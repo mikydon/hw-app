@@ -16,6 +16,14 @@ const C = {
   mint: "#5fe3a1",
   sky: "#7cc4ff",
 };
+// Dark themes share the accent colours; only the surfaces change, so contrast stays the same.
+const THEMES = {
+  navy:   { label: "Navy",   ink: "#0e1b36", panel: "#16284d", panelHi: "#1f3765", line: "#2c4679", chalk: "#eef2ff", dim: "#93a3c9", edge: "#0f2147" },
+  black:  { label: "Čierna", ink: "#000000", panel: "#111317", panelHi: "#1d2027", line: "#2b2f38", chalk: "#f2f4f8", dim: "#9aa1ae", edge: "#08090b" },
+  forest: { label: "Les",    ink: "#0d1f17", panel: "#142d22", panelHi: "#1d3d2f", line: "#2a5240", chalk: "#eefaf3", dim: "#94b3a3", edge: "#0a1912" },
+  plum:   { label: "Slivka", ink: "#1d1230", panel: "#2a1b45", panelHi: "#37245a", line: "#4a3374", chalk: "#f4effc", dim: "#ad9cc8", edge: "#150c24" },
+};
+const APP_VERSION = "1.1.0";
 const DISPLAY = "'Big Shoulders Display', 'Arial Narrow', Impact, sans-serif";
 const BODY = "'Figtree', -apple-system, 'Segoe UI', sans-serif";
 
@@ -37,9 +45,14 @@ function unlockAudio() {
   if (window._wac) return;
   try { window._wac = new (window.AudioContext || window.webkitAudioContext)(); } catch (_) {}
 }
+// User settings (sounds, volume, vibration…) are mirrored here so plain functions can read them.
+const VOLUME = { low: 0.45, mid: 1, high: 1.6 };
+const setting = k => (window._wset ? window._wset[k] : undefined);
+const volMul = () => VOLUME[setting("volume")] || 1;
 function beep(freq, dur, vol) {
   try {
-    if (window._wmute) return;
+    if (setting("sndTimer") === false) return;
+    vol = Math.min(1, vol * volMul());
     const ctx = window._wac;
     if (!ctx) return;
     const play = () => {
@@ -61,8 +74,9 @@ const soundPrepEnd = () => beep(880, 0.12, 0.4);
 
 // Fun effects: all notes are scheduled on the audio clock inside ONE play call.
 // No setTimeout chains — those are what broke the sound on Android before.
-function melody(notes, type = "triangle", vol = 0.3) {
-  if (window._wmute) return;
+function melody(notes, type = "triangle", vol = 0.3, cat = "fx") {
+  if (setting(cat === "tap" ? "sndTap" : "sndFx") === false) return;
+  vol = Math.min(1, vol * volMul());
   try {
     const ctx = window._wac;
     if (!ctx) return;
@@ -127,13 +141,13 @@ function playSfx(kind) {
   const [notes, type, vol] = list[i];
   melody(notes, type, vol);
 }
-const sfxTap = () => melody([[1180 + Math.floor(Math.random() * 6) * 50, 0, 0.05]], "sine", 0.12);
+const sfxTap = () => melody([[1180 + Math.floor(Math.random() * 6) * 50, 0, 0.05]], "sine", 0.12, "tap");
 const sfxCheck = () => playSfx("check");
 const sfxSet = () => playSfx("set");
 const sfxRecord = () => playSfx("record");
 const sfxFinish = () => playSfx("finish");
 const sfxLevel = () => playSfx("level");
-function vibrate(pat) { try { navigator.vibrate?.(pat); } catch (_) {} }
+function vibrate(pat) { if (setting("vibrate") === false) return; try { navigator.vibrate?.(pat); } catch (_) {} }
 if (typeof document !== "undefined") {
   document.addEventListener("click", unlockAudio, { once: true });
 }
@@ -488,6 +502,27 @@ const QUOTES = [
   "Ťažké série, ľahší život.",
   "Každý silák raz začínal od nuly.",
 ];
+// Shown during rest: one useful fact + one line of encouragement.
+const REST_FACTS = [
+  "Cvičiť môžeš aj každý deň, ale najlepšie je obdeň. Svaly rastú počas oddychu, nie počas cvičenia.",
+  "Spánok je tvoj najlepší doplnok. 7–9 hodín denne = rýchlejšia regenerácia.",
+  "Posledné opakovania série robia najviac práce. Práve tie budujú svaly.",
+  "Pomalé spúšťanie (3 sekundy) dá svalom viac práce než rýchle opakovania.",
+  "Bielkoviny v každom jedle pomáhajú svalom rásť.",
+  "Pravidelnosť porazí intenzitu. Radšej 13 minút obdeň ako hodina raz za mesiac.",
+  "Napi sa vody. Aj mierny smäd znižuje výkon.",
+  "Dýchaj pomaly: nosom dnu, ústami von. Rýchlejšie sa upokojíš.",
+  "Plný rozsah pohybu = viac svalov v práci. Radšej menej opakovaní, ale celých.",
+];
+const REST_MOTIVATION = [
+  "Verím ti, ty to dáš! 💪",
+  "Každá séria ťa posúva bližšie k cieľu.",
+  "Si silnejší, než si myslíš.",
+  "Ešte kúsok, zvládneš to.",
+  "Dnešok sa počíta. Nevzdávaj to.",
+  "Toto je moment, kde sa rastie.",
+  "Budúce ja ti poďakuje.",
+];
 const REST_TIPS = [
   "Napi sa vody.",
   "Dýchaj pomaly: nosom dnu, ústami von.",
@@ -562,7 +597,7 @@ function useCountdown(endAt, onEnd, onTick) {
 function useWakeLock() {
   useEffect(() => {
     let lock = null;
-    const get = async () => { try { lock = await navigator.wakeLock?.request("screen"); } catch (_) {} };
+    const get = async () => { if (setting("keepAwake") === false) return; try { lock = await navigator.wakeLock?.request("screen"); } catch (_) {} };
     const onVis = () => { if (document.visibilityState === "visible") get(); };
     get();
     document.addEventListener("visibilitychange", onVis);
@@ -806,6 +841,17 @@ function RankLadder({ id, best }) {
 // ─── SHARED UI ──────────────────────────────────────────────────────────────
 const btnBase = { border: "none", cursor: "pointer", fontFamily: BODY, fontWeight: 700, borderRadius: 14 };
 const EDGE = { [C.signal]: "#c29300", [C.chalk]: "#8e9cc2", [C.panelHi]: "#0f2147", [C.mint]: "#2b9e66", "#e62117": "#9b120c" };
+function applyTheme(id) {
+  const t = THEMES[id] || THEMES.navy;
+  Object.keys(t).forEach(k => { if (k !== "label" && k !== "edge") C[k] = t[k]; });
+  EDGE[C.panelHi] = t.edge;
+  EDGE[C.chalk] = "#8e9cc2";
+  try {
+    document.body.style.background = C.ink;
+    const m = document.querySelector('meta[name="theme-color"]');
+    if (m) m.setAttribute("content", C.ink);
+  } catch (_) {}
+}
 const bigBtn = (bg, fg) => ({ ...btnBase, width: "100%", padding: "17px 16px", fontSize: 16, background: bg, color: fg, "--e": EDGE[bg] || "transparent" });
 const ghostBtn = { ...btnBase, background: "transparent", color: C.dim, border: `1.5px solid ${C.line}`, padding: "10px 14px", fontSize: 13 };
 
@@ -883,6 +929,10 @@ const chip = color => ({ display: "flex", alignItems: "center", gap: 4, fontFami
 
 // ─── PROFILE / STATS HELPERS ────────────────────────────────────────────────
 const PROFILE_KEY = "domaci-trening-v1-profile";
+const SETTINGS_KEY = "domaci-trening-v1-settings";
+const DEFAULT_SETTINGS = { theme: "navy", sndTap: true, sndFx: true, sndTimer: true, volume: "mid", vibrate: true, keepAwake: true, aiCopy: false };
+async function loadSettings() { try { const v = await store.get(SETTINGS_KEY); if (v) return JSON.parse(v); } catch (_) {} return null; }
+async function saveSettings(st) { await store.set(SETTINGS_KEY, JSON.stringify(st)); }
 async function loadProfile() { try { const v = await store.get(PROFILE_KEY); if (v) return JSON.parse(v); } catch (_) {} return null; }
 async function saveProfile(p) { await store.set(PROFILE_KEY, JSON.stringify(p)); }
 // Square-crop + shrink the picked photo to 256 px so it stores small.
@@ -959,7 +1009,7 @@ function TopBar({ tab, history, profile, onProfile }) {
   const today = dateKey();
   const st = streakInfo(history, today);
   const lv = levelInfo(totalXP(history));
-  const title = tab === "train" ? "Tréning" : tab === "history" ? "História" : "Profil";
+  const title = tab === "train" ? "Tréning" : tab === "history" ? "História" : tab === "settings" ? "Nastavenia" : "Profil";
   return (
     <div style={{ position: "sticky", top: 0, zIndex: 20, background: `${C.ink}ee`, backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderBottom: `1px solid ${C.line}` }}>
       <div style={{ maxWidth: 460, margin: "0 auto", padding: "10px 18px", display: "flex", alignItems: "center", gap: 8 }}>
@@ -982,11 +1032,11 @@ function TabIcon({ name, active }) {
   const s = { fill: "none", stroke: c, strokeWidth: 2.2, strokeLinecap: "round", strokeLinejoin: "round" };
   if (name === "train") return <svg width="26" height="26" viewBox="0 0 24 24"><path d="M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11" {...s} /></svg>;
   if (name === "history") return <svg width="26" height="26" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="3" {...s} /><path d="M3.5 10h17M8 3v4M16 3v4" {...s} /><circle cx="12" cy="15" r="1.6" fill={c} stroke="none" /></svg>;
-  return <svg width="26" height="26" viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="4" {...s} /><path d="M4.5 20c1.2-3.6 4-5.5 7.5-5.5s6.3 1.9 7.5 5.5" {...s} /></svg>;
+  return <svg width="26" height="26" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2" {...s} /><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7" {...s} /><circle cx="12" cy="12" r="6.6" {...s} /></svg>;
 }
 
 function TabBar({ tab, setTab }) {
-  const tabs = [["train", "Tréning"], ["history", "História"], ["profile", "Profil"]];
+  const tabs = [["train", "Tréning"], ["history", "História"], ["settings", "Nastavenia"]];
   return (
     <nav aria-label="Hlavné menu" style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 30, background: `${C.panel}f2`, backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderTop: `1px solid ${C.line}`, paddingBottom: "env(safe-area-inset-bottom)" }}>
       <div style={{ maxWidth: 460, margin: "0 auto", display: "flex" }}>
@@ -1354,14 +1404,12 @@ function HistoryTab({ history, onDelete }) {
 }
 
 // ─── TAB 3: PROFIL ──────────────────────────────────────────────────────────
-function ProfileTab({ history, profile, setProfile, muted, onToggleMute, onFreeze }) {
-  const [confirmReset, setConfirmReset] = useState(false);
+function ProfileTab({ history, profile, setProfile, onFreeze }) {
   const fz = freezesAvailable(history);
   const fileRef = useRef(null);
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(profile.name || "");
   const [howEx, setHowEx] = useState(null);
-  const [copied, setCopied] = useState(false);
   const [err, setErr] = useState("");
   const today = dateKey();
   const xp = totalXP(history);
@@ -1377,13 +1425,6 @@ function ProfileTab({ history, profile, setProfile, muted, onToggleMute, onFreez
     try { const url = await fileToAvatar(f); setProfile({ ...profile, pfp: url }); setErr(""); sfxCheck(); }
     catch (_) { setErr("Túto fotku sa nepodarilo načítať. Skús inú (JPG alebo PNG)."); }
   };
-  const copyAll = async () => {
-    const text = history.map(logText).join("\n\n");
-    try { await navigator.clipboard.writeText(text); }
-    catch (_) { const t = document.createElement("textarea"); t.value = text; document.body.appendChild(t); t.select(); try { document.execCommand("copy"); } catch (__) {} document.body.removeChild(t); }
-    setCopied(true); setTimeout(() => setCopied(false), 2500);
-  };
-
   const stats = [["Tréningy", history.length], ["Série spolu", history.reduce((a, e) => a + setsIn(e), 0)], ["Opakovaní spolu", totalReps(history)], ["Najdlhšia séria", `🔥 ${bestStreak(history)}`]];
 
   return (
@@ -1474,25 +1515,154 @@ function ProfileTab({ history, profile, setProfile, muted, onToggleMute, onFreez
         ))}
       </div>
 
-      <div style={sectionTitle}>Nastavenia</div>
-      <div style={{ ...card }}>
-        <button onClick={onToggleMute} style={{ ...btnBase, width: "100%", background: "transparent", color: C.chalk, padding: "14px 16px", display: "flex", justifyContent: "space-between", alignItems: "center", borderRadius: 0 }}>
-          <span>Zvuky</span>
-          <span style={{ width: 50, height: 28, borderRadius: 99, background: muted ? C.panelHi : C.mint, position: "relative", transition: "background .2s" }}>
-            <span style={{ position: "absolute", top: 3, left: muted ? 3 : 25, width: 22, height: 22, borderRadius: 99, background: C.chalk, transition: "left .2s" }} />
-          </span>
+    </div>
+  );
+}
+
+// ─── TAB 3: NASTAVENIA ──────────────────────────────────────────────────────
+function Toggle({ on }) {
+  return (
+    <span aria-hidden="true" style={{ width: 50, height: 28, borderRadius: 99, background: on ? C.mint : C.panelHi, position: "relative", transition: "background .2s", flexShrink: 0, border: `1px solid ${C.line}` }}>
+      <span style={{ position: "absolute", top: 2, left: on ? 24 : 2, width: 22, height: 22, borderRadius: 99, background: C.chalk, transition: "left .2s" }} />
+    </span>
+  );
+}
+function SettingRow({ title, desc, on, onClick, first }) {
+  return (
+    <button role="switch" aria-checked={!!on} onClick={onClick}
+      style={{ ...btnBase, width: "100%", background: "transparent", color: C.chalk, padding: "13px 16px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, textAlign: "left", borderRadius: 0, borderTop: first ? "none" : `1px solid ${C.line}` }}>
+      <span style={{ flex: 1 }}>
+        <span style={{ display: "block", fontSize: 15, fontWeight: 700 }}>{title}</span>
+        {desc && <span style={{ display: "block", fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2, lineHeight: 1.4 }}>{desc}</span>}
+      </span>
+      <Toggle on={on} />
+    </button>
+  );
+}
+
+function SettingsTab({ settings, setSettings, history, profile, setProfile, onImport }) {
+  const [confirmReset, setConfirmReset] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [msg, setMsg] = useState("");
+  const [pending, setPending] = useState(null);
+  const fileRef = useRef(null);
+  const set = (k, v) => { const n = { ...settings, [k]: v }; window._wset = n; setSettings(n); };
+  const flip = k => { unlockAudio(); const v = !settings[k]; set(k, v); if (v) { if (k === "sndTap") sfxTap(); else if (k === "sndTimer") soundExercise(); else sfxCheck(); } };
+
+  const exportBackup = () => {
+    const data = { app: "domaci-trening", version: 1, appVersion: APP_VERSION, exportedAt: new Date().toISOString(), history, profile, settings };
+    try {
+      const blob = new Blob([JSON.stringify(data)], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `trening-zaloha-${dateKey()}.json`;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+      setMsg("✓ Záloha uložená do Stiahnutých súborov."); sfxCheck();
+    } catch (_) { setMsg("Zálohu sa nepodarilo uložiť."); }
+  };
+  const readBackup = e => {
+    const f = e.target.files && e.target.files[0];
+    e.target.value = "";
+    if (!f) return;
+    const fr = new FileReader();
+    fr.onload = () => {
+      try {
+        const d = JSON.parse(fr.result);
+        if (d.app !== "domaci-trening" || !Array.isArray(d.history)) throw new Error("bad");
+        setPending(d); setMsg("");
+      } catch (_) { setMsg("Toto nie je záloha z tejto apky."); }
+    };
+    fr.readAsText(f);
+  };
+  const copyAll = async () => {
+    const text = history.map(logText).join("\n\n");
+    try { await navigator.clipboard.writeText(text); }
+    catch (_) { const t = document.createElement("textarea"); t.value = text; document.body.appendChild(t); t.select(); try { document.execCommand("copy"); } catch (__) {} document.body.removeChild(t); }
+    setCopied(true); setTimeout(() => setCopied(false), 2500);
+  };
+
+  const rowBtn = (first) => ({ ...btnBase, width: "100%", background: "transparent", color: C.chalk, padding: "13px 16px", textAlign: "left", borderRadius: 0, borderTop: first ? "none" : `1px solid ${C.line}`, fontSize: 15 });
+
+  return (
+    <div className="scr" style={{ padding: "6px 18px 110px", maxWidth: 460, margin: "0 auto" }}>
+      <input ref={fileRef} type="file" accept="application/json,.json" onChange={readBackup} style={{ display: "none" }} />
+
+      <div style={sectionTitle}>Vzhľad</div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+        {Object.entries(THEMES).map(([id, t]) => (
+          <button key={id} onClick={() => { sfxTap(); set("theme", id); }} aria-pressed={settings.theme === id}
+            style={{ ...btnBase, background: t.ink, border: `2px solid ${settings.theme === id ? C.signal : t.line}`, padding: 10, textAlign: "left", color: t.chalk }}>
+            <div style={{ display: "flex", gap: 5, marginBottom: 8 }}>
+              <span style={{ width: 22, height: 22, borderRadius: 7, background: t.panel, border: `1px solid ${t.line}` }} />
+              <span style={{ width: 22, height: 22, borderRadius: 7, background: C.signal }} />
+              <span style={{ width: 22, height: 22, borderRadius: 7, background: C.mint }} />
+              <span style={{ width: 22, height: 22, borderRadius: 7, background: C.sky }} />
+            </div>
+            <div style={{ fontSize: 14, fontWeight: 700 }}>{t.label}{settings.theme === id ? " ✓" : ""}</div>
+          </button>
+        ))}
+      </div>
+
+      <div style={sectionTitle}>Zvuky</div>
+      <div style={card}>
+        <SettingRow first title="Zvuky tlačidiel" desc="Jemné cvaknutie pri ťuknutí." on={settings.sndTap} onClick={() => flip("sndTap")} />
+        <SettingRow title="Zvukové efekty" desc="Melódie po sérii, rekorde, novom ranku a na konci tréningu." on={settings.sndFx} onClick={() => flip("sndFx")} />
+        <SettingRow title="Odpočítavanie a časovače" desc="Pípanie 3-2-1, štart a koniec výdrže a oddychu." on={settings.sndTimer} onClick={() => flip("sndTimer")} />
+        <div style={{ padding: "13px 16px", borderTop: `1px solid ${C.line}` }}>
+          <div style={{ fontSize: 15, fontWeight: 700, color: C.chalk }}>Hlasitosť</div>
+          <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
+            {[["low", "Tichá"], ["mid", "Stredná"], ["high", "Hlasná"]].map(([id, l]) => (
+              <button key={id} onClick={() => { unlockAudio(); set("volume", id); sfxCheck(); }} aria-pressed={settings.volume === id}
+                style={{ ...btnBase, flex: 1, padding: "9px 4px", fontSize: 13, background: settings.volume === id ? C.chalk : "transparent", color: settings.volume === id ? C.ink : C.dim, border: `1.5px solid ${settings.volume === id ? C.chalk : C.line}` }}>{l}</button>
+            ))}
+          </div>
+          <div style={{ fontSize: 12, color: C.dim, marginTop: 6 }}>Hlasitosť sa sčíta s hlasitosťou telefónu.</div>
+        </div>
+      </div>
+
+      <div style={sectionTitle}>Tréning</div>
+      <div style={card}>
+        <SettingRow first title="Vibrácie" desc="Telefón zavibruje na konci výdrže, oddychu a pri rekorde." on={settings.vibrate} onClick={() => { set("vibrate", !settings.vibrate); if (!settings.vibrate) { try { navigator.vibrate?.(120); } catch (_) {} } }} />
+        <SettingRow title="Nechať obrazovku zapnutú" desc="Počas tréningu displej nezhasne." on={settings.keepAwake} onClick={() => set("keepAwake", !settings.keepAwake)} />
+        <SettingRow title="Kopírovanie záznamu pre AI" desc="Na konci tréningu pribudne tlačidlo, ktoré skopíruje tréning ako text, napríklad pre ChatGPT alebo Claude." on={settings.aiCopy} onClick={() => set("aiCopy", !settings.aiCopy)} />
+      </div>
+
+      <div style={sectionTitle}>Dáta a záloha</div>
+      <div style={card}>
+        <button onClick={exportBackup} style={rowBtn(true)}>
+          💾 Uložiť zálohu
+          <div style={{ fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2 }}>Stiahne súbor so všetkými tréningami, profilom a nastaveniami.</div>
         </button>
-        <button onClick={copyAll} style={{ ...btnBase, width: "100%", background: "transparent", color: C.chalk, padding: "14px 16px", textAlign: "left", borderTop: `1px solid ${C.line}`, borderRadius: 0 }}>
-          {copied ? "✓ Skopírované" : "Kopírovať celú históriu"}
+        <button onClick={() => fileRef.current && fileRef.current.click()} style={rowBtn(false)}>
+          📂 Obnoviť zo zálohy
+          <div style={{ fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2 }}>Napríklad v novom telefóne. Nahradí terajšie údaje.</div>
         </button>
+        {pending && (
+          <div style={{ padding: "12px 16px", borderTop: `1px solid ${C.line}`, background: `${C.signal}14` }}>
+            <div style={{ fontSize: 14, color: C.chalk, fontWeight: 600 }}>Záloha z {pending.exportedAt ? fmtDate(dateKey(new Date(pending.exportedAt)), true) : "neznámeho dátumu"}: {pending.history.length} {plural(pending.history.length, "tréning", "tréningy", "tréningov")}. Nahradiť terajšie údaje?</div>
+            <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+              <button onClick={() => { onImport(pending); setPending(null); setMsg("✓ Údaje obnovené."); sfxCheck(); }} className="b3d" style={{ ...btnBase, background: C.signal, color: C.signalInk, padding: "9px 14px", "--e": EDGE[C.signal] }}>Áno, obnoviť</button>
+              <button onClick={() => setPending(null)} style={{ ...ghostBtn, padding: "9px 14px" }}>Zrušiť</button>
+            </div>
+          </div>
+        )}
+        {settings.aiCopy && (
+          <button onClick={copyAll} style={rowBtn(false)}>{copied ? "✓ Skopírované" : "📋 Kopírovať celú históriu pre AI"}</button>
+        )}
         <button onClick={() => {
             if (!confirmReset) { setConfirmReset(true); setTimeout(() => setConfirmReset(false), 4000); return; }
-            setProfile({ ...profile, streakResetTs: Date.now(), freezeDays: profile.freezeDays || [] }); setConfirmReset(false);
+            setProfile({ ...profile, streakResetTs: Date.now(), freezeDays: profile.freezeDays || [] }); setConfirmReset(false); setMsg("Séria vynulovaná.");
           }}
-          style={{ ...btnBase, width: "100%", background: "transparent", color: confirmReset ? "#ff8a80" : C.chalk, padding: "14px 16px", textAlign: "left", borderTop: `1px solid ${C.line}`, borderRadius: 0 }}>
-          {confirmReset ? "Naozaj vynulovať sériu? Ťukni znova" : "Resetovať sériu 🔥 na 0"}
-          <div style={{ fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2 }}>História, XP a ranky ostanú. Séria sa začne počítať odznova.</div>
+          style={{ ...rowBtn(false), color: confirmReset ? "#ff8a80" : C.chalk }}>
+          {confirmReset ? "Naozaj vynulovať sériu? Ťukni znova" : "🔥 Resetovať sériu na 0"}
+          <div style={{ fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2 }}>História, XP a ranky ostanú.</div>
         </button>
+      </div>
+      {msg && <div role="status" style={{ fontSize: 13, color: msg.startsWith("✓") ? C.mint : C.dim, marginTop: 8 }}>{msg}</div>}
+
+      <div style={{ fontSize: 12, color: C.dim, textAlign: "center", marginTop: 26, lineHeight: 1.6 }}>
+        Domáci tréning, verzia {APP_VERSION}<br />Všetky údaje sú uložené len v tomto zariadení.
       </div>
     </div>
   );
@@ -1712,7 +1882,12 @@ function Rest({ rest, nextItem, rounds, onEnd, onAdd }) {
       <div style={{ marginTop: 22, fontSize: 13, color: C.dim }}>Ďalej</div>
       <div style={{ fontFamily: DISPLAY, fontSize: 36, fontWeight: 800, color: C.chalk, lineHeight: 1.05 }}>{ex.name}</div>
       <div style={{ fontSize: 13, color: C.dim, marginTop: 4 }}>Priprav si miesto, kým to odpočíta.</div>
-      {rest.tip && <div style={{ marginTop: 14, fontSize: 14, color: C.sky, fontWeight: 600 }}>💧 {rest.tip}</div>}
+      {(rest.tip || rest.moti) && (
+        <div style={{ marginTop: 18, background: C.panel, border: `1px solid ${C.line}`, borderRadius: 16, padding: "12px 14px", textAlign: "left" }}>
+          {rest.tip && <div style={{ fontSize: 14, color: C.sky, fontWeight: 600, lineHeight: 1.45 }}>💡 {rest.tip}</div>}
+          {rest.moti && <div style={{ fontSize: 16, color: C.chalk, fontWeight: 800, marginTop: 6 }}>{rest.moti}</div>}
+        </div>
+      )}
       <div style={{ display: "flex", gap: 10, marginTop: 22 }}>
         <button onClick={onAdd} style={{ ...ghostBtn, flex: 1, padding: 14, fontSize: 14 }}>+15 s</button>
         <button onClick={() => { unlockAudio(); onEnd(); }} style={{ ...btnBase, flex: 2, padding: 14, fontSize: 15, background: C.panelHi, color: C.chalk }}>Som pripravený</button>
@@ -1864,7 +2039,7 @@ function Summary({ entry, xpBefore = 0, xpGained, newCh = [], history, onClose }
         ))}
       </div>
       <div style={{ fontSize: 14, color: C.dim, marginTop: 14, lineHeight: 1.5 }}>Ďalší tréning: deň {DAYS[(DAYS.findIndex(d => d.id === entry.day) + 1) % DAYS.length].id}, ideálne {fmtDate(addDays(entry.date, 2))}</div>
-      <button onClick={copy} className="b3d" style={{ ...bigBtn(copied ? C.mint : C.chalk, C.ink), marginTop: 16 }}>{copied ? "✓ Skopírované" : "Kopírovať záznam"}</button>
+      {setting("aiCopy") && <button onClick={copy} className="b3d" style={{ ...bigBtn(copied ? C.mint : C.chalk, C.ink), marginTop: 16 }}>{copied ? "✓ Skopírované" : "Kopírovať záznam pre AI"}</button>}
       <button onClick={onClose} className="b3d" style={{ ...bigBtn("transparent", C.dim), marginTop: 8, border: `1.5px solid ${C.line}` }}>Domov</button>
     </div>
   );
@@ -1934,7 +2109,7 @@ function Session({ session, setSession, history, onSave, onClose }) {
     const rankUp = (pr || oldBest === null) && newRank > rankIdx(it.id, oldBest);
     const cheer = rankUp ? `${RANKS[newRank].icon} Nový rank: ${RANKS[newRank].name}!` : pr ? "🏆 Nový osobný rekord!" : CHEERS[Math.floor(Math.random() * CHEERS.length)];
     if (rankUp) { sfxLevel(); vibrate([120, 60, 120, 60, 260]); } else if (pr) { sfxRecord(); vibrate([80, 40, 80]); } else sfxSet();
-    setSession({ ...session, results, phase: "rest", rest: { endAt: Date.now() + secs * 1000, total: secs, nextPos: session.pos + 1, newRound: next.r !== it.r, pr, cheer, tip: pick(REST_TIPS) } });
+    setSession({ ...session, results, phase: "rest", rest: { endAt: Date.now() + secs * 1000, total: secs, nextPos: session.pos + 1, newRound: next.r !== it.r, pr, cheer, tip: pick(REST_FACTS), moti: pick(REST_MOTIVATION) } });
   };
 
   const goBack = () => {
@@ -1996,11 +2171,13 @@ export default function App() {
   const [history, setHistory] = useState(SEED_HISTORY);
   const [session, setSession] = useState(null);
   const [loaded, setLoaded] = useState(false);
-  const [muted, setMuted] = useState(false);
+  const [settings, setSettingsState] = useState(DEFAULT_SETTINGS);
   const [tab, setTab] = useState("train");
   const [profile, setProfileState] = useState({ name: "User", pfp: null, freezeDays: [], streakResetTs: 0 });
   META = { freezeDays: profile.freezeDays || [], streakResetTs: profile.streakResetTs || 0 };
-  useEffect(() => { window._wmute = muted; }, [muted]);
+  window._wset = settings;
+  applyTheme(settings.theme);
+  const setSettings = n => { setSettingsState(n); saveSettings(n); };
   useEffect(() => { loadProfile().then(p => { if (p) setProfileState(prev => ({ ...prev, ...p })); }); }, []);
   const setProfile = p => { setProfileState(p); saveProfile(p); };
   const applyFreeze = () => {
@@ -2014,7 +2191,10 @@ export default function App() {
   useEffect(() => {
     loadAll().then(s => {
       if (s && Array.isArray(s.history)) setHistory(s.history);
-      if (s && typeof s.muted === "boolean") setMuted(s.muted);
+      loadSettings().then(st => {
+        if (st) setSettingsState({ ...DEFAULT_SETTINGS, ...st });
+        else if (s && s.muted === true) setSettingsState({ ...DEFAULT_SETTINGS, sndTap: false, sndFx: false, sndTimer: false });
+      });
       if (s && s.session && s.session.phase !== "summary") {
         const ss = s.session;
         // A rest timer can't survive a reload, so resume at the next exercise.
@@ -2027,8 +2207,8 @@ export default function App() {
 
   useEffect(() => {
     if (!loaded) return;
-    saveAll({ history, muted, session: session && session.phase !== "summary" ? session : null });
-  }, [history, session, muted, loaded]);
+    saveAll({ history, session: session && session.phase !== "summary" ? session : null });
+  }, [history, session, loaded]);
 
   useEffect(() => { window.scrollTo?.(0, 0); }, [session?.phase, session?.pos, tab]);
 
@@ -2065,8 +2245,9 @@ export default function App() {
           <TopBar tab={tab} history={history} profile={profile} onProfile={() => { sfxTap(); setTab("profile"); }} />
           {tab === "train" && <TrainTab history={history} onStart={start} onFreeze={applyFreeze} />}
           {tab === "history" && <HistoryTab history={history} onDelete={idx => setHistory(h => h.filter((_, i) => i !== idx))} />}
-          {tab === "profile" && <ProfileTab history={history} profile={profile} setProfile={setProfile} muted={muted} onFreeze={applyFreeze}
-            onToggleMute={() => { unlockAudio(); const m = !muted; window._wmute = m; setMuted(m); if (!m) sfxCheck(); }} />}
+          {tab === "profile" && <ProfileTab history={history} profile={profile} setProfile={setProfile} onFreeze={applyFreeze} />}
+          {tab === "settings" && <SettingsTab settings={settings} setSettings={setSettings} history={history} profile={profile} setProfile={setProfile}
+            onImport={d => { setHistory(d.history); if (d.profile) setProfile({ ...profile, ...d.profile }); if (d.settings) setSettings({ ...DEFAULT_SETTINGS, ...d.settings }); }} />}
           <TabBar tab={tab} setTab={setTab} />
         </>
       )}
