@@ -451,7 +451,7 @@ export default {
   },
 
   fig: {
-    k1: ["En haut", "En bas"],
+    k1: ["En haut", "En bas, coudes à ~45° du corps"],
     k3: ["En haut", "En bas, coudes serrés"],
     b5: ["Correct : corps droit", "Incorrect : bas du dos qui s'affaisse"],
     n1: ["Départ", "En bas, talons au sol"],

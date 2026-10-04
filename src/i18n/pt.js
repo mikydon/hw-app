@@ -451,7 +451,7 @@ export default {
   },
 
   fig: {
-    k1: ["Em cima", "Embaixo"],
+    k1: ["Em cima", "Embaixo, cotovelos a ~45° do corpo"],
     k3: ["Em cima", "Embaixo, cotovelos junto ao corpo"],
     b5: ["Certo: corpo reto", "Errado: lombar caída"],
     n1: ["Início", "Embaixo, calcanhares no chão"],

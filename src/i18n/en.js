@@ -451,7 +451,7 @@ export default {
   },
 
   fig: {
-    k1: ["Up", "Down"],
+    k1: ["Up", "Down, elbows ~45° from the body"],
     k3: ["Up", "Down, elbows in"],
     b5: ["Right: straight body", "Wrong: sagging lower back"],
     n1: ["Start", "Down, heels on the floor"],

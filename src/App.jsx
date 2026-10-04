@@ -572,7 +572,7 @@ function fromFeet(foot, lean) { const a = -90 - lean; return { hip: dirv(foot, a
 const FIGS = {
   k1: [
     { hip: [50, 76.4], torso: -26, hands: [[73.4, GROUND], [75.4, GROUND]], armBend: [1, 1], feet: [[14, GROUND], [16, GROUND]], legBend: [1, 1], hide: ["farLeg"] },
-    { hip: [50.3, 87.9], torso: -8.7, hands: [[73.4, GROUND], [75.4, GROUND]], armBend: [1, 1], feet: [[10.8, GROUND], [12.8, GROUND]], legBend: [1, 1], hide: ["farLeg"] },
+    { hip: [50.3, 87.9], torso: -8.7, hands: [[73.4, GROUND], [75.4, GROUND]], armBend: [1, 1], feet: [[10.8, GROUND], [12.8, GROUND]], legBend: [1, 1], hide: ["farLeg"], props: [{ t: "elbowTop" }] },
   ],
   k3: [
     { hip: [50, 76.4], torso: -26, hands: [[73.4, GROUND], [74.4, GROUND]], armBend: [1, 1], feet: [[14, GROUND], [16, GROUND]], legBend: [1, 1], hide: ["farLeg"], props: [{ t: "diamondTop" }] },
@@ -710,6 +710,23 @@ function Prop({ pr }) {
   // Small "seen from above" inset: palms side by side, index fingers and thumbs touching = diamond.
   // Dashed line straight down from the shoulder: shows that the hands are placed behind it (under the chest).
   if (pr.t === "plumb") return <line x1={pr.x} y1={pr.y} x2={pr.x} y2={GROUND} stroke={C.sky} strokeWidth="1.4" strokeDasharray="2.2 1.8" />;
+  // Push-up bottom seen from above: arms about 45° from the body, not straight out to the sides.
+  if (pr.t === "elbowTop") return (
+    <g>
+      <rect x="3" y="7" width="52" height="40" rx="6" fill={C.panel} stroke={C.line} strokeWidth="1.2" />
+      <circle cx="29" cy="15" r="3.6" fill={C.chalk} />
+      <rect x="23.5" y="20" width="11" height="22" rx="4" fill={C.chalk} />
+      <g stroke={C.chalk} strokeWidth="2.6" strokeLinecap="round">
+        <line x1="24.5" y1="22" x2="16.5" y2="30" /><line x1="33.5" y1="22" x2="41.5" y2="30" />
+      </g>
+      <circle cx="16.5" cy="30" r="1.9" fill={C.chalk} /><circle cx="41.5" cy="30" r="1.9" fill={C.chalk} />
+      <g stroke={C.sky} strokeWidth="1" fill="none">
+        <line x1="22" y1="22" x2="22" y2="33" strokeDasharray="1.6 1.4" />
+        <path d="M22 28.6 A6.6 6.6 0 0 1 17.3 26.7" />
+      </g>
+      <text x="13.2" y="40" fontSize="6" fill={C.sky} fontFamily={BODY} fontWeight="700">45°</text>
+    </g>
+  );
   if (pr.t === "diamondTop") {
     // Both hands seen from above (like a photo of real hands): fingers together, turned inwards,
     // straight thumbs starting lower on the palm. Index fingertips touch at the top, thumb tips at the

@@ -451,7 +451,7 @@ export default {
   },
 
   fig: {
-    k1: ["Oben", "Unten"],
+    k1: ["Oben", "Unten, Ellbogen ca. 45° vom Körper"],
     k3: ["Oben", "Unten, Ellbogen eng"],
     b5: ["Richtig: Körper gerade", "Falsch: Hohlkreuz"],
     n1: ["Start", "Unten, Fersen am Boden"],
