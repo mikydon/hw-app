@@ -184,7 +184,7 @@ export default {
     ready: "Bora!",
 
     coolTitle: "Treino concluído",
-    coolIntro: "Alongar no final é opcional. Os especialistas concordam que não ajuda na recuperação nem no ganho de músculo, só na flexibilidade. Se quiser, estes dois fazem sentido: flexor do quadril (dos dois lados) e postura da criança. 90 segundos no total.",
+    coolIntro: "Alongar no final é opcional. Os especialistas concordam que não ajuda na recuperação nem no ganho de músculo, só na flexibilidade. Se quiser, estes fazem sentido: flexor do quadril (dos dois lados), cobra e postura da criança. 2 minutos no total.",
     coolDone: "✓ feito",
     coolPrep: "posicione-se, {n}",
     coolHold: "segure, {n} s",
@@ -459,6 +459,7 @@ export default {
   cool: {
     c1: { name: "Flexor do quadril, esquerdo", why: "Ficar muito tempo sentado (escola, computador) encurta a parte da frente do quadril. Se for fazer só um alongamento, faça este.", how: "Ajoelhe com o joelho esquerdo no chão e o pé direito à frente. Contraia os glúteos e leve o quadril para a frente até sentir alongar a parte da frente do quadril esquerdo. Não arqueie a lombar." },
     c2: { name: "Flexor do quadril, direito", why: "O mesmo do outro lado.", how: "Ajoelhe com o joelho direito no chão e o pé esquerdo à frente. Contraia os glúteos e leve o quadril para a frente." },
+    c4: { name: "Cobra", why: "Alonga o abdômen e a frente do quadril. Compensa todo o enrolar dos exercícios de abdômen.", how: "Deite de bruços, palmas sob os ombros, cotovelos junto ao corpo. Deixe o quadril no chão e empurre devagar com os braços até sentir um alongamento agradável no abdômen. Ombros baixos, longe das orelhas; os cotovelos não precisam ficar totalmente esticados. Se incomodar na lombar, desça um pouco." },
     c3: { name: "Postura da criança", why: "Acalma a respiração e relaxa as costas. Puro bem-estar.", how: "Joelhos afastados, sente o quadril para trás sobre os calcanhares, estique os braços o mais à frente que puder, testa no chão. Respire devagar." },
   },
 
@@ -487,6 +488,7 @@ export default {
     hollow: ["Lombar colada no chão"],
     legraise: ["Pernas para cima", "Desça devagar, sem apoiar no chão"],
     hf: ["Joelho de trás no chão, quadril à frente"],
+    cobra: ["Quadril no chão, peito para cima"],
     child: ["Quadril nos calcanhares, braços bem à frente"],
   },
 

@@ -184,7 +184,7 @@ export default {
     ready: "Som pripravený",
 
     coolTitle: "Tréning hotový",
-    coolIntro: "Strečing na konci je voliteľný. Odborníci sa zhodli, že nepomáha regenerácii ani rastu svalov. Pomáha len ohybnosti. Ak ho chceš, tieto dva majú pre teba zmysel: bedrový flexor (na obe strany) a child's pose. Spolu 90 sekúnd.",
+    coolIntro: "Strečing na konci je voliteľný. Odborníci sa zhodli, že nepomáha regenerácii ani rastu svalov. Pomáha len ohybnosti. Ak ho chceš, tieto majú pre teba zmysel: bedrový flexor (na obe strany), kobra a child's pose. Spolu 2 minúty.",
     coolDone: "✓ hotovo",
     coolPrep: "zaujmi pozíciu, {n}",
     coolHold: "drž, {n} s",
@@ -459,6 +459,7 @@ export default {
   cool: {
     c1: { name: "Bedrový flexor, ľavá", why: "Veľa sedíš (škola, počítač), takže predná strana bedra sa skracuje. Ak chceš robiť len jeden strečing, rob tento.", how: "Kľakni si na ľavé koleno, pravá noha vpredu. Zatni zadok a posuň boky dopredu, kým necítiš ťah vpredu na ľavom bedre. Neprehýbaj sa v krížoch." },
     c2: { name: "Bedrový flexor, pravá", why: "To isté na druhú stranu.", how: "Kľakni si na pravé koleno, ľavá noha vpredu. Zatni zadok a posuň boky dopredu." },
+    c4: { name: "Kobra", why: "Natiahne brucho a prednú stranu bokov. Je to protiváha ku krčeniu pri cvikoch na brucho.", how: "Ľahni na brucho, dlane polož pod ramená, lakte pri tele. Boky nechaj na zemi a pomaly sa rukami vytlač hore, kým necítiš príjemný ťah na bruchu. Ramená drž dole od uší, lakte nemusia byť úplne vystreté. Ak ťa pichá v krížoch, choď nižšie." },
     c3: { name: "Child's pose", why: "Upokojí dych a uvoľní chrbát. Je to čisto na pohodu.", how: "Kolená od seba, zadok si sadni na päty, ruky vystri čo najďalej pred seba, čelo na zem. Pomaly dýchaj." },
   },
 
@@ -487,6 +488,7 @@ export default {
     hollow: ["Driek pritlačený k zemi"],
     legraise: ["Nohy hore", "Pomaly dole, nepoložiť na zem"],
     hf: ["Zadné koleno na zemi, boky dopredu"],
+    cobra: ["Boky na zemi, hrudník hore"],
     child: ["Zadok na päty, ruky ďaleko pred seba"],
   },
 

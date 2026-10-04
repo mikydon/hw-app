@@ -184,7 +184,7 @@ export default {
     ready: "Ich bin bereit",
 
     coolTitle: "Training geschafft",
-    coolIntro: "Dehnen am Ende ist optional. Fachleute sind sich einig: Es hilft nicht bei Regeneration oder Muskelaufbau, nur bei der Beweglichkeit. Wenn du willst, lohnen sich diese zwei: Hüftbeuger (beide Seiten) und Kindhaltung. Insgesamt 90 Sekunden.",
+    coolIntro: "Dehnen am Ende ist optional. Fachleute sind sich einig: Es hilft nicht bei Regeneration oder Muskelaufbau, nur bei der Beweglichkeit. Wenn du willst, lohnen sich diese: Hüftbeuger (beide Seiten), Kobra und Kindhaltung. Insgesamt 2 Minuten.",
     coolDone: "✓ erledigt",
     coolPrep: "in Position gehen, {n}",
     coolHold: "halten, {n} s",
@@ -459,6 +459,7 @@ export default {
   cool: {
     c1: { name: "Hüftbeuger, links", why: "Viel Sitzen (Schule, Computer) verkürzt die Vorderseite deiner Hüfte. Wenn du nur eine Dehnung machst, dann diese.", how: "Knie dich auf das linke Knie, rechter Fuß vorne. Spann den Po an und schieb die Hüfte nach vorn, bis du eine Dehnung vorne an der linken Hüfte spürst. Kein Hohlkreuz machen." },
     c2: { name: "Hüftbeuger, rechts", why: "Das Gleiche auf der anderen Seite.", how: "Knie dich auf das rechte Knie, linker Fuß vorne. Spann den Po an und schieb die Hüfte nach vorn." },
+    c4: { name: "Kobra", why: "Dehnt den Bauch und die Vorderseite der Hüfte. Ein Gegengewicht zu all dem Einrollen bei den Bauchübungen.", how: "Leg dich auf den Bauch, Handflächen unter die Schultern, Ellbogen nah am Körper. Lass die Hüfte am Boden und drück dich langsam mit den Armen hoch, bis du eine angenehme Dehnung im Bauch spürst. Schultern weg von den Ohren, die Ellbogen müssen nicht ganz gestreckt sein. Wenn es im unteren Rücken zwickt, geh tiefer." },
     c3: { name: "Kindhaltung", why: "Beruhigt deine Atmung und entspannt den Rücken. Einfach nur zum Wohlfühlen.", how: "Knie auseinander, setz die Hüfte zurück auf die Fersen, streck die Arme so weit wie möglich nach vorn, Stirn auf den Boden. Atme langsam." },
   },
 
@@ -487,6 +488,7 @@ export default {
     hollow: ["Unterer Rücken fest am Boden"],
     legraise: ["Beine oben", "Langsam runter, nicht auf den Boden ablegen"],
     hf: ["Hinteres Knie unten, Hüfte vor"],
+    cobra: ["Hüfte am Boden, Brust hoch"],
     child: ["Hüfte zu den Fersen, Arme weit vor"],
   },
 

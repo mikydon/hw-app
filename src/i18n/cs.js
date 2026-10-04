@@ -184,7 +184,7 @@ export default {
     ready: "Jdu na to",
 
     coolTitle: "Trénink hotový",
-    coolIntro: "Protažení na konci je volitelné. Odborníci se shodují, že nepomáhá regeneraci ani růstu svalů, jen flexibilitě. Jestli chceš, dávají smysl tyhle dva: flexory kyčle (obě strany) a pozice dítěte. Celkem 90 sekund.",
+    coolIntro: "Protažení na konci je volitelné. Odborníci se shodují, že nepomáhá regeneraci ani růstu svalů, jen flexibilitě. Jestli chceš, dávají smysl tyhle: flexory kyčle (obě strany), kobra a pozice dítěte. Celkem 2 minuty.",
     coolDone: "✓ hotovo",
     coolPrep: "zaujmi pozici, {n}",
     coolHold: "drž, {n} s",
@@ -459,6 +459,7 @@ export default {
   cool: {
     c1: { name: "Flexory kyčle, levá", why: "Hodně sezení (škola, počítač) zkracuje přední stranu kyčlí. Jestli máš dělat jen jeden strečink, dělej tenhle.", how: "Klekni si na levé koleno, pravé chodidlo vpředu. Stiskni hýždě a posuň pánev dopředu, dokud neucítíš tah v přední části levé kyčle. Neprohýbej se v bedrech." },
     c2: { name: "Flexory kyčle, pravá", why: "To samé na druhé straně.", how: "Klekni si na pravé koleno, levé chodidlo vpředu. Stiskni hýždě a posuň pánev dopředu." },
+    c4: { name: "Kobra", why: "Protáhne břicho a přední stranu kyčlí. Je to protiváha ke krčení při cvicích na břicho.", how: "Lehni si na břicho, dlaně dej pod ramena, lokty u těla. Pánev nech na zemi a pomalu se rukama vytlač nahoru, až ucítíš příjemný tah na břiše. Ramena drž dole od uší, lokty nemusí být úplně natažené. Jestli tě píchá v kříži, jdi níž." },
     c3: { name: "Pozice dítěte", why: "Zklidní dech a uvolní záda. Čistě pro dobrý pocit.", how: "Kolena od sebe, sedni si pánví na paty, natáhni paže co nejdál dopředu, čelo na zemi. Dýchej pomalu." },
   },
 
@@ -487,6 +488,7 @@ export default {
     hollow: ["Bedra přitisknutá k zemi"],
     legraise: ["Nohy nahoře", "Pomalu dolů, nepokládat na zem"],
     hf: ["Zadní koleno na zemi, pánev dopředu"],
+    cobra: ["Pánev na zemi, hrudník nahoru"],
     child: ["Pánev na paty, paže daleko dopředu"],
   },
 

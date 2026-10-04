@@ -184,7 +184,7 @@ export default {
     ready: "Ci sono",
 
     coolTitle: "Allenamento finito",
-    coolIntro: "Lo stretching finale è facoltativo. Gli esperti concordano che non aiuta il recupero né la crescita muscolare, solo la flessibilità. Se vuoi farlo, questi due hanno senso: flessori dell'anca (entrambi i lati) e posizione del bambino. 90 secondi in tutto.",
+    coolIntro: "Lo stretching finale è facoltativo. Gli esperti concordano che non aiuta il recupero né la crescita muscolare, solo la flessibilità. Se vuoi farlo, questi hanno senso: flessori dell'anca (entrambi i lati), cobra e posizione del bambino. 2 minuti in tutto.",
     coolDone: "✓ fatto",
     coolPrep: "mettiti in posizione, {n}",
     coolHold: "tieni, {n} s",
@@ -459,6 +459,7 @@ export default {
   cool: {
     c1: { name: "Flessori dell'anca, sinistra", why: "Stare molto seduti (scuola, computer) accorcia la parte anteriore delle anche. Se fai un solo allungamento, fai questo.", how: "Appoggia il ginocchio sinistro a terra, piede destro davanti. Stringi i glutei e porta i fianchi in avanti finché senti l'allungamento davanti all'anca sinistra. Non inarcare la zona lombare." },
     c2: { name: "Flessori dell'anca, destra", why: "Lo stesso dall'altro lato.", how: "Appoggia il ginocchio destro a terra, piede sinistro davanti. Stringi i glutei e porta i fianchi in avanti." },
+    c4: { name: "Cobra", why: "Allunga l'addome e la parte anteriore delle anche. Bilancia tutto l'arrotolarsi degli esercizi per l'addome.", how: "Sdraiati a pancia in giù, mani sotto le spalle, gomiti vicini al corpo. Lascia i fianchi a terra e spingi piano con le braccia verso l'alto finché senti un allungamento piacevole sull'addome. Spalle basse, lontane dalle orecchie; i gomiti non devono essere del tutto tesi. Se senti fastidio nella zona lombare, scendi un po'." },
     c3: { name: "Posizione del bambino", why: "Calma il respiro e rilassa la schiena. Solo per stare bene.", how: "Ginocchia divaricate, siediti con i fianchi sui talloni, allunga le braccia in avanti più che puoi, fronte a terra. Respira lentamente." },
   },
 
@@ -487,6 +488,7 @@ export default {
     hollow: ["Zona lombare schiacciata a terra"],
     legraise: ["Gambe su", "Abbassa piano, senza appoggiarle a terra"],
     hf: ["Ginocchio dietro a terra, fianchi avanti"],
+    cobra: ["Fianchi a terra, petto su"],
     child: ["Fianchi sui talloni, braccia ben avanti"],
   },
 

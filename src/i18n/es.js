@@ -184,7 +184,7 @@ export default {
     ready: "¡Vamos!",
 
     coolTitle: "Entrenamiento terminado",
-    coolIntro: "Estirar al final es opcional. Los expertos coinciden en que no ayuda a la recuperación ni al crecimiento muscular, solo a la flexibilidad. Si te apetece, estos dos tienen sentido: flexor de cadera (ambos lados) y postura del niño. 90 segundos en total.",
+    coolIntro: "Estirar al final es opcional. Los expertos coinciden en que no ayuda a la recuperación ni al crecimiento muscular, solo a la flexibilidad. Si te apetece, estos tienen sentido: flexor de cadera (ambos lados), cobra y postura del niño. 2 minutos en total.",
     coolDone: "✓ hecho",
     coolPrep: "ponte en posición, {n}",
     coolHold: "aguanta, {n} s",
@@ -459,6 +459,7 @@ export default {
   cool: {
     c1: { name: "Flexor de cadera, izquierda", why: "Pasar muchas horas en la silla (clases, PC) acorta la parte delantera de la cadera. Si solo haces un estiramiento, que sea este.", how: "Apoya la rodilla izquierda en el suelo, con el pie derecho delante. Aprieta los glúteos y lleva la cadera hacia delante hasta notar el estiramiento en la parte delantera de la cadera izquierda. No arquees la zona lumbar." },
     c2: { name: "Flexor de cadera, derecha", why: "Lo mismo del otro lado.", how: "Apoya la rodilla derecha en el suelo, con el pie izquierdo delante. Aprieta los glúteos y lleva la cadera hacia delante." },
+    c4: { name: "Cobra", why: "Estira el abdomen y la parte delantera de la cadera. Compensa todo el encogerse de los ejercicios de abdomen.", how: "Túmbate boca abajo, palmas bajo los hombros, codos pegados al cuerpo. Deja la cadera en el suelo y empuja despacio con los brazos hacia arriba hasta notar un estiramiento agradable en el abdomen. Hombros abajo, lejos de las orejas; los codos no tienen que estar del todo estirados. Si te pincha la zona lumbar, baja un poco." },
     c3: { name: "Postura del niño", why: "Calma la respiración y relaja la espalda. Solo para sentirte bien.", how: "Rodillas separadas, siéntate con la cadera sobre los talones, estira los brazos hacia delante todo lo que puedas, frente en el suelo. Respira despacio." },
   },
 
@@ -487,6 +488,7 @@ export default {
     hollow: ["Lumbar pegada al suelo"],
     legraise: ["Piernas arriba", "Baja despacio, sin apoyarlas en el suelo"],
     hf: ["Rodilla de atrás abajo, cadera adelante"],
+    cobra: ["Cadera en el suelo, pecho arriba"],
     child: ["Cadera a los talones, brazos bien adelante"],
   },
 

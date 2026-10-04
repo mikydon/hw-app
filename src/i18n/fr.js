@@ -184,7 +184,7 @@ export default {
     ready: "J'y vais",
 
     coolTitle: "Séance terminée",
-    coolIntro: "Les étirements à la fin sont facultatifs. Les experts sont d'accord : ils n'aident ni la récupération ni la prise de muscle, seulement la souplesse. Si tu veux en faire, ces deux-là ont du sens : fléchisseurs de la hanche (des deux côtés) et posture de l'enfant. 90 secondes au total.",
+    coolIntro: "Les étirements à la fin sont facultatifs. Les experts sont d'accord : ils n'aident ni la récupération ni la prise de muscle, seulement la souplesse. Si tu veux en faire, ceux-ci ont du sens : fléchisseurs de la hanche (des deux côtés), cobra et posture de l'enfant. 2 minutes au total.",
     coolDone: "✓ fait",
     coolPrep: "mets-toi en position, {n}",
     coolHold: "tiens, {n} s",
@@ -459,6 +459,7 @@ export default {
   cool: {
     c1: { name: "Fléchisseur de hanche, gauche", why: "Rester beaucoup assis (école, ordi) raccourcit l'avant des hanches. Si tu ne fais qu'un étirement, fais celui-là.", how: "Genou gauche au sol, pied droit devant. Serre les fessiers et avance les hanches jusqu'à sentir un étirement à l'avant de la hanche gauche. Ne creuse pas le bas du dos." },
     c2: { name: "Fléchisseur de hanche, droite", why: "Pareil de l'autre côté.", how: "Genou droit au sol, pied gauche devant. Serre les fessiers et avance les hanches." },
+    c4: { name: "Cobra", why: "Étire les abdos et l'avant des hanches. Ça compense tous les enroulements des exercices d'abdos.", how: "Allonge-toi sur le ventre, paumes sous les épaules, coudes près du corps. Laisse les hanches au sol et pousse lentement avec les bras jusqu'à sentir un étirement agréable dans le ventre. Garde les épaules basses, loin des oreilles ; les coudes n'ont pas besoin d'être tendus. Si ça pince dans le bas du dos, descends un peu." },
     c3: { name: "Posture de l'enfant", why: "Calme ta respiration et détend ton dos. Juste pour le bien-être.", how: "Genoux écartés, assieds tes fesses sur tes talons, tends les bras le plus loin possible devant toi, front au sol. Respire lentement." },
   },
 
@@ -487,6 +488,7 @@ export default {
     hollow: ["Bas du dos plaqué au sol"],
     legraise: ["Jambes en l'air", "Descends lentement, sans les poser au sol"],
     hf: ["Genou arrière au sol, hanches en avant"],
+    cobra: ["Hanches au sol, poitrine en haut"],
     child: ["Fesses sur les talons, bras loin devant"],
   },
 

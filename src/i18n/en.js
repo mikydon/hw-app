@@ -184,7 +184,7 @@ export default {
     ready: "I'm ready",
 
     coolTitle: "Workout done",
-    coolIntro: "Stretching at the end is optional. Experts agree it doesn't help recovery or muscle growth, only flexibility. If you want it, these two make sense: hip flexor (both sides) and child's pose. 90 seconds in total.",
+    coolIntro: "Stretching at the end is optional. Experts agree it doesn't help recovery or muscle growth, only flexibility. If you want it, these make sense: hip flexor (both sides), cobra and child's pose. 2 minutes in total.",
     coolDone: "✓ done",
     coolPrep: "get into position, {n}",
     coolHold: "hold, {n} s",
@@ -459,6 +459,7 @@ export default {
   cool: {
     c1: { name: "Hip flexor, left", why: "Sitting a lot (school, computer) shortens the front of your hips. If you only do one stretch, do this one.", how: "Kneel on your left knee, right foot in front. Squeeze your glutes and shift your hips forward until you feel a stretch at the front of your left hip. Don't arch your lower back." },
     c2: { name: "Hip flexor, right", why: "The same on the other side.", how: "Kneel on your right knee, left foot in front. Squeeze your glutes and shift your hips forward." },
+    c4: { name: "Cobra", why: "Stretches your abs and the front of your hips. It balances out all the curling in the core exercises.", how: "Lie on your stomach, palms under your shoulders, elbows close to your body. Keep your hips on the floor and slowly press up with your arms until you feel a gentle stretch in your abs. Keep your shoulders down away from your ears; your elbows don't have to be fully straight. If your lower back pinches, go lower." },
     c3: { name: "Child's pose", why: "Calms your breathing and relaxes your back. Purely for feeling good.", how: "Knees apart, sit your hips back on your heels, reach your arms as far forward as you can, forehead on the floor. Breathe slowly." },
   },
 
@@ -487,6 +488,7 @@ export default {
     hollow: ["Lower back pressed to the floor"],
     legraise: ["Legs up", "Lower slowly, don't put them on the floor"],
     hf: ["Back knee down, hips forward"],
+    cobra: ["Hips on the floor, chest up"],
     child: ["Hips to heels, arms far forward"],
   },
 

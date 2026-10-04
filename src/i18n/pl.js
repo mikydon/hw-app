@@ -184,7 +184,7 @@ export default {
     ready: "Zaczynam",
 
     coolTitle: "Trening zakończony",
-    coolIntro: "Rozciąganie na koniec jest opcjonalne. Eksperci są zgodni, że nie pomaga w regeneracji ani we wzroście mięśni, tylko w gibkości. Jeśli chcesz, sens mają te dwa: zginacz biodra (obie strony) i pozycja dziecka. Razem 90 sekund.",
+    coolIntro: "Rozciąganie na koniec jest opcjonalne. Eksperci są zgodni, że nie pomaga w regeneracji ani we wzroście mięśni, tylko w gibkości. Jeśli chcesz, sens mają te: zginacz biodra (obie strony), kobra i pozycja dziecka. Razem 2 minuty.",
     coolDone: "✓ zrobione",
     coolPrep: "zajmij pozycję, {n}",
     coolHold: "trzymaj, {n} s",
@@ -459,6 +459,7 @@ export default {
   cool: {
     c1: { name: "Zginacz biodra, lewy", why: "Dużo siedzenia (szkoła, komputer) skraca przód bioder. Jeśli robisz tylko jedno rozciąganie, zrób to.", how: "Uklęknij na lewym kolanie, prawa stopa z przodu. Napnij pośladki i przesuń biodra do przodu, aż poczujesz rozciąganie z przodu lewego biodra. Nie wyginaj dolnej części pleców." },
     c2: { name: "Zginacz biodra, prawy", why: "To samo po drugiej stronie.", how: "Uklęknij na prawym kolanie, lewa stopa z przodu. Napnij pośladki i przesuń biodra do przodu." },
+    c4: { name: "Kobra", why: "Rozciąga brzuch i przód bioder. To przeciwwaga dla zginania przy ćwiczeniach na brzuch.", how: "Połóż się na brzuchu, dłonie pod barkami, łokcie przy ciele. Biodra zostaw na podłodze i powoli wypchnij się rękami w górę, aż poczujesz przyjemne rozciąganie brzucha. Barki trzymaj nisko, z dala od uszu, łokcie nie muszą być całkiem wyprostowane. Jeśli kłuje cię w krzyżu, zejdź niżej." },
     c3: { name: "Pozycja dziecka", why: "Uspokaja oddech i rozluźnia plecy. Czysto dla przyjemności.", how: "Kolana szeroko, usiądź biodrami na piętach, wyciągnij ręce jak najdalej do przodu, czoło na podłodze. Oddychaj powoli." },
   },
 
@@ -487,6 +488,7 @@ export default {
     hollow: ["Dół pleców dociśnięty do podłogi"],
     legraise: ["Nogi w górze", "Opuszczaj powoli, nie kładź na podłogę"],
     hf: ["Tylne kolano na ziemi, biodra do przodu"],
+    cobra: ["Biodra na podłodze, klatka w górę"],
     child: ["Biodra na piętach, ręce daleko z przodu"],
   },
 

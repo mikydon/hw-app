@@ -184,7 +184,7 @@ export default {
     ready: "Kész vagyok",
 
     coolTitle: "Edzés kész",
-    coolIntro: "A nyújtás a végén opcionális. A szakértők egyetértenek abban, hogy sem a regenerációt, sem az izomnövekedést nem segíti, csak a hajlékonyságot. Ha szeretnéd, ez a kettő éri meg: csípőhajlító (mindkét oldal) és gyermekpóz. Összesen 90 másodperc.",
+    coolIntro: "A nyújtás a végén opcionális. A szakértők egyetértenek abban, hogy sem a regenerációt, sem az izomnövekedést nem segíti, csak a hajlékonyságot. Ha szeretnéd, ezek érik meg: csípőhajlító (mindkét oldal), kobra és gyermekpóz. Összesen 2 perc.",
     coolDone: "✓ kész",
     coolPrep: "vedd fel a pozíciót, {n}",
     coolHold: "tartsd, {n} mp",
@@ -459,6 +459,7 @@ export default {
   cool: {
     c1: { name: "Csípőhajlító, bal", why: "A sok ülés (iskola, gép) megrövidíti a csípőd elejét. Ha csak egy nyújtást csinálsz, ez legyen az.", how: "Térdelj a bal térdedre, a jobb lábad elöl. Feszítsd meg a farizmod, és told előre a csípőd, amíg nyúlást érzel a bal csípőd elején. Ne homoríts a derekadban." },
     c2: { name: "Csípőhajlító, jobb", why: "Ugyanez a másik oldalon.", how: "Térdelj a jobb térdedre, a bal lábad elöl. Feszítsd meg a farizmod, és told előre a csípőd." },
+    c4: { name: "Kobra", why: "Nyújtja a hasat és a csípő elejét. Ellensúlyozza a hasizomgyakorlatok sok előrehajlását.", how: "Feküdj hasra, tenyér a vállak alatt, könyök a test mellett. A csípőd maradjon a földön, és lassan told fel magad a karoddal, amíg kellemes nyújtást nem érzel a hasadon. A vállad tartsd lent, távol a fülektől, a könyöknek nem kell teljesen nyújtva lennie. Ha szúr a derekad, menj lejjebb." },
     c3: { name: "Gyermekpóz", why: "Megnyugtatja a légzésed és ellazítja a hátad. Csak a jó érzésért.", how: "Térdek szét, ülj hátra a sarkadra, nyújtsd a karod előre, amennyire csak tudod, a homlokod a padlón. Lélegezz lassan." },
   },
 
@@ -487,6 +488,7 @@ export default {
     hollow: ["Derék a padlóhoz nyomva"],
     legraise: ["Láb fent", "Lassan le, ne tedd le a földre"],
     hf: ["Hátsó térd lent, csípő előre"],
+    cobra: ["Csípő a földön, mellkas fel"],
     child: ["Csípő a sarokra, kar messze előre"],
   },
 
