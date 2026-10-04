@@ -651,8 +651,8 @@ const FIGS = {
     { hip: [28, 74], torso: -90, hands: [[28.5, 77], [28.5, 77]], armBend: [1, 1], feet: [[48, GROUND], [48, GROUND]], legBend: [-1, -1], hide: ["farArm", "farLeg"], props: [{ t: "wall" }] },
   ],
   birddog: [
-    { hip: [40, 74], torso: -20.3, hands: [[64, GROUND], [66, GROUND]], armBend: [1, 1], feet: [[20, GROUND], [22, GROUND]], legBend: [-1, -1] },
-    { hip: [40, 74], torso: -20.3, hands: [[94, 62], [66, GROUND]], armBend: [1, 1], feet: [[20, GROUND], [0, 70]], legBend: [-1, -1] },
+    { hip: [46, 70], torso: -2.2, fl: { th: 24, ua: 13, fa: 12 }, hands: [[72, GROUND], [72, GROUND]], armBend: [1, 1], feet: [[26, GROUND], [26, GROUND]], legBend: [-1, -1], hide: ["farArm", "farLeg"] },
+    { hip: [46, 70], torso: -2.2, fl: { th: 24, ua: 13, fa: 12 }, hands: [[97.1, 68.3], [72, GROUND]], armBend: [1, 1], feet: [[26, GROUND], [2, 72.2]], legBend: [-1, -1] },
   ],
   hollow: [
     { hip: [50, 89], torso: -14, head: -24, hands: [[104, 72], [106, 72]], armBend: [1, 1], feet: [[11, 80], [11, 79]], legBend: [1, 1] },
