@@ -587,7 +587,7 @@ const FIGS = {
     { hip: [48, 82], torso: -58, hands: [[88, 58], [90, 58]], armBend: [1, 1], feet: [[60, GROUND], [62, GROUND]], legBend: [-1, -1] },
   ],
   r1: [
-    { hip: [58.8, 44.6], torso: 68.8, head: 85, fl: { th: 27, sh: 27, torso: 24 }, hands: [[78, GROUND], [79, GROUND]], armBend: [1, 1], feet: [[37, GROUND], [38, GROUND]], legBend: [1, 1], hide: ["farLeg"] },
+    { hip: [58.8, 44.6], torso: 68.8, head: 85, belly: [0.42, 0.88], fl: { th: 27, sh: 27, torso: 24 }, hands: [[78, GROUND], [79, GROUND]], armBend: [1, 1], feet: [[37, GROUND], [38, GROUND]], legBend: [1, 1], hide: ["farLeg"] },
     { hip: [79.2, 60.3], torso: 55, head: 39.5, fl: { th: 27, sh: 27, torso: 24 }, hands: [[78, GROUND], [79, GROUND]], elbows: [[78, 80], [79, 80]], feet: [[37, GROUND], [38, GROUND]], legBend: [1, 1], hide: ["farLeg"] },
   ],
   row1: [
@@ -623,8 +623,8 @@ const FIGS = {
     { hip: [56.46, 88.52], torso: -10, hands: [[74, GROUND], [76, GROUND]], armBend: [1, 1], feet: [[18, 85], [20, 85]], legBend: [-1, -1] },
   ],
   kIncl: [
-    { hip: [47.9, 66.9], torso: -42.7, hands: [[85, 72], [87, 72]], armBend: [1, 1], feet: [[18.5, GROUND], [20.5, GROUND]], legBend: [1, 1], props: [{ t: "table" }] },
-    { hip: [54.16, 75.87], torso: -26.95, hands: [[85, 72], [87, 72]], armBend: [1, 1], feet: [[18.5, GROUND], [20.5, GROUND]], legBend: [1, 1], props: [{ t: "table" }] },
+    { hip: [47.9, 66.9], torso: -42.7, hands: [[85, 72], [87, 72]], armBend: [1, 1], feet: [[18.5, GROUND], [20.5, GROUND]], legBend: [1, 1], hide: ["farLeg"], props: [{ t: "table" }] },
+    { hip: [54.16, 75.87], torso: -26.95, hands: [[85, 72], [87, 72]], armBend: [1, 1], feet: [[18.5, GROUND], [20.5, GROUND]], legBend: [1, 1], hide: ["farLeg"], props: [{ t: "table" }] },
   ],
   superman: [
     { hip: [46, 89], torso: 0, head: -8, hands: [[101, 90], [102, 90]], armBend: [1, 1], feet: [[6, 91], [8, 91]], legBend: [1, 1] },
@@ -688,7 +688,7 @@ function Stick({ p }) {
   const tl = Math.hypot(tv[0], tv[1]) || 1;
   const nrm = [(-tv[1] / tl) * (p.supine ? -1 : 1), (tv[0] / tl) * (p.supine ? -1 : 1)];
   const at = (t, off) => [p.hip[0] + tv[0] * t + nrm[0] * off, p.hip[1] + tv[1] * t + nrm[1] * off];
-  const belly = [at(0.22, 4.6), at(0.72, 4.6)];
+  const belly = p.belly ? [at(p.belly[0], 4.6), at(p.belly[1], 4.6)] : [at(0.22, 4.6), at(0.72, 4.6)]; // p.belly: [from, to] along the torso
   return (
     <g strokeLinecap="round" strokeLinejoin="round" fill="none">
       {parts.filter(x => x.i === 1).map((x, k) => <polyline key={`f${k}`} points={line(x.pts)} stroke={x.col} strokeWidth="5" />)}
