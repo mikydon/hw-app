@@ -709,20 +709,25 @@ function Prop({ pr }) {
   if (pr.t === "towelFloor") return <rect x={pr.x} y={GROUND} width="14" height="3" rx="1" fill={C.signal} />;
   // Small "seen from above" inset: palms side by side, index fingers and thumbs touching = diamond.
   if (pr.t === "diamondTop") {
-    // Both hands seen from above (fingers pointing forward). Index fingertips touch at the top,
-    // thumbs touch at the bottom, so the gap between the hands is a diamond (filled light blue).
-    const L = [[[11, 24], [9, 12]], [[14, 24], [13, 10]], [[17, 24], [18, 9]], [[19.5, 25], [28.6, 13.5]], [[20, 33], [28.6, 35]]];
-    const R = L.map(([a, b]) => [[58 - a[0], a[1]], [58 - b[0], b[1]]]);
+    // Both hands seen from above, fingers together, turned inwards. Index fingertips touch at the
+    // top, thumbs at the bottom, so the gap between the hands is a small diamond (light blue).
+    const hand = (
+      <g>
+        <rect x="-4.6" y="-5" width="9.2" height="10" rx="3" fill={C.chalk} />
+        <g stroke={C.chalk} strokeWidth="2.2" strokeLinecap="round">
+          <line x1="-3.3" y1="-4" x2="-3.3" y2="-9.6" /><line x1="-1.1" y1="-4" x2="-1.1" y2="-10.8" />
+          <line x1="1.1" y1="-4" x2="1.1" y2="-11.2" /><line x1="3.3" y1="-4" x2="3.3" y2="-10.6" />
+          <line x1="4" y1="1.5" x2="9.4" y2="-2.6" />
+        </g>
+      </g>
+    );
     return (
       <g>
-        <rect x="3" y="3" width="52" height="46" rx="6" fill={C.panel} stroke={C.line} strokeWidth="1.2" />
-        <path d="M29 14.5 L37.6 25 L29 34.4 L20.4 25 Z" fill={C.sky} opacity="0.55" />
-        <g stroke={C.chalk} strokeWidth="2.4" strokeLinecap="round">
-          {[...L, ...R].map(([a, b], k) => <line key={k} x1={a[0]} y1={a[1]} x2={b[0]} y2={b[1]} />)}
-        </g>
-        <rect x="10" y="23" width="10.5" height="13" rx="4" fill={C.chalk} />
-        <rect x="37.5" y="23" width="10.5" height="13" rx="4" fill={C.chalk} />
-        <text x="29" y="45.5" textAnchor="middle" fontSize="5.5" fill={C.dim} fontFamily={BODY}>{T("figTop")}</text>
+        <rect x="3" y="3" width="52" height="42" rx="6" fill={C.panel} stroke={C.line} strokeWidth="1.2" />
+        <path d="M29 19.9 L32.6 25.6 L29 29.2 L25.4 25.6 Z" fill={C.sky} opacity="0.7" />
+        <g transform="translate(19.6 25.5) rotate(40)">{hand}</g>
+        <g transform="translate(38.4 25.5) scale(-1 1) rotate(40)">{hand}</g>
+        <text x="29" y="41.5" textAnchor="middle" fontSize="5.5" fill={C.dim} fontFamily={BODY}>{T("figTop")}</text>
       </g>
     );
   }
