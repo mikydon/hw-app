@@ -483,7 +483,7 @@ export default {
     bridge: ["Fekvés, térd hajlítva", "Csípő fel, farizom feszítve"],
     sbridge: ["Fekvés, egyik láb fent", "Csípő fel, farizom feszítve"],
     wallsit: ["Térd ~90°, hát a falon"],
-    birddog: ["Négykézláb", "Kar és ellentétes láb"],
+    birddog: ["Négykézláb: kar és térd ~90°", "Kar és ellentétes láb"],
     hollow: ["Derék a padlóhoz nyomva"],
     legraise: ["Láb fent", "Lassan le, ne érjen le"],
     hf: ["Hátsó térd lent, csípő előre"],

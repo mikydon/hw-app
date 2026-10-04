@@ -483,7 +483,7 @@ export default {
     bridge: ["Sur le dos, genoux pliés", "Hanches en haut, fessiers serrés"],
     sbridge: ["Sur le dos, une jambe en l'air", "Hanches en haut, fessiers serrés"],
     wallsit: ["Genoux ~90°, dos au mur"],
-    birddog: ["À quatre pattes", "Bras et jambe opposée"],
+    birddog: ["À quatre pattes : bras et genoux ~90°", "Bras et jambe opposée"],
     hollow: ["Bas du dos plaqué au sol"],
     legraise: ["Jambes en l'air", "Descends lentement, sans toucher le sol"],
     hf: ["Genou arrière au sol, hanches en avant"],

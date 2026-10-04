@@ -483,7 +483,7 @@ export default {
     bridge: ["Leżenie, kolana zgięte", "Biodra w górę, spięte pośladki"],
     sbridge: ["Leżenie, jedna noga w górze", "Biodra w górę, spięte pośladki"],
     wallsit: ["Kolana ~90°, plecy przy ścianie"],
-    birddog: ["Na czworakach", "Ręka i przeciwna noga"],
+    birddog: ["Na czworakach: ręce i kolana ~90°", "Ręka i przeciwna noga"],
     hollow: ["Dół pleców dociśnięty do podłogi"],
     legraise: ["Nogi w górze", "Opuszczaj powoli, nie odkładaj"],
     hf: ["Tylne kolano na ziemi, biodra do przodu"],

@@ -483,7 +483,7 @@ export default {
     bridge: ["Vleže, kolena pokrčená", "Pánev nahoru, stiskni hýždě"],
     sbridge: ["Vleže, jedna noha nahoře", "Pánev nahoru, stiskni hýždě"],
     wallsit: ["Kolena ~90°, záda na zdi"],
-    birddog: ["Na všech čtyřech", "Paže a opačná noha"],
+    birddog: ["Na všech čtyřech: paže i kolena ~90°", "Paže a opačná noha"],
     hollow: ["Bedra přitisknutá k zemi"],
     legraise: ["Nohy nahoře", "Pomalu dolů, nepokládej"],
     hf: ["Zadní koleno na zemi, pánev dopředu"],

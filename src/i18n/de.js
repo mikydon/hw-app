@@ -483,7 +483,7 @@ export default {
     bridge: ["Liegen, Knie angewinkelt", "Hüfte hoch, Po anspannen"],
     sbridge: ["Liegen, ein Bein oben", "Hüfte hoch, Po anspannen"],
     wallsit: ["Knie ~90°, Rücken an der Wand"],
-    birddog: ["Vierfüßlerstand", "Arm und Gegenbein"],
+    birddog: ["Vierfüßlerstand: Arme und Knie ~90°", "Arm und Gegenbein"],
     hollow: ["Unterer Rücken fest am Boden"],
     legraise: ["Beine oben", "Langsam runter, nicht ablegen"],
     hf: ["Hinteres Knie unten, Hüfte vor"],

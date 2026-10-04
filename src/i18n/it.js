@@ -483,7 +483,7 @@ export default {
     bridge: ["Sdraiati, ginocchia piegate", "Fianchi su, stringi i glutei"],
     sbridge: ["Sdraiati, una gamba su", "Fianchi su, stringi i glutei"],
     wallsit: ["Ginocchia ~90°, schiena al muro"],
-    birddog: ["A quattro zampe", "Braccio e gamba opposta"],
+    birddog: ["A quattro zampe: braccia e ginocchia ~90°", "Braccio e gamba opposta"],
     hollow: ["Zona lombare schiacciata a terra"],
     legraise: ["Gambe su", "Abbassa piano, senza toccare terra"],
     hf: ["Ginocchio dietro a terra, fianchi avanti"],
