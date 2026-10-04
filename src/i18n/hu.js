@@ -358,7 +358,7 @@ export default {
       muscles: "Combhajlítók, farizom",
       tempo: "3 mp ki, 1 mp vissza",
       how: "Feküdj a hátadra sima padlón (parketta, csempe), a sarkad egy törölközőn vagy zokniban. Emeld a csípőd hídba. 3 másodperc alatt csúsztasd ki a lábad, amíg majdnem egyenes nem lesz, a csípőd végig fent marad. Aztán húzd vissza a sarkad a fenekedhez.",
-      tip: "Szőnyegen nem csúszik. Akkor helyette egylábas csípőemelést csinálj: csípő fent, egyik láb a levegőben, és lábanként írd be az ismétléseket.",
+      tip: "Szőnyegen a törölköző nem csúszik. Akkor helyette egylábas csípőemelést csinálj: egyik sarok a földön a feneked közelében, a másik láb nyújtva a levegőben, és emeld-engedd a csípőd. Csináld meg az összes ismétlést az egyik lábbal, aztán ugyanannyit a másikkal. Egy láb számát írd be: 10 bal + 10 jobb = írj 10-et.",
       lvl: "Csináld egy lábbal, a másikat tartsd a levegőben.",
     },
     b4: {

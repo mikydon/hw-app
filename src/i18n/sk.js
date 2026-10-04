@@ -358,7 +358,7 @@ export default {
       muscles: "Zadné stehná, zadok",
       tempo: "3 s von, 1 s späť",
       how: "Ľahni na chrbát na hladkú podlahu (parkety, dlažba), päty polož na uterák alebo cvič v ponožkách. Zdvihni boky do mostíka. 3 sekundy vysúvaj nohy dopredu, kým nie sú skoro vystreté, boky stále hore. Potom pritiahni päty späť k zadku.",
-      tip: "Na koberci to nekĺže. Vtedy rob jednonohý mostík: boky hore, jedna noha vo vzduchu, a zapíš počet na jednu nohu.",
+      tip: "Na koberci uterák nekĺže. Vtedy rob namiesto toho mostík na jednej nohe: jedna päta na zemi pri zadku, druhú nohu vystri do vzduchu a dvíhaj boky hore a dole. Urob všetky opakovania jednou nohou, potom rovnako druhou. Do appky zapíš počet za jednu nohu: 10 ľavou + 10 pravou = zapíš 10.",
       lvl: "Rob ho jednou nohou, druhú drž vo vzduchu.",
     },
     b4: {

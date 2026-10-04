@@ -358,7 +358,7 @@ export default {
       muscles: "Ischio-jambiers, fessiers",
       tempo: "3 s pour tendre, 1 s pour revenir",
       how: "Allonge-toi sur le dos sur un sol lisse (parquet, carrelage), talons sur une serviette ou en chaussettes. Monte les hanches en pont. Fais glisser tes jambes vers l'avant en 3 secondes jusqu'à ce qu'elles soient presque tendues, hanches toujours en l'air. Puis ramène tes talons vers tes fessiers.",
-      tip: "Ça ne glisse pas sur la moquette. Dans ce cas, fais plutôt un pont sur une jambe : hanches en l'air, une jambe en l'air, et note les répétitions par jambe.",
+      tip: "Sur la moquette, la serviette ne glisse pas. Fais alors plutôt un pont sur une jambe : un talon au sol près des fesses, l'autre jambe tendue en l'air, et monte puis descends les hanches. Fais toutes les répétitions d'une jambe, puis autant de l'autre. Note le nombre pour une jambe : 10 à gauche + 10 à droite = note 10.",
       lvl: "Fais-le sur une jambe, garde l'autre en l'air.",
     },
     b4: {
