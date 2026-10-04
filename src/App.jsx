@@ -709,27 +709,45 @@ function Prop({ pr }) {
   if (pr.t === "towelFloor") return <rect x={pr.x} y={GROUND} width="14" height="3" rx="1" fill={C.signal} />;
   // Small "seen from above" inset: palms side by side, index fingers and thumbs touching = diamond.
   if (pr.t === "diamondTop") {
-    // Both hands seen from above, fingers together, turned inwards. Index fingertips touch at the
-    // top, thumbs at the bottom, so the gap between the hands is a small diamond (light blue).
-    const hand = (
-      <g>
-        <rect x="-4.6" y="-5" width="9.2" height="10" rx="3" fill={C.chalk} />
-        <g stroke={C.chalk} strokeWidth="2.2" strokeLinecap="round">
-          <line x1="-3.3" y1="-4" x2="-3.3" y2="-9.6" /><line x1="-1.1" y1="-4" x2="-1.1" y2="-10.8" />
-          <line x1="1.1" y1="-4" x2="1.1" y2="-11.2" /><line x1="3.3" y1="-4" x2="3.3" y2="-10.6" />
-          <line x1="4.6" y1="-4" x2="8.55" y2="-3.37" />
+    // Both hands seen from above, flat on the floor, fingers together pointing forward and inwards.
+    // Index fingertips touch at the top and thumb tips at the bottom; the gap between the hands is a
+    // symmetric diamond (light blue). The thumbs start lower on the palm, like on a real hand.
+    const cx = 29, cy = 25, hw = 4.2, hh = 4.6;           // diamond centre and half sizes
+    const W = [cx - hw, cy], TOP = [cx, cy - hh], BOT = [cx, cy + hh];
+    const len = Math.hypot(hw, hh), u = [hw / len, -hh / len]; // finger direction (W → T)
+    const out = [-hh / len, -hw / len];                    // away from the diamond, toward the little finger
+    const P = (a, k1, b, k2 = 0, c, k3 = 0) => [a[0] + b[0] * k1 + (c ? c[0] * k3 : 0), a[1] + b[1] * k1 + (c ? c[1] * k3 : 0)];
+    const fingers = [0, 1, 2, 3].map(k => {               // index (k=0) … little finger (k=3)
+      const base = P(W, 1.1 + 2.25 * k, out, -0.2, u);
+      const tip = P(TOP, 1.1 + 2.25 * k, out, -0.25 - (k === 3 ? 1.6 : k === 2 ? 0.5 : k === 1 ? 0.2 : 0), u);
+      return [base, tip];
+    });
+    const kIn = P(W, 0.2, out, -0.6, u), kOut = P(W, 8.1, out, -0.6, u);
+    const heelOut = P(kOut, -8, u), heelIn = P(kIn, -8, u, 0.4, [-out[0], -out[1]]);
+    const thumbBase = P(kIn, -4.6, u, 0.6, [-out[0], -out[1]]);
+    const downOut = [-hh / len, hw / len];                // outward normal of the lower edge (W → B)
+    const thumbTip = P(BOT, 1.1, downOut, -0.3, [hw / len, hh / len]);
+    const hand = flip => {
+      const f = q => (flip ? [2 * cx - q[0], q[1]] : q);
+      const pts = arr => arr.map(f).map(q => q.map(v => v.toFixed(2)).join(",")).join(" ");
+      return (
+        <g key={flip ? "r" : "l"}>
+          <polygon points={pts([kIn, kOut, heelOut, heelIn, thumbBase])} fill={C.chalk} stroke={C.chalk} strokeWidth="2.2" strokeLinejoin="round" />
+          <g stroke={C.chalk} strokeWidth="2.2" strokeLinecap="round">
+            {fingers.map(([a, b], k) => { const A = f(a), Bb = f(b); return <line key={k} x1={A[0]} y1={A[1]} x2={Bb[0]} y2={Bb[1]} />; })}
+          </g>
+          {(() => { const A = f(thumbBase), Bb = f(thumbTip); return <line x1={A[0]} y1={A[1]} x2={Bb[0]} y2={Bb[1]} stroke={C.chalk} strokeWidth="2.6" strokeLinecap="round" />; })()}
         </g>
-      </g>
-    );
+      );
+    };
     return (
       <g>
-        <rect x="3" y="3" width="52" height="42" rx="6" fill={C.panel} stroke={C.line} strokeWidth="1.2" />
-        <path d="M29 20.2 L31.8 25 L29 26.6 L26.2 25 Z" fill={C.sky} opacity="0.75" />
-        <g transform="translate(18.95 25.5) rotate(36)">{hand}</g>
-        <g transform="translate(39.05 25.5) scale(-1 1) rotate(36)">{hand}</g>
-        {/* thin gaps where the fingertips touch, so it reads as two hands, not one paw */}
-        <g stroke={C.panel} strokeWidth="0.7"><line x1="29" y1="17.4" x2="29" y2="20.3" /><line x1="29" y1="26.5" x2="29" y2="29.2" /></g>
-        <text x="29" y="41.5" textAnchor="middle" fontSize="5.5" fill={C.dim} fontFamily={BODY}>{T("figTop")}</text>
+        <rect x="3" y="3" width="52" height="44" rx="6" fill={C.panel} stroke={C.line} strokeWidth="1.2" />
+        <path d={`M${TOP[0]} ${TOP[1]} L${cx + hw} ${cy} L${BOT[0]} ${BOT[1]} L${W[0]} ${W[1]} Z`} fill={C.sky} opacity="0.75" />
+        {hand(false)}{hand(true)}
+        {/* thin gaps where the fingertips touch, so it reads as two hands */}
+        <g stroke={C.panel} strokeWidth="0.7"><line x1={cx} y1={TOP[1] - 3} x2={cx} y2={TOP[1] + 0.2} /><line x1={cx} y1={BOT[1] - 0.2} x2={cx} y2={BOT[1] + 3} /></g>
+        <text x="29" y="44" textAnchor="middle" fontSize="5.5" fill={C.dim} fontFamily={BODY}>{T("figTop")}</text>
       </g>
     );
   }
