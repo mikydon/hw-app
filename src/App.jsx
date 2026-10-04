@@ -655,7 +655,7 @@ const FIGS = {
     { hip: [46, 70], torso: -2.2, fl: { th: 24, ua: 13, fa: 12 }, hands: [[97.1, 68.3], [72, GROUND]], armBend: [1, 1], feet: [[26, GROUND], [2, 72.2]], legBend: [-1, -1] },
   ],
   hollow: [
-    { hip: [50, 89], torso: -14, head: -24, hands: [[104, 72], [106, 72]], armBend: [1, 1], feet: [[11, 80], [11, 79]], legBend: [1, 1] },
+    { hip: [50, 89], torso: -14, head: -24, hands: [[104, 72], [104, 72]], armBend: [1, 1], feet: [[11, 80], [11, 80]], legBend: [1, 1], supine: true, hide: ["farArm", "farLeg"] },
   ],
   legraise: [
     { hip: [50, 89], torso: 0, head: 0, hands: [[48, 92], [50, 92]], armBend: [1, 1], feet: [[50, 49], [52, 49]], legBend: [1, 1], supine: true },
