@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 400">
+  <rect width="1200" height="400" fill="#0e1b36"/>
+  <g transform="translate(60 44) scale(0.609)">
+    <rect width="512" height="512" rx="116" fill="#16284d"/>
+    <path d="M120 248 L256 130 L392 248" fill="none" stroke="#ffd23f" stroke-width="44" stroke-linecap="round" stroke-linejoin="round"/>
+    <g fill="#eef2ff">
+      <rect x="172" y="324" width="168" height="30" rx="15"/>
+      <rect x="130" y="276" width="40" height="126" rx="16"/>
+      <rect x="342" y="276" width="40" height="126" rx="16"/>
+      <rect x="96" y="302" width="30" height="74" rx="13"/>
+      <rect x="386" y="302" width="30" height="74" rx="13"/>
+    </g>
+  </g>
+  <text x="430" y="250" font-family="'Big Shoulders Display', 'Arial Narrow', sans-serif" font-weight="900" font-size="210" fill="#eef2ff" letter-spacing="-2">HW<tspan fill="#ffd23f"> APP</tspan></text>
+  <text x="436" y="322" font-family="Figtree, 'Segoe UI', sans-serif" font-weight="600" font-size="44" fill="#93a3c9">Home workout, no equipment</text>
+</svg>
