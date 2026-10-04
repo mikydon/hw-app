@@ -284,8 +284,8 @@ export default {
       muscles: "Pectoraux, triceps, avant des épaules",
       tempo: "3 s en descente, courte pause, remontée",
       how: "Mains un peu plus écartées que les épaules, corps aligné de la tête aux talons, abdos et fessiers contractés. Descends en 3 secondes jusqu'à ce que ta poitrine frôle le sol, marque une courte pause et repousse vers le haut. Garde les coudes à ~45° du corps, pas écartés sur les côtés.",
-      tip: "Dès que tu fais 25+ au premier tour, pose tes mains sur deux gros livres. Ta poitrine descend plus bas, le muscle s'étire davantage et se développe plus.",
-      lvl: "Pose tes mains sur deux gros livres pour que ta poitrine descende plus bas. Tes chiffres vont baisser au début, c'est normal.",
+      tip: "Dès que tu fais 25+ au premier tour, pose tes mains sur deux gros livres. Ta poitrine descend plus bas, le muscle s'étire davantage et se développe plus. Les livres doivent être stables et de même hauteur pour ne pas glisser. Si tes épaules font mal, descends moins bas.",
+      lvl: "Pose tes mains sur deux gros livres pour que ta poitrine descende plus bas. Tes chiffres vont baisser au début, c'est normal. Les livres doivent être stables pour ne pas glisser.",
     },
     row1: {
       name: "Rowing au cadre de porte",
@@ -331,7 +331,7 @@ export default {
       muscles: "Quadriceps, fessiers",
       tempo: "3 s en descente, remontée",
       how: "Dos à une chaise, pose le dessus de ton pied arrière sur l'assise. Fais un grand pas en avant avec le pied avant. Descends en 3 secondes, le genou arrière va vers le sol. Remonte en poussant dans le talon du pied avant.",
-      tip: "Place ton pied avant assez loin pour que ton genou reste au-dessus du pied. Buste légèrement penché en avant = plus de fessiers.",
+      tip: "Place ton pied avant assez loin pour que ton genou reste au-dessus du pied. Buste légèrement penché en avant = plus de fessiers. Mets la chaise contre un mur pour qu'elle ne glisse pas sous ton pied.",
       lvl: "Ralentis : 4 s en descente et 2 s de pause en bas.",
     },
     b2: {
@@ -364,7 +364,7 @@ export default {
       tempo: "3 s pour tendre, 1 s pour revenir",
       how: "Allonge-toi sur le dos sur un sol lisse (parquet, carrelage), talons sur une serviette ou en chaussettes. Monte les hanches en pont. Fais glisser tes jambes vers l'avant en 3 secondes jusqu'à ce qu'elles soient presque tendues, hanches toujours en l'air. Puis ramène tes talons vers tes fessiers.",
       tip: "Sur la moquette ou ça ne glisse pas ? Remplace-le par un pont classique.",
-      lvl: "Fais-le sur une jambe, garde l'autre en l'air.",
+      lvl: "Fais-le sur une jambe, garde l'autre en l'air. Commence avec une amplitude plus courte. En cas de crampe ou si les hanches tombent, reviens à deux jambes.",
     },
     b4: {
       name: "Crunch bicyclette",
@@ -421,14 +421,14 @@ export default {
       muscles: "Épaules, triceps",
       tempo: "3 s en bas, en haut",
       how: "Pose les pieds sur une chaise, les mains au sol un peu devant, et monte les hanches pour que ton buste soit presque vertical. Plie les coudes et descends la tête vers le sol juste devant les mains, coudes vers l'arrière, pas sur les côtés. Repousse vers le haut.",
-      tip: "Plus le buste est vertical, plus le poids va sur les épaules. Serre les fessiers pour ne pas cambrer le bas du dos.",
+      tip: "Plus le buste est vertical, plus le poids va sur les épaules. Serre les fessiers pour ne pas cambrer le bas du dos. La chaise doit être stable, idéalement contre un mur. Descends la tête lentement, ne tombe jamais dessus.",
     },
     k3e: {
       name: "Pompes diamant pieds sur une chaise",
       muscles: "Triceps, intérieur des pectoraux, épaules",
       tempo: "3 s en bas, en haut",
       how: "Pose les pieds sur une chaise et les mains sous la poitrine, pouces et index qui se touchent pour former un diamant. Corps aligné de la tête aux talons. Descends, coudes vers l'arrière le long du corps, poitrine vers les mains. Repousse vers le haut.",
-      tip: "Ne lève pas les hanches et ne les laisse pas tomber. Si tes poignets ou tes coudes font mal, écarte un peu les mains.",
+      tip: "Ne lève pas les hanches et ne les laisse pas tomber. Si tes poignets ou tes coudes font mal, écarte un peu les mains. La chaise doit être stable, idéalement contre un mur.",
     },
     n1q: {
       name: "Squat 1 et 1/4",
@@ -448,7 +448,7 @@ export default {
       muscles: "Fessiers, ischio-jambiers",
       tempo: "montée, 2 s de contraction, descente",
       how: "Allonge-toi sur le dos, genoux pliés, pieds au sol. Tends une jambe en l'air et garde les cuisses l'une contre l'autre. Pousse dans le talon de la jambe au sol et monte les hanches jusqu'à ce que ton corps forme une ligne droite du genou aux épaules. En haut, serre les fessiers 2 secondes et redescends lentement. D'abord toutes les répétitions d'une jambe, puis de l'autre.",
-      tip: "Garde les hanches à niveau, ne les laisse pas tomber du côté de la jambe levée. Note le nombre pour une jambe : 10 à gauche + 10 à droite = note 10.",
+      tip: "Garde les hanches à niveau, ne les laisse pas tomber du côté de la jambe levée. Note le nombre pour une jambe : 10 à gauche + 10 à droite = note 10. En cas de crampe à l'arrière de la cuisse, reviens au pont sur deux jambes.",
     },
     wallsit: {
       name: "Chaise (wall sit)",

@@ -284,8 +284,8 @@ export default {
       muscles: "Petto, tricipiti, deltoidi anteriori",
       tempo: "3 s giù, breve pausa, su",
       how: "Mani un po' più larghe delle spalle, corpo dritto dalla testa ai talloni, addominali e glutei contratti. Scendi in 3 secondi finché il petto quasi tocca il pavimento, fermati un attimo e spingi di nuovo su. Tieni i gomiti a ~45° dal corpo, non aperti verso l'esterno.",
-      tip: "Quando arrivi a 25+ nel primo giro, appoggia le mani su due libri spessi. Il petto scende più in basso, il muscolo si allunga di più e cresce di più.",
-      lvl: "Appoggia le mani su due libri spessi così il petto scende più in basso. All'inizio i tuoi numeri caleranno, è normale.",
+      tip: "Quando arrivi a 25+ nel primo giro, appoggia le mani su due libri spessi. Il petto scende più in basso, il muscolo si allunga di più e cresce di più. I libri devono essere stabili e della stessa altezza, così non scivolano. Se ti fanno male le spalle, scendi meno.",
+      lvl: "Appoggia le mani su due libri spessi così il petto scende più in basso. All'inizio i tuoi numeri caleranno, è normale. I libri devono essere stabili, così non scivolano.",
     },
     row1: {
       name: "Rematore allo stipite",
@@ -331,7 +331,7 @@ export default {
       muscles: "Quadricipiti, glutei",
       tempo: "3 s giù, su",
       how: "Mettiti davanti a una sedia e appoggia il dorso del piede posteriore sulla seduta. Fai un bel passo avanti con il piede anteriore. Scendi in 3 secondi, il ginocchio posteriore va verso il pavimento. Spingi su attraverso il tallone del piede anteriore.",
-      tip: "Porta il piede anteriore abbastanza avanti da tenere il ginocchio sopra il piede. Busto leggermente inclinato in avanti = più glutei.",
+      tip: "Porta il piede anteriore abbastanza avanti da tenere il ginocchio sopra il piede. Busto leggermente inclinato in avanti = più glutei. Appoggia la sedia al muro, così non scivola sotto il piede.",
       lvl: "Rallenta: 4 s giù e 2 s di pausa in basso.",
     },
     b2: {
@@ -364,7 +364,7 @@ export default {
       tempo: "3 s fuori, 1 s dentro",
       how: "Sdraiati sulla schiena su un pavimento liscio (parquet, piastrelle), talloni su un asciugamano o con i calzini. Solleva i fianchi in un ponte. Fai scivolare le gambe in avanti in 3 secondi finché sono quasi tese, fianchi sempre su. Poi riporta i talloni verso i glutei.",
       tip: "Sei sul tappeto o non riesci a scivolare? Sostituiscilo con un ponte normale.",
-      lvl: "Fallo con una gamba sola, tieni l'altra in aria.",
+      lvl: "Fallo con una gamba sola, tieni l'altra in aria. Inizia con un'escursione più corta. Se arriva un crampo o i fianchi cedono, torna a due gambe.",
     },
     b4: {
       name: "Bicycle crunch",
@@ -421,14 +421,14 @@ export default {
       muscles: "Spalle, tricipiti",
       tempo: "3 s giù, su",
       how: "Metti i piedi su una sedia, le mani a terra un po' più avanti e porta i fianchi in alto, così il busto è quasi verticale. Piega i gomiti e porta la testa verso terra appena davanti alle mani, gomiti indietro, non di lato. Spingi di nuovo su.",
-      tip: "Più il busto è verticale, più peso va sulle spalle. Stringi i glutei per non inarcare la zona lombare.",
+      tip: "Più il busto è verticale, più peso va sulle spalle. Stringi i glutei per non inarcare la zona lombare. La sedia deve essere stabile, meglio contro il muro. Scendi con la testa piano, non caderci mai sopra.",
     },
     k3e: {
       name: "Piegamenti diamante con piedi sulla sedia",
       muscles: "Tricipiti, petto interno, spalle",
       tempo: "3 s giù, su",
       how: "Metti i piedi su una sedia e le mani sotto il petto in modo che pollici e indici si tocchino formando un diamante. Corpo dritto dalla testa ai talloni. Scendi con i gomiti indietro lungo il corpo, petto verso le mani. Spingi di nuovo su.",
-      tip: "Non alzare né far cadere i fianchi. Se ti fanno male i polsi o i gomiti, allarga un po' le mani.",
+      tip: "Non alzare né far cadere i fianchi. Se ti fanno male i polsi o i gomiti, allarga un po' le mani. La sedia deve essere stabile, meglio contro il muro.",
     },
     n1q: {
       name: "Squat 1 e 1/4",
@@ -448,7 +448,7 @@ export default {
       muscles: "Glutei, femorali",
       tempo: "su, 2 s contrazione, giù",
       how: "Sdraiati sulla schiena, ginocchia piegate, piedi a terra. Distendi una gamba in aria e tieni le cosce vicine. Spingi con il tallone della gamba a terra e solleva i fianchi finché il corpo forma una linea retta dal ginocchio alle spalle. In alto stringi i glutei per 2 secondi e scendi piano. Prima tutte le ripetizioni con una gamba, poi con l'altra.",
-      tip: "Tieni i fianchi in linea, non lasciarli cadere dal lato della gamba sollevata. Registra il numero di una gamba: 10 sinistra + 10 destra = scrivi 10.",
+      tip: "Tieni i fianchi in linea, non lasciarli cadere dal lato della gamba sollevata. Registra il numero di una gamba: 10 sinistra + 10 destra = scrivi 10. Se arriva un crampo al femorale, torna al ponte su due gambe.",
     },
     wallsit: {
       name: "Wall sit",

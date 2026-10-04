@@ -284,8 +284,8 @@ export default {
       muscles: "Hruď, triceps, predné ramená",
       tempo: "3 s dole, krátka pauza, hore",
       how: "Ruky daj o niečo širšie ako ramená, telo rovné od hlavy po päty, brucho a zadok zaťaté. 3 sekundy sa spúšťaj, kým sa hrudník takmer nedotkne zeme, chvíľu podrž a zatlač sa hore. Lakte zvierajú s telom ~45°, nie do strán.",
-      tip: "Keď v prvom kole dáš 25+, polož ruky na dve hrubé knihy. Hrudník pôjde hlbšie, sval sa viac natiahne a viac rastie.",
-      lvl: "Polož ruky na dve hrubé knihy, aby hrudník išiel hlbšie. Čísla najprv klesnú, to je v poriadku.",
+      tip: "Keď v prvom kole dáš 25+, polož ruky na dve hrubé knihy. Hrudník pôjde hlbšie, sval sa viac natiahne a viac rastie. Knihy musia byť pevné a rovnako vysoké, aby sa nešmýkali. Ak ťa bolia ramená, choď menej hlboko.",
+      lvl: "Polož ruky na dve hrubé knihy, aby hrudník išiel hlbšie. Čísla najprv klesnú, to je v poriadku. Knihy musia byť pevné, aby sa nešmýkali.",
     },
     row1: {
       name: "Veslovanie o rám dverí",
@@ -331,7 +331,7 @@ export default {
       muscles: "Predné stehná, zadok",
       tempo: "3 s dole, hore",
       how: "Postav sa pred stoličku a zadnú nohu polož nártom na sedadlo. Prednou nohou urob veľký krok vpred. 3 sekundy sa spúšťaj, zadné koleno ide k zemi. Zatlač sa cez pätu prednej nohy hore.",
-      tip: "Predné chodidlo daj tak ďaleko, aby koleno zostalo nad chodidlom. Mierny predklon trupu = viac zaberie zadok.",
+      tip: "Predné chodidlo daj tak ďaleko, aby koleno zostalo nad chodidlom. Mierny predklon trupu = viac zaberie zadok. Stoličku opri o stenu, aby sa pod nohou neposunula.",
       lvl: "Spomaľ: 4 s dole a 2 s pauza dole.",
     },
     b2: {
@@ -364,7 +364,7 @@ export default {
       tempo: "3 s von, 1 s späť",
       how: "Ľahni na chrbát na hladkú podlahu (parkety, dlažba), päty polož na uterák alebo cvič v ponožkách. Zdvihni boky do mostíka. 3 sekundy vysúvaj nohy dopredu, kým nie sú skoro vystreté, boky stále hore. Potom pritiahni päty späť k zadku.",
       tip: "Si na koberci alebo sa nemôžeš kĺzať? Vymeň ho za obyčajný mostík.",
-      lvl: "Rob ho jednou nohou, druhú drž vo vzduchu.",
+      lvl: "Rob ho jednou nohou, druhú drž vo vzduchu. Najprv s kratším rozsahom. Keď chytá kŕč alebo padajú boky, vráť sa na obe nohy.",
     },
     b4: {
       name: "Bicycle crunch",
@@ -421,14 +421,14 @@ export default {
       muscles: "Ramená, triceps",
       tempo: "3 s dole, hore",
       how: "Nohy polož na stoličku, ruky na zem kúsok pred ňu a zadok daj vysoko, aby bol trup skoro zvislý. Ohni lakte a spúšťaj hlavu k zemi kúsok pred rukami, lakte idú dozadu, nie do strán. Zatlač sa späť hore.",
-      tip: "Čím je trup zvislejší, tým viac váhy ide na ramená. Zatni zadok, aby sa ti neprehýbal driek.",
+      tip: "Čím je trup zvislejší, tým viac váhy ide na ramená. Zatni zadok, aby sa ti neprehýbal driek. Stolička musí stáť pevne, najlepšie opretá o stenu. Hlavu spúšťaj pomaly, nikdy na ňu nepadaj.",
     },
     k3e: {
       name: "Diamond klik s nohami na stoličke",
       muscles: "Triceps, vnútorná hruď, ramená",
       tempo: "3 s dole, hore",
       how: "Nohy polož na stoličku, ruky pod hrudník tak, aby sa palce a ukazováky dotýkali a tvorili diamant. Telo rovné od hlavy po päty. Spúšťaj sa, lakte idú dozadu popri tele, hrudník k rukám. Zatlač sa hore.",
-      tip: "Zadok nedvíhaj ani nepúšťaj dole. Ak bolia zápästia alebo lakte, daj ruky kúsok od seba.",
+      tip: "Zadok nedvíhaj ani nepúšťaj dole. Ak bolia zápästia alebo lakte, daj ruky kúsok od seba. Stolička musí stáť pevne, najlepšie opretá o stenu.",
     },
     n1q: {
       name: "Drep 1 a 1/4",
@@ -448,7 +448,7 @@ export default {
       muscles: "Zadok, zadné stehná",
       tempo: "hore, 2 s stlač, dole",
       how: "Ľahni na chrbát, kolená pokrč, chodidlá na zemi. Jednu nohu vystri do vzduchu, stehná drž pri sebe. Zatlač cez pätu nohy na zemi a zdvihni boky, kým telo netvorí rovnú čiaru od kolena po ramená. Hore 2 sekundy stlač zadok a pomaly spusti. Najprv všetky opakovania jednou nohou, potom druhou.",
-      tip: "Boky drž rovno, nenechaj ich padať na stranu zdvihnutej nohy. Zapíš počet za jednu nohu: 10 ľavou + 10 pravou = zapíš 10.",
+      tip: "Boky drž rovno, nenechaj ich padať na stranu zdvihnutej nohy. Zapíš počet za jednu nohu: 10 ľavou + 10 pravou = zapíš 10. Keď chytá kŕč v zadnom stehne, vráť sa na mostík na oboch nohách.",
     },
     wallsit: {
       name: "Wall sit",

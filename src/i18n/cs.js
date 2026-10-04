@@ -284,8 +284,8 @@ export default {
       muscles: "Prsa, triceps, přední ramena",
       tempo: "3 s dolů, krátká pauza, nahoru",
       how: "Ruce kousek šířeji než ramena, tělo rovné od hlavy po paty, břicho a hýždě zpevněné. Spouštěj se 3 sekundy, dokud se hrudník skoro nedotkne země, krátce vydrž a vytlač se zpět nahoru. Lokty drž ~45° od těla, ne roztažené do stran.",
-      tip: "Jakmile v prvním kole dáš 25+, opři ruce o dvě tlusté knihy. Hrudník půjde hlouběji, sval se víc protáhne a víc poroste.",
-      lvl: "Opři ruce o dvě tlusté knihy, ať jde hrudník hlouběji. Čísla ti ze začátku klesnou, to je v pohodě.",
+      tip: "Jakmile v prvním kole dáš 25+, opři ruce o dvě tlusté knihy. Hrudník půjde hlouběji, sval se víc protáhne a víc poroste. Knihy musí být pevné a stejně vysoké, aby neklouzaly. Když bolí ramena, jdi méně hluboko.",
+      lvl: "Opři ruce o dvě tlusté knihy, ať jde hrudník hlouběji. Čísla ti ze začátku klesnou, to je v pohodě. Knihy musí být pevné, aby neklouzaly.",
     },
     row1: {
       name: "Přítah o zárubeň",
@@ -331,7 +331,7 @@ export default {
       muscles: "Přední stehna, hýždě",
       tempo: "3 s dolů, nahoru",
       how: "Postav se před židli a polož nárt zadní nohy na sedák. Přední nohou udělej velký krok dopředu. Spouštěj se 3 sekundy, zadní koleno jde k zemi. Vytlač se nahoru přes patu přední nohy.",
-      tip: "Přední chodidlo dej tak daleko, aby koleno zůstalo nad chodidlem. Mírný předklon trupu = víc hýždí.",
+      tip: "Přední chodidlo dej tak daleko, aby koleno zůstalo nad chodidlem. Mírný předklon trupu = víc hýždí. Židli opři o zeď, aby se pod nohou neposunula.",
       lvl: "Zpomal: 4 s dolů a 2 s pauza dole.",
     },
     b2: {
@@ -364,7 +364,7 @@ export default {
       tempo: "3 s ven, 1 s zpět",
       how: "Lehni si na záda na hladkou podlahu (dřevo, dlaždice), paty na ručníku nebo v ponožkách. Zvedni pánev do mostu. 3 sekundy vysouvej nohy, dokud nejsou skoro natažené, pánev pořád nahoře. Pak přitáhni paty zpět k hýždím.",
       tip: "Jsi na koberci nebo nemůžeš klouzat? Vyměň ho za obyčejný most.",
-      lvl: "Dělej to jednou nohou, druhou drž ve vzduchu.",
+      lvl: "Dělej to jednou nohou, druhou drž ve vzduchu. Nejdřív s kratším rozsahem. Když chytá křeč nebo padá pánev, vrať se na obě nohy.",
     },
     b4: {
       name: "Bicykl",
@@ -421,14 +421,14 @@ export default {
       muscles: "Ramena, triceps",
       tempo: "3 s dolů, nahoru",
       how: "Nohy dej na židli, ruce na zem kousek před ni a zadek vysoko, aby byl trup skoro svislý. Pokrč lokty a spouštěj hlavu k zemi kousek před rukama, lokty jdou dozadu, ne do stran. Vytlač se zpět nahoru.",
-      tip: "Čím svislejší trup, tím víc váhy jde na ramena. Zpevni hýždě, ať se ti neprohýbají bedra.",
+      tip: "Čím svislejší trup, tím víc váhy jde na ramena. Zpevni hýždě, ať se ti neprohýbají bedra. Židle musí stát pevně, nejlépe opřená o zeď. Hlavu spouštěj pomalu, nikdy na ni nepadej.",
     },
     k3e: {
       name: "Diamond klik s nohama na židli",
       muscles: "Triceps, vnitřní hrudník, ramena",
       tempo: "3 s dolů, nahoru",
       how: "Nohy dej na židli, ruce pod hrudník tak, aby se palce a ukazováčky dotýkaly a tvořily diamant. Tělo rovné od hlavy po paty. Spouštěj se, lokty jdou dozadu podél těla, hrudník k rukám. Vytlač se nahoru.",
-      tip: "Zadek nezvedej ani nepropadej. Když bolí zápěstí nebo lokty, dej ruce kousek od sebe.",
+      tip: "Zadek nezvedej ani nepropadej. Když bolí zápěstí nebo lokty, dej ruce kousek od sebe. Židle musí stát pevně, nejlépe opřená o zeď.",
     },
     n1q: {
       name: "Dřep 1 a 1/4",
@@ -448,7 +448,7 @@ export default {
       muscles: "Hýždě, zadní stehna",
       tempo: "nahoru, 2 s stisk, dolů",
       how: "Lehni si na záda, kolena pokrč, chodidla na zemi. Jednu nohu natáhni do vzduchu, stehna drž u sebe. Zatlač přes patu nohy na zemi a zvedni pánev, až tělo tvoří rovnou čáru od kolena k ramenům. Nahoře 2 sekundy stiskni hýždě a pomalu spusť. Nejdřív všechna opakování jednou nohou, pak druhou.",
-      tip: "Pánev drž rovně, nenech ji padat na stranu zvednuté nohy. Zapiš počet za jednu nohu: 10 levou + 10 pravou = zapiš 10.",
+      tip: "Pánev drž rovně, nenech ji padat na stranu zvednuté nohy. Zapiš počet za jednu nohu: 10 levou + 10 pravou = zapiš 10. Když chytá křeč v zadním stehně, vrať se na most na obou nohou.",
     },
     wallsit: {
       name: "Wall sit",

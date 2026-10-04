@@ -284,8 +284,8 @@ export default {
       muscles: "Klatka piersiowa, triceps, przednie barki",
       tempo: "3 s w dół, krótka pauza, w górę",
       how: "Dłonie trochę szerzej niż barki, ciało w linii prostej od głowy do pięt, brzuch i pośladki napięte. Opuszczaj się przez 3 sekundy, aż klatka prawie dotknie podłogi, zatrzymaj się na chwilę i wypchnij w górę. Łokcie trzymaj pod kątem ~45° do ciała, nie rozkładaj ich na boki.",
-      tip: "Gdy w pierwszej rundzie zrobisz 25+, oprzyj dłonie na dwóch grubych książkach. Klatka zejdzie głębiej, mięsień bardziej się rozciągnie i bardziej urośnie.",
-      lvl: "Oprzyj dłonie na dwóch grubych książkach, żeby klatka schodziła głębiej. Na początku liczby spadną, to normalne.",
+      tip: "Gdy w pierwszej rundzie zrobisz 25+, oprzyj dłonie na dwóch grubych książkach. Klatka zejdzie głębiej, mięsień bardziej się rozciągnie i bardziej urośnie. Książki muszą być stabilne i równej wysokości, żeby się nie ślizgały. Jeśli bolą barki, schodź płycej.",
+      lvl: "Oprzyj dłonie na dwóch grubych książkach, żeby klatka schodziła głębiej. Na początku liczby spadną, to normalne. Książki muszą być stabilne, żeby się nie ślizgały.",
     },
     row1: {
       name: "Wiosłowanie we framudze drzwi",
@@ -331,7 +331,7 @@ export default {
       muscles: "Przód ud, pośladki",
       tempo: "3 s w dół, w górę",
       how: "Stań przed krzesłem i oprzyj grzbiet tylnej stopy na siedzisku. Zrób duży krok do przodu przednią stopą. Opuszczaj się przez 3 sekundy, tylne kolano idzie w stronę podłogi. Wypchnij się w górę przez piętę przedniej stopy.",
-      tip: "Postaw przednią stopę na tyle daleko, żeby kolano zostało nad stopą. Lekkie pochylenie tułowia do przodu = więcej pośladków.",
+      tip: "Postaw przednią stopę na tyle daleko, żeby kolano zostało nad stopą. Lekkie pochylenie tułowia do przodu = więcej pośladków. Oprzyj krzesło o ścianę, żeby nie przesunęło się pod stopą.",
       lvl: "Zwolnij: 4 s w dół i 2 s pauzy na dole.",
     },
     b2: {
@@ -364,7 +364,7 @@ export default {
       tempo: "3 s od siebie, 1 s z powrotem",
       how: "Połóż się na plecach na gładkiej podłodze (drewno, płytki), pięty na ręczniku albo w skarpetkach. Unieś biodra do mostka. Przez 3 sekundy wysuwaj nogi, aż będą prawie proste, biodra cały czas w górze. Potem przyciągnij pięty z powrotem do pośladków.",
       tip: "Jesteś na dywanie albo nie możesz się ślizgać? Zamień to na zwykły mostek.",
-      lvl: "Rób to jedną nogą, drugą trzymaj w powietrzu.",
+      lvl: "Rób to jedną nogą, drugą trzymaj w powietrzu. Najpierw z krótszym zakresem. Gdy łapie skurcz albo opadają biodra, wróć na obie nogi.",
     },
     b4: {
       name: "Rowerek",
@@ -421,14 +421,14 @@ export default {
       muscles: "Barki, triceps",
       tempo: "3 s w dół, w górę",
       how: "Połóż stopy na krześle, dłonie na podłodze trochę przed nim i unieś biodra wysoko, tak by tułów był prawie pionowy. Zegnij łokcie i opuszczaj głowę do podłogi tuż przed dłońmi, łokcie idą do tyłu, nie na boki. Wypchnij się w górę.",
-      tip: "Im bardziej pionowy tułów, tym więcej ciężaru idzie na barki. Napnij pośladki, żeby nie wyginać lędźwi.",
+      tip: "Im bardziej pionowy tułów, tym więcej ciężaru idzie na barki. Napnij pośladki, żeby nie wyginać lędźwi. Krzesło musi stać stabilnie, najlepiej oparte o ścianę. Opuszczaj głowę powoli, nigdy na nią nie opadaj.",
     },
     k3e: {
       name: "Pompki diamentowe z nogami na krześle",
       muscles: "Triceps, wewnętrzna część klatki, barki",
       tempo: "3 s w dół, w górę",
       how: "Połóż stopy na krześle, a dłonie pod klatką tak, by kciuki i palce wskazujące się stykały i tworzyły diament. Ciało proste od głowy do pięt. Opuszczaj się, łokcie idą do tyłu wzdłuż ciała, klatka w stronę dłoni. Wypchnij się w górę.",
-      tip: "Nie unoś ani nie opuszczaj bioder. Jeśli bolą nadgarstki lub łokcie, rozsuń trochę dłonie.",
+      tip: "Nie unoś ani nie opuszczaj bioder. Jeśli bolą nadgarstki lub łokcie, rozsuń trochę dłonie. Krzesło musi stać stabilnie, najlepiej oparte o ścianę.",
     },
     n1q: {
       name: "Przysiad 1 i 1/4",
@@ -448,7 +448,7 @@ export default {
       muscles: "Pośladki, tył ud",
       tempo: "w górę, 2 s spięcia, w dół",
       how: "Połóż się na plecach, kolana zgięte, stopy na podłodze. Jedną nogę wyprostuj w powietrzu, uda trzymaj razem. Wypchnij się przez piętę nogi na podłodze i unieś biodra, aż ciało utworzy prostą linię od kolana do barków. Na górze spinaj pośladki przez 2 sekundy i powoli opuść. Najpierw wszystkie powtórzenia jedną nogą, potem drugą.",
-      tip: "Trzymaj biodra równo, nie pozwól im opadać na stronę uniesionej nogi. Zapisz liczbę dla jednej nogi: 10 lewą + 10 prawą = zapisz 10.",
+      tip: "Trzymaj biodra równo, nie pozwól im opadać na stronę uniesionej nogi. Zapisz liczbę dla jednej nogi: 10 lewą + 10 prawą = zapisz 10. Gdy łapie skurcz w tylnej części uda, wróć do mostka na obu nogach.",
     },
     wallsit: {
       name: "Krzesełko przy ścianie",

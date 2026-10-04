@@ -284,8 +284,8 @@ export default {
       muscles: "Chest, triceps, front shoulders",
       tempo: "3 s down, short pause, up",
       how: "Hands slightly wider than your shoulders, body straight from head to heels, abs and glutes tight. Lower yourself for 3 seconds until your chest almost touches the floor, hold briefly and push back up. Keep your elbows at ~45° to your body, not flared out.",
-      tip: "Once you hit 25+ in the first round, put your hands on two thick books. Your chest goes deeper, the muscle stretches more and grows more.",
-      lvl: "Put your hands on two thick books so your chest goes deeper. Your numbers will drop at first, that's fine.",
+      tip: "Once you hit 25+ in the first round, put your hands on two thick books. Your chest goes deeper, the muscle stretches more and grows more. The books must be sturdy and the same height so they don't slip. If your shoulders hurt, go less deep.",
+      lvl: "Put your hands on two thick books so your chest goes deeper. Your numbers will drop at first, that's fine. The books must be sturdy so they don't slip.",
     },
     row1: {
       name: "Door frame row",
@@ -331,7 +331,7 @@ export default {
       muscles: "Front thighs, glutes",
       tempo: "3 s down, up",
       how: "Stand in front of a chair and put the top of your back foot on the seat. Take a big step forward with your front foot. Lower yourself for 3 seconds, your back knee goes towards the floor. Push up through the heel of your front foot.",
-      tip: "Put your front foot far enough forward that your knee stays above your foot. Leaning your torso slightly forward = more glutes.",
+      tip: "Put your front foot far enough forward that your knee stays above your foot. Leaning your torso slightly forward = more glutes. Put the chair against a wall so it can't slide under your foot.",
       lvl: "Slow down: 4 s down and a 2 s pause at the bottom.",
     },
     b2: {
@@ -364,7 +364,7 @@ export default {
       tempo: "3 s out, 1 s back",
       how: "Lie on your back on a smooth floor (wood, tiles), heels on a towel or in socks. Lift your hips into a bridge. Slide your legs out for 3 seconds until they're almost straight, hips still up. Then pull your heels back to your glutes.",
       tip: "On carpet, or can't slide? Swap it for a regular glute bridge.",
-      lvl: "Do it with one leg, keep the other in the air.",
+      lvl: "Do it with one leg, keep the other in the air. Start with a shorter range. If you cramp or your hips drop, go back to both legs.",
     },
     b4: {
       name: "Bicycle crunch",
@@ -421,14 +421,14 @@ export default {
       muscles: "Shoulders, triceps",
       tempo: "3 s down, up",
       how: "Put your feet on a chair, hands on the floor a bit in front of it, and lift your hips high so your torso is almost vertical. Bend your elbows and lower your head to the floor just in front of your hands, elbows going back, not out to the sides. Push back up.",
-      tip: "The more vertical your torso, the more weight goes onto your shoulders. Squeeze your glutes so your lower back doesn't arch.",
+      tip: "The more vertical your torso, the more weight goes onto your shoulders. Squeeze your glutes so your lower back doesn't arch. The chair must stand firm, ideally against a wall. Lower your head slowly, never drop onto it.",
     },
     k3e: {
       name: "Feet-elevated diamond push-up",
       muscles: "Triceps, inner chest, shoulders",
       tempo: "3 s down, up",
       how: "Put your feet on a chair and your hands under your chest so your thumbs and index fingers touch and form a diamond. Body straight from head to heels. Lower yourself with your elbows going back along your body, chest towards your hands. Push back up.",
-      tip: "Don't let your hips rise or sag. If your wrists or elbows hurt, move your hands a bit apart.",
+      tip: "Don't let your hips rise or sag. If your wrists or elbows hurt, move your hands a bit apart. The chair must stand firm, ideally against a wall.",
     },
     n1q: {
       name: "1¼ squat",
@@ -448,7 +448,7 @@ export default {
       muscles: "Glutes, hamstrings",
       tempo: "up, 2 s squeeze, down",
       how: "Lie on your back, knees bent, feet on the floor. Straighten one leg into the air and keep your thighs together. Push through the heel on the floor and lift your hips until your body forms a straight line from knee to shoulders. Squeeze your glutes for 2 seconds at the top and lower slowly. Do all reps with one leg first, then the other.",
-      tip: "Keep your hips level; don't let them drop to the side of the raised leg. Log the count for one leg: 10 left + 10 right = log 10.",
+      tip: "Keep your hips level; don't let them drop to the side of the raised leg. Log the count for one leg: 10 left + 10 right = log 10. If your hamstring cramps, go back to the two-leg bridge.",
     },
     wallsit: {
       name: "Wall sit",

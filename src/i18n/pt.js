@@ -284,8 +284,8 @@ export default {
       muscles: "Peito, tríceps, ombros (parte da frente)",
       tempo: "3 s descendo, pausa curta, sobe",
       how: "Mãos um pouco mais abertas que os ombros, corpo reto da cabeça aos calcanhares, abdômen e glúteos contraídos. Desça em 3 segundos até o peito quase encostar no chão, segure um instante e empurre de volta para cima. Mantenha os cotovelos a ~45° do corpo, não abertos para os lados.",
-      tip: "Quando passar de 25 na primeira rodada, apoie as mãos em dois livros grossos. O peito desce mais, o músculo alonga mais e cresce mais.",
-      lvl: "Apoie as mãos em dois livros grossos para o peito descer mais. No começo seus números vão cair, tudo bem.",
+      tip: "Quando passar de 25 na primeira rodada, apoie as mãos em dois livros grossos. O peito desce mais, o músculo alonga mais e cresce mais. Os livros devem ser firmes e da mesma altura para não escorregar. Se os ombros doerem, desça menos.",
+      lvl: "Apoie as mãos em dois livros grossos para o peito descer mais. No começo seus números vão cair, tudo bem. Os livros devem ser firmes para não escorregar.",
     },
     row1: {
       name: "Remada no batente da porta",
@@ -331,7 +331,7 @@ export default {
       muscles: "Coxa (parte da frente), glúteos",
       tempo: "3 s descendo, sobe",
       how: "Fique de costas para uma cadeira e apoie o peito do pé de trás no assento. Dê um passo grande à frente com o pé da frente. Desça em 3 segundos, com o joelho de trás indo em direção ao chão. Suba empurrando pelo calcanhar do pé da frente.",
-      tip: "Coloque o pé da frente longe o bastante para o joelho ficar acima do pé. Inclinar o tronco um pouco para a frente = mais glúteo.",
+      tip: "Coloque o pé da frente longe o bastante para o joelho ficar acima do pé. Inclinar o tronco um pouco para a frente = mais glúteo. Encoste a cadeira na parede para ela não deslizar sob o pé.",
       lvl: "Vá mais devagar: 4 s descendo e 2 s de pausa embaixo.",
     },
     b2: {
@@ -364,7 +364,7 @@ export default {
       tempo: "3 s esticando, 1 s voltando",
       how: "Deite de barriga para cima num chão liso (madeira, piso frio), com os calcanhares sobre uma toalha ou de meias. Suba o quadril numa ponte. Deslize as pernas para a frente em 3 segundos até ficarem quase esticadas, com o quadril ainda no alto. Depois puxe os calcanhares de volta até os glúteos.",
       tip: "Está no tapete ou não consegue deslizar? Troque por uma ponte normal.",
-      lvl: "Faça com uma perna só, mantendo a outra no ar.",
+      lvl: "Faça com uma perna só, mantendo a outra no ar. Comece com amplitude menor. Se der cãibra ou o quadril cair, volte para as duas pernas.",
     },
     b4: {
       name: "Abdominal bicicleta",
@@ -421,14 +421,14 @@ export default {
       muscles: "Ombros, tríceps",
       tempo: "3 s descendo, sobe",
       how: "Coloque os pés numa cadeira e as mãos no chão um pouco à frente, com o quadril bem alto para o tronco ficar quase vertical. Dobre os cotovelos e desça a cabeça até o chão logo à frente das mãos, cotovelos para trás, não para os lados. Empurre de volta para cima.",
-      tip: "Quanto mais vertical o tronco, mais peso vai para os ombros. Contraia os glúteos para não arquear a lombar.",
+      tip: "Quanto mais vertical o tronco, mais peso vai para os ombros. Contraia os glúteos para não arquear a lombar. A cadeira deve ficar firme, de preferência encostada na parede. Desça a cabeça devagar, nunca caia sobre ela.",
     },
     k3e: {
       name: "Flexão diamante com pés na cadeira",
       muscles: "Tríceps, parte interna do peito, ombros",
       tempo: "3 s descendo, sobe",
       how: "Coloque os pés numa cadeira e as mãos sob o peito, com polegares e indicadores se tocando em forma de diamante. Corpo reto da cabeça aos calcanhares. Desça com os cotovelos para trás junto ao corpo, peito em direção às mãos. Empurre de volta para cima.",
-      tip: "Não deixe o quadril subir nem cair. Se os punhos ou cotovelos doerem, afaste um pouco as mãos.",
+      tip: "Não deixe o quadril subir nem cair. Se os punhos ou cotovelos doerem, afaste um pouco as mãos. A cadeira deve ficar firme, de preferência encostada na parede.",
     },
     n1q: {
       name: "Agachamento 1 e 1/4",
@@ -448,7 +448,7 @@ export default {
       muscles: "Glúteos, posteriores da coxa",
       tempo: "sobe, 2 s contraindo, desce",
       how: "Deite de costas, joelhos dobrados, pés no chão. Estique uma perna no ar e mantenha as coxas juntas. Empurre pelo calcanhar da perna no chão e suba o quadril até o corpo formar uma linha reta do joelho aos ombros. Em cima, contraia os glúteos por 2 segundos e desça devagar. Primeiro todas as repetições com uma perna, depois com a outra.",
-      tip: "Mantenha o quadril nivelado, sem deixar cair para o lado da perna levantada. Anote o número de uma perna: 10 esquerda + 10 direita = anote 10.",
+      tip: "Mantenha o quadril nivelado, sem deixar cair para o lado da perna levantada. Anote o número de uma perna: 10 esquerda + 10 direita = anote 10. Se der cãibra no posterior da coxa, volte para a ponte com as duas pernas.",
     },
     wallsit: {
       name: "Cadeirinha na parede",

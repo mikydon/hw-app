@@ -284,8 +284,8 @@ export default {
       muscles: "Mell, tricepsz, elülső váll",
       tempo: "3 mp le, rövid szünet, fel",
       how: "A kezed kicsit vállszélességnél szélesebben, a tested egyenes a fejedtől a sarkadig, a hasad és a farizmod feszes. 3 másodperc alatt engedd le magad, amíg a mellkasod majdnem eléri a padlót, tartsd meg egy pillanatra, és told vissza magad. A könyököd ~45°-ban legyen a testedhez képest, ne nyisd szét oldalra.",
-      tip: "Ha az első körben megvan a 25+, tedd a kezed két vastag könyvre. A mellkasod mélyebbre megy, az izom jobban nyúlik, és jobban is nő.",
-      lvl: "Tedd a kezed két vastag könyvre, hogy a mellkasod mélyebbre menjen. Eleinte kevesebb ismétlés lesz, ez teljesen oké.",
+      tip: "Ha az első körben megvan a 25+, tedd a kezed két vastag könyvre. A mellkasod mélyebbre megy, az izom jobban nyúlik, és jobban is nő. A könyvek legyenek stabilak és egyforma magasak, hogy ne csússzanak. Ha fáj a vállad, menj kevésbé mélyre.",
+      lvl: "Tedd a kezed két vastag könyvre, hogy a mellkasod mélyebbre menjen. Eleinte kevesebb ismétlés lesz, ez teljesen oké. A könyvek legyenek stabilak, hogy ne csússzanak.",
     },
     row1: {
       name: "Evezés ajtókeretnél",
@@ -331,7 +331,7 @@ export default {
       muscles: "Elülső comb, farizom",
       tempo: "3 mp le, fel",
       how: "Állj egy szék elé, és tedd a hátsó lábfejed tetejét az ülésre. Lépj nagyot előre az elülső lábaddal. 3 másodperc alatt ereszkedj le, a hátsó térded a padló felé megy. Az elülső lábad sarkán keresztül told fel magad.",
-      tip: "Az elülső lábad legyen elég messze elöl, hogy a térded a lábfejed fölött maradjon. Enyhén előredöntött törzs = több farizom.",
+      tip: "Az elülső lábad legyen elég messze elöl, hogy a térded a lábfejed fölött maradjon. Enyhén előredöntött törzs = több farizom. Támaszd a széket a falnak, hogy ne csússzon el a lábad alatt.",
       lvl: "Lassíts: 4 mp le és 2 mp szünet lent.",
     },
     b2: {
@@ -364,7 +364,7 @@ export default {
       tempo: "3 mp ki, 1 mp vissza",
       how: "Feküdj a hátadra sima padlón (parketta, csempe), a sarkad egy törölközőn vagy zokniban. Emeld a csípőd hídba. 3 másodperc alatt csúsztasd ki a lábad, amíg majdnem egyenes nem lesz, a csípőd végig fent marad. Aztán húzd vissza a sarkad a fenekedhez.",
       tip: "Szőnyegen vagy, vagy nem tudsz csúszni? Cseréld le sima csípőemelésre.",
-      lvl: "Csináld egy lábbal, a másikat tartsd a levegőben.",
+      lvl: "Csináld egy lábbal, a másikat tartsd a levegőben. Először rövidebb mozgástartománnyal. Ha görcsöl vagy leesik a csípőd, térj vissza két lábra.",
     },
     b4: {
       name: "Biciklis hasprés",
@@ -421,14 +421,14 @@ export default {
       muscles: "Váll, tricepsz",
       tempo: "3 mp le, fel",
       how: "Tedd a lábad egy székre, a kezed a földre kicsit elé, a csípőd emeld magasra, hogy a törzsed majdnem függőleges legyen. Hajlítsd a könyököd, és engedd a fejed a földhöz kicsit a kezed elé, a könyök hátra megy, nem oldalra. Told vissza magad.",
-      tip: "Minél függőlegesebb a törzs, annál több súly kerül a vállra. Feszítsd meg a farizmod, hogy ne homorítson a derekad.",
+      tip: "Minél függőlegesebb a törzs, annál több súly kerül a vállra. Feszítsd meg a farizmod, hogy ne homorítson a derekad. A szék álljon stabilan, legjobb, ha a falnak támasztod. A fejed lassan engedd le, soha ne zuhanj rá.",
     },
     k3e: {
       name: "Gyémánt fekvőtámasz emelt lábbal",
       muscles: "Tricepsz, belső mell, váll",
       tempo: "3 mp le, fel",
       how: "Tedd a lábad egy székre, a kezed a mellkasod alá úgy, hogy a hüvelyk- és mutatóujjaid összeérjenek és gyémántot formáljanak. A test egyenes a fejtől a sarkig. Engedd le magad, a könyök hátra megy a test mellett, a mellkas a kéz felé. Told vissza magad.",
-      tip: "Ne emeld és ne engedd le a csípőd. Ha fáj a csuklód vagy a könyököd, tedd kicsit távolabb a kezed.",
+      tip: "Ne emeld és ne engedd le a csípőd. Ha fáj a csuklód vagy a könyököd, tedd kicsit távolabb a kezed. A szék álljon stabilan, legjobb, ha a falnak támasztod.",
     },
     n1q: {
       name: "1 és 1/4 guggolás",
@@ -448,7 +448,7 @@ export default {
       muscles: "Farizom, combhajlítók",
       tempo: "fel, 2 mp szorítás, le",
       how: "Feküdj hanyatt, térd hajlítva, talp a földön. Az egyik lábad nyújtsd ki a levegőbe, a combokat tartsd egymás mellett. Told a földön lévő láb sarkán keresztül, és emeld a csípőd, amíg a tested egyenes vonal nem lesz a térdtől a vállig. Fent 2 másodpercig szorítsd a farizmot, és lassan engedd le. Előbb az összes ismétlés az egyik lábbal, utána a másikkal.",
-      tip: "A csípőd maradjon vízszintes, ne essen le a felemelt láb oldalán. Egy láb számát írd be: 10 bal + 10 jobb = írj 10-et.",
+      tip: "A csípőd maradjon vízszintes, ne essen le a felemelt láb oldalán. Egy láb számát írd be: 10 bal + 10 jobb = írj 10-et. Ha görcsöl a combhajlítód, térj vissza a kétlábas csípőemelésre.",
     },
     wallsit: {
       name: "Falnál ülés",

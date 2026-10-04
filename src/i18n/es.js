@@ -284,8 +284,8 @@ export default {
       muscles: "Pecho, tríceps, deltoides anterior",
       tempo: "3 s abajo, pausa corta, arriba",
       how: "Manos un poco más abiertas que los hombros, cuerpo recto de la cabeza a los talones, abdomen y glúteos apretados. Baja durante 3 segundos hasta que el pecho casi toque el suelo, aguanta un instante y vuelve a subir. Mantén los codos a ~45° del cuerpo, no abiertos hacia los lados.",
-      tip: "Cuando llegues a 25+ en la primera ronda, apoya las manos en dos libros gruesos. El pecho baja más, el músculo se estira más y crece más.",
-      lvl: "Apoya las manos en dos libros gruesos para que el pecho baje más. Al principio harás menos reps, es normal.",
+      tip: "Cuando llegues a 25+ en la primera ronda, apoya las manos en dos libros gruesos. El pecho baja más, el músculo se estira más y crece más. Los libros deben ser firmes y de la misma altura para que no resbalen. Si te duelen los hombros, baja menos.",
+      lvl: "Apoya las manos en dos libros gruesos para que el pecho baje más. Al principio harás menos reps, es normal. Los libros deben ser firmes para que no resbalen.",
     },
     row1: {
       name: "Remo en el marco de la puerta",
@@ -331,7 +331,7 @@ export default {
       muscles: "Cuádriceps, glúteos",
       tempo: "3 s abajo, arriba",
       how: "Ponte delante de una silla y apoya el empeine del pie de atrás en el asiento. Da un paso largo hacia delante con el otro pie. Baja durante 3 segundos, con la rodilla de atrás yendo hacia el suelo. Sube empujando con el talón del pie de delante.",
-      tip: "Adelanta el pie de delante lo suficiente para que la rodilla quede sobre el pie. Inclinar un poco el torso hacia delante = más glúteos.",
+      tip: "Adelanta el pie de delante lo suficiente para que la rodilla quede sobre el pie. Inclinar un poco el torso hacia delante = más glúteos. Apoya la silla contra la pared para que no se deslice bajo el pie.",
       lvl: "Ve más lento: 4 s abajo y 2 s de pausa abajo.",
     },
     b2: {
@@ -364,7 +364,7 @@ export default {
       tempo: "3 s afuera, 1 s de vuelta",
       how: "Túmbate boca arriba en un suelo liso (madera, baldosas), con los talones sobre una toalla o en calcetines. Sube la cadera en puente. Desliza las piernas hacia fuera durante 3 segundos hasta que estén casi rectas, con la cadera todavía arriba. Luego lleva los talones de vuelta hacia los glúteos.",
       tip: "¿Estás en alfombra o no puedes deslizar? Cámbialo por un puente normal.",
-      lvl: "Hazlo con una pierna y mantén la otra en el aire.",
+      lvl: "Hazlo con una pierna y mantén la otra en el aire. Empieza con menos recorrido. Si te da un calambre o se cae la cadera, vuelve a las dos piernas.",
     },
     b4: {
       name: "Abdominal bicicleta",
@@ -421,14 +421,14 @@ export default {
       muscles: "Hombros, tríceps",
       tempo: "3 s abajo, arriba",
       how: "Pon los pies en una silla y las manos en el suelo un poco por delante, con la cadera alta para que el torso quede casi vertical. Dobla los codos y baja la cabeza al suelo justo delante de las manos, con los codos hacia atrás, no hacia los lados. Vuelve a subir.",
-      tip: "Cuanto más vertical el torso, más peso va a los hombros. Aprieta los glúteos para no arquear la zona lumbar.",
+      tip: "Cuanto más vertical el torso, más peso va a los hombros. Aprieta los glúteos para no arquear la zona lumbar. La silla debe estar firme, mejor apoyada contra la pared. Baja la cabeza despacio, nunca caigas sobre ella.",
     },
     k3e: {
       name: "Flexión diamante con pies en la silla",
       muscles: "Tríceps, pecho interior, hombros",
       tempo: "3 s abajo, arriba",
       how: "Pon los pies en una silla y las manos bajo el pecho de modo que pulgares e índices se toquen y formen un diamante. Cuerpo recto de la cabeza a los talones. Baja con los codos hacia atrás pegados al cuerpo y el pecho hacia las manos. Vuelve a subir.",
-      tip: "Que la cadera no suba ni se hunda. Si te duelen las muñecas o los codos, separa un poco las manos.",
+      tip: "Que la cadera no suba ni se hunda. Si te duelen las muñecas o los codos, separa un poco las manos. La silla debe estar firme, mejor apoyada contra la pared.",
     },
     n1q: {
       name: "Sentadilla 1 y 1/4",
@@ -448,7 +448,7 @@ export default {
       muscles: "Glúteos, isquiotibiales",
       tempo: "arriba, 2 s apretando, abajo",
       how: "Túmbate boca arriba, rodillas dobladas, pies en el suelo. Estira una pierna en el aire y mantén los muslos juntos. Empuja con el talón de la pierna apoyada y sube la cadera hasta que el cuerpo forme una línea recta de la rodilla a los hombros. Arriba aprieta los glúteos 2 segundos y baja despacio. Primero todas las reps con una pierna y luego con la otra.",
-      tip: "Mantén la cadera nivelada, que no caiga hacia el lado de la pierna levantada. Apunta el número de una pierna: 10 izquierda + 10 derecha = apunta 10.",
+      tip: "Mantén la cadera nivelada, que no caiga hacia el lado de la pierna levantada. Apunta el número de una pierna: 10 izquierda + 10 derecha = apunta 10. Si te da un calambre en el isquio, vuelve al puente con las dos piernas.",
     },
     wallsit: {
       name: "Sentadilla en pared",

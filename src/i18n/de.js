@@ -284,8 +284,8 @@ export default {
       muscles: "Brust, Trizeps, vordere Schultern",
       tempo: "3 s runter, kurze Pause, hoch",
       how: "Hände etwas weiter als schulterbreit, Körper gerade von Kopf bis Ferse, Bauch und Po angespannt. Senk dich 3 Sekunden lang ab, bis deine Brust fast den Boden berührt, halte kurz und drück dich wieder hoch. Ellbogen im ~45°-Winkel zum Körper, nicht nach außen abspreizen.",
-      tip: "Sobald du in der ersten Runde 25+ schaffst, stell die Hände auf zwei dicke Bücher. Deine Brust geht tiefer, der Muskel wird stärker gedehnt und wächst mehr.",
-      lvl: "Stell die Hände auf zwei dicke Bücher, damit deine Brust tiefer geht. Deine Zahlen sinken erst mal, das ist okay.",
+      tip: "Sobald du in der ersten Runde 25+ schaffst, stell die Hände auf zwei dicke Bücher. Deine Brust geht tiefer, der Muskel wird stärker gedehnt und wächst mehr. Die Bücher müssen stabil und gleich hoch sein, damit nichts rutscht. Wenn die Schultern schmerzen, geh weniger tief.",
+      lvl: "Stell die Hände auf zwei dicke Bücher, damit deine Brust tiefer geht. Deine Zahlen sinken erst mal, das ist okay. Die Bücher müssen stabil sein, damit nichts rutscht.",
     },
     row1: {
       name: "Türrahmen-Rudern",
@@ -331,7 +331,7 @@ export default {
       muscles: "Oberschenkelvorderseite, Po",
       tempo: "3 s runter, hoch",
       how: "Stell dich vor einen Stuhl und leg den Spann deines hinteren Fußes auf die Sitzfläche. Mach mit dem vorderen Fuß einen großen Schritt nach vorn. Senk dich 3 Sekunden lang ab, das hintere Knie geht Richtung Boden. Drück dich über die Ferse des vorderen Fußes hoch.",
-      tip: "Stell den vorderen Fuß so weit nach vorn, dass dein Knie über dem Fuß bleibt. Oberkörper leicht nach vorn geneigt = mehr Po.",
+      tip: "Stell den vorderen Fuß so weit nach vorn, dass dein Knie über dem Fuß bleibt. Oberkörper leicht nach vorn geneigt = mehr Po. Stell den Stuhl an die Wand, damit er unter dem Fuß nicht wegrutscht.",
       lvl: "Langsamer: 4 s runter und 2 s Pause unten.",
     },
     b2: {
@@ -364,7 +364,7 @@ export default {
       tempo: "3 s raus, 1 s zurück",
       how: "Leg dich auf einem glatten Boden (Holz, Fliesen) auf den Rücken, Fersen auf einem Handtuch oder in Socken. Heb die Hüfte in eine Brücke. Schieb die Beine 3 Sekunden lang nach vorn, bis sie fast gestreckt sind, Hüfte bleibt oben. Dann zieh die Fersen zurück zum Po.",
       tip: "Auf Teppich oder es rutscht nicht? Tausch sie gegen eine normale Glute Bridge.",
-      lvl: "Mach's mit einem Bein, das andere bleibt in der Luft.",
+      lvl: "Mach's mit einem Bein, das andere bleibt in der Luft. Fang mit kürzerem Bewegungsweg an. Bei Krampf oder absinkender Hüfte zurück auf beide Beine.",
     },
     b4: {
       name: "Bicycle Crunch",
@@ -421,14 +421,14 @@ export default {
       muscles: "Schultern, Trizeps",
       tempo: "3 s runter, hoch",
       how: "Leg die Füße auf einen Stuhl, die Hände etwas davor auf den Boden, und schieb die Hüfte hoch, sodass der Oberkörper fast senkrecht ist. Beug die Ellbogen und senk den Kopf knapp vor den Händen zum Boden, die Ellbogen gehen nach hinten, nicht zur Seite. Drück dich wieder hoch.",
-      tip: "Je senkrechter der Oberkörper, desto mehr Gewicht geht auf die Schultern. Spann den Po an, damit du kein Hohlkreuz machst.",
+      tip: "Je senkrechter der Oberkörper, desto mehr Gewicht geht auf die Schultern. Spann den Po an, damit du kein Hohlkreuz machst. Der Stuhl muss fest stehen, am besten an der Wand. Senk den Kopf langsam, lass dich nie darauf fallen.",
     },
     k3e: {
       name: "Diamant-Liegestütz mit Füßen auf dem Stuhl",
       muscles: "Trizeps, innere Brust, Schultern",
       tempo: "3 s runter, hoch",
       how: "Leg die Füße auf einen Stuhl und die Hände so unter die Brust, dass sich Daumen und Zeigefinger berühren und einen Diamanten bilden. Körper gerade von Kopf bis Ferse. Senk dich ab, die Ellbogen gehen nah am Körper nach hinten, die Brust zu den Händen. Drück dich wieder hoch.",
-      tip: "Hüfte weder hochschieben noch durchhängen lassen. Wenn Handgelenke oder Ellbogen schmerzen, setz die Hände etwas auseinander.",
+      tip: "Hüfte weder hochschieben noch durchhängen lassen. Wenn Handgelenke oder Ellbogen schmerzen, setz die Hände etwas auseinander. Der Stuhl muss fest stehen, am besten an der Wand.",
     },
     n1q: {
       name: "1¼-Kniebeuge",
@@ -448,7 +448,7 @@ export default {
       muscles: "Po, Oberschenkelrückseite",
       tempo: "hoch, 2 s anspannen, runter",
       how: "Leg dich auf den Rücken, Knie angewinkelt, Füße am Boden. Streck ein Bein in die Luft und halte die Oberschenkel nebeneinander. Drück über die Ferse des Standbeins und heb die Hüfte, bis dein Körper vom Knie bis zu den Schultern eine gerade Linie bildet. Oben 2 Sekunden den Po anspannen und langsam absenken. Erst alle Wiederholungen mit einem Bein, dann mit dem anderen.",
-      tip: "Halte die Hüfte gerade, lass sie nicht zur Seite des gehobenen Beins absinken. Trag die Zahl für ein Bein ein: 10 links + 10 rechts = 10 eintragen.",
+      tip: "Halte die Hüfte gerade, lass sie nicht zur Seite des gehobenen Beins absinken. Trag die Zahl für ein Bein ein: 10 links + 10 rechts = 10 eintragen. Bei einem Krampf im hinteren Oberschenkel zurück zur Glute Bridge auf beiden Beinen.",
     },
     wallsit: {
       name: "Wall Sit",
