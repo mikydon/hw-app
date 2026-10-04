@@ -658,8 +658,8 @@ const FIGS = {
     { hip: [50, 89], torso: -14, head: -24, hands: [[104, 72], [104, 72]], armBend: [1, 1], feet: [[11, 80], [11, 80]], legBend: [1, 1], supine: true, hide: ["farArm", "farLeg"] },
   ],
   legraise: [
-    { hip: [50, 89], torso: 0, head: 0, hands: [[48, 92], [50, 92]], armBend: [1, 1], feet: [[50, 49], [52, 49]], legBend: [1, 1], supine: true },
-    { hip: [50, 89], torso: 0, head: 0, hands: [[48, 92], [50, 92]], armBend: [1, 1], feet: [[10.3, 84], [10.5, 83]], legBend: [1, 1] },
+    { hip: [50, 89], torso: 0, head: 0, hands: [[47.1, 92.4], [47.1, 92.4]], armBend: [1, 1], feet: [[50, 49], [50, 49]], legBend: [1, 1], supine: true, hide: ["farArm", "farLeg"] },
+    { hip: [50, 89], torso: 0, head: 0, hands: [[47.1, 92.4], [47.1, 92.4]], armBend: [1, 1], feet: [[10.3, 84], [10.3, 84]], legBend: [1, 1], supine: true, hide: ["farArm", "farLeg"] },
   ],
   hf: [
     { hip: [56, 76], torso: -92, hands: [[60, 80], [56, 80]], armBend: [1, 1], feet: [[84, GROUND], [24, GROUND]], legBend: [-1, -1] },
