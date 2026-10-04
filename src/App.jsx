@@ -1369,6 +1369,40 @@ function CloseX({ onClick, color }) {
   );
 }
 
+// Helper hints: now and then (every other day) one short "did you know" card on Home, each pointing
+// to a feature, with a button that opens it. Seen hints are skipped until all were shown.
+const HINTS = [
+  { k: "themes", go: "settings" }, { k: "exercises", go: "settings" }, { k: "calories", go: "calories" },
+  { k: "minimize", go: null }, { k: "backup", go: "settings" }, { k: "history", go: "history" },
+  { k: "howto", go: null }, { k: "freeze", go: "profile" }, { k: "language", go: "settings" }, { k: "birthday", go: "calories" },
+];
+function HintCard({ ui, setUi, profile, onGo }) {
+  const today = dateKey();
+  const dayNo = Math.round(parseKey(today).getTime() / 86400000);
+  if (dayNo % 2 !== 0 || ui.hintHidden === today) return null;
+  const avail = HINTS.filter(h => !(h.k === "birthday" && profile && profile.birth && profile.birth.m));
+  let pickH;
+  if (ui.hint && ui.hint.date === today) pickH = avail.find(h => h.k === ui.hint.k);
+  if (!pickH) {
+    const seen = ui.hintsSeen || [];
+    const fresh = avail.filter(h => !seen.includes(h.k));
+    pickH = (fresh.length ? fresh : avail)[0];
+  }
+  if (!pickH) return null;
+  const mark = extra => setUi({ ...ui, hint: { date: today, k: pickH.k }, hintsSeen: [...new Set([...(((ui.hintsSeen || []).length >= avail.length) ? [] : ui.hintsSeen || []), pickH.k])], ...extra });
+  return (
+    <div data-hint={pickH.k} style={{ ...card, position: "relative", padding: "12px 40px 12px 14px", marginTop: 14, display: "flex", gap: 10, alignItems: "flex-start", borderColor: `${C.sky}66` }}>
+      <CloseX onClick={() => mark({ hintHidden: today })} />
+      <div style={{ fontSize: 20, lineHeight: 1.2 }}>💡</div>
+      <div style={{ minWidth: 0 }}>
+        <div style={{ fontSize: 12, fontWeight: 800, color: C.sky }}>{T("hintTitle")}</div>
+        <div style={{ fontSize: 14, color: C.chalk, lineHeight: 1.45, marginTop: 2 }}>{T("hint_" + pickH.k)}</div>
+        {pickH.go && <button onClick={() => { mark({ hintHidden: today }); onGo(pickH.go); }} style={{ ...btnBase, background: "transparent", color: C.sky, padding: "6px 0 0", fontSize: 13 }}>{T("hintGo")} ›</button>}
+      </div>
+    </div>
+  );
+}
+
 // Confetti once per app start on the birthday (kept in memory, so no write races with the daily line).
 let BDAY_BURST = null;
 function BirthdayCard({ profile, ui, setUi }) {
@@ -1390,7 +1424,7 @@ function BirthdayCard({ profile, ui, setUi }) {
   );
 }
 
-function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, profile }) {
+function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, profile, onGo }) {
   const today = dateKey();
   // Make sure today's daily line and the "done" card texts are picked (and saved) before painting.
   useLayoutEffect(() => { const n = uiForToday(ui, history, today); if (n !== ui) setUi(n); });
@@ -1472,6 +1506,7 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
         </div>
       )}
 
+      {onGo && history.length > 0 && <HintCard ui={ui} setUi={setUi} profile={profile} onGo={onGo} />}
       <div style={{ display: "flex", gap: 6, marginTop: 16 }} aria-label={T("weekLine", { count: TP("workouts", weekCount) })}>
         {week.map(w => (
           <div key={w.k} style={{ flex: 1, textAlign: "center" }}>
@@ -3235,7 +3270,7 @@ export default function App() {
             <>
               <TopBar screen={screen} history={history} menuOpen={menuOpen} onMenu={() => { sfxTap(); setMenuOpen(o => !o); }} />
               <div key={screen}>
-                {screen === "train" && <TrainTab history={history} onStart={start} onFreeze={applyFreeze} ui={ui} setUi={setUi} active={session} onResume={resume} profile={profile} />}
+                {screen === "train" && <TrainTab history={history} onStart={start} onFreeze={applyFreeze} ui={ui} setUi={setUi} active={session} onResume={resume} profile={profile} onGo={go} />}
                 {screen === "history" && <HistoryTab history={history}
                   onDelete={idx => editHistory(h => h.filter((_, i) => i !== idx))}
                   onSaveEntry={(idx, entry) => editHistory(h => (idx === null ? [...h, entry] : h.map((e, i) => (i === idx ? entry : e))))} />}
