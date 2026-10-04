@@ -358,7 +358,7 @@ export default {
       muscles: "Oberschenkelrückseite, Po",
       tempo: "3 s raus, 1 s zurück",
       how: "Leg dich auf einem glatten Boden (Holz, Fliesen) auf den Rücken, Fersen auf einem Handtuch oder in Socken. Heb die Hüfte in eine Brücke. Schieb die Beine 3 Sekunden lang nach vorn, bis sie fast gestreckt sind, Hüfte bleibt oben. Dann zieh die Fersen zurück zum Po.",
-      tip: "Auf Teppich rutscht das Handtuch nicht. Mach dann stattdessen eine einbeinige Glute Bridge: eine Ferse nah am Po auf dem Boden, das andere Bein gestreckt in der Luft, und heb und senk die Hüfte. Mach alle Wiederholungen mit einem Bein, dann genauso viele mit dem anderen. Trag die Zahl für ein Bein ein: 10 links + 10 rechts = 10 eintragen.",
+      tip: "Auf Teppich oder es rutscht nicht? Tausch sie gegen eine normale Glute Bridge.",
       lvl: "Mach's mit einem Bein, das andere bleibt in der Luft.",
     },
     b4: {

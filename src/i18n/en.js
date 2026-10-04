@@ -358,7 +358,7 @@ export default {
       muscles: "Hamstrings, glutes",
       tempo: "3 s out, 1 s back",
       how: "Lie on your back on a smooth floor (wood, tiles), heels on a towel or in socks. Lift your hips into a bridge. Slide your legs out for 3 seconds until they're almost straight, hips still up. Then pull your heels back to your glutes.",
-      tip: "A towel won't slide on carpet. Then do a single-leg bridge instead: one heel on the floor near your glutes, the other leg straight in the air, and raise and lower your hips. Do all reps with one leg, then the same with the other. Log the count for one leg: 10 left + 10 right = log 10.",
+      tip: "On carpet, or can't slide? Swap it for a regular glute bridge.",
       lvl: "Do it with one leg, keep the other in the air.",
     },
     b4: {

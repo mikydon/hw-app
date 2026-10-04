@@ -358,7 +358,7 @@ export default {
       muscles: "Isquiotibiales, glúteos",
       tempo: "3 s afuera, 1 s de vuelta",
       how: "Túmbate boca arriba en un suelo liso (madera, baldosas), con los talones sobre una toalla o en calcetines. Sube la cadera en puente. Desliza las piernas hacia fuera durante 3 segundos hasta que estén casi rectas, con la cadera todavía arriba. Luego lleva los talones de vuelta hacia los glúteos.",
-      tip: "En alfombra la toalla no se desliza. En ese caso haz un puente a una pierna: un talón en el suelo cerca de los glúteos, la otra pierna estirada en el aire, y sube y baja la cadera. Haz todas las reps con una pierna y luego las mismas con la otra. Apunta el número de una pierna: 10 izquierda + 10 derecha = apunta 10.",
+      tip: "¿Estás en alfombra o no puedes deslizar? Cámbialo por un puente normal.",
       lvl: "Hazlo con una pierna y mantén la otra en el aire.",
     },
     b4: {

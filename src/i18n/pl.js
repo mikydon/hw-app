@@ -358,7 +358,7 @@ export default {
       muscles: "Tył ud, pośladki",
       tempo: "3 s od siebie, 1 s z powrotem",
       how: "Połóż się na plecach na gładkiej podłodze (drewno, płytki), pięty na ręczniku albo w skarpetkach. Unieś biodra do mostka. Przez 3 sekundy wysuwaj nogi, aż będą prawie proste, biodra cały czas w górze. Potem przyciągnij pięty z powrotem do pośladków.",
-      tip: "Na dywanie ręcznik się nie ślizga. Wtedy zrób zamiast tego mostek na jednej nodze: jedna pięta na podłodze przy pośladkach, druga noga wyprostowana w powietrzu, unoś i opuszczaj biodra. Zrób wszystkie powtórzenia jedną nogą, potem tyle samo drugą. Zapisz liczbę dla jednej nogi: 10 lewą + 10 prawą = zapisz 10.",
+      tip: "Jesteś na dywanie albo nie możesz się ślizgać? Zamień to na zwykły mostek.",
       lvl: "Rób to jedną nogą, drugą trzymaj w powietrzu.",
     },
     b4: {

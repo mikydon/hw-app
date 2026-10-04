@@ -358,7 +358,7 @@ export default {
       muscles: "Posteriores da coxa, glúteos",
       tempo: "3 s esticando, 1 s voltando",
       how: "Deite de barriga para cima num chão liso (madeira, piso frio), com os calcanhares sobre uma toalha ou de meias. Suba o quadril numa ponte. Deslize as pernas para a frente em 3 segundos até ficarem quase esticadas, com o quadril ainda no alto. Depois puxe os calcanhares de volta até os glúteos.",
-      tip: "No tapete a toalha não desliza. Nesse caso, faça a ponte com uma perna só: um calcanhar no chão perto dos glúteos, a outra perna esticada no ar, e suba e desça o quadril. Faça todas as repetições com uma perna e depois o mesmo com a outra. Anote o número de uma perna: 10 esquerda + 10 direita = anote 10.",
+      tip: "Está no tapete ou não consegue deslizar? Troque por uma ponte normal.",
       lvl: "Faça com uma perna só, mantendo a outra no ar.",
     },
     b4: {

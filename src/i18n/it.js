@@ -358,7 +358,7 @@ export default {
       muscles: "Femorali, glutei",
       tempo: "3 s fuori, 1 s dentro",
       how: "Sdraiati sulla schiena su un pavimento liscio (parquet, piastrelle), talloni su un asciugamano o con i calzini. Solleva i fianchi in un ponte. Fai scivolare le gambe in avanti in 3 secondi finché sono quasi tese, fianchi sempre su. Poi riporta i talloni verso i glutei.",
-      tip: "Sul tappeto l'asciugamano non scivola. In quel caso fai un ponte su una gamba: un tallone a terra vicino ai glutei, l'altra gamba tesa in aria, e alza e abbassa i fianchi. Fai tutte le ripetizioni con una gamba, poi lo stesso con l'altra. Registra il numero di una gamba: 10 sinistra + 10 destra = scrivi 10.",
+      tip: "Sei sul tappeto o non riesci a scivolare? Sostituiscilo con un ponte normale.",
       lvl: "Fallo con una gamba sola, tieni l'altra in aria.",
     },
     b4: {

@@ -358,7 +358,7 @@ export default {
       muscles: "Zadní stehna, hýždě",
       tempo: "3 s ven, 1 s zpět",
       how: "Lehni si na záda na hladkou podlahu (dřevo, dlaždice), paty na ručníku nebo v ponožkách. Zvedni pánev do mostu. 3 sekundy vysouvej nohy, dokud nejsou skoro natažené, pánev pořád nahoře. Pak přitáhni paty zpět k hýždím.",
-      tip: "Na koberci ručník neklouže. Pak dělej místo toho most na jedné noze: jedna pata na zemi u zadku, druhou nohu natáhni do vzduchu a zvedej pánev nahoru a dolů. Udělej všechna opakování jednou nohou, pak stejně druhou. Do appky zapiš počet za jednu nohu: 10 levou + 10 pravou = zapiš 10.",
+      tip: "Jsi na koberci nebo nemůžeš klouzat? Vyměň ho za obyčejný most.",
       lvl: "Dělej to jednou nohou, druhou drž ve vzduchu.",
     },
     b4: {

@@ -207,7 +207,7 @@ const EX = {
     yt: "https://www.youtube.com/watch?v=ytEalkENNiQ",
   },
   n7: {
-    type: "reps", start: 10, unit: "",
+    type: "reps", start: 10, unit: "", swapTip: true, // the tip suggests swapping: HowTo shows a swap button in a workout
     yt: "https://www.youtube.com/watch?v=cWSsWpuxmYM",
   },
   b4: {
@@ -925,7 +925,7 @@ function Sheet({ title, onClose, children }) {
   );
 }
 
-function HowTo({ id, history, onClose }) {
+function HowTo({ id, history, onClose, onSwap }) {
   const ex = EX[id];
   const best = bestFor(history, id);
   return (
@@ -935,6 +935,7 @@ function HowTo({ id, history, onClose }) {
       {ex.tempo && <div style={{ background: C.panelHi, borderRadius: 12, padding: "10px 13px", marginBottom: 14, fontSize: 14 }}><b style={{ color: C.signal }}>{T("tempo")}:</b> {ex.tempo}</div>}
       <div>{ex.how}</div>
       <div style={{ marginTop: 14, paddingTop: 12, borderTop: `1px solid ${C.line}`, color: C.chalk }}>💡 {ex.tip}</div>
+      {onSwap && ex.swapTip && <button onClick={onSwap} style={{ ...ghostBtn, marginTop: 10, padding: "10px 14px", color: C.sky, borderColor: `${C.sky}88` }}>{T("swap")}</button>}
       <button onClick={() => openYT(ex.yt)} className="b3d" style={{ ...bigBtn("#e62117", "#fff"), marginTop: 16, fontSize: 14, padding: 14 }}>{T("videoYT")}</button>
       <RankLadder id={id} best={best} />
     </Sheet>
@@ -2129,7 +2130,7 @@ function Work({ item, rounds, history, sessionResults, onRecord, onSwap, exclude
 
   return (
     <div>
-      {how && <HowTo id={item.id} history={history} onClose={() => setHow(false)} />}
+      {how && <HowTo id={item.id} history={history} onClose={() => setHow(false)} onSwap={onSwap && ph === "ready" ? () => { sfxTap(); setHow(false); setSwap(true); } : null} />}
       {swap && <SwapSheet item={item} exclude={exclude || []} history={history} onClose={() => setSwap(false)} onPick={id => { setSwap(false); sfxCheck(); onSwap(item.slot, id); }} />}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10 }}>
         <div style={{ fontFamily: DISPLAY, fontSize: fitSize(ex.name, 46), fontWeight: 900, lineHeight: 0.95, color: C.chalk, flex: 1, minWidth: 0, hyphens: "auto", overflowWrap: "break-word" }}>{ex.name}</div>
