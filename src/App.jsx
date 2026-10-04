@@ -1086,30 +1086,52 @@ function bestStreak(history) {
 function totalReps(history) {
   return history.reduce((a, e) => a + e.items.reduce((b, it) => b + it.res.reduce((c, v) => c + (typeof v === "number" ? v : 0), 0), 0), 0);
 }
-function achievements(history) {
-  const n = history.length;
-  const bs = bestStreak(history);
-  const prs = history.reduce((a, e) => a + ((e.prs && e.prs.length) || 0), 0);
-  const maxRank = Math.max(0, ...Object.keys(RANK_AT).map(id => rankIdx(id, bestFor(history, id))));
-  const lvl = levelInfo(totalXP(history)).lvl;
-  const push = bestFor(history, "k1") || 0;
-  return [
-    { icon: "🎯", k: "first", ok: n >= 1 },
-    { icon: "🖐️", k: "w5", ok: n >= 5 },
-    { icon: "🔟", k: "w10", ok: n >= 10 },
-    { icon: "🏅", k: "w25", ok: n >= 25 },
-    { icon: "🏆", k: "w50", ok: n >= 50 },
-    { icon: "🔥", k: "s3", ok: bs >= 3 },
-    { icon: "⚡", k: "s7", ok: bs >= 7 },
-    { icon: "🌋", k: "s15", ok: bs >= 15 },
-    { icon: "📈", k: "pr", ok: prs >= 1 },
-    { icon: "🥇", k: "gold", ok: maxRank >= 4 },
-    { icon: "💎", k: "diamond", ok: maxRank >= 6 },
-    { icon: "✅", k: "week", ok: [...new Set(history.map(e => weekKey(e.date)))].some(wk => challengeStatus(history, wk).every(c => c.done)) },
-    { icon: "⭐", k: "lvl5", ok: lvl >= 5 },
-    { icon: "💪", k: "r3", ok: history.some(e => e.rounds === 3) },
-    { icon: "🦾", k: "push30", ok: push >= 30 },
-  ].map(a => ({ ...a, name: L.ach[a.k][0], desc: L.ach[a.k][1] }));
+// Achievements have 7 tiers named like the exercise ranks (Wood … Diamond). Everything is derived
+// from history (+ birthdays and calorie days from `extra`), so badges earned before v1.4 stay earned.
+const ACH = [
+  { k: "workouts", icon: "🎯", at: [1, 5, 10, 25, 50, 100, 200], pl: "workouts", v: c => c.n },
+  { k: "streak", icon: "🔥", at: [3, 7, 15, 30, 60, 100, 180], pl: "days", v: c => c.bs },
+  { k: "records", icon: "📈", at: [1, 5, 10, 25, 50, 100, 200], pl: "prs", v: c => c.prs },
+  { k: "ranks", icon: "🥇", at: [1, 4, 8, 15, 25, 40, 60], v: c => c.rankSum },
+  { k: "weeks", icon: "✅", at: [1, 2, 4, 8, 12, 26, 52], pl: "weeks", v: c => c.weeks },
+  { k: "level", icon: "⭐", at: [2, 5, 10, 15, 20, 30, 50], v: c => c.lvl },
+  { k: "rounds3", icon: "💪", at: [1, 5, 10, 25, 50, 100, 200], pl: "workouts", v: c => c.r3 },
+  { k: "pushups", icon: "🦾", at: [10, 20, 30, 40, 50, 60, 75], pl: "pushups", v: c => c.push },
+  { k: "reps", icon: "📊", at: [100, 500, 1000, 2500, 5000, 10000, 25000], pl: "reps", v: c => c.reps },
+  { k: "birthday", icon: "🎂", at: [1, 2, 3, 4, 5, 7, 10], pl: "birthdays", v: c => c.bdays },
+  { k: "calories", icon: "🍽️", at: [1, 7, 14, 30, 60, 100, 200], pl: "days", v: c => c.kcalDays },
+];
+function achCounts(history, extra = {}) {
+  const pushIds = ["k1", "k3", "r1", "kKnee", "kIncl", "r1e", "k3e"];
+  return {
+    n: history.length,
+    bs: bestStreak(history),
+    prs: history.reduce((a, e) => a + ((e.prs && e.prs.length) || 0), 0),
+    rankSum: Object.keys(RANK_AT).reduce((a, id) => a + rankIdx(id, bestFor(history, id)), 0),
+    weeks: [...new Set(history.map(e => weekKey(e.date)))].filter(wk => challengeStatus(history, wk).every(c => c.done)).length,
+    lvl: levelInfo(totalXP(history)).lvl,
+    r3: history.filter(e => e.rounds === 3).length,
+    push: Math.max(0, ...pushIds.map(id => bestFor(history, id) || 0)),
+    reps: totalReps(history),
+    bdays: extra.bdays || 0,
+    kcalDays: extra.kcalDays || 0,
+  };
+}
+function achievements(history, extra) {
+  const c = achCounts(history, extra);
+  return ACH.map(a => {
+    const v = a.v(c);
+    const tier = a.at.filter(x => v >= x).length; // 0 = locked, 1..7 = Wood..Diamond
+    const next = tier < a.at.length ? a.at[tier] : null;
+    const goal = next ?? a.at[a.at.length - 1];
+    const [name, desc] = L.ach[a.k];
+    return { ...a, v, tier, next, name, desc: fmt(desc, { n: goal, x: a.pl ? TP(a.pl, goal) : goal }) };
+  });
+}
+// Tiers that went up between two histories, for the end-of-workout summary.
+function achUps(before, after, extra) {
+  const a = achievements(before, extra), b = achievements(after, extra);
+  return b.filter((x, i) => x.tier > a[i].tier).map(x => ({ k: x.k, icon: x.icon, name: x.name, tier: x.tier }));
 }
 
 function Avatar({ profile, size = 38 }) {
@@ -1776,15 +1798,28 @@ function ProfileTab({ history, profile, setProfile, onFreeze }) {
         })}
       </div>
 
-      <div style={sectionTitle}>{T("badgesTitle")} <span style={{ fontFamily: BODY, fontSize: 14, color: C.dim, fontWeight: 600 }}>{ach.filter(a => a.ok).length}/{ach.length}</span></div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
-        {ach.map(a => (
-          <div key={a.k} style={{ ...card, padding: "12px 6px", textAlign: "center", opacity: a.ok ? 1 : 0.45, borderColor: a.ok ? C.signal : C.line }}>
-            <div style={{ fontSize: 28, filter: a.ok ? "none" : "grayscale(1)" }}>{a.ok ? a.icon : "🔒"}</div>
-            <div style={{ fontSize: 12, fontWeight: 700, color: C.chalk, marginTop: 4 }}>{a.name}</div>
-            <div style={{ fontSize: 11, color: C.dim, marginTop: 2 }}>{a.desc}</div>
-          </div>
-        ))}
+      <div style={sectionTitle}>{T("badgesTitle")} <span style={{ fontFamily: BODY, fontSize: 14, color: C.dim, fontWeight: 600 }}>{T("achTiers", { n: ach.reduce((x, a) => x + a.tier, 0), max: ach.reduce((x, a) => x + a.at.length, 0) })}</span></div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+        {ach.map(a => {
+          const r = a.tier ? RANKS[a.tier - 1] : null;
+          const prev = a.tier ? a.at[a.tier - 1] : 0;
+          const pct = a.next === null ? 100 : Math.max(0, Math.min(100, ((a.v - prev) / (a.next - prev)) * 100));
+          return (
+            <div key={a.k} data-ach={a.k} data-tier={a.tier} style={{ ...card, padding: "11px 12px", borderColor: r ? `${r.color}88` : C.line }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <div style={{ fontSize: 26, filter: r ? "none" : "grayscale(1)", opacity: r ? 1 : 0.5 }}>{a.icon}</div>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: C.chalk, lineHeight: 1.2 }}>{a.name}</div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: r ? r.color : C.dim }}>{r ? `${r.icon} ${r.name}` : `🔒 ${T("achLocked")}`}</div>
+                </div>
+              </div>
+              <div style={{ height: 6, background: C.panelHi, borderRadius: 99, marginTop: 9, overflow: "hidden" }}>
+                <div style={{ height: "100%", width: `${pct}%`, background: r ? r.color : C.dim, borderRadius: 99, transition: "width .6s ease-out" }} />
+              </div>
+              <div style={{ fontSize: 11, color: C.dim, marginTop: 5, lineHeight: 1.35 }}>{a.next === null ? T("achMax") : `${T("achNext", { rank: RANKS[a.tier].name })} ${a.desc}`}</div>
+            </div>
+          );
+        })}
       </div>
 
     </div>
@@ -2372,7 +2407,7 @@ function Cool({ onFinish }) {
 }
 
 // ─── SESSION: SUMMARY ───────────────────────────────────────────────────────
-function Summary({ entry, xpBefore = 0, xpGained, newCh = [], history, onClose }) {
+function Summary({ entry, xpBefore = 0, xpGained, newCh = [], newAch = [], history, onClose }) {
   const [copied, setCopied] = useState(false);
   const gained = entry ? (xpGained ?? xpFor(entry)) : 0;
   const [shown, setShown] = useState(0);
@@ -2430,6 +2465,13 @@ function Summary({ entry, xpBefore = 0, xpGained, newCh = [], history, onClose }
         <div className="pop" style={{ marginTop: 14, background: "#173f3a", border: `2px solid ${C.mint}`, borderRadius: 16, padding: "12px 16px" }}>
           {newCh.map(c => (
             <div key={c.id} style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, color: C.mint, lineHeight: 1.2 }}>{T("challengeDone", { text: L.ch[c.id] })} <span style={{ color: C.sky }}>+{c.xp} XP</span></div>
+          ))}
+        </div>
+      )}
+      {newAch.length > 0 && (
+        <div className="pop" data-newach style={{ marginTop: 14, border: `2px solid ${C.sky}`, borderRadius: 16, padding: "12px 16px" }}>
+          {newAch.map(a => (
+            <div key={a.k} style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, color: RANKS[a.tier - 1].color, lineHeight: 1.2 }}>{a.icon} {T("achUp", { name: a.name, rank: `${RANKS[a.tier - 1].icon} ${RANKS[a.tier - 1].name}` })}</div>
           ))}
         </div>
       )}
@@ -2491,10 +2533,11 @@ function Session({ session, setSession, history, onSave, onClose }) {
     }).filter(Boolean);
     const entry = items.length ? { date: dateKey(), ts: Date.now(), day: session.day, rounds: session.rounds, items, prs, rankUps, warm: session.warm.every(Boolean), cool: !!coolDone } : null;
     const xpBefore = totalXP(history);
-    let xpGained = 0, newCh = [];
+    let xpGained = 0, newCh = [], newAch = [];
     if (entry) {
       const after = [...history, entry];
       xpGained = totalXP(after) - xpBefore;
+      newAch = achUps(history, after);
       const wk = weekKey(entry.date);
       const beforeDone = new Set(challengeStatus(history, wk).filter(c => c.done).map(c => c.id));
       newCh = challengeStatus(after, wk).filter(c => c.done && !beforeDone.has(c.id));
@@ -2505,7 +2548,7 @@ function Session({ session, setSession, history, onSave, onClose }) {
       if (up) sfxLevel(); else sfxFinish();
       vibrate(prs.length || up ? [120, 60, 120, 60, 260] : [200]);
     }
-    setSession({ ...session, phase: "summary", entry, xpBefore, xpGained, newCh, rest: null });
+    setSession({ ...session, phase: "summary", entry, xpBefore, xpGained, newCh, newAch, rest: null });
   };
 
   const record = (val) => {
@@ -2577,7 +2620,7 @@ function Session({ session, setSession, history, onSave, onClose }) {
           onAdd={() => setSession(s => (s.rest ? { ...s, rest: { ...s.rest, endAt: s.rest.endAt + 15000, total: s.rest.total + 15 } } : s))} />
       )}
       {session.phase === "cool" && <Cool onFinish={finish} />}
-      {session.phase === "summary" && <Summary entry={session.entry} xpBefore={session.xpBefore || 0} xpGained={session.xpGained} newCh={session.newCh || []} history={history} onClose={onClose} />}
+      {session.phase === "summary" && <Summary entry={session.entry} xpBefore={session.xpBefore || 0} xpGained={session.xpGained} newCh={session.newCh || []} newAch={session.newAch || []} history={history} onClose={onClose} />}
       </div>
     </div>
   );
