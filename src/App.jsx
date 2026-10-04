@@ -599,8 +599,8 @@ const FIGS = {
     { ...fromFeet([88, GROUND], 2), hands: [[97.4, 31], [86.8, 56.8]], elbows: [[83.5, 30.5], [86.2, 42.8]], feet: [[88, GROUND], [90, GROUND]], legBend: [1, 1], props: [{ t: "frame" }], grip: true, hide: ["farArm"] },
   ],
   row2: [
-    { ...fromFeet([96, GROUND], 30), hands: [[89.3, 49], [89.8, 48.6]], armBend: [-1, -1], feet: [[96, GROUND], [98, GROUND]], legBend: [1, 1], props: [{ t: "door" }, { t: "towel", from: [104, 56], to: [89.6, 48.8] }] },
-    { ...fromFeet([96, GROUND], 12), hands: [[90, 42], [91, 42.5]], armBend: [1, 1], feet: [[96, GROUND], [98, GROUND]], legBend: [1, 1], props: [{ t: "door" }, { t: "towel", from: [104, 56], to: [90.5, 42.3] }] },
+    { ...fromFeet([96, GROUND], 30), hands: [[89.3, 49], [89.8, 48.6]], armBend: [-1, -1], feet: [[96, GROUND], [98, GROUND]], legBend: [1, 1], hide: ["farLeg"], props: [{ t: "door" }, { t: "towel", from: [104, 56], to: [89.6, 48.8] }] },
+    { ...fromFeet([96, GROUND], 12), hands: [[90, 42], [91, 42.5]], armBend: [1, 1], feet: [[96, GROUND], [98, GROUND]], legBend: [1, 1], hide: ["farLeg"], props: [{ t: "door" }, { t: "towel", from: [104, 56], to: [90.5, 42.3] }] },
   ],
   n2: [
     { hip: [63, 57], torso: -88, hands: [[64, 84], [60, 84]], armBend: [1, 1], feet: [[78, GROUND], [30, 70]], legBend: [-1, -1], props: [{ t: "chair" }] },
@@ -701,16 +701,18 @@ function Stick({ p }) {
   );
 }
 
+// Towels are orange, so they are never mistaken for the yellow belly marker.
+const TOWEL = "#ff9f5a";
 function Prop({ pr }) {
   const s = { stroke: C.sky, strokeWidth: 3, fill: "none", strokeLinecap: "round", strokeLinejoin: "round" };
   // Door frame (jamb) seen from the side as one solid post; the hand grips its front edge.
   if (pr.t === "frame") return <g><rect x="95.5" y="6" width="4.6" height="90" rx="1" fill={C.sky} fillOpacity="0.28" stroke={C.sky} strokeWidth="3" /><line x1="100.1" y1="6" x2="118" y2="6" {...s} /></g>;
-  if (pr.t === "door") return <g><rect x="102" y="10" width="5" height="86" {...s} /><circle cx="104.5" cy="56" r="2.5" fill={C.sky} /></g>;
-  if (pr.t === "towel") return <line x1={pr.from[0]} y1={pr.from[1]} x2={pr.to[0]} y2={pr.to[1]} stroke={C.signal} strokeWidth="3" strokeLinecap="round" />;
+  if (pr.t === "door") return <g><rect x="102" y="10" width="5" height="86" rx="1" fill={C.sky} fillOpacity="0.28" stroke={C.sky} strokeWidth="3" /><circle cx="104.5" cy="56" r="2.5" fill={C.sky} /></g>;
+  if (pr.t === "towel") return <line x1={pr.from[0]} y1={pr.from[1]} x2={pr.to[0]} y2={pr.to[1]} stroke={TOWEL} strokeWidth="3" strokeLinecap="round" />;
   if (pr.t === "chair") return <g {...s}><line x1="8" y1="72" x2="36" y2="72" /><line x1="10" y1="72" x2="10" y2="96" /><line x1="34" y1="72" x2="34" y2="96" /><line x1="10" y1="72" x2="10" y2="44" /></g>;
   if (pr.t === "table") return <g {...s}><line x1="80" y1="74" x2="118" y2="74" /><line x1="84" y1="74" x2="84" y2="96" /><line x1="114" y1="74" x2="114" y2="96" /></g>;
   if (pr.t === "wall") return <line x1="20" y1="4" x2="20" y2="96" {...s} strokeWidth="4" />;
-  if (pr.t === "towelFloor") return <rect x={pr.x} y={GROUND} width="14" height="3" rx="1" fill={C.signal} />;
+  if (pr.t === "towelFloor") return <rect x={pr.x} y={GROUND} width="14" height="3" rx="1" fill={TOWEL} />;
   // Small "seen from above" inset: palms side by side, index fingers and thumbs touching = diamond.
   // Dashed line straight down from the shoulder: shows that the hands are placed behind it (under the chest).
   if (pr.t === "plumb") return <line x1={pr.x} y1={pr.y} x2={pr.x} y2={GROUND} stroke={C.sky} strokeWidth="1.4" strokeDasharray="2.2 1.8" />;
