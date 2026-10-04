@@ -68,6 +68,8 @@ export function setLang(code) {
 }
 
 const fill = (s, p) => (p ? s.replace(/\{(\w+)\}/g, (m, k) => (p[k] !== undefined && p[k] !== null ? p[k] : m)) : s);
+// fmt("Day {day}", { day: "A" }) for texts that come from arrays (no key).
+export const fmt = fill;
 // t("startDay", { d: "A" }) -> "Start day A"
 export function t(key, params) { const s = L.ui[key] ?? en.ui[key] ?? key; return fill(s, params); }
 // tp("workouts", 3) -> "3 workouts" (correct plural form for the language)

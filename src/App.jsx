@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef } from "react";
-import { L, t as T, tp as TP, setLang, detectLang, LANGS, fmtLong, fmtShortDM, fmtMonthYear, weekdaysShort, capFirst } from "./i18n/index.js";
+import { useState, useEffect, useLayoutEffect, useRef } from "react";
+import { createPortal } from "react-dom";
+import { L, t as T, tp as TP, fmt, setLang, detectLang, LANGS, fmtLong, fmtShortDM, fmtMonthYear, weekdaysShort, capFirst } from "./i18n/index.js";
 
 // ─── DESIGN TOKENS ──────────────────────────────────────────────────────────
 // Scoreboard look: deep navy, chalk-white type, one signal yellow for "do this
@@ -24,7 +25,7 @@ const THEMES = {
   forest: {    ink: "#0d1f17", panel: "#142d22", panelHi: "#1d3d2f", line: "#2a5240", chalk: "#eefaf3", dim: "#94b3a3", edge: "#0a1912" },
   plum:   { ink: "#1d1230", panel: "#2a1b45", panelHi: "#37245a", line: "#4a3374", chalk: "#f4effc", dim: "#ad9cc8", edge: "#150c24" },
 };
-const APP_VERSION = "1.2.0";
+const APP_VERSION = "1.3.0";
 // Big Shoulders has no Cyrillic, so Oswald (also condensed) covers Ukrainian. The browser only
 // downloads the Oswald unicode ranges a page actually uses.
 const DISPLAY = "'Big Shoulders Display', 'Oswald', 'Arial Narrow', Impact, sans-serif";
@@ -260,7 +261,13 @@ const ALT_GROUPS = [
   ["n1", "n2", "n7", "lunge", "bridge", "wallsit"],
   ["b5", "b2", "b4", "birddog", "hollow", "legraise"],
 ];
-function altsFor(id, exclude) { const g = ALT_GROUPS.find(x => x.includes(id)) || []; return g.filter(x => x !== id && !exclude.includes(x)); }
+// Same order as ALT_GROUPS; names come from the locale (grp_push…).
+const GROUP_KEYS = ["push", "pull", "legs", "core"];
+const groupOf = id => ALT_GROUPS.findIndex(g => g.includes(id));
+// Exercises turned off in Settings → Exercises ("I can't do this one").
+const exOff = () => new Set(setting("exOff") || []);
+const isOn = id => !exOff().has(id);
+function altsFor(id, exclude) { const g = ALT_GROUPS.find(x => x.includes(id)) || []; return g.filter(x => x !== id && !exclude.includes(x) && isOn(x)); }
 
 // Every day: one push, one pull, one legs, one core.
 const DAYS = [
@@ -268,6 +275,19 @@ const DAYS = [
   { id: "B", ids: ["r1", "row2", "n2", "b2"] },
   { id: "C", ids: ["k3", "row3", "n7", "b4"] },
 ];
+const MAIN_IDS = DAYS.flatMap(d => d.ids);
+const dayOfMain = id => (DAYS.find(d => d.ids.includes(id)) || {}).id;
+// The exercise a plan slot really uses. If you turned the slot's exercise off, it is replaced by
+// another exercise of the same type (push/pull/legs/core), so every workout still trains all four.
+// It looks from the slot onwards and first skips exercises another day already uses, so A, B and C
+// keep different exercises where possible.
+function effId(slot, off = exOff()) {
+  if (!off.has(slot)) return slot;
+  const g = ALT_GROUPS[groupOf(slot)] || [slot];
+  const i = g.indexOf(slot);
+  const order = g.slice(i + 1).concat(g.slice(0, i)).filter(x => !off.has(x));
+  return order.find(x => !MAIN_IDS.includes(x)) || order[0] || slot;
+}
 
 // When every round last time hit "at", the app suggests the harder version.
 const LEVEL_UP_AT = {
@@ -320,11 +340,26 @@ function perUnit(u) { const c = unitCode(u); return c ? L.perUnit[c] || "" : "";
 // Logged items keep the name they had when saved; show the current language's name instead.
 const exName = it => (EX[it.id] && EX[it.id].name) || it.name;
 
-function buildSeq(dayId, rounds, swaps = {}) {
+// base: slot → exercise fixed when the workout started (after replacing turned-off exercises).
+function buildSeq(dayId, rounds, swaps = {}, base = {}) {
   const day = DAYS.find(d => d.id === dayId);
   const seq = [];
-  for (let r = 0; r < rounds; r++) day.ids.forEach(slot => seq.push({ id: swaps[slot] || slot, slot, r }));
+  for (let r = 0; r < rounds; r++) day.ids.forEach(slot => { const b = base[slot] || effId(slot); seq.push({ id: swaps[slot] || b, slot, base: b, r }); });
   return seq;
+}
+// History stays sorted by date (then time), so "last workout" is always the newest one.
+function sortHistory(h) { return h.map((e, i) => [e, i]).sort((a, b) => (a[0].date < b[0].date ? -1 : a[0].date > b[0].date ? 1 : entryTs(a[0]) - entryTs(b[0]) || a[1] - b[1])).map(x => x[0]); }
+// Records and rank-ups are stored per workout. After an edit, delete or manual add they are
+// worked out again in date order, with the same rules as at the end of a workout.
+function recomputeFlags(h) {
+  const out = [];
+  h.forEach(e => {
+    const top = it => Math.max(...it.res.map(numVal).filter(n => !isNaN(n)));
+    const prs = e.items.filter(it => { const b = bestFor(out, it.id); return b !== null && top(it) > b; }).map(it => it.id);
+    const rankUps = e.items.map(it => { const to = rankIdx(it.id, top(it)); return to > rankIdx(it.id, bestFor(out, it.id)) ? { id: it.id, to } : null; }).filter(Boolean);
+    out.push({ ...e, prs, rankUps });
+  });
+  return out;
 }
 function lastFor(history, id) {
   for (let i = history.length - 1; i >= 0; i--) {
@@ -410,9 +445,40 @@ function freezesAvailable(history) {
   const earned = wks.filter(wk => challengeStatus(history, wk).every(c => c.done)).length + 1; // 1 free to start
   return Math.max(0, Math.min(2, earned - (META.freezeDays || []).length));
 }
-// Motivation (texts in the locale). Quote of the day rotates by date; the rest are random.
+// Motivation (texts in the locale).
 const pick = arr => arr[Math.floor(Math.random() * arr.length)];
-function quoteOfDay(k) { return L.quotes[Math.floor(parseKey(k).getTime() / 86400000) % L.quotes.length]; }
+// Random index 0..n-1 that differs from `not` (when there is a choice).
+function pickOther(n, not) { if (n <= 1) return 0; let i = Math.floor(Math.random() * n); if (i === not) i = (i + 1 + Math.floor(Math.random() * (n - 1))) % n; return i; }
+// Daily line on the Train tab. Right after a workout (today or yesterday) it is a rest day, so the
+// line comes from `restDay` and never says "go train". Otherwise it comes from `quotes`.
+function dayKind(history, today) {
+  const last = history[history.length - 1];
+  return last && daysBetween(last.date, today) <= 1 ? "rest" : "train";
+}
+const dailyPool = kind => (kind === "rest" ? L.restDay : L.quotes);
+// Picks today's line (random, but none shown in the last 3 days) and the texts of the "done today"
+// card (new ones for every workout). Returns the same object when nothing needs to change.
+function uiForToday(ui, history, today) {
+  let n = ui;
+  const kind = dayKind(history, today);
+  if (!(ui.daily && ui.daily.date === today && ui.daily.kind === kind)) {
+    const recent = (ui.recent || []).filter(r => { const d = daysBetween(r.date, today); return d >= 0 && d <= 3; });
+    const blocked = new Set(recent.filter(r => r.kind === kind).map(r => r.i));
+    const all = dailyPool(kind).map((_, i) => i);
+    const free = all.filter(i => !blocked.has(i));
+    const i = pick(free.length ? free : all);
+    n = { ...n, daily: { date: today, kind, i }, recent: [...recent, { date: today, kind, i }] };
+  }
+  const last = history[history.length - 1];
+  if (last && last.date === today) {
+    const ts = entryTs(last);
+    if (!(ui.doneVar && ui.doneVar.ts === ts)) {
+      const prev = ui.doneVar || {};
+      n = { ...n, doneVar: { ts, t: pickOther(L.doneTitles.length, prev.t), s: pickOther(L.doneSubs.length, prev.s) } };
+    }
+  }
+  return n;
+}
 
 
 function nextDayIdx(history) {
@@ -765,17 +831,21 @@ function Logo({ size = 40 }) {
 }
 function openYT(url) { try { window.open(url, "_blank"); } catch (_) {} }
 
+// Rendered straight into <body> through a portal. Inside a screen, the .scr slide-in animation
+// makes the screen the containing block for position:fixed, so the sheet used to be placed
+// relative to the (long, scrolled) page instead of the phone screen and ended up off-screen.
 function Sheet({ title, onClose, children }) {
-  return (
+  return createPortal(
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(5,10,24,0.82)", zIndex: 100, display: "flex", alignItems: "flex-end", justifyContent: "center", padding: 12 }}>
-      <div onClick={e => e.stopPropagation()} style={{ background: C.panel, borderRadius: 22, padding: "22px 20px 26px", width: "100%", maxWidth: 460, border: `1px solid ${C.line}`, maxHeight: "82vh", overflowY: "auto" }}>
+      <div onClick={e => e.stopPropagation()} className="sheetBox" style={{ background: C.panel, borderRadius: 22, padding: "22px 20px 26px", width: "100%", maxWidth: 460, border: `1px solid ${C.line}`, overflowY: "auto", overscrollBehavior: "contain", fontFamily: BODY }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, marginBottom: 14 }}>
           <div style={{ fontFamily: DISPLAY, fontSize: 30, fontWeight: 800, lineHeight: 1, color: C.chalk }}>{title}</div>
           <button onClick={onClose} aria-label={T("close")} style={{ ...btnBase, background: C.panelHi, color: C.dim, padding: "7px 12px", fontSize: 14 }}>✕</button>
         </div>
         <div style={{ fontSize: 15, color: "#cdd6f0", lineHeight: 1.65 }}>{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
@@ -841,11 +911,15 @@ const SETTINGS_KEY = "domaci-trening-v1-settings";
 // Backups made before the rename say "domaci-trening"; both are accepted.
 const BACKUP_ID = "hw-app";
 const BACKUP_IDS = [BACKUP_ID, "domaci-trening"];
-const DEFAULT_SETTINGS = { theme: "navy", sndTap: true, sndFx: true, sndTimer: true, volume: "mid", vibrate: true, keepAwake: true, aiCopy: false };
+const DEFAULT_SETTINGS = { theme: "navy", sndTap: true, sndFx: true, sndTimer: true, volume: "mid", vibrate: true, keepAwake: true, aiCopy: false, exOff: [] };
 async function loadSettings() { try { const v = await store.get(SETTINGS_KEY); if (v) return JSON.parse(v); } catch (_) {} return null; }
 async function saveSettings(st) { await store.set(SETTINGS_KEY, JSON.stringify(st)); }
 async function loadProfile() { try { const v = await store.get(PROFILE_KEY); if (v) return JSON.parse(v); } catch (_) {} return null; }
 async function saveProfile(p) { await store.set(PROFILE_KEY, JSON.stringify(p)); }
+// Small UI memory: closed cards and which daily line was shown. Not part of backups.
+const UI_KEY = "domaci-trening-v1-ui";
+async function loadUi() { try { const v = await store.get(UI_KEY); if (v) return JSON.parse(v); } catch (_) {} return null; }
+async function saveUi(u) { await store.set(UI_KEY, JSON.stringify(u)); }
 // Square-crop + shrink the picked photo to 256 px so it stores small.
 function fileToAvatar(file) {
   return new Promise((resolve, reject) => {
@@ -998,8 +1072,18 @@ function ChallengesCard({ history }) {
 }
 
 // ─── TAB 1: WORKOUT ─────────────────────────────────────────────────────────
-function TrainTab({ history, onStart, onFreeze }) {
+// Small ✕ in the top-right corner of a card that can be hidden.
+function CloseX({ onClick, color }) {
+  return (
+    <button onClick={e => { e.stopPropagation(); sfxTap(); onClick(); }} aria-label={T("hide")}
+      style={{ ...btnBase, position: "absolute", top: 6, right: 6, width: 34, height: 34, padding: 0, borderRadius: 99, background: "transparent", color: color || C.dim, fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
+  );
+}
+
+function TrainTab({ history, onStart, onFreeze, ui, setUi }) {
   const today = dateKey();
+  // Make sure today's daily line and the "done" card texts are picked (and saved) before painting.
+  useLayoutEffect(() => { const n = uiForToday(ui, history, today); if (n !== ui) setUi(n); });
   const auto = nextDayIdx(history);
   const [dayIdx, setDayIdx] = useState(auto);
   const [rounds, setRounds] = useState(2);
@@ -1010,6 +1094,10 @@ function TrainTab({ history, onStart, onFreeze }) {
   const st = streakInfo(history, today);
 
   const doneToday = !!last && gap <= 0;
+  const lastTs = last ? entryTs(last) : 0;
+  const showDone = doneToday && ui.doneHiddenTs !== lastTs;
+  const dv = ui.doneVar && ui.doneVar.ts === lastTs ? ui.doneVar : { t: 0, s: 0 };
+  const dailyText = ui.daily && ui.daily.date === today && ui.dailyHidden !== today ? (() => { const pool = dailyPool(ui.daily.kind); return pool[ui.daily.i % pool.length]; })() : null;
   const nextIdeal = last ? addDays(last.date, 2) : today;
   let status = T("firstWorkout");
   if (last) {
@@ -1035,19 +1123,21 @@ function TrainTab({ history, onStart, onFreeze }) {
     <div className="scr" style={{ padding: "16px 18px 110px", maxWidth: 460, margin: "0 auto" }}>
       {howEx && <HowTo id={howEx} history={history} onClose={() => setHowEx(null)} />}
 
-      {doneToday && (
-        <div style={{ background: "#173f3a", border: `1.5px solid ${C.mint}`, borderRadius: 18, padding: "14px 16px", display: "flex", alignItems: "center", gap: 14, marginBottom: 14 }}>
+      {showDone && (
+        <div style={{ position: "relative", background: "#173f3a", border: `1.5px solid ${C.mint}`, borderRadius: 18, padding: "14px 40px 14px 16px", display: "flex", alignItems: "center", gap: 14, marginBottom: 14 }}>
+          <CloseX color="#bfe9d4" onClick={() => setUi({ ...ui, doneHiddenTs: lastTs })} />
           <div className="pop" style={{ width: 46, height: 46, borderRadius: 99, background: C.mint, color: C.ink, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, fontWeight: 900, flexShrink: 0 }}>✓</div>
           <div>
-            <div style={{ fontFamily: DISPLAY, fontSize: 32, fontWeight: 900, lineHeight: 0.95, color: C.mint }}>{T("doneTitle")}</div>
-            <div style={{ fontSize: 14, color: C.chalk, marginTop: 4, fontWeight: 600 }}>{T("doneSub", { day: last.day })}</div>
+            <div style={{ fontFamily: DISPLAY, fontSize: 32, fontWeight: 900, lineHeight: 0.95, color: C.mint }}>{L.doneTitles[dv.t % L.doneTitles.length]}</div>
+            <div style={{ fontSize: 14, color: C.chalk, marginTop: 4, fontWeight: 600 }}>{fmt(L.doneSubs[dv.s % L.doneSubs.length], { day: last.day })}</div>
             <div style={{ fontSize: 12, color: "#bfe9d4", marginTop: 4, lineHeight: 1.5 }}>{last.items.map(it => `${exName(it)} ${it.res.map(r => fmtRes(r, "")).join("/")}`).join(", ")}</div>
           </div>
         </div>
       )}
 
-      {history.length === 0 && (
-        <div style={{ ...card, padding: "15px 16px", marginBottom: 16, borderColor: C.signal }}>
+      {history.length === 0 && !ui.welcomeHidden && (
+        <div style={{ ...card, position: "relative", padding: "15px 16px", marginBottom: 16, borderColor: C.signal }}>
+          <CloseX onClick={() => setUi({ ...ui, welcomeHidden: true })} />
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <Logo size={46} />
             <div>
@@ -1064,9 +1154,12 @@ function TrainTab({ history, onStart, onFreeze }) {
         </div>
       )}
 
-      <div style={{ padding: "4px 0 4px 14px", borderLeft: `4px solid ${C.signal}` }}>
-        <div style={{ fontFamily: DISPLAY, fontSize: 27, fontWeight: 800, lineHeight: 1.1, color: C.chalk }}>{quoteOfDay(today)}</div>
-      </div>
+      {dailyText && (
+        <div style={{ position: "relative", padding: "4px 40px 4px 14px", borderLeft: `4px solid ${C.signal}` }}>
+          <div style={{ fontFamily: DISPLAY, fontSize: 27, fontWeight: 800, lineHeight: 1.1, color: C.chalk }}>{dailyText}</div>
+          <CloseX onClick={() => setUi({ ...ui, dailyHidden: today })} />
+        </div>
+      )}
 
       <div style={{ display: "flex", gap: 6, marginTop: 16 }} aria-label={T("weekLine", { count: TP("workouts", weekCount) })}>
         {week.map(w => (
@@ -1101,7 +1194,8 @@ function TrainTab({ history, onStart, onFreeze }) {
       </div>
 
       <div style={{ ...card, marginTop: 18 }}>
-        {day.ids.map((id, i) => {
+        {day.ids.map((slot, i) => {
+          const id = effId(slot);
           const ex = EX[id];
           const l = lastFor(history, id);
           const b = bestFor(history, id);
@@ -1117,6 +1211,7 @@ function TrainTab({ history, onStart, onFreeze }) {
                   {n && <span style={{ fontSize: 11, color: C.dim, fontWeight: 500 }}>{n.rank.icon} {T("toNext", { n: n.need })}</span>}
                 </div>
                 {levelUpFor(history, id) && <div style={{ fontSize: 12, color: C.signal, fontWeight: 700, marginTop: 3 }}>{T("harderShort")}</div>}
+                {id !== slot && <div style={{ fontSize: 12, color: C.sky, fontWeight: 600, marginTop: 3 }}>{T("replacing", { name: EX[slot].name })}</div>}
               </div>
               <div style={{ textAlign: "right", flexShrink: 0 }}>
                 <div style={{ fontFamily: DISPLAY, fontSize: 20, fontWeight: 800, color: l ? C.chalk : C.dim }}>
@@ -1251,9 +1346,125 @@ function ProgressChart({ history }) {
   );
 }
 
-function HistoryTab({ history, onDelete }) {
+// ─── HISTORY: EDIT / ADD A WORKOUT ──────────────────────────────────────────
+// Values are edited as text so a box can be empty ("didn't do that round").
+const toField = v => { const n = numVal(v); return isNaN(n) ? "" : String(n); };
+function fromField(s, type) {
+  const n = parseInt(String(s).trim(), 10);
+  if (isNaN(n) || n < 0) return null;
+  return type === "time" ? `${Math.min(n, 3600)}s` : Math.min(n, 999);
+}
+const exType = id => (EX[id] ? EX[id].type : "reps");
+function EntryEditor({ entry, nextDay, onSave, onDelete, onClose }) {
+  const today = dateKey();
+  const isNew = !entry;
+  const rowsFor = (dayId, rounds) => DAYS.find(d => d.id === dayId).ids.map(slot => ({ id: effId(slot), vals: Array(rounds).fill("") }));
+  const [date, setDate] = useState(entry ? entry.date : today);
+  const [day, setDay] = useState(entry ? entry.day : nextDay);
+  const [rounds, setRounds] = useState(entry ? Math.max(1, entry.rounds || 2) : 2);
+  const [rows, setRows] = useState(() => entry
+    ? entry.items.map(it => ({ id: it.id, name: it.name, unit: it.unit, vals: Array.from({ length: Math.max(1, entry.rounds || it.res.length) }, (_, r) => toField(it.res[r])) }))
+    : rowsFor(nextDay, 2));
+  const [err, setErr] = useState("");
+  const [confirmDel, setConfirmDel] = useState(false);
+  const untouched = rows.every(r => r.vals.every(v => v === ""));
+
+  const setRoundsN = n => { sfxTap(); setRounds(n); setRows(rs => rs.map(r => ({ ...r, vals: Array.from({ length: n }, (_, i) => r.vals[i] ?? "") }))); };
+  // For a new, still empty workout, picking another day loads that day's exercises.
+  const setDayId = id => { sfxTap(); setDay(id); if (isNew && untouched) setRows(rowsFor(id, rounds)); };
+  const setVal = (ri, k, v) => setRows(rs => rs.map((r, i) => (i === ri ? { ...r, vals: r.vals.map((x, j) => (j === k ? v.replace(/[^0-9]/g, "").slice(0, 4) : x)) } : r)));
+  const removeRow = ri => { sfxTap(); setRows(rs => rs.filter((_, i) => i !== ri)); };
+  const addRow = id => { if (!id) return; sfxTap(); setRows(rs => [...rs, { id, vals: Array(rounds).fill("") }]); };
+  const used = new Set(rows.map(r => r.id));
+
+  const save = () => {
+    const items = rows.map(r => {
+      const ex = EX[r.id];
+      return { id: r.id, name: ex ? ex.name : r.name, unit: ex ? ex.unit : r.unit, res: r.vals.slice(0, rounds).map(v => fromField(v, exType(r.id))) };
+    }).filter(it => it.res.some(v => v !== null));
+    if (!items.length) { setErr(T("editEmpty")); return; }
+    if (!date || date > today) { setErr(T("editBadDate")); return; }
+    // Keep the time of day when only the date changes; a new workout for today gets "now".
+    const tod = entry ? (entryTs(entry) - parseKey(entry.date).getTime()) : 12 * 3600000;
+    const ts = entry && entry.date === date ? entryTs(entry) : isNew && date === today ? Date.now() : parseKey(date).getTime() + tod;
+    const base = entry || { warm: false, cool: false, manual: true };
+    sfxCheck();
+    onSave({ ...base, date, ts, day, rounds, items });
+  };
+
+  const field = { fontFamily: BODY, fontSize: 16, fontWeight: 700, padding: "9px 10px", borderRadius: 11, border: `1.5px solid ${C.line}`, background: C.ink, color: C.chalk, outline: "none", boxSizing: "border-box" };
+  const label = { fontSize: 12, color: C.dim, fontWeight: 600, marginBottom: 6 };
+  const pill = on => ({ ...btnBase, flex: 1, padding: "9px 0", fontSize: 15, background: on ? C.chalk : "transparent", color: on ? C.ink : C.dim, border: `1.5px solid ${on ? C.chalk : C.line}` });
+
+  return (
+    <Sheet title={isNew ? T("addTitle") : T("editTitle")} onClose={onClose}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 14 }}>
+        <div>
+          <div style={label}>{T("fDate")}</div>
+          <input type="date" value={date} max={today} onChange={e => { setDate(e.target.value); setErr(""); }} aria-label={T("fDate")} style={{ ...field, width: "100%", colorScheme: "dark" }} />
+        </div>
+        <div style={{ display: "flex", gap: 12 }}>
+          <div style={{ flex: 3 }}>
+            <div style={label}>{T("fDay")}</div>
+            <div style={{ display: "flex", gap: 6 }}>{DAYS.map(d => <button key={d.id} onClick={() => setDayId(d.id)} aria-pressed={day === d.id} style={{ ...pill(day === d.id), fontFamily: DISPLAY, fontSize: 20 }}>{d.id}</button>)}</div>
+          </div>
+          <div style={{ flex: 2 }}>
+            <div style={label}>{T("fRounds")}</div>
+            <div style={{ display: "flex", gap: 6 }}>{[2, 3].map(n => <button key={n} onClick={() => setRoundsN(n)} aria-pressed={rounds === n} style={pill(rounds === n)}>{n}</button>)}</div>
+          </div>
+        </div>
+        <div style={{ fontSize: 13, color: C.dim, lineHeight: 1.5 }}>{T("editHint")}</div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {rows.map((r, ri) => {
+            const ex = EX[r.id];
+            const time = exType(r.id) === "time";
+            return (
+              <div key={r.id} style={{ background: C.panelHi, borderRadius: 14, padding: "10px 12px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <div style={{ flex: 1, minWidth: 0, fontSize: 15, fontWeight: 700, color: C.chalk }}>
+                    {ex ? ex.name : r.name}
+                    <span style={{ fontSize: 12, color: C.dim, fontWeight: 500 }}>{time ? ` (${T("secondsUnit")})` : ex && ex.unit ? ` (${perUnit(ex.unit)})` : ""}</span>
+                  </div>
+                  <button onClick={() => removeRow(ri)} aria-label={T("removeEx", { name: ex ? ex.name : r.name })} style={{ ...btnBase, background: "transparent", color: "#ff8a80", fontSize: 15, padding: "4px 8px" }}>✕</button>
+                </div>
+                <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+                  {r.vals.map((v, k) => (
+                    <label key={k} style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 11, color: C.dim, marginBottom: 3 }}>{T("roundN", { r: k + 1 })}</div>
+                      <input inputMode="numeric" pattern="[0-9]*" value={v} placeholder="–" onChange={e => { setVal(ri, k, e.target.value); setErr(""); }}
+                        aria-label={`${ex ? ex.name : r.name}, ${T("roundN", { r: k + 1 })}`} style={{ ...field, width: "100%", textAlign: "center" }} />
+                    </label>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <select value="" onChange={e => addRow(e.target.value)} aria-label={T("addEx")} style={{ ...field, width: "100%", fontWeight: 600, color: C.dim }}>
+          <option value="">{T("addEx")}</option>
+          {ALT_GROUPS.map((g, gi) => (
+            <optgroup key={gi} label={T("grp_" + GROUP_KEYS[gi])}>
+              {g.filter(id => !used.has(id)).map(id => <option key={id} value={id}>{EX[id].name}</option>)}
+            </optgroup>
+          ))}
+        </select>
+        {err && <div role="alert" style={{ fontSize: 13, color: "#ff8a80", fontWeight: 600 }}>{err}</div>}
+        <button onClick={save} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk) }}>{T("save")}</button>
+        {!isNew && (
+          <button onClick={() => { if (!confirmDel) { setConfirmDel(true); setTimeout(() => setConfirmDel(false), 4000); return; } onDelete(); }}
+            style={{ ...ghostBtn, width: "100%", padding: 12, color: confirmDel ? "#ff8a80" : C.dim, borderColor: confirmDel ? "#ff8a80" : C.line }}>
+            {confirmDel ? T("confirmDelete") : T("deleteWorkout")}
+          </button>
+        )}
+      </div>
+    </Sheet>
+  );
+}
+
+function HistoryTab({ history, onDelete, onSaveEntry }) {
   const [confirmDel, setConfirmDel] = useState(null);
   const [open, setOpen] = useState(null);
+  const [editing, setEditing] = useState(null); // index, "new" or null
   const sets = history.reduce((a, e) => a + setsIn(e), 0);
   const prs = history.reduce((a, e) => a + ((e.prs && e.prs.length) || 0), 0);
   const tiles = [[T("tileTrainings"), history.length], [T("tileSets"), sets], [T("tilePRs"), prs]];
@@ -1267,10 +1478,20 @@ function HistoryTab({ history, onDelete }) {
           </div>
         ))}
       </div>
+      {editing !== null && (
+        <EntryEditor key={String(editing)} entry={editing === "new" ? null : history[editing]} nextDay={DAYS[nextDayIdx(history)].id}
+          onClose={() => setEditing(null)}
+          onSave={e => { onSaveEntry(editing === "new" ? null : editing, e); setEditing(null); setOpen(null); }}
+          onDelete={() => { onDelete(editing); setEditing(null); setOpen(null); }} />
+      )}
       <MonthCalendar history={history} />
       <div style={sectionTitle}>{T("progress")}</div>
       <ProgressChart history={history} />
       <div style={sectionTitle}>{T("workoutsTitle")}</div>
+      <button onClick={() => { sfxTap(); setEditing("new"); }} style={{ ...ghostBtn, width: "100%", padding: "12px 14px", fontSize: 14, color: C.chalk, marginBottom: 10, textAlign: "left" }}>
+        {T("addWorkout")}
+        <div style={{ fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2 }}>{T("addWorkoutD")}</div>
+      </button>
       {history.length === 0 && <div style={{ color: C.dim, fontSize: 14 }}>{T("noHistory")}</div>}
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         {history.slice().reverse().map((s, ri) => {
@@ -1302,7 +1523,8 @@ function HistoryTab({ history, onDelete }) {
                       </div>
                     );
                   })}
-                  <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 6 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 6 }}>
+                    <button onClick={() => { sfxTap(); setConfirmDel(null); setEditing(idx); }} style={{ ...btnBase, background: "transparent", color: C.sky, fontSize: 13, padding: "4px 6px", fontWeight: 700 }}>{T("editWorkout")}</button>
                     <button onClick={() => { if (confirmDel === idx) { onDelete(idx); setConfirmDel(null); } else setConfirmDel(idx); }}
                       style={{ ...btnBase, background: "transparent", color: confirmDel === idx ? "#ff8a80" : C.dim, fontSize: 12, padding: "4px 6px", fontWeight: 600 }}>
                       {confirmDel === idx ? T("confirmDelete") : T("deleteWorkout")}
@@ -1455,7 +1677,76 @@ function SettingRow({ title, desc, on, onClick, first }) {
   );
 }
 
-function SettingsTab({ settings, setSettings, history, profile, setProfile, onImport }) {
+// ─── SETTINGS → EXERCISES ───────────────────────────────────────────────────
+// Every exercise by type, with its how-to, and a switch for "I can do this one". At least one
+// exercise of each type stays on, otherwise that muscle group would drop out of the plan.
+function ExercisesPage({ settings, set, history, onBack }) {
+  const [howEx, setHowEx] = useState(null);
+  const [warn, setWarn] = useState(null); // group index whose last exercise you tried to turn off
+  const off = new Set(settings.exOff || []);
+  const toggle = id => {
+    const g = groupOf(id);
+    const n = new Set(off);
+    if (n.has(id)) n.delete(id);
+    else {
+      if (ALT_GROUPS[g].filter(x => !n.has(x)).length <= 1) { setWarn(g); vibrate([60, 40, 60]); return; }
+      n.add(id);
+    }
+    setWarn(null); sfxTap(); set("exOff", [...n]);
+  };
+  return (
+    <div>
+      {howEx && <HowTo id={howEx} history={history} onClose={() => setHowEx(null)} />}
+      <button onClick={() => { sfxTap(); onBack(); }} style={{ ...ghostBtn, marginTop: 10, padding: "8px 12px" }}>‹ {T("tabSettings")}</button>
+      <div style={{ ...sectionTitle, marginTop: 14 }}>{T("exTitle")}</div>
+      <div style={{ fontSize: 13, color: C.dim, lineHeight: 1.55 }}>{T("exIntro")}</div>
+      {ALT_GROUPS.map((g, gi) => {
+        const onN = g.filter(x => !off.has(x)).length;
+        return (
+          <div key={gi} style={{ marginTop: 18 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8, marginBottom: 8 }}>
+              <div style={{ fontFamily: DISPLAY, fontSize: 22, fontWeight: 900, color: C.chalk }}>{T("grp_" + GROUP_KEYS[gi])}</div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: onN >= 2 ? C.mint : C.signal, whiteSpace: "nowrap" }}>{T("grpOn", { on: onN, n: g.length })}</div>
+            </div>
+            {warn === gi && <div role="alert" style={{ fontSize: 13, color: "#ff8a80", fontWeight: 600, marginBottom: 8, lineHeight: 1.45 }}>{T("grpLastLock")}</div>}
+            {warn !== gi && onN === 1 && <div style={{ fontSize: 12, color: C.signal, marginBottom: 8, lineHeight: 1.45 }}>{T("grpLast")}</div>}
+            <div style={card}>
+              {g.map((id, i) => {
+                const ex = EX[id];
+                const on = !off.has(id);
+                const d = dayOfMain(id);
+                const sub = d && !on ? effId(id, off) : null;
+                return (
+                  <div key={id} style={{ display: "flex", alignItems: "center", borderTop: i ? `1px solid ${C.line}` : "none", opacity: on ? 1 : 0.72 }}>
+                    <button onClick={() => setHowEx(id)} style={{ ...btnBase, flex: 1, minWidth: 0, textAlign: "left", background: "transparent", color: C.chalk, padding: "12px 8px 12px 16px", borderRadius: 0 }}>
+                      <div style={{ fontSize: 15, fontWeight: 700 }}>{ex.name}</div>
+                      <div style={{ fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2 }}>{ex.muscles}</div>
+                      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 5 }}>
+                        {d && <span style={{ fontSize: 11, fontWeight: 700, color: C.signal, border: `1.5px solid ${C.signal}55`, borderRadius: 99, padding: "1px 8px" }}>{T("dayN", { d })}</span>}
+                        {!d && <span style={{ fontSize: 11, fontWeight: 700, color: C.dim, border: `1.5px solid ${C.line}`, borderRadius: 99, padding: "1px 8px" }}>{T("exAlt")}</span>}
+                        {ex.tag && <span style={{ fontSize: 11, fontWeight: 700, color: C.sky, border: `1.5px solid ${C.sky}55`, borderRadius: 99, padding: "1px 8px" }}>{T("tag_" + ex.tag)}</span>}
+                        <span style={{ fontSize: 11, color: C.dim, padding: "2px 0" }}>{T("exInfo")}</span>
+                      </div>
+                      {sub && sub !== id && <div style={{ fontSize: 12, color: C.sky, fontWeight: 600, marginTop: 5 }}>{T("exReplacedBy", { d, name: EX[sub].name })}</div>}
+                    </button>
+                    <button role="switch" aria-checked={on} aria-label={T("exCanDo", { name: ex.name })} onClick={() => toggle(id)}
+                      style={{ ...btnBase, background: "transparent", padding: "12px 16px 12px 8px", borderRadius: 0, alignSelf: "stretch", display: "flex", alignItems: "center" }}>
+                      <Toggle on={on} />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function SettingsTab({ settings, setSettings, history, profile, setProfile, onImport, onResetAll }) {
+  const [page, setPage] = useState(null); // null | "exercises"
+  const [resetAll, setResetAll] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
   const [copied, setCopied] = useState(false);
   const [msg, setMsg] = useState("");
@@ -1499,9 +1790,28 @@ function SettingsTab({ settings, setSettings, history, profile, setProfile, onIm
   };
 
   const rowBtn = (first) => ({ ...btnBase, width: "100%", background: "transparent", color: C.chalk, padding: "13px 16px", textAlign: "left", borderRadius: 0, borderTop: first ? "none" : `1px solid ${C.line}`, fontSize: 15 });
+  const openPage = pg => { sfxTap(); setPage(pg); try { window.scrollTo(0, 0); } catch (_) {} };
+
+  if (page === "exercises") {
+    return (
+      <div className="scr" key="ex" style={{ padding: "6px 18px 110px", maxWidth: 460, margin: "0 auto" }}>
+        <ExercisesPage settings={settings} set={set} history={history} onBack={() => openPage(null)} />
+      </div>
+    );
+  }
 
   return (
-    <div className="scr" style={{ padding: "6px 18px 110px", maxWidth: 460, margin: "0 auto" }}>
+    <div className="scr" key="main" style={{ padding: "6px 18px 110px", maxWidth: 460, margin: "0 auto" }}>
+      {resetAll && (
+        <Sheet title={T("resetAllTitle")} onClose={() => setResetAll(false)}>
+          <div>{T("resetAllBody", { count: TP("workouts", history.length) })}</div>
+          <button onClick={exportBackup} className="b3d" style={{ ...bigBtn(C.panelHi, C.chalk), marginTop: 16, fontSize: 15, padding: 14 }}>{T("resetAllBackup")}</button>
+          <button onClick={() => { onResetAll(); setResetAll(false); setMsg(T("msgResetAll")); sfxCheck(); }} className="b3d"
+            style={{ ...bigBtn("#c62828", "#fff"), marginTop: 10, fontSize: 15, padding: 14, "--e": "#7f1414" }}>{T("resetAllYes")}</button>
+          <button onClick={() => setResetAll(false)} style={{ ...ghostBtn, width: "100%", marginTop: 10, padding: 12 }}>{T("cancel")}</button>
+          {msg && <div role="status" style={{ fontSize: 13, color: msg.startsWith("✓") ? C.mint : C.dim, marginTop: 10 }}>{msg}</div>}
+        </Sheet>
+      )}
       <input ref={fileRef} type="file" accept="application/json,.json" onChange={readBackup} style={{ display: "none" }} />
 
       <div style={sectionTitle}>{T("language")}</div>
@@ -1554,7 +1864,14 @@ function SettingsTab({ settings, setSettings, history, profile, setProfile, onIm
 
       <div style={sectionTitle}>{T("trainingSettings")}</div>
       <div style={card}>
-        <SettingRow first title={T("vibrate")} desc={T("vibrateD")} on={settings.vibrate} onClick={() => { set("vibrate", !settings.vibrate); if (!settings.vibrate) { try { navigator.vibrate?.(120); } catch (_) {} } }} />
+        <button onClick={() => openPage("exercises")} style={{ ...rowBtn(true), display: "flex", alignItems: "center", gap: 10 }}>
+          <span style={{ flex: 1 }}>
+            {T("exMenu")}
+            <span style={{ display: "block", fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2 }}>{T("exMenuD")}</span>
+          </span>
+          <span aria-hidden="true" style={{ color: C.dim, fontSize: 20 }}>›</span>
+        </button>
+        <SettingRow title={T("vibrate")} desc={T("vibrateD")} on={settings.vibrate} onClick={() => { set("vibrate", !settings.vibrate); if (!settings.vibrate) { try { navigator.vibrate?.(120); } catch (_) {} } }} />
         <SettingRow title={T("keepAwake")} desc={T("keepAwakeD")} on={settings.keepAwake} onClick={() => set("keepAwake", !settings.keepAwake)} />
         <SettingRow title={T("aiCopy")} desc={T("aiCopyD")} on={settings.aiCopy} onClick={() => set("aiCopy", !settings.aiCopy)} />
       </div>
@@ -1588,6 +1905,10 @@ function SettingsTab({ settings, setSettings, history, profile, setProfile, onIm
           style={{ ...rowBtn(false), color: confirmReset ? "#ff8a80" : C.chalk }}>
           {confirmReset ? T("resetStreakConfirm") : T("resetStreak")}
           <div style={{ fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2 }}>{T("resetStreakD")}</div>
+        </button>
+        <button onClick={() => { sfxTap(); setMsg(""); setResetAll(true); }} style={{ ...rowBtn(false), color: "#ff8a80" }}>
+          {T("resetAll")}
+          <div style={{ fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2 }}>{T("resetAllD")}</div>
         </button>
       </div>
       {msg && <div role="status" style={{ fontSize: 13, color: msg.startsWith("✓") ? C.mint : C.dim, marginTop: 8 }}>{msg}</div>}
@@ -1634,14 +1955,14 @@ function Warmup({ done, setDone, onNext }) {
 
 // ─── SESSION: WORK ──────────────────────────────────────────────────────────
 function SwapSheet({ item, exclude, history, onPick, onClose }) {
-  const opts = altsFor(item.slot, exclude);
+  const opts = altsFor(item.slot, exclude).filter(id => id !== item.base);
   return (
     <Sheet title={T("swapTitle")} onClose={onClose}>
       <div style={{ fontSize: 14, color: C.dim, marginBottom: 12 }}>{T("swapHint", { name: EX[item.id].name })}</div>
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        {item.slot !== item.id && (
-          <button onClick={() => onPick(item.slot)} style={{ ...btnBase, textAlign: "left", background: C.panelHi, color: C.chalk, padding: "12px 14px", border: `1.5px solid ${C.line}` }}>
-            <div style={{ fontSize: 15, fontWeight: 700 }}>{T("swapBack", { name: EX[item.slot].name })}</div>
+        {item.base !== item.id && (
+          <button onClick={() => onPick(item.base)} style={{ ...btnBase, textAlign: "left", background: C.panelHi, color: C.chalk, padding: "12px 14px", border: `1.5px solid ${C.line}` }}>
+            <div style={{ fontSize: 15, fontWeight: 700 }}>{T("swapBack", { name: EX[item.base].name })}</div>
           </button>
         )}
         {opts.map(id => {
@@ -1982,14 +2303,16 @@ function Session({ session, setSession, history, onSave, onClose }) {
   useWakeLock();
   const [confirmQuit, setConfirmQuit] = useState(false);
   const swaps = session.swaps || {};
-  const seq = buildSeq(session.day, session.rounds, swaps);
   const day = DAYS.find(d => d.id === session.day);
-  const doSwap = (slot, id) => setSession({ ...session, swaps: { ...swaps, [slot]: id === slot ? undefined : id } });
-  const usedIds = day.ids.map(slot => swaps[slot] || slot);
+  // Exercises fixed at the start (older saved sessions don't have them: work them out now).
+  const base = session.base || Object.fromEntries(day.ids.map(slot => [slot, effId(slot)]));
+  const seq = buildSeq(session.day, session.rounds, swaps, base);
+  const doSwap = (slot, id) => setSession({ ...session, swaps: { ...swaps, [slot]: id === base[slot] ? undefined : id } });
+  const usedIds = day.ids.map(slot => swaps[slot] || base[slot]);
   const hasResults = Object.values(session.results).some(a => a && a.some(v => v !== null && v !== undefined));
 
   const finish = (coolDone = false) => {
-    const ids = [...new Set(day.ids.flatMap(slot => [slot, swaps[slot]].filter(Boolean)))];
+    const ids = [...new Set(day.ids.flatMap(slot => [slot, base[slot], swaps[slot]].filter(Boolean)))];
     const items = ids
       .map(id => ({ id, name: EX[id].name, unit: EX[id].unit, res: Array.from({ length: session.rounds }, (_, r) => { const v = (session.results[id] || [])[r]; return v === undefined ? null : v; }) }))
       .filter(it => it.res.some(v => v !== null));
@@ -2106,6 +2429,10 @@ export default function App() {
   const [settings, setSettingsState] = useState(DEFAULT_SETTINGS);
   const [tab, setTab] = useState("train");
   const [profile, setProfileState] = useState({ name: "User", pfp: null, freezeDays: [], streakResetTs: 0 });
+  const [ui, setUiState] = useState({});
+  const setUi = u => { setUiState(u); saveUi(u); };
+  // Every change to past workouts keeps the history sorted and records/rank-ups correct.
+  const editHistory = fn => setHistory(h => recomputeFlags(sortHistory(fn(h))));
   META = { freezeDays: profile.freezeDays || [], streakResetTs: profile.streakResetTs || 0 };
   window._wset = settings;
   applyTheme(settings.theme);
@@ -2122,7 +2449,8 @@ export default function App() {
   };
 
   useEffect(() => {
-    loadAll().then(s => {
+    Promise.all([loadAll(), loadUi()]).then(([s, u]) => {
+      if (u) setUiState(u);
       if (s && Array.isArray(s.history)) setHistory(s.history);
       loadSettings().then(st => {
         if (st) setSettingsState({ ...DEFAULT_SETTINGS, ...st });
@@ -2145,7 +2473,10 @@ export default function App() {
 
   useEffect(() => { window.scrollTo?.(0, 0); }, [session?.phase, session?.pos, tab]);
 
-  const start = (dayId, rounds) => setSession({ day: dayId, rounds, phase: "warmup", pos: 0, warm: WARMUP.map(() => false), results: {}, rest: null });
+  const start = (dayId, rounds) => {
+    const day = DAYS.find(d => d.id === dayId);
+    setSession({ day: dayId, rounds, base: Object.fromEntries(day.ids.map(slot => [slot, effId(slot)])), phase: "warmup", pos: 0, warm: WARMUP.map(() => false), results: {}, rest: null });
+  };
 
   return (
     <div style={{ minHeight: "100vh", background: C.ink, color: C.chalk, fontFamily: BODY }}>
@@ -2155,6 +2486,7 @@ export default function App() {
         .b3d:active{transform:translateY(4px); box-shadow:0 1px 0 var(--e, transparent)}
         @keyframes scrIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
         .scr{animation:scrIn .28s ease-out both}
+        .sheetBox{box-sizing:border-box;max-height:86vh;max-height:calc(100dvh - 24px)}
         @keyframes bump{0%{transform:scale(.82)}55%{transform:scale(1.12)}100%{transform:scale(1)}}
         .bump{animation:bump .22s ease-out}
         @keyframes pop{0%{transform:scale(0);opacity:0}60%{transform:scale(1.2);opacity:1}100%{transform:scale(1);opacity:1}}
@@ -2176,10 +2508,13 @@ export default function App() {
       ) : (
         <>
           <TopBar tab={tab} history={history} profile={profile} onProfile={() => { sfxTap(); setTab("profile"); }} />
-          {tab === "train" && <TrainTab history={history} onStart={start} onFreeze={applyFreeze} />}
-          {tab === "history" && <HistoryTab history={history} onDelete={idx => setHistory(h => h.filter((_, i) => i !== idx))} />}
+          {tab === "train" && <TrainTab history={history} onStart={start} onFreeze={applyFreeze} ui={ui} setUi={setUi} />}
+          {tab === "history" && <HistoryTab history={history}
+            onDelete={idx => editHistory(h => h.filter((_, i) => i !== idx))}
+            onSaveEntry={(idx, entry) => editHistory(h => (idx === null ? [...h, entry] : h.map((e, i) => (i === idx ? entry : e))))} />}
           {tab === "profile" && <ProfileTab history={history} profile={profile} setProfile={setProfile} onFreeze={applyFreeze} />}
           {tab === "settings" && <SettingsTab settings={settings} setSettings={setSettings} history={history} profile={profile} setProfile={setProfile}
+            onResetAll={() => { setHistory([]); setProfile({ ...profile, freezeDays: [], streakResetTs: 0 }); setUi({}); }}
             onImport={d => { setHistory(d.history); if (d.profile) setProfile({ ...profile, ...d.profile }); if (d.settings) setSettings({ ...DEFAULT_SETTINGS, ...d.settings }); }} />}
           <TabBar tab={tab} setTab={setTab} />
         </>

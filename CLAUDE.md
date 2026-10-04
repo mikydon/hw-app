@@ -9,7 +9,9 @@ Talk to Michael in casual Slovak. Before you deliver anything, test it (build pl
   - In App.jsx `t` is imported as `T` and `tp` as `TP` (locals named `t` exist). `applyLang()` copies texts into `EX`, `WARMUP`, `COOL`, `FIGS` labels and `RANKS`, like `applyTheme()` does for colours.
   - Any new string: add it to `en.js` and every locale file. Keep `{placeholders}`. Slovak wording is Michael's; keep it.
   - Units are codes (`arm`, `leg`, `side`). History saved before v1.2 has Slovak names and units (`/ruku`…); display goes through `exName()` and `unitStr()`.
+  - Daily lines: `quotes` (training days) and `restDay` (trained today or yesterday, never "go train"); `doneTitles`/`doneSubs` vary the "done today" card. They are picked by index, so every locale must have the same number of items (`check.mjs` enforces it).
 - `assets/`: `mark.svg` (logo), `icon-maskable.svg`, `logo-wordmark.svg/png`. Icons in the root are rendered from them with Chromium.
+- `Sheet` (bottom sheets: how-to, swap, editors) renders into `<body>` with a React portal. Inside a screen, the `.scr` slide-in animation makes the screen the containing block for `position: fixed`, which put sheets off-screen (fixed in v1.3.0). Keep the portal and `.sheetBox` (border-box, max-height from `dvh`).
 - `src/main.jsx`: entry. Renders `<App/>` and registers `sw.js` when served over http(s).
 - `template.html`, `build.mjs`: `npm install && npm run build` bundles `src/` with esbuild and inlines it into `index.html`.
 - `index.html`, `manifest.webmanifest`, `sw.js`, `icon.svg`, `icon-*.png`, `icon-maskable-*.png`, `apple-touch-icon.png`: the deployable PWA. GitHub Pages serves it from `main`, root (https://mikydon.github.io/hw-app/).
@@ -21,8 +23,11 @@ Talk to Michael in casual Slovak. Before you deliver anything, test it (build pl
 - Keys (keep the old names, or users lose their data):
   - `domaci-trening-v1`: `{history, session}`
   - `domaci-trening-v1-profile`: name, pfp (256 px JPEG data URL), `freezeDays`, `streakResetTs`
-  - `domaci-trening-v1-settings` (includes `lang`; missing = auto-detect from the phone)
-- History entries: `{date, ts, day, rounds, items:[{id,name,unit,res}], prs, rankUps, warm, cool}`. XP, levels, ranks, challenges and streak are all derived from history.
+  - `domaci-trening-v1-settings` (includes `lang`; missing = auto-detect from the phone; `exOff` = exercises turned off in Settings → Exercises)
+  - `domaci-trening-v1-ui`: closed cards (`dailyHidden`, `doneHiddenTs`, `welcomeHidden`), today's daily line and the last 3 days of lines (`daily`, `recent`), the done-card variant (`doneVar`). Not in backups; full reset clears it.
+- History entries: `{date, ts, day, rounds, items:[{id,name,unit,res}], prs, rankUps, warm, cool}` (+ `manual: true` when added by hand). XP, levels, ranks, challenges and streak are all derived from history.
+- History can be edited, deleted or added to in the History tab. Every such change goes through `editHistory()`: sorted by date then time (`sortHistory`), then `prs`/`rankUps` recomputed in order (`recomputeFlags`, same rules as the end of a workout).
+- Full reset (Settings) empties history, freeze days, `streakResetTs` and the UI memory; name, photo and settings stay.
 - Backup export/import is JSON with `app: "hw-app"` (import also accepts the old `"domaci-trening"`). It currently uses an `<a download>` link. In the APK this must switch to the Capacitor Share/Filesystem plugins.
 
 ## Must keep
@@ -36,10 +41,12 @@ Talk to Michael in casual Slovak. Before you deliver anything, test it (build pl
 - Rest is 30 s between exercises and 60 s between rounds.
 - Last round is taken close to failure (1–2 reps in reserve).
 - Post-workout stretching is optional, per the 2025 Delphi consensus.
+- Turned-off exercises (`exOff`): `effId(slot)` replaces a day's exercise with the next one of the same type from `ALT_GROUPS` that is on, preferring ones no other day uses. At least one per type must stay on (the UI blocks the last one). A workout stores `session.base` (slot → exercise) at the start; older sessions without it fall back to `effId`.
 
 ## Roadmap (agreed order)
 1. Done in v1.2.0: 11 languages, HW App branding and logo. Settings tab was v1.1.0.
-2. Real Android APK via Capacitor, with a GitHub Actions build to Releases.
+   Done in v1.3.0: sheet fix, daily lines + closable cards, history editing/manual add, full reset, Settings → Exercises.
+2. Next (planned as v1.4.0): Real Android APK via Capacitor, with a GitHub Actions build to Releases.
    - Use the same signing key every time so updates keep user data.
    - Store the key as a repo secret.
    - Add an in-app "new version" check against GitHub Releases.
@@ -48,4 +55,4 @@ Talk to Michael in casual Slovak. Before you deliver anything, test it (build pl
    - Add a privacy policy and an account-deletion option.
 
 ## Testing recipe
-Bundle with esbuild into a test page. Run Playwright with Chromium at `/opt/pw-browsers/chromium`. Use `page.clock` to fast-forward timers. Google Fonts are blocked in the sandbox; for layout checks serve them from `@fontsource` packages via `page.route`. Check long languages (hu, de, uk) for overflow. Check the flows: workout, rest, swap, summary, reload persistence, settings and backup.
+Bundle with esbuild into a test page. Run Playwright with Chromium at `/opt/pw-browsers/chromium`. Use `page.clock` to fast-forward timers. Google Fonts are blocked in the sandbox; for layout checks serve them from `@fontsource` packages via `page.route`. Check long languages (hu, de, uk) for overflow. Check the flows: workout, rest, swap, summary, reload persistence, settings and backup. Since v1.3.0 also: sheets fully on screen after scrolling, daily line kinds and no repeats over many days (`page.clock.setFixedTime` + reload), closing cards, history edit/add/delete with record recompute, full reset, Exercises page (last one locked, replacement used in a workout). Seed localStorage once per context (guard with a sessionStorage flag) so reloads keep the data.

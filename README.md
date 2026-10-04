@@ -17,10 +17,11 @@
 - 3 workout days (A, B, C), trained every other day: push, pull, legs and core in a circuit of 2 or 3 rounds
 - warm-up, timers, sounds and rest breaks between exercises, with tips during the rest
 - a drawing, instructions and a video link for every exercise
-- swap an exercise when one doesn't work for you
+- swap an exercise when one doesn't work for you, or turn off exercises you can't do in Settings → Exercises (the app replaces them with another of the same type)
 - XP, levels, a 🔥 streak with freezes, ranks per exercise (Wood to Diamond), weekly challenges and badges
-- history with a calendar and a progress chart
-- backup and restore of all your data as a file
+- history with a calendar and a progress chart; edit or delete past workouts, or add one you did without the app
+- a new motivational line every day (a rest-day one after a workout), and cards you can close
+- backup and restore of all your data as a file, and a "start over from zero" reset that keeps your profile
 - 11 languages: English, Slovenčina, Čeština, Polski, Magyar, Українська, Deutsch, Español, Français, Italiano, Português. The app picks your phone's language automatically; you can change it in Settings.
 
 ## Privacy
