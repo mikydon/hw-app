@@ -212,6 +212,7 @@ export default {
     ladderNone: "Ranghi (serie migliore: ancora nessuna)",
     rankStart: "inizio",
     figureAria: "Disegno: {labels}",
+    figBelly: "Linea gialla = lato della pancia",
     photoAlt: "Foto profilo",
 
     // v1.3.0

@@ -212,6 +212,7 @@ export default {
     ladderNone: "Patentes (melhor série: nenhuma ainda)",
     rankStart: "início",
     figureAria: "Desenho: {labels}",
+    figBelly: "Linha amarela = lado da barriga",
     photoAlt: "Foto de perfil",
 
     // v1.3.0

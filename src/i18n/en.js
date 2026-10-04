@@ -212,6 +212,7 @@ export default {
     ladderNone: "Ranks (best set: none yet)",
     rankStart: "start",
     figureAria: "Drawing: {labels}",
+    figBelly: "Yellow line = belly side",
     photoAlt: "Profile photo",
 
     // v1.3.0

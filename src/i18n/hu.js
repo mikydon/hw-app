@@ -212,6 +212,7 @@ export default {
     ladderNone: "Rangok (legjobb sorozat: még nincs)",
     rankStart: "kezdés",
     figureAria: "Rajz: {labels}",
+    figBelly: "Sárga vonal = a has oldala",
     photoAlt: "Profilkép",
 
     // v1.3.0

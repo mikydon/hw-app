@@ -571,8 +571,8 @@ function fromFeet(foot, lean) { const a = -90 - lean; return { hip: dirv(foot, a
 
 const FIGS = {
   k1: [
-    { hip: [50, 76.4], torso: -26, hands: [[73.4, GROUND], [75.4, GROUND]], armBend: [1, 1], feet: [[14, GROUND], [16, GROUND]], legBend: [1, 1] },
-    { hip: [50.3, 87.9], torso: -8.7, hands: [[73.4, GROUND], [75.4, GROUND]], armBend: [1, 1], feet: [[10.8, GROUND], [12.8, GROUND]], legBend: [1, 1] },
+    { hip: [50, 76.4], torso: -26, hands: [[73.4, GROUND], [75.4, GROUND]], armBend: [1, 1], feet: [[14, GROUND], [16, GROUND]], legBend: [1, 1], hide: ["farLeg"] },
+    { hip: [50.3, 87.9], torso: -8.7, hands: [[73.4, GROUND], [75.4, GROUND]], armBend: [1, 1], feet: [[10.8, GROUND], [12.8, GROUND]], legBend: [1, 1], hide: ["farLeg"] },
   ],
   k3: [
     { hip: [50, 76.4], torso: -26, hands: [[70, GROUND], [72, GROUND]], armBend: [1, 1], feet: [[14, GROUND], [16, GROUND]], legBend: [1, 1], props: [{ t: "diamond", x: 71, y: 89 }] },
@@ -607,15 +607,15 @@ const FIGS = {
     { hip: [58, 72], torso: -80, hands: [[60, 99], [56, 99]], armBend: [1, 1], feet: [[78, GROUND], [30, 70]], legBend: [-1, -1], props: [{ t: "chair" }] },
   ],
   b2: [
-    { hip: [42, 88], torso: 0, head: 0, hands: [[68, 59], [70, 59.5]], armBend: [1, 1], feet: [[22, 68], [24, 68]], legBend: [1, 1], lying: true },
-    { hip: [42, 88], torso: 0, head: 0, hands: [[97, 86], [70, 59.5]], armBend: [1, 1], feet: [[22, 68], [2, 86]], legBend: [1, 1], lying: true },
+    { hip: [42, 88], torso: 0, head: 0, hands: [[68, 59], [70, 59.5]], armBend: [1, 1], feet: [[22, 68], [24, 68]], legBend: [1, 1], supine: true },
+    { hip: [42, 88], torso: 0, head: 0, hands: [[97, 86], [70, 59.5]], armBend: [1, 1], feet: [[22, 68], [2, 86]], legBend: [1, 1], supine: true },
   ],
   n7: [
-    { hip: [54, 72], torso: 30, head: 10, hands: [[48, 92.5], [50, 92.5]], armBend: [1, 1], feet: [[34, GROUND - 2], [36, GROUND - 2]], legBend: [1, 1], props: [{ t: "towelFloor", x: 28 }] },
+    { hip: [54, 72], torso: 30, head: 10, hands: [[48, 92.5], [50, 92.5]], armBend: [1, 1], feet: [[34, GROUND - 2], [36, GROUND - 2]], legBend: [1, 1], props: [{ t: "towelFloor", x: 28 }], supine: true },
     { hip: [50, 80], torso: 22, head: 10, hands: [[45.2, 93], [47.2, 93]], armBend: [1, 1], feet: [[12, GROUND - 2], [12.5, GROUND - 1.5]], legBend: [1, 1], props: [{ t: "towelFloor", x: 6 }] },
   ],
   b4: [
-    { hip: [44, 88], torso: -22, head: -40, hands: [[72, 76], [73, 75]], elbows: [[60, 70], [75, 63.5]], feet: [[32, 64], [5, 79]], legBend: [1, 1] },
+    { hip: [44, 88], torso: -22, head: -40, hands: [[72, 76], [73, 75]], elbows: [[60, 70], [75, 63.5]], feet: [[32, 64], [5, 79]], legBend: [1, 1], supine: true },
     { hip: [44, 88], torso: -22, head: -40, hands: [[73, 75], [72, 76]], elbows: [[75, 63.5], [60, 70]], feet: [[5, 79], [32, 64]], legBend: [1, 1] },
   ],
   kKnee: [
@@ -639,7 +639,7 @@ const FIGS = {
     { hip: [40, 72], torso: -88, hands: [[42, 98], [38, 98]], armBend: [1, 1], feet: [[60, GROUND], [16, GROUND - 1]], legBend: [-1, -1] },
   ],
   bridge: [
-    { hip: [46, 89], torso: 0, head: 0, hands: [[44, 92], [46, 92]], armBend: [1, 1], feet: [[28, GROUND], [30, GROUND]], legBend: [1, 1] },
+    { hip: [46, 89], torso: 0, head: 0, hands: [[44, 92], [46, 92]], armBend: [1, 1], feet: [[28, GROUND], [30, GROUND]], legBend: [1, 1], supine: true },
     { hip: [51.1, 80.3], torso: 17.2, head: 0, hands: [[46, 93], [48, 93]], armBend: [1, 1], feet: [[28, GROUND], [30, GROUND]], legBend: [1, 1] },
   ],
   wallsit: [
@@ -653,7 +653,7 @@ const FIGS = {
     { hip: [50, 89], torso: -14, head: -24, hands: [[104, 72], [106, 72]], armBend: [1, 1], feet: [[11, 80], [11, 79]], legBend: [1, 1] },
   ],
   legraise: [
-    { hip: [50, 89], torso: 0, head: 0, hands: [[48, 92], [50, 92]], armBend: [1, 1], feet: [[50, 49], [52, 49]], legBend: [1, 1] },
+    { hip: [50, 89], torso: 0, head: 0, hands: [[48, 92], [50, 92]], armBend: [1, 1], feet: [[50, 49], [52, 49]], legBend: [1, 1], supine: true },
     { hip: [50, 89], torso: 0, head: 0, hands: [[48, 92], [50, 92]], armBend: [1, 1], feet: [[10.3, 84], [10.5, 83]], legBend: [1, 1] },
   ],
   hf: [
@@ -680,10 +680,18 @@ function Stick({ p }) {
     if (!(i === 1 && (p.hide || []).includes("farArm"))) parts.push({ i, col, pts: [shoulder, elbow, hand] });
   });
   const line = pts => pts.map(q => `${q[0].toFixed(1)},${q[1].toFixed(1)}`).join(" ");
+  // Yellow belly stripe along the front of the torso, so you can tell belly from back.
+  // Front = torso direction turned 90° clockwise (faces right when standing); flipped when lying on the back.
+  const tv = [shoulder[0] - p.hip[0], shoulder[1] - p.hip[1]];
+  const tl = Math.hypot(tv[0], tv[1]) || 1;
+  const nrm = [(-tv[1] / tl) * (p.supine ? -1 : 1), (tv[0] / tl) * (p.supine ? -1 : 1)];
+  const at = (t, off) => [p.hip[0] + tv[0] * t + nrm[0] * off, p.hip[1] + tv[1] * t + nrm[1] * off];
+  const belly = [at(0.22, 4.6), at(0.72, 4.6)];
   return (
     <g strokeLinecap="round" strokeLinejoin="round" fill="none">
       {parts.filter(x => x.i === 1).map((x, k) => <polyline key={`f${k}`} points={line(x.pts)} stroke={x.col} strokeWidth="5" />)}
       <polyline points={line([p.hip, shoulder])} stroke={near} strokeWidth="6" />
+      <polyline points={line(belly)} stroke={C.signal} strokeWidth="2.6" />
       <circle cx={headC[0]} cy={headC[1]} r={FL.head} fill={near} stroke="none" />
       {parts.filter(x => x.i === 0).map((x, k) => <polyline key={`n${k}`} points={line(x.pts)} stroke={x.col} strokeWidth="5" />)}
     </g>
@@ -707,7 +715,8 @@ function ExFigure({ id }) {
   const poses = FIGS[id];
   if (!poses) return null;
   return (
-    <div style={{ display: "flex", gap: 8, margin: "4px 0 14px", justifyContent: "center" }} role="img" aria-label={T("figureAria", { labels: poses.map(p => p.label).join(", ") })}>
+    <div style={{ margin: "4px 0 14px" }} role="img" aria-label={T("figureAria", { labels: poses.map(p => p.label).join(", ") })}>
+      <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
       {poses.map((p, i) => (
         <div key={i} style={{ flex: poses.length > 1 ? 1 : "0 1 62%", background: C.ink, border: `1.5px solid ${p.bad ? "#ff8a80" : C.line}`, borderRadius: 14, padding: "6px 4px 8px", textAlign: "center" }}>
           <svg viewBox="0 0 120 100" style={{ width: "100%", height: "auto", display: "block" }}>
@@ -718,6 +727,10 @@ function ExFigure({ id }) {
           <div style={{ fontSize: 12, fontWeight: 600, color: p.bad ? "#ff8a80" : C.dim, marginTop: 4, lineHeight: 1.3 }}>{poses.length > 1 ? `${i + 1}. ` : ""}{p.label}</div>
         </div>
       ))}
+      </div>
+      <div style={{ fontSize: 11, color: C.dim, textAlign: "center", marginTop: 6, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+        <span aria-hidden="true" style={{ width: 16, height: 3, borderRadius: 2, background: C.signal, display: "inline-block" }} />{T("figBelly")}
+      </div>
     </div>
   );
 }

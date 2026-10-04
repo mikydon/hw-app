@@ -212,6 +212,7 @@ export default {
     ladderNone: "Rangs (meilleure série : aucune pour l'instant)",
     rankStart: "départ",
     figureAria: "Dessin : {labels}",
+    figBelly: "Trait jaune = côté du ventre",
     photoAlt: "Photo de profil",
 
     // v1.3.0

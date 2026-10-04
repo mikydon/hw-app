@@ -212,6 +212,7 @@ export default {
     ladderNone: "Ранги (найкращий підхід: ще немає)",
     rankStart: "старт",
     figureAria: "Малюнок: {labels}",
+    figBelly: "Жовта риска = бік живота",
     photoAlt: "Фото профілю",
 
     // v1.3.0

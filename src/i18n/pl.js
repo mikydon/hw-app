@@ -212,6 +212,7 @@ export default {
     ladderNone: "Rangi (najlepsza seria: jeszcze brak)",
     rankStart: "start",
     figureAria: "Rysunek: {labels}",
+    figBelly: "Żółta kreska = strona brzucha",
     photoAlt: "Zdjęcie profilowe",
 
     // v1.3.0

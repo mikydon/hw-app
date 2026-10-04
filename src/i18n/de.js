@@ -212,6 +212,7 @@ export default {
     ladderNone: "Ränge (bester Satz: noch keiner)",
     rankStart: "Start",
     figureAria: "Zeichnung: {labels}",
+    figBelly: "Gelbe Linie = Bauchseite",
     photoAlt: "Profilfoto",
 
     // v1.3.0

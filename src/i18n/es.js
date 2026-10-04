@@ -212,6 +212,7 @@ export default {
     ladderNone: "Rangos (mejor serie: aún ninguna)",
     rankStart: "inicio",
     figureAria: "Dibujo: {labels}",
+    figBelly: "Línea amarilla = lado del abdomen",
     photoAlt: "Foto de perfil",
 
     // v1.3.0

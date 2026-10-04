@@ -212,6 +212,7 @@ export default {
     ladderNone: "Ranky (nejlepší série: zatím žádná)",
     rankStart: "start",
     figureAria: "Obrázek: {labels}",
+    figBelly: "Žlutá čárka = strana břicha",
     photoAlt: "Profilová fotka",
 
     // v1.3.0
