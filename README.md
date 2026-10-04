@@ -15,18 +15,22 @@
 
 ## What it does
 - 3 workout days (A, B, C), trained every other day: push, pull, legs and core in a circuit of 2 or 3 rounds
+- the rep counter starts at 0 and shows last time's result with a +1 goal, so you keep beating yourself
+- one menu (☰, top right) for everything; during a workout you can open other screens and the workout keeps running in a small floating window
+- calorie calculator (Mifflin-St Jeor, like calculator.net) with lose / maintain / gain targets, workouts from the app added automatically, and a daily food log
+- birthday surprises (greeting, confetti, a free streak freeze) when you enter your birth date
 - warm-up, timers, sounds and rest breaks between exercises, with tips during the rest; optional stretching at the end (hip flexor, cobra, child's pose)
 - a drawing (yellow line = belly side), instructions and a video link for every exercise
 - 27 exercises, each marked easier, medium or harder; when one gets easy, its tip points to the harder version and lets you swap to it
 - swap an exercise when one doesn't work for you, or turn off exercises you can't do in Settings → Exercises (the app replaces them with another of the same type)
-- XP, levels, a 🔥 streak with freezes, ranks per exercise (Wood to Diamond), weekly challenges and badges
+- XP, levels, a 🔥 streak with freezes, ranks per exercise (Wood to Diamond), weekly challenges and badges with levels (Wood to Diamond)
 - history with a calendar and a progress chart; edit or delete past workouts, or add one you did without the app
 - a new motivational line every day (a rest-day one after a workout), and cards you can close
 - backup and restore of all your data as a file, and a "start over from zero" reset that keeps your profile
 - 11 languages: English, Slovenčina, Čeština, Polski, Magyar, Українська, Deutsch, Español, Français, Italiano, Português. The app picks your phone's language automatically; you can change it in Settings.
 
 ## Privacy
-All your data (workouts, name, photo) is stored only on your phone, in this browser. Nothing is sent anywhere. If you clear the browser's data, the history is deleted too, so save a backup in Settings first.
+All your data (workouts, calories, name, photo, birth date) is stored only on your phone, in this browser. Nothing is sent anywhere. If you clear the browser's data, the history is deleted too, so save a backup in Settings first.
 
 ## For developers
 - Source: `src/App.jsx` (React), entry `src/main.jsx`
