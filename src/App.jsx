@@ -1,6 +1,6 @@
 import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import { L, t as T, tp as TP, fmt, setLang, detectLang, LANGS, fmtLong, fmtShortDM, fmtMonthYear, weekdaysShort, capFirst } from "./i18n/index.js";
+import { L, LANG, t as T, tp as TP, fmt, setLang, detectLang, LANGS, fmtLong, fmtShortDM, fmtMonthYear, weekdaysShort, capFirst } from "./i18n/index.js";
 
 // ─── DESIGN TOKENS ──────────────────────────────────────────────────────────
 // Scoreboard look: deep navy, chalk-white type, one signal yellow for "do this
@@ -1128,6 +1128,10 @@ function achievements(history, extra) {
     return { ...a, v, tier, next, name, desc: fmt(desc, { n: goal, x: a.pl ? TP(a.pl, goal) : goal }) };
   });
 }
+function achExtra(profile, kcal) {
+  const log = (kcal && kcal.log) || {};
+  return { bdays: ((profile && profile.bdays) || []).length, kcalDays: Object.keys(log).filter(d => log[d] && log[d].length).length };
+}
 // Tiers that went up between two histories, for the end-of-workout summary.
 function achUps(before, after, extra) {
   const a = achievements(before, extra), b = achievements(after, extra);
@@ -1505,6 +1509,324 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume }) {
   );
 }
 
+// ─── CALORIES ───────────────────────────────────────────────────────────────
+// Like calculator.net (default formula): Mifflin-St Jeor BMR × activity factor = maintenance (TDEE).
+// The activity levels describe activity OUTSIDE the app; the app's own workouts are added on top, per day.
+// Lose/gain rates: 0.25 / 0.5 / 1 kg a week, 1 kg of body fat ≈ 7700 kcal, so 275 / 550 / 1100 kcal a day.
+const KCAL_KEY = "domaci-trening-v1-kcal";
+const ACTIVITY = [["none", 1.2], ["light", 1.375], ["moderate", 1.465], ["active", 1.55], ["very", 1.725], ["extra", 1.9]];
+const KCAL_PER_KG = 7700;
+const RATES = [0.25, 0.5, 1];
+const WORKOUT_MET = 6.0; // 2024 Compendium 02032: circuit training, body weight exercises
+async function loadKcal() { try { const v = await store.get(KCAL_KEY); if (v) return JSON.parse(v); } catch (_) {} return null; }
+async function saveKcal(k) { await store.set(KCAL_KEY, JSON.stringify(k)); }
+function ageOn(birth, today = dateKey()) {
+  if (!birth || !birth.y) return null;
+  const t = parseKey(today);
+  let a = t.getFullYear() - birth.y;
+  if (birth.m && birth.d && (t.getMonth() + 1 < birth.m || (t.getMonth() + 1 === birth.m && t.getDate() < birth.d))) a -= 1;
+  return a;
+}
+function bmrOf(k, age) { return 10 * k.weight + 6.25 * k.height - 5 * age + (k.sex === "f" ? -161 : 5); }
+function tdeeOf(k, age) { return bmrOf(k, age) * (ACTIVITY.find(a => a[0] === k.activity) || ACTIVITY[0])[1]; }
+// Extra kcal burned by workouts done in the app that day (net, above resting: (MET − 1) × kg × hours).
+function workoutKcal(history, day, kg) {
+  return Math.round(history.filter(e => e.date === day).reduce((a, e) => a + (WORKOUT_MET - 1) * kg * ((e.rounds === 3 ? 19 : 13) / 60), 0));
+}
+function goalDelta(goal) { if (!goal || goal.type === "maintain") return 0; const d = Math.round((goal.rate * KCAL_PER_KG) / 7); return goal.type === "lose" ? -d : d; }
+function kcalTarget(k, age, history, day) { return Math.round(tdeeOf(k, age) + goalDelta(k.goal)) + workoutKcal(history, day, k.weight); }
+function dayTotal(k, day) { return ((k.log || {})[day] || []).reduce((a, x) => a + x.kcal, 0); }
+const nf = n => Math.round(n).toLocaleString(LANG);
+
+function KcalSetup({ kcal, profile, onSave, onCancel }) {
+  const today = dateKey();
+  const thisYear = parseKey(today).getFullYear();
+  const b = profile.birth || {};
+  const [sex, setSex] = useState(kcal.sex || "");
+  const [year, setYear] = useState(b.y ? String(b.y) : "");
+  const [month, setMonth] = useState(b.m || 0);
+  const [day, setDay] = useState(b.d || 0);
+  const [height, setHeight] = useState(kcal.height ? String(kcal.height) : "");
+  const [weight, setWeight] = useState(kcal.weight ? String(kcal.weight) : "");
+  const [activity, setActivity] = useState(kcal.activity || "");
+  const [err, setErr] = useState("");
+  const [askDate, setAskDate] = useState(false);
+  const field = { fontFamily: BODY, fontSize: 16, fontWeight: 700, padding: "10px 12px", borderRadius: 12, border: `1.5px solid ${C.line}`, background: C.ink, color: C.chalk, outline: "none", boxSizing: "border-box", width: "100%" };
+  const label = { fontSize: 13, color: C.chalk, fontWeight: 800, marginBottom: 6 };
+  const hint = { fontSize: 12, color: C.dim, lineHeight: 1.45, marginTop: 5 };
+  const pill = on => ({ ...btnBase, flex: 1, padding: "11px 0", fontSize: 15, background: on ? C.chalk : "transparent", color: on ? C.ink : C.dim, border: `1.5px solid ${on ? C.chalk : C.line}` });
+  const num = (v, max) => v.replace(/[^0-9]/g, "").slice(0, max);
+  const months = Array.from({ length: 12 }, (_, i) => new Date(2000, i, 1).toLocaleString(LANG, { month: "long" }));
+  const daysIn = month ? new Date(Number(year) || 2000, month, 0).getDate() : 31;
+  const check = () => {
+    const y = Number(year), h = Number(height), w = Number(weight);
+    if (!sex) return T("kcErrSex");
+    if (!y || y < thisYear - 100 || y > thisYear - 10) return T("kcErrYear");
+    if ((month && !day) || (!month && day)) return T("kcErrDate");
+    if (!h || h < 100 || h > 250) return T("kcErrHeight");
+    if (!w || w < 30 || w > 300) return T("kcErrWeight");
+    if (!activity) return T("kcErrActivity");
+    return "";
+  };
+  const save = (confirmed) => {
+    const e = check();
+    if (e) { setErr(e); return; }
+    if (!month && !confirmed) { setAskDate(true); return; }
+    sfxCheck();
+    onSave({ sex, height: Number(height), weight: Number(weight), activity }, { y: Number(year), m: month || null, d: month ? Math.min(day, daysIn) : null });
+  };
+  return (
+    <div data-kcsetup>
+      {askDate && (
+        <Sheet title={T("kcNoDateTitle")} onClose={() => setAskDate(false)}>
+          <div style={{ fontSize: 15, color: C.chalk, lineHeight: 1.55 }}>{T("kcNoDateBody")}</div>
+          <button onClick={() => setAskDate(false)} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 16 }}>{T("kcNoDateAdd")}</button>
+          <button onClick={() => { setAskDate(false); save(true); }} style={{ ...bigBtn("transparent", C.dim), marginTop: 8, border: `1.5px solid ${C.line}` }}>{T("kcNoDateSkip")}</button>
+        </Sheet>
+      )}
+      <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+        <div>
+          <div style={label}>{T("kcSex")}</div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button onClick={() => { sfxTap(); setSex("m"); setErr(""); }} aria-pressed={sex === "m"} style={pill(sex === "m")}>{T("kcMale")}</button>
+            <button onClick={() => { sfxTap(); setSex("f"); setErr(""); }} aria-pressed={sex === "f"} style={pill(sex === "f")}>{T("kcFemale")}</button>
+          </div>
+        </div>
+        <div>
+          <div style={label}>{T("kcBirth")}</div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <input value={year} onChange={e => { setYear(num(e.target.value, 4)); setErr(""); }} inputMode="numeric" placeholder={T("kcYear")} aria-label={T("kcYear")} style={{ ...field, flex: 1.1 }} />
+            <select value={month} onChange={e => { setMonth(Number(e.target.value)); setErr(""); }} aria-label={T("kcMonth")} style={{ ...field, flex: 1.5, colorScheme: "dark" }}>
+              <option value={0}>{T("kcMonth")}</option>
+              {months.map((m, i) => <option key={i} value={i + 1}>{m}</option>)}
+            </select>
+            <select value={day} onChange={e => { setDay(Number(e.target.value)); setErr(""); }} aria-label={T("kcDay")} style={{ ...field, flex: 1, colorScheme: "dark" }}>
+              <option value={0}>{T("kcDay")}</option>
+              {Array.from({ length: daysIn }, (_, i) => <option key={i} value={i + 1}>{i + 1}.</option>)}
+            </select>
+          </div>
+          <div style={hint}>{T("kcBirthHint")}</div>
+        </div>
+        <div style={{ display: "flex", gap: 10 }}>
+          <div style={{ flex: 1 }}>
+            <div style={label}>{T("kcHeight")}</div>
+            <input value={height} onChange={e => { setHeight(num(e.target.value, 3)); setErr(""); }} inputMode="numeric" placeholder="180" aria-label={T("kcHeight")} style={field} />
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={label}>{T("kcWeight")}</div>
+            <input value={weight} onChange={e => { setWeight(num(e.target.value, 3)); setErr(""); }} inputMode="numeric" placeholder="75" aria-label={T("kcWeight")} style={field} />
+          </div>
+        </div>
+        <div>
+          <div style={label}>{T("kcActivity")}</div>
+          <div style={{ ...hint, marginTop: 0, marginBottom: 8, color: C.sky }}>{T("kcActivityHint")}</div>
+          <div role="radiogroup" aria-label={T("kcActivity")} style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            {ACTIVITY.map(([id]) => (
+              <button key={id} role="radio" aria-checked={activity === id} onClick={() => { sfxTap(); setActivity(id); setErr(""); }}
+                style={{ ...btnBase, textAlign: "left", padding: "10px 12px", background: activity === id ? `${C.signal}1f` : "transparent", border: `1.5px solid ${activity === id ? C.signal : C.line}`, color: C.chalk }}>
+                <span style={{ display: "block", fontSize: 14, fontWeight: 800, color: activity === id ? C.signal : C.chalk }}>{T("kcAct_" + id)}</span>
+                <span style={{ display: "block", fontSize: 12, fontWeight: 500, color: C.dim, marginTop: 1 }}>{T("kcActD_" + id)}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+        {err && <div role="alert" style={{ fontSize: 14, color: "#ff8a80", fontWeight: 700 }}>{err}</div>}
+        <button onClick={() => save(false)} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk) }}>{T("kcCalc")}</button>
+        {onCancel && <button onClick={onCancel} style={{ ...bigBtn("transparent", C.dim), marginTop: -8, border: `1.5px solid ${C.line}` }}>{T("cancel")}</button>}
+      </div>
+    </div>
+  );
+}
+
+function KcalGoals({ kcal, age, onPick }) {
+  const tdee = tdeeOf(kcal, age);
+  const min = kcal.sex === "f" ? 1200 : 1500;
+  const row = (goal, title, sub) => {
+    const v = Math.round(tdee + goalDelta(goal));
+    const on = kcal.goal && kcal.goal.type === goal.type && (goal.type === "maintain" || kcal.goal.rate === goal.rate);
+    return (
+      <button key={goal.type + (goal.rate || "")} onClick={() => onPick(goal)} aria-pressed={!!on} data-goal-opt={goal.type + (goal.rate || "")}
+        style={{ ...btnBase, width: "100%", display: "flex", alignItems: "center", gap: 10, textAlign: "left", padding: "11px 13px", marginTop: 6, background: on ? `${C.signal}1f` : C.ink, border: `1.5px solid ${on ? C.signal : C.line}`, color: C.chalk }}>
+        <span style={{ flex: 1, minWidth: 0 }}>
+          <span style={{ display: "block", fontSize: 14, fontWeight: 800 }}>{title}</span>
+          <span style={{ display: "block", fontSize: 12, fontWeight: 500, color: v < min ? "#ff8a80" : C.dim }}>{v < min ? T("kcTooLow", { n: nf(min) }) : sub}</span>
+        </span>
+        <span style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, color: on ? C.signal : C.chalk, whiteSpace: "nowrap" }}>{nf(v)}<span style={{ fontFamily: BODY, fontSize: 11, color: C.dim, marginLeft: 3 }}>kcal</span></span>
+      </button>
+    );
+  };
+  const kg = r => r.toLocaleString(LANG);
+  return (
+    <div>
+      <div style={{ fontSize: 13, color: C.dim, lineHeight: 1.5 }}>{T("kcBmrLine", { bmr: nf(bmrOf(kcal, age)), tdee: nf(tdee), age })}</div>
+      <div style={{ fontSize: 13, fontWeight: 800, color: C.chalk, marginTop: 14 }}>{T("kcLose")}</div>
+      {RATES.map(r => row({ type: "lose", rate: r }, T("kcRateLose", { kg: kg(r) }), T("kcPerDayLess", { n: nf((r * KCAL_PER_KG) / 7) })))}
+      <div style={{ fontSize: 13, fontWeight: 800, color: C.chalk, marginTop: 14 }}>{T("kcMaintain")}</div>
+      {row({ type: "maintain" }, T("kcMaintainT"), T("kcMaintainD"))}
+      <div style={{ fontSize: 13, fontWeight: 800, color: C.chalk, marginTop: 14 }}>{T("kcGain")}</div>
+      {RATES.map(r => row({ type: "gain", rate: r }, T("kcRateGain", { kg: kg(r) }), T("kcPerDayMore", { n: nf((r * KCAL_PER_KG) / 7) })))}
+      <div style={{ fontSize: 12, color: C.dim, lineHeight: 1.5, marginTop: 10 }}>{T("kcWorkoutNote")}</div>
+      {age < 18 && <div style={{ fontSize: 13, color: C.signal, lineHeight: 1.5, marginTop: 8, fontWeight: 700 }}>{T("kcUnder18")}</div>}
+    </div>
+  );
+}
+
+function Calories({ history, profile, setProfile, kcal, setKcal }) {
+  const today = dateKey();
+  const [editing, setEditing] = useState(false);
+  const [changingGoal, setChangingGoal] = useState(false);
+  const [amount, setAmount] = useState("");
+  const [note, setNote] = useState("");
+  const [openDay, setOpenDay] = useState(null);
+  const age = ageOn(profile.birth, today);
+  const ready = kcal && kcal.sex && kcal.height && kcal.weight && kcal.activity && age !== null;
+  const saveSetup = (k, birth) => { setKcal({ ...(kcal || {}), ...k, log: (kcal && kcal.log) || {} }); setProfile({ ...profile, birth }); setEditing(false); };
+  const wrap = children => <div className="scr" style={{ padding: "16px 18px 110px", maxWidth: 460, margin: "0 auto" }}>{children}</div>;
+
+  if (!ready || editing) {
+    return wrap(
+      <>
+        {!ready && (
+          <div style={{ ...card, padding: "15px 16px", marginBottom: 18, borderColor: C.signal }}>
+            <div style={{ fontFamily: DISPLAY, fontSize: 28, fontWeight: 900, color: C.signal, lineHeight: 1 }}>{T("kcIntroTitle")}</div>
+            <div style={{ fontSize: 14, color: C.chalk, lineHeight: 1.55, marginTop: 8 }}>{T("kcIntro")}</div>
+          </div>
+        )}
+        <KcalSetup kcal={kcal || {}} profile={profile} onSave={saveSetup} onCancel={ready ? () => setEditing(false) : null} />
+      </>
+    );
+  }
+
+  const pickGoal = goal => { sfxCheck(); setKcal({ ...kcal, goal }); setChangingGoal(false); };
+  if (!kcal.goal || changingGoal) {
+    return wrap(
+      <>
+        <div style={{ fontFamily: DISPLAY, fontSize: 30, fontWeight: 900, color: C.chalk, lineHeight: 1 }}>{T("kcPickTitle")}</div>
+        <div style={{ fontSize: 14, color: C.dim, lineHeight: 1.5, margin: "6px 0 12px" }}>{T("kcPickBody")}</div>
+        <KcalGoals kcal={kcal} age={age} onPick={pickGoal} />
+        {kcal.goal && <button onClick={() => setChangingGoal(false)} style={{ ...bigBtn("transparent", C.dim), marginTop: 14, border: `1.5px solid ${C.line}` }}>{T("cancel")}</button>}
+      </>
+    );
+  }
+
+  const target = kcalTarget(kcal, age, history, today);
+  const eaten = dayTotal(kcal, today);
+  const wk = workoutKcal(history, today, kcal.weight);
+  const left = target - eaten;
+  const pct = Math.min(1, eaten / Math.max(1, target));
+  const over = left < 0;
+  const add = () => {
+    const n = Number(amount);
+    if (!n || n < 1 || n > 9999) return;
+    sfxCheck();
+    const log = { ...(kcal.log || {}) };
+    log[today] = [...(log[today] || []), { ts: Date.now(), kcal: n, note: note.trim().slice(0, 40) }];
+    setKcal({ ...kcal, log });
+    setAmount(""); setNote("");
+  };
+  const remove = (day, ts) => {
+    sfxTap();
+    const log = { ...(kcal.log || {}) };
+    log[day] = (log[day] || []).filter(x => x.ts !== ts);
+    if (!log[day].length) delete log[day];
+    setKcal({ ...kcal, log });
+  };
+  const days = Object.keys(kcal.log || {}).filter(d => d !== today).sort().reverse().slice(0, 30);
+  const goalName = kcal.goal.type === "maintain" ? T("kcMaintainT") : T(kcal.goal.type === "lose" ? "kcRateLose" : "kcRateGain", { kg: kcal.goal.rate.toLocaleString(LANG) });
+  const field = { fontFamily: BODY, fontSize: 16, fontWeight: 700, padding: "11px 12px", borderRadius: 12, border: `1.5px solid ${C.line}`, background: C.ink, color: C.chalk, outline: "none", boxSizing: "border-box", minWidth: 0 };
+  const R = 64, CIRC = 2 * Math.PI * R;
+  return wrap(
+    <>
+      <div style={{ ...card, padding: "16px", display: "flex", alignItems: "center", gap: 16 }} data-kctoday>
+        <div style={{ position: "relative", width: 150, height: 150, flexShrink: 0 }}>
+          <svg width="150" height="150" style={{ transform: "rotate(-90deg)" }}>
+            <circle cx="75" cy="75" r={R} fill="none" stroke={C.panelHi} strokeWidth="12" />
+            <circle cx="75" cy="75" r={R} fill="none" stroke={over ? "#ff8a80" : C.mint} strokeWidth="12" strokeLinecap="round" strokeDasharray={CIRC} strokeDashoffset={CIRC * (1 - pct)} style={{ transition: "stroke-dashoffset .6s ease-out" }} />
+          </svg>
+          <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+            <div key={eaten} className="bump" style={{ fontFamily: DISPLAY, fontSize: 38, fontWeight: 900, lineHeight: 0.9, color: C.chalk }}>{nf(eaten)}</div>
+            <div style={{ fontSize: 12, color: C.dim }}>{T("kcOf", { n: nf(target) })}</div>
+          </div>
+        </div>
+        <div style={{ minWidth: 0 }}>
+          <div style={{ fontSize: 12, color: C.dim }}>{T("kcToday")}</div>
+          <div style={{ fontFamily: DISPLAY, fontSize: 30, fontWeight: 900, lineHeight: 1, color: over ? "#ff8a80" : C.mint, marginTop: 2 }}>{over ? T("kcOver", { n: nf(-left) }) : T("kcLeft", { n: nf(left) })}</div>
+          <div style={{ fontSize: 12, color: C.dim, marginTop: 6, lineHeight: 1.45 }}>{goalName}</div>
+          {wk > 0 && <div style={{ fontSize: 12, color: C.sky, marginTop: 3, fontWeight: 700 }}>{T("kcWorkoutToday", { n: nf(wk) })}</div>}
+        </div>
+      </div>
+
+      <div style={{ ...card, padding: "14px 15px", marginTop: 10 }}>
+        <div style={{ fontSize: 14, fontWeight: 800, color: C.chalk, marginBottom: 8 }}>{T("kcAddTitle")}</div>
+        <div style={{ display: "flex", gap: 8 }}>
+          <input value={amount} onChange={e => setAmount(e.target.value.replace(/[^0-9]/g, "").slice(0, 4))} onKeyDown={e => { if (e.key === "Enter") add(); }} inputMode="numeric" placeholder="kcal" aria-label={T("kcAmount")} style={{ ...field, flex: 1 }} />
+          <input value={note} onChange={e => setNote(e.target.value)} onKeyDown={e => { if (e.key === "Enter") add(); }} placeholder={T("kcNote")} aria-label={T("kcNote")} style={{ ...field, flex: 1.6 }} />
+        </div>
+        <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
+          {[100, 250, 500].map(n => <button key={n} onClick={() => { sfxTap(); setAmount(String((Number(amount) || 0) + n)); }} style={{ ...ghostBtn, flex: 1, padding: "8px 0" }}>+{n}</button>)}
+        </div>
+        <button onClick={add} disabled={!Number(amount)} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 10, padding: 15, opacity: Number(amount) ? 1 : 0.5 }}>{Number(amount) ? T("kcAddBtn", { n: nf(Number(amount)) }) : T("kcAddBtn0")}</button>
+        {((kcal.log || {})[today] || []).length > 0 && (
+          <div style={{ marginTop: 12 }}>
+            {(kcal.log[today]).map(x => (
+              <div key={x.ts} style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 0", borderTop: `1px solid ${C.line}` }}>
+                <span style={{ fontSize: 12, color: C.dim, width: 44 }}>{new Date(x.ts).toLocaleTimeString(LANG, { hour: "2-digit", minute: "2-digit" })}</span>
+                <span style={{ flex: 1, fontSize: 14, color: C.chalk, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{x.note || "—"}</span>
+                <span style={{ fontFamily: DISPLAY, fontSize: 20, fontWeight: 800, color: C.chalk }}>{nf(x.kcal)}</span>
+                <button onClick={() => remove(today, x.ts)} aria-label={T("kcDelete")} style={{ ...btnBase, background: "transparent", color: C.dim, padding: "4px 8px", fontSize: 15 }}>✕</button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {days.length > 0 && (
+        <>
+          <div style={sectionTitle}>{T("kcHistory")}</div>
+          <div style={{ ...card }}>
+            {days.map((d, i) => {
+              const tot = dayTotal(kcal, d);
+              const tg = kcalTarget(kcal, ageOn(profile.birth, d) ?? age, history, d);
+              const o = openDay === d;
+              return (
+                <div key={d} style={{ borderTop: i ? `1px solid ${C.line}` : "none" }}>
+                  <button onClick={() => { sfxTap(); setOpenDay(o ? null : d); }} aria-expanded={o} style={{ ...btnBase, width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "12px 15px", background: "transparent", color: C.chalk, textAlign: "left", borderRadius: 0 }}>
+                    <span style={{ flex: 1, fontSize: 14, fontWeight: 700 }}>{capFirst(fmtDate(d))}</span>
+                    <span style={{ fontSize: 13, color: tot > tg ? "#ff8a80" : C.mint, fontWeight: 800 }}>{nf(tot)}</span>
+                    <span style={{ fontSize: 12, color: C.dim }}>/ {nf(tg)}</span>
+                    <span style={{ color: C.dim, fontSize: 12 }}>{o ? "▾" : "▸"}</span>
+                  </button>
+                  {o && kcal.log[d].map(x => (
+                    <div key={x.ts} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 15px 6px 25px" }}>
+                      <span style={{ flex: 1, fontSize: 13, color: C.dim }}>{x.note || "—"}</span>
+                      <span style={{ fontSize: 14, fontWeight: 800, color: C.chalk }}>{nf(x.kcal)}</span>
+                      <button onClick={() => remove(d, x.ts)} aria-label={T("kcDelete")} style={{ ...btnBase, background: "transparent", color: C.dim, padding: "2px 8px", fontSize: 14 }}>✕</button>
+                    </div>
+                  ))}
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
+
+      <div style={sectionTitle}>{T("kcSettings")}</div>
+      <div style={{ ...card, padding: "13px 15px" }} data-kcsettings>
+        <div style={{ fontSize: 14, color: C.chalk, lineHeight: 1.6 }}>
+          {T("kcSummary", { sex: T(kcal.sex === "f" ? "kcFemale" : "kcMale"), age, h: kcal.height, w: kcal.weight })}<br />
+          <span style={{ color: C.dim }}>{T("kcAct_" + kcal.activity)}</span>
+        </div>
+        <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+          <button onClick={() => { sfxTap(); setEditing(true); }} style={{ ...ghostBtn, flex: 1 }}>{T("kcEdit")}</button>
+          <button onClick={() => { sfxTap(); setChangingGoal(true); }} style={{ ...ghostBtn, flex: 1, color: C.sky, borderColor: `${C.sky}88` }}>{T("kcChangeGoal")}</button>
+        </div>
+        <div style={{ fontSize: 12, color: C.dim, lineHeight: 1.5, marginTop: 10 }}>{T("kcAutoAge")}</div>
+      </div>
+      <div style={{ fontSize: 11, color: C.dim, lineHeight: 1.5, marginTop: 12 }}>{T("kcDisclaimer")}</div>
+    </>
+  );
+}
+
 // ─── TAB 2: HISTORY ────────────────────────────────────────────────────────
 function MonthCalendar({ history }) {
   const today = dateKey();
@@ -1802,7 +2124,7 @@ function HistoryTab({ history, onDelete, onSaveEntry }) {
 }
 
 // ─── TAB 3: PROFILE ──────────────────────────────────────────────────────────
-function ProfileTab({ history, profile, setProfile, onFreeze }) {
+function ProfileTab({ history, profile, setProfile, onFreeze, kcal }) {
   const fz = freezesAvailable(history);
   const fileRef = useRef(null);
   const [editing, setEditing] = useState(false);
@@ -1813,7 +2135,7 @@ function ProfileTab({ history, profile, setProfile, onFreeze }) {
   const xp = totalXP(history);
   const lv = levelInfo(xp);
   const st = streakInfo(history, today);
-  const ach = achievements(history);
+  const ach = achievements(history, achExtra(profile, kcal));
   const since = history.length ? history.map(e => e.date).sort()[0] : null;
 
   const pick = async e => {
@@ -2019,7 +2341,7 @@ function ExercisesPage({ settings, set, history, onBack }) {
   );
 }
 
-function SettingsTab({ settings, setSettings, history, profile, setProfile, onImport, onResetAll }) {
+function SettingsTab({ settings, setSettings, history, profile, setProfile, onImport, onResetAll, kcal }) {
   const [page, setPage] = useState(null); // null | "exercises"
   const [langOpen, setLangOpen] = useState(false);
   const [resetAll, setResetAll] = useState(false);
@@ -2033,7 +2355,7 @@ function SettingsTab({ settings, setSettings, history, profile, setProfile, onIm
   const flip = k => { unlockAudio(); const v = !settings[k]; set(k, v); if (v) { if (k === "sndTap") sfxTap(); else if (k === "sndTimer") soundExercise(); else sfxCheck(); } };
 
   const exportBackup = () => {
-    const data = { app: BACKUP_ID, version: 1, appVersion: APP_VERSION, exportedAt: new Date().toISOString(), history, profile, settings };
+    const data = { app: BACKUP_ID, version: 1, appVersion: APP_VERSION, exportedAt: new Date().toISOString(), history, profile, settings, kcal: kcal || null };
     try {
       const blob = new Blob([JSON.stringify(data)], { type: "application/json" });
       const a = document.createElement("a");
@@ -2748,6 +3070,8 @@ export default function App() {
   const [live, setLive] = useState(null);
   const [profile, setProfileState] = useState({ name: "User", pfp: null, freezeDays: [], streakResetTs: 0 });
   const [ui, setUiState] = useState({});
+  const [kcal, setKcalState] = useState(null);
+  const setKcal = k => { setKcalState(k); saveKcal(k); };
   const setUi = u => { setUiState(u); saveUi(u); };
   // Every change to past workouts keeps the history sorted and records/rank-ups correct.
   const editHistory = fn => setHistory(h => recomputeFlags(sortHistory(fn(h))));
@@ -2756,7 +3080,7 @@ export default function App() {
   applyTheme(settings.theme);
   applyLang(settings.lang || detectLang());
   const setSettings = n => { setSettingsState(n); saveSettings(n); };
-  useEffect(() => { loadProfile().then(p => { if (p) setProfileState(prev => ({ ...prev, ...p })); }); }, []);
+  useEffect(() => { loadProfile().then(p => { if (p) setProfileState(prev => ({ ...prev, ...p })); }); loadKcal().then(k => { if (k) setKcalState(k); }); }, []);
   const setProfile = p => { setProfileState(p); saveProfile(p); };
   const applyFreeze = () => {
     unlockAudio();
@@ -2853,11 +3177,12 @@ export default function App() {
                 {screen === "history" && <HistoryTab history={history}
                   onDelete={idx => editHistory(h => h.filter((_, i) => i !== idx))}
                   onSaveEntry={(idx, entry) => editHistory(h => (idx === null ? [...h, entry] : h.map((e, i) => (i === idx ? entry : e))))} />}
-                {screen === "profile" && <ProfileTab history={history} profile={profile} setProfile={setProfile} onFreeze={applyFreeze} />}
-                {screen === "calories" && <div className="scr" style={{ padding: "16px 18px 110px", maxWidth: 460, margin: "0 auto", color: C.dim }}>…</div>}
+                {screen === "profile" && <ProfileTab history={history} profile={profile} setProfile={setProfile} onFreeze={applyFreeze} kcal={kcal} />}
+                {screen === "calories" && <Calories history={history} profile={profile} setProfile={setProfile} kcal={kcal} setKcal={setKcal} />}
                 {screen === "settings" && <SettingsTab settings={settings} setSettings={setSettings} history={history} profile={profile} setProfile={setProfile}
-                  onResetAll={() => { setHistory([]); setProfile({ ...profile, freezeDays: [], streakResetTs: 0 }); setUi({}); }}
-                  onImport={d => { setHistory(d.history); if (d.profile) setProfile({ ...profile, ...d.profile }); if (d.settings) setSettings({ ...DEFAULT_SETTINGS, ...d.settings }); }} />}
+                  kcal={kcal}
+                  onResetAll={() => { setHistory([]); setProfile({ ...profile, freezeDays: [], streakResetTs: 0 }); setUi({}); if (kcal) setKcal({ ...kcal, log: {} }); }}
+                  onImport={d => { setHistory(d.history); if (d.profile) setProfile({ ...profile, ...d.profile }); if (d.settings) setSettings({ ...DEFAULT_SETTINGS, ...d.settings }); if (d.kcal) setKcal(d.kcal); }} />}
               </div>
               {session && session.phase !== "summary" && <MiniPlayer session={session} live={live} onOpen={resume} />}
             </>
