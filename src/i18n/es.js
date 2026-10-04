@@ -464,7 +464,7 @@ export default {
     n7: ["Cadera arriba, talones cerca de los glúteos", "Piernas afuera, cadera arriba"],
     b4: ["Codo a la rodilla contraria", "Cambia de lado"],
     kKnee: ["Arriba, rodillas en el suelo", "Abajo"],
-    kIncl: ["Manos en la mesa, arriba", "Pecho al borde"],
+    kIncl: ["Manos en la mesa, arriba", "Pecho al borde, codos a ~45° del cuerpo"],
     superman: ["Boca abajo", "Levanta y aguanta 2 s"],
     ytw: ["Y: brazos hacia delante y arriba", "W: codos a las costillas"],
     lunge: ["Inicio", "Paso atrás, rodilla al suelo"],

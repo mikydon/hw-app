@@ -464,7 +464,7 @@ export default {
     n7: ["Boky hore, päty pri zadku", "Vysuň nohy, boky stále hore"],
     b4: ["Lakeť k opačnému kolenu", "Vymeň strany"],
     kKnee: ["Hore, kolená na zemi", "Dole"],
-    kIncl: ["Ruky na stole, hore", "Hrudník k hrane"],
+    kIncl: ["Ruky na stole, hore", "Hrudník k hrane, lakte ~45° od tela"],
     superman: ["Ľahni na brucho", "Zdvihni a podrž 2 s"],
     ytw: ["Y: ruky dopredu hore", "W: lakte k rebrám"],
     lunge: ["Štart", "Krok dozadu, koleno k zemi"],

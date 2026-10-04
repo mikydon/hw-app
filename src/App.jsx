@@ -623,8 +623,8 @@ const FIGS = {
     { hip: [56.46, 88.52], torso: -10, hands: [[74, GROUND], [76, GROUND]], armBend: [1, 1], feet: [[18, 85], [20, 85]], legBend: [-1, -1] },
   ],
   kIncl: [
-    { hip: [47.9, 66.9], torso: -42.7, hands: [[85, 72], [87, 72]], armBend: [1, 1], feet: [[18.5, GROUND], [20.5, GROUND]], legBend: [1, 1], hide: ["farLeg"], props: [{ t: "table" }] },
-    { hip: [54.16, 75.87], torso: -26.95, hands: [[85, 72], [87, 72]], armBend: [1, 1], feet: [[18.5, GROUND], [20.5, GROUND]], legBend: [1, 1], hide: ["farLeg"], props: [{ t: "table" }] },
+    { hip: [51.2, 64.7], torso: -47.1, hands: [[81, 72], [82, 72]], armBend: [1, 1], feet: [[24, GROUND], [25, GROUND]], legBend: [1, 1], hide: ["farLeg"], props: [{ t: "table" }] },
+    { hip: [59.78, 76.11], torso: -26.57, hands: [[81, 72], [82, 72]], armBend: [1, 1], feet: [[24, GROUND], [25, GROUND]], legBend: [1, 1], hide: ["farLeg"], props: [{ t: "table" }] },
   ],
   superman: [
     { hip: [46, 89], torso: 0, head: -8, hands: [[101, 90], [102, 90]], armBend: [1, 1], feet: [[6, 91], [8, 91]], legBend: [1, 1] },

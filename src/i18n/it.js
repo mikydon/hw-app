@@ -464,7 +464,7 @@ export default {
     n7: ["Fianchi su, talloni vicino ai glutei", "Gambe in avanti, fianchi sempre su"],
     b4: ["Gomito al ginocchio opposto", "Cambia lato"],
     kKnee: ["Su, ginocchia a terra", "Giù"],
-    kIncl: ["Mani sul tavolo, su", "Petto verso il bordo"],
+    kIncl: ["Mani sul tavolo, su", "Petto verso il bordo, gomiti a ~45° dal corpo"],
     superman: ["A pancia in giù", "Solleva e tieni 2 s"],
     ytw: ["Y: braccia avanti e in alto", "W: gomiti alle costole"],
     lunge: ["Inizio", "Passo indietro, ginocchio verso terra"],

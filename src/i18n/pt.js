@@ -464,7 +464,7 @@ export default {
     n7: ["Quadril alto, calcanhares perto dos glúteos", "Deslize as pernas, quadril ainda alto"],
     b4: ["Cotovelo no joelho oposto", "Troque de lado"],
     kKnee: ["Em cima, joelhos no chão", "Embaixo"],
-    kIncl: ["Mãos na mesa, em cima", "Peito até a borda"],
+    kIncl: ["Mãos na mesa, em cima", "Peito até a borda, cotovelos a ~45° do corpo"],
     superman: ["De barriga para baixo", "Suba e segure 2 s"],
     ytw: ["Y: braços à frente e para cima", "W: cotovelos às costelas"],
     lunge: ["Início", "Passo para trás, joelho ao chão"],
