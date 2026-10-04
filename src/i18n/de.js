@@ -453,7 +453,7 @@ export default {
 
   fig: {
     k1: ["Oben", "Unten"],
-    k3: ["Oben, Hände unter der Brust", "Unten, Ellbogen eng"],
+    k3: ["Oben", "Unten, Ellbogen eng"],
     b5: ["Richtig: Körper gerade", "Falsch: Hohlkreuz"],
     n1: ["Start", "Unten, Fersen am Boden"],
     r1: ["Oben", "Unten, Kopf vor den Händen"],

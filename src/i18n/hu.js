@@ -453,7 +453,7 @@ export default {
 
   fig: {
     k1: ["Fent", "Lent"],
-    k3: ["Fent, kéz a mellkas alatt", "Lent, könyök a testnél"],
+    k3: ["Fent", "Lent, könyök a testnél"],
     b5: ["Helyes: egyenes test", "Hibás: belógó derék"],
     n1: ["Kezdés", "Lent, sarok a padlón"],
     r1: ["Fent", "Lent, fej a kéz előtt"],

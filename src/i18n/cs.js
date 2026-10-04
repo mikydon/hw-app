@@ -453,7 +453,7 @@ export default {
 
   fig: {
     k1: ["Nahoře", "Dole"],
-    k3: ["Nahoře, ruce pod hrudníkem", "Dole, lokty u těla"],
+    k3: ["Nahoře", "Dole, lokty u těla"],
     b5: ["Správně: rovné tělo", "Špatně: propadlá bedra"],
     n1: ["Start", "Dole, paty na zemi"],
     r1: ["Nahoře", "Dole, hlava před rukama"],

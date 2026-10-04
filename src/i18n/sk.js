@@ -453,7 +453,7 @@ export default {
 
   fig: {
     k1: ["Hore", "Dole"],
-    k3: ["Hore, ruky pod hrudníkom", "Dole, lakte k telu"],
+    k3: ["Hore", "Dole, lakte k telu"],
     b5: ["Správne: rovné telo", "Zle: prehnutý driek"],
     n1: ["Štart", "Dole, päty na zemi"],
     r1: ["Hore", "Dole, hlava pred ruky"],
