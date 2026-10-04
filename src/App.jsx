@@ -589,10 +589,10 @@ const FIGS = {
   ],
   n1: [
     { hip: [60, 54], torso: -90, hands: [[88.6, 30], [88.6, 30]], armBend: [1, 1], feet: [[60, GROUND], [60, GROUND]], legBend: [-1, -1], hide: ["farArm", "farLeg"] },
-    { hip: [53, 83], torso: -62, belly: [0.4, 0.9], hands: [[95.4, 58], [95.4, 58]], armBend: [1, 1], feet: [[62, GROUND], [62, GROUND]], legBend: [-1, -1], hide: ["farArm", "farLeg"] },
+    { hip: [53, 83], torso: -62, hands: [[95.4, 58], [95.4, 58]], armBend: [1, 1], feet: [[62, GROUND], [62, GROUND]], legBend: [-1, -1], hide: ["farArm", "farLeg"] },
   ],
   r1: [
-    { hip: [58.8, 44.6], torso: 68.8, head: 85, belly: [0.42, 0.88], fl: { th: 27, sh: 27, torso: 24 }, hands: [[78, GROUND], [79, GROUND]], armBend: [1, 1], feet: [[37, GROUND], [38, GROUND]], legBend: [1, 1], hide: ["farLeg"] },
+    { hip: [58.8, 44.6], torso: 68.8, head: 85, fl: { th: 27, sh: 27, torso: 24 }, hands: [[78, GROUND], [79, GROUND]], armBend: [1, 1], feet: [[37, GROUND], [38, GROUND]], legBend: [1, 1], hide: ["farLeg"] },
     { hip: [79.2, 60.3], torso: 55, head: 39.5, fl: { th: 27, sh: 27, torso: 24 }, hands: [[78, GROUND], [79, GROUND]], elbows: [[78, 80], [79, 80]], feet: [[37, GROUND], [38, GROUND]], legBend: [1, 1], hide: ["farLeg"] },
   ],
   row1: [
@@ -669,7 +669,7 @@ const FIGS = {
     { hip: [48, 90], torso: -40, head: -32, fl: { ua: 12, fa: 11 }, hands: [[70, GROUND], [70, GROUND]], armBend: [1, 1], feet: [[8.1, 92.5], [8.1, 92.5]], legBend: [1, 1], hide: ["farArm", "farLeg"] },
   ],
   child: [
-    { hip: [32, 83], torso: 0, head: 18, belly: [0.62, 0.95], hands: [[87, 92.5], [87, 92.5]], armBend: [1, 1], feet: [[30, GROUND], [30, GROUND]], legBend: [-1, -1], hide: ["farArm", "farLeg"] },
+    { hip: [32, 83], torso: 0, head: 18, hands: [[87, 92.5], [87, 92.5]], armBend: [1, 1], feet: [[30, GROUND], [30, GROUND]], legBend: [-1, -1], hide: ["farArm", "farLeg"] },
   ],
 };
 
@@ -691,22 +691,23 @@ function Stick({ p }) {
     if (!(i === 1 && (p.hide || []).includes("farArm"))) parts.push({ i, col, pts: [shoulder, elbow, hand] });
   });
   const line = pts => pts.map(q => `${q[0].toFixed(1)},${q[1].toFixed(1)}`).join(" ");
-  // Yellow belly stripe along the front of the torso, so you can tell belly from back.
+  // Yellow belly marker: the front half of the torso line is yellow, at the same place on every figure.
+  // It is drawn inside the torso (not next to it) and on top, so a limb lying along the body never hides it.
   // Front = torso direction turned 90° clockwise (faces right when standing); flipped when lying on the back.
   const tv = [shoulder[0] - p.hip[0], shoulder[1] - p.hip[1]];
   const tl = Math.hypot(tv[0], tv[1]) || 1;
   const nrm = [(-tv[1] / tl) * (p.supine ? -1 : 1), (tv[0] / tl) * (p.supine ? -1 : 1)];
   const at = (t, off) => [p.hip[0] + tv[0] * t + nrm[0] * off, p.hip[1] + tv[1] * t + nrm[1] * off];
-  const belly = p.belly === false ? null : p.belly ? [at(p.belly[0], 4.6), at(p.belly[1], 4.6)] : [at(0.22, 4.6), at(0.72, 4.6)]; // p.belly: [from, to] along the torso
+  const belly = [at(0.12, 1.5), at(0.88, 1.5)];
   return (
     <g strokeLinecap="round" strokeLinejoin="round" fill="none">
       {parts.filter(x => x.i === 1).map((x, k) => <polyline key={`f${k}`} points={line(x.pts)} stroke={x.col} strokeWidth="5" />)}
       {(p.props || []).filter(pr => pr.mid).map((pr, k) => <Prop key={`m${k}`} pr={pr} />)}
       <polyline points={line([p.hip, shoulder])} stroke={near} strokeWidth="6" />
-      {belly && <polyline points={line(belly)} stroke={C.signal} strokeWidth="2.6" />}
       <circle cx={headC[0]} cy={headC[1]} r={FL.head} fill={near} stroke="none" />
       {parts.filter(x => x.i === 0).map((x, k) => <polyline key={`n${k}`} points={line(x.pts)} stroke={x.col} strokeWidth="5" />)}
       {p.grip && (() => { const h = parts.find(x => x.i === 0 && x.pts[0] === shoulder).pts[2]; return <circle cx={h[0]} cy={h[1]} r="3" fill={near} />; })()}
+      <polyline points={line(belly)} stroke={C.signal} strokeWidth="2.4" />
     </g>
   );
 }
@@ -796,7 +797,7 @@ function ExFigure({ id }) {
       ))}
       </div>
       <div style={{ fontSize: 11, color: C.dim, textAlign: "center", marginTop: 6, display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "center", columnGap: 14, rowGap: 4 }}>
-        {poses.some(p => !p.top && p.belly !== false) && <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><span aria-hidden="true" style={{ width: 16, height: 3, borderRadius: 2, background: C.signal, display: "inline-block" }} />{T("figBelly")}</span>}
+        {poses.some(p => !p.top) && <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><span aria-hidden="true" style={{ width: 16, height: 3, borderRadius: 2, background: C.signal, display: "inline-block" }} />{T("figBelly")}</span>}
         {["towel", "towelFloor"].filter(k => poses.some(p => (p.props || []).some(pr => pr.t === k))).map(k => (
           <span key={k} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><span aria-hidden="true" style={{ width: 16, height: 3, borderRadius: 2, background: TOWEL, display: "inline-block" }} />{T(k === "towel" ? "figTowel" : "figTowelSlide")}</span>
         ))}
