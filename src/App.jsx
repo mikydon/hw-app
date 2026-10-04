@@ -599,8 +599,8 @@ const FIGS = {
     { ...fromFeet([88, GROUND], 2), hands: [[97.4, 31], [86.8, 56.8]], elbows: [[83.5, 30.5], [86.2, 42.8]], feet: [[88, GROUND], [90, GROUND]], legBend: [1, 1], props: [{ t: "frame" }], grip: true, hide: ["farArm"] },
   ],
   row2: [
-    { hip: [76, 64], torso: -110, head: -100, hands: [[91.5, 55.6], [91.9, 55.2]], armBend: [-1, -1], feet: [[97, GROUND], [98, GROUND]], legBend: [-1, -1], hide: ["farLeg"], props: [{ t: "door" }, { t: "towel", from: [104, 56], to: [91.7, 55.4] }] },
-    { hip: [82, 64], torso: -95, head: -90, hands: [[92.5, 55], [93, 55.4]], armBend: [1, 1], feet: [[97, GROUND], [98, GROUND]], legBend: [-1, -1], hide: ["farLeg"], props: [{ t: "door" }, { t: "towel", from: [104, 56], to: [92.8, 55.2] }] },
+    { hip: [83, 64], torso: -110, head: -100, hands: [[98.4, 55.6], [98.8, 55.2]], armBend: [-1, -1], feet: [[103, GROUND], [106, GROUND]], legBend: [-1, -1], props: [{ t: "door", mid: true }, { t: "towel", from: [104, 56], to: [98.6, 55.4], mid: true }] },
+    { hip: [89, 64], torso: -95, head: -90, hands: [[98.5, 55], [99, 55.4]], armBend: [1, 1], feet: [[103, GROUND], [106, GROUND]], legBend: [-1, -1], props: [{ t: "door", mid: true }, { t: "towel", from: [104, 56], to: [98.8, 55.2], mid: true }] },
   ],
   n2: [
     { hip: [63, 57], torso: -88, hands: [[64, 84], [60, 84]], armBend: [1, 1], feet: [[78, GROUND], [30, 70]], legBend: [-1, -1], props: [{ t: "chair" }] },
@@ -692,6 +692,7 @@ function Stick({ p }) {
   return (
     <g strokeLinecap="round" strokeLinejoin="round" fill="none">
       {parts.filter(x => x.i === 1).map((x, k) => <polyline key={`f${k}`} points={line(x.pts)} stroke={x.col} strokeWidth="5" />)}
+      {(p.props || []).filter(pr => pr.mid).map((pr, k) => <Prop key={`m${k}`} pr={pr} />)}
       <polyline points={line([p.hip, shoulder])} stroke={near} strokeWidth="6" />
       <polyline points={line(belly)} stroke={C.signal} strokeWidth="2.6" />
       <circle cx={headC[0]} cy={headC[1]} r={FL.head} fill={near} stroke="none" />
@@ -708,7 +709,8 @@ function Prop({ pr }) {
   // Door frame (jamb) seen from the side as one solid post; the hand grips its front edge.
   if (pr.t === "frame") return <g><rect x="95.5" y="6" width="4.6" height="90" rx="1" fill={C.sky} fillOpacity="0.28" stroke={C.sky} strokeWidth="3" /><line x1="100.1" y1="6" x2="118" y2="6" {...s} /></g>;
   if (pr.t === "door") return <g><rect x="102" y="10" width="5" height="86" rx="1" fill={C.sky} fillOpacity="0.28" stroke={C.sky} strokeWidth="3" /><circle cx="104.5" cy="56" r="2.5" fill={C.sky} /></g>;
-  if (pr.t === "towel") return <line x1={pr.from[0]} y1={pr.from[1]} x2={pr.to[0]} y2={pr.to[1]} stroke={TOWEL} strokeWidth="3" strokeLinecap="round" />;
+  // Towel looped over the handle: the part to the hands plus an end hanging down.
+  if (pr.t === "towel") return <g stroke={TOWEL} strokeWidth="3" strokeLinecap="round"><line x1={pr.from[0]} y1={pr.from[1]} x2={pr.to[0]} y2={pr.to[1]} /><line x1={pr.from[0]} y1={pr.from[1]} x2={pr.from[0] - 1.5} y2={pr.from[1] + 10} /></g>;
   if (pr.t === "chair") return <g {...s}><line x1="8" y1="72" x2="36" y2="72" /><line x1="10" y1="72" x2="10" y2="96" /><line x1="34" y1="72" x2="34" y2="96" /><line x1="10" y1="72" x2="10" y2="44" /></g>;
   if (pr.t === "table") return <g {...s}><line x1="80" y1="74" x2="118" y2="74" /><line x1="84" y1="74" x2="84" y2="96" /><line x1="114" y1="74" x2="114" y2="96" /></g>;
   if (pr.t === "wall") return <line x1="20" y1="4" x2="20" y2="96" {...s} strokeWidth="4" />;
@@ -755,7 +757,7 @@ function ExFigure({ id }) {
         <div key={i} style={{ flex: poses.length > 1 ? 1 : "0 1 62%", background: C.ink, border: `1.5px solid ${p.bad ? "#ff8a80" : C.line}`, borderRadius: 14, padding: "6px 4px 8px", textAlign: "center" }}>
           <svg viewBox="0 0 120 100" style={{ width: "100%", height: "auto", display: "block" }}>
             <line x1="0" y1={GROUND + 3} x2="120" y2={GROUND + 3} stroke={C.line} strokeWidth="2" />
-            {(p.props || []).map((pr, k) => <Prop key={k} pr={pr} />)}
+            {(p.props || []).filter(pr => !pr.mid).map((pr, k) => <Prop key={k} pr={pr} />)}
             <Stick p={p} />
           </svg>
           <div style={{ fontSize: 12, fontWeight: 600, color: p.bad ? "#ff8a80" : C.dim, marginTop: 4, lineHeight: 1.3 }}>{poses.length > 1 ? `${i + 1}. ` : ""}{p.label}</div>
