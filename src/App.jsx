@@ -745,20 +745,18 @@ function Prop({ pr }) {
 
 // Lying face down, seen from above (back view): arms in the shape of the letter Y, T or W.
 function TopFig({ arms }) {
-  const sh = [[50, 31], [70, 31]];
+  const sh = [60, 31];
   const A = {
-    Y: [[[33.4, 7.2]], [[86.6, 7.2]]],
-    T: [[[21, 31]], [[99, 31]]],
-    W: [[[37, 38.5], [36, 24.5]], [[83, 38.5], [84, 24.5]]],
+    Y: [[[36, 10]], [[84, 10]]],
+    T: [[[30, 31]], [[90, 31]]],
+    W: [[[44, 44], [40, 24]], [[76, 44], [80, 24]]],
   }[arms] || [[], []];
-  const pts = (s0, rest) => [s0, ...rest].map(q => q.join(",")).join(" ");
+  const pts = rest => [sh, ...rest].map(q => q.join(",")).join(" ");
   return (
-    <g fill="none" stroke={C.chalk} strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="56,58 56,93" strokeWidth="5" /><polyline points="64,58 64,93" strokeWidth="5" />
-      <polyline points="60,27 60,58" strokeWidth="9" />
-      <polyline points="54,58 66,58" strokeWidth="6" />
-      <polyline points="50,31 70,31" strokeWidth="6" />
-      <polyline points={pts(sh[0], A[0])} strokeWidth="5" /><polyline points={pts(sh[1], A[1])} strokeWidth="5" />
+    <g fill="none" stroke={C.chalk} strokeWidth="5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="54,93 60,60 66,93" />
+      <polyline points="60,27 60,60" strokeWidth="6" />
+      <polyline points={pts(A[0])} /><polyline points={pts(A[1])} />
       <circle cx="60" cy="17" r="7" fill={C.chalk} stroke="none" />
     </g>
   );
