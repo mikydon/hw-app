@@ -458,7 +458,7 @@ export default {
     n1: ["Start", "Unten, Fersen am Boden"],
     r1: ["Oben", "Unten, Kopf vor den Händen"],
     row1: ["Start, Arm gestreckt", "Ziehen, Ellbogen nach hinten"],
-    row3: ["Start, Hand auf Schulterhöhe", "Ellbogen hoch zur Seite"],
+    row3: ["Start, Hand auf Schulterhöhe", "Ellbogen zur Seite, ~90° vom Körper"],
     row2: ["Start, Arme gestreckt", "Brust zur Tür"],
     n2: ["Oben", "Unten, hinteres Knie zum Boden"],
     b2: ["Start", "Arm und Gegenbein runter"],

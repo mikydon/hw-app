@@ -458,7 +458,7 @@ export default {
     n1: ["Start", "Down, heels on the floor"],
     r1: ["Up", "Down, head in front of hands"],
     row1: ["Start, arm straight", "Pull, elbow back"],
-    row3: ["Start, hand at shoulder height", "Elbow out to the side, high"],
+    row3: ["Start, hand at shoulder height", "Elbow out to the side, ~90° from the body"],
     row2: ["Start, arms straight", "Chest to the door"],
     n2: ["Up", "Down, back knee to the floor"],
     b2: ["Start", "Arm and opposite leg down"],

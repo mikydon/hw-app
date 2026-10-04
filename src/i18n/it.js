@@ -458,7 +458,7 @@ export default {
     n1: ["Inizio", "Giù, talloni a terra"],
     r1: ["Su", "Giù, testa davanti alle mani"],
     row1: ["Inizio, braccio teso", "Tira, gomito indietro"],
-    row3: ["Inizio, mano all'altezza della spalla", "Gomito di lato, in alto"],
+    row3: ["Inizio, mano all'altezza della spalla", "Gomito di lato, a ~90° dal corpo"],
     row2: ["Inizio, braccia tese", "Petto verso la porta"],
     n2: ["Su", "Giù, ginocchio posteriore verso terra"],
     b2: ["Inizio", "Braccio e gamba opposta giù"],

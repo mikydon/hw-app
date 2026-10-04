@@ -458,7 +458,7 @@ export default {
     n1: ["Départ", "En bas, talons au sol"],
     r1: ["En haut", "En bas, tête devant les mains"],
     row1: ["Départ, bras tendu", "Tirage, coude en arrière"],
-    row3: ["Départ, main à hauteur d'épaule", "Coude sur le côté, en hauteur"],
+    row3: ["Départ, main à hauteur d'épaule", "Coude sur le côté, à ~90° du corps"],
     row2: ["Départ, bras tendus", "Poitrine vers la porte"],
     n2: ["En haut", "En bas, genou arrière vers le sol"],
     b2: ["Départ", "Bras et jambe opposée vers le bas"],

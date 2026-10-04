@@ -458,7 +458,7 @@ export default {
     n1: ["Inicio", "Abajo, talones en el suelo"],
     r1: ["Arriba", "Abajo, cabeza delante de las manos"],
     row1: ["Inicio, brazo estirado", "Tira, codo atrás"],
-    row3: ["Inicio, mano a la altura del hombro", "Codo hacia el lado, alto"],
+    row3: ["Inicio, mano a la altura del hombro", "Codo hacia el lado, a ~90° del cuerpo"],
     row2: ["Inicio, brazos estirados", "Pecho hacia la puerta"],
     n2: ["Arriba", "Abajo, rodilla de atrás al suelo"],
     b2: ["Inicio", "Brazo y pierna contraria abajo"],

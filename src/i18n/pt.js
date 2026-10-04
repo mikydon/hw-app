@@ -458,7 +458,7 @@ export default {
     n1: ["Início", "Embaixo, calcanhares no chão"],
     r1: ["Em cima", "Embaixo, cabeça à frente das mãos"],
     row1: ["Início, braço esticado", "Puxe, cotovelo para trás"],
-    row3: ["Início, mão na altura do ombro", "Cotovelo para o lado, alto"],
+    row3: ["Início, mão na altura do ombro", "Cotovelo para o lado, a ~90° do corpo"],
     row2: ["Início, braços esticados", "Peito até a porta"],
     n2: ["Em cima", "Embaixo, joelho de trás ao chão"],
     b2: ["Início", "Braço e perna oposta descem"],

@@ -458,7 +458,7 @@ export default {
     n1: ["Kezdés", "Lent, sarok a padlón"],
     r1: ["Fent", "Lent, fej a kéz előtt"],
     row1: ["Kezdés, nyújtott kar", "Húzás, könyök hátra"],
-    row3: ["Kezdés, kéz vállmagasságban", "Könyök oldalra, magasan"],
+    row3: ["Kezdés, kéz vállmagasságban", "Könyök oldalra, ~90°-ban"],
     row2: ["Kezdés, nyújtott kar", "Mellkas az ajtóhoz"],
     n2: ["Fent", "Lent, hátsó térd a padló felé"],
     b2: ["Kezdés", "Kar és ellentétes láb le"],

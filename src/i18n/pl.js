@@ -458,7 +458,7 @@ export default {
     n1: ["Start", "Dół, pięty na podłodze"],
     r1: ["Góra", "Dół, głowa przed dłońmi"],
     row1: ["Start, ręka prosta", "Przyciągnij, łokieć do tyłu"],
-    row3: ["Start, dłoń na wysokości barku", "Łokieć na bok, wysoko"],
+    row3: ["Start, dłoń na wysokości barku", "Łokieć na bok, ~90° od ciała"],
     row2: ["Start, ręce proste", "Klatka do drzwi"],
     n2: ["Góra", "Dół, tylne kolano do podłogi"],
     b2: ["Start", "Ręka i przeciwna noga w dół"],

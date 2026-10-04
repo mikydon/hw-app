@@ -458,7 +458,7 @@ export default {
     n1: ["Štart", "Dole, päty na zemi"],
     r1: ["Hore", "Dole, hlava pred ruky"],
     row1: ["Štart, ruka vystretá", "Pritiahni, lakeť dozadu"],
-    row3: ["Štart, ruka vo výške ramena", "Lakeť do strany, vysoko"],
+    row3: ["Štart, ruka vo výške ramena", "Lakeť do strany, ~90° od tela"],
     row2: ["Štart, ruky vystreté", "Hrudník k dverám"],
     n2: ["Hore", "Dole, zadné koleno k zemi"],
     b2: ["Štart", "Ruka a opačná noha dole"],
