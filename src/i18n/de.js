@@ -213,6 +213,7 @@ export default {
     rankStart: "Start",
     figureAria: "Zeichnung: {labels}",
     figBelly: "Gelbe Linie = Bauchseite",
+    figTowel: "Orange Linie = Handtuch oder fester Stoff",
     photoAlt: "Profilfoto",
 
     // v1.3.0

@@ -213,6 +213,7 @@ export default {
     rankStart: "kezdés",
     figureAria: "Rajz: {labels}",
     figBelly: "Sárga vonal = a has oldala",
+    figTowel: "Narancs vonal = törölköző vagy erős rongy",
     photoAlt: "Profilkép",
 
     // v1.3.0

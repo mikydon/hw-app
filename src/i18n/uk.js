@@ -213,6 +213,7 @@ export default {
     rankStart: "старт",
     figureAria: "Малюнок: {labels}",
     figBelly: "Жовта риска = бік живота",
+    figTowel: "Помаранчева лінія = рушник або міцна тканина",
     photoAlt: "Фото профілю",
 
     // v1.3.0

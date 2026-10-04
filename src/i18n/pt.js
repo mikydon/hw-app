@@ -213,6 +213,7 @@ export default {
     rankStart: "início",
     figureAria: "Desenho: {labels}",
     figBelly: "Linha amarela = lado da barriga",
+    figTowel: "Linha laranja = toalha ou pano resistente",
     photoAlt: "Foto de perfil",
 
     // v1.3.0

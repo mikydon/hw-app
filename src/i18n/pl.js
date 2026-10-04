@@ -213,6 +213,7 @@ export default {
     rankStart: "start",
     figureAria: "Rysunek: {labels}",
     figBelly: "Żółta kreska = strona brzucha",
+    figTowel: "Pomarańczowa linia = ręcznik lub mocna szmatka",
     photoAlt: "Zdjęcie profilowe",
 
     // v1.3.0

@@ -213,6 +213,7 @@ export default {
     rankStart: "inizio",
     figureAria: "Disegno: {labels}",
     figBelly: "Linea gialla = lato della pancia",
+    figTowel: "Linea arancione = asciugamano o panno resistente",
     photoAlt: "Foto profilo",
 
     // v1.3.0

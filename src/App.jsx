@@ -599,8 +599,8 @@ const FIGS = {
     { ...fromFeet([88, GROUND], 2), hands: [[97.4, 31], [86.8, 56.8]], elbows: [[83.5, 30.5], [86.2, 42.8]], feet: [[88, GROUND], [90, GROUND]], legBend: [1, 1], props: [{ t: "frame" }], grip: true, hide: ["farArm", "farLeg"] },
   ],
   row2: [
-    { hip: [83, 64], torso: -110, head: -100, hands: [[98.4, 55.6], [98.8, 55.2]], armBend: [-1, -1], feet: [[103, GROUND], [106, GROUND]], legBend: [-1, -1], props: [{ t: "door", mid: true }, { t: "towel", from: [104, 56], to: [98.6, 55.4], mid: true }] },
-    { hip: [89, 64], torso: -95, head: -90, hands: [[98.5, 55], [99, 55.4]], armBend: [1, 1], feet: [[103, GROUND], [106, GROUND]], legBend: [-1, -1], props: [{ t: "door", mid: true }, { t: "towel", from: [104, 56], to: [98.8, 55.2], mid: true }] },
+    { hip: [79.5, 64], torso: -110, head: -100, hands: [[95, 55.6], [95.4, 55.2]], armBend: [-1, -1], feet: [[103, GROUND], [104.5, GROUND]], legBend: [-1, -1], props: [{ t: "door", mid: true }, { t: "towel", from: [104, 56], to: [95.2, 55.4], mid: true }] },
+    { hip: [86, 64], torso: -95, head: -90, hands: [[96, 55], [96.5, 55.4]], armBend: [1, 1], feet: [[103, GROUND], [104.5, GROUND]], legBend: [-1, -1], props: [{ t: "door", mid: true }, { t: "towel", from: [104, 56], to: [96.3, 55.2], mid: true }] },
   ],
   n2: [
     { hip: [63, 57], torso: -88, hands: [[64, 84], [60, 84]], armBend: [1, 1], feet: [[78, GROUND], [30, 70]], legBend: [-1, -1], props: [{ t: "chair" }] },
@@ -763,8 +763,11 @@ function ExFigure({ id }) {
         </div>
       ))}
       </div>
-      <div style={{ fontSize: 11, color: C.dim, textAlign: "center", marginTop: 6, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
-        <span aria-hidden="true" style={{ width: 16, height: 3, borderRadius: 2, background: C.signal, display: "inline-block" }} />{T("figBelly")}
+      <div style={{ fontSize: 11, color: C.dim, textAlign: "center", marginTop: 6, display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "center", columnGap: 14, rowGap: 4 }}>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><span aria-hidden="true" style={{ width: 16, height: 3, borderRadius: 2, background: C.signal, display: "inline-block" }} />{T("figBelly")}</span>
+        {poses.some(p => (p.props || []).some(pr => pr.t === "towel" || pr.t === "towelFloor")) && (
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><span aria-hidden="true" style={{ width: 16, height: 3, borderRadius: 2, background: TOWEL, display: "inline-block" }} />{T("figTowel")}</span>
+        )}
       </div>
     </div>
   );

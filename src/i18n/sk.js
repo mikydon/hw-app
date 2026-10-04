@@ -213,6 +213,7 @@ export default {
     rankStart: "štart",
     figureAria: "Obrázok: {labels}",
     figBelly: "Žltá čiarka = strana brucha",
+    figTowel: "Oranžová čiara = uterák alebo pevná handra",
     photoAlt: "Profilová fotka",
 
     // v1.3.0

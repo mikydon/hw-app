@@ -213,6 +213,7 @@ export default {
     rankStart: "départ",
     figureAria: "Dessin : {labels}",
     figBelly: "Trait jaune = côté du ventre",
+    figTowel: "Trait orange = serviette ou tissu solide",
     photoAlt: "Photo de profil",
 
     // v1.3.0
