@@ -213,7 +213,6 @@ export default {
     rankStart: "départ",
     figureAria: "Dessin : {labels}",
     figBelly: "Trait jaune = côté du ventre",
-    figTop: "vue de dessus",
     photoAlt: "Photo de profil",
 
     // v1.3.0

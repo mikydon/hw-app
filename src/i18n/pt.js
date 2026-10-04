@@ -213,7 +213,6 @@ export default {
     rankStart: "início",
     figureAria: "Desenho: {labels}",
     figBelly: "Linha amarela = lado da barriga",
-    figTop: "vista de cima",
     photoAlt: "Foto de perfil",
 
     // v1.3.0

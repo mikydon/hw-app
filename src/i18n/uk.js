@@ -213,7 +213,6 @@ export default {
     rankStart: "старт",
     figureAria: "Малюнок: {labels}",
     figBelly: "Жовта риска = бік живота",
-    figTop: "вигляд згори",
     photoAlt: "Фото профілю",
 
     // v1.3.0

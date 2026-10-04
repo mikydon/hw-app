@@ -213,7 +213,6 @@ export default {
     rankStart: "kezdés",
     figureAria: "Rajz: {labels}",
     figBelly: "Sárga vonal = a has oldala",
-    figTop: "felülnézet",
     photoAlt: "Profilkép",
 
     // v1.3.0

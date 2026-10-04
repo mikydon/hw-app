@@ -213,7 +213,6 @@ export default {
     rankStart: "start",
     figureAria: "Drawing: {labels}",
     figBelly: "Yellow line = belly side",
-    figTop: "from above",
     photoAlt: "Profile photo",
 
     // v1.3.0

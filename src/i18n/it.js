@@ -213,7 +213,6 @@ export default {
     rankStart: "inizio",
     figureAria: "Disegno: {labels}",
     figBelly: "Linea gialla = lato della pancia",
-    figTop: "vista dall'alto",
     photoAlt: "Foto profilo",
 
     // v1.3.0

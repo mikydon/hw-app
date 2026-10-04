@@ -726,13 +726,12 @@ function Prop({ pr }) {
     );
     return (
       <g>
-        <rect x="3" y="3" width="52" height="44" rx="6" fill={C.panel} stroke={C.line} strokeWidth="1.2" />
+        <rect x="3" y="7" width="52" height="34" rx="6" fill={C.panel} stroke={C.line} strokeWidth="1.2" />
         <path d="M29 21.2 L31.4 24.8 L29 28.4 L26.6 24.8 Z" fill={C.sky} opacity="0.8" />
         <g transform="translate(17.69 26.5) rotate(35)">{hand}</g>
         <g transform="translate(40.31 26.5) scale(-1 1) rotate(35)">{hand}</g>
         {/* thin gaps where the fingertips touch, so it reads as two hands */}
         <g stroke={C.panel} strokeWidth="0.7"><line x1="29" y1="16.2" x2="29" y2="19.1" /><line x1="29" y1="30.5" x2="29" y2="33.3" /></g>
-        <text x="29" y="44" textAnchor="middle" fontSize="5.5" fill={C.dim} fontFamily={BODY}>{T("figTop")}</text>
       </g>
     );
   }
