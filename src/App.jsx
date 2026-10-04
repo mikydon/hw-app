@@ -476,9 +476,11 @@ function challengeXP(history) {
 }
 function freezesAvailable(history) {
   const wks = [...new Set(history.map(e => weekKey(e.date)))];
-  const bonus = META.bonusFreezes || 0; // birthday gifts
+  const bonus = META.bonusFreezes || 0; // birthday gifts (one per year)
   const earned = wks.filter(wk => challengeStatus(history, wk).every(c => c.done)).length + 1 + bonus; // 1 free to start
-  return Math.max(0, Math.min(2 + bonus, earned - (META.freezeDays || []).length));
+  // The limit is 2; in a year with a birthday gift it is 3, so the present is never lost to the limit.
+  const cap = 2 + (META.giftThisYear ? 1 : 0);
+  return Math.max(0, Math.min(cap, earned - (META.freezeDays || []).length));
 }
 // Motivation (texts in the locale).
 const pick = arr => arr[Math.floor(Math.random() * arr.length)];
@@ -493,8 +495,17 @@ function dayKind(history, today) {
 const dailyPool = kind => (kind === "rest" ? L.restDay : L.quotes);
 // Picks today's line (random, but none shown in the last 3 days) and the texts of the "done today"
 // card (new ones for every workout). Returns the same object when nothing needs to change.
-function uiForToday(ui, history, today) {
+function uiForToday(ui, history, today, profile) {
   let n = ui;
+  // Helper hint (every other day): picked once per day and marked as seen right away.
+  const dayNo = Math.round(parseKey(today).getTime() / 86400000);
+  if (dayNo % 2 === 0 && history.length > 0 && !(ui.hint && ui.hint.date === today)) {
+    const avail = HINTS.filter(h => !(h.k === "birthday" && profile && profile.birth && profile.birth.m));
+    const seen0 = ui.hintsSeen || [];
+    const seen = avail.every(h => seen0.includes(h.k)) ? [] : seen0;
+    const h = avail.find(x => !seen.includes(x.k)) || avail[0];
+    if (h) n = { ...n, hint: { date: today, k: h.k }, hintsSeen: [...seen, h.k] };
+  }
   const kind = dayKind(history, today);
   if (!(ui.daily && ui.daily.date === today && ui.daily.kind === kind)) {
     const recent = (ui.recent || []).filter(r => { const d = daysBetween(r.date, today); return d >= 0 && d <= 3; });
@@ -1186,10 +1197,10 @@ let card = { background: C.panel, border: `1px solid ${C.line}`, borderRadius: 1
 const SCREENS = ["train", "calories", "history", "profile", "settings"];
 const SCREEN_TITLE = { train: "tabTrain", calories: "tabCalories", history: "tabHistory", profile: "tabProfile", settings: "tabSettings" };
 
-function MenuButton({ open, onClick }) {
+function MenuButton({ open, onClick, btnRef, label }) {
   const bar = (y, rot) => ({ position: "absolute", left: 11, width: 20, height: 2.6, borderRadius: 2, background: C.chalk, top: open ? 20 : y, transform: open ? `rotate(${rot}deg)` : "none", transition: "top .22s ease, transform .22s ease, opacity .18s" });
   return (
-    <button onClick={onClick} aria-label={open ? T("menuClose") : T("menuOpen")} aria-expanded={open} data-menu-btn
+    <button ref={btnRef} onClick={onClick} aria-label={label || (open ? T("menuClose") : T("menuOpen"))} aria-expanded={open} data-menu-btn
       style={{ ...btnBase, position: "relative", width: 42, height: 42, padding: 0, borderRadius: 13, background: open ? C.panelHi : C.panel, border: `1.5px solid ${C.line}`, flexShrink: 0 }}>
       <span style={bar(13, 45)} />
       <span style={{ ...bar(20, 0), opacity: open ? 0 : 1 }} />
@@ -1231,12 +1242,15 @@ function TabIcon({ name, active }) {
 function MenuDrawer({ open, screen, history, profile, session, onGo, onResume, onClose }) {
   const [shown, setShown] = useState(open);
   useEffect(() => { if (open) setShown(true); else { const t = setTimeout(() => setShown(false), 260); return () => clearTimeout(t); } }, [open]);
+  const closeRef = useRef(null);
   useEffect(() => {
     if (!open) return;
+    const back = document.activeElement;
+    const f = setTimeout(() => { try { closeRef.current && closeRef.current.focus(); } catch (_) {} }, 30);
     const k = e => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", k);
     const prev = document.body.style.overflow; document.body.style.overflow = "hidden";
-    return () => { window.removeEventListener("keydown", k); document.body.style.overflow = prev; };
+    return () => { clearTimeout(f); window.removeEventListener("keydown", k); document.body.style.overflow = prev; try { const b = [...document.querySelectorAll("[data-menu-btn]")].find(el => el.offsetParent); (b || back) && (b || back).focus({ preventScroll: true }); } catch (_) {} };
   }, [open]);
   if (!shown) return null;
   const lv = levelInfo(totalXP(history));
@@ -1248,7 +1262,7 @@ function MenuDrawer({ open, screen, history, profile, session, onGo, onResume, o
       <nav aria-label={T("mainMenu")} className="drawerPanel" style={{ position: "absolute", top: 0, right: 0, bottom: 0, width: "min(86vw, 340px)", background: C.panel, borderLeft: `1px solid ${C.line}`, boxShadow: "-20px 0 50px rgba(0,0,0,.35)", display: "flex", flexDirection: "column", paddingBottom: "env(safe-area-inset-bottom)", overflowY: "auto" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px 4px 18px" }}>
           <div style={{ fontFamily: DISPLAY, fontSize: 15, fontWeight: 800, color: C.dim, letterSpacing: 1 }}>HW APP</div>
-          <MenuButton open={true} onClick={onClose} />
+          <MenuButton open={true} onClick={onClose} btnRef={closeRef} />
         </div>
         <button onClick={() => onGo("profile")} className="drawerItem" style={{ ...btnBase, "--i": 0, display: "flex", alignItems: "center", gap: 12, margin: "8px 14px 6px", padding: "12px", borderRadius: 18, background: C.panelHi, color: C.chalk, textAlign: "left" }}>
           <BdayHalo size={52}><Avatar profile={profile} size={52} /></BdayHalo>
@@ -1376,28 +1390,19 @@ const HINTS = [
   { k: "minimize", go: null }, { k: "backup", go: "settings" }, { k: "history", go: "history" },
   { k: "howto", go: null }, { k: "freeze", go: "profile" }, { k: "language", go: "settings" }, { k: "birthday", go: "calories" },
 ];
-function HintCard({ ui, setUi, profile, onGo }) {
+function HintCard({ ui, setUi, onGo }) {
   const today = dateKey();
-  const dayNo = Math.round(parseKey(today).getTime() / 86400000);
-  if (dayNo % 2 !== 0 || ui.hintHidden === today) return null;
-  const avail = HINTS.filter(h => !(h.k === "birthday" && profile && profile.birth && profile.birth.m));
-  let pickH;
-  if (ui.hint && ui.hint.date === today) pickH = avail.find(h => h.k === ui.hint.k);
-  if (!pickH) {
-    const seen = ui.hintsSeen || [];
-    const fresh = avail.filter(h => !seen.includes(h.k));
-    pickH = (fresh.length ? fresh : avail)[0];
-  }
-  if (!pickH) return null;
-  const mark = extra => setUi({ ...ui, hint: { date: today, k: pickH.k }, hintsSeen: [...new Set([...(((ui.hintsSeen || []).length >= avail.length) ? [] : ui.hintsSeen || []), pickH.k])], ...extra });
+  if (!ui.hint || ui.hint.date !== today || ui.hintHidden === today) return null;
+  const h = HINTS.find(x => x.k === ui.hint.k);
+  if (!h) return null;
   return (
-    <div data-hint={pickH.k} style={{ ...card, position: "relative", padding: "12px 40px 12px 14px", marginTop: 14, display: "flex", gap: 10, alignItems: "flex-start", borderColor: `${C.sky}66` }}>
-      <CloseX onClick={() => mark({ hintHidden: today })} />
+    <div data-hint={h.k} style={{ ...card, position: "relative", padding: "12px 40px 12px 14px", marginTop: 14, display: "flex", gap: 10, alignItems: "flex-start", borderColor: `${C.sky}66` }}>
+      <CloseX onClick={() => setUi({ ...ui, hintHidden: today })} />
       <div style={{ fontSize: 20, lineHeight: 1.2 }}>💡</div>
       <div style={{ minWidth: 0 }}>
         <div style={{ fontSize: 12, fontWeight: 800, color: C.sky }}>{T("hintTitle")}</div>
-        <div style={{ fontSize: 14, color: C.chalk, lineHeight: 1.45, marginTop: 2 }}>{T("hint_" + pickH.k)}</div>
-        {pickH.go && <button onClick={() => { mark({ hintHidden: today }); onGo(pickH.go); }} style={{ ...btnBase, background: "transparent", color: C.sky, padding: "6px 0 0", fontSize: 13 }}>{T("hintGo")} ›</button>}
+        <div style={{ fontSize: 14, color: C.chalk, lineHeight: 1.45, marginTop: 2 }}>{T("hint_" + h.k)}</div>
+        {h.go && <button onClick={() => { setUi({ ...ui, hintHidden: today }); onGo(h.go); }} style={{ ...btnBase, background: "transparent", color: C.sky, padding: "6px 0 0", fontSize: 13 }}>{T("hintGo")} ›</button>}
       </div>
     </div>
   );
@@ -1409,7 +1414,7 @@ function BirthdayCard({ profile, ui, setUi }) {
   const today = dateKey();
   const show = bdayToday() && ui.bdayHidden !== today;
   const [burst] = useState(() => show && BDAY_BURST !== today);
-  useEffect(() => { if (burst) { BDAY_BURST = today; sfxLevel(); } }, []);
+  useEffect(() => { if (burst) BDAY_BURST = today; }, []);
   if (!show) return null;
   const age = ageOn(profile.birth, today);
   return (
@@ -1427,7 +1432,7 @@ function BirthdayCard({ profile, ui, setUi }) {
 function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, profile, onGo }) {
   const today = dateKey();
   // Make sure today's daily line and the "done" card texts are picked (and saved) before painting.
-  useLayoutEffect(() => { const n = uiForToday(ui, history, today); if (n !== ui) setUi(n); });
+  useLayoutEffect(() => { const n = uiForToday(ui, history, today, profile); if (n !== ui) setUi(n); });
   const auto = nextDayIdx(history);
   const [dayIdx, setDayIdx] = useState(auto);
   const [rounds, setRounds] = useState(2);
@@ -1506,7 +1511,7 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
         </div>
       )}
 
-      {onGo && history.length > 0 && <HintCard ui={ui} setUi={setUi} profile={profile} onGo={onGo} />}
+      {onGo && <HintCard ui={ui} setUi={setUi} onGo={onGo} />}
       <div style={{ display: "flex", gap: 6, marginTop: 16 }} aria-label={T("weekLine", { count: TP("workouts", weekCount) })}>
         {week.map(w => (
           <div key={w.k} style={{ flex: 1, textAlign: "center" }}>
@@ -1610,8 +1615,11 @@ async function saveKcal(k) { await store.set(KCAL_KEY, JSON.stringify(k)); }
 function ageOn(birth, today = dateKey()) {
   if (!birth || !birth.y) return null;
   const t = parseKey(today);
-  let a = t.getFullYear() - birth.y;
-  if (birth.m && birth.d && (t.getMonth() + 1 < birth.m || (t.getMonth() + 1 === birth.m && t.getDate() < birth.d))) a -= 1;
+  const y = t.getFullYear();
+  let a = y - birth.y;
+  const leap = (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0;
+  const bd = birth.m === 2 && birth.d === 29 && !leap ? 28 : birth.d; // same rule as isBirthday
+  if (birth.m && birth.d && (t.getMonth() + 1 < birth.m || (t.getMonth() + 1 === birth.m && t.getDate() < bd))) a -= 1;
   return a;
 }
 function bmrOf(k, age) { return 10 * k.weight + 6.25 * k.height - 5 * age + (k.sex === "f" ? -161 : 5); }
@@ -2279,7 +2287,7 @@ function ProfileTab({ history, profile, setProfile, onFreeze, kcal }) {
       <div style={{ ...card, padding: "13px 15px", marginTop: 8, display: "flex", alignItems: "center", gap: 12 }}>
         <div style={{ fontSize: 30 }}>🧊</div>
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 15, fontWeight: 700, color: C.chalk }}>{T("freezeTitle", { n: fz, max: Math.max(2, fz) })}</div>
+          <div style={{ fontSize: 15, fontWeight: 700, color: C.chalk }}>{T("freezeTitle", { n: fz, max: META.giftThisYear ? 3 : 2 })}</div>
           <div style={{ fontSize: 12, color: C.dim, lineHeight: 1.45 }}>{T("freezeDesc")}</div>
         </div>
         <button disabled={!fz || st.frozenToday || (history.length && history[history.length - 1].date === today)} onClick={onFreeze}
@@ -3113,7 +3121,7 @@ function Session({ session, setSession, history, onSave, onClose, onMinimize, on
                 style={{ ...ghostBtn, padding: "7px 11px", fontSize: 12, color: confirmQuit ? "#ff8a80" : C.dim, borderColor: confirmQuit ? "#ff8a80" : C.line }}>
                 {confirmQuit ? (hasResults ? T("quitSave") : T("quitConfirm")) : T("quit")}
               </button>
-              {onMinimize && <MenuButton open={false} onClick={() => { sfxTap(); onMinimize(); }} />}
+              {onMinimize && <MenuButton open={false} label={T("menuMinimize")} onClick={() => { sfxTap(); onMinimize(); }} />}
             </div>
           </div>
           <div style={{ display: "flex", gap: 4, marginTop: 12, marginBottom: 22 }} aria-label={T("progressAria", { done: doneCount, total: seq.length })}>
@@ -3162,7 +3170,7 @@ export default function App() {
   const setUi = u => { setUiState(u); saveUi(u); };
   // Every change to past workouts keeps the history sorted and records/rank-ups correct.
   const editHistory = fn => setHistory(h => recomputeFlags(sortHistory(fn(h))));
-  META = { freezeDays: profile.freezeDays || [], streakResetTs: profile.streakResetTs || 0, bonusFreezes: (profile.bdayGifts || []).length, birth: profile.birth || null };
+  META = { freezeDays: profile.freezeDays || [], streakResetTs: profile.streakResetTs || 0, bonusFreezes: (profile.bdayGifts || []).length, giftThisYear: (profile.bdayGifts || []).includes(parseKey(dateKey()).getFullYear()), birth: profile.birth || null };
   window._wset = settings;
   applyTheme(settings.theme);
   applyLang(settings.lang || detectLang());
@@ -3278,7 +3286,7 @@ export default function App() {
                 {screen === "calories" && <Calories history={history} profile={profile} setProfile={setProfile} kcal={kcal} setKcal={setKcal} />}
                 {screen === "settings" && <SettingsTab settings={settings} setSettings={setSettings} history={history} profile={profile} setProfile={setProfile}
                   kcal={kcal}
-                  onResetAll={() => { setHistory([]); setProfile({ ...profile, freezeDays: [], streakResetTs: 0 }); setUi({}); if (kcal) setKcal({ ...kcal, log: {} }); }}
+                  onResetAll={() => { setHistory([]); setProfile({ ...profile, freezeDays: [], streakResetTs: 0, bdays: [], bdayGifts: [] }); setUi({}); if (kcal) setKcal({ ...kcal, log: {} }); }}
                   onImport={d => { setHistory(d.history); if (d.profile) setProfile({ ...profile, ...d.profile }); if (d.settings) setSettings({ ...DEFAULT_SETTINGS, ...d.settings }); if (d.kcal) setKcal(d.kcal); }} />}
               </div>
               {session && session.phase !== "summary" && <MiniPlayer session={session} live={live} onOpen={resume} />}

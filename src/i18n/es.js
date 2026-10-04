@@ -109,6 +109,7 @@ export default {
     kcDisclaimer: "Es una estimación con la fórmula Mifflin-St Jeor (la misma que calculator.net). Cada cuerpo es distinto: vigila tu peso 2–3 semanas y ajusta el objetivo.",
     menuOpen: "Abrir menú",
     menuClose: "Cerrar menú",
+    menuMinimize: "Minimizar el entreno y abrir el menú",
     menuD_train: "Entreno de hoy y retos",
     menuD_calories: "Calculadora y registro diario",
     menuD_history: "Calendario, gráfica y edición",

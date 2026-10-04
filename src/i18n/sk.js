@@ -109,6 +109,7 @@ export default {
     kcDisclaimer: "Je to odhad podľa vzorca Mifflin-St Jeor (rovnaký ako na calculator.net). Každé telo je iné: sleduj váhu 2–3 týždne a podľa toho uprav cieľ.",
     menuOpen: "Otvoriť menu",
     menuClose: "Zavrieť menu",
+    menuMinimize: "Zmenšiť tréning a otvoriť menu",
     menuD_train: "Dnešný tréning a výzvy",
     menuD_calories: "Kalkulačka a denný zápis",
     menuD_history: "Kalendár, graf a úpravy",

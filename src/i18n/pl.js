@@ -109,6 +109,7 @@ export default {
     kcDisclaimer: "To szacunek według wzoru Mifflin-St Jeor (tego samego co na calculator.net). Każde ciało jest inne: obserwuj wagę przez 2–3 tygodnie i dostosuj cel.",
     menuOpen: "Otwórz menu",
     menuClose: "Zamknij menu",
+    menuMinimize: "Zminimalizuj trening i otwórz menu",
     menuD_train: "Dzisiejszy trening i wyzwania",
     menuD_calories: "Kalkulator i dzienny zapis",
     menuD_history: "Kalendarz, wykres i edycja",

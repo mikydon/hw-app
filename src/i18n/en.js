@@ -109,6 +109,7 @@ export default {
     kcDisclaimer: "This is an estimate using the Mifflin-St Jeor formula (the same as calculator.net). Every body is different: watch your weight for 2–3 weeks and adjust the goal.",
     menuOpen: "Open menu",
     menuClose: "Close menu",
+    menuMinimize: "Minimize the workout and open the menu",
     menuD_train: "Today's workout and challenges",
     menuD_calories: "Calculator and daily log",
     menuD_history: "Calendar, chart and edits",

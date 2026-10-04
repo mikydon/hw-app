@@ -109,6 +109,7 @@ export default {
     kcDisclaimer: "Das ist eine Schätzung nach der Mifflin-St-Jeor-Formel (wie bei calculator.net). Jeder Körper ist anders: beobachte dein Gewicht 2–3 Wochen und pass das Ziel an.",
     menuOpen: "Menü öffnen",
     menuClose: "Menü schließen",
+    menuMinimize: "Training verkleinern und Menü öffnen",
     menuD_train: "Heutiges Training und Challenges",
     menuD_calories: "Rechner und Tagesprotokoll",
     menuD_history: "Kalender, Grafik, Bearbeiten",

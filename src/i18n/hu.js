@@ -109,6 +109,7 @@ export default {
     kcDisclaimer: "Ez becslés a Mifflin-St Jeor képlettel (ugyanaz, mint a calculator.net-en). Minden test más: 2–3 hétig figyeld a súlyod, és ahhoz igazítsd a célt.",
     menuOpen: "Menü megnyitása",
     menuClose: "Menü bezárása",
+    menuMinimize: "Edzés kicsinyítése és menü megnyitása",
     menuD_train: "Mai edzés és kihívások",
     menuD_calories: "Kalkulátor és napi napló",
     menuD_history: "Naptár, grafikon, szerkesztés",
