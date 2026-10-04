@@ -482,7 +482,7 @@ export default {
     lunge: ["Start", "Krok w tył, kolano do podłogi"],
     bridge: ["Leżenie, kolana zgięte", "Biodra w górę, spięte pośladki"],
     sbridge: ["Leżenie, jedna noga w górze", "Biodra w górę, spięte pośladki"],
-    wallsit: ["Uda poziomo, kolana ~90°, plecy przy ścianie"],
+    wallsit: ["Kolana ~90°, plecy przy ścianie"],
     birddog: ["Na czworakach", "Ręka i przeciwna noga"],
     hollow: ["Dół pleców dociśnięty do podłogi"],
     legraise: ["Nogi w górze", "Opuszczaj powoli, nie odkładaj"],

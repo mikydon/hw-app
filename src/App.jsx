@@ -583,8 +583,8 @@ const FIGS = {
     { hip: [50.3, 87.9], torso: -8.7, hands: [[73.4, GROUND], [74.4, GROUND]], armBend: [1, 1], feet: [[10.8, GROUND], [12.8, GROUND]], legBend: [1, 1], hide: ["farLeg"] },
   ],
   b5: [
-    { hip: [53, 86], torso: -12.5, hands: [[93, GROUND], [95, GROUND]], elbows: [[78, GROUND], [80, GROUND]], feet: [[14, GROUND], [16, GROUND]], legBend: [1, 1] },
-    { hip: [52, 92], torso: -26, hands: [[93, GROUND], [95, GROUND]], elbows: [[78, GROUND], [80, GROUND]], feet: [[12, GROUND], [12.5, 93]], legBend: [1, 1], bad: true },
+    { hip: [52.8, 84.9], torso: -13.2, hands: [[93, GROUND], [93, GROUND]], elbows: [[78.1, GROUND], [78.1, GROUND]], feet: [[13.7, GROUND], [13.7, GROUND]], legBend: [1, 1], hide: ["farArm", "farLeg"] },
+    { hip: [54.4, 90], torso: -25, hands: [[93, GROUND], [93, GROUND]], elbows: [[78, GROUND], [78, GROUND]], feet: [[14.8, GROUND], [14.8, GROUND]], legBend: [1, 1], hide: ["farArm", "farLeg"], bad: true },
   ],
   n1: [
     { hip: [60, 54], torso: -90, hands: [[88.6, 30], [88.6, 30]], armBend: [1, 1], feet: [[60, GROUND], [60, GROUND]], legBend: [-1, -1], hide: ["farArm", "farLeg"] },

@@ -482,7 +482,7 @@ export default {
     lunge: ["Início", "Passo para trás, joelho ao chão"],
     bridge: ["Deite, joelhos dobrados", "Quadril para cima, contraia os glúteos"],
     sbridge: ["Deite, uma perna para cima", "Quadril para cima, contraia os glúteos"],
-    wallsit: ["Coxas paralelas, joelhos ~90°, costas na parede"],
+    wallsit: ["Joelhos ~90°, costas na parede"],
     birddog: ["De quatro apoios", "Braço e perna oposta"],
     hollow: ["Lombar colada no chão"],
     legraise: ["Pernas para cima", "Desça devagar, sem encostar"],

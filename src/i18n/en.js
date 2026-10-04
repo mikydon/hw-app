@@ -482,7 +482,7 @@ export default {
     lunge: ["Start", "Step back, knee to the floor"],
     bridge: ["Lie down, knees bent", "Hips up, squeeze glutes"],
     sbridge: ["Lie down, one leg up", "Hips up, squeeze glutes"],
-    wallsit: ["Thighs level, knees ~90°, back on the wall"],
+    wallsit: ["Knees ~90°, back on the wall"],
     birddog: ["On all fours", "Arm and opposite leg"],
     hollow: ["Lower back pressed to the floor"],
     legraise: ["Legs up", "Lower slowly, don't touch down"],
