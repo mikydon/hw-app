@@ -719,17 +719,17 @@ function Prop({ pr }) {
           <line x1="-3.3" y1="-4" x2="-3.3" y2="-11.8" /><line x1="-1.1" y1="-4" x2="-1.1" y2="-13.2" />
           <line x1="1.1" y1="-4" x2="1.1" y2="-13.8" /><line x1="3.3" y1="-4" x2="3.3" y2="-13" />
         </g>
-        <line x1="4.8" y1="1.2" x2="12.12" y2="-2.48" stroke={C.chalk} strokeWidth="2.6" strokeLinecap="round" />
+        <line x1="4.8" y1="1.2" x2="11.38" y2="-1.47" stroke={C.chalk} strokeWidth="2.6" strokeLinecap="round" />
       </g>
     );
     return (
       <g>
         <rect x="3" y="3" width="52" height="44" rx="6" fill={C.panel} stroke={C.line} strokeWidth="1.2" />
-        <path d="M29 21.4 L31.4 25 L29 28.6 L26.6 25 Z" fill={C.sky} opacity="0.8" />
-        <g transform="translate(16.96 26) rotate(40)">{hand}</g>
-        <g transform="translate(41.04 26) scale(-1 1) rotate(40)">{hand}</g>
+        <path d="M29 21.2 L31.4 24.8 L29 28.4 L26.6 24.8 Z" fill={C.sky} opacity="0.8" />
+        <g transform="translate(17.69 26.5) rotate(35)">{hand}</g>
+        <g transform="translate(40.31 26.5) scale(-1 1) rotate(35)">{hand}</g>
         {/* thin gaps where the fingertips touch, so it reads as two hands */}
-        <g stroke={C.panel} strokeWidth="0.7"><line x1="29" y1="16.6" x2="29" y2="19.5" /><line x1="29" y1="30.6" x2="29" y2="33.4" /></g>
+        <g stroke={C.panel} strokeWidth="0.7"><line x1="29" y1="16.2" x2="29" y2="19.1" /><line x1="29" y1="30.5" x2="29" y2="33.3" /></g>
         <text x="29" y="44" textAnchor="middle" fontSize="5.5" fill={C.dim} fontFamily={BODY}>{T("figTop")}</text>
       </g>
     );
