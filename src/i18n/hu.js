@@ -485,7 +485,7 @@ export default {
     wallsit: ["Térd ~90°, hát a falon"],
     birddog: ["Négykézláb: kar és térd ~90°", "Kar és ellentétes láb"],
     hollow: ["Derék a padlóhoz nyomva"],
-    legraise: ["Láb fent", "Lassan le, ne érjen le"],
+    legraise: ["Láb fent", "Lassan le, ne tedd le a földre"],
     hf: ["Hátsó térd lent, csípő előre"],
     child: ["Csípő a sarokra, kar messze előre"],
   },

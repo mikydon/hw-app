@@ -485,7 +485,7 @@ export default {
     wallsit: ["Genoux ~90°, dos au mur"],
     birddog: ["À quatre pattes : bras et genoux ~90°", "Bras et jambe opposée"],
     hollow: ["Bas du dos plaqué au sol"],
-    legraise: ["Jambes en l'air", "Descends lentement, sans toucher le sol"],
+    legraise: ["Jambes en l'air", "Descends lentement, sans les poser au sol"],
     hf: ["Genou arrière au sol, hanches en avant"],
     child: ["Fesses sur les talons, bras loin devant"],
   },

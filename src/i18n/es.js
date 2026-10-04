@@ -485,7 +485,7 @@ export default {
     wallsit: ["Rodillas ~90°, espalda en la pared"],
     birddog: ["En cuatro apoyos: brazos y rodillas ~90°", "Brazo y pierna contraria"],
     hollow: ["Lumbar pegada al suelo"],
-    legraise: ["Piernas arriba", "Baja despacio, sin tocar el suelo"],
+    legraise: ["Piernas arriba", "Baja despacio, sin apoyarlas en el suelo"],
     hf: ["Rodilla de atrás abajo, cadera adelante"],
     child: ["Cadera a los talones, brazos bien adelante"],
   },

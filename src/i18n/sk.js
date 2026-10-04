@@ -485,7 +485,7 @@ export default {
     wallsit: ["Kolená ~90°, chrbát na stene"],
     birddog: ["Na štyroch: ruky aj kolená ~90°", "Ruka a opačná noha"],
     hollow: ["Driek pritlačený k zemi"],
-    legraise: ["Nohy hore", "Pomaly dole, nepoložiť"],
+    legraise: ["Nohy hore", "Pomaly dole, nepoložiť na zem"],
     hf: ["Zadné koleno na zemi, boky dopredu"],
     child: ["Zadok na päty, ruky ďaleko pred seba"],
   },

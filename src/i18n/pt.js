@@ -485,7 +485,7 @@ export default {
     wallsit: ["Joelhos ~90°, costas na parede"],
     birddog: ["De quatro apoios: braços e joelhos ~90°", "Braço e perna oposta"],
     hollow: ["Lombar colada no chão"],
-    legraise: ["Pernas para cima", "Desça devagar, sem encostar"],
+    legraise: ["Pernas para cima", "Desça devagar, sem apoiar no chão"],
     hf: ["Joelho de trás no chão, quadril à frente"],
     child: ["Quadril nos calcanhares, braços bem à frente"],
   },

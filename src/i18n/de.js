@@ -485,7 +485,7 @@ export default {
     wallsit: ["Knie ~90°, Rücken an der Wand"],
     birddog: ["Vierfüßlerstand: Arme und Knie ~90°", "Arm und Gegenbein"],
     hollow: ["Unterer Rücken fest am Boden"],
-    legraise: ["Beine oben", "Langsam runter, nicht ablegen"],
+    legraise: ["Beine oben", "Langsam runter, nicht auf den Boden ablegen"],
     hf: ["Hinteres Knie unten, Hüfte vor"],
     child: ["Hüfte zu den Fersen, Arme weit vor"],
   },

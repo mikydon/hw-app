@@ -662,10 +662,10 @@ const FIGS = {
     { hip: [50, 89], torso: 0, head: 0, hands: [[47.1, 92.4], [47.1, 92.4]], armBend: [1, 1], feet: [[10.3, 84], [10.3, 84]], legBend: [1, 1], supine: true, hide: ["farArm", "farLeg"] },
   ],
   hf: [
-    { hip: [56, 76], torso: -92, hands: [[60, 80], [56, 80]], armBend: [1, 1], feet: [[84, GROUND], [24, GROUND]], legBend: [-1, -1] },
+    { hip: [56, 76], torso: -92, hands: [[55, 76], [55, 76]], armBend: [1, 1], feet: [[84, GROUND], [24, GROUND]], legBend: [-1, -1], hide: ["farArm"] },
   ],
   child: [
-    { hip: [32, 84], torso: 0, head: 18, hands: [[86, GROUND], [88, GROUND]], armBend: [1, 1], feet: [[30, GROUND], [32, GROUND]], legBend: [-1, -1] },
+    { hip: [32, 84], torso: 0, head: 18, hands: [[87, 92.5], [87, 92.5]], armBend: [1, 1], feet: [[30, GROUND], [30, GROUND]], legBend: [-1, -1], hide: ["farArm", "farLeg"] },
   ],
 };
 

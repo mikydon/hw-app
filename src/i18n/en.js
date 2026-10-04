@@ -485,7 +485,7 @@ export default {
     wallsit: ["Knees ~90°, back on the wall"],
     birddog: ["On all fours: arms and knees ~90°", "Arm and opposite leg"],
     hollow: ["Lower back pressed to the floor"],
-    legraise: ["Legs up", "Lower slowly, don't touch down"],
+    legraise: ["Legs up", "Lower slowly, don't put them on the floor"],
     hf: ["Back knee down, hips forward"],
     child: ["Hips to heels, arms far forward"],
   },

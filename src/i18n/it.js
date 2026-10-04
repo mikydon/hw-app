@@ -485,7 +485,7 @@ export default {
     wallsit: ["Ginocchia ~90°, schiena al muro"],
     birddog: ["A quattro zampe: braccia e ginocchia ~90°", "Braccio e gamba opposta"],
     hollow: ["Zona lombare schiacciata a terra"],
-    legraise: ["Gambe su", "Abbassa piano, senza toccare terra"],
+    legraise: ["Gambe su", "Abbassa piano, senza appoggiarle a terra"],
     hf: ["Ginocchio dietro a terra, fianchi avanti"],
     child: ["Fianchi sui talloni, braccia ben avanti"],
   },

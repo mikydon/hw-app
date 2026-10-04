@@ -485,7 +485,7 @@ export default {
     wallsit: ["Kolana ~90°, plecy przy ścianie"],
     birddog: ["Na czworakach: ręce i kolana ~90°", "Ręka i przeciwna noga"],
     hollow: ["Dół pleców dociśnięty do podłogi"],
-    legraise: ["Nogi w górze", "Opuszczaj powoli, nie odkładaj"],
+    legraise: ["Nogi w górze", "Opuszczaj powoli, nie kładź na podłogę"],
     hf: ["Tylne kolano na ziemi, biodra do przodu"],
     child: ["Biodra na piętach, ręce daleko z przodu"],
   },
