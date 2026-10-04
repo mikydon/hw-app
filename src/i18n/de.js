@@ -106,6 +106,7 @@ export default {
     trainingSettings: "Training",
     vibrate: "Vibration",
     vibrateD: "Dein Handy vibriert am Ende einer Halteübung oder Pause und bei einem Rekord.",
+    vibrateHint: "Vibriert nichts? Prüf, ob der Lautlos-Modus oder Nicht stören aus ist und ob Vibration in den Handy-Einstellungen an ist.",
     keepAwake: "Bildschirm anlassen",
     keepAwakeD: "Das Display bleibt während des Trainings an.",
     aiCopy: "Log für KI kopieren",
@@ -266,7 +267,7 @@ export default {
 
   units: { arm: "/Arm", leg: "/Bein", side: "/Seite" },
   perUnit: { arm: "pro Arm", leg: "pro Bein", side: "pro Seite" },
-  themes: { navy: "Marine", black: "Schwarz", forest: "Wald", plum: "Pflaume" },
+  themes: { navy: "Marine", black: "Schwarz", forest: "Wald", plum: "Pflaume", ocean: "Ozean", wine: "Wein", slate: "Schiefer", coffee: "Kaffee" },
   ranks: ["Holz", "Eisen", "Bronze", "Silber", "Gold", "Platin", "Diamant"],
 
   ex: {

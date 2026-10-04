@@ -106,6 +106,7 @@ export default {
     trainingSettings: "Trening",
     vibrate: "Wibracje",
     vibrateD: "Telefon zawibruje na koniec przytrzymania lub przerwy i przy rekordzie.",
+    vibrateHint: "Jeśli telefon nie wibruje, sprawdź, czy nie masz włączonego trybu cichego lub Nie przeszkadzać i czy wibracje są włączone w ustawieniach telefonu.",
     keepAwake: "Nie wygaszaj ekranu",
     keepAwakeD: "Ekran nie gaśnie podczas treningu.",
     aiCopy: "Kopiuj log dla AI",
@@ -266,7 +267,7 @@ export default {
 
   units: { arm: "/rękę", leg: "/nogę", side: "/stronę" },
   perUnit: { arm: "na rękę", leg: "na nogę", side: "na stronę" },
-  themes: { navy: "Granat", black: "Czerń", forest: "Las", plum: "Śliwka" },
+  themes: { navy: "Granat", black: "Czerń", forest: "Las", plum: "Śliwka", ocean: "Ocean", wine: "Wino", slate: "Łupek", coffee: "Kawa" },
   ranks: ["Drewno", "Żelazo", "Brąz", "Srebro", "Złoto", "Platyna", "Diament"],
 
   ex: {

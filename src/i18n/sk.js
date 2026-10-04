@@ -106,6 +106,7 @@ export default {
     trainingSettings: "Tréning",
     vibrate: "Vibrácie",
     vibrateD: "Telefón zavibruje na konci výdrže, oddychu a pri rekorde.",
+    vibrateHint: "Ak telefón nevibruje, skontroluj, či nemáš zapnutý tichý režim alebo Nerušiť a či máš v nastaveniach telefónu zapnuté vibrácie.",
     keepAwake: "Nechať obrazovku zapnutú",
     keepAwakeD: "Počas tréningu displej nezhasne.",
     aiCopy: "Kopírovanie záznamu pre AI",
@@ -266,7 +267,7 @@ export default {
 
   units: { arm: "/ruku", leg: "/nohu", side: "/stranu" },
   perUnit: { arm: "na ruku", leg: "na nohu", side: "na stranu" },
-  themes: { navy: "Navy", black: "Čierna", forest: "Les", plum: "Slivka" },
+  themes: { navy: "Navy", black: "Čierna", forest: "Les", plum: "Slivka", ocean: "Oceán", wine: "Víno", slate: "Bridlica", coffee: "Káva" },
   ranks: ["Drevo", "Železo", "Bronz", "Striebro", "Zlato", "Platina", "Diamant"],
 
   ex: {

@@ -11,7 +11,9 @@ Talk to Michael in casual Slovak. Before you deliver anything, test it (build pl
   - Units are codes (`arm`, `leg`, `side`). History saved before v1.2 has Slovak names and units (`/ruku`…); display goes through `exName()` and `unitStr()`.
   - Daily lines: `quotes` (training days) and `restDay` (trained today or yesterday, never "go train"); `doneTitles`/`doneSubs` vary the "done today" card. They are picked by index, so every locale must have the same number of items (`check.mjs` enforces it).
 - `assets/`: `mark.svg` (logo), `icon-maskable.svg`, `logo-wordmark.svg/png`. Icons in the root are rendered from them with Chromium.
-- `Sheet` (bottom sheets: how-to, swap, editors) renders into `<body>` with a React portal. Inside a screen, the `.scr` slide-in animation makes the screen the containing block for `position: fixed`, which put sheets off-screen (fixed in v1.3.0). Keep the portal and `.sheetBox` (border-box, max-height from `dvh`).
+- `Sheet` (bottom sheets: how-to, swap, editors) renders into `<body>` with a React portal. Inside a screen, the `.scr` slide-in animation makes the screen the containing block for `position: fixed`, which put sheets off-screen (fixed in v1.3.0). Keep the portal and `.sheetBox` (border-box, max-height from `dvh`). `Confetti` uses a portal for the same reason (it was cut off on short screens).
+- Settings: language is one row that opens a scrollable sheet (room for more languages). Themes: navy, black, forest, plum, ocean, wine, slate, coffee (dark only; keep dim/panel contrast ≥ 4.5, names in `themes` of every locale).
+- Figures (`FIGS`): side view, person faces right, y grows down, ground y = 94. Limb lengths are fixed (`FL`); hands/feet are targets and IK picks the elbow/knee side by `armBend`/`legBend`, so a wrong sign flips a joint (elbows must point back toward the feet in push-ups/rows, knees on the floor in knee push-ups, etc.). A target farther than the limb length leaves the hand/foot short of it (gaps to frames/towels). `hide: ["farArm"|"farLeg"]` drops the back limb when it only confuses. Check new poses by printing joint positions and looking at a render; Michael reviews figures one by one.
 - `src/main.jsx`: entry. Renders `<App/>` and registers `sw.js` when served over http(s).
 - `template.html`, `build.mjs`: `npm install && npm run build` bundles `src/` with esbuild and inlines it into `index.html`.
 - `index.html`, `manifest.webmanifest`, `sw.js`, `icon.svg`, `icon-*.png`, `icon-maskable-*.png`, `apple-touch-icon.png`: the deployable PWA. GitHub Pages serves it from `main`, root (https://mikydon.github.io/hw-app/).
@@ -46,6 +48,7 @@ Talk to Michael in casual Slovak. Before you deliver anything, test it (build pl
 ## Roadmap (agreed order)
 1. Done in v1.2.0: 11 languages, HW App branding and logo. Settings tab was v1.1.0.
    Done in v1.3.0: sheet fix, daily lines + closable cards, history editing/manual add, full reset, Settings → Exercises.
+   Done in v1.3.1: figure fixes (push-up elbows back, pike head in front of hands, knees, rows), confetti fix, language sheet, 4 more themes, vibration hint. Name change still open (Michael suggested "howo"; HOWO is a Sinotruk truck brand).
 2. Next (planned as v1.4.0): Real Android APK via Capacitor, with a GitHub Actions build to Releases.
    - Use the same signing key every time so updates keep user data.
    - Store the key as a repo secret.

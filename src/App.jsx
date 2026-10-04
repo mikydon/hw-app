@@ -24,8 +24,12 @@ const THEMES = {
   black:  { ink: "#000000", panel: "#111317", panelHi: "#1d2027", line: "#2b2f38", chalk: "#f2f4f8", dim: "#9aa1ae", edge: "#08090b" },
   forest: {    ink: "#0d1f17", panel: "#142d22", panelHi: "#1d3d2f", line: "#2a5240", chalk: "#eefaf3", dim: "#94b3a3", edge: "#0a1912" },
   plum:   { ink: "#1d1230", panel: "#2a1b45", panelHi: "#37245a", line: "#4a3374", chalk: "#f4effc", dim: "#ad9cc8", edge: "#150c24" },
+  ocean:  { ink: "#071f26", panel: "#0e2f38", panelHi: "#15414c", line: "#1f5966", chalk: "#ecfafc", dim: "#8fb5bd", edge: "#06181e" },
+  wine:   { ink: "#22090f", panel: "#34111b", panelHi: "#461a26", line: "#622637", chalk: "#fdeff2", dim: "#c49ba6", edge: "#18060b" },
+  slate:  { ink: "#15181d", panel: "#1f242b", panelHi: "#2a313a", line: "#3a434f", chalk: "#f1f4f8", dim: "#9aa6b4", edge: "#0e1115" },
+  coffee: { ink: "#1c140f", panel: "#2a1f17", panelHi: "#382a20", line: "#4d3a2c", chalk: "#fbf3ec", dim: "#b8a291", edge: "#130d09" },
 };
-const APP_VERSION = "1.3.0";
+const APP_VERSION = "1.3.1";
 // Big Shoulders has no Cyrillic, so Oswald (also condensed) covers Ukrainian. The browser only
 // downloads the Oswald unicode ranges a page actually uses.
 const DISPLAY = "'Big Shoulders Display', 'Oswald', 'Arial Narrow', Impact, sans-serif";
@@ -568,89 +572,89 @@ function fromFeet(foot, lean) { const a = -90 - lean; return { hip: dirv(foot, a
 const FIGS = {
   k1: [
     { hip: [50, 76.4], torso: -26, hands: [[73.4, GROUND], [75.4, GROUND]], armBend: [1, 1], feet: [[14, GROUND], [16, GROUND]], legBend: [1, 1] },
-    { hip: [50.3, 87.9], torso: -8.7, hands: [[72, GROUND], [74, GROUND]], armBend: [-1, -1], feet: [[10.8, GROUND], [12.8, GROUND]], legBend: [1, 1] },
+    { hip: [50.3, 87.9], torso: -8.7, hands: [[73.4, GROUND], [75.4, GROUND]], armBend: [1, 1], feet: [[10.8, GROUND], [12.8, GROUND]], legBend: [1, 1] },
   ],
   k3: [
     { hip: [50, 76.4], torso: -26, hands: [[70, GROUND], [72, GROUND]], armBend: [1, 1], feet: [[14, GROUND], [16, GROUND]], legBend: [1, 1], props: [{ t: "diamond", x: 71, y: 89 }] },
-    { hip: [50.3, 87.9], torso: -8.7, hands: [[70, GROUND], [72, GROUND]], armBend: [-1, -1], feet: [[10.8, GROUND], [12.8, GROUND]], legBend: [1, 1] },
+    { hip: [50.3, 87.9], torso: -8.7, hands: [[70, GROUND], [72, GROUND]], armBend: [1, 1], feet: [[10.8, GROUND], [12.8, GROUND]], legBend: [1, 1] },
   ],
   b5: [
     { hip: [53, 86], torso: -12.5, hands: [[93, GROUND], [95, GROUND]], elbows: [[78, GROUND], [80, GROUND]], feet: [[14, GROUND], [16, GROUND]], legBend: [1, 1] },
-    { hip: [52, 92], torso: -26, hands: [[93, GROUND], [95, GROUND]], elbows: [[78, GROUND], [80, GROUND]], feet: [[14, GROUND], [16, GROUND]], legBend: [-1, -1], bad: true },
+    { hip: [52, 92], torso: -26, hands: [[93, GROUND], [95, GROUND]], elbows: [[78, GROUND], [80, GROUND]], feet: [[12, GROUND], [12.5, 93]], legBend: [1, 1], bad: true },
   ],
   n1: [
     { hip: [58, 54], torso: -90, hands: [[84, 33], [86, 33]], armBend: [1, 1], feet: [[58, GROUND], [60, GROUND]], legBend: [1, 1] },
     { hip: [48, 82], torso: -58, hands: [[88, 58], [90, 58]], armBend: [1, 1], feet: [[60, GROUND], [62, GROUND]], legBend: [-1, -1] },
   ],
   r1: [
-    { hip: [50, 59.4], torso: 39, head: 50, hands: [[92.7, GROUND], [94.7, GROUND]], armBend: [-1, -1], feet: [[30, GROUND], [32, GROUND]], legBend: [1, 1] },
-    { hip: [55, 59], torso: 50, head: 62, hands: [[90, GROUND], [92, GROUND]], armBend: [-1, -1], feet: [[36, GROUND], [38, GROUND]], legBend: [1, 1] },
+    { hip: [50.2, 54.1], torso: 46.5, head: 70, hands: [[88, GROUND], [90, GROUND]], armBend: [1, 1], feet: [[48, GROUND], [50, GROUND]], legBend: [1, 1] },
+    { hip: [70.1, 60.7], torso: 42.5, head: 52.5, hands: [[88, GROUND], [90, GROUND]], armBend: [1, 1], feet: [[48, GROUND], [50, GROUND]], legBend: [1, 1] },
   ],
   row1: [
-    { ...fromFeet([86, GROUND], 17), hands: [[96, 41], [70, 62]], armBend: [-1, 1], feet: [[86, GROUND], [88, GROUND]], legBend: [1, 1], props: [{ t: "frame" }] },
-    { ...fromFeet([88, GROUND], 0), hands: [[96, 42], [80, 62]], armBend: [1, 1], feet: [[86, GROUND], [88, GROUND]], legBend: [1, 1], props: [{ t: "frame" }] },
+    { ...fromFeet([88, GROUND], 17), hands: [[97, 37.2], [70.5, 59.7]], armBend: [-1, 1], feet: [[88, GROUND], [90, GROUND]], legBend: [1, 1], props: [{ t: "frame" }], hide: ["farArm"] },
+    { ...fromFeet([88, GROUND], 2), hands: [[97, 37.2], [86.5, 56.8]], armBend: [1, 1], feet: [[88, GROUND], [90, GROUND]], legBend: [1, 1], props: [{ t: "frame" }], hide: ["farArm"] },
   ],
   row3: [
-    { ...fromFeet([86, GROUND], 17), hands: [[96, 36], [70, 62]], armBend: [-1, 1], feet: [[86, GROUND], [88, GROUND]], legBend: [1, 1], props: [{ t: "frame" }] },
-    { ...fromFeet([88, GROUND], 0), hands: [[96, 30], [80, 62]], armBend: [-1, 1], feet: [[86, GROUND], [88, GROUND]], legBend: [1, 1], props: [{ t: "frame" }] },
+    { ...fromFeet([88, GROUND], 17), hands: [[97.4, 31], [70.5, 59.7]], armBend: [-1, 1], feet: [[88, GROUND], [90, GROUND]], legBend: [1, 1], props: [{ t: "frame" }], hide: ["farArm"] },
+    { ...fromFeet([88, GROUND], 2), hands: [[97.4, 31], [86.8, 56.8]], elbows: [[83.5, 30.5], [86.2, 42.8]], feet: [[88, GROUND], [90, GROUND]], legBend: [1, 1], props: [{ t: "frame" }], hide: ["farArm"] },
   ],
   row2: [
-    { ...fromFeet([84, GROUND], 30), hands: [[84, 52], [86, 52]], armBend: [-1, -1], feet: [[84, GROUND], [86, GROUND]], legBend: [1, 1], props: [{ t: "door" }, { t: "towel", from: [104, 56], to: [85, 52] }] },
-    { ...fromFeet([84, GROUND], 14), hands: [[90, 54], [92, 54]], armBend: [1, 1], feet: [[84, GROUND], [86, GROUND]], legBend: [1, 1], props: [{ t: "door" }, { t: "towel", from: [104, 56], to: [91, 54] }] },
+    { ...fromFeet([96, GROUND], 30), hands: [[89.3, 49], [89.8, 48.6]], armBend: [-1, -1], feet: [[96, GROUND], [98, GROUND]], legBend: [1, 1], props: [{ t: "door" }, { t: "towel", from: [104, 56], to: [89.6, 48.8] }] },
+    { ...fromFeet([96, GROUND], 12), hands: [[90, 42], [91, 42.5]], armBend: [1, 1], feet: [[96, GROUND], [98, GROUND]], legBend: [1, 1], props: [{ t: "door" }, { t: "towel", from: [104, 56], to: [90.5, 42.3] }] },
   ],
   n2: [
-    { hip: [62, 54], torso: -88, hands: [[64, 74], [60, 74]], armBend: [1, 1], feet: [[80, GROUND], [30, 70]], legBend: [-1, 1], props: [{ t: "chair" }] },
-    { hip: [58, 72], torso: -80, hands: [[60, 92], [56, 92]], armBend: [1, 1], feet: [[80, GROUND], [30, 70]], legBend: [-1, 1], props: [{ t: "chair" }] },
+    { hip: [63, 57], torso: -88, hands: [[64, 84], [60, 84]], armBend: [1, 1], feet: [[78, GROUND], [30, 70]], legBend: [-1, -1], props: [{ t: "chair" }] },
+    { hip: [58, 72], torso: -80, hands: [[60, 99], [56, 99]], armBend: [1, 1], feet: [[78, GROUND], [30, 70]], legBend: [-1, -1], props: [{ t: "chair" }] },
   ],
   b2: [
-    { hip: [42, 88], torso: 0, head: 0, hands: [[68, 60], [70, 60]], armBend: [1, 1], feet: [[22, 68], [24, 68]], legBend: [-1, -1], lying: true },
-    { hip: [42, 88], torso: 0, head: 0, hands: [[95, 86], [70, 60]], armBend: [1, 1], feet: [[24, 68], [3, 86]], legBend: [-1, -1], lying: true },
+    { hip: [42, 88], torso: 0, head: 0, hands: [[68, 59], [70, 59.5]], armBend: [1, 1], feet: [[22, 68], [24, 68]], legBend: [1, 1], lying: true },
+    { hip: [42, 88], torso: 0, head: 0, hands: [[97, 86], [70, 59.5]], armBend: [1, 1], feet: [[22, 68], [2, 86]], legBend: [1, 1], lying: true },
   ],
   n7: [
-    { hip: [54, 72], torso: 30, head: 10, hands: [[66, GROUND], [68, GROUND]], armBend: [1, 1], feet: [[34, GROUND - 2], [36, GROUND - 2]], legBend: [-1, -1], props: [{ t: "towelFloor", x: 28 }] },
-    { hip: [50, 80], torso: 22, head: 10, hands: [[66, GROUND], [68, GROUND]], armBend: [1, 1], feet: [[12, GROUND - 2], [14, GROUND - 2]], legBend: [-1, -1], props: [{ t: "towelFloor", x: 6 }] },
+    { hip: [54, 72], torso: 30, head: 10, hands: [[48, 92.5], [50, 92.5]], armBend: [1, 1], feet: [[34, GROUND - 2], [36, GROUND - 2]], legBend: [1, 1], props: [{ t: "towelFloor", x: 28 }] },
+    { hip: [50, 80], torso: 22, head: 10, hands: [[45.2, 93], [47.2, 93]], armBend: [1, 1], feet: [[12, GROUND - 2], [12.5, GROUND - 1.5]], legBend: [1, 1], props: [{ t: "towelFloor", x: 6 }] },
   ],
   b4: [
-    { hip: [44, 88], torso: -22, head: -40, hands: [[66, 68], [70, 66]], armBend: [-1, -1], feet: [[42, 64], [8, 82]], legBend: [-1, -1] },
-    { hip: [44, 88], torso: -22, head: -40, hands: [[70, 66], [66, 68]], armBend: [-1, -1], feet: [[8, 82], [42, 64]], legBend: [-1, -1] },
+    { hip: [44, 88], torso: -22, head: -40, hands: [[72, 76], [73, 75]], elbows: [[60, 70], [75, 63.5]], feet: [[32, 64], [5, 79]], legBend: [1, 1] },
+    { hip: [44, 88], torso: -22, head: -40, hands: [[73, 75], [72, 76]], elbows: [[75, 63.5], [60, 70]], feet: [[5, 79], [32, 64]], legBend: [1, 1] },
   ],
   kKnee: [
-    { hip: [51.5, 81.4], torso: -39, hands: [[72, GROUND], [74, GROUND]], armBend: [1, 1], feet: [[18, 80], [20, 80]], legBend: [-1, -1] },
-    { hip: [55.5, 89.6], torso: -12.6, hands: [[78, GROUND], [80, GROUND]], armBend: [-1, -1], feet: [[20, 82], [22, 82]], legBend: [-1, -1] },
+    { hip: [52.95, 80.26], torso: -35.94, hands: [[74, GROUND], [76, GROUND]], armBend: [1, 1], feet: [[18, 85], [20, 85]], legBend: [-1, -1] },
+    { hip: [56.46, 88.52], torso: -10, hands: [[74, GROUND], [76, GROUND]], armBend: [1, 1], feet: [[18, 85], [20, 85]], legBend: [-1, -1] },
   ],
   kIncl: [
-    { hip: [44.6, 68.3], torso: -40, hands: [[84, 72], [86, 72]], armBend: [1, 1], feet: [[14, GROUND], [16, GROUND]], legBend: [1, 1], props: [{ t: "table" }] },
-    { hip: [48.6, 74], torso: -30, hands: [[84, 72], [86, 72]], armBend: [-1, -1], feet: [[14, GROUND], [16, GROUND]], legBend: [1, 1], props: [{ t: "table" }] },
+    { hip: [47.9, 66.9], torso: -42.7, hands: [[85, 72], [87, 72]], armBend: [1, 1], feet: [[18.5, GROUND], [20.5, GROUND]], legBend: [1, 1], props: [{ t: "table" }] },
+    { hip: [54.16, 75.87], torso: -26.95, hands: [[85, 72], [87, 72]], armBend: [1, 1], feet: [[18.5, GROUND], [20.5, GROUND]], legBend: [1, 1], props: [{ t: "table" }] },
   ],
   superman: [
-    { hip: [46, 89], torso: 0, head: -8, hands: [[100, 90], [102, 90]], armBend: [1, 1], feet: [[6, 91], [8, 91]], legBend: [1, 1] },
-    { hip: [46, 89], torso: -12, head: -22, hands: [[98, 74], [100, 74]], armBend: [1, 1], feet: [[8, 80], [10, 80]], legBend: [1, 1] },
+    { hip: [46, 89], torso: 0, head: -8, hands: [[101, 90], [102, 90]], armBend: [1, 1], feet: [[6, 91], [8, 91]], legBend: [1, 1] },
+    { hip: [46, 89], torso: -12, head: -22, hands: [[98, 74], [100, 74]], armBend: [1, 1], feet: [[7, 80], [7.5, 79]], legBend: [1, 1] },
   ],
   ytw: [
-    { hip: [40, 89], torso: -8, head: -14, hands: [[94, 76], [96, 76]], armBend: [1, 1], feet: [[2, 91], [4, 91]], legBend: [1, 1] },
-    { hip: [40, 89], torso: -8, head: -14, hands: [[72, 80], [74, 80]], armBend: [1, 1], feet: [[2, 91], [4, 91]], legBend: [1, 1] },
+    { hip: [40, 89], torso: -8, head: -14, hands: [[94, 76], [96, 76]], armBend: [1, 1], feet: [[0, 90], [0, 91]], legBend: [1, 1] },
+    { hip: [40, 89], torso: -8, head: -14, hands: [[64, 77], [65, 78]], elbows: [[51, 82.5], [52, 83.5]], feet: [[0, 90], [0, 91]], legBend: [1, 1] },
   ],
   lunge: [
     { hip: [58, 54], torso: -90, hands: [[60, 80], [56, 80]], armBend: [1, 1], feet: [[58, GROUND], [60, GROUND]], legBend: [-1, -1] },
-    { hip: [56, 72], torso: -88, hands: [[58, 98], [54, 98]], armBend: [1, 1], feet: [[76, GROUND], [24, GROUND - 2]], legBend: [-1, 1] },
+    { hip: [40, 72], torso: -88, hands: [[42, 98], [38, 98]], armBend: [1, 1], feet: [[60, GROUND], [16, GROUND - 1]], legBend: [-1, -1] },
   ],
   bridge: [
     { hip: [46, 89], torso: 0, head: 0, hands: [[44, 92], [46, 92]], armBend: [1, 1], feet: [[28, GROUND], [30, GROUND]], legBend: [1, 1] },
-    { hip: [48, 72], torso: 35, head: 10, hands: [[42, 93], [44, 93]], armBend: [1, 1], feet: [[28, GROUND], [30, GROUND]], legBend: [1, 1] },
+    { hip: [51.1, 80.3], torso: 17.2, head: 0, hands: [[46, 93], [48, 93]], armBend: [1, 1], feet: [[28, GROUND], [30, GROUND]], legBend: [1, 1] },
   ],
   wallsit: [
-    { hip: [30, 70], torso: -90, hands: [[38, 92], [36, 92]], armBend: [1, 1], feet: [[50, GROUND], [52, GROUND]], legBend: [-1, -1], props: [{ t: "wall" }] },
+    { hip: [27, 74], torso: -90, hands: [[27.5, 77], [28.5, 77]], armBend: [1, 1], feet: [[47, GROUND], [49, GROUND]], legBend: [-1, -1], props: [{ t: "wall" }] },
   ],
   birddog: [
-    { hip: [40, 74], torso: -20.3, hands: [[64, GROUND], [66, GROUND]], armBend: [1, 1], feet: [[20, GROUND], [22, GROUND]], legBend: [1, 1] },
-    { hip: [40, 74], torso: -20.3, hands: [[94, 62], [66, GROUND]], armBend: [1, 1], feet: [[20, GROUND], [2, 70]], legBend: [1, 1] },
+    { hip: [40, 74], torso: -20.3, hands: [[64, GROUND], [66, GROUND]], armBend: [1, 1], feet: [[20, GROUND], [22, GROUND]], legBend: [-1, -1] },
+    { hip: [40, 74], torso: -20.3, hands: [[94, 62], [66, GROUND]], armBend: [1, 1], feet: [[20, GROUND], [0, 70]], legBend: [-1, -1] },
   ],
   hollow: [
-    { hip: [50, 89], torso: -14, head: -24, hands: [[104, 72], [106, 72]], armBend: [1, 1], feet: [[12, 80], [14, 80]], legBend: [1, 1] },
+    { hip: [50, 89], torso: -14, head: -24, hands: [[104, 72], [106, 72]], armBend: [1, 1], feet: [[11, 80], [11, 79]], legBend: [1, 1] },
   ],
   legraise: [
     { hip: [50, 89], torso: 0, head: 0, hands: [[48, 92], [50, 92]], armBend: [1, 1], feet: [[50, 49], [52, 49]], legBend: [1, 1] },
-    { hip: [50, 89], torso: 0, head: 0, hands: [[48, 92], [50, 92]], armBend: [1, 1], feet: [[11, 84], [13, 84]], legBend: [1, 1] },
+    { hip: [50, 89], torso: 0, head: 0, hands: [[48, 92], [50, 92]], armBend: [1, 1], feet: [[10.3, 84], [10.5, 83]], legBend: [1, 1] },
   ],
   hf: [
     { hip: [56, 76], torso: -92, hands: [[60, 80], [56, 80]], armBend: [1, 1], feet: [[84, GROUND], [24, GROUND]], legBend: [-1, -1] },
@@ -671,8 +675,9 @@ function Stick({ p }) {
     if (p.elbows) { elbow = p.elbows[i]; hand = p.hands[i]; }
     else { const a = ik(shoulder, p.hands[i], FL.ua, FL.fa, p.armBend[i]); elbow = a.mid; hand = a.end; }
     const lg = ik(p.hip, p.feet[i], FL.th, FL.sh, p.legBend[i]);
-    parts.push({ i, col, pts: [p.hip, lg.mid, lg.end] });
-    parts.push({ i, col, pts: [shoulder, elbow, hand] });
+    // hide: ["farArm", "farLeg"] leaves out the back limb when it would only confuse (e.g. one-arm rows).
+    if (!(i === 1 && (p.hide || []).includes("farLeg"))) parts.push({ i, col, pts: [p.hip, lg.mid, lg.end] });
+    if (!(i === 1 && (p.hide || []).includes("farArm"))) parts.push({ i, col, pts: [shoulder, elbow, hand] });
   });
   const line = pts => pts.map(q => `${q[0].toFixed(1)},${q[1].toFixed(1)}`).join(" ");
   return (
@@ -894,12 +899,15 @@ function Confetti({ count = 70 }) {
   const [show, setShow] = useState(true);
   useEffect(() => { const t = setTimeout(() => setShow(false), 4200); return () => clearTimeout(t); }, []);
   if (!show) return null;
-  return (
+  // Portal into <body> for the same reason as Sheet: inside an animated screen, "fixed" would be
+  // relative to that screen, so on a short screen (workout ended early) the confetti got cut off.
+  return createPortal(
     <div aria-hidden="true" style={{ position: "fixed", inset: 0, pointerEvents: "none", overflow: "hidden", zIndex: 90 }}>
       {pieces.map((p, i) => (
         <span key={i} className="conf" style={{ left: `${p.left}%`, background: p.color, borderRadius: p.round ? 99 : 2, "--dx": p.dx, "--rot": p.rot, "--dur": p.dur, "--delay": p.delay }} />
       ))}
-    </div>
+    </div>,
+    document.body
   );
 }
 
@@ -1746,6 +1754,7 @@ function ExercisesPage({ settings, set, history, onBack }) {
 
 function SettingsTab({ settings, setSettings, history, profile, setProfile, onImport, onResetAll }) {
   const [page, setPage] = useState(null); // null | "exercises"
+  const [langOpen, setLangOpen] = useState(false);
   const [resetAll, setResetAll] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -1815,19 +1824,32 @@ function SettingsTab({ settings, setSettings, history, profile, setProfile, onIm
       <input ref={fileRef} type="file" accept="application/json,.json" onChange={readBackup} style={{ display: "none" }} />
 
       <div style={sectionTitle}>{T("language")}</div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-        {LANGS.map(l => {
-          const on = curLang === l.code;
-          return (
-            <button key={l.code} lang={l.code} onClick={() => { sfxTap(); set("lang", l.code); }} aria-pressed={on}
-              style={{ ...btnBase, display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", textAlign: "left", fontSize: 14, background: on ? C.panelHi : "transparent", color: on ? C.chalk : C.dim, border: `1.5px solid ${on ? C.signal : C.line}` }}>
-              <span aria-hidden="true" style={{ fontSize: 18 }}>{l.flag}</span>
-              <span style={{ flex: 1 }}>{l.name}</span>
-              {on && <span style={{ color: C.signal }}>✓</span>}
-            </button>
-          );
-        })}
-      </div>
+      {/* One row with the current language; the full list opens in a scrollable sheet, so more languages fit later. */}
+      {(() => { const cur = LANGS.find(l => l.code === curLang) || LANGS[0]; return (
+        <button onClick={() => { sfxTap(); setLangOpen(true); }} aria-haspopup="dialog" aria-label={`${T("language")}: ${cur.name}`}
+          style={{ ...btnBase, ...card, width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "13px 16px", textAlign: "left", fontSize: 16, color: C.chalk }}>
+          <span aria-hidden="true" style={{ fontSize: 22 }}>{cur.flag}</span>
+          <span style={{ flex: 1 }}>{cur.name}</span>
+          <span aria-hidden="true" style={{ color: C.dim, fontSize: 20 }}>›</span>
+        </button>
+      ); })()}
+      {langOpen && (
+        <Sheet title={T("language")} onClose={() => setLangOpen(false)}>
+          <div role="listbox" aria-label={T("language")} style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            {LANGS.map(l => {
+              const on = curLang === l.code;
+              return (
+                <button key={l.code} lang={l.code} role="option" aria-selected={on} onClick={() => { sfxTap(); set("lang", l.code); setLangOpen(false); }}
+                  style={{ ...btnBase, display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", textAlign: "left", fontSize: 16, background: on ? C.panelHi : "transparent", color: on ? C.chalk : "#cdd6f0", border: `1.5px solid ${on ? C.signal : C.line}` }}>
+                  <span aria-hidden="true" style={{ fontSize: 22 }}>{l.flag}</span>
+                  <span style={{ flex: 1 }}>{l.name}</span>
+                  {on && <span style={{ color: C.signal }}>✓</span>}
+                </button>
+              );
+            })}
+          </div>
+        </Sheet>
+      )}
 
       <div style={sectionTitle}>{T("appearance")}</div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
@@ -1871,7 +1893,7 @@ function SettingsTab({ settings, setSettings, history, profile, setProfile, onIm
           </span>
           <span aria-hidden="true" style={{ color: C.dim, fontSize: 20 }}>›</span>
         </button>
-        <SettingRow title={T("vibrate")} desc={T("vibrateD")} on={settings.vibrate} onClick={() => { set("vibrate", !settings.vibrate); if (!settings.vibrate) { try { navigator.vibrate?.(120); } catch (_) {} } }} />
+        <SettingRow title={T("vibrate")} desc={`${T("vibrateD")} ${T("vibrateHint")}`} on={settings.vibrate} onClick={() => { set("vibrate", !settings.vibrate); if (!settings.vibrate) { try { navigator.vibrate?.(120); } catch (_) {} } }} />
         <SettingRow title={T("keepAwake")} desc={T("keepAwakeD")} on={settings.keepAwake} onClick={() => set("keepAwake", !settings.keepAwake)} />
         <SettingRow title={T("aiCopy")} desc={T("aiCopyD")} on={settings.aiCopy} onClick={() => set("aiCopy", !settings.aiCopy)} />
       </div>

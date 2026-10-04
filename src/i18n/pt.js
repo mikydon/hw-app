@@ -106,6 +106,7 @@ export default {
     trainingSettings: "Treino",
     vibrate: "Vibração",
     vibrateD: "O celular vibra no fim de uma isometria ou de um descanso e quando você bate um recorde.",
+    vibrateHint: "Se não vibrar, confira se o modo silencioso e o Não perturbe estão desligados e se a vibração está ligada nas configurações do celular.",
     keepAwake: "Manter a tela ligada",
     keepAwakeD: "A tela fica acesa durante o treino.",
     aiCopy: "Copiar registro para IA",
@@ -266,7 +267,7 @@ export default {
 
   units: { arm: "/braço", leg: "/perna", side: "/lado" },
   perUnit: { arm: "por braço", leg: "por perna", side: "por lado" },
-  themes: { navy: "Marinho", black: "Preto", forest: "Floresta", plum: "Ameixa" },
+  themes: { navy: "Marinho", black: "Preto", forest: "Floresta", plum: "Ameixa", ocean: "Oceano", wine: "Vinho", slate: "Ardósia", coffee: "Café" },
   ranks: ["Madeira", "Ferro", "Bronze", "Prata", "Ouro", "Platina", "Diamante"],
 
   ex: {

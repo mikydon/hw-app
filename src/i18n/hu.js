@@ -106,6 +106,7 @@ export default {
     trainingSettings: "Edzés",
     vibrate: "Rezgés",
     vibrateD: "A telefonod rezeg egy tartás vagy pihenő végén, és ha rekordot döntesz.",
+    vibrateHint: "Ha a telefon nem rezeg, nézd meg, hogy nincs-e bekapcsolva a néma mód vagy a Ne zavarjanak, és hogy a telefon beállításaiban be van-e kapcsolva a rezgés.",
     keepAwake: "Képernyő ébren tartása",
     keepAwakeD: "A kijelző edzés közben bekapcsolva marad.",
     aiCopy: "Napló másolása AI-nak",
@@ -266,7 +267,7 @@ export default {
 
   units: { arm: "/kar", leg: "/láb", side: "/oldal" },
   perUnit: { arm: "karonként", leg: "lábanként", side: "oldalanként" },
-  themes: { navy: "Sötétkék", black: "Fekete", forest: "Erdő", plum: "Szilva" },
+  themes: { navy: "Sötétkék", black: "Fekete", forest: "Erdő", plum: "Szilva", ocean: "Óceán", wine: "Bor", slate: "Pala", coffee: "Kávé" },
   ranks: ["Fa", "Vas", "Bronz", "Ezüst", "Arany", "Platina", "Gyémánt"],
 
   ex: {

@@ -106,6 +106,7 @@ export default {
     trainingSettings: "Allenamento",
     vibrate: "Vibrazione",
     vibrateD: "Il telefono vibra alla fine di una tenuta o di un recupero e quando fai un record.",
+    vibrateHint: "Se non vibra, controlla che la modalità silenziosa e Non disturbare siano disattivate e che la vibrazione sia attiva nelle impostazioni del telefono.",
     keepAwake: "Schermo sempre acceso",
     keepAwakeD: "Il display resta acceso durante l'allenamento.",
     aiCopy: "Copia log per l'IA",
@@ -266,7 +267,7 @@ export default {
 
   units: { arm: "/braccio", leg: "/gamba", side: "/lato" },
   perUnit: { arm: "per braccio", leg: "per gamba", side: "per lato" },
-  themes: { navy: "Blu notte", black: "Nero", forest: "Foresta", plum: "Prugna" },
+  themes: { navy: "Blu notte", black: "Nero", forest: "Foresta", plum: "Prugna", ocean: "Oceano", wine: "Vino", slate: "Ardesia", coffee: "Caffè" },
   ranks: ["Legno", "Ferro", "Bronzo", "Argento", "Oro", "Platino", "Diamante"],
 
   ex: {

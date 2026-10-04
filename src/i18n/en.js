@@ -106,6 +106,7 @@ export default {
     trainingSettings: "Workout",
     vibrate: "Vibration",
     vibrateD: "Your phone vibrates at the end of a hold or a rest and on a record.",
+    vibrateHint: "If it doesn't vibrate, check that silent mode and Do Not Disturb are off and that vibration is on in the phone's settings.",
     keepAwake: "Keep the screen on",
     keepAwakeD: "The display stays on during a workout.",
     aiCopy: "Copy log for AI",
@@ -266,7 +267,7 @@ export default {
 
   units: { arm: "/arm", leg: "/leg", side: "/side" },
   perUnit: { arm: "per arm", leg: "per leg", side: "per side" },
-  themes: { navy: "Navy", black: "Black", forest: "Forest", plum: "Plum" },
+  themes: { navy: "Navy", black: "Black", forest: "Forest", plum: "Plum", ocean: "Ocean", wine: "Wine", slate: "Slate", coffee: "Coffee" },
   ranks: ["Wood", "Iron", "Bronze", "Silver", "Gold", "Platinum", "Diamond"],
 
   ex: {
