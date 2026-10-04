@@ -512,7 +512,7 @@ export default {
     sbridge: ["Sdraiati, una gamba su", "Fianchi su, stringi i glutei"],
     r1e: ["Su, piedi sulla sedia", "Giù, testa davanti alle mani"],
     k3e: ["Su, piedi sulla sedia", "Giù, gomiti stretti"],
-    n1q: ["Fino in fondo", "Un quarto su", "Di nuovo giù, poi su"],
+    n1q: ["Fino in fondo", "Un quarto su", "Di nuovo fino in fondo", "Solo allora su"],
     b5l: ["Una gamba su, cambia a metà"],
     wallsit: ["Ginocchia ~90°, schiena al muro"],
     birddog: ["A quattro zampe: braccia e ginocchia ~90°", "Braccio e gamba opposta"],

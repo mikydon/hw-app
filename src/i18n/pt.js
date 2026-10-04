@@ -512,7 +512,7 @@ export default {
     sbridge: ["Deite, uma perna para cima", "Quadril para cima, contraia os glúteos"],
     r1e: ["Em cima, pés na cadeira", "Embaixo, cabeça à frente das mãos"],
     k3e: ["Em cima, pés na cadeira", "Embaixo, cotovelos junto ao corpo"],
-    n1q: ["Até embaixo", "Um quarto acima", "Desce de novo, depois sobe"],
+    n1q: ["Até embaixo", "Um quarto acima", "De novo até embaixo", "Só então sobe"],
     b5l: ["Uma perna em cima, troque na metade"],
     wallsit: ["Joelhos ~90°, costas na parede"],
     birddog: ["De quatro apoios: braços e joelhos ~90°", "Braço e perna oposta"],

@@ -512,7 +512,7 @@ export default {
     sbridge: ["Ľahni, jedna noha hore", "Boky hore, stlač zadok"],
     r1e: ["Hore, nohy na stoličke", "Dole, hlava pred ruky"],
     k3e: ["Hore, nohy na stoličke", "Dole, lakte k telu"],
-    n1q: ["Úplne dole", "Štvrť cesty hore", "Znova dole, až potom hore"],
+    n1q: ["Úplne dole", "Štvrť cesty hore", "Znova úplne dole", "Až potom hore"],
     b5l: ["Jedna noha hore, v polovici vymeň"],
     wallsit: ["Kolená ~90°, chrbát na stene"],
     birddog: ["Na štyroch: ruky aj kolená ~90°", "Ruka a opačná noha"],

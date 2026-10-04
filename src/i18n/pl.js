@@ -512,7 +512,7 @@ export default {
     sbridge: ["Leżenie, jedna noga w górze", "Biodra w górę, spięte pośladki"],
     r1e: ["Góra, nogi na krześle", "Dół, głowa przed dłońmi"],
     k3e: ["Góra, nogi na krześle", "Dół, łokcie przy ciele"],
-    n1q: ["Na sam dół", "Ćwierć w górę", "Znów w dół, potem w górę"],
+    n1q: ["Na sam dół", "Ćwierć w górę", "Znów na sam dół", "Dopiero wtedy w górę"],
     b5l: ["Jedna noga w górze, w połowie zmień"],
     wallsit: ["Kolana ~90°, plecy przy ścianie"],
     birddog: ["Na czworakach: ręce i kolana ~90°", "Ręka i przeciwna noga"],

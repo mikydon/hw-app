@@ -512,7 +512,7 @@ export default {
     sbridge: ["Fekvés, egyik láb fent", "Csípő fel, farizom feszítve"],
     r1e: ["Fent, láb a széken", "Lent, fej a kéz előtt"],
     k3e: ["Fent, láb a széken", "Lent, könyök a testnél"],
-    n1q: ["Teljesen le", "Negyed útig fel", "Újra le, csak utána fel"],
+    n1q: ["Teljesen le", "Negyed útig fel", "Újra teljesen le", "Csak utána fel"],
     b5l: ["Egyik láb fent, félidőben csere"],
     wallsit: ["Térd ~90°, hát a falon"],
     birddog: ["Négykézláb: kar és térd ~90°", "Kar és ellentétes láb"],

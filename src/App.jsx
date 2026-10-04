@@ -695,6 +695,7 @@ const FIGS = {
   n1q: [
     { hip: [53, 83], torso: -62, hands: [[95.4, 58], [95.4, 58]], armBend: [1, 1], feet: [[62, GROUND], [62, GROUND]], legBend: [-1, -1], hide: ["farArm", "farLeg"] },
     { hip: [55, 75], torso: -68, hands: [[94, 50], [94, 50]], armBend: [1, 1], feet: [[62, GROUND], [62, GROUND]], legBend: [-1, -1], hide: ["farArm", "farLeg"] },
+    { hip: [53, 83], torso: -62, hands: [[95.4, 58], [95.4, 58]], armBend: [1, 1], feet: [[62, GROUND], [62, GROUND]], legBend: [-1, -1], hide: ["farArm", "farLeg"] },
     { hip: [60, 54], torso: -90, hands: [[88.6, 30], [88.6, 30]], armBend: [1, 1], feet: [[60, GROUND], [60, GROUND]], legBend: [-1, -1], hide: ["farArm", "farLeg"] },
   ],
   b5l: [
@@ -812,7 +813,7 @@ function ExFigure({ id }) {
   if (!poses) return null;
   return (
     <div style={{ margin: "4px 0 14px" }} role="img" aria-label={T("figureAria", { labels: poses.map(p => p.label).join(", ") })}>
-      <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
+      <div style={poses.length === 4 ? { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 } : { display: "flex", gap: 8, justifyContent: "center" }}>
       {poses.map((p, i) => (
         <div key={i} style={{ flex: poses.length > 1 ? 1 : "0 1 62%", background: C.ink, border: `1.5px solid ${p.bad ? "#ff8a80" : C.line}`, borderRadius: 14, padding: "6px 4px 8px", textAlign: "center" }}>
           <svg viewBox="0 0 120 100" style={{ width: "100%", height: "auto", display: "block" }}>

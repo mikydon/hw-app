@@ -512,7 +512,7 @@ export default {
     sbridge: ["Boca arriba, una pierna arriba", "Cadera arriba, aprieta glúteos"],
     r1e: ["Arriba, pies en la silla", "Abajo, cabeza delante de las manos"],
     k3e: ["Arriba, pies en la silla", "Abajo, codos pegados"],
-    n1q: ["Abajo del todo", "Un cuarto arriba", "Otra vez abajo, luego arriba"],
+    n1q: ["Abajo del todo", "Un cuarto arriba", "Otra vez abajo del todo", "Solo entonces arriba"],
     b5l: ["Una pierna arriba, cambia a la mitad"],
     wallsit: ["Rodillas ~90°, espalda en la pared"],
     birddog: ["En cuatro apoyos: brazos y rodillas ~90°", "Brazo y pierna contraria"],
