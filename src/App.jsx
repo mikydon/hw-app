@@ -167,51 +167,51 @@ if (typeof document !== "undefined") {
 // instructions for every exercise live in src/i18n/<lang>.js and are filled in by applyLang().
 const EX = {
   k1: {
-    type: "reps", start: 15, unit: "",
+    diff: "mid", type: "reps", start: 15, unit: "",
     yt: "https://www.youtube.com/watch?v=es_Tz8Si75o",
   },
   row1: {
-    type: "reps", start: 12, unit: "arm",
+    diff: "mid", type: "reps", start: 12, unit: "arm",
     yt: "https://www.youtube.com/watch?v=ytEalkENNiQ",
   },
   n1: {
-    type: "reps", start: 15, unit: "",
+    diff: "mid", swapTip: true, type: "reps", start: 15, unit: "",
     yt: "https://www.youtube.com/watch?v=zJBLDJMJiDE",
   },
   b5: {
-    type: "time", durs: [30, 45, 60, 75], dur: 45, unit: "",
+    diff: "mid", swapTip: true, type: "time", durs: [30, 45, 60, 75], dur: 45, unit: "",
     yt: "https://www.youtube.com/watch?v=ASdvN_XEl_c",
   },
   r1: {
-    type: "reps", start: 12, unit: "",
+    diff: "mid", swapTip: true, type: "reps", start: 12, unit: "",
     yt: "https://www.youtube.com/watch?v=pHR5yG6xBps",
   },
   row2: {
-    type: "reps", start: 10, unit: "",
+    diff: "mid", type: "reps", start: 10, unit: "",
     yt: "https://www.youtube.com/watch?v=g8wWFlr2gQU",
   },
   n2: {
-    type: "reps", start: 12, unit: "leg",
+    diff: "mid", type: "reps", start: 12, unit: "leg",
     yt: "https://www.youtube.com/watch?v=DeCnHqrN22U",
   },
   b2: {
-    type: "reps", start: 10, unit: "side",
+    diff: "mid", type: "reps", start: 10, unit: "side",
     yt: "https://www.youtube.com/watch?v=4XLEnwUr1d8",
   },
   k3: {
-    type: "reps", start: 10, unit: "",
+    diff: "mid", swapTip: true, type: "reps", start: 10, unit: "",
     yt: "https://www.youtube.com/watch?v=_6AvEX9-k8E",
   },
   row3: {
-    type: "reps", start: 12, unit: "arm",
+    diff: "mid", type: "reps", start: 12, unit: "arm",
     yt: "https://www.youtube.com/watch?v=ytEalkENNiQ",
   },
   n7: {
-    type: "reps", start: 10, unit: "", swapTip: true, // the tip suggests swapping: HowTo shows a swap button in a workout
+    diff: "mid", type: "reps", start: 10, unit: "", swapTip: true, // the tip suggests swapping: HowTo shows a swap button in a workout
     yt: "https://www.youtube.com/watch?v=cWSsWpuxmYM",
   },
   b4: {
-    type: "reps", start: 15, unit: "side",
+    diff: "mid", type: "reps", start: 15, unit: "side",
     yt: "https://www.youtube.com/watch?v=9FGilxCbdz8",
   },
 };
@@ -219,55 +219,71 @@ const EX = {
 // ─── ALTERNATIVES (for "Swap exercise") ──────────────────────────────────────
 Object.assign(EX, {
   kKnee: {
-    tag: "easier", type: "reps", start: 10, unit: "",
+    diff: "easy", type: "reps", start: 10, unit: "",
     yt: "https://www.youtube.com/watch?v=z8nUnCdZXQI",
   },
   kIncl: {
-    tag: "easier", type: "reps", start: 12, unit: "",
+    diff: "easy", type: "reps", start: 12, unit: "",
     yt: "https://www.youtube.com/watch?v=-9S9gdRwwak",
   },
   superman: {
-    tag: "noDoor", type: "reps", start: 12, unit: "",
+    diff: "easy", tag: "noDoor", type: "reps", start: 12, unit: "",
     yt: "https://www.youtube.com/watch?v=cZxtPxeR2H8",
   },
   ytw: {
-    tag: "noDoor", type: "reps", start: 6, unit: "",
+    diff: "easy", tag: "noDoor", type: "reps", start: 6, unit: "",
     yt: "https://www.youtube.com/watch?v=OmgJCA_lzrs",
   },
   lunge: {
-    tag: "noChair", type: "reps", start: 10, unit: "leg",
+    diff: "mid", tag: "noChair", type: "reps", start: 10, unit: "leg",
     yt: "https://www.youtube.com/watch?v=ALl174GTuoY",
   },
   bridge: {
     diff: "easy", type: "reps", start: 15, unit: "", swapTip: true,
     yt: "https://www.youtube.com/watch?v=Q_Bpj91Yiis",
   },
+  r1e: {
+    diff: "hard", type: "reps", start: 8, unit: "",
+    yt: "https://www.youtube.com/watch?v=8URA3YSur2M",
+  },
+  k3e: {
+    diff: "hard", type: "reps", start: 8, unit: "",
+    yt: "https://www.youtube.com/watch?v=pbF3MJpDhbw",
+  },
+  n1q: {
+    diff: "hard", type: "reps", start: 8, unit: "",
+    yt: "https://www.youtube.com/watch?v=1aacJiFpOSg",
+  },
+  b5l: {
+    diff: "hard", type: "time", durs: [20, 30, 45, 60], dur: 30, unit: "",
+    yt: "https://www.youtube.com/watch?v=UMq7bnHrBSY",
+  },
   sbridge: {
     diff: "hard", type: "reps", start: 8, unit: "leg",
     yt: "https://www.youtube.com/watch?v=E9a7o0Ae418",
   },
   wallsit: {
-    tag: "hold", type: "time", durs: [30, 45, 60, 90], dur: 45, unit: "",
+    diff: "mid", tag: "hold", type: "time", durs: [30, 45, 60, 90], dur: 45, unit: "",
     yt: "https://www.youtube.com/watch?v=6caT9GsL4TA",
   },
   birddog: {
-    tag: "easier", type: "reps", start: 10, unit: "side",
+    diff: "easy", type: "reps", start: 10, unit: "side",
     yt: "https://www.youtube.com/watch?v=DkPT1fR_B9A",
   },
   hollow: {
-    tag: "hold", type: "time", durs: [20, 30, 45], dur: 30, unit: "",
+    diff: "mid", tag: "hold", type: "time", durs: [20, 30, 45], dur: 30, unit: "",
     yt: "https://www.youtube.com/watch?v=LlDNef_Ztsc",
   },
   legraise: {
-    tag: "similar", type: "reps", start: 10, unit: "",
+    diff: "mid", tag: "similar", type: "reps", start: 10, unit: "",
     yt: "https://www.youtube.com/watch?v=JB2oyawG9KI",
   },
 });
 const ALT_GROUPS = [
-  ["k1", "k3", "r1", "kIncl", "kKnee"],
+  ["k1", "k3", "r1", "kIncl", "kKnee", "r1e", "k3e"],
   ["row1", "row2", "row3", "superman", "ytw"],
-  ["n1", "n2", "n7", "lunge", "bridge", "wallsit", "sbridge"],
-  ["b5", "b2", "b4", "birddog", "hollow", "legraise"],
+  ["n1", "n2", "n7", "lunge", "bridge", "wallsit", "sbridge", "n1q"],
+  ["b5", "b2", "b4", "birddog", "hollow", "legraise", "b5l"],
 ];
 // Same order as ALT_GROUPS; names come from the locale (grp_push…).
 const GROUP_KEYS = ["push", "pull", "legs", "core"];
@@ -429,10 +445,10 @@ const CH_POOL = [
   { id: "r3", icon: "💪", goal: 1, xp: 40, val: w => w.filter(e => e.rounds === 3).length },
   { id: "warm", icon: "🔥", goal: 2, xp: 30, val: w => w.filter(e => e.warm).length },
   { id: "cool", icon: "🧘", goal: 2, xp: 30, val: w => w.filter(e => e.cool).length },
-  { id: "push100", icon: "🦾", goal: 100, xp: 50, val: w => sumReps(w, ["k1", "k3", "r1", "kKnee", "kIncl"]) },
+  { id: "push100", icon: "🦾", goal: 100, xp: 50, val: w => sumReps(w, ["k1", "k3", "r1", "kKnee", "kIncl", "r1e", "k3e"]) },
   { id: "rank", icon: "🎖️", goal: 1, xp: 60, val: w => w.reduce((a, e) => a + ((e.rankUps && e.rankUps.length) || 0), 0) },
   { id: "reps300", icon: "📈", goal: 300, xp: 40, val: w => sumReps(w, null) },
-  { id: "legs100", icon: "🦵", goal: 100, xp: 40, val: w => sumReps(w, ["n1", "n2", "n7", "lunge", "bridge", "sbridge"]) },
+  { id: "legs100", icon: "🦵", goal: 100, xp: 40, val: w => sumReps(w, ["n1", "n2", "n7", "lunge", "bridge", "sbridge", "n1q"]) },
 ];
 function challengesFor(wk) {
   const seed = Math.round(parseKey(wk).getTime() / 604800000);
@@ -667,6 +683,22 @@ const FIGS = {
   ],
   cobra: [
     { hip: [48, 90], torso: -40, head: -32, fl: { ua: 12, fa: 11 }, hands: [[70, GROUND], [70, GROUND]], armBend: [1, 1], feet: [[8.1, 92.5], [8.1, 92.5]], legBend: [1, 1], hide: ["farArm", "farLeg"] },
+  ],
+  r1e: [
+    { hip: [70, 42], torso: 78, head: 85, fl: { th: 25, sh: 25, torso: 24 }, hands: [[77, GROUND], [77, GROUND]], armBend: [1, 1], feet: [[28.5, 70], [28.5, 70]], legBend: [1, 1], hide: ["farArm", "farLeg"], props: [{ t: "chair" }] },
+    { hip: [84, 57.75], torso: 68, head: 39.5, fl: { th: 25, sh: 25, torso: 24 }, hands: [[78, GROUND], [78, GROUND]], elbows: [[78, 80], [78, 80]], feet: [[33, 71], [33, 71]], legBend: [1, 1], hide: ["farArm", "farLeg"], props: [{ t: "chair" }] },
+  ],
+  k3e: [
+    { hip: [62.1, 67.2], torso: -4, hands: [[88, GROUND], [88, GROUND]], armBend: [1, 1], feet: [[22, 70], [22, 70]], legBend: [1, 1], hide: ["farArm", "farLeg"], props: [{ t: "chair" }, { t: "diamondTop" }] },
+    { hip: [61, 79.1], torso: 13.1, hands: [[88, GROUND], [88, GROUND]], armBend: [1, 1], feet: [[22, 70], [22, 70]], legBend: [1, 1], hide: ["farArm", "farLeg"], props: [{ t: "chair" }] },
+  ],
+  n1q: [
+    { hip: [53, 83], torso: -62, hands: [[95.4, 58], [95.4, 58]], armBend: [1, 1], feet: [[62, GROUND], [62, GROUND]], legBend: [-1, -1], hide: ["farArm", "farLeg"] },
+    { hip: [55, 75], torso: -68, hands: [[94, 50], [94, 50]], armBend: [1, 1], feet: [[62, GROUND], [62, GROUND]], legBend: [-1, -1], hide: ["farArm", "farLeg"] },
+    { hip: [60, 54], torso: -90, hands: [[88.6, 30], [88.6, 30]], armBend: [1, 1], feet: [[60, GROUND], [60, GROUND]], legBend: [-1, -1], hide: ["farArm", "farLeg"] },
+  ],
+  b5l: [
+    { hip: [52.8, 84.9], torso: -13.2, hands: [[93, GROUND], [93, GROUND]], elbows: [[78.1, GROUND], [78.1, GROUND]], feet: [[12.8, 83.6], [13.7, GROUND]], legBend: [1, 1], hide: ["farArm"] },
   ],
   child: [
     { hip: [32, 83], torso: 0, head: 18, hands: [[87, 92.5], [87, 92.5]], armBend: [1, 1], feet: [[30, GROUND], [30, GROUND]], legBend: [-1, -1], hide: ["farArm", "farLeg"] },
