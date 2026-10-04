@@ -18,6 +18,12 @@ export default {
     tabProfile: "Profil",
     mainMenu: "Menu główne",
     tabCalories: "Kalorie",
+    newsTitle: "Co nowego w {v}",
+    newsIntro: "Duża aktualizacja. Oto wszystko, co nowe, i jak było wcześniej.",
+    newsBefore: "Wcześniej:",
+    newsNow: "Teraz:",
+    newsOk: "Super, zaczynamy",
+    newsLink: "Co nowego",
     hintTitle: "Czy wiesz?",
     hintGo: "Pokaż",
     hint_themes: "Chcesz inny kolor? Ustawienia → Wygląd mają 8 motywów.",
@@ -667,6 +673,19 @@ export default {
     birthday: ["Urodziny", "{x} z aplikacją"],
     calories: ["Kalorie", "{x} z zapisanymi kaloriami"],
   },
+
+  news14: [
+    ["Menu", "na dole pasek z 3 kartami, profil przez zdjęcie w prawym górnym rogu.", "jedno menu ☰ w prawym górnym rogu ze wszystkim: Trening, Kalorie, Historia, Profil, Ustawienia."],
+    ["Trening w tle", "w trakcie treningu nie dało się nigdzie przejść.", "trening zmniejsza się do okienka na dole, czas i dźwięki lecą dalej, stuknięciem wracasz."],
+    ["Licznik powtórzeń", "liczba była ustawiona z góry według ostatniego razu albo szacunkiem.", "zaczyna od 0 i pokazuje ostatni wynik z celem +1."],
+    ["Ostatnia runda", "1–2 powtórzenia w zapasie.", "do upadku technicznego: dopóki powtórzenia są czyste."],
+    ["Kalorie", "nie było.", "kalkulator (odchudzanie, utrzymanie, przybieranie) i dzienny zapis jedzenia. Treningi z aplikacji doliczają się same."],
+    ["Odznaki", "15 odznak: masz albo nie masz.", "11 rodzajów z poziomami Drewno → Diament i paskiem, ile brakuje. To, co miałeś, zostaje."],
+    ["Urodziny", "nic.", "po wpisaniu daty urodzenia niespodzianka, konfetti, dodatkowy freeze i urodzinowa odznaka."],
+    ["Plank", "30 – 75 s.", "także 15 s."],
+    ["Bezpieczeństwo", "trudniejsze wersje bez ostrzeżeń.", "ostrzeżenia przy ryzykownych krokach (skurcz, biodra, krzesło o ścianę, stabilne książki)."],
+    ["Wskazówki", "nie było.", "co drugi dzień jedno „Czy wiesz?” z przyciskiem, który cię tam zabierze."],
+  ],
 
   quotes: [
     "Dyscyplina zaprowadzi cię tam, gdzie motywacja nie da rady.",

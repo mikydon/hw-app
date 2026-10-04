@@ -18,6 +18,12 @@ export default {
     tabProfile: "Profil",
     mainMenu: "Hauptmenü",
     tabCalories: "Kalorien",
+    newsTitle: "Neu in {v}",
+    newsIntro: "Ein großes Update. Hier ist alles Neue und wie es vorher war.",
+    newsBefore: "Vorher:",
+    newsNow: "Jetzt:",
+    newsOk: "Super, los geht's",
+    newsLink: "Was ist neu",
     hintTitle: "Schon gewusst?",
     hintGo: "Zeigen",
     hint_themes: "Lieber eine andere Farbe? Unter Einstellungen → Darstellung gibt es 8 Themes.",
@@ -667,6 +673,19 @@ export default {
     birthday: ["Geburtstage", "{x} mit der App"],
     calories: ["Kalorien", "{x} mit Kalorien-Eintrag"],
   },
+
+  news14: [
+    ["Menü", "unten eine Leiste mit 3 Tabs, Profil über das Foto oben rechts.", "ein ☰-Menü oben rechts mit allem: Training, Kalorien, Verlauf, Profil, Einstellungen."],
+    ["Training im Hintergrund", "während des Trainings konnte man nirgendwo anders hin.", "das Training schrumpft unten auf ein kleines Fenster, Zeit und Töne laufen weiter, antippen bringt dich zurück."],
+    ["Wiederholungszähler", "die Zahl war vorab nach dem letzten Mal oder geschätzt eingestellt.", "er startet bei 0 und zeigt dein letztes Ergebnis mit einem +1-Ziel."],
+    ["Letzte Runde", "1–2 Wiederholungen in Reserve.", "bis zum technischen Versagen: solange jede Wiederholung sauber ist."],
+    ["Kalorien", "gab es nicht.", "Rechner (abnehmen, halten, zunehmen) und tägliches Essensprotokoll. Trainings aus der App werden automatisch dazugerechnet."],
+    ["Abzeichen", "15 Abzeichen: hat man oder nicht.", "11 Arten mit Stufen Holz → Diamant und einem Balken, was noch fehlt. Was du hattest, bleibt."],
+    ["Geburtstag", "nichts.", "mit Geburtsdatum eine Überraschung, Konfetti, ein extra Freeze und ein Geburtstagsabzeichen."],
+    ["Plank", "30 – 75 s.", "auch 15 s."],
+    ["Sicherheit", "schwerere Varianten ohne Hinweise.", "Hinweise bei riskanten Schritten (Krampf, Hüfte, Stuhl an der Wand, stabile Bücher)."],
+    ["Tipps", "gab es nicht.", "jeden zweiten Tag ein „Schon gewusst?“ mit einem Knopf, der dich hinführt."],
+  ],
 
   quotes: [
     "Disziplin bringt dich dahin, wo Motivation nicht hinkommt.",

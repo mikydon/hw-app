@@ -18,6 +18,12 @@ export default {
     tabProfile: "Perfil",
     mainMenu: "Menú principal",
     tabCalories: "Calorías",
+    newsTitle: "Novedades de la {v}",
+    newsIntro: "Una gran actualización. Aquí está todo lo nuevo y cómo era antes.",
+    newsBefore: "Antes:",
+    newsNow: "Ahora:",
+    newsOk: "Genial, vamos",
+    newsLink: "Novedades",
     hintTitle: "¿Sabías que…?",
     hintGo: "Mostrar",
     hint_themes: "¿Otro color? En Ajustes → Apariencia hay 8 temas.",
@@ -667,6 +673,19 @@ export default {
     birthday: ["Cumpleaños", "{x} con la app"],
     calories: ["Calorías", "{x} con calorías anotadas"],
   },
+
+  news14: [
+    ["Menú", "abajo una barra con 3 pestañas, el perfil desde la foto arriba a la derecha.", "un menú ☰ arriba a la derecha con todo: Entrenar, Calorías, Historial, Perfil, Ajustes."],
+    ["Entreno en segundo plano", "durante el entreno no podías ir a ninguna otra parte.", "el entreno se encoge en una ventanita abajo, el tiempo y los sonidos siguen, tocas y vuelves."],
+    ["Contador de repeticiones", "el número venía puesto según la última vez o estimado.", "empieza en 0 y muestra tu último resultado con un objetivo +1."],
+    ["Última ronda", "1–2 repeticiones en reserva.", "hasta el fallo técnico: mientras cada repetición sea limpia."],
+    ["Calorías", "no existían.", "calculadora (perder, mantener, ganar) y registro diario de comida. Los entrenos de la app se suman solos."],
+    ["Insignias", "15 insignias: las tenías o no.", "11 tipos con niveles Madera → Diamante y una barra con lo que falta. Lo que tenías se queda."],
+    ["Cumpleaños", "nada.", "con tu fecha de nacimiento: sorpresa, confeti, un freeze extra e insignia de cumpleaños."],
+    ["Plancha", "30 – 75 s.", "también 15 s."],
+    ["Seguridad", "las versiones difíciles no tenían avisos.", "avisos en los pasos con riesgo (calambres, cadera, silla contra la pared, libros firmes)."],
+    ["Consejos", "no existían.", "cada dos días un «¿Sabías que…?» con un botón que te lleva allí."],
+  ],
 
   quotes: [
     "La disciplina te lleva adonde la motivación no llega.",

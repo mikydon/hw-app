@@ -18,6 +18,12 @@ export default {
     tabProfile: "Profil",
     mainMenu: "Hlavní menu",
     tabCalories: "Kalorie",
+    newsTitle: "Co je nového ve {v}",
+    newsIntro: "Velký update. Tady je všechno nové a jak to bylo předtím.",
+    newsBefore: "Předtím:",
+    newsNow: "Teď:",
+    newsOk: "Super, jdeme na to",
+    newsLink: "Co je nového",
     hintTitle: "Věděl jsi?",
     hintGo: "Ukázat",
     hint_themes: "Chceš jinou barvu appky? V Nastavení → Vzhled je 8 témat.",
@@ -667,6 +673,19 @@ export default {
     birthday: ["Narozeniny", "{x} s appkou"],
     calories: ["Kalorie", "{x} se zápisem kalorií"],
   },
+
+  news14: [
+    ["Menu", "dole lišta se 3 kartami, profil přes fotku vpravo nahoře.", "jedno menu ☰ vpravo nahoře se vším: Trénink, Kalorie, Historie, Profil, Nastavení."],
+    ["Trénink na pozadí", "během tréninku se nedalo jít nikam jinam.", "trénink se zmenší do okénka dole, čas a zvuky běží dál a ťuknutím se vrátíš."],
+    ["Počítadlo opakování", "číslo bylo předem nastavené podle minula nebo odhadem.", "začíná od 0 a ukazuje, kolik jsi dal minule, s cílem +1."],
+    ["Poslední kolo", "1–2 opakování v záloze.", "do technického selhání: dokud dáš čisté opakování."],
+    ["Kalorie", "nebyly.", "kalkulačka (hubnutí, udržení, přibírání) a denní zápis jídla. Tréninky z appky se připočtou samy."],
+    ["Odznaky", "15 odznaků, buď máš, nebo nemáš.", "11 druhů s úrovněmi Dřevo → Diamant a ukazatelem, kolik chybí. Co jsi měl, zůstává."],
+    ["Narozeniny", "nic.", "po zadání data narození překvapení, konfety, freeze navíc a narozeninový odznak."],
+    ["Plank", "30 – 75 s.", "i 15 s."],
+    ["Bezpečnost", "těžší verze bez upozornění.", "u rizikových kroků upozornění (křeč, pánev, židle o zeď, pevné knihy)."],
+    ["Tipy", "nebyly.", "každý druhý den jeden „Věděl jsi?“ s tlačítkem, které tě tam zavede."],
+  ],
 
   quotes: [
     "Disciplína tě dostane tam, kam motivace nedosáhne.",

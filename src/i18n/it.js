@@ -18,6 +18,12 @@ export default {
     tabProfile: "Profilo",
     mainMenu: "Menu principale",
     tabCalories: "Calorie",
+    newsTitle: "Novità della {v}",
+    newsIntro: "Un grande aggiornamento. Ecco tutte le novità e com'era prima.",
+    newsBefore: "Prima:",
+    newsNow: "Ora:",
+    newsOk: "Ottimo, andiamo",
+    newsLink: "Novità",
     hintTitle: "Lo sapevi?",
     hintGo: "Mostra",
     hint_themes: "Vuoi un altro colore? In Impostazioni → Aspetto ci sono 8 temi.",
@@ -667,6 +673,19 @@ export default {
     birthday: ["Compleanni", "{x} con l'app"],
     calories: ["Calorie", "{x} con calorie registrate"],
   },
+
+  news14: [
+    ["Menu", "in basso una barra con 3 schede, il profilo dalla foto in alto a destra.", "un unico menu ☰ in alto a destra con tutto: Allenamento, Calorie, Storico, Profilo, Impostazioni."],
+    ["Allenamento in sottofondo", "durante l'allenamento non potevi andare altrove.", "l'allenamento si riduce a una finestrella in basso, tempo e suoni continuano, un tocco per tornare."],
+    ["Contatore ripetizioni", "il numero era impostato in anticipo in base all'ultima volta o stimato.", "parte da 0 e mostra l'ultimo risultato con un obiettivo +1."],
+    ["Ultimo giro", "1–2 ripetizioni di riserva.", "fino al cedimento tecnico: finché ogni ripetizione è pulita."],
+    ["Calorie", "non c'erano.", "un calcolatore (dimagrire, mantenere, aumentare) e un diario dei pasti. Gli allenamenti dell'app si aggiungono da soli."],
+    ["Badge", "15 badge: o li avevi o no.", "11 tipi con livelli Legno → Diamante e una barra di quanto manca. Quello che avevi resta."],
+    ["Compleanno", "niente.", "con la data di nascita: sorpresa, coriandoli, un freeze in più e un badge di compleanno."],
+    ["Plank", "30 – 75 s.", "anche 15 s."],
+    ["Sicurezza", "le versioni più difficili senza avvisi.", "avvisi nei passaggi rischiosi (crampi, fianchi, sedia contro il muro, libri stabili)."],
+    ["Consigli", "non c'erano.", "a giorni alterni un «Lo sapevi?» con un pulsante che ti porta lì."],
+  ],
 
   quotes: [
     "La disciplina ti porta dove la motivazione non arriva.",

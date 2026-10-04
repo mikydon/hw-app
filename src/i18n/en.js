@@ -18,6 +18,12 @@ export default {
     tabProfile: "Profile",
     mainMenu: "Main menu",
     tabCalories: "Calories",
+    newsTitle: "What's new in {v}",
+    newsIntro: "A big update. Here's everything new and how it was before.",
+    newsBefore: "Before:",
+    newsNow: "Now:",
+    newsOk: "Great, let's go",
+    newsLink: "What's new",
     hintTitle: "Did you know?",
     hintGo: "Show me",
     hint_themes: "Want a different colour? Settings → Appearance has 8 themes.",
@@ -667,6 +673,19 @@ export default {
     birthday: ["Birthdays", "{x} with the app"],
     calories: ["Calories", "{x} with calories logged"],
   },
+
+  news14: [
+    ["Menu", "a bar with 3 tabs at the bottom, profile through the photo top right.", "one ☰ menu top right with everything: Workout, Calories, History, Profile, Settings."],
+    ["Workout in the background", "during a workout you couldn't go anywhere else.", "the workout shrinks to a small window at the bottom, time and sounds keep going, tap to go back."],
+    ["Rep counter", "the number was preset from last time or a guess.", "it starts at 0 and shows last time's result with a +1 goal."],
+    ["Last round", "1–2 reps in reserve.", "to technical failure: as long as each rep is clean."],
+    ["Calories", "didn't exist.", "a calculator (lose, keep, gain) and a daily food log. Workouts from the app are added automatically."],
+    ["Badges", "15 badges, you either had them or not.", "11 kinds with levels Wood → Diamond and a bar showing what's left. What you had stays."],
+    ["Birthday", "nothing.", "once you enter your birth date: a surprise, confetti, an extra freeze and a birthday badge."],
+    ["Plank", "30 – 75 s.", "15 s too."],
+    ["Safety", "harder versions had no warnings.", "warnings on risky steps (cramps, hips, chair against a wall, sturdy books)."],
+    ["Tips", "didn't exist.", "every other day one \"Did you know?\" with a button that takes you there."],
+  ],
 
   quotes: [
     "Discipline takes you where motivation can't.",

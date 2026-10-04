@@ -18,6 +18,12 @@ export default {
     tabProfile: "Profil",
     mainMenu: "Főmenü",
     tabCalories: "Kalóriák",
+    newsTitle: "Újdonságok a {v} verzióban",
+    newsIntro: "Nagy frissítés. Itt van minden új, és hogy előtte milyen volt.",
+    newsBefore: "Előtte:",
+    newsNow: "Most:",
+    newsOk: "Szuper, mehet",
+    newsLink: "Újdonságok",
     hintTitle: "Tudtad?",
     hintGo: "Mutasd",
     hint_themes: "Más színt szeretnél? A Beállítások → Megjelenés alatt 8 téma van.",
@@ -667,6 +673,19 @@ export default {
     birthday: ["Születésnapok", "{x} az appal"],
     calories: ["Kalóriák", "{x} kalórianaplóval"],
   },
+
+  news14: [
+    ["Menü", "lent egy sáv 3 füllel, a profil a jobb felső fotón keresztül.", "egy ☰ menü jobb fent mindennel: Edzés, Kalóriák, Előzmények, Profil, Beállítások."],
+    ["Edzés a háttérben", "edzés közben nem lehetett máshová menni.", "az edzés lent egy kis ablakká zsugorodik, az idő és a hangok mennek tovább, koppintással visszatérsz."],
+    ["Ismétlésszámláló", "a szám előre be volt állítva a legutóbbi alapján vagy becsléssel.", "0-ról indul, és mutatja a legutóbbi eredményt +1 céllal."],
+    ["Utolsó kör", "1–2 ismétlés tartalékban.", "technikai bukásig: amíg tiszta az ismétlés."],
+    ["Kalóriák", "nem voltak.", "kalkulátor (fogyás, tartás, hízás) és napi étkezési napló. Az app edzései maguktól hozzáadódnak."],
+    ["Jelvények", "15 jelvény: vagy megvan, vagy nincs.", "11 fajta, Fa → Gyémánt szintekkel és egy sávval, mennyi hiányzik. Ami megvolt, megmarad."],
+    ["Születésnap", "semmi.", "a születési dátum megadása után meglepetés, konfetti, extra freeze és születésnapi jelvény."],
+    ["Plank", "30 – 75 mp.", "15 mp is."],
+    ["Biztonság", "a nehezebb változatoknál nem volt figyelmeztetés.", "figyelmeztetések a kockázatos lépéseknél (görcs, csípő, szék a falnál, stabil könyvek)."],
+    ["Tippek", "nem voltak.", "minden második nap egy „Tudtad?”, gombbal, ami odavisz."],
+  ],
 
   quotes: [
     "A fegyelem odavisz, ahová a motiváció nem.",

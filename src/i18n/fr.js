@@ -18,6 +18,12 @@ export default {
     tabProfile: "Profil",
     mainMenu: "Menu principal",
     tabCalories: "Calories",
+    newsTitle: "Nouveautés de la {v}",
+    newsIntro: "Une grosse mise à jour. Voici tout ce qui est nouveau et comment c'était avant.",
+    newsBefore: "Avant :",
+    newsNow: "Maintenant :",
+    newsOk: "Super, c'est parti",
+    newsLink: "Nouveautés",
     hintTitle: "Le savais-tu ?",
     hintGo: "Voir",
     hint_themes: "Envie d'une autre couleur ? Réglages → Apparence propose 8 thèmes.",
@@ -667,6 +673,19 @@ export default {
     birthday: ["Anniversaires", "{x} avec l'appli"],
     calories: ["Calories", "{x} avec calories notées"],
   },
+
+  news14: [
+    ["Menu", "en bas une barre à 3 onglets, le profil via la photo en haut à droite.", "un seul menu ☰ en haut à droite avec tout : Entraînement, Calories, Historique, Profil, Réglages."],
+    ["Séance en arrière-plan", "pendant la séance, impossible d'aller ailleurs.", "la séance se réduit en petite fenêtre en bas, le temps et les sons continuent, un toucher pour revenir."],
+    ["Compteur de répétitions", "le nombre était préréglé selon la dernière fois ou estimé.", "il part de 0 et affiche ton dernier résultat avec un objectif +1."],
+    ["Dernier tour", "1–2 répétitions en réserve.", "jusqu'à l'échec technique : tant que chaque répétition est propre."],
+    ["Calories", "n'existaient pas.", "un calculateur (perdre, garder, prendre) et un journal des repas. Les séances de l'appli s'ajoutent toutes seules."],
+    ["Badges", "15 badges : tu les avais ou non.", "11 types avec niveaux Bois → Diamant et une barre de progression. Ce que tu avais reste."],
+    ["Anniversaire", "rien.", "avec ta date de naissance : surprise, confettis, un freeze en plus et un badge d'anniversaire."],
+    ["Planche", "30 – 75 s.", "aussi 15 s."],
+    ["Sécurité", "les versions plus dures sans avertissement.", "des avertissements sur les étapes risquées (crampe, hanches, chaise contre un mur, livres stables)."],
+    ["Astuces", "n'existaient pas.", "un jour sur deux, un « Le savais-tu ? » avec un bouton qui t'y emmène."],
+  ],
 
   quotes: [
     "La discipline t'emmène là où la motivation ne peut pas aller.",

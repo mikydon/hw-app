@@ -19,7 +19,7 @@ for (const code of codes) {
     if (Array.isArray(a)) {
       if (!Array.isArray(b)) { errs.push(`not array ${p}`); return; }
       // Daily lines are picked by index, so every language needs the same number of them.
-      const fixedLen = /^(fig|ach|ranks|quotes|restDay|doneTitles|doneSubs)/.test(p);
+      const fixedLen = /^(fig|ach|ranks|quotes|restDay|doneTitles|doneSubs|news)/.test(p);
       if (fixedLen && a.length !== b.length) errs.push(`length ${p}: ${b.length} vs ${a.length}`);
       if (!b.length) errs.push(`empty ${p}`);
       if (fixedLen) a.forEach((x, i) => walk(x, b[i], `${p}[${i}]`));

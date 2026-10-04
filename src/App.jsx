@@ -1239,7 +1239,7 @@ function TabIcon({ name, active }) {
 }
 
 // Slide-in drawer from the right with everything in the app. Rendered into <body> (like Sheet).
-function MenuDrawer({ open, screen, history, profile, session, onGo, onResume, onClose }) {
+function MenuDrawer({ open, screen, history, profile, session, onGo, onResume, onClose, onNews }) {
   const [shown, setShown] = useState(open);
   useEffect(() => { if (open) setShown(true); else { const t = setTimeout(() => setShown(false), 260); return () => clearTimeout(t); } }, [open]);
   const closeRef = useRef(null);
@@ -1291,7 +1291,10 @@ function MenuDrawer({ open, screen, history, profile, session, onGo, onResume, o
             );
           })}
         </div>
-        <div style={{ marginTop: "auto", padding: "14px 18px", fontSize: 11, color: C.dim, fontFamily: BODY }}>HW App {APP_VERSION}</div>
+        <div style={{ marginTop: "auto", padding: "10px 18px 14px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+          <span style={{ fontSize: 11, color: C.dim, fontFamily: BODY }}>HW App {APP_VERSION}</span>
+          {onNews && <button onClick={onNews} data-news-btn style={{ ...btnBase, background: "transparent", color: C.sky, fontSize: 12, padding: "4px 0" }}>{T("newsLink")} ›</button>}
+        </div>
       </nav>
     </div>,
     document.body
@@ -1380,6 +1383,28 @@ function CloseX({ onClick, color }) {
   return (
     <button onClick={e => { e.stopPropagation(); sfxTap(); onClick(); }} aria-label={T("hide")}
       style={{ ...btnBase, position: "absolute", top: 6, right: 6, width: 34, height: 34, padding: 0, borderRadius: 99, background: "transparent", color: color || C.dim, fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
+  );
+}
+
+// "What's new" after a big update (second version number changes): each change next to how it was before.
+const bigVer = v => String(v || "0.0").split(".").slice(0, 2).join(".");
+function WhatsNew({ onClose }) {
+  const key = "news" + bigVer(APP_VERSION).replace(".", "");
+  const items = L[key] || [];
+  return (
+    <Sheet title={T("newsTitle", { v: APP_VERSION })} onClose={onClose}>
+      <div data-whatsnew style={{ fontSize: 14, color: C.dim, lineHeight: 1.5, marginBottom: 12 }}>{T("newsIntro")}</div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        {items.map(([title, before, now], i) => (
+          <div key={i} style={{ ...card, padding: "12px 14px" }}>
+            <div style={{ fontSize: 15, fontWeight: 800, color: C.chalk }}>{title}</div>
+            <div style={{ fontSize: 13, color: C.dim, lineHeight: 1.45, marginTop: 4 }}><b>{T("newsBefore")}</b> {before}</div>
+            <div style={{ fontSize: 13, color: C.mint, lineHeight: 1.45, marginTop: 3 }}><b>{T("newsNow")}</b> {now}</div>
+          </div>
+        ))}
+      </div>
+      <button onClick={onClose} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 16 }}>{T("newsOk")}</button>
+    </Sheet>
   );
 }
 
@@ -3163,6 +3188,7 @@ export default function App() {
   // A running workout can be minimized to the mini player; it stays mounted (hidden), so timers and sounds go on.
   const [sessionOpen, setSessionOpen] = useState(true);
   const [live, setLive] = useState(null);
+  const [newsOpen, setNewsOpen] = useState(false);
   const [profile, setProfileState] = useState({ name: "User", pfp: null, freezeDays: [], streakResetTs: 0 });
   const [ui, setUiState] = useState({});
   const [kcal, setKcalState] = useState(null);
@@ -3200,6 +3226,7 @@ export default function App() {
       loadSettings().then(st => {
         if (st) setSettingsState({ ...DEFAULT_SETTINGS, ...st });
         else if (s && s.muted === true) setSettingsState({ ...DEFAULT_SETTINGS, sndTap: false, sndFx: false, sndTimer: false });
+        setSettingsLoaded(true);
       });
       if (s && s.session && s.session.phase !== "summary") {
         const ss = s.session;
@@ -3215,6 +3242,15 @@ export default function App() {
     if (!loaded) return;
     saveAll({ history, session: session && session.phase !== "summary" ? session : null });
   }, [history, session, loaded]);
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
+  const [newsChecked, setNewsChecked] = useState(false);
+  useEffect(() => {
+    if (!loaded || !settingsLoaded || newsChecked) return;
+    setNewsChecked(true);
+    if (bigVer(settings.seenVersion) === bigVer(APP_VERSION)) return;
+    if (history.length > 0) setNewsOpen(true); // someone who used an older version
+    else setSettings({ ...settings, seenVersion: APP_VERSION }); // a new install has nothing to compare
+  }, [loaded, settingsLoaded]);
 
   useEffect(() => { if (!session || sessionOpen) window.scrollTo?.(0, 0); }, [session?.phase, session?.pos]);
   useEffect(() => { window.scrollTo?.(0, 0); }, [screen, sessionOpen]);
@@ -3293,7 +3329,8 @@ export default function App() {
             </>
           )}
           <MenuDrawer open={menuOpen} screen={screen} history={history} profile={profile} session={session && session.phase !== "summary" ? session : null}
-            onGo={go} onResume={resume} onClose={() => setMenuOpen(false)} />
+            onGo={go} onResume={resume} onClose={() => setMenuOpen(false)} onNews={() => { setMenuOpen(false); setNewsOpen(true); }} />
+          {newsOpen && <WhatsNew onClose={() => { setNewsOpen(false); if (settings.seenVersion !== APP_VERSION) setSettings({ ...settings, seenVersion: APP_VERSION }); }} />}
         </>
       )}
     </div>

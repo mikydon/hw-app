@@ -18,6 +18,12 @@ export default {
     tabProfile: "Perfil",
     mainMenu: "Menu principal",
     tabCalories: "Calorias",
+    newsTitle: "Novidades da {v}",
+    newsIntro: "Uma grande atualização. Aqui está tudo de novo e como era antes.",
+    newsBefore: "Antes:",
+    newsNow: "Agora:",
+    newsOk: "Ótimo, vamos lá",
+    newsLink: "Novidades",
     hintTitle: "Você sabia?",
     hintGo: "Mostrar",
     hint_themes: "Quer outra cor? Em Ajustes → Aparência há 8 temas.",
@@ -667,6 +673,19 @@ export default {
     birthday: ["Aniversários", "{x} com o app"],
     calories: ["Calorias", "{x} com calorias anotadas"],
   },
+
+  news14: [
+    ["Menu", "embaixo uma barra com 3 abas, o perfil pela foto no canto superior direito.", "um menu ☰ no canto superior direito com tudo: Treino, Calorias, Histórico, Perfil, Ajustes."],
+    ["Treino em segundo plano", "durante o treino não dava para ir a outro lugar.", "o treino encolhe numa janelinha embaixo, tempo e sons continuam, um toque e você volta."],
+    ["Contador de repetições", "o número vinha definido pela última vez ou por estimativa.", "começa em 0 e mostra o último resultado com meta +1."],
+    ["Última rodada", "1–2 repetições de reserva.", "até a falha técnica: enquanto cada repetição for limpa."],
+    ["Calorias", "não existiam.", "calculadora (emagrecer, manter, ganhar) e registro diário de comida. Os treinos do app são somados sozinhos."],
+    ["Medalhas", "15 medalhas: ou tinha ou não.", "11 tipos com níveis Madeira → Diamante e uma barra do que falta. O que você tinha continua."],
+    ["Aniversário", "nada.", "com a data de nascimento: surpresa, confete, um freeze extra e medalha de aniversário."],
+    ["Prancha", "30 – 75 s.", "também 15 s."],
+    ["Segurança", "versões mais difíceis sem avisos.", "avisos nos passos arriscados (cãibra, quadril, cadeira na parede, livros firmes)."],
+    ["Dicas", "não existiam.", "a cada dois dias um «Você sabia?» com um botão que leva até lá."],
+  ],
 
   quotes: [
     "A disciplina te leva aonde a motivação não leva.",
