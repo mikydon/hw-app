@@ -61,6 +61,8 @@ Talk to Michael in casual Slovak. Before you deliver anything, test it (build pl
    - Plank: add a 15 s option to `durs`.
    - Navigation redesign: remove the bottom tab bar. Put everything (History, Settings, Profile, the new calories…) behind one top-right menu icon where the profile button is now (a common icon, like other apps use), ordered logically, with a sleek modern animation.
    - Calorie calculator like https://www.calculator.net/calorie-calculator.html: input birth date (or only the year), weight, height; show calories to lose, to gain/bulk and to maintain. He picks one, then logs eaten calories by day (saved, with history). Age updates on its own on birthdays, so the target recalculates. Weight/height editable in a settings page placed after the main calorie log screen. Open question for him: sex and activity level (the calculator needs both).
+   - Help hints: now and then show small helper lines, e.g. "Want a different theme? Settings → Themes".
+   - Use the app during a workout: open Settings, Profile, etc. mid-workout without losing the workout. While away from the workout screen, show a small floating mini player (like YouTube's minimized video) with the running rest/hold timer; tapping it expands back to the workout. Nothing may reset.
    - Birthday: greeting ("VŠETKO NAJLEPŠIE"), confetti around the profile, some texts change ("dnes je tvoj deň"), a free freeze day, and an achievement for opening the app on his birthday.
 2. Next (planned as v1.4.0): Real Android APK via Capacitor, with a GitHub Actions build to Releases.
    - Use the same signing key every time so updates keep user data.
