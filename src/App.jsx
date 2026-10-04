@@ -785,9 +785,9 @@ function ExFigure({ id }) {
       </div>
       <div style={{ fontSize: 11, color: C.dim, textAlign: "center", marginTop: 6, display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "center", columnGap: 14, rowGap: 4 }}>
         {poses.some(p => !p.top) && <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><span aria-hidden="true" style={{ width: 16, height: 3, borderRadius: 2, background: C.signal, display: "inline-block" }} />{T("figBelly")}</span>}
-        {poses.some(p => (p.props || []).some(pr => pr.t === "towel" || pr.t === "towelFloor")) && (
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><span aria-hidden="true" style={{ width: 16, height: 3, borderRadius: 2, background: TOWEL, display: "inline-block" }} />{T("figTowel")}</span>
-        )}
+        {["towel", "towelFloor"].filter(k => poses.some(p => (p.props || []).some(pr => pr.t === k))).map(k => (
+          <span key={k} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><span aria-hidden="true" style={{ width: 16, height: 3, borderRadius: 2, background: TOWEL, display: "inline-block" }} />{T(k === "towel" ? "figTowel" : "figTowelSlide")}</span>
+        ))}
       </div>
     </div>
   );

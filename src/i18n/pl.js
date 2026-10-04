@@ -214,6 +214,7 @@ export default {
     figureAria: "Rysunek: {labels}",
     figBelly: "Żółta kreska = strona brzucha",
     figTowel: "Pomarańczowa linia = ręcznik lub mocna szmatka",
+    figTowelSlide: "Pomarańczowy = ręcznik pod piętami, ślizga się po podłodze",
     photoAlt: "Zdjęcie profilowe",
 
     // v1.3.0

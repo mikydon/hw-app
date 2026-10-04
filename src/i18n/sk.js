@@ -214,6 +214,7 @@ export default {
     figureAria: "Obrázok: {labels}",
     figBelly: "Žltá čiarka = strana brucha",
     figTowel: "Oranžová čiara = uterák alebo pevná handra",
+    figTowelSlide: "Oranžová = uterák pod pätami, kĺže po zemi",
     photoAlt: "Profilová fotka",
 
     // v1.3.0

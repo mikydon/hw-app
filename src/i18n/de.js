@@ -214,6 +214,7 @@ export default {
     figureAria: "Zeichnung: {labels}",
     figBelly: "Gelbe Linie = Bauchseite",
     figTowel: "Orange Linie = Handtuch oder fester Stoff",
+    figTowelSlide: "Orange = Handtuch unter den Fersen, gleitet über den Boden",
     photoAlt: "Profilfoto",
 
     // v1.3.0

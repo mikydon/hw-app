@@ -214,6 +214,7 @@ export default {
     figureAria: "Drawing: {labels}",
     figBelly: "Yellow line = belly side",
     figTowel: "Orange line = towel or a strong cloth",
+    figTowelSlide: "Orange = towel under the heels, slides on the floor",
     photoAlt: "Profile photo",
 
     // v1.3.0

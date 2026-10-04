@@ -214,6 +214,7 @@ export default {
     figureAria: "Rajz: {labels}",
     figBelly: "Sárga vonal = a has oldala",
     figTowel: "Narancs vonal = törölköző vagy erős rongy",
+    figTowelSlide: "Narancs = törölköző a sarkak alatt, csúszik a padlón",
     photoAlt: "Profilkép",
 
     // v1.3.0

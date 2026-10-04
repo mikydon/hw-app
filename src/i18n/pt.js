@@ -214,6 +214,7 @@ export default {
     figureAria: "Desenho: {labels}",
     figBelly: "Linha amarela = lado da barriga",
     figTowel: "Linha laranja = toalha ou pano resistente",
+    figTowelSlide: "Laranja = toalha sob os calcanhares, desliza no chão",
     photoAlt: "Foto de perfil",
 
     // v1.3.0

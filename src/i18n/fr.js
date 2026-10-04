@@ -214,6 +214,7 @@ export default {
     figureAria: "Dessin : {labels}",
     figBelly: "Trait jaune = côté du ventre",
     figTowel: "Trait orange = serviette ou tissu solide",
+    figTowelSlide: "Orange = serviette sous les talons, glisse sur le sol",
     photoAlt: "Photo de profil",
 
     // v1.3.0

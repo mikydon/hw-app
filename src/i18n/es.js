@@ -214,6 +214,7 @@ export default {
     figureAria: "Dibujo: {labels}",
     figBelly: "Línea amarilla = lado del abdomen",
     figTowel: "Línea naranja = toalla o un trapo resistente",
+    figTowelSlide: "Naranja = toalla bajo los talones, se desliza por el suelo",
     photoAlt: "Foto de perfil",
 
     // v1.3.0

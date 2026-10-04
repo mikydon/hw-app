@@ -214,6 +214,7 @@ export default {
     figureAria: "Obrázek: {labels}",
     figBelly: "Žlutá čárka = strana břicha",
     figTowel: "Oranžová čára = ručník nebo pevný hadr",
+    figTowelSlide: "Oranžová = ručník pod patami, klouže po zemi",
     photoAlt: "Profilová fotka",
 
     // v1.3.0

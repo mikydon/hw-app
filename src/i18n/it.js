@@ -214,6 +214,7 @@ export default {
     figureAria: "Disegno: {labels}",
     figBelly: "Linea gialla = lato della pancia",
     figTowel: "Linea arancione = asciugamano o panno resistente",
+    figTowelSlide: "Arancione = asciugamano sotto i talloni, scivola sul pavimento",
     photoAlt: "Foto profilo",
 
     // v1.3.0
