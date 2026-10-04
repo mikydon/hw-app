@@ -179,7 +179,7 @@ const EX = {
     yt: "https://www.youtube.com/watch?v=zJBLDJMJiDE",
   },
   b5: {
-    diff: "mid", swapTip: true, type: "time", durs: [30, 45, 60, 75], dur: 45, unit: "",
+    diff: "mid", swapTip: true, type: "time", durs: [15, 30, 45, 60, 75], dur: 45, unit: "",
     yt: "https://www.youtube.com/watch?v=ASdvN_XEl_c",
   },
   r1: {
@@ -2140,25 +2140,23 @@ function Work({ item, rounds, history, sessionResults, onRecord, onSwap, exclude
   const isLastRound = item.r === rounds - 1;
   const [how, setHow] = useState(false);
 
-  const thisSession = (sessionResults && sessionResults[item.id]) || [];
-  const initReps = () => {
-    const v0 = last ? last.res[item.r] : undefined;
-    if (typeof v0 === "number") return v0;
-    // No number for this round from last time: use what you did in the previous round today.
-    const prev = thisSession[item.r - 1];
-    if (typeof prev === "number") return prev;
-    if (!last) return ex.start;
-    const v = last.res[item.r];
-    if (typeof v === "number") return v;
-    const first = last.res.find(x => typeof x === "number");
-    return typeof first === "number" ? first : ex.start;
-  };
-  const [reps, setReps] = useState(initReps);
+  // Progressive overload: last time's result for this round (or the closest round), and a goal one step above it.
+  // The counter always starts at 0 (no guesses); the goal is shown next to it.
+  const prevVal = (() => {
+    if (!last) return null;
+    const own = numVal(last.res[item.r]);
+    if (!isNaN(own)) return own;
+    const nums = last.res.map(numVal).filter(n => !isNaN(n));
+    return nums.length ? nums[nums.length - 1] : null;
+  })();
+  const goal = prevVal === null ? null : ex.type === "time" ? (ex.durs.find(d => d > prevVal) ?? null) : prevVal + 1;
+  const [reps, setReps] = useState(0);
 
   const initDur = () => {
     if (ex.type !== "time") return 0;
-    const v = last ? parseInt(last.res[item.r] ?? last.res[0], 10) : NaN;
-    return ex.durs.includes(v) ? v : ex.dur;
+    if (goal !== null) return goal;
+    if (prevVal !== null && ex.durs.includes(prevVal)) return prevVal;
+    return ex.dur;
   };
   const [dur, setDur] = useState(initDur);
   const [ph, setPh] = useState("ready"); // ready | prep | hold
@@ -2198,6 +2196,20 @@ function Work({ item, rounds, history, sessionResults, onRecord, onSwap, exclude
       </div>
       <div style={{ fontSize: 13, color: C.dim, marginTop: 8 }}>{ex.muscles}{ex.tempo ? `. ${T("tempo")}: ${ex.tempo}` : ""}</div>
       <div style={{ fontSize: 13, color: C.chalk, marginTop: 6 }}>{lastLine}</div>
+      {prevVal !== null && (() => {
+        // Holds: the goal is preselected as the duration, so "reached" only makes sense for reps.
+        const hit = ex.type === "reps" && goal !== null && reps >= goal;
+        const unit = ex.type === "time" ? " s" : unitStr(ex.unit);
+        return (
+          <div data-goal style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 10, background: hit ? `${C.mint}1f` : C.panel, border: `1.5px solid ${hit ? C.mint : C.signal}66`, borderRadius: 14, padding: "9px 12px" }}>
+            <span className={hit ? "pop" : ""} key={hit ? "hit" : "aim"} style={{ fontFamily: DISPLAY, fontWeight: 900, fontSize: 20, lineHeight: 1, color: hit ? C.mint : C.signal, border: `2px solid ${hit ? C.mint : C.signal}`, borderRadius: 10, padding: "3px 7px", flexShrink: 0 }}>{hit ? "✓" : ex.type === "time" ? "↑" : "+1"}</span>
+            <div style={{ fontSize: 13, color: C.chalk, lineHeight: 1.4 }}>
+              {goal === null ? T("goalTop", { v: `${prevVal}${unit}` }) : hit ? T("goalHit", { v: `${goal}${unit}` }) : T("goalLine", { v: `${prevVal}${unit}`, g: `${goal}${unit}` })}
+              <div style={{ fontSize: 12, color: C.dim }}>{T("goalOk")}</div>
+            </div>
+          </div>
+        );
+      })()}
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
         <RankBadge id={item.id} best={best} />
         {RANK_AT[item.id] && (() => { const n = rankNext(item.id, best); return n ? <span style={{ fontSize: 12, color: C.dim }}>{n.rank.icon} {T("rankFrom", { rank: n.rank.name, v: `${n.at}${ex.type === "time" ? " s" : ""}` })}</span> : <span style={{ fontSize: 12, color: C.dim }}>{T("topRank")}</span>; })()}
@@ -2223,7 +2235,7 @@ function Work({ item, rounds, history, sessionResults, onRecord, onSwap, exclude
             </div>
             <button className="b3d" onClick={() => { const n = reps + 1; if (best !== null && n === best + 1) sfxRecord(); else sfxTap(); setReps(n); }} aria-label={T("more")} style={{ ...btnBase, width: 64, height: 64, borderRadius: 99, background: C.panelHi, color: C.chalk, fontSize: 32, "--e": "#0a1734" }}>+</button>
           </div>
-          <div style={{ fontSize: 12, color: C.dim, textAlign: "center", marginTop: 10 }}>{last ? T("numFromLast") : T("numGuess")} {T("adjust")}</div>
+          <div style={{ fontSize: 12, color: C.dim, textAlign: "center", marginTop: 10 }}>{T("countHint")}</div>
           <button onClick={() => { unlockAudio(); onRecord(reps); }} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 22, fontSize: 18, padding: 19 }}>
             {T("doneBtn", { v: `${reps}${unitStr(ex.unit)}` })}
           </button>

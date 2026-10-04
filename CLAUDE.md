@@ -37,11 +37,12 @@ Talk to Michael in casual Slovak. Before you deliver anything, test it (build pl
 - Timer beeps (`beep`) stay fixed. Reward sounds have variants, with no immediate repeat.
 - Settings are mirrored to `window._wset`. Sound categories are `sndTap`, `sndFx` and `sndTimer`, plus `volume`, `vibrate`, `keepAwake` and `aiCopy` (off by default).
 - Exercise videos are links only (opened on YouTube). Verify every link with YouTube oEmbed before adding it.
+- The `wine` theme stays exactly as it is: never change or remove it (a friend of Michael's loves it; half a joke, but a firm rule). If a change ever seems necessary, ask Michael first and explain why you are asking.
 
 ## Program logic (evidence-based, keep unless asked)
 - Days A, B and C, trained every other day. Each day has push, pull, legs and core, done as a circuit of 2 or 3 rounds.
 - Rest is 30 s between exercises and 60 s between rounds.
-- Last round is taken close to failure (1–2 reps in reserve).
+- Last round goes to technical failure: as many clean reps as possible, stop when form would break (Michael, Oct 2026; research: hypertrophy improves closer to failure, full failure adds fatigue without more growth). Earlier rounds stay submaximal. Rep counter starts at 0; from the 2nd time the workout shows last time and a +1 goal (holds: the next duration preset).
 - Post-workout stretching is optional, per the 2025 Delphi consensus.
 - Turned-off exercises (`exOff`): `effId(slot)` replaces a day's exercise with the next one of the same type from `ALT_GROUPS` that is on, preferring ones no other day uses. At least one per type must stay on (the UI blocks the last one). A workout stores `session.base` (slot → exercise) at the start; older sessions without it fall back to `effId`.
 
