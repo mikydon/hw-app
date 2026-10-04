@@ -409,7 +409,7 @@ export default {
       muscles: "Pośladki, tył ud",
       tempo: "w górę, 2 s spięcia, w dół",
       how: "Połóż się na plecach, kolana zgięte, stopy na podłodze. Wypchnij się przez pięty i unieś biodra, aż ciało utworzy prostą linię od kolan do barków. Na górze spinaj pośladki przez 2 sekundy i powoli opuść.",
-      tip: "Trudniejsza wersja: jedna noga w powietrzu. Wtedy zapisuj powtórzenia na nogę.",
+      tip: "Trudniejsza wersja: jedna noga w powietrzu. Zrób wszystkie powtórzenia jedną nogą, potem drugą. Zapisz liczbę dla jednej nogi: 10 lewą + 10 prawą = zapisz 10.",
     },
     wallsit: {
       name: "Krzesełko przy ścianie",

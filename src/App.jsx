@@ -636,8 +636,8 @@ const FIGS = {
     { hip: [40, 72], torso: -88, hands: [[39, 72], [39, 72]], armBend: [1, 1], feet: [[60, GROUND], [16, GROUND - 1]], legBend: [-1, -1], hide: ["farArm"] },
   ],
   bridge: [
-    { hip: [46, 89], torso: 0, head: 0, hands: [[44, 92], [46, 92]], armBend: [1, 1], feet: [[28, GROUND], [30, GROUND]], legBend: [1, 1], supine: true },
-    { hip: [51.1, 80.3], torso: 17.2, head: 0, hands: [[46, 93], [48, 93]], armBend: [1, 1], feet: [[28, GROUND], [30, GROUND]], legBend: [1, 1] },
+    { hip: [46, 89], torso: 0, head: 0, hands: [[43.1, 92.4], [43.1, 92.4]], armBend: [1, 1], feet: [[28, GROUND], [30, GROUND]], legBend: [1, 1], supine: true, hide: ["farArm", "farLeg"] },
+    { hip: [51.1, 80.3], torso: 17.2, head: 0, hands: [[46, 93], [48, 93]], armBend: [1, 1], feet: [[28, GROUND], [30, GROUND]], legBend: [1, 1], supine: true, hide: ["farArm", "farLeg"] },
   ],
   wallsit: [
     { hip: [27, 74], torso: -90, hands: [[27.5, 77], [28.5, 77]], armBend: [1, 1], feet: [[47, GROUND], [49, GROUND]], legBend: [-1, -1], props: [{ t: "wall" }] },

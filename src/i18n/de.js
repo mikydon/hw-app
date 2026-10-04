@@ -409,7 +409,7 @@ export default {
       muscles: "Po, Oberschenkelrückseite",
       tempo: "hoch, 2 s anspannen, runter",
       how: "Leg dich auf den Rücken, Knie angewinkelt, Füße am Boden. Drück dich über die Fersen hoch und heb die Hüfte, bis dein Körper von Knien bis Schultern eine gerade Linie bildet. Spann oben 2 Sekunden den Po an und senk dich langsam ab.",
-      tip: "Schwerere Variante: ein Bein in der Luft. Dann trag die Wiederholungen pro Bein ein.",
+      tip: "Schwerere Variante: ein Bein in der Luft. Mach alle Wiederholungen mit einem Bein, dann mit dem anderen. Trag die Zahl für ein Bein ein: 10 links + 10 rechts = 10 eintragen.",
     },
     wallsit: {
       name: "Wall Sit",

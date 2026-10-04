@@ -409,7 +409,7 @@ export default {
       muscles: "Glúteos, posteriores da coxa",
       tempo: "sobe, 2 s contraindo, desce",
       how: "Deite de barriga para cima, joelhos dobrados, pés no chão. Empurre pelos calcanhares e suba o quadril até o corpo formar uma linha reta dos joelhos aos ombros. Contraia os glúteos por 2 segundos lá em cima e desça devagar.",
-      tip: "Versão mais difícil: uma perna no ar. Aí anote as repetições por perna.",
+      tip: "Versão mais difícil: uma perna no ar. Faça todas as repetições com uma perna e depois com a outra. Anote o número de uma perna: 10 esquerda + 10 direita = anote 10.",
     },
     wallsit: {
       name: "Cadeirinha na parede",

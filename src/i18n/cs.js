@@ -409,7 +409,7 @@ export default {
       muscles: "Hýždě, zadní stehna",
       tempo: "nahoru, 2 s stisk, dolů",
       how: "Lehni si na záda, kolena pokrčená, chodidla na zemi. Zatlač přes paty a zvedni pánev, až tělo tvoří rovnou linii od kolen po ramena. Nahoře 2 sekundy stiskni hýždě a pomalu se spusť.",
-      tip: "Těžší verze: jedna noha ve vzduchu. Pak zapisuj opakování na nohu.",
+      tip: "Těžší verze: jedna noha ve vzduchu. Udělej všechna opakování jednou nohou, pak druhou. Zapiš počet za jednu nohu: 10 levou + 10 pravou = zapiš 10.",
     },
     wallsit: {
       name: "Wall sit",

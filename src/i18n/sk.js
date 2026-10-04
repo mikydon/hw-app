@@ -409,7 +409,7 @@ export default {
       muscles: "Zadok, zadné stehná",
       tempo: "hore, 2 s stlač, dole",
       how: "Ľahni na chrbát, kolená pokrč, chodidlá na zemi. Zatlač cez päty a zdvihni boky, kým telo netvorí rovnú čiaru od kolien po ramená. Hore 2 sekundy stlač zadok a pomaly spusti.",
-      tip: "Ťažšia verzia: jedna noha vo vzduchu. Zapíš potom počet na jednu nohu.",
+      tip: "Ťažšia verzia: jedna noha vo vzduchu. Urob všetky opakovania jednou nohou, potom druhou. Zapíš počet za jednu nohu: 10 ľavou + 10 pravou = zapíš 10.",
     },
     wallsit: {
       name: "Wall sit",

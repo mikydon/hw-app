@@ -409,7 +409,7 @@ export default {
       muscles: "Glutei, femorali",
       tempo: "su, 2 s contrazione, giù",
       how: "Sdraiati sulla schiena, ginocchia piegate, piedi a terra. Spingi con i talloni e solleva i fianchi finché il corpo forma una linea dritta dalle ginocchia alle spalle. Stringi i glutei per 2 secondi in alto e torna giù lentamente.",
-      tip: "Versione più difficile: una gamba in aria. In quel caso registra le ripetizioni per gamba.",
+      tip: "Versione più difficile: una gamba in aria. Fai tutte le ripetizioni con una gamba, poi con l'altra. Registra il numero di una gamba: 10 sinistra + 10 destra = scrivi 10.",
     },
     wallsit: {
       name: "Wall sit",

@@ -409,7 +409,7 @@ export default {
       muscles: "Glúteos, isquiotibiales",
       tempo: "arriba, 2 s apretando, abajo",
       how: "Túmbate boca arriba, rodillas dobladas, pies en el suelo. Empuja con los talones y sube la cadera hasta que el cuerpo forme una línea recta de las rodillas a los hombros. Aprieta los glúteos 2 segundos arriba y baja despacio.",
-      tip: "Versión más difícil: una pierna en el aire. En ese caso, apunta las reps por pierna.",
+      tip: "Versión más difícil: una pierna en el aire. Haz todas las reps con una pierna y luego con la otra. Apunta el número de una pierna: 10 izquierda + 10 derecha = apunta 10.",
     },
     wallsit: {
       name: "Sentadilla en pared",

@@ -409,7 +409,7 @@ export default {
       muscles: "Fessiers, ischio-jambiers",
       tempo: "montée, 2 s de contraction, descente",
       how: "Allonge-toi sur le dos, genoux pliés, pieds au sol. Pousse dans les talons et monte les hanches jusqu'à ce que ton corps forme une ligne droite des genoux aux épaules. Serre les fessiers 2 secondes en haut et redescends lentement.",
-      tip: "Version plus dure : une jambe en l'air. Note alors les répétitions par jambe.",
+      tip: "Version plus dure : une jambe en l'air. Fais toutes les répétitions d'une jambe, puis de l'autre. Note le nombre pour une jambe : 10 à gauche + 10 à droite = note 10.",
     },
     wallsit: {
       name: "Chaise (wall sit)",

@@ -409,7 +409,7 @@ export default {
       muscles: "Glutes, hamstrings",
       tempo: "up, 2 s squeeze, down",
       how: "Lie on your back, knees bent, feet on the floor. Push through your heels and lift your hips until your body forms a straight line from knees to shoulders. Squeeze your glutes for 2 seconds at the top and lower slowly.",
-      tip: "Harder version: one leg in the air. Then log reps per leg.",
+      tip: "Harder version: one leg in the air. Do all reps with one leg, then the other. Log the count for one leg: 10 left + 10 right = log 10.",
     },
     wallsit: {
       name: "Wall sit",

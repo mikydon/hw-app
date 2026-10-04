@@ -409,7 +409,7 @@ export default {
       muscles: "Farizom, combhajlítók",
       tempo: "fel, 2 mp szorítás, le",
       how: "Feküdj a hátadra, a térded hajlítva, a talpad a padlón. Nyomd a sarkadat a padlóba, és emeld a csípőd addig, amíg a tested egyenes vonalat alkot a térdedtől a válladig. Fent szorítsd meg a farizmod 2 másodpercig, és lassan engedd le.",
-      tip: "Nehezebb változat: egyik láb a levegőben. Akkor lábanként írd be az ismétléseket.",
+      tip: "Nehezebb változat: egyik láb a levegőben. Csináld meg az összes ismétlést az egyik lábbal, aztán a másikkal. Egy láb számát írd be: 10 bal + 10 jobb = írj 10-et.",
     },
     wallsit: {
       name: "Falnál ülés",
