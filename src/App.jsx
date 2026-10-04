@@ -591,12 +591,12 @@ const FIGS = {
     { hip: [79.2, 60.3], torso: 55, head: 39.5, fl: { th: 27, sh: 27, torso: 24 }, hands: [[78, GROUND], [79, GROUND]], elbows: [[78, 80], [79, 80]], feet: [[37, GROUND], [38, GROUND]], legBend: [1, 1], hide: ["farLeg"] },
   ],
   row1: [
-    { ...fromFeet([88, GROUND], 17), hands: [[97, 37.2], [70.5, 59.7]], armBend: [-1, 1], feet: [[88, GROUND], [90, GROUND]], legBend: [1, 1], props: [{ t: "frame" }], hide: ["farArm", "farLeg"] },
-    { ...fromFeet([88, GROUND], 2), hands: [[97, 37.2], [86.5, 56.8]], elbows: [[83.4, 38.5], [84.3, 43]], feet: [[88, GROUND], [90, GROUND]], legBend: [1, 1], props: [{ t: "frame" }], hide: ["farArm", "farLeg"] },
+    { ...fromFeet([88, GROUND], 17), hands: [[97, 37.2], [70.5, 59.7]], armBend: [-1, 1], feet: [[88, GROUND], [90, GROUND]], legBend: [1, 1], props: [{ t: "frame" }], grip: true, hide: ["farArm", "farLeg"] },
+    { ...fromFeet([88, GROUND], 2), hands: [[97, 37.2], [86.5, 56.8]], elbows: [[83.4, 38.5], [84.3, 43]], feet: [[88, GROUND], [90, GROUND]], legBend: [1, 1], props: [{ t: "frame" }], grip: true, hide: ["farArm", "farLeg"] },
   ],
   row3: [
-    { ...fromFeet([88, GROUND], 17), hands: [[97.4, 31], [70.5, 59.7]], armBend: [-1, 1], feet: [[88, GROUND], [90, GROUND]], legBend: [1, 1], props: [{ t: "frame" }], hide: ["farArm"] },
-    { ...fromFeet([88, GROUND], 2), hands: [[97.4, 31], [86.8, 56.8]], elbows: [[83.5, 30.5], [86.2, 42.8]], feet: [[88, GROUND], [90, GROUND]], legBend: [1, 1], props: [{ t: "frame" }], hide: ["farArm"] },
+    { ...fromFeet([88, GROUND], 17), hands: [[97.4, 31], [70.5, 59.7]], armBend: [-1, 1], feet: [[88, GROUND], [90, GROUND]], legBend: [1, 1], props: [{ t: "frame" }], grip: true, hide: ["farArm"] },
+    { ...fromFeet([88, GROUND], 2), hands: [[97.4, 31], [86.8, 56.8]], elbows: [[83.5, 30.5], [86.2, 42.8]], feet: [[88, GROUND], [90, GROUND]], legBend: [1, 1], props: [{ t: "frame" }], grip: true, hide: ["farArm"] },
   ],
   row2: [
     { ...fromFeet([96, GROUND], 30), hands: [[89.3, 49], [89.8, 48.6]], armBend: [-1, -1], feet: [[96, GROUND], [98, GROUND]], legBend: [1, 1], props: [{ t: "door" }, { t: "towel", from: [104, 56], to: [89.6, 48.8] }] },
@@ -696,13 +696,15 @@ function Stick({ p }) {
       <polyline points={line(belly)} stroke={C.signal} strokeWidth="2.6" />
       <circle cx={headC[0]} cy={headC[1]} r={FL.head} fill={near} stroke="none" />
       {parts.filter(x => x.i === 0).map((x, k) => <polyline key={`n${k}`} points={line(x.pts)} stroke={x.col} strokeWidth="5" />)}
+      {p.grip && (() => { const h = parts.find(x => x.i === 0 && x.pts[0] === shoulder).pts[2]; return <circle cx={h[0]} cy={h[1]} r="3" fill={near} />; })()}
     </g>
   );
 }
 
 function Prop({ pr }) {
   const s = { stroke: C.sky, strokeWidth: 3, fill: "none", strokeLinecap: "round", strokeLinejoin: "round" };
-  if (pr.t === "frame") return <g><rect x="97" y="6" width="7" height="90" {...s} /><line x1="104" y1="6" x2="118" y2="6" {...s} /></g>;
+  // Door frame (jamb) seen from the side as one solid post; the hand grips its front edge.
+  if (pr.t === "frame") return <g><rect x="95.5" y="6" width="9" height="90" rx="1" fill={C.sky} fillOpacity="0.28" stroke={C.sky} strokeWidth="3" /><line x1="104.5" y1="6" x2="118" y2="6" {...s} /></g>;
   if (pr.t === "door") return <g><rect x="102" y="10" width="5" height="86" {...s} /><circle cx="104.5" cy="56" r="2.5" fill={C.sky} /></g>;
   if (pr.t === "towel") return <line x1={pr.from[0]} y1={pr.from[1]} x2={pr.to[0]} y2={pr.to[1]} stroke={C.signal} strokeWidth="3" strokeLinecap="round" />;
   if (pr.t === "chair") return <g {...s}><line x1="8" y1="72" x2="36" y2="72" /><line x1="10" y1="72" x2="10" y2="96" /><line x1="34" y1="72" x2="34" y2="96" /><line x1="10" y1="72" x2="10" y2="44" /></g>;
