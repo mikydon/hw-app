@@ -146,6 +146,9 @@ export default {
     tag_noChair: "senza sedia",
     tag_hold: "tenuta",
     tag_similar: "simile",
+    diff_easy: "più facile",
+    diff_mid: "medio",
+    diff_hard: "più difficile",
 
     howTo: "Come si fa",
     swap: "⇄ Cambia",
@@ -409,7 +412,14 @@ export default {
       muscles: "Glutei, femorali",
       tempo: "su, 2 s contrazione, giù",
       how: "Sdraiati sulla schiena, ginocchia piegate, piedi a terra. Spingi con i talloni e solleva i fianchi finché il corpo forma una linea dritta dalle ginocchia alle spalle. Stringi i glutei per 2 secondi in alto e torna giù lentamente.",
-      tip: "Versione più difficile: una gamba in aria. Fai tutte le ripetizioni con una gamba, poi con l'altra. Registra il numero di una gamba: 10 sinistra + 10 destra = scrivi 10.",
+      tip: "La versione più difficile è il Ponte su una gamba. Quando questo ti sembra facile, sostituiscilo con quello.",
+    },
+    sbridge: {
+      name: "Ponte su una gamba",
+      muscles: "Glutei, femorali",
+      tempo: "su, 2 s contrazione, giù",
+      how: "Sdraiati sulla schiena, ginocchia piegate, piedi a terra. Distendi una gamba in aria e tieni le cosce vicine. Spingi con il tallone della gamba a terra e solleva i fianchi finché il corpo forma una linea retta dal ginocchio alle spalle. In alto stringi i glutei per 2 secondi e scendi piano. Prima tutte le ripetizioni con una gamba, poi con l'altra.",
+      tip: "Tieni i fianchi in linea, non lasciarli cadere dal lato della gamba sollevata. Registra il numero di una gamba: 10 sinistra + 10 destra = scrivi 10.",
     },
     wallsit: {
       name: "Wall sit",
@@ -471,6 +481,7 @@ export default {
     ytw: ["Y: braccia in diagonale avanti", "T: braccia ai lati", "W: gomiti verso le costole"],
     lunge: ["Inizio", "Passo indietro, ginocchio verso terra"],
     bridge: ["Sdraiati, ginocchia piegate", "Fianchi su, stringi i glutei"],
+    sbridge: ["Sdraiati, una gamba su", "Fianchi su, stringi i glutei"],
     wallsit: ["Cosce parallele, schiena al muro"],
     birddog: ["A quattro zampe", "Braccio e gamba opposta"],
     hollow: ["Zona lombare schiacciata a terra"],

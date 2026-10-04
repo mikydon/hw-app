@@ -146,6 +146,9 @@ export default {
     tag_noChair: "szék nélkül",
     tag_hold: "tartás",
     tag_similar: "hasonló",
+    diff_easy: "könnyebb",
+    diff_mid: "közepes",
+    diff_hard: "nehezebb",
 
     howTo: "Így csináld",
     swap: "⇄ Csere",
@@ -409,7 +412,14 @@ export default {
       muscles: "Farizom, combhajlítók",
       tempo: "fel, 2 mp szorítás, le",
       how: "Feküdj a hátadra, a térded hajlítva, a talpad a padlón. Nyomd a sarkadat a padlóba, és emeld a csípőd addig, amíg a tested egyenes vonalat alkot a térdedtől a válladig. Fent szorítsd meg a farizmod 2 másodpercig, és lassan engedd le.",
-      tip: "Nehezebb változat: egyik láb a levegőben. Csináld meg az összes ismétlést az egyik lábbal, aztán a másikkal. Egy láb számát írd be: 10 bal + 10 jobb = írj 10-et.",
+      tip: "A nehezebb változat az Egylábas csípőemelés. Ha ez már könnyű, cseréld le arra.",
+    },
+    sbridge: {
+      name: "Egylábas csípőemelés",
+      muscles: "Farizom, combhajlítók",
+      tempo: "fel, 2 mp szorítás, le",
+      how: "Feküdj hanyatt, térd hajlítva, talp a földön. Az egyik lábad nyújtsd ki a levegőbe, a combokat tartsd egymás mellett. Told a földön lévő láb sarkán keresztül, és emeld a csípőd, amíg a tested egyenes vonal nem lesz a térdtől a vállig. Fent 2 másodpercig szorítsd a farizmot, és lassan engedd le. Előbb az összes ismétlés az egyik lábbal, utána a másikkal.",
+      tip: "A csípőd maradjon vízszintes, ne essen le a felemelt láb oldalán. Egy láb számát írd be: 10 bal + 10 jobb = írj 10-et.",
     },
     wallsit: {
       name: "Falnál ülés",
@@ -471,6 +481,7 @@ export default {
     ytw: ["Y: kar ferdén előre", "T: kar oldalra", "W: könyök a bordákhoz"],
     lunge: ["Kezdés", "Hátralépés, térd a padló felé"],
     bridge: ["Fekvés, térd hajlítva", "Csípő fel, farizom feszítve"],
+    sbridge: ["Fekvés, egyik láb fent", "Csípő fel, farizom feszítve"],
     wallsit: ["Comb vízszintes, hát a falon"],
     birddog: ["Négykézláb", "Kar és ellentétes láb"],
     hollow: ["Derék a padlóhoz nyomva"],

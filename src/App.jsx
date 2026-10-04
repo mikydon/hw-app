@@ -239,8 +239,12 @@ Object.assign(EX, {
     yt: "https://www.youtube.com/watch?v=ALl174GTuoY",
   },
   bridge: {
-    tag: "easier", type: "reps", start: 15, unit: "",
+    diff: "easy", type: "reps", start: 15, unit: "", swapTip: true,
     yt: "https://www.youtube.com/watch?v=Q_Bpj91Yiis",
+  },
+  sbridge: {
+    diff: "hard", type: "reps", start: 8, unit: "leg",
+    yt: "https://www.youtube.com/watch?v=E9a7o0Ae418",
   },
   wallsit: {
     tag: "hold", type: "time", durs: [30, 45, 60, 90], dur: 45, unit: "",
@@ -262,7 +266,7 @@ Object.assign(EX, {
 const ALT_GROUPS = [
   ["k1", "k3", "r1", "kIncl", "kKnee"],
   ["row1", "row2", "row3", "superman", "ytw"],
-  ["n1", "n2", "n7", "lunge", "bridge", "wallsit"],
+  ["n1", "n2", "n7", "lunge", "bridge", "wallsit", "sbridge"],
   ["b5", "b2", "b4", "birddog", "hollow", "legraise"],
 ];
 // Same order as ALT_GROUPS; names come from the locale (grp_push…).
@@ -427,7 +431,7 @@ const CH_POOL = [
   { id: "push100", icon: "🦾", goal: 100, xp: 50, val: w => sumReps(w, ["k1", "k3", "r1", "kKnee", "kIncl"]) },
   { id: "rank", icon: "🎖️", goal: 1, xp: 60, val: w => w.reduce((a, e) => a + ((e.rankUps && e.rankUps.length) || 0), 0) },
   { id: "reps300", icon: "📈", goal: 300, xp: 40, val: w => sumReps(w, null) },
-  { id: "legs100", icon: "🦵", goal: 100, xp: 40, val: w => sumReps(w, ["n1", "n2", "n7", "lunge", "bridge"]) },
+  { id: "legs100", icon: "🦵", goal: 100, xp: 40, val: w => sumReps(w, ["n1", "n2", "n7", "lunge", "bridge", "sbridge"]) },
 ];
 function challengesFor(wk) {
   const seed = Math.round(parseKey(wk).getTime() / 604800000);
@@ -638,6 +642,10 @@ const FIGS = {
   bridge: [
     { hip: [46, 89], torso: 0, head: 0, hands: [[43.1, 92.4], [43.1, 92.4]], armBend: [1, 1], feet: [[28, GROUND], [30, GROUND]], legBend: [1, 1], supine: true, hide: ["farArm", "farLeg"] },
     { hip: [51.1, 80.3], torso: 17.2, head: 0, hands: [[46, 93], [48, 93]], armBend: [1, 1], feet: [[28, GROUND], [30, GROUND]], legBend: [1, 1], supine: true, hide: ["farArm", "farLeg"] },
+  ],
+  sbridge: [
+    { hip: [46, 89], torso: 0, head: 0, hands: [[43.1, 92.4], [43.1, 92.4]], armBend: [1, 1], feet: [[18.6, 60], [28, GROUND]], legBend: [1, 1], supine: true, hide: ["farArm"] },
+    { hip: [51.1, 80.3], torso: 17.2, head: 0, hands: [[46, 93], [48, 93]], armBend: [1, 1], feet: [[12.95, 68.55], [28, GROUND]], legBend: [1, 1], supine: true, hide: ["farArm"] },
   ],
   wallsit: [
     { hip: [27, 74], torso: -90, hands: [[27.5, 77], [28.5, 77]], armBend: [1, 1], feet: [[47, GROUND], [49, GROUND]], legBend: [-1, -1], props: [{ t: "wall" }] },
@@ -925,12 +933,20 @@ function Sheet({ title, onClose, children }) {
   );
 }
 
+// Difficulty compared with the program: easy / mid / hard ("diff" in EX). Shown as a small chip.
+function DiffChip({ id, pad = "1px 8px" }) {
+  const d = EX[id] && EX[id].diff;
+  if (!d) return null;
+  const col = { easy: C.mint, mid: C.sky, hard: "#ff8a6b" }[d];
+  return <span style={{ fontSize: 11, fontWeight: 700, color: col, border: `1.5px solid ${col}55`, borderRadius: 99, padding: pad, whiteSpace: "nowrap" }}>{T("diff_" + d)}</span>;
+}
+
 function HowTo({ id, history, onClose, onSwap }) {
   const ex = EX[id];
   const best = bestFor(history, id);
   return (
     <Sheet title={ex.name} onClose={onClose}>
-      <div style={{ color: C.dim, fontSize: 13, marginBottom: 10 }}>{ex.muscles}</div>
+      <div style={{ color: C.dim, fontSize: 13, marginBottom: 10, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>{ex.muscles}<DiffChip id={id} /></div>
       <ExFigure id={id} />
       {ex.tempo && <div style={{ background: C.panelHi, borderRadius: 12, padding: "10px 13px", marginBottom: 14, fontSize: 14 }}><b style={{ color: C.signal }}>{T("tempo")}:</b> {ex.tempo}</div>}
       <div>{ex.how}</div>
@@ -1804,6 +1820,7 @@ function ExercisesPage({ settings, set, history, onBack }) {
                       <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 5 }}>
                         {d && <span style={{ fontSize: 11, fontWeight: 700, color: C.signal, border: `1.5px solid ${C.signal}55`, borderRadius: 99, padding: "1px 8px" }}>{T("dayN", { d })}</span>}
                         {!d && <span style={{ fontSize: 11, fontWeight: 700, color: C.dim, border: `1.5px solid ${C.line}`, borderRadius: 99, padding: "1px 8px" }}>{T("exAlt")}</span>}
+                        <DiffChip id={id} />
                         {ex.tag && <span style={{ fontSize: 11, fontWeight: 700, color: C.sky, border: `1.5px solid ${C.sky}55`, borderRadius: 99, padding: "1px 8px" }}>{T("tag_" + ex.tag)}</span>}
                         <span style={{ fontSize: 11, color: C.dim, padding: "2px 0" }}>{T("exInfo")}</span>
                       </div>
@@ -2067,6 +2084,7 @@ function SwapSheet({ item, exclude, history, onPick, onClose }) {
                 <div style={{ fontSize: 15, fontWeight: 700 }}>{ex.name}</div>
                 <div style={{ fontSize: 12, color: C.dim, marginTop: 2 }}>{ex.muscles}{l ? T("lastShort", { v: l.res.map(r => fmtRes(r, "")).join("/") }) : ""}</div>
               </div>
+              <DiffChip id={id} pad="2px 8px" />
               {ex.tag && <span style={{ fontSize: 11, fontWeight: 700, color: C.sky, border: `1.5px solid ${C.sky}55`, borderRadius: 99, padding: "2px 8px", whiteSpace: "nowrap" }}>{T("tag_" + ex.tag)}</span>}
             </button>
           );

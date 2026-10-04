@@ -146,6 +146,9 @@ export default {
     tag_noChair: "sans chaise",
     tag_hold: "maintien",
     tag_similar: "similaire",
+    diff_easy: "plus facile",
+    diff_mid: "moyen",
+    diff_hard: "plus difficile",
 
     howTo: "Comment faire",
     swap: "⇄ Remplacer",
@@ -409,7 +412,14 @@ export default {
       muscles: "Fessiers, ischio-jambiers",
       tempo: "montée, 2 s de contraction, descente",
       how: "Allonge-toi sur le dos, genoux pliés, pieds au sol. Pousse dans les talons et monte les hanches jusqu'à ce que ton corps forme une ligne droite des genoux aux épaules. Serre les fessiers 2 secondes en haut et redescends lentement.",
-      tip: "Version plus dure : une jambe en l'air. Fais toutes les répétitions d'une jambe, puis de l'autre. Note le nombre pour une jambe : 10 à gauche + 10 à droite = note 10.",
+      tip: "La version plus dure est le Pont sur une jambe. Quand celui-ci devient facile, remplace-le par celui-là.",
+    },
+    sbridge: {
+      name: "Pont sur une jambe",
+      muscles: "Fessiers, ischio-jambiers",
+      tempo: "montée, 2 s de contraction, descente",
+      how: "Allonge-toi sur le dos, genoux pliés, pieds au sol. Tends une jambe en l'air et garde les cuisses l'une contre l'autre. Pousse dans le talon de la jambe au sol et monte les hanches jusqu'à ce que ton corps forme une ligne droite du genou aux épaules. En haut, serre les fessiers 2 secondes et redescends lentement. D'abord toutes les répétitions d'une jambe, puis de l'autre.",
+      tip: "Garde les hanches à niveau, ne les laisse pas tomber du côté de la jambe levée. Note le nombre pour une jambe : 10 à gauche + 10 à droite = note 10.",
     },
     wallsit: {
       name: "Chaise (wall sit)",
@@ -471,6 +481,7 @@ export default {
     ytw: ["Y : bras en diagonale vers l'avant", "T : bras sur les côtés", "W : coudes vers les côtes"],
     lunge: ["Départ", "Pas en arrière, genou vers le sol"],
     bridge: ["Sur le dos, genoux pliés", "Hanches en haut, fessiers serrés"],
+    sbridge: ["Sur le dos, une jambe en l'air", "Hanches en haut, fessiers serrés"],
     wallsit: ["Cuisses à l'horizontale, dos au mur"],
     birddog: ["À quatre pattes", "Bras et jambe opposée"],
     hollow: ["Bas du dos plaqué au sol"],

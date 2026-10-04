@@ -146,6 +146,9 @@ export default {
     tag_noChair: "sem cadeira",
     tag_hold: "isometria",
     tag_similar: "parecido",
+    diff_easy: "mais fácil",
+    diff_mid: "médio",
+    diff_hard: "mais difícil",
 
     howTo: "Como fazer",
     swap: "⇄ Trocar",
@@ -409,7 +412,14 @@ export default {
       muscles: "Glúteos, posteriores da coxa",
       tempo: "sobe, 2 s contraindo, desce",
       how: "Deite de barriga para cima, joelhos dobrados, pés no chão. Empurre pelos calcanhares e suba o quadril até o corpo formar uma linha reta dos joelhos aos ombros. Contraia os glúteos por 2 segundos lá em cima e desça devagar.",
-      tip: "Versão mais difícil: uma perna no ar. Faça todas as repetições com uma perna e depois com a outra. Anote o número de uma perna: 10 esquerda + 10 direita = anote 10.",
+      tip: "A versão mais difícil é a Elevação pélvica unilateral. Quando esta ficar fácil, troque por ela.",
+    },
+    sbridge: {
+      name: "Elevação pélvica unilateral",
+      muscles: "Glúteos, posteriores da coxa",
+      tempo: "sobe, 2 s contraindo, desce",
+      how: "Deite de costas, joelhos dobrados, pés no chão. Estique uma perna no ar e mantenha as coxas juntas. Empurre pelo calcanhar da perna no chão e suba o quadril até o corpo formar uma linha reta do joelho aos ombros. Em cima, contraia os glúteos por 2 segundos e desça devagar. Primeiro todas as repetições com uma perna, depois com a outra.",
+      tip: "Mantenha o quadril nivelado, sem deixar cair para o lado da perna levantada. Anote o número de uma perna: 10 esquerda + 10 direita = anote 10.",
     },
     wallsit: {
       name: "Cadeirinha na parede",
@@ -471,6 +481,7 @@ export default {
     ytw: ["Y: braços na diagonal à frente", "T: braços para os lados", "W: cotovelos junto às costelas"],
     lunge: ["Início", "Passo para trás, joelho ao chão"],
     bridge: ["Deite, joelhos dobrados", "Quadril para cima, contraia os glúteos"],
+    sbridge: ["Deite, uma perna para cima", "Quadril para cima, contraia os glúteos"],
     wallsit: ["Coxas paralelas, costas na parede"],
     birddog: ["De quatro apoios", "Braço e perna oposta"],
     hollow: ["Lombar colada no chão"],

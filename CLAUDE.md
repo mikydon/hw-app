@@ -49,6 +49,11 @@ Talk to Michael in casual Slovak. Before you deliver anything, test it (build pl
 1. Done in v1.2.0: 11 languages, HW App branding and logo. Settings tab was v1.1.0.
    Done in v1.3.0: sheet fix, daily lines + closable cards, history editing/manual add, full reset, Settings → Exercises.
    Done in v1.3.1: figure fixes (push-up elbows back, pike head in front of hands, knees, rows), confetti fix, language sheet, 4 more themes, vibration hint. Name change still open (Michael suggested "howo"; HOWO is a Sinotruk truck brand).
+   In progress on branch `figures`: Michael reviews every figure one by one (send one image with the English name plus the app's description and tip; merge into main only when all are approved).
+   Michael's request for after the figure review (do it for all exercises):
+   - Every tip that names a harder version becomes its own exercise: texts in all 11 languages, a figure, a video checked with oEmbed. The tip then says you can swap to it, and `swapTip: true` adds the ⇄ swap button in the how-to sheet during a workout. Done so far: `bridge` → `sbridge` (Single-leg glute bridge).
+   - Give every exercise a difficulty `diff` (`easy`/`mid`/`hard`, shown by `DiffChip`): program exercises are `mid`, easier alternatives `easy` (replaces the `easier` tag), harder variants `hard`. So far only `bridge` (easy) and `sbridge` (hard) have it.
+   - One-leg/one-side versions use the unit `leg`/`side`, so the count is per leg. Tips explain it: "10 left + 10 right = log 10".
 2. Next (planned as v1.4.0): Real Android APK via Capacitor, with a GitHub Actions build to Releases.
    - Use the same signing key every time so updates keep user data.
    - Store the key as a repo secret.

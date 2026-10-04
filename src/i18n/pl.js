@@ -146,6 +146,9 @@ export default {
     tag_noChair: "bez krzesła",
     tag_hold: "statyczne",
     tag_similar: "podobne",
+    diff_easy: "łatwiejsze",
+    diff_mid: "średnie",
+    diff_hard: "trudniejsze",
 
     howTo: "Jak to robić",
     swap: "⇄ Zamień",
@@ -409,7 +412,14 @@ export default {
       muscles: "Pośladki, tył ud",
       tempo: "w górę, 2 s spięcia, w dół",
       how: "Połóż się na plecach, kolana zgięte, stopy na podłodze. Wypchnij się przez pięty i unieś biodra, aż ciało utworzy prostą linię od kolan do barków. Na górze spinaj pośladki przez 2 sekundy i powoli opuść.",
-      tip: "Trudniejsza wersja: jedna noga w powietrzu. Zrób wszystkie powtórzenia jedną nogą, potem drugą. Zapisz liczbę dla jednej nogi: 10 lewą + 10 prawą = zapisz 10.",
+      tip: "Trudniejsza wersja to Mostek na jednej nodze. Gdy ten jest dla ciebie łatwy, zamień go na tamten.",
+    },
+    sbridge: {
+      name: "Mostek na jednej nodze",
+      muscles: "Pośladki, tył ud",
+      tempo: "w górę, 2 s spięcia, w dół",
+      how: "Połóż się na plecach, kolana zgięte, stopy na podłodze. Jedną nogę wyprostuj w powietrzu, uda trzymaj razem. Wypchnij się przez piętę nogi na podłodze i unieś biodra, aż ciało utworzy prostą linię od kolana do barków. Na górze spinaj pośladki przez 2 sekundy i powoli opuść. Najpierw wszystkie powtórzenia jedną nogą, potem drugą.",
+      tip: "Trzymaj biodra równo, nie pozwól im opadać na stronę uniesionej nogi. Zapisz liczbę dla jednej nogi: 10 lewą + 10 prawą = zapisz 10.",
     },
     wallsit: {
       name: "Krzesełko przy ścianie",
@@ -471,6 +481,7 @@ export default {
     ytw: ["Y: ręce skośnie do przodu", "T: ręce na boki", "W: łokcie do żeber"],
     lunge: ["Start", "Krok w tył, kolano do podłogi"],
     bridge: ["Leżenie, kolana zgięte", "Biodra w górę, spięte pośladki"],
+    sbridge: ["Leżenie, jedna noga w górze", "Biodra w górę, spięte pośladki"],
     wallsit: ["Uda poziomo, plecy przy ścianie"],
     birddog: ["Na czworakach", "Ręka i przeciwna noga"],
     hollow: ["Dół pleców dociśnięty do podłogi"],

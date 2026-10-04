@@ -146,6 +146,9 @@ export default {
     tag_noChair: "bez stoličky",
     tag_hold: "výdrž",
     tag_similar: "podobné",
+    diff_easy: "ľahšie",
+    diff_mid: "stredné",
+    diff_hard: "náročnejšie",
 
     howTo: "Ako na to",
     swap: "⇄ Vymeniť",
@@ -409,7 +412,14 @@ export default {
       muscles: "Zadok, zadné stehná",
       tempo: "hore, 2 s stlač, dole",
       how: "Ľahni na chrbát, kolená pokrč, chodidlá na zemi. Zatlač cez päty a zdvihni boky, kým telo netvorí rovnú čiaru od kolien po ramená. Hore 2 sekundy stlač zadok a pomaly spusti.",
-      tip: "Ťažšia verzia: jedna noha vo vzduchu. Urob všetky opakovania jednou nohou, potom druhou. Zapíš počet za jednu nohu: 10 ľavou + 10 pravou = zapíš 10.",
+      tip: "Ťažšia verzia je Mostík na jednej nohe. Keď ti je tento ľahký, vymeň si ho zaň.",
+    },
+    sbridge: {
+      name: "Mostík na jednej nohe",
+      muscles: "Zadok, zadné stehná",
+      tempo: "hore, 2 s stlač, dole",
+      how: "Ľahni na chrbát, kolená pokrč, chodidlá na zemi. Jednu nohu vystri do vzduchu, stehná drž pri sebe. Zatlač cez pätu nohy na zemi a zdvihni boky, kým telo netvorí rovnú čiaru od kolena po ramená. Hore 2 sekundy stlač zadok a pomaly spusti. Najprv všetky opakovania jednou nohou, potom druhou.",
+      tip: "Boky drž rovno, nenechaj ich padať na stranu zdvihnutej nohy. Zapíš počet za jednu nohu: 10 ľavou + 10 pravou = zapíš 10.",
     },
     wallsit: {
       name: "Wall sit",
@@ -471,6 +481,7 @@ export default {
     ytw: ["Y: ruky šikmo dopredu", "T: ruky do strán", "W: lakte k rebrám"],
     lunge: ["Štart", "Krok dozadu, koleno k zemi"],
     bridge: ["Ľahni, kolená pokrčené", "Boky hore, stlač zadok"],
+    sbridge: ["Ľahni, jedna noha hore", "Boky hore, stlač zadok"],
     wallsit: ["Stehná vodorovne, chrbát na stene"],
     birddog: ["Na štyroch", "Ruka a opačná noha"],
     hollow: ["Driek pritlačený k zemi"],

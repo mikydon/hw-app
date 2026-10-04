@@ -146,6 +146,9 @@ export default {
     tag_noChair: "no chair",
     tag_hold: "hold",
     tag_similar: "similar",
+    diff_easy: "easier",
+    diff_mid: "medium",
+    diff_hard: "harder",
 
     howTo: "How to",
     swap: "⇄ Swap",
@@ -409,7 +412,14 @@ export default {
       muscles: "Glutes, hamstrings",
       tempo: "up, 2 s squeeze, down",
       how: "Lie on your back, knees bent, feet on the floor. Push through your heels and lift your hips until your body forms a straight line from knees to shoulders. Squeeze your glutes for 2 seconds at the top and lower slowly.",
-      tip: "Harder version: one leg in the air. Do all reps with one leg, then the other. Log the count for one leg: 10 left + 10 right = log 10.",
+      tip: "The harder version is the Single-leg glute bridge. When this one feels easy, swap it for that.",
+    },
+    sbridge: {
+      name: "Single-leg glute bridge",
+      muscles: "Glutes, hamstrings",
+      tempo: "up, 2 s squeeze, down",
+      how: "Lie on your back, knees bent, feet on the floor. Straighten one leg into the air and keep your thighs together. Push through the heel on the floor and lift your hips until your body forms a straight line from knee to shoulders. Squeeze your glutes for 2 seconds at the top and lower slowly. Do all reps with one leg first, then the other.",
+      tip: "Keep your hips level; don't let them drop to the side of the raised leg. Log the count for one leg: 10 left + 10 right = log 10.",
     },
     wallsit: {
       name: "Wall sit",
@@ -471,6 +481,7 @@ export default {
     ytw: ["Y: arms forward and out", "T: arms out to the sides", "W: elbows to the ribs"],
     lunge: ["Start", "Step back, knee to the floor"],
     bridge: ["Lie down, knees bent", "Hips up, squeeze glutes"],
+    sbridge: ["Lie down, one leg up", "Hips up, squeeze glutes"],
     wallsit: ["Thighs level, back on the wall"],
     birddog: ["On all fours", "Arm and opposite leg"],
     hollow: ["Lower back pressed to the floor"],

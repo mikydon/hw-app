@@ -146,6 +146,9 @@ export default {
     tag_noChair: "bez židle",
     tag_hold: "výdrž",
     tag_similar: "podobný",
+    diff_easy: "lehčí",
+    diff_mid: "střední",
+    diff_hard: "náročnější",
 
     howTo: "Jak na to",
     swap: "⇄ Vyměnit",
@@ -409,7 +412,14 @@ export default {
       muscles: "Hýždě, zadní stehna",
       tempo: "nahoru, 2 s stisk, dolů",
       how: "Lehni si na záda, kolena pokrčená, chodidla na zemi. Zatlač přes paty a zvedni pánev, až tělo tvoří rovnou linii od kolen po ramena. Nahoře 2 sekundy stiskni hýždě a pomalu se spusť.",
-      tip: "Těžší verze: jedna noha ve vzduchu. Udělej všechna opakování jednou nohou, pak druhou. Zapiš počet za jednu nohu: 10 levou + 10 pravou = zapiš 10.",
+      tip: "Těžší verze je Most na jedné noze. Když je ti tenhle lehký, vyměň si ho za něj.",
+    },
+    sbridge: {
+      name: "Most na jedné noze",
+      muscles: "Hýždě, zadní stehna",
+      tempo: "nahoru, 2 s stisk, dolů",
+      how: "Lehni si na záda, kolena pokrč, chodidla na zemi. Jednu nohu natáhni do vzduchu, stehna drž u sebe. Zatlač přes patu nohy na zemi a zvedni pánev, až tělo tvoří rovnou čáru od kolena k ramenům. Nahoře 2 sekundy stiskni hýždě a pomalu spusť. Nejdřív všechna opakování jednou nohou, pak druhou.",
+      tip: "Pánev drž rovně, nenech ji padat na stranu zvednuté nohy. Zapiš počet za jednu nohu: 10 levou + 10 pravou = zapiš 10.",
     },
     wallsit: {
       name: "Wall sit",
@@ -471,6 +481,7 @@ export default {
     ytw: ["Y: ruce šikmo dopředu", "T: ruce do stran", "W: lokty k žebrům"],
     lunge: ["Start", "Krok dozadu, koleno k zemi"],
     bridge: ["Vleže, kolena pokrčená", "Pánev nahoru, stiskni hýždě"],
+    sbridge: ["Vleže, jedna noha nahoře", "Pánev nahoru, stiskni hýždě"],
     wallsit: ["Stehna vodorovně, záda na zdi"],
     birddog: ["Na všech čtyřech", "Paže a opačná noha"],
     hollow: ["Bedra přitisknutá k zemi"],

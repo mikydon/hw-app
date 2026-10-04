@@ -146,6 +146,9 @@ export default {
     tag_noChair: "ohne Stuhl",
     tag_hold: "halten",
     tag_similar: "ähnlich",
+    diff_easy: "leichter",
+    diff_mid: "mittel",
+    diff_hard: "schwerer",
 
     howTo: "Anleitung",
     swap: "⇄ Tauschen",
@@ -409,7 +412,14 @@ export default {
       muscles: "Po, Oberschenkelrückseite",
       tempo: "hoch, 2 s anspannen, runter",
       how: "Leg dich auf den Rücken, Knie angewinkelt, Füße am Boden. Drück dich über die Fersen hoch und heb die Hüfte, bis dein Körper von Knien bis Schultern eine gerade Linie bildet. Spann oben 2 Sekunden den Po an und senk dich langsam ab.",
-      tip: "Schwerere Variante: ein Bein in der Luft. Mach alle Wiederholungen mit einem Bein, dann mit dem anderen. Trag die Zahl für ein Bein ein: 10 links + 10 rechts = 10 eintragen.",
+      tip: "Die schwerere Variante ist die Einbeinige Glute Bridge. Wenn dir diese leicht fällt, tausch sie dagegen.",
+    },
+    sbridge: {
+      name: "Einbeinige Glute Bridge",
+      muscles: "Po, Oberschenkelrückseite",
+      tempo: "hoch, 2 s anspannen, runter",
+      how: "Leg dich auf den Rücken, Knie angewinkelt, Füße am Boden. Streck ein Bein in die Luft und halte die Oberschenkel nebeneinander. Drück über die Ferse des Standbeins und heb die Hüfte, bis dein Körper vom Knie bis zu den Schultern eine gerade Linie bildet. Oben 2 Sekunden den Po anspannen und langsam absenken. Erst alle Wiederholungen mit einem Bein, dann mit dem anderen.",
+      tip: "Halte die Hüfte gerade, lass sie nicht zur Seite des gehobenen Beins absinken. Trag die Zahl für ein Bein ein: 10 links + 10 rechts = 10 eintragen.",
     },
     wallsit: {
       name: "Wall Sit",
@@ -471,6 +481,7 @@ export default {
     ytw: ["Y: Arme schräg nach vorn", "T: Arme zur Seite", "W: Ellbogen zu den Rippen"],
     lunge: ["Start", "Schritt zurück, Knie zum Boden"],
     bridge: ["Liegen, Knie angewinkelt", "Hüfte hoch, Po anspannen"],
+    sbridge: ["Liegen, ein Bein oben", "Hüfte hoch, Po anspannen"],
     wallsit: ["Oberschenkel waagrecht, Rücken an der Wand"],
     birddog: ["Vierfüßlerstand", "Arm und Gegenbein"],
     hollow: ["Unterer Rücken fest am Boden"],

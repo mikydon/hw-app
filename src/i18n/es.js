@@ -146,6 +146,9 @@ export default {
     tag_noChair: "sin silla",
     tag_hold: "estático",
     tag_similar: "parecido",
+    diff_easy: "más fácil",
+    diff_mid: "media",
+    diff_hard: "más difícil",
 
     howTo: "Cómo se hace",
     swap: "⇄ Cambiar",
@@ -409,7 +412,14 @@ export default {
       muscles: "Glúteos, isquiotibiales",
       tempo: "arriba, 2 s apretando, abajo",
       how: "Túmbate boca arriba, rodillas dobladas, pies en el suelo. Empuja con los talones y sube la cadera hasta que el cuerpo forme una línea recta de las rodillas a los hombros. Aprieta los glúteos 2 segundos arriba y baja despacio.",
-      tip: "Versión más difícil: una pierna en el aire. Haz todas las reps con una pierna y luego con la otra. Apunta el número de una pierna: 10 izquierda + 10 derecha = apunta 10.",
+      tip: "La versión más difícil es el Puente a una pierna. Cuando este te resulte fácil, cámbialo por ese.",
+    },
+    sbridge: {
+      name: "Puente a una pierna",
+      muscles: "Glúteos, isquiotibiales",
+      tempo: "arriba, 2 s apretando, abajo",
+      how: "Túmbate boca arriba, rodillas dobladas, pies en el suelo. Estira una pierna en el aire y mantén los muslos juntos. Empuja con el talón de la pierna apoyada y sube la cadera hasta que el cuerpo forme una línea recta de la rodilla a los hombros. Arriba aprieta los glúteos 2 segundos y baja despacio. Primero todas las reps con una pierna y luego con la otra.",
+      tip: "Mantén la cadera nivelada, que no caiga hacia el lado de la pierna levantada. Apunta el número de una pierna: 10 izquierda + 10 derecha = apunta 10.",
     },
     wallsit: {
       name: "Sentadilla en pared",
@@ -471,6 +481,7 @@ export default {
     ytw: ["Y: brazos en diagonal al frente", "T: brazos a los lados", "W: codos a las costillas"],
     lunge: ["Inicio", "Paso atrás, rodilla al suelo"],
     bridge: ["Boca arriba, rodillas dobladas", "Cadera arriba, aprieta glúteos"],
+    sbridge: ["Boca arriba, una pierna arriba", "Cadera arriba, aprieta glúteos"],
     wallsit: ["Muslos paralelos, espalda en la pared"],
     birddog: ["En cuatro apoyos", "Brazo y pierna contraria"],
     hollow: ["Lumbar pegada al suelo"],
