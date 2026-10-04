@@ -418,7 +418,16 @@ function totalXP(h) { return h.reduce((a, e) => a + xpFor(e), 0) + challengeXP(h
 function levelInfo(xp) { let lvl = 1, need = 100, rest = xp; while (rest >= need) { rest -= need; lvl++; need += 50; } return { lvl, into: rest, need }; }
 // Streak for an every-other-day plan: it holds while no gap is longer than 2 days.
 // META (from the profile) holds freeze days that bridge a gap and a manual reset time.
-let META = { freezeDays: [], streakResetTs: 0 };
+let META = { freezeDays: [], streakResetTs: 0, bonusFreezes: 0, birth: null };
+// Birthday: day and month from the profile (Feb 29 is celebrated on Feb 28 in other years).
+function isBirthday(birth, today = dateKey()) {
+  if (!birth || !birth.m || !birth.d) return false;
+  const t = parseKey(today), y = t.getFullYear();
+  const leap = (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0;
+  const d = birth.m === 2 && birth.d === 29 && !leap ? 28 : birth.d;
+  return t.getMonth() + 1 === birth.m && t.getDate() === d;
+}
+const bdayToday = () => isBirthday(META.birth);
 function entryTs(e) { return e.ts || parseKey(e.date).getTime() + 12 * 3600000; }
 function streakInfo(history, today) {
   const train = new Set(history.filter(e => entryTs(e) > (META.streakResetTs || 0)).map(e => e.date));
@@ -467,8 +476,9 @@ function challengeXP(history) {
 }
 function freezesAvailable(history) {
   const wks = [...new Set(history.map(e => weekKey(e.date)))];
-  const earned = wks.filter(wk => challengeStatus(history, wk).every(c => c.done)).length + 1; // 1 free to start
-  return Math.max(0, Math.min(2, earned - (META.freezeDays || []).length));
+  const bonus = META.bonusFreezes || 0; // birthday gifts
+  const earned = wks.filter(wk => challengeStatus(history, wk).every(c => c.done)).length + 1 + bonus; // 1 free to start
+  return Math.max(0, Math.min(2 + bonus, earned - (META.freezeDays || []).length));
 }
 // Motivation (texts in the locale).
 const pick = arr => arr[Math.floor(Math.random() * arr.length)];
@@ -1138,6 +1148,26 @@ function achUps(before, after, extra) {
   return b.filter((x, i) => x.tier > a[i].tier).map(x => ({ k: x.k, icon: x.icon, name: x.name, tier: x.tier }));
 }
 
+// On the user's birthday: little confetti pieces and emojis floating around the avatar.
+function BdayHalo({ size, children }) {
+  if (!bdayToday()) return children;
+  const bits = ["🎉", "🎈", "✨", "🎂", "🎊", "✨"];
+  const cols = [C.signal, C.mint, C.sky, "#ff7ab6", C.signal, C.mint, C.sky, "#ff7ab6"];
+  return (
+    <span data-bday-halo style={{ position: "relative", display: "inline-block", width: size, height: size }}>
+      {children}
+      {bits.map((b, i) => {
+        const a = (i / bits.length) * Math.PI * 2 - Math.PI / 2, r = size * 0.62;
+        return <span key={"e" + i} aria-hidden="true" className="haloBit" style={{ position: "absolute", left: size / 2 + Math.cos(a) * r - size * 0.11, top: size / 2 + Math.sin(a) * r - size * 0.11, fontSize: size * 0.2, "--d": `${i * 0.35}s`, pointerEvents: "none" }}>{b}</span>;
+      })}
+      {cols.map((c, i) => {
+        const a = ((i + 0.5) / cols.length) * Math.PI * 2, r = size * 0.56;
+        return <span key={"c" + i} aria-hidden="true" className="haloBit" style={{ position: "absolute", left: size / 2 + Math.cos(a) * r - 3, top: size / 2 + Math.sin(a) * r - 4, width: 6, height: 9, borderRadius: i % 2 ? 99 : 2, background: c, "--d": `${0.2 + i * 0.27}s`, pointerEvents: "none" }} />;
+      })}
+    </span>
+  );
+}
+
 function Avatar({ profile, size = 38 }) {
   const initial = (profile.name || "?").trim().charAt(0).toUpperCase() || "?";
   return profile.pfp ? (
@@ -1177,7 +1207,7 @@ function TopBar({ screen, history, menuOpen, onMenu }) {
       <div style={{ maxWidth: 460, margin: "0 auto", padding: "10px 18px", display: "flex", alignItems: "center", gap: 8 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div key={screen} className="titleIn" style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, lineHeight: 1, color: C.chalk }}>{T(SCREEN_TITLE[screen])}</div>
-          <div style={{ fontSize: 12, color: C.dim, marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{capFirst(fmtDate(today, true))}</div>
+          <div style={{ fontSize: 12, color: bdayToday() ? C.signal : C.dim, fontWeight: bdayToday() ? 800 : 400, marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{bdayToday() ? T("bdayTop") : capFirst(fmtDate(today, true))}</div>
         </div>
         <div style={chip(st.n ? "#ffa94d" : C.dim)} aria-label={T("streakAria", { n: st.n })}><span className={st.n ? "wiggle" : ""}>🔥</span>{st.n}</div>
         <div style={chip(C.sky)} aria-label={T("levelAria", { n: lv.lvl })}>⚡{lv.lvl}</div>
@@ -1221,7 +1251,7 @@ function MenuDrawer({ open, screen, history, profile, session, onGo, onResume, o
           <MenuButton open={true} onClick={onClose} />
         </div>
         <button onClick={() => onGo("profile")} className="drawerItem" style={{ ...btnBase, "--i": 0, display: "flex", alignItems: "center", gap: 12, margin: "8px 14px 6px", padding: "12px", borderRadius: 18, background: C.panelHi, color: C.chalk, textAlign: "left" }}>
-          <Avatar profile={profile} size={52} />
+          <BdayHalo size={52}><Avatar profile={profile} size={52} /></BdayHalo>
           <div style={{ minWidth: 0 }}>
             <div style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, lineHeight: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{profile.name || T("defaultName")}</div>
             <div style={{ fontSize: 13, color: C.dim, marginTop: 4 }}><span style={{ color: C.sky, fontWeight: 800 }}>⚡ {lv.lvl}</span> · <span style={{ color: "#ffa94d", fontWeight: 800 }}>🔥 {st.n}</span></div>
@@ -1339,7 +1369,28 @@ function CloseX({ onClick, color }) {
   );
 }
 
-function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume }) {
+// Confetti once per app start on the birthday (kept in memory, so no write races with the daily line).
+let BDAY_BURST = null;
+function BirthdayCard({ profile, ui, setUi }) {
+  const today = dateKey();
+  const show = bdayToday() && ui.bdayHidden !== today;
+  const [burst] = useState(() => show && BDAY_BURST !== today);
+  useEffect(() => { if (burst) { BDAY_BURST = today; sfxLevel(); } }, []);
+  if (!show) return null;
+  const age = ageOn(profile.birth, today);
+  return (
+    <div data-bday className="pop" style={{ position: "relative", marginBottom: 16, borderRadius: 20, padding: "16px 44px 16px 16px", background: `linear-gradient(135deg, ${C.signal}33, #ff7ab633 55%, ${C.sky}33)`, border: `2px solid ${C.signal}` }}>
+      {burst && <Confetti count={90} />}
+      <CloseX onClick={() => setUi({ ...ui, bdayHidden: today })} />
+      <div style={{ fontSize: 34, lineHeight: 1 }}>🎂🎉</div>
+      <div style={{ fontFamily: DISPLAY, fontSize: 34, fontWeight: 900, lineHeight: 0.95, color: C.signal, marginTop: 6 }}>{T("bdayTitle", { name: profile.name || T("defaultName") })}</div>
+      {age !== null && <div style={{ fontSize: 15, fontWeight: 800, color: C.chalk, marginTop: 6 }}>{T("bdayAge", { n: age })}</div>}
+      <div style={{ fontSize: 14, color: C.chalk, lineHeight: 1.5, marginTop: 6 }}>{T("bdayBody")}</div>
+    </div>
+  );
+}
+
+function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, profile }) {
   const today = dateKey();
   // Make sure today's daily line and the "done" card texts are picked (and saved) before painting.
   useLayoutEffect(() => { const n = uiForToday(ui, history, today); if (n !== ui) setUi(n); });
@@ -1356,7 +1407,7 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume }) {
   const lastTs = last ? entryTs(last) : 0;
   const showDone = doneToday && ui.doneHiddenTs !== lastTs;
   const dv = ui.doneVar && ui.doneVar.ts === lastTs ? ui.doneVar : { t: 0, s: 0 };
-  const dailyText = ui.daily && ui.daily.date === today && ui.dailyHidden !== today ? (() => { const pool = dailyPool(ui.daily.kind); return pool[ui.daily.i % pool.length]; })() : null;
+  const dailyText = ui.daily && ui.daily.date === today && ui.dailyHidden !== today ? (bdayToday() ? T("bdayDaily") : (() => { const pool = dailyPool(ui.daily.kind); return pool[ui.daily.i % pool.length]; })()) : null;
   const nextIdeal = last ? addDays(last.date, 2) : today;
   let status = T("firstWorkout");
   if (last) {
@@ -1382,6 +1433,7 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume }) {
     <div className="scr" style={{ padding: "16px 18px 110px", maxWidth: 460, margin: "0 auto" }}>
       {howEx && <HowTo id={howEx} history={history} onClose={() => setHowEx(null)} />}
 
+      {profile && <BirthdayCard profile={profile} ui={ui} setUi={setUi} />}
       {showDone && (
         <div style={{ position: "relative", background: "#173f3a", border: `1.5px solid ${C.mint}`, borderRadius: 18, padding: "14px 40px 14px 16px", display: "flex", alignItems: "center", gap: 14, marginBottom: 14 }}>
           <CloseX color="#bfe9d4" onClick={() => setUi({ ...ui, doneHiddenTs: lastTs })} />
@@ -2154,7 +2206,7 @@ function ProfileTab({ history, profile, setProfile, onFreeze, kcal }) {
 
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", paddingTop: 6 }}>
         <button onClick={() => fileRef.current && fileRef.current.click()} aria-label={T("changePhoto")} style={{ ...btnBase, position: "relative", background: "transparent", padding: 0, borderRadius: 99 }}>
-          <Avatar profile={profile} size={104} />
+          <BdayHalo size={104}><Avatar profile={profile} size={104} /></BdayHalo>
           <span style={{ position: "absolute", right: -2, bottom: -2, width: 34, height: 34, borderRadius: 99, background: C.panelHi, border: `2px solid ${C.ink}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>📷</span>
         </button>
         {err && <div style={{ fontSize: 13, color: "#ff8a80", marginTop: 8 }}>{err}</div>}
@@ -2170,7 +2222,7 @@ function ProfileTab({ history, profile, setProfile, onFreeze, kcal }) {
             <span style={{ fontSize: 13, color: C.dim, marginLeft: 6 }}>✏️</span>
           </button>
         )}
-        <div style={{ fontSize: 13, color: C.dim, marginTop: 2 }}>{since ? T("since", { date: fmtDate(since, true) }) : T("newMember")}</div>
+        <div style={{ fontSize: 13, color: bdayToday() ? C.signal : C.dim, fontWeight: bdayToday() ? 800 : 400, marginTop: 2 }}>{bdayToday() ? T("bdayHero") : since ? T("since", { date: fmtDate(since, true) }) : T("newMember")}</div>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 18 }}>
@@ -2192,7 +2244,7 @@ function ProfileTab({ history, profile, setProfile, onFreeze, kcal }) {
       <div style={{ ...card, padding: "13px 15px", marginTop: 8, display: "flex", alignItems: "center", gap: 12 }}>
         <div style={{ fontSize: 30 }}>🧊</div>
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 15, fontWeight: 700, color: C.chalk }}>{T("freezeTitle", { n: fz })}</div>
+          <div style={{ fontSize: 15, fontWeight: 700, color: C.chalk }}>{T("freezeTitle", { n: fz, max: Math.max(2, fz) })}</div>
           <div style={{ fontSize: 12, color: C.dim, lineHeight: 1.45 }}>{T("freezeDesc")}</div>
         </div>
         <button disabled={!fz || st.frozenToday || (history.length && history[history.length - 1].date === today)} onClick={onFreeze}
@@ -2855,7 +2907,7 @@ function Summary({ entry, xpBefore = 0, xpGained, newCh = [], newAch = [], histo
   const lvNow = levelInfo(xpBefore + shown);
   const leveledUp = levelInfo(xpBefore + gained).lvl > levelInfo(xpBefore).lvl;
   const st = entry ? streakInfo(history, entry.date) : { n: 0 };
-  const [finishLine] = useState(() => pick(L.finish));
+  const [finishLine] = useState(() => (bdayToday() ? T("bdayFinish") : pick(L.finish)));
   const text = entry ? logText(entry) : "";
   const copy = async () => {
     try { await navigator.clipboard.writeText(text); }
@@ -3075,12 +3127,20 @@ export default function App() {
   const setUi = u => { setUiState(u); saveUi(u); };
   // Every change to past workouts keeps the history sorted and records/rank-ups correct.
   const editHistory = fn => setHistory(h => recomputeFlags(sortHistory(fn(h))));
-  META = { freezeDays: profile.freezeDays || [], streakResetTs: profile.streakResetTs || 0 };
+  META = { freezeDays: profile.freezeDays || [], streakResetTs: profile.streakResetTs || 0, bonusFreezes: (profile.bdayGifts || []).length, birth: profile.birth || null };
   window._wset = settings;
   applyTheme(settings.theme);
   applyLang(settings.lang || detectLang());
   const setSettings = n => { setSettingsState(n); saveSettings(n); };
-  useEffect(() => { loadProfile().then(p => { if (p) setProfileState(prev => ({ ...prev, ...p })); }); loadKcal().then(k => { if (k) setKcalState(k); }); }, []);
+  const [profLoaded, setProfLoaded] = useState(false);
+  useEffect(() => { loadProfile().then(p => { if (p) setProfileState(prev => ({ ...prev, ...p })); setProfLoaded(true); }); loadKcal().then(k => { if (k) setKcalState(k); }); }, []);
+  // Birthday: count it for the achievement and give one freeze day as a present (once per year).
+  useEffect(() => {
+    if (!profLoaded || !isBirthday(profile.birth)) return;
+    const y = parseKey(dateKey()).getFullYear();
+    if ((profile.bdays || []).includes(y)) return;
+    setProfile({ ...profile, bdays: [...(profile.bdays || []), y], bdayGifts: [...(profile.bdayGifts || []), y] });
+  }, [profLoaded, profile.birth && profile.birth.m, profile.birth && profile.birth.d, dateKey()]);
   const setProfile = p => { setProfileState(p); saveProfile(p); };
   const applyFreeze = () => {
     unlockAudio();
@@ -3152,6 +3212,8 @@ export default function App() {
         .drawerItem{transition:background .15s} .drawerItem:active{transform:scale(.98)}
         @keyframes miniIn{from{opacity:0;transform:translate(-50%,40px) scale(.94)}to{opacity:1;transform:translate(-50%,0)}}
         .miniIn{animation:miniIn .38s cubic-bezier(.2,1.2,.4,1) both}
+        @keyframes halo{0%,100%{transform:translateY(0) rotate(0) scale(1)}50%{transform:translateY(-5px) rotate(12deg) scale(1.15)}}
+        .haloBit{animation:halo 1.8s ease-in-out var(--d) infinite}
         @keyframes titleIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
         .titleIn{animation:titleIn .28s ease-out both}
         @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}.conf{display:none}}
@@ -3173,7 +3235,7 @@ export default function App() {
             <>
               <TopBar screen={screen} history={history} menuOpen={menuOpen} onMenu={() => { sfxTap(); setMenuOpen(o => !o); }} />
               <div key={screen}>
-                {screen === "train" && <TrainTab history={history} onStart={start} onFreeze={applyFreeze} ui={ui} setUi={setUi} active={session} onResume={resume} />}
+                {screen === "train" && <TrainTab history={history} onStart={start} onFreeze={applyFreeze} ui={ui} setUi={setUi} active={session} onResume={resume} profile={profile} />}
                 {screen === "history" && <HistoryTab history={history}
                   onDelete={idx => editHistory(h => h.filter((_, i) => i !== idx))}
                   onSaveEntry={(idx, entry) => editHistory(h => (idx === null ? [...h, entry] : h.map((e, i) => (i === idx ? entry : e))))} />}
