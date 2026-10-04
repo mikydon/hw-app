@@ -669,7 +669,7 @@ const FIGS = {
     { hip: [48, 90], torso: -40, head: -32, fl: { ua: 12, fa: 11 }, hands: [[70, GROUND], [70, GROUND]], armBend: [1, 1], feet: [[8.1, 92.5], [8.1, 92.5]], legBend: [1, 1], hide: ["farArm", "farLeg"] },
   ],
   child: [
-    { hip: [32, 84], torso: 0, head: 18, hands: [[87, 92.5], [87, 92.5]], armBend: [1, 1], feet: [[30, GROUND], [30, GROUND]], legBend: [-1, -1], hide: ["farArm", "farLeg"], bellyTop: true },
+    { hip: [32, 83], torso: 0, head: 18, belly: [0.62, 0.95], hands: [[87, 92.5], [87, 92.5]], armBend: [1, 1], feet: [[30, GROUND], [30, GROUND]], legBend: [-1, -1], hide: ["farArm", "farLeg"] },
   ],
 };
 
@@ -703,10 +703,9 @@ function Stick({ p }) {
       {parts.filter(x => x.i === 1).map((x, k) => <polyline key={`f${k}`} points={line(x.pts)} stroke={x.col} strokeWidth="5" />)}
       {(p.props || []).filter(pr => pr.mid).map((pr, k) => <Prop key={`m${k}`} pr={pr} />)}
       <polyline points={line([p.hip, shoulder])} stroke={near} strokeWidth="6" />
-      {belly && !p.bellyTop && <polyline points={line(belly)} stroke={C.signal} strokeWidth="2.6" />}
+      {belly && <polyline points={line(belly)} stroke={C.signal} strokeWidth="2.6" />}
       <circle cx={headC[0]} cy={headC[1]} r={FL.head} fill={near} stroke="none" />
       {parts.filter(x => x.i === 0).map((x, k) => <polyline key={`n${k}`} points={line(x.pts)} stroke={x.col} strokeWidth="5" />)}
-      {belly && p.bellyTop && <polyline points={line(belly)} stroke={C.signal} strokeWidth="2.6" />}
       {p.grip && (() => { const h = parts.find(x => x.i === 0 && x.pts[0] === shoulder).pts[2]; return <circle cx={h[0]} cy={h[1]} r="3" fill={near} />; })()}
     </g>
   );
