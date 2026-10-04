@@ -704,7 +704,7 @@ function Stick({ p }) {
 function Prop({ pr }) {
   const s = { stroke: C.sky, strokeWidth: 3, fill: "none", strokeLinecap: "round", strokeLinejoin: "round" };
   // Door frame (jamb) seen from the side as one solid post; the hand grips its front edge.
-  if (pr.t === "frame") return <g><rect x="95.5" y="6" width="9" height="90" rx="1" fill={C.sky} fillOpacity="0.28" stroke={C.sky} strokeWidth="3" /><line x1="104.5" y1="6" x2="118" y2="6" {...s} /></g>;
+  if (pr.t === "frame") return <g><rect x="95.5" y="6" width="4.6" height="90" rx="1" fill={C.sky} fillOpacity="0.28" stroke={C.sky} strokeWidth="3" /><line x1="100.1" y1="6" x2="118" y2="6" {...s} /></g>;
   if (pr.t === "door") return <g><rect x="102" y="10" width="5" height="86" {...s} /><circle cx="104.5" cy="56" r="2.5" fill={C.sky} /></g>;
   if (pr.t === "towel") return <line x1={pr.from[0]} y1={pr.from[1]} x2={pr.to[0]} y2={pr.to[1]} stroke={C.signal} strokeWidth="3" strokeLinecap="round" />;
   if (pr.t === "chair") return <g {...s}><line x1="8" y1="72" x2="36" y2="72" /><line x1="10" y1="72" x2="10" y2="96" /><line x1="34" y1="72" x2="34" y2="96" /><line x1="10" y1="72" x2="10" y2="44" /></g>;
