@@ -2,7 +2,7 @@
 
 # HW App 💪
 
-**HW App** (home workout app) is a free app for training at home with no equipment, in about 13 minutes. It runs on your phone like a normal app.
+**HW App** (home workout app) is a free app for training at home with no equipment, in ~13 minutes. It runs on your phone like a normal app.
 
 **Open it:** https://mikydon.github.io/hw-app/
 
@@ -15,8 +15,9 @@
 
 ## What it does
 - 3 workout days (A, B, C), trained every other day: push, pull, legs and core in a circuit of 2 or 3 rounds
-- warm-up, timers, sounds and rest breaks between exercises, with tips during the rest
-- a drawing, instructions and a video link for every exercise
+- warm-up, timers, sounds and rest breaks between exercises, with tips during the rest; optional stretching at the end (hip flexor, cobra, child's pose)
+- a drawing (yellow line = belly side), instructions and a video link for every exercise
+- 27 exercises, each marked easier, medium or harder; when one gets easy, its tip points to the harder version and lets you swap to it
 - swap an exercise when one doesn't work for you, or turn off exercises you can't do in Settings → Exercises (the app replaces them with another of the same type)
 - XP, levels, a 🔥 streak with freezes, ranks per exercise (Wood to Diamond), weekly challenges and badges
 - history with a calendar and a progress chart; edit or delete past workouts, or add one you did without the app
