@@ -213,6 +213,7 @@ export default {
     rankStart: "inicio",
     figureAria: "Dibujo: {labels}",
     figBelly: "Línea amarilla = lado del abdomen",
+    figTop: "vista desde arriba",
     photoAlt: "Foto de perfil",
 
     // v1.3.0

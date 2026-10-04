@@ -213,6 +213,7 @@ export default {
     rankStart: "start",
     figureAria: "Rysunek: {labels}",
     figBelly: "Żółta kreska = strona brzucha",
+    figTop: "widok z góry",
     photoAlt: "Zdjęcie profilowe",
 
     // v1.3.0

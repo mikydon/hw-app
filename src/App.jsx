@@ -575,8 +575,8 @@ const FIGS = {
     { hip: [50.3, 87.9], torso: -8.7, hands: [[73.4, GROUND], [75.4, GROUND]], armBend: [1, 1], feet: [[10.8, GROUND], [12.8, GROUND]], legBend: [1, 1], hide: ["farLeg"] },
   ],
   k3: [
-    { hip: [50, 76.4], torso: -26, hands: [[70, GROUND], [72, GROUND]], armBend: [1, 1], feet: [[14, GROUND], [16, GROUND]], legBend: [1, 1], hide: ["farLeg"], props: [{ t: "diamond", x: 71, y: 89 }] },
-    { hip: [50.3, 87.9], torso: -8.7, hands: [[70, GROUND], [72, GROUND]], armBend: [1, 1], feet: [[10.8, GROUND], [12.8, GROUND]], legBend: [1, 1], hide: ["farLeg"] },
+    { hip: [50, 76.4], torso: -26, hands: [[67, GROUND], [69, GROUND]], armBend: [1, 1], feet: [[14, GROUND], [16, GROUND]], legBend: [1, 1], hide: ["farLeg"], props: [{ t: "diamondTop" }] },
+    { hip: [50.3, 87.9], torso: -8.7, hands: [[67, GROUND], [69, GROUND]], armBend: [1, 1], feet: [[10.8, GROUND], [12.8, GROUND]], legBend: [1, 1], hide: ["farLeg"] },
   ],
   b5: [
     { hip: [53, 86], torso: -12.5, hands: [[93, GROUND], [95, GROUND]], elbows: [[78, GROUND], [80, GROUND]], feet: [[14, GROUND], [16, GROUND]], legBend: [1, 1] },
@@ -707,6 +707,19 @@ function Prop({ pr }) {
   if (pr.t === "table") return <g {...s}><line x1="80" y1="74" x2="118" y2="74" /><line x1="84" y1="74" x2="84" y2="96" /><line x1="114" y1="74" x2="114" y2="96" /></g>;
   if (pr.t === "wall") return <line x1="20" y1="4" x2="20" y2="96" {...s} strokeWidth="4" />;
   if (pr.t === "towelFloor") return <rect x={pr.x} y={GROUND} width="14" height="3" rx="1" fill={C.signal} />;
+  // Small "seen from above" inset: palms side by side, index fingers and thumbs touching = diamond.
+  if (pr.t === "diamondTop") return (
+    <g>
+      <rect x="3" y="3" width="44" height="40" rx="6" fill={C.panel} stroke={C.line} strokeWidth="1.2" />
+      <g stroke={C.chalk} strokeWidth="2.6" strokeLinecap="round" fill="none">
+        <line x1="14" y1="16" x2="25" y2="11" /><line x1="14" y1="26" x2="25" y2="31" />
+        <line x1="36" y1="16" x2="25" y2="11" /><line x1="36" y1="26" x2="25" y2="31" />
+      </g>
+      <ellipse cx="10" cy="21" rx="5" ry="7.5" fill={C.chalk} /><ellipse cx="40" cy="21" rx="5" ry="7.5" fill={C.chalk} />
+      <path d="M25 13.5 L33 21 L25 28.5 L17 21 Z" fill={C.sky} opacity="0.45" />
+      <text x="25" y="40" textAnchor="middle" fontSize="5.5" fill={C.dim} fontFamily={BODY}>{T("figTop")}</text>
+    </g>
+  );
   if (pr.t === "diamond") return <path d={`M${pr.x} ${pr.y - 5} L${pr.x + 5} ${pr.y} L${pr.x} ${pr.y + 5} L${pr.x - 5} ${pr.y} Z`} stroke={C.signal} strokeWidth="2" fill="none" />;
   return null;
 }

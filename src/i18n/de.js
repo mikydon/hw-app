@@ -213,6 +213,7 @@ export default {
     rankStart: "Start",
     figureAria: "Zeichnung: {labels}",
     figBelly: "Gelbe Linie = Bauchseite",
+    figTop: "von oben",
     photoAlt: "Profilfoto",
 
     // v1.3.0

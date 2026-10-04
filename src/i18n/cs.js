@@ -213,6 +213,7 @@ export default {
     rankStart: "start",
     figureAria: "Obrázek: {labels}",
     figBelly: "Žlutá čárka = strana břicha",
+    figTop: "pohled shora",
     photoAlt: "Profilová fotka",
 
     // v1.3.0
