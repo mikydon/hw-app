@@ -463,7 +463,7 @@ export default {
     b2: ["Départ", "Bras et jambe opposée vers le bas"],
     n7: ["Hanches en l'air, talons près des fessiers", "Jambes glissées, hanches toujours en l'air"],
     b4: ["Coude vers le genou opposé", "Change de côté"],
-    kKnee: ["En haut, genoux au sol", "En bas"],
+    kKnee: ["En haut, genoux au sol", "En bas, coudes à ~45° du corps"],
     kIncl: ["Mains sur la table, en haut", "Poitrine vers le bord, coudes à ~45° du corps"],
     superman: ["Sur le ventre", "Décolle et tiens 2 s"],
     ytw: ["Y : bras en avant et en haut", "W : coudes vers les côtes"],

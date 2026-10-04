@@ -463,7 +463,7 @@ export default {
     b2: ["Start", "Arm und Gegenbein runter"],
     n7: ["Hüfte hoch, Fersen am Po", "Beine raus, Hüfte bleibt oben"],
     b4: ["Ellbogen zum Gegenknie", "Seite wechseln"],
-    kKnee: ["Oben, Knie am Boden", "Unten"],
+    kKnee: ["Oben, Knie am Boden", "Unten, Ellbogen ~45° vom Körper"],
     kIncl: ["Hände auf dem Tisch, oben", "Brust zur Kante, Ellbogen ~45° vom Körper"],
     superman: ["Auf dem Bauch liegen", "Heben, 2 s halten"],
     ytw: ["Y: Arme nach vorn oben", "W: Ellbogen zu den Rippen"],

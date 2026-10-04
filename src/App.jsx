@@ -619,8 +619,8 @@ const FIGS = {
     { hip: [44, 88], torso: -22, head: -40, hands: [[73, 75], [72, 76]], elbows: [[75, 63.5], [60, 70]], feet: [[5, 79], [32, 64]], legBend: [1, 1] },
   ],
   kKnee: [
-    { hip: [52.95, 80.26], torso: -35.94, hands: [[74, GROUND], [76, GROUND]], armBend: [1, 1], feet: [[18, 85], [20, 85]], legBend: [-1, -1] },
-    { hip: [56.46, 88.52], torso: -10, hands: [[74, GROUND], [76, GROUND]], armBend: [1, 1], feet: [[18, 85], [20, 85]], legBend: [-1, -1] },
+    { hip: [52.95, 80.26], torso: -35.94, hands: [[74, GROUND], [76, GROUND]], armBend: [1, 1], feet: [[18, 85], [20, 85]], legBend: [-1, -1], hide: ["farLeg"] },
+    { hip: [56.46, 88.52], torso: -10, hands: [[74, GROUND], [76, GROUND]], armBend: [1, 1], feet: [[18, 85], [20, 85]], legBend: [-1, -1], hide: ["farLeg"] },
   ],
   kIncl: [
     { hip: [51.2, 64.7], torso: -47.1, hands: [[81, 72], [82, 72]], armBend: [1, 1], feet: [[24, GROUND], [25, GROUND]], legBend: [1, 1], hide: ["farLeg"], props: [{ t: "table" }] },

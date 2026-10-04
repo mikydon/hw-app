@@ -463,7 +463,7 @@ export default {
     b2: ["Start", "Ręka i przeciwna noga w dół"],
     n7: ["Biodra w górze, pięty przy pośladkach", "Wysuń nogi, biodra wciąż w górze"],
     b4: ["Łokieć do przeciwnego kolana", "Zmiana strony"],
-    kKnee: ["Góra, kolana na podłodze", "Dół"],
+    kKnee: ["Góra, kolana na podłodze", "Dół, łokcie ~45° od ciała"],
     kIncl: ["Dłonie na stole, góra", "Klatka do krawędzi, łokcie ~45° od ciała"],
     superman: ["Leżenie na brzuchu", "Unieś i trzymaj 2 s"],
     ytw: ["Y: ręce do przodu i w górę", "W: łokcie do żeber"],

@@ -463,7 +463,7 @@ export default {
     b2: ["Kezdés", "Kar és ellentétes láb le"],
     n7: ["Csípő fent, sarok a fenék közelében", "Láb kicsúsztatva, csípő fent"],
     b4: ["Könyök az ellentétes térdhez", "Oldalcsere"],
-    kKnee: ["Fent, térd a padlón", "Lent"],
+    kKnee: ["Fent, térd a padlón", "Lent, könyök ~45°-ban"],
     kIncl: ["Kéz az asztalon, fent", "Mellkas a széléhez, könyök ~45°-ban"],
     superman: ["Hason fekvés", "Emelés, 2 mp tartás"],
     ytw: ["Y: kar előre-fel", "W: könyök a bordákhoz"],

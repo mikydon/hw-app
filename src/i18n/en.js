@@ -463,7 +463,7 @@ export default {
     b2: ["Start", "Arm and opposite leg down"],
     n7: ["Hips up, heels near glutes", "Slide legs out, hips still up"],
     b4: ["Elbow to opposite knee", "Switch sides"],
-    kKnee: ["Up, knees on the floor", "Down"],
+    kKnee: ["Up, knees on the floor", "Down, elbows ~45° from the body"],
     kIncl: ["Hands on the table, up", "Chest to the edge, elbows ~45° from the body"],
     superman: ["Lie on your stomach", "Lift and hold 2 s"],
     ytw: ["Y: arms forward and up", "W: elbows to ribs"],
