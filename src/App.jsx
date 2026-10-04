@@ -611,8 +611,8 @@ const FIGS = {
     { hip: [42, 88], torso: 0, head: 0, hands: [[97, 86], [70, 59.5]], armBend: [1, 1], feet: [[22, 68], [2, 86]], legBend: [1, 1], supine: true },
   ],
   n7: [
-    { hip: [54, 72], torso: 30, head: 10, hands: [[48, 92.5], [50, 92.5]], armBend: [1, 1], feet: [[34, GROUND - 2], [36, GROUND - 2]], legBend: [1, 1], props: [{ t: "towelFloor", x: 28 }], supine: true },
-    { hip: [50, 80], torso: 22, head: 10, hands: [[45.2, 93], [47.2, 93]], armBend: [1, 1], feet: [[12, GROUND - 2], [12.5, GROUND - 1.5]], legBend: [1, 1], props: [{ t: "towelFloor", x: 6 }] },
+    { hip: [54, 72], torso: 30, head: 10, hands: [[48, 92.5], [50, 92.5]], armBend: [1, 1], feet: [[34, GROUND - 2], [36, GROUND - 2]], legBend: [1, 1], props: [{ t: "towelFloor", x: 28 }], supine: true, hide: ["farArm", "farLeg"] },
+    { hip: [50, 80], torso: 22, head: 10, hands: [[45.2, 93], [47.2, 93]], armBend: [1, 1], feet: [[12, GROUND - 2], [12.5, GROUND - 1.5]], legBend: [1, 1], props: [{ t: "towelFloor", x: 6 }], supine: true, hide: ["farArm", "farLeg"] },
   ],
   b4: [
     { hip: [44, 88], torso: -22, head: -40, hands: [[72, 76], [73, 75]], elbows: [[60, 70], [75, 63.5]], feet: [[32, 64], [5, 79]], legBend: [1, 1], supine: true },
