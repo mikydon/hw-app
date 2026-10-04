@@ -467,7 +467,7 @@ export default {
     kKnee: ["Góra, kolana na podłodze", "Dół, łokcie ~45° od ciała"],
     kIncl: ["Dłonie na stole, góra", "Klatka do krawędzi, łokcie ~45° od ciała"],
     superman: ["Leżenie na brzuchu", "Unieś i trzymaj 2 s"],
-    ytw: ["Y: ręce do przodu i w górę", "W: łokcie do żeber"],
+    ytw: ["Y: ręce skośnie do przodu", "T: ręce na boki", "W: łokcie do żeber"],
     lunge: ["Start", "Krok w tył, kolano do podłogi"],
     bridge: ["Leżenie, kolana zgięte", "Biodra w górę, spięte pośladki"],
     wallsit: ["Uda poziomo, plecy przy ścianie"],

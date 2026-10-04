@@ -467,7 +467,7 @@ export default {
     kKnee: ["Hore, kolená na zemi", "Dole, lakte ~45° od tela"],
     kIncl: ["Ruky na stole, hore", "Hrudník k hrane, lakte ~45° od tela"],
     superman: ["Ľahni na brucho", "Zdvihni a podrž 2 s"],
-    ytw: ["Y: ruky dopredu hore", "W: lakte k rebrám"],
+    ytw: ["Y: ruky šikmo dopredu", "T: ruky do strán", "W: lakte k rebrám"],
     lunge: ["Štart", "Krok dozadu, koleno k zemi"],
     bridge: ["Ľahni, kolená pokrčené", "Boky hore, stlač zadok"],
     wallsit: ["Stehná vodorovne, chrbát na stene"],

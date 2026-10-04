@@ -467,7 +467,7 @@ export default {
     kKnee: ["Oben, Knie am Boden", "Unten, Ellbogen ~45° vom Körper"],
     kIncl: ["Hände auf dem Tisch, oben", "Brust zur Kante, Ellbogen ~45° vom Körper"],
     superman: ["Auf dem Bauch liegen", "Heben, 2 s halten"],
-    ytw: ["Y: Arme nach vorn oben", "W: Ellbogen zu den Rippen"],
+    ytw: ["Y: Arme schräg nach vorn", "T: Arme zur Seite", "W: Ellbogen zu den Rippen"],
     lunge: ["Start", "Schritt zurück, Knie zum Boden"],
     bridge: ["Liegen, Knie angewinkelt", "Hüfte hoch, Po anspannen"],
     wallsit: ["Oberschenkel waagrecht, Rücken an der Wand"],

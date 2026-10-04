@@ -467,7 +467,7 @@ export default {
     kKnee: ["Em cima, joelhos no chão", "Embaixo, cotovelos a ~45° do corpo"],
     kIncl: ["Mãos na mesa, em cima", "Peito até a borda, cotovelos a ~45° do corpo"],
     superman: ["De barriga para baixo", "Suba e segure 2 s"],
-    ytw: ["Y: braços à frente e para cima", "W: cotovelos às costelas"],
+    ytw: ["Y: braços na diagonal à frente", "T: braços para os lados", "W: cotovelos junto às costelas"],
     lunge: ["Início", "Passo para trás, joelho ao chão"],
     bridge: ["Deite, joelhos dobrados", "Quadril para cima, contraia os glúteos"],
     wallsit: ["Coxas paralelas, costas na parede"],

@@ -467,7 +467,7 @@ export default {
     kKnee: ["Su, ginocchia a terra", "Giù, gomiti a ~45° dal corpo"],
     kIncl: ["Mani sul tavolo, su", "Petto verso il bordo, gomiti a ~45° dal corpo"],
     superman: ["A pancia in giù", "Solleva e tieni 2 s"],
-    ytw: ["Y: braccia avanti e in alto", "W: gomiti alle costole"],
+    ytw: ["Y: braccia in diagonale avanti", "T: braccia ai lati", "W: gomiti verso le costole"],
     lunge: ["Inizio", "Passo indietro, ginocchio verso terra"],
     bridge: ["Sdraiati, ginocchia piegate", "Fianchi su, stringi i glutei"],
     wallsit: ["Cosce parallele, schiena al muro"],

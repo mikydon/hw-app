@@ -630,10 +630,7 @@ const FIGS = {
     { hip: [46, 89], torso: 0, head: -8, hands: [[101, 90], [102, 90]], armBend: [1, 1], feet: [[6, 91], [8, 91]], legBend: [1, 1], hide: ["farArm", "farLeg"] },
     { hip: [46, 89], torso: -12, head: -22, hands: [[98, 74], [100, 74]], armBend: [1, 1], feet: [[7, 80], [7.5, 79]], legBend: [1, 1], hide: ["farArm", "farLeg"] },
   ],
-  ytw: [
-    { hip: [40, 89], torso: -8, head: -14, hands: [[94, 76], [96, 76]], armBend: [1, 1], feet: [[0, 90], [0, 91]], legBend: [1, 1], hide: ["farArm", "farLeg"] },
-    { hip: [40, 89], torso: -8, head: -14, hands: [[64, 77], [65, 78]], elbows: [[51, 82.5], [52, 83.5]], feet: [[0, 90], [0, 91]], legBend: [1, 1], hide: ["farArm", "farLeg"] },
-  ],
+  ytw: [{ top: "Y" }, { top: "T" }, { top: "W" }],
   lunge: [
     { hip: [58, 54], torso: -90, hands: [[60, 80], [56, 80]], armBend: [1, 1], feet: [[58, GROUND], [60, GROUND]], legBend: [-1, -1] },
     { hip: [40, 72], torso: -88, hands: [[42, 98], [38, 98]], armBend: [1, 1], feet: [[60, GROUND], [16, GROUND - 1]], legBend: [-1, -1] },
@@ -746,6 +743,27 @@ function Prop({ pr }) {
   return null;
 }
 
+// Lying face down, seen from above (back view): arms in the shape of the letter Y, T or W.
+function TopFig({ arms }) {
+  const sh = [[50, 31], [70, 31]];
+  const A = {
+    Y: [[[33.4, 7.2]], [[86.6, 7.2]]],
+    T: [[[21, 31]], [[99, 31]]],
+    W: [[[37, 38.5], [36, 24.5]], [[83, 38.5], [84, 24.5]]],
+  }[arms] || [[], []];
+  const pts = (s0, rest) => [s0, ...rest].map(q => q.join(",")).join(" ");
+  return (
+    <g fill="none" stroke={C.chalk} strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="56,58 56,93" strokeWidth="5" /><polyline points="64,58 64,93" strokeWidth="5" />
+      <polyline points="60,27 60,58" strokeWidth="9" />
+      <polyline points="54,58 66,58" strokeWidth="6" />
+      <polyline points="50,31 70,31" strokeWidth="6" />
+      <polyline points={pts(sh[0], A[0])} strokeWidth="5" /><polyline points={pts(sh[1], A[1])} strokeWidth="5" />
+      <circle cx="60" cy="17" r="7" fill={C.chalk} stroke="none" />
+    </g>
+  );
+}
+
 function ExFigure({ id }) {
   const poses = FIGS[id];
   if (!poses) return null;
@@ -755,16 +773,20 @@ function ExFigure({ id }) {
       {poses.map((p, i) => (
         <div key={i} style={{ flex: poses.length > 1 ? 1 : "0 1 62%", background: C.ink, border: `1.5px solid ${p.bad ? "#ff8a80" : C.line}`, borderRadius: 14, padding: "6px 4px 8px", textAlign: "center" }}>
           <svg viewBox="0 0 120 100" style={{ width: "100%", height: "auto", display: "block" }}>
-            <line x1="0" y1={GROUND + 3} x2="120" y2={GROUND + 3} stroke={C.line} strokeWidth="2" />
-            {(p.props || []).filter(pr => !pr.mid).map((pr, k) => <Prop key={k} pr={pr} />)}
-            <Stick p={p} />
+            {p.top ? <TopFig arms={p.top} /> : (
+              <>
+                <line x1="0" y1={GROUND + 3} x2="120" y2={GROUND + 3} stroke={C.line} strokeWidth="2" />
+                {(p.props || []).filter(pr => !pr.mid).map((pr, k) => <Prop key={k} pr={pr} />)}
+                <Stick p={p} />
+              </>
+            )}
           </svg>
           <div style={{ fontSize: 12, fontWeight: 600, color: p.bad ? "#ff8a80" : C.dim, marginTop: 4, lineHeight: 1.3 }}>{poses.length > 1 ? `${i + 1}. ` : ""}{p.label}</div>
         </div>
       ))}
       </div>
       <div style={{ fontSize: 11, color: C.dim, textAlign: "center", marginTop: 6, display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "center", columnGap: 14, rowGap: 4 }}>
-        <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><span aria-hidden="true" style={{ width: 16, height: 3, borderRadius: 2, background: C.signal, display: "inline-block" }} />{T("figBelly")}</span>
+        {poses.some(p => !p.top) && <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><span aria-hidden="true" style={{ width: 16, height: 3, borderRadius: 2, background: C.signal, display: "inline-block" }} />{T("figBelly")}</span>}
         {poses.some(p => (p.props || []).some(pr => pr.t === "towel" || pr.t === "towelFloor")) && (
           <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><span aria-hidden="true" style={{ width: 16, height: 3, borderRadius: 2, background: TOWEL, display: "inline-block" }} />{T("figTowel")}</span>
         )}

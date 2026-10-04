@@ -467,7 +467,7 @@ export default {
     kKnee: ["Up, knees on the floor", "Down, elbows ~45° from the body"],
     kIncl: ["Hands on the table, up", "Chest to the edge, elbows ~45° from the body"],
     superman: ["Lie on your stomach", "Lift and hold 2 s"],
-    ytw: ["Y: arms forward and up", "W: elbows to ribs"],
+    ytw: ["Y: arms forward and out", "T: arms out to the sides", "W: elbows to the ribs"],
     lunge: ["Start", "Step back, knee to the floor"],
     bridge: ["Lie down, knees bent", "Hips up, squeeze glutes"],
     wallsit: ["Thighs level, back on the wall"],

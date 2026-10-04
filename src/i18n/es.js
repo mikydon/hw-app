@@ -467,7 +467,7 @@ export default {
     kKnee: ["Arriba, rodillas en el suelo", "Abajo, codos a ~45° del cuerpo"],
     kIncl: ["Manos en la mesa, arriba", "Pecho al borde, codos a ~45° del cuerpo"],
     superman: ["Boca abajo", "Levanta y aguanta 2 s"],
-    ytw: ["Y: brazos hacia delante y arriba", "W: codos a las costillas"],
+    ytw: ["Y: brazos en diagonal al frente", "T: brazos a los lados", "W: codos a las costillas"],
     lunge: ["Inicio", "Paso atrás, rodilla al suelo"],
     bridge: ["Boca arriba, rodillas dobladas", "Cadera arriba, aprieta glúteos"],
     wallsit: ["Muslos paralelos, espalda en la pared"],

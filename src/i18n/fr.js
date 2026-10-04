@@ -467,7 +467,7 @@ export default {
     kKnee: ["En haut, genoux au sol", "En bas, coudes à ~45° du corps"],
     kIncl: ["Mains sur la table, en haut", "Poitrine vers le bord, coudes à ~45° du corps"],
     superman: ["Sur le ventre", "Décolle et tiens 2 s"],
-    ytw: ["Y : bras en avant et en haut", "W : coudes vers les côtes"],
+    ytw: ["Y : bras en diagonale vers l'avant", "T : bras sur les côtés", "W : coudes vers les côtes"],
     lunge: ["Départ", "Pas en arrière, genou vers le sol"],
     bridge: ["Sur le dos, genoux pliés", "Hanches en haut, fessiers serrés"],
     wallsit: ["Cuisses à l'horizontale, dos au mur"],

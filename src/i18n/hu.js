@@ -467,7 +467,7 @@ export default {
     kKnee: ["Fent, térd a padlón", "Lent, könyök ~45°-ban"],
     kIncl: ["Kéz az asztalon, fent", "Mellkas a széléhez, könyök ~45°-ban"],
     superman: ["Hason fekvés", "Emelés, 2 mp tartás"],
-    ytw: ["Y: kar előre-fel", "W: könyök a bordákhoz"],
+    ytw: ["Y: kar ferdén előre", "T: kar oldalra", "W: könyök a bordákhoz"],
     lunge: ["Kezdés", "Hátralépés, térd a padló felé"],
     bridge: ["Fekvés, térd hajlítva", "Csípő fel, farizom feszítve"],
     wallsit: ["Comb vízszintes, hát a falon"],
