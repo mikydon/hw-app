@@ -595,8 +595,8 @@ const FIGS = {
     { ...fromFeet([88, GROUND], 2), hands: [[97, 37.2], [86.5, 56.8]], elbows: [[83.4, 38.5], [84.3, 43]], feet: [[88, GROUND], [90, GROUND]], legBend: [1, 1], props: [{ t: "frame" }], grip: true, hide: ["farArm", "farLeg"] },
   ],
   row3: [
-    { ...fromFeet([88, GROUND], 17), hands: [[97.4, 31], [70.5, 59.7]], armBend: [-1, 1], feet: [[88, GROUND], [90, GROUND]], legBend: [1, 1], props: [{ t: "frame" }], grip: true, hide: ["farArm"] },
-    { ...fromFeet([88, GROUND], 2), hands: [[97.4, 31], [86.8, 56.8]], elbows: [[83.5, 30.5], [86.2, 42.8]], feet: [[88, GROUND], [90, GROUND]], legBend: [1, 1], props: [{ t: "frame" }], grip: true, hide: ["farArm"] },
+    { ...fromFeet([88, GROUND], 18), hands: [[97.4, 31], [70.5, 59.7]], armBend: [-1, 1], feet: [[88, GROUND], [90, GROUND]], legBend: [1, 1], props: [{ t: "frame" }], grip: true, hide: ["farArm", "farLeg"] },
+    { ...fromFeet([88, GROUND], 2), hands: [[97.4, 31], [86.8, 56.8]], elbows: [[83.5, 30.5], [86.2, 42.8]], feet: [[88, GROUND], [90, GROUND]], legBend: [1, 1], props: [{ t: "frame" }], grip: true, hide: ["farArm", "farLeg"] },
   ],
   row2: [
     { hip: [83, 64], torso: -110, head: -100, hands: [[98.4, 55.6], [98.8, 55.2]], armBend: [-1, -1], feet: [[103, GROUND], [106, GROUND]], legBend: [-1, -1], props: [{ t: "door", mid: true }, { t: "towel", from: [104, 56], to: [98.6, 55.4], mid: true }] },
