@@ -717,14 +717,14 @@ function Prop({ pr }) {
         <g stroke={C.chalk} strokeWidth="2.2" strokeLinecap="round">
           <line x1="-3.3" y1="-4" x2="-3.3" y2="-9.6" /><line x1="-1.1" y1="-4" x2="-1.1" y2="-10.8" />
           <line x1="1.1" y1="-4" x2="1.1" y2="-11.2" /><line x1="3.3" y1="-4" x2="3.3" y2="-10.6" />
-          <polyline points="4,1.5 8,-1.6 11.2,-0.6" fill="none" strokeLinejoin="round" />
+          <line x1="4.3" y1="-1.5" x2="11.4" y2="-0.7" />
         </g>
       </g>
     );
     return (
       <g>
         <rect x="3" y="3" width="52" height="42" rx="6" fill={C.panel} stroke={C.line} strokeWidth="1.2" />
-        <path d="M29 19.9 L32.8 26.2 L29 31 L25.2 26.2 Z" fill={C.sky} opacity="0.7" />
+        <path d="M29 20.2 L33.4 25.9 L29 31.6 L24.6 25.9 Z" fill={C.sky} opacity="0.7" />
         <g transform="translate(19.6 25.5) rotate(40)">{hand}</g>
         <g transform="translate(38.4 25.5) scale(-1 1) rotate(40)">{hand}</g>
         <text x="29" y="41.5" textAnchor="middle" fontSize="5.5" fill={C.dim} fontFamily={BODY}>{T("figTop")}</text>
