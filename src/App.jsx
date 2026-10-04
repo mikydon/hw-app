@@ -612,7 +612,7 @@ const FIGS = {
   ],
   b2: [
     { hip: [42, 88], torso: 0, head: 0, hands: [[68, 59], [68, 59]], armBend: [1, 1], feet: [[22, 68], [22, 68]], legBend: [1, 1], supine: true, hide: ["farArm", "farLeg"] },
-    { hip: [42, 88], torso: 0, head: 0, hands: [[96.1, 80.4], [68, 59]], armBend: [1, 1], feet: [[2.1, 84], [22, 68]], legBend: [1, 1], supine: true },
+    { hip: [42, 88], torso: 0, head: 0, hands: [[96.1, 80.4], [68, 59]], armBend: [1, 1], feet: [[22, 68], [2.1, 84]], legBend: [1, 1], supine: true },
   ],
   n7: [
     { hip: [54, 72], torso: 30, head: 10, hands: [[48, 92.5], [50, 92.5]], armBend: [1, 1], feet: [[34, GROUND - 2], [36, GROUND - 2]], legBend: [1, 1], props: [{ t: "towelFloor", x: 28 }], supine: true, hide: ["farArm", "farLeg"] },
