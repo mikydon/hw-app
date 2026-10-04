@@ -708,18 +708,24 @@ function Prop({ pr }) {
   if (pr.t === "wall") return <line x1="20" y1="4" x2="20" y2="96" {...s} strokeWidth="4" />;
   if (pr.t === "towelFloor") return <rect x={pr.x} y={GROUND} width="14" height="3" rx="1" fill={C.signal} />;
   // Small "seen from above" inset: palms side by side, index fingers and thumbs touching = diamond.
-  if (pr.t === "diamondTop") return (
-    <g>
-      <rect x="3" y="3" width="44" height="40" rx="6" fill={C.panel} stroke={C.line} strokeWidth="1.2" />
-      <g stroke={C.chalk} strokeWidth="2.6" strokeLinecap="round" fill="none">
-        <line x1="14" y1="16" x2="25" y2="11" /><line x1="14" y1="26" x2="25" y2="31" />
-        <line x1="36" y1="16" x2="25" y2="11" /><line x1="36" y1="26" x2="25" y2="31" />
+  if (pr.t === "diamondTop") {
+    // Both hands seen from above (fingers pointing forward). Index fingertips touch at the top,
+    // thumbs touch at the bottom, so the gap between the hands is a diamond (filled light blue).
+    const L = [[[11, 24], [9, 12]], [[14, 24], [13, 10]], [[17, 24], [18, 9]], [[19.5, 25], [28.6, 13.5]], [[20, 33], [28.6, 35]]];
+    const R = L.map(([a, b]) => [[58 - a[0], a[1]], [58 - b[0], b[1]]]);
+    return (
+      <g>
+        <rect x="3" y="3" width="52" height="46" rx="6" fill={C.panel} stroke={C.line} strokeWidth="1.2" />
+        <path d="M29 14.5 L37.6 25 L29 34.4 L20.4 25 Z" fill={C.sky} opacity="0.55" />
+        <g stroke={C.chalk} strokeWidth="2.4" strokeLinecap="round">
+          {[...L, ...R].map(([a, b], k) => <line key={k} x1={a[0]} y1={a[1]} x2={b[0]} y2={b[1]} />)}
+        </g>
+        <rect x="10" y="23" width="10.5" height="13" rx="4" fill={C.chalk} />
+        <rect x="37.5" y="23" width="10.5" height="13" rx="4" fill={C.chalk} />
+        <text x="29" y="45.5" textAnchor="middle" fontSize="5.5" fill={C.dim} fontFamily={BODY}>{T("figTop")}</text>
       </g>
-      <ellipse cx="10" cy="21" rx="5" ry="7.5" fill={C.chalk} /><ellipse cx="40" cy="21" rx="5" ry="7.5" fill={C.chalk} />
-      <path d="M25 13.5 L33 21 L25 28.5 L17 21 Z" fill={C.sky} opacity="0.45" />
-      <text x="25" y="40" textAnchor="middle" fontSize="5.5" fill={C.dim} fontFamily={BODY}>{T("figTop")}</text>
-    </g>
-  );
+    );
+  }
   if (pr.t === "diamond") return <path d={`M${pr.x} ${pr.y - 5} L${pr.x + 5} ${pr.y} L${pr.x} ${pr.y + 5} L${pr.x - 5} ${pr.y} Z`} stroke={C.signal} strokeWidth="2" fill="none" />;
   return null;
 }
