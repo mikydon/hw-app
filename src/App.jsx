@@ -1146,24 +1146,38 @@ function Avatar({ profile, size = 38 }) {
 let sectionTitle = { fontFamily: DISPLAY, fontSize: 28, fontWeight: 900, color: C.chalk, margin: "26px 0 10px" };
 let card = { background: C.panel, border: `1px solid ${C.line}`, borderRadius: 18 };
 
-// ─── TOP BAR + TAB BAR ──────────────────────────────────────────────────────
-function TopBar({ tab, history, profile, onProfile }) {
+// ─── TOP BAR + MENU ─────────────────────────────────────────────────────────
+// Screens: train (home), calories, history, profile, settings. One menu button (☰) top right
+// opens a drawer with all of them; there is no bottom tab bar any more (v1.4.0).
+const SCREENS = ["train", "calories", "history", "profile", "settings"];
+const SCREEN_TITLE = { train: "tabTrain", calories: "tabCalories", history: "tabHistory", profile: "tabProfile", settings: "tabSettings" };
+
+function MenuButton({ open, onClick }) {
+  const bar = (y, rot) => ({ position: "absolute", left: 11, width: 20, height: 2.6, borderRadius: 2, background: C.chalk, top: open ? 20 : y, transform: open ? `rotate(${rot}deg)` : "none", transition: "top .22s ease, transform .22s ease, opacity .18s" });
+  return (
+    <button onClick={onClick} aria-label={open ? T("menuClose") : T("menuOpen")} aria-expanded={open} data-menu-btn
+      style={{ ...btnBase, position: "relative", width: 42, height: 42, padding: 0, borderRadius: 13, background: open ? C.panelHi : C.panel, border: `1.5px solid ${C.line}`, flexShrink: 0 }}>
+      <span style={bar(13, 45)} />
+      <span style={{ ...bar(20, 0), opacity: open ? 0 : 1 }} />
+      <span style={bar(27, -45)} />
+    </button>
+  );
+}
+
+function TopBar({ screen, history, menuOpen, onMenu }) {
   const today = dateKey();
   const st = streakInfo(history, today);
   const lv = levelInfo(totalXP(history));
-  const title = T(tab === "train" ? "tabTrain" : tab === "history" ? "tabHistory" : tab === "settings" ? "tabSettings" : "tabProfile");
   return (
     <div style={{ position: "sticky", top: 0, zIndex: 20, background: `${C.ink}ee`, backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderBottom: `1px solid ${C.line}` }}>
       <div style={{ maxWidth: 460, margin: "0 auto", padding: "10px 18px", display: "flex", alignItems: "center", gap: 8 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, lineHeight: 1, color: C.chalk }}>{title}</div>
+          <div key={screen} className="titleIn" style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, lineHeight: 1, color: C.chalk }}>{T(SCREEN_TITLE[screen])}</div>
           <div style={{ fontSize: 12, color: C.dim, marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{capFirst(fmtDate(today, true))}</div>
         </div>
         <div style={chip(st.n ? "#ffa94d" : C.dim)} aria-label={T("streakAria", { n: st.n })}><span className={st.n ? "wiggle" : ""}>🔥</span>{st.n}</div>
         <div style={chip(C.sky)} aria-label={T("levelAria", { n: lv.lvl })}>⚡{lv.lvl}</div>
-        <button onClick={onProfile} aria-label={T("openProfile")} style={{ ...btnBase, background: "transparent", padding: 0, borderRadius: 99 }}>
-          <Avatar profile={profile} size={38} />
-        </button>
+        <MenuButton open={menuOpen} onClick={onMenu} />
       </div>
     </div>
   );
@@ -1174,23 +1188,107 @@ function TabIcon({ name, active }) {
   const s = { fill: "none", stroke: c, strokeWidth: 2.2, strokeLinecap: "round", strokeLinejoin: "round" };
   if (name === "train") return <svg width="26" height="26" viewBox="0 0 24 24"><path d="M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11" {...s} /></svg>;
   if (name === "history") return <svg width="26" height="26" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="3" {...s} /><path d="M3.5 10h17M8 3v4M16 3v4" {...s} /><circle cx="12" cy="15" r="1.6" fill={c} stroke="none" /></svg>;
+  if (name === "calories") return <svg width="26" height="26" viewBox="0 0 24 24"><path d="M12 21c-4 0-6.5-2.7-6.5-6.3 0-3.2 2.2-5.4 3.6-7.6.6 1.6 1.4 2.6 2.5 3.1C12 7 13 4.7 14.6 3c.6 2.9 3.9 5.6 3.9 10.2 0 4.4-2.6 7.8-6.5 7.8z" {...s} /></svg>;
+  if (name === "profile") return <svg width="26" height="26" viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="4" {...s} /><path d="M4.5 20.5c1.2-3.6 4-5.5 7.5-5.5s6.3 1.9 7.5 5.5" {...s} /></svg>;
   return <svg width="26" height="26" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2" {...s} /><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7" {...s} /><circle cx="12" cy="12" r="6.6" {...s} /></svg>;
 }
 
-function TabBar({ tab, setTab }) {
-  const tabs = [["train", T("tabTrain")], ["history", T("tabHistory")], ["settings", T("tabSettings")]];
-  return (
-    <nav aria-label={T("mainMenu")} style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 30, background: `${C.panel}f2`, backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderTop: `1px solid ${C.line}`, paddingBottom: "env(safe-area-inset-bottom)" }}>
-      <div style={{ maxWidth: 460, margin: "0 auto", display: "flex" }}>
-        {tabs.map(([id, label]) => (
-          <button key={id} onClick={() => { if (tab !== id) sfxTap(); setTab(id); }} aria-current={tab === id ? "page" : undefined}
-            style={{ ...btnBase, flex: 1, background: "transparent", padding: "8px 0 10px", display: "flex", flexDirection: "column", alignItems: "center", gap: 2, color: tab === id ? C.signal : C.dim, fontSize: 12, borderRadius: 0 }}>
-            <span className={tab === id ? "pop" : ""} key={tab === id ? "on" : "off"} style={{ display: "inline-flex" }}><TabIcon name={id} active={tab === id} /></span>
-            {label}
+// Slide-in drawer from the right with everything in the app. Rendered into <body> (like Sheet).
+function MenuDrawer({ open, screen, history, profile, session, onGo, onResume, onClose }) {
+  const [shown, setShown] = useState(open);
+  useEffect(() => { if (open) setShown(true); else { const t = setTimeout(() => setShown(false), 260); return () => clearTimeout(t); } }, [open]);
+  useEffect(() => {
+    if (!open) return;
+    const k = e => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", k);
+    const prev = document.body.style.overflow; document.body.style.overflow = "hidden";
+    return () => { window.removeEventListener("keydown", k); document.body.style.overflow = prev; };
+  }, [open]);
+  if (!shown) return null;
+  const lv = levelInfo(totalXP(history));
+  const st = streakInfo(history, dateKey());
+  const items = SCREENS.map(id => ({ id, label: T(SCREEN_TITLE[id]), desc: T("menuD_" + id) }));
+  return createPortal(
+    <div role="dialog" aria-modal="true" aria-label={T("mainMenu")} className={open ? "drawerOn" : "drawerOff"} style={{ position: "fixed", inset: 0, zIndex: 60 }}>
+      <div onClick={onClose} className="drawerBg" style={{ position: "absolute", inset: 0, background: "rgba(3,8,20,.55)", backdropFilter: "blur(3px)", WebkitBackdropFilter: "blur(3px)" }} />
+      <nav aria-label={T("mainMenu")} className="drawerPanel" style={{ position: "absolute", top: 0, right: 0, bottom: 0, width: "min(86vw, 340px)", background: C.panel, borderLeft: `1px solid ${C.line}`, boxShadow: "-20px 0 50px rgba(0,0,0,.35)", display: "flex", flexDirection: "column", paddingBottom: "env(safe-area-inset-bottom)", overflowY: "auto" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px 4px 18px" }}>
+          <div style={{ fontFamily: DISPLAY, fontSize: 15, fontWeight: 800, color: C.dim, letterSpacing: 1 }}>HW APP</div>
+          <MenuButton open={true} onClick={onClose} />
+        </div>
+        <button onClick={() => onGo("profile")} className="drawerItem" style={{ ...btnBase, "--i": 0, display: "flex", alignItems: "center", gap: 12, margin: "8px 14px 6px", padding: "12px", borderRadius: 18, background: C.panelHi, color: C.chalk, textAlign: "left" }}>
+          <Avatar profile={profile} size={52} />
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, lineHeight: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{profile.name || T("defaultName")}</div>
+            <div style={{ fontSize: 13, color: C.dim, marginTop: 4 }}><span style={{ color: C.sky, fontWeight: 800 }}>⚡ {lv.lvl}</span> · <span style={{ color: "#ffa94d", fontWeight: 800 }}>🔥 {st.n}</span></div>
+          </div>
+        </button>
+        {session && (
+          <button onClick={onResume} className="drawerItem" data-resume style={{ ...btnBase, "--i": 1, margin: "6px 14px", padding: "13px 14px", borderRadius: 16, background: C.signal, color: C.signalInk, display: "flex", alignItems: "center", gap: 10, fontSize: 15, textAlign: "left" }}>
+            <span style={{ fontSize: 18 }}>▶</span>{T("resumeWorkout", { d: session.day })}
           </button>
-        ))}
-      </div>
-    </nav>
+        )}
+        <div style={{ padding: "6px 8px" }}>
+          {items.map((it, i) => {
+            const on = it.id === screen;
+            return (
+              <button key={it.id} onClick={() => onGo(it.id)} aria-current={on ? "page" : undefined} className="drawerItem" data-screen={it.id}
+                style={{ ...btnBase, "--i": i + 2, width: "100%", display: "flex", alignItems: "center", gap: 14, padding: "11px 12px", margin: "2px 0", borderRadius: 14, background: on ? `${C.signal}1a` : "transparent", color: on ? C.signal : C.chalk, textAlign: "left" }}>
+                <span style={{ width: 40, height: 40, borderRadius: 12, background: on ? `${C.signal}26` : C.panelHi, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><TabIcon name={it.id} active={on} /></span>
+                <span style={{ minWidth: 0 }}>
+                  <span style={{ display: "block", fontSize: 16, fontWeight: 800 }}>{it.label}</span>
+                  <span style={{ display: "block", fontSize: 12, fontWeight: 500, color: C.dim, marginTop: 1 }}>{it.desc}</span>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+        <div style={{ marginTop: "auto", padding: "14px 18px", fontSize: 11, color: C.dim, fontFamily: BODY }}>HW App {APP_VERSION}</div>
+      </nav>
+    </div>,
+    document.body
+  );
+}
+
+// Floating card while a workout runs in the background (like a minimized video). Tap = back to the workout.
+function MiniPlayer({ session, live, onOpen }) {
+  const [, tick] = useState(0);
+  useEffect(() => { const t = setInterval(() => tick(x => x + 1), 250); return () => clearInterval(t); }, []);
+  const day = DAYS.find(d => d.id === session.day);
+  const base = session.base || {};
+  const seq = buildSeq(session.day, session.rounds, session.swaps || {}, base);
+  const cur = seq[Math.min(session.pos, seq.length - 1)];
+  const secsLeft = endAt => Math.max(0, Math.ceil((endAt - Date.now()) / 1000));
+  let label, big = null, total = null, color = C.signal;
+  if (session.phase === "rest" && session.rest) {
+    const nxt = seq[session.rest.nextPos];
+    big = secsLeft(session.rest.endAt); total = session.rest.total; color = C.sky;
+    label = T("miniRest", { name: EX[nxt.id].name });
+  } else if (session.phase === "work" && live && (live.kind === "hold" || live.kind === "prep") && live.endAt) {
+    big = secsLeft(live.endAt); total = live.total; color = live.kind === "hold" ? C.chalk : C.signal;
+    label = live.kind === "hold" ? T("miniHold", { name: EX[cur.id].name }) : T("miniPrep", { name: EX[cur.id].name });
+  } else if (session.phase === "work") label = T("miniNext", { name: EX[cur.id].name });
+  else if (session.phase === "warmup") label = T("miniWarmup");
+  else if (session.phase === "cool") label = T("miniCool");
+  else label = T("miniDone");
+  const pct = big !== null && total ? big / total : 0;
+  return createPortal(
+    <button onClick={onOpen} className="miniIn" data-mini aria-label={T("miniOpen")}
+      style={{ ...btnBase, position: "fixed", left: "50%", bottom: "calc(14px + env(safe-area-inset-bottom))", transform: "translateX(-50%)", zIndex: 40, width: "min(calc(100vw - 24px), 436px)", display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", borderRadius: 20, background: C.panelHi, border: `1.5px solid ${color}88`, boxShadow: "0 12px 34px rgba(0,0,0,.45)", color: C.chalk, textAlign: "left" }}>
+      <span style={{ position: "relative", width: 48, height: 48, flexShrink: 0 }}>
+        <svg width="48" height="48" style={{ transform: "rotate(-90deg)" }}>
+          <circle cx="24" cy="24" r="20" fill="none" stroke={C.line} strokeWidth="4" />
+          {big !== null && <circle cx="24" cy="24" r="20" fill="none" stroke={color} strokeWidth="4" strokeLinecap="round" strokeDasharray={125.7} strokeDashoffset={125.7 * (1 - pct)} style={{ transition: "stroke-dashoffset .25s linear" }} />}
+        </svg>
+        <span style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: DISPLAY, fontWeight: 900, fontSize: big !== null ? 20 : 18, color }}>{big !== null ? big : "▶"}</span>
+      </span>
+      <span style={{ flex: 1, minWidth: 0 }}>
+        <span style={{ display: "block", fontSize: 12, color: C.dim, fontWeight: 600 }}>{T("dayRound", { d: day.id, r: cur.r + 1, n: session.rounds })}</span>
+        <span style={{ display: "block", fontSize: 15, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{label}</span>
+      </span>
+      <span aria-hidden="true" style={{ fontSize: 13, fontWeight: 800, color: C.signal, flexShrink: 0 }}>{T("miniBack")}</span>
+    </button>,
+    document.body
   );
 }
 
@@ -1237,7 +1335,7 @@ function CloseX({ onClick, color }) {
   );
 }
 
-function TrainTab({ history, onStart, onFreeze, ui, setUi }) {
+function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume }) {
   const today = dateKey();
   // Make sure today's daily line and the "done" card texts are picked (and saved) before painting.
   useLayoutEffect(() => { const n = uiForToday(ui, history, today); if (n !== ui) setUi(n); });
@@ -1392,9 +1490,15 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi }) {
       </div>
       <div style={{ fontSize: 12, color: C.dim, marginTop: 8, lineHeight: 1.5 }}>{T("roundsHint")}</div>
 
-      <button onClick={() => { unlockAudio(); onStart(day.id, rounds); }} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 14, fontSize: 18, padding: 19 }}>
-        {T("startDay", { d: day.id })}
-      </button>
+      {active ? (
+        <button onClick={() => { unlockAudio(); onResume(); }} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 14, fontSize: 18, padding: 19 }}>
+          ▶ {T("resumeWorkout", { d: active.day })}
+        </button>
+      ) : (
+        <button onClick={() => { unlockAudio(); onStart(day.id, rounds); }} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 14, fontSize: 18, padding: 19 }}>
+          {T("startDay", { d: day.id })}
+        </button>
+      )}
 
       <div style={{ marginTop: 22 }}><ChallengesCard history={history} /></div>
     </div>
@@ -2168,7 +2272,7 @@ function SwapSheet({ item, exclude, history, onPick, onClose }) {
   );
 }
 
-function Work({ item, rounds, history, sessionResults, onRecord, onSwap, exclude }) {
+function Work({ item, rounds, history, sessionResults, onRecord, onSwap, exclude, onLive }) {
   const [swap, setSwap] = useState(false);
   const ex = EX[item.id];
   const last = lastFor(history, item.id);
@@ -2205,6 +2309,9 @@ function Work({ item, rounds, history, sessionResults, onRecord, onSwap, exclude
     () => { if (ph === "prep") soundPrepEnd(); }
   );
 
+  // Tell the app about a running hold/prep timer (for the mini player when the workout is minimized).
+  useEffect(() => { if (onLive) onLive(ph === "ready" || !endAt ? null : { kind: ph, endAt, total: ph === "prep" ? 5 : dur }); }, [ph, endAt]);
+  useEffect(() => () => { if (onLive) onLive(null); }, []);
   const startHold = () => { unlockAudio(); setPh("prep"); setEndAt(Date.now() + 5000); };
   const stopHold = () => {
     unlockAudio();
@@ -2504,7 +2611,7 @@ function Summary({ entry, xpBefore = 0, xpGained, newCh = [], newAch = [], histo
 }
 
 // ─── SESSION SHELL ──────────────────────────────────────────────────────────
-function Session({ session, setSession, history, onSave, onClose }) {
+function Session({ session, setSession, history, onSave, onClose, onMinimize, onLive }) {
   useWakeLock();
   const [confirmQuit, setConfirmQuit] = useState(false);
   const swaps = session.swaps || {};
@@ -2591,12 +2698,13 @@ function Session({ session, setSession, history, onSave, onClose }) {
             <div style={{ fontSize: 14, color: C.dim, fontWeight: 600 }}>
               {inFlow ? T("dayRound", { d: session.day, r: cur.r + 1, n: session.rounds }) : T("dayN", { d: session.day })}
             </div>
-            <div style={{ display: "flex", gap: 8 }}>
+            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
               {inFlow && <button onClick={goBack} style={{ ...ghostBtn, padding: "7px 11px", fontSize: 12 }}>{T("back")}</button>}
               <button onClick={() => { if (!confirmQuit) { setConfirmQuit(true); setTimeout(() => setConfirmQuit(false), 3000); return; } if (hasResults) finish(); else onClose(); }}
                 style={{ ...ghostBtn, padding: "7px 11px", fontSize: 12, color: confirmQuit ? "#ff8a80" : C.dim, borderColor: confirmQuit ? "#ff8a80" : C.line }}>
                 {confirmQuit ? (hasResults ? T("quitSave") : T("quitConfirm")) : T("quit")}
               </button>
+              {onMinimize && <MenuButton open={false} onClick={() => { sfxTap(); onMinimize(); }} />}
             </div>
           </div>
           <div style={{ display: "flex", gap: 4, marginTop: 12, marginBottom: 22 }} aria-label={T("progressAria", { done: doneCount, total: seq.length })}>
@@ -2612,7 +2720,7 @@ function Session({ session, setSession, history, onSave, onClose }) {
         <Warmup done={session.warm} setDone={w => setSession({ ...session, warm: w })} onNext={() => { unlockAudio(); setSession({ ...session, phase: "work", pos: 0 }); }} />
       )}
       {session.phase === "work" && (
-        <Work key={`${session.pos}-${seq[session.pos].id}`} item={seq[session.pos]} rounds={session.rounds} history={history} sessionResults={session.results} onRecord={record} onSwap={doSwap} exclude={usedIds} />
+        <Work key={`${session.pos}-${seq[session.pos].id}`} item={seq[session.pos]} rounds={session.rounds} history={history} sessionResults={session.results} onRecord={record} onSwap={doSwap} exclude={usedIds} onLive={onLive} />
       )}
       {session.phase === "rest" && session.rest && (
         <Rest key={session.rest.nextPos} rest={session.rest} nextItem={seq[session.rest.nextPos]} rounds={session.rounds}
@@ -2633,7 +2741,11 @@ export default function App() {
   const [session, setSession] = useState(null);
   const [loaded, setLoaded] = useState(false);
   const [settings, setSettingsState] = useState(DEFAULT_SETTINGS);
-  const [tab, setTab] = useState("train");
+  const [screen, setScreen] = useState("train");
+  const [menuOpen, setMenuOpen] = useState(false);
+  // A running workout can be minimized to the mini player; it stays mounted (hidden), so timers and sounds go on.
+  const [sessionOpen, setSessionOpen] = useState(true);
+  const [live, setLive] = useState(null);
   const [profile, setProfileState] = useState({ name: "User", pfp: null, freezeDays: [], streakResetTs: 0 });
   const [ui, setUiState] = useState({});
   const setUi = u => { setUiState(u); saveUi(u); };
@@ -2677,11 +2789,15 @@ export default function App() {
     saveAll({ history, session: session && session.phase !== "summary" ? session : null });
   }, [history, session, loaded]);
 
-  useEffect(() => { window.scrollTo?.(0, 0); }, [session?.phase, session?.pos, tab]);
+  useEffect(() => { if (!session || sessionOpen) window.scrollTo?.(0, 0); }, [session?.phase, session?.pos]);
+  useEffect(() => { window.scrollTo?.(0, 0); }, [screen, sessionOpen]);
+  const go = id => { if (id !== screen) sfxTap(); setScreen(id); setMenuOpen(false); if (session) setSessionOpen(false); };
+  const resume = () => { sfxTap(); setMenuOpen(false); setSessionOpen(true); };
 
   const start = (dayId, rounds) => {
     const day = DAYS.find(d => d.id === dayId);
     setSession({ day: dayId, rounds, base: Object.fromEntries(day.ids.map(slot => [slot, effId(slot)])), phase: "warmup", pos: 0, warm: WARMUP.map(() => false), results: {}, rest: null });
+    setSessionOpen(true);
   };
 
   return (
@@ -2703,26 +2819,51 @@ export default function App() {
         .wiggle{display:inline-block;animation:wiggle .5s ease-in-out 2}
         @keyframes fall{0%{transform:translate3d(0,-10vh,0) rotate(0)}100%{transform:translate3d(var(--dx),110vh,0) rotate(var(--rot))}}
         .conf{position:absolute;top:0;width:9px;height:14px;animation:fall var(--dur) cubic-bezier(.25,.6,.4,1) var(--delay) forwards}
+        @keyframes dFadeIn{from{opacity:0}to{opacity:1}} @keyframes dFadeOut{from{opacity:1}to{opacity:0}}
+        @keyframes dIn{from{transform:translateX(104%)}to{transform:none}} @keyframes dOut{from{transform:none}to{transform:translateX(104%)}}
+        @keyframes dItem{from{opacity:0;transform:translateX(26px)}to{opacity:1;transform:none}}
+        .drawerOff{pointer-events:none} .drawerOn .drawerBg{animation:dFadeIn .25s ease-out both} .drawerOff .drawerBg{animation:dFadeOut .26s ease-in both}
+        .drawerOn .drawerPanel{animation:dIn .34s cubic-bezier(.2,.9,.3,1) both} .drawerOff .drawerPanel{animation:dOut .26s cubic-bezier(.5,0,.75,.2) both}
+        .drawerOn .drawerItem{animation:dItem .4s cubic-bezier(.2,.9,.3,1) both;animation-delay:calc(var(--i) * 38ms + 70ms)}
+        .drawerItem{transition:background .15s} .drawerItem:active{transform:scale(.98)}
+        @keyframes miniIn{from{opacity:0;transform:translate(-50%,40px) scale(.94)}to{opacity:1;transform:translate(-50%,0)}}
+        .miniIn{animation:miniIn .38s cubic-bezier(.2,1.2,.4,1) both}
+        @keyframes titleIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+        .titleIn{animation:titleIn .28s ease-out both}
         @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}.conf{display:none}}
       `}</style>
       {!loaded ? (
         <div style={{ padding: 40, display: "flex", flexDirection: "column", alignItems: "center", gap: 12, color: C.dim }}><Logo size={64} />{T("loading")}</div>
-      ) : session ? (
-        <Session session={session} setSession={setSession} history={history}
-          onSave={entry => setHistory(h => [...h, entry])}
-          onClose={() => setSession(null)} />
       ) : (
         <>
-          <TopBar tab={tab} history={history} profile={profile} onProfile={() => { sfxTap(); setTab("profile"); }} />
-          {tab === "train" && <TrainTab history={history} onStart={start} onFreeze={applyFreeze} ui={ui} setUi={setUi} />}
-          {tab === "history" && <HistoryTab history={history}
-            onDelete={idx => editHistory(h => h.filter((_, i) => i !== idx))}
-            onSaveEntry={(idx, entry) => editHistory(h => (idx === null ? [...h, entry] : h.map((e, i) => (i === idx ? entry : e))))} />}
-          {tab === "profile" && <ProfileTab history={history} profile={profile} setProfile={setProfile} onFreeze={applyFreeze} />}
-          {tab === "settings" && <SettingsTab settings={settings} setSettings={setSettings} history={history} profile={profile} setProfile={setProfile}
-            onResetAll={() => { setHistory([]); setProfile({ ...profile, freezeDays: [], streakResetTs: 0 }); setUi({}); }}
-            onImport={d => { setHistory(d.history); if (d.profile) setProfile({ ...profile, ...d.profile }); if (d.settings) setSettings({ ...DEFAULT_SETTINGS, ...d.settings }); }} />}
-          <TabBar tab={tab} setTab={setTab} />
+          {session && (
+            <div style={{ display: sessionOpen ? "block" : "none" }} aria-hidden={!sessionOpen}>
+              <Session session={session} setSession={setSession} history={history}
+                onSave={entry => setHistory(h => [...h, entry])}
+                onClose={() => { setSession(null); setSessionOpen(true); setLive(null); setScreen("train"); }}
+                onMinimize={() => { setSessionOpen(false); setMenuOpen(true); }}
+                onLive={setLive} />
+            </div>
+          )}
+          {(!session || !sessionOpen) && (
+            <>
+              <TopBar screen={screen} history={history} menuOpen={menuOpen} onMenu={() => { sfxTap(); setMenuOpen(o => !o); }} />
+              <div key={screen}>
+                {screen === "train" && <TrainTab history={history} onStart={start} onFreeze={applyFreeze} ui={ui} setUi={setUi} active={session} onResume={resume} />}
+                {screen === "history" && <HistoryTab history={history}
+                  onDelete={idx => editHistory(h => h.filter((_, i) => i !== idx))}
+                  onSaveEntry={(idx, entry) => editHistory(h => (idx === null ? [...h, entry] : h.map((e, i) => (i === idx ? entry : e))))} />}
+                {screen === "profile" && <ProfileTab history={history} profile={profile} setProfile={setProfile} onFreeze={applyFreeze} />}
+                {screen === "calories" && <div className="scr" style={{ padding: "16px 18px 110px", maxWidth: 460, margin: "0 auto", color: C.dim }}>…</div>}
+                {screen === "settings" && <SettingsTab settings={settings} setSettings={setSettings} history={history} profile={profile} setProfile={setProfile}
+                  onResetAll={() => { setHistory([]); setProfile({ ...profile, freezeDays: [], streakResetTs: 0 }); setUi({}); }}
+                  onImport={d => { setHistory(d.history); if (d.profile) setProfile({ ...profile, ...d.profile }); if (d.settings) setSettings({ ...DEFAULT_SETTINGS, ...d.settings }); }} />}
+              </div>
+              {session && session.phase !== "summary" && <MiniPlayer session={session} live={live} onOpen={resume} />}
+            </>
+          )}
+          <MenuDrawer open={menuOpen} screen={screen} history={history} profile={profile} session={session && session.phase !== "summary" ? session : null}
+            onGo={go} onResume={resume} onClose={() => setMenuOpen(false)} />
         </>
       )}
     </div>
