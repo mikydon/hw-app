@@ -482,7 +482,7 @@ export default {
     lunge: ["Départ", "Pas en arrière, genou vers le sol"],
     bridge: ["Sur le dos, genoux pliés", "Hanches en haut, fessiers serrés"],
     sbridge: ["Sur le dos, une jambe en l'air", "Hanches en haut, fessiers serrés"],
-    wallsit: ["Cuisses à l'horizontale, dos au mur"],
+    wallsit: ["Cuisses à l'horizontale, genoux ~90°, dos au mur"],
     birddog: ["À quatre pattes", "Bras et jambe opposée"],
     hollow: ["Bas du dos plaqué au sol"],
     legraise: ["Jambes en l'air", "Descends lentement, sans toucher le sol"],

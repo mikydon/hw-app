@@ -482,7 +482,7 @@ export default {
     lunge: ["Kezdés", "Hátralépés, térd a padló felé"],
     bridge: ["Fekvés, térd hajlítva", "Csípő fel, farizom feszítve"],
     sbridge: ["Fekvés, egyik láb fent", "Csípő fel, farizom feszítve"],
-    wallsit: ["Comb vízszintes, hát a falon"],
+    wallsit: ["Comb vízszintes, térd ~90°, hát a falon"],
     birddog: ["Négykézláb", "Kar és ellentétes láb"],
     hollow: ["Derék a padlóhoz nyomva"],
     legraise: ["Láb fent", "Lassan le, ne érjen le"],

@@ -482,7 +482,7 @@ export default {
     lunge: ["Inicio", "Paso atrás, rodilla al suelo"],
     bridge: ["Boca arriba, rodillas dobladas", "Cadera arriba, aprieta glúteos"],
     sbridge: ["Boca arriba, una pierna arriba", "Cadera arriba, aprieta glúteos"],
-    wallsit: ["Muslos paralelos, espalda en la pared"],
+    wallsit: ["Muslos paralelos, rodillas ~90°, espalda en la pared"],
     birddog: ["En cuatro apoyos", "Brazo y pierna contraria"],
     hollow: ["Lumbar pegada al suelo"],
     legraise: ["Piernas arriba", "Baja despacio, sin tocar el suelo"],

@@ -482,7 +482,7 @@ export default {
     lunge: ["Start", "Schritt zurück, Knie zum Boden"],
     bridge: ["Liegen, Knie angewinkelt", "Hüfte hoch, Po anspannen"],
     sbridge: ["Liegen, ein Bein oben", "Hüfte hoch, Po anspannen"],
-    wallsit: ["Oberschenkel waagrecht, Rücken an der Wand"],
+    wallsit: ["Oberschenkel waagrecht, Knie ~90°, Rücken an der Wand"],
     birddog: ["Vierfüßlerstand", "Arm und Gegenbein"],
     hollow: ["Unterer Rücken fest am Boden"],
     legraise: ["Beine oben", "Langsam runter, nicht ablegen"],

@@ -482,7 +482,7 @@ export default {
     lunge: ["Štart", "Krok dozadu, koleno k zemi"],
     bridge: ["Ľahni, kolená pokrčené", "Boky hore, stlač zadok"],
     sbridge: ["Ľahni, jedna noha hore", "Boky hore, stlač zadok"],
-    wallsit: ["Stehná vodorovne, chrbát na stene"],
+    wallsit: ["Stehná vodorovne, kolená ~90°, chrbát na stene"],
     birddog: ["Na štyroch", "Ruka a opačná noha"],
     hollow: ["Driek pritlačený k zemi"],
     legraise: ["Nohy hore", "Pomaly dole, nepoložiť"],

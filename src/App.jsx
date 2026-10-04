@@ -648,7 +648,7 @@ const FIGS = {
     { hip: [51.1, 80.3], torso: 17.2, head: 0, hands: [[46, 93], [48, 93]], armBend: [1, 1], feet: [[12.95, 68.55], [28, GROUND]], legBend: [1, 1], supine: true, hide: ["farArm"] },
   ],
   wallsit: [
-    { hip: [27, 74], torso: -90, hands: [[27.5, 77], [28.5, 77]], armBend: [1, 1], feet: [[47, GROUND], [49, GROUND]], legBend: [-1, -1], props: [{ t: "wall" }] },
+    { hip: [28, 74], torso: -90, hands: [[28.5, 77], [28.5, 77]], armBend: [1, 1], feet: [[48, GROUND], [48, GROUND]], legBend: [-1, -1], hide: ["farArm", "farLeg"], props: [{ t: "wall" }] },
   ],
   birddog: [
     { hip: [40, 74], torso: -20.3, hands: [[64, GROUND], [66, GROUND]], armBend: [1, 1], feet: [[20, GROUND], [22, GROUND]], legBend: [-1, -1] },

@@ -482,7 +482,7 @@ export default {
     lunge: ["Inizio", "Passo indietro, ginocchio verso terra"],
     bridge: ["Sdraiati, ginocchia piegate", "Fianchi su, stringi i glutei"],
     sbridge: ["Sdraiati, una gamba su", "Fianchi su, stringi i glutei"],
-    wallsit: ["Cosce parallele, schiena al muro"],
+    wallsit: ["Cosce parallele, ginocchia ~90°, schiena al muro"],
     birddog: ["A quattro zampe", "Braccio e gamba opposta"],
     hollow: ["Zona lombare schiacciata a terra"],
     legraise: ["Gambe su", "Abbassa piano, senza toccare terra"],
