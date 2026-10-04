@@ -451,7 +451,7 @@ export default {
   },
 
   fig: {
-    k1: ["Fent", "Lent, könyök kb. 45°-ban"],
+    k1: ["Fent", "Lent, könyök ~45°-ban"],
     k3: ["Fent", "Lent, könyök a testnél"],
     b5: ["Helyes: egyenes test", "Hibás: belógó derék"],
     n1: ["Kezdés", "Lent, sarok a padlón"],

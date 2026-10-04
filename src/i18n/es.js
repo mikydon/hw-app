@@ -451,7 +451,7 @@ export default {
   },
 
   fig: {
-    k1: ["Arriba", "Abajo, codos a unos 45°"],
+    k1: ["Arriba", "Abajo, codos a ~45° del cuerpo"],
     k3: ["Arriba", "Abajo, codos pegados"],
     b5: ["Bien: cuerpo recto", "Mal: lumbar hundida"],
     n1: ["Inicio", "Abajo, talones en el suelo"],

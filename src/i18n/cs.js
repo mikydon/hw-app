@@ -451,7 +451,7 @@ export default {
   },
 
   fig: {
-    k1: ["Nahoře", "Dole, lokty asi 45° od těla"],
+    k1: ["Nahoře", "Dole, lokty ~45° od těla"],
     k3: ["Nahoře", "Dole, lokty u těla"],
     b5: ["Správně: rovné tělo", "Špatně: propadlá bedra"],
     n1: ["Start", "Dole, paty na zemi"],

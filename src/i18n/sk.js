@@ -451,7 +451,7 @@ export default {
   },
 
   fig: {
-    k1: ["Hore", "Dole, lakte asi 45° od tela"],
+    k1: ["Hore", "Dole, lakte ~45° od tela"],
     k3: ["Hore", "Dole, lakte k telu"],
     b5: ["Správne: rovné telo", "Zle: prehnutý driek"],
     n1: ["Štart", "Dole, päty na zemi"],

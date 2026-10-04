@@ -451,7 +451,7 @@ export default {
   },
 
   fig: {
-    k1: ["Su", "Giù, gomiti a circa 45°"],
+    k1: ["Su", "Giù, gomiti a ~45° dal corpo"],
     k3: ["Su", "Giù, gomiti stretti"],
     b5: ["Giusto: corpo dritto", "Sbagliato: zona lombare che cede"],
     n1: ["Inizio", "Giù, talloni a terra"],
