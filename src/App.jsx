@@ -603,8 +603,8 @@ const FIGS = {
     { hip: [86, 64], torso: -95, head: -90, hands: [[96, 55], [96.5, 55.4]], armBend: [1, 1], feet: [[103, GROUND], [104.5, GROUND]], legBend: [-1, -1], props: [{ t: "door", mid: true }, { t: "towel", from: [104, 56], to: [96.3, 55.2], mid: true }] },
   ],
   n2: [
-    { hip: [63, 57], torso: -88, hands: [[64, 84], [60, 84]], armBend: [1, 1], feet: [[78, GROUND], [30, 70]], legBend: [-1, -1], props: [{ t: "chair" }] },
-    { hip: [58, 72], torso: -80, hands: [[60, 99], [56, 99]], armBend: [1, 1], feet: [[78, GROUND], [30, 70]], legBend: [-1, -1], props: [{ t: "chair" }] },
+    { hip: [54, 57], torso: -86, hands: [[53, 57], [53, 57]], armBend: [1, 1], feet: [[69, GROUND], [30, 70]], legBend: [-1, -1], hide: ["farArm"], props: [{ t: "chair" }] },
+    { hip: [48, 70], torso: -80, hands: [[47, 70], [47, 70]], armBend: [1, 1], feet: [[70, GROUND], [30, 70]], legBend: [-1, -1], hide: ["farArm"], props: [{ t: "chair" }] },
   ],
   b2: [
     { hip: [42, 88], torso: 0, head: 0, hands: [[68, 59], [70, 59.5]], armBend: [1, 1], feet: [[22, 68], [24, 68]], legBend: [1, 1], supine: true },
