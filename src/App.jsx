@@ -587,8 +587,8 @@ const FIGS = {
     { hip: [48, 82], torso: -58, hands: [[88, 58], [90, 58]], armBend: [1, 1], feet: [[60, GROUND], [62, GROUND]], legBend: [-1, -1] },
   ],
   r1: [
-    { hip: [50.2, 54.1], torso: 46.5, head: 70, hands: [[88, GROUND], [90, GROUND]], armBend: [1, 1], feet: [[48, GROUND], [50, GROUND]], legBend: [1, 1], hide: ["farLeg"] },
-    { hip: [70.1, 60.7], torso: 42.5, head: 52.5, hands: [[88, GROUND], [90, GROUND]], armBend: [1, 1], feet: [[48, GROUND], [50, GROUND]], legBend: [1, 1], hide: ["farLeg"] },
+    { hip: [57.9, 49.1], torso: 58, head: 76, fl: { th: 25, sh: 25, torso: 24 }, hands: [[86, GROUND], [87, GROUND]], armBend: [1, 1], feet: [[35.2, GROUND], [36.2, GROUND]], legBend: [1, 1], hide: ["farLeg"] },
+    { hip: [71, 59], torso: 45, head: 65, fl: { th: 25, sh: 25, torso: 24 }, hands: [[86, GROUND], [87, GROUND]], armBend: [1, 1], feet: [[35.2, GROUND], [36.2, GROUND]], legBend: [1, 1], hide: ["farLeg"] },
   ],
   row1: [
     { ...fromFeet([88, GROUND], 17), hands: [[97, 37.2], [70.5, 59.7]], armBend: [-1, 1], feet: [[88, GROUND], [90, GROUND]], legBend: [1, 1], props: [{ t: "frame" }], hide: ["farArm"] },
@@ -665,16 +665,18 @@ const FIGS = {
 };
 
 function Stick({ p }) {
-  const shoulder = dirv(p.hip, p.torso, FL.torso);
-  const headC = dirv(shoulder, p.head ?? p.torso, FL.neck + FL.head);
+  // p.fl can override limb lengths for one pose (e.g. longer legs where the proportions matter).
+  const fl = p.fl ? { ...FL, ...p.fl } : FL;
+  const shoulder = dirv(p.hip, p.torso, fl.torso);
+  const headC = dirv(shoulder, p.head ?? p.torso, fl.neck + fl.head);
   const near = C.chalk, far = "#6f80aa";
   const parts = [];
   [1, 0].forEach(i => {
     const col = i === 0 ? near : far;
     let elbow, hand;
     if (p.elbows) { elbow = p.elbows[i]; hand = p.hands[i]; }
-    else { const a = ik(shoulder, p.hands[i], FL.ua, FL.fa, p.armBend[i]); elbow = a.mid; hand = a.end; }
-    const lg = ik(p.hip, p.feet[i], FL.th, FL.sh, p.legBend[i]);
+    else { const a = ik(shoulder, p.hands[i], fl.ua, fl.fa, p.armBend[i]); elbow = a.mid; hand = a.end; }
+    const lg = ik(p.hip, p.feet[i], fl.th, fl.sh, p.legBend[i]);
     // hide: ["farArm", "farLeg"] leaves out the back limb when it would only confuse (e.g. one-arm rows).
     if (!(i === 1 && (p.hide || []).includes("farLeg"))) parts.push({ i, col, pts: [p.hip, lg.mid, lg.end] });
     if (!(i === 1 && (p.hide || []).includes("farArm"))) parts.push({ i, col, pts: [shoulder, elbow, hand] });
