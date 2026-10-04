@@ -513,7 +513,7 @@ export default {
     r1e: ["Góra, nogi na krześle", "Dół, głowa przed dłońmi"],
     k3e: ["Góra, nogi na krześle", "Dół, łokcie przy ciele"],
     n1q: ["Na sam dół", "Ćwierć w górę", "Znów na sam dół", "Dopiero wtedy w górę"],
-    b5l: ["Jedna noga w górze, w połowie zmień"],
+    b5l: ["Jedna noga w górze", "W połowie czasu zmień nogi"],
     wallsit: ["Kolana ~90°, plecy przy ścianie"],
     birddog: ["Na czworakach: ręce i kolana ~90°", "Ręka i przeciwna noga"],
     hollow: ["Dół pleców dociśnięty do podłogi"],

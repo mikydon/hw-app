@@ -513,7 +513,7 @@ export default {
     r1e: ["Hore, nohy na stoličke", "Dole, hlava pred ruky"],
     k3e: ["Hore, nohy na stoličke", "Dole, lakte k telu"],
     n1q: ["Úplne dole", "Štvrť cesty hore", "Znova úplne dole", "Až potom hore"],
-    b5l: ["Jedna noha hore, v polovici vymeň"],
+    b5l: ["Jedna noha hore", "V polovici času vymeň nohy"],
     wallsit: ["Kolená ~90°, chrbát na stene"],
     birddog: ["Na štyroch: ruky aj kolená ~90°", "Ruka a opačná noha"],
     hollow: ["Driek pritlačený k zemi"],

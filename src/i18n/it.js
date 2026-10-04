@@ -513,7 +513,7 @@ export default {
     r1e: ["Su, piedi sulla sedia", "Giù, testa davanti alle mani"],
     k3e: ["Su, piedi sulla sedia", "Giù, gomiti stretti"],
     n1q: ["Fino in fondo", "Un quarto su", "Di nuovo fino in fondo", "Solo allora su"],
-    b5l: ["Una gamba su, cambia a metà"],
+    b5l: ["Una gamba su", "A metà tempo cambia gamba"],
     wallsit: ["Ginocchia ~90°, schiena al muro"],
     birddog: ["A quattro zampe: braccia e ginocchia ~90°", "Braccio e gamba opposta"],
     hollow: ["Zona lombare schiacciata a terra"],

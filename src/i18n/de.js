@@ -513,7 +513,7 @@ export default {
     r1e: ["Oben, Füße auf dem Stuhl", "Unten, Kopf vor den Händen"],
     k3e: ["Oben, Füße auf dem Stuhl", "Unten, Ellbogen am Körper"],
     n1q: ["Ganz runter", "Ein Viertel hoch", "Wieder ganz runter", "Erst dann hoch"],
-    b5l: ["Ein Bein oben, nach der Hälfte wechseln"],
+    b5l: ["Ein Bein oben", "Nach der Hälfte Beine wechseln"],
     wallsit: ["Knie ~90°, Rücken an der Wand"],
     birddog: ["Vierfüßlerstand: Arme und Knie ~90°", "Arm und Gegenbein"],
     hollow: ["Unterer Rücken fest am Boden"],

@@ -513,7 +513,7 @@ export default {
     r1e: ["En haut, pieds sur la chaise", "En bas, tête devant les mains"],
     k3e: ["En haut, pieds sur la chaise", "En bas, coudes serrés"],
     n1q: ["Tout en bas", "Un quart en haut", "De nouveau tout en bas", "Seulement ensuite en haut"],
-    b5l: ["Une jambe en l'air, change à mi-temps"],
+    b5l: ["Une jambe en l'air", "À mi-temps, change de jambe"],
     wallsit: ["Genoux ~90°, dos au mur"],
     birddog: ["À quatre pattes : bras et genoux ~90°", "Bras et jambe opposée"],
     hollow: ["Bas du dos plaqué au sol"],

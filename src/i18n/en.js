@@ -513,7 +513,7 @@ export default {
     r1e: ["Up, feet on a chair", "Down, head in front of hands"],
     k3e: ["Up, feet on a chair", "Down, elbows in"],
     n1q: ["All the way down", "A quarter up", "All the way down again", "Only then up"],
-    b5l: ["One leg up, switch halfway"],
+    b5l: ["One leg up", "Halfway through, switch legs"],
     wallsit: ["Knees ~90°, back on the wall"],
     birddog: ["On all fours: arms and knees ~90°", "Arm and opposite leg"],
     hollow: ["Lower back pressed to the floor"],

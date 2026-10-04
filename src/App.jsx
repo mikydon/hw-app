@@ -700,6 +700,7 @@ const FIGS = {
   ],
   b5l: [
     { hip: [52.8, 84.9], torso: -13.2, hands: [[93, GROUND], [93, GROUND]], elbows: [[78.1, GROUND], [78.1, GROUND]], feet: [[12.8, 83.6], [13.7, GROUND]], legBend: [1, 1], hide: ["farArm"] },
+    { hip: [52.8, 84.9], torso: -13.2, hands: [[93, GROUND], [93, GROUND]], elbows: [[78.1, GROUND], [78.1, GROUND]], feet: [[13.7, GROUND], [12.8, 83.6]], legBend: [1, 1], hide: ["farArm"] },
   ],
   child: [
     { hip: [32, 83], torso: 0, head: 18, hands: [[87, 92.5], [87, 92.5]], armBend: [1, 1], feet: [[30, GROUND], [30, GROUND]], legBend: [-1, -1], hide: ["farArm", "farLeg"] },
