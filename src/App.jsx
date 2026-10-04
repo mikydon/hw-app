@@ -575,7 +575,7 @@ const FIGS = {
     { hip: [50.3, 87.9], torso: -8.7, hands: [[73.4, GROUND], [75.4, GROUND]], armBend: [1, 1], feet: [[10.8, GROUND], [12.8, GROUND]], legBend: [1, 1], hide: ["farLeg"] },
   ],
   k3: [
-    { hip: [50, 76.4], torso: -26, hands: [[67, GROUND], [69, GROUND]], armBend: [1, 1], feet: [[14, GROUND], [16, GROUND]], legBend: [1, 1], hide: ["farLeg"], props: [{ t: "diamondTop" }] },
+    { hip: [50, 76.4], torso: -26, hands: [[67, GROUND], [69, GROUND]], armBend: [1, 1], feet: [[14, GROUND], [16, GROUND]], legBend: [1, 1], hide: ["farLeg"], props: [{ t: "diamondTop" }, { t: "plumb", x: 73.4, y: 67 }] },
     { hip: [50.3, 87.9], torso: -8.7, hands: [[67, GROUND], [69, GROUND]], armBend: [1, 1], feet: [[10.8, GROUND], [12.8, GROUND]], legBend: [1, 1], hide: ["farLeg"] },
   ],
   b5: [
@@ -708,6 +708,8 @@ function Prop({ pr }) {
   if (pr.t === "wall") return <line x1="20" y1="4" x2="20" y2="96" {...s} strokeWidth="4" />;
   if (pr.t === "towelFloor") return <rect x={pr.x} y={GROUND} width="14" height="3" rx="1" fill={C.signal} />;
   // Small "seen from above" inset: palms side by side, index fingers and thumbs touching = diamond.
+  // Dashed line straight down from the shoulder: shows that the hands are placed behind it (under the chest).
+  if (pr.t === "plumb") return <line x1={pr.x} y1={pr.y} x2={pr.x} y2={GROUND} stroke={C.sky} strokeWidth="1.4" strokeDasharray="2.2 1.8" />;
   if (pr.t === "diamondTop") {
     // Both hands seen from above (like a photo of real hands): fingers together, turned inwards,
     // straight thumbs starting lower on the palm. Index fingertips touch at the top, thumb tips at the

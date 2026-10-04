@@ -453,7 +453,7 @@ export default {
 
   fig: {
     k1: ["Su", "Giù"],
-    k3: ["Su", "Giù, gomiti stretti"],
+    k3: ["Su, mani sotto il petto", "Giù, gomiti stretti"],
     b5: ["Giusto: corpo dritto", "Sbagliato: zona lombare che cede"],
     n1: ["Inizio", "Giù, talloni a terra"],
     r1: ["Su", "Giù, testa davanti alle mani"],

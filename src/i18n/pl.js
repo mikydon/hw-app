@@ -453,7 +453,7 @@ export default {
 
   fig: {
     k1: ["Góra", "Dół"],
-    k3: ["Góra", "Dół, łokcie przy ciele"],
+    k3: ["Góra, dłonie pod klatką", "Dół, łokcie przy ciele"],
     b5: ["Dobrze: proste ciało", "Źle: opadający dół pleców"],
     n1: ["Start", "Dół, pięty na podłodze"],
     r1: ["Góra", "Dół, głowa przed dłońmi"],
