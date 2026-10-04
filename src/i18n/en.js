@@ -550,7 +550,7 @@ export default {
     workouts: ["Workouts", "{x}"],
     streak: ["Streak", "a streak of {x}"],
     records: ["Records", "{x}"],
-    ranks: ["Ranks", "rank levels across all exercises: {n}"],
+    ranks: ["Rank collector", "rank levels across all exercises: {n}"],
     weeks: ["Weekly challenges", "{x} at 100%"],
     level: ["Level", "level {n}"],
     rounds3: ["Three rounds", "{x} with 3 rounds"],

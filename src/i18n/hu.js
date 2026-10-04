@@ -550,7 +550,7 @@ export default {
     workouts: ["Edzések", "{x}"],
     streak: ["Sorozat", "{x} sorozat"],
     records: ["Rekordok", "{x}"],
-    ranks: ["Rangok", "rangszintek összesen: {n}"],
+    ranks: ["Rangvadász", "rangszintek összesen: {n}"],
     weeks: ["Heti kihívások", "{x} 100%-on"],
     level: ["Szint", "{n}. szint"],
     rounds3: ["Három kör", "{x} 3 körrel"],

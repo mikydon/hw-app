@@ -550,7 +550,7 @@ export default {
     workouts: ["Treinos", "{x}"],
     streak: ["Sequência", "sequência de {x}"],
     records: ["Recordes", "{x}"],
-    ranks: ["Ranks", "soma dos ranks em todos os exercícios: {n}"],
+    ranks: ["Colecionador de ranks", "soma dos ranks em todos os exercícios: {n}"],
     weeks: ["Desafios semanais", "{x} em 100%"],
     level: ["Nível", "nível {n}"],
     rounds3: ["Três rodadas", "{x} com 3 rodadas"],

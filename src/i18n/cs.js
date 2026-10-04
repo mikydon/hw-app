@@ -550,7 +550,7 @@ export default {
     workouts: ["Tréninky", "{x}"],
     streak: ["Série", "série {x}"],
     records: ["Rekordy", "{x}"],
-    ranks: ["Ranky", "součet ranků ve všech cvicích {n}"],
+    ranks: ["Sběratel ranků", "součet ranků ve všech cvicích {n}"],
     weeks: ["Týdenní výzvy", "{x} na 100 %"],
     level: ["Level", "level {n}"],
     rounds3: ["Tři kola", "{x} se 3 koly"],
