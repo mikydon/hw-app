@@ -29,6 +29,8 @@
 - backup and restore of all your data as a file, and a "start over from zero" reset that keeps your profile
 - 11 languages: English, Slovenčina, Čeština, Polski, Magyar, Українська, Deutsch, Español, Français, Italiano, Português. The app picks your phone's language automatically; you can change it in Settings.
 
+What changed in each version: [CHANGELOG.md](CHANGELOG.md).
+
 ## Privacy
 All your data (workouts, calories, name, photo, birth date) is stored only on your phone, in this browser. Nothing is sent anywhere. If you clear the browser's data, the history is deleted too, so save a backup in Settings first.
 
