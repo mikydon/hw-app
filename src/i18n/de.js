@@ -24,6 +24,12 @@ export default {
     newsNow: "Jetzt:",
     newsOk: "Super, los geht's",
     newsLink: "Was ist neu",
+    newsSmall: "Ein kleines Update, nichts Neues herunterzuladen.",
+    newsSwipe: "Kleine Updates: nach links wischen oder hier tippen ›",
+    newsPrev: "Zurück",
+    newsNext: "Weiter",
+    updTitle: "Die App wurde auf {v} aktualisiert",
+    updBtn: "Sieh dir an, was neu ist",
     hintTitle: "Schon gewusst?",
     hintGo: "Zeigen",
     hint_themes: "Lieber eine andere Farbe? Unter Einstellungen → Darstellung gibt es 8 Themes.",
@@ -686,6 +692,14 @@ export default {
     ["Plank", "30 – 75 s.", "auch 15 s."],
     ["Sicherheit", "schwerere Varianten ohne Hinweise.", "Hinweise bei riskanten Schritten (Krampf, Hüfte, Stuhl an der Wand, stabile Bücher)."],
     ["Tipps", "gab es nicht.", "jeden zweiten Tag ein „Schon gewusst?“ mit einem Knopf, der dich hinführt."],
+  ],
+  news141: [
+    "Der Kalorienrechner fragt „Mann oder Frau?“.",
+    "Pflichtfelder haben ein Sternchen *, beim Geburtsdatum ist nur das Jahr Pflicht.",
+  ],
+  news142: [
+    "Die Neuigkeiten haben jetzt Seiten: zuerst das große Update, nach links wischen für die kleinen.",
+    "Nach einem kleinen Update führt dich eine Karte auf dem Startbildschirm direkt zu seiner Seite. Nur beim ersten Mal.",
   ],
 
   quotes: [

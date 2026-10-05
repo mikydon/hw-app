@@ -24,6 +24,12 @@ export default {
     newsNow: "Agora:",
     newsOk: "Ótimo, vamos lá",
     newsLink: "Novidades",
+    newsSmall: "Uma atualização pequena, nada novo para baixar.",
+    newsSwipe: "Atualizações pequenas: deslize para a esquerda ou toque aqui ›",
+    newsPrev: "Anterior",
+    newsNext: "Próxima",
+    updTitle: "O app foi atualizado para a {v}",
+    updBtn: "Veja as novidades",
     hintTitle: "Você sabia?",
     hintGo: "Mostrar",
     hint_themes: "Quer outra cor? Em Ajustes → Aparência há 8 temas.",
@@ -686,6 +692,14 @@ export default {
     ["Prancha", "30 – 75 s.", "também 15 s."],
     ["Segurança", "versões mais difíceis sem avisos.", "avisos nos passos arriscados (cãibra, quadril, cadeira na parede, livros firmes)."],
     ["Dicas", "não existiam.", "a cada dois dias um «Você sabia?» com um botão que leva até lá."],
+  ],
+  news141: [
+    "A calculadora de calorias pergunta \"Homem ou mulher?\".",
+    "Os campos obrigatórios têm um asterisco *; da data de nascimento só o ano é obrigatório.",
+  ],
+  news142: [
+    "\"Novidades\" tem páginas: a primeira é a grande atualização, deslize para a esquerda para as pequenas.",
+    "Depois de uma atualização pequena, um cartão no início leva você à página dela. Só aparece da primeira vez.",
   ],
 
   quotes: [

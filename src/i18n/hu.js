@@ -24,6 +24,12 @@ export default {
     newsNow: "Most:",
     newsOk: "Szuper, mehet",
     newsLink: "Újdonságok",
+    newsSmall: "Kis frissítés, semmit nem kell újra letölteni.",
+    newsSwipe: "Kis frissítések: húzd balra vagy koppints ide ›",
+    newsPrev: "Előző",
+    newsNext: "Következő",
+    updTitle: "Az app frissült: {v}",
+    updBtn: "Nézd meg az újdonságokat",
     hintTitle: "Tudtad?",
     hintGo: "Mutasd",
     hint_themes: "Más színt szeretnél? A Beállítások → Megjelenés alatt 8 téma van.",
@@ -686,6 +692,14 @@ export default {
     ["Plank", "30 – 75 mp.", "15 mp is."],
     ["Biztonság", "a nehezebb változatoknál nem volt figyelmeztetés.", "figyelmeztetések a kockázatos lépéseknél (görcs, csípő, szék a falnál, stabil könyvek)."],
     ["Tippek", "nem voltak.", "minden második nap egy „Tudtad?”, gombbal, ami odavisz."],
+  ],
+  news141: [
+    "A kalóriakalkulátor azt kérdezi: „Férfi vagy nő?”.",
+    "A kötelező mezőknél csillag * van; a születési dátumból csak az év kötelező.",
+  ],
+  news142: [
+    "Az „Újdonságok” több oldalas: az első a nagy frissítés, balra húzva jönnek a kicsik.",
+    "Kis frissítés után a kezdőképernyőn egy kártya egyből az oldalára visz. Csak először jelenik meg.",
   ],
 
   quotes: [

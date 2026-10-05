@@ -24,6 +24,12 @@ export default {
     newsNow: "Teraz:",
     newsOk: "Super, poďme na to",
     newsLink: "Čo je nové",
+    newsSmall: "Drobná úprava, netreba nič nové sťahovať.",
+    newsSwipe: "Drobné úpravy: potiahni doľava alebo ťukni sem ›",
+    newsPrev: "Predošlá",
+    newsNext: "Ďalšia",
+    updTitle: "Appka bola aktualizovaná na {v}",
+    updBtn: "Pozri, čo je nové",
     hintTitle: "Vedel si?",
     hintGo: "Ukázať",
     hint_themes: "Chceš inú farbu appky? V Nastaveniach → Vzhľad je 8 tém.",
@@ -686,6 +692,14 @@ export default {
     ["Plank", "30 – 75 s.", "aj 15 s."],
     ["Bezpečnosť", "ťažšie verzie bez upozornení.", "pri rizikových krokoch upozornenia (kŕč, boky, stolička o stenu, pevné knihy)."],
     ["Tipy", "neboli.", "každý druhý deň jeden „Vedel si?“ s tlačidlom, ktoré ťa tam zavedie."],
+  ],
+  news141: [
+    "Kalkulačka kalórií sa pýta „Muž alebo žena?“.",
+    "Povinné údaje majú hviezdičku *, z narodenia je povinný len rok.",
+  ],
+  news142: [
+    "„Čo je nové“ má strany: prvá je veľký update, potiahnutím doľava drobné úpravy.",
+    "Po drobnej úprave ťa karta na úvode zavedie priamo na jej stranu. Ukáže sa len prvýkrát.",
   ],
 
   quotes: [

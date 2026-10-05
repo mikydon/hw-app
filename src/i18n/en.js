@@ -24,6 +24,12 @@ export default {
     newsNow: "Now:",
     newsOk: "Great, let's go",
     newsLink: "What's new",
+    newsSmall: "A small update. Nothing new to download.",
+    newsSwipe: "Small updates: swipe left or tap here ›",
+    newsPrev: "Previous",
+    newsNext: "Next",
+    updTitle: "The app has been updated to {v}",
+    updBtn: "See what's new",
     hintTitle: "Did you know?",
     hintGo: "Show me",
     hint_themes: "Want a different colour? Settings → Appearance has 8 themes.",
@@ -686,6 +692,14 @@ export default {
     ["Plank", "30 – 75 s.", "15 s too."],
     ["Safety", "harder versions had no warnings.", "warnings on risky steps (cramps, hips, chair against a wall, sturdy books)."],
     ["Tips", "didn't exist.", "every other day one \"Did you know?\" with a button that takes you there."],
+  ],
+  news141: [
+    "The calorie calculator asks \"Man or woman?\".",
+    "Required fields have a star *; of the birth date only the year is required.",
+  ],
+  news142: [
+    "\"What's new\" has pages: the first is the big update, swipe left for the small ones.",
+    "After a small update, a card on the home screen opens its page. It shows only the first time.",
   ],
 
   quotes: [

@@ -24,6 +24,12 @@ export default {
     newsNow: "Maintenant :",
     newsOk: "Super, c'est parti",
     newsLink: "Nouveautés",
+    newsSmall: "Petite mise à jour, rien de nouveau à télécharger.",
+    newsSwipe: "Petites mises à jour : glisse vers la gauche ou touche ici ›",
+    newsPrev: "Précédente",
+    newsNext: "Suivante",
+    updTitle: "L'appli a été mise à jour en {v}",
+    updBtn: "Voir les nouveautés",
     hintTitle: "Le savais-tu ?",
     hintGo: "Voir",
     hint_themes: "Envie d'une autre couleur ? Réglages → Apparence propose 8 thèmes.",
@@ -686,6 +692,14 @@ export default {
     ["Planche", "30 – 75 s.", "aussi 15 s."],
     ["Sécurité", "les versions plus dures sans avertissement.", "des avertissements sur les étapes risquées (crampe, hanches, chaise contre un mur, livres stables)."],
     ["Astuces", "n'existaient pas.", "un jour sur deux, un « Le savais-tu ? » avec un bouton qui t'y emmène."],
+  ],
+  news141: [
+    "Le calculateur de calories demande « Homme ou femme ? ».",
+    "Les champs obligatoires ont un astérisque * ; pour la naissance, seule l'année est obligatoire.",
+  ],
+  news142: [
+    "« Nouveautés » a des pages : la première est la grande mise à jour, glisse vers la gauche pour les petites.",
+    "Après une petite mise à jour, une carte sur l'accueil t'emmène à sa page. Elle n'apparaît que la première fois.",
   ],
 
   quotes: [

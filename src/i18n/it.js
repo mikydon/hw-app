@@ -24,6 +24,12 @@ export default {
     newsNow: "Ora:",
     newsOk: "Ottimo, andiamo",
     newsLink: "Novità",
+    newsSmall: "Piccolo aggiornamento, niente di nuovo da scaricare.",
+    newsSwipe: "Piccoli aggiornamenti: scorri a sinistra o tocca qui ›",
+    newsPrev: "Precedente",
+    newsNext: "Successiva",
+    updTitle: "L'app è stata aggiornata alla {v}",
+    updBtn: "Scopri le novità",
     hintTitle: "Lo sapevi?",
     hintGo: "Mostra",
     hint_themes: "Vuoi un altro colore? In Impostazioni → Aspetto ci sono 8 temi.",
@@ -686,6 +692,14 @@ export default {
     ["Plank", "30 – 75 s.", "anche 15 s."],
     ["Sicurezza", "le versioni più difficili senza avvisi.", "avvisi nei passaggi rischiosi (crampi, fianchi, sedia contro il muro, libri stabili)."],
     ["Consigli", "non c'erano.", "a giorni alterni un «Lo sapevi?» con un pulsante che ti porta lì."],
+  ],
+  news141: [
+    "Il calcolatore di calorie chiede «Uomo o donna?».",
+    "I campi obbligatori hanno un asterisco *; della data di nascita è obbligatorio solo l'anno.",
+  ],
+  news142: [
+    "«Novità» ha più pagine: la prima è il grande aggiornamento, scorri a sinistra per quelli piccoli.",
+    "Dopo un piccolo aggiornamento, una scheda nella home ti porta alla sua pagina. Compare solo la prima volta.",
   ],
 
   quotes: [

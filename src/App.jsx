@@ -29,7 +29,7 @@ const THEMES = {
   slate:  { ink: "#15181d", panel: "#1f242b", panelHi: "#2a313a", line: "#3a434f", chalk: "#f1f4f8", dim: "#9aa6b4", edge: "#0e1115" },
   coffee: { ink: "#1c140f", panel: "#2a1f17", panelHi: "#382a20", line: "#4d3a2c", chalk: "#fbf3ec", dim: "#b8a291", edge: "#130d09" },
 };
-const APP_VERSION = "1.4.1";
+const APP_VERSION = "1.4.2";
 // Big Shoulders has no Cyrillic, so Oswald (also condensed) covers Ukrainian. The browser only
 // downloads the Oswald unicode ranges a page actually uses.
 const DISPLAY = "'Big Shoulders Display', 'Oswald', 'Arial Narrow', Impact, sans-serif";
@@ -1386,25 +1386,126 @@ function CloseX({ onClick, color }) {
   );
 }
 
-// "What's new" after a big update (second version number changes): each change next to how it was before.
+// "What's new": page 1 = the big update (each change next to how it was before), then one page per
+// small update of the same big version (1.4.1, 1.4.2, … 1.4.9, 1.4.9.1 …), reached by swiping left.
+// Texts: news<big> (e.g. news14: [title, before, now]) and news<small> (e.g. news141: [line, …]).
 const bigVer = v => String(v || "0.0").split(".").slice(0, 2).join(".");
-function WhatsNew({ onClose }) {
-  const key = "news" + bigVer(APP_VERSION).replace(".", "");
-  const items = L[key] || [];
+const verCmp = (a, b) => {
+  const x = String(a || "0").split(".").map(Number), y = String(b || "0").split(".").map(Number);
+  for (let i = 0; i < Math.max(x.length, y.length); i++) { const d = (x[i] || 0) - (y[i] || 0); if (d) return d < 0 ? -1 : 1; }
+  return 0;
+};
+const newsKey = v => "news" + v.replace(/\./g, "");
+function newsPages() {
+  const big = bigVer(APP_VERSION);
+  const pages = [{ v: big + ".0", big: true, items: L[newsKey(big)] || [] }];
+  const cands = [];
+  for (let i = 1; i <= 9; i++) cands.push(`${big}.${i}`);
+  for (let i = 1; i <= 9; i++) cands.push(`${big}.9.${i}`);
+  for (const v of cands) if (verCmp(v, APP_VERSION) <= 0 && Array.isArray(L[newsKey(v)])) pages.push({ v, items: L[newsKey(v)] });
+  return pages;
+}
+// A small update (same big version) with "What's new" lines the user hasn't seen yet.
+const newsUnseen = seen => !!seen && bigVer(seen) === bigVer(APP_VERSION) && newsPages().some(p => !p.big && verCmp(p.v, seen) > 0);
+// at = a version to open on (the card after a small update opens the current version's page)
+function WhatsNew({ onClose, at }) {
+  const pages = newsPages();
+  const start = at ? Math.max(0, pages.findIndex(x => x.v === at)) : 0;
+  const [pg, setPg] = useState(start);
+  const [h, setH] = useState(null);
+  const [prog, setProg] = useState(start); // scroll position in pages (1.5 = halfway from page 2 to 3), drives the dots
+  const track = useRef(null);
+  const refs = useRef([]);
+  useLayoutEffect(() => { const el = refs.current[pg]; if (el) setH(el.offsetHeight); }, [pg]);
+  useLayoutEffect(() => { const t = track.current; if (t && start) t.scrollLeft = start * t.clientWidth; }, []);
+  const goTo = i => { const t = track.current; if (t) t.scrollTo({ left: i * t.clientWidth, behavior: "smooth" }); };
+  const onScroll = () => {
+    const t = track.current; if (!t || !t.clientWidth) return;
+    const f = Math.max(0, Math.min(pages.length - 1, t.scrollLeft / t.clientWidth));
+    setProg(f);
+    const i = Math.round(f);
+    if (i !== pg) { setPg(i); try { const b = t.closest(".sheetBox"); b && b.scrollTo({ top: 0, behavior: "smooth" }); } catch (_) {} }
+  };
+  const p = pages[pg] || pages[0];
+  const arrow = (dis, on, label, ch) => (
+    <button onClick={on} disabled={dis} aria-label={label} style={{ ...btnBase, width: 34, height: 34, padding: 0, borderRadius: 10, background: C.panelHi, color: dis ? C.line : C.chalk, fontSize: 18, flexShrink: 0 }}>{ch}</button>
+  );
   return (
-    <Sheet title={T("newsTitle", { v: bigVer(APP_VERSION) + ".0" })} onClose={onClose}>
-      <div data-whatsnew style={{ fontSize: 14, color: C.dim, lineHeight: 1.5, marginBottom: 12 }}>{T("newsIntro")}</div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        {items.map(([title, before, now], i) => (
-          <div key={i} style={{ ...card, padding: "12px 14px" }}>
-            <div style={{ fontSize: 15, fontWeight: 800, color: C.chalk }}>{title}</div>
-            <div style={{ fontSize: 13, color: C.dim, lineHeight: 1.45, marginTop: 4 }}><b>{T("newsBefore")}</b> {before}</div>
-            <div style={{ fontSize: 13, color: C.mint, lineHeight: 1.45, marginTop: 3 }}><b>{T("newsNow")}</b> {now}</div>
+    <Sheet title={T("newsTitle", { v: p.v })} onClose={onClose}>
+      {pages.length > 1 && (
+        <div data-news-nav style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+          {arrow(pg === 0, () => goTo(pg - 1), T("newsPrev"), "‹")}
+          <div style={{ flex: 1, display: "flex", flexWrap: "wrap", gap: 6, justifyContent: "center" }}>
+            {pages.map((x, i) => (
+              <button key={x.v} onClick={() => goTo(i)} aria-current={i === pg ? "page" : undefined} data-news-pill={x.v}
+                style={{ ...btnBase, padding: "4px 9px", borderRadius: 99, fontSize: 12, background: i === pg ? C.chalk : "transparent", color: i === pg ? C.ink : C.dim, border: `1.5px solid ${i === pg ? C.chalk : C.line}` }}>{x.v}</button>
+            ))}
           </div>
+          {arrow(pg === pages.length - 1, () => goTo(pg + 1), T("newsNext"), "›")}
+        </div>
+      )}
+      <div ref={track} onScroll={onScroll} data-news-track className="noBar"
+        style={{ display: "flex", alignItems: "flex-start", overflowX: "auto", overflowY: "hidden", scrollSnapType: "x mandatory", overscrollBehaviorX: "contain", height: h || "auto", transition: "height .25s ease" }}>
+        {pages.map((x, i) => (
+          <section key={x.v} ref={el => (refs.current[i] = el)} data-news-page={x.v} aria-hidden={i !== pg}
+            style={{ flex: "0 0 100%", minWidth: 0, scrollSnapAlign: "start", scrollSnapStop: "always", boxSizing: "border-box", padding: "0 1px" }}>
+            {x.big ? (<>
+              <div data-whatsnew style={{ fontSize: 14, color: C.dim, lineHeight: 1.5, marginBottom: 12 }}>{T("newsIntro")}</div>
+              {pages.length > 1 && <button onClick={() => goTo(1)} data-news-swipe style={{ ...btnBase, background: "transparent", color: C.sky, fontSize: 13, padding: "0 0 12px", textAlign: "left" }}>{T("newsSwipe")}</button>}
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {x.items.map(([title, before, now], j) => (
+                  <div key={j} style={{ ...card, padding: "12px 14px" }}>
+                    <div style={{ fontSize: 15, fontWeight: 800, color: C.chalk }}>{title}</div>
+                    <div style={{ fontSize: 13, color: C.dim, lineHeight: 1.45, marginTop: 4 }}><b>{T("newsBefore")}</b> {before}</div>
+                    <div style={{ fontSize: 13, color: C.mint, lineHeight: 1.45, marginTop: 3 }}><b>{T("newsNow")}</b> {now}</div>
+                  </div>
+                ))}
+              </div>
+            </>) : (<>
+              <div style={{ fontSize: 14, color: C.dim, lineHeight: 1.5, marginBottom: 12 }}>{T("newsSmall")}</div>
+              <div style={{ ...card, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 8 }}>
+                {x.items.map((line, j) => (
+                  <div key={j} style={{ display: "flex", gap: 8, fontSize: 14, color: C.chalk, lineHeight: 1.45 }}><span style={{ color: C.mint, fontWeight: 900 }}>•</span><span>{line}</span></div>
+                ))}
+              </div>
+            </>)}
+          </section>
         ))}
       </div>
-      <button onClick={onClose} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 16 }}>{T("newsOk")}</button>
+      {/* dots + button stay pinned to the bottom of the sheet, also while page 1 is scrolled */}
+      <div data-news-foot style={{ position: "sticky", bottom: -26, margin: "0 -20px -26px", padding: "2px 20px 22px", background: `linear-gradient(${C.panel}00, ${C.panel} 14px)`, zIndex: 1 }}>
+        {pages.length > 1 && <PageDots n={pages.length} prog={prog} />}
+        <button onClick={onClose} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 12 }}>{T("newsOk")}</button>
+      </div>
     </Sheet>
+  );
+}
+// Page dots: the active dot follows the swipe. Halfway between two pages it stretches over both
+// (they "merge"), then it lets go of the old one and ends as one dot on the new page.
+function PageDots({ n, prog }) {
+  const D = 8, GAP = 10, step = D + GAP;
+  const i = Math.min(n - 1, Math.floor(prog)), t = prog - i;
+  const lead = Math.min(1, t * 2), tail = Math.max(0, t * 2 - 1); // front edge moves first, back edge catches up
+  return (
+    <div data-news-dots aria-hidden="true" style={{ position: "relative", width: n * D + (n - 1) * GAP, height: D, margin: "14px auto 0" }}>
+      {Array.from({ length: n }, (_, k) => <span key={k} style={{ position: "absolute", left: k * step, top: 0, width: D, height: D, borderRadius: D, background: C.line }} />)}
+      <span data-news-dot-active style={{ position: "absolute", top: 0, left: i * step + tail * step, width: D + (lead - tail) * step, height: D, borderRadius: D, background: C.chalk }} />
+    </div>
+  );
+}
+
+// After a small update, on the first start only: "The app has been updated to x, see what's new".
+// ✕ hides it; the button opens What's new on the page of this version. Not shown again later.
+function UpdateCard({ onOpen, onClose }) {
+  return (
+    <div data-update-card className="titleIn" style={{ ...card, position: "relative", padding: "14px 40px 14px 16px", marginBottom: 14, borderColor: `${C.signal}88`, display: "flex", gap: 12, alignItems: "center" }}>
+      <span style={{ fontSize: 26 }}>🎉</span>
+      <div style={{ minWidth: 0 }}>
+        <div style={{ fontSize: 15, fontWeight: 800, color: C.chalk }}>{T("updTitle", { v: APP_VERSION })}</div>
+        <button onClick={() => { sfxTap(); onOpen(); }} data-update-open style={{ ...btnBase, background: "transparent", color: C.signal, fontSize: 14, padding: "4px 0 0", textAlign: "left" }}>{T("updBtn")} ›</button>
+      </div>
+      <CloseX onClick={onClose} />
+    </div>
   );
 }
 
@@ -1454,7 +1555,7 @@ function BirthdayCard({ profile, ui, setUi }) {
   );
 }
 
-function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, profile, onGo }) {
+function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, profile, onGo, upd }) {
   const today = dateKey();
   // Make sure today's daily line and the "done" card texts are picked (and saved) before painting.
   useLayoutEffect(() => { const n = uiForToday(ui, history, today, profile); if (n !== ui) setUi(n); });
@@ -1497,6 +1598,7 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
     <div className="scr" style={{ padding: "16px 18px 110px", maxWidth: 460, margin: "0 auto" }}>
       {howEx && <HowTo id={howEx} history={history} onClose={() => setHowEx(null)} />}
 
+      {upd && <UpdateCard onOpen={upd.open} onClose={upd.close} />}
       {profile && <BirthdayCard profile={profile} ui={ui} setUi={setUi} />}
       {showDone && (
         <div style={{ position: "relative", background: "#173f3a", border: `1.5px solid ${C.mint}`, borderRadius: 18, padding: "14px 40px 14px 16px", display: "flex", alignItems: "center", gap: 14, marginBottom: 14 }}>
@@ -3256,10 +3358,16 @@ export default function App() {
   }, [history, session, loaded]);
   const [settingsLoaded, setSettingsLoaded] = useState(false);
   const [newsChecked, setNewsChecked] = useState(false);
+  const [updCard, setUpdCard] = useState(false); // "updated, see what's new" card, only on this first start after a small update
+  const [newsAt, setNewsAt] = useState(null);
   useEffect(() => {
     if (!loaded || !settingsLoaded || newsChecked) return;
     setNewsChecked(true);
-    if (bigVer(settings.seenVersion) === bigVer(APP_VERSION)) return;
+    if (bigVer(settings.seenVersion) === bigVer(APP_VERSION)) {
+      // small update: show the card now and remember the version right away, so it's gone next time
+      if (newsUnseen(settings.seenVersion)) { setUpdCard(true); setSettings({ ...settings, seenVersion: APP_VERSION }); }
+      return;
+    }
     if (history.length > 0) setNewsOpen(true); // someone who used an older version
     else setSettings({ ...settings, seenVersion: APP_VERSION }); // a new install has nothing to compare
   }, [loaded, settingsLoaded]);
@@ -3284,6 +3392,7 @@ export default function App() {
         @keyframes scrIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
         .scr{animation:scrIn .28s ease-out both}
         .sheetBox{box-sizing:border-box;max-height:86vh;max-height:calc(100dvh - 24px)}
+        .noBar{scrollbar-width:none}.noBar::-webkit-scrollbar{display:none}
         @keyframes bump{0%{transform:scale(.82)}55%{transform:scale(1.12)}100%{transform:scale(1)}}
         .bump{animation:bump .22s ease-out}
         @keyframes pop{0%{transform:scale(0);opacity:0}60%{transform:scale(1.2);opacity:1}100%{transform:scale(1);opacity:1}}
@@ -3326,7 +3435,7 @@ export default function App() {
             <>
               <TopBar screen={screen} history={history} menuOpen={menuOpen} onMenu={() => { sfxTap(); setMenuOpen(o => !o); }} />
               <div key={screen}>
-                {screen === "train" && <TrainTab history={history} onStart={start} onFreeze={applyFreeze} ui={ui} setUi={setUi} active={session} onResume={resume} profile={profile} onGo={go} />}
+                {screen === "train" && <TrainTab history={history} onStart={start} onFreeze={applyFreeze} ui={ui} setUi={setUi} active={session} onResume={resume} profile={profile} onGo={go} upd={updCard ? { open: () => { setUpdCard(false); setNewsAt(APP_VERSION); setNewsOpen(true); }, close: () => setUpdCard(false) } : null} />}
                 {screen === "history" && <HistoryTab history={history}
                   onDelete={idx => editHistory(h => h.filter((_, i) => i !== idx))}
                   onSaveEntry={(idx, entry) => editHistory(h => (idx === null ? [...h, entry] : h.map((e, i) => (i === idx ? entry : e))))} />}
@@ -3342,7 +3451,7 @@ export default function App() {
           )}
           <MenuDrawer open={menuOpen} screen={screen} history={history} profile={profile} session={session && session.phase !== "summary" ? session : null}
             onGo={go} onResume={resume} onClose={() => setMenuOpen(false)} onNews={() => { setMenuOpen(false); setNewsOpen(true); }} />
-          {newsOpen && <WhatsNew onClose={() => { setNewsOpen(false); if (settings.seenVersion !== APP_VERSION) setSettings({ ...settings, seenVersion: APP_VERSION }); }} />}
+          {newsOpen && <WhatsNew at={newsAt} onClose={() => { setNewsOpen(false); setNewsAt(null); if (settings.seenVersion !== APP_VERSION) setSettings({ ...settings, seenVersion: APP_VERSION }); }} />}
         </>
       )}
     </div>

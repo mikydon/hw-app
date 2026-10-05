@@ -6,6 +6,18 @@
 
 *Versioning: 1 = the app, second number = big update, third = small fixes (after 9 a fourth number is added: 1.4.9 → 1.4.9.1). Big updates compare every change with how it was before.*
 
+## 1.4.2 (2026-10-05)
+
+**Drobné úpravy.**
+
+- „Čo je nové“ má strany: prvá je veľký update 1.4.0, potiahnutím doľava drobné úpravy 1.4.1, 1.4.2…
+- hore verzie na ťuknutie a šípky, dole bodky, ktoré sa pri prechode spoja a zase rozdelia
+- bodky a tlačidlo ostávajú vždy viditeľné dole
+- po drobnej úprave sa pri prvom spustení na úvode ukáže karta „Appka bola aktualizovaná na 1.4.2 · Pozri, čo je nové“: ✕ ju zavrie, tlačidlo otvorí rovno stranu tejto verzie; pri ďalšom spustení už nie je
+
+---
+*Small update: "What's new" has swipeable pages (big update first, then each small update), version chips, arrows and merging page dots; after a small update, a one-time card on Home opens that version's page.*
+
 ## 1.4.1 (2026-10-05)
 <!-- commit: ad8751b945b71083cea9753b463ecf8b84a75a2b -->
 

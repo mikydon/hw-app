@@ -24,6 +24,12 @@ export default {
     newsNow: "Teraz:",
     newsOk: "Super, zaczynamy",
     newsLink: "Co nowego",
+    newsSmall: "Mała aktualizacja, nic nowego nie trzeba pobierać.",
+    newsSwipe: "Małe aktualizacje: przesuń w lewo albo stuknij tutaj ›",
+    newsPrev: "Poprzednia",
+    newsNext: "Następna",
+    updTitle: "Aplikacja została zaktualizowana do {v}",
+    updBtn: "Zobacz, co nowego",
     hintTitle: "Czy wiesz?",
     hintGo: "Pokaż",
     hint_themes: "Chcesz inny kolor? Ustawienia → Wygląd mają 8 motywów.",
@@ -686,6 +692,14 @@ export default {
     ["Plank", "30 – 75 s.", "także 15 s."],
     ["Bezpieczeństwo", "trudniejsze wersje bez ostrzeżeń.", "ostrzeżenia przy ryzykownych krokach (skurcz, biodra, krzesło o ścianę, stabilne książki)."],
     ["Wskazówki", "nie było.", "co drugi dzień jedno „Czy wiesz?” z przyciskiem, który cię tam zabierze."],
+  ],
+  news141: [
+    "Kalkulator kalorii pyta „Mężczyzna czy kobieta?”.",
+    "Wymagane pola mają gwiazdkę *, z daty urodzenia wymagany jest tylko rok.",
+  ],
+  news142: [
+    "„Co nowego” ma strony: pierwsza to duża aktualizacja, w lewo są małe.",
+    "Po małej aktualizacji karta na ekranie głównym otworzy jej stronę. Pokazuje się tylko za pierwszym razem.",
   ],
 
   quotes: [
