@@ -18,13 +18,14 @@ for p in parts:
     body = re.sub(r"<!--.*?-->\n?", "", body, flags=re.S).strip()
     path = f"/tmp/notes-{ver}.md"
     open(path, "w", encoding="utf-8").write(body + "\n")
-    out.append((ver, date, c.group(1) if c else "", path))
+    out.append((ver, date, c.group(1) if c else "-", path))  # "-" = no pinned commit (bash read drops empty tab fields)
 for ver, date, c, path in reversed(out):
     print("\t".join([ver, date, c, path]))
 PY
 while IFS=$'\t' read -r ver date commit notes; do
   tag="v$ver"
   if grep -qx "$tag" <<<"$existing"; then echo "$tag exists"; continue; fi
+  [ "$commit" = "-" ] && commit=""
   target="${commit:-$GITHUB_SHA}"
   target=$(git rev-parse "$target^{commit}")
   echo "creating $tag at $target"

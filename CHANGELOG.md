@@ -7,6 +7,7 @@
 *Versioning: 1 = the app, second number = big update, third = small fixes (after 9 a fourth number is added: 1.4.9 → 1.4.9.1). Big updates compare every change with how it was before.*
 
 ## 1.4.1 (2026-10-05)
+<!-- commit: ad8751b945b71083cea9753b463ecf8b84a75a2b -->
 
 **Drobné úpravy.**
 
