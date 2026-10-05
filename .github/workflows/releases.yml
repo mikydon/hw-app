@@ -1,0 +1,18 @@
+name: Releases from CHANGELOG
+on:
+  push:
+    branches: [main]
+    paths: [CHANGELOG.md]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: .github/scripts/releases.sh
+        env:
+          GH_TOKEN: ${{ github.token }}

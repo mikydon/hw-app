@@ -2,9 +2,12 @@
 
 Číslovanie: **1** = celá appka, druhé číslo = veľký update, tretie = drobné úpravy (po 9 pribudne štvrté: 1.4.9 → 1.4.9.1). Pri veľkom update je každá zmena porovnaná s tým, ako to bolo predtým.
 
+<!-- New version: add a "## x.y.z (date)" section on top. A GitHub Action creates the release on push to main (commit = the push, or the one in a commit comment). -->
+
 *Versioning: 1 = the app, second number = big update, third = small fixes (after 9 a fourth number is added: 1.4.9 → 1.4.9.1). Big updates compare every change with how it was before.*
 
 ## 1.4.0 (2026-10-05)
+<!-- commit: 97c45c159027c340178108bff8e0b1a63c4964e5 -->
 
 **Veľký update: nové menu, kalórie, tréning na pozadí, odznaky s úrovňami, narodeniny.** Porovnanie s 1.3.2:
 
@@ -26,6 +29,7 @@
 *Big update: one ☰ menu top right, the workout keeps running in a mini player, rep counter from 0 with a +1 goal, last round to technical failure, calorie calculator and food log, tiered badges, birthday surprises, 15 s plank, safety notes, tips, and a "What's new" screen.*
 
 ## 1.3.2 (2026-10-05)
+<!-- commit: a9ab12c6246a5e676aa4d8b0437503ddb8b2d6e6 -->
 
 **Drobné úpravy.**
 
@@ -40,6 +44,7 @@
 *Small update: all exercise drawings reviewed, 5 harder versions with a swap button in the tip, difficulty labels, cobra stretch.*
 
 ## 1.3.1 (2026-10-04)
+<!-- commit: 1f9e202d776423460bb70664e2d8fb5206759d90 -->
 
 **Drobné úpravy.**
 
@@ -53,6 +58,7 @@
 *Small update: figure fixes, confetti fix, language picker sheet, 4 more themes, vibration hint.*
 
 ## 1.3.0 (2026-10-04)
+<!-- commit: 8c0688096097d97b9d178a723d4bd3c8d54738d0 -->
 
 **Veľký update: denné texty, úprava histórie, výber cvikov.** Porovnanie s 1.2.0:
 
@@ -69,6 +75,7 @@
 *Big update: a new daily line every day, closable cards, edit/delete/add workouts in History, full reset, Settings → Exercises with automatic replacements, sheets always on screen.*
 
 ## 1.2.0 (2026-10-04)
+<!-- commit: fcfe3aa0beb43c4d2c32f0bb3ed882d557960f99 -->
 
 **Veľký update: jazyky a nový názov.** Porovnanie s 1.1.0:
 
@@ -83,6 +90,7 @@
 *Big update: new name HW App with a new logo, 11 languages picked from the phone's language, local dates.*
 
 ## 1.1.0 (2026-10-04)
+<!-- commit: 78d080ac13afa14201df8c8dec3596551f819d5f -->
 
 **Veľký update: Nastavenia.** Porovnanie s 1.0.0:
 
@@ -100,6 +108,7 @@
 *Big update: Settings tab with 4 themes, separate sound toggles, volume, vibration, keep-awake, backup/restore, profile from the avatar, tips during rest, "Copy for AI" opt-in.*
 
 ## 1.0.0 (2026-10-03)
+<!-- commit: 2ecfe41bf42369cf988382d6b24731ceb442d742 -->
 
 **Prvá verzia (vtedy „Domáci tréning“).** Veľká verzia: celá appka.
 

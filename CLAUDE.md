@@ -26,6 +26,7 @@ Talk to Michael in casual Slovak. Before you deliver anything, test it (build pl
 - Bump `CACHE` in `sw.js` and `APP_VERSION` in `App.jsx` on releases.
 - Version numbers (Michael, Oct 5, 2026): `1` = the full app, second number = big update, third = small fixes/tweaks that don't need a new download (beta-like). After `x.y.9` add a fourth number: `1.4.9` → `1.4.9.1` → `1.4.9.2` … (not `1.4.10`).
 - Every big update (second number changes) gets a "What's new" list that compares each change with how it was before: in the app (`WhatsNew` sheet, shown once after updating, also from the menu; texts `news<major><minor>` in every locale) and in the GitHub release notes.
+- Releases: `CHANGELOG.md` has one `## x.y.z (date)` section per version (Slovak, plus one English line; big updates as a Predtým/Teraz table). On a push to `main` that changes it, `.github/workflows/releases.yml` runs `.github/scripts/releases.sh`, which creates a tag + GitHub release for each section that has none yet (commit from `<!-- commit: sha -->`, else the pushed commit). Claude sessions cannot create releases or push tags (HTTP 403), so this workflow does it.
 
 ## Storage
 - `store` adapter: uses `window.storage` (Claude artifact) when present, otherwise `localStorage`.
