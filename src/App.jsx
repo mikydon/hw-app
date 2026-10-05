@@ -29,7 +29,7 @@ const THEMES = {
   slate:  { ink: "#15181d", panel: "#1f242b", panelHi: "#2a313a", line: "#3a434f", chalk: "#f1f4f8", dim: "#9aa6b4", edge: "#0e1115" },
   coffee: { ink: "#1c140f", panel: "#2a1f17", panelHi: "#382a20", line: "#4d3a2c", chalk: "#fbf3ec", dim: "#b8a291", edge: "#130d09" },
 };
-const APP_VERSION = "1.4.0";
+const APP_VERSION = "1.4.1";
 // Big Shoulders has no Cyrillic, so Oswald (also condensed) covers Ukrainian. The browser only
 // downloads the Oswald unicode ranges a page actually uses.
 const DISPLAY = "'Big Shoulders Display', 'Oswald', 'Arial Narrow', Impact, sans-serif";
@@ -1392,7 +1392,7 @@ function WhatsNew({ onClose }) {
   const key = "news" + bigVer(APP_VERSION).replace(".", "");
   const items = L[key] || [];
   return (
-    <Sheet title={T("newsTitle", { v: APP_VERSION })} onClose={onClose}>
+    <Sheet title={T("newsTitle", { v: bigVer(APP_VERSION) + ".0" })} onClose={onClose}>
       <div data-whatsnew style={{ fontSize: 14, color: C.dim, lineHeight: 1.5, marginBottom: 12 }}>{T("newsIntro")}</div>
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         {items.map(([title, before, now], i) => (
@@ -1674,6 +1674,8 @@ function KcalSetup({ kcal, profile, onSave, onCancel }) {
   const field = { fontFamily: BODY, fontSize: 16, fontWeight: 700, padding: "10px 12px", borderRadius: 12, border: `1.5px solid ${C.line}`, background: C.ink, color: C.chalk, outline: "none", boxSizing: "border-box", width: "100%" };
   const label = { fontSize: 13, color: C.chalk, fontWeight: 800, marginBottom: 6 };
   const hint = { fontSize: 12, color: C.dim, lineHeight: 1.45, marginTop: 5 };
+  const star = <span aria-hidden="true" data-req style={{ color: "#ff8a80", marginLeft: 3 }}>*</span>;
+  const sub = { fontSize: 11, color: C.dim, fontWeight: 700, marginBottom: 4 };
   const pill = on => ({ ...btnBase, flex: 1, padding: "11px 0", fontSize: 15, background: on ? C.chalk : "transparent", color: on ? C.ink : C.dim, border: `1.5px solid ${on ? C.chalk : C.line}` });
   const num = (v, max) => v.replace(/[^0-9]/g, "").slice(0, max);
   const months = Array.from({ length: 12 }, (_, i) => new Date(2000, i, 1).toLocaleString(LANG, { month: "long" }));
@@ -1705,8 +1707,9 @@ function KcalSetup({ kcal, profile, onSave, onCancel }) {
         </Sheet>
       )}
       <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+        <div data-req-note style={{ fontSize: 12, color: C.dim, lineHeight: 1.45, marginBottom: -6 }}><span style={{ color: "#ff8a80", fontWeight: 800 }}>*</span>{T("kcReq").replace(/^\*/, "")}</div>
         <div>
-          <div style={label}>{T("kcSex")}</div>
+          <div style={label}>{T("kcSex")}{star}</div>
           <div style={{ display: "flex", gap: 8 }}>
             <button onClick={() => { sfxTap(); setSex("m"); setErr(""); }} aria-pressed={sex === "m"} style={pill(sex === "m")}>{T("kcMale")}</button>
             <button onClick={() => { sfxTap(); setSex("f"); setErr(""); }} aria-pressed={sex === "f"} style={pill(sex === "f")}>{T("kcFemale")}</button>
@@ -1715,30 +1718,39 @@ function KcalSetup({ kcal, profile, onSave, onCancel }) {
         <div>
           <div style={label}>{T("kcBirth")}</div>
           <div style={{ display: "flex", gap: 8 }}>
-            <input value={year} onChange={e => { setYear(num(e.target.value, 4)); setErr(""); }} inputMode="numeric" placeholder={T("kcYear")} aria-label={T("kcYear")} style={{ ...field, flex: 1.1 }} />
-            <select value={month} onChange={e => { setMonth(Number(e.target.value)); setErr(""); }} aria-label={T("kcMonth")} style={{ ...field, flex: 1.5, colorScheme: "dark" }}>
-              <option value={0}>{T("kcMonth")}</option>
-              {months.map((m, i) => <option key={i} value={i + 1}>{m}</option>)}
-            </select>
-            <select value={day} onChange={e => { setDay(Number(e.target.value)); setErr(""); }} aria-label={T("kcDay")} style={{ ...field, flex: 1, colorScheme: "dark" }}>
-              <option value={0}>{T("kcDay")}</option>
-              {Array.from({ length: daysIn }, (_, i) => <option key={i} value={i + 1}>{i + 1}.</option>)}
-            </select>
+            <div style={{ flex: 1.1, minWidth: 0 }}>
+              <div style={sub}>{T("kcYear")}{star}</div>
+              <input value={year} onChange={e => { setYear(num(e.target.value, 4)); setErr(""); }} inputMode="numeric" placeholder="2000" aria-label={T("kcYear")} aria-required="true" style={field} />
+            </div>
+            <div style={{ flex: 1.5, minWidth: 0 }}>
+              <div style={sub}>{T("kcMonth")}</div>
+              <select value={month} onChange={e => { setMonth(Number(e.target.value)); setErr(""); }} aria-label={T("kcMonth")} style={{ ...field, colorScheme: "dark" }}>
+                <option value={0}>–</option>
+                {months.map((m, i) => <option key={i} value={i + 1}>{m}</option>)}
+              </select>
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={sub}>{T("kcDay")}</div>
+              <select value={day} onChange={e => { setDay(Number(e.target.value)); setErr(""); }} aria-label={T("kcDay")} style={{ ...field, colorScheme: "dark" }}>
+                <option value={0}>–</option>
+                {Array.from({ length: daysIn }, (_, i) => <option key={i} value={i + 1}>{i + 1}.</option>)}
+              </select>
+            </div>
           </div>
           <div style={hint}>{T("kcBirthHint")}</div>
         </div>
         <div style={{ display: "flex", gap: 10 }}>
           <div style={{ flex: 1 }}>
-            <div style={label}>{T("kcHeight")}</div>
-            <input value={height} onChange={e => { setHeight(num(e.target.value, 3)); setErr(""); }} inputMode="numeric" placeholder="180" aria-label={T("kcHeight")} style={field} />
+            <div style={label}>{T("kcHeight")}{star}</div>
+            <input value={height} onChange={e => { setHeight(num(e.target.value, 3)); setErr(""); }} inputMode="numeric" placeholder="180" aria-label={T("kcHeight")} aria-required="true" style={field} />
           </div>
           <div style={{ flex: 1 }}>
-            <div style={label}>{T("kcWeight")}</div>
-            <input value={weight} onChange={e => { setWeight(num(e.target.value, 3)); setErr(""); }} inputMode="numeric" placeholder="75" aria-label={T("kcWeight")} style={field} />
+            <div style={label}>{T("kcWeight")}{star}</div>
+            <input value={weight} onChange={e => { setWeight(num(e.target.value, 3)); setErr(""); }} inputMode="numeric" placeholder="75" aria-label={T("kcWeight")} aria-required="true" style={field} />
           </div>
         </div>
         <div>
-          <div style={label}>{T("kcActivity")}</div>
+          <div style={label}>{T("kcActivity")}{star}</div>
           <div style={{ ...hint, marginTop: 0, marginBottom: 8, color: C.sky }}>{T("kcActivityHint")}</div>
           <div role="radiogroup" aria-label={T("kcActivity")} style={{ display: "flex", flexDirection: "column", gap: 6 }}>
             {ACTIVITY.map(([id]) => (

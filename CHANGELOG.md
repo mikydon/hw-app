@@ -6,6 +6,17 @@
 
 *Versioning: 1 = the app, second number = big update, third = small fixes (after 9 a fourth number is added: 1.4.9 → 1.4.9.1). Big updates compare every change with how it was before.*
 
+## 1.4.1 (2026-10-05)
+
+**Drobné úpravy.**
+
+- kalkulačka kalórií: namiesto „Pohlavie“ otázka „Muž alebo žena?“ (vo všetkých jazykoch, napr. po anglicky „Man or woman?“ namiesto „Sex“)
+- povinné údaje majú červenú hviezdičku * a vysvetlivku „* = povinné, bez nich nevieme vypočítať kalórie“
+- pri narodení je jasné, že povinný je len rok; deň a mesiac nie, ale bez nich nebude pozdrav, konfety ani narodeninový odznak
+
+---
+*Small update: calorie form asks "Man or woman?", required fields marked with *, only the birth year is required.*
+
 ## 1.4.0 (2026-10-05)
 <!-- commit: 97c45c159027c340178108bff8e0b1a63c4964e5 -->
 

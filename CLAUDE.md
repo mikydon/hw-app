@@ -73,6 +73,11 @@ Talk to Michael in casual Slovak. Before you deliver anything, test it (build pl
    - Birthday: greeting ("VŠETKO NAJLEPŠIE"), confetti around the profile, some texts change ("dnes je tvoj deň"), a free freeze day, and a tiered achievement for opening the app on a birthday (1st … 10th birthday).
    - Achievements: all of them get tiers like the exercise ranks (Wood → Iron → … → Diamond), e.g. workouts 1/5/10/25/50/100/200; keep what users already earned.
    - Safety notes in tips/level-up texts for every exercise where a harder step has a real risk (e.g. single-leg towel curl: shorter range first; on cramp or dropping hips go back to two legs).
+   v1.4.1 (Oct 5, 2026): calorie form asks "Man or woman?" instead of "Sex/Pohlavie" (Michael: more family friendly), red `*` on required fields (man/woman, birth year, height, weight, activity) with the note `kcReq`; day and month have no star, `kcBirthHint` says what is lost without them.
+   To-do from Michael (Oct 5, 2026), NOT started; order: APK first, then these:
+   - More calorie messages, also during/after a workout (e.g. "Daj si dačo dobré po cvičení, ešte ti chýba X kalórií"), on Home and in the menu.
+   - A separate calorie streak with its own badge shown somewhere visible, plus motivational lines (Home, menu, during the workout). Ask Michael what counts as a streak day (logged food? within the target?).
+   - Link with Samsung Health (last, needs the APK): steps, calories, water. Example from Michael: 27,000 steps is far above "only the app" activity, so extra steps must add calories. Facts checked Oct 5, 2026: Samsung Health syncs steps, exercise sessions and exercise calories, weight, height and nutrition to Health Connect; water is not on Samsung's list. Health Connect is an on-device Android API, so a PWA can't read it; it needs the native app. Design: subtract the steps already assumed by the chosen activity level so nothing is counted twice.
 2. After that (APK, version number to be decided): Real Android APK via Capacitor, with a GitHub Actions build to Releases.
    - Use the same signing key every time so updates keep user data.
    - Store the key as a repo secret.
