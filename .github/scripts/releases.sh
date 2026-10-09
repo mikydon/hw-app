@@ -14,6 +14,18 @@
 #    only when it was signed with the real key ($SIGNED=true); it becomes "Latest".
 # GitHub adds "Source code" zip/tar.gz to every release by itself (can't be turned off).
 set -euo pipefail
+trap 'echo "::error::releases.sh stopped at line $LINENO: $BASH_COMMAND"' ERR
+# Runs a command; on failure shows its output as an annotation (readable without the log).
+run() {
+  local out
+  if ! out=$("$@" 2>&1); then
+    out=${out//$'\n'/ }
+    echo "::error::$1 $2 $3 failed: ${out:0:600}"
+    return 1
+  fi
+  [ -n "$out" ] && echo "$out"
+  return 0
+}
 REPO="${GITHUB_REPOSITORY:-mikydon/hw-app}"
 DIST="${DIST:-dist}"
 APP_VERSION="${APP_VERSION:-}"
@@ -50,7 +62,7 @@ PY
 has_release() { gh release view "$1" --repo "$REPO" --json tagName >/dev/null 2>&1; }
 tag_commit() {
   local obj type
-  obj=$(gh api "repos/$REPO/git/ref/tags/$1" --jq '.object.sha + " " + .object.type')
+  obj=$(run gh api "repos/$REPO/git/ref/tags/$1" --jq '.object.sha + " " + .object.type')
   type=${obj#* }; obj=${obj% *}
   if [ "$type" = "tag" ]; then gh api "repos/$REPO/git/tags/$obj" --jq .object.sha; else echo "$obj"; fi
 }
@@ -60,7 +72,7 @@ sync_text() {  # tag title notes-file
   cur_title=$(gh release view "$1" --repo "$REPO" --json name --jq .name)
   cur_body=$(gh release view "$1" --repo "$REPO" --json body --jq .body | norm)
   if [ "$cur_body" != "$(norm < "$3")" ] || [ "$cur_title" != "$2" ]; then
-    echo "updating $1"; gh release edit "$1" --repo "$REPO" --title "$2" --notes-file "$3"
+    echo "updating $1"; run gh release edit "$1" --repo "$REPO" --title "$2" --notes-file "$3"
   else
     echo "$1 up to date"
   fi
@@ -72,8 +84,8 @@ while IFS=$'\t' read -r kind ver tag title commit notes; do
   if ! has_release "$tag" && has_release "v$ver"; then
     sha=$(tag_commit "v$ver")
     echo "moving v$ver → $tag ($sha)"
-    gh api -X POST "repos/$REPO/git/refs" -f ref="refs/tags/$tag" -f sha="$sha" >/dev/null
-    gh release edit "v$ver" --repo "$REPO" --tag "$tag" --title "$title" --notes-file "$notes" --latest=false
+    run gh api -X POST "repos/$REPO/git/refs" -f ref="refs/tags/$tag" -f sha="$sha" >/dev/null
+    run gh release edit "v$ver" --repo "$REPO" --tag "$tag" --title "$title" --notes-file "$notes" --latest=false
     gh api -X DELETE "repos/$REPO/git/refs/tags/v$ver" || true
   fi
 done < /tmp/sections.tsv
@@ -85,7 +97,7 @@ while IFS=$'\t' read -r kind ver tag title commit notes; do
     if has_release "$tag"; then sync_text "$tag" "$title" "$notes"; continue; fi
     target=$(git rev-parse "${commit:-$GITHUB_SHA}^{commit}")
     echo "creating $tag at $target"
-    gh release create "$tag" --repo "$REPO" --target "$target" --title "$title" --notes-file "$notes" --latest=false
+    run gh release create "$tag" --repo "$REPO" --target "$target" --title "$title" --notes-file "$notes" --latest=false
     continue
   fi
   if [ "$ver" != "$APP_VERSION" ]; then
@@ -100,11 +112,11 @@ while IFS=$'\t' read -r kind ver tag title commit notes; do
   for f in "${files[@]}"; do [ -f "$f" ] || { echo "::error::missing $f"; exit 1; }; done
   if has_release "$tag"; then
     sync_text "$tag" "$title" "$notes"
-    gh release upload "$tag" --repo "$REPO" --clobber "${files[@]}"
-    gh release edit "$tag" --repo "$REPO" --latest
+    run gh release upload "$tag" --repo "$REPO" --clobber "${files[@]}"
+    run gh release edit "$tag" --repo "$REPO" --latest
   else
     target=$(git rev-parse "${commit:-$GITHUB_SHA}^{commit}")
     echo "creating $tag at $target with the APK"
-    gh release create "$tag" --repo "$REPO" --target "$target" --title "$title" --notes-file "$notes" --latest "${files[@]}"
+    run gh release create "$tag" --repo "$REPO" --target "$target" --title "$title" --notes-file "$notes" --latest "${files[@]}"
   fi
 done < /tmp/sections.tsv
