@@ -116,6 +116,9 @@ Talk to Michael in casual Slovak. Before you deliver anything, test it (build pl
    - Check that every video matches the exercise's description and drawing. Example: Door frame row: description and drawing say standing, the video shows a woman seated with knees at 90°.
    UI
    - The "add exercise" popup (adding to a workout in History) is ugly, ignores the theme and covers the whole screen; make it a themed sheet that shows the app behind it.
+   - Profile: the name isn't centred under the photo like the photo is (looks unprofessional); centre the name and move the ✏️ edit pencil elsewhere (Oct 10).
+   - Everywhere, not only Home ("Workout"): split content into smaller boxes with a slightly lighter colour, like the streak/level boxes in Profile, so it reads better. Michael wants to try a few variants and compare (Oct 10).
+   - Default workout length (Oct 10): Michael understood 19 min (3 rounds) as the default and recommended, 13 min (2 rounds) only when short on time. Today the app preselects 2 rounds and the welcome text says "~13 minút", while `roundsHint` already says 3 rounds grow faster. Make 3 rounds the preselected, recommended option, 2 rounds the "no time" one, and fix the welcome text (evidence: more weekly sets → more hypertrophy, Schoenfeld 2017; Pelland 2025).
 3. Firebase (free Spark plan): accounts, friend list and a global leaderboard (level, streak, trainings).
    - Profile photos go into Firestore, because Storage is no longer free since Feb 2026.
    - Add a privacy policy and an account-deletion option.
