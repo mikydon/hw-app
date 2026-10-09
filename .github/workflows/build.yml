@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-24.04
     outputs:
       version: ${{ steps.ver.outputs.version }}
-      signed: ${{ steps.sign.outputs.signed }}
+      signed: ${{ steps.sign.outputs.signed == 'true' && steps.real.outcome == 'success' }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -41,27 +41,51 @@ jobs:
       - name: Test APK (HW App Test)
         working-directory: android
         run: ./gradlew --no-daemon assembleDebug -PappVersionName=${{ steps.ver.outputs.version }} -PappVersionCode=${{ steps.ver.outputs.code }}
+      # Checks the key before using it and reports problems as annotations (never the secrets themselves).
       - name: Signing key from secrets
         id: sign
         env:
           KS: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          PW: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
         run: |
-          if [ -n "$KS" ]; then
-            echo "$KS" | base64 -d > "$RUNNER_TEMP/release.jks"
-            echo "signed=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "::warning::No ANDROID_KEYSTORE_BASE64 secret yet: only the test APK is built."
-            echo "signed=false" >> "$GITHUB_OUTPUT"
+          echo "signed=false" >> "$GITHUB_OUTPUT"
+          if [ -z "$KS" ]; then echo "::warning::No ANDROID_KEYSTORE_BASE64 secret yet: only the test APK is built."; exit 0; fi
+          [ -n "$PW" ] || { echo "::error::Secret ANDROID_KEYSTORE_PASSWORD is missing or empty."; exit 0; }
+          [ -n "$ALIAS" ] || { echo "::error::Secret ANDROID_KEY_ALIAS is missing or empty."; exit 0; }
+          printf '%s' "$KS" | tr -d ' \r\n\t' | base64 -d > "$RUNNER_TEMP/release.jks" 2>/dev/null \
+            || { echo "::error::ANDROID_KEYSTORE_BASE64 is not valid base64 (copy the whole text from the PowerShell command again)."; exit 0; }
+          size=$(stat -c %s "$RUNNER_TEMP/release.jks")
+          echo "keystore file: $size bytes"
+          if ! out=$(keytool -list -keystore "$RUNNER_TEMP/release.jks" -storepass "$PW" 2>&1); then
+            msg=$(echo "$out" | grep -i "error\|exception" | head -1); msg=${msg//"$PW"/***}
+            echo "::error::The keystore can't be opened with ANDROID_KEYSTORE_PASSWORD ($size bytes): ${msg:-unknown error}. Usually a wrong password, or the base64 text is incomplete."
+            exit 0
           fi
+          aliases=$(echo "$out" | grep -i "PrivateKeyEntry" | cut -d, -f1 | tr '\n' ' ')
+          if ! echo "$out" | grep -iq "^$ALIAS,"; then
+            echo "::error::Alias from ANDROID_KEY_ALIAS not found in the keystore. The keystore has: ${aliases:-no keys}"
+            exit 0
+          fi
+          echo "keystore OK, alias found"
+          echo "signed=true" >> "$GITHUB_OUTPUT"
       - name: Real APK (signed)
+        id: real
         if: steps.sign.outputs.signed == 'true'
+        continue-on-error: true
         working-directory: android
         env:
           ANDROID_KEYSTORE_FILE: ${{ runner.temp }}/release.jks
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-        run: ./gradlew --no-daemon assembleRelease -PappVersionName=${{ steps.ver.outputs.version }} -PappVersionCode=${{ steps.ver.outputs.code }}
+        run: |
+          set -o pipefail
+          if ! ./gradlew --no-daemon assembleRelease -PappVersionName=${{ steps.ver.outputs.version }} -PappVersionCode=${{ steps.ver.outputs.code }} 2>&1 | tee "$RUNNER_TEMP/release.log"; then
+            why=$(grep -A6 "What went wrong" "$RUNNER_TEMP/release.log" | head -8 | tr '\n' ' '); why=${why//"$ANDROID_KEYSTORE_PASSWORD"/***}
+            echo "::error::Real APK build failed: ${why:-see the log}"
+            exit 1
+          fi
       - name: Collect files
         env:
           V: ${{ steps.ver.outputs.version }}
@@ -71,7 +95,7 @@ jobs:
           mkdir dist
           cp android/app/build/outputs/apk/debug/app-debug.apk "dist/HW-App-Test-$V.apk"
           (cd www && zip -qrX "../dist/hw-app-web-$V.zip" .)
-          if [ "$SIGNED" = "true" ]; then
+          if [ "$SIGNED" = "true" ] && [ -f android/app/build/outputs/apk/release/app-release.apk ]; then
             cp android/app/build/outputs/apk/release/app-release.apk "dist/HW-App-$V.apk"
             "$ANDROID_HOME"/build-tools/*/apksigner verify --print-certs "dist/HW-App-$V.apk" | head -3 || true
           fi
