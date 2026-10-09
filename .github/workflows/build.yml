@@ -59,7 +59,12 @@ jobs:
           echo "keystore file: $size bytes"
           if ! out=$(keytool -list -keystore "$RUNNER_TEMP/release.jks" -storepass "$PW" 2>&1); then
             msg=$(echo "$out" | grep -i "error\|exception" | head -1); msg=${msg//"$PW"/***}
-            echo "::error::The keystore can't be opened with ANDROID_KEYSTORE_PASSWORD ($size bytes): ${msg:-unknown error}. Usually a wrong password, or the base64 text is incomplete."
+            trimmed=$(printf '%s' "$PW" | tr -d '\r\n' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+            if [ "$trimmed" != "$PW" ] && keytool -list -keystore "$RUNNER_TEMP/release.jks" -storepass "$trimmed" >/dev/null 2>&1; then
+              echo "::error::ANDROID_KEYSTORE_PASSWORD has an extra space or new line at the start/end. Edit the secret and paste the password without it."
+            else
+              echo "::error::The keystore can't be opened with ANDROID_KEYSTORE_PASSWORD ($size bytes): ${msg:-unknown error}. The password in the secret is not the one used when the keystore was created."
+            fi
             exit 0
           fi
           aliases=$(echo "$out" | grep -i "PrivateKeyEntry" | cut -d, -f1 | tr '\n' ' ')
