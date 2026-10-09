@@ -2,16 +2,22 @@
 
 # HW App 💪
 
-**HW App** (home workout app) is a free app for training at home with no equipment, in ~13 minutes. It runs on your phone like a normal app.
+**HW App** (home workout app) is a free app for training at home with no equipment. It's an Android app; the website version works in any browser too.
 
-**Open it:** https://mikydon.github.io/hw-app/
+## Install it on your phone (Android)
+1. On your phone, open the newest release: https://github.com/mikydon/hw-app/releases/latest
+2. Download **HW-App-x.y.z.apk** (only this file) and open it.
+3. If Android asks, allow installing apps from your browser.
+4. Google Play Protect may say *App blocked to protect your device*, because the app isn't from the Play Store. Tap **Install anyway** (on some phones it's under *More details*):
 
-## Install it on your phone
-1. Open the link above in Chrome (Android) or Safari (iPhone).
-2. Add it to your home screen:
-   - **Android (Chrome):** menu ⋮ → *Install app* or *Add to Home screen*
-   - **iPhone (Safari):** Share button → *Add to Home Screen*
-3. Start it from the icon like any other app. It works offline too.
+   <img src="docs/play-protect-install-anyway.png" alt="Play Protect: tap Install anyway" width="300">
+
+5. Updates: small ones arrive inside the app by themselves; for a big one the app shows a card with the new APK. Install it over the old one, your data stays.
+
+**Coming from the website?** In the browser: Settings → *Save backup*. In the app: Settings → *Restore from backup*.
+
+## Website (any phone, also iPhone)
+Open https://mikydon.github.io/hw-app/ and add it to your home screen (Android Chrome: menu ⋮ → *Install app*; iPhone Safari: Share → *Add to Home Screen*). It works offline too. Data in the website and in the Android app are separate.
 
 ## What it does
 - 3 workout days (A, B, C), trained every other day: push, pull, legs and core in a circuit of 2 or 3 rounds

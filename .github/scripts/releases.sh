@@ -37,10 +37,14 @@ import re
 BETA_NOTE = ("> **Browser beta:** the web version from before the Android app. Nothing to download; "
              "the website https://mikydon.github.io/hw-app/ still works. "
              "The \"Source code\" files below are added by GitHub to every release and are only for developers.\n\n")
-APP_NOTE = ("> **Android app.** On your phone, download **HW-App-{v}.apk** below and open it to install "
-            "(if Android asks, allow installing apps from your browser). To update, install the new APK over the old one; "
-            "your data stays. Small updates arrive inside the app by themselves. "
-            "`hw-app-web-{v}.zip` and `update.json` are for those automatic updates; the \"Source code\" files are only for developers.\n\n")
+APP_NOTE = ("> **Android app.** On your phone, download **HW-App-{v}.apk** below and open it to install. "
+            "Only the APK is needed: `hw-app-web-{v}.zip` and `update.json` are for the app's automatic updates, "
+            "the \"Source code\" files only for developers.\n>\n"
+            "> - If Android asks, allow installing apps from your browser.\n"
+            "> - Google Play Protect may say *App blocked to protect your device*, because the app isn't from the Play Store. "
+            "Tap **Install anyway** (on some phones it's under *More details*).\n"
+            "> - To update, install the new APK over the old one; your data stays. Small updates arrive inside the app by themselves.\n\n"
+            "<img src=\"https://raw.githubusercontent.com/mikydon/hw-app/main/docs/play-protect-install-anyway.png\" alt=\"Play Protect: tap Install anyway\" width=\"300\">\n\n")
 s = open("CHANGELOG.md", encoding="utf-8").read()
 out = []
 for p in re.split(r"^## ", s, flags=re.M)[1:]:
