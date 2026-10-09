@@ -1,12 +1,28 @@
 # Changelog
 
-HW App is a web app: open https://mikydon.github.io/hw-app/ (or install it to your home screen). It updates by itself, so there is nothing to download from the releases.
+HW App is an Android app: download the APK from the newest release (on your phone, open it to install). Small updates arrive inside the app by themselves; a big update (second number) is a new APK. The website https://mikydon.github.io/hw-app/ keeps working too.
 
-Version numbers: **1** = the app, the second number = a big update, the third = small fixes and tweaks (after 9 a fourth number is added: 1.4.9 → 1.4.9.1). Every big update compares each change with how it was before.
+Version numbers: **1** = the app, the second number = a big update (a new APK), the third = small fixes and tweaks that arrive by themselves (after 9 a fourth number is added: 1.0.9 → 1.0.9.1). Every big update compares each change with how it was before.
 
-<!-- New version: add a "## x.y.z (date)" section on top. A GitHub Action creates the release on push to main (commit = the push, or the one in a commit comment) and keeps the notes of existing releases in sync with this file. -->
+Everything before the Android app is **Browser beta** (the website), numbered 1.0.0 to 1.4.2. The Android app starts again at 1.0.0.
 
-## 1.4.2 (2026-10-05)
+<!-- New version: add a "## x.y.z (date)" section on top (web-only history uses "## Browser beta x.y.z (date)"). On a push to main, .github/workflows/build.yml builds everything and .github/scripts/releases.sh creates/updates the releases (commit = the push, or the one in a commit comment). -->
+
+## 1.0.0 (2026-10-10)
+
+**The first Android app.** HW App moved from the browser into a real app. Compared with Browser beta 1.4.2:
+
+| | Before (Browser beta 1.4.2) | Now (1.0.0) |
+|---|---|---|
+| App | a website in the browser | a real Android app with an icon on the home screen |
+| Your data | saved in the browser | saved in the app; move it with a backup (browser: Settings → Save backup, app: Settings → Restore from backup) |
+| Updates | a new version on the next visit | small updates download by themselves and switch on at the next start; for a big one the app shows where to get the new APK |
+| Backup | downloaded as a file | opens the share menu: save it to Files or Google Drive, or send it to yourself |
+| Offline | fonts came from Google, so without internet the app looked different | the fonts are inside the app, everything works offline |
+| Back button | – | closes a sheet or the menu; in a workout it takes you Home and the workout keeps running |
+| Version numbers | Browser beta 1.0.0 to 1.4.2 | counting starts again at 1.0.0 |
+
+## Browser beta 1.4.2 (2026-10-05)
 <!-- commit: 34cc653b38c243582fdf363070be18f29e0a353f -->
 
 **Small update.**
@@ -16,7 +32,7 @@ Version numbers: **1** = the app, the second number = a big update, the third = 
 - The dots and the button always stay visible at the bottom.
 - After a small update, the first start shows a card on the home screen: "The app has been updated to 1.4.2 · See what's new". ✕ closes it, the button opens that version's page. It's gone on the next start.
 
-## 1.4.1 (2026-10-05)
+## Browser beta 1.4.1 (2026-10-05)
 <!-- commit: ad8751b945b71083cea9753b463ecf8b84a75a2b -->
 
 **Small update.**
@@ -25,7 +41,7 @@ Version numbers: **1** = the app, the second number = a big update, the third = 
 - Required fields have a red star * and the note "* = required. Without these we can't work out your calories."
 - For the birth date only the year is required. Day and month are optional, but without them there's no birthday greeting, confetti or birthday badge.
 
-## 1.4.0 (2026-10-05)
+## Browser beta 1.4.0 (2026-10-05)
 <!-- commit: 97c45c159027c340178108bff8e0b1a63c4964e5 -->
 
 **Big update: new menu, calories, workout in the background, badges with levels, birthdays.** Compared with 1.3.2:
@@ -44,7 +60,7 @@ Version numbers: **1** = the app, the second number = a big update, the third = 
 | Tips | none | a "Did you know?" every other day with a button to the feature |
 | What's new | none | after a big update this comparison shows once, then it's in the menu |
 
-## 1.3.2 (2026-10-05)
+## Browser beta 1.3.2 (2026-10-05)
 <!-- commit: a9ab12c6246a5e676aa4d8b0437503ddb8b2d6e6 -->
 
 **Small update.**
@@ -56,7 +72,7 @@ Version numbers: **1** = the app, the second number = a big update, the third = 
 - Cobra stretch in the cool-down.
 - "~" instead of "about".
 
-## 1.3.1 (2026-10-04)
+## Browser beta 1.3.1 (2026-10-04)
 <!-- commit: 1f9e202d776423460bb70664e2d8fb5206759d90 -->
 
 **Small update.**
@@ -67,7 +83,7 @@ Version numbers: **1** = the app, the second number = a big update, the third = 
 - 4 new themes: Ocean, Wine, Slate, Coffee.
 - A hint on why the phone doesn't vibrate (silent mode / Do Not Disturb).
 
-## 1.3.0 (2026-10-04)
+## Browser beta 1.3.0 (2026-10-04)
 <!-- commit: 8c0688096097d97b9d178a723d4bd3c8d54738d0 -->
 
 **Big update: daily lines, editable history, exercise picker.** Compared with 1.2.0:
@@ -81,7 +97,7 @@ Version numbers: **1** = the app, the second number = a big update, the third = 
 | Exercises | all always on | Settings → Exercises: turn off what you can't do, the app picks a replacement |
 | Sheets (How to, Swap) | sometimes off the screen | always fully on the screen |
 
-## 1.2.0 (2026-10-04)
+## Browser beta 1.2.0 (2026-10-04)
 <!-- commit: fcfe3aa0beb43c4d2c32f0bb3ed882d557960f99 -->
 
 **Big update: languages and a new name.** Compared with 1.1.0:
@@ -93,7 +109,7 @@ Version numbers: **1** = the app, the second number = a big update, the third = 
 | Dates and numbers | Slovak format | in the chosen language's format |
 | Old workouts | in Slovak | shown in the new language |
 
-## 1.1.0 (2026-10-04)
+## Browser beta 1.1.0 (2026-10-04)
 <!-- commit: 78d080ac13afa14201df8c8dec3596551f819d5f -->
 
 **Big update: Settings.** Compared with 1.0.0:
@@ -108,7 +124,7 @@ Version numbers: **1** = the app, the second number = a big update, the third = 
 | Rest | only a countdown | a training fact and a bit of encouragement |
 | "Copy log for AI" | always on | optional, off by default |
 
-## 1.0.0 (2026-10-03)
+## Browser beta 1.0.0 (2026-10-03)
 <!-- commit: 2ecfe41bf42369cf988382d6b24731ceb442d742 -->
 
 **First version (then called "Domáci tréning").** The whole app.

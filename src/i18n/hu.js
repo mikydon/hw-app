@@ -30,6 +30,14 @@ export default {
     newsNext: "Következő",
     updTitle: "Az app frissült: {v}",
     updBtn: "Nézd meg az újdonságokat",
+    msgBackupShared: "✓ A mentés kész. Mentsd a Fájlokba vagy a Google Drive-ra, vagy küldd el magadnak.",
+    backupSaveDApp: "Megnyitja a Megosztás menüt: mentsd a fájlt a Fájlokba vagy a Google Drive-ra, vagy küldd el magadnak.",
+    apkUpdTitle: "Új appverzió: {v}",
+    apkUpdBody: "Nagyobb frissítés: töltsd le és telepítsd az új APK-t. Az adataid megmaradnak.",
+    apkUpdBtn: "Letöltés",
+    welcomeMove: "Böngészőben használtad a HW Appot? Hozd át az adataidat: a böngészőben Beállítások → Biztonsági mentés, aztán itt Beállítások → Visszaállítás mentésből.",
+    welcomeMoveBtn: "Beállítások megnyitása",
+    getAndroid: "📱 Androidos app",
     hintTitle: "Tudtad?",
     hintGo: "Mutasd",
     hint_themes: "Más színt szeretnél? A Beállítások → Megjelenés alatt 8 téma van.",
@@ -700,6 +708,15 @@ export default {
   news142: [
     "Az „Újdonságok” több oldalas: az első a nagy frissítés, balra húzva jönnek a kicsik.",
     "Kis frissítés után a kezdőképernyőn egy kártya egyből az oldalára visz. Csak először jelenik meg.",
+  ],
+  news10: [
+    ["App", "weboldal a böngészőben (Browser beta).", "igazi androidos app ikonnal a kezdőképernyőn. A weboldalon a menüben találod → 📱 Androidos app."],
+    ["Adataid", "a böngészőben tárolva.", "az appban tárolva. Mentéssel hozod át: a böngészőben Beállítások → Biztonsági mentés, az appban Beállítások → Visszaállítás mentésből."],
+    ["Frissítések", "új verzió az oldal következő megnyitásakor.", "a kis frissítések maguktól letöltődnek és a következő indításkor élesednek; nagy frissítésnél az app megmutatja, honnan töltsd le az új APK-t."],
+    ["Mentés", "letöltődött egy fájl.", "megnyílik a Megosztás menü: mentsd a Fájlokba vagy a Google Drive-ra, vagy küldd el magadnak."],
+    ["Internet nélkül", "a betűtípusok a Google-tól jöttek, internet nélkül másképp nézett ki az app.", "a betűtípusok az appban vannak, minden működik offline is."],
+    ["Vissza gomb", "–", "bezár egy ablakot vagy a menüt; edzésből a kezdőképernyőre visz, az edzés közben fut tovább."],
+    ["Verziószámok", "Browser beta 1.0.0 – 1.4.2.", "újra 1.0.0-tól számolunk, ez az app első verziója."],
   ],
 
   quotes: [

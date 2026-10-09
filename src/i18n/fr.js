@@ -30,6 +30,14 @@ export default {
     newsNext: "Suivante",
     updTitle: "L'appli a été mise à jour en {v}",
     updBtn: "Voir les nouveautés",
+    msgBackupShared: "✓ Sauvegarde prête. Enregistre-la dans Fichiers ou sur Google Drive, ou envoie-la-toi.",
+    backupSaveDApp: "Ouvre le menu Partager : enregistre le fichier dans Fichiers ou sur Google Drive, ou envoie-le-toi.",
+    apkUpdTitle: "Nouvelle version de l'appli : {v}",
+    apkUpdBody: "Une grosse mise à jour : télécharge et installe le nouvel APK. Tes données restent.",
+    apkUpdBtn: "Télécharger",
+    welcomeMove: "Tu utilisais HW App dans le navigateur ? Transfère tes données : dans le navigateur Réglages → Sauvegarder, puis ici Réglages → Restaurer une sauvegarde.",
+    welcomeMoveBtn: "Ouvrir les réglages",
+    getAndroid: "📱 Appli Android",
     hintTitle: "Le savais-tu ?",
     hintGo: "Voir",
     hint_themes: "Envie d'une autre couleur ? Réglages → Apparence propose 8 thèmes.",
@@ -700,6 +708,15 @@ export default {
   news142: [
     "« Nouveautés » a des pages : la première est la grande mise à jour, glisse vers la gauche pour les petites.",
     "Après une petite mise à jour, une carte sur l'accueil t'emmène à sa page. Elle n'apparaît que la première fois.",
+  ],
+  news10: [
+    ["Appli", "un site dans le navigateur (Browser beta).", "une vraie appli Android avec une icône sur l'écran d'accueil. Sur le site, elle est dans le menu → 📱 Appli Android."],
+    ["Tes données", "enregistrées dans le navigateur.", "enregistrées dans l'appli. Transfère-les avec une sauvegarde : dans le navigateur Réglages → Sauvegarder, dans l'appli Réglages → Restaurer une sauvegarde."],
+    ["Mises à jour", "nouvelle version à la prochaine visite.", "les petites se téléchargent seules et s'activent au prochain démarrage ; pour une grosse, l'appli te montre où récupérer le nouvel APK."],
+    ["Sauvegarde", "un fichier était téléchargé.", "le menu Partager s'ouvre : enregistre-la dans Fichiers ou sur Google Drive, ou envoie-la-toi."],
+    ["Hors ligne", "les polices venaient de Google, sans internet l'appli avait un autre look.", "les polices sont dans l'appli, tout marche hors ligne."],
+    ["Bouton retour", "–", "ferme une fenêtre ou le menu ; pendant une séance, il te ramène à l'accueil et la séance continue."],
+    ["Numéros de version", "Browser beta 1.0.0 à 1.4.2.", "on recompte à partir de 1.0.0, la première version de l'appli."],
   ],
 
   quotes: [

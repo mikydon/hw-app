@@ -30,6 +30,14 @@ export default {
     newsNext: "Weiter",
     updTitle: "Die App wurde auf {v} aktualisiert",
     updBtn: "Sieh dir an, was neu ist",
+    msgBackupShared: "✓ Backup bereit. Speichere es in „Dateien“ oder auf Google Drive oder schick es dir selbst.",
+    backupSaveDApp: "Öffnet das Teilen-Menü: Speichere die Datei in „Dateien“ oder auf Google Drive oder schick sie dir selbst.",
+    apkUpdTitle: "Neue App-Version: {v}",
+    apkUpdBody: "Ein größeres Update: lade die neue APK herunter und installiere sie. Deine Daten bleiben.",
+    apkUpdBtn: "Herunterladen",
+    welcomeMove: "Hast du HW App vorher im Browser benutzt? Nimm deine Daten mit: im Browser Einstellungen → Backup speichern, dann hier Einstellungen → Backup wiederherstellen.",
+    welcomeMoveBtn: "Einstellungen öffnen",
+    getAndroid: "📱 Android-App",
     hintTitle: "Schon gewusst?",
     hintGo: "Zeigen",
     hint_themes: "Lieber eine andere Farbe? Unter Einstellungen → Darstellung gibt es 8 Themes.",
@@ -700,6 +708,15 @@ export default {
   news142: [
     "Die Neuigkeiten haben jetzt Seiten: zuerst das große Update, nach links wischen für die kleinen.",
     "Nach einem kleinen Update führt dich eine Karte auf dem Startbildschirm direkt zu seiner Seite. Nur beim ersten Mal.",
+  ],
+  news10: [
+    ["App", "eine Website im Browser (Browser beta).", "eine echte Android-App mit Symbol auf dem Startbildschirm. Auf der Website findest du sie im Menü → 📱 Android-App."],
+    ["Deine Daten", "im Browser gespeichert.", "in der App gespeichert. Mitnehmen mit einem Backup: im Browser Einstellungen → Backup speichern, in der App Einstellungen → Backup wiederherstellen."],
+    ["Updates", "neue Version beim nächsten Öffnen der Seite.", "kleine Updates laden sich selbst und gelten ab dem nächsten Start; bei einem großen zeigt dir die App, wo es die neue APK gibt."],
+    ["Backup", "wurde als Datei heruntergeladen.", "öffnet das Teilen-Menü: speichere es in „Dateien“ oder auf Google Drive oder schick es dir selbst."],
+    ["Offline", "die Schriften kamen von Google, ohne Internet sah die App anders aus.", "die Schriften sind in der App, alles funktioniert offline."],
+    ["Zurück-Taste", "–", "schließt ein Fenster oder das Menü; im Training geht es zur Startseite und das Training läuft weiter."],
+    ["Versionsnummern", "Browser beta 1.0.0 bis 1.4.2.", "die Zählung beginnt neu bei 1.0.0, der ersten App-Version."],
   ],
 
   quotes: [

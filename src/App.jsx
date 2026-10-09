@@ -1,5 +1,6 @@
 import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { createPortal } from "react-dom";
+import { isNative, pushBack, setRootBack, vibratePattern, keepScreenOn, openExternal, saveBackupFile, checkForUpdate } from "./native.js";
 import { L, LANG, t as T, tp as TP, fmt, setLang, detectLang, LANGS, fmtLong, fmtShortDM, fmtMonthYear, weekdaysShort, capFirst } from "./i18n/index.js";
 
 // ─── DESIGN TOKENS ──────────────────────────────────────────────────────────
@@ -29,25 +30,11 @@ const THEMES = {
   slate:  { ink: "#15181d", panel: "#1f242b", panelHi: "#2a313a", line: "#3a434f", chalk: "#f1f4f8", dim: "#9aa6b4", edge: "#0e1115" },
   coffee: { ink: "#1c140f", panel: "#2a1f17", panelHi: "#382a20", line: "#4d3a2c", chalk: "#fbf3ec", dim: "#b8a291", edge: "#130d09" },
 };
-const APP_VERSION = "1.4.2";
+const APP_VERSION = "1.0.0";
 // Big Shoulders has no Cyrillic, so Oswald (also condensed) covers Ukrainian. The browser only
 // downloads the Oswald unicode ranges a page actually uses.
 const DISPLAY = "'Big Shoulders Display', 'Oswald', 'Arial Narrow', Impact, sans-serif";
 const BODY = "'Figtree', -apple-system, 'Segoe UI', sans-serif";
-
-function useFonts() {
-  useEffect(() => {
-    const add = (id, href) => {
-      if (document.getElementById(id)) return;
-      const l = document.createElement("link");
-      l.id = id; l.rel = "stylesheet"; l.href = href;
-      document.head.appendChild(l);
-    };
-    add("f-bsd", "https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&display=swap");
-    add("f-fig", "https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap");
-    add("f-osw", "https://fonts.googleapis.com/css2?family=Oswald:wght@600;700&display=swap");
-  }, []);
-}
 
 // ─── AUDIO (unchanged — tested and working on Android) ──────────────────────
 function unlockAudio() {
@@ -156,7 +143,7 @@ const sfxSet = () => playSfx("set");
 const sfxRecord = () => playSfx("record");
 const sfxFinish = () => playSfx("finish");
 const sfxLevel = () => playSfx("level");
-function vibrate(pat) { if (setting("vibrate") === false) return; try { navigator.vibrate?.(pat); } catch (_) {} }
+function vibrate(pat) { if (setting("vibrate") === false) return; vibratePattern(pat); }
 if (typeof document !== "undefined") {
   document.addEventListener("click", unlockAudio, { once: true });
 }
@@ -580,12 +567,12 @@ function useCountdown(endAt, onEnd, onTick) {
 
 function useWakeLock() {
   useEffect(() => {
-    let lock = null;
-    const get = async () => { if (setting("keepAwake") === false) return; try { lock = await navigator.wakeLock?.request("screen"); } catch (_) {} };
+    let release = null;
+    const get = async () => { if (setting("keepAwake") === false) return; const rel = await keepScreenOn(); if (release) release(); release = rel; };
     const onVis = () => { if (document.visibilityState === "visible") get(); };
     get();
     document.addEventListener("visibilitychange", onVis);
-    return () => { document.removeEventListener("visibilitychange", onVis); try { lock?.release(); } catch (_) {} };
+    return () => { document.removeEventListener("visibilitychange", onVis); if (release) release(); };
   }, []);
 }
 
@@ -973,14 +960,20 @@ function Logo({ size = 40 }) {
     </svg>
   );
 }
-function openYT(url) { try { window.open(url, "_blank"); } catch (_) {} }
+function openYT(url) { openExternal(url); }
 
 // Rendered straight into <body> through a portal. Inside a screen, the .scr slide-in animation
 // makes the screen the containing block for position:fixed, so the sheet used to be placed
 // relative to the (long, scrolled) page instead of the phone screen and ended up off-screen.
+// Android back button closes the newest open sheet.
+function useBack(fn, on = true) {
+  const ref = useRef(fn); ref.current = fn;
+  useEffect(() => (on ? pushBack(() => ref.current && ref.current()) : undefined), [on]);
+}
 function Sheet({ title, onClose, children }) {
+  useBack(onClose);
   return createPortal(
-    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(5,10,24,0.82)", zIndex: 100, display: "flex", alignItems: "flex-end", justifyContent: "center", padding: 12 }}>
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(5,10,24,0.82)", zIndex: 100, display: "flex", alignItems: "flex-end", justifyContent: "center", padding: "calc(12px + var(--sat)) 12px calc(12px + var(--sab))" }}>
       <div onClick={e => e.stopPropagation()} className="sheetBox" style={{ background: C.panel, borderRadius: 22, padding: "22px 20px 26px", width: "100%", maxWidth: 460, border: `1px solid ${C.line}`, overflowY: "auto", overscrollBehavior: "contain", fontFamily: BODY }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, marginBottom: 14 }}>
           <div style={{ fontFamily: DISPLAY, fontSize: 30, fontWeight: 800, lineHeight: 1, color: C.chalk }}>{title}</div>
@@ -1215,7 +1208,7 @@ function TopBar({ screen, history, menuOpen, onMenu }) {
   const lv = levelInfo(totalXP(history));
   return (
     <div style={{ position: "sticky", top: 0, zIndex: 20, background: `${C.ink}ee`, backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderBottom: `1px solid ${C.line}` }}>
-      <div style={{ maxWidth: 460, margin: "0 auto", padding: "10px 18px", display: "flex", alignItems: "center", gap: 8 }}>
+      <div style={{ maxWidth: 460, margin: "0 auto", padding: "calc(10px + var(--sat)) 18px 10px", display: "flex", alignItems: "center", gap: 8 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div key={screen} className="titleIn" style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, lineHeight: 1, color: C.chalk }}>{T(SCREEN_TITLE[screen])}</div>
           <div style={{ fontSize: 12, color: bdayToday() ? C.signal : C.dim, fontWeight: bdayToday() ? 800 : 400, marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{bdayToday() ? T("bdayTop") : capFirst(fmtDate(today, true))}</div>
@@ -1243,6 +1236,7 @@ function MenuDrawer({ open, screen, history, profile, session, onGo, onResume, o
   const [shown, setShown] = useState(open);
   useEffect(() => { if (open) setShown(true); else { const t = setTimeout(() => setShown(false), 260); return () => clearTimeout(t); } }, [open]);
   const closeRef = useRef(null);
+  useBack(onClose, open);
   useEffect(() => {
     if (!open) return;
     const back = document.activeElement;
@@ -1259,7 +1253,7 @@ function MenuDrawer({ open, screen, history, profile, session, onGo, onResume, o
   return createPortal(
     <div role="dialog" aria-modal="true" aria-label={T("mainMenu")} className={open ? "drawerOn" : "drawerOff"} style={{ position: "fixed", inset: 0, zIndex: 60 }}>
       <div onClick={onClose} className="drawerBg" style={{ position: "absolute", inset: 0, background: "rgba(3,8,20,.55)", backdropFilter: "blur(3px)", WebkitBackdropFilter: "blur(3px)" }} />
-      <nav aria-label={T("mainMenu")} className="drawerPanel" style={{ position: "absolute", top: 0, right: 0, bottom: 0, width: "min(86vw, 340px)", background: C.panel, borderLeft: `1px solid ${C.line}`, boxShadow: "-20px 0 50px rgba(0,0,0,.35)", display: "flex", flexDirection: "column", paddingBottom: "env(safe-area-inset-bottom)", overflowY: "auto" }}>
+      <nav aria-label={T("mainMenu")} className="drawerPanel" style={{ position: "absolute", top: 0, right: 0, bottom: 0, width: "min(86vw, 340px)", background: C.panel, borderLeft: `1px solid ${C.line}`, boxShadow: "-20px 0 50px rgba(0,0,0,.35)", display: "flex", flexDirection: "column", paddingTop: "var(--sat)", paddingBottom: "var(--sab)", overflowY: "auto" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px 4px 18px" }}>
           <div style={{ fontFamily: DISPLAY, fontSize: 15, fontWeight: 800, color: C.dim, letterSpacing: 1 }}>HW APP</div>
           <MenuButton open={true} onClick={onClose} btnRef={closeRef} />
@@ -1293,6 +1287,7 @@ function MenuDrawer({ open, screen, history, profile, session, onGo, onResume, o
         </div>
         <div style={{ marginTop: "auto", padding: "10px 18px 14px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
           <span style={{ fontSize: 11, color: C.dim, fontFamily: BODY }}>HW App {APP_VERSION}</span>
+          {!isNative && <button onClick={() => { sfxTap(); openExternal("https://github.com/mikydon/hw-app/releases/latest"); }} data-get-android style={{ ...btnBase, background: "transparent", color: C.mint, fontSize: 12, padding: "4px 0" }}>{T("getAndroid")}</button>}
           {onNews && <button onClick={onNews} data-news-btn style={{ ...btnBase, background: "transparent", color: C.sky, fontSize: 12, padding: "4px 0" }}>{T("newsLink")} ›</button>}
         </div>
       </nav>
@@ -1325,7 +1320,7 @@ function MiniPlayer({ session, live, onOpen }) {
   const pct = big !== null && total ? big / total : 0;
   return createPortal(
     <button onClick={onOpen} className="miniIn" data-mini aria-label={T("miniOpen")}
-      style={{ ...btnBase, position: "fixed", left: "50%", bottom: "calc(14px + env(safe-area-inset-bottom))", transform: "translateX(-50%)", zIndex: 40, width: "min(calc(100vw - 24px), 436px)", display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", borderRadius: 20, background: C.panelHi, border: `1.5px solid ${color}88`, boxShadow: "0 12px 34px rgba(0,0,0,.45)", color: C.chalk, textAlign: "left" }}>
+      style={{ ...btnBase, position: "fixed", left: "50%", bottom: "calc(14px + var(--sab))", transform: "translateX(-50%)", zIndex: 40, width: "min(calc(100vw - 24px), 436px)", display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", borderRadius: 20, background: C.panelHi, border: `1.5px solid ${color}88`, boxShadow: "0 12px 34px rgba(0,0,0,.45)", color: C.chalk, textAlign: "left" }}>
       <span style={{ position: "relative", width: 48, height: 48, flexShrink: 0 }}>
         <svg width="48" height="48" style={{ transform: "rotate(-90deg)" }}>
           <circle cx="24" cy="24" r="20" fill="none" stroke={C.line} strokeWidth="4" />
@@ -1509,6 +1504,21 @@ function UpdateCard({ onOpen, onClose }) {
   );
 }
 
+// A newer big version needs a new APK: a card on Home with the download (app only).
+function ApkUpdateCard({ info, onClose }) {
+  return (
+    <div data-apk-update className="titleIn" style={{ ...card, position: "relative", padding: "14px 40px 14px 16px", marginBottom: 14, borderColor: `${C.mint}99`, display: "flex", gap: 12, alignItems: "center" }}>
+      <span style={{ fontSize: 26 }}>📲</span>
+      <div style={{ minWidth: 0 }}>
+        <div style={{ fontSize: 15, fontWeight: 800, color: C.chalk }}>{T("apkUpdTitle", { v: info.version })}</div>
+        <div style={{ fontSize: 12, color: C.dim, lineHeight: 1.45, marginTop: 2 }}>{T("apkUpdBody")}</div>
+        <button onClick={() => { sfxTap(); openExternal(info.url || "https://github.com/mikydon/hw-app/releases/latest"); }} data-apk-download style={{ ...btnBase, background: "transparent", color: C.mint, fontSize: 14, padding: "4px 0 0", textAlign: "left" }}>{T("apkUpdBtn")} ›</button>
+      </div>
+      <CloseX onClick={onClose} />
+    </div>
+  );
+}
+
 // Helper hints: now and then (every other day) one short "did you know" card on Home, each pointing
 // to a feature, with a button that opens it. Seen hints are skipped until all were shown.
 const HINTS = [
@@ -1555,7 +1565,7 @@ function BirthdayCard({ profile, ui, setUi }) {
   );
 }
 
-function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, profile, onGo, upd }) {
+function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, profile, onGo, upd, apk }) {
   const today = dateKey();
   // Make sure today's daily line and the "done" card texts are picked (and saved) before painting.
   useLayoutEffect(() => { const n = uiForToday(ui, history, today, profile); if (n !== ui) setUi(n); });
@@ -1598,6 +1608,7 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
     <div className="scr" style={{ padding: "16px 18px 110px", maxWidth: 460, margin: "0 auto" }}>
       {howEx && <HowTo id={howEx} history={history} onClose={() => setHowEx(null)} />}
 
+      {apk && <ApkUpdateCard info={apk.info} onClose={apk.close} />}
       {upd && <UpdateCard onOpen={upd.open} onClose={upd.close} />}
       {profile && <BirthdayCard profile={profile} ui={ui} setUi={setUi} />}
       {showDone && (
@@ -1628,6 +1639,12 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
           <div style={{ fontSize: 13, color: C.dim, lineHeight: 1.55, marginTop: 8 }}>
             {T("welcome2")}
           </div>
+          {isNative && onGo && (
+            <div data-move style={{ fontSize: 13, color: C.sky, lineHeight: 1.55, marginTop: 10, paddingTop: 10, borderTop: `1px solid ${C.line}` }}>
+              {T("welcomeMove")}
+              <button onClick={() => { sfxTap(); onGo("settings"); }} style={{ ...btnBase, display: "block", background: "transparent", color: C.signal, fontSize: 14, padding: "6px 0 0" }}>{T("welcomeMoveBtn")} ›</button>
+            </div>
+          )}
         </div>
       )}
 
@@ -1916,6 +1933,8 @@ function Calories({ history, profile, setProfile, kcal, setKcal }) {
   const ready = kcal && kcal.sex && kcal.height && kcal.weight && kcal.activity && age !== null;
   const saveSetup = (k, birth) => { setKcal({ ...(kcal || {}), ...k, log: (kcal && kcal.log) || {} }); setProfile({ ...profile, birth }); setEditing(false); };
   const wrap = children => <div className="scr" style={{ padding: "16px 18px 110px", maxWidth: 460, margin: "0 auto" }}>{children}</div>;
+  useBack(() => setEditing(false), !!(ready && editing));
+  useBack(() => setChangingGoal(false), !!(ready && !editing && changingGoal));
 
   if (!ready || editing) {
     return wrap(
@@ -2577,6 +2596,7 @@ function ExercisesPage({ settings, set, history, onBack }) {
 
 function SettingsTab({ settings, setSettings, history, profile, setProfile, onImport, onResetAll, kcal }) {
   const [page, setPage] = useState(null); // null | "exercises"
+  useBack(() => setPage(null), page === "exercises");
   const [langOpen, setLangOpen] = useState(false);
   const [resetAll, setResetAll] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
@@ -2590,15 +2610,9 @@ function SettingsTab({ settings, setSettings, history, profile, setProfile, onIm
 
   const exportBackup = () => {
     const data = { app: BACKUP_ID, version: 1, appVersion: APP_VERSION, exportedAt: new Date().toISOString(), history, profile, settings, kcal: kcal || null };
-    try {
-      const blob = new Blob([JSON.stringify(data)], { type: "application/json" });
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = `hw-app-backup-${dateKey()}.json`;
-      document.body.appendChild(a); a.click(); a.remove();
-      setTimeout(() => URL.revokeObjectURL(a.href), 2000);
-      setMsg(T("msgBackupSaved")); sfxCheck();
-    } catch (_) { setMsg(T("msgBackupFail")); }
+    saveBackupFile(`hw-app-backup-${dateKey()}.json`, JSON.stringify(data))
+      .then(how => { if (how === "cancelled") return; setMsg(T(how === "shared" ? "msgBackupShared" : "msgBackupSaved")); sfxCheck(); })
+      .catch(() => setMsg(T("msgBackupFail")));
   };
   const readBackup = e => {
     const f = e.target.files && e.target.files[0];
@@ -2725,7 +2739,7 @@ function SettingsTab({ settings, setSettings, history, profile, setProfile, onIm
       <div style={card}>
         <button onClick={exportBackup} style={rowBtn(true)}>
           {T("backupSave")}
-          <div style={{ fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2 }}>{T("backupSaveD")}</div>
+          <div style={{ fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2 }}>{T(isNative ? "backupSaveDApp" : "backupSaveD")}</div>
         </button>
         <button onClick={() => fileRef.current && fileRef.current.click()} style={rowBtn(false)}>
           {T("backupLoad")}
@@ -3247,7 +3261,7 @@ function Session({ session, setSession, history, onSave, onClose, onMinimize, on
   const doneCount = session.phase === "cool" || session.phase === "summary" ? seq.length : session.phase === "rest" ? session.pos + 1 : session.phase === "work" ? session.pos : 0;
 
   return (
-    <div style={{ padding: "16px 18px 40px", maxWidth: 460, margin: "0 auto" }}>
+    <div style={{ padding: "calc(16px + var(--sat)) 18px calc(40px + var(--sab))", maxWidth: 460, margin: "0 auto" }}>
       {session.phase !== "summary" && (
         <>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
@@ -3292,7 +3306,6 @@ function Session({ session, setSession, history, onSave, onClose, onMinimize, on
 
 // ─── APP ────────────────────────────────────────────────────────────────────
 export default function App() {
-  useFonts();
   const [history, setHistory] = useState(SEED_HISTORY);
   const [session, setSession] = useState(null);
   const [loaded, setLoaded] = useState(false);
@@ -3375,6 +3388,20 @@ export default function App() {
   useEffect(() => { if (!session || sessionOpen) window.scrollTo?.(0, 0); }, [session?.phase, session?.pos]);
   useEffect(() => { window.scrollTo?.(0, 0); }, [screen, sessionOpen]);
   const go = id => { if (id !== screen) sfxTap(); setScreen(id); setMenuOpen(false); if (session) setSessionOpen(false); };
+  // Android back with nothing open: minimize the workout, then go Home, then leave the app.
+  useEffect(() => {
+    setRootBack(() => {
+      if (session && sessionOpen) { setSessionOpen(false); return true; }
+      if (screen !== "train") { setScreen("train"); return true; }
+      return false;
+    });
+  });
+  // App only: look for a new version once per start (a new APK, or a small update for the next start).
+  const [apkUpd, setApkUpd] = useState(null);
+  useEffect(() => {
+    if (!loaded || !isNative) return;
+    checkForUpdate(APP_VERSION).then(r => { if (r && r.apk) setApkUpd(r.apk); }).catch(() => {});
+  }, [loaded]);
   const resume = () => { sfxTap(); setMenuOpen(false); setSessionOpen(true); };
 
   const start = (dayId, rounds) => {
@@ -3391,7 +3418,8 @@ export default function App() {
         .b3d:active{transform:translateY(4px); box-shadow:0 1px 0 var(--e, transparent)}
         @keyframes scrIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
         .scr{animation:scrIn .28s ease-out both}
-        .sheetBox{box-sizing:border-box;max-height:86vh;max-height:calc(100dvh - 24px)}
+        :root{--sat:var(--safe-area-inset-top,env(safe-area-inset-top,0px));--sab:var(--safe-area-inset-bottom,env(safe-area-inset-bottom,0px))}
+        .sheetBox{box-sizing:border-box;max-height:86vh;max-height:calc(100dvh - 24px - var(--sat) - var(--sab))}
         .noBar{scrollbar-width:none}.noBar::-webkit-scrollbar{display:none}
         @keyframes bump{0%{transform:scale(.82)}55%{transform:scale(1.12)}100%{transform:scale(1)}}
         .bump{animation:bump .22s ease-out}
@@ -3435,7 +3463,8 @@ export default function App() {
             <>
               <TopBar screen={screen} history={history} menuOpen={menuOpen} onMenu={() => { sfxTap(); setMenuOpen(o => !o); }} />
               <div key={screen}>
-                {screen === "train" && <TrainTab history={history} onStart={start} onFreeze={applyFreeze} ui={ui} setUi={setUi} active={session} onResume={resume} profile={profile} onGo={go} upd={updCard ? { open: () => { setUpdCard(false); setNewsAt(APP_VERSION); setNewsOpen(true); }, close: () => setUpdCard(false) } : null} />}
+                {screen === "train" && <TrainTab history={history} onStart={start} onFreeze={applyFreeze} ui={ui} setUi={setUi} active={session} onResume={resume} profile={profile} onGo={go} upd={updCard ? { open: () => { setUpdCard(false); setNewsAt(APP_VERSION); setNewsOpen(true); }, close: () => setUpdCard(false) } : null}
+                  apk={apkUpd ? { info: apkUpd, close: () => setApkUpd(null) } : null} />}
                 {screen === "history" && <HistoryTab history={history}
                   onDelete={idx => editHistory(h => h.filter((_, i) => i !== idx))}
                   onSaveEntry={(idx, entry) => editHistory(h => (idx === null ? [...h, entry] : h.map((e, i) => (i === idx ? entry : e))))} />}

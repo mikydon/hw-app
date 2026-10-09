@@ -1,0 +1,125 @@
+name: Build and release
+# On every push: build the website bundle, the test APK ("HW App Test") and, when the signing key
+# secrets exist, the real APK.
+# - other branches: the test APK goes to the "test-build" pre-release (always the newest one)
+# - main: releases are synced with CHANGELOG.md (.github/scripts/releases.sh); the current app
+#   version gets its APK, the live-update zip and update.json attached
+on:
+  push:
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    outputs:
+      version: ${{ steps.ver.outputs.version }}
+      signed: ${{ steps.sign.outputs.signed }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 21
+      - run: npm ci
+      - run: npm run build
+      - name: The committed index.html and fonts match the source
+        run: git diff --exit-code --stat -- index.html fonts
+      - id: ver
+        run: node .github/scripts/version.mjs >> "$GITHUB_OUTPUT"
+      - run: npx cap sync android
+      - name: Test APK (HW App Test)
+        working-directory: android
+        run: ./gradlew --no-daemon assembleDebug -PappVersionName=${{ steps.ver.outputs.version }} -PappVersionCode=${{ steps.ver.outputs.code }}
+      - name: Signing key from secrets
+        id: sign
+        env:
+          KS: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$KS" ]; then
+            echo "$KS" | base64 -d > "$RUNNER_TEMP/release.jks"
+            echo "signed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::No ANDROID_KEYSTORE_BASE64 secret yet: only the test APK is built."
+            echo "signed=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Real APK (signed)
+        if: steps.sign.outputs.signed == 'true'
+        working-directory: android
+        env:
+          ANDROID_KEYSTORE_FILE: ${{ runner.temp }}/release.jks
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: ./gradlew --no-daemon assembleRelease -PappVersionName=${{ steps.ver.outputs.version }} -PappVersionCode=${{ steps.ver.outputs.code }}
+      - name: Collect files
+        env:
+          V: ${{ steps.ver.outputs.version }}
+          SIGNED: ${{ steps.sign.outputs.signed }}
+        run: |
+          rm -f "$RUNNER_TEMP/release.jks"
+          mkdir dist
+          cp android/app/build/outputs/apk/debug/app-debug.apk "dist/HW-App-Test-$V.apk"
+          (cd www && zip -qrX "../dist/hw-app-web-$V.zip" .)
+          if [ "$SIGNED" = "true" ]; then
+            cp android/app/build/outputs/apk/release/app-release.apk "dist/HW-App-$V.apk"
+            "$ANDROID_HOME"/build-tools/*/apksigner verify --print-certs "dist/HW-App-$V.apk" | head -3 || true
+          fi
+          node .github/scripts/update-json.mjs "$V" > dist/update.json
+          cat dist/update.json
+          ls -la dist
+      - uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: dist/
+          retention-days: 30
+
+  test-build:
+    needs: build
+    if: github.ref != 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist
+      - name: Update the "test-build" pre-release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          V: ${{ needs.build.outputs.version }}
+        run: |
+          gh release delete test-build --cleanup-tag --yes 2>/dev/null || true
+          gh release create test-build --prerelease --target "$GITHUB_SHA" --title "Test build ($GITHUB_REF_NAME, $V)" \
+            --notes "> **Test version, not for everyday use.** It installs as a separate app, **HW App Test**, next to the real one and has its own data. Built from branch \`$GITHUB_REF_NAME\`, commit ${GITHUB_SHA::7}. To install: download the .apk on the phone and open it (allow installing from your browser if Android asks)." \
+            "dist/HW-App-Test-$V.apk"
+
+  release:
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist
+      - name: Sync releases with CHANGELOG.md
+        env:
+          GH_TOKEN: ${{ github.token }}
+          APP_VERSION: ${{ needs.build.outputs.version }}
+          SIGNED: ${{ needs.build.outputs.signed }}
+          DIST: dist
+        run: .github/scripts/releases.sh

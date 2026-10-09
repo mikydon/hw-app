@@ -30,6 +30,14 @@ export default {
     newsNext: "Następna",
     updTitle: "Aplikacja została zaktualizowana do {v}",
     updBtn: "Zobacz, co nowego",
+    msgBackupShared: "✓ Kopia gotowa. Zapisz ją w Plikach lub na Dysku Google albo wyślij ją sobie.",
+    backupSaveDApp: "Otwiera menu Udostępnij: zapisz plik w Plikach lub na Dysku Google albo wyślij go sobie.",
+    apkUpdTitle: "Nowa wersja aplikacji: {v}",
+    apkUpdBody: "Większa aktualizacja: pobierz i zainstaluj nowy APK. Twoje dane zostaną.",
+    apkUpdBtn: "Pobierz",
+    welcomeMove: "Używałeś HW App w przeglądarce? Przenieś dane: w przeglądarce Ustawienia → Zapisz kopię, potem tutaj Ustawienia → Przywróć z kopii.",
+    welcomeMoveBtn: "Otwórz Ustawienia",
+    getAndroid: "📱 Aplikacja na Androida",
     hintTitle: "Czy wiesz?",
     hintGo: "Pokaż",
     hint_themes: "Chcesz inny kolor? Ustawienia → Wygląd mają 8 motywów.",
@@ -700,6 +708,15 @@ export default {
   news142: [
     "„Co nowego” ma strony: pierwsza to duża aktualizacja, w lewo są małe.",
     "Po małej aktualizacji karta na ekranie głównym otworzy jej stronę. Pokazuje się tylko za pierwszym razem.",
+  ],
+  news10: [
+    ["Aplikacja", "strona w przeglądarce (Browser beta).", "prawdziwa aplikacja na Androida z ikoną na ekranie głównym. Na stronie znajdziesz ją w menu → 📱 Aplikacja na Androida."],
+    ["Twoje dane", "zapisane w przeglądarce.", "zapisane w aplikacji. Przeniesiesz je kopią: w przeglądarce Ustawienia → Zapisz kopię, w aplikacji Ustawienia → Przywróć z kopii."],
+    ["Aktualizacje", "nowa wersja przy następnym otwarciu strony.", "małe aktualizacje pobierają się same i włączają przy następnym uruchomieniu; przy dużej aplikacja pokaże, skąd pobrać nowy APK."],
+    ["Kopia zapasowa", "pobierał się plik.", "otwiera się menu Udostępnij: zapisz ją w Plikach lub na Dysku Google albo wyślij ją sobie."],
+    ["Bez internetu", "czcionki pobierały się z Google, bez internetu aplikacja wyglądała inaczej.", "czcionki są w aplikacji, wszystko działa offline."],
+    ["Przycisk wstecz", "–", "zamyka okno lub menu; z treningu wracasz na start, a trening trwa dalej."],
+    ["Numery wersji", "Browser beta 1.0.0 do 1.4.2.", "liczymy od nowa od 1.0.0, pierwsza wersja aplikacji."],
   ],
 
   quotes: [

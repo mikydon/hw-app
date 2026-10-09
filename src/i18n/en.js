@@ -30,6 +30,14 @@ export default {
     newsNext: "Next",
     updTitle: "The app has been updated to {v}",
     updBtn: "See what's new",
+    msgBackupShared: "✓ Backup ready. Save it to Files or Google Drive, or send it to yourself.",
+    backupSaveDApp: "Opens the share menu: save the file to Files or Google Drive, or send it to yourself.",
+    apkUpdTitle: "New app version: {v}",
+    apkUpdBody: "A bigger update: download and install the new APK. Your data stays.",
+    apkUpdBtn: "Download",
+    welcomeMove: "Used HW App in the browser before? Move your data: in the browser, Settings → Save backup; then here, Settings → Restore from backup.",
+    welcomeMoveBtn: "Open Settings",
+    getAndroid: "📱 Android app",
     hintTitle: "Did you know?",
     hintGo: "Show me",
     hint_themes: "Want a different colour? Settings → Appearance has 8 themes.",
@@ -700,6 +708,15 @@ export default {
   news142: [
     "\"What's new\" has pages: the first is the big update, swipe left for the small ones.",
     "After a small update, a card on the home screen opens its page. It shows only the first time.",
+  ],
+  news10: [
+    ["App", "a website in the browser (Browser beta).", "a real Android app with an icon on your home screen. On the website it's in the menu → 📱 Android app."],
+    ["Your data", "saved in the browser.", "saved in the app. Move it with a backup: in the browser Settings → Save backup, in the app Settings → Restore from backup."],
+    ["Updates", "a new version on the next visit.", "small updates download by themselves and switch on at the next start; for a big one the app shows where to get the new APK."],
+    ["Backup", "downloaded as a file.", "opens the share menu: save it to Files or Google Drive, or send it to yourself."],
+    ["Offline", "fonts came from Google, so without internet the app looked different.", "the fonts are inside the app, everything works offline."],
+    ["Back button", "–", "closes a sheet or the menu; in a workout it takes you Home and the workout keeps running."],
+    ["Version numbers", "Browser beta 1.0.0 to 1.4.2.", "counting starts again at 1.0.0, the first version of the app."],
   ],
 
   quotes: [

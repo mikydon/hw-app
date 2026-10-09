@@ -30,6 +30,14 @@ export default {
     newsNext: "Siguiente",
     updTitle: "La app se ha actualizado a la {v}",
     updBtn: "Mira las novedades",
+    msgBackupShared: "✓ Copia lista. Guárdala en Archivos o en Google Drive, o envíatela.",
+    backupSaveDApp: "Abre el menú Compartir: guarda el archivo en Archivos o en Google Drive, o envíatelo.",
+    apkUpdTitle: "Nueva versión de la app: {v}",
+    apkUpdBody: "Una actualización grande: descarga e instala el nuevo APK. Tus datos se quedan.",
+    apkUpdBtn: "Descargar",
+    welcomeMove: "¿Usabas HW App en el navegador? Pasa tus datos: en el navegador Ajustes → Guardar copia de seguridad; luego aquí Ajustes → Restaurar copia de seguridad.",
+    welcomeMoveBtn: "Abrir Ajustes",
+    getAndroid: "📱 App para Android",
     hintTitle: "¿Sabías que…?",
     hintGo: "Mostrar",
     hint_themes: "¿Otro color? En Ajustes → Apariencia hay 8 temas.",
@@ -700,6 +708,15 @@ export default {
   news142: [
     "«Novedades» tiene páginas: la primera es la gran actualización; desliza a la izquierda para las pequeñas.",
     "Tras una actualización pequeña, una tarjeta en el inicio te lleva a su página. Solo aparece la primera vez.",
+  ],
+  news10: [
+    ["App", "una web en el navegador (Browser beta).", "una app de Android de verdad con icono en la pantalla de inicio. En la web está en el menú → 📱 App para Android."],
+    ["Tus datos", "guardados en el navegador.", "guardados en la app. Pásalos con una copia: en el navegador Ajustes → Guardar copia de seguridad, en la app Ajustes → Restaurar copia de seguridad."],
+    ["Actualizaciones", "nueva versión al volver a abrir la web.", "las pequeñas se descargan solas y se activan al siguiente inicio; en una grande la app te muestra dónde bajar el nuevo APK."],
+    ["Copia de seguridad", "se descargaba un archivo.", "se abre el menú Compartir: guárdala en Archivos o en Google Drive, o envíatela."],
+    ["Sin internet", "las fuentes venían de Google, sin internet la app se veía distinta.", "las fuentes van dentro de la app, todo funciona sin conexión."],
+    ["Botón atrás", "–", "cierra una ventana o el menú; en un entrenamiento te lleva al inicio y el entrenamiento sigue."],
+    ["Números de versión", "Browser beta 1.0.0 a 1.4.2.", "se vuelve a contar desde 1.0.0, la primera versión de la app."],
   ],
 
   quotes: [

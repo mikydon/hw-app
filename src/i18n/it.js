@@ -30,6 +30,14 @@ export default {
     newsNext: "Successiva",
     updTitle: "L'app è stata aggiornata alla {v}",
     updBtn: "Scopri le novità",
+    msgBackupShared: "✓ Backup pronto. Salvalo in File o su Google Drive, oppure invialo a te stesso.",
+    backupSaveDApp: "Apre il menu Condividi: salva il file in File o su Google Drive, oppure invialo a te stesso.",
+    apkUpdTitle: "Nuova versione dell'app: {v}",
+    apkUpdBody: "Un aggiornamento grande: scarica e installa il nuovo APK. I tuoi dati restano.",
+    apkUpdBtn: "Scarica",
+    welcomeMove: "Usavi HW App nel browser? Porta qui i tuoi dati: nel browser Impostazioni → Salva backup, poi qui Impostazioni → Ripristina da backup.",
+    welcomeMoveBtn: "Apri Impostazioni",
+    getAndroid: "📱 App per Android",
     hintTitle: "Lo sapevi?",
     hintGo: "Mostra",
     hint_themes: "Vuoi un altro colore? In Impostazioni → Aspetto ci sono 8 temi.",
@@ -700,6 +708,15 @@ export default {
   news142: [
     "«Novità» ha più pagine: la prima è il grande aggiornamento, scorri a sinistra per quelli piccoli.",
     "Dopo un piccolo aggiornamento, una scheda nella home ti porta alla sua pagina. Compare solo la prima volta.",
+  ],
+  news10: [
+    ["App", "un sito nel browser (Browser beta).", "una vera app Android con l'icona nella schermata Home. Sul sito la trovi nel menu → 📱 App per Android."],
+    ["I tuoi dati", "salvati nel browser.", "salvati nell'app. Spostali con un backup: nel browser Impostazioni → Salva backup, nell'app Impostazioni → Ripristina da backup."],
+    ["Aggiornamenti", "nuova versione alla prossima apertura del sito.", "quelli piccoli si scaricano da soli e partono al prossimo avvio; per uno grande l'app ti mostra dove scaricare il nuovo APK."],
+    ["Backup", "si scaricava un file.", "si apre il menu Condividi: salvalo in File o su Google Drive, oppure invialo a te stesso."],
+    ["Offline", "i font arrivavano da Google, senza internet l'app sembrava diversa.", "i font sono nell'app, tutto funziona offline."],
+    ["Tasto indietro", "–", "chiude una finestra o il menu; durante l'allenamento ti riporta alla home e l'allenamento continua."],
+    ["Numeri di versione", "Browser beta da 1.0.0 a 1.4.2.", "si riparte da 1.0.0, la prima versione dell'app."],
   ],
 
   quotes: [

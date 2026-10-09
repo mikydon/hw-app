@@ -30,6 +30,14 @@ export default {
     newsNext: "Další",
     updTitle: "Appka byla aktualizována na {v}",
     updBtn: "Podívej se, co je nového",
+    msgBackupShared: "✓ Záloha je připravená. Ulož ji do Souborů nebo na Disk Google, případně si ji pošli.",
+    backupSaveDApp: "Otevře nabídku Sdílet: ulož soubor do Souborů, na Disk Google nebo si ho pošli.",
+    apkUpdTitle: "Nová verze appky: {v}",
+    apkUpdBody: "Větší update: stáhni a nainstaluj nové APK. Tvoje data zůstanou.",
+    apkUpdBtn: "Stáhnout",
+    welcomeMove: "Používal jsi HW App v prohlížeči? Přenes si data: v prohlížeči Nastavení → Uložit zálohu, pak tady Nastavení → Obnovit ze zálohy.",
+    welcomeMoveBtn: "Otevřít Nastavení",
+    getAndroid: "📱 Appka pro Android",
     hintTitle: "Věděl jsi?",
     hintGo: "Ukázat",
     hint_themes: "Chceš jinou barvu appky? V Nastavení → Vzhled je 8 témat.",
@@ -700,6 +708,15 @@ export default {
   news142: [
     "„Co je nového“ má stránky: první je velký update, přejetím doleva drobné úpravy.",
     "Po drobné úpravě tě karta na úvodu zavede přímo na její stránku. Ukáže se jen poprvé.",
+  ],
+  news10: [
+    ["Appka", "webová stránka v prohlížeči (Browser beta).", "skutečná Android appka s ikonou na ploše. Na webu ji najdeš v menu → 📱 Appka pro Android."],
+    ["Tvoje data", "uložená v prohlížeči.", "uložená v appce. Přeneseš je zálohou: v prohlížeči Nastavení → Uložit zálohu, v appce Nastavení → Obnovit ze zálohy."],
+    ["Update", "nová verze při dalším otevření stránky.", "malé updaty se stáhnou samy a zapnou se při dalším spuštění, u velkého ti appka ukáže, kde stáhnout nové APK."],
+    ["Záloha", "stáhl se soubor.", "otevře se nabídka Sdílet: ulož ji do Souborů, na Disk Google nebo si ji pošli."],
+    ["Bez internetu", "písma se stahovala z Google, bez internetu vypadala appka jinak.", "písma jsou přímo v appce, vše funguje i offline."],
+    ["Tlačítko zpět", "–", "zavře okno nebo menu, z tréninku tě vrátí na úvod a trénink běží dál."],
+    ["Čísla verzí", "Browser beta 1.0.0 až 1.4.2.", "počítá se znovu od 1.0.0, první verze appky."],
   ],
 
   quotes: [

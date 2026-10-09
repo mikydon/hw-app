@@ -30,6 +30,14 @@ export default {
     newsNext: "Próxima",
     updTitle: "O app foi atualizado para a {v}",
     updBtn: "Veja as novidades",
+    msgBackupShared: "✓ Backup pronto. Salve em Arquivos ou no Google Drive, ou envie para você mesmo.",
+    backupSaveDApp: "Abre o menu Compartilhar: salve o arquivo em Arquivos ou no Google Drive, ou envie para você mesmo.",
+    apkUpdTitle: "Nova versão do app: {v}",
+    apkUpdBody: "Uma atualização grande: baixe e instale o novo APK. Seus dados continuam.",
+    apkUpdBtn: "Baixar",
+    welcomeMove: "Usava o HW App no navegador? Traga seus dados: no navegador Ajustes → Salvar backup; depois aqui Ajustes → Restaurar backup.",
+    welcomeMoveBtn: "Abrir Ajustes",
+    getAndroid: "📱 App para Android",
     hintTitle: "Você sabia?",
     hintGo: "Mostrar",
     hint_themes: "Quer outra cor? Em Ajustes → Aparência há 8 temas.",
@@ -700,6 +708,15 @@ export default {
   news142: [
     "\"Novidades\" tem páginas: a primeira é a grande atualização, deslize para a esquerda para as pequenas.",
     "Depois de uma atualização pequena, um cartão no início leva você à página dela. Só aparece da primeira vez.",
+  ],
+  news10: [
+    ["App", "um site no navegador (Browser beta).", "um app Android de verdade com ícone na tela inicial. No site ele está no menu → 📱 App para Android."],
+    ["Seus dados", "salvos no navegador.", "salvos no app. Traga-os com um backup: no navegador Ajustes → Salvar backup, no app Ajustes → Restaurar backup."],
+    ["Atualizações", "nova versão ao abrir o site de novo.", "as pequenas baixam sozinhas e entram no próximo início; numa grande o app mostra onde baixar o novo APK."],
+    ["Backup", "baixava um arquivo.", "abre o menu Compartilhar: salve em Arquivos ou no Google Drive, ou envie para você mesmo."],
+    ["Sem internet", "as fontes vinham do Google, sem internet o app ficava diferente.", "as fontes estão dentro do app, tudo funciona offline."],
+    ["Botão voltar", "–", "fecha uma janela ou o menu; num treino ele leva ao início e o treino continua."],
+    ["Números de versão", "Browser beta 1.0.0 a 1.4.2.", "a contagem recomeça em 1.0.0, a primeira versão do app."],
   ],
 
   quotes: [
