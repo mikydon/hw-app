@@ -99,10 +99,14 @@ jobs:
           rm -f "$RUNNER_TEMP/release.jks"
           mkdir dist
           cp android/app/build/outputs/apk/debug/app-debug.apk "dist/HW-App-Test-$V.apk"
+          tsigner=$(ls -d "$ANDROID_HOME"/build-tools/*/ | sort -V | tail -1)apksigner
+          "$tsigner" verify "dist/HW-App-Test-$V.apk" || { echo "::error::test APK signature check failed"; exit 1; }
           (cd www && zip -qrX "../dist/hw-app-web-$V.zip" .)
           if [ "$SIGNED" = "true" ] && [ -f android/app/build/outputs/apk/release/app-release.apk ]; then
             cp android/app/build/outputs/apk/release/app-release.apk "dist/HW-App-$V.apk"
-            "$ANDROID_HOME"/build-tools/*/apksigner verify --print-certs "dist/HW-App-$V.apk" | head -3 || true
+            signer=$(ls -d "$ANDROID_HOME"/build-tools/*/ | sort -V | tail -1)apksigner
+            cert=$("$signer" verify --print-certs "dist/HW-App-$V.apk" | grep -m2 "DN:\|SHA-256" | tr '\n' ' ')
+            echo "::notice::Real APK $V signed. $cert"
           fi
           node .github/scripts/update-json.mjs "$V" > dist/update.json
           cat dist/update.json
