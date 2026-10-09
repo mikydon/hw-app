@@ -14,13 +14,14 @@
 #    only when it was signed with the real key ($SIGNED=true); it becomes "Latest".
 # GitHub adds "Source code" zip/tar.gz to every release by itself (can't be turned off).
 set -euo pipefail
-trap 'echo "::error::releases.sh stopped at line $LINENO: $BASH_COMMAND"' ERR
+exec 3>&1  # annotations always reach the log, even from commands whose stdout is discarded
+trap 'echo "::error::releases.sh stopped at line $LINENO: $BASH_COMMAND" >&3' ERR
 # Runs a command; on failure shows its output as an annotation (readable without the log).
 run() {
   local out
   if ! out=$("$@" 2>&1); then
     out=${out//$'\n'/ }
-    echo "::error::$1 $2 $3 failed: ${out:0:600}"
+    echo "::error::$1 $2 $3 failed: ${out:0:600}" >&3
     return 1
   fi
   [ -n "$out" ] && echo "$out"
@@ -84,8 +85,13 @@ while IFS=$'\t' read -r kind ver tag title commit notes; do
   if ! has_release "$tag" && has_release "v$ver"; then
     sha=$(tag_commit "v$ver")
     echo "moving v$ver → $tag ($sha)"
-    run gh api -X POST "repos/$REPO/git/refs" -f ref="refs/tags/$tag" -f sha="$sha" >/dev/null
-    run gh release edit "v$ver" --repo "$REPO" --tag "$tag" --title "$title" --notes-file "$notes" --latest=false
+    # Creating the tag directly can be refused for commits that change .github/workflows (the
+    # workflow token has no "workflows" permission); then the Releases API creates it from --target.
+    if ! gh api -X POST "repos/$REPO/git/refs" -f ref="refs/tags/$tag" -f sha="$sha" >/dev/null 2>/tmp/ref.err; then
+      echo "::notice::direct tag $tag refused ($(tr '\n' ' ' < /tmp/ref.err | cut -c1-200)); letting the release create it"
+    fi
+    run gh release edit "v$ver" --repo "$REPO" --tag "$tag" --target "$sha" --title "$title" --notes-file "$notes" --latest=false
+    run gh api "repos/$REPO/git/ref/tags/$tag" --jq .object.sha >/dev/null
     gh api -X DELETE "repos/$REPO/git/refs/tags/v$ver" || true
   fi
 done < /tmp/sections.tsv
