@@ -82,17 +82,19 @@ sync_text() {  # tag title notes-file
 # 1. move old beta tags v1.x.y → beta-v1.x.y
 while IFS=$'\t' read -r kind ver tag title commit notes; do
   [ "$kind" = "beta" ] || continue
-  if ! has_release "$tag" && has_release "v$ver"; then
+  if ! has_release "$tag" && has_release "v$ver" && ! gh release view "v$ver" --repo "$REPO" --json name --jq .name | grep -q "Browser beta"; then
     sha=$(tag_commit "v$ver")
     echo "moving v$ver → $tag ($sha)"
-    # Creating the tag directly can be refused for commits that change .github/workflows (the
-    # workflow token has no "workflows" permission); then the Releases API creates it from --target.
-    if ! gh api -X POST "repos/$REPO/git/refs" -f ref="refs/tags/$tag" -f sha="$sha" >/dev/null 2>/tmp/ref.err; then
-      echo "::notice::direct tag $tag refused ($(tr '\n' ' ' < /tmp/ref.err | cut -c1-200)); letting the release create it"
+    # GitHub refuses the workflow token a tag on a commit whose .github/workflows differ from the
+    # default branch (no "workflows" permission; Browser beta 1.4.1 and 1.4.2 have the old
+    # releases.yml). Those keep their v-tag and are only renamed; Michael can move them in the web UI.
+    if gh api -X POST "repos/$REPO/git/refs" -f ref="refs/tags/$tag" -f sha="$sha" >/dev/null 2>/tmp/ref.err; then
+      run gh release edit "v$ver" --repo "$REPO" --tag "$tag" --title "$title" --notes-file "$notes" --latest=false
+      gh api -X DELETE "repos/$REPO/git/refs/tags/v$ver" || true
+    else
+      echo "::notice::Browser beta $ver keeps the tag v$ver (GitHub doesn't let the workflow create $tag on that commit); only renamed."
+      run gh release edit "v$ver" --repo "$REPO" --title "$title" --notes-file "$notes" --latest=false
     fi
-    run gh release edit "v$ver" --repo "$REPO" --tag "$tag" --target "$sha" --title "$title" --notes-file "$notes" --latest=false
-    run gh api "repos/$REPO/git/ref/tags/$tag" --jq .object.sha >/dev/null
-    gh api -X DELETE "repos/$REPO/git/refs/tags/v$ver" || true
   fi
 done < /tmp/sections.tsv
 
@@ -101,10 +103,17 @@ while IFS=$'\t' read -r kind ver tag title commit notes; do
   [ "$commit" = "-" ] && commit=""
   if [ "$kind" = "beta" ]; then
     if has_release "$tag"; then sync_text "$tag" "$title" "$notes"; continue; fi
+    if has_release "v$ver" && gh release view "v$ver" --repo "$REPO" --json name --jq .name | grep -q "Browser beta"; then
+      sync_text "v$ver" "$title" "$notes"; continue   # a beta that kept its old v-tag
+    fi
     target=$(git rev-parse "${commit:-$GITHUB_SHA}^{commit}")
     echo "creating $tag at $target"
     run gh release create "$tag" --repo "$REPO" --target "$target" --title "$title" --notes-file "$notes" --latest=false
     continue
+  fi
+  if has_release "$tag" && gh release view "$tag" --repo "$REPO" --json name --jq .name | grep -q "Browser beta"; then
+    echo "::error::$tag is still used by the Browser beta release. Move that release to the tag beta-$tag on GitHub first."
+    exit 1
   fi
   if [ "$ver" != "$APP_VERSION" ]; then
     if has_release "$tag"; then sync_text "$tag" "$title" "$notes"; else echo "::warning::$tag has no release and isn't the current version ($APP_VERSION); skipped"; fi
