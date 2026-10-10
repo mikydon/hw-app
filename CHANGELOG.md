@@ -10,6 +10,20 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 
 <!-- New version: add a "## x.y.z (date)" section on top (web-only history uses "## Browser beta x.y.z (date)"). On a push to main, .github/workflows/build.yml builds everything and .github/scripts/releases.sh creates/updates the releases (commit = the push, or the one in a commit comment). -->
 
+## 1.3.0 (2026-10-10)
+
+**A big update: a new APK** (download it in the app and tap Install; your data stays). Compared with 1.2.1:
+
+| | Before (1.2.1) | Now (1.3.0) |
+|---|---|---|
+| Vibration *(Android app only)* | with "touch feedback" off in the phone's settings the app didn't vibrate at all (Android 13+ silences vibrations without attributes then) | the end of rests and holds vibrates like an alarm (the app's own small plugin with the ALARM usage), also in silent mode and whatever the touch feedback setting |
+| Weight and height *(Android app only)* | typed in by hand and changed by hand | taken from Health Connect (Samsung Health, smart scales…) and kept up to date; the newer value wins, so a weight typed in the app is never overwritten by an older Health Connect record |
+| First start *(Android app only)* | every detail typed in | right after the nickname: "Connect Health Connect?"; yes = steps, weight and height load by themselves and those questions are skipped (Health Connect has no age or gender, so those are still asked); no = type them in |
+| Texts | some still mentioned tabs at the bottom, clearing the browser (in the app) or silent mode for vibration | reviewed in all 14 languages: ☰ menu → Profile, backups when changing phones, alarm vibration, Health Connect with steps, weight and height |
+| Privacy policy | steps and food calories | also weight and height ([privacy.html](https://mikydon.github.io/hw-app/privacy.html)) |
+| Calories on the main screen | an input field, an Add button and week dots in one crowded card | one clean card: eaten vs target, a thin bar and one line; tapping it opens Calories, where food is logged |
+| Looks | solid coloured boxes in every layout | new **Liquid glass** layout (first in the list): see-through frosted boxes over soft colour blobs of the theme, like on iPhones |
+
 ## 1.2.1 (2026-10-10)
 
 - When a big update includes only one small update, "What's new" and the release notes say "Also the small update 1.1.1" instead of "1.1.1–1.1.1".

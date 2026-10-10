@@ -1,6 +1,6 @@
 import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import { isNative, pushBack, setRootBack, vibratePattern, keepScreenOn, openExternal, saveBackupFile, checkForUpdate, lastUpdate, lastGh, applyUpdateNow, latestApk, isTestBuild, apkState, onApk, apkSupported, apkRestore, apkDownload, apkCanInstall, apkAllow, apkInstall, onAppResume, healthState, healthConnect, healthSettings, healthSteps, healthFoodItems } from "./native.js";
+import { isNative, pushBack, setRootBack, vibratePattern, keepScreenOn, openExternal, saveBackupFile, checkForUpdate, lastUpdate, lastGh, applyUpdateNow, latestApk, isTestBuild, apkState, onApk, apkSupported, apkRestore, apkDownload, apkCanInstall, apkAllow, apkInstall, onAppResume, healthState, healthConnect, healthSettings, healthSteps, healthFoodItems, healthBody } from "./native.js";
 import { L, LANG, t as T, tp as TP, fmt, setLang, detectLang, LANGS, fmtLong, fmtShortDM, fmtMonthYear, weekdaysShort, capFirst } from "./i18n/index.js";
 
 // ─── DESIGN TOKENS ──────────────────────────────────────────────────────────
@@ -30,7 +30,7 @@ const THEMES = {
   slate:  { ink: "#15181d", panel: "#1f242b", panelHi: "#2a313a", line: "#3a434f", chalk: "#f1f4f8", dim: "#9aa6b4", edge: "#0e1115" },
   coffee: { ink: "#1c140f", panel: "#2a1f17", panelHi: "#382a20", line: "#4d3a2c", chalk: "#fbf3ec", dim: "#b8a291", edge: "#130d09" },
 };
-const APP_VERSION = "1.2.1";
+const APP_VERSION = "1.3.0";
 // Big Shoulders has no Cyrillic, so Oswald (also condensed) covers Ukrainian. The browser only
 // downloads the Oswald unicode ranges a page actually uses.
 const DISPLAY = "'Big Shoulders Display', 'Oswald', 'Arial Narrow', Impact, sans-serif";
@@ -1201,9 +1201,20 @@ let card = { background: C.panel, border: `1px solid ${C.line}`, borderRadius: 1
 // "flat" (the old open layout). Set from settings.look in App.
 let LOOK = "cards";
 // A soft inner tile inside a box (badges, ranks): visible but quiet, on any look.
-const SOFT = () => (LOOK === "tiles" ? `${C.ink}55` : `${C.chalk}0d`);
+const SOFT = () => (LOOK === "tiles" ? `${C.ink}55` : LOOK === "liquid" ? "rgba(255,255,255,.06)" : `${C.chalk}0d`);
+// "Liquid glass" (Michael, Oct 10: like on iPhones): translucent frosted boxes over soft colour blobs of the theme.
+const LIQUID = () => ({ background: "rgba(255,255,255,.075)", border: "1px solid rgba(255,255,255,.16)", borderRadius: 26, backdropFilter: "blur(18px) saturate(170%)", WebkitBackdropFilter: "blur(18px) saturate(170%)", boxShadow: "inset 0 1px 0 rgba(255,255,255,.14), 0 10px 30px rgba(0,0,0,.25)" });
+function LiquidBg() {
+  return <div aria-hidden="true" data-liquid-bg style={{ position: "fixed", inset: 0, zIndex: -1, pointerEvents: "none", background: `radial-gradient(55% 40% at 8% 6%, ${C.sky}99, transparent 72%), radial-gradient(50% 38% at 96% 34%, ${C.signal}77, transparent 72%), radial-gradient(58% 42% at 14% 74%, ${C.mint}70, transparent 72%), radial-gradient(50% 36% at 90% 96%, #ff7ab666, transparent 72%), ${C.ink}` }} />;
+}
 function Sect({ title, children, style, titlePad, accent, ...rest }) {
   if (LOOK === "flat") return <div {...rest} style={{ marginTop: 18, ...style }}>{children}</div>;
+  if (LOOK === "liquid") return (
+    <section {...rest} data-sect style={{ ...LIQUID(), padding: "15px 16px", marginTop: 12, ...style }}>
+      {title && <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: C.chalk, opacity: 0.7, marginBottom: 10, padding: titlePad || 0 }}>{title}</div>}
+      {children}
+    </section>
+  );
   if (LOOK === "glass") return (
     <section {...rest} data-sect style={{ background: `linear-gradient(160deg, ${C.panelHi}, ${C.panel} 60%)`, border: `1px solid ${C.chalk}14`, borderRadius: 24, padding: "15px 16px", marginTop: 12, boxShadow: "0 10px 30px rgba(0,0,0,.28)", ...style }}>
       {title && <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: C.dim, marginBottom: 10, padding: titlePad || 0 }}>{title}</div>}
@@ -1300,7 +1311,7 @@ function TopBar({ screen, history, menuOpen, onMenu, onGo, dlPct }) {
   const st = streakInfo(history, today);
   const lv = levelInfo(totalXP(history));
   return (
-    <div style={{ position: "sticky", top: 0, zIndex: 20, background: `${C.ink}ee`, backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderBottom: `1px solid ${C.line}` }}>
+    <div style={{ position: "sticky", top: 0, zIndex: 20, background: LOOK === "liquid" ? `${C.ink}99` : `${C.ink}ee`, backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderBottom: `1px solid ${C.line}` }}>
       <div style={{ maxWidth: 460, margin: "0 auto", padding: "calc(10px + var(--sat)) 18px 10px", display: "flex", alignItems: "center", gap: 8 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div key={screen} className="titleIn" style={{ fontFamily: DISPLAY, fontSize: CJK.test(T(SCREEN_TITLE[screen])) ? 21 : 24, fontWeight: 900, lineHeight: 1.05, color: C.chalk, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{T(SCREEN_TITLE[screen])}</div>
@@ -1826,10 +1837,20 @@ function missingSetup(profile, kcal) {
 // Grey example in the empty weight field: a healthy weight for the height entered (BMI 22, the middle of the WHO
 // normal range 18.5–24.9), never a fixed number that could put someone off (Michael, Oct 10).
 const idealKg = h => (h >= 100 && h <= 250 ? Math.round(22 * (h / 100) ** 2) : 0);
-const OB_STEPS = ["name", "sex", "birth", "height", "weight", "activity", "goal"];
+const OB_STEPS = ["name", "sex", "birth", "height", "weight", "activity", "goal"]; // + "hc" after the name in the app (1.3.0)
 function obStepFor(profile, kcal) {
   const m = missingSetup(profile, kcal);
-  return m.name ? 0 : m.kcal.length ? OB_STEPS.indexOf(m.kcal[0]) : OB_STEPS.length - 1;
+  return m.name ? "name" : m.kcal.length ? m.kcal[0] : "goal";
+}
+// Weight and height from Health Connect (1.3.0, Michael): a newer record there replaces what the app has; a value typed
+// in the app counts from the moment it was typed (wTs/hTs), so an older Health Connect record never overwrites it.
+function withBody(k, body) {
+  if (!body) return k;
+  let n = k;
+  const w = body.weight, h = body.height;
+  if (w && w.v >= 30 && w.v <= 300 && w.ts > (k.wTs || 0)) n = { ...n, weight: w.v, wTs: w.ts, wSrc: "hc" };
+  if (h && h.v >= 100 && h.v <= 250 && h.ts > (k.hTs || 0)) n = { ...n, height: h.v, hTs: h.ts, hSrc: "hc" };
+  return n;
 }
 // Month and day pickers in the app's colours (Michael, Oct 10: the phone's grey dropdowns looked ugly).
 const monthNames = style => Array.from({ length: 12 }, (_, i) => new Date(2000, i, 1).toLocaleString(LANG, { month: style }));
@@ -1858,8 +1879,15 @@ function DayGrid({ value, max, onChange }) {
 function Onboarding({ start = 0, profile, setProfile, kcal, setKcal, onDone }) {
   const thisYear = parseKey(dateKey()).getFullYear();
   const k0 = kcal || {}, b0 = profile.birth || {};
-  const [step, setStep] = useState(start);
+  const [id, setId] = useState(typeof start === "number" ? OB_STEPS[start] || "name" : start);
   const [dir, setDir] = useState(1);
+  // App only: offer Health Connect right after the name (steps, weight and height come from there; age and gender don't).
+  const [hcAvail, setHcAvail] = useState(false);
+  const [hcRes, setHcRes] = useState(null); // null | "busy" | {ok, w, h} | "denied"
+  useEffect(() => { if (isNative) healthState().then(st => setHcAvail(!!(st && st.available))).catch(() => {}); }, []);
+  const hcFilled = hcRes && hcRes.ok ? { height: !!hcRes.h, weight: !!hcRes.w } : {};
+  const steps = ["name", ...(hcAvail ? ["hc"] : []), "sex", "birth", ...(hcFilled.height ? [] : ["height"]), ...(hcFilled.weight ? [] : ["weight"]), "activity", "goal"];
+  const step = Math.max(0, steps.indexOf(id));
   const [name, setName] = useState(profile.name && profile.name !== "User" ? profile.name : "");
   const [sex, setSex] = useState(k0.sex || "");
   const [year, setYear] = useState(b0.y ? String(b0.y) : "");
@@ -1870,12 +1898,24 @@ function Onboarding({ start = 0, profile, setProfile, kcal, setKcal, onDone }) {
   const [activity, setActivity] = useState(k0.activity || "");
   const [err, setErr] = useState("");
   const [askDate, setAskDate] = useState(false);
-  const id = OB_STEPS[step], last = OB_STEPS.length - 1;
-  const goTo = n => { setErr(""); setDir(n >= step ? 1 : -1); if (n > last) onDone(); else { setStep(n); window.scrollTo(0, 0); } };
+  const last = steps.length - 1;
+  const goTo = n => { setErr(""); setDir(n >= step ? 1 : -1); if (n > last) onDone(); else { setId(steps[n]); window.scrollTo(0, 0); } };
+  const connectHc = async () => {
+    unlockAudio(); sfxTap(); setHcRes("busy");
+    const ok = await healthConnect(false);
+    if (!ok.steps && !ok.body) { setHcRes("denied"); return; }
+    const [st, body] = await Promise.all([healthSteps(7), healthBody()]);
+    const k = withBody({ ...(kcal || {}), log: (kcal && kcal.log) || {}, healthOn: true, steps: { ...((kcal && kcal.steps) || {}), ...(st || {}) } }, body);
+    setKcal(k);
+    if (k.height) setHeight(String(k.height));
+    if (k.weight) setWeight(String(k.weight));
+    sfxCheck();
+    setHcRes({ ok: true, h: body && body.height && k.hSrc === "hc" ? k.height : 0, w: body && body.weight && k.wSrc === "hc" ? k.weight : 0 });
+  };
   const saveK = patch => setKcal({ ...(kcal || {}), ...patch, log: (kcal && kcal.log) || {} });
   const daysIn = month ? new Date(Number(year) || 2000, month, 0).getDate() : 31;
   const num = (v, max) => v.replace(/[^0-9]/g, "").slice(0, max);
-  const filled = { name: !!name.trim(), sex: !!sex, birth: year.length === 4, height: !!height, weight: !!weight, activity: !!activity, goal: true }[id];
+  const filled = { name: !!name.trim(), hc: !!(hcRes && hcRes.ok), sex: !!sex, birth: year.length === 4, height: !!height, weight: !!weight, activity: !!activity, goal: true }[id];
   const next = confirmed => {
     if (id === "name") setProfile({ ...profile, name: name.trim() });
     else if (id === "sex") saveK({ sex });
@@ -1885,8 +1925,8 @@ function Onboarding({ start = 0, profile, setProfile, kcal, setKcal, onDone }) {
       if (month && !day) { setErr(T("kcErrDate")); return; }
       if (!month && confirmed !== true) { setAskDate(true); return; }
       setProfile({ ...profile, birth: { y, m: month || null, d: month ? Math.min(day, daysIn) : null } });
-    } else if (id === "height") { const h = Number(height); if (h < 100 || h > 250) { setErr(T("kcErrHeight")); return; } saveK({ height: h }); }
-    else if (id === "weight") { const w = Number(weight); if (w < 30 || w > 300) { setErr(T("kcErrWeight")); return; } saveK({ weight: w }); }
+    } else if (id === "height") { const h = Number(height); if (h < 100 || h > 250) { setErr(T("kcErrHeight")); return; } if (h !== (kcal || {}).height) saveK({ height: h, hTs: Date.now(), hSrc: "me" }); }
+    else if (id === "weight") { const w = Number(weight); if (w < 30 || w > 300) { setErr(T("kcErrWeight")); return; } if (w !== (kcal || {}).weight) saveK({ weight: w, wTs: Date.now(), wSrc: "me" }); }
     else if (id === "activity") saveK({ activity });
     sfxCheck(); goTo(step + 1);
   };
@@ -1919,16 +1959,32 @@ function Onboarding({ start = 0, profile, setProfile, kcal, setKcal, onDone }) {
         <span style={{ flex: 1 }} />
         <button data-ob-skipall onClick={() => { sfxTap(); onDone(); }} style={{ ...btnBase, background: "transparent", color: C.dim, fontSize: 13, padding: "6px 2px", flexShrink: 0 }}>{T("obSkipAll")}</button>
       </div>
-      <div aria-label={T("obStep", { n: step + 1, m: OB_STEPS.length })} role="img" style={{ display: "flex", gap: 5, marginBottom: 8 }}>
-        {OB_STEPS.map((_, i) => <span key={i} style={{ flex: 1, height: 5, borderRadius: 99, background: i < step ? C.signal : i === step ? `${C.signal}aa` : C.panelHi, transition: "background .3s" }} />)}
+      <div aria-label={T("obStep", { n: step + 1, m: steps.length })} role="img" style={{ display: "flex", gap: 5, marginBottom: 8 }}>
+        {steps.map((_, i) => <span key={i} style={{ flex: 1, height: 5, borderRadius: 99, background: i < step ? C.signal : i === step ? `${C.signal}aa` : C.panelHi, transition: "background .3s" }} />)}
       </div>
-      <div style={{ fontSize: 12, color: C.dim, fontWeight: 700, marginBottom: 18 }}>{T("obStep", { n: step + 1, m: OB_STEPS.length })}</div>
-      <div key={step} className={dir > 0 ? "obIn" : "obBack"}>
+      <div style={{ fontSize: 12, color: C.dim, fontWeight: 700, marginBottom: 18 }}>{T("obStep", { n: step + 1, m: steps.length })}</div>
+      <div key={id} className={dir > 0 ? "obIn" : "obBack"}>
         {id === "name" && <>
           <Logo size={56} />
           <div style={{ marginTop: 14 }}>{title(T("obHello"))}</div>
           {desc(T("obName"))}
           <input className="obf" data-ob-name value={name} maxLength={24} autoFocus onChange={e => setName(e.target.value)} onKeyDown={e => { if (e.key === "Enter" && name.trim()) next(); }} placeholder={T("obNamePh")} aria-label={T("obNamePh")} style={bigField} />
+        </>}
+        {id === "hc" && <>
+          <div aria-hidden="true" style={{ fontSize: 44, lineHeight: 1 }}>👟⚖️</div>
+          <div style={{ marginTop: 12 }}>{title(T("obHcT"))}</div>
+          {desc(T("obHcD"))}
+          {hcRes && hcRes.ok ? (
+            <div data-ob-hc="ok" style={{ ...card, padding: "13px 15px", borderColor: `${C.mint}99` }}>
+              <div style={{ fontSize: 15, fontWeight: 800, color: C.mint }}>✓ {T("obHcOk")}</div>
+              <div style={{ fontSize: 13, color: C.chalk, lineHeight: 1.5, marginTop: 4 }}>{hcRes.h || hcRes.w ? T("obHcGot", { what: [hcRes.h ? `${T("setup_height")} ${hcRes.h} cm` : "", hcRes.w ? `${T("setup_weight")} ${hcRes.w} kg` : ""].filter(Boolean).join(", ") }) : T("obHcNone")}</div>
+              <div style={{ fontSize: 12, color: C.dim, lineHeight: 1.45, marginTop: 6 }}>{T("obHcFood")}</div>
+            </div>
+          ) : <>
+            {hcRes === "denied" && <div data-ob-hc="denied" style={{ fontSize: 13, color: C.signal, lineHeight: 1.5, marginBottom: 12 }}>{T("hcDenied")}</div>}
+            <button data-ob-hc-connect onClick={connectHc} disabled={hcRes === "busy"} className="b3d" style={{ ...bigBtn(C.mint, C.ink), "--e": "#2c8a5c", opacity: hcRes === "busy" ? 0.6 : 1 }}>{T("obHcYes")}</button>
+            <button data-ob-hc-no onClick={() => { sfxTap(); goTo(step + 1); }} style={{ ...bigBtn("transparent", C.chalk), marginTop: 10, border: `1.5px solid ${C.line}` }}>{T("obHcNo")}</button>
+          </>}
         </>}
         {id === "sex" && <>
           {title(T("kcSex"))}
@@ -1978,8 +2034,8 @@ function Onboarding({ start = 0, profile, setProfile, kcal, setKcal, onDone }) {
             : <div data-ob-nodata style={{ fontSize: 14, color: C.signal, lineHeight: 1.5 }}>{T("setupNoKcal", { what: miss.map(f => T("setup_" + f)).join(", ") })}</div>}
         </>}
         {err && <div role="alert" style={{ fontSize: 14, color: "#ff8a80", fontWeight: 700, marginTop: 12 }}>{err}</div>}
-        {id !== "goal" && <button data-ob-next disabled={!filled} onClick={() => next()} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 22, opacity: filled ? 1 : 0.45 }}>{T("obNext")}</button>}
-        <button data-ob-skip onClick={() => { sfxTap(); goTo(step + 1); }} style={{ ...ghostBtn, display: "block", margin: "12px auto 0" }}>{T("obSkip")}</button>
+        {id !== "goal" && (id !== "hc" || filled) && <button data-ob-next disabled={!filled} onClick={() => next()} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 22, opacity: filled ? 1 : 0.45 }}>{T("obNext")}</button>}
+        {id !== "hc" && <button data-ob-skip onClick={() => { sfxTap(); goTo(step + 1); }} style={{ ...ghostBtn, display: "block", margin: "12px auto 0" }}>{T("obSkip")}</button>}
       </div>
     </div>
   );
@@ -2448,52 +2504,38 @@ function KcalWeekDots({ history }) {
   );
 }
 // Home: eaten / target, quick add, the streak; the Calories screen keeps history and settings.
+// Home: one quiet card (Michael, Oct 10: minimal, no input or dots here): eaten / target, a thin bar and one line.
+// The whole card opens Calories, where food is logged and the history is.
 function HomeKcal({ history, kcal, setKcal, onOpen }) {
-  const [amount, setAmount] = useState("");
   const s = kcalNow(history);
+  const mt = LOOK === "flat" ? 22 : LOOK === "tiles" ? 8 : 12;
   if (!s) {
     return (
-      <button data-home-kcal="setup" onClick={() => { sfxTap(); onOpen(); }} style={{ ...btnBase, ...card, width: "100%", marginTop: LOOK === "flat" ? 22 : LOOK === "tiles" ? 8 : 12, padding: "13px 15px", display: "flex", alignItems: "center", gap: 12, color: C.chalk, textAlign: "left" }}>
-        <span style={{ fontSize: 24 }} aria-hidden="true">🥗</span>
-        <span style={{ flex: 1, minWidth: 0 }}><span style={{ display: "block", fontSize: 15, fontWeight: 800 }}>{T("kcHomeSetup")}</span><span style={{ display: "block", fontSize: 12, color: C.dim, marginTop: 2 }}>{T("kcHomeSetupD")}</span></span>
-        <span style={{ color: C.dim, fontSize: 18 }}>›</span>
+      <button data-home-kcal="setup" onClick={() => { sfxTap(); onOpen(); }} style={{ ...btnBase, ...card, width: "100%", marginTop: mt, padding: "14px 16px", display: "flex", alignItems: "center", gap: 12, color: C.chalk, textAlign: "left" }}>
+        <span style={{ flex: 1, minWidth: 0 }}><span style={{ display: "block", fontSize: 15, fontWeight: 800 }}>{T("kcHomeSetup")}</span><span style={{ display: "block", fontSize: 12, color: C.dim, marginTop: 3 }}>{T("kcHomeSetupD")}</span></span>
+        <span aria-hidden="true" style={{ color: C.dim, fontSize: 20 }}>›</span>
       </button>
     );
   }
-  const add = () => {
-    const n = Number(amount);
-    if (!n || n < 1 || n > 9999) return;
-    sfxCheck();
-    const today = dateKey(), log = { ...(kcal.log || {}) };
-    log[today] = [...(log[today] || []), { ts: Date.now(), kcal: n, note: "" }];
-    setKcal({ ...kcal, log });
-    setAmount("");
-  };
   const pct = Math.min(1, s.eaten / Math.max(1, s.target)), over = s.left < 0;
   const col = s.hit ? KC_HIT : over ? "#ff8a80" : C.mint;
   return (
-    <div data-home-kcal="on" style={{ ...card, marginTop: LOOK === "flat" ? 22 : LOOK === "tiles" ? 8 : 12, padding: "14px 15px" }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
-        <div style={{ fontSize: 14, fontWeight: 800, color: C.chalk }}>🥗 {T("kcHomeTitle")}</div>
+    <button data-home-kcal="on" onClick={() => { sfxTap(); onOpen(); }} aria-label={`${T("kcHomeTitle")}: ${nf(s.eaten)} ${T("kcOf", { n: nf(s.target) })}`}
+      style={{ ...btnBase, ...card, display: "block", width: "100%", marginTop: mt, padding: "15px 16px", color: C.chalk, textAlign: "left", fontWeight: 400 }}>
+      <span style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+        <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: C.dim }}>{T("kcHomeTitle")}</span>
         <KcalStreakChip history={history} small />
-      </div>
-      <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginTop: 8 }}>
+      </span>
+      <span style={{ display: "flex", alignItems: "baseline", gap: 6, marginTop: 6 }}>
         <span data-home-kcal-eaten style={{ fontFamily: DISPLAY, fontSize: 34, fontWeight: 900, lineHeight: 1, color: C.chalk }}>{nf(s.eaten)}</span>
         <span style={{ fontSize: 13, color: C.dim }}>{T("kcOf", { n: nf(s.target) })}</span>
-      </div>
-      <div style={{ height: 8, borderRadius: 99, background: C.panelHi, marginTop: 8, overflow: "hidden" }}><div style={{ width: `${pct * 100}%`, height: "100%", borderRadius: 99, background: col, transition: "width .5s ease-out" }} /></div>
-      <div data-home-kcal-line style={{ fontSize: 13, color: s.hit ? KC_HIT : C.dim, marginTop: 8, lineHeight: 1.45 }}>{kcalLine(s)}</div>
-      <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
-        <input value={amount} onChange={e => setAmount(e.target.value.replace(/[^0-9]/g, "").slice(0, 4))} onKeyDown={e => { if (e.key === "Enter") add(); }} inputMode="numeric" placeholder="kcal" aria-label={T("kcAmount")}
-          style={{ fontFamily: BODY, fontSize: 16, fontWeight: 700, padding: "10px 12px", borderRadius: 12, border: `1.5px solid ${C.line}`, background: C.ink, color: C.chalk, outline: "none", boxSizing: "border-box", minWidth: 0, flex: 1 }} />
-        <button data-home-kcal-add onClick={add} disabled={!Number(amount)} style={{ ...btnBase, padding: "10px 14px", fontSize: 14, background: Number(amount) ? C.signal : C.panelHi, color: Number(amount) ? C.signalInk : C.dim, flexShrink: 0 }}>{T("kcHomeAdd")}</button>
-      </div>
-      {ownIgnored(kcal, dateKey()) && <div data-own-ignored style={{ fontSize: 11, color: KC_HIT, lineHeight: 1.4, marginTop: 6 }}>{T("kcOwnIgnored")}</div>}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 12, gap: 8 }}>
-        <KcalWeekDots history={history} />
-        <button data-home-kcal-open onClick={() => { sfxTap(); onOpen(); }} style={{ ...btnBase, background: "transparent", color: C.sky, fontSize: 13, padding: "4px 0" }}>{T("kcHomeOpen")} ›</button>
-      </div>
-    </div>
+      </span>
+      <span style={{ display: "block", height: 5, borderRadius: 99, background: `${C.chalk}14`, marginTop: 10, overflow: "hidden" }}><span style={{ display: "block", width: `${pct * 100}%`, height: "100%", borderRadius: 99, background: col, transition: "width .5s ease-out" }} /></span>
+      <span style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 9 }}>
+        <span data-home-kcal-line style={{ flex: 1, fontSize: 13, color: s.hit ? KC_HIT : C.dim, lineHeight: 1.45 }}>{kcalLine(s)}</span>
+        <span aria-hidden="true" data-home-kcal-open style={{ color: C.dim, fontSize: 20, lineHeight: 1 }}>›</span>
+      </span>
+    </button>
   );
 }
 
@@ -2541,13 +2583,14 @@ function HealthCard({ kcal, setKcal }) {
   const sync = async (k = kcal) => {
     const m = await healthSteps(7), f = await healthSteps(7, "dietaryEnergyConsumed");
     const it = k.healthFood === true ? await healthFoodItems(7) : null;
-    if (m || f) setKcal({ ...k, healthOn: true, steps: { ...(k.steps || {}), ...(m || {}) }, food: { ...(k.food || {}), ...(f || {}) }, foodItems: { ...(k.foodItems || {}), ...(it || {}) } });
+    const body = await healthBody();
+    if (m || f || body) setKcal(withBody({ ...k, healthOn: true, steps: { ...(k.steps || {}), ...(m || {}) }, food: { ...(k.food || {}), ...(f || {}) }, foodItems: { ...(k.foodItems || {}), ...(it || {}) } }, body));
     return m;
   };
   const connect = async () => {
     unlockAudio(); sfxTap(); setBusy(true); setDenied(false);
     const ok = await healthConnect(false);
-    if (ok.steps) { sfxCheck(); await sync(); } else setDenied(true);
+    if (ok.steps || ok.body) { sfxCheck(); await sync(); } else setDenied(true);
     await refresh(); setBusy(false);
   };
   // Food is optional: permission for nutrition, then the user picks how it counts (and confirms).
@@ -2584,6 +2627,12 @@ function HealthCard({ kcal, setKcal }) {
         <span style={{ fontSize: 13, color: C.dim }}>{T("hcStepsToday")}</span>
       </div>
       <div style={{ fontSize: 12, color: C.dim, lineHeight: 1.5, marginTop: 6 }}>{T("hcHow", { n: nf(assumed) })}</div>
+      {st.body ? (
+        <div data-hc-body style={{ fontSize: 12, color: C.chalk, lineHeight: 1.5, marginTop: 8 }}>⚖️ {kcal.wSrc === "hc" || kcal.hSrc === "hc" ? T("hcBodyOn", { w: kcal.weight, h: kcal.height }) : T("hcBodyNone")}</div>
+      ) : (
+        <button data-hc-body-connect onClick={async () => { sfxTap(); setBusy(true); const ok = await healthConnect(false); if (ok.body) { sfxCheck(); await sync(); } await refresh(); setBusy(false); }} disabled={busy}
+          style={{ ...btnBase, marginTop: 10, padding: "9px 13px", fontSize: 13, background: "transparent", color: C.mint, border: `1.5px solid ${C.mint}88` }}>⚖️ {T("hcBodyConnect")}</button>
+      )}
       <div data-hc-food-box={kcal.healthFood === true && st.food ? "on" : "off"} style={{ marginTop: 12, paddingTop: 10, borderTop: `1px solid ${C.line}` }}>
         <div style={{ fontSize: 13, fontWeight: 800, color: C.chalk }}>🍽️ {T("hcFood")}{kcal.healthFood === true && food ? ` · ${nf(food)} kcal` : ""}</div>
         {kcal.healthFood === true && st.food ? <>
@@ -2712,7 +2761,12 @@ function Calories({ history, profile, setProfile, kcal, setKcal }) {
   const [how, setHow] = useState(false);
   const age = ageOn(profile.birth, today);
   const ready = kcal && kcal.sex && kcal.height && kcal.weight && kcal.activity && age !== null;
-  const saveSetup = (k, birth) => { setKcal({ ...(kcal || {}), ...k, log: (kcal && kcal.log) || {} }); setProfile({ ...profile, birth }); setEditing(false); };
+  const saveSetup = (k, birth) => {
+    const o = kcal || {}, n = { ...o, ...k, log: o.log || {} }, ts = Date.now();
+    if (k.weight !== o.weight) Object.assign(n, { wTs: ts, wSrc: "me" }); // typed now: newer than any older Health Connect record
+    if (k.height !== o.height) Object.assign(n, { hTs: ts, hSrc: "me" });
+    setKcal(n); setProfile({ ...profile, birth }); setEditing(false);
+  };
   const wrap = children => <div className="scr" style={{ padding: "16px 18px 110px", maxWidth: 460, margin: "0 auto" }}>{children}</div>;
   useBack(() => setEditing(false), !!(ready && editing));
   useBack(() => setChangingGoal(false), !!(ready && !editing && changingGoal));
@@ -2840,6 +2894,7 @@ function Calories({ history, profile, setProfile, kcal, setKcal }) {
         <div style={{ fontSize: 14, color: C.chalk, lineHeight: 1.6 }}>
           {T("kcSummary", { sex: T(kcal.sex === "f" ? "kcFemale" : "kcMale"), age, h: kcal.height, w: kcal.weight })}<br />
           <span style={{ color: C.dim }}>{T("kcAct_" + kcal.activity)}</span>
+          {(kcal.wSrc === "hc" || kcal.hSrc === "hc") && <span data-kc-body-hc style={{ display: "block", fontSize: 12, color: C.mint, marginTop: 4 }}>⚖️ {T("hcBodyOn", { w: kcal.weight, h: kcal.height })}</span>}
         </div>
         <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
           <button onClick={() => { sfxTap(); setEditing(true); }} style={{ ...ghostBtn, flex: 1 }}>{T("kcEdit")}</button>
@@ -3536,12 +3591,12 @@ function SettingsTab({ settings, setSettings, history, profile, setProfile, onIm
       </div>
       <div style={{ fontSize: 13, color: C.chalk, fontWeight: 800, margin: "14px 0 8px" }}>{T("lookTitle")}</div>
       <div role="radiogroup" aria-label={T("lookTitle")} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
-        {["cards", "tiles", "glass", "accent", "flat"].map(id => {
+        {["liquid", "cards", "tiles", "glass", "accent", "flat"].map(id => {
           const on = (settings.look || "cards") === id;
-          const box = id === "cards" ? { background: C.panel, border: `1px solid ${C.line}`, borderRadius: 6 } : id === "tiles" ? { background: C.panelHi, borderRadius: 5 } : id === "glass" ? { background: `linear-gradient(160deg, ${C.panelHi}, ${C.panel})`, borderRadius: 8, boxShadow: "0 3px 8px rgba(0,0,0,.3)" } : id === "accent" ? { background: C.panel, borderLeft: `3px solid ${C.signal}`, borderRadius: 4 } : { borderBottom: `1px solid ${C.line}` };
+          const box = id === "liquid" ? { background: "rgba(255,255,255,.14)", border: "1px solid rgba(255,255,255,.28)", borderRadius: 9, backdropFilter: "blur(6px)" } : id === "cards" ? { background: C.panel, border: `1px solid ${C.line}`, borderRadius: 6 } : id === "tiles" ? { background: C.panelHi, borderRadius: 5 } : id === "glass" ? { background: `linear-gradient(160deg, ${C.panelHi}, ${C.panel})`, borderRadius: 8, boxShadow: "0 3px 8px rgba(0,0,0,.3)" } : id === "accent" ? { background: C.panel, borderLeft: `3px solid ${C.signal}`, borderRadius: 4 } : { borderBottom: `1px solid ${C.line}` };
           return (
             <button key={id} role="radio" aria-checked={on} data-look={id} onClick={() => { sfxTap(); set("look", id); }}
-              style={{ ...btnBase, background: C.ink, border: `2px solid ${on ? C.signal : C.line}`, padding: 9, color: C.chalk, textAlign: "left" }}>
+              style={{ ...btnBase, background: id === "liquid" ? `radial-gradient(70% 60% at 20% 15%, ${C.sky}66, transparent), radial-gradient(70% 60% at 85% 85%, ${C.signal}55, transparent), ${C.ink}` : C.ink, border: `2px solid ${on ? C.signal : C.line}`, padding: 9, color: C.chalk, textAlign: "left" }}>
               <div style={{ display: "flex", flexDirection: "column", gap: id === "tiles" ? 3 : 5, marginBottom: 8 }}>
                 {[18, 26, 14].map((h, i) => <span key={i} style={{ height: h, ...box }} />)}
               </div>
@@ -4311,6 +4366,9 @@ export default function App() {
   if (LOOK === "tiles") card = { background: C.panelHi, border: `1px solid ${C.panelHi}`, borderRadius: 16 };
   if (LOOK === "glass") card = { background: `linear-gradient(160deg, ${C.panelHi}, ${C.panel} 60%)`, border: `1px solid ${C.chalk}14`, borderRadius: 24, boxShadow: "0 10px 30px rgba(0,0,0,.28)" };
   if (LOOK === "accent") card = { background: C.panel, border: `1px solid ${C.line}`, borderLeft: `4px solid ${C.chalk}40`, borderRadius: 16 };
+  if (LOOK === "liquid") card = LIQUID();
+  // The liquid background sits at z-index -1: it shows only when body has no background of its own (html keeps the colour).
+  try { document.documentElement.style.background = C.ink; document.body.style.background = LOOK === "liquid" ? "transparent" : C.ink; } catch (_) {}
   applyLang(settings.lang || detectLang());
   const setSettings = n => { setSettingsState(n); saveSettings(n); };
   const [profLoaded, setProfLoaded] = useState(false);
@@ -4402,7 +4460,7 @@ export default function App() {
   useEffect(() => {
     if (!isNative || stepsSynced || !kcal || !kcal.healthOn) return;
     setStepsSynced(true);
-    Promise.all([healthSteps(7), healthSteps(7, "dietaryEnergyConsumed"), kcal.healthFood === true ? healthFoodItems(7) : null]).then(([m, f, it]) => { if (m || f) setKcalState(k => { const n = { ...k, steps: { ...(k.steps || {}), ...(m || {}) }, food: { ...(k.food || {}), ...(f || {}) }, foodItems: { ...(k.foodItems || {}), ...(it || {}) } }; saveKcal(n); return n; }); });
+    Promise.all([healthSteps(7), healthSteps(7, "dietaryEnergyConsumed"), kcal.healthFood === true ? healthFoodItems(7) : null, healthBody()]).then(([m, f, it, body]) => { if (m || f || body) setKcalState(k => { const n = withBody({ ...k, steps: { ...(k.steps || {}), ...(m || {}) }, food: { ...(k.food || {}), ...(f || {}) }, foodItems: { ...(k.foodItems || {}), ...(it || {}) } }, body); saveKcal(n); return n; }); });
   }, [kcal]);
   // Website: the newest Android app version on GitHub for the menu (the API allows browsers; 60 calls an hour per IP).
   useEffect(() => {
@@ -4428,7 +4486,8 @@ export default function App() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: C.ink, color: C.chalk, fontFamily: BODY }}>
+    <div style={{ minHeight: "100vh", background: LOOK === "liquid" ? "transparent" : C.ink, color: C.chalk, fontFamily: BODY }}>
+      {LOOK === "liquid" && <LiquidBg />}
       <style>{`
         button:focus-visible{outline:3px solid ${C.signal};outline-offset:2px}
         [data-reps-input]::-webkit-inner-spin-button,[data-reps-input]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}

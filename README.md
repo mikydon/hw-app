@@ -40,7 +40,7 @@ Open https://mikydon.github.io/hw-app/ and add it to your home screen (Android C
 What changed in each version: [CHANGELOG.md](CHANGELOG.md).
 
 ## Privacy
-All your data (workouts, calories, name, photo, birth date) is stored only on your device: in the app, or in the browser on the website. Nothing you enter is sent anywhere. If you connect Health Connect, the app reads only your daily step count, and it stays on your phone. If you clear the browser's data, the website's history is deleted too, so save a backup in Settings first. Full policy: [privacy.html](https://mikydon.github.io/hw-app/privacy.html).
+All your data (workouts, calories, name, photo, birth date) is stored only on your device: in the app, or in the browser on the website. Nothing you enter is sent anywhere. If you connect Health Connect, the app reads only your steps, weight and height (and, if you choose, the calories of food logged in other apps), and they stay on your phone. If you clear the browser's data, the website's history is deleted too, so save a backup in Settings first. Full policy: [privacy.html](https://mikydon.github.io/hw-app/privacy.html).
 
 ## For developers
 - Source: `src/App.jsx` (React), entry `src/main.jsx`

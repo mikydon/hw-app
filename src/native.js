@@ -30,8 +30,12 @@ if (isNative) {
 
 // ─── Vibration ─────────────────────────────────────────────────────────────
 // pattern like navigator.vibrate: [on, off, on, …] in ms
+// 1.3.0: the app's own HwVibrate plugin vibrates with the ALARM usage, so it works even when "touch feedback"
+// is off in the phone's settings (Android 13+ silences vibrations without attributes then). Older APKs: Haptics.
+const HwVibrate = registerPlugin("HwVibrate");
 export function vibratePattern(pat) {
   if (!isNative) { try { navigator.vibrate?.(pat); } catch (_) {} return; }
+  if (Capacitor.isPluginAvailable("HwVibrate")) { HwVibrate.vibrate({ pattern: (Array.isArray(pat) ? pat : [pat]).map(Number) }).catch(() => {}); return; }
   const arr = Array.isArray(pat) ? pat : [pat];
   let t = 0;
   arr.forEach((ms, i) => {
@@ -248,20 +252,41 @@ export function onAppResume(fn) {
 // ─── Health Connect (app 1.1.0) ────────────────────────────────────────────
 // Read: steps and eaten calories (nutrition energy); the manifest removes every other health permission the plugin declares.
 const HC_READ = ["steps", "dietaryEnergyConsumed"];
+const HC_BODY = ["weight", "height"]; // 1.3.0 (Michael, Oct 10): weight and height come from Health Connect too
 export async function healthState() {
   if (!isNative) return { available: false, web: true };
   try {
     const a = await Health.isAvailable();
     if (!a || !a.available) return { available: false, reason: (a && a.reason) || "" };
-    const s = await Health.checkAuthorization({ read: HC_READ });
+    const s = await Health.checkAuthorization({ read: [...HC_READ, ...HC_BODY] });
     const ok = (s && s.readAuthorized) || [];
-    return { available: true, granted: ok.includes("steps"), food: ok.includes("dietaryEnergyConsumed") };
+    return { available: true, granted: ok.includes("steps"), food: ok.includes("dietaryEnergyConsumed"), body: ok.includes("weight") || ok.includes("height") };
   } catch (e) { return { available: false, reason: errMsg(e) }; }
 }
 // Steps first; eaten calories only when the user also wants them (Michael, Oct 10: food is optional).
+// Steps, weight and height together; food only when asked for (withFood).
 export async function healthConnect(withFood = false) {
-  try { const s = await Health.requestAuthorization({ read: withFood ? HC_READ : ["steps"] }); const ok = (s && s.readAuthorized) || []; return { steps: ok.includes("steps"), food: ok.includes("dietaryEnergyConsumed") }; }
-  catch (_) { return { steps: false, food: false }; }
+  try {
+    const s = await Health.requestAuthorization({ read: withFood ? [...HC_READ, ...HC_BODY] : ["steps", ...HC_BODY] });
+    const ok = (s && s.readAuthorized) || [];
+    return { steps: ok.includes("steps"), food: ok.includes("dietaryEnergyConsumed"), body: ok.includes("weight") || ok.includes("height") };
+  } catch (_) { return { steps: false, food: false, body: false }; }
+}
+// The newest weight (kg) and height (cm) in Health Connect, with their times: {weight: {v, ts}, height: {v, ts}}.
+// Records are read oldest first, so a long window is read and the newest one picked here.
+export async function healthBody() {
+  if (!isNative) return null;
+  const out = {};
+  for (const [type, years] of [["weight", 2], ["height", 10]]) {
+    try {
+      const start = new Date(); start.setFullYear(start.getFullYear() - years);
+      const r = await Health.readSamples({ dataType: type, startDate: start.toISOString(), endDate: new Date().toISOString(), limit: 2000 });
+      let best = null;
+      for (const x of (r && r.samples) || []) { const ts = new Date(x.startDate).getTime(), v = Number(x.value); if (v > 0 && (!best || ts > best.ts)) best = { v, ts }; }
+      if (best) out[type] = { v: Math.round(best.v), ts: best.ts }; // whole kg / cm, like the app's own fields
+    } catch (_) {}
+  }
+  return out;
 }
 export function healthSettings() { if (isNative) Health.openHealthConnectSettings().catch(() => {}); }
 // Per local day for the last `days` days (today included): { "2026-10-10": 8123, … }
