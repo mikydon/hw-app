@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: How to translate HW App
+    url: https://github.com/mikydon/hw-app/blob/main/TRANSLATING.md
+    about: Fix a text or add your language.

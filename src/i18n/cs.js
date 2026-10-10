@@ -85,7 +85,7 @@ export default {
     hint_history: "Zapomněl jsi zapsat trénink? Historie → Přidat trénink ručně.",
     hint_howto: "Ťukni na cvik v seznamu a uvidíš obrázek, postup i video.",
     hint_freeze: "Nestíháš dnes cvičit? Zmrazení šňůry v Profilu tě ochrání.",
-    hint_language: "Appka umí 11 jazyků: Nastavení → Jazyk.",
+    hint_language: "Appka umí 14 jazyků: Nastavení → Jazyk.",
     hint_birthday: "Zadej datum narození v Kaloriích a appka tě na narozeniny překvapí. 🎂",
     bdayTitle: "VŠECHNO NEJLEPŠÍ, {name}!",
     bdayAge: "Dnes je ti {n}! 🎉",
@@ -374,6 +374,7 @@ export default {
 
     appearance: "Vzhled",
     language: "Jazyk",
+    translateHelp: "Chybí tvůj jazyk nebo je v překladu chyba? Pomoz s překladem na GitHubu ›",
     sounds: "Zvuky",
     sndTap: "Zvuky tlačítek",
     sndTapD: "Jemné cvaknutí při klepnutí.",
@@ -890,6 +891,7 @@ export default {
     ["📱 Kalorie z Health Connect", "Při propojení se jídlo ze Samsung Health hned přičetlo k tvým zápisům, i když bylo zapsané dvakrát.", "Kroky se propojí samy, kalorie z jídla jsou nepovinné. Při připojení si vybereš: jen Health Connect (tvoje zápisy se nepočítají, ale zůstanou uložené), nebo sečíst."],
     ["Jak se počítá cíl", "Viděl jsi jen výsledné číslo.", "„Jak se počítá cíl?“ v Kaloriích ukáže celý součet: běžný den, cíl (např. přibírání), dnešní trénink a kroky navíc."],
     ["Vibrace v nastavení", "Při zapnutí se v appce nic nestalo.", "Když ji zapneš, telefon krátce zavibruje. Při vypnutí nic."],
+    ["Jazyky", "11 jazyků.", "14 jazyků: přibyla čínština, japonština a korejština. Překlady může kdokoli opravit nebo přidat nový jazyk na GitHubu."],
   ],
   news11: [
     ["📱 Kroky z Health Connect", "Kalorie znaly jen tvou úroveň pohybu a tréninky v appce.", "Pokud dovolíš, appka si přes Health Connect přečte kroky (Samsung Health, Google Fit, Fitbit…). Kroky nad tím, co počítá tvoje úroveň pohybu, přidají kalorie k cíli. Najdeš to v Kaloriích. Kalorie zapsané v jiných appkách se započítají jako snědené."],

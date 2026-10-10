@@ -12,6 +12,9 @@ import es from "./es.js";
 import fr from "./fr.js";
 import it from "./it.js";
 import pt from "./pt.js";
+import zh from "./zh.js";
+import ja from "./ja.js";
+import ko from "./ko.js";
 
 // Native names, so people find their language even if the UI is in another one.
 export const LANGS = [
@@ -26,8 +29,11 @@ export const LANGS = [
   { code: "fr", name: "Français", flag: "🇫🇷" },
   { code: "it", name: "Italiano", flag: "🇮🇹" },
   { code: "pt", name: "Português", flag: "🇧🇷" },
+  { code: "zh", name: "中文（简体）", flag: "🇨🇳" },
+  { code: "ja", name: "日本語", flag: "🇯🇵" },
+  { code: "ko", name: "한국어", flag: "🇰🇷" },
 ];
-const SOURCES = { en, sk, cs, pl, hu, uk, de, es, fr, it, pt };
+const SOURCES = { en, sk, cs, pl, hu, uk, de, es, fr, it, pt, zh, ja, ko };
 
 // Objects merge key by key; strings and arrays are taken whole from the locale.
 function merge(base, over) {

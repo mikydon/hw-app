@@ -85,7 +85,7 @@ export default {
     hint_history: "Zabudol si zapísať tréning? História → Pridať tréning ručne.",
     hint_howto: "Ťukni na cvik v zozname a uvidíš obrázok, postup aj video.",
     hint_freeze: "Nestíhaš dnes cvičiť? Zamrazenie série v Profile ťa ochráni.",
-    hint_language: "Appka vie 11 jazykov: Nastavenia → Jazyk.",
+    hint_language: "Appka vie 14 jazykov: Nastavenia → Jazyk.",
     hint_birthday: "Zadaj dátum narodenia v Kalóriách a appka ťa na narodeniny prekvapí. 🎂",
     bdayTitle: "VŠETKO NAJLEPŠIE, {name}!",
     bdayAge: "Dnes máš {n}! 🎉",
@@ -374,6 +374,7 @@ export default {
 
     appearance: "Vzhľad",
     language: "Jazyk",
+    translateHelp: "Chýba tvoj jazyk alebo je v preklade chyba? Pomôž s prekladom na GitHube ›",
     sounds: "Zvuky",
     sndTap: "Zvuky tlačidiel",
     sndTapD: "Jemné cvaknutie pri ťuknutí.",
@@ -890,6 +891,7 @@ export default {
     ["📱 Kalórie z Health Connect", "Pri prepojení sa jedlo zo Samsung Health hneď pripočítalo k tvojim zápisom, aj keď si ho mal zapísané dvakrát.", "Kroky sa prepoja samy, kalórie z jedla sú nepovinné. Pri pripojení si vyberieš: len Health Connect (tvoje zápisy sa nerátajú, ale ostanú uložené), alebo sčítať."],
     ["Ako sa počíta cieľ", "Videl si len výsledné číslo.", "„Ako sa počíta cieľ?“ v Kalóriách ukáže celý súčet: bežný deň, cieľ (napr. priberanie), dnešný tréning a kroky navyše."],
     ["Vibrácia v nastaveniach", "Pri zapnutí sa v appke nič nestalo.", "Keď ju zapneš, telefón krátko zavibruje. Pri vypnutí nič."],
+    ["Jazyky", "11 jazykov.", "14 jazykov: pribudla čínština, japončina a kórejčina. Preklady môže ktokoľvek opraviť alebo pridať nový jazyk na GitHube."],
   ],
   news11: [
     ["📱 Kroky z Health Connect", "Kalórie poznali len tvoju úroveň pohybu a tréningy v appke.", "Ak dovolíš, appka si cez Health Connect prečíta kroky (Samsung Health, Google Fit, Fitbit…). Kroky nad tým, čo ráta tvoja úroveň pohybu, pridajú kalórie k cieľu. Nájdeš to v Kalóriách. Kalórie, ktoré si zapíšeš v iných appkách, sa započítajú ako zjedené."],

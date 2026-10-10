@@ -85,7 +85,7 @@ export default {
     hint_history: "¿Olvidaste anotar un entreno? Historial → Añadir un entrenamiento a mano.",
     hint_howto: "Toca un ejercicio de la lista para ver dibujo, pasos y vídeo.",
     hint_freeze: "¿Hoy no te da tiempo? Un protector de racha en tu Perfil la salva.",
-    hint_language: "La app habla 11 idiomas: Ajustes → Idioma.",
+    hint_language: "La app habla 14 idiomas: Ajustes → Idioma.",
     hint_birthday: "Pon tu fecha de nacimiento en Calorías y la app te sorprenderá en tu cumpleaños. 🎂",
     bdayTitle: "¡FELIZ CUMPLEAÑOS, {name}!",
     bdayAge: "¡Hoy cumples {n}! 🎉",
@@ -374,6 +374,7 @@ export default {
 
     appearance: "Apariencia",
     language: "Idioma",
+    translateHelp: "¿Falta tu idioma o hay un error? Ayuda a traducir en GitHub ›",
     sounds: "Sonidos",
     sndTap: "Sonido de botones",
     sndTapD: "Un clic suave al tocar.",
@@ -890,6 +891,7 @@ export default {
     ["📱 Calorías de Health Connect", "Al conectar, la comida de Samsung Health se sumaba enseguida a tus registros, aunque estuviera anotada dos veces.", "Los pasos se conectan solos; las calorías de la comida son opcionales. Al conectarlas eliges: solo Health Connect (tus registros no cuentan pero se guardan) o sumar ambos."],
     ["Cómo se calcula el objetivo", "Solo veías el número final.", "«¿Cómo se calcula el objetivo?» en Calorías muestra toda la suma: un día normal, tu objetivo (p. ej. ganar peso), el entrenamiento de hoy y los pasos extra."],
     ["Vibración en Ajustes", "Al activarla no pasaba nada.", "Al activarla, el móvil vibra un momento. Al desactivarla, nada."],
+    ["Idiomas", "11 idiomas.", "14 idiomas: nuevos el chino, el japonés y el coreano. Cualquiera puede corregir una traducción o añadir un idioma en GitHub."],
   ],
   news11: [
     ["📱 Pasos de Health Connect", "Las calorías solo conocían tu nivel de actividad y los entrenamientos de la app.", "Si lo permites, la app lee tus pasos a través de Health Connect (Samsung Health, Google Fit, Fitbit…). Los pasos por encima de lo que ya cuenta tu nivel de actividad suman calorías al objetivo. Está en Calorías. Las calorías que apuntas en otras apps cuentan como comidas."],

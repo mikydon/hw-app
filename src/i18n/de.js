@@ -85,7 +85,7 @@ export default {
     hint_history: "Ein Training vergessen? Verlauf → Training von Hand hinzufügen.",
     hint_howto: "Tipp in der Liste auf eine Übung: Zeichnung, Anleitung und Video.",
     hint_freeze: "Heute keine Zeit? Ein Serienschutz im Profil rettet deine Serie.",
-    hint_language: "Die App spricht 11 Sprachen: Einstellungen → Sprache.",
+    hint_language: "Die App spricht 14 Sprachen: Einstellungen → Sprache.",
     hint_birthday: "Trag dein Geburtsdatum bei Kalorien ein und die App überrascht dich an deinem Geburtstag. 🎂",
     bdayTitle: "ALLES GUTE ZUM GEBURTSTAG, {name}!",
     bdayAge: "Heute wirst du {n}! 🎉",
@@ -374,6 +374,7 @@ export default {
 
     appearance: "Darstellung",
     language: "Sprache",
+    translateHelp: "Fehlt deine Sprache oder ist ein Fehler drin? Hilf beim Übersetzen auf GitHub ›",
     sounds: "Töne",
     sndTap: "Tastentöne",
     sndTapD: "Ein leises Klicken beim Tippen.",
@@ -890,6 +891,7 @@ export default {
     ["📱 Kalorien aus Health Connect", "Beim Verbinden wurde das Essen aus Samsung Health sofort zu deinen Einträgen addiert, auch wenn es doppelt eingetragen war.", "Schritte verbinden sich von selbst, Kalorien aus dem Essen sind freiwillig. Beim Verbinden wählst du: nur Health Connect (deine Einträge zählen nicht, bleiben aber gespeichert) oder beides addieren."],
     ["Wie das Ziel berechnet wird", "Du hast nur die Endzahl gesehen.", "„Wie wird das Ziel berechnet?“ unter Kalorien zeigt die ganze Summe: normaler Tag, Ziel (z. B. Zunehmen), heutiges Training und zusätzliche Schritte."],
     ["Vibration in den Einstellungen", "Beim Einschalten passierte nichts.", "Beim Einschalten vibriert das Handy kurz. Beim Ausschalten nichts."],
+    ["Sprachen", "11 Sprachen.", "14 Sprachen: neu sind Chinesisch, Japanisch und Koreanisch. Jeder kann auf GitHub eine Übersetzung korrigieren oder eine Sprache hinzufügen."],
   ],
   news11: [
     ["📱 Schritte aus Health Connect", "Kalorien kannten nur dein Aktivitätslevel und die Workouts der App.", "Wenn du es erlaubst, liest die App deine Schritte über Health Connect (Samsung Health, Google Fit, Fitbit…). Schritte über dem, was dein Aktivitätslevel schon zählt, bringen Kalorien zum Ziel dazu. Du findest es unter Kalorien. Kalorien, die du in anderen Apps einträgst, zählen als gegessen."],

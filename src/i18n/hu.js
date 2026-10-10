@@ -85,7 +85,7 @@ export default {
     hint_history: "Elfelejtettél beírni egy edzést? Előzmények → Edzés hozzáadása kézzel.",
     hint_howto: "Koppints egy gyakorlatra a listában: rajz, leírás és videó.",
     hint_freeze: "Ma nincs időd edzeni? A Profilban a szériavédő megmenti a sorozatod.",
-    hint_language: "Az app 11 nyelven tud: Beállítások → Nyelv.",
+    hint_language: "Az app 14 nyelven tud: Beállítások → Nyelv.",
     hint_birthday: "Add meg a születési dátumod a Kalóriáknál, és az app meglep a születésnapodon. 🎂",
     bdayTitle: "BOLDOG SZÜLETÉSNAPOT, {name}!",
     bdayAge: "Ma {n} éves lettél! 🎉",
@@ -374,6 +374,7 @@ export default {
 
     appearance: "Megjelenés",
     language: "Nyelv",
+    translateHelp: "Hiányzik a nyelved, vagy hibát találtál? Segíts fordítani a GitHubon ›",
     sounds: "Hangok",
     sndTap: "Gombhangok",
     sndTapD: "Halk kattanás koppintáskor.",
@@ -890,6 +891,7 @@ export default {
     ["📱 Kalóriák a Health Connectből", "Összekapcsoláskor a Samsung Health ételei azonnal hozzáadódtak a bejegyzéseidhez, akkor is, ha kétszer volt beírva.", "A lépések maguktól kapcsolódnak, az ételkalóriák nem kötelezők. Összekapcsoláskor választasz: csak Health Connect (a bejegyzéseid nem számítanak, de megmaradnak), vagy összeadás."],
     ["Hogyan számolódik a cél", "Csak a végeredményt láttad.", "A Kalóriákban a „Hogyan számolódik a cél?” megmutatja az egész összeget: átlagos nap, cél (pl. hízás), mai edzés és plusz lépések."],
     ["Rezgés a beállításokban", "Bekapcsoláskor semmi sem történt.", "Bekapcsoláskor a telefon röviden rezeg. Kikapcsoláskor semmi."],
+    ["Nyelvek", "11 nyelv.", "14 nyelv: új a kínai, a japán és a koreai. Bárki javíthat fordítást vagy hozzáadhat egy nyelvet a GitHubon."],
   ],
   news11: [
     ["📱 Lépések a Health Connectből", "A kalória csak a mozgásszintedet és az app edzéseit ismerte.", "Ha engeded, az app a Health Connecten át beolvassa a lépéseidet (Samsung Health, Google Fit, Fitbit…). Ami a mozgásszinted feletti, az kalóriát ad a célhoz. A Kalóriában találod. A más appokban beírt kalória elfogyasztottként számít."],

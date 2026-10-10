@@ -1,0 +1,18 @@
+name: Translations
+# Checks pull requests that change texts: same keys as en.js, every {placeholder} kept,
+# same list lengths, plural forms for the language (src/i18n/check.mjs). Nothing is built or released here.
+on:
+  pull_request:
+    paths: ["src/i18n/**"]
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: Check every language file against en.js
+        run: node src/i18n/check.mjs

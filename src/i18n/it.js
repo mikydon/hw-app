@@ -85,7 +85,7 @@ export default {
     hint_history: "Hai dimenticato di segnare un allenamento? Storico → Aggiungi un allenamento a mano.",
     hint_howto: "Tocca un esercizio nella lista per vedere disegno, passaggi e video.",
     hint_freeze: "Oggi non hai tempo? Un congelamento nel Profilo salva la tua serie.",
-    hint_language: "L'app parla 11 lingue: Impostazioni → Lingua.",
+    hint_language: "L'app parla 14 lingue: Impostazioni → Lingua.",
     hint_birthday: "Inserisci la data di nascita in Calorie e l'app ti farà una sorpresa al compleanno. 🎂",
     bdayTitle: "BUON COMPLEANNO, {name}!",
     bdayAge: "Oggi compi {n} anni! 🎉",
@@ -374,6 +374,7 @@ export default {
 
     appearance: "Aspetto",
     language: "Lingua",
+    translateHelp: "Manca la tua lingua o c'è un errore? Aiuta a tradurre su GitHub ›",
     sounds: "Suoni",
     sndTap: "Suoni dei pulsanti",
     sndTapD: "Un clic leggero quando tocchi.",
@@ -890,6 +891,7 @@ export default {
     ["📱 Calorie da Health Connect", "Collegando, il cibo di Samsung Health si sommava subito alle tue voci, anche se era registrato due volte.", "I passi si collegano da soli, le calorie del cibo sono facoltative. Collegandole scegli: solo Health Connect (le tue voci non contano ma restano salvate) o sommare entrambi."],
     ["Come si calcola l'obiettivo", "Vedevi solo il numero finale.", "«Come si calcola l'obiettivo?» in Calorie mostra tutta la somma: giorno normale, obiettivo (es. aumento di peso), allenamento di oggi e passi in più."],
     ["Vibrazione nelle Impostazioni", "Attivandola non succedeva nulla.", "Quando la attivi, il telefono vibra brevemente. Quando la disattivi, niente."],
+    ["Lingue", "11 lingue.", "14 lingue: nuovi cinese, giapponese e coreano. Chiunque può correggere una traduzione o aggiungere una lingua su GitHub."],
   ],
   news11: [
     ["📱 Passi da Health Connect", "Le calorie conoscevano solo il tuo livello di attività e gli allenamenti dell'app.", "Se lo permetti, l'app legge i passi tramite Health Connect (Samsung Health, Google Fit, Fitbit…). I passi oltre quelli che conta già il tuo livello di attività aggiungono calorie all'obiettivo. Lo trovi in Calorie. Le calorie segnate in altre app contano come mangiate."],

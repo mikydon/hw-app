@@ -23,6 +23,7 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 | Food calories from Health Connect *(Android app only)* | connecting added food from other apps to your own entries straight away | steps connect by themselves; food calories are optional ("Also connect food calories"), and you choose and confirm how they count: only Health Connect (your own entries don't count on those days but stay saved, and count again if you disconnect) or added together |
 | Today's calorie target | only the final number | "How is the target calculated?" shows the sum: a normal day, your goal, today's workout and extra steps |
 | Vibration setting | turning it on did nothing you could feel | the phone vibrates briefly when you turn it on |
+| Languages | 11 | 14: Chinese (Simplified), Japanese and Korean are new; the language list links to [TRANSLATING.md](https://github.com/mikydon/hw-app/blob/main/TRANSLATING.md), where anyone can fix a translation or add a language (reviewed, shipped with the next big update) |
 
 ## 1.1.1 (2026-10-10)
 

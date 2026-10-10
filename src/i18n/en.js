@@ -85,7 +85,7 @@ export default {
     hint_history: "Forgot to log a workout? History → Add a workout manually.",
     hint_howto: "Tap an exercise in the list to see a drawing, steps and a video.",
     hint_freeze: "No time to train today? A streak freeze in your Profile keeps your streak.",
-    hint_language: "The app speaks 11 languages: Settings → Language.",
+    hint_language: "The app speaks 14 languages: Settings → Language.",
     hint_birthday: "Enter your birth date in Calories and the app will surprise you on your birthday. 🎂",
     bdayTitle: "HAPPY BIRTHDAY, {name}!",
     bdayAge: "You're {n} today! 🎉",
@@ -374,6 +374,7 @@ export default {
 
     appearance: "Appearance",
     language: "Language",
+    translateHelp: "Missing your language, or found a mistake? Help translate on GitHub ›",
     sounds: "Sounds",
     sndTap: "Button sounds",
     sndTapD: "A soft click when you tap.",
@@ -890,6 +891,7 @@ export default {
     ["📱 Calories from Health Connect", "When connected, food from Samsung Health was added to your own entries at once, even if it was logged twice.", "Steps connect by themselves; food calories are optional. When you connect them, you choose: only Health Connect (your entries don't count but stay saved), or add both."],
     ["How the target is calculated", "You only saw the final number.", "\"How is the target calculated?\" in Calories shows the whole sum: a normal day, your goal (e.g. gaining), today's workout and extra steps."],
     ["Vibration in Settings", "Turning it on did nothing in the app.", "When you turn it on, the phone vibrates briefly. Turning it off does nothing."],
+    ["Languages", "11 languages.", "14 languages: Chinese, Japanese and Korean are new. Anyone can fix a translation or add a language on GitHub."],
   ],
   news11: [
     ["📱 Steps from Health Connect", "Calories only knew your activity level and the app's workouts.", "If you allow it, the app reads your steps through Health Connect (Samsung Health, Google Fit, Fitbit…). Steps above what your activity level already counts add calories to your target. It's in Calories. Calories you log in other apps count as eaten."],

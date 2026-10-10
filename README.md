@@ -35,7 +35,7 @@ Open https://mikydon.github.io/hw-app/ and add it to your home screen (Android C
 - history with a calendar and a progress chart; edit or delete past workouts, or add one you did without the app
 - a new motivational line every day (a rest-day one after a workout), and cards you can close
 - backup and restore of all your data as a file, and a "start over from zero" reset that keeps your profile
-- 11 languages: English, Slovenčina, Čeština, Polski, Magyar, Українська, Deutsch, Español, Français, Italiano, Português. The app picks your phone's language automatically; you can change it in Settings.
+- 14 languages: English, Slovenčina, Čeština, Polski, Magyar, Українська, Deutsch, Español, Français, Italiano, Português, 中文（简体）, 日本語, 한국어. The app picks your phone's language automatically (English if yours isn't there yet); you can change it in Settings. Found a mistake or missing your language? See [TRANSLATING.md](TRANSLATING.md).
 
 What changed in each version: [CHANGELOG.md](CHANGELOG.md).
 

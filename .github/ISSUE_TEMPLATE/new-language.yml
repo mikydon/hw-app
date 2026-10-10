@@ -1,0 +1,33 @@
+name: New language
+description: Add HW App in your language.
+title: "[New language] "
+labels: ["translation", "new language"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you! The steps and rules are in [TRANSLATING.md](https://github.com/mikydon/hw-app/blob/main/TRANSLATING.md). In short: copy `src/i18n/en.js`, translate the texts in quotes, keep every `{placeholder}`, and attach the file here (or open a pull request).
+  - type: input
+    id: language
+    attributes:
+      label: Language (in English and in the language itself)
+      placeholder: "e.g. Dutch / Nederlands"
+    validations:
+      required: true
+  - type: input
+    id: code
+    attributes:
+      label: Two-letter language code
+      placeholder: "e.g. nl"
+  - type: dropdown
+    id: state
+    attributes:
+      label: How far are you?
+      options: ["Finished file attached", "Partly translated, attached", "I'd like to start, please help"]
+    validations:
+      required: true
+  - type: textarea
+    id: file
+    attributes:
+      label: File or notes
+      description: Drag the translated .js file here (rename it to .txt if GitHub doesn't accept .js).

@@ -85,7 +85,7 @@ export default {
     hint_history: "Tu as oublié de noter une séance ? Historique → Ajouter une séance à la main.",
     hint_howto: "Touche un exercice dans la liste pour voir le dessin, les étapes et la vidéo.",
     hint_freeze: "Pas le temps aujourd'hui ? Un gel de flamme dans ton Profil sauve ta série.",
-    hint_language: "L'appli parle 11 langues : Réglages → Langue.",
+    hint_language: "L'appli parle 14 langues : Réglages → Langue.",
     hint_birthday: "Entre ta date de naissance dans Calories et l'appli te fera une surprise pour ton anniversaire. 🎂",
     bdayTitle: "JOYEUX ANNIVERSAIRE, {name} !",
     bdayAge: "Tu as {n} ans aujourd'hui ! 🎉",
@@ -374,6 +374,7 @@ export default {
 
     appearance: "Apparence",
     language: "Langue",
+    translateHelp: "Ta langue manque ou il y a une erreur ? Aide à traduire sur GitHub ›",
     sounds: "Sons",
     sndTap: "Sons des boutons",
     sndTapD: "Un petit clic quand tu touches l'écran.",
@@ -890,6 +891,7 @@ export default {
     ["📱 Calories depuis Health Connect", "À la connexion, les repas de Samsung Health s'ajoutaient tout de suite à tes saisies, même s'ils étaient notés deux fois.", "Les pas se connectent tout seuls, les calories des repas sont facultatives. En les connectant, tu choisis : seulement Health Connect (tes saisies ne comptent pas mais restent enregistrées) ou additionner les deux."],
     ["Comment l'objectif est calculé", "Tu ne voyais que le chiffre final.", "« Comment l'objectif est-il calculé ? » dans Calories montre toute la somme : un jour normal, ton objectif (ex. prise de poids), l'entraînement du jour et les pas en plus."],
     ["Vibration dans les Réglages", "L'activer ne faisait rien.", "Quand tu l'actives, le téléphone vibre brièvement. Quand tu la désactives, rien."],
+    ["Langues", "11 langues.", "14 langues : le chinois, le japonais et le coréen sont nouveaux. Tout le monde peut corriger une traduction ou ajouter une langue sur GitHub."],
   ],
   news11: [
     ["📱 Pas depuis Health Connect", "Les calories ne connaissaient que ton niveau d'activité et les séances de l'appli.", "Si tu l'autorises, l'appli lit tes pas via Health Connect (Samsung Health, Google Fit, Fitbit…). Les pas au-delà de ce que compte déjà ton niveau d'activité ajoutent des calories à l'objectif. C'est dans Calories. Les calories notées dans d'autres applis comptent comme mangées."],

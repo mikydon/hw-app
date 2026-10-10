@@ -32,6 +32,8 @@ jobs:
           distribution: temurin
           java-version: 21
       - run: npm ci
+      - name: Texts in every language match en.js (src/i18n/check.mjs)
+        run: node src/i18n/check.mjs
       - run: npm run build
       - name: The committed index.html and fonts match the source
         run: git diff --exit-code --stat -- index.html fonts

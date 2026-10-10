@@ -85,7 +85,7 @@ export default {
     hint_history: "Zapomniałeś zapisać trening? Historia → Dodaj trening ręcznie.",
     hint_howto: "Stuknij ćwiczenie na liście, a zobaczysz rysunek, opis i film.",
     hint_freeze: "Nie masz dziś czasu? Zamrożenie passy w Profilu ją uratuje.",
-    hint_language: "Aplikacja zna 11 języków: Ustawienia → Język.",
+    hint_language: "Aplikacja zna 14 języków: Ustawienia → Język.",
     hint_birthday: "Wpisz datę urodzenia w Kaloriach, a aplikacja zrobi ci urodzinową niespodziankę. 🎂",
     bdayTitle: "WSZYSTKIEGO NAJLEPSZEGO, {name}!",
     bdayAge: "Kończysz dziś {n}! 🎉",
@@ -374,6 +374,7 @@ export default {
 
     appearance: "Wygląd",
     language: "Język",
+    translateHelp: "Brakuje twojego języka albo jest błąd w tłumaczeniu? Pomóż tłumaczyć na GitHubie ›",
     sounds: "Dźwięki",
     sndTap: "Dźwięki przycisków",
     sndTapD: "Delikatne kliknięcie przy dotknięciu.",
@@ -890,6 +891,7 @@ export default {
     ["📱 Kalorie z Health Connect", "Po połączeniu jedzenie z Samsung Health od razu dodawało się do twoich wpisów, nawet gdy było zapisane podwójnie.", "Kroki łączą się same, kalorie z jedzenia są opcjonalne. Przy łączeniu wybierasz: tylko Health Connect (twoje wpisy się nie liczą, ale zostają zapisane) albo sumowanie."],
     ["Jak liczony jest cel", "Widziałeś tylko wynik.", "„Jak liczony jest cel?” w Kaloriach pokazuje całą sumę: zwykły dzień, cel (np. przybieranie), dzisiejszy trening i dodatkowe kroki."],
     ["Wibracja w ustawieniach", "Po włączeniu nic się nie działo.", "Gdy ją włączysz, telefon krótko zawibruje. Po wyłączeniu nic."],
+    ["Języki", "11 języków.", "14 języków: doszły chiński, japoński i koreański. Każdy może poprawić tłumaczenie lub dodać język na GitHubie."],
   ],
   news11: [
     ["📱 Kroki z Health Connect", "Kalorie znały tylko twój poziom ruchu i treningi w aplikacji.", "Jeśli pozwolisz, aplikacja odczyta kroki przez Health Connect (Samsung Health, Google Fit, Fitbit…). Kroki ponad to, co liczy twój poziom ruchu, dodają kalorie do celu. Znajdziesz to w Kaloriach. Kalorie zapisane w innych aplikacjach liczą się jako zjedzone."],

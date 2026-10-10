@@ -35,6 +35,8 @@ const APP_VERSION = "1.2.0";
 // downloads the Oswald unicode ranges a page actually uses.
 const DISPLAY = "'Big Shoulders Display', 'Oswald', 'Arial Narrow', Impact, sans-serif";
 const BODY = "'Figtree', -apple-system, 'Segoe UI', sans-serif";
+// Chinese, Japanese and Korean glyphs are full width (the display font is condensed Latin), so a few big titles get smaller.
+const CJK = /[\u3040-\u30ff\u3400-\u9fff\uac00-\ud7af]/;
 
 // ─── AUDIO (unchanged — tested and working on Android) ──────────────────────
 function unlockAudio() {
@@ -997,6 +999,7 @@ function DiffChip({ id, pad = "1px 8px" }) {
 // "?" next to an exercise name anywhere: opens its description sheet (one host in App).
 const SUPPORT_URL = "https://www.patreon.com/c/mikydon";
 const PRIVACY_URL = "https://mikydon.github.io/hw-app/privacy.html";
+const TRANSLATE_URL = "https://github.com/mikydon/hw-app/blob/main/TRANSLATING.md";
 let openHowToGlobal = null;
 function ExQ({ id, onOpen, style }) {
   const go = e => { e.stopPropagation(); e.preventDefault(); sfxTap(); if (onOpen) onOpen(); else if (openHowToGlobal) openHowToGlobal(id); };
@@ -1300,7 +1303,7 @@ function TopBar({ screen, history, menuOpen, onMenu, onGo, dlPct }) {
     <div style={{ position: "sticky", top: 0, zIndex: 20, background: `${C.ink}ee`, backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderBottom: `1px solid ${C.line}` }}>
       <div style={{ maxWidth: 460, margin: "0 auto", padding: "calc(10px + var(--sat)) 18px 10px", display: "flex", alignItems: "center", gap: 8 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div key={screen} className="titleIn" style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, lineHeight: 1, color: C.chalk }}>{T(SCREEN_TITLE[screen])}</div>
+          <div key={screen} className="titleIn" style={{ fontFamily: DISPLAY, fontSize: CJK.test(T(SCREEN_TITLE[screen])) ? 21 : 24, fontWeight: 900, lineHeight: 1.05, color: C.chalk, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{T(SCREEN_TITLE[screen])}</div>
           <div style={{ display: "flex", gap: 5, fontSize: 12, color: bdayToday() ? C.signal : C.dim, fontWeight: bdayToday() ? 800 : 400, marginTop: 2, whiteSpace: "nowrap" }}>
             <span style={{ overflow: "hidden", textOverflow: "ellipsis", minWidth: 0 }}>{bdayToday() ? T("bdayTop") : capFirst(fmtDate(today, true))}</span>
             <span data-clock style={{ flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>· {now.toLocaleTimeString(LANG, { hour: "2-digit", minute: "2-digit" })}</span>
@@ -3506,6 +3509,7 @@ function SettingsTab({ settings, setSettings, history, profile, setProfile, onIm
               );
             })}
           </div>
+          <button data-translate-help onClick={() => { sfxTap(); openExternal(TRANSLATE_URL); }} style={{ ...btnBase, background: "transparent", color: C.sky, fontSize: 13, padding: "14px 2px 2px", textAlign: "left", lineHeight: 1.45 }}>{T("translateHelp")}</button>
         </Sheet>
       )}
 

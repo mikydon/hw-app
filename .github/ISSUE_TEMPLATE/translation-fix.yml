@@ -1,0 +1,39 @@
+name: Translation fix
+description: A text in the app is wrong, unclear or sounds unnatural in your language.
+title: "[Translation] "
+labels: ["translation"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping! You can also fix it yourself, see [TRANSLATING.md](https://github.com/mikydon/hw-app/blob/main/TRANSLATING.md).
+  - type: dropdown
+    id: language
+    attributes:
+      label: Language
+      options: [English, Slovenčina, Čeština, Polski, Magyar, Українська, Deutsch, Español, Français, Italiano, Português, 中文（简体）, 日本語, 한국어]
+    validations:
+      required: true
+  - type: input
+    id: where
+    attributes:
+      label: Where in the app?
+      placeholder: "e.g. Settings → Sounds, or the workout summary"
+    validations:
+      required: true
+  - type: textarea
+    id: now
+    attributes:
+      label: What it says now
+    validations:
+      required: true
+  - type: textarea
+    id: better
+    attributes:
+      label: What it should say
+    validations:
+      required: true
+  - type: textarea
+    id: more
+    attributes:
+      label: Screenshot or anything else (optional)
