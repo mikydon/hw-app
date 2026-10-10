@@ -81,6 +81,14 @@ export default {
     kcNoDateAdd: "Aggiungo la data",
     kcNoDateSkip: "Sì, salva solo l'anno",
     kcSex: "Sesso",
+    lookTitle: "Layout della schermata principale",
+    look_cards: "Riquadri",
+    look_tiles: "Tessere",
+    look_flat: "Aperto",
+    lookHint: "Riquadri = contenuto in box, Tessere = box più chiari e compatti (anche nelle altre schermate), Aperto = l'aspetto originale senza box.",
+    secWeek: "Questa settimana",
+    secExercises: "Esercizi",
+    secLength: "Durata dell'allenamento",
     obStep: "Passo {n} di 3",
     obSkipAll: "Salta tutto",
     obHello: "Benvenuto in HW App!",
@@ -851,6 +859,11 @@ export default {
     "Pulsante flottante nella schermata principale: quando la scelta dei giri non è visibile, in basso compaiono due quadratini 19 e 13 min e «Inizia giorno».",
     "Al primo avvio l'app chiede soprannome, sesso, data di nascita, altezza, peso e obiettivo di calorie. Tutto si può saltare; ciò che manca appare in alto nella schermata principale e si completa con un tocco.",
     "Il modulo delle calorie dice di nuovo «Sesso» (invece di «Uomo o donna?»).",
+  ],
+  news107: [
+    "La schermata principale è divisa in riquadri: Questa settimana, Allenamento di oggi, Esercizi, Durata dell'allenamento, Calorie, Sfide.",
+    "Impostazioni → Aspetto → Layout: Riquadri, Tessere (più chiare e compatte, anche nelle altre schermate) o Aperto (l'aspetto originale). Prova quale ti piace di più.",
+    "Il menu laterale è più chiaro: profilo, schermate e in fondo un riquadro sull'app (versione, novità, versione più recente su GitHub).",
   ],
 
   quotes: [

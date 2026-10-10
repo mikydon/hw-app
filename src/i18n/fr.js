@@ -81,6 +81,14 @@ export default {
     kcNoDateAdd: "J'ajoute la date",
     kcNoDateSkip: "Oui, garder seulement l'année",
     kcSex: "Sexe",
+    lookTitle: "Disposition de l'écran principal",
+    look_cards: "Cadres",
+    look_tiles: "Tuiles",
+    look_flat: "Ouvert",
+    lookHint: "Cadres = contenu en blocs, Tuiles = blocs plus clairs et serrés (aussi sur les autres écrans), Ouvert = l'aspect d'origine sans blocs.",
+    secWeek: "Cette semaine",
+    secExercises: "Exercices",
+    secLength: "Durée de la séance",
     obStep: "Étape {n} sur 3",
     obSkipAll: "Tout passer",
     obHello: "Bienvenue dans HW App !",
@@ -851,6 +859,11 @@ export default {
     "Bouton flottant sur l'écran principal : quand le choix des tours n'est pas visible, deux petits carrés 19 et 13 min et « Commencer le jour » apparaissent en bas.",
     "Au premier lancement, l'appli demande un pseudo, le sexe, la date de naissance, la taille, le poids et un objectif de calories. Tout peut être passé ; ce qui manque s'affiche en haut de l'écran principal et se complète d'un geste.",
     "Le formulaire de calories indique de nouveau « Sexe » (au lieu de « Homme ou femme ? »).",
+  ],
+  news107: [
+    "L'écran principal est découpé en cadres : Cette semaine, Séance du jour, Exercices, Durée de la séance, Calories, Défis.",
+    "Réglages → Apparence → Disposition : Cadres, Tuiles (plus clairs et serrés, aussi sur les autres écrans) ou Ouvert (l'aspect d'origine). Essaie ce que tu préfères.",
+    "Le menu latéral est plus clair : profil, écrans et en bas un bloc sur l'appli (version, nouveautés, version la plus récente sur GitHub).",
   ],
 
   quotes: [

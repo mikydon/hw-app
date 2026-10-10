@@ -81,6 +81,14 @@ export default {
     kcNoDateAdd: "I'll add the date",
     kcNoDateSkip: "Yes, save only the year",
     kcSex: "Gender",
+    lookTitle: "Main screen layout",
+    look_cards: "Boxes",
+    look_tiles: "Tiles",
+    look_flat: "Open",
+    lookHint: "Boxes = content in boxes, Tiles = lighter, tighter boxes (on other screens too), Open = the original look without boxes.",
+    secWeek: "This week",
+    secExercises: "Exercises",
+    secLength: "Workout length",
     obStep: "Step {n} of 3",
     obSkipAll: "Skip all",
     obHello: "Welcome to HW App!",
@@ -851,6 +859,11 @@ export default {
     "Floating button on the main screen: when the rounds choice is off screen, two small squares 19 and 13 min and \"Start day\" pop up at the bottom.",
     "On the first start the app asks for a nickname, gender, birth date, height, weight and a calorie goal. Everything can be skipped; whatever is missing shows at the top of the main screen and can be added with one tap.",
     "The calorie form says \"Gender\" again (instead of \"Man or woman?\").",
+  ],
+  news107: [
+    "The main screen is split into boxes: This week, Today's workout, Exercises, Workout length, Calories, Challenges.",
+    "Settings → Appearance → Layout: Boxes, Tiles (lighter and tighter, on other screens too) or Open (the original look). Try which you like best.",
+    "The side menu is clearer: profile, screens, and at the bottom a box about the app (version, what's new, newest version on GitHub).",
   ],
 
   quotes: [

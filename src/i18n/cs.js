@@ -81,6 +81,14 @@ export default {
     kcNoDateAdd: "Doplním datum",
     kcNoDateSkip: "Ano, uložit jen rok",
     kcSex: "Pohlaví",
+    lookTitle: "Rozložení hlavní obrazovky",
+    look_cards: "Rámečky",
+    look_tiles: "Dlaždice",
+    look_flat: "Otevřené",
+    lookHint: "Rámečky = obsah v boxech, Dlaždice = světlejší a těsnější boxy (i na ostatních obrazovkách), Otevřené = původní vzhled bez boxů.",
+    secWeek: "Tento týden",
+    secExercises: "Cviky",
+    secLength: "Délka tréninku",
     obStep: "Krok {n} ze 3",
     obSkipAll: "Přeskočit vše",
     obHello: "Vítej v HW App!",
@@ -851,6 +859,11 @@ export default {
     "Plovoucí tlačítko na hlavní obrazovce: když nevidíš výběr kol, dole vyskočí dva čtverečky 19 a 13 min a vedle nich „Začít den“.",
     "Při prvním spuštění se appka zeptá na přezdívku, pohlaví, datum narození, výšku, váhu a cíl kalorií. Vše jde přeskočit; co chybí, uvidíš nahoře na hlavní obrazovce a doplníš jedním ťuknutím.",
     "Ve formuláři kalorií je znovu „Pohlaví“ (místo „Muž, nebo žena?“).",
+  ],
+  news107: [
+    "Hlavní obrazovka je rozdělená do rámečků: Tento týden, Dnešní trénink, Cviky, Délka tréninku, Kalorie, Výzvy.",
+    "Nastavení → Vzhled → Rozložení: Rámečky, Dlaždice (světlejší a těsnější, i na ostatních obrazovkách) nebo Otevřené (původní vzhled). Vyzkoušej, co se ti líbí nejvíc.",
+    "Pravý panel je přehlednější: profil, obrazovky a dole box o appce (verze, novinky, nejnovější verze na GitHubu).",
   ],
 
   quotes: [

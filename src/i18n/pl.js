@@ -81,6 +81,14 @@ export default {
     kcNoDateAdd: "Uzupełnię datę",
     kcNoDateSkip: "Tak, zapisz tylko rok",
     kcSex: "Płeć",
+    lookTitle: "Układ ekranu głównego",
+    look_cards: "Ramki",
+    look_tiles: "Kafelki",
+    look_flat: "Otwarty",
+    lookHint: "Ramki = treść w polach, Kafelki = jaśniejsze, ciaśniejsze pola (także na innych ekranach), Otwarty = pierwotny wygląd bez pól.",
+    secWeek: "Ten tydzień",
+    secExercises: "Ćwiczenia",
+    secLength: "Długość treningu",
     obStep: "Krok {n} z 3",
     obSkipAll: "Pomiń wszystko",
     obHello: "Witaj w HW App!",
@@ -851,6 +859,11 @@ export default {
     "Pływający przycisk na ekranie głównym: gdy wybór rund jest poza ekranem, na dole pojawiają się dwa kwadraciki 19 i 13 min oraz „Zacznij dzień”.",
     "Przy pierwszym uruchomieniu aplikacja pyta o pseudonim, płeć, datę urodzenia, wzrost, wagę i cel kalorii. Wszystko można pominąć; czego brakuje, widać u góry ekranu głównego i można to uzupełnić jednym stuknięciem.",
     "Formularz kalorii znów ma „Płeć” (zamiast „Mężczyzna czy kobieta?”).",
+  ],
+  news107: [
+    "Ekran główny jest podzielony na ramki: Ten tydzień, Dzisiejszy trening, Ćwiczenia, Długość treningu, Kalorie, Wyzwania.",
+    "Ustawienia → Wygląd → Układ: Ramki, Kafelki (jaśniejsze i ciaśniejsze, także na innych ekranach) lub Otwarty (pierwotny wygląd). Sprawdź, co ci się najbardziej podoba.",
+    "Boczne menu jest czytelniejsze: profil, ekrany, a na dole pole o aplikacji (wersja, nowości, najnowsza wersja na GitHubie).",
   ],
 
   quotes: [

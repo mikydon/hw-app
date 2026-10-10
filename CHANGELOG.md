@@ -10,6 +10,12 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 
 <!-- New version: add a "## x.y.z (date)" section on top (web-only history uses "## Browser beta x.y.z (date)"). On a push to main, .github/workflows/build.yml builds everything and .github/scripts/releases.sh creates/updates the releases (commit = the push, or the one in a commit comment). -->
 
+## 1.0.7 (2026-10-10)
+
+- The main screen is split into boxes with small headings (This week, Today's workout, Exercises, Workout length), next to the Calories and Challenges boxes. Before: one long open page.
+- Settings → Appearance → Layout: Boxes (default), Tiles (lighter, tighter boxes, also on the other screens) or Open (the old look), to compare on the phone.
+- The side menu is clearer: profile box, the screens in one box, and at the bottom one box about the app (version + What's new, newest version on GitHub, update state; on the website the Android app link).
+
 ## 1.0.6 (2026-10-10)
 
 - Floating start bar on the main screen: when the rounds choice is off screen, a bar slides up with two small squares (19 and 13 min) and a wide "Start day X". It slides away when the rounds buttons are in view. Before: one sticky Start button without the choice of length.

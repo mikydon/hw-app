@@ -30,7 +30,7 @@ const THEMES = {
   slate:  { ink: "#15181d", panel: "#1f242b", panelHi: "#2a313a", line: "#3a434f", chalk: "#f1f4f8", dim: "#9aa6b4", edge: "#0e1115" },
   coffee: { ink: "#1c140f", panel: "#2a1f17", panelHi: "#382a20", line: "#4d3a2c", chalk: "#fbf3ec", dim: "#b8a291", edge: "#130d09" },
 };
-const APP_VERSION = "1.0.6";
+const APP_VERSION = "1.0.7";
 // Big Shoulders has no Cyrillic, so Oswald (also condensed) covers Ukrainian. The browser only
 // downloads the Oswald unicode ranges a page actually uses.
 const DISPLAY = "'Big Shoulders Display', 'Oswald', 'Arial Narrow', Impact, sans-serif";
@@ -1193,6 +1193,19 @@ function Avatar({ profile, size = 38 }) {
 
 let sectionTitle = { fontFamily: DISPLAY, fontSize: 28, fontWeight: 900, color: C.chalk, margin: "26px 0 10px" };
 let card = { background: C.panel, border: `1px solid ${C.line}`, borderRadius: 18 };
+// Look of the main screen (Michael, Oct 10: try a few and compare): "cards" (boxes, default), "tiles" (lighter, tighter boxes),
+// "flat" (the old open layout). Set from settings.look in App.
+let LOOK = "cards";
+function Sect({ title, children, style, titlePad, ...rest }) {
+  if (LOOK === "flat") return <div {...rest} style={{ marginTop: 18, ...style }}>{children}</div>;
+  const tiles = LOOK === "tiles";
+  return (
+    <section {...rest} data-sect style={{ background: tiles ? C.panelHi : C.panel, border: `1px solid ${tiles ? C.panelHi : C.line}`, borderRadius: tiles ? 16 : 20, padding: tiles ? "12px 13px" : "14px 15px", marginTop: tiles ? 8 : 12, ...style }}>
+      {title && <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: tiles ? C.chalk : C.dim, opacity: tiles ? 0.8 : 1, marginBottom: 10, padding: titlePad || 0 }}>{title}</div>}
+      {children}
+    </section>
+  );
+}
 
 // ─── TOP BAR + MENU ─────────────────────────────────────────────────────────
 // Screens: train (home), calories, history, profile, settings. One menu button (☰) top right
@@ -1219,22 +1232,41 @@ function useClock() {
   return now;
 }
 // App only: one small line in the menu with the result of the last update check.
-function UpdStatus({ gh, dl, webOnly }) {
-  const u = webOnly ? null : lastUpdate();
+// Menu: one box about the app: version + What's new, newest on GitHub (tap = releases), update state, Android link.
+function AboutBox({ gh, dl, onNews }) {
+  const u = isNative ? lastUpdate() : null;
   const newer = gh && verCmp(gh, APP_VERSION) > 0;
-  const ghLine = gh ? (
-    <button data-gh={gh} onClick={() => { sfxTap(); openExternal("https://github.com/mikydon/hw-app/releases/latest"); }} style={{ ...btnBase, display: "flex", alignItems: "center", gap: 8, background: "transparent", padding: "0 0 4px", color: newer ? C.mint : C.dim, fontSize: 12, fontWeight: 700, textAlign: "left" }}>
-      {T("ghLatest", { v: gh })}
-      {newer && <span style={{ fontSize: 10, fontWeight: 900, padding: "2px 7px", borderRadius: 99, background: C.mint, color: C.ink, letterSpacing: 0.3 }}>{T("ghNew")}</span>}
-    </button>
-  ) : null;
-  if (dl && dl.kind === "downloading") return <div data-upd-status="downloading" style={{ padding: "0 18px 12px", marginTop: -6, fontSize: 11, color: C.sky, fontFamily: BODY }}>{ghLine}{T("updDownloading", { v: dl.v })} {Math.round(dl.pct || 0)} %</div>;
-  if (!u || !u.kind) return ghLine ? <div style={{ padding: "0 18px 12px", marginTop: -6 }}>{ghLine}</div> : null;
-  const time = new Date(u.ts).toLocaleTimeString(LANG, { hour: "2-digit", minute: "2-digit" });
-  const txt = T("upd_" + u.kind, { v: u.v || "", e: u.err || "", time });
+  const row = { ...btnBase, width: "100%", display: "flex", alignItems: "center", gap: 8, background: "transparent", padding: "11px 0", textAlign: "left", borderRadius: 0, borderTop: `1px solid ${C.line}` };
+  let status = null;
+  if (isNative && dl && dl.kind === "downloading") status = <div data-upd-status="downloading" style={{ fontSize: 12, color: C.sky }}>{T("updDownloading", { v: dl.v })} {Math.round(dl.pct || 0)} %</div>;
+  else if (u && u.kind) {
+    const time = new Date(u.ts).toLocaleTimeString(LANG, { hour: "2-digit", minute: "2-digit" });
+    status = (
+      <div data-upd-status={u.kind} style={{ fontSize: 12, lineHeight: 1.45, color: u.kind === "error" || u.kind === "net" ? C.signal : C.dim }}>
+        {T("upd_" + u.kind, { v: u.v || "", e: u.err || "", time })}
+        {u.failed ? <span style={{ display: "block", color: C.signal }}>{T("updFailedV", { v: u.failed })}</span> : null}
+      </div>
+    );
+  }
   return (
-    <div data-upd-status={u.kind} style={{ padding: "0 18px 12px", marginTop: -6, fontSize: 11, lineHeight: 1.45, color: u.kind === "error" || u.kind === "net" ? C.signal : C.dim, fontFamily: BODY }}>
-      {ghLine}{txt}{u.failed ? <span style={{ display: "block", color: C.signal }}>{T("updFailedV", { v: u.failed })}</span> : null}
+    <div data-about style={{ margin: "auto 14px 14px", background: C.panel, border: `1px solid ${C.line}`, borderRadius: 18, padding: "4px 14px" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, padding: "10px 0" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}><Logo size={30} /><span style={{ fontSize: 14, fontWeight: 800, color: C.chalk }}>HW App {APP_VERSION}</span></div>
+        {onNews && <button onClick={onNews} data-news-btn style={{ ...btnBase, background: "transparent", color: C.sky, fontSize: 13, padding: "4px 0" }}>{T("newsLink")} ›</button>}
+      </div>
+      {gh && (
+        <button data-gh={gh} onClick={() => { sfxTap(); openExternal("https://github.com/mikydon/hw-app/releases/latest"); }} style={{ ...row, color: newer ? C.mint : C.dim, fontSize: 13, fontWeight: 700 }}>
+          <span style={{ flex: 1, minWidth: 0 }}>{T("ghLatest", { v: gh })}</span>
+          {newer && <span style={{ fontSize: 10, fontWeight: 900, padding: "2px 7px", borderRadius: 99, background: C.mint, color: C.ink, letterSpacing: 0.3 }}>{T("ghNew")}</span>}
+          <span aria-hidden="true">›</span>
+        </button>
+      )}
+      {status && <div style={{ padding: "10px 0", borderTop: `1px solid ${C.line}` }}>{status}</div>}
+      {!isNative && (
+        <button onClick={() => { sfxTap(); openExternal("https://github.com/mikydon/hw-app/releases/latest"); }} data-get-android style={{ ...row, color: C.mint, fontSize: 13, fontWeight: 800 }}>
+          <span style={{ flex: 1 }}>{T("getAndroid")}</span><span aria-hidden="true">›</span>
+        </button>
+      )}
     </div>
   );
 }
@@ -1295,12 +1327,12 @@ function MenuDrawer({ open, screen, history, profile, session, onGo, onResume, o
   return createPortal(
     <div role="dialog" aria-modal="true" aria-label={T("mainMenu")} className={open ? "drawerOn" : "drawerOff"} style={{ position: "fixed", inset: 0, zIndex: 60 }}>
       <div onClick={onClose} className="drawerBg" style={{ position: "absolute", inset: 0, background: "rgba(3,8,20,.55)", backdropFilter: "blur(3px)", WebkitBackdropFilter: "blur(3px)" }} />
-      <nav aria-label={T("mainMenu")} className="drawerPanel" style={{ position: "absolute", top: 0, right: 0, bottom: 0, width: "min(86vw, 340px)", background: C.panel, borderLeft: `1px solid ${C.line}`, boxShadow: "-20px 0 50px rgba(0,0,0,.35)", display: "flex", flexDirection: "column", paddingTop: "var(--sat)", paddingBottom: "var(--sab)", overflowY: "auto" }}>
+      <nav aria-label={T("mainMenu")} className="drawerPanel" style={{ fontFamily: BODY, position: "absolute", top: 0, right: 0, bottom: 0, width: "min(86vw, 340px)", background: C.ink, borderLeft: `1px solid ${C.line}`, boxShadow: "-20px 0 50px rgba(0,0,0,.35)", display: "flex", flexDirection: "column", paddingTop: "var(--sat)", paddingBottom: "var(--sab)", overflowY: "auto" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px 4px 18px" }}>
           <div style={{ fontFamily: DISPLAY, fontSize: 15, fontWeight: 800, color: C.dim, letterSpacing: 1 }}>HW APP</div>
           <MenuButton open={true} onClick={onClose} btnRef={closeRef} />
         </div>
-        <button onClick={() => onGo("profile")} className="drawerItem" style={{ ...btnBase, "--i": 0, display: "flex", alignItems: "center", gap: 12, margin: "8px 14px 6px", padding: "12px", borderRadius: 18, background: C.panelHi, color: C.chalk, textAlign: "left" }}>
+        <button onClick={() => onGo("profile")} className="drawerItem" style={{ ...btnBase, "--i": 0, display: "flex", alignItems: "center", gap: 12, margin: "8px 14px 6px", padding: "12px", borderRadius: 18, background: C.panel, border: `1px solid ${C.line}`, color: C.chalk, textAlign: "left" }}>
           <BdayHalo size={52}><Avatar profile={profile} size={52} /></BdayHalo>
           <div style={{ minWidth: 0 }}>
             <div style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, lineHeight: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{profile.name || T("defaultName")}</div>
@@ -1312,12 +1344,12 @@ function MenuDrawer({ open, screen, history, profile, session, onGo, onResume, o
             <span style={{ fontSize: 18 }}>▶</span>{T("resumeWorkout", { d: session.day })}
           </button>
         )}
-        <div style={{ padding: "6px 8px" }}>
+        <div data-nav-box style={{ margin: "6px 14px 12px", padding: "4px", background: C.panel, border: `1px solid ${C.line}`, borderRadius: 18 }}>
           {items.map((it, i) => {
             const on = it.id === screen;
             return (
               <button key={it.id} onClick={() => onGo(it.id)} aria-current={on ? "page" : undefined} className="drawerItem" data-screen={it.id}
-                style={{ ...btnBase, "--i": i + 2, width: "100%", display: "flex", alignItems: "center", gap: 14, padding: "11px 12px", margin: "2px 0", borderRadius: 14, background: on ? `${C.signal}1a` : "transparent", color: on ? C.signal : C.chalk, textAlign: "left" }}>
+                style={{ ...btnBase, "--i": i + 2, width: "100%", display: "flex", alignItems: "center", gap: 14, padding: "10px 10px", margin: "2px 0", borderRadius: 14, background: on ? `${C.signal}1a` : "transparent", color: on ? C.signal : C.chalk, textAlign: "left" }}>
                 <span style={{ width: 40, height: 40, borderRadius: 12, background: on ? `${C.signal}26` : C.panelHi, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><TabIcon name={it.id} active={on} /></span>
                 <span style={{ minWidth: 0 }}>
                   <span style={{ display: "block", fontSize: 16, fontWeight: 800 }}>{it.label}</span>
@@ -1327,12 +1359,7 @@ function MenuDrawer({ open, screen, history, profile, session, onGo, onResume, o
             );
           })}
         </div>
-        <div style={{ marginTop: "auto", padding: "10px 18px 14px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-          <span style={{ fontSize: 11, color: C.dim, fontFamily: BODY }}>HW App {APP_VERSION}</span>
-          {!isNative && <button onClick={() => { sfxTap(); openExternal("https://github.com/mikydon/hw-app/releases/latest"); }} data-get-android style={{ ...btnBase, background: "transparent", color: C.mint, fontSize: 12, padding: "4px 0" }}>{T("getAndroid")}</button>}
-          {onNews && <button onClick={onNews} data-news-btn style={{ ...btnBase, background: "transparent", color: C.sky, fontSize: 12, padding: "4px 0" }}>{T("newsLink")} ›</button>}
-        </div>
-        {isNative ? <UpdStatus gh={gh} dl={dl} /> : gh ? <UpdStatus gh={gh} dl={null} webOnly /> : null}
+        <AboutBox gh={gh} dl={dl} onNews={onNews} />
       </nav>
     </div>,
     document.body
@@ -1865,7 +1892,8 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
       )}
 
       {onGo && <HintCard ui={ui} setUi={setUi} onGo={onGo} />}
-      <div style={{ display: "flex", gap: 6, marginTop: 16 }} aria-label={T("weekLine", { count: TP("workouts", weekCount) })}>
+      <Sect title={T("secWeek")} style={LOOK === "flat" ? { marginTop: 16 } : {}}>
+      <div style={{ display: "flex", gap: 6 }} aria-label={T("weekLine", { count: TP("workouts", weekCount) })}>
         {week.map(w => (
           <button key={w.k} data-week-day={w.k} onClick={() => onGo && onGo("history", w.on ? { edit: w.k } : null)} aria-label={`${w.lb} ${fmtDate(w.k)}${w.on ? " ✓" : ""}`}
             style={{ ...btnBase, flex: 1, textAlign: "center", background: "transparent", padding: 0, color: "inherit" }}>
@@ -1876,8 +1904,10 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
         ))}
       </div>
       <div style={{ fontSize: 12, color: C.dim, marginTop: 6 }}>{T("weekLine", { count: TP("workouts", weekCount) })}</div>
+      </Sect>
 
-      <div style={{ fontSize: 14, color: C.dim, marginTop: 22 }}>{doneToday ? T("nextWorkout") : T("todayWorkout")}</div>
+      <Sect style={LOOK === "flat" ? { marginTop: 22 } : {}}>
+      <div style={{ fontSize: 14, color: C.dim }}>{doneToday ? T("nextWorkout") : T("todayWorkout")}</div>
       <div data-day-title style={{ fontFamily: DISPLAY, fontWeight: 900, fontSize: fitSize(T("dayN", { d: day.id }).replace(/\s/g, "_"), doneToday ? 72 : 96, 6), lineHeight: 0.85, paddingBottom: "0.16em", letterSpacing: -1, color: C.chalk, marginTop: 4 }}>
         {T("dayN", { d: day.id })}
       </div>
@@ -1898,8 +1928,10 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
           </button>
         ))}
       </div>
+      </Sect>
 
-      <div style={{ ...card, marginTop: 18 }}>
+      <Sect title={T("secExercises")} titlePad="0 15px" style={LOOK === "flat" ? {} : { padding: "12px 0 4px" }}>
+      <div style={LOOK === "flat" ? { ...card } : { borderTop: `1px solid ${LOOK === "tiles" ? C.line : C.line}` }}>
         {day.ids.map((slot, i) => {
           const id = effId(slot);
           const ex = EX[id];
@@ -1929,9 +1961,11 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
           );
         })}
       </div>
-      <div style={{ fontSize: 12, color: C.dim, marginTop: 8 }}>{T("tapHint")}</div>
+      <div style={{ fontSize: 12, color: C.dim, marginTop: 8, padding: LOOK === "flat" ? 0 : "0 15px 8px" }}>{T("tapHint")}</div>
+      </Sect>
 
-      <div ref={roundsRow} data-rounds-row style={{ display: "flex", gap: 8, marginTop: 14 }}>
+      <Sect title={T("secLength")} style={LOOK === "flat" ? { marginTop: 14 } : {}}>
+      <div ref={roundsRow} data-rounds-row style={{ display: "flex", gap: 8 }}>
         {[3, 2].map(n => (
           <button key={n} onClick={() => { sfxTap(); setRounds(n); }} aria-pressed={rounds === n} data-rounds={n}
             style={{ ...btnBase, flex: 1, padding: "11px 8px", fontSize: 13, background: rounds === n ? C.panelHi : "transparent", color: rounds === n ? C.chalk : C.dim, border: `1.5px solid ${rounds === n ? C.chalk : C.line}` }}>
@@ -1954,10 +1988,11 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
           </button>
         </div>
       )}
+      </Sect>
       {!active && <FloatStart show={!rowSeen} day={day.id} rounds={rounds} setRounds={setRounds} onStart={() => { unlockAudio(); onStart(day.id, rounds); }} />}
 
       <HomeKcal history={history} kcal={kcal} setKcal={setKcal} onOpen={() => onGo("calories")} />
-      <div style={{ marginTop: 22 }}><ChallengesCard history={history} /></div>
+      <div style={{ marginTop: LOOK === "flat" ? 22 : LOOK === "tiles" ? 8 : 12 }}><ChallengesCard history={history} /></div>
     </div>
   );
 }
@@ -2160,7 +2195,7 @@ function HomeKcal({ history, kcal, setKcal, onOpen }) {
   const s = kcalNow(history);
   if (!s) {
     return (
-      <button data-home-kcal="setup" onClick={() => { sfxTap(); onOpen(); }} style={{ ...btnBase, ...card, width: "100%", marginTop: 22, padding: "13px 15px", display: "flex", alignItems: "center", gap: 12, color: C.chalk, textAlign: "left" }}>
+      <button data-home-kcal="setup" onClick={() => { sfxTap(); onOpen(); }} style={{ ...btnBase, ...card, width: "100%", marginTop: LOOK === "flat" ? 22 : LOOK === "tiles" ? 8 : 12, padding: "13px 15px", display: "flex", alignItems: "center", gap: 12, color: C.chalk, textAlign: "left" }}>
         <span style={{ fontSize: 24 }} aria-hidden="true">🥗</span>
         <span style={{ flex: 1, minWidth: 0 }}><span style={{ display: "block", fontSize: 15, fontWeight: 800 }}>{T("kcHomeSetup")}</span><span style={{ display: "block", fontSize: 12, color: C.dim, marginTop: 2 }}>{T("kcHomeSetupD")}</span></span>
         <span style={{ color: C.dim, fontSize: 18 }}>›</span>
@@ -2179,7 +2214,7 @@ function HomeKcal({ history, kcal, setKcal, onOpen }) {
   const pct = Math.min(1, s.eaten / Math.max(1, s.target)), over = s.left < 0;
   const col = s.hit ? KC_TEAL : over ? "#ff8a80" : C.mint;
   return (
-    <div data-home-kcal="on" style={{ ...card, marginTop: 22, padding: "14px 15px" }}>
+    <div data-home-kcal="on" style={{ ...card, marginTop: LOOK === "flat" ? 22 : LOOK === "tiles" ? 8 : 12, padding: "14px 15px" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
         <div style={{ fontSize: 14, fontWeight: 800, color: C.chalk }}>🥗 {T("kcHomeTitle")}</div>
         <KcalStreakChip history={history} small />
@@ -3061,6 +3096,23 @@ function SettingsTab({ settings, setSettings, history, profile, setProfile, onIm
           </button>
         ))}
       </div>
+      <div style={{ fontSize: 13, color: C.chalk, fontWeight: 800, margin: "14px 0 8px" }}>{T("lookTitle")}</div>
+      <div role="radiogroup" aria-label={T("lookTitle")} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
+        {["cards", "tiles", "flat"].map(id => {
+          const on = (settings.look || "cards") === id;
+          const box = id === "cards" ? { background: C.panel, border: `1px solid ${C.line}`, borderRadius: 6 } : id === "tiles" ? { background: C.panelHi, borderRadius: 5 } : { borderBottom: `1px solid ${C.line}` };
+          return (
+            <button key={id} role="radio" aria-checked={on} data-look={id} onClick={() => { sfxTap(); set("look", id); }}
+              style={{ ...btnBase, background: C.ink, border: `2px solid ${on ? C.signal : C.line}`, padding: 9, color: C.chalk, textAlign: "left" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: id === "tiles" ? 3 : 5, marginBottom: 8 }}>
+                {[18, 26, 14].map((h, i) => <span key={i} style={{ height: h, ...box }} />)}
+              </div>
+              <div style={{ fontSize: 13, fontWeight: 700 }}>{T("look_" + id)}{on ? " ✓" : ""}</div>
+            </button>
+          );
+        })}
+      </div>
+      <div style={{ fontSize: 12, color: C.dim, marginTop: 6, lineHeight: 1.45 }}>{T("lookHint")}</div>
 
       <div style={sectionTitle}>{T("sounds")}</div>
       <div style={card}>
@@ -3816,6 +3868,8 @@ export default function App() {
   META = { kcal, skips: profile.skips || {}, freezeDays: profile.freezeDays || [], streakResetTs: profile.streakResetTs || 0, bonusFreezes: (profile.bdayGifts || []).length, giftThisYear: (profile.bdayGifts || []).includes(parseKey(dateKey()).getFullYear()), birth: profile.birth || null };
   window._wset = settings;
   applyTheme(settings.theme);
+  LOOK = settings.look || "cards";
+  if (LOOK === "tiles") card = { background: C.panelHi, border: `1px solid ${C.panelHi}`, borderRadius: 16 };
   applyLang(settings.lang || detectLang());
   const setSettings = n => { setSettingsState(n); saveSettings(n); };
   const [profLoaded, setProfLoaded] = useState(false);

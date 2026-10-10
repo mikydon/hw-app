@@ -81,6 +81,14 @@ export default {
     kcNoDateAdd: "Datum ergänzen",
     kcNoDateSkip: "Ja, nur das Jahr speichern",
     kcSex: "Geschlecht",
+    lookTitle: "Layout des Hauptbildschirms",
+    look_cards: "Kästen",
+    look_tiles: "Kacheln",
+    look_flat: "Offen",
+    lookHint: "Kästen = Inhalt in Boxen, Kacheln = hellere, engere Boxen (auch auf anderen Bildschirmen), Offen = das ursprüngliche Aussehen ohne Boxen.",
+    secWeek: "Diese Woche",
+    secExercises: "Übungen",
+    secLength: "Trainingsdauer",
     obStep: "Schritt {n} von 3",
     obSkipAll: "Alles überspringen",
     obHello: "Willkommen bei HW App!",
@@ -851,6 +859,11 @@ export default {
     "Schwebende Taste auf dem Hauptbildschirm: ist die Rundenwahl außer Sicht, erscheinen unten zwei kleine Felder 19 und 13 Min. und „Tag starten“.",
     "Beim ersten Start fragt die App nach Spitzname, Geschlecht, Geburtsdatum, Größe, Gewicht und Kalorienziel. Alles lässt sich überspringen; was fehlt, steht oben auf dem Hauptbildschirm und lässt sich mit einem Tippen ergänzen.",
     "Im Kalorienformular steht wieder „Geschlecht“ (statt „Mann oder Frau?“).",
+  ],
+  news107: [
+    "Der Hauptbildschirm ist in Kästen geteilt: Diese Woche, Heutiges Training, Übungen, Trainingsdauer, Kalorien, Challenges.",
+    "Einstellungen → Aussehen → Layout: Kästen, Kacheln (heller und enger, auch auf anderen Bildschirmen) oder Offen (das ursprüngliche Aussehen). Probier aus, was dir am besten gefällt.",
+    "Das Seitenmenü ist übersichtlicher: Profil, Bildschirme und unten ein Kasten zur App (Version, Neuigkeiten, neueste Version auf GitHub).",
   ],
 
   quotes: [

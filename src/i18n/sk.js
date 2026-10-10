@@ -81,6 +81,14 @@ export default {
     kcNoDateAdd: "Doplním dátum",
     kcNoDateSkip: "Áno, uložiť len rok",
     kcSex: "Pohlavie",
+    lookTitle: "Rozloženie hlavnej obrazovky",
+    look_cards: "Rámčeky",
+    look_tiles: "Dlaždice",
+    look_flat: "Otvorené",
+    lookHint: "Rámčeky = obsah v boxoch, Dlaždice = svetlejšie a tesnejšie boxy (aj na ostatných obrazovkách), Otvorené = pôvodný vzhľad bez boxov.",
+    secWeek: "Tento týždeň",
+    secExercises: "Cviky",
+    secLength: "Dĺžka tréningu",
     obStep: "Krok {n} z 3",
     obSkipAll: "Preskočiť všetko",
     obHello: "Vitaj v HW App!",
@@ -851,6 +859,11 @@ export default {
     "Floating tlačidlo na hlavnej obrazovke: keď nevidíš výber kôl, dole vyskočia dva štvorčeky 19 a 13 min a vedľa nich „Začať deň“.",
     "Pri prvom spustení sa appka spýta na prezývku, pohlavie, dátum narodenia, výšku, váhu a cieľ kalórií. Všetko sa dá preskočiť; čo chýba, uvidíš hore na hlavnej obrazovke a doplníš jedným ťuknutím.",
     "Vo formulári kalórií je znova „Pohlavie“ (namiesto „Muž alebo žena?“).",
+  ],
+  news107: [
+    "Hlavná obrazovka je rozdelená do rámčekov: Tento týždeň, Dnešný tréning, Cviky, Dĺžka tréningu, Kalórie, Výzvy.",
+    "Nastavenia → Vzhľad → Rozloženie: Rámčeky, Dlaždice (svetlejšie a tesnejšie, aj na ostatných obrazovkách) alebo Otvorené (pôvodný vzhľad). Vyskúšaj, čo sa ti páči najviac.",
+    "Pravý panel je prehľadnejší: profil, obrazovky a dole box o appke (verzia, novinky, najnovšia verzia na GitHube).",
   ],
 
   quotes: [

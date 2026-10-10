@@ -81,6 +81,14 @@ export default {
     kcNoDateAdd: "Megadom a dátumot",
     kcNoDateSkip: "Igen, csak az évet mentsd",
     kcSex: "Nem",
+    lookTitle: "A főképernyő elrendezése",
+    look_cards: "Keretek",
+    look_tiles: "Csempék",
+    look_flat: "Nyitott",
+    lookHint: "Keretek = tartalom dobozokban, Csempék = világosabb, szorosabb dobozok (a többi képernyőn is), Nyitott = az eredeti, doboz nélküli kinézet.",
+    secWeek: "Ezen a héten",
+    secExercises: "Gyakorlatok",
+    secLength: "Edzés hossza",
     obStep: "{n}. lépés a 3-ból",
     obSkipAll: "Mindet kihagyom",
     obHello: "Üdv a HW Appban!",
@@ -851,6 +859,11 @@ export default {
     "Lebegő gomb a főképernyőn: ha a körválasztás nem látszik, alul két kis négyzet (19 és 13 perc) és a „Nap indítása” jelenik meg.",
     "Első indításkor az app megkérdezi a beceneved, nemed, születési dátumod, magasságod, súlyod és kalóriacélod. Minden kihagyható; ami hiányzik, a főképernyő tetején látszik, és egy koppintással pótolható.",
     "A kalóriaűrlapon újra „Nem” szerepel (a „Férfi vagy nő?” helyett).",
+  ],
+  news107: [
+    "A főképernyő keretekre van osztva: Ezen a héten, Mai edzés, Gyakorlatok, Edzés hossza, Kalória, Kihívások.",
+    "Beállítások → Megjelenés → Elrendezés: Keretek, Csempék (világosabb és szorosabb, a többi képernyőn is) vagy Nyitott (az eredeti kinézet). Próbáld ki, melyik tetszik legjobban.",
+    "Az oldalsó menü áttekinthetőbb: profil, képernyők, alul pedig egy doboz az appról (verzió, újdonságok, legújabb verzió a GitHubon).",
   ],
 
   quotes: [

@@ -81,6 +81,14 @@ export default {
     kcNoDateAdd: "Vou pôr a data",
     kcNoDateSkip: "Sim, salvar só o ano",
     kcSex: "Sexo",
+    lookTitle: "Layout do ecrã principal",
+    look_cards: "Caixas",
+    look_tiles: "Mosaicos",
+    look_flat: "Aberto",
+    lookHint: "Caixas = conteúdo em caixas, Mosaicos = caixas mais claras e juntas (também noutros ecrãs), Aberto = o aspeto original sem caixas.",
+    secWeek: "Esta semana",
+    secExercises: "Exercícios",
+    secLength: "Duração do treino",
     obStep: "Passo {n} de 3",
     obSkipAll: "Saltar tudo",
     obHello: "Bem-vindo ao HW App!",
@@ -851,6 +859,11 @@ export default {
     "Botão flutuante no ecrã principal: quando a escolha de rodadas não está visível, aparecem em baixo dois quadradinhos 19 e 13 min e «Começar o dia».",
     "No primeiro início, o app pede alcunha, sexo, data de nascimento, altura, peso e objetivo de calorias. Tudo se pode saltar; o que faltar aparece no topo do ecrã principal e completa-se com um toque.",
     "O formulário de calorias volta a dizer «Sexo» (em vez de «Homem ou mulher?»).",
+  ],
+  news107: [
+    "O ecrã principal está dividido em caixas: Esta semana, Treino de hoje, Exercícios, Duração do treino, Calorias, Desafios.",
+    "Ajustes → Aparência → Layout: Caixas, Mosaicos (mais claros e juntos, também noutros ecrãs) ou Aberto (o aspeto original). Experimenta o que gostas mais.",
+    "O menu lateral está mais claro: perfil, ecrãs e em baixo uma caixa sobre o app (versão, novidades, versão mais recente no GitHub).",
   ],
 
   quotes: [
