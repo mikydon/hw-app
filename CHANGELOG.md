@@ -8,6 +8,13 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 
 <!-- New version: add a "## x.y.z (date)" section on top (web-only history uses "## Browser beta x.y.z (date)"). On a push to main, .github/workflows/build.yml builds everything and .github/scripts/releases.sh creates/updates the releases (commit = the push, or the one in a commit comment). -->
 
+## 1.0.4 (2026-10-10)
+
+- The rep counter starts at what you did last time (before: at 0); the +1 goal stays.
+- Tap the big number to type the reps directly.
+- One-arm and one-leg exercises (door frame rows, Bulgarian split squat, reverse lunge, single-leg bridge…): right side first, "Continue", then left. If the sides differ, the app says so, asks you to train both sides equally and logs the weaker side.
+- A small clock runs at the top during a workout; the summary shows the total time (saved with the workout).
+
 ## 1.0.3 (2026-10-10)
 
 - **If you have app 1.0.0:** small updates don't reach it. Download **HW-App-1.0.3.apk** below once and install it over the old app (your data stays). From then on small updates arrive by themselves.

@@ -309,7 +309,19 @@ export default {
     goalHit: "Goal {v} reached! Every extra rep is a bonus.",
     goalTop: "Last time {v}, the most you can pick. Consider the harder version.",
     goalOk: "If you don't make it today, that's fine. Next time.",
-    countHint: "It starts at 0. Tap + for every rep, or set the number at the end.",
+    countHint: "It starts at what you did last time. Tap + and −, or tap the number and type it.",
+    countHint0: "It starts at 0. Tap + for every rep, or tap the number and type it.",
+    typeReps: "Type the number of reps",
+    sideR_arm: "Right arm",
+    sideL_arm: "Left arm",
+    sideR_leg: "Right leg",
+    sideL_leg: "Left leg",
+    sideNext: "Continue: {side} →",
+    sideBack: "← Back: {side}",
+    sideDiffTitle: "The sides differ.",
+    sideDiff: "{a}: {r}, {b}: {l}. Train both sides equally: don't do more with the stronger side than the weaker one manages, and let the weaker side catch up. {v} is logged (the weaker side).",
+    elapsedAria: "Workout time",
+    totalTime: "Total time: {t}",
     lastRound: "Last round. This is the set that builds muscle: go to technical failure, as long as each rep is clean. When your form starts to break, stop. 💪",
     less: "Less",
     more: "More",
@@ -745,6 +757,12 @@ export default {
   news103: [
     "If you have app 1.0.0, small updates don't reach it: download the 1.0.3 APK once and install it over the old one (your data stays).",
     "In the menu, under the app version, you can see when the app last looked for an update and how it went.",
+  ],
+  news104: [
+    "The rep counter starts at what you did last time (the +1 goal stays).",
+    "Tap the big number to type the reps directly.",
+    "One-arm or one-leg exercises: right side first, \"Continue\", then left. If the sides differ, the app tells you and logs the weaker side.",
+    "A small clock runs at the top during a workout, and the summary shows the total time.",
   ],
 
   quotes: [

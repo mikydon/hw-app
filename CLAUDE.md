@@ -60,7 +60,7 @@ Talk to Michael in casual Slovak. Before you deliver anything, test it (build pl
 ## Program logic (evidence-based, keep unless asked)
 - Days A, B and C, trained every other day. Each day has push, pull, legs and core, done as a circuit of 2 or 3 rounds.
 - Rest is 30 s between exercises and 60 s between rounds.
-- Last round goes to technical failure: as many clean reps as possible, stop when form would break (Michael, Oct 2026; research: hypertrophy improves closer to failure, full failure adds fatigue without more growth). Earlier rounds stay submaximal. Rep counter starts at 0; from the 2nd time the workout shows last time and a +1 goal (holds: the next duration preset).
+- Last round goes to technical failure: as many clean reps as possible, stop when form would break (Michael, Oct 2026; research: hypertrophy improves closer to failure, full failure adds fatigue without more growth). Earlier rounds stay submaximal. Rep counter starts at last time's number for that round (0 the first time; Michael, Oct 9) and can be typed by tapping it (`data-reps`/`data-reps-input`, 0–999); from the 2nd time the workout shows last time and a +1 goal (holds: the next duration preset). Exercises with unit `arm`/`leg` (all done one side, then the other) split the counter: right first (`data-side-next`), then left starting at the right's number; if they differ, `sideDiff` asks to train both equally and the weaker side is logged (`side` units are alternating moves: no split). Workouts store `session.startTs`; the header shows `Elapsed`, history entries get `dur` (seconds, if under 4 h) shown as total time on the summary.
 - Post-workout stretching is optional, per the 2025 Delphi consensus.
 - Turned-off exercises (`exOff`): `effId(slot)` replaces a day's exercise with the next one of the same type from `ALT_GROUPS` that is on, preferring ones no other day uses. At least one per type must stay on (the UI blocks the last one). A workout stores `session.base` (slot → exercise) at the start; older sessions without it fall back to `effId`.
 
@@ -90,6 +90,7 @@ Talk to Michael in casual Slovak. Before you deliver anything, test it (build pl
    - Add an in-app "new version" check against GitHub Releases.
    Done in app 1.0.1 (Oct 10, 2026, small update): 3 rounds preselected + "odporúčané" (`data-rounds`, `roundsRec`; welcome/meta/manifest say ~19 min), day title spacing (`data-day-title`), 🔥/⚡ chips open Profile (`data-chip`), clock in the top bar (`useClock`, `data-clock`), week strip opens History / that day's editor (`go(id, {edit})`), `ExQ` "?" next to every exercise name (global `openHowToGlobal`), add-exercise picker as a short themed `Sheet` (`data-add-ex`), profile name centred with the pencil beside it (`data-pencil`, Save no longer overlaps), +100/+250/+500 removed, "💛 Support the app" row in the menu (`data-support`, `SUPPORT_URL` = https://www.patreon.com/c/mikydon, texts `support`/`supportDesc`) and `.github/FUNDING.yml`.
    Done in app 1.0.2 (Oct 10, 2026): small updates switch on at the 2nd start (see Updates above); the Start button on Home is `position: sticky` at the bottom (`data-start-wrap`, `data-start`, shows the chosen rounds), so it is on screen when the app opens (Michael: "priamo na oči").
+   Done in app 1.0.3 (Oct 10): update status line in the menu (see Updates). Done in 1.0.4 (Oct 10): counter from last time, typing reps, right/left split for arm/leg exercises, workout clock + total time (see Program logic).
    Money (Oct 10): Michael wants income later (subtle ads and/or ~2 € ad-free subscription); for now only voluntary Patreon, the app stays free. AdMob only fully serves ads for apps listed in a supported store (Play, Galaxy Store, Amazon…), not for a sideloaded APK.
 3. After the APK, Michael's requests (Oct 5 + Oct 9, 2026), NOT started:
    Calories
@@ -102,10 +103,6 @@ Talk to Michael in casual Slovak. Before you deliver anything, test it (build pl
    Home screen
    - Too much on one page: split it better, nicer and easier to read.
    Workout
-   - Type the rep number by hand.
-   - The counter starts at what you did last time (no longer 0), still with the +1 goal (changes the Oct 4 rule "always start at 0").
-   - One-arm/one-leg exercises: split the counter into two halves, right first, "continue", then left; if the sides differ, tell the user to train both sides equally.
-   - A small elapsed-time clock at the top during the workout (not in the way); show the total time at the end.
    - Tempo guide for exercises with a tempo (e.g. 3 s down, 1 s hold, up): an X-second timer that restarts every X seconds, shown like a breathing-exercise guide (circle shrinks on the way down, becomes a bar during the hold, grows on the way up). Design is up to Claude.
    - "Couldn't train today" with a reason. Later: a free AI (if possible) judges the reason and keeps the streak / gives a freeze / restores the streak (e.g. wisdom tooth surgery).
    Content

@@ -309,7 +309,19 @@ export default {
     goalHit: "Obiettivo {v} raggiunto! Ogni ripetizione in più è un bonus.",
     goalTop: "L'ultima volta {v}, il massimo selezionabile. Valuta la versione più difficile.",
     goalOk: "Se oggi non ci riesci, va bene. La prossima volta.",
-    countHint: "Si parte da 0. Tocca + a ogni ripetizione o imposta il numero alla fine.",
+    countHint: "Parte da quello che hai fatto l'ultima volta. Tocca + e −, oppure tocca il numero e scrivilo.",
+    countHint0: "Parte da 0. Tocca + a ogni ripetizione, oppure tocca il numero e scrivilo.",
+    typeReps: "Scrivi il numero di ripetizioni",
+    sideR_arm: "Braccio destro",
+    sideL_arm: "Braccio sinistro",
+    sideR_leg: "Gamba destra",
+    sideL_leg: "Gamba sinistra",
+    sideNext: "Continua: {side} →",
+    sideBack: "← Indietro: {side}",
+    sideDiffTitle: "I lati sono diversi.",
+    sideDiff: "{a}: {r}, {b}: {l}. Allena entrambi i lati allo stesso modo: con il più forte non fare più di quanto riesce il più debole, e fai recuperare il lato debole. Viene registrato {v} (il lato più debole).",
+    elapsedAria: "Tempo di allenamento",
+    totalTime: "Tempo totale: {t}",
     lastRound: "Ultimo giro. È la serie che costruisce i muscoli: arriva al cedimento tecnico, finché ogni ripetizione è pulita. Quando la tecnica cede, fermati. 💪",
     less: "Meno",
     more: "Più",
@@ -745,6 +757,12 @@ export default {
   news103: [
     "Se hai l'app 1.0.0, i piccoli aggiornamenti non le arrivano: scarica una volta l'APK 1.0.3 e installalo sopra quella vecchia (i dati restano).",
     "Nel menu, sotto la versione dell'app, vedi quando ha cercato aggiornamenti l'ultima volta e com'è andata.",
+  ],
+  news104: [
+    "Il contatore delle ripetizioni parte da quello che hai fatto l'ultima volta (l'obiettivo +1 resta).",
+    "Tocca il numero grande per scrivere direttamente le ripetizioni.",
+    "Esercizi a un braccio o una gamba: prima il lato destro, «Continua», poi il sinistro. Se i lati sono diversi, l'app te lo dice e registra il lato più debole.",
+    "In alto durante l'allenamento scorre un piccolo orologio, e alla fine vedi il tempo totale.",
   ],
 
   quotes: [

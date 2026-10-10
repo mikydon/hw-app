@@ -309,7 +309,19 @@ export default {
     goalHit: "Ziel {v} geschafft! Jede weitere ist ein Bonus.",
     goalTop: "Letztes Mal {v}, das Maximum zur Auswahl. Denk an die schwerere Variante.",
     goalOk: "Wenn es heute nicht klappt, ist das okay. Nächstes Mal.",
-    countHint: "Es startet bei 0. Tippe + bei jeder Wiederholung oder stell die Zahl am Ende ein.",
+    countHint: "Es startet bei deinem letzten Ergebnis. Tippe + und −, oder tippe auf die Zahl und gib sie ein.",
+    countHint0: "Es startet bei 0. Tippe + bei jeder Wiederholung, oder tippe auf die Zahl und gib sie ein.",
+    typeReps: "Anzahl der Wiederholungen eingeben",
+    sideR_arm: "Rechter Arm",
+    sideL_arm: "Linker Arm",
+    sideR_leg: "Rechtes Bein",
+    sideL_leg: "Linkes Bein",
+    sideNext: "Weiter: {side} →",
+    sideBack: "← Zurück: {side}",
+    sideDiffTitle: "Die Seiten sind unterschiedlich.",
+    sideDiff: "{a}: {r}, {b}: {l}. Trainiere beide Seiten gleich: mit der stärkeren nicht mehr, als die schwächere schafft, und lass die schwächere aufholen. Gespeichert wird {v} (die schwächere Seite).",
+    elapsedAria: "Trainingszeit",
+    totalTime: "Gesamtzeit: {t}",
     lastRound: "Letzte Runde. Dieser Satz baut Muskeln auf: geh bis zum technischen Versagen, solange jede Wiederholung sauber ist. Wenn die Technik nachlässt, hör auf. 💪",
     less: "Weniger",
     more: "Mehr",
@@ -745,6 +757,12 @@ export default {
   news103: [
     "Wenn du App 1.0.0 hast, kommen kleine Updates nicht an: lade einmal die APK 1.0.3 und installiere sie über die alte (deine Daten bleiben).",
     "Im Menü unter der App-Version siehst du, wann die App zuletzt nach Updates gesucht hat und mit welchem Ergebnis.",
+  ],
+  news104: [
+    "Der Wiederholungszähler startet bei deinem letzten Ergebnis (das +1-Ziel bleibt).",
+    "Tippe auf die große Zahl, um die Wiederholungen direkt einzugeben.",
+    "Übungen mit einem Arm oder Bein: zuerst rechts, „Weiter“, dann links. Unterscheiden sich die Seiten, sagt es dir die App und speichert die schwächere Seite.",
+    "Oben läuft während des Trainings eine kleine Uhr, und am Ende siehst du die Gesamtzeit.",
   ],
 
   quotes: [

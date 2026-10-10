@@ -309,7 +309,19 @@ export default {
     goalHit: "Objectif {v} atteint ! Chaque répétition en plus est un bonus.",
     goalTop: "La dernière fois {v}, le maximum proposé. Pense à la version plus dure.",
     goalOk: "Si tu n'y arrives pas aujourd'hui, pas grave. La prochaine fois.",
-    countHint: "Ça commence à 0. Touche + à chaque répétition ou règle le nombre à la fin.",
+    countHint: "Ça commence à ton résultat de la dernière fois. Touche + et −, ou touche le nombre et tape-le.",
+    countHint0: "Ça commence à 0. Touche + à chaque répétition, ou touche le nombre et tape-le.",
+    typeReps: "Taper le nombre de répétitions",
+    sideR_arm: "Bras droit",
+    sideL_arm: "Bras gauche",
+    sideR_leg: "Jambe droite",
+    sideL_leg: "Jambe gauche",
+    sideNext: "Continuer : {side} →",
+    sideBack: "← Retour : {side}",
+    sideDiffTitle: "Les côtés sont différents.",
+    sideDiff: "{a} : {r}, {b} : {l}. Entraîne les deux côtés pareil : avec le plus fort, n'en fais pas plus que le plus faible, et laisse le côté faible rattraper. {v} est noté (le côté le plus faible).",
+    elapsedAria: "Durée de la séance",
+    totalTime: "Durée totale : {t}",
     lastRound: "Dernier tour. C'est la série qui construit le muscle : va jusqu'à l'échec technique, tant que chaque répétition est propre. Quand la technique se dégrade, arrête. 💪",
     less: "Moins",
     more: "Plus",
@@ -745,6 +757,12 @@ export default {
   news103: [
     "Si tu as l'appli 1.0.0, les petites mises à jour ne l'atteignent pas : télécharge une fois l'APK 1.0.3 et installe-le par-dessus l'ancienne (tes données restent).",
     "Dans le menu, sous la version de l'appli, tu vois quand elle a cherché une mise à jour pour la dernière fois et avec quel résultat.",
+  ],
+  news104: [
+    "Le compteur de répétitions commence à ton résultat de la dernière fois (l'objectif +1 reste).",
+    "Touche le grand nombre pour taper directement les répétitions.",
+    "Exercices à un bras ou une jambe : d'abord le côté droit, « Continuer », puis le gauche. Si les côtés diffèrent, l'appli te le dit et note le côté le plus faible.",
+    "Une petite horloge tourne en haut pendant la séance, et le résumé affiche la durée totale.",
   ],
 
   quotes: [

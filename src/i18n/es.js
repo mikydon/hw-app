@@ -309,7 +309,19 @@ export default {
     goalHit: "¡Objetivo {v} logrado! Cada una extra es un bonus.",
     goalTop: "La última vez {v}, lo máximo para elegir. Piensa en la versión más difícil.",
     goalOk: "Si hoy no sale, no pasa nada. La próxima vez.",
-    countHint: "Empieza en 0. Toca + en cada repetición o ajusta el número al final.",
+    countHint: "Empieza en lo que hiciste la última vez. Toca + y −, o toca el número y escríbelo.",
+    countHint0: "Empieza en 0. Toca + en cada repetición, o toca el número y escríbelo.",
+    typeReps: "Escribir el número de repeticiones",
+    sideR_arm: "Brazo derecho",
+    sideL_arm: "Brazo izquierdo",
+    sideR_leg: "Pierna derecha",
+    sideL_leg: "Pierna izquierda",
+    sideNext: "Seguir: {side} →",
+    sideBack: "← Volver: {side}",
+    sideDiffTitle: "Los lados son distintos.",
+    sideDiff: "{a}: {r}, {b}: {l}. Entrena los dos lados por igual: con el más fuerte no hagas más de lo que logra el más débil, y deja que el débil se ponga al día. Se guarda {v} (el lado más débil).",
+    elapsedAria: "Tiempo de entrenamiento",
+    totalTime: "Tiempo total: {t}",
     lastRound: "Última ronda. Esta es la serie que construye músculo: llega al fallo técnico, mientras cada repetición sea limpia. Cuando la técnica empiece a fallar, para. 💪",
     less: "Menos",
     more: "Más",
@@ -745,6 +757,12 @@ export default {
   news103: [
     "Si tienes la app 1.0.0, las actualizaciones pequeñas no le llegan: descarga una vez el APK 1.0.3 e instálalo encima del viejo (tus datos se quedan).",
     "En el menú, bajo la versión de la app, ves cuándo buscó actualizaciones por última vez y cómo fue.",
+  ],
+  news104: [
+    "El contador de repeticiones empieza en lo que hiciste la última vez (el objetivo +1 sigue).",
+    "Toca el número grande para escribir las repeticiones directamente.",
+    "Ejercicios a un brazo o una pierna: primero el lado derecho, «Seguir», luego el izquierdo. Si los lados son distintos, la app te lo dice y guarda el más débil.",
+    "Arriba corre un pequeño reloj durante el entrenamiento y al final ves el tiempo total.",
   ],
 
   quotes: [

@@ -309,7 +309,19 @@ export default {
     goalHit: "Cel {v} osiągnięty! Każde kolejne to bonus.",
     goalTop: "Ostatnio {v}, to najwięcej do wyboru. Rozważ trudniejszą wersję.",
     goalOk: "Jeśli dziś się nie uda, nic nie szkodzi. Następnym razem.",
-    countHint: "Zaczyna się od 0. Stukaj + przy każdym powtórzeniu albo ustaw liczbę na końcu.",
+    countHint: "Zaczyna się od tego, co zrobiłeś ostatnio. Stukaj + i −, albo stuknij liczbę i ją wpisz.",
+    countHint0: "Zaczyna się od 0. Stukaj + przy każdym powtórzeniu albo stuknij liczbę i ją wpisz.",
+    typeReps: "Wpisz liczbę powtórzeń",
+    sideR_arm: "Prawa ręka",
+    sideL_arm: "Lewa ręka",
+    sideR_leg: "Prawa noga",
+    sideL_leg: "Lewa noga",
+    sideNext: "Dalej: {side} →",
+    sideBack: "← Wróć: {side}",
+    sideDiffTitle: "Strony się różnią.",
+    sideDiff: "{a}: {r}, {b}: {l}. Trenuj obie strony tak samo: silniejszą nie rób więcej, niż da radę słabsza, a słabszą stopniowo wyrównaj. Zapisze się {v} (słabsza strona).",
+    elapsedAria: "Czas treningu",
+    totalTime: "Łączny czas: {t}",
     lastRound: "Ostatnia runda. To ta seria buduje mięśnie: idź do upadku technicznego, czyli dopóki robisz czyste powtórzenia. Gdy technika zaczyna się psuć, skończ. 💪",
     less: "Mniej",
     more: "Więcej",
@@ -745,6 +757,12 @@ export default {
   news103: [
     "Jeśli masz aplikację 1.0.0, małe aktualizacje do niej nie dotrą: raz pobierz APK 1.0.3 i zainstaluj na starą (dane zostaną).",
     "W menu pod wersją aplikacji widać, kiedy ostatnio szukała aktualizacji i z jakim wynikiem.",
+  ],
+  news104: [
+    "Licznik powtórzeń zaczyna od tego, co zrobiłeś ostatnio (cel +1 zostaje).",
+    "Stuknij dużą liczbę, aby od razu wpisać powtórzenia.",
+    "Ćwiczenia na jedną rękę lub nogę: najpierw prawa strona, „Dalej”, potem lewa. Gdy strony się różnią, aplikacja to powie i zapisze słabszą stronę.",
+    "U góry w trakcie treningu chodzi mały zegar, a na końcu widać łączny czas.",
   ],
 
   quotes: [

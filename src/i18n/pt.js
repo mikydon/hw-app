@@ -309,7 +309,19 @@ export default {
     goalHit: "Meta {v} batida! Cada uma a mais é bônus.",
     goalTop: "Da última vez {v}, o máximo para escolher. Pense na versão mais difícil.",
     goalOk: "Se hoje não der, tudo bem. Na próxima.",
-    countHint: "Começa em 0. Toque + a cada repetição ou ajuste o número no final.",
+    countHint: "Começa no que fizeste da última vez. Toca + e −, ou toca no número e escreve-o.",
+    countHint0: "Começa em 0. Toca + a cada repetição, ou toca no número e escreve-o.",
+    typeReps: "Escrever o número de repetições",
+    sideR_arm: "Braço direito",
+    sideL_arm: "Braço esquerdo",
+    sideR_leg: "Perna direita",
+    sideL_leg: "Perna esquerda",
+    sideNext: "Continuar: {side} →",
+    sideBack: "← Voltar: {side}",
+    sideDiffTitle: "Os lados são diferentes.",
+    sideDiff: "{a}: {r}, {b}: {l}. Treina os dois lados por igual: com o mais forte não faças mais do que o mais fraco consegue, e deixa o mais fraco alcançar. Fica registado {v} (o lado mais fraco).",
+    elapsedAria: "Tempo de treino",
+    totalTime: "Tempo total: {t}",
     lastRound: "Última rodada. Esta é a série que constrói músculo: vá até a falha técnica, enquanto cada repetição for limpa. Quando a técnica começar a quebrar, pare. 💪",
     less: "Menos",
     more: "Mais",
@@ -745,6 +757,12 @@ export default {
   news103: [
     "Se tens o app 1.0.0, as atualizações pequenas não chegam até ele: baixa uma vez o APK 1.0.3 e instala por cima do antigo (os teus dados ficam).",
     "No menu, por baixo da versão do app, vês quando ele procurou atualizações pela última vez e como correu.",
+  ],
+  news104: [
+    "O contador de repetições começa no que fizeste da última vez (o objetivo +1 mantém-se).",
+    "Toca no número grande para escrever as repetições diretamente.",
+    "Exercícios a um braço ou uma perna: primeiro o lado direito, «Continuar», depois o esquerdo. Se os lados forem diferentes, o app avisa e regista o lado mais fraco.",
+    "No topo corre um pequeno relógio durante o treino, e no fim vês o tempo total.",
   ],
 
   quotes: [

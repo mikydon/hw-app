@@ -30,7 +30,7 @@ const THEMES = {
   slate:  { ink: "#15181d", panel: "#1f242b", panelHi: "#2a313a", line: "#3a434f", chalk: "#f1f4f8", dim: "#9aa6b4", edge: "#0e1115" },
   coffee: { ink: "#1c140f", panel: "#2a1f17", panelHi: "#382a20", line: "#4d3a2c", chalk: "#fbf3ec", dim: "#b8a291", edge: "#130d09" },
 };
-const APP_VERSION = "1.0.3";
+const APP_VERSION = "1.0.4";
 // Big Shoulders has no Cyrillic, so Oswald (also condensed) covers Ukrainian. The browser only
 // downloads the Oswald unicode ranges a page actually uses.
 const DISPLAY = "'Big Shoulders Display', 'Oswald', 'Arial Narrow', Impact, sans-serif";
@@ -2930,7 +2930,7 @@ function Work({ item, rounds, history, sessionResults, onRecord, onSwap, exclude
   const [how, setHow] = useState(false);
 
   // Progressive overload: last time's result for this round (or the closest round), and a goal one step above it.
-  // The counter always starts at 0 (no guesses); the goal is shown next to it.
+  // The counter starts at last time's number (Michael, Oct 9: no longer 0); the goal is +1 above it.
   const prevVal = (() => {
     if (!last) return null;
     const own = numVal(last.res[item.r]);
@@ -2939,7 +2939,17 @@ function Work({ item, rounds, history, sessionResults, onRecord, onSwap, exclude
     return nums.length ? nums[nums.length - 1] : null;
   })();
   const goal = prevVal === null ? null : ex.type === "time" ? (ex.durs.find(d => d > prevVal) ?? null) : prevVal + 1;
-  const [reps, setReps] = useState(0);
+  // Coming back to a round that was already logged (Back button): start at that number.
+  const already = numVal(((sessionResults || {})[item.id] || [])[item.r]);
+  const startReps = !isNaN(already) ? already : prevVal !== null ? prevVal : 0;
+  const [reps, setRepsRaw] = useState(startReps);
+  const setReps = n => setRepsRaw(Math.max(0, Math.min(999, Math.round(n) || 0)));
+  const [typing, setTyping] = useState(false);
+  // One arm / one leg at a time: right side first, then left (Michael, Oct 9). The weaker side is logged.
+  const split = ex.type === "reps" && (ex.unit === "arm" || ex.unit === "leg");
+  const [side, setSide] = useState("R");
+  const [rightReps, setRightReps] = useState(null);
+  const sideName = sd => T(`side${sd}_${ex.unit}`);
 
   const initDur = () => {
     if (ex.type !== "time") return 0;
@@ -3018,19 +3028,50 @@ function Work({ item, rounds, history, sessionResults, onRecord, onSwap, exclude
 
       {ex.type === "reps" && (
         <>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 18, marginTop: 26 }}>
+          {split && (
+            <div data-side={side} style={{ display: "flex", justifyContent: "center", gap: 8, marginTop: 22 }}>
+              {["R", "L"].map((sd, i) => (
+                <span key={sd} style={{ fontSize: 13, fontWeight: 800, padding: "6px 12px", borderRadius: 99, background: side === sd ? C.sky : "transparent", color: side === sd ? C.ink : sd === "R" && side === "L" ? C.mint : C.dim, border: `1.5px solid ${side === sd ? C.sky : C.line}` }}>
+                  {sd === "R" && side === "L" ? `✓ ${sideName(sd)} ${rightReps}` : `${i + 1}. ${sideName(sd)}`}
+                </span>
+              ))}
+            </div>
+          )}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 18, marginTop: split ? 14 : 26 }}>
             <button className="b3d" onClick={() => { sfxTap(); setReps(Math.max(0, reps - 1)); }} aria-label={T("less")} style={{ ...btnBase, width: 64, height: 64, borderRadius: 99, background: C.panelHi, color: C.chalk, fontSize: 32, "--e": "#0a1734" }}>−</button>
             <div style={{ textAlign: "center", minWidth: 120 }}>
-              <div key={reps} className="bump" style={{ fontFamily: DISPLAY, fontSize: 132, fontWeight: 900, lineHeight: 0.85, color: best !== null && reps > best ? C.signal : C.chalk }}>{reps}</div>
+              {typing ? (
+                <input data-reps-input type="number" inputMode="numeric" pattern="[0-9]*" min={0} max={999} autoFocus defaultValue={reps} aria-label={T("typeReps")}
+                  onFocus={e => e.target.select()}
+                  onBlur={e => { setReps(+e.target.value); setTyping(false); }}
+                  onKeyDown={e => { if (e.key === "Enter") e.target.blur(); }}
+                  style={{ width: 150, fontFamily: DISPLAY, fontSize: 104, fontWeight: 900, lineHeight: 1, textAlign: "center", color: C.chalk, background: C.panel, border: `2px solid ${C.signal}`, borderRadius: 18, padding: "4px 0", outline: "none", MozAppearance: "textfield" }} />
+              ) : (
+                <button data-reps onClick={() => { sfxTap(); setTyping(true); }} aria-label={`${reps}. ${T("typeReps")}`} key={reps} className="bump" style={{ ...btnBase, background: "transparent", padding: 0, fontFamily: DISPLAY, fontSize: 132, fontWeight: 900, lineHeight: 0.85, color: best !== null && reps > best ? C.signal : C.chalk, borderBottom: `2px dashed ${C.line}` }}>{reps}</button>
+              )}
               <div style={{ fontSize: 13, color: C.dim, marginTop: 4 }}>{T("reps")}{ex.unit ? ` ${perUnit(ex.unit)}` : ""}</div>
               <div style={{ height: 22, marginTop: 4, fontSize: 14, fontWeight: 800, color: C.signal }}>{best !== null && reps > best ? <span className="pop" style={{ display: "inline-block" }}>{rankIdx(item.id, reps) > rankIdx(item.id, best) ? `${RANKS[rankIdx(item.id, reps)].icon} ${T("newRank", { rank: RANKS[rankIdx(item.id, reps)].name })}` : T("pr")}</span> : ""}</div>
             </div>
             <button className="b3d" onClick={() => { const n = reps + 1; if (best !== null && n === best + 1) sfxRecord(); else sfxTap(); setReps(n); }} aria-label={T("more")} style={{ ...btnBase, width: 64, height: 64, borderRadius: 99, background: C.panelHi, color: C.chalk, fontSize: 32, "--e": "#0a1734" }}>+</button>
           </div>
-          <div style={{ fontSize: 12, color: C.dim, textAlign: "center", marginTop: 10 }}>{T("countHint")}</div>
-          <button onClick={() => { unlockAudio(); onRecord(reps); }} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 22, fontSize: 18, padding: 19 }}>
-            {T("doneBtn", { v: `${reps}${unitStr(ex.unit)}` })}
-          </button>
+          <div style={{ fontSize: 12, color: C.dim, textAlign: "center", marginTop: 10 }}>{T(prevVal !== null ? "countHint" : "countHint0")}</div>
+          {split && side === "L" && rightReps !== null && rightReps !== reps && (
+            <div data-side-diff style={{ marginTop: 14, border: `1.5px solid ${C.sky}88`, background: `${C.sky}14`, borderRadius: 14, padding: "10px 13px", fontSize: 13, lineHeight: 1.5, color: C.chalk }}>
+              <b style={{ color: C.sky }}>{T("sideDiffTitle")}</b> {T("sideDiff", { a: sideName("R"), r: rightReps, b: sideName("L"), l: reps, v: Math.min(rightReps, reps) })}
+            </div>
+          )}
+          {split && side === "R" ? (
+            <button data-side-next onClick={() => { unlockAudio(); sfxSet(); setRightReps(reps); setSide("L"); setTyping(false); }} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 22, fontSize: 18, padding: 19 }}>
+              {T("sideNext", { side: sideName("L") })}
+            </button>
+          ) : (
+            <button onClick={() => { unlockAudio(); onRecord(split && rightReps !== null ? Math.min(rightReps, reps) : reps); }} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 22, fontSize: 18, padding: 19 }}>
+              {T("doneBtn", { v: `${split && rightReps !== null ? Math.min(rightReps, reps) : reps}${unitStr(ex.unit)}` })}
+            </button>
+          )}
+          {split && side === "L" && (
+            <button data-side-back onClick={() => { sfxTap(); setSide("R"); setReps(rightReps ?? reps); setRightReps(null); }} style={{ ...ghostBtn, display: "block", margin: "12px auto 0" }}>{T("sideBack", { side: sideName("R") })}</button>
+          )}
         </>
       )}
 
@@ -3070,6 +3111,16 @@ function Work({ item, rounds, history, sessionResults, onRecord, onSwap, exclude
       )}
     </div>
   );
+}
+
+// Small workout clock in the header: time since the workout started (m:ss, h:mm:ss after an hour).
+const fmtDur = secs => { const h = Math.floor(secs / 3600), m = Math.floor(secs / 60) % 60, x = secs % 60; return h ? `${h}:${String(m).padStart(2, "0")}:${String(x).padStart(2, "0")}` : `${m}:${String(x).padStart(2, "0")}`; };
+function Elapsed({ since }) {
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => { const iv = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(iv); }, []);
+  const secs = Math.max(0, Math.round((now - since) / 1000));
+  if (secs >= 4 * 3600) return null;
+  return <span data-elapsed aria-label={T("elapsedAria")} style={{ display: "block", fontSize: 12, fontWeight: 600, color: C.dim, marginTop: 2, fontVariantNumeric: "tabular-nums" }}>⏱ {fmtDur(secs)}</span>;
 }
 
 // ─── SESSION: REST ──────────────────────────────────────────────────────────
@@ -3205,6 +3256,7 @@ function Summary({ entry, xpBefore = 0, xpGained, newCh = [], newAch = [], histo
       <div className="pop" style={{ fontFamily: DISPLAY, fontSize: 60, fontWeight: 900, lineHeight: 0.95, color: C.mint }}>{T("great")}</div>
       <div style={{ fontSize: 16, color: C.chalk, marginTop: 8, fontWeight: 600, lineHeight: 1.4 }}>{finishLine}</div>
       <div style={{ fontSize: 13, color: C.dim, marginTop: 4 }}>{T("dayDate", { d: entry.day, date: fmtDate(entry.date, true) })}</div>
+      {entry.dur > 0 && <div data-total-time style={{ fontSize: 14, color: C.chalk, fontWeight: 700, marginTop: 6 }}>⏱ {T("totalTime", { t: fmtDur(entry.dur) })}</div>}
       <div style={{ marginTop: 16, background: C.panel, border: `1px solid ${C.line}`, borderRadius: 18, padding: "14px 16px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 10 }}>
           <div style={{ fontFamily: DISPLAY, fontSize: 44, fontWeight: 900, lineHeight: 1, color: C.sky }}>+{shown} XP</div>
@@ -3288,7 +3340,8 @@ function Session({ session, setSession, history, onSave, onClose, onMinimize, on
       const to = rankIdx(it.id, Math.max(...it.res.map(numVal).filter(n => !isNaN(n))));
       return to > from ? { id: it.id, to } : null;
     }).filter(Boolean);
-    const entry = items.length ? { date: dateKey(), ts: Date.now(), day: session.day, rounds: session.rounds, items, prs, rankUps, warm: session.warm.every(Boolean), cool: !!coolDone } : null;
+    const secs = session.startTs ? Math.round((Date.now() - session.startTs) / 1000) : 0;
+    const entry = items.length ? { date: dateKey(), ts: Date.now(), day: session.day, rounds: session.rounds, items, prs, rankUps, warm: session.warm.every(Boolean), cool: !!coolDone, ...(secs > 0 && secs < 4 * 3600 ? { dur: secs } : {}) } : null;
     const xpBefore = totalXP(history);
     let xpGained = 0, newCh = [], newAch = [];
     if (entry) {
@@ -3345,8 +3398,9 @@ function Session({ session, setSession, history, onSave, onClose, onMinimize, on
       {session.phase !== "summary" && (
         <>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
-            <div style={{ fontSize: 14, color: C.dim, fontWeight: 600 }}>
+            <div style={{ fontSize: 14, color: C.dim, fontWeight: 600, minWidth: 0 }}>
               {inFlow ? T("dayRound", { d: session.day, r: cur.r + 1, n: session.rounds }) : T("dayN", { d: session.day })}
+              {session.startTs && <Elapsed since={session.startTs} />}
             </div>
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
               {inFlow && <button onClick={goBack} style={{ ...ghostBtn, padding: "7px 11px", fontSize: 12 }}>{T("back")}</button>}
@@ -3489,7 +3543,7 @@ export default function App() {
 
   const start = (dayId, rounds) => {
     const day = DAYS.find(d => d.id === dayId);
-    setSession({ day: dayId, rounds, base: Object.fromEntries(day.ids.map(slot => [slot, effId(slot)])), phase: "warmup", pos: 0, warm: WARMUP.map(() => false), results: {}, rest: null });
+    setSession({ day: dayId, rounds, base: Object.fromEntries(day.ids.map(slot => [slot, effId(slot)])), phase: "warmup", pos: 0, warm: WARMUP.map(() => false), results: {}, rest: null, startTs: Date.now() });
     setSessionOpen(true);
   };
 
@@ -3497,6 +3551,7 @@ export default function App() {
     <div style={{ minHeight: "100vh", background: C.ink, color: C.chalk, fontFamily: BODY }}>
       <style>{`
         button:focus-visible{outline:3px solid ${C.signal};outline-offset:2px}
+        [data-reps-input]::-webkit-inner-spin-button,[data-reps-input]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
         .b3d{transition:transform .08s ease, box-shadow .08s ease; box-shadow:0 5px 0 var(--e, transparent)}
         .b3d:active{transform:translateY(4px); box-shadow:0 1px 0 var(--e, transparent)}
         @keyframes scrIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}

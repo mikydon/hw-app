@@ -309,7 +309,19 @@ export default {
     goalHit: "A {v} cél megvan! Minden további ráadás.",
     goalTop: "Legutóbb {v}, ez a legtöbb, amit választhatsz. Gondolj a nehezebb változatra.",
     goalOk: "Ha ma nem jön össze, semmi gond. Majd legközelebb.",
-    countHint: "0-ról indul. Koppints a +-ra minden ismétlésnél, vagy állítsd be a végén.",
+    countHint: "Onnan indul, amennyit legutóbb csináltál. Koppints a + és − gombra, vagy koppints a számra és írd be.",
+    countHint0: "0-ról indul. Koppints a +-ra minden ismétlésnél, vagy koppints a számra és írd be.",
+    typeReps: "Ismétlésszám beírása",
+    sideR_arm: "Jobb kar",
+    sideL_arm: "Bal kar",
+    sideR_leg: "Jobb láb",
+    sideL_leg: "Bal láb",
+    sideNext: "Tovább: {side} →",
+    sideBack: "← Vissza: {side}",
+    sideDiffTitle: "A két oldal eltér.",
+    sideDiff: "{a}: {r}, {b}: {l}. Edzd egyformán a két oldalt: az erősebbel ne csinálj többet, mint amennyit a gyengébb bír, és a gyengébbet fokozatosan hozd fel. A(z) {v} kerül be (a gyengébb oldal).",
+    elapsedAria: "Edzésidő",
+    totalTime: "Teljes idő: {t}",
     lastRound: "Utolsó kör. Ez a sorozat építi az izmot: menj technikai bukásig, amíg tiszta az ismétlés. Ha a technika romlani kezd, állj meg. 💪",
     less: "Kevesebb",
     more: "Több",
@@ -745,6 +757,12 @@ export default {
   news103: [
     "Ha az 1.0.0-s app van fent, a kis frissítések nem jutnak el hozzá: egyszer töltsd le az 1.0.3-as APK-t, és telepítsd a régire (az adataid megmaradnak).",
     "A menüben az app verziója alatt látod, mikor kereste utoljára a frissítést, és mi lett az eredmény.",
+  ],
+  news104: [
+    "Az ismétlésszámláló onnan indul, amennyit legutóbb csináltál (a +1 cél marad).",
+    "Koppints a nagy számra, és rögtön beírhatod az ismétléseket.",
+    "Egykezes vagy egylábas gyakorlatok: előbb a jobb oldal, „Tovább”, aztán a bal. Ha a két oldal eltér, az app szól, és a gyengébb oldalt menti.",
+    "Edzés közben fent egy kis óra fut, a végén pedig látod a teljes időt.",
   ],
 
   quotes: [

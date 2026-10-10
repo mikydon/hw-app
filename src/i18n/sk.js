@@ -309,7 +309,19 @@ export default {
     goalHit: "Cieľ {v} splnený! Každé ďalšie je bonus.",
     goalTop: "Minule {v}, to je najviac na výber. Zváž ťažšiu verziu.",
     goalOk: "Keď to dnes nedáš, nevadí. Nabudúce.",
-    countHint: "Začína sa od 0. Ťukaj + pri každom opakovaní alebo nastav číslo na konci.",
+    countHint: "Začína tým, čo si spravil minule. Ťukaj + a −, alebo ťukni na číslo a napíš ho.",
+    countHint0: "Začína sa od 0. Ťukaj + pri každom opakovaní, alebo ťukni na číslo a napíš ho.",
+    typeReps: "Napísať počet opakovaní",
+    sideR_arm: "Pravá ruka",
+    sideL_arm: "Ľavá ruka",
+    sideR_leg: "Pravá noha",
+    sideL_leg: "Ľavá noha",
+    sideNext: "Pokračovať: {side} →",
+    sideBack: "← Späť: {side}",
+    sideDiffTitle: "Strany sa líšia.",
+    sideDiff: "{a}: {r}, {b}: {l}. Trénuj obe strany rovnako: silnejšou nerob viac, než zvládne slabšia, a slabšiu postupne dorovnaj. Zapíše sa {v} (slabšia strana).",
+    elapsedAria: "Čas tréningu",
+    totalTime: "Celkový čas: {t}",
     lastRound: "Posledné kolo. Toto je séria, ktorá stavia svaly: choď do technického zlyhania, teda kým dáš čisté opakovanie. Keď by sa technika lámala, skonči. 💪",
     less: "Menej",
     more: "Viac",
@@ -745,6 +757,12 @@ export default {
   news103: [
     "Ak máš appku 1.0.0, malé aktualizácie sa do nej nedostanú: raz si stiahni APK 1.0.3 a nainštaluj ho cez starú (dáta ostanú).",
     "V menu pod verziou appky vidíš, kedy appka naposledy hľadala aktualizáciu a ako to dopadlo.",
+  ],
+  news104: [
+    "Počítadlo opakovaní začína tým, čo si spravil minule (cieľ +1 ostáva).",
+    "Ťukni na veľké číslo a počet opakovaní napíšeš rovno.",
+    "Cviky na jednu ruku alebo nohu: najprv pravá strana, „Pokračovať“, potom ľavá. Keď sa strany líšia, appka ti to povie a zapíše slabšiu stranu.",
+    "Hore pri tréningu bežia malé hodiny a na konci vidíš celkový čas.",
   ],
 
   quotes: [
