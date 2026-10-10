@@ -897,6 +897,9 @@ export default {
     "\"What's new\" has pages: the first is the big update, swipe left for the small ones.",
     "After a small update, a card on the home screen opens its page. It shows only the first time.",
   ],
+  news131: [
+    "Liquid glass: the ☰ menu now has the same colourful background as the rest of the app (before, it was a flat dark panel).",
+  ],
   news13: [
     ["📱 Vibration", "With touch feedback off in the phone, the app didn't vibrate at all.", "It vibrates like an alarm: at the end of rests and holds, also in silent mode, whatever the touch feedback setting."],
     ["📱 Weight and height from Health Connect", "You typed weight and height yourself and changed them by hand.", "The app takes them from Health Connect (Samsung Health, scales…) and updates them by itself. The newer value wins: if you change it in the app, an older Health Connect number doesn't overwrite it."],

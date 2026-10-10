@@ -897,6 +897,9 @@ export default {
     "«Novità» ha più pagine: la prima è il grande aggiornamento, scorri a sinistra per quelli piccoli.",
     "Dopo un piccolo aggiornamento, una scheda nella home ti porta alla sua pagina. Compare solo la prima volta.",
   ],
+  news131: [
+    "Vetro liquido: il menu ☰ ora ha lo stesso sfondo colorato del resto dell'app (prima era un pannello scuro e piatto).",
+  ],
   news13: [
     ["📱 Vibrazione", "Con il feedback tattile disattivato nel telefono, l'app non vibrava affatto.", "Vibra come una sveglia: alla fine di pause e tenute, anche in modalità silenziosa, indipendentemente dal feedback tattile."],
     ["📱 Peso e altezza da Health Connect", "Peso e altezza li scrivevi tu e li cambiavi a mano.", "L'app li prende da Health Connect (Samsung Health, bilancia…) e li aggiorna da sola. Vince il valore più recente: se lo cambi nell'app, un numero più vecchio di Health Connect non lo sovrascrive."],

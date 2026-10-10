@@ -897,6 +897,9 @@ export default {
     "Az „Újdonságok” több oldalas: az első a nagy frissítés, balra húzva jönnek a kicsik.",
     "Kis frissítés után a kezdőképernyőn egy kártya egyből az oldalára visz. Csak először jelenik meg.",
   ],
+  news131: [
+    "Folyékony üveg: a ☰ menü háttere most ugyanolyan színes, mint az app többi része (eddig sima sötét panel volt).",
+  ],
   news13: [
     ["📱 Rezgés", "Ha a telefonban ki volt kapcsolva az érintési visszajelzés, az app egyáltalán nem rezgett.", "Ébresztőként rezeg: a pihenő és a tartás végén, néma módban is, az érintési visszajelzéstől függetlenül."],
     ["📱 Testsúly és magasság a Health Connectből", "A testsúlyt és a magasságot magad írtad be és kézzel módosítottad.", "Az app a Health Connectből veszi át őket (Samsung Health, mérleg…), és magától frissíti. Az újabb érték nyer: ha az appban átírod, egy régebbi Health Connect-adat nem írja felül."],

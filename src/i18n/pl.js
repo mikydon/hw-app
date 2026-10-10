@@ -897,6 +897,9 @@ export default {
     "„Co nowego” ma strony: pierwsza to duża aktualizacja, w lewo są małe.",
     "Po małej aktualizacji karta na ekranie głównym otworzy jej stronę. Pokazuje się tylko za pierwszym razem.",
   ],
+  news131: [
+    "Płynne szkło: menu ☰ ma teraz takie samo kolorowe tło jak reszta aplikacji (wcześniej był to płaski, ciemny panel).",
+  ],
   news13: [
     ["📱 Wibracje", "Przy wyłączonych wibracjach dotyku w telefonie aplikacja w ogóle nie wibrowała.", "Wibruje jak budzik: na koniec przerwy i wytrzymania, także w trybie cichym, niezależnie od wibracji dotyku."],
     ["📱 Waga i wzrost z Health Connect", "Wagę i wzrost wpisywałeś sam i zmieniałeś ręcznie.", "Aplikacja bierze je z Health Connect (Samsung Health, waga…) i sama aktualizuje. Wygrywa nowsza wartość: gdy zmienisz ją w aplikacji, starsza liczba z Health Connect jej nie nadpisze."],

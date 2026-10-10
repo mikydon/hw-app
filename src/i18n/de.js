@@ -897,6 +897,9 @@ export default {
     "Die Neuigkeiten haben jetzt Seiten: zuerst das große Update, nach links wischen für die kleinen.",
     "Nach einem kleinen Update führt dich eine Karte auf dem Startbildschirm direkt zu seiner Seite. Nur beim ersten Mal.",
   ],
+  news131: [
+    "Flüssigglas: Das ☰-Menü hat jetzt denselben farbigen Hintergrund wie der Rest der App (vorher war es ein flaches dunkles Feld).",
+  ],
   news13: [
     ["📱 Vibration", "Mit ausgeschaltetem Berührungsfeedback im Handy vibrierte die App gar nicht.", "Sie vibriert wie ein Wecker: am Ende von Pausen und Halteübungen, auch im Lautlos-Modus, egal wie das Berührungsfeedback eingestellt ist."],
     ["📱 Gewicht und Größe aus Health Connect", "Gewicht und Größe hast du selbst eingetippt und von Hand geändert.", "Die App holt sie aus Health Connect (Samsung Health, Waage…) und aktualisiert sie selbst. Der neuere Wert gewinnt: Änderst du ihn in der App, überschreibt ihn ein älterer Health-Connect-Wert nicht."],

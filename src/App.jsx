@@ -30,7 +30,7 @@ const THEMES = {
   slate:  { ink: "#15181d", panel: "#1f242b", panelHi: "#2a313a", line: "#3a434f", chalk: "#f1f4f8", dim: "#9aa6b4", edge: "#0e1115" },
   coffee: { ink: "#1c140f", panel: "#2a1f17", panelHi: "#382a20", line: "#4d3a2c", chalk: "#fbf3ec", dim: "#b8a291", edge: "#130d09" },
 };
-const APP_VERSION = "1.3.0";
+const APP_VERSION = "1.3.1";
 // Big Shoulders has no Cyrillic, so Oswald (also condensed) covers Ukrainian. The browser only
 // downloads the Oswald unicode ranges a page actually uses.
 const DISPLAY = "'Big Shoulders Display', 'Oswald', 'Arial Narrow', Impact, sans-serif";
@@ -1210,8 +1210,11 @@ const LIQUID = () => ({ background: "rgba(255,255,255,.075)", border: "1px solid
 const LIQUID_BAR = (dark = "66") => ({ background: `linear-gradient(180deg, rgba(255,255,255,.11), rgba(255,255,255,.05)), ${C.ink}${dark}`, backdropFilter: "blur(24px) saturate(180%)", WebkitBackdropFilter: "blur(24px) saturate(180%)" });
 const LIQUID_FLOAT = () => ({ ...LIQUID_BAR("99"), border: "1px solid rgba(255,255,255,.2)", boxShadow: "inset 0 1px 0 rgba(255,255,255,.18), 0 12px 34px rgba(0,0,0,.35)" });
 const LIQUID_PILL = () => ({ background: "rgba(255,255,255,.09)", border: "1px solid rgba(255,255,255,.2)", boxShadow: "inset 0 1px 0 rgba(255,255,255,.16)" });
+// The colour blobs of the theme: the page background, and the ☰ menu panel gets its own copy (1.3.1, Michael: the
+// menu looked different, a flat dark panel, because it only blurred the dimmed page behind it).
+const liquidGrad = () => `radial-gradient(55% 40% at 8% 6%, ${C.sky}99, transparent 72%), radial-gradient(50% 38% at 96% 34%, ${C.signal}77, transparent 72%), radial-gradient(58% 42% at 14% 74%, ${C.mint}70, transparent 72%), radial-gradient(50% 36% at 90% 96%, #ff7ab666, transparent 72%), ${C.ink}`;
 function LiquidBg() {
-  return <div aria-hidden="true" data-liquid-bg style={{ position: "fixed", inset: 0, zIndex: -1, pointerEvents: "none", background: `radial-gradient(55% 40% at 8% 6%, ${C.sky}99, transparent 72%), radial-gradient(50% 38% at 96% 34%, ${C.signal}77, transparent 72%), radial-gradient(58% 42% at 14% 74%, ${C.mint}70, transparent 72%), radial-gradient(50% 36% at 90% 96%, #ff7ab666, transparent 72%), ${C.ink}` }} />;
+  return <div aria-hidden="true" data-liquid-bg style={{ position: "fixed", inset: 0, zIndex: -1, pointerEvents: "none", background: liquidGrad() }} />;
 }
 function Sect({ title, children, style, titlePad, accent, ...rest }) {
   if (LOOK === "flat") return <div {...rest} style={{ marginTop: 18, ...style }}>{children}</div>;
@@ -1370,7 +1373,7 @@ function MenuDrawer({ open, screen, history, profile, session, onGo, onResume, o
   return createPortal(
     <div role="dialog" aria-modal="true" aria-label={T("mainMenu")} className={open ? "drawerOn" : "drawerOff"} style={{ position: "fixed", inset: 0, zIndex: 60 }}>
       <div onClick={onClose} className="drawerBg" style={{ position: "absolute", inset: 0, background: "rgba(3,8,20,.55)", backdropFilter: "blur(3px)", WebkitBackdropFilter: "blur(3px)" }} />
-      <nav aria-label={T("mainMenu")} className="drawerPanel" style={{ fontFamily: BODY, position: "absolute", top: 0, right: 0, bottom: 0, width: "min(86vw, 340px)", background: C.ink, borderLeft: `1px solid ${C.line}`, boxShadow: "-20px 0 50px rgba(0,0,0,.35)", ...(LOOK === "liquid" ? { background: `${C.ink}a6`, backdropFilter: "blur(30px) saturate(180%)", WebkitBackdropFilter: "blur(30px) saturate(180%)", borderLeft: "1px solid rgba(255,255,255,.16)" } : {}), display: "flex", flexDirection: "column", paddingTop: "var(--sat)", paddingBottom: "var(--sab)", overflowY: "auto" }}>
+      <nav aria-label={T("mainMenu")} className="drawerPanel" style={{ fontFamily: BODY, position: "absolute", top: 0, right: 0, bottom: 0, width: "min(86vw, 340px)", background: C.ink, borderLeft: `1px solid ${C.line}`, boxShadow: "-20px 0 50px rgba(0,0,0,.35)", ...(LOOK === "liquid" ? { background: liquidGrad(), borderLeft: "1px solid rgba(255,255,255,.16)" } : {}), display: "flex", flexDirection: "column", paddingTop: "var(--sat)", paddingBottom: "var(--sab)", overflowY: "auto" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px 4px 18px" }}>
           <div style={{ fontFamily: DISPLAY, fontSize: 15, fontWeight: 800, color: C.dim, letterSpacing: 1 }}>HW APP</div>
           <MenuButton open={true} onClick={onClose} btnRef={closeRef} />

@@ -897,6 +897,9 @@ export default {
     "« Nouveautés » a des pages : la première est la grande mise à jour, glisse vers la gauche pour les petites.",
     "Après une petite mise à jour, une carte sur l'accueil t'emmène à sa page. Elle n'apparaît que la première fois.",
   ],
+  news131: [
+    "Verre liquide : le menu ☰ a maintenant le même fond coloré que le reste de l'appli (avant, c'était un panneau sombre et plat).",
+  ],
   news13: [
     ["📱 Vibration", "Avec le retour tactile désactivé sur le téléphone, l'appli ne vibrait pas du tout.", "Elle vibre comme une alarme : à la fin des pauses et des maintiens, même en mode silencieux, quel que soit le retour tactile."],
     ["📱 Poids et taille depuis Health Connect", "Tu saisissais le poids et la taille toi-même et les changeais à la main.", "L'appli les prend dans Health Connect (Samsung Health, balance…) et les met à jour toute seule. La valeur la plus récente l'emporte : si tu la changes dans l'appli, un chiffre plus ancien de Health Connect ne l'écrase pas."],

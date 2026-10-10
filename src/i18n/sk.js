@@ -897,6 +897,9 @@ export default {
     "„Čo je nové“ má strany: prvá je veľký update, potiahnutím doľava drobné úpravy.",
     "Po drobnej úprave ťa karta na úvode zavedie priamo na jej stranu. Ukáže sa len prvýkrát.",
   ],
+  news131: [
+    "Tekuté sklo: ☰ menu má teraz rovnaké farebné pozadie ako zvyšok appky (predtým to bol plochý tmavý panel).",
+  ],
   news13: [
     ["📱 Vibrácie", "Pri vypnutej dotykovej odozve v telefóne appka nevibrovala vôbec.", "Vibruje ako budík: na konci oddychu a výdrže aj v tichom režime, bez ohľadu na dotykovú odozvu."],
     ["📱 Váha a výška z Health Connect", "Váhu a výšku si musel písať sám a meniť ich ručne.", "Appka ich berie z Health Connect (Samsung Health, váha…) a aktualizuje sama. Novší údaj vyhrá: keď ju prepíšeš v appke, staršie číslo z Health Connect ju neprepíše."],

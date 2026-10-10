@@ -897,6 +897,9 @@ export default {
     "\"Novidades\" tem páginas: a primeira é a grande atualização, deslize para a esquerda para as pequenas.",
     "Depois de uma atualização pequena, um cartão no início leva você à página dela. Só aparece da primeira vez.",
   ],
+  news131: [
+    "Vidro líquido: o menu ☰ agora tem o mesmo fundo colorido que o resto da app (antes era um painel escuro e liso).",
+  ],
   news13: [
     ["📱 Vibração", "Com o retorno tátil desligado no celular, o app não vibrava nada.", "Vibra como um alarme: no fim dos descansos e das sustentações, também no modo silencioso, seja qual for o retorno tátil."],
     ["📱 Peso e altura do Health Connect", "Você digitava peso e altura e mudava à mão.", "O app pega do Health Connect (Samsung Health, balanças…) e atualiza sozinho. Vale o valor mais novo: se você mudar no app, um número mais antigo do Health Connect não o substitui."],
