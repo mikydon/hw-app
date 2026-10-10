@@ -43,7 +43,9 @@ APP_NOTE = ("> **Android app.** On your phone, download **HW-App-{v}.apk** below
             "> - If Android asks, allow installing apps from your browser.\n"
             "> - Google Play Protect may say *App blocked to protect your device*, because the app isn't from the Play Store. "
             "Tap **Install anyway** (on some phones it's under *More details*).\n"
-            "> - To update, install the new APK over the old one; your data stays. Small updates arrive inside the app by themselves.\n\n"
+            "> - To update, install the new APK over the old one; your data stays. Small updates arrive inside the app by themselves.\n>\n"
+            "> **Website:** https://mikydon.github.io/hw-app/ runs the same version and updates itself when you open it. "
+            "Points marked *(Android app only)* don't apply there.\n\n"
             "<img src=\"https://raw.githubusercontent.com/mikydon/hw-app/main/docs/play-protect-install-anyway.png\" alt=\"Play Protect: tap Install anyway\" width=\"300\">\n\n")
 s = open("CHANGELOG.md", encoding="utf-8").read()
 out = []

@@ -1,6 +1,6 @@
 import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import { isNative, pushBack, setRootBack, vibratePattern, keepScreenOn, openExternal, saveBackupFile, checkForUpdate, lastUpdate } from "./native.js";
+import { isNative, pushBack, setRootBack, vibratePattern, keepScreenOn, openExternal, saveBackupFile, checkForUpdate, lastUpdate, lastGh, applyUpdateNow } from "./native.js";
 import { L, LANG, t as T, tp as TP, fmt, setLang, detectLang, LANGS, fmtLong, fmtShortDM, fmtMonthYear, weekdaysShort, capFirst } from "./i18n/index.js";
 
 // ─── DESIGN TOKENS ──────────────────────────────────────────────────────────
@@ -30,7 +30,7 @@ const THEMES = {
   slate:  { ink: "#15181d", panel: "#1f242b", panelHi: "#2a313a", line: "#3a434f", chalk: "#f1f4f8", dim: "#9aa6b4", edge: "#0e1115" },
   coffee: { ink: "#1c140f", panel: "#2a1f17", panelHi: "#382a20", line: "#4d3a2c", chalk: "#fbf3ec", dim: "#b8a291", edge: "#130d09" },
 };
-const APP_VERSION = "1.0.4";
+const APP_VERSION = "1.0.5";
 // Big Shoulders has no Cyrillic, so Oswald (also condensed) covers Ukrainian. The browser only
 // downloads the Oswald unicode ranges a page actually uses.
 const DISPLAY = "'Big Shoulders Display', 'Oswald', 'Arial Narrow', Impact, sans-serif";
@@ -1219,14 +1219,22 @@ function useClock() {
   return now;
 }
 // App only: one small line in the menu with the result of the last update check.
-function UpdStatus() {
-  const u = lastUpdate();
-  if (!u || !u.kind) return null;
+function UpdStatus({ gh, dl, webOnly }) {
+  const u = webOnly ? null : lastUpdate();
+  const newer = gh && verCmp(gh, APP_VERSION) > 0;
+  const ghLine = gh ? (
+    <button data-gh={gh} onClick={() => { sfxTap(); openExternal("https://github.com/mikydon/hw-app/releases/latest"); }} style={{ ...btnBase, display: "flex", alignItems: "center", gap: 8, background: "transparent", padding: "0 0 4px", color: newer ? C.mint : C.dim, fontSize: 12, fontWeight: 700, textAlign: "left" }}>
+      {T("ghLatest", { v: gh })}
+      {newer && <span style={{ fontSize: 10, fontWeight: 900, padding: "2px 7px", borderRadius: 99, background: C.mint, color: C.ink, letterSpacing: 0.3 }}>{T("ghNew")}</span>}
+    </button>
+  ) : null;
+  if (dl && dl.kind === "downloading") return <div data-upd-status="downloading" style={{ padding: "0 18px 12px", marginTop: -6, fontSize: 11, color: C.sky, fontFamily: BODY }}>{ghLine}{T("updDownloading", { v: dl.v })} {Math.round(dl.pct || 0)} %</div>;
+  if (!u || !u.kind) return ghLine ? <div style={{ padding: "0 18px 12px", marginTop: -6 }}>{ghLine}</div> : null;
   const time = new Date(u.ts).toLocaleTimeString(LANG, { hour: "2-digit", minute: "2-digit" });
   const txt = T("upd_" + u.kind, { v: u.v || "", e: u.err || "", time });
   return (
     <div data-upd-status={u.kind} style={{ padding: "0 18px 12px", marginTop: -6, fontSize: 11, lineHeight: 1.45, color: u.kind === "error" || u.kind === "net" ? C.signal : C.dim, fontFamily: BODY }}>
-      {txt}{u.failed ? <span style={{ display: "block", color: C.signal }}>{T("updFailedV", { v: u.failed })}</span> : null}
+      {ghLine}{txt}{u.failed ? <span style={{ display: "block", color: C.signal }}>{T("updFailedV", { v: u.failed })}</span> : null}
     </div>
   );
 }
@@ -1265,7 +1273,7 @@ function TabIcon({ name, active }) {
 }
 
 // Slide-in drawer from the right with everything in the app. Rendered into <body> (like Sheet).
-function MenuDrawer({ open, screen, history, profile, session, onGo, onResume, onClose, onNews }) {
+function MenuDrawer({ open, screen, history, profile, session, onGo, onResume, onClose, onNews, gh, dl }) {
   const [shown, setShown] = useState(open);
   useEffect(() => { if (open) setShown(true); else { const t = setTimeout(() => setShown(false), 260); return () => clearTimeout(t); } }, [open]);
   const closeRef = useRef(null);
@@ -1282,7 +1290,8 @@ function MenuDrawer({ open, screen, history, profile, session, onGo, onResume, o
   if (!shown) return null;
   const lv = levelInfo(totalXP(history));
   const st = streakInfo(history, dateKey());
-  const items = SCREENS.map(id => ({ id, label: T(SCREEN_TITLE[id]), desc: T("menuD_" + id) }));
+  const kcs = kcalNow(history);
+  const items = SCREENS.map(id => ({ id, label: T(SCREEN_TITLE[id]), desc: id === "calories" && kcs ? T("kcMenu", { e: nf(kcs.eaten), t: nf(kcs.target) }) : T("menuD_" + id) }));
   return createPortal(
     <div role="dialog" aria-modal="true" aria-label={T("mainMenu")} className={open ? "drawerOn" : "drawerOff"} style={{ position: "fixed", inset: 0, zIndex: 60 }}>
       <div onClick={onClose} className="drawerBg" style={{ position: "absolute", inset: 0, background: "rgba(3,8,20,.55)", backdropFilter: "blur(3px)", WebkitBackdropFilter: "blur(3px)" }} />
@@ -1318,21 +1327,12 @@ function MenuDrawer({ open, screen, history, profile, session, onGo, onResume, o
             );
           })}
         </div>
-        <div style={{ marginTop: "auto", padding: "0 18px" }}>
-          <button onClick={() => { sfxTap(); openExternal(SUPPORT_URL); }} data-support style={{ ...btnBase, width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 14, background: C.panelHi, color: C.chalk, textAlign: "left" }}>
-            <span style={{ fontSize: 18 }} aria-hidden="true">💛</span>
-            <span style={{ minWidth: 0 }}>
-              <span style={{ display: "block", fontSize: 14, fontWeight: 800 }}>{T("support")}</span>
-              <span style={{ display: "block", fontSize: 11, fontWeight: 500, color: C.dim, marginTop: 1 }}>{T("supportDesc")}</span>
-            </span>
-          </button>
-        </div>
-        <div style={{ padding: "10px 18px 14px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+        <div style={{ marginTop: "auto", padding: "10px 18px 14px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
           <span style={{ fontSize: 11, color: C.dim, fontFamily: BODY }}>HW App {APP_VERSION}</span>
           {!isNative && <button onClick={() => { sfxTap(); openExternal("https://github.com/mikydon/hw-app/releases/latest"); }} data-get-android style={{ ...btnBase, background: "transparent", color: C.mint, fontSize: 12, padding: "4px 0" }}>{T("getAndroid")}</button>}
           {onNews && <button onClick={onNews} data-news-btn style={{ ...btnBase, background: "transparent", color: C.sky, fontSize: 12, padding: "4px 0" }}>{T("newsLink")} ›</button>}
         </div>
-        {isNative && <UpdStatus />}
+        {isNative ? <UpdStatus gh={gh} dl={dl} /> : gh ? <UpdStatus gh={gh} dl={null} webOnly /> : null}
       </nav>
     </div>,
     document.body
@@ -1436,11 +1436,13 @@ const verCmp = (a, b) => {
 const newsKey = v => "news" + v.replace(/\./g, "");
 function newsPages() {
   const big = bigVer(APP_VERSION);
+  // Lines starting with 📱 are about the Android app only (updates…); the website hides them (Michael, Oct 10).
+  const forHere = arr => arr.filter(l => isNative || typeof l !== "string" || !l.startsWith("📱"));
   const pages = [{ v: big + ".0", big: true, items: L[newsKey(big)] || [] }];
   const cands = [];
   for (let i = 1; i <= 9; i++) cands.push(`${big}.${i}`);
   for (let i = 1; i <= 9; i++) cands.push(`${big}.9.${i}`);
-  for (const v of cands) if (verCmp(v, APP_VERSION) <= 0 && Array.isArray(L[newsKey(v)])) pages.push({ v, items: L[newsKey(v)] });
+  for (const v of cands) if (verCmp(v, APP_VERSION) <= 0 && Array.isArray(L[newsKey(v)]) && forHere(L[newsKey(v)]).length) pages.push({ v, items: forHere(L[newsKey(v)]) });
   return pages;
 }
 // A small update (same big version) with "What's new" lines the user hasn't seen yet.
@@ -1608,7 +1610,67 @@ function BirthdayCard({ profile, ui, setUi }) {
   );
 }
 
-function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, profile, onGo, upd, apk }) {
+// "I can't train today" (Michael, Oct 9): a reason, saved with the day (profile.skips[date] = {r, note}),
+// plus a freeze if one is left. Later a free AI may judge the reason; for now it is only recorded.
+const SKIP_REASONS = [["sick", "🤒"], ["pain", "🤕"], ["work", "💼"], ["travel", "✈️"], ["other", "🙂"]];
+const skipIcon = r => (SKIP_REASONS.find(x => x[0] === r) || ["", "🧊"])[1];
+function SkipSheet({ freezes, onSave, onClose }) {
+  const [r, setR] = useState(null);
+  const [note, setNote] = useState("");
+  return (
+    <Sheet title={T("skipTitle")} onClose={onClose}>
+      <div data-skip-sheet>
+        <div style={{ fontSize: 14, color: C.dim, marginBottom: 10 }}>{T("skipWhy")}</div>
+        <div role="radiogroup" aria-label={T("skipWhy")} style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          {SKIP_REASONS.map(([k, ic]) => (
+            <button key={k} role="radio" aria-checked={r === k} data-skip-r={k} onClick={() => { sfxTap(); setR(k); }}
+              style={{ ...btnBase, padding: "9px 13px", fontSize: 14, background: r === k ? C.sky : "transparent", color: r === k ? C.ink : C.chalk, border: `1.5px solid ${r === k ? C.sky : C.line}` }}>{ic} {T("skip_" + k)}</button>
+          ))}
+        </div>
+        <label style={{ display: "block", fontSize: 13, color: C.dim, marginTop: 14 }}>{T("skipNote")}
+          <textarea data-skip-note value={note} maxLength={200} rows={2} onChange={e => setNote(e.target.value)}
+            style={{ display: "block", width: "100%", boxSizing: "border-box", marginTop: 6, background: C.ink, color: C.chalk, border: `1.5px solid ${C.line}`, borderRadius: 12, padding: "10px 12px", fontSize: 15, fontFamily: BODY, resize: "vertical" }} />
+        </label>
+        {(r === "sick" || r === "pain") && <div data-skip-rest style={{ marginTop: 12, fontSize: 13, color: C.chalk, lineHeight: 1.5, background: C.panelHi, borderRadius: 12, padding: "10px 12px" }}>{T("skipRestHint")}</div>}
+        {freezes > 0 ? (
+          <button data-skip-freeze disabled={!r} onClick={() => onSave({ r, note: note.trim() }, true)} className="b3d" style={{ ...bigBtn(C.sky, C.ink), marginTop: 16, opacity: r ? 1 : 0.5 }}>{T("skipUse", { n: freezes })}</button>
+        ) : (
+          <>
+            <div style={{ marginTop: 14, fontSize: 13, color: C.signal, lineHeight: 1.5 }}>{T("skipNoFreeze")}</div>
+            <button data-skip-save disabled={!r} onClick={() => onSave({ r, note: note.trim() }, false)} className="b3d" style={{ ...bigBtn(C.panelHi, C.chalk), marginTop: 12, opacity: r ? 1 : 0.5 }}>{T("skipSave")}</button>
+          </>
+        )}
+        {!r && <div style={{ fontSize: 12, color: C.dim, marginTop: 8, textAlign: "center" }}>{T("skipPick")}</div>}
+      </div>
+    </Sheet>
+  );
+}
+
+// App only: a small update downloading / ready, shown at the top of Home (Michael, Oct 10: so nobody closes the app halfway).
+function UpdateBanner({ dl, busy, onClose }) {
+  if (!dl) return null;
+  if (dl.kind === "downloading") {
+    const pct = Math.max(0, Math.min(100, Math.round(dl.pct || 0)));
+    return (
+      <div data-dl="downloading" role="status" style={{ ...card, padding: "11px 14px", marginBottom: 12, borderColor: `${C.sky}88` }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: C.chalk }}>⬇️ {T("updDownloading", { v: dl.v })}</div>
+        <div style={{ height: 6, borderRadius: 99, background: C.panelHi, marginTop: 8, overflow: "hidden" }}><div data-dl-pct={pct} style={{ width: `${Math.max(4, pct)}%`, height: "100%", background: C.sky, borderRadius: 99, transition: "width .3s" }} /></div>
+      </div>
+    );
+  }
+  return (
+    <div data-dl="ready" role="status" style={{ ...card, padding: "11px 14px", marginBottom: 12, borderColor: `${C.mint}88`, display: "flex", alignItems: "center", gap: 10 }}>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 13, fontWeight: 800, color: C.mint }}>✓ {T("updReady", { v: dl.v })}</div>
+        <div style={{ fontSize: 12, color: C.dim, marginTop: 2 }}>{T("updReadyLater")}</div>
+      </div>
+      {!busy && <button data-dl-now onClick={() => { sfxTap(); applyUpdateNow(dl.id); }} style={{ ...btnBase, background: C.mint, color: C.ink, padding: "8px 12px", fontSize: 13, flexShrink: 0 }}>{T("updReadyNow")}</button>}
+      <button onClick={onClose} aria-label={T("close")} style={{ ...btnBase, background: "transparent", color: C.dim, padding: "4px 6px", fontSize: 16, flexShrink: 0 }}>✕</button>
+    </div>
+  );
+}
+
+function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, profile, onGo, upd, apk, kcal, setKcal, dl, onDlClose }) {
   const today = dateKey();
   // Make sure today's daily line and the "done" card texts are picked (and saved) before painting.
   useLayoutEffect(() => { const n = uiForToday(ui, history, today, profile); if (n !== ui) setUi(n); });
@@ -1651,6 +1713,7 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
     <div className="scr" style={{ padding: "16px 18px 110px", maxWidth: 460, margin: "0 auto" }}>
       {howEx && <HowTo id={howEx} history={history} onClose={() => setHowEx(null)} />}
 
+      <UpdateBanner dl={dl} busy={!!active} onClose={onDlClose} />
       {apk && <ApkUpdateCard info={apk.info} onClose={apk.close} />}
       {upd && <UpdateCard onOpen={upd.open} onClose={upd.close} />}
       {profile && <BirthdayCard profile={profile} ui={ui} setUi={setUi} />}
@@ -1716,10 +1779,11 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
         {T("dayN", { d: day.id })}
       </div>
       <div data-day-status style={{ fontSize: 14, color: !doneToday && gap !== null && gap >= 2 ? C.signal : C.dim, marginTop: 6, lineHeight: 1.5 }}>{status}</div>
-      {!doneToday && st.gap === 2 && st.n > 0 && !st.frozenToday && freezesAvailable(history) > 0 && (
-        <button onClick={onFreeze} style={{ ...ghostBtn, marginTop: 10, color: C.sky, borderColor: C.sky }}>{T("freezeOffer", { n: freezesAvailable(history) })}</button>
+      {!doneToday && st.gap === 2 && st.n > 0 && !st.frozenToday && !(META.skips || {})[dateKey()] && (
+        <button data-skip-btn onClick={onFreeze} style={{ ...ghostBtn, marginTop: 10, color: C.sky, borderColor: C.sky }}>{T("skipBtn")}</button>
       )}
       {st.frozenToday && <div style={{ fontSize: 13, color: C.sky, marginTop: 8 }}>{T("frozenToday")}</div>}
+      {(META.skips || {})[dateKey()] && <div data-skip-today style={{ fontSize: 13, color: C.dim, marginTop: 4 }}>{T("skipSaved", { r: `${skipIcon(META.skips[dateKey()].r)} ${T("skip_" + META.skips[dateKey()].r)}${META.skips[dateKey()].note ? ` (${META.skips[dateKey()].note})` : ""}` })}</div>}
 
       <div role="radiogroup" aria-label={T("pickDay")} style={{ display: "flex", gap: 8, marginTop: 18 }}>
         {DAYS.map((d, i) => (
@@ -1789,6 +1853,7 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
         </div>
       )}
 
+      <HomeKcal history={history} kcal={kcal} setKcal={setKcal} onOpen={() => onGo("calories")} />
       <div style={{ marginTop: 22 }}><ChallengesCard history={history} /></div>
     </div>
   );
@@ -1938,6 +2003,103 @@ function KcalSetup({ kcal, profile, onSave, onCancel }) {
   );
 }
 
+// Calories right now (Home card, menu, workout summary). null until the calculator and a goal are set.
+// A day "hits" the target when it is within ±10 % of it (Michael, Oct 9: logged = green, hit = turquoise).
+function kcalNow(history, day = dateKey()) {
+  const k = META.kcal, age = ageOn(META.birth, day);
+  if (!k || !k.sex || !k.height || !k.weight || !k.activity || !k.goal || age === null) return null;
+  const target = kcalTarget(k, age, history, day), eaten = dayTotal(k, day);
+  return { target, eaten, left: target - eaten, logged: eaten > 0, hit: eaten > 0 && Math.abs(eaten - target) <= target * 0.1 };
+}
+const KC_TEAL = "#22d3ee"; // turquoise, clearly apart from the green (mint)
+// Days in a row with calories logged, up to today (today counts once something is logged; until then the streak
+// from yesterday still stands). hits = how many of them hit the target.
+function kcalStreak(history) {
+  const k = META.kcal;
+  if (!k || !k.log) return { n: 0, hits: 0 };
+  let d = dateKey(); if (!dayTotal(k, d)) d = addDays(d, -1);
+  let n = 0, hits = 0;
+  while (dayTotal(k, d) > 0 && n < 3660) { n++; const s = kcalNow(history, d); if (s && s.hit) hits++; d = addDays(d, -1); }
+  return { n, hits };
+}
+// The last 7 days for the little dots: "hit" | "log" | null
+function kcalWeek(history) {
+  const out = []; let d = addDays(dateKey(), -6);
+  for (let i = 0; i < 7; i++) { const s = kcalNow(history, d); out.push({ k: d, kind: s && s.hit ? "hit" : s && s.logged ? "log" : null }); d = addDays(d, 1); }
+  return out;
+}
+// One short line for the day: changes with the time of day and how far along you are.
+function kcalLine(s) {
+  if (!s) return "";
+  const h = new Date().getHours();
+  if (s.hit) return T("kcMsgHit");
+  if (s.left < 0) return T("kcMsgOver", { n: nf(-s.left) });
+  if (!s.logged) return T(h < 11 ? "kcMsgMorning" : h < 17 ? "kcMsgNoon" : "kcMsgEvening");
+  if (s.left <= s.target * 0.25) return T("kcMsgClose", { n: nf(s.left) });
+  return T("kcMsgLeft", { n: nf(s.left) });
+}
+function KcalStreakChip({ history, small }) {
+  const st = kcalStreak(history);
+  if (!st.n) return null;
+  const allHit = st.hits === st.n;
+  return <span data-kc-streak={st.n} title={T("kcStreakTip")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: small ? 12 : 13, fontWeight: 800, padding: small ? "3px 8px" : "4px 10px", borderRadius: 99, background: `${allHit ? KC_TEAL : C.mint}22`, color: allHit ? KC_TEAL : C.mint, border: `1.5px solid ${allHit ? KC_TEAL : C.mint}88`, whiteSpace: "nowrap" }}>🥗 {TP("kcStreakDays", st.n)}</span>;
+}
+function KcalWeekDots({ history }) {
+  return (
+    <div data-kc-week style={{ display: "flex", gap: 5 }} aria-label={T("kcWeekAria")}>
+      {kcalWeek(history).map(w => <span key={w.k} data-kc-day={w.kind || "none"} title={fmtDate(w.k)} style={{ width: 12, height: 12, borderRadius: 99, background: w.kind === "hit" ? KC_TEAL : w.kind === "log" ? C.mint : "transparent", border: `1.5px solid ${w.kind === "hit" ? KC_TEAL : w.kind === "log" ? C.mint : C.line}` }} />)}
+    </div>
+  );
+}
+// Home: eaten / target, quick add, the streak; the Calories screen keeps history and settings.
+function HomeKcal({ history, kcal, setKcal, onOpen }) {
+  const [amount, setAmount] = useState("");
+  const s = kcalNow(history);
+  if (!s) {
+    return (
+      <button data-home-kcal="setup" onClick={() => { sfxTap(); onOpen(); }} style={{ ...btnBase, ...card, width: "100%", marginTop: 22, padding: "13px 15px", display: "flex", alignItems: "center", gap: 12, color: C.chalk, textAlign: "left" }}>
+        <span style={{ fontSize: 24 }} aria-hidden="true">🥗</span>
+        <span style={{ flex: 1, minWidth: 0 }}><span style={{ display: "block", fontSize: 15, fontWeight: 800 }}>{T("kcHomeSetup")}</span><span style={{ display: "block", fontSize: 12, color: C.dim, marginTop: 2 }}>{T("kcHomeSetupD")}</span></span>
+        <span style={{ color: C.dim, fontSize: 18 }}>›</span>
+      </button>
+    );
+  }
+  const add = () => {
+    const n = Number(amount);
+    if (!n || n < 1 || n > 9999) return;
+    sfxCheck();
+    const today = dateKey(), log = { ...(kcal.log || {}) };
+    log[today] = [...(log[today] || []), { ts: Date.now(), kcal: n, note: "" }];
+    setKcal({ ...kcal, log });
+    setAmount("");
+  };
+  const pct = Math.min(1, s.eaten / Math.max(1, s.target)), over = s.left < 0;
+  const col = s.hit ? KC_TEAL : over ? "#ff8a80" : C.mint;
+  return (
+    <div data-home-kcal="on" style={{ ...card, marginTop: 22, padding: "14px 15px" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
+        <div style={{ fontSize: 14, fontWeight: 800, color: C.chalk }}>🥗 {T("kcHomeTitle")}</div>
+        <KcalStreakChip history={history} small />
+      </div>
+      <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginTop: 8 }}>
+        <span data-home-kcal-eaten style={{ fontFamily: DISPLAY, fontSize: 34, fontWeight: 900, lineHeight: 1, color: C.chalk }}>{nf(s.eaten)}</span>
+        <span style={{ fontSize: 13, color: C.dim }}>{T("kcOf", { n: nf(s.target) })}</span>
+      </div>
+      <div style={{ height: 8, borderRadius: 99, background: C.panelHi, marginTop: 8, overflow: "hidden" }}><div style={{ width: `${pct * 100}%`, height: "100%", borderRadius: 99, background: col, transition: "width .5s ease-out" }} /></div>
+      <div data-home-kcal-line style={{ fontSize: 13, color: s.hit ? KC_TEAL : C.dim, marginTop: 8, lineHeight: 1.45 }}>{kcalLine(s)}</div>
+      <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+        <input value={amount} onChange={e => setAmount(e.target.value.replace(/[^0-9]/g, "").slice(0, 4))} onKeyDown={e => { if (e.key === "Enter") add(); }} inputMode="numeric" placeholder="kcal" aria-label={T("kcAmount")}
+          style={{ fontFamily: BODY, fontSize: 16, fontWeight: 700, padding: "10px 12px", borderRadius: 12, border: `1.5px solid ${C.line}`, background: C.ink, color: C.chalk, outline: "none", boxSizing: "border-box", minWidth: 0, flex: 1 }} />
+        <button data-home-kcal-add onClick={add} disabled={!Number(amount)} style={{ ...btnBase, padding: "10px 14px", fontSize: 14, background: Number(amount) ? C.signal : C.panelHi, color: Number(amount) ? C.signalInk : C.dim, flexShrink: 0 }}>{T("kcHomeAdd")}</button>
+      </div>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 12, gap: 8 }}>
+        <KcalWeekDots history={history} />
+        <button data-home-kcal-open onClick={() => { sfxTap(); onOpen(); }} style={{ ...btnBase, background: "transparent", color: C.sky, fontSize: 13, padding: "4px 0" }}>{T("kcHomeOpen")} ›</button>
+      </div>
+    </div>
+  );
+}
+
 function KcalGoals({ kcal, age, onPick }) {
   const tdee = tdeeOf(kcal, age);
   const min = kcal.sex === "f" ? 1200 : 1500;
@@ -2057,6 +2219,13 @@ function Calories({ history, profile, setProfile, kcal, setKcal }) {
           {wk > 0 && <div style={{ fontSize: 12, color: C.sky, marginTop: 3, fontWeight: 700 }}>{T("kcWorkoutToday", { n: nf(wk) })}</div>}
         </div>
       </div>
+      <div data-kc-streak-card style={{ ...card, padding: "12px 15px", marginTop: 10, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
+        <div style={{ minWidth: 0 }}>
+          <div style={{ fontSize: 13, color: C.chalk, fontWeight: 700 }}>{kcalLine(kcalNow(history))}</div>
+          <div style={{ fontSize: 11, color: C.dim, marginTop: 3 }}>{T("kcLegend")}</div>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}><KcalStreakChip history={history} /><KcalWeekDots history={history} /></div>
+      </div>
 
       <div style={{ ...card, padding: "14px 15px", marginTop: 10 }}>
         <div style={{ fontSize: 14, fontWeight: 800, color: C.chalk, marginBottom: 8 }}>{T("kcAddTitle")}</div>
@@ -2159,6 +2328,12 @@ function MonthCalendar({ history }) {
           const k = `${y}-${pad(m + 1)}-${pad(d)}`;
           const on = byDate[k];
           const isToday = k === today;
+          const sk = !on && (META.skips || {})[k], fz = !on && (META.freezeDays || []).includes(k);
+          if (sk || fz) return (
+            <div key={i} data-cal-skip={k} title={sk ? `${T("skip_" + sk.r)}${sk.note ? `: ${sk.note}` : ""}` : "🧊"} style={{ aspectRatio: "1", borderRadius: 9, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: `${C.sky}22`, color: C.sky, border: `1.5px solid ${isToday ? C.chalk : `${C.sky}66`}`, fontSize: 13, fontWeight: 700 }}>
+              {d}<span style={{ fontSize: 10, lineHeight: 1 }}>{sk ? skipIcon(sk.r) : "🧊"}</span>
+            </div>
+          );
           return (
             <div key={i} title={on ? T("dayN", { d: on }) : undefined} style={{ aspectRatio: "1", borderRadius: 9, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
               background: on ? C.mint : "transparent", color: on ? C.ink : k > today ? "#4d5f8a" : C.dim, border: `1.5px solid ${on ? C.mint : isToday ? C.chalk : "transparent"}`, fontSize: 13, fontWeight: on ? 800 : 500 }}>
@@ -2852,6 +3027,14 @@ function SettingsTab({ settings, setSettings, history, profile, setProfile, onIm
       </div>
       {msg && <div role="status" style={{ fontSize: 13, color: msg.startsWith("✓") ? C.mint : C.dim, marginTop: 8 }}>{msg}</div>}
 
+      <button onClick={() => { sfxTap(); openExternal(SUPPORT_URL); }} data-support style={{ ...btnBase, ...card, width: "100%", marginTop: 22, display: "flex", alignItems: "center", gap: 12, padding: "13px 15px", color: C.chalk, textAlign: "left" }}>
+        <span style={{ fontSize: 22 }} aria-hidden="true">💛</span>
+        <span style={{ minWidth: 0, flex: 1 }}>
+          <span style={{ display: "block", fontSize: 15, fontWeight: 800 }}>{T("support")}</span>
+          <span style={{ display: "block", fontSize: 12, fontWeight: 500, color: C.dim, marginTop: 2 }}>{T("supportDesc")}</span>
+        </span>
+        <span style={{ color: C.dim, fontSize: 18 }}>›</span>
+      </button>
       <div style={{ fontSize: 12, color: C.dim, textAlign: "center", marginTop: 26, lineHeight: 1.6, display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
         <Logo size={44} />
         <div>{T("about", { v: APP_VERSION })}<br />{T("privacy")}</div>
@@ -2945,6 +3128,7 @@ function Work({ item, rounds, history, sessionResults, onRecord, onSwap, exclude
   const [reps, setRepsRaw] = useState(startReps);
   const setReps = n => setRepsRaw(Math.max(0, Math.min(999, Math.round(n) || 0)));
   const [typing, setTyping] = useState(false);
+  const [tempoOn, setTempoOn] = useState(false);
   // One arm / one leg at a time: right side first, then left (Michael, Oct 9). The weaker side is logged.
   const split = ex.type === "reps" && (ex.unit === "arm" || ex.unit === "leg");
   const [side, setSide] = useState("R");
@@ -3028,6 +3212,12 @@ function Work({ item, rounds, history, sessionResults, onRecord, onSwap, exclude
 
       {ex.type === "reps" && (
         <>
+          {TEMPO[item.id] && (
+            <button data-tempo-btn onClick={() => { unlockAudio(); sfxTap(); setTempoOn(!tempoOn); }} aria-pressed={tempoOn} style={{ ...ghostBtn, display: "block", margin: "16px auto 0", color: tempoOn ? C.ink : C.sky, background: tempoOn ? C.sky : "transparent", borderColor: tempoOn ? C.sky : `${C.sky}88` }}>
+              {tempoOn ? T("tempoOff") : T("tempoOn", { t: TEMPO[item.id].map(x => x[1]).join("-") })}
+            </button>
+          )}
+          {tempoOn && TEMPO[item.id] && <TempoGuide seq={TEMPO[item.id]} />}
           {split && (
             <div data-side={side} style={{ display: "flex", justifyContent: "center", gap: 8, marginTop: 22 }}>
               {["R", "L"].map((sd, i) => (
@@ -3121,6 +3311,68 @@ function Elapsed({ since }) {
   const secs = Math.max(0, Math.round((now - since) / 1000));
   if (secs >= 4 * 3600) return null;
   return <span data-elapsed aria-label={T("elapsedAria")} style={{ display: "block", fontSize: 12, fontWeight: 600, color: C.dim, marginTop: 2, fontVariantNumeric: "tabular-nums" }}>⏱ {fmtDur(secs)}</span>;
+}
+
+// Tempo guide (Michael, Oct 9): one rep as phases [shape, seconds, word]. Shape: "down" = the circle shrinks,
+// "up" = it grows, "hold" = it becomes a bar that fills. Words are the texts' own (tp_*). Taken from each exercise's
+// tempo text; a plain "up"/"down" without seconds = 1 s, "short pause" = 1 s. No guide where the tempo isn't a fixed
+// rhythm (bicycle crunch, Y-T-W, 1¼ squat).
+const TEMPO = {
+  k1: [["down", 3, "down"], ["hold", 1, "pause"], ["up", 1, "up"]],
+  n1: [["down", 3, "down"], ["hold", 1, "pause"], ["up", 1, "up"]],
+  row1: [["up", 1, "pull"], ["hold", 1, "hold"], ["down", 3, "back"]],
+  row2: [["up", 1, "pull"], ["hold", 1, "hold"], ["down", 3, "back"]],
+  row3: [["up", 1, "pull"], ["hold", 1, "hold"], ["down", 3, "back"]],
+  r1: [["down", 3, "down"], ["up", 1, "up"]], n2: [["down", 3, "down"], ["up", 1, "up"]], k3: [["down", 3, "down"], ["up", 1, "up"]],
+  kKnee: [["down", 3, "down"], ["up", 1, "up"]], kIncl: [["down", 3, "down"], ["up", 1, "up"]],
+  r1e: [["down", 3, "down"], ["up", 1, "up"]], k3e: [["down", 3, "down"], ["up", 1, "up"]],
+  lunge: [["down", 2, "down"], ["up", 1, "up"]],
+  b2: [["down", 2, "reach"], ["up", 2, "back"]],
+  n7: [["down", 3, "out"], ["up", 1, "back"]],
+  superman: [["up", 1, "up"], ["hold", 2, "hold"], ["down", 1, "down"]],
+  bridge: [["up", 1, "up"], ["hold", 2, "squeeze"], ["down", 1, "down"]],
+  sbridge: [["up", 1, "up"], ["hold", 2, "squeeze"], ["down", 1, "down"]],
+  birddog: [["up", 1, "reach"], ["hold", 2, "hold"], ["down", 1, "back"]],
+  legraise: [["up", 2, "up"], ["down", 2, "down"]],
+};
+function TempoGuide({ seq }) {
+  const total = seq.reduce((a, x) => a + x[1], 0);
+  const [t0] = useState(() => performance.now());
+  const [now, setNow] = useState(t0);
+  const lastPh = useRef(-1);
+  useEffect(() => { let id; const loop = ts => { setNow(ts); id = requestAnimationFrame(loop); }; id = requestAnimationFrame(loop); return () => cancelAnimationFrame(id); }, []);
+  const el = Math.max(0, (now - t0) / 1000), rep = Math.floor(el / total);
+  let t = el - rep * total, i = 0;
+  while (i < seq.length - 1 && t >= seq[i][1]) { t -= seq[i][1]; i++; }
+  const [shape, secs, word] = seq[i], p = Math.min(1, t / secs);
+  // a soft tick when the phase changes (one sound per change, nothing chained)
+  useEffect(() => { const k = rep * seq.length + i; if (lastPh.current !== -1 && lastPh.current !== k) sfxTap(); lastPh.current = k; }, [i, rep]);
+  const BIG = 74, SMALL = 30;
+  // size at the start of each phase = where the previous phase ended
+  const sizeBefore = j => { let r = BIG; for (let k = 0; k < j; k++) r = seq[k][0] === "down" ? SMALL : seq[k][0] === "up" ? BIG : r; return r; };
+  const r0 = i === 0 ? (seq[seq.length - 1][0] === "down" ? SMALL : BIG) : sizeBefore(i);
+  const r = shape === "down" ? BIG - (BIG - SMALL) * p : shape === "up" ? SMALL + (BIG - SMALL) * p : r0;
+  const left = Math.max(1, Math.ceil(secs - t - 1e-6));
+  return (
+    <div data-tempo-guide data-phase={word} style={{ display: "flex", alignItems: "center", gap: 14, marginTop: 14, background: C.panel, borderRadius: 18, padding: "10px 14px" }}>
+      <svg width="164" height="164" viewBox="0 0 164 164" aria-hidden="true" style={{ flexShrink: 0 }}>
+        <circle cx="82" cy="82" r={BIG} fill="none" stroke={C.line} strokeWidth="2" strokeDasharray="4 6" />
+        {shape === "hold" ? (
+          <g>
+            <rect x={82 - r} y={73} width={2 * r} height={18} rx={9} fill={C.panelHi} />
+            <rect x={82 - r} y={73} width={2 * r * p} height={18} rx={9} fill={C.signal} />
+          </g>
+        ) : (
+          <circle cx="82" cy="82" r={r} fill={`${C.sky}33`} stroke={C.sky} strokeWidth="3" />
+        )}
+      </svg>
+      <div style={{ minWidth: 0 }}>
+        <div style={{ fontFamily: DISPLAY, fontSize: 34, fontWeight: 900, lineHeight: 1, color: shape === "hold" ? C.signal : C.sky }}>{T("tp_" + word)}</div>
+        <div data-tempo-left style={{ fontFamily: DISPLAY, fontSize: 54, fontWeight: 900, lineHeight: 1, color: C.chalk, marginTop: 4, fontVariantNumeric: "tabular-nums" }}>{left}</div>
+        <div style={{ fontSize: 12, color: C.dim, marginTop: 4 }}>{T("tempoRep", { n: rep + 1, s: total })}</div>
+      </div>
+    </div>
+  );
 }
 
 // ─── SESSION: REST ──────────────────────────────────────────────────────────
@@ -3256,6 +3508,7 @@ function Summary({ entry, xpBefore = 0, xpGained, newCh = [], newAch = [], histo
       <div className="pop" style={{ fontFamily: DISPLAY, fontSize: 60, fontWeight: 900, lineHeight: 0.95, color: C.mint }}>{T("great")}</div>
       <div style={{ fontSize: 16, color: C.chalk, marginTop: 8, fontWeight: 600, lineHeight: 1.4 }}>{finishLine}</div>
       <div style={{ fontSize: 13, color: C.dim, marginTop: 4 }}>{T("dayDate", { d: entry.day, date: fmtDate(entry.date, true) })}</div>
+      {(() => { const s = kcalNow(history.concat(history.some(e => e.ts === entry.ts) ? [] : [entry])); return s ? <div data-sum-kcal style={{ fontSize: 13, color: s.hit ? KC_TEAL : C.sky, marginTop: 6, fontWeight: 700 }}>🥗 {s.left > 0 ? T("kcAfterWorkout", { n: nf(s.left) }) : T("kcAfterWorkoutDone")}</div> : null; })()}
       {entry.dur > 0 && <div data-total-time style={{ fontSize: 14, color: C.chalk, fontWeight: 700, marginTop: 6 }}>⏱ {T("totalTime", { t: fmtDur(entry.dur) })}</div>}
       <div style={{ marginTop: 16, background: C.panel, border: `1px solid ${C.line}`, borderRadius: 18, padding: "14px 16px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 10 }}>
@@ -3457,7 +3710,7 @@ export default function App() {
   const setUi = u => { setUiState(u); saveUi(u); };
   // Every change to past workouts keeps the history sorted and records/rank-ups correct.
   const editHistory = fn => setHistory(h => recomputeFlags(sortHistory(fn(h))));
-  META = { freezeDays: profile.freezeDays || [], streakResetTs: profile.streakResetTs || 0, bonusFreezes: (profile.bdayGifts || []).length, giftThisYear: (profile.bdayGifts || []).includes(parseKey(dateKey()).getFullYear()), birth: profile.birth || null };
+  META = { kcal, skips: profile.skips || {}, freezeDays: profile.freezeDays || [], streakResetTs: profile.streakResetTs || 0, bonusFreezes: (profile.bdayGifts || []).length, giftThisYear: (profile.bdayGifts || []).includes(parseKey(dateKey()).getFullYear()), birth: profile.birth || null };
   window._wset = settings;
   applyTheme(settings.theme);
   applyLang(settings.lang || detectLang());
@@ -3472,12 +3725,14 @@ export default function App() {
     setProfile({ ...profile, bdays: [...(profile.bdays || []), y], bdayGifts: [...(profile.bdayGifts || []), y] });
   }, [profLoaded, profile.birth && profile.birth.m, profile.birth && profile.birth.d, dateKey()]);
   const setProfile = p => { setProfileState(p); saveProfile(p); };
-  const applyFreeze = () => {
-    unlockAudio();
+  const [skipOpen, setSkipOpen] = useState(false);
+  const applyFreeze = () => { unlockAudio(); sfxTap(); setSkipOpen(true); };
+  const saveSkip = (reason, freeze) => {
     const t = dateKey();
-    if ((profile.freezeDays || []).includes(t) || freezesAvailable(history) < 1) return;
+    const canFreeze = freeze && !(profile.freezeDays || []).includes(t) && freezesAvailable(history) > 0;
     sfxCheck();
-    setProfile({ ...profile, freezeDays: [...(profile.freezeDays || []), t] });
+    setProfile({ ...profile, skips: { ...(profile.skips || {}), [t]: reason }, freezeDays: canFreeze ? [...(profile.freezeDays || []), t] : (profile.freezeDays || []) });
+    setSkipOpen(false);
   };
 
   useEffect(() => {
@@ -3535,9 +3790,16 @@ export default function App() {
   });
   // App only: look for a new version once per start (a new APK, or a small update for the next start).
   const [apkUpd, setApkUpd] = useState(null);
+  const [dl, setDl] = useState(null); // small update: {kind: downloading|ready, v, pct, id}
+  const [gh, setGh] = useState(() => (lastGh() || {}).v || null); // newest version on GitHub
+  // Website: the newest Android app version on GitHub for the menu (the API allows browsers; 60 calls an hour per IP).
+  useEffect(() => {
+    if (isNative) return;
+    fetch("https://api.github.com/repos/mikydon/hw-app/releases/latest").then(r => r.ok ? r.json() : null).then(j => { if (j && j.tag_name) setGh(String(j.tag_name).replace(/^v/, "")); }).catch(() => {});
+  }, []);
   useEffect(() => {
     if (!loaded || !isNative) return;
-    checkForUpdate(APP_VERSION, !!session).then(r => { if (r && r.apk) setApkUpd(r.apk); }).catch(() => {});
+    checkForUpdate(APP_VERSION, !!session, st => { if (st && st.kind === "gh") setGh(st.v); else setDl(st); }).then(r => { if (r && r.apk) setApkUpd(r.apk); }).catch(() => {});
   }, [loaded]);
   const resume = () => { sfxTap(); setMenuOpen(false); setSessionOpen(true); };
 
@@ -3602,7 +3864,7 @@ export default function App() {
             <>
               <TopBar screen={screen} history={history} menuOpen={menuOpen} onGo={go} onMenu={() => { sfxTap(); setMenuOpen(o => !o); }} />
               <div key={screen}>
-                {screen === "train" && <TrainTab history={history} onStart={start} onFreeze={applyFreeze} ui={ui} setUi={setUi} active={session} onResume={resume} profile={profile} onGo={go} upd={updCard ? { open: () => { setUpdCard(false); setNewsAt(APP_VERSION); setNewsOpen(true); }, close: () => setUpdCard(false) } : null}
+                {screen === "train" && <TrainTab dl={dl} onDlClose={() => setDl(null)} kcal={kcal} setKcal={setKcal} history={history} onStart={start} onFreeze={applyFreeze} ui={ui} setUi={setUi} active={session} onResume={resume} profile={profile} onGo={go} upd={updCard ? { open: () => { setUpdCard(false); setNewsAt(APP_VERSION); setNewsOpen(true); }, close: () => setUpdCard(false) } : null}
                   apk={apkUpd ? { info: apkUpd, close: () => setApkUpd(null) } : null} />}
                 {screen === "history" && <HistoryTab history={history} editDate={histEdit} onEditOpened={() => setHistEdit(null)}
                   onDelete={idx => editHistory(h => h.filter((_, i) => i !== idx))}
@@ -3611,15 +3873,16 @@ export default function App() {
                 {screen === "calories" && <Calories history={history} profile={profile} setProfile={setProfile} kcal={kcal} setKcal={setKcal} />}
                 {screen === "settings" && <SettingsTab settings={settings} setSettings={setSettings} history={history} profile={profile} setProfile={setProfile}
                   kcal={kcal}
-                  onResetAll={() => { setHistory([]); setProfile({ ...profile, freezeDays: [], streakResetTs: 0, bdays: [], bdayGifts: [] }); setUi({}); if (kcal) setKcal({ ...kcal, log: {} }); }}
+                  onResetAll={() => { setHistory([]); setProfile({ ...profile, freezeDays: [], skips: {}, streakResetTs: 0, bdays: [], bdayGifts: [] }); setUi({}); if (kcal) setKcal({ ...kcal, log: {} }); }}
                   onImport={d => { setHistory(d.history); if (d.profile) setProfile({ ...profile, ...d.profile }); if (d.settings) setSettings({ ...DEFAULT_SETTINGS, ...d.settings }); if (d.kcal) setKcal(d.kcal); }} />}
               </div>
               {session && session.phase !== "summary" && <MiniPlayer session={session} live={live} onOpen={resume} />}
             </>
           )}
-          <MenuDrawer open={menuOpen} screen={screen} history={history} profile={profile} session={session && session.phase !== "summary" ? session : null}
+          <MenuDrawer gh={gh} dl={dl} open={menuOpen} screen={screen} history={history} profile={profile} session={session && session.phase !== "summary" ? session : null}
             onGo={go} onResume={resume} onClose={() => setMenuOpen(false)} onNews={() => { setMenuOpen(false); setNewsOpen(true); }} />
-          {howId && <HowTo id={howId} history={history} onClose={() => setHowId(null)} />}
+          {skipOpen && <SkipSheet freezes={freezesAvailable(history)} onSave={saveSkip} onClose={() => setSkipOpen(false)} />}
+      {howId && <HowTo id={howId} history={history} onClose={() => setHowId(null)} />}
           {newsOpen && <WhatsNew at={newsAt} onClose={() => { setNewsOpen(false); setNewsAt(null); if (settings.seenVersion !== APP_VERSION) setSettings({ ...settings, seenVersion: APP_VERSION }); }} />}
         </>
       )}

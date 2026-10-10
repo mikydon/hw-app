@@ -109,10 +109,11 @@ const KILL = { delayConditions: [{ kind: "kill" }] };
 // The last update check, saved so the menu can show it (helps to see why an update didn't arrive).
 export const UPD_KEY = "domaci-trening-v1-upd";
 function updLog(o) { try { localStorage.setItem(UPD_KEY, JSON.stringify({ ts: Date.now(), ...o })); } catch (_) {} return o; }
+export function lastGh() { try { return JSON.parse(localStorage.getItem(UPD_KEY + "-gh") || "null"); } catch (_) { return null; } }
 export function lastUpdate() { try { return JSON.parse(localStorage.getItem(UPD_KEY) || "null"); } catch (_) { return null; } }
 const errMsg = e => String((e && (e.message || e.errorMessage)) || e || "?").slice(0, 120);
 
-export async function checkForUpdate(appVersion, busy = false) {
+export async function checkForUpdate(appVersion, busy = false, onState = () => {}) {
   if (!isNative) return null;
   let failed = null;
   try { const f = await CapacitorUpdater.getFailedUpdate(); if (f && f.bundle && f.bundle.version) failed = f.bundle.version; } catch (_) {}
@@ -137,15 +138,29 @@ export async function checkForUpdate(appVersion, busy = false) {
     info = typeof r.data === "string" ? JSON.parse(r.data) : r.data;
   } catch (e) { updLog({ kind: "net", err: errMsg(e), failed }); return null; }
   if (!info || !info.version) { updLog({ kind: "net", err: "update.json?", failed }); return null; }
+  // The newest version on GitHub, shown in the menu right away (Michael, Oct 10), before any download.
+  try { localStorage.setItem(UPD_KEY + "-gh", JSON.stringify({ v: info.version, ts: Date.now() })); } catch (_) {}
+  onState({ kind: "gh", v: info.version });
   if (nv && verCmp(big(info.version), big(nv)) > 0) return updLog({ kind: "apk", v: info.version, failed, apk: { version: info.version, url: info.apk && info.apk.url } });
   if (verCmp(info.version, appVersion) <= 0 || !info.bundle || !info.bundle.url) { updLog({ kind: "latest", v: info.version, failed }); return null; }
   if (nv && big(info.version) !== big(nv)) { updLog({ kind: "latest", v: info.version, failed }); return null; } // a bundle only runs in the APK it was built for
   try {
     const list = await CapacitorUpdater.list();
     let b = (list.bundles || []).find(x => x.version === info.version && x.status !== "error");
-    if (!b) b = await CapacitorUpdater.download({ url: info.bundle.url, version: info.version, checksum: info.bundle.sha256 });
+    if (!b) {
+      // Show it on Home, so nobody closes the app halfway (Michael, Oct 10).
+      onState({ kind: "downloading", v: info.version, pct: 0 });
+      updLog({ kind: "downloading", v: info.version, failed });
+      let sub = null;
+      try { sub = await CapacitorUpdater.addListener("download", e => { if (e && typeof e.percent === "number") onState({ kind: "downloading", v: info.version, pct: e.percent }); }); } catch (_) {}
+      try { b = await CapacitorUpdater.download({ url: info.bundle.url, version: info.version, checksum: info.bundle.sha256 }); }
+      finally { try { sub && sub.remove(); } catch (_) {} }
+    }
     await CapacitorUpdater.next({ id: b.id });
     await CapacitorUpdater.setMultiDelay(KILL);
+    onState({ kind: "ready", v: info.version, id: b.id });
     return updLog({ kind: "staged", v: info.version, failed, staged: info.version });
-  } catch (e) { updLog({ kind: "error", v: info.version, err: errMsg(e), failed }); return null; }
+  } catch (e) { onState(null); updLog({ kind: "error", v: info.version, err: errMsg(e), failed }); return null; }
 }
+// "Switch on now" on the ready banner: reloads into the downloaded version right away (in the foreground).
+export async function applyUpdateNow(id) { if (isNative && id) { try { await CapacitorUpdater.set({ id }); } catch (_) {} } }

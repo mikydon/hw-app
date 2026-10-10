@@ -4,9 +4,21 @@ HW App is an Android app: download the APK from the newest release (on your phon
 
 Version numbers: **1** = the app, the second number = a big update (a new APK), the third = small fixes and tweaks that arrive by themselves (after 9 a fourth number is added: 1.0.9 → 1.0.9.1). Every big update compares each change with how it was before.
 
+The website https://mikydon.github.io/hw-app/ runs the same code as the app and updates itself when you open it; points marked *(Android app only)* (APK installs, in-app updates) don't apply to it.
+
 Everything before the Android app is **Browser beta** (the website), numbered 1.0.0 to 1.4.2. The Android app starts again at 1.0.0.
 
 <!-- New version: add a "## x.y.z (date)" section on top (web-only history uses "## Browser beta x.y.z (date)"). On a push to main, .github/workflows/build.yml builds everything and .github/scripts/releases.sh creates/updates the releases (commit = the push, or the one in a commit comment). -->
+
+## 1.0.5 (2026-10-10)
+
+- Tempo guide: exercises with a fixed tempo (e.g. push-ups "3 s down, short pause, up") have a "▶ Tempo" button in the workout. A circle shrinks on the way down, grows on the way up and turns into a bar that fills during a hold or pause, with the phase name and the seconds left; it repeats every rep until you turn it off. No guide where the tempo isn't a fixed rhythm (bicycle crunch, Y-T-W, 1¼ squat).
+- "🧊 I can't train today…" (shown when the streak is at risk, and from the freeze card in Profile) asks for the reason: illness, pain or injury, work or school, travel, other, plus an optional note. With a freeze left it uses one; without, the reason is still saved. The History calendar shows such days in blue with the reason's icon. (Before: the button only used a freeze.)
+- "💛 Support the app" moved from the menu to the bottom of Settings. The menu shows the newest version on GitHub (in the app and on the website); tapping it opens the releases page.
+- Calories on the main screen: eaten vs target with a bar, a line for the time of day (breakfast, lunch, how much is left, target hit), quick add and a button to Calories. Before: only on the Calories screen. Without the calculator set up, a "Set up calories" card.
+- Calorie streak 🥗: days in a row with calories logged; dots for the last 7 days: green = logged, turquoise = target hit (within ±10 %). On Home and on the Calories screen.
+- After a workout the summary says how many calories you still need today ("Have something good after the workout…"); the menu shows today's calories under Calories.
+- *(Android app only)* While a small update downloads, the top of the main screen says so with a progress bar ("keep the app open"); when it's ready there is "Switch on now". Before: nothing was shown, so it was easy to close the app halfway.
 
 ## 1.0.4 (2026-10-10)
 
@@ -17,15 +29,15 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 
 ## 1.0.3 (2026-10-10)
 
-- **If you have app 1.0.0:** small updates don't reach it. Download **HW-App-1.0.3.apk** below once and install it over the old app (your data stays). From then on small updates arrive by themselves.
+- *(Android app only)* **If you have app 1.0.0:** small updates don't reach it. Download **HW-App-1.0.3.apk** below once and install it over the old app (your data stays). From then on small updates arrive by themselves.
   Why: the updater switched a downloaded version on while the app was in the background, where Android may pause it; the new version then didn't report a good start in time and was rolled back. Since 1.0.2 the app switches at the start, in the foreground.
-- The menu shows, under the app version, when the app last looked for an update and how it went (only in the Android app).
+- *(Android app only)* The menu shows, under the app version, when the app last looked for an update and how it went (only in the Android app).
 
 ## 1.0.2 (2026-10-10)
 
 A small update: it arrives inside the app by itself.
 
-- Small updates now switch on at the next start of the app. Before, the updater only switched when the app went to the background, so a new version showed up only at the third start. During a running workout the switch still waits for a later start.
+- *(Android app only)* Small updates now switch on at the next start of the app. Before, the updater only switched when the app went to the background, so a new version showed up only at the third start. During a running workout the switch still waits for a later start.
 - The "Start day" button is on screen as soon as the app opens (it stays at the bottom edge until you scroll to its place) and shows the chosen rounds.
 
 ## 1.0.1 (2026-10-10)
