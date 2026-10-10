@@ -30,7 +30,7 @@ const THEMES = {
   slate:  { ink: "#15181d", panel: "#1f242b", panelHi: "#2a313a", line: "#3a434f", chalk: "#f1f4f8", dim: "#9aa6b4", edge: "#0e1115" },
   coffee: { ink: "#1c140f", panel: "#2a1f17", panelHi: "#382a20", line: "#4d3a2c", chalk: "#fbf3ec", dim: "#b8a291", edge: "#130d09" },
 };
-const APP_VERSION = "1.0.5";
+const APP_VERSION = "1.0.6";
 // Big Shoulders has no Cyrillic, so Oswald (also condensed) covers Ukrainian. The browser only
 // downloads the Oswald unicode ranges a page actually uses.
 const DISPLAY = "'Big Shoulders Display', 'Oswald', 'Arial Narrow', Impact, sans-serif";
@@ -1670,13 +1670,115 @@ function UpdateBanner({ dl, busy, onClose }) {
   );
 }
 
-function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, profile, onGo, upd, apk, kcal, setKcal, dl, onDlClose }) {
+// Floating start bar: two small squares (19 / 13 min) and a wide "Start day X". It slides up when the rounds
+// buttons on Home are off screen and slides away when they are visible (then the normal button is right there).
+function FloatStart({ show, day, rounds, setRounds, onStart }) {
+  return createPortal(
+    <div data-fstart={show ? "on" : "off"} aria-hidden={!show} className={"fstart" + (show ? " on" : "")}
+      style={{ position: "fixed", left: 0, right: 0, bottom: "calc(var(--sab, 0px) + 12px)", zIndex: 40, display: "flex", justifyContent: "center", padding: "0 12px", pointerEvents: show ? "auto" : "none" }}>
+      <div style={{ display: "flex", gap: 8, width: "100%", maxWidth: 436, padding: 8, borderRadius: 22, background: `${C.ink}e6`, backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)", border: `1px solid ${C.line}`, boxShadow: "0 12px 34px rgba(0,0,0,.5)" }}>
+        {[3, 2].map((n, i) => (
+          <button key={n} tabIndex={show ? 0 : -1} data-fround={n} aria-pressed={rounds === n} aria-label={T("roundsBtn", { n, m: n === 2 ? 13 : 19 })} onClick={() => { sfxTap(); setRounds(n); }} className="fsq" style={{ ...btnBase, "--d": `${60 + i * 50}ms`, width: 58, flexShrink: 0, borderRadius: 14, padding: "6px 0", background: rounds === n ? C.chalk : C.panel, color: rounds === n ? C.ink : C.dim, border: `1.5px solid ${rounds === n ? C.chalk : C.line}`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", lineHeight: 1 }}>
+            <span style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900 }}>{n === 2 ? 13 : 19}</span>
+            <span style={{ fontSize: 10, fontWeight: 800, marginTop: 2 }}>min</span>
+          </button>
+        ))}
+        <button tabIndex={show ? 0 : -1} data-fstart-go onClick={onStart} className="b3d fsq" style={{ ...bigBtn(C.signal, C.signalInk), "--d": "160ms", flex: 1, minWidth: 0, padding: "10px 12px", fontSize: 17, borderRadius: 14 }}>{T("startDay", { d: day })}</button>
+      </div>
+    </div>,
+    document.body
+  );
+}
+
+// First start (Michael, Oct 9–10): nick, then the calorie details (gender, birth date, height, weight, activity),
+// then the calorie goal. Every step can be skipped; whatever is missing is listed at the top of Home (SetupCard).
+function missingSetup(profile, kcal) {
+  const k = kcal || {}, out = [];
+  if (!profile.name || profile.name === "User") out.push("name");
+  const kc = ["sex", "birth", "height", "weight", "activity"].filter(f => f === "birth" ? !(profile.birth && profile.birth.y) : !k[f]);
+  return { name: out.length > 0, kcal: kc, goal: !kc.length && !k.goal };
+}
+function Onboarding({ start = 0, profile, setProfile, kcal, setKcal, onDone }) {
+  const [step, setStep] = useState(start);
+  const [name, setName] = useState(profile.name && profile.name !== "User" ? profile.name : "");
+  const next = () => { sfxTap(); if (step >= 2) onDone(); else setStep(step + 1); };
+  const age = ageOn(profile.birth, dateKey());
+  const kcReady = kcal && kcal.sex && kcal.height && kcal.weight && kcal.activity && age !== null;
+  const wrapS = { padding: "calc(18px + var(--sat)) 18px calc(30px + var(--sab))", maxWidth: 460, margin: "0 auto" };
+  return (
+    <div data-onboard={step} className="scr" key={step} style={wrapS}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: 18 }}>
+        <div style={{ display: "flex", gap: 6 }} aria-label={T("obStep", { n: step + 1 })}>
+          {[0, 1, 2].map(i => <span key={i} style={{ width: i === step ? 26 : 8, height: 8, borderRadius: 99, background: i <= step ? C.signal : C.panelHi, transition: "width .3s" }} />)}
+        </div>
+        <button data-ob-skipall onClick={() => { sfxTap(); onDone(); }} style={{ ...btnBase, background: "transparent", color: C.dim, fontSize: 13, padding: "6px 2px" }}>{T("obSkipAll")}</button>
+      </div>
+      {step === 0 && (
+        <>
+          <Logo size={56} />
+          <div style={{ fontFamily: DISPLAY, fontSize: 40, fontWeight: 900, lineHeight: 1, color: C.chalk, marginTop: 14 }}>{T("obHello")}</div>
+          <div style={{ fontSize: 15, color: C.dim, lineHeight: 1.5, marginTop: 8 }}>{T("obName")}</div>
+          <input data-ob-name value={name} maxLength={24} autoFocus onChange={e => setName(e.target.value)} onKeyDown={e => { if (e.key === "Enter" && name.trim()) { setProfile({ ...profile, name: name.trim() }); next(); } }} placeholder={T("obNamePh")} aria-label={T("obNamePh")}
+            style={{ display: "block", width: "100%", boxSizing: "border-box", marginTop: 14, fontFamily: BODY, fontSize: 20, fontWeight: 700, padding: "14px 16px", borderRadius: 14, border: `1.5px solid ${C.line}`, background: C.panel, color: C.chalk, outline: "none" }} />
+          <button data-ob-next disabled={!name.trim()} onClick={() => { sfxCheck(); setProfile({ ...profile, name: name.trim() }); next(); }} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 16, opacity: name.trim() ? 1 : 0.5 }}>{T("obNext")}</button>
+          <button data-ob-skip onClick={next} style={{ ...ghostBtn, display: "block", margin: "12px auto 0" }}>{T("obSkip")}</button>
+        </>
+      )}
+      {step === 1 && (
+        <>
+          <div style={{ fontFamily: DISPLAY, fontSize: 34, fontWeight: 900, lineHeight: 1, color: C.chalk }}>{T("obBodyTitle")}</div>
+          <div style={{ fontSize: 14, color: C.dim, lineHeight: 1.5, margin: "8px 0 16px" }}>{T("obBodyD")}</div>
+          <KcalSetup kcal={kcal || {}} profile={profile} onSave={(k, birth) => { setKcal({ ...(kcal || {}), ...k, log: (kcal && kcal.log) || {} }); setProfile({ ...profile, birth }); next(); }} onCancel={null} />
+          <button data-ob-skip onClick={() => { sfxTap(); onDone(); }} style={{ ...ghostBtn, display: "block", margin: "14px auto 0" }}>{T("obSkip")}</button>
+        </>
+      )}
+      {step === 2 && (
+        <>
+          <div style={{ fontFamily: DISPLAY, fontSize: 34, fontWeight: 900, lineHeight: 1, color: C.chalk }}>{T("obGoalTitle")}</div>
+          <div style={{ fontSize: 14, color: C.dim, lineHeight: 1.5, margin: "8px 0 14px" }}>{T("kcPickBody")}</div>
+          {kcReady ? <KcalGoals kcal={kcal} age={age} onPick={goal => { sfxCheck(); setKcal({ ...kcal, goal }); onDone(); }} /> : <div style={{ fontSize: 14, color: C.signal }}>{T("obNoData")}</div>}
+          <button data-ob-skip onClick={() => { sfxTap(); onDone(); }} style={{ ...ghostBtn, display: "block", margin: "14px auto 0" }}>{T("obSkip")}</button>
+        </>
+      )}
+    </div>
+  );
+}
+// Top of Home: what the first-start setup is still missing, with a button that opens it at the right step.
+function SetupCard({ profile, kcal, onFix, onClose }) {
+  const m = missingSetup(profile, kcal);
+  if (!m.name && !m.kcal.length && !m.goal) return null;
+  const lines = [];
+  if (m.name) lines.push(T("setupNoName"));
+  if (m.kcal.length) lines.push(T("setupNoKcal", { what: m.kcal.map(f => T("setup_" + f)).join(", ") }));
+  else if (m.goal) lines.push(T("setupNoGoal"));
+  const step = m.name ? 0 : m.kcal.length ? 1 : 2;
+  return (
+    <div data-setup-card style={{ ...card, padding: "12px 14px", marginBottom: 12, borderColor: `${C.signal}88`, display: "flex", alignItems: "center", gap: 10 }}>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 14, fontWeight: 800, color: C.signal }}>⚙️ {T("setupTitle")}</div>
+        {lines.map((l, i) => <div key={i} style={{ fontSize: 12, color: C.chalk, lineHeight: 1.45, marginTop: 3 }}>{l}</div>)}
+      </div>
+      <button data-setup-fix onClick={() => { sfxTap(); onFix(step); }} style={{ ...btnBase, background: C.signal, color: C.signalInk, padding: "8px 12px", fontSize: 13, flexShrink: 0 }}>{T("setupFix")}</button>
+      <button onClick={onClose} aria-label={T("close")} style={{ ...btnBase, background: "transparent", color: C.dim, padding: "4px 6px", fontSize: 16, flexShrink: 0 }}>✕</button>
+    </div>
+  );
+}
+
+function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, profile, onGo, upd, apk, kcal, setKcal, dl, onDlClose, onSetup }) {
   const today = dateKey();
   // Make sure today's daily line and the "done" card texts are picked (and saved) before painting.
   useLayoutEffect(() => { const n = uiForToday(ui, history, today, profile); if (n !== ui) setUi(n); });
   const auto = nextDayIdx(history);
   const [dayIdx, setDayIdx] = useState(auto);
   const [rounds, setRounds] = useState(3); // 3 rounds recommended (more weekly sets); 2 when short on time
+  // While the rounds buttons are off screen, a floating bar offers 19 / 13 min + Start (Michael, Oct 10).
+  const roundsRow = useRef(null);
+  const [rowSeen, setRowSeen] = useState(true);
+  useEffect(() => {
+    const el = roundsRow.current; if (!el || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(([e]) => setRowSeen(e.isIntersecting), { threshold: 0.6 });
+    io.observe(el); return () => io.disconnect();
+  }, [active]);
   const [howEx, setHowEx] = useState(null);
   const last = history[history.length - 1];
   const gap = last ? daysBetween(last.date, today) : null;
@@ -1714,6 +1816,7 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
       {howEx && <HowTo id={howEx} history={history} onClose={() => setHowEx(null)} />}
 
       <UpdateBanner dl={dl} busy={!!active} onClose={onDlClose} />
+      {profile && !(ui && ui.setupHidden) && <SetupCard profile={profile} kcal={kcal} onFix={onSetup} onClose={() => setUi({ ...ui, setupHidden: true })} />}
       {apk && <ApkUpdateCard info={apk.info} onClose={apk.close} />}
       {upd && <UpdateCard onOpen={upd.open} onClose={upd.close} />}
       {profile && <BirthdayCard profile={profile} ui={ui} setUi={setUi} />}
@@ -1828,7 +1931,7 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
       </div>
       <div style={{ fontSize: 12, color: C.dim, marginTop: 8 }}>{T("tapHint")}</div>
 
-      <div style={{ display: "flex", gap: 8, marginTop: 14 }}>
+      <div ref={roundsRow} data-rounds-row style={{ display: "flex", gap: 8, marginTop: 14 }}>
         {[3, 2].map(n => (
           <button key={n} onClick={() => { sfxTap(); setRounds(n); }} aria-pressed={rounds === n} data-rounds={n}
             style={{ ...btnBase, flex: 1, padding: "11px 8px", fontSize: 13, background: rounds === n ? C.panelHi : "transparent", color: rounds === n ? C.chalk : C.dim, border: `1.5px solid ${rounds === n ? C.chalk : C.line}` }}>
@@ -1844,14 +1947,14 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
           ▶ {T("resumeWorkout", { d: active.day })}
         </button>
       ) : (
-        // Sticky: always on screen when Home opens (sits at the bottom edge until you scroll to its place)
-        <div data-start-wrap style={{ position: "sticky", bottom: "calc(var(--sab, 0px) + 12px)", zIndex: 5, marginTop: 14, filter: "drop-shadow(0 8px 16px rgba(0,0,0,.45))" }}>
+        <div data-start-wrap style={{ marginTop: 14 }}>
           <button onClick={() => { unlockAudio(); onStart(day.id, rounds); }} className="b3d" data-start style={{ ...bigBtn(C.signal, C.signalInk), fontSize: 18, padding: "13px 19px" }}>
             {T("startDay", { d: day.id })}
             <span data-start-rounds style={{ display: "block", fontSize: 12, fontWeight: 700, opacity: 0.75, marginTop: 2 }}>{T("roundsBtn", { n: rounds, m: rounds === 2 ? 13 : 19 })}</span>
           </button>
         </div>
       )}
+      {!active && <FloatStart show={!rowSeen} day={day.id} rounds={rounds} setRounds={setRounds} onStart={() => { unlockAudio(); onStart(day.id, rounds); }} />}
 
       <HomeKcal history={history} kcal={kcal} setKcal={setKcal} onOpen={() => onGo("calories")} />
       <div style={{ marginTop: 22 }}><ChallengesCard history={history} /></div>
@@ -3762,6 +3865,13 @@ export default function App() {
   const [newsChecked, setNewsChecked] = useState(false);
   const [updCard, setUpdCard] = useState(false); // "updated, see what's new" card, only on this first start after a small update
   const [newsAt, setNewsAt] = useState(null);
+  const [onboard, setOnboard] = useState(null); // step to show the first-start setup at, or null
+  const [obChecked, setObChecked] = useState(false);
+  useEffect(() => {
+    if (!loaded || !settingsLoaded || !profLoaded || obChecked) return;
+    setObChecked(true);
+    if (!settings.onboarded && history.length === 0 && (!profile.name || profile.name === "User")) setOnboard(0);
+  }, [loaded, settingsLoaded, profLoaded]);
   useEffect(() => {
     if (!loaded || !settingsLoaded || newsChecked) return;
     setNewsChecked(true);
@@ -3814,6 +3924,12 @@ export default function App() {
       <style>{`
         button:focus-visible{outline:3px solid ${C.signal};outline-offset:2px}
         [data-reps-input]::-webkit-inner-spin-button,[data-reps-input]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+        .fstart{transform:translateY(calc(100% + 24px));opacity:0;transition:transform .42s cubic-bezier(.2,.9,.25,1.12),opacity .25s ease}
+        .fstart.on{transform:none;opacity:1}
+        .fstart .fsq{transform:scale(.6);opacity:0;transition:transform .38s cubic-bezier(.2,.9,.3,1.3) var(--d,0ms),opacity .2s ease var(--d,0ms)}
+        .fstart.on .fsq{transform:none;opacity:1}
+        .fstart.on .fsq.b3d:active{transform:translateY(4px)}
+        @media (prefers-reduced-motion: reduce){.fstart,.fstart .fsq{transition:none}}
         .b3d{transition:transform .08s ease, box-shadow .08s ease; box-shadow:0 5px 0 var(--e, transparent)}
         .b3d:active{transform:translateY(4px); box-shadow:0 1px 0 var(--e, transparent)}
         @keyframes scrIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
@@ -3851,6 +3967,10 @@ export default function App() {
         <div style={{ padding: 40, display: "flex", flexDirection: "column", alignItems: "center", gap: 12, color: C.dim }}><Logo size={64} />{T("loading")}</div>
       ) : (
         <>
+          {onboard !== null && !session ? (
+            <Onboarding start={onboard} profile={profile} setProfile={setProfile} kcal={kcal} setKcal={setKcal}
+              onDone={() => { setOnboard(null); setUi({ ...ui, setupHidden: false }); if (!settings.onboarded) setSettings({ ...settings, onboarded: true }); window.scrollTo(0, 0); }} />
+          ) : <>
           {session && (
             <div style={{ display: sessionOpen ? "block" : "none" }} aria-hidden={!sessionOpen}>
               <Session session={session} setSession={setSession} history={history}
@@ -3864,7 +3984,7 @@ export default function App() {
             <>
               <TopBar screen={screen} history={history} menuOpen={menuOpen} onGo={go} onMenu={() => { sfxTap(); setMenuOpen(o => !o); }} />
               <div key={screen}>
-                {screen === "train" && <TrainTab dl={dl} onDlClose={() => setDl(null)} kcal={kcal} setKcal={setKcal} history={history} onStart={start} onFreeze={applyFreeze} ui={ui} setUi={setUi} active={session} onResume={resume} profile={profile} onGo={go} upd={updCard ? { open: () => { setUpdCard(false); setNewsAt(APP_VERSION); setNewsOpen(true); }, close: () => setUpdCard(false) } : null}
+                {screen === "train" && <TrainTab onSetup={st => setOnboard(st)} dl={dl} onDlClose={() => setDl(null)} kcal={kcal} setKcal={setKcal} history={history} onStart={start} onFreeze={applyFreeze} ui={ui} setUi={setUi} active={session} onResume={resume} profile={profile} onGo={go} upd={updCard ? { open: () => { setUpdCard(false); setNewsAt(APP_VERSION); setNewsOpen(true); }, close: () => setUpdCard(false) } : null}
                   apk={apkUpd ? { info: apkUpd, close: () => setApkUpd(null) } : null} />}
                 {screen === "history" && <HistoryTab history={history} editDate={histEdit} onEditOpened={() => setHistEdit(null)}
                   onDelete={idx => editHistory(h => h.filter((_, i) => i !== idx))}
@@ -3884,6 +4004,7 @@ export default function App() {
           {skipOpen && <SkipSheet freezes={freezesAvailable(history)} onSave={saveSkip} onClose={() => setSkipOpen(false)} />}
       {howId && <HowTo id={howId} history={history} onClose={() => setHowId(null)} />}
           {newsOpen && <WhatsNew at={newsAt} onClose={() => { setNewsOpen(false); setNewsAt(null); if (settings.seenVersion !== APP_VERSION) setSettings({ ...settings, seenVersion: APP_VERSION }); }} />}
+          </>}
         </>
       )}
     </div>

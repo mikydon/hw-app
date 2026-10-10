@@ -10,6 +10,12 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 
 <!-- New version: add a "## x.y.z (date)" section on top (web-only history uses "## Browser beta x.y.z (date)"). On a push to main, .github/workflows/build.yml builds everything and .github/scripts/releases.sh creates/updates the releases (commit = the push, or the one in a commit comment). -->
 
+## 1.0.6 (2026-10-10)
+
+- Floating start bar on the main screen: when the rounds choice is off screen, a bar slides up with two small squares (19 and 13 min) and a wide "Start day X". It slides away when the rounds buttons are in view. Before: one sticky Start button without the choice of length.
+- First start: the app asks for a nickname, then gender, birth date, height, weight and activity, then the calorie goal. Every step can be skipped. Whatever is still missing (nickname, data for calories, goal) is listed at the top of the main screen with an "Add" button that opens the right step. Before: nothing was asked; calories had to be found in the menu.
+- The calorie form says "Gender" again (instead of "Man or woman?").
+
 ## 1.0.5 (2026-10-10)
 
 - Tempo guide: exercises with a fixed tempo (e.g. push-ups "3 s down, short pause, up") have a "▶ Tempo" button in the workout. A circle shrinks on the way down, grows on the way up and turns into a bar that fills during a hold or pause, with the phase name and the seconds left; it repeats every rep until you turn it off. No guide where the tempo isn't a fixed rhythm (bicycle crunch, Y-T-W, 1¼ squat).
