@@ -38,6 +38,8 @@ export default {
     welcomeMove: "Böngészőben használtad a HW Appot? Hozd át az adataidat: a böngészőben Beállítások → Biztonsági mentés, aztán itt Beállítások → Visszaállítás mentésből.",
     welcomeMoveBtn: "Beállítások megnyitása",
     getAndroid: "📱 Androidos app",
+    support: "Támogasd az appot",
+    supportDesc: "Patreon · önkéntes, az app ingyenes marad",
     hintTitle: "Tudtad?",
     hintGo: "Mutasd",
     hint_themes: "Más színt szeretnél? A Beállítások → Megjelenés alatt 8 téma van.",
@@ -161,7 +163,7 @@ export default {
     streakAtRisk: "Ma edzésnap van. Ha kihagyod, a 🔥 szériád ({n}) holnap véget ér.",
     trainingDay: "Ma edzésnap van. Utolsó edzés: {date} ({ago}).",
     welcomeTitle: "Szia! 👋",
-    welcome1: "Otthon edzel, eszközök nélkül, ~13 percig. Az A-, B- és C-napot váltogatod, és minden második nap edzel. Minden edzés bemelegítéssel kezdődik, utána 4 gyakorlat jön köredzésben (2 vagy 3 kör), a végén pedig opcionális nyújtás.",
+    welcome1: "Otthon edzel, eszközök nélkül, ~19 percig. Az A-, B- és C-napot váltogatod, és minden második nap edzel. Minden edzés bemelegítéssel kezdődik, utána 4 gyakorlat jön köredzésben (2 vagy 3 kör), a végén pedig opcionális nyújtás.",
     welcome2: "Koppints egy gyakorlatra, és megnézheted a rajzát, a leírását és egy videót. Ha egy gyakorlat nem megy, edzés közben cseréld le a ⇄ gombbal. A neved és a fotód a profilodban állíthatod be (jobb felül).",
     weekLine: "Ezen a héten: {count}. Cél: 3–4 (minden második nap).",
     nextWorkout: "Következő edzés",
@@ -177,6 +179,7 @@ export default {
     tapInfo: "koppints az infóért",
     tapHint: "Koppints egy gyakorlatra: rajz, leírás, videó és rangok.",
     roundsBtn: "{n} kör, ~{m} perc",
+    roundsRec: "ajánlott",
     roundsHint: "3 kör = több sorozat hetente, vagyis gyorsabb fejlődés. Ha kevés az időd, 2 kör is elég.",
     startDay: "{d}-nap indítása",
 
@@ -717,6 +720,15 @@ export default {
     ["Internet nélkül", "a betűtípusok a Google-tól jöttek, internet nélkül másképp nézett ki az app.", "a betűtípusok az appban vannak, minden működik offline is."],
     ["Vissza gomb", "–", "bezár egy ablakot vagy a menüt; edzésből a kezdőképernyőre visz, az edzés közben fut tovább."],
     ["Verziószámok", "Browser beta 1.0.0 – 1.4.2.", "újra 1.0.0-tól számolunk, ez az app első verziója."],
+  ],
+  news101: [
+    "Mostantól a 3 kör (~19 perc) az alapértelmezett és ajánlott; a 2 kör azokra a napokra van, amikor kevés az időd.",
+    "A felső 🔥 vagy ⚡ megnyitja a profilodat; a dátum mellett az idő is látszik.",
+    "Koppints egy napra a heti sávban: a zöld nap a Történetben nyitja meg azt az edzést, a többi a Történetet.",
+    "Minden gyakorlat neve mellett egy ? megnyitja a leírását.",
+    "Régi edzéshez gyakorlatot az app színeiben megjelenő ablakban adhatsz.",
+    "A név a profilban középen van; a nagy napcím már nem ér hozzá az alatta lévő sorhoz; a +100/+250/+500 gombok eltűntek a Kalóriákból.",
+    "A menüben ott a „💛 Támogasd az appot”: önkéntes támogatás a Patreonon. Az egész app ingyenes marad.",
   ],
 
   quotes: [

@@ -38,6 +38,8 @@ export default {
     welcomeMove: "Tu utilisais HW App dans le navigateur ? Transfère tes données : dans le navigateur Réglages → Sauvegarder, puis ici Réglages → Restaurer une sauvegarde.",
     welcomeMoveBtn: "Ouvrir les réglages",
     getAndroid: "📱 Appli Android",
+    support: "Soutenir l'appli",
+    supportDesc: "Patreon · facultatif, l'appli reste gratuite",
     hintTitle: "Le savais-tu ?",
     hintGo: "Voir",
     hint_themes: "Envie d'une autre couleur ? Réglages → Apparence propose 8 thèmes.",
@@ -161,7 +163,7 @@ export default {
     streakAtRisk: "Aujourd'hui, c'est jour d'entraînement. Si tu le sautes, ta flamme 🔥 de {n} s'éteint demain.",
     trainingDay: "Aujourd'hui, c'est jour d'entraînement. Dernière séance : {date} ({ago}).",
     welcomeTitle: "Bienvenue ! 👋",
-    welcome1: "Tu t'entraînes à la maison, sans matériel, pendant ~13 minutes. Tu alternes les jours A, B et C, un jour sur deux. Chaque séance comprend un échauffement, puis 4 exercices en circuit (2 ou 3 tours) et des étirements facultatifs.",
+    welcome1: "Tu t'entraînes à la maison, sans matériel, pendant ~19 minutes. Tu alternes les jours A, B et C, un jour sur deux. Chaque séance comprend un échauffement, puis 4 exercices en circuit (2 ou 3 tours) et des étirements facultatifs.",
     welcome2: "Touche un exercice pour voir un dessin, les consignes et une vidéo. Si un exercice ne te convient pas, remplace-le pendant la séance avec le bouton ⇄. Ajoute ton nom et ta photo dans ton profil (en haut à droite).",
     weekLine: "Cette semaine : {count}. Objectif : 3–4 (un jour sur deux).",
     nextWorkout: "Prochaine séance",
@@ -177,6 +179,7 @@ export default {
     tapInfo: "touche pour les infos",
     tapHint: "Touche un exercice : dessin, consignes, vidéo et rangs.",
     roundsBtn: "{n} tours, ~{m} min",
+    roundsRec: "recommandé",
     roundsHint: "3 tours = plus de séries par semaine, donc des progrès plus rapides. Quand tu manques de temps, 2 tours suffisent.",
     startDay: "Lancer le jour {d}",
 
@@ -717,6 +720,15 @@ export default {
     ["Hors ligne", "les polices venaient de Google, sans internet l'appli avait un autre look.", "les polices sont dans l'appli, tout marche hors ligne."],
     ["Bouton retour", "–", "ferme une fenêtre ou le menu ; pendant une séance, il te ramène à l'accueil et la séance continue."],
     ["Numéros de version", "Browser beta 1.0.0 à 1.4.2.", "on recompte à partir de 1.0.0, la première version de l'appli."],
+  ],
+  news101: [
+    "3 tours (~19 min) sont maintenant présélectionnés et recommandés ; 2 tours pour les jours où tu manques de temps.",
+    "Touche 🔥 ou ⚡ en haut pour ouvrir ton profil ; l'heure s'affiche à côté de la date.",
+    "Touche un jour de la semaine : un jour vert ouvre cette séance dans l'Historique, un autre jour ouvre l'Historique.",
+    "Un ? à côté de chaque exercice ouvre sa description.",
+    "Ajouter un exercice à une ancienne séance se fait dans une fenêtre aux couleurs de l'appli.",
+    "Le nom du profil est centré ; le grand titre du jour ne touche plus la ligne du dessous ; les boutons +100/+250/+500 des Calories ont disparu.",
+    "Le menu a « 💛 Soutenir l'appli » : un soutien facultatif sur Patreon. Toute l'appli reste gratuite.",
   ],
 
   quotes: [

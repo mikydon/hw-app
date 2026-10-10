@@ -38,6 +38,8 @@ export default {
     welcomeMove: "Used HW App in the browser before? Move your data: in the browser, Settings → Save backup; then here, Settings → Restore from backup.",
     welcomeMoveBtn: "Open Settings",
     getAndroid: "📱 Android app",
+    support: "Support the app",
+    supportDesc: "Patreon · optional, the app stays free",
     hintTitle: "Did you know?",
     hintGo: "Show me",
     hint_themes: "Want a different colour? Settings → Appearance has 8 themes.",
@@ -161,7 +163,7 @@ export default {
     streakAtRisk: "Today is a training day. If you skip it, your 🔥 {n} streak ends tomorrow.",
     trainingDay: "Today is a training day. Last workout: {date} ({ago}).",
     welcomeTitle: "Welcome! 👋",
-    welcome1: "You train at home, with no equipment, for ~13 minutes. You rotate days A, B and C and train every other day. Each workout has a warm-up, then 4 exercises in a circuit (2 or 3 rounds) and optional stretching.",
+    welcome1: "You train at home, with no equipment, for ~19 minutes. You rotate days A, B and C and train every other day. Each workout has a warm-up, then 4 exercises in a circuit (2 or 3 rounds) and optional stretching.",
     welcome2: "Tap an exercise to see a drawing, instructions and a video. If an exercise doesn't work for you, swap it during the workout with the ⇄ button. Set your name and photo in your profile (top right).",
     weekLine: "This week: {count}. Goal: 3–4 (every other day).",
     nextWorkout: "Next workout",
@@ -177,6 +179,7 @@ export default {
     tapInfo: "tap for info",
     tapHint: "Tap an exercise: drawing, instructions, video and ranks.",
     roundsBtn: "{n} rounds, ~{m} min",
+    roundsRec: "recommended",
     roundsHint: "3 rounds mean more sets per week, so faster growth. When you're short on time, 2 rounds are enough.",
     startDay: "Start day {d}",
 
@@ -717,6 +720,15 @@ export default {
     ["Offline", "fonts came from Google, so without internet the app looked different.", "the fonts are inside the app, everything works offline."],
     ["Back button", "–", "closes a sheet or the menu; in a workout it takes you Home and the workout keeps running."],
     ["Version numbers", "Browser beta 1.0.0 to 1.4.2.", "counting starts again at 1.0.0, the first version of the app."],
+  ],
+  news101: [
+    "3 rounds (~19 min) are now preselected and recommended; 2 rounds are for days when you're short on time.",
+    "Tap 🔥 or ⚡ at the top to open your profile; the time is shown next to the date.",
+    "Tap a day in the week strip: a green day opens that workout in History, any other day opens History.",
+    "A ? next to every exercise name opens its description.",
+    "Adding an exercise to a past workout uses a sheet in the app's colours.",
+    "The profile name is centred; the big day title no longer touches the line under it; the +100/+250/+500 buttons in Calories are gone.",
+    "The menu has “💛 Support the app”: optional support on Patreon. The whole app stays free.",
   ],
 
   quotes: [

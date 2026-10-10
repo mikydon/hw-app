@@ -38,6 +38,8 @@ export default {
     welcomeMove: "Używałeś HW App w przeglądarce? Przenieś dane: w przeglądarce Ustawienia → Zapisz kopię, potem tutaj Ustawienia → Przywróć z kopii.",
     welcomeMoveBtn: "Otwórz Ustawienia",
     getAndroid: "📱 Aplikacja na Androida",
+    support: "Wesprzyj aplikację",
+    supportDesc: "Patreon · dobrowolnie, aplikacja zostaje darmowa",
     hintTitle: "Czy wiesz?",
     hintGo: "Pokaż",
     hint_themes: "Chcesz inny kolor? Ustawienia → Wygląd mają 8 motywów.",
@@ -161,7 +163,7 @@ export default {
     streakAtRisk: "Dziś dzień treningowy. Jeśli go odpuścisz, twoja passa 🔥 {n} jutro się skończy.",
     trainingDay: "Dziś dzień treningowy. Ostatni trening: {date} ({ago}).",
     welcomeTitle: "Witaj! 👋",
-    welcome1: "Trenujesz w domu, bez sprzętu, przez ~13 minut. Dni A, B i C idą na zmianę, a trenujesz co drugi dzień. Każdy trening to rozgrzewka, potem 4 ćwiczenia w obwodzie (2 lub 3 rundy) i opcjonalne rozciąganie.",
+    welcome1: "Trenujesz w domu, bez sprzętu, przez ~19 minut. Dni A, B i C idą na zmianę, a trenujesz co drugi dzień. Każdy trening to rozgrzewka, potem 4 ćwiczenia w obwodzie (2 lub 3 rundy) i opcjonalne rozciąganie.",
     welcome2: "Dotknij ćwiczenia, żeby zobaczyć rysunek, instrukcję i wideo. Jeśli jakieś ćwiczenie ci nie pasuje, zamień je w trakcie treningu przyciskiem ⇄. Imię i zdjęcie ustawisz w profilu (prawy górny róg).",
     weekLine: "W tym tygodniu: {count}. Cel: 3–4 (co drugi dzień).",
     nextWorkout: "Następny trening",
@@ -177,6 +179,7 @@ export default {
     tapInfo: "dotknij po info",
     tapHint: "Dotknij ćwiczenia: rysunek, instrukcja, wideo i rangi.",
     roundsBtn: "{n} rundy, ~{m} min",
+    roundsRec: "zalecane",
     roundsHint: "3 rundy to więcej serii w tygodniu, czyli szybsze postępy. Gdy brakuje ci czasu, 2 rundy wystarczą.",
     startDay: "Zacznij dzień {d}",
 
@@ -717,6 +720,15 @@ export default {
     ["Bez internetu", "czcionki pobierały się z Google, bez internetu aplikacja wyglądała inaczej.", "czcionki są w aplikacji, wszystko działa offline."],
     ["Przycisk wstecz", "–", "zamyka okno lub menu; z treningu wracasz na start, a trening trwa dalej."],
     ["Numery wersji", "Browser beta 1.0.0 do 1.4.2.", "liczymy od nowa od 1.0.0, pierwsza wersja aplikacji."],
+  ],
+  news101: [
+    "Domyślne i zalecane są teraz 3 rundy (~19 min); 2 rundy na dni, gdy brakuje czasu.",
+    "Stuknij 🔥 lub ⚡ u góry, aby otworzyć profil; przy dacie jest też godzina.",
+    "Stuknij dzień w tygodniu: zielony dzień otwiera ten trening w Historii, inny dzień otwiera Historię.",
+    "Znak ? przy każdym ćwiczeniu otwiera jego opis.",
+    "Dodawanie ćwiczenia do dawnego treningu to okno w kolorach aplikacji.",
+    "Imię w profilu jest wyśrodkowane; duży napis dnia nie dotyka już wiersza pod nim; przyciski +100/+250/+500 w Kaloriach zniknęły.",
+    "W menu jest „💛 Wesprzyj aplikację”: dobrowolne wsparcie na Patreonie. Cała aplikacja pozostaje darmowa.",
   ],
 
   quotes: [

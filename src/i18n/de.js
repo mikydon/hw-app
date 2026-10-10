@@ -38,6 +38,8 @@ export default {
     welcomeMove: "Hast du HW App vorher im Browser benutzt? Nimm deine Daten mit: im Browser Einstellungen → Backup speichern, dann hier Einstellungen → Backup wiederherstellen.",
     welcomeMoveBtn: "Einstellungen öffnen",
     getAndroid: "📱 Android-App",
+    support: "App unterstützen",
+    supportDesc: "Patreon · freiwillig, die App bleibt kostenlos",
     hintTitle: "Schon gewusst?",
     hintGo: "Zeigen",
     hint_themes: "Lieber eine andere Farbe? Unter Einstellungen → Darstellung gibt es 8 Themes.",
@@ -161,7 +163,7 @@ export default {
     streakAtRisk: "Heute ist Trainingstag. Wenn du ihn auslässt, endet morgen deine 🔥 Serie von {n}.",
     trainingDay: "Heute ist Trainingstag. Letztes Training: {date} ({ago}).",
     welcomeTitle: "Willkommen! 👋",
-    welcome1: "Du trainierst zu Hause, ohne Geräte, ~13 Minuten lang. Du wechselst zwischen Tag A, B und C und trainierst jeden zweiten Tag. Jedes Training hat ein Aufwärmen, dann 4 Übungen im Zirkel (2 oder 3 Runden) und optionales Dehnen.",
+    welcome1: "Du trainierst zu Hause, ohne Geräte, ~19 Minuten lang. Du wechselst zwischen Tag A, B und C und trainierst jeden zweiten Tag. Jedes Training hat ein Aufwärmen, dann 4 Übungen im Zirkel (2 oder 3 Runden) und optionales Dehnen.",
     welcome2: "Tippe auf eine Übung für Zeichnung, Anleitung und Video. Klappt eine Übung bei dir nicht, tausch sie im Training mit dem ⇄-Button. Name und Foto stellst du in deinem Profil ein (oben rechts).",
     weekLine: "Diese Woche: {count}. Ziel: 3–4 (jeden zweiten Tag).",
     nextWorkout: "Nächstes Training",
@@ -177,6 +179,7 @@ export default {
     tapInfo: "tippen für Infos",
     tapHint: "Tippe auf eine Übung: Zeichnung, Anleitung, Video und Ränge.",
     roundsBtn: "{n} Runden, ~{m} Min.",
+    roundsRec: "empfohlen",
     roundsHint: "3 Runden heißt mehr Sätze pro Woche, also schnellerer Muskelaufbau. Wenn du wenig Zeit hast, reichen 2 Runden.",
     startDay: "Tag {d} starten",
 
@@ -717,6 +720,15 @@ export default {
     ["Offline", "die Schriften kamen von Google, ohne Internet sah die App anders aus.", "die Schriften sind in der App, alles funktioniert offline."],
     ["Zurück-Taste", "–", "schließt ein Fenster oder das Menü; im Training geht es zur Startseite und das Training läuft weiter."],
     ["Versionsnummern", "Browser beta 1.0.0 bis 1.4.2.", "die Zählung beginnt neu bei 1.0.0, der ersten App-Version."],
+  ],
+  news101: [
+    "3 Runden (~19 Min.) sind jetzt vorausgewählt und empfohlen; 2 Runden für Tage mit wenig Zeit.",
+    "Tippe oben auf 🔥 oder ⚡, um dein Profil zu öffnen; neben dem Datum steht die Uhrzeit.",
+    "Tippe auf einen Tag in der Wochenleiste: ein grüner Tag öffnet dieses Training im Verlauf, jeder andere den Verlauf.",
+    "Ein ? neben jedem Übungsnamen öffnet die Beschreibung.",
+    "Eine Übung zu einem alten Training hinzufügen geht jetzt in einem Fenster in den Farben der App.",
+    "Der Name im Profil ist zentriert; der große Tagestitel berührt die Zeile darunter nicht mehr; die Tasten +100/+250/+500 in den Kalorien sind weg.",
+    "Im Menü gibt es „💛 App unterstützen“: freiwillige Unterstützung auf Patreon. Die ganze App bleibt kostenlos.",
   ],
 
   quotes: [

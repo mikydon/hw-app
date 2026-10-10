@@ -38,6 +38,8 @@ export default {
     welcomeMove: "Usavi HW App nel browser? Porta qui i tuoi dati: nel browser Impostazioni → Salva backup, poi qui Impostazioni → Ripristina da backup.",
     welcomeMoveBtn: "Apri Impostazioni",
     getAndroid: "📱 App per Android",
+    support: "Sostieni l'app",
+    supportDesc: "Patreon · facoltativo, l'app resta gratis",
     hintTitle: "Lo sapevi?",
     hintGo: "Mostra",
     hint_themes: "Vuoi un altro colore? In Impostazioni → Aspetto ci sono 8 temi.",
@@ -161,7 +163,7 @@ export default {
     streakAtRisk: "Oggi è giorno di allenamento. Se lo salti, domani la tua striscia 🔥 di {n} si interrompe.",
     trainingDay: "Oggi è giorno di allenamento. Ultimo allenamento: {date} ({ago}).",
     welcomeTitle: "Ti diamo il benvenuto! 👋",
-    welcome1: "Ti alleni a casa, senza attrezzi, per ~13 minuti. Fai a rotazione i giorni A, B e C e ti alleni a giorni alterni. Ogni allenamento ha un riscaldamento, poi 4 esercizi in circuito (2 o 3 giri) e uno stretching facoltativo.",
+    welcome1: "Ti alleni a casa, senza attrezzi, per ~19 minuti. Fai a rotazione i giorni A, B e C e ti alleni a giorni alterni. Ogni allenamento ha un riscaldamento, poi 4 esercizi in circuito (2 o 3 giri) e uno stretching facoltativo.",
     welcome2: "Tocca un esercizio per vedere disegno, istruzioni e video. Se un esercizio non fa per te, sostituiscilo durante l'allenamento con il pulsante ⇄. Imposta nome e foto nel profilo (in alto a destra).",
     weekLine: "Questa settimana: {count}. Obiettivo: 3–4 (a giorni alterni).",
     nextWorkout: "Prossimo allenamento",
@@ -177,6 +179,7 @@ export default {
     tapInfo: "tocca per info",
     tapHint: "Tocca un esercizio: disegno, istruzioni, video e ranghi.",
     roundsBtn: "{n} giri, ~{m} min",
+    roundsRec: "consigliato",
     roundsHint: "3 giri significano più serie a settimana, quindi crescita più rapida. Quando hai poco tempo, 2 giri bastano.",
     startDay: "Inizia giorno {d}",
 
@@ -717,6 +720,15 @@ export default {
     ["Offline", "i font arrivavano da Google, senza internet l'app sembrava diversa.", "i font sono nell'app, tutto funziona offline."],
     ["Tasto indietro", "–", "chiude una finestra o il menu; durante l'allenamento ti riporta alla home e l'allenamento continua."],
     ["Numeri di versione", "Browser beta da 1.0.0 a 1.4.2.", "si riparte da 1.0.0, la prima versione dell'app."],
+  ],
+  news101: [
+    "Ora 3 giri (~19 min) sono preselezionati e consigliati; 2 giri per i giorni in cui hai poco tempo.",
+    "Tocca 🔥 o ⚡ in alto per aprire il profilo; accanto alla data c'è anche l'ora.",
+    "Tocca un giorno della settimana: un giorno verde apre quell'allenamento nella Cronologia, un altro giorno apre la Cronologia.",
+    "Un ? accanto a ogni esercizio apre la sua descrizione.",
+    "Aggiungere un esercizio a un vecchio allenamento avviene in una finestra con i colori dell'app.",
+    "Il nome nel profilo è centrato; il grande titolo del giorno non tocca più la riga sotto; i pulsanti +100/+250/+500 nelle Calorie non ci sono più.",
+    "Nel menu c'è «💛 Sostieni l'app»: un supporto facoltativo su Patreon. Tutta l'app resta gratis.",
   ],
 
   quotes: [

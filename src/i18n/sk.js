@@ -38,6 +38,8 @@ export default {
     welcomeMove: "Používal si HW App v prehliadači? Prenes si dáta: v prehliadači Nastavenia → Uložiť zálohu, potom tu Nastavenia → Obnoviť zo zálohy.",
     welcomeMoveBtn: "Otvoriť Nastavenia",
     getAndroid: "📱 Appka pre Android",
+    support: "Podporiť appku",
+    supportDesc: "Patreon · dobrovoľne, appka zostáva zadarmo",
     hintTitle: "Vedel si?",
     hintGo: "Ukázať",
     hint_themes: "Chceš inú farbu appky? V Nastaveniach → Vzhľad je 8 tém.",
@@ -161,7 +163,7 @@ export default {
     streakAtRisk: "Dnes je tréningový deň. Ak dnes necvičíš, zajtra ti skončí séria 🔥 {n}.",
     trainingDay: "Dnes je tréningový deň. Posledný tréning: {date} ({ago}).",
     welcomeTitle: "Vitaj! 👋",
-    welcome1: "Cvičíš doma, bez náradia, ~13 minút. Striedaš dni A, B, C a cvičíš obdeň. Každý tréning má zahriatie, potom 4 cviky dookola (2 alebo 3 kolá) a voliteľný strečing.",
+    welcome1: "Cvičíš doma, bez náradia, ~19 minút. Striedaš dni A, B, C a cvičíš obdeň. Každý tréning má zahriatie, potom 4 cviky dookola (2 alebo 3 kolá) a voliteľný strečing.",
     welcome2: "Ťukni na cvik a uvidíš obrázok, postup a video. Ak ti cvik nejde, počas tréningu ho vymeníš tlačidlom ⇄. Meno a fotku si nastav v Profile vpravo hore.",
     weekLine: "Tento týždeň {count}. Cieľ sú 3–4 (obdeň).",
     nextWorkout: "Ďalší tréning",
@@ -177,6 +179,7 @@ export default {
     tapInfo: "ťukni pre info",
     tapHint: "Ťukni na cvik: obrázok, postup, video a ranky.",
     roundsBtn: "{n} kolá, ~{m} min",
+    roundsRec: "odporúčané",
     roundsHint: "3 kolá znamenajú viac sérií za týždeň, a teda rýchlejší rast. Keď nemáš čas, 2 kolá stačia.",
     startDay: "Začať deň {d}",
 
@@ -717,6 +720,15 @@ export default {
     ["Bez internetu", "písma sa sťahovali z Google, bez internetu vyzerala appka inak.", "písma sú priamo v appke, všetko funguje aj offline."],
     ["Tlačidlo späť", "–", "zavrie okno alebo menu, z tréningu ťa vráti na úvod a tréning beží ďalej."],
     ["Čísla verzií", "Browser beta 1.0.0 až 1.4.2.", "počíta sa znova od 1.0.0, prvá verzia appky."],
+  ],
+  news101: [
+    "Predvolené a odporúčané sú teraz 3 kolá (~19 min); 2 kolá sú na dni, keď nestíhaš.",
+    "Ťuknutím na 🔥 alebo ⚡ hore otvoríš profil; pri dátume je aj čas.",
+    "Ťukni na deň v týždni: zelený deň otvorí ten tréning v Histórii, iný deň otvorí Históriu.",
+    "Otáznik ? pri každom cviku otvorí jeho popis.",
+    "Pridanie cviku do starého tréningu je okno vo farbách appky.",
+    "Meno v profile je na strede; veľký nápis dňa sa už nedotýka riadku pod ním; tlačidlá +100/+250/+500 v Kalóriách sú preč.",
+    "V menu je „💛 Podporiť appku“: dobrovoľná podpora na Patreone. Appka zostáva celá zadarmo.",
   ],
 
   quotes: [

@@ -88,37 +88,31 @@ Talk to Michael in casual Slovak. Before you deliver anything, test it (build pl
    - App name still open: Michael picks from proposals (Oct 9). The visible name can change in any update; the internal applicationId can never change after the first release.
    - Use the same signing key every time so updates keep user data. Michael generates the keystore himself and stores it as repo secrets (give exact clicks).
    - Add an in-app "new version" check against GitHub Releases.
+   Done in app 1.0.1 (Oct 10, 2026, small update): 3 rounds preselected + "odporúčané" (`data-rounds`, `roundsRec`; welcome/meta/manifest say ~19 min), day title spacing (`data-day-title`), 🔥/⚡ chips open Profile (`data-chip`), clock in the top bar (`useClock`, `data-clock`), week strip opens History / that day's editor (`go(id, {edit})`), `ExQ` "?" next to every exercise name (global `openHowToGlobal`), add-exercise picker as a short themed `Sheet` (`data-add-ex`), profile name centred with the pencil beside it (`data-pencil`, Save no longer overlaps), +100/+250/+500 removed, "💛 Support the app" row in the menu (`data-support`, `SUPPORT_URL` = https://www.patreon.com/c/mikydon, texts `support`/`supportDesc`) and `.github/FUNDING.yml`.
+   Money (Oct 10): Michael wants income later (subtle ads and/or ~2 € ad-free subscription); for now only voluntary Patreon, the app stays free. AdMob only fully serves ads for apps listed in a supported store (Play, Galaxy Store, Amazon…), not for a sideloaded APK.
 3. After the APK, Michael's requests (Oct 5 + Oct 9, 2026), NOT started:
    Calories
    - Calorie streak (decided Oct 9): a day counts when calories are logged (green); a day that also hits the target is turquoise. Own badge, shown somewhere visible.
    - More calorie messages, also during/after a workout (e.g. "Daj si dačo dobré po cvičení, ešte ti chýba X kalórií"), on Home and in the menu, plus motivational lines.
    - Calories on Home too (it's the main tab): eaten / target and adding an entry, like the Calories screen but without history or settings; a button opens the Calories screen.
-   - Remove the "+250"-style quick-add buttons in Calories ("k ničomu").
-   - Link with Samsung Health (needs the APK): steps, calories, water. Example from Michael: 27,000 steps is far above "only the app" activity, so extra steps must add calories. Facts checked Oct 5, 2026: Samsung Health syncs steps, exercise sessions and exercise calories, weight, height and nutrition to Health Connect; water is not on Samsung's list. Health Connect is an on-device Android API, so a PWA can't read it; it needs the native app. Design: subtract the steps already assumed by the chosen activity level so nothing is counted twice.
+   - Health data via Health Connect (Oct 10: Michael wants Google Fit and others too; Health Connect is the shared hub for Samsung Health, Fitbit, Garmin, Oura, MyFitnessPal, Wear OS…; Google Fit APIs end with 2026; no fee; the Play declaration form is tied to Play publishing; whether permissions work for a sideloaded APK isn't documented, so test it on the test build first). Original request: link with Samsung Health (needs the APK): steps, calories, water. Example from Michael: 27,000 steps is far above "only the app" activity, so extra steps must add calories. Facts checked Oct 5, 2026: Samsung Health syncs steps, exercise sessions and exercise calories, weight, height and nutrition to Health Connect; water is not on Samsung's list. Health Connect is an on-device Android API, so a PWA can't read it; it needs the native app. Design: subtract the steps already assumed by the chosen activity level so nothing is counted twice.
    Onboarding
    - First start: ask gender (label "Pohlavie" / "Gender" again, Oct 9, replacing "Muž alebo žena?"), birth date, weight, height like other apps do; fill the calorie settings automatically; editing stays in Calories.
    Home screen
-   - Bug: the big "Day B" overlaps the yellow line under it ("Today is a training day. Last workout…").
    - Too much on one page: split it better, nicer and easier to read.
    - The start ("Cvičiť") button must be visible without scrolling.
-   - Tapping the 🔥 streak or ⚡ level chip opens Profile (where they're explained).
-   - Week strip at the top is tappable: a trained (green) day opens History straight in that workout's editor; an untrained day opens History.
-   - Show the time next to the date in the top bar.
    Workout
    - Type the rep number by hand.
    - The counter starts at what you did last time (no longer 0), still with the +1 goal (changes the Oct 4 rule "always start at 0").
    - One-arm/one-leg exercises: split the counter into two halves, right first, "continue", then left; if the sides differ, tell the user to train both sides equally.
    - A small elapsed-time clock at the top during the workout (not in the way); show the total time at the end.
    - Tempo guide for exercises with a tempo (e.g. 3 s down, 1 s hold, up): an X-second timer that restarts every X seconds, shown like a breathing-exercise guide (circle shrinks on the way down, becomes a bar during the hold, grows on the way up). Design is up to Claude.
-   - A "?" next to every exercise name everywhere in the app opens its description sheet.
    - "Couldn't train today" with a reason. Later: a free AI (if possible) judges the reason and keeps the streak / gives a freeze / restores the streak (e.g. wisdom tooth surgery).
    Content
    - Check that every video matches the exercise's description and drawing. Example: Door frame row: description and drawing say standing, the video shows a woman seated with knees at 90°.
    UI
-   - The "add exercise" popup (adding to a workout in History) is ugly, ignores the theme and covers the whole screen; make it a themed sheet that shows the app behind it.
-   - Profile: the name isn't centred under the photo like the photo is (looks unprofessional); centre the name and move the ✏️ edit pencil elsewhere (Oct 10).
    - Everywhere, not only Home ("Workout"): split content into smaller boxes with a slightly lighter colour, like the streak/level boxes in Profile, so it reads better. Michael wants to try a few variants and compare (Oct 10).
-   - Default workout length (Oct 10): Michael understood 19 min (3 rounds) as the default and recommended, 13 min (2 rounds) only when short on time. Today the app preselects 2 rounds and the welcome text says "~13 minút", while `roundsHint` already says 3 rounds grow faster. Make 3 rounds the preselected, recommended option, 2 rounds the "no time" one, and fix the welcome text (evidence: more weekly sets → more hypertrophy, Schoenfeld 2017; Pelland 2025).
+   Android developer verification (heads-up, Oct 10): Google requires verified developers also for sideloaded apps (Sept 2026 in BR/ID/SG/TH, worldwide planned 2027): one-time 25 USD, or a free limited-distribution account for up to 20 devices. Remind Michael before it applies in Slovakia. Michael (Oct 10): he's fine paying the 25 USD.
 3. Firebase (free Spark plan): accounts, friend list and a global leaderboard (level, streak, trainings).
    - Profile photos go into Firestore, because Storage is no longer free since Feb 2026.
    - Add a privacy policy and an account-deletion option.
