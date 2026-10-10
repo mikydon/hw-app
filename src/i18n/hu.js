@@ -25,6 +25,8 @@ export default {
     newsOk: "Szuper, mehet",
     newsLink: "Újdonságok",
     newsSmall: "Kis frissítés, semmit nem kell újra letölteni.",
+    newsAlso: "A kis frissítések is: {a}–{b}",
+    newsAlsoD: "Ha kihagytad őket, most azokat is megkapod.",
     newsSwipe: "Kis frissítések: húzd balra vagy koppints ide ›",
     newsPrev: "Előző",
     newsNext: "Következő",
@@ -847,6 +849,9 @@ export default {
     ["Edzéshossz választása", "Két széles gomb, alattuk a Start.", "19 és 13 perces négyzetek, mellettük a Start, mint a lebegő sávban (a Nyitott kinézetben is)."],
     ["Jelvények és rangok", "Mindegyik külön színes keretben.", "Egy nagy keret finom mezőkkel, könnyebben olvasható."],
     ["Kinézetek", "3 elrendezés.", "5 elrendezés: új az Üveg és a Kiemelés (Beállítások → Megjelenés)."],
+  ],
+  news111: [
+    "A nagy frissítés „Újdonságok” része az előtte lévő kis frissítéseket is mutatja (az 1.1.0-nál az 1.0.1–1.0.7-et).",
   ],
   news10: [
     ["App", "weboldal a böngészőben (Browser beta).", "igazi androidos app ikonnal a kezdőképernyőn. A weboldalon a menüben találod → 📱 Androidos app."],

@@ -25,6 +25,8 @@ export default {
     newsOk: "Super, jdeme na to",
     newsLink: "Co je nového",
     newsSmall: "Drobná úprava, není potřeba nic nového stahovat.",
+    newsAlso: "I menší aktualizace {a}–{b}",
+    newsAlsoD: "Pokud jsi je vynechal, máš je teď taky.",
     newsSwipe: "Drobné úpravy: přejeď doleva nebo ťukni sem ›",
     newsPrev: "Předchozí",
     newsNext: "Další",
@@ -847,6 +849,9 @@ export default {
     ["Výběr délky tréninku", "Dvě široká tlačítka a pod nimi Start.", "Čtverečky 19 a 13 min a vedle nich Start, stejně jako v plovoucí liště (i ve vzhledu Otevřené)."],
     ["Odznaky a ranky", "Každý v samostatném barevném rámečku.", "Jeden velký rámeček s jemnými políčky, líp se to čte."],
     ["Vzhledy", "3 rozložení.", "5 rozložení: přibyly Sklo a Akcent (Nastavení → Vzhled)."],
+  ],
+  news111: [
+    "„Co je nového“ u velké aktualizace ukazuje i všechny menší aktualizace před ní (u 1.1.0 tedy i 1.0.1–1.0.7).",
   ],
   news10: [
     ["Appka", "webová stránka v prohlížeči (Browser beta).", "skutečná Android appka s ikonou na ploše. Na webu ji najdeš v menu → 📱 Appka pro Android."],

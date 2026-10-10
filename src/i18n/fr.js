@@ -25,6 +25,8 @@ export default {
     newsOk: "Super, c'est parti",
     newsLink: "Nouveautés",
     newsSmall: "Petite mise à jour, rien de nouveau à télécharger.",
+    newsAlso: "Aussi les petites mises à jour {a}–{b}",
+    newsAlsoD: "Si tu les as ratées, tu les as maintenant aussi.",
     newsSwipe: "Petites mises à jour : glisse vers la gauche ou touche ici ›",
     newsPrev: "Précédente",
     newsNext: "Suivante",
@@ -847,6 +849,9 @@ export default {
     ["Choisir la durée", "Deux larges boutons avec Commencer dessous.", "Carrés 19 et 13 min avec Commencer à côté, comme dans la barre flottante (aussi dans l'aspect Ouvert)."],
     ["Badges et rangs", "Chacun dans son propre cadre coloré.", "Un grand bloc avec des cases discrètes, plus facile à lire."],
     ["Aspects", "3 dispositions.", "5 dispositions : Verre et Accent sont nouveaux (Réglages → Apparence)."],
+  ],
+  news111: [
+    "« Nouveautés » d'une grande mise à jour liste aussi toutes les petites d'avant (pour 1.1.0 : aussi 1.0.1–1.0.7).",
   ],
   news10: [
     ["Appli", "un site dans le navigateur (Browser beta).", "une vraie appli Android avec une icône sur l'écran d'accueil. Sur le site, elle est dans le menu → 📱 Appli Android."],

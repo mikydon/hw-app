@@ -25,6 +25,8 @@ export default {
     newsOk: "Ótimo, vamos lá",
     newsLink: "Novidades",
     newsSmall: "Uma atualização pequena, nada novo para baixar.",
+    newsAlso: "Também as atualizações pequenas {a}–{b}",
+    newsAlsoD: "Se as saltaste, agora tens também.",
     newsSwipe: "Atualizações pequenas: deslize para a esquerda ou toque aqui ›",
     newsPrev: "Anterior",
     newsNext: "Próxima",
@@ -847,6 +849,9 @@ export default {
     ["Escolher a duração", "Dois botões largos com Começar por baixo.", "Quadrados 19 e 13 min com Começar ao lado, como na barra flutuante (também no aspeto Aberto)."],
     ["Emblemas e níveis", "Cada um na sua moldura colorida.", "Uma caixa grande com quadrados discretos, mais fácil de ler."],
     ["Aspetos", "3 layouts.", "5 layouts: novos Vidro e Destaque (Ajustes → Aparência)."],
+  ],
+  news111: [
+    "«Novidades» de uma atualização grande mostra também todas as pequenas anteriores (na 1.1.0, também 1.0.1–1.0.7).",
   ],
   news10: [
     ["App", "um site no navegador (Browser beta).", "um app Android de verdade com ícone na tela inicial. No site ele está no menu → 📱 App para Android."],

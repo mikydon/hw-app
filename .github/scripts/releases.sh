@@ -49,6 +49,26 @@ APP_NOTE = ("> **Android app.** On your phone, download **HW-App-{v}.apk** below
             "<img src=\"https://raw.githubusercontent.com/mikydon/hw-app/main/docs/play-protect-install-anyway.png\" alt=\"Play Protect: tap Install anyway\" width=\"300\">\n\n")
 s = open("CHANGELOG.md", encoding="utf-8").read()
 out = []
+# A big update (x.y.0, y > 0) also lists the small updates of the previous big version (Michael, Oct 10, 2026):
+# whoever installs the new APK gets all of them at once.
+small = {}
+for p in re.split(r"^## ", s, flags=re.M)[1:]:
+    head, _, body = p.partition("\n")
+    m = re.match(r"(\d+)\.(\d+)\.(\d+)(?:\.\d+)?\s*\(", head)
+    if m and int(m.group(3)) > 0:
+        b = re.sub(r"<!--.*?-->\n?", "", body, flags=re.S).strip()
+        # drop the "a small update arrives by itself" intro and points about that release's own files ("below")
+        paras = [q for q in re.split(r"\n(?=- |\S)", b) if not q.startswith("A small update") and " below " not in q]
+        small.setdefault((int(m.group(1)), int(m.group(2))), []).append((head.split(" (")[0], "\n".join(paras).strip()))
+def also(ver):
+    x, y, z = (int(n) for n in ver.split(".")[:3])
+    if z or y == 0 or (x, y - 1) not in small: return ""
+    items = sorted(small[(x, y - 1)], key=lambda t: [int(n) for n in t[0].split(".")])
+    first, last = items[0][0], items[-1][0]
+    txt = f"\n\n### Also in this update: the small updates {first}–{last}\n\nIf you skipped them, you get them now too.\n"
+    for v, b in items:
+        txt += f"\n#### {v}\n\n{b}\n"
+    return txt
 for p in re.split(r"^## ", s, flags=re.M)[1:]:
     head, _, body = p.partition("\n")
     m = re.match(r"(Browser beta )?(\d+(?:\.\d+){2,3})\s*\(([^)]*)\)", head)
@@ -58,7 +78,7 @@ for p in re.split(r"^## ", s, flags=re.M)[1:]:
     body = re.sub(r"<!--.*?-->\n?", "", body, flags=re.S).strip()
     kind = "beta" if beta else "app"
     path = f"/tmp/notes-{kind}-{ver}.md"
-    open(path, "w", encoding="utf-8").write((BETA_NOTE if beta else APP_NOTE.format(v=ver)) + body + "\n")
+    open(path, "w", encoding="utf-8").write((BETA_NOTE if beta else APP_NOTE.format(v=ver)) + body + ("" if beta else also(ver)) + "\n")
     tag = f"beta-v{ver}" if beta else f"v{ver}"
     title = f"HW App Browser beta {ver} ({date})" if beta else f"HW App {ver} ({date})"
     out.append((kind, ver, tag, title, c.group(1) if c else "-", path))  # "-": bash read drops empty tab fields

@@ -30,7 +30,7 @@ const THEMES = {
   slate:  { ink: "#15181d", panel: "#1f242b", panelHi: "#2a313a", line: "#3a434f", chalk: "#f1f4f8", dim: "#9aa6b4", edge: "#0e1115" },
   coffee: { ink: "#1c140f", panel: "#2a1f17", panelHi: "#382a20", line: "#4d3a2c", chalk: "#fbf3ec", dim: "#b8a291", edge: "#130d09" },
 };
-const APP_VERSION = "1.1.0";
+const APP_VERSION = "1.1.1";
 // Big Shoulders has no Cyrillic, so Oswald (also condensed) covers Ukrainian. The browser only
 // downloads the Oswald unicode ranges a page actually uses.
 const DISPLAY = "'Big Shoulders Display', 'Oswald', 'Arial Narrow', Impact, sans-serif";
@@ -1479,11 +1479,24 @@ const verCmp = (a, b) => {
   return 0;
 };
 const newsKey = v => "news" + v.replace(/\./g, "");
+// Small-update lines that make no sense any more once the next big update is out (index in that version's list).
+const NEWS_OBSOLETE = { "1.0.3": [0] }; // "if you have 1.0.0, install the 1.0.3 APK"
 function newsPages() {
   const big = bigVer(APP_VERSION);
   // Lines starting with 📱 are about the Android app only (updates…); the website hides them (Michael, Oct 10).
   const forHere = arr => arr.filter(l => isNative || !String(Array.isArray(l) ? l[0] : l).startsWith("📱"));
-  const pages = [{ v: big + ".0", big: true, items: forHere(L[newsKey(big)] || []) }];
+  // A big update also lists the small updates of the previous big version (Michael, Oct 10: they belong to it).
+  const [bx, by] = big.split(".").map(Number), prevBig = by > 0 ? `${bx}.${by - 1}` : null, also = [];
+  if (prevBig) {
+    const pc = [];
+    for (let i = 1; i <= 9; i++) pc.push(`${prevBig}.${i}`);
+    for (let i = 1; i <= 9; i++) pc.push(`${prevBig}.9.${i}`);
+    for (const v of pc) {
+      const lines = Array.isArray(L[newsKey(v)]) ? forHere(L[newsKey(v)].filter((_, i) => !(NEWS_OBSOLETE[v] || []).includes(i))) : [];
+      if (lines.length) also.push({ v, lines });
+    }
+  }
+  const pages = [{ v: big + ".0", big: true, items: forHere(L[newsKey(big)] || []), also }];
   const cands = [];
   for (let i = 1; i <= 9; i++) cands.push(`${big}.${i}`);
   for (let i = 1; i <= 9; i++) cands.push(`${big}.9.${i}`);
@@ -1546,6 +1559,22 @@ function WhatsNew({ onClose, at }) {
                   </div>
                 ))}
               </div>
+              {x.also && x.also.length > 0 && (
+                <div data-news-also style={{ marginTop: 16 }}>
+                  <div style={{ fontSize: 15, fontWeight: 800, color: C.chalk }}>{T("newsAlso", { a: x.also[0].v, b: x.also[x.also.length - 1].v })}</div>
+                  <div style={{ fontSize: 13, color: C.dim, lineHeight: 1.45, margin: "3px 0 10px" }}>{T("newsAlsoD")}</div>
+                  <div style={{ ...card, padding: "4px 14px" }}>
+                    {x.also.map((g, gi) => (
+                      <div key={g.v} data-news-also-v={g.v} style={{ padding: "10px 0", borderTop: gi ? `1px solid ${C.line}` : "none" }}>
+                        <div style={{ fontSize: 12, fontWeight: 900, color: C.sky, marginBottom: 6 }}>{g.v}</div>
+                        {g.lines.map((line, j) => (
+                          <div key={j} style={{ display: "flex", gap: 8, fontSize: 13, color: C.chalk, lineHeight: 1.45, marginTop: j ? 5 : 0 }}><span style={{ color: C.mint, fontWeight: 900 }}>•</span><span>{line}</span></div>
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </>) : (<>
               <div style={{ fontSize: 14, color: C.dim, lineHeight: 1.5, marginBottom: 12 }}>{T("newsSmall")}</div>
               <div style={{ ...card, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 8 }}>

@@ -25,6 +25,8 @@ export default {
     newsOk: "Super, zaczynamy",
     newsLink: "Co nowego",
     newsSmall: "Mała aktualizacja, nic nowego nie trzeba pobierać.",
+    newsAlso: "Także małe aktualizacje {a}–{b}",
+    newsAlsoD: "Jeśli je pominąłeś, masz je teraz też.",
     newsSwipe: "Małe aktualizacje: przesuń w lewo albo stuknij tutaj ›",
     newsPrev: "Poprzednia",
     newsNext: "Następna",
@@ -847,6 +849,9 @@ export default {
     ["Wybór długości treningu", "Dwa szerokie przyciski, a pod nimi Start.", "Kwadraciki 19 i 13 min, a obok Start, jak w pływającym pasku (także w wyglądzie Otwarty)."],
     ["Odznaki i rangi", "Każda w osobnej kolorowej ramce.", "Jedna duża ramka z delikatnymi polami, łatwiej się czyta."],
     ["Wygląd", "3 układy.", "5 układów: doszły Szkło i Akcent (Ustawienia → Wygląd)."],
+  ],
+  news111: [
+    "„Co nowego” przy dużej aktualizacji pokazuje też wszystkie małe aktualizacje przed nią (przy 1.1.0 także 1.0.1–1.0.7).",
   ],
   news10: [
     ["Aplikacja", "strona w przeglądarce (Browser beta).", "prawdziwa aplikacja na Androida z ikoną na ekranie głównym. Na stronie znajdziesz ją w menu → 📱 Aplikacja na Androida."],

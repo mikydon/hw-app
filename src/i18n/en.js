@@ -25,6 +25,8 @@ export default {
     newsOk: "Great, let's go",
     newsLink: "What's new",
     newsSmall: "A small update. Nothing new to download.",
+    newsAlso: "Also the small updates {a}–{b}",
+    newsAlsoD: "If you skipped them, you get them now too.",
     newsSwipe: "Small updates: swipe left or tap here ›",
     newsPrev: "Previous",
     newsNext: "Next",
@@ -847,6 +849,9 @@ export default {
     ["Choosing the workout length", "Two wide buttons with Start under them.", "Squares 19 and 13 min with Start next to them, like the floating bar (also in the Open look)."],
     ["Badges and ranks", "Each in its own coloured frame.", "One big box with quiet tiles, easier to read."],
     ["Looks", "3 layouts.", "5 layouts: Glass and Accent are new (Settings → Appearance)."],
+  ],
+  news111: [
+    "\"What's new\" for a big update also lists all the small updates before it (for 1.1.0: 1.0.1–1.0.7).",
   ],
   news10: [
     ["App", "a website in the browser (Browser beta).", "a real Android app with an icon on your home screen. On the website it's in the menu → 📱 Android app."],

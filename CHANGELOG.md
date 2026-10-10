@@ -10,6 +10,10 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 
 <!-- New version: add a "## x.y.z (date)" section on top (web-only history uses "## Browser beta x.y.z (date)"). On a push to main, .github/workflows/build.yml builds everything and .github/scripts/releases.sh creates/updates the releases (commit = the push, or the one in a commit comment). -->
 
+## 1.1.1 (2026-10-10)
+
+- "What's new" for a big update also lists all the small updates before it, so whoever installs the new APK sees everything they got (for 1.1.0: 1.0.1–1.0.7). The GitHub release notes of a big update do the same.
+
 ## 1.1.0 (2026-10-10)
 
 **A big update: a new APK** (install it over the old app; your data stays). Compared with 1.0.7:

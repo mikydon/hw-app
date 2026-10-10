@@ -25,6 +25,8 @@ export default {
     newsOk: "Super, los geht's",
     newsLink: "Was ist neu",
     newsSmall: "Ein kleines Update, nichts Neues herunterzuladen.",
+    newsAlso: "Auch die kleinen Updates {a}–{b}",
+    newsAlsoD: "Falls du sie ausgelassen hast, hast du sie jetzt auch.",
     newsSwipe: "Kleine Updates: nach links wischen oder hier tippen ›",
     newsPrev: "Zurück",
     newsNext: "Weiter",
@@ -847,6 +849,9 @@ export default {
     ["Trainingsdauer wählen", "Zwei breite Tasten, darunter Start.", "Felder 19 und 13 Min. mit Start daneben, wie in der schwebenden Leiste (auch im Look Offen)."],
     ["Abzeichen und Ränge", "Jedes in einem eigenen farbigen Rahmen.", "Ein großer Kasten mit dezenten Feldern, leichter zu lesen."],
     ["Looks", "3 Layouts.", "5 Layouts: Glas und Akzent sind neu (Einstellungen → Aussehen)."],
+  ],
+  news111: [
+    "„Was ist neu“ zeigt bei einem großen Update auch alle kleinen Updates davor (bei 1.1.0 also auch 1.0.1–1.0.7).",
   ],
   news10: [
     ["App", "eine Website im Browser (Browser beta).", "eine echte Android-App mit Symbol auf dem Startbildschirm. Auf der Website findest du sie im Menü → 📱 Android-App."],
