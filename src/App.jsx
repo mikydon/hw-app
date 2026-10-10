@@ -1,6 +1,6 @@
 import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import { isNative, pushBack, setRootBack, vibratePattern, keepScreenOn, openExternal, saveBackupFile, checkForUpdate, lastUpdate, lastGh, applyUpdateNow } from "./native.js";
+import { isNative, pushBack, setRootBack, vibratePattern, keepScreenOn, openExternal, saveBackupFile, checkForUpdate, lastUpdate, lastGh, applyUpdateNow, healthState, healthConnect, healthSettings, healthSteps } from "./native.js";
 import { L, LANG, t as T, tp as TP, fmt, setLang, detectLang, LANGS, fmtLong, fmtShortDM, fmtMonthYear, weekdaysShort, capFirst } from "./i18n/index.js";
 
 // ─── DESIGN TOKENS ──────────────────────────────────────────────────────────
@@ -30,7 +30,7 @@ const THEMES = {
   slate:  { ink: "#15181d", panel: "#1f242b", panelHi: "#2a313a", line: "#3a434f", chalk: "#f1f4f8", dim: "#9aa6b4", edge: "#0e1115" },
   coffee: { ink: "#1c140f", panel: "#2a1f17", panelHi: "#382a20", line: "#4d3a2c", chalk: "#fbf3ec", dim: "#b8a291", edge: "#130d09" },
 };
-const APP_VERSION = "1.0.7";
+const APP_VERSION = "1.1.0";
 // Big Shoulders has no Cyrillic, so Oswald (also condensed) covers Ukrainian. The browser only
 // downloads the Oswald unicode ranges a page actually uses.
 const DISPLAY = "'Big Shoulders Display', 'Oswald', 'Arial Narrow', Impact, sans-serif";
@@ -996,6 +996,7 @@ function DiffChip({ id, pad = "1px 8px" }) {
 
 // "?" next to an exercise name anywhere: opens its description sheet (one host in App).
 const SUPPORT_URL = "https://www.patreon.com/c/mikydon";
+const PRIVACY_URL = "https://mikydon.github.io/hw-app/privacy.html";
 let openHowToGlobal = null;
 function ExQ({ id, onOpen, style }) {
   const go = e => { e.stopPropagation(); e.preventDefault(); sfxTap(); if (onOpen) onOpen(); else if (openHowToGlobal) openHowToGlobal(id); };
@@ -1196,8 +1197,25 @@ let card = { background: C.panel, border: `1px solid ${C.line}`, borderRadius: 1
 // Look of the main screen (Michael, Oct 10: try a few and compare): "cards" (boxes, default), "tiles" (lighter, tighter boxes),
 // "flat" (the old open layout). Set from settings.look in App.
 let LOOK = "cards";
-function Sect({ title, children, style, titlePad, ...rest }) {
+// A soft inner tile inside a box (badges, ranks): visible but quiet, on any look.
+const SOFT = () => (LOOK === "tiles" ? `${C.ink}55` : `${C.chalk}0d`);
+function Sect({ title, children, style, titlePad, accent, ...rest }) {
   if (LOOK === "flat") return <div {...rest} style={{ marginTop: 18, ...style }}>{children}</div>;
+  if (LOOK === "glass") return (
+    <section {...rest} data-sect style={{ background: `linear-gradient(160deg, ${C.panelHi}, ${C.panel} 60%)`, border: `1px solid ${C.chalk}14`, borderRadius: 24, padding: "15px 16px", marginTop: 12, boxShadow: "0 10px 30px rgba(0,0,0,.28)", ...style }}>
+      {title && <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: C.dim, marginBottom: 10, padding: titlePad || 0 }}>{title}</div>}
+      {children}
+    </section>
+  );
+  if (LOOK === "accent") {
+    const a = accent || C.signal;
+    return (
+      <section {...rest} data-sect style={{ background: C.panel, borderRadius: 16, borderLeft: `4px solid ${a}`, padding: "13px 15px", marginTop: 12, ...style }}>
+        {title && <div style={{ fontSize: 12, fontWeight: 900, letterSpacing: 0.6, textTransform: "uppercase", color: a, marginBottom: 10, padding: titlePad || 0 }}>{title}</div>}
+        {children}
+      </section>
+    );
+  }
   const tiles = LOOK === "tiles";
   return (
     <section {...rest} data-sect style={{ background: tiles ? C.panelHi : C.panel, border: `1px solid ${tiles ? C.panelHi : C.line}`, borderRadius: tiles ? 16 : 20, padding: tiles ? "12px 13px" : "14px 15px", marginTop: tiles ? 8 : 12, ...style }}>
@@ -1464,8 +1482,8 @@ const newsKey = v => "news" + v.replace(/\./g, "");
 function newsPages() {
   const big = bigVer(APP_VERSION);
   // Lines starting with 📱 are about the Android app only (updates…); the website hides them (Michael, Oct 10).
-  const forHere = arr => arr.filter(l => isNative || typeof l !== "string" || !l.startsWith("📱"));
-  const pages = [{ v: big + ".0", big: true, items: L[newsKey(big)] || [] }];
+  const forHere = arr => arr.filter(l => isNative || !String(Array.isArray(l) ? l[0] : l).startsWith("📱"));
+  const pages = [{ v: big + ".0", big: true, items: forHere(L[newsKey(big)] || []) }];
   const cands = [];
   for (let i = 1; i <= 9; i++) cands.push(`${big}.${i}`);
   for (let i = 1; i <= 9; i++) cands.push(`${big}.9.${i}`);
@@ -1892,7 +1910,7 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
       )}
 
       {onGo && <HintCard ui={ui} setUi={setUi} onGo={onGo} />}
-      <Sect title={T("secWeek")} style={LOOK === "flat" ? { marginTop: 16 } : {}}>
+      <Sect title={T("secWeek")} accent={C.mint} style={LOOK === "flat" ? { marginTop: 16 } : {}}>
       <div style={{ display: "flex", gap: 6 }} aria-label={T("weekLine", { count: TP("workouts", weekCount) })}>
         {week.map(w => (
           <button key={w.k} data-week-day={w.k} onClick={() => onGo && onGo("history", w.on ? { edit: w.k } : null)} aria-label={`${w.lb} ${fmtDate(w.k)}${w.on ? " ✓" : ""}`}
@@ -1930,7 +1948,7 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
       </div>
       </Sect>
 
-      <Sect title={T("secExercises")} titlePad="0 15px" style={LOOK === "flat" ? {} : { padding: "12px 0 4px" }}>
+      <Sect title={T("secExercises")} accent={C.sky} titlePad="0 15px" style={LOOK === "flat" ? {} : { padding: "12px 0 4px" }}>
       <div style={LOOK === "flat" ? { ...card } : { borderTop: `1px solid ${LOOK === "tiles" ? C.line : C.line}` }}>
         {day.ids.map((slot, i) => {
           const id = effId(slot);
@@ -1964,30 +1982,31 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
       <div style={{ fontSize: 12, color: C.dim, marginTop: 8, padding: LOOK === "flat" ? 0 : "0 15px 8px" }}>{T("tapHint")}</div>
       </Sect>
 
-      <Sect title={T("secLength")} style={LOOK === "flat" ? { marginTop: 14 } : {}}>
-      <div ref={roundsRow} data-rounds-row style={{ display: "flex", gap: 8 }}>
+      <Sect title={T("secLength")} accent={C.signal} style={LOOK === "flat" ? { marginTop: 14 } : {}}>
+      {/* Same shape as the floating bar (Michael, Oct 10): two squares 19 / 13 min and a wide Start */}
+      <div ref={roundsRow} data-rounds-row style={{ display: "flex", gap: 8, alignItems: "stretch", marginTop: 10 }}>
         {[3, 2].map(n => (
-          <button key={n} onClick={() => { sfxTap(); setRounds(n); }} aria-pressed={rounds === n} data-rounds={n}
-            style={{ ...btnBase, flex: 1, padding: "11px 8px", fontSize: 13, background: rounds === n ? C.panelHi : "transparent", color: rounds === n ? C.chalk : C.dim, border: `1.5px solid ${rounds === n ? C.chalk : C.line}` }}>
-            {T("roundsBtn", { n, m: n === 2 ? 13 : 19 })}
-            {n === 3 && <span data-rec style={{ display: "block", fontSize: 10, fontWeight: 800, color: C.mint, marginTop: 2, letterSpacing: 0.3 }}>{T("roundsRec")}</span>}
+          <button key={n} onClick={() => { sfxTap(); setRounds(n); }} aria-pressed={rounds === n} data-rounds={n} aria-label={T("roundsBtn", { n, m: n === 2 ? 13 : 19 })}
+            style={{ ...btnBase, position: "relative", width: 64, flexShrink: 0, padding: "8px 0", borderRadius: 14, background: rounds === n ? C.chalk : "transparent", color: rounds === n ? C.ink : C.dim, border: `1.5px solid ${rounds === n ? C.chalk : C.line}`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", lineHeight: 1 }}>
+            {n === 3 && <span data-rec style={{ position: "absolute", top: -9, left: "50%", transform: "translateX(-50%)", whiteSpace: "nowrap", fontSize: 9, fontWeight: 900, letterSpacing: 0.3, padding: "2px 6px", borderRadius: 99, background: C.mint, color: C.ink }}>{T("roundsRec")}</span>}
+            <span style={{ fontFamily: DISPLAY, fontSize: 26, fontWeight: 900 }}>{n === 2 ? 13 : 19}</span>
+            <span style={{ fontSize: 10, fontWeight: 800, marginTop: 2 }}>min</span>
           </button>
         ))}
-      </div>
-      <div style={{ fontSize: 12, color: C.dim, marginTop: 8, lineHeight: 1.5 }}>{T("roundsHint")}</div>
-
-      {active ? (
-        <button onClick={() => { unlockAudio(); onResume(); }} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 14, fontSize: 18, padding: 19 }}>
-          ▶ {T("resumeWorkout", { d: active.day })}
-        </button>
-      ) : (
-        <div data-start-wrap style={{ marginTop: 14 }}>
-          <button onClick={() => { unlockAudio(); onStart(day.id, rounds); }} className="b3d" data-start style={{ ...bigBtn(C.signal, C.signalInk), fontSize: 18, padding: "13px 19px" }}>
-            {T("startDay", { d: day.id })}
-            <span data-start-rounds style={{ display: "block", fontSize: 12, fontWeight: 700, opacity: 0.75, marginTop: 2 }}>{T("roundsBtn", { n: rounds, m: rounds === 2 ? 13 : 19 })}</span>
+        {active ? (
+          <button onClick={() => { unlockAudio(); onResume(); }} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), flex: 1, minWidth: 0, fontSize: 16, padding: "12px 10px", borderRadius: 14 }}>
+            ▶ {T("resumeWorkout", { d: active.day })}
           </button>
-        </div>
-      )}
+        ) : (
+          <div data-start-wrap style={{ flex: 1, minWidth: 0, display: "flex" }}>
+            <button onClick={() => { unlockAudio(); onStart(day.id, rounds); }} className="b3d" data-start style={{ ...bigBtn(C.signal, C.signalInk), fontSize: 17, padding: "10px 10px", borderRadius: 14 }}>
+              {T("startDay", { d: day.id })}
+              <span data-start-rounds style={{ display: "block", fontSize: 11, fontWeight: 700, opacity: 0.75, marginTop: 2 }}>{T("roundsBtn", { n: rounds, m: rounds === 2 ? 13 : 19 })}</span>
+            </button>
+          </div>
+        )}
+      </div>
+      <div style={{ fontSize: 12, color: C.dim, marginTop: 10, lineHeight: 1.5 }}>{T("roundsHint")}</div>
       </Sect>
       {!active && <FloatStart show={!rowSeen} day={day.id} rounds={rounds} setRounds={setRounds} onStart={() => { unlockAudio(); onStart(day.id, rounds); }} />}
 
@@ -2025,8 +2044,23 @@ function workoutKcal(history, day, kg) {
   return Math.round(history.filter(e => e.date === day).reduce((a, e) => a + (WORKOUT_MET - 1) * kg * ((e.rounds === 3 ? 19 : 13) / 60), 0));
 }
 function goalDelta(goal) { if (!goal || goal.type === "maintain") return 0; const d = Math.round((goal.rate * KCAL_PER_KG) / 7); return goal.type === "lose" ? -d : d; }
-function kcalTarget(k, age, history, day) { return Math.round(tdeeOf(k, age) + goalDelta(k.goal)) + workoutKcal(history, day, k.weight); }
-function dayTotal(k, day) { return ((k.log || {})[day] || []).reduce((a, x) => a + x.kcal, 0); }
+// Steps from Health Connect (app 1.1.0): only the steps above what the chosen activity level already assumes add calories,
+// so nothing is counted twice. Assumed steps follow Tudor-Locke & Bassett 2004 (sedentary < 5,000, low active 5,000–7,499,
+// somewhat active 7,500–9,999, active 10,000–12,499, highly active ≥ 12,500); the two highest levels go on in steps of 2,500.
+const LEVEL_STEPS = { none: 5000, light: 7500, moderate: 10000, active: 12500, very: 15000, extra: 17500 };
+// Net cost of walking ≈ 0.5 kcal per kg per km above rest (ACSM walking equation: 0.1 ml O2/kg/m, ~5 kcal per litre of O2);
+// step length ≈ 0.415 × height (men) or 0.413 × height (women).
+function stepsKcal(k, day) {
+  const st = k.healthOn && (k.steps || {})[day];
+  if (!st || !k.weight || !k.height) return 0;
+  const extra = Math.max(0, st - (LEVEL_STEPS[k.activity] || 5000));
+  const stepM = (k.sex === "f" ? 0.413 : 0.415) * (k.height / 100);
+  return Math.round(0.5 * k.weight * (extra * stepM) / 1000);
+}
+function kcalTarget(k, age, history, day) { return Math.round(tdeeOf(k, age) + goalDelta(k.goal)) + workoutKcal(history, day, k.weight) + stepsKcal(k, day); }
+// Eaten kcal for a day: what was logged here + food logged in other apps that reached Health Connect (app 1.1.0).
+function hcFood(k, day) { return k && k.healthOn && k.healthFood !== false ? Math.round((k.food || {})[day] || 0) : 0; }
+function dayTotal(k, day) { return ((k.log || {})[day] || []).reduce((a, x) => a + x.kcal, 0) + hcFood(k, day); }
 const nf = n => Math.round(n).toLocaleString(LANG);
 
 function KcalSetup({ kcal, profile, onSave, onCancel }) {
@@ -2149,7 +2183,9 @@ function kcalNow(history, day = dateKey()) {
   const target = kcalTarget(k, age, history, day), eaten = dayTotal(k, day);
   return { target, eaten, left: target - eaten, logged: eaten > 0, hit: eaten > 0 && Math.abs(eaten - target) <= target * 0.1 };
 }
-const KC_TEAL = "#22d3ee"; // turquoise, clearly apart from the green (mint)
+// Calories are amber everywhere (Michael, Oct 10: workouts green, calories a different colour):
+// logged = soft amber, target hit = solid amber with ✓.
+const KC_HIT = "#ff8c1a", KC_LOG = "#ffd98a";
 // Days in a row with calories logged, up to today (today counts once something is logged; until then the streak
 // from yesterday still stands). hits = how many of them hit the target.
 function kcalStreak(history) {
@@ -2180,12 +2216,23 @@ function KcalStreakChip({ history, small }) {
   const st = kcalStreak(history);
   if (!st.n) return null;
   const allHit = st.hits === st.n;
-  return <span data-kc-streak={st.n} title={T("kcStreakTip")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: small ? 12 : 13, fontWeight: 800, padding: small ? "3px 8px" : "4px 10px", borderRadius: 99, background: `${allHit ? KC_TEAL : C.mint}22`, color: allHit ? KC_TEAL : C.mint, border: `1.5px solid ${allHit ? KC_TEAL : C.mint}88`, whiteSpace: "nowrap" }}>🥗 {TP("kcStreakDays", st.n)}</span>;
+  return <span data-kc-streak={st.n} data-all-hit={allHit ? 1 : 0} title={T("kcStreakTip")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: small ? 12 : 13, fontWeight: 800, padding: small ? "3px 8px" : "4px 10px", borderRadius: 99, background: allHit ? `${KC_HIT}33` : `${KC_HIT}18`, color: KC_HIT, border: `1.5px solid ${KC_HIT}${allHit ? "" : "77"}`, whiteSpace: "nowrap" }}>🥗 {TP("kcStreakDays", st.n)}</span>;
 }
+// The last 7 days: a dot per day with its weekday under it; today also shows its date (Michael, Oct 10: plain dots made no sense).
 function KcalWeekDots({ history }) {
+  const today = dateKey(), wd = weekdaysShort(); // Monday first
   return (
-    <div data-kc-week style={{ display: "flex", gap: 5 }} aria-label={T("kcWeekAria")}>
-      {kcalWeek(history).map(w => <span key={w.k} data-kc-day={w.kind || "none"} title={fmtDate(w.k)} style={{ width: 12, height: 12, borderRadius: 99, background: w.kind === "hit" ? KC_TEAL : w.kind === "log" ? C.mint : "transparent", border: `1.5px solid ${w.kind === "hit" ? KC_TEAL : w.kind === "log" ? C.mint : C.line}` }} />)}
+    <div data-kc-week style={{ display: "flex", gap: 6, alignItems: "flex-start" }} aria-label={T("kcWeekAria")}>
+      {kcalWeek(history).map(w => {
+        const d = parseKey(w.k), isT = w.k === today;
+        return (
+          <span key={w.k} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, minWidth: 18 }}>
+            <span data-kc-day={w.kind || "none"} title={fmtDate(w.k)} style={{ width: 14, height: 14, borderRadius: 99, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 900, color: C.ink, background: w.kind === "hit" ? KC_HIT : w.kind === "log" ? KC_LOG : "transparent", border: `1.5px solid ${w.kind ? KC_HIT : isT ? C.chalk : C.line}` }}>{w.kind === "hit" ? "✓" : ""}</span>
+            <span style={{ fontSize: 9, lineHeight: 1, fontWeight: isT ? 900 : 600, color: isT ? C.chalk : C.dim }}>{wd[(d.getDay() + 6) % 7]}</span>
+            {isT && <span data-kc-today style={{ fontSize: 9, lineHeight: 1, fontWeight: 700, color: C.chalk, whiteSpace: "nowrap" }}>{fmtShortDM(d)}</span>}
+          </span>
+        );
+      })}
     </div>
   );
 }
@@ -2212,7 +2259,7 @@ function HomeKcal({ history, kcal, setKcal, onOpen }) {
     setAmount("");
   };
   const pct = Math.min(1, s.eaten / Math.max(1, s.target)), over = s.left < 0;
-  const col = s.hit ? KC_TEAL : over ? "#ff8a80" : C.mint;
+  const col = s.hit ? KC_HIT : over ? "#ff8a80" : C.mint;
   return (
     <div data-home-kcal="on" style={{ ...card, marginTop: LOOK === "flat" ? 22 : LOOK === "tiles" ? 8 : 12, padding: "14px 15px" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
@@ -2224,7 +2271,7 @@ function HomeKcal({ history, kcal, setKcal, onOpen }) {
         <span style={{ fontSize: 13, color: C.dim }}>{T("kcOf", { n: nf(s.target) })}</span>
       </div>
       <div style={{ height: 8, borderRadius: 99, background: C.panelHi, marginTop: 8, overflow: "hidden" }}><div style={{ width: `${pct * 100}%`, height: "100%", borderRadius: 99, background: col, transition: "width .5s ease-out" }} /></div>
-      <div data-home-kcal-line style={{ fontSize: 13, color: s.hit ? KC_TEAL : C.dim, marginTop: 8, lineHeight: 1.45 }}>{kcalLine(s)}</div>
+      <div data-home-kcal-line style={{ fontSize: 13, color: s.hit ? KC_HIT : C.dim, marginTop: 8, lineHeight: 1.45 }}>{kcalLine(s)}</div>
       <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
         <input value={amount} onChange={e => setAmount(e.target.value.replace(/[^0-9]/g, "").slice(0, 4))} onKeyDown={e => { if (e.key === "Enter") add(); }} inputMode="numeric" placeholder="kcal" aria-label={T("kcAmount")}
           style={{ fontFamily: BODY, fontSize: 16, fontWeight: 700, padding: "10px 12px", borderRadius: 12, border: `1.5px solid ${C.line}`, background: C.ink, color: C.chalk, outline: "none", boxSizing: "border-box", minWidth: 0, flex: 1 }} />
@@ -2267,6 +2314,79 @@ function KcalGoals({ kcal, age, onPick }) {
       {RATES.map(r => row({ type: "gain", rate: r }, T("kcRateGain", { kg: kg(r) }), T("kcPerDayMore", { n: nf((r * KCAL_PER_KG) / 7) })))}
       <div style={{ fontSize: 12, color: C.dim, lineHeight: 1.5, marginTop: 10 }}>{T("kcWorkoutNote")}</div>
       {age < 18 && <div style={{ fontSize: 13, color: C.signal, lineHeight: 1.5, marginTop: 8, fontWeight: 700 }}>{T("kcUnder18")}</div>}
+    </div>
+  );
+}
+
+// App only: steps from Health Connect (Samsung Health, Google Fit, Fitbit… all write there).
+function HealthCard({ kcal, setKcal }) {
+  const [st, setSt] = useState(null); // {available, granted, reason}
+  const [busy, setBusy] = useState(false);
+  const [denied, setDenied] = useState(false);
+  const refresh = () => healthState().then(setSt);
+  useEffect(() => { refresh(); }, []);
+  const today = dateKey();
+  const sync = async () => {
+    const m = await healthSteps(7), f = await healthSteps(7, "dietaryEnergyConsumed");
+    if (m || f) setKcal({ ...kcal, healthOn: true, steps: { ...(kcal.steps || {}), ...(m || {}) }, food: { ...(kcal.food || {}), ...(f || {}) } });
+    return m;
+  };
+  const connect = async () => {
+    unlockAudio(); sfxTap(); setBusy(true); setDenied(false);
+    const ok = await healthConnect();
+    if (ok.steps || ok.food) { sfxCheck(); await sync(); } else setDenied(true);
+    await refresh(); setBusy(false);
+  };
+  const food = (kcal.food || {})[today];
+  const steps = (kcal.steps || {})[today];
+  const assumed = LEVEL_STEPS[kcal.activity] || 5000;
+  const btn = { ...btnBase, padding: "9px 13px", fontSize: 13, flexShrink: 0 };
+  let body;
+  if (!st) body = <div style={{ fontSize: 13, color: C.dim }}>…</div>;
+  else if (!st.available) body = (
+    <>
+      <div data-hc="unavailable" style={{ fontSize: 13, color: C.chalk, lineHeight: 1.5 }}>{T("hcUnavailable")}</div>
+      <button onClick={() => { sfxTap(); refresh(); }} style={{ ...ghostBtn, marginTop: 10 }}>{T("hcRetry")}</button>
+    </>
+  );
+  else if (kcal.healthOn && st.granted) body = (
+    <>
+      <div data-hc="on" style={{ display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap" }}>
+        <span data-hc-steps style={{ fontFamily: DISPLAY, fontSize: 30, fontWeight: 900, color: C.chalk, lineHeight: 1 }}>{nf(steps || 0)}</span>
+        <span style={{ fontSize: 13, color: C.dim }}>{T("hcStepsToday")}</span>
+      </div>
+      <div style={{ fontSize: 12, color: C.dim, lineHeight: 1.5, marginTop: 6 }}>{T("hcHow", { n: nf(assumed) })}</div>
+      {st.food ? (
+        <button data-hc-food onClick={() => { sfxTap(); setKcal({ ...kcal, healthFood: kcal.healthFood === false }); }} role="switch" aria-checked={kcal.healthFood !== false}
+          style={{ ...btnBase, width: "100%", display: "flex", alignItems: "center", gap: 10, marginTop: 10, padding: "10px 0 2px", background: "transparent", color: C.chalk, textAlign: "left", borderTop: `1px solid ${C.line}`, borderRadius: 0 }}>
+          <span style={{ flex: 1, minWidth: 0 }}>
+            <span style={{ display: "block", fontSize: 13, fontWeight: 800 }}>{T("hcFood")}{food ? ` · ${nf(food)} kcal` : ""}</span>
+            <span style={{ display: "block", fontSize: 12, color: C.dim, lineHeight: 1.45, marginTop: 2 }}>{T("hcFoodD")}</span>
+          </span>
+          <Toggle on={kcal.healthFood !== false} />
+        </button>
+      ) : <div style={{ fontSize: 12, color: C.dim, lineHeight: 1.5, marginTop: 8 }}>{T("hcFoodOff")}</div>}
+      <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
+        <button data-hc-sync onClick={async () => { sfxTap(); setBusy(true); await sync(); setBusy(false); }} disabled={busy} style={{ ...btn, background: C.panelHi, color: C.chalk }}>{T("hcSync")}</button>
+        <button onClick={() => { sfxTap(); healthSettings(); }} style={{ ...btn, background: "transparent", color: C.sky, border: `1.5px solid ${C.sky}88` }}>{T("hcSettings")}</button>
+        <button data-hc-off onClick={() => { sfxTap(); setKcal({ ...kcal, healthOn: false }); }} style={{ ...btn, background: "transparent", color: C.dim, border: `1.5px solid ${C.line}` }}>{T("hcOff")}</button>
+      </div>
+    </>
+  );
+  else body = (
+    <>
+      <div data-hc="off" style={{ fontSize: 13, color: C.chalk, lineHeight: 1.5 }}>{T("hcIntro", { n: nf(assumed) })}</div>
+      {denied && <div data-hc-denied style={{ fontSize: 12, color: C.signal, lineHeight: 1.5, marginTop: 8 }}>{T("hcDenied")}</div>}
+      <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
+        <button data-hc-connect onClick={connect} disabled={busy} className="b3d" style={{ ...btn, background: C.mint, color: C.ink, "--e": "#2c8a5c" }}>{T("hcConnect")}</button>
+        {denied && <button onClick={() => { sfxTap(); healthSettings(); }} style={{ ...btn, background: "transparent", color: C.sky, border: `1.5px solid ${C.sky}88` }}>{T("hcSettings")}</button>}
+      </div>
+    </>
+  );
+  return (
+    <div data-health-card style={{ ...card, padding: "14px 15px", marginTop: 10 }}>
+      <div style={{ fontSize: 14, fontWeight: 800, color: C.chalk, marginBottom: 8 }}>👟 {T("hcTitle")}</div>
+      {body}
     </div>
   );
 }
@@ -2355,8 +2475,10 @@ function Calories({ history, profile, setProfile, kcal, setKcal }) {
           <div style={{ fontFamily: DISPLAY, fontSize: 30, fontWeight: 900, lineHeight: 1, color: over ? "#ff8a80" : C.mint, marginTop: 2 }}>{over ? T("kcOver", { n: nf(-left) }) : T("kcLeft", { n: nf(left) })}</div>
           <div style={{ fontSize: 12, color: C.dim, marginTop: 6, lineHeight: 1.45 }}>{goalName}</div>
           {wk > 0 && <div style={{ fontSize: 12, color: C.sky, marginTop: 3, fontWeight: 700 }}>{T("kcWorkoutToday", { n: nf(wk) })}</div>}
+          {stepsKcal(kcal, today) > 0 && <div data-steps-kcal style={{ fontSize: 12, color: C.sky, marginTop: 3, fontWeight: 700 }}>{T("hcStepsKcal", { n: nf(stepsKcal(kcal, today)) })}</div>}
         </div>
       </div>
+      {isNative && <HealthCard kcal={kcal} setKcal={setKcal} />}
       <div data-kc-streak-card style={{ ...card, padding: "12px 15px", marginTop: 10, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
         <div style={{ minWidth: 0 }}>
           <div style={{ fontSize: 13, color: C.chalk, fontWeight: 700 }}>{kcalLine(kcalNow(history))}</div>
@@ -2372,6 +2494,13 @@ function Calories({ history, profile, setProfile, kcal, setKcal }) {
           <input value={note} onChange={e => setNote(e.target.value)} onKeyDown={e => { if (e.key === "Enter") add(); }} placeholder={T("kcNote")} aria-label={T("kcNote")} style={{ ...field, flex: 1.6 }} />
         </div>
         <button onClick={add} disabled={!Number(amount)} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 10, padding: 15, opacity: Number(amount) ? 1 : 0.5 }}>{Number(amount) ? T("kcAddBtn", { n: nf(Number(amount)) }) : T("kcAddBtn0")}</button>
+        {hcFood(kcal, today) > 0 && (
+          <div data-hc-food-row style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 0", marginTop: 10, borderTop: `1px solid ${C.line}` }}>
+            <span style={{ fontSize: 15, width: 44 }} aria-hidden="true">🍽️</span>
+            <span style={{ flex: 1, fontSize: 14, color: C.chalk, minWidth: 0 }}>{T("hcFoodRow")}</span>
+            <span style={{ fontFamily: DISPLAY, fontSize: 20, fontWeight: 800, color: C.chalk }}>{nf(hcFood(kcal, today))}</span>
+          </div>
+        )}
         {((kcal.log || {})[today] || []).length > 0 && (
           <div style={{ marginTop: 12 }}>
             {(kcal.log[today]).map(x => (
@@ -2434,6 +2563,16 @@ function Calories({ history, profile, setProfile, kcal, setKcal }) {
 }
 
 // ─── TAB 2: HISTORY ────────────────────────────────────────────────────────
+function CalLegend() {
+  const sw = (bg, label) => <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}><span style={{ width: 14, height: 14, borderRadius: 4, border: `1px solid ${C.line}`, background: bg }} />{label}</span>;
+  return (
+    <div data-cal-legend style={{ display: "flex", flexWrap: "wrap", gap: "6px 14px", fontSize: 11, color: C.dim, marginTop: 10 }}>
+      {sw(`linear-gradient(135deg, ${C.mint} 0 45%, transparent 45%)`, T("calLegTrain"))}
+      {sw(`linear-gradient(315deg, ${KC_LOG} 0 45%, transparent 45%)`, T("calLegLog"))}
+      {sw(`linear-gradient(315deg, ${KC_HIT} 0 45%, transparent 45%)`, T("calLegHit"))}
+    </div>
+  );
+}
 function MonthCalendar({ history }) {
   const today = dateKey();
   const t = parseKey(today);
@@ -2472,15 +2611,23 @@ function MonthCalendar({ history }) {
               {d}<span style={{ fontSize: 10, lineHeight: 1 }}>{sk ? skipIcon(sk.r) : "🧊"}</span>
             </div>
           );
+          const kc = kcalNow(history, k);
+          const kind = kc && kc.hit ? "hit" : kc && kc.logged ? "log" : null;
+          const bgs = [];
+          if (on) bgs.push(`linear-gradient(135deg, ${C.mint} 0 34%, transparent 34%)`);
+          if (kind) bgs.push(`linear-gradient(315deg, ${kind === "hit" ? KC_HIT : KC_LOG} 0 34%, transparent 34%)`);
           return (
-            <div key={i} title={on ? T("dayN", { d: on }) : undefined} style={{ aspectRatio: "1", borderRadius: 9, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-              background: on ? C.mint : "transparent", color: on ? C.ink : k > today ? "#4d5f8a" : C.dim, border: `1.5px solid ${on ? C.mint : isToday ? C.chalk : "transparent"}`, fontSize: 13, fontWeight: on ? 800 : 500 }}>
+            <div key={i} data-cal-day={k} data-cal-train={on ? 1 : 0} data-cal-kcal={kind || "none"} title={[on ? T("dayN", { d: on }) : null, kind ? T(kind === "hit" ? "calKcalHit" : "calKcalLog") : null].filter(Boolean).join(" · ") || undefined}
+              style={{ position: "relative", aspectRatio: "1", borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden",
+                background: bgs.length ? bgs.join(", ") : "transparent", color: k > today ? "#4d5f8a" : C.chalk, border: `1.5px solid ${isToday ? C.chalk : on || kind ? C.line : "transparent"}`, fontSize: 13, fontWeight: on || kind ? 800 : 500 }}>
+              {on && <span style={{ position: "absolute", top: 2, left: 4, fontSize: 9, fontWeight: 900, color: C.ink, lineHeight: 1 }}>{on}</span>}
               {d}
-              {on && <span style={{ fontSize: 9, fontWeight: 800, lineHeight: 1 }}>{on}</span>}
+              {kind === "hit" && <span style={{ position: "absolute", bottom: 1, right: 3, fontSize: 9, fontWeight: 900, color: C.ink, lineHeight: 1 }}>✓</span>}
             </div>
           );
         })}
       </div>
+      <CalLegend />
     </div>
   );
 }
@@ -2857,12 +3004,12 @@ function ProfileTab({ history, profile, setProfile, onFreeze, kcal }) {
       </div>
 
       <div style={sectionTitle}>{T("ranksTitle")}</div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+      <div data-ranks-box style={{ ...card, padding: 8, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
         {Object.keys(RANK_AT).map(id => {
           const b = bestFor(history, id);
           const r = RANKS[rankIdx(id, b)];
           return (
-            <button key={id} onClick={() => setHowEx(id)} style={{ ...btnBase, textAlign: "left", background: C.panel, border: `1.5px solid ${r.color}66`, padding: "10px 12px", color: C.chalk }}>
+            <button key={id} onClick={() => setHowEx(id)} style={{ ...btnBase, textAlign: "left", background: SOFT(), border: "none", borderRadius: 12, padding: "10px 11px", color: C.chalk }}>
               <div style={{ fontSize: 13, fontWeight: 700, lineHeight: 1.25 }}>{EX[id].name}<ExQ id={id} onOpen={() => setHowEx(id)} style={{ width: 17, height: 17, fontSize: 10, marginLeft: 5 }} /></div>
               <div style={{ fontSize: 13, color: r.color, fontWeight: 700, marginTop: 4 }}>{r.icon} {r.name}<span style={{ color: C.dim, fontWeight: 500 }}>{b !== null ? T("maxBest", { v: `${b}${EX[id].type === "time" ? " s" : ""}` }) : ""}</span></div>
             </button>
@@ -2871,13 +3018,13 @@ function ProfileTab({ history, profile, setProfile, onFreeze, kcal }) {
       </div>
 
       <div style={sectionTitle}>{T("badgesTitle")} <span style={{ fontFamily: BODY, fontSize: 14, color: C.dim, fontWeight: 600 }}>{T("achTiers", { n: ach.reduce((x, a) => x + a.tier, 0), max: ach.reduce((x, a) => x + a.at.length, 0) })}</span></div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+      <div data-badges-box style={{ ...card, padding: 8, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
         {ach.map(a => {
           const r = a.tier ? RANKS[a.tier - 1] : null;
           const prev = a.tier ? a.at[a.tier - 1] : 0;
           const pct = a.next === null ? 100 : Math.max(0, Math.min(100, ((a.v - prev) / (a.next - prev)) * 100));
           return (
-            <div key={a.k} data-ach={a.k} data-tier={a.tier} style={{ ...card, padding: "11px 12px", borderColor: r ? `${r.color}88` : C.line }}>
+            <div key={a.k} data-ach={a.k} data-tier={a.tier} style={{ background: SOFT(), borderRadius: 12, padding: "10px 11px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <div style={{ fontSize: 26, filter: r ? "none" : "grayscale(1)", opacity: r ? 1 : 0.5 }}>{a.icon}</div>
                 <div style={{ minWidth: 0 }}>
@@ -2885,7 +3032,7 @@ function ProfileTab({ history, profile, setProfile, onFreeze, kcal }) {
                   <div style={{ fontSize: 12, fontWeight: 700, color: r ? r.color : C.dim }}>{r ? `${r.icon} ${r.name}` : `🔒 ${T("achLocked")}`}</div>
                 </div>
               </div>
-              <div style={{ height: 6, background: C.panelHi, borderRadius: 99, marginTop: 9, overflow: "hidden" }}>
+              <div style={{ height: 5, background: `${C.chalk}14`, borderRadius: 99, marginTop: 9, overflow: "hidden" }}>
                 <div style={{ height: "100%", width: `${pct}%`, background: r ? r.color : C.dim, borderRadius: 99, transition: "width .6s ease-out" }} />
               </div>
               <div style={{ fontSize: 11, color: C.dim, marginTop: 5, lineHeight: 1.35 }}>{a.next === null ? T("achMax") : `${T("achNext", { rank: RANKS[a.tier].name })} ${a.desc}`}</div>
@@ -3098,9 +3245,9 @@ function SettingsTab({ settings, setSettings, history, profile, setProfile, onIm
       </div>
       <div style={{ fontSize: 13, color: C.chalk, fontWeight: 800, margin: "14px 0 8px" }}>{T("lookTitle")}</div>
       <div role="radiogroup" aria-label={T("lookTitle")} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
-        {["cards", "tiles", "flat"].map(id => {
+        {["cards", "tiles", "glass", "accent", "flat"].map(id => {
           const on = (settings.look || "cards") === id;
-          const box = id === "cards" ? { background: C.panel, border: `1px solid ${C.line}`, borderRadius: 6 } : id === "tiles" ? { background: C.panelHi, borderRadius: 5 } : { borderBottom: `1px solid ${C.line}` };
+          const box = id === "cards" ? { background: C.panel, border: `1px solid ${C.line}`, borderRadius: 6 } : id === "tiles" ? { background: C.panelHi, borderRadius: 5 } : id === "glass" ? { background: `linear-gradient(160deg, ${C.panelHi}, ${C.panel})`, borderRadius: 8, boxShadow: "0 3px 8px rgba(0,0,0,.3)" } : id === "accent" ? { background: C.panel, borderLeft: `3px solid ${C.signal}`, borderRadius: 4 } : { borderBottom: `1px solid ${C.line}` };
           return (
             <button key={id} role="radio" aria-checked={on} data-look={id} onClick={() => { sfxTap(); set("look", id); }}
               style={{ ...btnBase, background: C.ink, border: `2px solid ${on ? C.signal : C.line}`, padding: 9, color: C.chalk, textAlign: "left" }}>
@@ -3193,6 +3340,7 @@ function SettingsTab({ settings, setSettings, history, profile, setProfile, onIm
       <div style={{ fontSize: 12, color: C.dim, textAlign: "center", marginTop: 26, lineHeight: 1.6, display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
         <Logo size={44} />
         <div>{T("about", { v: APP_VERSION })}<br />{T("privacy")}</div>
+        <button data-privacy onClick={() => { sfxTap(); openExternal(PRIVACY_URL); }} style={{ ...btnBase, background: "transparent", color: C.sky, fontSize: 12, padding: "2px 0" }}>{T("privacyLink")} ›</button>
       </div>
     </div>
   );
@@ -3663,7 +3811,7 @@ function Summary({ entry, xpBefore = 0, xpGained, newCh = [], newAch = [], histo
       <div className="pop" style={{ fontFamily: DISPLAY, fontSize: 60, fontWeight: 900, lineHeight: 0.95, color: C.mint }}>{T("great")}</div>
       <div style={{ fontSize: 16, color: C.chalk, marginTop: 8, fontWeight: 600, lineHeight: 1.4 }}>{finishLine}</div>
       <div style={{ fontSize: 13, color: C.dim, marginTop: 4 }}>{T("dayDate", { d: entry.day, date: fmtDate(entry.date, true) })}</div>
-      {(() => { const s = kcalNow(history.concat(history.some(e => e.ts === entry.ts) ? [] : [entry])); return s ? <div data-sum-kcal style={{ fontSize: 13, color: s.hit ? KC_TEAL : C.sky, marginTop: 6, fontWeight: 700 }}>🥗 {s.left > 0 ? T("kcAfterWorkout", { n: nf(s.left) }) : T("kcAfterWorkoutDone")}</div> : null; })()}
+      {(() => { const s = kcalNow(history.concat(history.some(e => e.ts === entry.ts) ? [] : [entry])); return s ? <div data-sum-kcal style={{ fontSize: 13, color: s.hit ? KC_HIT : C.sky, marginTop: 6, fontWeight: 700 }}>🥗 {s.left > 0 ? T("kcAfterWorkout", { n: nf(s.left) }) : T("kcAfterWorkoutDone")}</div> : null; })()}
       {entry.dur > 0 && <div data-total-time style={{ fontSize: 14, color: C.chalk, fontWeight: 700, marginTop: 6 }}>⏱ {T("totalTime", { t: fmtDur(entry.dur) })}</div>}
       <div style={{ marginTop: 16, background: C.panel, border: `1px solid ${C.line}`, borderRadius: 18, padding: "14px 16px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 10 }}>
@@ -3870,6 +4018,8 @@ export default function App() {
   applyTheme(settings.theme);
   LOOK = settings.look || "cards";
   if (LOOK === "tiles") card = { background: C.panelHi, border: `1px solid ${C.panelHi}`, borderRadius: 16 };
+  if (LOOK === "glass") card = { background: `linear-gradient(160deg, ${C.panelHi}, ${C.panel} 60%)`, border: `1px solid ${C.chalk}14`, borderRadius: 24, boxShadow: "0 10px 30px rgba(0,0,0,.28)" };
+  if (LOOK === "accent") card = { background: C.panel, border: `1px solid ${C.line}`, borderLeft: `4px solid ${C.chalk}40`, borderRadius: 16 };
   applyLang(settings.lang || detectLang());
   const setSettings = n => { setSettingsState(n); saveSettings(n); };
   const [profLoaded, setProfLoaded] = useState(false);
@@ -3956,6 +4106,13 @@ export default function App() {
   const [apkUpd, setApkUpd] = useState(null);
   const [dl, setDl] = useState(null); // small update: {kind: downloading|ready, v, pct, id}
   const [gh, setGh] = useState(() => (lastGh() || {}).v || null); // newest version on GitHub
+  // App: steps from Health Connect, once per start (the last 7 days, so a missed day is filled in too).
+  const [stepsSynced, setStepsSynced] = useState(false);
+  useEffect(() => {
+    if (!isNative || stepsSynced || !kcal || !kcal.healthOn) return;
+    setStepsSynced(true);
+    Promise.all([healthSteps(7), healthSteps(7, "dietaryEnergyConsumed")]).then(([m, f]) => { if (m || f) setKcalState(k => { const n = { ...k, steps: { ...(k.steps || {}), ...(m || {}) }, food: { ...(k.food || {}), ...(f || {}) } }; saveKcal(n); return n; }); });
+  }, [kcal]);
   // Website: the newest Android app version on GitHub for the menu (the API allows browsers; 60 calls an hour per IP).
   useEffect(() => {
     if (isNative) return;

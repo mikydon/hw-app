@@ -46,10 +46,12 @@ android {
             signingConfig signingConfigs.debug
             resValue "string", "app_name", "HW App Test"
             resValue "string", "title_activity_main", "HW App Test"
+            resValue "string", "health_connect_privacy_policy_url", "https://mikydon.github.io/hw-app/privacy.html"
         }
         release {
             resValue "string", "app_name", "HW App"
             resValue "string", "title_activity_main", "HW App"
+            resValue "string", "health_connect_privacy_policy_url", "https://mikydon.github.io/hw-app/privacy.html"
             if (System.getenv("ANDROID_KEYSTORE_FILE")) signingConfig signingConfigs.release
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'

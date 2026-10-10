@@ -10,6 +10,21 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 
 <!-- New version: add a "## x.y.z (date)" section on top (web-only history uses "## Browser beta x.y.z (date)"). On a push to main, .github/workflows/build.yml builds everything and .github/scripts/releases.sh creates/updates the releases (commit = the push, or the one in a commit comment). -->
 
+## 1.1.0 (2026-10-10)
+
+**A big update: a new APK** (install it over the old app; your data stays). Compared with 1.0.7:
+
+| | Before (1.0.7) | Now (1.1.0) |
+|---|---|---|
+| Steps *(Android app only)* | calories only knew your activity level and the app's workouts | with your permission the app reads your daily steps from Health Connect (Samsung Health, Google Fit, Fitbit… all write there); steps above what your activity level already assumes add calories to the day's target (~0.5 kcal per kg per km), so nothing is counted twice; calories you log in other apps (Samsung Health, MyFitnessPal…) count as eaten automatically (can be turned off) |
+| Android version *(Android app only)* | Android 7.0 and newer | Android 8.0 and newer (Health Connect needs it) |
+| Privacy policy | not written anywhere | [privacy.html](https://mikydon.github.io/hw-app/privacy.html), linked at the bottom of Settings: your data stays on your device; only steps and eaten calories are read from Health Connect, never sent anywhere |
+| Calendar in History | a trained day was all green; calories weren't shown | top-left corner = workout (green), bottom-right = calories (light orange = logged, orange with ✓ = target hit), with a legend |
+| Calorie colours, week dots | calories green/turquoise like workouts; unlabeled dots | calories orange, workouts green; the dots show weekdays and today's date |
+| Workout length | two wide buttons, Start below | squares 19 / 13 min with Start next to them, like the floating bar (all looks) |
+| Badges and ranks | each in its own coloured frame | one box with quiet tiles |
+| Looks | 3 layouts | 5 layouts (new: Glass, Accent) |
+
 ## 1.0.7 (2026-10-10)
 
 - The main screen is split into boxes with small headings (This week, Today's workout, Exercises, Workout length), next to the Calories and Challenges boxes. Before: one long open page.

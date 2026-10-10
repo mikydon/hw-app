@@ -5,6 +5,8 @@
 **HW App** (home workout app) is a free app for training at home with no equipment. It's an Android app; the website version works in any browser too.
 
 ## Install it on your phone (Android)
+Needs Android 8.0 or newer.
+
 1. On your phone, open the newest release: https://github.com/mikydon/hw-app/releases/latest
 2. Download **HW-App-x.y.z.apk** (only this file) and open it.
 3. If Android asks, allow installing apps from your browser.
@@ -38,7 +40,7 @@ Open https://mikydon.github.io/hw-app/ and add it to your home screen (Android C
 What changed in each version: [CHANGELOG.md](CHANGELOG.md).
 
 ## Privacy
-All your data (workouts, calories, name, photo, birth date) is stored only on your phone, in this browser. Nothing is sent anywhere. If you clear the browser's data, the history is deleted too, so save a backup in Settings first.
+All your data (workouts, calories, name, photo, birth date) is stored only on your device: in the app, or in the browser on the website. Nothing you enter is sent anywhere. If you connect Health Connect, the app reads only your daily step count, and it stays on your phone. If you clear the browser's data, the website's history is deleted too, so save a backup in Settings first. Full policy: [privacy.html](https://mikydon.github.io/hw-app/privacy.html).
 
 ## For developers
 - Source: `src/App.jsx` (React), entry `src/main.jsx`

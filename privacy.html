@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HW App privacy policy</title>
+<meta name="description" content="What HW App does with your data: it stays on your device.">
+<link rel="icon" href="icon.svg">
+<style>
+  :root { --ink: #0e1b36; --panel: #16284d; --line: #2c4679; --chalk: #eef2ff; --dim: #93a3c9; --signal: #ffd23f; --mint: #5fe3a1; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ink); color: var(--chalk); font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 720px; margin: 0 auto; padding: 32px 18px 60px; }
+  h1 { font-size: 30px; line-height: 1.15; margin: 0 0 6px; }
+  h2 { font-size: 19px; margin: 28px 0 8px; color: var(--signal); }
+  p, li { color: var(--chalk); }
+  .dim { color: var(--dim); font-size: 14px; }
+  .box { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; margin-top: 16px; }
+  a { color: var(--mint); }
+  ul { padding-left: 20px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>HW App privacy policy</h1>
+  <p class="dim">Last updated: October 10, 2026 · applies to the HW App Android app and the website https://mikydon.github.io/hw-app/</p>
+
+  <div class="box"><strong>In short:</strong> everything you enter stays on your device. HW App has no accounts, no servers of its own, no ads, no analytics and no tracking. Nothing you enter is sent to the developer or sold to anyone.</div>
+
+  <h2>What the app stores</h2>
+  <ul>
+    <li>Your workouts, records, streak and achievements.</li>
+    <li>Your profile: nickname, an optional photo and an optional birth date.</li>
+    <li>Calorie data, if you use the calorie calculator: gender, height, weight, activity level, goal and the calories you log.</li>
+    <li>Settings, such as language, theme and sounds.</li>
+  </ul>
+  <p>All of this is saved only on your device (in the app's storage, or in your browser's storage on the website). A backup file is created only when you tap "Save backup", and you decide where it goes.</p>
+
+  <h2>Health Connect (Android app)</h2>
+  <p>If you connect Health Connect in Calories, HW App asks for two read permissions: <strong>steps</strong> and <strong>nutrition</strong>. It reads your daily step count, to add the calories of the extra steps to your daily target, and the daily total of calories you logged in other apps (energy only, no foods or other nutrients), to count them as eaten. You can turn the second one off in Calories.</p>
+  <ul>
+    <li>The daily totals are stored on your device only and are used only for the calorie calculation.</li>
+    <li>HW App does not write anything to Health Connect and does not read any other health data.</li>
+    <li>This data is never sent off your device, shared, sold, or used for advertising.</li>
+    <li>You can disconnect at any time in Calories, and remove the permission in the Health Connect settings.</li>
+  </ul>
+  <p>The use of information received from Health Connect follows the <a href="https://support.google.com/googleplay/android-developer/answer/12991134">Health Connect policy requirements</a>, including the limited use requirements.</p>
+
+  <h2>Internet connections</h2>
+  <ul>
+    <li><strong>Updates (Android app):</strong> once per start the app downloads a small file (<code>update.json</code>) from GitHub to see whether a newer version exists, and downloads the update itself from GitHub. GitHub sees a normal web request (for example your IP address), as with any website.</li>
+    <li><strong>Website:</strong> the website asks the GitHub API for the newest app version to show it in the menu.</li>
+    <li><strong>Links you tap</strong> (exercise videos on YouTube, Patreon, GitHub) open those services, which have their own privacy policies.</li>
+  </ul>
+
+  <h2>Deleting your data</h2>
+  <p>Settings → "Start over from zero" removes your workouts and progress. Uninstalling the app (or clearing the website's data in your browser) removes everything.</p>
+
+  <h2>Children</h2>
+  <p>HW App is not aimed at children. The calorie calculator advises users under 18 not to cut or bulk hard without a doctor's advice.</p>
+
+  <h2>Contact</h2>
+  <p>Questions: open an issue at <a href="https://github.com/mikydon/hw-app/issues">github.com/mikydon/hw-app/issues</a>.</p>
+</main>
+</body>
+</html>
