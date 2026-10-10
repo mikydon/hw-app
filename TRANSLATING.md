@@ -71,4 +71,4 @@ npm run build                # builds index.html; open it in a browser to see yo
 
 ## Review
 
-I ([@mikydon](https://github.com/mikydon)) reviews every change, then it ships with the next big update. Thank you for helping! 💛
+I ([@mikydon](https://github.com/mikydon)) review every change, then it ships with the next big update. Thank you for helping! 💛
