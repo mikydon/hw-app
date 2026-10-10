@@ -39,6 +39,9 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- 1.2.0: a new APK is downloaded inside the app and handed to Android's installer when the user taps "Install".
+         Google Play restricts this permission; remove it if the app is ever published there (Play updates the app itself). -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
     <!-- Health Connect (1.1.0): the app only reads steps and eaten calories (nutrition). The health plugin declares read and write access to many
          types; Health Connect lists every declared permission, so all the others are removed here. -->

@@ -1,6 +1,6 @@
 // Everything that differs between the website and the Android app (Capacitor).
 // On the website every function here falls back to the browser API, so App.jsx can call them anywhere.
-import { Capacitor, CapacitorHttp } from "@capacitor/core";
+import { Capacitor, CapacitorHttp, registerPlugin } from "@capacitor/core";
 import { App as CapApp } from "@capacitor/app";
 import { Haptics } from "@capacitor/haptics";
 import { KeepAwake } from "@capacitor-community/keep-awake";
@@ -107,6 +107,8 @@ export async function nativeVersion() {
 // - a newer small version of the same big version is downloaded in the background and switched to
 //   on the next start (never in the middle of a session) → returns {staged: version}
 const KILL = { delayConditions: [{ kind: "kill" }] };
+let latest = null; // the APK of the newest release, from update.json: {version, url, size}
+export const latestApk = () => latest;
 // The last update check, saved so the menu can show it (helps to see why an update didn't arrive).
 export const UPD_KEY = "domaci-trening-v1-upd";
 function updLog(o) { try { localStorage.setItem(UPD_KEY, JSON.stringify({ ts: Date.now(), ...o })); } catch (_) {} return o; }
@@ -142,7 +144,8 @@ export async function checkForUpdate(appVersion, busy = false, onState = () => {
   // The newest version on GitHub, shown in the menu right away (Michael, Oct 10), before any download.
   try { localStorage.setItem(UPD_KEY + "-gh", JSON.stringify({ v: info.version, ts: Date.now() })); } catch (_) {}
   onState({ kind: "gh", v: info.version });
-  if (nv && verCmp(big(info.version), big(nv)) > 0) return updLog({ kind: "apk", v: info.version, failed, apk: { version: info.version, url: info.apk && info.apk.url } });
+  latest = info.apk && info.apk.url ? { version: info.version, url: info.apk.url, size: Number(info.apk.size) || 0 } : null;
+  if (nv && verCmp(big(info.version), big(nv)) > 0) return updLog({ kind: "apk", v: info.version, failed, apk: latest || { version: info.version, url: "" } });
   if (verCmp(info.version, appVersion) <= 0 || !info.bundle || !info.bundle.url) { updLog({ kind: "latest", v: info.version, failed }); return null; }
   if (nv && big(info.version) !== big(nv)) { updLog({ kind: "latest", v: info.version, failed }); return null; } // a bundle only runs in the APK it was built for
   try {
@@ -166,6 +169,82 @@ export async function checkForUpdate(appVersion, busy = false, onState = () => {
 // "Switch on now" on the ready banner: reloads into the downloaded version right away (in the foreground).
 export async function applyUpdateNow(id) { if (isNative && id) { try { await CapacitorUpdater.set({ id }); } catch (_) {} } }
 
+// ─── A new APK, downloaded inside the app (app 1.2.0) ──────────────────────
+// Michael (Oct 10): the download must not leave the app (no browser), show its progress, and never install
+// by itself: the APK waits in the app's cache until the user taps "Install" (not during a workout).
+// Download: Filesystem.downloadFile with progress events. Install: ApkInstaller, a small plugin of this app
+// (android/app/src/main/java/…/ApkInstallerPlugin.java) that opens Android's installer for the cached file.
+const ApkInstaller = registerPlugin("ApkInstaller");
+const APK_KEY = "domaci-trening-v1-upd-apk"; // {v, size} once a download finished
+let apk = { kind: "idle" };
+const apkSubs = new Set();
+function apkSet(s) { apk = s; apkSubs.forEach(f => { try { f(s); } catch (_) {} }); }
+export const apkState = () => apk;
+export function onApk(fn) { apkSubs.add(fn); return () => { apkSubs.delete(fn); }; }
+const apkName = v => `hw-app-${v}.apk`;
+export const apkSupported = () => isNative && Capacitor.isPluginAvailable("ApkInstaller");
+let testBuild = null;
+// The test APK ("HW App Test", id ….test) may download the newest release even when it isn't newer, to try the flow.
+export async function isTestBuild() {
+  if (!isNative) return false;
+  if (testBuild === null) { try { testBuild = /\.test$/.test((await CapApp.getInfo()).id || ""); } catch (_) { testBuild = false; } }
+  return testBuild;
+}
+// At start: a finished download of version v is ready again; every other cached APK (older, or already installed) is deleted.
+export async function apkRestore(v) {
+  if (!apkSupported()) return;
+  let m = null; try { m = JSON.parse(localStorage.getItem(APK_KEY) || "null"); } catch (_) {}
+  const keep = m && v && m.v === v ? apkName(v) : null;
+  try {
+    const r = await Filesystem.readdir({ path: "", directory: Directory.Cache });
+    for (const f of (r && r.files) || []) {
+      const n = typeof f === "string" ? f : f.name;
+      if (/^hw-app-.*\.apk$/.test(n) && n !== keep) await Filesystem.deleteFile({ path: n, directory: Directory.Cache }).catch(() => {});
+    }
+  } catch (_) {}
+  if (!keep) { try { localStorage.removeItem(APK_KEY); } catch (_) {} return; }
+  try {
+    const st = await Filesystem.stat({ path: keep, directory: Directory.Cache });
+    if (st && st.size === m.size) { if (apk.kind !== "downloading") apkSet({ kind: "ready", v, path: st.uri }); return; }
+  } catch (_) {}
+  try { localStorage.removeItem(APK_KEY); } catch (_) {}
+}
+export async function apkDownload(info) {
+  if (!apkSupported() || !info || !info.url || apk.kind === "downloading") return;
+  const v = info.version, path = apkName(v);
+  apkSet({ kind: "downloading", v, pct: 0 });
+  let sub = null;
+  try {
+    sub = await Filesystem.addListener("progress", e => {
+      if (!e || (e.url && e.url !== info.url)) return;
+      const total = Number(e.contentLength) > 0 ? Number(e.contentLength) : info.size || 0;
+      if (total > 0) apkSet({ kind: "downloading", v, pct: Math.min(100, (Number(e.bytes) / total) * 100) });
+    });
+    await Filesystem.downloadFile({ url: info.url, path, directory: Directory.Cache, progress: true, connectTimeout: 20000, readTimeout: 30000 });
+    const st = await Filesystem.stat({ path, directory: Directory.Cache });
+    if (!st || !st.size || (info.size && st.size !== info.size)) throw new Error("incomplete file (" + (st && st.size) + " B)");
+    try { localStorage.setItem(APK_KEY, JSON.stringify({ v, size: st.size })); } catch (_) {}
+    apkSet({ kind: "ready", v, path: st.uri });
+  } catch (e) {
+    try { await Filesystem.deleteFile({ path, directory: Directory.Cache }); } catch (_) {}
+    apkSet({ kind: "error", v, err: errMsg(e) });
+  } finally { try { sub && sub.remove(); } catch (_) {} }
+}
+// Android 8+: the user allows "install unknown apps" for HW App once (Settings opens on that switch).
+export async function apkCanInstall() { try { const r = await ApkInstaller.canInstall(); return !!(r && r.allowed); } catch (_) { return true; } }
+export function apkAllow() { if (apkSupported()) ApkInstaller.openSettings().catch(() => {}); }
+export async function apkInstall() {
+  if (apk.kind !== "ready") return false;
+  try { await ApkInstaller.install({ path: apk.path }); return true; }
+  catch (e) { apkSet({ ...apk, err: errMsg(e) }); return false; }
+}
+export function onAppResume(fn) {
+  if (!isNative) return () => {};
+  let h = null, gone = false;
+  CapApp.addListener("resume", fn).then(x => { h = x; if (gone) x.remove(); }).catch(() => {});
+  return () => { gone = true; if (h) h.remove(); };
+}
+
 // ─── Health Connect (app 1.1.0) ────────────────────────────────────────────
 // Read: steps and eaten calories (nutrition energy); the manifest removes every other health permission the plugin declares.
 const HC_READ = ["steps", "dietaryEnergyConsumed"];
@@ -179,8 +258,9 @@ export async function healthState() {
     return { available: true, granted: ok.includes("steps"), food: ok.includes("dietaryEnergyConsumed") };
   } catch (e) { return { available: false, reason: errMsg(e) }; }
 }
-export async function healthConnect() {
-  try { const s = await Health.requestAuthorization({ read: HC_READ }); const ok = (s && s.readAuthorized) || []; return { steps: ok.includes("steps"), food: ok.includes("dietaryEnergyConsumed") }; }
+// Steps first; eaten calories only when the user also wants them (Michael, Oct 10: food is optional).
+export async function healthConnect(withFood = false) {
+  try { const s = await Health.requestAuthorization({ read: withFood ? HC_READ : ["steps"] }); const ok = (s && s.readAuthorized) || []; return { steps: ok.includes("steps"), food: ok.includes("dietaryEnergyConsumed") }; }
   catch (_) { return { steps: false, food: false }; }
 }
 export function healthSettings() { if (isNative) Health.openHealthConnectSettings().catch(() => {}); }

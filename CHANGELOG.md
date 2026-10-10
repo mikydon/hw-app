@@ -10,6 +10,20 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 
 <!-- New version: add a "## x.y.z (date)" section on top (web-only history uses "## Browser beta x.y.z (date)"). On a push to main, .github/workflows/build.yml builds everything and .github/scripts/releases.sh creates/updates the releases (commit = the push, or the one in a commit comment). -->
 
+## 1.2.0 (2026-10-10)
+
+**A big update: a new APK** (install it over the old app; your data stays). From now on the next new APKs download inside the app. Compared with 1.1.1:
+
+| | Before (1.1.1) | Now (1.2.0) |
+|---|---|---|
+| Big updates *(Android app only)* | "Download" opened the browser; you had to find the APK in your downloads and open it | the APK downloads inside the app, with a percentage and a filling bar on the card and a thin line under the top bar on every screen; when it's done it waits until you tap Install (never during a workout); Android asks once to allow installs from HW App, then shows its normal "update this app?" confirmation |
+| First start | gender, birth date, height, weight and activity on one long page | one question per screen (nickname → gender → birthday → height → weight → activity → goal), each saved on Next, every step skippable, with Back |
+| Birth month and day | the phone's grey dropdown lists | grids of months and days in the app's colours (also in Calories) |
+| Example height and weight | grey 180 cm and 75 kg in the empty fields | height shows 0; the weight field shows a healthy weight for the height you entered (BMI 22) |
+| Food calories from Health Connect *(Android app only)* | connecting added food from other apps to your own entries straight away | steps connect by themselves; food calories are optional ("Also connect food calories"), and you choose and confirm how they count: only Health Connect (your own entries don't count on those days but stay saved, and count again if you disconnect) or added together |
+| Today's calorie target | only the final number | "How is the target calculated?" shows the sum: a normal day, your goal, today's workout and extra steps |
+| Vibration setting | turning it on did nothing you could feel | the phone vibrates briefly when you turn it on |
+
 ## 1.1.1 (2026-10-10)
 
 - "What's new" for a big update also lists all the small updates before it, so whoever installs the new APK sees everything they got (for 1.1.0: 1.0.1–1.0.7). The GitHub release notes of a big update do the same.

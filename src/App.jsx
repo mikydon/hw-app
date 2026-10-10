@@ -1,6 +1,6 @@
 import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import { isNative, pushBack, setRootBack, vibratePattern, keepScreenOn, openExternal, saveBackupFile, checkForUpdate, lastUpdate, lastGh, applyUpdateNow, healthState, healthConnect, healthSettings, healthSteps } from "./native.js";
+import { isNative, pushBack, setRootBack, vibratePattern, keepScreenOn, openExternal, saveBackupFile, checkForUpdate, lastUpdate, lastGh, applyUpdateNow, latestApk, isTestBuild, apkState, onApk, apkSupported, apkRestore, apkDownload, apkCanInstall, apkAllow, apkInstall, onAppResume, healthState, healthConnect, healthSettings, healthSteps } from "./native.js";
 import { L, LANG, t as T, tp as TP, fmt, setLang, detectLang, LANGS, fmtLong, fmtShortDM, fmtMonthYear, weekdaysShort, capFirst } from "./i18n/index.js";
 
 // ─── DESIGN TOKENS ──────────────────────────────────────────────────────────
@@ -30,7 +30,7 @@ const THEMES = {
   slate:  { ink: "#15181d", panel: "#1f242b", panelHi: "#2a313a", line: "#3a434f", chalk: "#f1f4f8", dim: "#9aa6b4", edge: "#0e1115" },
   coffee: { ink: "#1c140f", panel: "#2a1f17", panelHi: "#382a20", line: "#4d3a2c", chalk: "#fbf3ec", dim: "#b8a291", edge: "#130d09" },
 };
-const APP_VERSION = "1.1.1";
+const APP_VERSION = "1.2.0";
 // Big Shoulders has no Cyrillic, so Oswald (also condensed) covers Ukrainian. The browser only
 // downloads the Oswald unicode ranges a page actually uses.
 const DISPLAY = "'Big Shoulders Display', 'Oswald', 'Arial Narrow', Impact, sans-serif";
@@ -1289,8 +1289,10 @@ function AboutBox({ gh, dl, onNews }) {
   );
 }
 
-function TopBar({ screen, history, menuOpen, onMenu, onGo }) {
+function TopBar({ screen, history, menuOpen, onMenu, onGo, dlPct }) {
   const now = useClock();
+  const ap = useApk();
+  const prog = ap.kind === "downloading" ? ap.pct || 0 : dlPct; // a download in progress: a thin line under the bar on every screen
   const today = dateKey();
   const st = streakInfo(history, today);
   const lv = levelInfo(totalXP(history));
@@ -1308,6 +1310,7 @@ function TopBar({ screen, history, menuOpen, onMenu, onGo }) {
         <button onClick={() => onGo && onGo("profile")} data-chip="level" style={{ ...btnBase, ...chip(C.sky), background: "transparent" }} aria-label={T("levelAria", { n: lv.lvl })}>⚡{lv.lvl}</button>
         <MenuButton open={menuOpen} onClick={onMenu} />
       </div>
+      {typeof prog === "number" && <div data-top-prog={Math.round(prog)} role="progressbar" aria-valuenow={Math.round(prog)} aria-valuemin={0} aria-valuemax={100} style={{ position: "absolute", left: 0, bottom: -1, height: 3, width: `${Math.max(2, Math.min(100, prog))}%`, background: C.sky, borderRadius: "0 3px 3px 0", transition: "width .3s", boxShadow: `0 0 8px ${C.sky}` }} />}
     </div>
   );
 }
@@ -1623,17 +1626,60 @@ function UpdateCard({ onOpen, onClose }) {
   );
 }
 
-// A newer big version needs a new APK: a card on Home with the download (app only).
-function ApkUpdateCard({ info, onClose }) {
+// A newer big version needs a new APK: a card on Home (app only). Since 1.2.0 the APK is downloaded inside the
+// app with a progress bar (Michael, Oct 10: never leave the app for the browser) and installed only when the user
+// taps "Install", never during a workout. Android then shows its own install confirmation.
+function useApk() { const [s, setS] = useState(apkState()); useEffect(() => { const off = onApk(setS); setS(apkState()); return off; }, []); return s; } // re-read: it may have changed before subscribing
+function ApkUpdateCard({ info, busy, onClose }) {
+  const st = useApk();
+  const [perm, setPerm] = useState(false); // "install unknown apps" not allowed yet: explain + open Settings
+  useEffect(() => onAppResume(async () => { if (await apkCanInstall()) setPerm(false); }), []);
+  const s = st.v === info.version ? st : { kind: "idle" };
+  const inApp = apkSupported();
+  const download = () => { sfxTap(); if (inApp && info.url) apkDownload(info); else openExternal(info.url || "https://github.com/mikydon/hw-app/releases/latest"); };
+  const install = async () => { sfxTap(); if (!(await apkCanInstall())) { setPerm(true); return; } setPerm(false); apkInstall(); };
+  const pct = Math.max(0, Math.min(100, Math.round(s.pct || 0)));
+  const col = s.kind === "error" ? "#ff8a80" : s.kind === "ready" ? C.mint : s.kind === "downloading" ? C.sky : C.mint;
+  const link = { ...btnBase, background: "transparent", color: col, fontSize: 14, padding: "6px 0 0", textAlign: "left" };
+  const solid = { ...btnBase, background: col, color: C.ink, padding: "9px 14px", fontSize: 14, marginTop: 10 };
   return (
-    <div data-apk-update className="titleIn" style={{ ...card, position: "relative", padding: "14px 40px 14px 16px", marginBottom: 14, borderColor: `${C.mint}99`, display: "flex", gap: 12, alignItems: "center" }}>
-      <span style={{ fontSize: 26 }}>📲</span>
-      <div style={{ minWidth: 0 }}>
-        <div style={{ fontSize: 15, fontWeight: 800, color: C.chalk }}>{T("apkUpdTitle", { v: info.version })}</div>
-        <div style={{ fontSize: 12, color: C.dim, lineHeight: 1.45, marginTop: 2 }}>{T("apkUpdBody")}</div>
-        <button onClick={() => { sfxTap(); openExternal(info.url || "https://github.com/mikydon/hw-app/releases/latest"); }} data-apk-download style={{ ...btnBase, background: "transparent", color: C.mint, fontSize: 14, padding: "4px 0 0", textAlign: "left" }}>{T("apkUpdBtn")} ›</button>
+    <div data-apk-update={s.kind} className="titleIn" style={{ ...card, position: "relative", padding: "14px 40px 14px 16px", marginBottom: 14, borderColor: `${col}99` }}>
+      <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+        <span style={{ fontSize: 26, lineHeight: 1.1 }}>{s.kind === "ready" ? "✅" : s.kind === "downloading" ? "⬇️" : s.kind === "error" ? "⚠️" : "📲"}</span>
+        <div style={{ minWidth: 0, flex: 1 }}>
+          <div style={{ fontSize: 15, fontWeight: 800, color: C.chalk }}>
+            {s.kind === "downloading" ? T("apkDl", { v: info.version }) : s.kind === "ready" ? T("apkReady", { v: info.version }) : s.kind === "error" ? T("apkErr") : T("apkUpdTitle", { v: info.version })}
+            {info.test && <span data-apk-test style={{ marginLeft: 6, fontSize: 10, fontWeight: 900, padding: "2px 6px", borderRadius: 6, background: C.signal, color: C.signalInk, verticalAlign: "middle" }}>{T("apkTestTag")}</span>}
+          </div>
+          {s.kind === "idle" && <>
+            <div style={{ fontSize: 12, color: C.dim, lineHeight: 1.45, marginTop: 2 }}>{T(inApp ? "apkUpdBody" : "apkUpdBodyWeb")}</div>
+            <button onClick={download} data-apk-download style={link}>{T("apkUpdBtn")} ›</button>
+          </>}
+          {s.kind === "downloading" && <>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 8 }}>
+              <div style={{ flex: 1, height: 8, borderRadius: 99, background: C.panelHi, overflow: "hidden" }}><div data-apk-pct={pct} style={{ width: `${Math.max(3, pct)}%`, height: "100%", background: C.sky, borderRadius: 99, transition: "width .3s" }} /></div>
+              <span style={{ fontSize: 13, fontWeight: 800, color: C.sky, fontVariantNumeric: "tabular-nums", minWidth: 38, textAlign: "right" }}>{pct} %</span>
+            </div>
+            <div style={{ fontSize: 12, color: C.dim, lineHeight: 1.45, marginTop: 6 }}>{T("apkDlD")}</div>
+          </>}
+          {s.kind === "ready" && (busy ? <div data-apk-busy style={{ fontSize: 12, color: C.signal, lineHeight: 1.45, marginTop: 4 }}>{T("apkBusy")}</div> : <>
+            <div style={{ fontSize: 12, color: C.dim, lineHeight: 1.45, marginTop: 2 }}>{T("apkReadyD")}</div>
+            {perm ? <>
+              <div data-apk-perm style={{ fontSize: 12, color: C.chalk, lineHeight: 1.5, marginTop: 8, background: C.panelHi, borderRadius: 12, padding: "9px 11px" }}>{T("apkPermD")}</div>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                <button data-apk-allow onClick={() => { sfxTap(); apkAllow(); }} style={solid}>{T("apkPermBtn")}</button>
+                <button data-apk-install onClick={install} style={{ ...solid, background: "transparent", color: C.mint, border: `1.5px solid ${C.line}` }}>{T("apkInstall")}</button>
+              </div>
+            </> : <button data-apk-install onClick={install} style={solid}>{T("apkInstall")}</button>}
+            {s.err && <div style={{ fontSize: 11, color: "#ff8a80", marginTop: 6 }}>{s.err}</div>}
+          </>)}
+          {s.kind === "error" && <>
+            <div style={{ fontSize: 12, color: C.dim, lineHeight: 1.45, marginTop: 2 }}>{T("apkErrD")}</div>
+            <button data-apk-retry onClick={download} style={link}>{T("apkRetry")} ›</button>
+          </>}
+        </div>
       </div>
-      <CloseX onClick={onClose} />
+      {s.kind !== "downloading" && <CloseX onClick={onClose} />}
     </div>
   );
 }
@@ -1772,48 +1818,166 @@ function missingSetup(profile, kcal) {
   const kc = ["sex", "birth", "height", "weight", "activity"].filter(f => f === "birth" ? !(profile.birth && profile.birth.y) : !k[f]);
   return { name: out.length > 0, kcal: kc, goal: !kc.length && !k.goal };
 }
-function Onboarding({ start = 0, profile, setProfile, kcal, setKcal, onDone }) {
-  const [step, setStep] = useState(start);
-  const [name, setName] = useState(profile.name && profile.name !== "User" ? profile.name : "");
-  const next = () => { sfxTap(); if (step >= 2) onDone(); else setStep(step + 1); };
-  const age = ageOn(profile.birth, dateKey());
-  const kcReady = kcal && kcal.sex && kcal.height && kcal.weight && kcal.activity && age !== null;
-  const wrapS = { padding: "calc(18px + var(--sat)) 18px calc(30px + var(--sab))", maxWidth: 460, margin: "0 auto" };
+// One question per screen (Michael, Oct 10: "meno, Ďalej, dátum, Ďalej…", not everything at once).
+// Each answer is saved on "Ďalej", so skipping later keeps what was filled in.
+// Grey example in the empty weight field: a healthy weight for the height entered (BMI 22, the middle of the WHO
+// normal range 18.5–24.9), never a fixed number that could put someone off (Michael, Oct 10).
+const idealKg = h => (h >= 100 && h <= 250 ? Math.round(22 * (h / 100) ** 2) : 0);
+const OB_STEPS = ["name", "sex", "birth", "height", "weight", "activity", "goal"];
+function obStepFor(profile, kcal) {
+  const m = missingSetup(profile, kcal);
+  return m.name ? 0 : m.kcal.length ? OB_STEPS.indexOf(m.kcal[0]) : OB_STEPS.length - 1;
+}
+// Month and day pickers in the app's colours (Michael, Oct 10: the phone's grey dropdowns looked ugly).
+const monthNames = style => Array.from({ length: 12 }, (_, i) => new Date(2000, i, 1).toLocaleString(LANG, { month: style }));
+const pickBtn = on => ({ ...btnBase, padding: "11px 0", fontSize: 14, minWidth: 0, background: on ? C.signal : C.panel, color: on ? C.signalInk : C.chalk, border: `1.5px solid ${on ? C.signal : C.line}`, "--e": on ? EDGE[C.signal] || "transparent" : "transparent" });
+function MonthGrid({ value, onChange }) {
   return (
-    <div data-onboard={step} className="scr" key={step} style={wrapS}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: 18 }}>
-        <div style={{ display: "flex", gap: 6 }} aria-label={T("obStep", { n: step + 1 })}>
-          {[0, 1, 2].map(i => <span key={i} style={{ width: i === step ? 26 : 8, height: 8, borderRadius: 99, background: i <= step ? C.signal : C.panelHi, transition: "width .3s" }} />)}
-        </div>
-        <button data-ob-skipall onClick={() => { sfxTap(); onDone(); }} style={{ ...btnBase, background: "transparent", color: C.dim, fontSize: 13, padding: "6px 2px" }}>{T("obSkipAll")}</button>
+    <div data-month-grid role="radiogroup" aria-label={T("kcMonth")} style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 6 }}>
+      {monthNames("short").map((m, i) => {
+        const on = value === i + 1;
+        return <button key={i} role="radio" aria-checked={on} aria-label={monthNames("long")[i]} data-month={i + 1} onClick={() => { sfxTap(); onChange(on ? 0 : i + 1); }}
+          style={{ ...pickBtn(on), textTransform: "capitalize", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{m.replace(/\.$/, "")}</button>;
+      })}
+    </div>
+  );
+}
+function DayGrid({ value, max, onChange }) {
+  return (
+    <div data-day-grid role="radiogroup" aria-label={T("kcDay")} style={{ display: "grid", gridTemplateColumns: "repeat(7, minmax(0, 1fr))", gap: 5 }}>
+      {Array.from({ length: max }, (_, i) => {
+        const d = i + 1, on = value === d;
+        return <button key={d} role="radio" aria-checked={on} data-day={d} onClick={() => { sfxTap(); onChange(on ? 0 : d); }} style={{ ...pickBtn(on), padding: "9px 0", fontVariantNumeric: "tabular-nums" }}>{d}</button>;
+      })}
+    </div>
+  );
+}
+function Onboarding({ start = 0, profile, setProfile, kcal, setKcal, onDone }) {
+  const thisYear = parseKey(dateKey()).getFullYear();
+  const k0 = kcal || {}, b0 = profile.birth || {};
+  const [step, setStep] = useState(start);
+  const [dir, setDir] = useState(1);
+  const [name, setName] = useState(profile.name && profile.name !== "User" ? profile.name : "");
+  const [sex, setSex] = useState(k0.sex || "");
+  const [year, setYear] = useState(b0.y ? String(b0.y) : "");
+  const [month, setMonth] = useState(b0.m || 0);
+  const [day, setDay] = useState(b0.d || 0);
+  const [height, setHeight] = useState(k0.height ? String(k0.height) : "");
+  const [weight, setWeight] = useState(k0.weight ? String(k0.weight) : "");
+  const [activity, setActivity] = useState(k0.activity || "");
+  const [err, setErr] = useState("");
+  const [askDate, setAskDate] = useState(false);
+  const id = OB_STEPS[step], last = OB_STEPS.length - 1;
+  const goTo = n => { setErr(""); setDir(n >= step ? 1 : -1); if (n > last) onDone(); else { setStep(n); window.scrollTo(0, 0); } };
+  const saveK = patch => setKcal({ ...(kcal || {}), ...patch, log: (kcal && kcal.log) || {} });
+  const daysIn = month ? new Date(Number(year) || 2000, month, 0).getDate() : 31;
+  const num = (v, max) => v.replace(/[^0-9]/g, "").slice(0, max);
+  const filled = { name: !!name.trim(), sex: !!sex, birth: year.length === 4, height: !!height, weight: !!weight, activity: !!activity, goal: true }[id];
+  const next = confirmed => {
+    if (id === "name") setProfile({ ...profile, name: name.trim() });
+    else if (id === "sex") saveK({ sex });
+    else if (id === "birth") {
+      const y = Number(year);
+      if (!y || y < thisYear - 100 || y > thisYear - 10) { setErr(T("kcErrYear")); return; }
+      if (month && !day) { setErr(T("kcErrDate")); return; }
+      if (!month && confirmed !== true) { setAskDate(true); return; }
+      setProfile({ ...profile, birth: { y, m: month || null, d: month ? Math.min(day, daysIn) : null } });
+    } else if (id === "height") { const h = Number(height); if (h < 100 || h > 250) { setErr(T("kcErrHeight")); return; } saveK({ height: h }); }
+    else if (id === "weight") { const w = Number(weight); if (w < 30 || w > 300) { setErr(T("kcErrWeight")); return; } saveK({ weight: w }); }
+    else if (id === "activity") saveK({ activity });
+    sfxCheck(); goTo(step + 1);
+  };
+  const age = ageOn(profile.birth, dateKey());
+  const miss = missingSetup(profile, kcal).kcal;
+  const wrapS = { padding: "calc(14px + var(--sat)) 18px calc(30px + var(--sab))", maxWidth: 460, margin: "0 auto" };
+  const title = txt => <div style={{ fontFamily: DISPLAY, fontSize: 36, fontWeight: 900, lineHeight: 1, color: C.chalk }}>{txt}</div>;
+  const desc = txt => <div style={{ fontSize: 14, color: C.dim, lineHeight: 1.5, margin: "8px 0 18px" }}>{txt}</div>;
+  const bigField = { display: "block", width: "100%", boxSizing: "border-box", fontFamily: BODY, fontSize: 22, fontWeight: 800, padding: "14px 16px", borderRadius: 16, border: `1.5px solid ${C.line}`, background: C.panel, color: C.chalk, outline: "none" };
+  const numField = (val, set, max, ph, unit, label) => (
+    <div style={{ position: "relative" }}>
+      <input className="obf" data-ob-input={id} value={val} autoFocus inputMode="numeric" placeholder={ph} aria-label={label}
+        onChange={e => { set(num(e.target.value, max)); setErr(""); }} onKeyDown={e => { if (e.key === "Enter" && filled) next(); }}
+        style={{ ...bigField, fontFamily: DISPLAY, fontSize: 40, fontWeight: 900, padding: unit ? "10px 64px 10px 18px" : "10px 18px" }} />
+      {unit && <span aria-hidden="true" style={{ position: "absolute", right: 18, top: "50%", transform: "translateY(-50%)", fontSize: 18, fontWeight: 800, color: C.dim }}>{unit}</span>}
+    </div>
+  );
+  const sub = { fontSize: 12, color: C.dim, fontWeight: 800, margin: "16px 0 7px", textTransform: "uppercase", letterSpacing: ".04em" };
+  return (
+    <div data-onboard={step} data-ob-step={id} style={wrapS}>
+      {askDate && (
+        <Sheet title={T("kcNoDateTitle")} onClose={() => setAskDate(false)}>
+          <div style={{ fontSize: 15, color: C.chalk, lineHeight: 1.55 }}>{T("kcNoDateBody")}</div>
+          <button onClick={() => setAskDate(false)} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 16 }}>{T("kcNoDateAdd")}</button>
+          <button data-ob-yearonly onClick={() => { setAskDate(false); next(true); }} style={{ ...bigBtn("transparent", C.dim), marginTop: 8, border: `1.5px solid ${C.line}` }}>{T("kcNoDateSkip")}</button>
+        </Sheet>
+      )}
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6, minHeight: 34 }}>
+        {step > 0 ? <button data-ob-back onClick={() => { sfxTap(); goTo(step - 1); }} aria-label={T("back")} style={{ ...btnBase, background: "transparent", color: C.chalk, fontSize: 14, padding: "6px 2px", flexShrink: 0 }}>‹ {T("back")}</button> : <span />}
+        <span style={{ flex: 1 }} />
+        <button data-ob-skipall onClick={() => { sfxTap(); onDone(); }} style={{ ...btnBase, background: "transparent", color: C.dim, fontSize: 13, padding: "6px 2px", flexShrink: 0 }}>{T("obSkipAll")}</button>
       </div>
-      {step === 0 && (
-        <>
+      <div aria-label={T("obStep", { n: step + 1, m: OB_STEPS.length })} role="img" style={{ display: "flex", gap: 5, marginBottom: 8 }}>
+        {OB_STEPS.map((_, i) => <span key={i} style={{ flex: 1, height: 5, borderRadius: 99, background: i < step ? C.signal : i === step ? `${C.signal}aa` : C.panelHi, transition: "background .3s" }} />)}
+      </div>
+      <div style={{ fontSize: 12, color: C.dim, fontWeight: 700, marginBottom: 18 }}>{T("obStep", { n: step + 1, m: OB_STEPS.length })}</div>
+      <div key={step} className={dir > 0 ? "obIn" : "obBack"}>
+        {id === "name" && <>
           <Logo size={56} />
-          <div style={{ fontFamily: DISPLAY, fontSize: 40, fontWeight: 900, lineHeight: 1, color: C.chalk, marginTop: 14 }}>{T("obHello")}</div>
-          <div style={{ fontSize: 15, color: C.dim, lineHeight: 1.5, marginTop: 8 }}>{T("obName")}</div>
-          <input data-ob-name value={name} maxLength={24} autoFocus onChange={e => setName(e.target.value)} onKeyDown={e => { if (e.key === "Enter" && name.trim()) { setProfile({ ...profile, name: name.trim() }); next(); } }} placeholder={T("obNamePh")} aria-label={T("obNamePh")}
-            style={{ display: "block", width: "100%", boxSizing: "border-box", marginTop: 14, fontFamily: BODY, fontSize: 20, fontWeight: 700, padding: "14px 16px", borderRadius: 14, border: `1.5px solid ${C.line}`, background: C.panel, color: C.chalk, outline: "none" }} />
-          <button data-ob-next disabled={!name.trim()} onClick={() => { sfxCheck(); setProfile({ ...profile, name: name.trim() }); next(); }} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 16, opacity: name.trim() ? 1 : 0.5 }}>{T("obNext")}</button>
-          <button data-ob-skip onClick={next} style={{ ...ghostBtn, display: "block", margin: "12px auto 0" }}>{T("obSkip")}</button>
-        </>
-      )}
-      {step === 1 && (
-        <>
-          <div style={{ fontFamily: DISPLAY, fontSize: 34, fontWeight: 900, lineHeight: 1, color: C.chalk }}>{T("obBodyTitle")}</div>
-          <div style={{ fontSize: 14, color: C.dim, lineHeight: 1.5, margin: "8px 0 16px" }}>{T("obBodyD")}</div>
-          <KcalSetup kcal={kcal || {}} profile={profile} onSave={(k, birth) => { setKcal({ ...(kcal || {}), ...k, log: (kcal && kcal.log) || {} }); setProfile({ ...profile, birth }); next(); }} onCancel={null} />
-          <button data-ob-skip onClick={() => { sfxTap(); onDone(); }} style={{ ...ghostBtn, display: "block", margin: "14px auto 0" }}>{T("obSkip")}</button>
-        </>
-      )}
-      {step === 2 && (
-        <>
-          <div style={{ fontFamily: DISPLAY, fontSize: 34, fontWeight: 900, lineHeight: 1, color: C.chalk }}>{T("obGoalTitle")}</div>
-          <div style={{ fontSize: 14, color: C.dim, lineHeight: 1.5, margin: "8px 0 14px" }}>{T("kcPickBody")}</div>
-          {kcReady ? <KcalGoals kcal={kcal} age={age} onPick={goal => { sfxCheck(); setKcal({ ...kcal, goal }); onDone(); }} /> : <div style={{ fontSize: 14, color: C.signal }}>{T("obNoData")}</div>}
-          <button data-ob-skip onClick={() => { sfxTap(); onDone(); }} style={{ ...ghostBtn, display: "block", margin: "14px auto 0" }}>{T("obSkip")}</button>
-        </>
-      )}
+          <div style={{ marginTop: 14 }}>{title(T("obHello"))}</div>
+          {desc(T("obName"))}
+          <input className="obf" data-ob-name value={name} maxLength={24} autoFocus onChange={e => setName(e.target.value)} onKeyDown={e => { if (e.key === "Enter" && name.trim()) next(); }} placeholder={T("obNamePh")} aria-label={T("obNamePh")} style={bigField} />
+        </>}
+        {id === "sex" && <>
+          {title(T("kcSex"))}
+          {desc(T("obSexD"))}
+          <div role="radiogroup" aria-label={T("kcSex")} style={{ display: "flex", gap: 10 }}>
+            {[["m", "kcMale", "♂"], ["f", "kcFemale", "♀"]].map(([v, k, ic]) => (
+              <button key={v} role="radio" aria-checked={sex === v} data-ob-sex={v} onClick={() => { sfxTap(); setSex(v); }}
+                style={{ ...btnBase, flex: 1, padding: "22px 0 18px", borderRadius: 18, display: "flex", flexDirection: "column", alignItems: "center", gap: 6, background: sex === v ? C.signal : C.panel, border: `2px solid ${sex === v ? C.signal : C.line}`, color: sex === v ? C.signalInk : C.chalk, transition: "background .2s, color .2s" }}>
+                <span aria-hidden="true" style={{ fontSize: 34, lineHeight: 1 }}>{ic}</span>
+                <span style={{ fontSize: 17, fontWeight: 800 }}>{T(k)}</span>
+              </button>
+            ))}
+          </div>
+        </>}
+        {id === "birth" && <>
+          {title(T("obBirthT"))}
+          {desc(T("obBirthD"))}
+          <div style={{ ...sub, marginTop: 0 }}>{T("kcYear")} <span style={{ color: "#ff8a80" }}>*</span></div>
+          {numField(year, v => setYear(v), 4, "2000", "", T("kcYear"))}
+          <div style={sub}>{T("kcMonth")}</div>
+          <MonthGrid value={month} onChange={v => { setMonth(v); if (!v) setDay(0); setErr(""); }} />
+          {month > 0 && <>
+            <div style={sub}>{T("kcDay")}</div>
+            <DayGrid value={day} max={daysIn} onChange={v => { setDay(v); setErr(""); }} />
+          </>}
+        </>}
+        {id === "height" && <>{title(T("obHeightT"))}{desc(T("obHeightD"))}{numField(height, setHeight, 3, "0", "cm", T("kcHeight"))}</>}
+        {id === "weight" && <>{title(T("obWeightT"))}{desc(T("obWeightD"))}{numField(weight, setWeight, 3, String(idealKg(Number(height)) || 0), "kg", T("kcWeight"))}</>}
+        {id === "activity" && <>
+          {title(T("obActT"))}
+          {desc(T("kcActivityHint"))}
+          <div role="radiogroup" aria-label={T("kcActivity")} style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+            {ACTIVITY.map(([a]) => (
+              <button key={a} role="radio" aria-checked={activity === a} data-ob-act={a} onClick={() => { sfxTap(); setActivity(a); }}
+                style={{ ...btnBase, textAlign: "left", padding: "11px 13px", background: activity === a ? `${C.signal}1f` : C.panel, border: `1.5px solid ${activity === a ? C.signal : C.line}`, color: C.chalk }}>
+                <span style={{ display: "block", fontSize: 15, fontWeight: 800, color: activity === a ? C.signal : C.chalk }}>{T("kcAct_" + a)}</span>
+                <span style={{ display: "block", fontSize: 12, fontWeight: 500, color: C.dim, marginTop: 1 }}>{T("kcActD_" + a)}</span>
+              </button>
+            ))}
+          </div>
+        </>}
+        {id === "goal" && <>
+          {title(T("obGoalTitle"))}
+          {desc(T("kcPickBody"))}
+          {!miss.length && age !== null
+            ? <KcalGoals kcal={kcal} age={age} onPick={goal => { sfxCheck(); setKcal({ ...kcal, goal }); onDone(); }} />
+            : <div data-ob-nodata style={{ fontSize: 14, color: C.signal, lineHeight: 1.5 }}>{T("setupNoKcal", { what: miss.map(f => T("setup_" + f)).join(", ") })}</div>}
+        </>}
+        {err && <div role="alert" style={{ fontSize: 14, color: "#ff8a80", fontWeight: 700, marginTop: 12 }}>{err}</div>}
+        {id !== "goal" && <button data-ob-next disabled={!filled} onClick={() => next()} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 22, opacity: filled ? 1 : 0.45 }}>{T("obNext")}</button>}
+        <button data-ob-skip onClick={() => { sfxTap(); goTo(step + 1); }} style={{ ...ghostBtn, display: "block", margin: "12px auto 0" }}>{T("obSkip")}</button>
+      </div>
     </div>
   );
 }
@@ -1825,7 +1989,7 @@ function SetupCard({ profile, kcal, onFix, onClose }) {
   if (m.name) lines.push(T("setupNoName"));
   if (m.kcal.length) lines.push(T("setupNoKcal", { what: m.kcal.map(f => T("setup_" + f)).join(", ") }));
   else if (m.goal) lines.push(T("setupNoGoal"));
-  const step = m.name ? 0 : m.kcal.length ? 1 : 2;
+  const step = obStepFor(profile, kcal);
   return (
     <div data-setup-card style={{ ...card, padding: "12px 14px", marginBottom: 12, borderColor: `${C.signal}88`, display: "flex", alignItems: "center", gap: 10 }}>
       <div style={{ flex: 1, minWidth: 0 }}>
@@ -1890,8 +2054,8 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
       {howEx && <HowTo id={howEx} history={history} onClose={() => setHowEx(null)} />}
 
       <UpdateBanner dl={dl} busy={!!active} onClose={onDlClose} />
+      {apk && <ApkUpdateCard info={apk.info} busy={!!active} onClose={apk.close} />}
       {profile && !(ui && ui.setupHidden) && <SetupCard profile={profile} kcal={kcal} onFix={onSetup} onClose={() => setUi({ ...ui, setupHidden: true })} />}
-      {apk && <ApkUpdateCard info={apk.info} onClose={apk.close} />}
       {upd && <UpdateCard onOpen={upd.open} onClose={upd.close} />}
       {profile && <BirthdayCard profile={profile} ui={ui} setUi={setUi} />}
       {showDone && (
@@ -2088,8 +2252,13 @@ function stepsKcal(k, day) {
 }
 function kcalTarget(k, age, history, day) { return Math.round(tdeeOf(k, age) + goalDelta(k.goal)) + workoutKcal(history, day, k.weight) + stepsKcal(k, day); }
 // Eaten kcal for a day: what was logged here + food logged in other apps that reached Health Connect (app 1.1.0).
-function hcFood(k, day) { return k && k.healthOn && k.healthFood !== false ? Math.round((k.food || {})[day] || 0) : 0; }
-function dayTotal(k, day) { return ((k.log || {})[day] || []).reduce((a, x) => a + x.kcal, 0) + hcFood(k, day); }
+// Since 1.2.0 food from Health Connect is opt-in (healthFood === true). foodMode "hc": on a day where Health Connect
+// has food, only that counts and the user's own entries are ignored (not deleted: they count again when food is
+// disconnected; Michael, Oct 10). foodMode "both": added together.
+function hcFood(k, day) { return k && k.healthOn && k.healthFood === true ? Math.round((k.food || {})[day] || 0) : 0; }
+const ownFood = (k, day) => (((k || {}).log || {})[day] || []).reduce((a, x) => a + x.kcal, 0);
+const ownIgnored = (k, day) => k && k.foodMode === "hc" && hcFood(k, day) > 0;
+function dayTotal(k, day) { return (ownIgnored(k, day) ? 0 : ownFood(k, day)) + hcFood(k, day); }
 const nf = n => Math.round(n).toLocaleString(LANG);
 
 function KcalSetup({ kcal, profile, onSave, onCancel }) {
@@ -2105,6 +2274,7 @@ function KcalSetup({ kcal, profile, onSave, onCancel }) {
   const [activity, setActivity] = useState(kcal.activity || "");
   const [err, setErr] = useState("");
   const [askDate, setAskDate] = useState(false);
+  const [pick, setPick] = useState(null); // "m" | "d": themed month / day sheet instead of the phone's dropdown
   const field = { fontFamily: BODY, fontSize: 16, fontWeight: 700, padding: "10px 12px", borderRadius: 12, border: `1.5px solid ${C.line}`, background: C.ink, color: C.chalk, outline: "none", boxSizing: "border-box", width: "100%" };
   const label = { fontSize: 13, color: C.chalk, fontWeight: 800, marginBottom: 6 };
   const hint = { fontSize: 12, color: C.dim, lineHeight: 1.45, marginTop: 5 };
@@ -2112,7 +2282,8 @@ function KcalSetup({ kcal, profile, onSave, onCancel }) {
   const sub = { fontSize: 11, color: C.dim, fontWeight: 700, marginBottom: 4 };
   const pill = on => ({ ...btnBase, flex: 1, padding: "11px 0", fontSize: 15, background: on ? C.chalk : "transparent", color: on ? C.ink : C.dim, border: `1.5px solid ${on ? C.chalk : C.line}` });
   const num = (v, max) => v.replace(/[^0-9]/g, "").slice(0, max);
-  const months = Array.from({ length: 12 }, (_, i) => new Date(2000, i, 1).toLocaleString(LANG, { month: "long" }));
+  const months = monthNames("long");
+  const pickField = { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 4, textAlign: "left", whiteSpace: "nowrap", fontSize: 16, fontWeight: 700, borderRadius: 12 };
   const daysIn = month ? new Date(Number(year) || 2000, month, 0).getDate() : 31;
   const check = () => {
     const y = Number(year), h = Number(height), w = Number(weight);
@@ -2140,6 +2311,16 @@ function KcalSetup({ kcal, profile, onSave, onCancel }) {
           <button onClick={() => { setAskDate(false); save(true); }} style={{ ...bigBtn("transparent", C.dim), marginTop: 8, border: `1.5px solid ${C.line}` }}>{T("kcNoDateSkip")}</button>
         </Sheet>
       )}
+      {pick && (
+        <Sheet short title={T(pick === "m" ? "kcMonth" : "kcDay")} onClose={() => setPick(null)}>
+          <div data-pick-sheet={pick}>
+            {pick === "m"
+              ? <MonthGrid value={month} onChange={v => { setMonth(v); setErr(""); if (!v) { setDay(0); setPick(null); } else setPick("d"); }} />
+              : <DayGrid value={day} max={daysIn} onChange={v => { setDay(v); setErr(""); setPick(null); }} />}
+            {(month > 0 || day > 0) && <button data-pick-clear onClick={() => { sfxTap(); setMonth(0); setDay(0); setPick(null); }} style={{ ...ghostBtn, display: "block", margin: "14px auto 0" }}>{T("kcClear")}</button>}
+          </div>
+        </Sheet>
+      )}
       <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
         <div data-req-note style={{ fontSize: 12, color: C.dim, lineHeight: 1.45, marginBottom: -6 }}><span style={{ color: "#ff8a80", fontWeight: 800 }}>*</span>{T("kcReq").replace(/^\*/, "")}</div>
         <div>
@@ -2158,17 +2339,15 @@ function KcalSetup({ kcal, profile, onSave, onCancel }) {
             </div>
             <div style={{ flex: 1.5, minWidth: 0 }}>
               <div style={sub}>{T("kcMonth")}</div>
-              <select value={month} onChange={e => { setMonth(Number(e.target.value)); setErr(""); }} aria-label={T("kcMonth")} style={{ ...field, colorScheme: "dark" }}>
-                <option value={0}>–</option>
-                {months.map((m, i) => <option key={i} value={i + 1}>{m}</option>)}
-              </select>
+              <button data-pick-month={month} onClick={() => { sfxTap(); setPick("m"); }} aria-label={T("kcMonth")} style={{ ...btnBase, ...field, ...pickField }}>
+                <span style={{ overflow: "hidden", textOverflow: "ellipsis", textTransform: "capitalize" }}>{month ? months[month - 1] : "–"}</span><span aria-hidden="true" style={{ color: C.dim, fontSize: 12 }}>▾</span>
+              </button>
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={sub}>{T("kcDay")}</div>
-              <select value={day} onChange={e => { setDay(Number(e.target.value)); setErr(""); }} aria-label={T("kcDay")} style={{ ...field, colorScheme: "dark" }}>
-                <option value={0}>–</option>
-                {Array.from({ length: daysIn }, (_, i) => <option key={i} value={i + 1}>{i + 1}.</option>)}
-              </select>
+              <button data-pick-day={day} onClick={() => { sfxTap(); setPick(month ? "d" : "m"); }} aria-label={T("kcDay")} style={{ ...btnBase, ...field, ...pickField }}>
+                <span>{day ? day + "." : "–"}</span><span aria-hidden="true" style={{ color: C.dim, fontSize: 12 }}>▾</span>
+              </button>
             </div>
           </div>
           <div style={hint}>{T("kcBirthHint")}</div>
@@ -2176,11 +2355,11 @@ function KcalSetup({ kcal, profile, onSave, onCancel }) {
         <div style={{ display: "flex", gap: 10 }}>
           <div style={{ flex: 1 }}>
             <div style={label}>{T("kcHeight")}{star}</div>
-            <input value={height} onChange={e => { setHeight(num(e.target.value, 3)); setErr(""); }} inputMode="numeric" placeholder="180" aria-label={T("kcHeight")} aria-required="true" style={field} />
+            <input value={height} onChange={e => { setHeight(num(e.target.value, 3)); setErr(""); }} inputMode="numeric" placeholder="0" aria-label={T("kcHeight")} aria-required="true" style={field} />
           </div>
           <div style={{ flex: 1 }}>
             <div style={label}>{T("kcWeight")}{star}</div>
-            <input value={weight} onChange={e => { setWeight(num(e.target.value, 3)); setErr(""); }} inputMode="numeric" placeholder="75" aria-label={T("kcWeight")} aria-required="true" style={field} />
+            <input value={weight} onChange={e => { setWeight(num(e.target.value, 3)); setErr(""); }} inputMode="numeric" placeholder={String(idealKg(Number(height)) || 0)} aria-label={T("kcWeight")} aria-required="true" style={field} />
           </div>
         </div>
         <div>
@@ -2306,6 +2485,7 @@ function HomeKcal({ history, kcal, setKcal, onOpen }) {
           style={{ fontFamily: BODY, fontSize: 16, fontWeight: 700, padding: "10px 12px", borderRadius: 12, border: `1.5px solid ${C.line}`, background: C.ink, color: C.chalk, outline: "none", boxSizing: "border-box", minWidth: 0, flex: 1 }} />
         <button data-home-kcal-add onClick={add} disabled={!Number(amount)} style={{ ...btnBase, padding: "10px 14px", fontSize: 14, background: Number(amount) ? C.signal : C.panelHi, color: Number(amount) ? C.signalInk : C.dim, flexShrink: 0 }}>{T("kcHomeAdd")}</button>
       </div>
+      {ownIgnored(kcal, dateKey()) && <div data-own-ignored style={{ fontSize: 11, color: KC_HIT, lineHeight: 1.4, marginTop: 6 }}>{T("kcOwnIgnored")}</div>}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 12, gap: 8 }}>
         <KcalWeekDots history={history} />
         <button data-home-kcal-open onClick={() => { sfxTap(); onOpen(); }} style={{ ...btnBase, background: "transparent", color: C.sky, fontSize: 13, padding: "4px 0" }}>{T("kcHomeOpen")} ›</button>
@@ -2362,9 +2542,24 @@ function HealthCard({ kcal, setKcal }) {
   };
   const connect = async () => {
     unlockAudio(); sfxTap(); setBusy(true); setDenied(false);
-    const ok = await healthConnect();
-    if (ok.steps || ok.food) { sfxCheck(); await sync(); } else setDenied(true);
+    const ok = await healthConnect(false);
+    if (ok.steps) { sfxCheck(); await sync(); } else setDenied(true);
     await refresh(); setBusy(false);
+  };
+  // Food is optional: permission for nutrition, then the user picks how it counts (and confirms).
+  const [modeSheet, setModeSheet] = useState(false);
+  const [mode, setMode] = useState(kcal.foodMode || "hc");
+  const [foodDenied, setFoodDenied] = useState(false);
+  const connectFood = async () => {
+    sfxTap(); setFoodDenied(false);
+    let ok = st && st.food;
+    if (!ok) { setBusy(true); ok = (await healthConnect(true)).food; await refresh(); setBusy(false); }
+    if (ok) { setMode(kcal.foodMode || "hc"); setModeSheet(true); } else setFoodDenied(true);
+  };
+  const saveMode = async () => {
+    sfxCheck(); setModeSheet(false);
+    const f = await healthSteps(7, "dietaryEnergyConsumed");
+    setKcal({ ...kcal, healthFood: true, foodMode: mode, food: { ...(kcal.food || {}), ...(f || {}) } });
   };
   const food = (kcal.food || {})[today];
   const steps = (kcal.steps || {})[today];
@@ -2385,16 +2580,37 @@ function HealthCard({ kcal, setKcal }) {
         <span style={{ fontSize: 13, color: C.dim }}>{T("hcStepsToday")}</span>
       </div>
       <div style={{ fontSize: 12, color: C.dim, lineHeight: 1.5, marginTop: 6 }}>{T("hcHow", { n: nf(assumed) })}</div>
-      {st.food ? (
-        <button data-hc-food onClick={() => { sfxTap(); setKcal({ ...kcal, healthFood: kcal.healthFood === false }); }} role="switch" aria-checked={kcal.healthFood !== false}
-          style={{ ...btnBase, width: "100%", display: "flex", alignItems: "center", gap: 10, marginTop: 10, padding: "10px 0 2px", background: "transparent", color: C.chalk, textAlign: "left", borderTop: `1px solid ${C.line}`, borderRadius: 0 }}>
-          <span style={{ flex: 1, minWidth: 0 }}>
-            <span style={{ display: "block", fontSize: 13, fontWeight: 800 }}>{T("hcFood")}{food ? ` · ${nf(food)} kcal` : ""}</span>
-            <span style={{ display: "block", fontSize: 12, color: C.dim, lineHeight: 1.45, marginTop: 2 }}>{T("hcFoodD")}</span>
-          </span>
-          <Toggle on={kcal.healthFood !== false} />
-        </button>
-      ) : <div style={{ fontSize: 12, color: C.dim, lineHeight: 1.5, marginTop: 8 }}>{T("hcFoodOff")}</div>}
+      <div data-hc-food-box={kcal.healthFood === true && st.food ? "on" : "off"} style={{ marginTop: 12, paddingTop: 10, borderTop: `1px solid ${C.line}` }}>
+        <div style={{ fontSize: 13, fontWeight: 800, color: C.chalk }}>🍽️ {T("hcFood")}{kcal.healthFood === true && food ? ` · ${nf(food)} kcal` : ""}</div>
+        {kcal.healthFood === true && st.food ? <>
+          <div data-hc-mode={kcal.foodMode || "both"} style={{ fontSize: 12, color: C.dim, lineHeight: 1.45, marginTop: 3 }}>{T(kcal.foodMode === "hc" ? "hcFoodOnHc" : "hcFoodOnBoth")}</div>
+          <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
+            <button data-hc-food-mode onClick={() => { sfxTap(); setMode(kcal.foodMode || "both"); setModeSheet(true); }} style={{ ...btn, background: C.panelHi, color: C.chalk }}>{T("hcFoodChange")}</button>
+            <button data-hc-food-off onClick={() => { sfxTap(); setKcal({ ...kcal, healthFood: false }); }} style={{ ...btn, background: "transparent", color: C.dim, border: `1.5px solid ${C.line}` }}>{T("hcFoodDisconnect")}</button>
+          </div>
+        </> : <>
+          <div style={{ fontSize: 12, color: C.dim, lineHeight: 1.45, marginTop: 3 }}>{T("hcFoodOffD")}</div>
+          {foodDenied && <div data-hc-food-denied style={{ fontSize: 12, color: C.signal, lineHeight: 1.5, marginTop: 6 }}>{T("hcFoodOff")}</div>}
+          <button data-hc-food-connect onClick={connectFood} disabled={busy} style={{ ...btn, marginTop: 8, background: "transparent", color: KC_HIT, border: `1.5px solid ${KC_HIT}88` }}>{T("hcFoodConnect")}</button>
+        </>}
+      </div>
+      {modeSheet && (
+        <Sheet short title={T("hcFoodModeT")} onClose={() => setModeSheet(false)}>
+          <div data-hc-mode-sheet>
+            <div style={{ fontSize: 14, color: C.chalk, lineHeight: 1.5 }}>{T("hcFoodModeD")}</div>
+            <div role="radiogroup" aria-label={T("hcFoodModeT")} style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 12 }}>
+              {[["hc", "hcModeHc"], ["both", "hcModeBoth"]].map(([m, k]) => (
+                <button key={m} role="radio" aria-checked={mode === m} data-hc-mode-opt={m} onClick={() => { sfxTap(); setMode(m); }}
+                  style={{ ...btnBase, textAlign: "left", padding: "11px 13px", background: mode === m ? `${C.signal}1f` : C.ink, border: `1.5px solid ${mode === m ? C.signal : C.line}`, color: C.chalk }}>
+                  <span style={{ display: "block", fontSize: 14, fontWeight: 800, color: mode === m ? C.signal : C.chalk }}>{T(k)}</span>
+                  <span style={{ display: "block", fontSize: 12, fontWeight: 500, color: C.dim, marginTop: 2, lineHeight: 1.45 }}>{T(k + "D")}</span>
+                </button>
+              ))}
+            </div>
+            <button data-hc-mode-ok onClick={saveMode} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 14 }}>{T("hcModeOk")}</button>
+          </div>
+        </Sheet>
+      )}
       <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
         <button data-hc-sync onClick={async () => { sfxTap(); setBusy(true); await sync(); setBusy(false); }} disabled={busy} style={{ ...btn, background: C.panelHi, color: C.chalk }}>{T("hcSync")}</button>
         <button onClick={() => { sfxTap(); healthSettings(); }} style={{ ...btn, background: "transparent", color: C.sky, border: `1.5px solid ${C.sky}88` }}>{T("hcSettings")}</button>
@@ -2420,6 +2636,38 @@ function HealthCard({ kcal, setKcal }) {
   );
 }
 
+// "How is today's target calculated?" (Michael, Oct 10): every part of the number, added up.
+function TargetBreakdown({ kcal, age, history, day, target }) {
+  const goal = Math.round(goalDelta(kcal.goal)), base = Math.round(tdeeOf(kcal, age) + goalDelta(kcal.goal)) - goal; // adds up to kcalTarget exactly
+  const wk = workoutKcal(history, day, kcal.weight), stp = stepsKcal(kcal, day);
+  const steps = (kcal.steps || {})[day] || 0, lvl = LEVEL_STEPS[kcal.activity] || 5000;
+  const goalName = kcal.goal.type === "maintain" ? T("kcMaintainT") : T(kcal.goal.type === "lose" ? "kcRateLose" : "kcRateGain", { kg: kcal.goal.rate.toLocaleString(LANG) });
+  const sign = n => (n > 0 ? "+" : n < 0 ? "−" : "±") + nf(Math.abs(n));
+  const rows = [
+    ["base", T("kcB_base"), nf(base), null],
+    ["goal", goalName, sign(goal), null],
+    ["workout", T("kcB_workout"), sign(wk), wk ? null : T("kcB_workout0")],
+    ...(kcal.healthOn ? [["steps", T("kcB_steps"), sign(stp), T("kcB_stepsD", { s: nf(steps), n: nf(lvl) })]] : []),
+  ];
+  return (
+    <div data-kc-breakdown style={{ ...card, padding: "12px 15px", marginTop: 10 }}>
+      {rows.map(([k, label, v, sub]) => (
+        <div key={k} data-kc-b={k} style={{ display: "flex", alignItems: "baseline", gap: 10, padding: "6px 0", borderBottom: `1px solid ${C.line}` }}>
+          <span style={{ flex: 1, minWidth: 0 }}>
+            <span style={{ display: "block", fontSize: 13, color: C.chalk }}>{label}</span>
+            {sub && <span style={{ display: "block", fontSize: 11, color: C.dim, lineHeight: 1.4, marginTop: 1 }}>{sub}</span>}
+          </span>
+          <span style={{ fontFamily: DISPLAY, fontSize: 19, fontWeight: 800, color: k === "base" ? C.chalk : C.sky, whiteSpace: "nowrap" }}>{v}</span>
+        </div>
+      ))}
+      <div data-kc-b="total" style={{ display: "flex", alignItems: "baseline", gap: 10, paddingTop: 8 }}>
+        <span style={{ flex: 1, fontSize: 13, fontWeight: 800, color: C.chalk }}>{T("kcB_total")}</span>
+        <span style={{ fontFamily: DISPLAY, fontSize: 22, fontWeight: 900, color: C.mint }}>{nf(target)} kcal</span>
+      </div>
+    </div>
+  );
+}
+
 function Calories({ history, profile, setProfile, kcal, setKcal }) {
   const today = dateKey();
   const [editing, setEditing] = useState(false);
@@ -2427,6 +2675,7 @@ function Calories({ history, profile, setProfile, kcal, setKcal }) {
   const [amount, setAmount] = useState("");
   const [note, setNote] = useState("");
   const [openDay, setOpenDay] = useState(null);
+  const [how, setHow] = useState(false);
   const age = ageOn(profile.birth, today);
   const ready = kcal && kcal.sex && kcal.height && kcal.weight && kcal.activity && age !== null;
   const saveSetup = (k, birth) => { setKcal({ ...(kcal || {}), ...k, log: (kcal && kcal.log) || {} }); setProfile({ ...profile, birth }); setEditing(false); };
@@ -2505,8 +2754,10 @@ function Calories({ history, profile, setProfile, kcal, setKcal }) {
           <div style={{ fontSize: 12, color: C.dim, marginTop: 6, lineHeight: 1.45 }}>{goalName}</div>
           {wk > 0 && <div style={{ fontSize: 12, color: C.sky, marginTop: 3, fontWeight: 700 }}>{T("kcWorkoutToday", { n: nf(wk) })}</div>}
           {stepsKcal(kcal, today) > 0 && <div data-steps-kcal style={{ fontSize: 12, color: C.sky, marginTop: 3, fontWeight: 700 }}>{T("hcStepsKcal", { n: nf(stepsKcal(kcal, today)) })}</div>}
+          <button data-kc-how onClick={() => { sfxTap(); setHow(h => !h); }} aria-expanded={how} style={{ ...btnBase, background: "transparent", color: C.sky, fontSize: 12, padding: "6px 0 0" }}>{T("kcHowTitle")} {how ? "▴" : "▾"}</button>
         </div>
       </div>
+      {how && <TargetBreakdown kcal={kcal} age={age} history={history} day={today} target={target} />}
       {isNative && <HealthCard kcal={kcal} setKcal={setKcal} />}
       <div data-kc-streak-card style={{ ...card, padding: "12px 15px", marginTop: 10, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
         <div style={{ minWidth: 0 }}>
@@ -2530,8 +2781,9 @@ function Calories({ history, profile, setProfile, kcal, setKcal }) {
             <span style={{ fontFamily: DISPLAY, fontSize: 20, fontWeight: 800, color: C.chalk }}>{nf(hcFood(kcal, today))}</span>
           </div>
         )}
+        {ownIgnored(kcal, today) && ((kcal.log || {})[today] || []).length > 0 && <div data-own-ignored style={{ fontSize: 12, color: KC_HIT, lineHeight: 1.45, marginTop: 10 }}>{T("kcOwnIgnored")}</div>}
         {((kcal.log || {})[today] || []).length > 0 && (
-          <div style={{ marginTop: 12 }}>
+          <div style={{ marginTop: 12, opacity: ownIgnored(kcal, today) ? 0.5 : 1 }}>
             {(kcal.log[today]).map(x => (
               <div key={x.ts} style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 0", borderTop: `1px solid ${C.line}` }}>
                 <span style={{ fontSize: 12, color: C.dim, width: 44 }}>{new Date(x.ts).toLocaleTimeString(LANG, { hour: "2-digit", minute: "2-digit" })}</span>
@@ -3316,7 +3568,7 @@ function SettingsTab({ settings, setSettings, history, profile, setProfile, onIm
           </span>
           <span aria-hidden="true" style={{ color: C.dim, fontSize: 20 }}>›</span>
         </button>
-        <SettingRow title={T("vibrate")} desc={`${T("vibrateD")} ${T("vibrateHint")}`} on={settings.vibrate} onClick={() => { set("vibrate", !settings.vibrate); if (!settings.vibrate) { try { navigator.vibrate?.(120); } catch (_) {} } }} />
+        <SettingRow title={T("vibrate")} desc={`${T("vibrateD")} ${T("vibrateHint")}`} on={settings.vibrate} onClick={() => { set("vibrate", !settings.vibrate); if (!settings.vibrate) vibratePattern([160]); }} />
         <SettingRow title={T("keepAwake")} desc={T("keepAwakeD")} on={settings.keepAwake} onClick={() => set("keepAwake", !settings.keepAwake)} />
         <SettingRow title={T("aiCopy")} desc={T("aiCopyD")} on={settings.aiCopy} onClick={() => set("aiCopy", !settings.aiCopy)} />
       </div>
@@ -4149,7 +4401,13 @@ export default function App() {
   }, []);
   useEffect(() => {
     if (!loaded || !isNative) return;
-    checkForUpdate(APP_VERSION, !!session, st => { if (st && st.kind === "gh") setGh(st.v); else setDl(st); }).then(r => { if (r && r.apk) setApkUpd(r.apk); }).catch(() => {});
+    checkForUpdate(APP_VERSION, !!session, st => { if (st && st.kind === "gh") setGh(st.v); else setDl(st); }).then(async r => {
+      // A new big version → its APK. The test APK may always fetch the newest release, to try the flow.
+      let a = r && r.apk;
+      if (!a && latestApk() && await isTestBuild()) a = { ...latestApk(), test: true };
+      if (a) setApkUpd(a);
+      apkRestore(a && a.version); // an APK downloaded earlier is ready again; old ones are deleted
+    }).catch(() => {});
   }, [loaded]);
   const resume = () => { sfxTap(); setMenuOpen(false); setSessionOpen(true); };
 
@@ -4170,6 +4428,10 @@ export default function App() {
         .fstart.on .fsq{transform:none;opacity:1}
         .fstart.on .fsq.b3d:active{transform:translateY(4px)}
         @media (prefers-reduced-motion: reduce){.fstart,.fstart .fsq{transition:none}}
+        .obf:focus{border-color:${C.signal}!important;box-shadow:0 0 0 3px ${C.signal}2e}
+        @keyframes obIn{from{opacity:0;transform:translateX(26px)}to{opacity:1;transform:none}}
+        @keyframes obBack{from{opacity:0;transform:translateX(-26px)}to{opacity:1;transform:none}}
+        .obIn{animation:obIn .3s cubic-bezier(.2,.8,.3,1) both}.obBack{animation:obBack .3s cubic-bezier(.2,.8,.3,1) both}
         .b3d{transition:transform .08s ease, box-shadow .08s ease; box-shadow:0 5px 0 var(--e, transparent)}
         .b3d:active{transform:translateY(4px); box-shadow:0 1px 0 var(--e, transparent)}
         @keyframes scrIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
@@ -4222,7 +4484,7 @@ export default function App() {
           )}
           {(!session || !sessionOpen) && (
             <>
-              <TopBar screen={screen} history={history} menuOpen={menuOpen} onGo={go} onMenu={() => { sfxTap(); setMenuOpen(o => !o); }} />
+              <TopBar dlPct={dl && dl.kind === "downloading" ? dl.pct || 0 : null} screen={screen} history={history} menuOpen={menuOpen} onGo={go} onMenu={() => { sfxTap(); setMenuOpen(o => !o); }} />
               <div key={screen}>
                 {screen === "train" && <TrainTab onSetup={st => setOnboard(st)} dl={dl} onDlClose={() => setDl(null)} kcal={kcal} setKcal={setKcal} history={history} onStart={start} onFreeze={applyFreeze} ui={ui} setUi={setUi} active={session} onResume={resume} profile={profile} onGo={go} upd={updCard ? { open: () => { setUpdCard(false); setNewsAt(APP_VERSION); setNewsOpen(true); }, close: () => setUpdCard(false) } : null}
                   apk={apkUpd ? { info: apkUpd, close: () => setApkUpd(null) } : null} />}
