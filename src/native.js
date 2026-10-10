@@ -7,6 +7,7 @@ import { KeepAwake } from "@capacitor-community/keep-awake";
 import { Filesystem, Directory, Encoding } from "@capacitor/filesystem";
 import { Share } from "@capacitor/share";
 import { CapacitorUpdater } from "@capgo/capacitor-updater";
+import { Health } from "@capgo/capacitor-health";
 
 export const isNative = Capacitor.isNativePlatform();
 
@@ -164,3 +165,38 @@ export async function checkForUpdate(appVersion, busy = false, onState = () => {
 }
 // "Switch on now" on the ready banner: reloads into the downloaded version right away (in the foreground).
 export async function applyUpdateNow(id) { if (isNative && id) { try { await CapacitorUpdater.set({ id }); } catch (_) {} } }
+
+// ─── Health Connect (app 1.1.0) ────────────────────────────────────────────
+// Read: steps and eaten calories (nutrition energy); the manifest removes every other health permission the plugin declares.
+const HC_READ = ["steps", "dietaryEnergyConsumed"];
+export async function healthState() {
+  if (!isNative) return { available: false, web: true };
+  try {
+    const a = await Health.isAvailable();
+    if (!a || !a.available) return { available: false, reason: (a && a.reason) || "" };
+    const s = await Health.checkAuthorization({ read: HC_READ });
+    const ok = (s && s.readAuthorized) || [];
+    return { available: true, granted: ok.includes("steps"), food: ok.includes("dietaryEnergyConsumed") };
+  } catch (e) { return { available: false, reason: errMsg(e) }; }
+}
+export async function healthConnect() {
+  try { const s = await Health.requestAuthorization({ read: HC_READ }); const ok = (s && s.readAuthorized) || []; return { steps: ok.includes("steps"), food: ok.includes("dietaryEnergyConsumed") }; }
+  catch (_) { return { steps: false, food: false }; }
+}
+export function healthSettings() { if (isNative) Health.openHealthConnectSettings().catch(() => {}); }
+// Per local day for the last `days` days (today included): { "2026-10-10": 8123, … }
+// type: "steps" or "dietaryEnergyConsumed" (kcal eaten, logged in Samsung Health, MyFitnessPal…)
+export async function healthSteps(days = 7, type = "steps") {
+  if (!isNative) return null;
+  const start = new Date(); start.setHours(0, 0, 0, 0); start.setDate(start.getDate() - (days - 1));
+  try {
+    const r = await Health.queryAggregated({ dataType: type, startDate: start.toISOString(), endDate: new Date().toISOString(), bucket: "day", aggregation: "sum" });
+    const out = {};
+    for (const s of (r && r.samples) || []) {
+      const d = new Date(s.startDate);
+      const k = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+      out[k] = Math.max(0, Math.round(Number(s.value) || 0));
+    }
+    return out;
+  } catch (_) { return null; }
+}

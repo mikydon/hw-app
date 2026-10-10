@@ -1,6 +1,6 @@
 import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import { isNative, pushBack, setRootBack, vibratePattern, keepScreenOn, openExternal, saveBackupFile, checkForUpdate, lastUpdate, lastGh, applyUpdateNow } from "./native.js";
+import { isNative, pushBack, setRootBack, vibratePattern, keepScreenOn, openExternal, saveBackupFile, checkForUpdate, lastUpdate, lastGh, applyUpdateNow, healthState, healthConnect, healthSettings, healthSteps } from "./native.js";
 import { L, LANG, t as T, tp as TP, fmt, setLang, detectLang, LANGS, fmtLong, fmtShortDM, fmtMonthYear, weekdaysShort, capFirst } from "./i18n/index.js";
 
 // ─── DESIGN TOKENS ──────────────────────────────────────────────────────────
@@ -30,7 +30,7 @@ const THEMES = {
   slate:  { ink: "#15181d", panel: "#1f242b", panelHi: "#2a313a", line: "#3a434f", chalk: "#f1f4f8", dim: "#9aa6b4", edge: "#0e1115" },
   coffee: { ink: "#1c140f", panel: "#2a1f17", panelHi: "#382a20", line: "#4d3a2c", chalk: "#fbf3ec", dim: "#b8a291", edge: "#130d09" },
 };
-const APP_VERSION = "1.0.7";
+const APP_VERSION = "1.1.0";
 // Big Shoulders has no Cyrillic, so Oswald (also condensed) covers Ukrainian. The browser only
 // downloads the Oswald unicode ranges a page actually uses.
 const DISPLAY = "'Big Shoulders Display', 'Oswald', 'Arial Narrow', Impact, sans-serif";
@@ -996,6 +996,7 @@ function DiffChip({ id, pad = "1px 8px" }) {
 
 // "?" next to an exercise name anywhere: opens its description sheet (one host in App).
 const SUPPORT_URL = "https://www.patreon.com/c/mikydon";
+const PRIVACY_URL = "https://mikydon.github.io/hw-app/privacy.html";
 let openHowToGlobal = null;
 function ExQ({ id, onOpen, style }) {
   const go = e => { e.stopPropagation(); e.preventDefault(); sfxTap(); if (onOpen) onOpen(); else if (openHowToGlobal) openHowToGlobal(id); };
@@ -1464,8 +1465,8 @@ const newsKey = v => "news" + v.replace(/\./g, "");
 function newsPages() {
   const big = bigVer(APP_VERSION);
   // Lines starting with 📱 are about the Android app only (updates…); the website hides them (Michael, Oct 10).
-  const forHere = arr => arr.filter(l => isNative || typeof l !== "string" || !l.startsWith("📱"));
-  const pages = [{ v: big + ".0", big: true, items: L[newsKey(big)] || [] }];
+  const forHere = arr => arr.filter(l => isNative || !String(Array.isArray(l) ? l[0] : l).startsWith("📱"));
+  const pages = [{ v: big + ".0", big: true, items: forHere(L[newsKey(big)] || []) }];
   const cands = [];
   for (let i = 1; i <= 9; i++) cands.push(`${big}.${i}`);
   for (let i = 1; i <= 9; i++) cands.push(`${big}.9.${i}`);
@@ -2025,8 +2026,23 @@ function workoutKcal(history, day, kg) {
   return Math.round(history.filter(e => e.date === day).reduce((a, e) => a + (WORKOUT_MET - 1) * kg * ((e.rounds === 3 ? 19 : 13) / 60), 0));
 }
 function goalDelta(goal) { if (!goal || goal.type === "maintain") return 0; const d = Math.round((goal.rate * KCAL_PER_KG) / 7); return goal.type === "lose" ? -d : d; }
-function kcalTarget(k, age, history, day) { return Math.round(tdeeOf(k, age) + goalDelta(k.goal)) + workoutKcal(history, day, k.weight); }
-function dayTotal(k, day) { return ((k.log || {})[day] || []).reduce((a, x) => a + x.kcal, 0); }
+// Steps from Health Connect (app 1.1.0): only the steps above what the chosen activity level already assumes add calories,
+// so nothing is counted twice. Assumed steps follow Tudor-Locke & Bassett 2004 (sedentary < 5,000, low active 5,000–7,499,
+// somewhat active 7,500–9,999, active 10,000–12,499, highly active ≥ 12,500); the two highest levels go on in steps of 2,500.
+const LEVEL_STEPS = { none: 5000, light: 7500, moderate: 10000, active: 12500, very: 15000, extra: 17500 };
+// Net cost of walking ≈ 0.5 kcal per kg per km above rest (ACSM walking equation: 0.1 ml O2/kg/m, ~5 kcal per litre of O2);
+// step length ≈ 0.415 × height (men) or 0.413 × height (women).
+function stepsKcal(k, day) {
+  const st = k.healthOn && (k.steps || {})[day];
+  if (!st || !k.weight || !k.height) return 0;
+  const extra = Math.max(0, st - (LEVEL_STEPS[k.activity] || 5000));
+  const stepM = (k.sex === "f" ? 0.413 : 0.415) * (k.height / 100);
+  return Math.round(0.5 * k.weight * (extra * stepM) / 1000);
+}
+function kcalTarget(k, age, history, day) { return Math.round(tdeeOf(k, age) + goalDelta(k.goal)) + workoutKcal(history, day, k.weight) + stepsKcal(k, day); }
+// Eaten kcal for a day: what was logged here + food logged in other apps that reached Health Connect (app 1.1.0).
+function hcFood(k, day) { return k && k.healthOn && k.healthFood !== false ? Math.round((k.food || {})[day] || 0) : 0; }
+function dayTotal(k, day) { return ((k.log || {})[day] || []).reduce((a, x) => a + x.kcal, 0) + hcFood(k, day); }
 const nf = n => Math.round(n).toLocaleString(LANG);
 
 function KcalSetup({ kcal, profile, onSave, onCancel }) {
@@ -2271,6 +2287,79 @@ function KcalGoals({ kcal, age, onPick }) {
   );
 }
 
+// App only: steps from Health Connect (Samsung Health, Google Fit, Fitbit… all write there).
+function HealthCard({ kcal, setKcal }) {
+  const [st, setSt] = useState(null); // {available, granted, reason}
+  const [busy, setBusy] = useState(false);
+  const [denied, setDenied] = useState(false);
+  const refresh = () => healthState().then(setSt);
+  useEffect(() => { refresh(); }, []);
+  const today = dateKey();
+  const sync = async () => {
+    const m = await healthSteps(7), f = await healthSteps(7, "dietaryEnergyConsumed");
+    if (m || f) setKcal({ ...kcal, healthOn: true, steps: { ...(kcal.steps || {}), ...(m || {}) }, food: { ...(kcal.food || {}), ...(f || {}) } });
+    return m;
+  };
+  const connect = async () => {
+    unlockAudio(); sfxTap(); setBusy(true); setDenied(false);
+    const ok = await healthConnect();
+    if (ok.steps || ok.food) { sfxCheck(); await sync(); } else setDenied(true);
+    await refresh(); setBusy(false);
+  };
+  const food = (kcal.food || {})[today];
+  const steps = (kcal.steps || {})[today];
+  const assumed = LEVEL_STEPS[kcal.activity] || 5000;
+  const btn = { ...btnBase, padding: "9px 13px", fontSize: 13, flexShrink: 0 };
+  let body;
+  if (!st) body = <div style={{ fontSize: 13, color: C.dim }}>…</div>;
+  else if (!st.available) body = (
+    <>
+      <div data-hc="unavailable" style={{ fontSize: 13, color: C.chalk, lineHeight: 1.5 }}>{T("hcUnavailable")}</div>
+      <button onClick={() => { sfxTap(); refresh(); }} style={{ ...ghostBtn, marginTop: 10 }}>{T("hcRetry")}</button>
+    </>
+  );
+  else if (kcal.healthOn && st.granted) body = (
+    <>
+      <div data-hc="on" style={{ display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap" }}>
+        <span data-hc-steps style={{ fontFamily: DISPLAY, fontSize: 30, fontWeight: 900, color: C.chalk, lineHeight: 1 }}>{nf(steps || 0)}</span>
+        <span style={{ fontSize: 13, color: C.dim }}>{T("hcStepsToday")}</span>
+      </div>
+      <div style={{ fontSize: 12, color: C.dim, lineHeight: 1.5, marginTop: 6 }}>{T("hcHow", { n: nf(assumed) })}</div>
+      {st.food ? (
+        <button data-hc-food onClick={() => { sfxTap(); setKcal({ ...kcal, healthFood: kcal.healthFood === false }); }} role="switch" aria-checked={kcal.healthFood !== false}
+          style={{ ...btnBase, width: "100%", display: "flex", alignItems: "center", gap: 10, marginTop: 10, padding: "10px 0 2px", background: "transparent", color: C.chalk, textAlign: "left", borderTop: `1px solid ${C.line}`, borderRadius: 0 }}>
+          <span style={{ flex: 1, minWidth: 0 }}>
+            <span style={{ display: "block", fontSize: 13, fontWeight: 800 }}>{T("hcFood")}{food ? ` · ${nf(food)} kcal` : ""}</span>
+            <span style={{ display: "block", fontSize: 12, color: C.dim, lineHeight: 1.45, marginTop: 2 }}>{T("hcFoodD")}</span>
+          </span>
+          <Toggle on={kcal.healthFood !== false} />
+        </button>
+      ) : <div style={{ fontSize: 12, color: C.dim, lineHeight: 1.5, marginTop: 8 }}>{T("hcFoodOff")}</div>}
+      <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
+        <button data-hc-sync onClick={async () => { sfxTap(); setBusy(true); await sync(); setBusy(false); }} disabled={busy} style={{ ...btn, background: C.panelHi, color: C.chalk }}>{T("hcSync")}</button>
+        <button onClick={() => { sfxTap(); healthSettings(); }} style={{ ...btn, background: "transparent", color: C.sky, border: `1.5px solid ${C.sky}88` }}>{T("hcSettings")}</button>
+        <button data-hc-off onClick={() => { sfxTap(); setKcal({ ...kcal, healthOn: false }); }} style={{ ...btn, background: "transparent", color: C.dim, border: `1.5px solid ${C.line}` }}>{T("hcOff")}</button>
+      </div>
+    </>
+  );
+  else body = (
+    <>
+      <div data-hc="off" style={{ fontSize: 13, color: C.chalk, lineHeight: 1.5 }}>{T("hcIntro", { n: nf(assumed) })}</div>
+      {denied && <div data-hc-denied style={{ fontSize: 12, color: C.signal, lineHeight: 1.5, marginTop: 8 }}>{T("hcDenied")}</div>}
+      <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
+        <button data-hc-connect onClick={connect} disabled={busy} className="b3d" style={{ ...btn, background: C.mint, color: C.ink, "--e": "#2c8a5c" }}>{T("hcConnect")}</button>
+        {denied && <button onClick={() => { sfxTap(); healthSettings(); }} style={{ ...btn, background: "transparent", color: C.sky, border: `1.5px solid ${C.sky}88` }}>{T("hcSettings")}</button>}
+      </div>
+    </>
+  );
+  return (
+    <div data-health-card style={{ ...card, padding: "14px 15px", marginTop: 10 }}>
+      <div style={{ fontSize: 14, fontWeight: 800, color: C.chalk, marginBottom: 8 }}>👟 {T("hcTitle")}</div>
+      {body}
+    </div>
+  );
+}
+
 function Calories({ history, profile, setProfile, kcal, setKcal }) {
   const today = dateKey();
   const [editing, setEditing] = useState(false);
@@ -2355,8 +2444,10 @@ function Calories({ history, profile, setProfile, kcal, setKcal }) {
           <div style={{ fontFamily: DISPLAY, fontSize: 30, fontWeight: 900, lineHeight: 1, color: over ? "#ff8a80" : C.mint, marginTop: 2 }}>{over ? T("kcOver", { n: nf(-left) }) : T("kcLeft", { n: nf(left) })}</div>
           <div style={{ fontSize: 12, color: C.dim, marginTop: 6, lineHeight: 1.45 }}>{goalName}</div>
           {wk > 0 && <div style={{ fontSize: 12, color: C.sky, marginTop: 3, fontWeight: 700 }}>{T("kcWorkoutToday", { n: nf(wk) })}</div>}
+          {stepsKcal(kcal, today) > 0 && <div data-steps-kcal style={{ fontSize: 12, color: C.sky, marginTop: 3, fontWeight: 700 }}>{T("hcStepsKcal", { n: nf(stepsKcal(kcal, today)) })}</div>}
         </div>
       </div>
+      {isNative && <HealthCard kcal={kcal} setKcal={setKcal} />}
       <div data-kc-streak-card style={{ ...card, padding: "12px 15px", marginTop: 10, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
         <div style={{ minWidth: 0 }}>
           <div style={{ fontSize: 13, color: C.chalk, fontWeight: 700 }}>{kcalLine(kcalNow(history))}</div>
@@ -2372,6 +2463,13 @@ function Calories({ history, profile, setProfile, kcal, setKcal }) {
           <input value={note} onChange={e => setNote(e.target.value)} onKeyDown={e => { if (e.key === "Enter") add(); }} placeholder={T("kcNote")} aria-label={T("kcNote")} style={{ ...field, flex: 1.6 }} />
         </div>
         <button onClick={add} disabled={!Number(amount)} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 10, padding: 15, opacity: Number(amount) ? 1 : 0.5 }}>{Number(amount) ? T("kcAddBtn", { n: nf(Number(amount)) }) : T("kcAddBtn0")}</button>
+        {hcFood(kcal, today) > 0 && (
+          <div data-hc-food-row style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 0", marginTop: 10, borderTop: `1px solid ${C.line}` }}>
+            <span style={{ fontSize: 15, width: 44 }} aria-hidden="true">👟</span>
+            <span style={{ flex: 1, fontSize: 14, color: C.chalk, minWidth: 0 }}>{T("hcFoodRow")}</span>
+            <span style={{ fontFamily: DISPLAY, fontSize: 20, fontWeight: 800, color: C.chalk }}>{nf(hcFood(kcal, today))}</span>
+          </div>
+        )}
         {((kcal.log || {})[today] || []).length > 0 && (
           <div style={{ marginTop: 12 }}>
             {(kcal.log[today]).map(x => (
@@ -3193,6 +3291,7 @@ function SettingsTab({ settings, setSettings, history, profile, setProfile, onIm
       <div style={{ fontSize: 12, color: C.dim, textAlign: "center", marginTop: 26, lineHeight: 1.6, display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
         <Logo size={44} />
         <div>{T("about", { v: APP_VERSION })}<br />{T("privacy")}</div>
+        <button data-privacy onClick={() => { sfxTap(); openExternal(PRIVACY_URL); }} style={{ ...btnBase, background: "transparent", color: C.sky, fontSize: 12, padding: "2px 0" }}>{T("privacyLink")} ›</button>
       </div>
     </div>
   );
@@ -3956,6 +4055,13 @@ export default function App() {
   const [apkUpd, setApkUpd] = useState(null);
   const [dl, setDl] = useState(null); // small update: {kind: downloading|ready, v, pct, id}
   const [gh, setGh] = useState(() => (lastGh() || {}).v || null); // newest version on GitHub
+  // App: steps from Health Connect, once per start (the last 7 days, so a missed day is filled in too).
+  const [stepsSynced, setStepsSynced] = useState(false);
+  useEffect(() => {
+    if (!isNative || stepsSynced || !kcal || !kcal.healthOn) return;
+    setStepsSynced(true);
+    Promise.all([healthSteps(7), healthSteps(7, "dietaryEnergyConsumed")]).then(([m, f]) => { if (m || f) setKcalState(k => { const n = { ...k, steps: { ...(k.steps || {}), ...(m || {}) }, food: { ...(k.food || {}), ...(f || {}) } }; saveKcal(n); return n; }); });
+  }, [kcal]);
   // Website: the newest Android app version on GitHub for the menu (the API allows browsers; 60 calls an hour per IP).
   useEffect(() => {
     if (isNative) return;
