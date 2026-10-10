@@ -8,6 +8,20 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 
 <!-- New version: add a "## x.y.z (date)" section on top (web-only history uses "## Browser beta x.y.z (date)"). On a push to main, .github/workflows/build.yml builds everything and .github/scripts/releases.sh creates/updates the releases (commit = the push, or the one in a commit comment). -->
 
+## 1.0.1 (2026-10-10)
+
+A small update: it arrives inside the app by itself and switches on at the next start.
+
+- 3 rounds (~19 min) are now preselected and recommended; 2 rounds are for days when you're short on time.
+- Tap 🔥 or ⚡ at the top to open your profile; the time is shown next to the date.
+- Tap a day in the week strip: a green day opens that workout in History, any other day opens History.
+- A ? next to every exercise name opens its description (Home, workout, rest screen, summary, History, Profile, Settings → Exercises, swap sheet).
+- Adding an exercise to a past workout uses a sheet in the app's colours instead of the phone's dropdown.
+- The profile name is centred under the photo; the Save button no longer overlaps the line under it.
+- The big day title no longer touches the line under it.
+- The +100/+250/+500 buttons in Calories are gone.
+- The menu has "💛 Support the app": optional support on Patreon. The whole app stays free.
+
 ## 1.0.0 (2026-10-10)
 
 **The first Android app.** HW App moved from the browser into a real app. Compared with Browser beta 1.4.2:

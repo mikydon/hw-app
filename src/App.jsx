@@ -30,7 +30,7 @@ const THEMES = {
   slate:  { ink: "#15181d", panel: "#1f242b", panelHi: "#2a313a", line: "#3a434f", chalk: "#f1f4f8", dim: "#9aa6b4", edge: "#0e1115" },
   coffee: { ink: "#1c140f", panel: "#2a1f17", panelHi: "#382a20", line: "#4d3a2c", chalk: "#fbf3ec", dim: "#b8a291", edge: "#130d09" },
 };
-const APP_VERSION = "1.0.0";
+const APP_VERSION = "1.0.1";
 // Big Shoulders has no Cyrillic, so Oswald (also condensed) covers Ukrainian. The browser only
 // downloads the Oswald unicode ranges a page actually uses.
 const DISPLAY = "'Big Shoulders Display', 'Oswald', 'Arial Narrow', Impact, sans-serif";
@@ -970,11 +970,11 @@ function useBack(fn, on = true) {
   const ref = useRef(fn); ref.current = fn;
   useEffect(() => (on ? pushBack(() => ref.current && ref.current()) : undefined), [on]);
 }
-function Sheet({ title, onClose, children }) {
+function Sheet({ title, onClose, children, short }) {
   useBack(onClose);
   return createPortal(
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(5,10,24,0.82)", zIndex: 100, display: "flex", alignItems: "flex-end", justifyContent: "center", padding: "calc(12px + var(--sat)) 12px calc(12px + var(--sab))" }}>
-      <div onClick={e => e.stopPropagation()} className="sheetBox" style={{ background: C.panel, borderRadius: 22, padding: "22px 20px 26px", width: "100%", maxWidth: 460, border: `1px solid ${C.line}`, overflowY: "auto", overscrollBehavior: "contain", fontFamily: BODY }}>
+      <div onClick={e => e.stopPropagation()} className="sheetBox" style={{ ...(short ? { maxHeight: "70dvh" } : {}), background: C.panel, borderRadius: 22, padding: "22px 20px 26px", width: "100%", maxWidth: 460, border: `1px solid ${C.line}`, overflowY: "auto", overscrollBehavior: "contain", fontFamily: BODY }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, marginBottom: 14 }}>
           <div style={{ fontFamily: DISPLAY, fontSize: 30, fontWeight: 800, lineHeight: 1, color: C.chalk }}>{title}</div>
           <button onClick={onClose} aria-label={T("close")} style={{ ...btnBase, background: C.panelHi, color: C.dim, padding: "7px 12px", fontSize: 14 }}>✕</button>
@@ -994,6 +994,16 @@ function DiffChip({ id, pad = "1px 8px" }) {
   return <span style={{ fontSize: 11, fontWeight: 700, color: col, border: `1.5px solid ${col}55`, borderRadius: 99, padding: pad, whiteSpace: "nowrap" }}>{T("diff_" + d)}</span>;
 }
 
+// "?" next to an exercise name anywhere: opens its description sheet (one host in App).
+const SUPPORT_URL = "https://www.patreon.com/c/mikydon";
+let openHowToGlobal = null;
+function ExQ({ id, onOpen, style }) {
+  const go = e => { e.stopPropagation(); e.preventDefault(); sfxTap(); if (onOpen) onOpen(); else if (openHowToGlobal) openHowToGlobal(id); };
+  return (
+    <span role="button" tabIndex={0} data-exq={id} className="exq" aria-label={`${T("howTo")}: ${EX[id] ? EX[id].name : ""}`} onClick={go} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") go(e); }}
+      style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 20, height: 20, borderRadius: 99, border: `1.5px solid ${C.sky}`, color: C.sky, fontFamily: BODY, fontSize: 12, fontWeight: 800, marginLeft: 7, verticalAlign: "middle", cursor: "pointer", flexShrink: 0, lineHeight: 1, ...style }} />
+  );
+}
 function HowTo({ id, history, onClose, onSwap }) {
   const ex = EX[id];
   const best = bestFor(history, id);
@@ -1202,7 +1212,14 @@ function MenuButton({ open, onClick, btnRef, label }) {
   );
 }
 
-function TopBar({ screen, history, menuOpen, onMenu }) {
+// Current time (minutes), re-rendered every 20 s for the clock in the top bar.
+function useClock() {
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => { const iv = setInterval(() => setNow(new Date()), 20000); return () => clearInterval(iv); }, []);
+  return now;
+}
+function TopBar({ screen, history, menuOpen, onMenu, onGo }) {
+  const now = useClock();
   const today = dateKey();
   const st = streakInfo(history, today);
   const lv = levelInfo(totalXP(history));
@@ -1211,10 +1228,13 @@ function TopBar({ screen, history, menuOpen, onMenu }) {
       <div style={{ maxWidth: 460, margin: "0 auto", padding: "calc(10px + var(--sat)) 18px 10px", display: "flex", alignItems: "center", gap: 8 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div key={screen} className="titleIn" style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, lineHeight: 1, color: C.chalk }}>{T(SCREEN_TITLE[screen])}</div>
-          <div style={{ fontSize: 12, color: bdayToday() ? C.signal : C.dim, fontWeight: bdayToday() ? 800 : 400, marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{bdayToday() ? T("bdayTop") : capFirst(fmtDate(today, true))}</div>
+          <div style={{ display: "flex", gap: 5, fontSize: 12, color: bdayToday() ? C.signal : C.dim, fontWeight: bdayToday() ? 800 : 400, marginTop: 2, whiteSpace: "nowrap" }}>
+            <span style={{ overflow: "hidden", textOverflow: "ellipsis", minWidth: 0 }}>{bdayToday() ? T("bdayTop") : capFirst(fmtDate(today, true))}</span>
+            <span data-clock style={{ flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>· {now.toLocaleTimeString(LANG, { hour: "2-digit", minute: "2-digit" })}</span>
+          </div>
         </div>
-        <div style={chip(st.n ? "#ffa94d" : C.dim)} aria-label={T("streakAria", { n: st.n })}><span className={st.n ? "wiggle" : ""}>🔥</span>{st.n}</div>
-        <div style={chip(C.sky)} aria-label={T("levelAria", { n: lv.lvl })}>⚡{lv.lvl}</div>
+        <button onClick={() => onGo && onGo("profile")} data-chip="streak" style={{ ...btnBase, ...chip(st.n ? "#ffa94d" : C.dim), background: "transparent" }} aria-label={T("streakAria", { n: st.n })}><span className={st.n ? "wiggle" : ""}>🔥</span>{st.n}</button>
+        <button onClick={() => onGo && onGo("profile")} data-chip="level" style={{ ...btnBase, ...chip(C.sky), background: "transparent" }} aria-label={T("levelAria", { n: lv.lvl })}>⚡{lv.lvl}</button>
         <MenuButton open={menuOpen} onClick={onMenu} />
       </div>
     </div>
@@ -1285,7 +1305,16 @@ function MenuDrawer({ open, screen, history, profile, session, onGo, onResume, o
             );
           })}
         </div>
-        <div style={{ marginTop: "auto", padding: "10px 18px 14px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+        <div style={{ marginTop: "auto", padding: "0 18px" }}>
+          <button onClick={() => { sfxTap(); openExternal(SUPPORT_URL); }} data-support style={{ ...btnBase, width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 14, background: C.panelHi, color: C.chalk, textAlign: "left" }}>
+            <span style={{ fontSize: 18 }} aria-hidden="true">💛</span>
+            <span style={{ minWidth: 0 }}>
+              <span style={{ display: "block", fontSize: 14, fontWeight: 800 }}>{T("support")}</span>
+              <span style={{ display: "block", fontSize: 11, fontWeight: 500, color: C.dim, marginTop: 1 }}>{T("supportDesc")}</span>
+            </span>
+          </button>
+        </div>
+        <div style={{ padding: "10px 18px 14px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
           <span style={{ fontSize: 11, color: C.dim, fontFamily: BODY }}>HW App {APP_VERSION}</span>
           {!isNative && <button onClick={() => { sfxTap(); openExternal("https://github.com/mikydon/hw-app/releases/latest"); }} data-get-android style={{ ...btnBase, background: "transparent", color: C.mint, fontSize: 12, padding: "4px 0" }}>{T("getAndroid")}</button>}
           {onNews && <button onClick={onNews} data-news-btn style={{ ...btnBase, background: "transparent", color: C.sky, fontSize: 12, padding: "4px 0" }}>{T("newsLink")} ›</button>}
@@ -1571,7 +1600,7 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
   useLayoutEffect(() => { const n = uiForToday(ui, history, today, profile); if (n !== ui) setUi(n); });
   const auto = nextDayIdx(history);
   const [dayIdx, setDayIdx] = useState(auto);
-  const [rounds, setRounds] = useState(2);
+  const [rounds, setRounds] = useState(3); // 3 rounds recommended (more weekly sets); 2 when short on time
   const [howEx, setHowEx] = useState(null);
   const last = history[history.length - 1];
   const gap = last ? daysBetween(last.date, today) : null;
@@ -1658,20 +1687,21 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
       {onGo && <HintCard ui={ui} setUi={setUi} onGo={onGo} />}
       <div style={{ display: "flex", gap: 6, marginTop: 16 }} aria-label={T("weekLine", { count: TP("workouts", weekCount) })}>
         {week.map(w => (
-          <div key={w.k} style={{ flex: 1, textAlign: "center" }}>
+          <button key={w.k} data-week-day={w.k} onClick={() => onGo && onGo("history", w.on ? { edit: w.k } : null)} aria-label={`${w.lb} ${fmtDate(w.k)}${w.on ? " ✓" : ""}`}
+            style={{ ...btnBase, flex: 1, textAlign: "center", background: "transparent", padding: 0, color: "inherit" }}>
             <div style={{ fontSize: 11, color: w.isToday ? C.chalk : C.dim, fontWeight: w.isToday ? 700 : 500, marginBottom: 4 }}>{w.lb}</div>
             <div style={{ height: 30, borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 900,
               background: w.on ? C.mint : "transparent", color: C.ink, border: `1.5px solid ${w.on ? C.mint : w.isToday ? C.chalk : C.line}` }}>{w.on ? "✓" : ""}</div>
-          </div>
+          </button>
         ))}
       </div>
       <div style={{ fontSize: 12, color: C.dim, marginTop: 6 }}>{T("weekLine", { count: TP("workouts", weekCount) })}</div>
 
       <div style={{ fontSize: 14, color: C.dim, marginTop: 22 }}>{doneToday ? T("nextWorkout") : T("todayWorkout")}</div>
-      <div style={{ fontFamily: DISPLAY, fontWeight: 900, fontSize: fitSize(T("dayN", { d: day.id }).replace(/\s/g, "_"), doneToday ? 72 : 96, 6), lineHeight: 0.85, letterSpacing: -1, color: C.chalk, marginTop: 4 }}>
+      <div data-day-title style={{ fontFamily: DISPLAY, fontWeight: 900, fontSize: fitSize(T("dayN", { d: day.id }).replace(/\s/g, "_"), doneToday ? 72 : 96, 6), lineHeight: 0.85, paddingBottom: "0.16em", letterSpacing: -1, color: C.chalk, marginTop: 4 }}>
         {T("dayN", { d: day.id })}
       </div>
-      <div style={{ fontSize: 14, color: !doneToday && gap !== null && gap >= 2 ? C.signal : C.dim, marginTop: 10, lineHeight: 1.5 }}>{status}</div>
+      <div data-day-status style={{ fontSize: 14, color: !doneToday && gap !== null && gap >= 2 ? C.signal : C.dim, marginTop: 6, lineHeight: 1.5 }}>{status}</div>
       {!doneToday && st.gap === 2 && st.n > 0 && !st.frozenToday && freezesAvailable(history) > 0 && (
         <button onClick={onFreeze} style={{ ...ghostBtn, marginTop: 10, color: C.sky, borderColor: C.sky }}>{T("freezeOffer", { n: freezesAvailable(history) })}</button>
       )}
@@ -1699,7 +1729,7 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
             <button key={id} onClick={() => setHowEx(id)}
               style={{ ...btnBase, display: "flex", width: "100%", alignItems: "center", gap: 12, textAlign: "left", background: "transparent", color: C.chalk, padding: "14px 16px", borderRadius: 0, borderTop: i ? `1px solid ${C.line}` : "none" }}>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 16, fontWeight: 700 }}>{ex.name}</div>
+                <div style={{ fontSize: 16, fontWeight: 700 }}>{ex.name}<ExQ id={id} onOpen={() => setHowEx(id)} /></div>
                 <div style={{ fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2 }}>{ex.muscles}</div>
                 <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 5, flexWrap: "wrap" }}>
                   <RankBadge id={id} best={b} small />
@@ -1721,10 +1751,11 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
       <div style={{ fontSize: 12, color: C.dim, marginTop: 8 }}>{T("tapHint")}</div>
 
       <div style={{ display: "flex", gap: 8, marginTop: 14 }}>
-        {[2, 3].map(n => (
-          <button key={n} onClick={() => { sfxTap(); setRounds(n); }}
+        {[3, 2].map(n => (
+          <button key={n} onClick={() => { sfxTap(); setRounds(n); }} aria-pressed={rounds === n} data-rounds={n}
             style={{ ...btnBase, flex: 1, padding: "11px 8px", fontSize: 13, background: rounds === n ? C.panelHi : "transparent", color: rounds === n ? C.chalk : C.dim, border: `1.5px solid ${rounds === n ? C.chalk : C.line}` }}>
             {T("roundsBtn", { n, m: n === 2 ? 13 : 19 })}
+            {n === 3 && <span data-rec style={{ display: "block", fontSize: 10, fontWeight: 800, color: C.mint, marginTop: 2, letterSpacing: 0.3 }}>{T("roundsRec")}</span>}
           </button>
         ))}
       </div>
@@ -2015,9 +2046,6 @@ function Calories({ history, profile, setProfile, kcal, setKcal }) {
           <input value={amount} onChange={e => setAmount(e.target.value.replace(/[^0-9]/g, "").slice(0, 4))} onKeyDown={e => { if (e.key === "Enter") add(); }} inputMode="numeric" placeholder="kcal" aria-label={T("kcAmount")} style={{ ...field, flex: 1 }} />
           <input value={note} onChange={e => setNote(e.target.value)} onKeyDown={e => { if (e.key === "Enter") add(); }} placeholder={T("kcNote")} aria-label={T("kcNote")} style={{ ...field, flex: 1.6 }} />
         </div>
-        <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
-          {[100, 250, 500].map(n => <button key={n} onClick={() => { sfxTap(); setAmount(String((Number(amount) || 0) + n)); }} style={{ ...ghostBtn, flex: 1, padding: "8px 0" }}>+{n}</button>)}
-        </div>
         <button onClick={add} disabled={!Number(amount)} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 10, padding: 15, opacity: Number(amount) ? 1 : 0.5 }}>{Number(amount) ? T("kcAddBtn", { n: nf(Number(amount)) }) : T("kcAddBtn0")}</button>
         {((kcal.log || {})[today] || []).length > 0 && (
           <div style={{ marginTop: 12 }}>
@@ -2197,10 +2225,11 @@ function EntryEditor({ entry, nextDay, onSave, onDelete, onClose }) {
   const rowsFor = (dayId, rounds) => DAYS.find(d => d.id === dayId).ids.map(slot => ({ id: effId(slot), vals: Array(rounds).fill("") }));
   const [date, setDate] = useState(entry ? entry.date : today);
   const [day, setDay] = useState(entry ? entry.day : nextDay);
-  const [rounds, setRounds] = useState(entry ? Math.max(1, entry.rounds || 2) : 2);
+  const [rounds, setRounds] = useState(entry ? Math.max(1, entry.rounds || 2) : 3);
   const [rows, setRows] = useState(() => entry
     ? entry.items.map(it => ({ id: it.id, name: it.name, unit: it.unit, vals: Array.from({ length: Math.max(1, entry.rounds || it.res.length) }, (_, r) => toField(it.res[r])) }))
-    : rowsFor(nextDay, 2));
+    : rowsFor(nextDay, 3));
+  const [picking, setPicking] = useState(false);
   const [err, setErr] = useState("");
   const [confirmDel, setConfirmDel] = useState(false);
   const untouched = rows.every(r => r.vals.every(v => v === ""));
@@ -2260,6 +2289,7 @@ function EntryEditor({ entry, nextDay, onSave, onDelete, onClose }) {
                   <div style={{ flex: 1, minWidth: 0, fontSize: 15, fontWeight: 700, color: C.chalk }}>
                     {ex ? ex.name : r.name}
                     <span style={{ fontSize: 12, color: C.dim, fontWeight: 500 }}>{time ? ` (${T("secondsUnit")})` : ex && ex.unit ? ` (${perUnit(ex.unit)})` : ""}</span>
+                    {ex && <ExQ id={r.id} />}
                   </div>
                   <button onClick={() => removeRow(ri)} aria-label={T("removeEx", { name: ex ? ex.name : r.name })} style={{ ...btnBase, background: "transparent", color: "#ff8a80", fontSize: 15, padding: "4px 8px" }}>✕</button>
                 </div>
@@ -2276,14 +2306,35 @@ function EntryEditor({ entry, nextDay, onSave, onDelete, onClose }) {
             );
           })}
         </div>
-        <select value="" onChange={e => addRow(e.target.value)} aria-label={T("addEx")} style={{ ...field, width: "100%", fontWeight: 600, color: C.dim }}>
-          <option value="">{T("addEx")}</option>
-          {ALT_GROUPS.map((g, gi) => (
-            <optgroup key={gi} label={T("grp_" + GROUP_KEYS[gi])}>
-              {g.filter(id => !used.has(id)).map(id => <option key={id} value={id}>{EX[id].name}</option>)}
-            </optgroup>
-          ))}
-        </select>
+        {/* app-styled picker (the phone's own dropdown was full-screen and ignored the theme) */}
+        <button onClick={() => { sfxTap(); setPicking(true); }} data-add-ex style={{ ...btnBase, width: "100%", padding: "11px 12px", borderRadius: 11, border: `1.5px dashed ${C.line}`, background: "transparent", color: C.sky, fontSize: 15, fontWeight: 700, textAlign: "left" }}>{T("addEx")}</button>
+        {picking && (
+          <Sheet short title={T("addEx").replace(/^\S+\s/, "").replace(/…$/, "")} onClose={() => setPicking(false)}>
+            <div data-add-ex-sheet style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              {ALT_GROUPS.map((g, gi) => {
+                const left = g.filter(id => !used.has(id));
+                if (!left.length) return null;
+                return (
+                  <div key={gi}>
+                    <div style={{ fontSize: 12, color: C.dim, fontWeight: 800, letterSpacing: 0.5, textTransform: "uppercase", marginBottom: 6 }}>{T("grp_" + GROUP_KEYS[gi])}</div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                      {left.map(id => (
+                        <button key={id} data-pick-ex={id} onClick={() => { addRow(id); setPicking(false); }}
+                          style={{ ...btnBase, display: "flex", alignItems: "center", gap: 10, textAlign: "left", background: C.panelHi, color: C.chalk, padding: "11px 12px", border: `1.5px solid ${C.line}`, borderRadius: 13 }}>
+                          <span style={{ flex: 1, minWidth: 0 }}>
+                            <span style={{ display: "block", fontSize: 15, fontWeight: 700 }}>{EX[id].name}<ExQ id={id} /></span>
+                            <span style={{ display: "block", fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 1 }}>{EX[id].muscles}</span>
+                          </span>
+                          <DiffChip id={id} />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </Sheet>
+        )}
         {err && <div role="alert" style={{ fontSize: 13, color: "#ff8a80", fontWeight: 600 }}>{err}</div>}
         <button onClick={save} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk) }}>{T("save")}</button>
         {!isNew && (
@@ -2297,10 +2348,18 @@ function EntryEditor({ entry, nextDay, onSave, onDelete, onClose }) {
   );
 }
 
-function HistoryTab({ history, onDelete, onSaveEntry }) {
+function HistoryTab({ history, onDelete, onSaveEntry, editDate, onEditOpened }) {
   const [confirmDel, setConfirmDel] = useState(null);
   const [open, setOpen] = useState(null);
   const [editing, setEditing] = useState(null); // index, "new" or null
+  // opened from a green day in the week strip on Home: straight into that day's workout
+  useEffect(() => {
+    if (!editDate) return;
+    let idx = -1;
+    history.forEach((e, i) => { if (e.date === editDate) idx = i; });
+    if (idx >= 0) setEditing(idx);
+    onEditOpened && onEditOpened();
+  }, [editDate]);
   const sets = history.reduce((a, e) => a + setsIn(e), 0);
   const prs = history.reduce((a, e) => a + ((e.prs && e.prs.length) || 0), 0);
   const tiles = [[T("tileTrainings"), history.length], [T("tileSets"), sets], [T("tilePRs"), prs]];
@@ -2352,7 +2411,7 @@ function HistoryTab({ history, onDelete, onSaveEntry }) {
                     return (
                       <div key={it.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderTop: `1px solid ${C.line}` }}>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: 14, fontWeight: 600, color: C.chalk }}>{s.prs && s.prs.includes(it.id) ? "🏆 " : ""}{exName(it)}</div>
+                          <div style={{ fontSize: 14, fontWeight: 600, color: C.chalk }}>{s.prs && s.prs.includes(it.id) ? "🏆 " : ""}{exName(it)}{EX[it.id] && <ExQ id={it.id} />}</div>
                           {RANK_AT[it.id] && <div style={{ fontSize: 12, color: r.color, fontWeight: 700 }}>{r.icon} {T("rankThen", { rank: r.name })}</div>}
                         </div>
                         <div style={{ fontFamily: DISPLAY, fontSize: 20, fontWeight: 800, color: C.chalk, whiteSpace: "nowrap" }}>{it.res.map(v => fmtRes(v, "")).join(" / ")}<span style={{ fontFamily: BODY, fontSize: 11, color: C.dim, marginLeft: 3 }}>{unitStr(it.unit)}</span></div>
@@ -2412,15 +2471,18 @@ function ProfileTab({ history, profile, setProfile, onFreeze, kcal }) {
         </button>
         {err && <div style={{ fontSize: 13, color: "#ff8a80", marginTop: 8 }}>{err}</div>}
         {editing ? (
-          <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+          <div data-name-edit style={{ display: "flex", gap: 8, marginTop: 12, marginBottom: 10 }}>
             <input value={name} onChange={e => setName(e.target.value.slice(0, 24))} autoFocus aria-label={T("nameLabel")}
               style={{ fontFamily: BODY, fontSize: 18, fontWeight: 700, padding: "8px 12px", borderRadius: 12, border: `1.5px solid ${C.line}`, background: C.panel, color: C.chalk, width: 180, outline: "none" }} />
             <button onClick={() => { setProfile({ ...profile, name: name.trim() || T("defaultName") }); setEditing(false); sfxCheck(); }} className="b3d" style={{ ...btnBase, background: C.signal, color: C.signalInk, padding: "8px 14px", "--e": EDGE[C.signal] }}>{T("save")}</button>
           </div>
         ) : (
-          <button onClick={() => { setName(profile.name || ""); setEditing(true); }} style={{ ...btnBase, background: "transparent", color: C.chalk, marginTop: 10, padding: "2px 6px" }}>
-            <span style={{ fontFamily: DISPLAY, fontSize: 36, fontWeight: 900 }}>{profile.name || T("defaultName")}</span>
-            <span style={{ fontSize: 13, color: C.dim, marginLeft: 6 }}>✏️</span>
+          <button onClick={() => { setName(profile.name || ""); setEditing(true); }} aria-label={`${T("nameLabel")}: ${profile.name || T("defaultName")}`} data-profile-name style={{ ...btnBase, background: "transparent", color: C.chalk, marginTop: 10, padding: "2px 0" }}>
+            {/* the pencil hangs outside the name, so the name itself stays centred under the photo */}
+            <span style={{ position: "relative", display: "inline-block", fontFamily: DISPLAY, fontSize: 36, fontWeight: 900 }}>
+              {profile.name || T("defaultName")}
+              <span aria-hidden="true" data-pencil style={{ position: "absolute", left: "100%", top: "50%", transform: "translateY(-50%)", marginLeft: 8, width: 26, height: 26, borderRadius: 99, background: C.panelHi, border: `1px solid ${C.line}`, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: BODY, fontSize: 12 }}>✏️</span>
+            </span>
           </button>
         )}
         <div style={{ fontSize: 13, color: bdayToday() ? C.signal : C.dim, fontWeight: bdayToday() ? 800 : 400, marginTop: 2 }}>{bdayToday() ? T("bdayHero") : since ? T("since", { date: fmtDate(since, true) }) : T("newMember")}</div>
@@ -2470,7 +2532,7 @@ function ProfileTab({ history, profile, setProfile, onFreeze, kcal }) {
           const r = RANKS[rankIdx(id, b)];
           return (
             <button key={id} onClick={() => setHowEx(id)} style={{ ...btnBase, textAlign: "left", background: C.panel, border: `1.5px solid ${r.color}66`, padding: "10px 12px", color: C.chalk }}>
-              <div style={{ fontSize: 13, fontWeight: 700, lineHeight: 1.25 }}>{EX[id].name}</div>
+              <div style={{ fontSize: 13, fontWeight: 700, lineHeight: 1.25 }}>{EX[id].name}<ExQ id={id} onOpen={() => setHowEx(id)} style={{ width: 17, height: 17, fontSize: 10, marginLeft: 5 }} /></div>
               <div style={{ fontSize: 13, color: r.color, fontWeight: 700, marginTop: 4 }}>{r.icon} {r.name}<span style={{ color: C.dim, fontWeight: 500 }}>{b !== null ? T("maxBest", { v: `${b}${EX[id].type === "time" ? " s" : ""}` }) : ""}</span></div>
             </button>
           );
@@ -2568,7 +2630,7 @@ function ExercisesPage({ settings, set, history, onBack }) {
                 return (
                   <div key={id} style={{ display: "flex", alignItems: "center", borderTop: i ? `1px solid ${C.line}` : "none", opacity: on ? 1 : 0.72 }}>
                     <button onClick={() => setHowEx(id)} style={{ ...btnBase, flex: 1, minWidth: 0, textAlign: "left", background: "transparent", color: C.chalk, padding: "12px 8px 12px 16px", borderRadius: 0 }}>
-                      <div style={{ fontSize: 15, fontWeight: 700 }}>{ex.name}</div>
+                      <div style={{ fontSize: 15, fontWeight: 700 }}>{ex.name}<ExQ id={id} onOpen={() => setHowEx(id)} /></div>
                       <div style={{ fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2 }}>{ex.muscles}</div>
                       <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 5 }}>
                         {d && <span style={{ fontSize: 11, fontWeight: 700, color: C.signal, border: `1.5px solid ${C.signal}55`, borderRadius: 99, padding: "1px 8px" }}>{T("dayN", { d })}</span>}
@@ -2829,7 +2891,7 @@ function SwapSheet({ item, exclude, history, onPick, onClose }) {
           return (
             <button key={id} onClick={() => onPick(id)} style={{ ...btnBase, textAlign: "left", background: C.panelHi, color: C.chalk, padding: "12px 14px", border: `1.5px solid ${C.line}`, display: "flex", alignItems: "center", gap: 10 }}>
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 15, fontWeight: 700 }}>{ex.name}</div>
+                <div style={{ fontSize: 15, fontWeight: 700 }}>{ex.name}<ExQ id={id} /></div>
                 <div style={{ fontSize: 12, color: C.dim, marginTop: 2 }}>{ex.muscles}{l ? T("lastShort", { v: l.res.map(r => fmtRes(r, "")).join("/") }) : ""}</div>
               </div>
               <DiffChip id={id} pad="2px 8px" />
@@ -2900,7 +2962,7 @@ function Work({ item, rounds, history, sessionResults, onRecord, onSwap, exclude
       {how && <HowTo id={item.id} history={history} onClose={() => setHow(false)} onSwap={onSwap && ph === "ready" ? () => { sfxTap(); setHow(false); setSwap(true); } : null} />}
       {swap && <SwapSheet item={item} exclude={exclude || []} history={history} onClose={() => setSwap(false)} onPick={id => { setSwap(false); sfxCheck(); onSwap(item.slot, id); }} />}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10 }}>
-        <div style={{ fontFamily: DISPLAY, fontSize: fitSize(ex.name, 46), fontWeight: 900, lineHeight: 0.95, color: C.chalk, flex: 1, minWidth: 0, hyphens: "auto", overflowWrap: "break-word" }}>{ex.name}</div>
+        <div style={{ fontFamily: DISPLAY, fontSize: fitSize(ex.name, 46), fontWeight: 900, lineHeight: 0.95, color: C.chalk, flex: 1, minWidth: 0, hyphens: "auto", overflowWrap: "break-word" }}>{ex.name}<ExQ id={item.id} onOpen={() => setHow(true)} style={{ width: 24, height: 24, fontSize: 14, marginLeft: 8, verticalAlign: "0.15em" }} /></div>
         <div style={{ display: "flex", flexDirection: "column", gap: 6, flexShrink: 0 }}>
           <button onClick={() => setHow(true)} style={{ ...ghostBtn, padding: "8px 12px", whiteSpace: "nowrap" }}>{T("howTo")}</button>
           {onSwap && ph === "ready" && <button onClick={() => { sfxTap(); setSwap(true); }} style={{ ...ghostBtn, padding: "8px 12px", color: C.sky, borderColor: `${C.sky}88`, whiteSpace: "nowrap" }}>{T("swap")}</button>}
@@ -3008,7 +3070,7 @@ function Rest({ rest, nextItem, rounds, onEnd, onAdd }) {
         </Ring>
       </div>
       <div style={{ marginTop: 22, fontSize: 13, color: C.dim }}>{T("next")}</div>
-      <div style={{ fontFamily: DISPLAY, fontSize: 36, fontWeight: 800, color: C.chalk, lineHeight: 1.05 }}>{ex.name}</div>
+      <div style={{ fontFamily: DISPLAY, fontSize: 36, fontWeight: 800, color: C.chalk, lineHeight: 1.05 }}>{ex.name}<ExQ id={nextItem.id} style={{ width: 22, height: 22, fontSize: 13, verticalAlign: "0.2em" }} /></div>
       <div style={{ fontSize: 13, color: C.dim, marginTop: 4 }}>{T("prepare")}</div>
       {(rest.tip || rest.moti) && (
         <div style={{ marginTop: 18, background: C.panel, border: `1px solid ${C.line}`, borderRadius: 16, padding: "12px 14px", textAlign: "left" }}>
@@ -3168,7 +3230,7 @@ function Summary({ entry, xpBefore = 0, xpGained, newCh = [], newAch = [], histo
       <div style={{ marginTop: 16, background: C.panel, border: `1px solid ${C.line}`, borderRadius: 18 }}>
         {entry.items.map((it, i) => (
           <div key={it.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, padding: "13px 16px", borderTop: i ? `1px solid ${C.line}` : "none" }}>
-            <div style={{ fontSize: 15, fontWeight: 600, color: C.chalk }}>{entry.prs && entry.prs.includes(it.id) ? "🏆 " : ""}{exName(it)}</div>
+            <div style={{ fontSize: 15, fontWeight: 600, color: C.chalk }}>{entry.prs && entry.prs.includes(it.id) ? "🏆 " : ""}{exName(it)}{EX[it.id] && <ExQ id={it.id} />}</div>
             <div style={{ fontFamily: DISPLAY, fontSize: 22, fontWeight: 800, color: C.chalk, whiteSpace: "nowrap" }}>{it.res.map(r => fmtRes(r, "")).join(" / ")}<span style={{ fontFamily: BODY, fontSize: 11, color: C.dim, marginLeft: 4 }}>{unitStr(it.unit)}</span></div>
           </div>
         ))}
@@ -3387,7 +3449,10 @@ export default function App() {
 
   useEffect(() => { if (!session || sessionOpen) window.scrollTo?.(0, 0); }, [session?.phase, session?.pos]);
   useEffect(() => { window.scrollTo?.(0, 0); }, [screen, sessionOpen]);
-  const go = id => { if (id !== screen) sfxTap(); setScreen(id); setMenuOpen(false); if (session) setSessionOpen(false); };
+  const [histEdit, setHistEdit] = useState(null); // date whose workout opens in the History editor
+  const go = (id, opt) => { if (id !== screen) sfxTap(); setScreen(id); setMenuOpen(false); if (session) setSessionOpen(false); setHistEdit(opt && opt.edit ? opt.edit : null); };
+  const [howId, setHowId] = useState(null);
+  openHowToGlobal = setHowId;
   // Android back with nothing open: minimize the workout, then go Home, then leave the app.
   useEffect(() => {
     setRootBack(() => {
@@ -3420,6 +3485,7 @@ export default function App() {
         .scr{animation:scrIn .28s ease-out both}
         :root{--sat:var(--safe-area-inset-top,env(safe-area-inset-top,0px));--sab:var(--safe-area-inset-bottom,env(safe-area-inset-bottom,0px))}
         .sheetBox{box-sizing:border-box;max-height:86vh;max-height:calc(100dvh - 24px - var(--sat) - var(--sab))}
+        .exq::after{content:"?"}
         .noBar{scrollbar-width:none}.noBar::-webkit-scrollbar{display:none}
         @keyframes bump{0%{transform:scale(.82)}55%{transform:scale(1.12)}100%{transform:scale(1)}}
         .bump{animation:bump .22s ease-out}
@@ -3461,11 +3527,11 @@ export default function App() {
           )}
           {(!session || !sessionOpen) && (
             <>
-              <TopBar screen={screen} history={history} menuOpen={menuOpen} onMenu={() => { sfxTap(); setMenuOpen(o => !o); }} />
+              <TopBar screen={screen} history={history} menuOpen={menuOpen} onGo={go} onMenu={() => { sfxTap(); setMenuOpen(o => !o); }} />
               <div key={screen}>
                 {screen === "train" && <TrainTab history={history} onStart={start} onFreeze={applyFreeze} ui={ui} setUi={setUi} active={session} onResume={resume} profile={profile} onGo={go} upd={updCard ? { open: () => { setUpdCard(false); setNewsAt(APP_VERSION); setNewsOpen(true); }, close: () => setUpdCard(false) } : null}
                   apk={apkUpd ? { info: apkUpd, close: () => setApkUpd(null) } : null} />}
-                {screen === "history" && <HistoryTab history={history}
+                {screen === "history" && <HistoryTab history={history} editDate={histEdit} onEditOpened={() => setHistEdit(null)}
                   onDelete={idx => editHistory(h => h.filter((_, i) => i !== idx))}
                   onSaveEntry={(idx, entry) => editHistory(h => (idx === null ? [...h, entry] : h.map((e, i) => (i === idx ? entry : e))))} />}
                 {screen === "profile" && <ProfileTab history={history} profile={profile} setProfile={setProfile} onFreeze={applyFreeze} kcal={kcal} />}
@@ -3480,6 +3546,7 @@ export default function App() {
           )}
           <MenuDrawer open={menuOpen} screen={screen} history={history} profile={profile} session={session && session.phase !== "summary" ? session : null}
             onGo={go} onResume={resume} onClose={() => setMenuOpen(false)} onNews={() => { setMenuOpen(false); setNewsOpen(true); }} />
+          {howId && <HowTo id={howId} history={history} onClose={() => setHowId(null)} />}
           {newsOpen && <WhatsNew at={newsAt} onClose={() => { setNewsOpen(false); setNewsAt(null); if (settings.seenVersion !== APP_VERSION) setSettings({ ...settings, seenVersion: APP_VERSION }); }} />}
         </>
       )}

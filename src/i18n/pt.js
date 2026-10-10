@@ -38,6 +38,8 @@ export default {
     welcomeMove: "Usava o HW App no navegador? Traga seus dados: no navegador Ajustes → Salvar backup; depois aqui Ajustes → Restaurar backup.",
     welcomeMoveBtn: "Abrir Ajustes",
     getAndroid: "📱 App para Android",
+    support: "Apoiar o app",
+    supportDesc: "Patreon · opcional, o app continua grátis",
     hintTitle: "Você sabia?",
     hintGo: "Mostrar",
     hint_themes: "Quer outra cor? Em Ajustes → Aparência há 8 temas.",
@@ -161,7 +163,7 @@ export default {
     streakAtRisk: "Hoje é dia de treino. Se você pular, sua sequência de 🔥 {n} acaba amanhã.",
     trainingDay: "Hoje é dia de treino. Último treino: {date} ({ago}).",
     welcomeTitle: "Boas-vindas! 👋",
-    welcome1: "Você treina em casa, sem equipamento, por ~13 minutos. Você alterna os dias A, B e C e treina dia sim, dia não. Cada treino tem um aquecimento, depois 4 exercícios em circuito (2 ou 3 rodadas) e um alongamento opcional.",
+    welcome1: "Você treina em casa, sem equipamento, por ~19 minutos. Você alterna os dias A, B e C e treina dia sim, dia não. Cada treino tem um aquecimento, depois 4 exercícios em circuito (2 ou 3 rodadas) e um alongamento opcional.",
     welcome2: "Toque num exercício para ver um desenho, as instruções e um vídeo. Se um exercício não funcionar para você, troque durante o treino com o botão ⇄. Coloque seu nome e foto no perfil (canto superior direito).",
     weekLine: "Esta semana: {count}. Meta: 3–4 (dia sim, dia não).",
     nextWorkout: "Próximo treino",
@@ -177,6 +179,7 @@ export default {
     tapInfo: "toque para ver",
     tapHint: "Toque num exercício: desenho, instruções, vídeo e patentes.",
     roundsBtn: "{n} rodadas, ~{m} min",
+    roundsRec: "recomendado",
     roundsHint: "3 rodadas significam mais séries por semana, então você evolui mais rápido. Sem tempo? 2 rodadas já bastam.",
     startDay: "Começar o dia {d}",
 
@@ -717,6 +720,15 @@ export default {
     ["Sem internet", "as fontes vinham do Google, sem internet o app ficava diferente.", "as fontes estão dentro do app, tudo funciona offline."],
     ["Botão voltar", "–", "fecha uma janela ou o menu; num treino ele leva ao início e o treino continua."],
     ["Números de versão", "Browser beta 1.0.0 a 1.4.2.", "a contagem recomeça em 1.0.0, a primeira versão do app."],
+  ],
+  news101: [
+    "Agora 3 rodadas (~19 min) vêm pré-selecionadas e recomendadas; 2 rodadas para dias com pouco tempo.",
+    "Toque em 🔥 ou ⚡ no topo para abrir o perfil; ao lado da data aparece a hora.",
+    "Toque num dia da semana: um dia verde abre aquele treino no Histórico, outro dia abre o Histórico.",
+    "Um ? ao lado de cada exercício abre a descrição.",
+    "Adicionar um exercício a um treino antigo agora é uma janela com as cores do app.",
+    "O nome no perfil está centralizado; o título grande do dia não encosta mais na linha de baixo; os botões +100/+250/+500 em Calorias sumiram.",
+    "No menu há «💛 Apoiar o app»: apoio opcional no Patreon. O app inteiro continua grátis.",
   ],
 
   quotes: [
