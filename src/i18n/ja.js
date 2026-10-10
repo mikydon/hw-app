@@ -326,7 +326,7 @@ export default {
     skipRestHint: "熱や痛みがあるときは休むのが正解です。トレーニングは元気になるまで待っています。",
     skipUse: "🧊 フリーズを使う（{n}）",
     skipNoFreeze: "フリーズが残っていないので、今日で連続記録が途切れます。理由は履歴のカレンダーに保存されます。",
-    skipSave: "理由を保存",
+    skipReasonSave: "理由を保存",
     skipPick: "先に理由を選んでください。",
     skipSaved: "理由：{r}",
     pickDay: "日を選ぶ",

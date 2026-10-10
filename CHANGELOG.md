@@ -22,7 +22,8 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 | Texts | some still mentioned tabs at the bottom, clearing the browser (in the app) or silent mode for vibration | reviewed in all 14 languages: ☰ menu → Profile, backups when changing phones, alarm vibration, Health Connect with steps, weight and height |
 | Privacy policy | steps and food calories | also weight and height ([privacy.html](https://mikydon.github.io/hw-app/privacy.html)) |
 | Calories on the main screen | an input field, an Add button and week dots in one crowded card | one clean card: eaten vs target, a thin bar and one line; tapping it opens Calories, where food is logged |
-| Looks | solid coloured boxes in every layout | new **Liquid glass** layout (first in the list): see-through frosted boxes over soft colour blobs of the theme, like on iPhones |
+| Looks | solid coloured boxes in every layout | new **Liquid glass** layout (first in the list): see-through frosted boxes over soft colour blobs of the theme, like on iPhones; the top bar, the floating Start bar, the mini player, the ☰ menu and the sheets are frosted glass too |
+| "Can't train today" sheet | its save button said "Skip and save workout" (two texts had the same name since 1.2.0, so one replaced the other) | "Save the reason" again; the translation check now catches a name used twice |
 
 ## 1.2.1 (2026-10-10)
 

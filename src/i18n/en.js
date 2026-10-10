@@ -326,7 +326,7 @@ export default {
     skipRestHint: "With a fever or pain, rest is the right call. The workout will wait until you're well.",
     skipUse: "🧊 Use a freeze ({n})",
     skipNoFreeze: "You have no freeze left, so the streak breaks today. The reason is still saved in the History calendar.",
-    skipSave: "Save the reason",
+    skipReasonSave: "Save the reason",
     skipPick: "Pick a reason first.",
     skipSaved: "Reason: {r}",
     pickDay: "Pick a day",

@@ -326,7 +326,7 @@ export default {
     skipRestHint: "Lázas betegségnél vagy fájdalomnál a pihenés a jó döntés. Az edzés megvár, amíg meggyógyulsz.",
     skipUse: "🧊 Fagyasztás használata ({n})",
     skipNoFreeze: "Nincs több fagyasztásod, így a sorozat ma megszakad. Az ok azért bekerül a Történet naptárába.",
-    skipSave: "Ok mentése",
+    skipReasonSave: "Ok mentése",
     skipPick: "Előbb válassz okot.",
     skipSaved: "Ok: {r}",
     pickDay: "Válassz napot",

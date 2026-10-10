@@ -326,7 +326,7 @@ export default {
     skipRestHint: "Przy gorączce lub bólu odpoczynek to dobry wybór. Trening poczeka, aż wyzdrowiejesz.",
     skipUse: "🧊 Użyj zamrożenia ({n})",
     skipNoFreeze: "Nie masz zamrożenia, więc seria dziś się przerwie. Powód i tak zapisze się w kalendarzu w Historii.",
-    skipSave: "Zapisz powód",
+    skipReasonSave: "Zapisz powód",
     skipPick: "Najpierw wybierz powód.",
     skipSaved: "Powód: {r}",
     pickDay: "Wybierz dzień",

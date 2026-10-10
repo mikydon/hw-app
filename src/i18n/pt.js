@@ -326,7 +326,7 @@ export default {
     skipRestHint: "Com febre ou dor, descansar é a escolha certa. O treino espera até estares bem.",
     skipUse: "🧊 Usar congelamento ({n})",
     skipNoFreeze: "Não tens congelamentos, por isso a sequência quebra hoje. O motivo fica guardado na mesma no calendário do Histórico.",
-    skipSave: "Guardar motivo",
+    skipReasonSave: "Guardar motivo",
     skipPick: "Escolhe primeiro um motivo.",
     skipSaved: "Motivo: {r}",
     pickDay: "Escolha um dia",

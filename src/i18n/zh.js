@@ -326,7 +326,7 @@ export default {
     skipRestHint: "发烧或疼痛时，休息才是对的。训练会等你好起来。",
     skipUse: "🧊 使用冻结（{n}）",
     skipNoFreeze: "你没有冻结了，所以今天连胜会中断。原因仍会保存在历史日历中。",
-    skipSave: "保存原因",
+    skipReasonSave: "保存原因",
     skipPick: "请先选择原因。",
     skipSaved: "原因：{r}",
     pickDay: "选择训练日",

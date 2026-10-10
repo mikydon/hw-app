@@ -35,6 +35,18 @@ for (const code of codes) {
     if (ph(a) !== ph(b)) errs.push(`placeholders ${p}: "${ph(b)}" vs "${ph(a)}"`);
   };
   walk(en, loc, "");
+  // A key written twice in one section: JavaScript keeps only the last one, so the first text silently disappears
+  // (found Oct 10, 2026: two "skipSave" keys since 1.2.0).
+  const dupCheck = (file, label) => {
+    let sec = "", seen = new Set();
+    for (const line of fs.readFileSync(path.join(dir, file), "utf8").split("\n")) {
+      const top = line.match(/^  (\w+):\s*\{\s*$/); if (top) { sec = top[1]; seen = new Set(); continue; }
+      const m = line.match(/^    (\w+)\s*:/); if (!m) continue;
+      if (seen.has(m[1])) errs.push(`duplicate key ${sec}.${m[1]}${label}`); seen.add(m[1]);
+    }
+  };
+  dupCheck(code + ".js", "");
+  if (code === codes[0]) dupCheck("en.js", " (in en.js)");
   const pr = new Intl.PluralRules(code);
   const need = new Set(); for (let n = 0; n <= 200; n++) need.add(pr.select(n));
   for (const k of Object.keys(en.pl)) {

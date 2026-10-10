@@ -326,7 +326,7 @@ export default {
     skipRestHint: "열이나 통증이 있을 땐 쉬는 게 맞아요. 운동은 나을 때까지 기다려요.",
     skipUse: "🧊 동결 사용 ({n})",
     skipNoFreeze: "남은 동결이 없어서 오늘 연속 기록이 끊겨요. 이유는 기록 달력에 그대로 저장돼요.",
-    skipSave: "이유 저장",
+    skipReasonSave: "이유 저장",
     skipPick: "먼저 이유를 고르세요.",
     skipSaved: "이유: {r}",
     pickDay: "날 고르기",

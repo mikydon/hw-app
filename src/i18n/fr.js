@@ -326,7 +326,7 @@ export default {
     skipRestHint: "Avec de la fièvre ou une douleur, le repos est le bon choix. La séance attendra que tu ailles mieux.",
     skipUse: "🧊 Utiliser un gel ({n})",
     skipNoFreeze: "Tu n'as plus de gel, donc la série s'arrête aujourd'hui. La raison est quand même notée dans le calendrier de l'Historique.",
-    skipSave: "Enregistrer la raison",
+    skipReasonSave: "Enregistrer la raison",
     skipPick: "Choisis d'abord une raison.",
     skipSaved: "Raison : {r}",
     pickDay: "Choisis un jour",

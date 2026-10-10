@@ -326,7 +326,7 @@ export default {
     skipRestHint: "Bei Fieber oder Schmerzen ist Pause die richtige Wahl. Das Training wartet, bis du wieder fit bist.",
     skipUse: "🧊 Freeze nutzen ({n})",
     skipNoFreeze: "Du hast keinen Freeze mehr, also reißt die Serie heute. Der Grund wird trotzdem im Kalender im Verlauf gespeichert.",
-    skipSave: "Grund speichern",
+    skipReasonSave: "Grund speichern",
     skipPick: "Wähle zuerst einen Grund.",
     skipSaved: "Grund: {r}",
     pickDay: "Tag wählen",

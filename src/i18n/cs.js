@@ -326,7 +326,7 @@ export default {
     skipRestHint: "Při nemoci s horečkou nebo při bolesti je odpočinek správná volba. Trénink počká.",
     skipUse: "🧊 Použít zmrazení ({n})",
     skipNoFreeze: "Nemáš žádné zmrazení, takže série se dnes přeruší. Důvod se i tak uloží do kalendáře v Historii.",
-    skipSave: "Uložit důvod",
+    skipReasonSave: "Uložit důvod",
     skipPick: "Nejdřív vyber důvod.",
     skipSaved: "Důvod: {r}",
     pickDay: "Vyber den",
