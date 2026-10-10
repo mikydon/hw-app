@@ -65,7 +65,8 @@ def also(ver):
     if z or y == 0 or (x, y - 1) not in small: return ""
     items = sorted(small[(x, y - 1)], key=lambda t: [int(n) for n in t[0].split(".")])
     first, last = items[0][0], items[-1][0]
-    txt = f"\n\n### Also in this update: the small updates {first}–{last}\n\nIf you skipped them, you get them now too.\n"
+    what = f"the small update {first}" if first == last else f"the small updates {first}–{last}"
+    txt = f"\n\n### Also in this update: {what}\n\nIf you skipped {'it' if first == last else 'them'}, you get {'it' if first == last else 'them'} now too.\n"
     for v, b in items:
         txt += f"\n#### {v}\n\n{b}\n"
     return txt

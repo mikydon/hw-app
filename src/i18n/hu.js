@@ -26,6 +26,7 @@ export default {
     newsLink: "Újdonságok",
     newsSmall: "Kis frissítés, semmit nem kell újra letölteni.",
     newsAlso: "A kis frissítések is: {a}–{b}",
+    newsAlso1: "A(z) {a} kis frissítés is",
     newsAlsoD: "Ha kihagytad őket, most azokat is megkapod.",
     newsSwipe: "Kis frissítések: húzd balra vagy koppints ide ›",
     newsPrev: "Előző",
@@ -883,6 +884,9 @@ export default {
   news142: [
     "Az „Újdonságok” több oldalas: az első a nagy frissítés, balra húzva jönnek a kicsik.",
     "Kis frissítés után a kezdőképernyőn egy kártya egyből az oldalára visz. Csak először jelenik meg.",
+  ],
+  news121: [
+    "Ha egy nagy frissítés csak egy kis frissítést tartalmaz, az „Újdonságok” „A(z) 1.1.1 kis frissítés is” szöveget írja „1.1.1–1.1.1” helyett.",
   ],
   news12: [
     ["📱 Nagy frissítések (új APK)", "A „Letöltés” megnyitotta a böngészőt, és az APK-t a letöltések között kellett megkeresni.", "Az appban töltődik le: látod a százalékot és a telő csíkot (minden képernyő tetején is egy vékony vonalat). Csak a Telepítésre koppintva települ, edzés közben soha."],

@@ -26,6 +26,7 @@ export default {
     newsLink: "Novedades",
     newsSmall: "Una actualización pequeña, no hay que descargar nada nuevo.",
     newsAlso: "También las actualizaciones pequeñas {a}–{b}",
+    newsAlso1: "También la actualización pequeña {a}",
     newsAlsoD: "Si te las saltaste, ahora también las tienes.",
     newsSwipe: "Actualizaciones pequeñas: desliza a la izquierda o toca aquí ›",
     newsPrev: "Anterior",
@@ -883,6 +884,9 @@ export default {
   news142: [
     "«Novedades» tiene páginas: la primera es la gran actualización; desliza a la izquierda para las pequeñas.",
     "Tras una actualización pequeña, una tarjeta en el inicio te lleva a su página. Solo aparece la primera vez.",
+  ],
+  news121: [
+    "Cuando una actualización grande incluye solo una pequeña, «Novedades» dice «También la actualización pequeña 1.1.1» en vez de «1.1.1–1.1.1».",
   ],
   news12: [
     ["📱 Actualizaciones grandes (APK nuevo)", "«Descargar» abría el navegador y tenías que buscar el APK en tus descargas.", "Se descarga dentro de la app: ves el porcentaje y una barra que se llena (también una línea fina arriba en cada pantalla). Se instala solo cuando tocas Instalar, nunca durante un entrenamiento."],

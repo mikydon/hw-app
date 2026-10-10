@@ -26,6 +26,7 @@ export default {
     newsLink: "Nouveautés",
     newsSmall: "Petite mise à jour, rien de nouveau à télécharger.",
     newsAlso: "Aussi les petites mises à jour {a}–{b}",
+    newsAlso1: "Aussi la petite mise à jour {a}",
     newsAlsoD: "Si tu les as ratées, tu les as maintenant aussi.",
     newsSwipe: "Petites mises à jour : glisse vers la gauche ou touche ici ›",
     newsPrev: "Précédente",
@@ -883,6 +884,9 @@ export default {
   news142: [
     "« Nouveautés » a des pages : la première est la grande mise à jour, glisse vers la gauche pour les petites.",
     "Après une petite mise à jour, une carte sur l'accueil t'emmène à sa page. Elle n'apparaît que la première fois.",
+  ],
+  news121: [
+    "Quand une grande mise à jour n'en contient qu'une petite, « Nouveautés » affiche « Aussi la petite mise à jour 1.1.1 » au lieu de « 1.1.1–1.1.1 ».",
   ],
   news12: [
     ["📱 Grosses mises à jour (nouvel APK)", "« Télécharger » ouvrait le navigateur et il fallait retrouver l'APK dans tes téléchargements.", "Il se télécharge dans l'appli : tu vois le pourcentage et une barre qui se remplit (aussi une fine ligne en haut de chaque écran). Il s'installe seulement quand tu touches Installer, jamais pendant un entraînement."],

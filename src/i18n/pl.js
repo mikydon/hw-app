@@ -26,6 +26,7 @@ export default {
     newsLink: "Co nowego",
     newsSmall: "Mała aktualizacja, nic nowego nie trzeba pobierać.",
     newsAlso: "Także małe aktualizacje {a}–{b}",
+    newsAlso1: "Także mała aktualizacja {a}",
     newsAlsoD: "Jeśli je pominąłeś, masz je teraz też.",
     newsSwipe: "Małe aktualizacje: przesuń w lewo albo stuknij tutaj ›",
     newsPrev: "Poprzednia",
@@ -883,6 +884,9 @@ export default {
   news142: [
     "„Co nowego” ma strony: pierwsza to duża aktualizacja, w lewo są małe.",
     "Po małej aktualizacji karta na ekranie głównym otworzy jej stronę. Pokazuje się tylko za pierwszym razem.",
+  ],
+  news121: [
+    "Gdy duża aktualizacja zawiera tylko jedną małą, „Co nowego” pisze „Także mała aktualizacja 1.1.1” zamiast „1.1.1–1.1.1”.",
   ],
   news12: [
     ["📱 Duże aktualizacje (nowy APK)", "„Pobierz” otwierało przeglądarkę, a APK trzeba było znaleźć w pobranych plikach.", "Pobiera się w aplikacji: widzisz procenty i wypełniający się pasek (także cienką linię u góry każdego ekranu). Instaluje się dopiero po dotknięciu Zainstaluj, nigdy w trakcie treningu."],

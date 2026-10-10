@@ -26,6 +26,7 @@ export default {
     newsLink: "What's new",
     newsSmall: "A small update. Nothing new to download.",
     newsAlso: "Also the small updates {a}–{b}",
+    newsAlso1: "Also the small update {a}",
     newsAlsoD: "If you skipped them, you get them now too.",
     newsSwipe: "Small updates: swipe left or tap here ›",
     newsPrev: "Previous",
@@ -883,6 +884,9 @@ export default {
   news142: [
     "\"What's new\" has pages: the first is the big update, swipe left for the small ones.",
     "After a small update, a card on the home screen opens its page. It shows only the first time.",
+  ],
+  news121: [
+    "When a big update includes only one small update, \"What's new\" says \"Also the small update 1.1.1\" instead of \"1.1.1–1.1.1\".",
   ],
   news12: [
     ["📱 Big updates (new APK)", "\"Download\" opened the browser and you had to find the APK in your downloads.", "It downloads inside the app: you see the percentage and a filling bar (also a thin line at the top of every screen). It installs only when you tap Install, never during a workout."],

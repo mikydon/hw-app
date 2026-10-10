@@ -26,6 +26,7 @@ export default {
     newsLink: "Co je nového",
     newsSmall: "Drobná úprava, není potřeba nic nového stahovat.",
     newsAlso: "I menší aktualizace {a}–{b}",
+    newsAlso1: "I menší aktualizace {a}",
     newsAlsoD: "Pokud jsi je vynechal, máš je teď taky.",
     newsSwipe: "Drobné úpravy: přejeď doleva nebo ťukni sem ›",
     newsPrev: "Předchozí",
@@ -883,6 +884,9 @@ export default {
   news142: [
     "„Co je nového“ má stránky: první je velký update, přejetím doleva drobné úpravy.",
     "Po drobné úpravě tě karta na úvodu zavede přímo na její stránku. Ukáže se jen poprvé.",
+  ],
+  news121: [
+    "Když velký update obsahuje jen jednu menší aktualizaci, „Co je nového“ píše „I menší aktualizace 1.1.1“ místo „1.1.1–1.1.1“.",
   ],
   news12: [
     ["📱 Velké updaty (nové APK)", "„Stáhnout“ otevřelo prohlížeč, APK sis pak musel najít ve stažených souborech.", "Stáhne se přímo v appce: vidíš procenta a čáru, která se plní (i tenkou čáru nahoře na každé obrazovce). Nainstaluje se až po ťuknutí na Instalovat, nikdy během tréninku."],

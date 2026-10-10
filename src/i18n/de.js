@@ -26,6 +26,7 @@ export default {
     newsLink: "Was ist neu",
     newsSmall: "Ein kleines Update, nichts Neues herunterzuladen.",
     newsAlso: "Auch die kleinen Updates {a}–{b}",
+    newsAlso1: "Auch das kleine Update {a}",
     newsAlsoD: "Falls du sie ausgelassen hast, hast du sie jetzt auch.",
     newsSwipe: "Kleine Updates: nach links wischen oder hier tippen ›",
     newsPrev: "Zurück",
@@ -883,6 +884,9 @@ export default {
   news142: [
     "Die Neuigkeiten haben jetzt Seiten: zuerst das große Update, nach links wischen für die kleinen.",
     "Nach einem kleinen Update führt dich eine Karte auf dem Startbildschirm direkt zu seiner Seite. Nur beim ersten Mal.",
+  ],
+  news121: [
+    "Wenn ein großes Update nur ein kleines enthält, steht in „Was ist neu“ „Auch das kleine Update 1.1.1“ statt „1.1.1–1.1.1“.",
   ],
   news12: [
     ["📱 Große Updates (neue APK)", "„Herunterladen“ öffnete den Browser, und die APK musstest du in den Downloads suchen.", "Sie lädt in der App: du siehst Prozent und einen Balken, der sich füllt (auch eine dünne Linie oben auf jedem Bildschirm). Installiert wird erst, wenn du auf Installieren tippst, nie während eines Trainings."],

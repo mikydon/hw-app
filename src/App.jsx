@@ -30,7 +30,7 @@ const THEMES = {
   slate:  { ink: "#15181d", panel: "#1f242b", panelHi: "#2a313a", line: "#3a434f", chalk: "#f1f4f8", dim: "#9aa6b4", edge: "#0e1115" },
   coffee: { ink: "#1c140f", panel: "#2a1f17", panelHi: "#382a20", line: "#4d3a2c", chalk: "#fbf3ec", dim: "#b8a291", edge: "#130d09" },
 };
-const APP_VERSION = "1.2.0";
+const APP_VERSION = "1.2.1";
 // Big Shoulders has no Cyrillic, so Oswald (also condensed) covers Ukrainian. The browser only
 // downloads the Oswald unicode ranges a page actually uses.
 const DISPLAY = "'Big Shoulders Display', 'Oswald', 'Arial Narrow', Impact, sans-serif";
@@ -1567,7 +1567,7 @@ function WhatsNew({ onClose, at }) {
               </div>
               {x.also && x.also.length > 0 && (
                 <div data-news-also style={{ marginTop: 16 }}>
-                  <div style={{ fontSize: 15, fontWeight: 800, color: C.chalk }}>{T("newsAlso", { a: x.also[0].v, b: x.also[x.also.length - 1].v })}</div>
+                  <div style={{ fontSize: 15, fontWeight: 800, color: C.chalk }}>{x.also.length === 1 ? T("newsAlso1", { a: x.also[0].v }) : T("newsAlso", { a: x.also[0].v, b: x.also[x.also.length - 1].v })}</div>
                   <div style={{ fontSize: 13, color: C.dim, lineHeight: 1.45, margin: "3px 0 10px" }}>{T("newsAlsoD")}</div>
                   <div style={{ ...card, padding: "4px 14px" }}>
                     {x.also.map((g, gi) => (
