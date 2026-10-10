@@ -2,7 +2,7 @@
   "id": "./",
   "name": "HW App",
   "short_name": "HW App",
-  "description": "Home workout with no equipment: about 19 minutes (13 when short on time), days A/B/C every other day, ranks, weekly challenges and streaks. Available in 11 languages.",
+  "description": "Home workout with no equipment: about 19 minutes (13 when short on time), days A/B/C every other day, ranks, weekly challenges and streaks. Available in 14 languages.",
   "lang": "en",
   "start_url": "./",
   "scope": "./",
