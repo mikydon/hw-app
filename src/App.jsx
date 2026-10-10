@@ -1,6 +1,6 @@
 import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import { isNative, pushBack, setRootBack, vibratePattern, keepScreenOn, openExternal, saveBackupFile, checkForUpdate, lastUpdate, lastGh, applyUpdateNow, latestApk, isTestBuild, apkState, onApk, apkSupported, apkRestore, apkDownload, apkCanInstall, apkAllow, apkInstall, onAppResume, healthState, healthConnect, healthSettings, healthSteps } from "./native.js";
+import { isNative, pushBack, setRootBack, vibratePattern, keepScreenOn, openExternal, saveBackupFile, checkForUpdate, lastUpdate, lastGh, applyUpdateNow, latestApk, isTestBuild, apkState, onApk, apkSupported, apkRestore, apkDownload, apkCanInstall, apkAllow, apkInstall, onAppResume, healthState, healthConnect, healthSettings, healthSteps, healthFoodItems } from "./native.js";
 import { L, LANG, t as T, tp as TP, fmt, setLang, detectLang, LANGS, fmtLong, fmtShortDM, fmtMonthYear, weekdaysShort, capFirst } from "./i18n/index.js";
 
 // ─── DESIGN TOKENS ──────────────────────────────────────────────────────────
@@ -2538,9 +2538,10 @@ function HealthCard({ kcal, setKcal }) {
   const refresh = () => healthState().then(setSt);
   useEffect(() => { refresh(); }, []);
   const today = dateKey();
-  const sync = async () => {
+  const sync = async (k = kcal) => {
     const m = await healthSteps(7), f = await healthSteps(7, "dietaryEnergyConsumed");
-    if (m || f) setKcal({ ...kcal, healthOn: true, steps: { ...(kcal.steps || {}), ...(m || {}) }, food: { ...(kcal.food || {}), ...(f || {}) } });
+    const it = k.healthFood === true ? await healthFoodItems(7) : null;
+    if (m || f) setKcal({ ...k, healthOn: true, steps: { ...(k.steps || {}), ...(m || {}) }, food: { ...(k.food || {}), ...(f || {}) }, foodItems: { ...(k.foodItems || {}), ...(it || {}) } });
     return m;
   };
   const connect = async () => {
@@ -2561,8 +2562,8 @@ function HealthCard({ kcal, setKcal }) {
   };
   const saveMode = async () => {
     sfxCheck(); setModeSheet(false);
-    const f = await healthSteps(7, "dietaryEnergyConsumed");
-    setKcal({ ...kcal, healthFood: true, foodMode: mode, food: { ...(kcal.food || {}), ...(f || {}) } });
+    const f = await healthSteps(7, "dietaryEnergyConsumed"), it = await healthFoodItems(7);
+    setKcal({ ...kcal, healthFood: true, foodMode: mode, food: { ...(kcal.food || {}), ...(f || {}) }, foodItems: { ...(kcal.foodItems || {}), ...(it || {}) } });
   };
   const food = (kcal.food || {})[today];
   const steps = (kcal.steps || {})[today];
@@ -2635,6 +2636,36 @@ function HealthCard({ kcal, setKcal }) {
     <div data-health-card style={{ ...card, padding: "14px 15px", marginTop: 10 }}>
       <div style={{ fontSize: 14, fontWeight: 800, color: C.chalk, marginBottom: 8 }}>👟 {T("hcTitle")}</div>
       {body}
+    </div>
+  );
+}
+
+// One day's food, oldest first: own entries (✕ to delete) and, when food is connected, every entry from Health Connect
+// with its time and the app it came from (Michael, Oct 10). Own entries are dimmed when only Health Connect counts that day.
+function DayEntries({ kcal, day, onRemove, pad = "8px 0" }) {
+  const hc = hcFood(kcal, day), items = hc > 0 ? ((kcal.foodItems || {})[day] || []) : [], ign = ownIgnored(kcal, day);
+  const own = ((kcal.log || {})[day] || []).map(x => ({ ...x, own: true }));
+  const rows = [...own, ...items.map(x => ({ ...x, hc: true }))].sort((a, b) => a.ts - b.ts);
+  const time = ts => new Date(ts).toLocaleTimeString(LANG, { hour: "2-digit", minute: "2-digit" });
+  return (
+    <div data-day-entries={day}>
+      {ign && own.length > 0 && <div data-own-ignored style={{ fontSize: 12, color: KC_HIT, lineHeight: 1.45, padding: "4px 0 2px" }}>{T("kcOwnIgnored")}</div>}
+      {rows.map((x, i) => (
+        <div key={(x.hc ? "h" : "o") + x.ts + "-" + i} data-entry={x.hc ? "hc" : "own"} style={{ display: "flex", alignItems: "center", gap: 8, padding: pad, borderTop: `1px solid ${C.line}`, opacity: x.own && ign ? 0.5 : 1 }}>
+          <span style={{ fontSize: 12, color: C.dim, width: 44, flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>{time(x.ts)}</span>
+          <span style={{ flex: 1, fontSize: 14, color: C.chalk, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{x.hc ? <><span aria-hidden="true">🍽️ </span><span style={{ color: C.dim }}>{x.src || T("hcFoodRow")}</span></> : (x.note || "—")}</span>
+          <span style={{ fontFamily: DISPLAY, fontSize: 20, fontWeight: 800, color: x.hc ? KC_HIT : C.chalk, textDecoration: x.own && ign ? "line-through" : "none" }}>{nf(x.kcal)}</span>
+          {x.own ? <button onClick={() => onRemove(day, x.ts)} aria-label={T("kcDelete")} style={{ ...btnBase, background: "transparent", color: C.dim, padding: "4px 8px", fontSize: 15 }}>✕</button> : <span style={{ width: 31, flexShrink: 0 }} />}
+        </div>
+      ))}
+      {hc > 0 && !items.length && (
+        <div data-hc-food-row style={{ display: "flex", alignItems: "center", gap: 8, padding: pad, borderTop: `1px solid ${C.line}` }}>
+          <span style={{ fontSize: 15, width: 44 }} aria-hidden="true">🍽️</span>
+          <span style={{ flex: 1, fontSize: 14, color: C.chalk, minWidth: 0 }}>{T("hcFoodRow")}</span>
+          <span style={{ fontFamily: DISPLAY, fontSize: 20, fontWeight: 800, color: KC_HIT }}>{nf(hc)}</span>
+          <span style={{ width: 31, flexShrink: 0 }} />
+        </div>
+      )}
     </div>
   );
 }
@@ -2734,7 +2765,7 @@ function Calories({ history, profile, setProfile, kcal, setKcal }) {
     if (!log[day].length) delete log[day];
     setKcal({ ...kcal, log });
   };
-  const days = Object.keys(kcal.log || {}).filter(d => d !== today).sort().reverse().slice(0, 30);
+  const days = [...new Set([...Object.keys(kcal.log || {}), ...Object.keys(kcal.food || {}).filter(d => hcFood(kcal, d) > 0)])].filter(d => d !== today && d < today).sort().reverse().slice(0, 30);
   const goalName = kcal.goal.type === "maintain" ? T("kcMaintainT") : T(kcal.goal.type === "lose" ? "kcRateLose" : "kcRateGain", { kg: kcal.goal.rate.toLocaleString(LANG) });
   const field = { fontFamily: BODY, fontSize: 16, fontWeight: 700, padding: "11px 12px", borderRadius: 12, border: `1.5px solid ${C.line}`, background: C.ink, color: C.chalk, outline: "none", boxSizing: "border-box", minWidth: 0 };
   const R = 64, CIRC = 2 * Math.PI * R;
@@ -2777,26 +2808,7 @@ function Calories({ history, profile, setProfile, kcal, setKcal }) {
           <input value={note} onChange={e => setNote(e.target.value)} onKeyDown={e => { if (e.key === "Enter") add(); }} placeholder={T("kcNote")} aria-label={T("kcNote")} style={{ ...field, flex: 1.6 }} />
         </div>
         <button onClick={add} disabled={!Number(amount)} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 10, padding: 15, opacity: Number(amount) ? 1 : 0.5 }}>{Number(amount) ? T("kcAddBtn", { n: nf(Number(amount)) }) : T("kcAddBtn0")}</button>
-        {hcFood(kcal, today) > 0 && (
-          <div data-hc-food-row style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 0", marginTop: 10, borderTop: `1px solid ${C.line}` }}>
-            <span style={{ fontSize: 15, width: 44 }} aria-hidden="true">🍽️</span>
-            <span style={{ flex: 1, fontSize: 14, color: C.chalk, minWidth: 0 }}>{T("hcFoodRow")}</span>
-            <span style={{ fontFamily: DISPLAY, fontSize: 20, fontWeight: 800, color: C.chalk }}>{nf(hcFood(kcal, today))}</span>
-          </div>
-        )}
-        {ownIgnored(kcal, today) && ((kcal.log || {})[today] || []).length > 0 && <div data-own-ignored style={{ fontSize: 12, color: KC_HIT, lineHeight: 1.45, marginTop: 10 }}>{T("kcOwnIgnored")}</div>}
-        {((kcal.log || {})[today] || []).length > 0 && (
-          <div style={{ marginTop: 12, opacity: ownIgnored(kcal, today) ? 0.5 : 1 }}>
-            {(kcal.log[today]).map(x => (
-              <div key={x.ts} style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 0", borderTop: `1px solid ${C.line}` }}>
-                <span style={{ fontSize: 12, color: C.dim, width: 44 }}>{new Date(x.ts).toLocaleTimeString(LANG, { hour: "2-digit", minute: "2-digit" })}</span>
-                <span style={{ flex: 1, fontSize: 14, color: C.chalk, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{x.note || "—"}</span>
-                <span style={{ fontFamily: DISPLAY, fontSize: 20, fontWeight: 800, color: C.chalk }}>{nf(x.kcal)}</span>
-                <button onClick={() => remove(today, x.ts)} aria-label={T("kcDelete")} style={{ ...btnBase, background: "transparent", color: C.dim, padding: "4px 8px", fontSize: 15 }}>✕</button>
-              </div>
-            ))}
-          </div>
-        )}
+        {(dayTotal(kcal, today) > 0 || ((kcal.log || {})[today] || []).length > 0) && <div style={{ marginTop: 12 }}><DayEntries kcal={kcal} day={today} onRemove={remove} /></div>}
       </div>
 
       {days.length > 0 && (
@@ -2815,13 +2827,7 @@ function Calories({ history, profile, setProfile, kcal, setKcal }) {
                     <span style={{ fontSize: 12, color: C.dim }}>/ {nf(tg)}</span>
                     <span style={{ color: C.dim, fontSize: 12 }}>{o ? "▾" : "▸"}</span>
                   </button>
-                  {o && kcal.log[d].map(x => (
-                    <div key={x.ts} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 15px 6px 25px" }}>
-                      <span style={{ flex: 1, fontSize: 13, color: C.dim }}>{x.note || "—"}</span>
-                      <span style={{ fontSize: 14, fontWeight: 800, color: C.chalk }}>{nf(x.kcal)}</span>
-                      <button onClick={() => remove(d, x.ts)} aria-label={T("kcDelete")} style={{ ...btnBase, background: "transparent", color: C.dim, padding: "2px 8px", fontSize: 14 }}>✕</button>
-                    </div>
-                  ))}
+                  {o && <div data-day-open={d} style={{ padding: "0 15px 6px" }}><DayEntries kcal={kcal} day={d} onRemove={remove} pad="6px 0" /></div>}
                 </div>
               );
             })}
@@ -4396,7 +4402,7 @@ export default function App() {
   useEffect(() => {
     if (!isNative || stepsSynced || !kcal || !kcal.healthOn) return;
     setStepsSynced(true);
-    Promise.all([healthSteps(7), healthSteps(7, "dietaryEnergyConsumed")]).then(([m, f]) => { if (m || f) setKcalState(k => { const n = { ...k, steps: { ...(k.steps || {}), ...(m || {}) }, food: { ...(k.food || {}), ...(f || {}) } }; saveKcal(n); return n; }); });
+    Promise.all([healthSteps(7), healthSteps(7, "dietaryEnergyConsumed"), kcal.healthFood === true ? healthFoodItems(7) : null]).then(([m, f, it]) => { if (m || f) setKcalState(k => { const n = { ...k, steps: { ...(k.steps || {}), ...(m || {}) }, food: { ...(k.food || {}), ...(f || {}) }, foodItems: { ...(k.foodItems || {}), ...(it || {}) } }; saveKcal(n); return n; }); });
   }, [kcal]);
   // Website: the newest Android app version on GitHub for the menu (the API allows browsers; 60 calls an hour per IP).
   useEffect(() => {

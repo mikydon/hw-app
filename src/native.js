@@ -266,6 +266,23 @@ export async function healthConnect(withFood = false) {
 export function healthSettings() { if (isNative) Health.openHealthConnectSettings().catch(() => {}); }
 // Per local day for the last `days` days (today included): { "2026-10-10": 8123, … }
 // type: "steps" or "dietaryEnergyConsumed" (kcal eaten, logged in Samsung Health, MyFitnessPal…)
+// Each food entry from other apps (Michael, Oct 10: show them in the calorie history, with the time):
+// { "2026-10-10": [{ts, kcal, src}], … } for the last `days` days. src = the app that wrote it (e.g. Samsung Health).
+export async function healthFoodItems(days = 7) {
+  if (!isNative) return null;
+  const start = new Date(); start.setHours(0, 0, 0, 0); start.setDate(start.getDate() - (days - 1));
+  try {
+    const r = await Health.readSamples({ dataType: "dietaryEnergyConsumed", startDate: start.toISOString(), endDate: new Date().toISOString(), limit: 1000, ascending: true });
+    const out = {};
+    for (const s of (r && r.samples) || []) {
+      const d = new Date(s.startDate), kcal = Math.round(Number(s.value) || 0);
+      if (!kcal) continue;
+      const k = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+      (out[k] = out[k] || []).push({ ts: d.getTime(), kcal, src: String(s.sourceName || "").slice(0, 40) });
+    }
+    return out;
+  } catch (_) { return null; }
+}
 export async function healthSteps(days = 7, type = "steps") {
   if (!isNative) return null;
   const start = new Date(); start.setHours(0, 0, 0, 0); start.setDate(start.getDate() - (days - 1));
