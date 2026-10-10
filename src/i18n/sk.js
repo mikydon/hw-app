@@ -730,6 +730,10 @@ export default {
     "Meno v profile je na strede; veľký nápis dňa sa už nedotýka riadku pod ním; tlačidlá +100/+250/+500 v Kalóriách sú preč.",
     "V menu je „💛 Podporiť appku“: dobrovoľná podpora na Patreone. Appka zostáva celá zadarmo.",
   ],
+  news102: [
+    "Malé aktualizácie sa zapnú hneď pri ďalšom spustení appky (predtým až pri treťom). Počas rozbehnutého tréningu počkajú.",
+    "Tlačidlo „Začať deň“ vidíš hneď po otvorení appky, netreba scrollovať; ukazuje aj zvolené kolá.",
+  ],
 
   quotes: [
     "Disciplína ťa dovedie tam, kam motivácia nedočiahne.",

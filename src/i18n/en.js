@@ -730,6 +730,10 @@ export default {
     "The profile name is centred; the big day title no longer touches the line under it; the +100/+250/+500 buttons in Calories are gone.",
     "The menu has “💛 Support the app”: optional support on Patreon. The whole app stays free.",
   ],
+  news102: [
+    "Small updates now switch on at the next start of the app (before, only at the third). During a running workout they wait.",
+    "The \u201cStart day\u201d button is on screen as soon as the app opens, no scrolling; it also shows the chosen rounds.",
+  ],
 
   quotes: [
     "Discipline takes you where motivation can't.",

@@ -730,6 +730,10 @@ export default {
     "Jméno v profilu je uprostřed; velký nápis dne se už nedotýká řádku pod ním; tlačítka +100/+250/+500 v Kaloriích jsou pryč.",
     "V menu je „💛 Podpořit appku“: dobrovolná podpora na Patreonu. Appka zůstává celá zdarma.",
   ],
+  news102: [
+    "Malé aktualizace se zapnou hned při dalším spuštění appky (dřív až při třetím). Během rozběhnutého tréninku počkají.",
+    "Tlačítko „Začít den“ vidíš hned po otevření appky, není třeba scrollovat; ukazuje i zvolená kola.",
+  ],
 
   quotes: [
     "Disciplína tě dostane tam, kam motivace nedosáhne.",

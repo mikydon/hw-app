@@ -30,7 +30,7 @@ const THEMES = {
   slate:  { ink: "#15181d", panel: "#1f242b", panelHi: "#2a313a", line: "#3a434f", chalk: "#f1f4f8", dim: "#9aa6b4", edge: "#0e1115" },
   coffee: { ink: "#1c140f", panel: "#2a1f17", panelHi: "#382a20", line: "#4d3a2c", chalk: "#fbf3ec", dim: "#b8a291", edge: "#130d09" },
 };
-const APP_VERSION = "1.0.1";
+const APP_VERSION = "1.0.2";
 // Big Shoulders has no Cyrillic, so Oswald (also condensed) covers Ukrainian. The browser only
 // downloads the Oswald unicode ranges a page actually uses.
 const DISPLAY = "'Big Shoulders Display', 'Oswald', 'Arial Narrow', Impact, sans-serif";
@@ -1766,9 +1766,13 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
           ▶ {T("resumeWorkout", { d: active.day })}
         </button>
       ) : (
-        <button onClick={() => { unlockAudio(); onStart(day.id, rounds); }} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 14, fontSize: 18, padding: 19 }}>
-          {T("startDay", { d: day.id })}
-        </button>
+        // Sticky: always on screen when Home opens (sits at the bottom edge until you scroll to its place)
+        <div data-start-wrap style={{ position: "sticky", bottom: "calc(var(--sab, 0px) + 12px)", zIndex: 5, marginTop: 14, filter: "drop-shadow(0 8px 16px rgba(0,0,0,.45))" }}>
+          <button onClick={() => { unlockAudio(); onStart(day.id, rounds); }} className="b3d" data-start style={{ ...bigBtn(C.signal, C.signalInk), fontSize: 18, padding: "13px 19px" }}>
+            {T("startDay", { d: day.id })}
+            <span data-start-rounds style={{ display: "block", fontSize: 12, fontWeight: 700, opacity: 0.75, marginTop: 2 }}>{T("roundsBtn", { n: rounds, m: rounds === 2 ? 13 : 19 })}</span>
+          </button>
+        </div>
       )}
 
       <div style={{ marginTop: 22 }}><ChallengesCard history={history} /></div>
@@ -3465,7 +3469,7 @@ export default function App() {
   const [apkUpd, setApkUpd] = useState(null);
   useEffect(() => {
     if (!loaded || !isNative) return;
-    checkForUpdate(APP_VERSION).then(r => { if (r && r.apk) setApkUpd(r.apk); }).catch(() => {});
+    checkForUpdate(APP_VERSION, !!session).then(r => { if (r && r.apk) setApkUpd(r.apk); }).catch(() => {});
   }, [loaded]);
   const resume = () => { sfxTap(); setMenuOpen(false); setSessionOpen(true); };
 

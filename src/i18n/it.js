@@ -730,6 +730,10 @@ export default {
     "Il nome nel profilo è centrato; il grande titolo del giorno non tocca più la riga sotto; i pulsanti +100/+250/+500 nelle Calorie non ci sono più.",
     "Nel menu c'è «💛 Sostieni l'app»: un supporto facoltativo su Patreon. Tutta l'app resta gratis.",
   ],
+  news102: [
+    "I piccoli aggiornamenti si attivano già al prossimo avvio dell'app (prima solo al terzo). Durante un allenamento aspettano.",
+    "Il pulsante «Inizia giorno» si vede appena apri l'app, senza scorrere; mostra anche i giri scelti.",
+  ],
 
   quotes: [
     "La disciplina ti porta dove la motivazione non arriva.",

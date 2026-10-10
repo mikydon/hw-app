@@ -730,6 +730,10 @@ export default {
     "Der Name im Profil ist zentriert; der große Tagestitel berührt die Zeile darunter nicht mehr; die Tasten +100/+250/+500 in den Kalorien sind weg.",
     "Im Menü gibt es „💛 App unterstützen“: freiwillige Unterstützung auf Patreon. Die ganze App bleibt kostenlos.",
   ],
+  news102: [
+    "Kleine Updates werden jetzt beim nächsten Start der App aktiv (vorher erst beim dritten). Während eines laufenden Trainings warten sie.",
+    "Die Taste „Tag … starten“ ist sofort nach dem Öffnen der App sichtbar, ohne Scrollen; sie zeigt auch die gewählten Runden.",
+  ],
 
   quotes: [
     "Disziplin bringt dich dahin, wo Motivation nicht hinkommt.",

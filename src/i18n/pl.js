@@ -730,6 +730,10 @@ export default {
     "Imię w profilu jest wyśrodkowane; duży napis dnia nie dotyka już wiersza pod nim; przyciski +100/+250/+500 w Kaloriach zniknęły.",
     "W menu jest „💛 Wesprzyj aplikację”: dobrowolne wsparcie na Patreonie. Cała aplikacja pozostaje darmowa.",
   ],
+  news102: [
+    "Małe aktualizacje włączają się już przy następnym uruchomieniu aplikacji (wcześniej dopiero przy trzecim). W trakcie treningu czekają.",
+    "Przycisk „Zacznij dzień” widać od razu po otwarciu aplikacji, bez przewijania; pokazuje też wybrane rundy.",
+  ],
 
   quotes: [
     "Dyscyplina zaprowadzi cię tam, gdzie motywacja nie da rady.",

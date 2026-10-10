@@ -730,6 +730,10 @@ export default {
     "A név a profilban középen van; a nagy napcím már nem ér hozzá az alatta lévő sorhoz; a +100/+250/+500 gombok eltűntek a Kalóriákból.",
     "A menüben ott a „💛 Támogasd az appot”: önkéntes támogatás a Patreonon. Az egész app ingyenes marad.",
   ],
+  news102: [
+    "A kis frissítések már az app következő indításakor bekapcsolnak (korábban csak a harmadiknál). Futó edzés közben várnak.",
+    "A „…-nap indítása” gomb az app megnyitásakor azonnal látszik, nem kell görgetni; a választott köröket is mutatja.",
+  ],
 
   quotes: [
     "A fegyelem odavisz, ahová a motiváció nem.",

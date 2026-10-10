@@ -730,6 +730,10 @@ export default {
     "Le nom du profil est centré ; le grand titre du jour ne touche plus la ligne du dessous ; les boutons +100/+250/+500 des Calories ont disparu.",
     "Le menu a « 💛 Soutenir l'appli » : un soutien facultatif sur Patreon. Toute l'appli reste gratuite.",
   ],
+  news102: [
+    "Les petites mises à jour s'activent dès le prochain lancement de l'appli (avant, seulement au troisième). Pendant une séance, elles attendent.",
+    "Le bouton « Lancer le jour » est visible dès l'ouverture de l'appli, sans défiler ; il affiche aussi les tours choisis.",
+  ],
 
   quotes: [
     "La discipline t'emmène là où la motivation ne peut pas aller.",

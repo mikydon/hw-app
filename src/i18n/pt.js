@@ -730,6 +730,10 @@ export default {
     "O nome no perfil está centralizado; o título grande do dia não encosta mais na linha de baixo; os botões +100/+250/+500 em Calorias sumiram.",
     "No menu há «💛 Apoiar o app»: apoio opcional no Patreon. O app inteiro continua grátis.",
   ],
+  news102: [
+    "As atualizações pequenas ativam-se já no próximo início do app (antes, só no terceiro). Durante um treino, elas esperam.",
+    "O botão «Começar o dia» aparece logo ao abrir o app, sem rolar; também mostra as rodadas escolhidas.",
+  ],
 
   quotes: [
     "A disciplina te leva aonde a motivação não leva.",

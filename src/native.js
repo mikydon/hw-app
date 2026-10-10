@@ -105,8 +105,20 @@ export async function nativeVersion() {
 // - a newer big version (second number) needs a new APK → returns {apk: {version, url}}
 // - a newer small version of the same big version is downloaded in the background and switched to
 //   on the next start (never in the middle of a session) → returns {staged: version}
-export async function checkForUpdate(appVersion) {
+const KILL = { delayConditions: [{ kind: "kill" }] };
+export async function checkForUpdate(appVersion, busy = false) {
   if (!isNative) return null;
+  // A small update downloaded on an earlier start: switch to it right now, at the start.
+  // (The updater itself would only switch when the app goes to the background, i.e. a 3rd start.)
+  // Not while a workout is running: then it waits for the next start again.
+  try {
+    const nx = await CapacitorUpdater.getNextBundle();
+    if (nx && nx.id && nx.version && nx.status !== "error" && verCmp(nx.version, appVersion) > 0) {
+      if (busy) { await CapacitorUpdater.setMultiDelay(KILL); return { staged: nx.version }; }
+      await CapacitorUpdater.set({ id: nx.id }); // reloads into the new version
+      return { switching: nx.version };
+    }
+  } catch (_) {}
   const nv = await nativeVersion();
   let info;
   try {
@@ -123,7 +135,7 @@ export async function checkForUpdate(appVersion) {
     let b = (list.bundles || []).find(x => x.version === info.version && x.status !== "error");
     if (!b) b = await CapacitorUpdater.download({ url: info.bundle.url, version: info.version, checksum: info.bundle.sha256 });
     await CapacitorUpdater.next({ id: b.id });
-    await CapacitorUpdater.setMultiDelay({ delayConditions: [{ kind: "kill" }] });
+    await CapacitorUpdater.setMultiDelay(KILL);
     return { staged: info.version };
   } catch (_) { return null; }
 }
