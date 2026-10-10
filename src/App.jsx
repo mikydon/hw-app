@@ -2496,7 +2496,7 @@ function Calories({ history, profile, setProfile, kcal, setKcal }) {
         <button onClick={add} disabled={!Number(amount)} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 10, padding: 15, opacity: Number(amount) ? 1 : 0.5 }}>{Number(amount) ? T("kcAddBtn", { n: nf(Number(amount)) }) : T("kcAddBtn0")}</button>
         {hcFood(kcal, today) > 0 && (
           <div data-hc-food-row style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 0", marginTop: 10, borderTop: `1px solid ${C.line}` }}>
-            <span style={{ fontSize: 15, width: 44 }} aria-hidden="true">👟</span>
+            <span style={{ fontSize: 15, width: 44 }} aria-hidden="true">🍽️</span>
             <span style={{ flex: 1, fontSize: 14, color: C.chalk, minWidth: 0 }}>{T("hcFoodRow")}</span>
             <span style={{ fontFamily: DISPLAY, fontSize: 20, fontWeight: 800, color: C.chalk }}>{nf(hcFood(kcal, today))}</span>
           </div>
