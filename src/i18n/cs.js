@@ -40,6 +40,14 @@ export default {
     getAndroid: "📱 Appka pro Android",
     support: "Podpořit appku",
     supportDesc: "Patreon · dobrovolně, appka zůstává zdarma",
+    upd_latest: "Aktualizace: máš nejnovější verzi (kontrola {time})",
+    upd_staged: "Aktualizace: {v} je stažená, zapne se při dalším spuštění (kontrola {time})",
+    upd_waiting: "Aktualizace: {v} počká, až dokončíš trénink (kontrola {time})",
+    upd_switching: "Aktualizace: zapíná se {v}… (kontrola {time})",
+    upd_apk: "Aktualizace: nová velká verze {v}, je třeba stáhnout APK (kontrola {time})",
+    upd_net: "Aktualizace: nepodařilo se zkontrolovat ({e}) · {time}",
+    upd_error: "Aktualizace: chyba ({e}) · {time}",
+    updFailedV: "Verzi {v} se nepodařilo zapnout, appka to zkusí znovu.",
     hintTitle: "Věděl jsi?",
     hintGo: "Ukázat",
     hint_themes: "Chceš jinou barvu appky? V Nastavení → Vzhled je 8 témat.",
@@ -733,6 +741,10 @@ export default {
   news102: [
     "Malé aktualizace se zapnou hned při dalším spuštění appky (dřív až při třetím). Během rozběhnutého tréninku počkají.",
     "Tlačítko „Začít den“ vidíš hned po otevření appky, není třeba scrollovat; ukazuje i zvolená kola.",
+  ],
+  news103: [
+    "Pokud máš appku 1.0.0, malé aktualizace se do ní nedostanou: jednou si stáhni APK 1.0.3 a nainstaluj ho přes starou (data zůstanou).",
+    "V menu pod verzí appky vidíš, kdy appka naposledy hledala aktualizaci a jak to dopadlo.",
   ],
 
   quotes: [

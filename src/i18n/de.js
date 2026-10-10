@@ -40,6 +40,14 @@ export default {
     getAndroid: "📱 Android-App",
     support: "App unterstützen",
     supportDesc: "Patreon · freiwillig, die App bleibt kostenlos",
+    upd_latest: "Updates: du hast die neueste Version (geprüft {time})",
+    upd_staged: "Updates: {v} ist geladen und wird beim nächsten Start aktiv (geprüft {time})",
+    upd_waiting: "Updates: {v} wartet, bis du das Training beendest (geprüft {time})",
+    upd_switching: "Updates: {v} wird aktiviert… (geprüft {time})",
+    upd_apk: "Updates: neue große Version {v}, lade die APK herunter (geprüft {time})",
+    upd_net: "Updates: Prüfung fehlgeschlagen ({e}) · {time}",
+    upd_error: "Updates: Fehler ({e}) · {time}",
+    updFailedV: "Version {v} konnte nicht aktiviert werden; die App versucht es erneut.",
     hintTitle: "Schon gewusst?",
     hintGo: "Zeigen",
     hint_themes: "Lieber eine andere Farbe? Unter Einstellungen → Darstellung gibt es 8 Themes.",
@@ -733,6 +741,10 @@ export default {
   news102: [
     "Kleine Updates werden jetzt beim nächsten Start der App aktiv (vorher erst beim dritten). Während eines laufenden Trainings warten sie.",
     "Die Taste „Tag … starten“ ist sofort nach dem Öffnen der App sichtbar, ohne Scrollen; sie zeigt auch die gewählten Runden.",
+  ],
+  news103: [
+    "Wenn du App 1.0.0 hast, kommen kleine Updates nicht an: lade einmal die APK 1.0.3 und installiere sie über die alte (deine Daten bleiben).",
+    "Im Menü unter der App-Version siehst du, wann die App zuletzt nach Updates gesucht hat und mit welchem Ergebnis.",
   ],
 
   quotes: [

@@ -106,36 +106,46 @@ export async function nativeVersion() {
 // - a newer small version of the same big version is downloaded in the background and switched to
 //   on the next start (never in the middle of a session) → returns {staged: version}
 const KILL = { delayConditions: [{ kind: "kill" }] };
+// The last update check, saved so the menu can show it (helps to see why an update didn't arrive).
+export const UPD_KEY = "domaci-trening-v1-upd";
+function updLog(o) { try { localStorage.setItem(UPD_KEY, JSON.stringify({ ts: Date.now(), ...o })); } catch (_) {} return o; }
+export function lastUpdate() { try { return JSON.parse(localStorage.getItem(UPD_KEY) || "null"); } catch (_) { return null; } }
+const errMsg = e => String((e && (e.message || e.errorMessage)) || e || "?").slice(0, 120);
+
 export async function checkForUpdate(appVersion, busy = false) {
   if (!isNative) return null;
+  let failed = null;
+  try { const f = await CapacitorUpdater.getFailedUpdate(); if (f && f.bundle && f.bundle.version) failed = f.bundle.version; } catch (_) {}
   // A small update downloaded on an earlier start: switch to it right now, at the start.
-  // (The updater itself would only switch when the app goes to the background, i.e. a 3rd start.)
+  // (The updater itself would only switch when the app goes to the background, i.e. a 3rd start,
+  // and a version switched on in the background may not start in time and gets rolled back.)
   // Not while a workout is running: then it waits for the next start again.
   try {
     const nx = await CapacitorUpdater.getNextBundle();
     if (nx && nx.id && nx.version && nx.status !== "error" && verCmp(nx.version, appVersion) > 0) {
-      if (busy) { await CapacitorUpdater.setMultiDelay(KILL); return { staged: nx.version }; }
+      if (busy) { await CapacitorUpdater.setMultiDelay(KILL); return updLog({ kind: "waiting", v: nx.version, failed, staged: nx.version }); }
+      updLog({ kind: "switching", v: nx.version, failed });
       await CapacitorUpdater.set({ id: nx.id }); // reloads into the new version
       return { switching: nx.version };
     }
-  } catch (_) {}
+  } catch (e) { updLog({ kind: "error", err: "set: " + errMsg(e), failed }); }
   const nv = await nativeVersion();
   let info;
   try {
     const r = await CapacitorHttp.get({ url: UPDATE_JSON + "?t=" + Date.now(), headers: { Accept: "application/json" } });
-    if (r.status !== 200) return null;
+    if (r.status !== 200) { updLog({ kind: "net", err: "HTTP " + r.status, failed }); return null; }
     info = typeof r.data === "string" ? JSON.parse(r.data) : r.data;
-  } catch (_) { return null; }
-  if (!info || !info.version) return null;
-  if (nv && verCmp(big(info.version), big(nv)) > 0) return { apk: { version: info.version, url: info.apk && info.apk.url } };
-  if (verCmp(info.version, appVersion) <= 0 || !info.bundle || !info.bundle.url) return null;
-  if (nv && big(info.version) !== big(nv)) return null; // a bundle only runs in the APK it was built for
+  } catch (e) { updLog({ kind: "net", err: errMsg(e), failed }); return null; }
+  if (!info || !info.version) { updLog({ kind: "net", err: "update.json?", failed }); return null; }
+  if (nv && verCmp(big(info.version), big(nv)) > 0) return updLog({ kind: "apk", v: info.version, failed, apk: { version: info.version, url: info.apk && info.apk.url } });
+  if (verCmp(info.version, appVersion) <= 0 || !info.bundle || !info.bundle.url) { updLog({ kind: "latest", v: info.version, failed }); return null; }
+  if (nv && big(info.version) !== big(nv)) { updLog({ kind: "latest", v: info.version, failed }); return null; } // a bundle only runs in the APK it was built for
   try {
     const list = await CapacitorUpdater.list();
     let b = (list.bundles || []).find(x => x.version === info.version && x.status !== "error");
     if (!b) b = await CapacitorUpdater.download({ url: info.bundle.url, version: info.version, checksum: info.bundle.sha256 });
     await CapacitorUpdater.next({ id: b.id });
     await CapacitorUpdater.setMultiDelay(KILL);
-    return { staged: info.version };
-  } catch (_) { return null; }
+    return updLog({ kind: "staged", v: info.version, failed, staged: info.version });
+  } catch (e) { updLog({ kind: "error", v: info.version, err: errMsg(e), failed }); return null; }
 }

@@ -40,6 +40,14 @@ export default {
     getAndroid: "📱 App para Android",
     support: "Apoyar la app",
     supportDesc: "Patreon · opcional, la app sigue siendo gratis",
+    upd_latest: "Actualizaciones: tienes la versión más nueva (comprobado {time})",
+    upd_staged: "Actualizaciones: {v} está descargada y se activa en el siguiente inicio (comprobado {time})",
+    upd_waiting: "Actualizaciones: {v} espera a que termines el entrenamiento (comprobado {time})",
+    upd_switching: "Actualizaciones: activando {v}… (comprobado {time})",
+    upd_apk: "Actualizaciones: nueva versión grande {v}, descarga el APK (comprobado {time})",
+    upd_net: "Actualizaciones: no se pudo comprobar ({e}) · {time}",
+    upd_error: "Actualizaciones: error ({e}) · {time}",
+    updFailedV: "No se pudo activar la versión {v}; la app lo intentará de nuevo.",
     hintTitle: "¿Sabías que…?",
     hintGo: "Mostrar",
     hint_themes: "¿Otro color? En Ajustes → Apariencia hay 8 temas.",
@@ -733,6 +741,10 @@ export default {
   news102: [
     "Las actualizaciones pequeñas se activan ya en el siguiente inicio de la app (antes, solo en el tercero). Durante un entrenamiento esperan.",
     "El botón «Empezar día» se ve nada más abrir la app, sin desplazarte; también muestra las rondas elegidas.",
+  ],
+  news103: [
+    "Si tienes la app 1.0.0, las actualizaciones pequeñas no le llegan: descarga una vez el APK 1.0.3 e instálalo encima del viejo (tus datos se quedan).",
+    "En el menú, bajo la versión de la app, ves cuándo buscó actualizaciones por última vez y cómo fue.",
   ],
 
   quotes: [

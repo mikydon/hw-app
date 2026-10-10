@@ -40,6 +40,14 @@ export default {
     getAndroid: "📱 App per Android",
     support: "Sostieni l'app",
     supportDesc: "Patreon · facoltativo, l'app resta gratis",
+    upd_latest: "Aggiornamenti: hai la versione più recente (controllato alle {time})",
+    upd_staged: "Aggiornamenti: {v} è scaricata e si attiva al prossimo avvio (controllato alle {time})",
+    upd_waiting: "Aggiornamenti: {v} aspetta che finisci l'allenamento (controllato alle {time})",
+    upd_switching: "Aggiornamenti: attivazione di {v}… (controllato alle {time})",
+    upd_apk: "Aggiornamenti: nuova versione grande {v}, scarica l'APK (controllato alle {time})",
+    upd_net: "Aggiornamenti: controllo non riuscito ({e}) · {time}",
+    upd_error: "Aggiornamenti: errore ({e}) · {time}",
+    updFailedV: "Non è stato possibile attivare la versione {v}; l'app riproverà.",
     hintTitle: "Lo sapevi?",
     hintGo: "Mostra",
     hint_themes: "Vuoi un altro colore? In Impostazioni → Aspetto ci sono 8 temi.",
@@ -733,6 +741,10 @@ export default {
   news102: [
     "I piccoli aggiornamenti si attivano già al prossimo avvio dell'app (prima solo al terzo). Durante un allenamento aspettano.",
     "Il pulsante «Inizia giorno» si vede appena apri l'app, senza scorrere; mostra anche i giri scelti.",
+  ],
+  news103: [
+    "Se hai l'app 1.0.0, i piccoli aggiornamenti non le arrivano: scarica una volta l'APK 1.0.3 e installalo sopra quella vecchia (i dati restano).",
+    "Nel menu, sotto la versione dell'app, vedi quando ha cercato aggiornamenti l'ultima volta e com'è andata.",
   ],
 
   quotes: [

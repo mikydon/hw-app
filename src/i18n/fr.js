@@ -40,6 +40,14 @@ export default {
     getAndroid: "📱 Appli Android",
     support: "Soutenir l'appli",
     supportDesc: "Patreon · facultatif, l'appli reste gratuite",
+    upd_latest: "Mises à jour : tu as la version la plus récente (vérifié à {time})",
+    upd_staged: "Mises à jour : {v} est téléchargée et s'active au prochain lancement (vérifié à {time})",
+    upd_waiting: "Mises à jour : {v} attend la fin de ta séance (vérifié à {time})",
+    upd_switching: "Mises à jour : activation de {v}… (vérifié à {time})",
+    upd_apk: "Mises à jour : nouvelle grande version {v}, télécharge l'APK (vérifié à {time})",
+    upd_net: "Mises à jour : vérification impossible ({e}) · {time}",
+    upd_error: "Mises à jour : erreur ({e}) · {time}",
+    updFailedV: "La version {v} n'a pas pu s'activer ; l'appli réessaiera.",
     hintTitle: "Le savais-tu ?",
     hintGo: "Voir",
     hint_themes: "Envie d'une autre couleur ? Réglages → Apparence propose 8 thèmes.",
@@ -733,6 +741,10 @@ export default {
   news102: [
     "Les petites mises à jour s'activent dès le prochain lancement de l'appli (avant, seulement au troisième). Pendant une séance, elles attendent.",
     "Le bouton « Lancer le jour » est visible dès l'ouverture de l'appli, sans défiler ; il affiche aussi les tours choisis.",
+  ],
+  news103: [
+    "Si tu as l'appli 1.0.0, les petites mises à jour ne l'atteignent pas : télécharge une fois l'APK 1.0.3 et installe-le par-dessus l'ancienne (tes données restent).",
+    "Dans le menu, sous la version de l'appli, tu vois quand elle a cherché une mise à jour pour la dernière fois et avec quel résultat.",
   ],
 
   quotes: [

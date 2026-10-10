@@ -40,6 +40,14 @@ export default {
     getAndroid: "📱 Appka pre Android",
     support: "Podporiť appku",
     supportDesc: "Patreon · dobrovoľne, appka zostáva zadarmo",
+    upd_latest: "Aktualizácie: máš najnovšiu verziu (kontrola {time})",
+    upd_staged: "Aktualizácie: {v} je stiahnutá, zapne sa pri ďalšom spustení (kontrola {time})",
+    upd_waiting: "Aktualizácie: {v} počká, kým dokončíš tréning (kontrola {time})",
+    upd_switching: "Aktualizácie: zapína sa {v}… (kontrola {time})",
+    upd_apk: "Aktualizácie: nová veľká verzia {v}, treba stiahnuť APK (kontrola {time})",
+    upd_net: "Aktualizácie: nepodarilo sa skontrolovať ({e}) · {time}",
+    upd_error: "Aktualizácie: chyba ({e}) · {time}",
+    updFailedV: "Verziu {v} sa nepodarilo zapnúť, appka to skúsi znova.",
     hintTitle: "Vedel si?",
     hintGo: "Ukázať",
     hint_themes: "Chceš inú farbu appky? V Nastaveniach → Vzhľad je 8 tém.",
@@ -733,6 +741,10 @@ export default {
   news102: [
     "Malé aktualizácie sa zapnú hneď pri ďalšom spustení appky (predtým až pri treťom). Počas rozbehnutého tréningu počkajú.",
     "Tlačidlo „Začať deň“ vidíš hneď po otvorení appky, netreba scrollovať; ukazuje aj zvolené kolá.",
+  ],
+  news103: [
+    "Ak máš appku 1.0.0, malé aktualizácie sa do nej nedostanú: raz si stiahni APK 1.0.3 a nainštaluj ho cez starú (dáta ostanú).",
+    "V menu pod verziou appky vidíš, kedy appka naposledy hľadala aktualizáciu a ako to dopadlo.",
   ],
 
   quotes: [

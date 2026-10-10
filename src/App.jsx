@@ -1,6 +1,6 @@
 import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import { isNative, pushBack, setRootBack, vibratePattern, keepScreenOn, openExternal, saveBackupFile, checkForUpdate } from "./native.js";
+import { isNative, pushBack, setRootBack, vibratePattern, keepScreenOn, openExternal, saveBackupFile, checkForUpdate, lastUpdate } from "./native.js";
 import { L, LANG, t as T, tp as TP, fmt, setLang, detectLang, LANGS, fmtLong, fmtShortDM, fmtMonthYear, weekdaysShort, capFirst } from "./i18n/index.js";
 
 // ─── DESIGN TOKENS ──────────────────────────────────────────────────────────
@@ -30,7 +30,7 @@ const THEMES = {
   slate:  { ink: "#15181d", panel: "#1f242b", panelHi: "#2a313a", line: "#3a434f", chalk: "#f1f4f8", dim: "#9aa6b4", edge: "#0e1115" },
   coffee: { ink: "#1c140f", panel: "#2a1f17", panelHi: "#382a20", line: "#4d3a2c", chalk: "#fbf3ec", dim: "#b8a291", edge: "#130d09" },
 };
-const APP_VERSION = "1.0.2";
+const APP_VERSION = "1.0.3";
 // Big Shoulders has no Cyrillic, so Oswald (also condensed) covers Ukrainian. The browser only
 // downloads the Oswald unicode ranges a page actually uses.
 const DISPLAY = "'Big Shoulders Display', 'Oswald', 'Arial Narrow', Impact, sans-serif";
@@ -1218,6 +1218,19 @@ function useClock() {
   useEffect(() => { const iv = setInterval(() => setNow(new Date()), 20000); return () => clearInterval(iv); }, []);
   return now;
 }
+// App only: one small line in the menu with the result of the last update check.
+function UpdStatus() {
+  const u = lastUpdate();
+  if (!u || !u.kind) return null;
+  const time = new Date(u.ts).toLocaleTimeString(LANG, { hour: "2-digit", minute: "2-digit" });
+  const txt = T("upd_" + u.kind, { v: u.v || "", e: u.err || "", time });
+  return (
+    <div data-upd-status={u.kind} style={{ padding: "0 18px 12px", marginTop: -6, fontSize: 11, lineHeight: 1.45, color: u.kind === "error" || u.kind === "net" ? C.signal : C.dim, fontFamily: BODY }}>
+      {txt}{u.failed ? <span style={{ display: "block", color: C.signal }}>{T("updFailedV", { v: u.failed })}</span> : null}
+    </div>
+  );
+}
+
 function TopBar({ screen, history, menuOpen, onMenu, onGo }) {
   const now = useClock();
   const today = dateKey();
@@ -1319,6 +1332,7 @@ function MenuDrawer({ open, screen, history, profile, session, onGo, onResume, o
           {!isNative && <button onClick={() => { sfxTap(); openExternal("https://github.com/mikydon/hw-app/releases/latest"); }} data-get-android style={{ ...btnBase, background: "transparent", color: C.mint, fontSize: 12, padding: "4px 0" }}>{T("getAndroid")}</button>}
           {onNews && <button onClick={onNews} data-news-btn style={{ ...btnBase, background: "transparent", color: C.sky, fontSize: 12, padding: "4px 0" }}>{T("newsLink")} ›</button>}
         </div>
+        {isNative && <UpdStatus />}
       </nav>
     </div>,
     document.body

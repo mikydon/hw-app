@@ -40,6 +40,14 @@ export default {
     getAndroid: "📱 Android app",
     support: "Support the app",
     supportDesc: "Patreon · optional, the app stays free",
+    upd_latest: "Updates: you have the newest version (checked {time})",
+    upd_staged: "Updates: {v} is downloaded and switches on at the next start (checked {time})",
+    upd_waiting: "Updates: {v} waits until you finish the workout (checked {time})",
+    upd_switching: "Updates: switching to {v}… (checked {time})",
+    upd_apk: "Updates: new big version {v}, download the APK (checked {time})",
+    upd_net: "Updates: couldn't check ({e}) · {time}",
+    upd_error: "Updates: error ({e}) · {time}",
+    updFailedV: "Version {v} couldn't be switched on; the app will try again.",
     hintTitle: "Did you know?",
     hintGo: "Show me",
     hint_themes: "Want a different colour? Settings → Appearance has 8 themes.",
@@ -733,6 +741,10 @@ export default {
   news102: [
     "Small updates now switch on at the next start of the app (before, only at the third). During a running workout they wait.",
     "The \u201cStart day\u201d button is on screen as soon as the app opens, no scrolling; it also shows the chosen rounds.",
+  ],
+  news103: [
+    "If you have app 1.0.0, small updates don't reach it: download the 1.0.3 APK once and install it over the old one (your data stays).",
+    "In the menu, under the app version, you can see when the app last looked for an update and how it went.",
   ],
 
   quotes: [

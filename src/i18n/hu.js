@@ -40,6 +40,14 @@ export default {
     getAndroid: "📱 Androidos app",
     support: "Támogasd az appot",
     supportDesc: "Patreon · önkéntes, az app ingyenes marad",
+    upd_latest: "Frissítések: a legújabb verzió van fent (ellenőrizve {time})",
+    upd_staged: "Frissítések: a(z) {v} letöltve, a következő indításkor bekapcsol (ellenőrizve {time})",
+    upd_waiting: "Frissítések: a(z) {v} megvárja, amíg befejezed az edzést (ellenőrizve {time})",
+    upd_switching: "Frissítések: a(z) {v} bekapcsolása… (ellenőrizve {time})",
+    upd_apk: "Frissítések: új nagy verzió ({v}), töltsd le az APK-t (ellenőrizve {time})",
+    upd_net: "Frissítések: nem sikerült ellenőrizni ({e}) · {time}",
+    upd_error: "Frissítések: hiba ({e}) · {time}",
+    updFailedV: "A(z) {v} verziót nem sikerült bekapcsolni; az app újra megpróbálja.",
     hintTitle: "Tudtad?",
     hintGo: "Mutasd",
     hint_themes: "Más színt szeretnél? A Beállítások → Megjelenés alatt 8 téma van.",
@@ -733,6 +741,10 @@ export default {
   news102: [
     "A kis frissítések már az app következő indításakor bekapcsolnak (korábban csak a harmadiknál). Futó edzés közben várnak.",
     "A „…-nap indítása” gomb az app megnyitásakor azonnal látszik, nem kell görgetni; a választott köröket is mutatja.",
+  ],
+  news103: [
+    "Ha az 1.0.0-s app van fent, a kis frissítések nem jutnak el hozzá: egyszer töltsd le az 1.0.3-as APK-t, és telepítsd a régire (az adataid megmaradnak).",
+    "A menüben az app verziója alatt látod, mikor kereste utoljára a frissítést, és mi lett az eredmény.",
   ],
 
   quotes: [
