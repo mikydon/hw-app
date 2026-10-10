@@ -5,7 +5,7 @@ Talk to Michael in casual Slovak. Before you deliver anything, test it (build pl
 
 ## Layout
 - `src/App.jsx`: the whole React app in one file (exercise data, figures, ranks, challenges, UI). No user-facing text lives here.
-- `src/i18n/`: `en.js` (base), `sk cs pl hu uk de es fr it pt`.js, `index.js` (`t`/`tp`, Intl dates, `LANGS`), `check.mjs` (run `node src/i18n/check.mjs` after any text change: keys, placeholders, plural forms).
+- `src/i18n/`: `en.js` (base), `sk cs pl hu uk de es fr it pt zh ja ko`.js, `index.js` (`t`/`tp`, Intl dates, `LANGS`), `check.mjs` (run `node src/i18n/check.mjs` after any text change: keys, placeholders, plural forms).
   - In App.jsx `t` is imported as `T` and `tp` as `TP` (locals named `t` exist). `applyLang()` copies texts into `EX`, `WARMUP`, `COOL`, `FIGS` labels and `RANKS`, like `applyTheme()` does for colours.
   - Any new string: add it to `en.js` and every locale file. Keep `{placeholders}`. Slovak wording is Michael's; keep it.
   - Units are codes (`arm`, `leg`, `side`). History saved before v1.2 has Slovak names and units (`/ruku`…); display goes through `exName()` and `unitStr()`.
