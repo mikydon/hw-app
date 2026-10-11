@@ -24,4 +24,7 @@ jobs:
           java-version: 21
       - run: npm install --no-audit --no-fund
       - name: Rules tests in the emulator
-        run: npm test
+        shell: bash
+        run: |
+          set -o pipefail
+          npm test 2>&1 | tee out.txt || { echo "::error title=Rules test log::$(tail -n 60 out.txt | sed -e 's/%/%25/g' | sed ':a;N;$!ba;s/\n/%0A/g')"; exit 1; }
