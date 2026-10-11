@@ -158,6 +158,12 @@ while IFS=$'\t' read -r kind ver tag title commit notes; do
     run gh release edit "$tag" --repo "$REPO" --latest
   else
     target=$(git rev-parse "${commit:-$GITHUB_SHA}^{commit}")
+    # a leftover tag without a release (e.g. v1.4.1 after its Browser beta release moved to beta-v1.4.1)
+    # points at old code; delete it so the new release gets its tag on the right commit
+    if gh api "repos/$REPO/git/ref/tags/$tag" >/dev/null 2>&1 && [ "$(tag_commit "$tag")" != "$target" ]; then
+      echo "deleting the leftover tag $tag ($(tag_commit "$tag"))"
+      run gh api -X DELETE "repos/$REPO/git/refs/tags/$tag"
+    fi
     echo "creating $tag at $target with the APK"
     run gh release create "$tag" --repo "$REPO" --target "$target" --title "$title" --notes-file "$notes" --latest "${files[@]}"
   fi
