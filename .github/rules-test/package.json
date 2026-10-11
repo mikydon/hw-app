@@ -2,7 +2,7 @@
   "name": "hw-app-rules-test",
   "private": true,
   "type": "module",
-  "scripts": { "test": "firebase emulators:exec --only firestore --project demo-hw-app \"node test.mjs\"" },
+  "scripts": { "test": "cp ../../firestore.rules . && firebase emulators:exec --only firestore --project demo-hw-app \"node test.mjs\"" },
   "devDependencies": {
     "@firebase/rules-unit-testing": "6.0.0",
     "firebase": "13.0.0",

@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import { initializeTestEnvironment, assertSucceeds, assertFails } from "@firebase/rules-unit-testing";
 import { doc, getDoc, setDoc, deleteDoc, collection, getDocs, query, orderBy, limit, writeBatch, addDoc, serverTimestamp } from "firebase/firestore";
 
-const env = await initializeTestEnvironment({ projectId: "demo-hw-app", firestore: { rules: readFileSync("../../firestore.rules", "utf8"), host: "127.0.0.1", port: 8080 } });
+const env = await initializeTestEnvironment({ projectId: "demo-hw-app", firestore: { rules: readFileSync("firestore.rules", "utf8"), host: "127.0.0.1", port: 8080 } });
 const as = u => (u ? env.authenticatedContext(u) : env.unauthenticatedContext()).firestore();
 const stats = (nick, code, extra = {}) => ({ nick, pfp: null, xp: 1200, lvl: 4, streak: 3, n: 12, code, global: false, ts: serverTimestamp(), ...extra });
 const board = nick => ({ nick, pfp: null, xp: 1200, lvl: 4, streak: 3, n: 12, ts: serverTimestamp() });
