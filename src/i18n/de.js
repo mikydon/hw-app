@@ -944,6 +944,10 @@ export default {
     "Obere Leiste in jedem Layout: ganz oben auf der Seite hängt sie am oberen Rand; beim Runterscrollen löst sie sich sanft zu einer schwebenden, abgerundeten Box.",
     "Flüssigglas sieht echtem Glas ähnlicher: ein Glanz aus der Ecke, eine sanfte Spiegelung und hellere Kanten. Weiterhin ohne Unschärfe, also bleibt alles flüssig.",
   ],
+  news143: [
+    "Das Layout Glas sieht echtem Glas ähnlicher: ein Glanz aus der Ecke, eine sanfte Spiegelung, eine helle Oberkante und ein sanftes Leuchten der Themenfarben hinter den Boxen. Die Startleiste und das ☰-Menü passen dazu, und das Handy wird weiterhin kaum belastet.",
+    "Obere Leiste: ganz oben auf der Seite füllt sie den Bildschirm jetzt von Rand zu Rand, ohne Linie oben oder an den Seiten.",
+  ],
   news14: [
     ["📱 Sicherungen", "„Sicherung speichern“ öffnete das Teilen-Menü, von selbst wurde nichts gespeichert.", "Sicherungen landen in Documents/HW App auf dem Handy. Schalte in den Einstellungen die automatische Sicherung ein: jeden Tag (und nach jedem Training) ersetzt eine frische Kopie die alte. Selbst gespeicherte Sicherungen bleiben, bis du sie löschst. Wiederherstellen, teilen oder löschen unter Einstellungen → Sicherungen auf dem Handy."],
     ["Abzeichen", "11 Abzeichen.", "21 Abzeichen. Neu: wie lange du schon trainierst, Health Connect (Eisen → Gold → Diamant), Frühaufsteher, Nachteule, Trainingszeit, A + B + C, Dehnen, Plank, Kalorienziel und 10.000 Schritte. Im Profil siehst du, wie viele Abzeichen und Stufen du hast."],

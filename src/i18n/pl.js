@@ -944,6 +944,10 @@ export default {
     "Górny pasek w każdym układzie: na samej górze strony przylega do górnej krawędzi; gdy przewijasz w dół, płynnie odkleja się w pływające zaokrąglone pole.",
     "Płynne szkło wygląda bardziej jak prawdziwe szkło: połysk od rogu, delikatne odbicie i jaśniejsze krawędzie. Nadal bez rozmycia, więc działa płynnie.",
   ],
+  news143: [
+    "Układ Szkło wygląda bardziej jak prawdziwe szkło: połysk od rogu, delikatne odbicie, jasna górna krawędź i delikatna poświata kolorów motywu za polami. Pasek startu i menu ☰ do niego pasują, a telefon nadal się nie męczy.",
+    "Górny pasek: na samej górze strony wypełnia ekran od krawędzi do krawędzi, bez linii u góry i po bokach.",
+  ],
   news14: [
     ["📱 Kopie zapasowe", "Zapisz kopię otwierało menu Udostępnij i nic nie zapisywało się samo.", "Kopie trafiają do Documents/HW App w telefonie. W Ustawieniach włącz Automatyczną kopię: codziennie (i po każdym treningu) nowa kopia zastępuje starą. Kopie zapisane przez ciebie zostają, dopóki ich nie usuniesz. Przywrócisz, udostępnisz lub usuniesz je w Ustawienia → Kopie w telefonie."],
     ["Odznaki", "11 odznak.", "21 odznak. Nowe: jak długo już trenujesz, Health Connect (Żelazo → Złoto → Diament), ranny ptaszek, nocny marek, czas treningu, A + B + C, rozciąganie, plank, cel kalorii i 10 000 kroków. W profilu widać, ile masz odznak i poziomów."],

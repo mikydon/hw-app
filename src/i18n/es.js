@@ -944,6 +944,10 @@ export default {
     "Barra superior en todos los diseños: arriba del todo se pega al borde superior; al desplazarte hacia abajo se despega suavemente en una caja flotante redondeada.",
     "El cristal líquido se parece más al cristal real: un brillo desde la esquina, un reflejo suave y bordes más claros. Sigue sin desenfoque, así que va fluido.",
   ],
+  news143: [
+    "El diseño Cristal se parece más al cristal real: un brillo desde la esquina, un reflejo suave, un borde superior claro y un suave resplandor de los colores del tema detrás de las cajas. La barra de inicio y el menú ☰ combinan con él, y sigue siendo ligero para el móvil.",
+    "Barra superior: arriba del todo ahora llena la pantalla de borde a borde, sin línea arriba ni a los lados.",
+  ],
   news14: [
     ["📱 Copias de seguridad", "Guardar copia abría el menú de compartir y nada se guardaba solo.", "Las copias van a Documents/HW App en tu móvil. Activa la copia automática en Ajustes: cada día (y después de cada entreno) una copia nueva sustituye a la anterior. Las que guardes tú se quedan hasta que las borres. Restaúralas, compártelas o bórralas en Ajustes → Copias en el móvil."],
     ["Insignias", "11 insignias.", "21 insignias. Nuevas: cuánto llevas entrenando, Health Connect (Hierro → Oro → Diamante), madrugador, noctámbulo, tiempo entrenado, A + B + C, estiramiento, plancha, objetivo de calorías y 10.000 pasos. En el perfil ves cuántas insignias y niveles tienes."],

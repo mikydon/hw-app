@@ -944,6 +944,10 @@ export default {
     "Horní lišta ve všech rozloženích: když jsi úplně nahoře, drží se horního okraje; když scrolluješ dolů, plynule se odlepí do plovoucího zaobleného boxu.",
     "Tekuté sklo vypadá víc jako skutečné sklo: odlesk z rohu, jemný odraz a světlejší hrany. Pořád bez rozmazání, takže zůstává plynulé.",
   ],
+  news143: [
+    "Rozložení Sklo vypadá víc jako skutečné sklo: odlesk z rohu, jemný odraz, světlá horní hrana a jemná záře barev motivu za boxy. Lišta se startem a menu ☰ k němu ladí a telefon to pořád nezatěžuje.",
+    "Horní lišta: když jsi úplně nahoře, vyplňuje obrazovku od kraje ke kraji, bez čáry nahoře a po stranách.",
+  ],
   news14: [
     ["📱 Zálohy", "Uložit zálohu otevřelo nabídku Sdílet a samo se neukládalo nic.", "Zálohy se ukládají do Documents/HW App v telefonu. V Nastavení zapni Automatickou zálohu: každý den (a po každém tréninku) nahradí starou zálohu nová. Zálohy, které uložíš sám, zůstanou, dokud je nesmažeš. Obnovit, sdílet nebo smazat je můžeš v Nastavení → Zálohy v telefonu."],
     ["Odznaky", "11 odznaků.", "21 odznaků. Nové: jak dlouho už trénuješ, Health Connect (Železo → Zlato → Diamant), ranní ptáče, noční sova, odcvičený čas, A + B + C, protažení, plank, cíl kalorií a 10 000 kroků. V profilu vidíš, kolik odznaků a úrovní máš."],

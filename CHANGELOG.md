@@ -10,6 +10,11 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 
 <!-- New version: add a "## x.y.z (date)" section on top (web-only history uses "## Browser beta x.y.z (date)"). On a push to main, .github/workflows/build.yml builds everything and .github/scripts/releases.sh creates/updates the releases (commit = the push, or the one in a commit comment). -->
 
+## 1.4.3 (2026-10-12)
+
+- The Glass layout looks more like real glass: a sheen from the top-left corner, a soft diagonal reflection, a bright rim along the top edge, and a dim glow of the theme colours behind the boxes (one background layer, drawn once). The floating Start bar, the top bar and the ☰ menu match it. Still opaque boxes without blur, so it stays light on the phone.
+- Top bar: at the top of the page it now fills the screen edge to edge (no line along the top or the sides); the floating box under it only appears once it peels off.
+
 ## 1.4.2 (2026-10-12)
 
 - The top bar in every layout: at the top of the page it hangs from the top edge (square top corners, rounded bottom corners); when you scroll down, it smoothly peels off into a floating rounded box, and back when you return to the top. Only opacity and position animate, so it costs no extra drawing.

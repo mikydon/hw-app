@@ -944,6 +944,10 @@ export default {
     "Barre du haut dans toutes les dispositions : tout en haut de la page, elle colle au bord supérieur ; quand tu fais défiler vers le bas, elle se détache en douceur en une boîte flottante arrondie.",
     "Le verre liquide ressemble davantage à du vrai verre : un reflet depuis le coin, une réflexion douce et des bords plus clairs. Toujours sans flou, donc tout reste fluide.",
   ],
+  news143: [
+    "La disposition Verre ressemble davantage à du vrai verre : un reflet depuis le coin, une réflexion douce, un bord supérieur clair et une douce lueur des couleurs du thème derrière les blocs. La barre de démarrage et le menu ☰ sont assortis, et le téléphone n'est toujours pas sollicité.",
+    "Barre du haut : tout en haut de la page, elle remplit maintenant l'écran d'un bord à l'autre, sans ligne en haut ni sur les côtés.",
+  ],
   news14: [
     ["📱 Sauvegardes", "Enregistrer une sauvegarde ouvrait le menu Partager, et rien ne s'enregistrait tout seul.", "Les sauvegardes vont dans Documents/HW App sur ton téléphone. Active la sauvegarde automatique dans les Réglages : chaque jour (et après chaque séance) une copie neuve remplace l'ancienne. Celles que tu enregistres toi-même restent jusqu'à ce que tu les supprimes. Restaure, partage ou supprime-les dans Réglages → Sauvegardes sur le téléphone."],
     ["Badges", "11 badges.", "21 badges. Nouveaux : depuis combien de temps tu t'entraînes, Health Connect (Fer → Or → Diamant), lève-tôt, couche-tard, temps d'entraînement, A + B + C, étirements, gainage, objectif calorique et 10 000 pas. Le profil montre combien de badges et de niveaux tu as."],

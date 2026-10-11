@@ -30,7 +30,7 @@ const THEMES = {
   slate:  { ink: "#15181d", panel: "#1f242b", panelHi: "#2a313a", line: "#3a434f", chalk: "#f1f4f8", dim: "#9aa6b4", edge: "#0e1115" },
   coffee: { ink: "#1c140f", panel: "#2a1f17", panelHi: "#382a20", line: "#4d3a2c", chalk: "#fbf3ec", dim: "#b8a291", edge: "#130d09" },
 };
-const APP_VERSION = "1.4.2";
+const APP_VERSION = "1.4.3";
 // Big Shoulders has no Cyrillic, so Oswald (also condensed) covers Ukrainian. The browser only
 // downloads the Oswald unicode ranges a page actually uses.
 const DISPLAY = "'Big Shoulders Display', 'Oswald', 'Arial Narrow', Impact, sans-serif";
@@ -1254,8 +1254,15 @@ const LIQUID_PILL = () => ({ background: "linear-gradient(180deg, rgba(255,255,2
 const liquidGrad = () => `radial-gradient(55% 40% at 8% 6%, ${C.sky}99, transparent 72%), radial-gradient(50% 38% at 96% 34%, ${C.signal}77, transparent 72%), radial-gradient(58% 42% at 14% 74%, ${C.mint}70, transparent 72%), radial-gradient(50% 36% at 90% 96%, #ff7ab666, transparent 72%), ${C.ink}`;
 function LiquidBg() {
   // its own GPU layer, painted once: scrolling and the menu don't repaint the big gradients
-  return <div aria-hidden="true" data-liquid-bg style={{ position: "fixed", inset: 0, zIndex: -1, pointerEvents: "none", background: liquidGrad(), transform: "translateZ(0)", willChange: "transform" }} />;
+  return <div aria-hidden="true" data-liquid-bg style={{ position: "fixed", inset: 0, zIndex: -1, pointerEvents: "none", background: LOOK === "glass" ? glassGrad() : liquidGrad(), transform: "translateZ(0)", willChange: "transform" }} />;
 }
+// "Glass" (Sklo, Michael's favourite: like Liquid glass but lighter on the phone). 1.4.2: more like real glass, still
+// opaque boxes (no transparency to blend, no blur): the theme's dark gradient with a sheen from the top-left corner and
+// a faint diagonal reflection, a bright rim along the top edge, a light one at the bottom, and a soft shadow. The
+// page gets a dim glow of the theme colours (one layer, painted once) so the glass has something to sit on.
+const GLASS_LOOK_SHEEN = "linear-gradient(130deg, rgba(255,255,255,.14) 0%, rgba(255,255,255,.045) 28%, rgba(255,255,255,0) 50%, rgba(255,255,255,0) 61%, rgba(255,255,255,.06) 68%, rgba(255,255,255,0) 76%)";
+const GLASS = () => ({ background: `${GLASS_LOOK_SHEEN}, linear-gradient(160deg, ${C.panelHi}, ${C.panel} 62%)`, border: `1px solid ${C.chalk}1c`, borderRadius: 24, boxShadow: "inset 0 1px 0 rgba(255,255,255,.22), inset 0 -1px 0 rgba(255,255,255,.06), 0 8px 22px rgba(0,0,0,.28)" });
+const glassGrad = () => `radial-gradient(70% 45% at 0% 0%, ${C.sky}40, transparent 70%), radial-gradient(60% 40% at 100% 45%, ${C.signal}26, transparent 70%), radial-gradient(70% 45% at 10% 100%, ${C.mint}26, transparent 70%), ${C.ink}`;
 // The − / + buttons of the rep counter: theme colours (and glass in the liquid look), never a fixed navy edge.
 const stepBtn = () => ({ ...btnBase, width: 64, height: 64, borderRadius: 99, background: C.panelHi, color: C.chalk, fontSize: 32, lineHeight: 1, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, "--e": EDGE[C.panelHi], ...(LOOK === "liquid" ? LIQUID_PILL() : {}) });
 // Section title row: the title on the left, an optional quiet count/chip on the right (same on every screen).
@@ -1270,7 +1277,7 @@ function Sect({ title, meta, children, style, titlePad, accent, ...rest }) {
     </section>
   );
   if (LOOK === "glass") return (
-    <section {...rest} data-sect style={{ background: `linear-gradient(160deg, ${C.panelHi}, ${C.panel} 60%)`, border: `1px solid ${C.chalk}14`, borderRadius: 24, padding: "15px 16px", marginTop: 12, boxShadow: "0 10px 30px rgba(0,0,0,.28)", ...style }}>
+    <section {...rest} data-sect style={{ ...GLASS(), padding: "15px 16px", marginTop: 12, ...style }}>
       {title && <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: C.dim, marginBottom: 10, padding: titlePad || 0, ...SECT_HEAD }}><span>{title}</span>{sectMeta(meta)}</div>}
       {children}
     </section>
@@ -1409,7 +1416,8 @@ function TopBar({ screen, history, menuOpen, onMenu, onGo, dlPct }) {
   const pill = liquid ? LIQUID_PILL() : { background: "transparent" };
   // 1.4.2 (Michael): one top bar for every look. At the top of the page it hangs from the top edge (square top
   // corners, rounded bottom corners); once the page scrolls it peels off into a floating rounded box. The box and its
-  // content never move: a full-width plate lies over it at the top and shrinks + fades into it on scroll, and the
+  // content never move: at the top a full-width plate (no top/side edges, it fills the screen edge to edge; the box
+  // under it is hidden so nothing shows through) shrinks + fades into the box on scroll, and the
   // fade over the status bar comes in. Only opacity and transform animate (the compositor does it, no repaint, no
   // layout), and a finished plate or fade is hidden so it isn't drawn on every scrolled frame.
   const [fl, setFl] = useState(() => typeof window !== "undefined" && window.scrollY > 12);
@@ -1421,12 +1429,12 @@ function TopBar({ screen, history, menuOpen, onMenu, onGo, dlPct }) {
     check();
     return () => { window.removeEventListener("scroll", on); if (raf) cancelAnimationFrame(raf); };
   }, []);
-  const box = liquid ? { ...LIQUID_FLOAT(), boxShadow: GLASS_EDGE } : { background: LOOK === "glass" ? card.background : LOOK === "tiles" ? C.panelHi : C.panel, border: `1px solid ${LOOK === "glass" ? `${C.chalk}14` : C.line}` };
+  const box = liquid ? { ...LIQUID_FLOAT(), boxShadow: GLASS_EDGE } : LOOK === "glass" ? { ...GLASS(), borderRadius: undefined, boxShadow: "inset 0 1px 0 rgba(255,255,255,.22), inset 0 -1px 0 rgba(255,255,255,.06)" } : { background: LOOK === "tiles" ? C.panelHi : C.panel, border: `1px solid ${C.line}` };
   return (
     <div data-topbar data-topbar-float={fl ? 1 : 0} className={"tbOut" + (fl ? " fl" : "")} style={{ "--tbFade": C.ink }}>
       <div className="tbWrap">
         <div aria-hidden="true" className="tbPill" style={{ ...box, boxShadow: `${liquid ? GLASS_EDGE + ", " : ""}0 10px 26px rgba(0,0,0,.3)` }} />
-        <div aria-hidden="true" data-topbar-plate className="tbPlate" style={{ ...box, borderTopColor: "transparent" }} />
+        <div aria-hidden="true" data-topbar-plate className="tbPlate" style={{ background: box.background, borderBottom: box.border }} />
         <div data-topbar-box className="tbBox">
         <div style={{ flex: 1, minWidth: 0 }}>
           <div key={screen} className="titleIn" style={{ fontFamily: DISPLAY, fontSize: CJK.test(T(SCREEN_TITLE[screen])) ? 21 : 24, fontWeight: 900, lineHeight: 1.05, color: C.chalk, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{T(SCREEN_TITLE[screen])}</div>
@@ -1479,7 +1487,7 @@ function MenuDrawer({ open, screen, history, profile, session, onGo, onResume, o
   return createPortal(
     <div role="dialog" aria-modal="true" aria-label={T("mainMenu")} className={open ? "drawerOn" : "drawerOff"} style={{ position: "fixed", inset: 0, zIndex: 60 }}>
       <div onClick={onClose} className="drawerBg" style={{ position: "absolute", inset: 0, background: "rgba(3,8,20,.6)" }} />
-      <nav aria-label={T("mainMenu")} className="drawerPanel" style={{ fontFamily: BODY, position: "absolute", top: 0, right: 0, bottom: 0, width: "min(86vw, 340px)", background: C.ink, borderLeft: `1px solid ${C.line}`, boxShadow: "-20px 0 50px rgba(0,0,0,.35)", ...(LOOK === "liquid" ? { background: liquidGrad(), borderLeft: "1px solid rgba(255,255,255,.16)" } : {}), display: "flex", flexDirection: "column", paddingTop: "var(--sat)", paddingBottom: "var(--sab)", overflowY: "auto" }}>
+      <nav aria-label={T("mainMenu")} className="drawerPanel" style={{ fontFamily: BODY, position: "absolute", top: 0, right: 0, bottom: 0, width: "min(86vw, 340px)", background: C.ink, borderLeft: `1px solid ${C.line}`, boxShadow: "-20px 0 50px rgba(0,0,0,.35)", ...(LOOK === "liquid" ? { background: liquidGrad(), borderLeft: "1px solid rgba(255,255,255,.16)" } : LOOK === "glass" ? { background: glassGrad() } : {}), display: "flex", flexDirection: "column", paddingTop: "var(--sat)", paddingBottom: "var(--sab)", overflowY: "auto" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px 4px 18px" }}>
           <div style={{ fontFamily: DISPLAY, fontSize: 15, fontWeight: 800, color: C.dim, letterSpacing: 1 }}>HW APP</div>
           <MenuButton open={true} onClick={onClose} btnRef={closeRef} />
@@ -1923,7 +1931,7 @@ function FloatStart({ show, day, rounds, setRounds, onStart }) {
   return createPortal(
     <div data-fstart={show ? "on" : "off"} aria-hidden={!show} className={"fstart" + (show ? " on" : "")}
       style={{ position: "fixed", left: 0, right: 0, bottom: "calc(var(--sab, 0px) + 12px)", zIndex: 40, display: "flex", justifyContent: "center", padding: "0 12px", pointerEvents: show ? "auto" : "none" }}>
-      <div data-fstart-box style={{ display: "flex", gap: 8, width: "100%", maxWidth: 436, padding: 8, borderRadius: 22, background: `${C.ink}f5`, border: `1px solid ${C.line}`, boxShadow: "0 12px 34px rgba(0,0,0,.5)", ...(LOOK === "liquid" ? { ...LIQUID_FLOAT(), borderRadius: 26 } : {}) }}>
+      <div data-fstart-box style={{ display: "flex", gap: 8, width: "100%", maxWidth: 436, padding: 8, borderRadius: 22, background: `${C.ink}f5`, border: `1px solid ${C.line}`, boxShadow: "0 12px 34px rgba(0,0,0,.5)", ...(LOOK === "liquid" ? { ...LIQUID_FLOAT(), borderRadius: 26 } : LOOK === "glass" ? { ...GLASS(), borderRadius: 22, boxShadow: "inset 0 1px 0 rgba(255,255,255,.22), 0 12px 34px rgba(0,0,0,.5)" } : {}) }}>
         {[3, 2].map((n, i) => (
           <button key={n} tabIndex={show ? 0 : -1} data-fround={n} aria-pressed={rounds === n} aria-label={T("roundsBtn", { n, m: n === 2 ? 13 : 19 })} onClick={() => { sfxTap(); setRounds(n); }} className="fsq" style={{ ...btnBase, "--d": `${60 + i * 50}ms`, width: 58, flexShrink: 0, borderRadius: 14, padding: "6px 0", background: rounds === n ? C.chalk : C.panel, color: rounds === n ? C.ink : C.dim, border: `1.5px solid ${rounds === n ? C.chalk : C.line}`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", lineHeight: 1, ...(LOOK === "liquid" && rounds !== n ? { ...LIQUID_PILL(), color: C.chalk } : {}) }}>
             <span style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900 }}>{n === 2 ? 13 : 19}</span>
@@ -4541,12 +4549,12 @@ export default function App() {
   applyTheme(settings.theme);
   LOOK = settings.look || "cards";
   if (LOOK === "tiles") card = { background: C.panelHi, border: `1px solid ${C.panelHi}`, borderRadius: 16 };
-  if (LOOK === "glass") card = { background: `linear-gradient(160deg, ${C.panelHi}, ${C.panel} 60%)`, border: `1px solid ${C.chalk}14`, borderRadius: 24, boxShadow: "0 10px 30px rgba(0,0,0,.28)" };
+  if (LOOK === "glass") card = GLASS();
   if (LOOK === "accent") card = { background: C.panel, border: `1px solid ${C.line}`, borderLeft: `4px solid ${C.chalk}40`, borderRadius: 16 };
   if (LOOK === "liquid") card = LIQUID();
   if (LOOK === "liquid") sectionTitle = { ...sectionTitle, color: `${C.chalk}b3` };
   // The liquid background sits at z-index -1: it shows only when body has no background of its own (html keeps the colour).
-  try { document.documentElement.style.background = C.ink; document.body.style.background = LOOK === "liquid" ? "transparent" : C.ink; } catch (_) {}
+  try { document.documentElement.style.background = C.ink; document.body.style.background = LOOK === "liquid" || LOOK === "glass" ? "transparent" : C.ink; } catch (_) {}
   applyLang(settings.lang || detectLang());
   const setSettings = n => { setSettingsState(n); saveSettings(n); };
   const [profLoaded, setProfLoaded] = useState(false);
@@ -4696,7 +4704,7 @@ export default function App() {
 
   return (
     <div style={{ minHeight: "100vh", background: LOOK === "liquid" ? "transparent" : C.ink, color: C.chalk, fontFamily: BODY }}>
-      {LOOK === "liquid" && <LiquidBg />}
+      {(LOOK === "liquid" || LOOK === "glass") && <LiquidBg />}
       <style>{`
         button:focus-visible{outline:3px solid ${C.signal};outline-offset:2px}
         [data-reps-input]::-webkit-inner-spin-button,[data-reps-input]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
@@ -4747,11 +4755,12 @@ export default function App() {
         .tbOut.fl::before{opacity:1;visibility:visible;transition:opacity .35s ease}
         .tbWrap{position:relative;max-width:440px;margin:0 auto}
         .tbBox{pointer-events:auto;position:relative;z-index:3;display:flex;align-items:center;gap:8px;padding:11px 13px 11px 19px}
-        .tbPill{position:absolute;inset:0;border-radius:24px}
+        .tbPill{position:absolute;inset:0;border-radius:24px;opacity:0;visibility:hidden;transition:opacity .3s ease,visibility 0s .3s}
+        .tbOut.fl .tbPill{opacity:1;visibility:visible;transition:opacity .3s ease}
         .tbPlate{position:absolute;z-index:2;pointer-events:none;left:-10px;right:-10px;bottom:0;top:calc(-6px - var(--sat));border-radius:0 0 26px 26px;transform-origin:50% 100%;transition:transform .5s cubic-bezier(.22,1,.36,1),opacity .38s ease}
         .tbOut.fl .tbPlate{opacity:0;visibility:hidden;transform:scale(.952,.7);transition:transform .5s cubic-bezier(.22,1,.36,1),opacity .38s ease,visibility 0s .5s}
         @media (max-width: 380px){.tbOut{padding-left:6px;padding-right:6px}.tbPlate{left:-6px;right:-6px}.tbBox{padding:11px 9px 11px 13px;gap:6px}}
-        @media (prefers-reduced-motion: reduce){.tbOut::before,.tbOut.fl::before,.tbPlate,.tbOut.fl .tbPlate{transition:none}}
+        @media (prefers-reduced-motion: reduce){.tbOut::before,.tbOut.fl::before,.tbPlate,.tbOut.fl .tbPlate,.tbPill,.tbOut.fl .tbPill{transition:none}}
         @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}.conf{display:none}}
       `}</style>
       {!loaded ? (

@@ -944,6 +944,10 @@ export default {
     "Felső sáv minden elrendezésben: az oldal tetején a felső szélhez simul; lefelé görgetéskor finoman leválik egy lebegő, lekerekített dobozzá.",
     "A folyékony üveg jobban hasonlít a valódi üvegre: fényes csillanás a sarokból, lágy tükröződés és világosabb élek. Továbbra is elmosás nélkül, így gördülékeny marad.",
   ],
+  news143: [
+    "Az Üveg elrendezés jobban hasonlít a valódi üvegre: csillanás a sarokból, lágy tükröződés, világos felső él és a téma színeinek halvány fénye a dobozok mögött. Az indítósáv és a ☰ menü illik hozzá, és a telefont továbbra sem terheli.",
+    "Felső sáv: az oldal tetején most szélétől széléig kitölti a képernyőt, vonal nélkül felül és oldalt.",
+  ],
   news14: [
     ["📱 Mentések", "A Mentés a megosztás menüt nyitotta meg, és semmi sem mentődött magától.", "A mentések a telefon Documents/HW App mappájába kerülnek. A Beállításokban kapcsold be az Automatikus mentést: minden nap (és minden edzés után) friss mentés lép a régi helyére. A saját mentéseid megmaradnak, amíg nem törlöd őket. Visszaállítani, megosztani vagy törölni a Beállítások → Mentések a telefonon alatt tudod."],
     ["Jelvények", "11 jelvény.", "21 jelvény. Újak: mióta edzel, Health Connect (Vas → Arany → Gyémánt), korán kelő, éjjeli bagoly, edzésidő, A + B + C, nyújtás, plank, kalóriacél és 10 000 lépés. A profilban látod, hány jelvényed és szinted van."],

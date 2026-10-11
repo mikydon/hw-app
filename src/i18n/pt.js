@@ -944,6 +944,10 @@ export default {
     "Barra superior em todos os layouts: no topo da página fica presa à borda superior; ao deslizar para baixo, solta-se suavemente numa caixa flutuante arredondada.",
     "O vidro líquido parece mais vidro de verdade: um brilho a partir do canto, um reflexo suave e bordas mais claras. Continua sem desfoque, então tudo fica fluido.",
   ],
+  news143: [
+    "O layout Vidro parece mais vidro de verdade: um brilho a partir do canto, um reflexo suave, uma borda superior clara e um brilho suave das cores do tema atrás das caixas. A barra de início e o menu ☰ combinam com ele, e continua leve para o telemóvel.",
+    "Barra superior: no topo da página, agora preenche o ecrã de uma ponta à outra, sem linha em cima nem dos lados.",
+  ],
   news14: [
     ["📱 Cópias de segurança", "Guardar cópia abria o menu de partilha e nada se guardava sozinho.", "As cópias vão para Documents/HW App no telemóvel. Liga a cópia automática nas Definições: todos os dias (e depois de cada treino) uma cópia nova substitui a antiga. As que guardares tu ficam até as apagares. Restaura, partilha ou apaga-as em Definições → Cópias no telemóvel."],
     ["Medalhas", "11 medalhas.", "21 medalhas. Novas: há quanto tempo treinas, Health Connect (Ferro → Ouro → Diamante), madrugador, noctívago, tempo de treino, A + B + C, alongamentos, prancha, meta de calorias e 10 000 passos. No perfil vês quantas medalhas e níveis tens."],

@@ -944,6 +944,10 @@ export default {
     "Top bar in every layout: at the top of the page it hangs from the top edge; when you scroll down, it smoothly peels off into a floating rounded box.",
     "Liquid glass looks more like real glass: a sheen from the corner, a soft reflection and brighter edges. Still without blur, so it stays smooth.",
   ],
+  news143: [
+    "Glass layout looks more like real glass: a sheen from the corner, a soft reflection, a bright top edge and a soft glow of the theme colours behind the boxes. The Start bar and the ☰ menu match it, and it stays light on the phone.",
+    "Top bar: at the top of the page it now fills the screen edge to edge, without a line at the top or sides.",
+  ],
   news14: [
     ["📱 Backups", "Save backup opened the share menu, and nothing was ever saved by itself.", "Backups go to Documents/HW App on your phone. Turn on Automatic backup in Settings: every day (and after every workout) a fresh copy replaces the old one. Backups you save yourself stay until you delete them. Restore, share or delete them in Settings → Backups in the phone."],
     ["Badges", "11 badges.", "21 badges. New: how long you've been training, Health Connect (Iron → Gold → Diamond), early bird, night owl, time trained, A + B + C, stretching, plank, calorie target and 10,000 steps. Profile shows how many badges and levels you have."],
