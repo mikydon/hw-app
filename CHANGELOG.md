@@ -10,6 +10,11 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 
 <!-- New version: add a "## x.y.z (date)" section on top (web-only history uses "## Browser beta x.y.z (date)"). On a push to main, .github/workflows/build.yml builds everything and .github/scripts/releases.sh creates/updates the releases (commit = the push, or the one in a commit comment). -->
 
+## 1.4.2 (2026-10-12)
+
+- The top bar in every layout: at the top of the page it hangs from the top edge (square top corners, rounded bottom corners); when you scroll down, it smoothly peels off into a floating rounded box, and back when you return to the top. Only opacity and position animate, so it costs no extra drawing.
+- Liquid glass looks more like real glass: a sheen from the top-left corner, a soft diagonal reflection, a bright rim along the top edge and a lighter one at the bottom. Still without blur (measured: scrolling costs the same as in 1.4.1).
+
 ## 1.4.1 (2026-10-11)
 
 - Liquid glass is smoother: no blur anywhere any more (the top bar, Start bar and mini player got a stronger tint instead), the colour background sits on its own layer and is drawn once, cards have no large drop shadows, and the ☰ menu opens with one slide instead of animating every row.

@@ -30,7 +30,7 @@ const THEMES = {
   slate:  { ink: "#15181d", panel: "#1f242b", panelHi: "#2a313a", line: "#3a434f", chalk: "#f1f4f8", dim: "#9aa6b4", edge: "#0e1115" },
   coffee: { ink: "#1c140f", panel: "#2a1f17", panelHi: "#382a20", line: "#4d3a2c", chalk: "#fbf3ec", dim: "#b8a291", edge: "#130d09" },
 };
-const APP_VERSION = "1.4.1";
+const APP_VERSION = "1.4.2";
 // Big Shoulders has no Cyrillic, so Oswald (also condensed) covers Ukrainian. The browser only
 // downloads the Oswald unicode ranges a page actually uses.
 const DISPLAY = "'Big Shoulders Display', 'Oswald', 'Arial Narrow', Impact, sans-serif";
@@ -1233,15 +1233,22 @@ const SOFT = () => (LOOK === "tiles" ? `${C.ink}55` : LOOK === "liquid" ? "rgba(
 // 1.4.1 (Michael: "sekavá"): the boxes no longer blur what is behind them. Behind a box there is only the soft colour
 // background, which is already blurry, so it looks the same, but a blur per box made every scroll frame expensive
 // on phones. Since 1.4.1 nothing blurs at all (the bars use a strong tint instead).
-const LIQUID = () => ({ background: "rgba(255,255,255,.085)", border: "1px solid rgba(255,255,255,.16)", borderRadius: 26, boxShadow: "inset 0 1px 0 rgba(255,255,255,.14)" });
+// 1.4.2 (Michael: "ešte viacej realisticky ako glass", but optimized): still no blur. Real glass catches light: one
+// gradient carries a sheen from the top-left corner and a faint diagonal reflection further down; the rim is bright
+// along the top edge, lighter again at the bottom (light coming through the thickness), with a thin second line for
+// the edge. One gradient and sharp 1px inset lines only (measured: every extra full-card gradient or blurred shadow
+// costs raster time while scrolling); painted once, nothing runs per frame.
+const GLASS_SHEEN = "linear-gradient(130deg, rgba(255,255,255,.2) 0%, rgba(255,255,255,.07) 28%, rgba(255,255,255,0) 50%, rgba(255,255,255,0) 61%, rgba(255,255,255,.075) 68%, rgba(255,255,255,0) 76%)";
+const GLASS_EDGE = "inset 0 1px 0 rgba(255,255,255,.38), inset 0 -1px 0 rgba(255,255,255,.14), inset 0 0 0 1px rgba(255,255,255,.06)";
+const LIQUID = () => ({ background: `${GLASS_SHEEN}, rgba(255,255,255,.07)`, border: "1px solid rgba(255,255,255,.14)", borderRadius: 26, boxShadow: GLASS_EDGE });
 // The same glass for the bars and floating panels (top bar, floating start, mini player, menu, sheets; Michael, Oct 10:
 // "tam sa to applajnut musí tiež"), and small glass pills for the chips and buttons on them.
 // A dark layer under the white tint keeps text readable when something bright (a white button) passes behind.
 // 1.4.1: no blur at all any more (Michael: still laggy in Liquid glass, menu too). A more opaque tint keeps text
 // readable when content scrolls under the bar; the look stays glassy over the colour background.
 const LIQUID_BAR = (dark = "f0") => ({ background: `linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.04)), ${C.ink}${dark}` });
-const LIQUID_FLOAT = () => ({ ...LIQUID_BAR("ee"), border: "1px solid rgba(255,255,255,.2)", boxShadow: "inset 0 1px 0 rgba(255,255,255,.18), 0 10px 24px rgba(0,0,0,.3)" });
-const LIQUID_PILL = () => ({ background: "rgba(255,255,255,.09)", border: "1px solid rgba(255,255,255,.2)", boxShadow: "inset 0 1px 0 rgba(255,255,255,.16)" });
+const LIQUID_FLOAT = () => ({ background: `${GLASS_SHEEN}, linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.04)), ${C.ink}ee`, border: "1px solid rgba(255,255,255,.18)", boxShadow: `${GLASS_EDGE}, 0 10px 24px rgba(0,0,0,.3)` });
+const LIQUID_PILL = () => ({ background: "linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,.05))", border: "1px solid rgba(255,255,255,.18)", boxShadow: "inset 0 1px 0 rgba(255,255,255,.30), inset 0 -1px 0 rgba(0,0,0,.16)" });
 // The colour blobs of the theme: the page background, and the ☰ menu panel gets its own copy (1.3.1, Michael: the
 // menu looked different, a flat dark panel, because it only blurred the dimmed page behind it).
 const liquidGrad = () => `radial-gradient(55% 40% at 8% 6%, ${C.sky}99, transparent 72%), radial-gradient(50% 38% at 96% 34%, ${C.signal}77, transparent 72%), radial-gradient(58% 42% at 14% 74%, ${C.mint}70, transparent 72%), radial-gradient(50% 36% at 90% 96%, #ff7ab666, transparent 72%), ${C.ink}`;
@@ -1400,13 +1407,27 @@ function TopBar({ screen, history, menuOpen, onMenu, onGo, dlPct }) {
   const lv = levelInfo(totalXP(history));
   const liquid = LOOK === "liquid";
   const pill = liquid ? LIQUID_PILL() : { background: "transparent" };
+  // 1.4.2 (Michael): one top bar for every look. At the top of the page it hangs from the top edge (square top
+  // corners, rounded bottom corners); once the page scrolls it peels off into a floating rounded box. The box and its
+  // content never move: a full-width plate lies over it at the top and shrinks + fades into it on scroll, and the
+  // fade over the status bar comes in. Only opacity and transform animate (the compositor does it, no repaint, no
+  // layout), and a finished plate or fade is hidden so it isn't drawn on every scrolled frame.
+  const [fl, setFl] = useState(() => typeof window !== "undefined" && window.scrollY > 12);
+  useEffect(() => {
+    let raf = 0;
+    const check = () => { raf = 0; const y = window.scrollY; setFl(f => (f ? y > 4 : y > 12)); };
+    const on = () => { if (!raf) raf = requestAnimationFrame(check); };
+    window.addEventListener("scroll", on, { passive: true });
+    check();
+    return () => { window.removeEventListener("scroll", on); if (raf) cancelAnimationFrame(raf); };
+  }, []);
+  const box = liquid ? { ...LIQUID_FLOAT(), boxShadow: GLASS_EDGE } : { background: LOOK === "glass" ? card.background : LOOK === "tiles" ? C.panelHi : C.panel, border: `1px solid ${LOOK === "glass" ? `${C.chalk}14` : C.line}` };
   return (
-    // Liquid glass (1.4.1, Michael: "ako ten workout box"): the bar floats as a rounded glass box under the status bar,
-    // with a soft fade above it so content scrolling past the status bar stays calm. Other looks: the full-width bar.
-    <div data-topbar data-topbar-float={liquid ? 1 : 0} style={liquid
-      ? { position: "sticky", top: 0, zIndex: 20, padding: "calc(6px + var(--sat)) 10px 6px", background: `linear-gradient(180deg, ${C.ink} 0, ${C.ink}d9 calc(var(--sat) + 4px), ${C.ink}00 100%)` }
-      : { position: "sticky", top: 0, zIndex: 20, background: `${C.ink}f7`, borderBottom: `1px solid ${C.line}` }}>
-      <div style={{ maxWidth: liquid ? 440 : 460, margin: "0 auto", padding: liquid ? "9px 10px 9px 16px" : "calc(10px + var(--sat)) 18px 10px", display: "flex", alignItems: "center", gap: 8, position: "relative", ...(liquid ? { ...LIQUID_FLOAT(), borderRadius: 24 } : {}) }}>
+    <div data-topbar data-topbar-float={fl ? 1 : 0} className={"tbOut" + (fl ? " fl" : "")} style={{ "--tbFade": C.ink }}>
+      <div className="tbWrap">
+        <div aria-hidden="true" className="tbPill" style={{ ...box, boxShadow: `${liquid ? GLASS_EDGE + ", " : ""}0 10px 26px rgba(0,0,0,.3)` }} />
+        <div aria-hidden="true" data-topbar-plate className="tbPlate" style={{ ...box, borderTopColor: "transparent" }} />
+        <div data-topbar-box className="tbBox">
         <div style={{ flex: 1, minWidth: 0 }}>
           <div key={screen} className="titleIn" style={{ fontFamily: DISPLAY, fontSize: CJK.test(T(SCREEN_TITLE[screen])) ? 21 : 24, fontWeight: 900, lineHeight: 1.05, color: C.chalk, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{T(SCREEN_TITLE[screen])}</div>
           <div style={{ display: "flex", gap: 5, fontSize: 12, color: bdayToday() ? C.signal : C.dim, fontWeight: bdayToday() ? 800 : 400, marginTop: 2, whiteSpace: "nowrap" }}>
@@ -1417,8 +1438,9 @@ function TopBar({ screen, history, menuOpen, onMenu, onGo, dlPct }) {
         <button onClick={() => onGo && onGo("profile")} data-chip="streak" style={{ ...btnBase, ...chip(st.n ? "#ffa94d" : C.dim), ...pill }} aria-label={T("streakAria", { n: st.n })}><span className={st.n ? "wiggle" : ""}>🔥</span>{st.n}</button>
         <button onClick={() => onGo && onGo("profile")} data-chip="level" style={{ ...btnBase, ...chip(C.sky), ...pill }} aria-label={T("levelAria", { n: lv.lvl })}>⚡{lv.lvl}</button>
         <MenuButton open={menuOpen} onClick={onMenu} />
+        {typeof prog === "number" && <div data-top-prog={Math.round(prog)} role="progressbar" aria-valuenow={Math.round(prog)} aria-valuemin={0} aria-valuemax={100} style={{ position: "absolute", left: 18, bottom: 4, height: 3, width: `calc((100% - 36px) * ${Math.max(2, Math.min(100, prog)) / 100})`, background: C.sky, borderRadius: 3, transition: "width .3s", boxShadow: `0 0 8px ${C.sky}` }} />}
+        </div>
       </div>
-      {typeof prog === "number" && <div data-top-prog={Math.round(prog)} role="progressbar" aria-valuenow={Math.round(prog)} aria-valuemin={0} aria-valuemax={100} style={{ position: "absolute", left: liquid ? 24 : 0, bottom: liquid ? 7 : -1, height: 3, width: liquid ? `calc((100% - 48px) * ${Math.max(2, Math.min(100, prog)) / 100})` : `${Math.max(2, Math.min(100, prog))}%`, background: C.sky, borderRadius: liquid ? 3 : "0 3px 3px 0", transition: "width .3s", boxShadow: `0 0 8px ${C.sky}` }} />}
     </div>
   );
 }
@@ -4607,13 +4629,16 @@ export default function App() {
     if (!loaded || !settingsLoaded || newsChecked) return;
     setNewsChecked(true);
     // (a seenVersion newer than the app comes from the old website numbering, e.g. Browser beta 1.4.2: show What's new)
-    if (bigVer(settings.seenVersion) === bigVer(APP_VERSION) && verCmp(settings.seenVersion, APP_VERSION) <= 0) {
+    // From 1.4.2 the app marks its own seenVersion (seenApp), because app 1.4.2 and Browser beta 1.4.2 share the number:
+    // a "1.4.2" without the mark was saved by the old website, so that user still gets the big What's new.
+    const betaSeen = settings.seenVersion === "1.4.2" && !settings.seenApp;
+    if (!betaSeen && bigVer(settings.seenVersion) === bigVer(APP_VERSION) && verCmp(settings.seenVersion, APP_VERSION) <= 0) {
       // small update: show the card now and remember the version right away, so it's gone next time
-      if (newsUnseen(settings.seenVersion)) { setUpdCard(true); setSettings({ ...settings, seenVersion: APP_VERSION }); }
+      if (newsUnseen(settings.seenVersion)) { setUpdCard(true); setSettings({ ...settings, seenVersion: APP_VERSION, seenApp: true }); }
       return;
     }
     if (history.length > 0) setNewsOpen(true); // someone who used an older version
-    else setSettings({ ...settings, seenVersion: APP_VERSION }); // a new install has nothing to compare
+    else setSettings({ ...settings, seenVersion: APP_VERSION, seenApp: true }); // a new install has nothing to compare
   }, [loaded, settingsLoaded]);
 
   useEffect(() => { if (!session || sessionOpen) window.scrollTo?.(0, 0); }, [session?.phase, session?.pos]);
@@ -4717,6 +4742,16 @@ export default function App() {
         .haloBit{animation:halo 1.8s ease-in-out var(--d) infinite}
         @keyframes titleIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
         .titleIn{animation:titleIn .28s ease-out both}
+        .tbOut{position:sticky;top:0;z-index:20;display:flow-root;pointer-events:none;padding:calc(var(--sat) + 6px) 10px 2px}
+        .tbOut::before{content:"";position:absolute;left:0;right:0;top:0;height:calc(var(--sat) + 22px);background:linear-gradient(180deg,var(--tbFade) var(--sat),transparent);opacity:0;visibility:hidden;transition:opacity .35s ease,visibility 0s .35s}
+        .tbOut.fl::before{opacity:1;visibility:visible;transition:opacity .35s ease}
+        .tbWrap{position:relative;max-width:440px;margin:0 auto}
+        .tbBox{pointer-events:auto;position:relative;z-index:3;display:flex;align-items:center;gap:8px;padding:11px 13px 11px 19px}
+        .tbPill{position:absolute;inset:0;border-radius:24px}
+        .tbPlate{position:absolute;z-index:2;pointer-events:none;left:-10px;right:-10px;bottom:0;top:calc(-6px - var(--sat));border-radius:0 0 26px 26px;transform-origin:50% 100%;transition:transform .5s cubic-bezier(.22,1,.36,1),opacity .38s ease}
+        .tbOut.fl .tbPlate{opacity:0;visibility:hidden;transform:scale(.952,.7);transition:transform .5s cubic-bezier(.22,1,.36,1),opacity .38s ease,visibility 0s .5s}
+        @media (max-width: 380px){.tbOut{padding-left:6px;padding-right:6px}.tbPlate{left:-6px;right:-6px}.tbBox{padding:11px 9px 11px 13px;gap:6px}}
+        @media (prefers-reduced-motion: reduce){.tbOut::before,.tbOut.fl::before,.tbPlate,.tbOut.fl .tbPlate{transition:none}}
         @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}.conf{display:none}}
       `}</style>
       {!loaded ? (
@@ -4760,7 +4795,7 @@ export default function App() {
             onGo={go} onResume={resume} onClose={() => setMenuOpen(false)} onNews={() => { setMenuOpen(false); setNewsOpen(true); }} />
           {skipOpen && <SkipSheet freezes={freezesAvailable(history)} onSave={saveSkip} onClose={() => setSkipOpen(false)} />}
       {howId && <HowTo id={howId} history={history} onClose={() => setHowId(null)} />}
-          {newsOpen && <WhatsNew at={newsAt} onClose={() => { setNewsOpen(false); setNewsAt(null); if (settings.seenVersion !== APP_VERSION) setSettings({ ...settings, seenVersion: APP_VERSION }); }} />}
+          {newsOpen && <WhatsNew at={newsAt} onClose={() => { setNewsOpen(false); setNewsAt(null); if (settings.seenVersion !== APP_VERSION || !settings.seenApp) setSettings({ ...settings, seenVersion: APP_VERSION, seenApp: true }); }} />}
           </>}
         </>
       )}

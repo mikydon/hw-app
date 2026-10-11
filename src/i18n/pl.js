@@ -940,6 +940,10 @@ export default {
     "Płynne szkło działa płynniej: nic już nie jest rozmywane (paski mają za to mocniejszy odcień), kolorowe tło rysuje się tylko raz, a menu ☰ otwiera się jednym prostym wysunięciem.",
     "Płynne szkło: górny pasek to teraz unosząca się, zaokrąglona szklana ramka, jak ramki pod nim.",
   ],
+  news142: [
+    "Górny pasek w każdym układzie: na samej górze strony przylega do górnej krawędzi; gdy przewijasz w dół, płynnie odkleja się w pływające zaokrąglone pole.",
+    "Płynne szkło wygląda bardziej jak prawdziwe szkło: połysk od rogu, delikatne odbicie i jaśniejsze krawędzie. Nadal bez rozmycia, więc działa płynnie.",
+  ],
   news14: [
     ["📱 Kopie zapasowe", "Zapisz kopię otwierało menu Udostępnij i nic nie zapisywało się samo.", "Kopie trafiają do Documents/HW App w telefonie. W Ustawieniach włącz Automatyczną kopię: codziennie (i po każdym treningu) nowa kopia zastępuje starą. Kopie zapisane przez ciebie zostają, dopóki ich nie usuniesz. Przywrócisz, udostępnisz lub usuniesz je w Ustawienia → Kopie w telefonie."],
     ["Odznaki", "11 odznak.", "21 odznak. Nowe: jak długo już trenujesz, Health Connect (Żelazo → Złoto → Diament), ranny ptaszek, nocny marek, czas treningu, A + B + C, rozciąganie, plank, cel kalorii i 10 000 kroków. W profilu widać, ile masz odznak i poziomów."],

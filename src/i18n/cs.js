@@ -940,6 +940,10 @@ export default {
     "Tekuté sklo je plynulejší: nic se už nerozmazává (lišty mají místo toho výraznější odstín), barevné pozadí se vykreslí jen jednou a menu ☰ se otevře jedním jednoduchým posunem.",
     "Tekuté sklo: horní lišta je teď plovoucí zaoblený skleněný box, jako boxy pod ní.",
   ],
+  news142: [
+    "Horní lišta ve všech rozloženích: když jsi úplně nahoře, drží se horního okraje; když scrolluješ dolů, plynule se odlepí do plovoucího zaobleného boxu.",
+    "Tekuté sklo vypadá víc jako skutečné sklo: odlesk z rohu, jemný odraz a světlejší hrany. Pořád bez rozmazání, takže zůstává plynulé.",
+  ],
   news14: [
     ["📱 Zálohy", "Uložit zálohu otevřelo nabídku Sdílet a samo se neukládalo nic.", "Zálohy se ukládají do Documents/HW App v telefonu. V Nastavení zapni Automatickou zálohu: každý den (a po každém tréninku) nahradí starou zálohu nová. Zálohy, které uložíš sám, zůstanou, dokud je nesmažeš. Obnovit, sdílet nebo smazat je můžeš v Nastavení → Zálohy v telefonu."],
     ["Odznaky", "11 odznaků.", "21 odznaků. Nové: jak dlouho už trénuješ, Health Connect (Železo → Zlato → Diamant), ranní ptáče, noční sova, odcvičený čas, A + B + C, protažení, plank, cíl kalorií a 10 000 kroků. V profilu vidíš, kolik odznaků a úrovní máš."],
