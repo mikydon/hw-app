@@ -1,0 +1,77 @@
+rules_version = '2';
+// HW App (1.5.0): who may read and write what. Paste into Firebase console → Firestore → Rules → Publish.
+// Tested in CI against the Firestore emulator (.github/rules-test). Anything not allowed here is denied.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function isMe(id) { return signedIn() && request.auth.uid == id; }
+    function data() { return request.resource.data; }
+    function only(keys) { return data().keys().hasOnly(keys); }
+    function nowTs() { return data().ts == request.time; }
+    function intIn(v, lo, hi) { return v is int && v >= lo && v <= hi; }
+    function nickOk(n) { return n is string && n.matches('^[\\p{L}\\p{N}_.-]{3,20}$'); }
+    function pfpOk(p) { return p == null || (p is string && p.size() < 24000 && p.matches('^data:image/jpeg;base64,[A-Za-z0-9+/=]+$')); }
+    function statsOk() {
+      return nickOk(data().nick) && pfpOk(data().get('pfp', null))
+        && intIn(data().xp, 0, 100000000) && intIn(data().lvl, 1, 100000)
+        && intIn(data().streak, 0, 100000) && intIn(data().n, 0, 100000) && nowTs();
+    }
+    function codeOk(c) { return c is string && c.matches('^[A-HJ-NP-Z2-9]{6}$'); }
+
+    // Profiles: anyone signed in can open one (friends, requests); nobody can list them all.
+    match /profiles/{uid} {
+      allow get: if signedIn();
+      allow create, update: if isMe(uid)
+        && only(['nick', 'pfp', 'xp', 'lvl', 'streak', 'n', 'code', 'global', 'ts'])
+        && statsOk() && codeOk(data().code) && data().global is bool
+        && existsAfter(/databases/$(database)/documents/codes/$(data().code))
+        && getAfter(/databases/$(database)/documents/codes/$(data().code)).data.uid == uid;
+      allow delete: if isMe(uid);
+    }
+    // World leaderboard: only people who switched it on; read in pages of at most 100.
+    match /board/{uid} {
+      allow get: if signedIn();
+      allow list: if signedIn() && request.query.limit <= 100;
+      allow create, update: if isMe(uid) && only(['nick', 'pfp', 'xp', 'lvl', 'streak', 'n', 'ts']) && statsOk();
+      allow delete: if isMe(uid);
+    }
+    // Unique nicknames and friend codes: one owner each, never taken over.
+    match /nicks/{nick} {
+      allow get: if signedIn();
+      allow create: if signedIn() && only(['uid']) && data().uid == request.auth.uid && nickOk(nick) && nick == nick.lower();
+      allow delete: if signedIn() && resource.data.uid == request.auth.uid;
+    }
+    match /codes/{code} {
+      allow get: if signedIn();
+      allow create: if signedIn() && only(['uid']) && data().uid == request.auth.uid && codeOk(code);
+      allow delete: if signedIn() && resource.data.uid == request.auth.uid;
+    }
+    // Friend requests: the sender creates one in the receiver's inbox; either of them can remove it.
+    match /inbox/{to}/from/{from} {
+      allow create: if isMe(from) && to != from && only(['ts']) && nowTs();
+      allow get: if isMe(to) || isMe(from);
+      allow list: if isMe(to);
+      allow delete: if isMe(to) || isMe(from);
+    }
+    // Friends: written for both people when the receiver accepts (the request must exist);
+    // either friend can end it.
+    match /friends/{owner}/list/{other} {
+      allow read: if isMe(owner);
+      allow create: if only(['ts']) && nowTs() && (
+        (isMe(owner) && exists(/databases/$(database)/documents/inbox/$(owner)/from/$(other))) ||
+        (isMe(other) && exists(/databases/$(database)/documents/inbox/$(other)/from/$(owner))));
+      allow delete: if isMe(owner) || isMe(other);
+    }
+    // The automatic cloud backup: only its owner.
+    match /backups/{uid} {
+      allow get, delete: if isMe(uid);
+      allow create, update: if isMe(uid) && only(['json', 'n', 'ts']) && data().json is string
+        && data().json.size() < 900000 && intIn(data().n, 0, 100000) && nowTs();
+    }
+    // Reports about a profile: anyone signed in can send one; only the developer reads them (console).
+    match /reports/{id} {
+      allow create: if signedIn() && only(['by', 'about', 'reason', 'ts']) && data().by == request.auth.uid
+        && data().about is string && data().reason is string && data().reason.size() <= 300 && nowTs();
+    }
+  }
+}
