@@ -95,6 +95,7 @@ await t("reports can't be read in the app", false, () => getDocs(collection(as("
 await t("other collections are closed", false, () => setDoc(doc(as("bob"), "anything", "x"), { a: 1 }));
 
 console.log("deleting an account");
+await t("deleting a nickname that doesn't exist is harmless", true, () => deleteDoc(doc(as("carol"), "nicks", "never_was")));
 await t("carol deletes everything of hers", true, () => {
   const db = as("carol"), b = writeBatch(db);
   ["profiles", "board", "backups"].forEach(c => b.delete(doc(db, c, "carol")));
