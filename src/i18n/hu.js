@@ -936,6 +936,10 @@ export default {
     "Az „Újdonságok” több oldalas: az első a nagy frissítés, balra húzva jönnek a kicsik.",
     "Kis frissítés után a kezdőképernyőn egy kártya egyből az oldalára visz. Csak először jelenik meg.",
   ],
+  news141: [
+    "A Folyékony üveg gördülékenyebb: semmi sincs már elmosva (a sávok helyette erősebb árnyalatot kaptak), a színes háttér csak egyszer rajzolódik ki, a ☰ menü pedig egyetlen egyszerű csúszással nyílik.",
+    "Folyékony üveg: a felső sáv most lebegő, lekerekített üvegdoboz, mint az alatta lévő dobozok.",
+  ],
   news14: [
     ["📱 Mentések", "A Mentés a megosztás menüt nyitotta meg, és semmi sem mentődött magától.", "A mentések a telefon Documents/HW App mappájába kerülnek. A Beállításokban kapcsold be az Automatikus mentést: minden nap (és minden edzés után) friss mentés lép a régi helyére. A saját mentéseid megmaradnak, amíg nem törlöd őket. Visszaállítani, megosztani vagy törölni a Beállítások → Mentések a telefonon alatt tudod."],
     ["Jelvények", "11 jelvény.", "21 jelvény. Újak: mióta edzel, Health Connect (Vas → Arany → Gyémánt), korán kelő, éjjeli bagoly, edzésidő, A + B + C, nyújtás, plank, kalóriacél és 10 000 lépés. A profilban látod, hány jelvényed és szinted van."],

@@ -936,6 +936,10 @@ export default {
     "Die Neuigkeiten haben jetzt Seiten: zuerst das große Update, nach links wischen für die kleinen.",
     "Nach einem kleinen Update führt dich eine Karte auf dem Startbildschirm direkt zu seiner Seite. Nur beim ersten Mal.",
   ],
+  news141: [
+    "Flüssigglas läuft flüssiger: nichts wird mehr weichgezeichnet (die Leisten sind dafür kräftiger getönt), der Farbhintergrund wird nur einmal gezeichnet und das ☰-Menü gleitet mit einer einfachen Bewegung herein.",
+    "Flüssigglas: Die obere Leiste ist jetzt eine schwebende, abgerundete Glasbox wie die Boxen darunter.",
+  ],
   news14: [
     ["📱 Sicherungen", "„Sicherung speichern“ öffnete das Teilen-Menü, von selbst wurde nichts gespeichert.", "Sicherungen landen in Documents/HW App auf dem Handy. Schalte in den Einstellungen die automatische Sicherung ein: jeden Tag (und nach jedem Training) ersetzt eine frische Kopie die alte. Selbst gespeicherte Sicherungen bleiben, bis du sie löschst. Wiederherstellen, teilen oder löschen unter Einstellungen → Sicherungen auf dem Handy."],
     ["Abzeichen", "11 Abzeichen.", "21 Abzeichen. Neu: wie lange du schon trainierst, Health Connect (Eisen → Gold → Diamant), Frühaufsteher, Nachteule, Trainingszeit, A + B + C, Dehnen, Plank, Kalorienziel und 10.000 Schritte. Im Profil siehst du, wie viele Abzeichen und Stufen du hast."],

@@ -30,7 +30,7 @@ const THEMES = {
   slate:  { ink: "#15181d", panel: "#1f242b", panelHi: "#2a313a", line: "#3a434f", chalk: "#f1f4f8", dim: "#9aa6b4", edge: "#0e1115" },
   coffee: { ink: "#1c140f", panel: "#2a1f17", panelHi: "#382a20", line: "#4d3a2c", chalk: "#fbf3ec", dim: "#b8a291", edge: "#130d09" },
 };
-const APP_VERSION = "1.4.0";
+const APP_VERSION = "1.4.1";
 // Big Shoulders has no Cyrillic, so Oswald (also condensed) covers Ukrainian. The browser only
 // downloads the Oswald unicode ranges a page actually uses.
 const DISPLAY = "'Big Shoulders Display', 'Oswald', 'Arial Narrow', Impact, sans-serif";
@@ -1232,19 +1232,22 @@ const SOFT = () => (LOOK === "tiles" ? `${C.ink}55` : LOOK === "liquid" ? "rgba(
 // "Liquid glass" (Michael, Oct 10: like on iPhones): translucent frosted boxes over soft colour blobs of the theme.
 // 1.4.1 (Michael: "sekavá"): the boxes no longer blur what is behind them. Behind a box there is only the soft colour
 // background, which is already blurry, so it looks the same, but a blur per box made every scroll frame expensive
-// on phones. Only the bars that content scrolls under (top bar, floating Start, mini player) still blur.
-const LIQUID = () => ({ background: "rgba(255,255,255,.085)", border: "1px solid rgba(255,255,255,.16)", borderRadius: 26, boxShadow: "inset 0 1px 0 rgba(255,255,255,.14), 0 10px 30px rgba(0,0,0,.25)" });
+// on phones. Since 1.4.1 nothing blurs at all (the bars use a strong tint instead).
+const LIQUID = () => ({ background: "rgba(255,255,255,.085)", border: "1px solid rgba(255,255,255,.16)", borderRadius: 26, boxShadow: "inset 0 1px 0 rgba(255,255,255,.14)" });
 // The same glass for the bars and floating panels (top bar, floating start, mini player, menu, sheets; Michael, Oct 10:
 // "tam sa to applajnut musí tiež"), and small glass pills for the chips and buttons on them.
 // A dark layer under the white tint keeps text readable when something bright (a white button) passes behind.
-const LIQUID_BAR = (dark = "66") => ({ background: `linear-gradient(180deg, rgba(255,255,255,.11), rgba(255,255,255,.05)), ${C.ink}${dark}`, backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" });
-const LIQUID_FLOAT = () => ({ ...LIQUID_BAR("99"), border: "1px solid rgba(255,255,255,.2)", boxShadow: "inset 0 1px 0 rgba(255,255,255,.18), 0 12px 34px rgba(0,0,0,.35)" });
+// 1.4.1: no blur at all any more (Michael: still laggy in Liquid glass, menu too). A more opaque tint keeps text
+// readable when content scrolls under the bar; the look stays glassy over the colour background.
+const LIQUID_BAR = (dark = "f0") => ({ background: `linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.04)), ${C.ink}${dark}` });
+const LIQUID_FLOAT = () => ({ ...LIQUID_BAR("ee"), border: "1px solid rgba(255,255,255,.2)", boxShadow: "inset 0 1px 0 rgba(255,255,255,.18), 0 10px 24px rgba(0,0,0,.3)" });
 const LIQUID_PILL = () => ({ background: "rgba(255,255,255,.09)", border: "1px solid rgba(255,255,255,.2)", boxShadow: "inset 0 1px 0 rgba(255,255,255,.16)" });
 // The colour blobs of the theme: the page background, and the ☰ menu panel gets its own copy (1.3.1, Michael: the
 // menu looked different, a flat dark panel, because it only blurred the dimmed page behind it).
 const liquidGrad = () => `radial-gradient(55% 40% at 8% 6%, ${C.sky}99, transparent 72%), radial-gradient(50% 38% at 96% 34%, ${C.signal}77, transparent 72%), radial-gradient(58% 42% at 14% 74%, ${C.mint}70, transparent 72%), radial-gradient(50% 36% at 90% 96%, #ff7ab666, transparent 72%), ${C.ink}`;
 function LiquidBg() {
-  return <div aria-hidden="true" data-liquid-bg style={{ position: "fixed", inset: 0, zIndex: -1, pointerEvents: "none", background: liquidGrad() }} />;
+  // its own GPU layer, painted once: scrolling and the menu don't repaint the big gradients
+  return <div aria-hidden="true" data-liquid-bg style={{ position: "fixed", inset: 0, zIndex: -1, pointerEvents: "none", background: liquidGrad(), transform: "translateZ(0)", willChange: "transform" }} />;
 }
 // The − / + buttons of the rep counter: theme colours (and glass in the liquid look), never a fixed navy edge.
 const stepBtn = () => ({ ...btnBase, width: 64, height: 64, borderRadius: 99, background: C.panelHi, color: C.chalk, fontSize: 32, lineHeight: 1, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, "--e": EDGE[C.panelHi], ...(LOOK === "liquid" ? LIQUID_PILL() : {}) });
@@ -1398,8 +1401,12 @@ function TopBar({ screen, history, menuOpen, onMenu, onGo, dlPct }) {
   const liquid = LOOK === "liquid";
   const pill = liquid ? LIQUID_PILL() : { background: "transparent" };
   return (
-    <div data-topbar style={{ position: "sticky", top: 0, zIndex: 20, background: `${C.ink}f7`, borderBottom: `1px solid ${C.line}`, ...(liquid ? { ...LIQUID_BAR(), borderBottom: "1px solid rgba(255,255,255,.14)", boxShadow: "inset 0 -1px 0 rgba(0,0,0,.12)" } : {}) }}>
-      <div style={{ maxWidth: 460, margin: "0 auto", padding: "calc(10px + var(--sat)) 18px 10px", display: "flex", alignItems: "center", gap: 8 }}>
+    // Liquid glass (1.4.1, Michael: "ako ten workout box"): the bar floats as a rounded glass box under the status bar,
+    // with a soft fade above it so content scrolling past the status bar stays calm. Other looks: the full-width bar.
+    <div data-topbar data-topbar-float={liquid ? 1 : 0} style={liquid
+      ? { position: "sticky", top: 0, zIndex: 20, padding: "calc(6px + var(--sat)) 10px 6px", background: `linear-gradient(180deg, ${C.ink} 0, ${C.ink}d9 calc(var(--sat) + 4px), ${C.ink}00 100%)` }
+      : { position: "sticky", top: 0, zIndex: 20, background: `${C.ink}f7`, borderBottom: `1px solid ${C.line}` }}>
+      <div style={{ maxWidth: liquid ? 440 : 460, margin: "0 auto", padding: liquid ? "9px 10px 9px 16px" : "calc(10px + var(--sat)) 18px 10px", display: "flex", alignItems: "center", gap: 8, position: "relative", ...(liquid ? { ...LIQUID_FLOAT(), borderRadius: 24 } : {}) }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div key={screen} className="titleIn" style={{ fontFamily: DISPLAY, fontSize: CJK.test(T(SCREEN_TITLE[screen])) ? 21 : 24, fontWeight: 900, lineHeight: 1.05, color: C.chalk, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{T(SCREEN_TITLE[screen])}</div>
           <div style={{ display: "flex", gap: 5, fontSize: 12, color: bdayToday() ? C.signal : C.dim, fontWeight: bdayToday() ? 800 : 400, marginTop: 2, whiteSpace: "nowrap" }}>
@@ -1411,7 +1418,7 @@ function TopBar({ screen, history, menuOpen, onMenu, onGo, dlPct }) {
         <button onClick={() => onGo && onGo("profile")} data-chip="level" style={{ ...btnBase, ...chip(C.sky), ...pill }} aria-label={T("levelAria", { n: lv.lvl })}>⚡{lv.lvl}</button>
         <MenuButton open={menuOpen} onClick={onMenu} />
       </div>
-      {typeof prog === "number" && <div data-top-prog={Math.round(prog)} role="progressbar" aria-valuenow={Math.round(prog)} aria-valuemin={0} aria-valuemax={100} style={{ position: "absolute", left: 0, bottom: -1, height: 3, width: `${Math.max(2, Math.min(100, prog))}%`, background: C.sky, borderRadius: "0 3px 3px 0", transition: "width .3s", boxShadow: `0 0 8px ${C.sky}` }} />}
+      {typeof prog === "number" && <div data-top-prog={Math.round(prog)} role="progressbar" aria-valuenow={Math.round(prog)} aria-valuemin={0} aria-valuemax={100} style={{ position: "absolute", left: liquid ? 24 : 0, bottom: liquid ? 7 : -1, height: 3, width: liquid ? `calc((100% - 48px) * ${Math.max(2, Math.min(100, prog)) / 100})` : `${Math.max(2, Math.min(100, prog))}%`, background: C.sky, borderRadius: liquid ? 3 : "0 3px 3px 0", transition: "width .3s", boxShadow: `0 0 8px ${C.sky}` }} />}
     </div>
   );
 }
@@ -4702,7 +4709,7 @@ export default function App() {
         @keyframes dItem{from{opacity:0;transform:translateX(26px)}to{opacity:1;transform:none}}
         .drawerOff{pointer-events:none} .drawerOn .drawerBg{animation:dFadeIn .25s ease-out both} .drawerOff .drawerBg{animation:dFadeOut .26s ease-in both}
         .drawerOn .drawerPanel{animation:dIn .34s cubic-bezier(.2,.9,.3,1) both} .drawerOff .drawerPanel{animation:dOut .26s cubic-bezier(.5,0,.75,.2) both}
-        .drawerOn .drawerItem{animation:dItem .4s cubic-bezier(.2,.9,.3,1) both;animation-delay:calc(var(--i) * 38ms + 70ms)}
+        .drawerPanel{will-change:transform;contain:layout paint}
         .drawerItem{transition:background .15s} .drawerItem:active{transform:scale(.98)}
         @keyframes miniIn{from{opacity:0;transform:translate(-50%,40px) scale(.94)}to{opacity:1;transform:translate(-50%,0)}}
         .miniIn{animation:miniIn .38s cubic-bezier(.2,1.2,.4,1) both}

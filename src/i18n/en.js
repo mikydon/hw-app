@@ -936,6 +936,10 @@ export default {
     "\"What's new\" has pages: the first is the big update, swipe left for the small ones.",
     "After a small update, a card on the home screen opens its page. It shows only the first time.",
   ],
+  news141: [
+    "Liquid glass is smoother: nothing is blurred any more (the bars got a stronger tint instead), the colour background is drawn once, and the ☰ menu opens with one simple slide.",
+    "Liquid glass: the top bar is now a floating rounded glass box, like the boxes below it.",
+  ],
   news14: [
     ["📱 Backups", "Save backup opened the share menu, and nothing was ever saved by itself.", "Backups go to Documents/HW App on your phone. Turn on Automatic backup in Settings: every day (and after every workout) a fresh copy replaces the old one. Backups you save yourself stay until you delete them. Restore, share or delete them in Settings → Backups in the phone."],
     ["Badges", "11 badges.", "21 badges. New: how long you've been training, Health Connect (Iron → Gold → Diamond), early bird, night owl, time trained, A + B + C, stretching, plank, calorie target and 10,000 steps. Profile shows how many badges and levels you have."],

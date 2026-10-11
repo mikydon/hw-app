@@ -936,6 +936,10 @@ export default {
     "\"Novidades\" tem páginas: a primeira é a grande atualização, deslize para a esquerda para as pequenas.",
     "Depois de uma atualização pequena, um cartão no início leva você à página dela. Só aparece da primeira vez.",
   ],
+  news141: [
+    "O vidro líquido está mais fluido: já nada é desfocado (as barras têm um tom mais forte), o fundo colorido é desenhado só uma vez e o menu ☰ abre com um único deslizar.",
+    "Vidro líquido: a barra de cima é agora uma caixa de vidro flutuante e arredondada, como as de baixo.",
+  ],
   news14: [
     ["📱 Cópias de segurança", "Guardar cópia abria o menu de partilha e nada se guardava sozinho.", "As cópias vão para Documents/HW App no telemóvel. Liga a cópia automática nas Definições: todos os dias (e depois de cada treino) uma cópia nova substitui a antiga. As que guardares tu ficam até as apagares. Restaura, partilha ou apaga-as em Definições → Cópias no telemóvel."],
     ["Medalhas", "11 medalhas.", "21 medalhas. Novas: há quanto tempo treinas, Health Connect (Ferro → Ouro → Diamante), madrugador, noctívago, tempo de treino, A + B + C, alongamentos, prancha, meta de calorias e 10 000 passos. No perfil vês quantas medalhas e níveis tens."],

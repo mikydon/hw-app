@@ -936,6 +936,10 @@ export default {
     "«Novedades» tiene páginas: la primera es la gran actualización; desliza a la izquierda para las pequeñas.",
     "Tras una actualización pequeña, una tarjeta en el inicio te lleva a su página. Solo aparece la primera vez.",
   ],
+  news141: [
+    "El cristal líquido va más fluido: ya no se desenfoca nada (las barras tienen un tono más intenso), el fondo de colores se dibuja una sola vez y el menú ☰ se abre con un solo deslizamiento.",
+    "Cristal líquido: la barra superior ahora es una caja de cristal flotante y redondeada, como las de debajo.",
+  ],
   news14: [
     ["📱 Copias de seguridad", "Guardar copia abría el menú de compartir y nada se guardaba solo.", "Las copias van a Documents/HW App en tu móvil. Activa la copia automática en Ajustes: cada día (y después de cada entreno) una copia nueva sustituye a la anterior. Las que guardes tú se quedan hasta que las borres. Restaúralas, compártelas o bórralas en Ajustes → Copias en el móvil."],
     ["Insignias", "11 insignias.", "21 insignias. Nuevas: cuánto llevas entrenando, Health Connect (Hierro → Oro → Diamante), madrugador, noctámbulo, tiempo entrenado, A + B + C, estiramiento, plancha, objetivo de calorías y 10.000 pasos. En el perfil ves cuántas insignias y niveles tienes."],

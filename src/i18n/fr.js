@@ -936,6 +936,10 @@ export default {
     "« Nouveautés » a des pages : la première est la grande mise à jour, glisse vers la gauche pour les petites.",
     "Après une petite mise à jour, une carte sur l'accueil t'emmène à sa page. Elle n'apparaît que la première fois.",
   ],
+  news141: [
+    "Le verre liquide est plus fluide : plus rien n'est flouté (les barres sont plus teintées à la place), le fond coloré n'est dessiné qu'une fois et le menu ☰ s'ouvre d'un simple glissement.",
+    "Verre liquide : la barre du haut est maintenant un cadre de verre flottant et arrondi, comme ceux en dessous.",
+  ],
   news14: [
     ["📱 Sauvegardes", "Enregistrer une sauvegarde ouvrait le menu Partager, et rien ne s'enregistrait tout seul.", "Les sauvegardes vont dans Documents/HW App sur ton téléphone. Active la sauvegarde automatique dans les Réglages : chaque jour (et après chaque séance) une copie neuve remplace l'ancienne. Celles que tu enregistres toi-même restent jusqu'à ce que tu les supprimes. Restaure, partage ou supprime-les dans Réglages → Sauvegardes sur le téléphone."],
     ["Badges", "11 badges.", "21 badges. Nouveaux : depuis combien de temps tu t'entraînes, Health Connect (Fer → Or → Diamant), lève-tôt, couche-tard, temps d'entraînement, A + B + C, étirements, gainage, objectif calorique et 10 000 pas. Le profil montre combien de badges et de niveaux tu as."],

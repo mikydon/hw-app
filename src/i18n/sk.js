@@ -936,6 +936,10 @@ export default {
     "„Čo je nové“ má strany: prvá je veľký update, potiahnutím doľava drobné úpravy.",
     "Po drobnej úprave ťa karta na úvode zavedie priamo na jej stranu. Ukáže sa len prvýkrát.",
   ],
+  news141: [
+    "Tekuté sklo je plynulejšie: nič sa už nerozmazáva (lišty majú namiesto toho výraznejší odtieň), farebné pozadie sa vykreslí len raz a menu ☰ sa otvorí jedným jednoduchým posunom.",
+    "Tekuté sklo: horná lišta je teraz plávajúci zaoblený sklený box, ako boxy pod ňou.",
+  ],
   news14: [
     ["📱 Zálohy", "Uložiť zálohu otvorilo menu Zdieľať a samo sa neukladalo nič.", "Zálohy sa ukladajú do Documents/HW App v telefóne. V Nastaveniach zapni Automatickú zálohu: každý deň (a po každom tréningu) nahradí starú zálohu nová. Zálohy, ktoré uložíš sám, ostanú, kým ich nezmažeš. Obnoviť, zdieľať alebo zmazať ich môžeš v Nastavenia → Zálohy v telefóne."],
     ["Odznaky", "11 odznakov.", "21 odznakov. Nové: ako dlho už trénuješ, Health Connect (Železo → Zlato → Diamant), ranné vtáča, nočná sova, odcvičený čas, A + B + C, strečing, plank, cieľ kalórií a 10 000 krokov. V profile vidíš, koľko odznakov a úrovní máš."],

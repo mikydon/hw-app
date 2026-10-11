@@ -936,6 +936,10 @@ export default {
     "«Novità» ha più pagine: la prima è il grande aggiornamento, scorri a sinistra per quelli piccoli.",
     "Dopo un piccolo aggiornamento, una scheda nella home ti porta alla sua pagina. Compare solo la prima volta.",
   ],
+  news141: [
+    "Il vetro liquido è più fluido: non si sfoca più nulla (le barre hanno invece una tinta più marcata), lo sfondo colorato viene disegnato una volta sola e il menu ☰ si apre con un solo scorrimento.",
+    "Vetro liquido: la barra in alto ora è un riquadro di vetro fluttuante e arrotondato, come quelli sotto.",
+  ],
   news14: [
     ["📱 Backup", "Salva backup apriva il menu Condividi e niente si salvava da solo.", "I backup vanno in Documents/HW App sul telefono. Attiva il backup automatico nelle Impostazioni: ogni giorno (e dopo ogni allenamento) una copia nuova sostituisce la vecchia. Quelli che salvi tu restano finché non li cancelli. Ripristinali, condividili o eliminali in Impostazioni → Backup nel telefono."],
     ["Badge", "11 badge.", "21 badge. Nuovi: da quanto ti alleni, Health Connect (Ferro → Oro → Diamante), mattiniero, nottambulo, tempo di allenamento, A + B + C, stretching, plank, obiettivo calorico e 10.000 passi. Nel profilo vedi quanti badge e livelli hai."],

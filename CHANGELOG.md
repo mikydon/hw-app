@@ -10,6 +10,11 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 
 <!-- New version: add a "## x.y.z (date)" section on top (web-only history uses "## Browser beta x.y.z (date)"). On a push to main, .github/workflows/build.yml builds everything and .github/scripts/releases.sh creates/updates the releases (commit = the push, or the one in a commit comment). -->
 
+## 1.4.1 (2026-10-11)
+
+- Liquid glass is smoother: no blur anywhere any more (the top bar, Start bar and mini player got a stronger tint instead), the colour background sits on its own layer and is drawn once, cards have no large drop shadows, and the ☰ menu opens with one slide instead of animating every row.
+- Liquid glass: the top bar floats as a rounded glass box under the status bar, like the boxes below it.
+
 ## 1.4.0 (2026-10-11)
 
 **A big update: a new APK** (download it in the app and tap Install; your data stays). Compared with 1.3.1:
