@@ -1,6 +1,6 @@
 import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import { isNative, pushBack, setRootBack, vibratePattern, keepScreenOn, openExternal, saveBackupFile, checkForUpdate, lastUpdate, lastGh, applyUpdateNow, latestApk, isTestBuild, apkState, onApk, apkSupported, apkRestore, apkDownload, apkCanInstall, apkAllow, apkInstall, onAppResume, healthState, healthConnect, healthSettings, healthSteps, healthFoodItems, healthBody } from "./native.js";
+import { isNative, pushBack, setRootBack, exitApp, vibratePattern, keepScreenOn, openExternal, saveBackupFile, bkSupported, bkWrite, bkList, bkRead, bkDelete, bkShare, BK_DIR, BK_AUTO, checkForUpdate, lastUpdate, lastGh, applyUpdateNow, latestApk, isTestBuild, apkState, onApk, apkSupported, apkRestore, apkDownload, apkCanInstall, apkAllow, apkInstall, onAppResume, healthState, healthConnect, healthSettings, healthSteps, healthFoodItems, healthBody } from "./native.js";
 import { L, LANG, t as T, tp as TP, fmt, setLang, detectLang, LANGS, fmtLong, fmtShortDM, fmtMonthYear, weekdaysShort, capFirst } from "./i18n/index.js";
 
 // ─── DESIGN TOKENS ──────────────────────────────────────────────────────────
@@ -1005,7 +1005,7 @@ function ExQ({ id, onOpen, style }) {
   const go = e => { e.stopPropagation(); e.preventDefault(); sfxTap(); if (onOpen) onOpen(); else if (openHowToGlobal) openHowToGlobal(id); };
   return (
     <span role="button" tabIndex={0} data-exq={id} className="exq" aria-label={`${T("howTo")}: ${EX[id] ? EX[id].name : ""}`} onClick={go} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") go(e); }}
-      style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 20, height: 20, borderRadius: 99, border: `1.5px solid ${C.sky}`, color: C.sky, fontFamily: BODY, fontSize: 12, fontWeight: 800, marginLeft: 7, verticalAlign: "middle", cursor: "pointer", flexShrink: 0, lineHeight: 1, ...style }} />
+      style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", boxSizing: "border-box", width: 15, height: 15, borderRadius: 99, border: `1.2px solid ${C.sky}`, color: C.sky, fontFamily: BODY, fontSize: 9.5, fontWeight: 800, marginLeft: 6, opacity: 0.85, verticalAlign: "middle", cursor: "pointer", flexShrink: 0, lineHeight: 1, ...style }} />
   );
 }
 function HowTo({ id, history, onClose, onSwap }) {
@@ -1074,6 +1074,14 @@ const SETTINGS_KEY = "domaci-trening-v1-settings";
 // Backups made before the rename say "domaci-trening"; both are accepted.
 const BACKUP_ID = "hw-app";
 const BACKUP_IDS = [BACKUP_ID, "domaci-trening"];
+// The backup file: everything the app knows (manual, automatic and the one offered before a full reset).
+function backupJson(history, profile, settings, kcal) {
+  return JSON.stringify({ app: BACKUP_ID, version: 1, appVersion: APP_VERSION, exportedAt: new Date().toISOString(), history, profile, settings, kcal: kcal || null });
+}
+// Automatic backup (app only, 1.4.0): the result of the last run, {ts, day, ok, err}. Not in backups.
+const AUTOBK_KEY = "domaci-trening-v1-autobk";
+const autoBkInfo = () => { try { return JSON.parse(localStorage.getItem(AUTOBK_KEY) || "null"); } catch (_) { return null; } };
+const stamp = d => `${dateKey(d)}-${String(d.getHours()).padStart(2, "0")}${String(d.getMinutes()).padStart(2, "0")}`;
 const DEFAULT_SETTINGS = { theme: "navy", sndTap: true, sndFx: true, sndTimer: true, volume: "mid", vibrate: true, keepAwake: true, aiCopy: false, exOff: [] };
 async function loadSettings() { try { const v = await store.get(SETTINGS_KEY); if (v) return JSON.parse(v); } catch (_) {} return null; }
 async function saveSettings(st) { await store.set(SETTINGS_KEY, JSON.stringify(st)); }
@@ -1116,8 +1124,12 @@ function totalReps(history) {
 }
 // Achievements have 7 tiers named like the exercise ranks (Wood … Diamond). Everything is derived
 // from history (+ birthdays and calorie days from `extra`), so badges earned before v1.4 stay earned.
+// 1.4.0 (Michael, Oct 11): more of them: how long you train, Health Connect, early/late workouts, hours, A+B+C,
+// stretching, plank, calorie target hits, 10 000-step days. `rk` = a family with fewer steps, each step lands on a
+// chosen rank (Health Connect: Iron → Gold → Diamond). `span` = the goal is a time span (days/months/years).
 const ACH = [
   { k: "workouts", icon: "🎯", at: [1, 5, 10, 25, 50, 100, 200], pl: "workouts", v: c => c.n },
+  { k: "tenure", icon: "📅", at: [7, 30, 90, 180, 365, 730, 1095], span: true, v: c => c.tenure },
   { k: "streak", icon: "🔥", at: [3, 7, 15, 30, 60, 100, 180], pl: "days", v: c => c.bs },
   { k: "records", icon: "📈", at: [1, 5, 10, 25, 50, 100, 200], pl: "prs", v: c => c.prs },
   { k: "ranks", icon: "🥇", at: [1, 4, 8, 15, 25, 40, 60], v: c => c.rankSum },
@@ -1127,8 +1139,21 @@ const ACH = [
   { k: "pushups", icon: "🦾", at: [10, 20, 30, 40, 50, 60, 75], pl: "pushups", v: c => c.push },
   { k: "reps", icon: "📊", at: [100, 500, 1000, 2500, 5000, 10000, 25000], pl: "reps", v: c => c.reps },
   { k: "birthday", icon: "🎂", at: [1, 2, 3, 4, 5, 7, 10], pl: "birthdays", v: c => c.bdays },
+  { k: "early", icon: "🌅", at: [1, 5, 10, 25, 50, 100, 200], pl: "workouts", v: c => c.early },
+  { k: "night", icon: "🌙", at: [1, 5, 10, 25, 50, 100, 200], pl: "workouts", v: c => c.night },
+  { k: "hours", icon: "⏱️", at: [1, 3, 6, 12, 25, 50, 100], pl: "hours", v: c => c.hours },
+  { k: "abc", icon: "🔤", at: [1, 3, 5, 10, 20, 35, 60], v: c => c.abc },
+  { k: "cool", icon: "🧘", at: [1, 5, 10, 25, 50, 100, 200], pl: "workouts", v: c => c.cool },
+  { k: "plank", icon: "🧱", at: [30, 45, 60, 90, 120, 180, 300], v: c => c.plank },
   { k: "calories", icon: "🍽️", at: [1, 7, 14, 30, 60, 100, 200], pl: "days", v: c => c.kcalDays },
+  { k: "kcalHit", icon: "🥗", at: [1, 7, 14, 30, 60, 100, 200], pl: "days", v: c => c.kcalHits },
+  { k: "steps", icon: "👟", at: [1, 7, 14, 30, 60, 100, 200], pl: "days", v: c => c.steps10k },
+  { k: "health", icon: "❤️", at: [1, 2, 3], rk: [1, 4, 6], v: c => c.hc },
 ];
+// Start of a workout (ts is when it was saved; dur = its length, if known).
+const startHour = e => new Date((e.ts || 0) - (e.dur || 0) * 1000).getHours();
+// "7 days", "3 months", "2 years" for the tenure badge.
+function spanText(d) { return d >= 365 ? TP("years", Math.round(d / 365)) : d >= 30 ? TP("months", Math.round(d / 30)) : TP("days", d); }
 function achCounts(history, extra = {}) {
   const pushIds = ["k1", "k3", "r1", "kKnee", "kIncl", "r1e", "k3e"];
   return {
@@ -1143,22 +1168,48 @@ function achCounts(history, extra = {}) {
     reps: totalReps(history),
     bdays: extra.bdays || 0,
     kcalDays: extra.kcalDays || 0,
+    tenure: history.length ? daysBetween(history.map(e => e.date).sort()[0], dateKey()) : 0,
+    early: history.filter(e => e.ts && !e.manual && startHour(e) < 8).length,
+    night: history.filter(e => e.ts && !e.manual && startHour(e) >= 20).length,
+    hours: Math.floor(history.reduce((a, e) => a + (e.dur || 0), 0) / 3600),
+    abc: Math.min(...["A", "B", "C"].map(d => history.filter(e => e.day === d).length)),
+    cool: history.filter(e => e.cool).length,
+    plank: Math.max(0, ...["b5", "b5l"].map(id => bestFor(history, id) || 0)),
+    kcalHits: extra.kcalHits || 0,
+    steps10k: extra.steps10k || 0,
+    hc: extra.hc || 0,
   };
 }
 function achievements(history, extra) {
   const c = achCounts(history, extra);
   return ACH.map(a => {
     const v = a.v(c);
-    const tier = a.at.filter(x => v >= x).length; // 0 = locked, 1..7 = Wood..Diamond
-    const next = tier < a.at.length ? a.at[tier] : null;
+    const step = a.at.filter(x => v >= x).length; // 0 = locked
+    const tier = a.rk ? (step ? a.rk[step - 1] + 1 : 0) : step; // 1..7 = Wood..Diamond
+    const next = step < a.at.length ? a.at[step] : null;
+    const nextRank = step < a.at.length ? (a.rk ? a.rk[step] : step) : null;
     const goal = next ?? a.at[a.at.length - 1];
     const [name, desc] = L.ach[a.k];
-    return { ...a, v, tier, next, name, desc: fmt(desc, { n: goal, x: a.pl ? TP(a.pl, goal) : goal }) };
+    return { ...a, v, step, tier, next, nextRank, name, desc: fmt(desc, { n: goal, x: a.span ? spanText(goal) : a.pl ? TP(a.pl, goal) : goal }) };
   });
 }
-function achExtra(profile, kcal) {
-  const log = (kcal && kcal.log) || {};
-  return { bdays: ((profile && profile.bdays) || []).length, kcalDays: Object.keys(log).filter(d => log[d] && log[d].length).length };
+// Health Connect level: 1 = one kind of data (steps), 2 = also weight/height, 3 = everything (also food calories).
+// Kept at its best (kcal.hcBest), so disconnecting later doesn't take the badge away.
+function hcLevel(k) {
+  if (!k || !k.healthOn) return 0;
+  return 1 + (k.wSrc === "hc" || k.hSrc === "hc" ? 1 : 0) + (k.healthFood === true ? 1 : 0);
+}
+function achExtra(profile, kcal, history) {
+  const k = kcal || {}, log = k.log || {}, steps = k.steps || {};
+  let kcalHits = 0;
+  if (history) for (const d of new Set([...Object.keys(log), ...Object.keys(k.food || {})])) { const s = kcalNow(history, d); if (s && s.hit) kcalHits++; }
+  return {
+    bdays: ((profile && profile.bdays) || []).length,
+    kcalDays: Object.keys(log).filter(d => log[d] && log[d].length).length,
+    kcalHits,
+    steps10k: Object.keys(steps).filter(d => steps[d] >= 10000).length,
+    hc: Math.max(hcLevel(k), k.hcBest || 0),
+  };
 }
 // Tiers that went up between two histories, for the end-of-workout summary.
 function achUps(before, after, extra) {
@@ -1245,6 +1296,47 @@ function Sect({ title, children, style, titlePad, accent, ...rest }) {
       {title && <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: tiles ? C.chalk : C.dim, opacity: tiles ? 0.8 : 1, marginBottom: 10, padding: titlePad || 0 }}>{title}</div>}
       {children}
     </section>
+  );
+}
+
+// Rounded corners of small tiles: never as round as the big liquid boxes (26 px), so text never comes near a corner.
+const tileR = () => ({ borderRadius: Math.min(card.borderRadius || 20, 20) });
+// "Really leave?" at the bottom after the first back on Home (app only).
+function ExitPrompt({ onStay, onLeave }) {
+  return createPortal(
+    <div data-exit-ask role="alertdialog" aria-label={T("exitAskTitle")} className="miniIn"
+      style={{ position: "fixed", left: "50%", bottom: "calc(14px + var(--sab))", transform: "translateX(-50%)", zIndex: 90, width: "min(calc(100vw - 24px), 436px)", display: "flex", alignItems: "center", gap: 10, padding: "12px 12px 12px 16px", borderRadius: 20, background: C.panelHi, border: `1px solid ${C.line}`, boxShadow: "0 12px 34px rgba(0,0,0,.45)", fontFamily: BODY, ...(LOOK === "liquid" ? { ...LIQUID_FLOAT(), borderRadius: 24 } : {}) }}>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 15, fontWeight: 800, color: C.chalk }}>{T("exitAskTitle")}</div>
+        <div style={{ fontSize: 12, color: C.dim, marginTop: 2 }}>{T("exitAskD")}</div>
+      </div>
+      <button data-exit-stay onClick={onStay} style={{ ...btnBase, background: "transparent", color: C.chalk, padding: "9px 10px", fontSize: 14 }}>{T("exitStay")}</button>
+      <button data-exit-yes onClick={onLeave} style={{ ...btnBase, background: C.signal, color: C.signalInk, padding: "9px 14px", fontSize: 14, borderRadius: 12 }}>{T("exitYes")}</button>
+    </div>,
+    document.body
+  );
+}
+// Section title with a quiet count on the right (Profile: ranks, badges).
+function SectionHead({ title, meta }) {
+  return (
+    <div data-section-head style={{ ...sectionTitle, display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 12 }}>
+      <span>{title}</span>
+      {meta && <span style={{ fontFamily: BODY, fontSize: 12, color: C.dim, fontWeight: 600, textAlign: "right", lineHeight: 1.35, paddingBottom: 3 }}>{meta}</span>}
+    </div>
+  );
+}
+// One number tile (Profile): label top left, icon top right, the number below (same spot in every tile), a quiet line at the bottom.
+function StatTile({ label, value, icon, color, sub, children, data }) {
+  return (
+    <div data-stat={data} style={{ ...card, ...tileR(), padding: "13px 15px", display: "flex", flexDirection: "column", minWidth: 0 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+        <span style={{ fontSize: 12, color: C.dim, fontWeight: 600, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{label}</span>
+        <span aria-hidden="true" style={{ fontSize: 17, lineHeight: 1, flexShrink: 0 }}>{icon}</span>
+      </div>
+      <div style={{ fontFamily: DISPLAY, fontSize: 36, fontWeight: 900, color: color || C.chalk, lineHeight: 1, marginTop: 8, fontVariantNumeric: "tabular-nums" }}>{value}</div>
+      {children}
+      {sub && <div style={{ fontSize: 11.5, color: C.dim, marginTop: "auto", paddingTop: 7, lineHeight: 1.35 }}>{sub}</div>}
+    </div>
   );
 }
 
@@ -3281,8 +3373,9 @@ function ProfileTab({ history, profile, setProfile, onFreeze, kcal }) {
   const xp = totalXP(history);
   const lv = levelInfo(xp);
   const st = streakInfo(history, today);
-  const ach = achievements(history, achExtra(profile, kcal));
+  const ach = achievements(history, achExtra(profile, kcal, history));
   const since = history.length ? history.map(e => e.date).sort()[0] : null;
+  const rankLv = Object.keys(RANK_AT).reduce((a, id) => a + rankIdx(id, bestFor(history, id)), 0);
 
   const pick = async e => {
     const f = e.target.files && e.target.files[0];
@@ -3291,7 +3384,7 @@ function ProfileTab({ history, profile, setProfile, onFreeze, kcal }) {
     try { const url = await fileToAvatar(f); setProfile({ ...profile, pfp: url }); setErr(""); sfxCheck(); }
     catch (_) { setErr(T("photoErr")); }
   };
-  const stats = [[T("statTrainings"), history.length], [T("statSets"), history.reduce((a, e) => a + setsIn(e), 0)], [T("statReps"), totalReps(history)], [T("statBestStreak"), `🔥 ${bestStreak(history)}`]];
+  const stats = [[T("statTrainings"), history.length, "🏋️"], [T("statSets"), history.reduce((a, e) => a + setsIn(e), 0), "🔁"], [T("statReps"), nf(totalReps(history)), "📊"], [T("statBestStreak"), bestStreak(history), "🏆"]];
 
   return (
     <div className="scr" style={{ padding: "16px 18px 110px", maxWidth: 460, margin: "0 auto" }}>
@@ -3322,24 +3415,20 @@ function ProfileTab({ history, profile, setProfile, onFreeze, kcal }) {
         <div style={{ fontSize: 13, color: bdayToday() ? C.signal : C.dim, fontWeight: bdayToday() ? 800 : 400, marginTop: 2 }}>{bdayToday() ? T("bdayHero") : since ? T("since", { date: fmtDate(since, true) }) : T("newMember")}</div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 18 }}>
-        <div style={{ ...card, padding: "14px" }}>
-          <div style={{ fontSize: 12, color: C.dim }}>{T("streak")}</div>
-          <div style={{ fontFamily: DISPLAY, fontSize: 40, fontWeight: 900, color: "#ffa94d", lineHeight: 1 }}><span className={st.n ? "wiggle" : ""}>🔥</span> {st.n}</div>
-          <div style={{ fontSize: 12, color: st.gap === 2 ? C.signal : C.dim, marginTop: 4 }}>{st.gap === 2 ? T("streakRisk") : T("streakHold")}</div>
-        </div>
-        <div style={{ ...card, padding: "14px" }}>
-          <div style={{ fontSize: 12, color: C.dim }}>{T("level")}</div>
-          <div style={{ fontFamily: DISPLAY, fontSize: 40, fontWeight: 900, color: C.sky, lineHeight: 1 }}>⚡ {lv.lvl}</div>
-          <div style={{ height: 8, background: C.panelHi, borderRadius: 99, marginTop: 8, overflow: "hidden" }}>
+      {/* 1.4.0 (Michael, Oct 11): every tile the same: label top left, icon top right, the number below at the same
+          place in every tile, one quiet line at the bottom. */}
+      <div data-stat-grid style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 18 }}>
+        <StatTile data="streak" label={T("streak")} icon={<span className={st.n ? "wiggle" : ""}>🔥</span>} value={st.n} color="#ffa94d" sub={<span style={{ color: st.gap === 2 ? C.signal : C.dim }}>{st.gap === 2 ? T("streakRisk") : T("streakHold")}</span>} />
+        <StatTile data="level" label={T("level")} icon="⚡" value={lv.lvl} color={C.sky} sub={T("xpLine", { into: lv.into, need: lv.need, total: xp })}>
+          <div style={{ height: 6, background: `${C.chalk}14`, borderRadius: 99, marginTop: 8, overflow: "hidden" }}>
             <div style={{ height: "100%", width: `${(lv.into / lv.need) * 100}%`, background: C.sky, borderRadius: 99, transition: "width .6s ease-out" }} />
           </div>
-          <div style={{ fontSize: 12, color: C.dim, marginTop: 4 }}>{T("xpLine", { into: lv.into, need: lv.need, total: xp })}</div>
-        </div>
+        </StatTile>
+        {stats.map(([l, v, ic]) => <StatTile key={l} label={l} icon={ic} value={v} />)}
       </div>
 
-      <div style={{ ...card, padding: "13px 15px", marginTop: 8, display: "flex", alignItems: "center", gap: 12 }}>
-        <div style={{ fontSize: 30 }}>🧊</div>
+      <div data-freeze-card style={{ ...card, ...tileR(), padding: "13px 15px", marginTop: 8, display: "flex", alignItems: "center", gap: 12 }}>
+        <div style={{ fontSize: 22, width: 22, textAlign: "center", flexShrink: 0 }}>🧊</div>
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: 15, fontWeight: 700, color: C.chalk }}>{T("freezeTitle", { n: fz, max: META.giftThisYear ? 3 : 2 })}</div>
           <div style={{ fontSize: 12, color: C.dim, lineHeight: 1.45 }}>{T("freezeDesc")}</div>
@@ -3350,48 +3439,43 @@ function ProfileTab({ history, profile, setProfile, onFreeze, kcal }) {
         </button>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 8 }}>
-        {stats.map(([l, v]) => (
-          <div key={l} style={{ ...card, padding: "12px 14px" }}>
-            <div style={{ fontFamily: DISPLAY, fontSize: 30, fontWeight: 900, color: C.chalk, lineHeight: 1 }}>{v}</div>
-            <div style={{ fontSize: 12, color: C.dim, marginTop: 4 }}>{l}</div>
-          </div>
-        ))}
-      </div>
 
-      <div style={sectionTitle}>{T("ranksTitle")}</div>
+      <SectionHead title={T("ranksTitle")} meta={T("achTiers", { n: rankLv, max: Object.keys(RANK_AT).length * (RANKS.length - 1) })} />
       <div data-ranks-box style={{ ...card, padding: 8, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
-        {Object.keys(RANK_AT).map(id => {
+        {Object.keys(RANK_AT).map((id, ri, all) => {
           const b = bestFor(history, id);
           const r = RANKS[rankIdx(id, b)];
           return (
-            <button key={id} onClick={() => setHowEx(id)} style={{ ...btnBase, textAlign: "left", background: SOFT(), border: "none", borderRadius: 12, padding: "10px 11px", color: C.chalk }}>
-              <div style={{ fontSize: 13, fontWeight: 700, lineHeight: 1.25 }}>{EX[id].name}<ExQ id={id} onOpen={() => setHowEx(id)} style={{ width: 17, height: 17, fontSize: 10, marginLeft: 5 }} /></div>
-              <div style={{ fontSize: 13, color: r.color, fontWeight: 700, marginTop: 4 }}>{r.icon} {r.name}<span style={{ color: C.dim, fontWeight: 500 }}>{b !== null ? T("maxBest", { v: `${b}${EX[id].type === "time" ? " s" : ""}` }) : ""}</span></div>
+            <button key={id} data-rank-tile={id} onClick={() => setHowEx(id)} style={{ ...btnBase, textAlign: "left", background: SOFT(), border: "none", borderRadius: 12, padding: "10px 11px", color: C.chalk, display: "flex", flexDirection: "column", gridColumn: all.length % 2 && ri === all.length - 1 ? "1 / -1" : undefined }}>
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 6, width: "100%" }}>
+                <span style={{ flex: 1, minWidth: 0, fontSize: 13, fontWeight: 700, lineHeight: 1.25 }}>{EX[id].name}</span>
+                <span aria-hidden="true" style={{ fontSize: 16, lineHeight: 1, flexShrink: 0 }}>{r.icon}</span>
+              </div>
+              <div style={{ fontSize: 12, marginTop: "auto", paddingTop: 5 }}><span style={{ color: r.color, fontWeight: 800 }}>{r.name}</span><span style={{ color: C.dim }}>{b !== null ? T("maxBest", { v: `${b}${EX[id].type === "time" ? " s" : ""}` }) : ""}</span></div>
             </button>
           );
         })}
       </div>
 
-      <div style={sectionTitle}>{T("badgesTitle")} <span style={{ fontFamily: BODY, fontSize: 14, color: C.dim, fontWeight: 600 }}>{T("achTiers", { n: ach.reduce((x, a) => x + a.tier, 0), max: ach.reduce((x, a) => x + a.at.length, 0) })}</span></div>
+      <SectionHead title={T("badgesTitle")} meta={<>{T("achCount", { n: ach.filter(a => a.step).length, max: ach.length })}<br />{T("achTiers", { n: ach.reduce((x, a) => x + a.step, 0), max: ach.reduce((x, a) => x + a.at.length, 0) })}</>} />
       <div data-badges-box style={{ ...card, padding: 8, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
-        {ach.map(a => {
+        {ach.map((a, ai) => {
           const r = a.tier ? RANKS[a.tier - 1] : null;
-          const prev = a.tier ? a.at[a.tier - 1] : 0;
+          const prev = a.step ? a.at[a.step - 1] : 0;
           const pct = a.next === null ? 100 : Math.max(0, Math.min(100, ((a.v - prev) / (a.next - prev)) * 100));
           return (
-            <div key={a.k} data-ach={a.k} data-tier={a.tier} style={{ background: SOFT(), borderRadius: 12, padding: "10px 11px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <div style={{ fontSize: 26, filter: r ? "none" : "grayscale(1)", opacity: r ? 1 : 0.5 }}>{a.icon}</div>
-                <div style={{ minWidth: 0 }}>
+            <div key={a.k} data-ach={a.k} data-tier={a.tier} style={{ background: SOFT(), borderRadius: 12, padding: "10px 11px", gridColumn: ach.length % 2 && ai === ach.length - 1 ? "1 / -1" : undefined }}>
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 6 }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 13, fontWeight: 800, color: C.chalk, lineHeight: 1.2 }}>{a.name}</div>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: r ? r.color : C.dim }}>{r ? `${r.icon} ${r.name}` : `🔒 ${T("achLocked")}`}</div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: r ? r.color : C.dim, marginTop: 2 }}>{r ? `${r.icon} ${r.name}` : `🔒 ${T("achLocked")}`}</div>
                 </div>
+                <div aria-hidden="true" style={{ fontSize: 20, lineHeight: 1, flexShrink: 0, filter: r ? "none" : "grayscale(1)", opacity: r ? 1 : 0.5 }}>{a.icon}</div>
               </div>
               <div style={{ height: 5, background: `${C.chalk}14`, borderRadius: 99, marginTop: 9, overflow: "hidden" }}>
                 <div style={{ height: "100%", width: `${pct}%`, background: r ? r.color : C.dim, borderRadius: 99, transition: "width .6s ease-out" }} />
               </div>
-              <div style={{ fontSize: 11, color: C.dim, marginTop: 5, lineHeight: 1.35 }}>{a.next === null ? T("achMax") : `${T("achNext", { rank: RANKS[a.tier].name })} ${a.desc}`}</div>
+              <div style={{ fontSize: 11, color: C.dim, marginTop: 5, lineHeight: 1.35 }}>{a.next === null ? T("achMax") : `${T("achNext", { rank: RANKS[a.nextRank].name })} ${a.desc}`}</div>
             </div>
           );
         })}
@@ -3407,6 +3491,48 @@ function Toggle({ on }) {
     <span aria-hidden="true" style={{ width: 50, height: 28, borderRadius: 99, background: on ? C.mint : C.panelHi, position: "relative", transition: "background .2s", flexShrink: 0, border: `1px solid ${C.line}` }}>
       <span style={{ position: "absolute", top: 2, left: on ? 24 : 2, width: 22, height: 22, borderRadius: 99, background: C.chalk, transition: "left .2s" }} />
     </span>
+  );
+}
+// "today 9:41", "yesterday 21:05", or the date and time.
+function fmtWhen(ts) {
+  const d = new Date(ts), k = dateKey(d), time = d.toLocaleTimeString(LANG, { hour: "2-digit", minute: "2-digit" });
+  return k === dateKey() ? `${T("today")} ${time}` : k === addDays(dateKey(), -1) ? `${T("yesterday")} ${time}` : `${fmtDate(k, true)} ${time}`;
+}
+// Backups in Documents/HW App (app only): restore, share or delete. The automatic one is first.
+function BackupsSheet({ onClose, onRestore, autoOn }) {
+  const [files, setFiles] = useState(null);
+  const [sure, setSure] = useState(null);
+  const [err, setErr] = useState("");
+  const load = () => bkList().then(setFiles);
+  useEffect(() => { load(); }, []);
+  const small = { ...btnBase, background: C.panelHi, color: C.chalk, padding: "7px 11px", fontSize: 13, borderRadius: 10 };
+  return (
+    <Sheet title={T("bkFolder")} onClose={onClose}>
+      <div style={{ fontSize: 13, color: C.dim, lineHeight: 1.5 }}>{T("bkSheetD", { dir: `Documents/${BK_DIR}` })}</div>
+      {files === null ? null : !files.length ? <div data-bk-empty style={{ marginTop: 14, fontSize: 14, color: C.dim }}>{T("bkEmpty")}</div> : (
+        <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 8 }}>
+          {files.map(f => (
+            <div key={f.name} data-bk-file={f.name} data-bk-auto={f.auto ? 1 : 0} style={{ background: SOFT(), borderRadius: 14, padding: "11px 12px" }}>
+              <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+                <span style={{ fontSize: 15, fontWeight: 800, color: C.chalk, flex: 1, minWidth: 0 }}>{f.auto ? `🔄 ${T("bkAutoName")}` : `💾 ${f.mtime ? fmtWhen(f.mtime) : f.name}`}</span>
+                <span style={{ fontSize: 12, color: C.dim, flexShrink: 0 }}>{Math.max(1, Math.round(f.size / 1024))} kB</span>
+              </div>
+              <div style={{ fontSize: 12, color: C.dim, marginTop: 2, overflowWrap: "anywhere" }}>{f.auto ? (f.mtime ? `${T("bkUpdated")} ${fmtWhen(f.mtime)}` : f.name) + (autoOn ? "" : ` · ${T("bkAutoOff")}`) : f.name}</div>
+              <div style={{ display: "flex", gap: 6, marginTop: 9, flexWrap: "wrap" }}>
+                <button data-bk-restore onClick={() => { sfxTap(); bkRead(f.name).then(onRestore).catch(() => setErr(T("msgNotBackup"))); }} style={{ ...small, background: C.signal, color: C.signalInk }}>{T("bkRestore")}</button>
+                <button data-bk-share onClick={() => { sfxTap(); bkShare(f.name).catch(() => setErr(T("msgBackupFail"))); }} style={small}>{T("bkShare")}</button>
+                <button data-bk-delete onClick={() => {
+                    if (sure !== f.name) { setSure(f.name); setTimeout(() => setSure(s => (s === f.name ? null : s)), 4000); return; }
+                    bkDelete(f.name).then(() => { setSure(null); sfxTap(); load(); }).catch(() => setErr(T("msgBackupFail")));
+                  }} style={{ ...small, color: "#ff8a80", marginLeft: "auto" }}>{sure === f.name ? T("bkDeleteSure") : T("bkDelete")}</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+      {err && <div role="status" style={{ fontSize: 13, color: "#ff8a80", marginTop: 10 }}>{err}</div>}
+      <div style={{ fontSize: 12, color: C.dim, marginTop: 14, lineHeight: 1.5 }}>{T("bkOld")}</div>
+    </Sheet>
   );
 }
 function SettingRow({ title, desc, on, onClick, first }) {
@@ -3490,7 +3616,7 @@ function ExercisesPage({ settings, set, history, onBack }) {
   );
 }
 
-function SettingsTab({ settings, setSettings, history, profile, setProfile, onImport, onResetAll, kcal }) {
+function SettingsTab({ settings, setSettings, history, profile, setProfile, onImport, onResetAll, kcal, autoBk, onAutoBackup }) {
   const [page, setPage] = useState(null); // null | "exercises"
   useBack(() => setPage(null), page === "exercises");
   const [langOpen, setLangOpen] = useState(false);
@@ -3504,24 +3630,32 @@ function SettingsTab({ settings, setSettings, history, profile, setProfile, onIm
   const curLang = settings.lang || detectLang();
   const flip = k => { unlockAudio(); const v = !settings[k]; set(k, v); if (v) { if (k === "sndTap") sfxTap(); else if (k === "sndTimer") soundExercise(); else sfxCheck(); } };
 
+  const [bkOpen, setBkOpen] = useState(false);
+  // In the app a backup you save yourself goes to Documents/HW App and is never deleted automatically (1.4.0).
   const exportBackup = () => {
-    const data = { app: BACKUP_ID, version: 1, appVersion: APP_VERSION, exportedAt: new Date().toISOString(), history, profile, settings, kcal: kcal || null };
-    saveBackupFile(`hw-app-backup-${dateKey()}.json`, JSON.stringify(data))
+    const text = backupJson(history, profile, settings, kcal);
+    if (bkSupported()) {
+      const name = `hw-app-backup-${stamp(new Date())}.json`;
+      bkWrite(name, text).then(() => { setMsg(T("msgBackupFolder", { dir: `Documents/${BK_DIR}`, name })); sfxCheck(); }).catch(() => setMsg(T("msgBackupFail")));
+      return;
+    }
+    saveBackupFile(`hw-app-backup-${dateKey()}.json`, text)
       .then(how => { if (how === "cancelled") return; setMsg(T(how === "shared" ? "msgBackupShared" : "msgBackupSaved")); sfxCheck(); })
       .catch(() => setMsg(T("msgBackupFail")));
+  };
+  const loadBackupText = txt => {
+    try {
+      const d = JSON.parse(txt);
+      if (!BACKUP_IDS.includes(d.app) || !Array.isArray(d.history)) throw new Error("bad");
+      setPending(d); setMsg(""); return true;
+    } catch (_) { setMsg(T("msgNotBackup")); return false; }
   };
   const readBackup = e => {
     const f = e.target.files && e.target.files[0];
     e.target.value = "";
     if (!f) return;
     const fr = new FileReader();
-    fr.onload = () => {
-      try {
-        const d = JSON.parse(fr.result);
-        if (!BACKUP_IDS.includes(d.app) || !Array.isArray(d.history)) throw new Error("bad");
-        setPending(d); setMsg("");
-      } catch (_) { setMsg(T("msgNotBackup")); }
-    };
+    fr.onload = () => loadBackupText(fr.result);
     fr.readAsText(f);
   };
   const copyAll = async () => {
@@ -3555,6 +3689,7 @@ function SettingsTab({ settings, setSettings, history, profile, setProfile, onIm
         </Sheet>
       )}
       <input ref={fileRef} type="file" accept="application/json,.json" onChange={readBackup} style={{ display: "none" }} />
+      {bkOpen && <BackupsSheet onClose={() => setBkOpen(false)} onRestore={txt => { if (loadBackupText(txt)) setBkOpen(false); }} autoOn={!!settings.autoBackup} />}
 
       <div style={sectionTitle}>{T("language")}</div>
       {/* One row with the current language; the full list opens in a scrollable sheet, so more languages fit later. */}
@@ -3653,8 +3788,18 @@ function SettingsTab({ settings, setSettings, history, profile, setProfile, onIm
       <div style={card}>
         <button onClick={exportBackup} style={rowBtn(true)}>
           {T("backupSave")}
-          <div style={{ fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2 }}>{T(isNative ? "backupSaveDApp" : "backupSaveD")}</div>
+          <div style={{ fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2 }}>{isNative ? T("backupSaveDApp", { dir: `Documents/${BK_DIR}` }) : T("backupSaveD")}</div>
         </button>
+        {bkSupported() && (
+          <>
+            <SettingRow title={T("autoBk")} desc={<>{T("autoBkD", { dir: `Documents/${BK_DIR}` })}<span data-autobk-status={autoBk ? (autoBk.ok ? "ok" : "err") : "none"} style={{ display: "block", marginTop: 4, color: autoBk && !autoBk.ok ? "#ff8a80" : autoBk ? C.mint : C.dim }}>{!settings.autoBackup ? null : !autoBk ? T("autoBkNone") : autoBk.ok ? T("autoBkLast", { time: fmtWhen(autoBk.ts) }) : T("autoBkErr", { e: autoBk.err || "?" })}</span></>}
+              on={settings.autoBackup} onClick={() => { const v = !settings.autoBackup; set("autoBackup", v); sfxTap(); if (v) onAutoBackup(true); }} />
+            <button data-bk-open onClick={() => { sfxTap(); setBkOpen(true); }} style={{ ...rowBtn(false), display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ flex: 1 }}>{T("bkFolder")}<span style={{ display: "block", fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2 }}>{T("bkFolderD", { dir: `Documents/${BK_DIR}` })}</span></span>
+              <span aria-hidden="true" style={{ color: C.dim, fontSize: 20 }}>›</span>
+            </button>
+          </>
+        )}
         <button onClick={() => fileRef.current && fileRef.current.click()} style={rowBtn(false)}>
           {T("backupLoad")}
           <div style={{ fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2 }}>{T("backupLoadD")}</div>
@@ -3834,7 +3979,7 @@ function Work({ item, rounds, history, sessionResults, onRecord, onSwap, exclude
       {how && <HowTo id={item.id} history={history} onClose={() => setHow(false)} onSwap={onSwap && ph === "ready" ? () => { sfxTap(); setHow(false); setSwap(true); } : null} />}
       {swap && <SwapSheet item={item} exclude={exclude || []} history={history} onClose={() => setSwap(false)} onPick={id => { setSwap(false); sfxCheck(); onSwap(item.slot, id); }} />}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10 }}>
-        <div style={{ fontFamily: DISPLAY, fontSize: fitSize(ex.name, 46), fontWeight: 900, lineHeight: 0.95, color: C.chalk, flex: 1, minWidth: 0, hyphens: "auto", overflowWrap: "break-word" }}>{ex.name}<ExQ id={item.id} onOpen={() => setHow(true)} style={{ width: 24, height: 24, fontSize: 14, marginLeft: 8, verticalAlign: "0.15em" }} /></div>
+        <div style={{ fontFamily: DISPLAY, fontSize: fitSize(ex.name, 46), fontWeight: 900, lineHeight: 0.95, color: C.chalk, flex: 1, minWidth: 0, hyphens: "auto", overflowWrap: "break-word" }}>{ex.name}<ExQ id={item.id} onOpen={() => setHow(true)} style={{ width: 19, height: 19, fontSize: 11, marginLeft: 8, verticalAlign: "0.2em" }} /></div>
         <div style={{ display: "flex", flexDirection: "column", gap: 6, flexShrink: 0 }}>
           <button onClick={() => setHow(true)} style={{ ...ghostBtn, padding: "8px 12px", whiteSpace: "nowrap" }}>{T("howTo")}</button>
           {onSwap && ph === "ready" && <button onClick={() => { sfxTap(); setSwap(true); }} style={{ ...ghostBtn, padding: "8px 12px", color: C.sky, borderColor: `${C.sky}88`, whiteSpace: "nowrap" }}>{T("swap")}</button>}
@@ -4051,7 +4196,7 @@ function Rest({ rest, nextItem, rounds, onEnd, onAdd }) {
         </Ring>
       </div>
       <div style={{ marginTop: 22, fontSize: 13, color: C.dim }}>{T("next")}</div>
-      <div style={{ fontFamily: DISPLAY, fontSize: 36, fontWeight: 800, color: C.chalk, lineHeight: 1.05 }}>{ex.name}<ExQ id={nextItem.id} style={{ width: 22, height: 22, fontSize: 13, verticalAlign: "0.2em" }} /></div>
+      <div style={{ fontFamily: DISPLAY, fontSize: 36, fontWeight: 800, color: C.chalk, lineHeight: 1.05 }}>{ex.name}<ExQ id={nextItem.id} style={{ width: 17, height: 17, fontSize: 10, verticalAlign: "0.25em" }} /></div>
       <div style={{ fontSize: 13, color: C.dim, marginTop: 4 }}>{T("prepare")}</div>
       {(rest.tip || rest.moti) && (
         <div style={{ marginTop: 18, background: C.panel, border: `1px solid ${C.line}`, borderRadius: 16, padding: "12px 14px", textAlign: "left" }}>
@@ -4260,7 +4405,7 @@ function Session({ session, setSession, history, onSave, onClose, onMinimize, on
     if (entry) {
       const after = [...history, entry];
       xpGained = totalXP(after) - xpBefore;
-      newAch = achUps(history, after);
+      newAch = achUps(history, after, achExtra({ bdays: [] }, META.kcal, after));
       const wk = weekKey(entry.date);
       const beforeDone = new Set(challengeStatus(history, wk).filter(c => c.done).map(c => c.id));
       newCh = challengeStatus(after, wk).filter(c => c.done && !beforeDone.has(c.id));
@@ -4366,6 +4511,8 @@ export default function App() {
   const [profile, setProfileState] = useState({ name: "User", pfp: null, freezeDays: [], streakResetTs: 0 });
   const [ui, setUiState] = useState({});
   const [kcal, setKcalState] = useState(null);
+  const [kcalLoaded, setKcalLoaded] = useState(false);
+  const [autoBk, setAutoBk] = useState(() => autoBkInfo());
   const setKcal = k => { setKcalState(k); saveKcal(k); };
   const setUi = u => { setUiState(u); saveUi(u); };
   // Every change to past workouts keeps the history sorted and records/rank-ups correct.
@@ -4383,7 +4530,9 @@ export default function App() {
   applyLang(settings.lang || detectLang());
   const setSettings = n => { setSettingsState(n); saveSettings(n); };
   const [profLoaded, setProfLoaded] = useState(false);
-  useEffect(() => { loadProfile().then(p => { if (p) setProfileState(prev => ({ ...prev, ...p })); setProfLoaded(true); }); loadKcal().then(k => { if (k) setKcalState(k); }); }, []);
+  useEffect(() => { loadProfile().then(p => { if (p) setProfileState(prev => ({ ...prev, ...p })); setProfLoaded(true); }); loadKcal().then(k => { if (k) setKcalState(k); setKcalLoaded(true); }); }, []);
+  // The Health Connect badge stays at its best level, also after disconnecting (1.4.0).
+  useEffect(() => { if (kcal && hcLevel(kcal) > (kcal.hcBest || 0)) setKcal({ ...kcal, hcBest: hcLevel(kcal) }); }, [kcal]);
   // Birthday: count it for the achievement and give one freeze day as a present (once per year).
   useEffect(() => {
     if (!profLoaded || !isBirthday(profile.birth)) return;
@@ -4428,6 +4577,26 @@ export default function App() {
   const [settingsLoaded, setSettingsLoaded] = useState(false);
   const [newsChecked, setNewsChecked] = useState(false);
   const [updCard, setUpdCard] = useState(false); // "updated, see what's new" card, only on this first start after a small update
+  // Automatic backup (app only, 1.4.0): Documents/HW App/hw-app-auto-backup.json, replaced by a fresh copy once a day
+  // and a few seconds after any change (a finished workout, calories, settings). Never written while there is no
+  // data at all, so a full reset or a fresh install can't overwrite a good backup with an empty one.
+  const runAutoBackup = (force = false) => {
+    if (!bkSupported()) return;
+    const k = META.kcal;
+    const hasData = history.length > 0 || Object.keys((k && k.log) || {}).some(d => (k.log[d] || []).length);
+    if (!hasData && !force) return;
+    if (!hasData) { const info = { ts: Date.now(), day: dateKey(), ok: false, err: T("autoBkEmpty") }; setAutoBk(info); return; }
+    const save = info => { try { localStorage.setItem(AUTOBK_KEY, JSON.stringify(info)); } catch (_) {} setAutoBk(info); };
+    bkWrite(BK_AUTO, backupJson(history, profile, settings, k))
+      .then(() => save({ ts: Date.now(), day: dateKey(), ok: true }))
+      .catch(e => save({ ts: Date.now(), day: dateKey(), ok: false, err: String((e && e.message) || e).slice(0, 120) }));
+  };
+  useEffect(() => {
+    if (!bkSupported() || !settings.autoBackup || !loaded || !settingsLoaded || !profLoaded || !kcalLoaded) return;
+    const last = autoBkInfo();
+    const t = setTimeout(() => runAutoBackup(), last && last.ok && last.day === dateKey() ? 4000 : 1500);
+    return () => clearTimeout(t);
+  }, [history, profile, kcal, settings, loaded, settingsLoaded, profLoaded, kcalLoaded]);
   const [newsAt, setNewsAt] = useState(null);
   const [onboard, setOnboard] = useState(null); // step to show the first-start setup at, or null
   const [obChecked, setObChecked] = useState(false);
@@ -4454,11 +4623,16 @@ export default function App() {
   const go = (id, opt) => { if (id !== screen) sfxTap(); setScreen(id); setMenuOpen(false); if (session) setSessionOpen(false); setHistEdit(opt && opt.edit ? opt.edit : null); };
   const [howId, setHowId] = useState(null);
   openHowToGlobal = setHowId;
-  // Android back with nothing open: minimize the workout, then go Home, then leave the app.
+  // Android back with nothing open: minimize the workout, then go Home, then ask before leaving (1.4.0, Michael:
+  // like other apps, "really leave?"; a second back within a few seconds or "Leave" closes the app).
+  const [exitAsk, setExitAsk] = useState(false);
+  useEffect(() => { if (!exitAsk) return; const t = setTimeout(() => setExitAsk(false), 3500); return () => clearTimeout(t); }, [exitAsk]);
   useEffect(() => {
     setRootBack(() => {
       if (session && sessionOpen) { setSessionOpen(false); return true; }
       if (screen !== "train") { setScreen("train"); return true; }
+      if (!exitAsk) { setExitAsk(true); return true; }
+      setExitAsk(false);
       return false;
     });
   });
@@ -4518,7 +4692,7 @@ export default function App() {
         .scr{animation:scrIn .28s ease-out both}
         :root{--sat:var(--safe-area-inset-top,env(safe-area-inset-top,0px));--sab:var(--safe-area-inset-bottom,env(safe-area-inset-bottom,0px))}
         .sheetBox{box-sizing:border-box;max-height:86vh;max-height:calc(100dvh - 24px - var(--sat) - var(--sab))}
-        .exq::after{content:"?"}
+        .exq::after{content:"?"} .exq{position:relative} .exq::before{content:"";position:absolute;inset:-10px}
         .noBar{scrollbar-width:none}.noBar::-webkit-scrollbar{display:none}
         @keyframes bump{0%{transform:scale(.82)}55%{transform:scale(1.12)}100%{transform:scale(1)}}
         .bump{animation:bump .22s ease-out}
@@ -4574,11 +4748,12 @@ export default function App() {
                 {screen === "profile" && <ProfileTab history={history} profile={profile} setProfile={setProfile} onFreeze={applyFreeze} kcal={kcal} />}
                 {screen === "calories" && <Calories history={history} profile={profile} setProfile={setProfile} kcal={kcal} setKcal={setKcal} />}
                 {screen === "settings" && <SettingsTab settings={settings} setSettings={setSettings} history={history} profile={profile} setProfile={setProfile}
-                  kcal={kcal}
+                  kcal={kcal} autoBk={autoBk} onAutoBackup={runAutoBackup}
                   onResetAll={() => { setHistory([]); setProfile({ ...profile, freezeDays: [], skips: {}, streakResetTs: 0, bdays: [], bdayGifts: [] }); setUi({}); if (kcal) setKcal({ ...kcal, log: {} }); }}
                   onImport={d => { setHistory(d.history); if (d.profile) setProfile({ ...profile, ...d.profile }); if (d.settings) setSettings({ ...DEFAULT_SETTINGS, ...d.settings }); if (d.kcal) setKcal(d.kcal); }} />}
               </div>
               {session && session.phase !== "summary" && <MiniPlayer session={session} live={live} onOpen={resume} />}
+              {exitAsk && <ExitPrompt onStay={() => { sfxTap(); setExitAsk(false); }} onLeave={() => { setExitAsk(false); exitApp(); }} />}
             </>
           )}
           <MenuDrawer gh={gh} dl={dl} open={menuOpen} screen={screen} history={history} profile={profile} session={session && session.phase !== "summary" ? session : null}

@@ -87,6 +87,41 @@ export async function saveBackupFile(name, text) {
   }
 }
 
+// ─── Backups in the phone's Documents folder (app only, 1.4.0) ─────────────
+// Michael (Oct 11): an automatic backup every day (one file, the old one is replaced) and manual backups that are
+// never deleted automatically, all in one folder he can find: Documents/HW App. Android 11+ needs no permission for
+// files the app creates there; Android 8–10 ask once for storage access (declared in the manifest up to API 29).
+// After a reinstall Android no longer counts older files as the app's own, so they can't be listed or replaced
+// from here (they stay in the folder and can be restored with "Load a backup").
+export const BK_DIR = "HW App";
+export const BK_AUTO = "hw-app-auto-backup.json";
+const bkPath = name => `${BK_DIR}/${name}`;
+export const bkSupported = () => isNative;
+export async function bkWrite(name, text) {
+  const res = await Filesystem.writeFile({ path: bkPath(name), data: text, directory: Directory.Documents, encoding: Encoding.UTF8, recursive: true });
+  return res.uri;
+}
+// Newest first: [{name, size, mtime, auto}]
+export async function bkList() {
+  try {
+    const r = await Filesystem.readdir({ path: BK_DIR, directory: Directory.Documents });
+    return (r.files || [])
+      .filter(f => (f.type ? f.type === "file" : true) && /\.json$/i.test(f.name))
+      .map(f => ({ name: f.name, size: f.size || 0, mtime: f.mtime || 0, auto: f.name === BK_AUTO }))
+      .sort((a, b) => (b.auto - a.auto) || (b.mtime - a.mtime) || b.name.localeCompare(a.name));
+  } catch (_) { return []; }
+}
+export async function bkRead(name) {
+  const r = await Filesystem.readFile({ path: bkPath(name), directory: Directory.Documents, encoding: Encoding.UTF8 });
+  return typeof r.data === "string" ? r.data : await r.data.text();
+}
+export async function bkDelete(name) { await Filesystem.deleteFile({ path: bkPath(name), directory: Directory.Documents }); }
+export async function bkShare(name) {
+  const { uri } = await Filesystem.getUri({ path: bkPath(name), directory: Directory.Documents });
+  try { await Share.share({ title: name, files: [uri] }); return "shared"; }
+  catch (e) { if (/cancel/i.test(String(e && e.message))) return "cancelled"; throw e; }
+}
+
 // ─── Updates (app only) ────────────────────────────────────────────────────
 // Every GitHub release has update.json: {version, bundle:{url, sha256}, apk:{url}}.
 // releases/latest/download/… always points to the newest release.
