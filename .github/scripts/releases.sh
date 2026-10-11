@@ -125,6 +125,19 @@ while IFS=$'\t' read -r kind ver tag title commit notes; do
   fi
 done < /tmp/sections.tsv
 
+# 1b. Betas that kept their old v-tag (1.4.1, 1.4.2): the app now needs those tags. The workflow can't create a tag
+#     on the old commit, but it can on the pushed one, so the beta release moves to beta-v1.x.y there (only its
+#     "Source code" files change; Michael, Oct 11: do it automatically). Then the old v-tag is deleted.
+while IFS=$'\t' read -r kind ver tag title commit notes; do
+  [ "$kind" = "beta" ] || continue
+  if ! has_release "$tag" && has_release "v$ver" && gh release view "v$ver" --repo "$REPO" --json name --jq .name | grep -q "Browser beta"; then
+    echo "moving Browser beta $ver from v$ver to $tag (at $GITHUB_SHA)"
+    gh api "repos/$REPO/git/ref/tags/$tag" >/dev/null 2>&1 || run gh api -X POST "repos/$REPO/git/refs" -f ref="refs/tags/$tag" -f sha="$GITHUB_SHA"
+    run gh release edit "v$ver" --repo "$REPO" --tag "$tag" --title "$title" --notes-file "$notes" --latest=false
+    gh api -X DELETE "repos/$REPO/git/refs/tags/v$ver" >/dev/null 2>&1 || echo "::notice::the old tag v$ver stays (GitHub refused to delete it); the app release will replace it"
+  fi
+done < /tmp/sections.tsv
+
 # 2. create / update
 while IFS=$'\t' read -r kind ver tag title commit notes; do
   [ "$commit" = "-" ] && commit=""
