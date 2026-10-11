@@ -944,6 +944,7 @@ export default {
     ["📱 Odchod z aplikace", "Zpět na hlavní obrazovce aplikaci hned zavřelo.", "První zpět se zeptá „Opravdu chceš odejít?“. Druhé zpět nebo Odejít ji zavře."],
     ["? u cviků", "Velký ? u každého cviku.", "Menší, nenápadnější ?, klepne se na něj pořád snadno."],
     ["Videa", "Každý cvik měl jedno pevné video na YouTube a někdy ukazovalo jinou variantu než obrázek.", "„Vyhledat na internetu“ otevře hledání, jak se cvik dělá, v tvém jazyce, a video si vybereš sám."],
+    ["Plynulejší", "Každý matný box rozmazával to, co bylo za ním, a rozmazávaly i lišty, takže posouvání na mobilu umělo sekat.", "Rozmazané jsou už jen lišty, pod kterými se posouvá obsah. Boxy vypadají stejně a posouvání, menu i okna jsou plynulejší."],
   ],
   news131: [
     "Tekuté sklo: ☰ menu má teď stejné barevné pozadí jako zbytek aplikace (předtím to byl plochý tmavý panel).",

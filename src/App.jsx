@@ -951,8 +951,8 @@ function useBack(fn, on = true) {
 function Sheet({ title, onClose, children, short }) {
   useBack(onClose);
   return createPortal(
-    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(5,10,24,0.82)", ...(LOOK === "liquid" ? { background: "rgba(5,10,24,0.5)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)" } : {}), zIndex: 100, display: "flex", alignItems: "flex-end", justifyContent: "center", padding: "calc(12px + var(--sat)) 12px calc(12px + var(--sab))" }}>
-      <div onClick={e => e.stopPropagation()} className="sheetBox" style={{ ...(short ? { maxHeight: "70dvh" } : {}), background: C.panel, borderRadius: 22, padding: "22px 20px 26px", width: "100%", maxWidth: 460, border: `1px solid ${C.line}`, overflowY: "auto", overscrollBehavior: "contain", fontFamily: BODY, ...(LOOK === "liquid" ? { background: `${C.panel}c7`, backdropFilter: "blur(30px) saturate(170%)", WebkitBackdropFilter: "blur(30px) saturate(170%)", border: "1px solid rgba(255,255,255,.16)", borderRadius: 26, boxShadow: "inset 0 1px 0 rgba(255,255,255,.14), 0 20px 50px rgba(0,0,0,.4)" } : {}) }}>
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(5,10,24,0.82)", ...(LOOK === "liquid" ? { background: "rgba(5,10,24,0.66)" } : {}), zIndex: 100, display: "flex", alignItems: "flex-end", justifyContent: "center", padding: "calc(12px + var(--sat)) 12px calc(12px + var(--sab))" }}>
+      <div onClick={e => e.stopPropagation()} className="sheetBox" style={{ ...(short ? { maxHeight: "70dvh" } : {}), background: C.panel, borderRadius: 22, padding: "22px 20px 26px", width: "100%", maxWidth: 460, border: `1px solid ${C.line}`, overflowY: "auto", overscrollBehavior: "contain", fontFamily: BODY, ...(LOOK === "liquid" ? { background: `${C.panel}f2`, border: "1px solid rgba(255,255,255,.16)", borderRadius: 26, boxShadow: "inset 0 1px 0 rgba(255,255,255,.14), 0 20px 50px rgba(0,0,0,.4)" } : {}) }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, marginBottom: 14 }}>
           <div style={{ fontFamily: DISPLAY, fontSize: 30, fontWeight: 800, lineHeight: 1, color: C.chalk }}>{title}</div>
           <button onClick={onClose} aria-label={T("close")} style={{ ...btnBase, background: C.panelHi, color: C.dim, padding: "7px 12px", fontSize: 14 }}>✕</button>
@@ -1230,11 +1230,14 @@ let LOOK = "cards";
 // A soft inner tile inside a box (badges, ranks): visible but quiet, on any look.
 const SOFT = () => (LOOK === "tiles" ? `${C.ink}55` : LOOK === "liquid" ? "rgba(255,255,255,.06)" : `${C.chalk}0d`);
 // "Liquid glass" (Michael, Oct 10: like on iPhones): translucent frosted boxes over soft colour blobs of the theme.
-const LIQUID = () => ({ background: "rgba(255,255,255,.075)", border: "1px solid rgba(255,255,255,.16)", borderRadius: 26, backdropFilter: "blur(18px) saturate(170%)", WebkitBackdropFilter: "blur(18px) saturate(170%)", boxShadow: "inset 0 1px 0 rgba(255,255,255,.14), 0 10px 30px rgba(0,0,0,.25)" });
+// 1.4.1 (Michael: "sekavá"): the boxes no longer blur what is behind them. Behind a box there is only the soft colour
+// background, which is already blurry, so it looks the same, but a blur per box made every scroll frame expensive
+// on phones. Only the bars that content scrolls under (top bar, floating Start, mini player) still blur.
+const LIQUID = () => ({ background: "rgba(255,255,255,.085)", border: "1px solid rgba(255,255,255,.16)", borderRadius: 26, boxShadow: "inset 0 1px 0 rgba(255,255,255,.14), 0 10px 30px rgba(0,0,0,.25)" });
 // The same glass for the bars and floating panels (top bar, floating start, mini player, menu, sheets; Michael, Oct 10:
 // "tam sa to applajnut musí tiež"), and small glass pills for the chips and buttons on them.
 // A dark layer under the white tint keeps text readable when something bright (a white button) passes behind.
-const LIQUID_BAR = (dark = "66") => ({ background: `linear-gradient(180deg, rgba(255,255,255,.11), rgba(255,255,255,.05)), ${C.ink}${dark}`, backdropFilter: "blur(24px) saturate(180%)", WebkitBackdropFilter: "blur(24px) saturate(180%)" });
+const LIQUID_BAR = (dark = "66") => ({ background: `linear-gradient(180deg, rgba(255,255,255,.11), rgba(255,255,255,.05)), ${C.ink}${dark}`, backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" });
 const LIQUID_FLOAT = () => ({ ...LIQUID_BAR("99"), border: "1px solid rgba(255,255,255,.2)", boxShadow: "inset 0 1px 0 rgba(255,255,255,.18), 0 12px 34px rgba(0,0,0,.35)" });
 const LIQUID_PILL = () => ({ background: "rgba(255,255,255,.09)", border: "1px solid rgba(255,255,255,.2)", boxShadow: "inset 0 1px 0 rgba(255,255,255,.16)" });
 // The colour blobs of the theme: the page background, and the ☰ menu panel gets its own copy (1.3.1, Michael: the
@@ -1244,7 +1247,7 @@ function LiquidBg() {
   return <div aria-hidden="true" data-liquid-bg style={{ position: "fixed", inset: 0, zIndex: -1, pointerEvents: "none", background: liquidGrad() }} />;
 }
 // The − / + buttons of the rep counter: theme colours (and glass in the liquid look), never a fixed navy edge.
-const stepBtn = () => ({ ...btnBase, width: 64, height: 64, borderRadius: 99, background: C.panelHi, color: C.chalk, fontSize: 32, lineHeight: 1, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, "--e": EDGE[C.panelHi], ...(LOOK === "liquid" ? { ...LIQUID_PILL(), backdropFilter: "blur(18px)", WebkitBackdropFilter: "blur(18px)" } : {}) });
+const stepBtn = () => ({ ...btnBase, width: 64, height: 64, borderRadius: 99, background: C.panelHi, color: C.chalk, fontSize: 32, lineHeight: 1, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, "--e": EDGE[C.panelHi], ...(LOOK === "liquid" ? LIQUID_PILL() : {}) });
 // Section title row: the title on the left, an optional quiet count/chip on the right (same on every screen).
 const SECT_HEAD = { display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 };
 const sectMeta = meta => meta ? <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: 0, textTransform: "none", color: C.dim, opacity: 1, whiteSpace: "nowrap" }}>{meta}</span> : null;
@@ -1395,7 +1398,7 @@ function TopBar({ screen, history, menuOpen, onMenu, onGo, dlPct }) {
   const liquid = LOOK === "liquid";
   const pill = liquid ? LIQUID_PILL() : { background: "transparent" };
   return (
-    <div data-topbar style={{ position: "sticky", top: 0, zIndex: 20, background: `${C.ink}ee`, backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderBottom: `1px solid ${C.line}`, ...(liquid ? { ...LIQUID_BAR(), borderBottom: "1px solid rgba(255,255,255,.14)", boxShadow: "inset 0 -1px 0 rgba(0,0,0,.12)" } : {}) }}>
+    <div data-topbar style={{ position: "sticky", top: 0, zIndex: 20, background: `${C.ink}f7`, borderBottom: `1px solid ${C.line}`, ...(liquid ? { ...LIQUID_BAR(), borderBottom: "1px solid rgba(255,255,255,.14)", boxShadow: "inset 0 -1px 0 rgba(0,0,0,.12)" } : {}) }}>
       <div style={{ maxWidth: 460, margin: "0 auto", padding: "calc(10px + var(--sat)) 18px 10px", display: "flex", alignItems: "center", gap: 8 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div key={screen} className="titleIn" style={{ fontFamily: DISPLAY, fontSize: CJK.test(T(SCREEN_TITLE[screen])) ? 21 : 24, fontWeight: 900, lineHeight: 1.05, color: C.chalk, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{T(SCREEN_TITLE[screen])}</div>
@@ -1436,7 +1439,8 @@ function MenuDrawer({ open, screen, history, profile, session, onGo, onResume, o
     const k = e => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", k);
     const prev = document.body.style.overflow; document.body.style.overflow = "hidden";
-    return () => { clearTimeout(f); window.removeEventListener("keydown", k); document.body.style.overflow = prev; try { const b = [...document.querySelectorAll("[data-menu-btn]")].find(el => el.offsetParent); (b || back) && (b || back).focus({ preventScroll: true }); } catch (_) {} };
+    return () => { clearTimeout(f); window.removeEventListener("keydown", k); document.body.style.overflow = prev; // give focus back to ☰ only for keyboards/mice; on touch it forced a layout right during the screen change (1.4.1)
+      try { if (window.matchMedia && matchMedia("(pointer: fine)").matches) requestAnimationFrame(() => { const b = [...document.querySelectorAll("[data-menu-btn]")].find(el => el.offsetParent); (b || back) && (b || back).focus({ preventScroll: true }); }); } catch (_) {} };
   }, [open]);
   if (!shown) return null;
   const lv = levelInfo(totalXP(history));
@@ -1445,7 +1449,7 @@ function MenuDrawer({ open, screen, history, profile, session, onGo, onResume, o
   const items = SCREENS.map(id => ({ id, label: T(SCREEN_TITLE[id]), desc: id === "calories" && kcs ? T("kcMenu", { e: nf(kcs.eaten), t: nf(kcs.target) }) : T("menuD_" + id) }));
   return createPortal(
     <div role="dialog" aria-modal="true" aria-label={T("mainMenu")} className={open ? "drawerOn" : "drawerOff"} style={{ position: "fixed", inset: 0, zIndex: 60 }}>
-      <div onClick={onClose} className="drawerBg" style={{ position: "absolute", inset: 0, background: "rgba(3,8,20,.55)", backdropFilter: "blur(3px)", WebkitBackdropFilter: "blur(3px)" }} />
+      <div onClick={onClose} className="drawerBg" style={{ position: "absolute", inset: 0, background: "rgba(3,8,20,.6)" }} />
       <nav aria-label={T("mainMenu")} className="drawerPanel" style={{ fontFamily: BODY, position: "absolute", top: 0, right: 0, bottom: 0, width: "min(86vw, 340px)", background: C.ink, borderLeft: `1px solid ${C.line}`, boxShadow: "-20px 0 50px rgba(0,0,0,.35)", ...(LOOK === "liquid" ? { background: liquidGrad(), borderLeft: "1px solid rgba(255,255,255,.16)" } : {}), display: "flex", flexDirection: "column", paddingTop: "var(--sat)", paddingBottom: "var(--sab)", overflowY: "auto" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px 4px 18px" }}>
           <div style={{ fontFamily: DISPLAY, fontSize: 15, fontWeight: 800, color: C.dim, letterSpacing: 1 }}>HW APP</div>
@@ -1890,7 +1894,7 @@ function FloatStart({ show, day, rounds, setRounds, onStart }) {
   return createPortal(
     <div data-fstart={show ? "on" : "off"} aria-hidden={!show} className={"fstart" + (show ? " on" : "")}
       style={{ position: "fixed", left: 0, right: 0, bottom: "calc(var(--sab, 0px) + 12px)", zIndex: 40, display: "flex", justifyContent: "center", padding: "0 12px", pointerEvents: show ? "auto" : "none" }}>
-      <div data-fstart-box style={{ display: "flex", gap: 8, width: "100%", maxWidth: 436, padding: 8, borderRadius: 22, background: `${C.ink}e6`, backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)", border: `1px solid ${C.line}`, boxShadow: "0 12px 34px rgba(0,0,0,.5)", ...(LOOK === "liquid" ? { ...LIQUID_FLOAT(), borderRadius: 26 } : {}) }}>
+      <div data-fstart-box style={{ display: "flex", gap: 8, width: "100%", maxWidth: 436, padding: 8, borderRadius: 22, background: `${C.ink}f5`, border: `1px solid ${C.line}`, boxShadow: "0 12px 34px rgba(0,0,0,.5)", ...(LOOK === "liquid" ? { ...LIQUID_FLOAT(), borderRadius: 26 } : {}) }}>
         {[3, 2].map((n, i) => (
           <button key={n} tabIndex={show ? 0 : -1} data-fround={n} aria-pressed={rounds === n} aria-label={T("roundsBtn", { n, m: n === 2 ? 13 : 19 })} onClick={() => { sfxTap(); setRounds(n); }} className="fsq" style={{ ...btnBase, "--d": `${60 + i * 50}ms`, width: 58, flexShrink: 0, borderRadius: 14, padding: "6px 0", background: rounds === n ? C.chalk : C.panel, color: rounds === n ? C.ink : C.dim, border: `1.5px solid ${rounds === n ? C.chalk : C.line}`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", lineHeight: 1, ...(LOOK === "liquid" && rounds !== n ? { ...LIQUID_PILL(), color: C.chalk } : {}) }}>
             <span style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900 }}>{n === 2 ? 13 : 19}</span>
@@ -3723,7 +3727,7 @@ function SettingsTab({ settings, setSettings, history, profile, setProfile, onIm
       <div role="radiogroup" aria-label={T("lookTitle")} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
         {["liquid", "cards", "tiles", "glass", "accent", "flat"].map(id => {
           const on = (settings.look || "cards") === id;
-          const box = id === "liquid" ? { background: "rgba(255,255,255,.14)", border: "1px solid rgba(255,255,255,.28)", borderRadius: 9, backdropFilter: "blur(6px)" } : id === "cards" ? { background: C.panel, border: `1px solid ${C.line}`, borderRadius: 6 } : id === "tiles" ? { background: C.panelHi, borderRadius: 5 } : id === "glass" ? { background: `linear-gradient(160deg, ${C.panelHi}, ${C.panel})`, borderRadius: 8, boxShadow: "0 3px 8px rgba(0,0,0,.3)" } : id === "accent" ? { background: C.panel, borderLeft: `3px solid ${C.signal}`, borderRadius: 4 } : { borderBottom: `1px solid ${C.line}` };
+          const box = id === "liquid" ? { background: "rgba(255,255,255,.14)", border: "1px solid rgba(255,255,255,.28)", borderRadius: 9 } : id === "cards" ? { background: C.panel, border: `1px solid ${C.line}`, borderRadius: 6 } : id === "tiles" ? { background: C.panelHi, borderRadius: 5 } : id === "glass" ? { background: `linear-gradient(160deg, ${C.panelHi}, ${C.panel})`, borderRadius: 8, boxShadow: "0 3px 8px rgba(0,0,0,.3)" } : id === "accent" ? { background: C.panel, borderLeft: `3px solid ${C.signal}`, borderRadius: 4 } : { borderBottom: `1px solid ${C.line}` };
           return (
             <button key={id} role="radio" aria-checked={on} data-look={id} onClick={() => { sfxTap(); set("look", id); }}
               style={{ ...btnBase, background: id === "liquid" ? `radial-gradient(70% 60% at 20% 15%, ${C.sky}66, transparent), radial-gradient(70% 60% at 85% 85%, ${C.signal}55, transparent), ${C.ink}` : C.ink, border: `2px solid ${on ? C.signal : C.line}`, padding: 9, color: C.chalk, textAlign: "left" }}>
@@ -3975,7 +3979,7 @@ function Work({ item, rounds, history, sessionResults, onRecord, onSwap, exclude
         const hit = ex.type === "reps" && goal !== null && reps >= goal;
         const unit = ex.type === "time" ? " s" : unitStr(ex.unit);
         return (
-          <div data-goal style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 10, background: hit ? `${C.mint}1f` : LOOK === "liquid" ? "rgba(255,255,255,.07)" : C.panel, border: `1.5px solid ${hit ? C.mint : C.signal}66`, borderRadius: 14, padding: "9px 12px", ...(LOOK === "liquid" ? { backdropFilter: "blur(18px)", WebkitBackdropFilter: "blur(18px)" } : {}) }}>
+          <div data-goal style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 10, background: hit ? `${C.mint}1f` : LOOK === "liquid" ? "rgba(255,255,255,.07)" : C.panel, border: `1.5px solid ${hit ? C.mint : C.signal}66`, borderRadius: 14, padding: "9px 12px" }}>
             <span className={hit ? "pop" : ""} key={hit ? "hit" : "aim"} style={{ fontFamily: DISPLAY, fontWeight: 900, fontSize: 20, lineHeight: 1, color: hit ? C.mint : C.signal, border: `2px solid ${hit ? C.mint : C.signal}`, borderRadius: 10, padding: "3px 7px", flexShrink: 0 }}>{hit ? "✓" : ex.type === "time" ? "↑" : "+1"}</span>
             <div style={{ fontSize: 13, color: C.chalk, lineHeight: 1.4 }}>
               {goal === null ? T("goalTop", { v: `${prevVal}${unit}` }) : hit ? T("goalHit", { v: `${goal}${unit}` }) : T("goalLine", { v: `${prevVal}${unit}`, g: `${goal}${unit}` })}

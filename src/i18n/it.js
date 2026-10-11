@@ -944,6 +944,7 @@ export default {
     ["📱 Uscire dall'app", "Indietro nella schermata principale chiudeva subito l'app.", "Il primo indietro chiede «Uscire dall'app?». Un secondo indietro o Esci la chiude."],
     ["? accanto agli esercizi", "Un ? grande accanto a ogni esercizio.", "Un ? più piccolo e discreto, sempre facile da toccare."],
     ["Video", "Ogni esercizio aveva un video YouTube fisso, che a volte mostrava una variante diversa dal disegno.", "«Cerca sul web» apre una ricerca su come fare l'esercizio, nella tua lingua, e scegli tu il video."],
+    ["Più fluido", "Ogni riquadro satinato sfocava ciò che stava dietro, e anche le barre, quindi lo scorrimento sul telefono poteva scattare.", "Sono sfocate solo le barre sotto cui scorre il contenuto. I riquadri sembrano uguali e scorrimento, menu e finestre sono più fluidi."],
   ],
   news131: [
     "Vetro liquido: il menu ☰ ora ha lo stesso sfondo colorato del resto dell'app (prima era un pannello scuro e piatto).",

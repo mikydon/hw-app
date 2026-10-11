@@ -944,6 +944,7 @@ export default {
     ["📱 Leaving the app", "Back on the main screen closed the app at once.", "The first back asks \"Leave the app?\". A second back or Leave closes it."],
     ["? next to exercises", "A big ? next to every exercise.", "A smaller, quieter ?, still easy to tap."],
     ["Videos", "Each exercise had one fixed YouTube video, and sometimes it showed a different variation than the drawing.", "\"Search the web\" opens a search for how to do the exercise, in your language, so you pick the video that suits you."],
+    ["Smoother", "Every frosted box blurred what was behind it and the bars blurred too, so scrolling could stutter on phones.", "Only the bars that content scrolls under are blurred. The boxes look the same and scrolling, menus and sheets are smoother."],
   ],
   news131: [
     "Liquid glass: the ☰ menu now has the same colourful background as the rest of the app (before, it was a flat dark panel).",

@@ -944,6 +944,7 @@ export default {
     ["📱 App verlassen", "Zurück auf dem Startbildschirm schloss die App sofort.", "Das erste Zurück fragt „App wirklich verlassen?“. Ein zweites Zurück oder Verlassen schließt sie."],
     ["? neben Übungen", "Ein großes ? neben jeder Übung.", "Ein kleineres, ruhigeres ?, weiterhin leicht zu tippen."],
     ["Videos", "Jede Übung hatte ein festes YouTube-Video, das manchmal eine andere Variante als die Zeichnung zeigte.", "„Im Web suchen“ öffnet eine Suche, wie die Übung geht, in deiner Sprache, und du wählst das Video selbst."],
+    ["Flüssiger", "Jede Milchglas-Box machte den Hintergrund unscharf, die Leisten auch, darum konnte das Scrollen am Handy ruckeln.", "Unscharf sind nur noch die Leisten, unter denen Inhalt durchscrollt. Die Boxen sehen gleich aus, Scrollen, Menü und Fenster laufen flüssiger."],
   ],
   news131: [
     "Flüssigglas: Das ☰-Menü hat jetzt denselben farbigen Hintergrund wie der Rest der App (vorher war es ein flaches dunkles Feld).",

@@ -944,6 +944,7 @@ export default {
     ["📱 Kilépés az appból", "A vissza a főképernyőn rögtön bezárta az appot.", "Az első vissza megkérdezi: „Biztosan kilépsz?”. A második vissza vagy a Kilépés bezárja."],
     ["? a gyakorlatok mellett", "Nagy ? minden gyakorlat mellett.", "Kisebb, visszafogottabb ?, továbbra is könnyű rákoppintani."],
     ["Videók", "Minden gyakorlathoz egy fix YouTube-videó tartozott, és néha más változatot mutatott, mint a rajz.", "A „Keresés a neten” a saját nyelveden keresi meg, hogyan kell a gyakorlatot csinálni, a videót te választod."],
+    ["Gördülékenyebb", "Minden matt doboz elmosta a mögötte lévőt, és a sávok is, így a görgetés akadozhatott a telefonon.", "Már csak azok a sávok mosnak el, amelyek alatt tartalom görög. A dobozok ugyanúgy néznek ki, a görgetés, a menü és az ablakok gördülékenyebbek."],
   ],
   news131: [
     "Folyékony üveg: a ☰ menü háttere most ugyanolyan színes, mint az app többi része (eddig sima sötét panel volt).",

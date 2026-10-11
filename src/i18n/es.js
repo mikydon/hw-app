@@ -944,6 +944,7 @@ export default {
     ["📱 Salir de la app", "Atrás en la pantalla principal cerraba la app al instante.", "El primer atrás pregunta «¿Salir de la app?». Un segundo atrás o Salir la cierra."],
     ["? junto a los ejercicios", "Un ? grande junto a cada ejercicio.", "Un ? más pequeño y discreto, igual de fácil de tocar."],
     ["Vídeos", "Cada ejercicio tenía un vídeo fijo de YouTube y a veces mostraba otra variante distinta al dibujo.", "«Buscar en internet» abre una búsqueda de cómo se hace el ejercicio, en tu idioma, y eliges tú el vídeo."],
+    ["Más fluido", "Cada caja esmerilada desenfocaba lo que había detrás, y las barras también, así que el desplazamiento podía ir a tirones en el móvil.", "Solo se desenfocan las barras bajo las que se desplaza el contenido. Las cajas se ven igual y el desplazamiento, el menú y las ventanas van más fluidos."],
   ],
   news131: [
     "Cristal líquido: el menú ☰ ahora tiene el mismo fondo de colores que el resto de la app (antes era un panel oscuro y plano).",

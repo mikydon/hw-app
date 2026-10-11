@@ -22,6 +22,7 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 | Design | each screen had its own headings and boxes | the same section labels and boxes on every screen; the calorie week uses the same strip as the training week; list rows without leading emojis |
 | Leaving the app *(Android app only)* | back on the main screen closed the app at once | the first back asks "Leave the app?"; a second back or Leave closes it |
 | "?" next to exercises | big | smaller and quieter, same tap area |
+| Smoothness | every frosted box (Liquid glass) blurred the background behind it, and the top bar and Start bar blurred in every layout, so scrolling could stutter on phones | only the bars that content scrolls under blur, in Liquid glass only; boxes look the same; closing the menu no longer forces a layout on touch screens |
 | Videos | one fixed YouTube link per exercise (sometimes a different variation than the drawing) | "Search the web" opens a search for how to do the exercise, in the app's language |
 
 ## 1.3.1 (2026-10-10)

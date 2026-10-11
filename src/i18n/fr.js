@@ -944,6 +944,7 @@ export default {
     ["📱 Quitter l'appli", "Retour sur l'écran principal fermait l'appli tout de suite.", "Le premier retour demande « Quitter l'appli ? ». Un second retour ou Quitter la ferme."],
     ["? à côté des exercices", "Un grand ? à côté de chaque exercice.", "Un ? plus petit et plus discret, toujours facile à toucher."],
     ["Vidéos", "Chaque exercice avait une vidéo YouTube fixe, qui montrait parfois une autre variante que le dessin.", "« Chercher sur le web » ouvre une recherche sur la façon de faire l'exercice, dans ta langue, et tu choisis la vidéo."],
+    ["Plus fluide", "Chaque cadre dépoli floutait ce qu'il y avait derrière, les barres aussi, donc le défilement pouvait saccader sur le téléphone.", "Seules les barres sous lesquelles le contenu défile sont floutées. Les cadres sont identiques et le défilement, le menu et les fenêtres sont plus fluides."],
   ],
   news131: [
     "Verre liquide : le menu ☰ a maintenant le même fond coloré que le reste de l'appli (avant, c'était un panneau sombre et plat).",

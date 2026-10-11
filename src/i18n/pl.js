@@ -944,6 +944,7 @@ export default {
     ["📱 Wyjście z aplikacji", "Wstecz na ekranie głównym od razu zamykało aplikację.", "Pierwsze wstecz pyta „Na pewno wyjść?”. Drugie wstecz albo Wyjdź ją zamyka."],
     ["? przy ćwiczeniach", "Duży ? przy każdym ćwiczeniu.", "Mniejszy, spokojniejszy ?, nadal łatwo go dotknąć."],
     ["Filmy", "Każde ćwiczenie miało jeden stały film na YouTube, a czasem pokazywał inną wersję niż rysunek.", "„Szukaj w internecie” otwiera wyszukiwanie, jak wykonać ćwiczenie, w twoim języku, a film wybierasz sam."],
+    ["Płynniej", "Każda matowa ramka rozmywała to, co było za nią, i paski też rozmywały, więc przewijanie na telefonie potrafiło się zacinać.", "Rozmyte są już tylko paski, pod którymi przewija się treść. Ramki wyglądają tak samo, a przewijanie, menu i okna działają płynniej."],
   ],
   news131: [
     "Płynne szkło: menu ☰ ma teraz takie samo kolorowe tło jak reszta aplikacji (wcześniej był to płaski, ciemny panel).",

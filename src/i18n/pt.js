@@ -944,6 +944,7 @@ export default {
     ["📱 Sair da app", "Voltar no ecrã principal fechava logo a app.", "O primeiro voltar pergunta «Sair da app?». Um segundo voltar ou Sair fecha-a."],
     ["? ao lado dos exercícios", "Um ? grande ao lado de cada exercício.", "Um ? mais pequeno e discreto, igualmente fácil de tocar."],
     ["Vídeos", "Cada exercício tinha um vídeo fixo do YouTube, que às vezes mostrava outra variante diferente do desenho.", "«Pesquisar na internet» abre uma pesquisa sobre como fazer o exercício, no teu idioma, e escolhes tu o vídeo."],
+    ["Mais fluido", "Cada caixa fosca desfocava o que estava atrás, e as barras também, por isso o deslizar podia engasgar no telemóvel.", "Só as barras por baixo das quais o conteúdo desliza ficam desfocadas. As caixas parecem iguais e o deslizar, o menu e as janelas ficam mais fluidos."],
   ],
   news131: [
     "Vidro líquido: o menu ☰ agora tem o mesmo fundo colorido que o resto da app (antes era um painel escuro e liso).",
