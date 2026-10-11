@@ -30,7 +30,7 @@ const THEMES = {
   slate:  { ink: "#15181d", panel: "#1f242b", panelHi: "#2a313a", line: "#3a434f", chalk: "#f1f4f8", dim: "#9aa6b4", edge: "#0e1115" },
   coffee: { ink: "#1c140f", panel: "#2a1f17", panelHi: "#382a20", line: "#4d3a2c", chalk: "#fbf3ec", dim: "#b8a291", edge: "#130d09" },
 };
-const APP_VERSION = "1.3.1";
+const APP_VERSION = "1.4.0";
 // Big Shoulders has no Cyrillic, so Oswald (also condensed) covers Ukrainian. The browser only
 // downloads the Oswald unicode ranges a page actually uses.
 const DISPLAY = "'Big Shoulders Display', 'Oswald', 'Arial Narrow', Impact, sans-serif";
@@ -157,51 +157,39 @@ if (typeof document !== "undefined") {
 const EX = {
   k1: {
     diff: "mid", type: "reps", start: 15, unit: "",
-    yt: "https://www.youtube.com/watch?v=es_Tz8Si75o",
   },
   row1: {
     diff: "mid", type: "reps", start: 12, unit: "arm",
-    yt: "https://www.youtube.com/watch?v=ytEalkENNiQ",
   },
   n1: {
     diff: "mid", swapTip: true, type: "reps", start: 15, unit: "",
-    yt: "https://www.youtube.com/watch?v=zJBLDJMJiDE",
   },
   b5: {
     diff: "mid", swapTip: true, type: "time", durs: [15, 30, 45, 60, 75], dur: 45, unit: "",
-    yt: "https://www.youtube.com/watch?v=ASdvN_XEl_c",
   },
   r1: {
     diff: "mid", swapTip: true, type: "reps", start: 12, unit: "",
-    yt: "https://www.youtube.com/watch?v=pHR5yG6xBps",
   },
   row2: {
     diff: "mid", type: "reps", start: 10, unit: "",
-    yt: "https://www.youtube.com/watch?v=g8wWFlr2gQU",
   },
   n2: {
     diff: "mid", type: "reps", start: 12, unit: "leg",
-    yt: "https://www.youtube.com/watch?v=DeCnHqrN22U",
   },
   b2: {
     diff: "mid", type: "reps", start: 10, unit: "side",
-    yt: "https://www.youtube.com/watch?v=4XLEnwUr1d8",
   },
   k3: {
     diff: "mid", swapTip: true, type: "reps", start: 10, unit: "",
-    yt: "https://www.youtube.com/watch?v=_6AvEX9-k8E",
   },
   row3: {
     diff: "mid", type: "reps", start: 12, unit: "arm",
-    yt: "https://www.youtube.com/watch?v=ytEalkENNiQ",
   },
   n7: {
     diff: "mid", type: "reps", start: 10, unit: "", swapTip: true, // the tip suggests swapping: HowTo shows a swap button in a workout
-    yt: "https://www.youtube.com/watch?v=cWSsWpuxmYM",
   },
   b4: {
     diff: "mid", type: "reps", start: 15, unit: "side",
-    yt: "https://www.youtube.com/watch?v=9FGilxCbdz8",
   },
 };
 
@@ -209,63 +197,48 @@ const EX = {
 Object.assign(EX, {
   kKnee: {
     diff: "easy", type: "reps", start: 10, unit: "",
-    yt: "https://www.youtube.com/watch?v=z8nUnCdZXQI",
   },
   kIncl: {
     diff: "easy", type: "reps", start: 12, unit: "",
-    yt: "https://www.youtube.com/watch?v=-9S9gdRwwak",
   },
   superman: {
     diff: "easy", tag: "noDoor", type: "reps", start: 12, unit: "",
-    yt: "https://www.youtube.com/watch?v=cZxtPxeR2H8",
   },
   ytw: {
     diff: "easy", tag: "noDoor", type: "reps", start: 6, unit: "",
-    yt: "https://www.youtube.com/watch?v=OmgJCA_lzrs",
   },
   lunge: {
     diff: "mid", tag: "noChair", type: "reps", start: 10, unit: "leg",
-    yt: "https://www.youtube.com/watch?v=ALl174GTuoY",
   },
   bridge: {
     diff: "easy", type: "reps", start: 15, unit: "", swapTip: true,
-    yt: "https://www.youtube.com/watch?v=Q_Bpj91Yiis",
   },
   r1e: {
     diff: "hard", type: "reps", start: 8, unit: "",
-    yt: "https://www.youtube.com/watch?v=8URA3YSur2M",
   },
   k3e: {
     diff: "hard", type: "reps", start: 8, unit: "",
-    yt: "https://www.youtube.com/watch?v=pbF3MJpDhbw",
   },
   n1q: {
     diff: "hard", type: "reps", start: 8, unit: "",
-    yt: "https://www.youtube.com/watch?v=1aacJiFpOSg",
   },
   b5l: {
     diff: "hard", type: "time", durs: [20, 30, 45, 60], dur: 30, unit: "",
-    yt: "https://www.youtube.com/watch?v=UMq7bnHrBSY",
   },
   sbridge: {
     diff: "hard", type: "reps", start: 8, unit: "leg",
-    yt: "https://www.youtube.com/watch?v=E9a7o0Ae418",
   },
   wallsit: {
     diff: "mid", tag: "hold", type: "time", durs: [30, 45, 60, 90], dur: 45, unit: "",
-    yt: "https://www.youtube.com/watch?v=6caT9GsL4TA",
   },
   birddog: {
     diff: "easy", type: "reps", start: 10, unit: "side",
-    yt: "https://www.youtube.com/watch?v=DkPT1fR_B9A",
   },
   hollow: {
     diff: "mid", tag: "hold", type: "time", durs: [20, 30, 45], dur: 30, unit: "",
-    yt: "https://www.youtube.com/watch?v=LlDNef_Ztsc",
   },
   legraise: {
     diff: "mid", tag: "similar", type: "reps", start: 10, unit: "",
-    yt: "https://www.youtube.com/watch?v=JB2oyawG9KI",
   },
 });
 const ALT_GROUPS = [
@@ -319,17 +292,17 @@ const LEVEL_UP_AT = {
 };
 
 const WARMUP = [
-  { id: "w1", yt: "https://www.youtube.com/watch?v=fxwa7edi4Y0" },
-  { id: "w2", yt: "https://www.youtube.com/watch?v=difYoBtZi2s" },
-  { id: "w3", yt: "https://www.youtube.com/watch?v=A5H1IRn_pd4" },
-  { id: "w4", yt: "https://www.youtube.com/watch?v=aFkv2m9FTGs" },
+  { id: "w1" },
+  { id: "w2" },
+  { id: "w3" },
+  { id: "w4" },
 ];
 
 const COOL = [
-  { id: "c1", fig: "hf", dur: 30, yt: "https://www.youtube.com/watch?v=KT0HlPGCl6k" },
-  { id: "c2", fig: "hf", dur: 30, yt: "https://www.youtube.com/watch?v=KT0HlPGCl6k" },
-  { id: "c4", fig: "cobra", dur: 30, yt: "https://www.youtube.com/watch?v=JDcdhTuycOI" },
-  { id: "c3", fig: "child", dur: 30, yt: "https://www.youtube.com/watch?v=2MJGg-dUKh0" },
+  { id: "c1", fig: "hf", dur: 30 },
+  { id: "c2", fig: "hf", dur: 30 },
+  { id: "c4", fig: "cobra", dur: 30 },
+  { id: "c3", fig: "child", dur: 30 },
 ];
 
 // History logged before this version (empty for a fresh install).
@@ -924,7 +897,8 @@ function applyTheme(id) {
   } catch (_) {}
   // These shared styles are built from C, so rebuild them when the theme changes.
   ghostBtn = { ...btnBase, background: "transparent", color: C.dim, border: `1.5px solid ${C.line}`, padding: "10px 14px", fontSize: 13 };
-  sectionTitle = { fontFamily: DISPLAY, fontSize: 28, fontWeight: 900, color: C.chalk, margin: "26px 0 10px" };
+  // 1.4.0: section labels look the same everywhere (small capitals, like the titles inside the Home boxes).
+  sectionTitle = { fontFamily: BODY, fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: C.dim, margin: "22px 4px 8px" };
   card = { background: C.panel, border: `1px solid ${C.line}`, borderRadius: 18 };
 }
 // Copies the current language's texts into the data objects (like applyTheme does for colours).
@@ -962,7 +936,9 @@ function Logo({ size = 40 }) {
     </svg>
   );
 }
-function openYT(url) { openExternal(url); }
+// 1.4.0 (Michael, Oct 11): no fixed video links any more (a link could show a different variation than the drawing);
+// a button opens a web search for "how to do <exercise>" in the app's language, and people pick a video themselves.
+function searchHowTo(name) { openExternal("https://www.google.com/search?q=" + encodeURIComponent(T("searchQ", { name }))); }
 
 // Rendered straight into <body> through a portal. Inside a screen, the .scr slide-in animation
 // makes the screen the containing block for position:fixed, so the sheet used to be placed
@@ -981,7 +957,7 @@ function Sheet({ title, onClose, children, short }) {
           <div style={{ fontFamily: DISPLAY, fontSize: 30, fontWeight: 800, lineHeight: 1, color: C.chalk }}>{title}</div>
           <button onClick={onClose} aria-label={T("close")} style={{ ...btnBase, background: C.panelHi, color: C.dim, padding: "7px 12px", fontSize: 14 }}>✕</button>
         </div>
-        <div style={{ fontSize: 15, color: "#cdd6f0", lineHeight: 1.65 }}>{children}</div>
+        <div style={{ fontSize: 15, color: `${C.chalk}d9`, lineHeight: 1.65 }}>{children}</div>
       </div>
     </div>,
     document.body
@@ -1019,7 +995,7 @@ function HowTo({ id, history, onClose, onSwap }) {
       <div>{ex.how}</div>
       <div style={{ marginTop: 14, paddingTop: 12, borderTop: `1px solid ${C.line}`, color: C.chalk }}>💡 {ex.tip}</div>
       {onSwap && ex.swapTip && <button onClick={onSwap} style={{ ...ghostBtn, marginTop: 10, padding: "10px 14px", color: C.sky, borderColor: `${C.sky}88` }}>{T("swap")}</button>}
-      <button onClick={() => openYT(ex.yt)} className="b3d" style={{ ...bigBtn("#e62117", "#fff"), marginTop: 16, fontSize: 14, padding: 14 }}>{T("videoYT")}</button>
+      <button data-search-howto onClick={() => { sfxTap(); searchHowTo(ex.name); }} className="b3d" style={{ ...bigBtn(C.panelHi, C.chalk), marginTop: 16, fontSize: 14, padding: 14 }}>{T("searchWeb")}</button>
       <RankLadder id={id} best={best} />
     </Sheet>
   );
@@ -1246,7 +1222,7 @@ function Avatar({ profile, size = 38 }) {
   );
 }
 
-let sectionTitle = { fontFamily: DISPLAY, fontSize: 28, fontWeight: 900, color: C.chalk, margin: "26px 0 10px" };
+let sectionTitle = { fontFamily: BODY, fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: C.dim, margin: "22px 4px 8px" };
 let card = { background: C.panel, border: `1px solid ${C.line}`, borderRadius: 18 };
 // Look of the main screen (Michael, Oct 10: try a few and compare): "cards" (boxes, default), "tiles" (lighter, tighter boxes),
 // "flat" (the old open layout). Set from settings.look in App.
@@ -1267,17 +1243,22 @@ const liquidGrad = () => `radial-gradient(55% 40% at 8% 6%, ${C.sky}99, transpar
 function LiquidBg() {
   return <div aria-hidden="true" data-liquid-bg style={{ position: "fixed", inset: 0, zIndex: -1, pointerEvents: "none", background: liquidGrad() }} />;
 }
-function Sect({ title, children, style, titlePad, accent, ...rest }) {
+// The − / + buttons of the rep counter: theme colours (and glass in the liquid look), never a fixed navy edge.
+const stepBtn = () => ({ ...btnBase, width: 64, height: 64, borderRadius: 99, background: C.panelHi, color: C.chalk, fontSize: 32, lineHeight: 1, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, "--e": EDGE[C.panelHi], ...(LOOK === "liquid" ? { ...LIQUID_PILL(), backdropFilter: "blur(18px)", WebkitBackdropFilter: "blur(18px)" } : {}) });
+// Section title row: the title on the left, an optional quiet count/chip on the right (same on every screen).
+const SECT_HEAD = { display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 };
+const sectMeta = meta => meta ? <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: 0, textTransform: "none", color: C.dim, opacity: 1, whiteSpace: "nowrap" }}>{meta}</span> : null;
+function Sect({ title, meta, children, style, titlePad, accent, ...rest }) {
   if (LOOK === "flat") return <div {...rest} style={{ marginTop: 18, ...style }}>{children}</div>;
   if (LOOK === "liquid") return (
     <section {...rest} data-sect style={{ ...LIQUID(), padding: "15px 16px", marginTop: 12, ...style }}>
-      {title && <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: C.chalk, opacity: 0.7, marginBottom: 10, padding: titlePad || 0 }}>{title}</div>}
+      {title && <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: C.chalk, opacity: 0.7, marginBottom: 10, padding: titlePad || 0, ...SECT_HEAD }}><span>{title}</span>{sectMeta(meta)}</div>}
       {children}
     </section>
   );
   if (LOOK === "glass") return (
     <section {...rest} data-sect style={{ background: `linear-gradient(160deg, ${C.panelHi}, ${C.panel} 60%)`, border: `1px solid ${C.chalk}14`, borderRadius: 24, padding: "15px 16px", marginTop: 12, boxShadow: "0 10px 30px rgba(0,0,0,.28)", ...style }}>
-      {title && <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: C.dim, marginBottom: 10, padding: titlePad || 0 }}>{title}</div>}
+      {title && <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: C.dim, marginBottom: 10, padding: titlePad || 0, ...SECT_HEAD }}><span>{title}</span>{sectMeta(meta)}</div>}
       {children}
     </section>
   );
@@ -1285,7 +1266,7 @@ function Sect({ title, children, style, titlePad, accent, ...rest }) {
     const a = accent || C.signal;
     return (
       <section {...rest} data-sect style={{ background: C.panel, borderRadius: 16, borderLeft: `4px solid ${a}`, padding: "13px 15px", marginTop: 12, ...style }}>
-        {title && <div style={{ fontSize: 12, fontWeight: 900, letterSpacing: 0.6, textTransform: "uppercase", color: a, marginBottom: 10, padding: titlePad || 0 }}>{title}</div>}
+        {title && <div style={{ fontSize: 12, fontWeight: 900, letterSpacing: 0.6, textTransform: "uppercase", color: a, marginBottom: 10, padding: titlePad || 0, ...SECT_HEAD }}><span>{title}</span>{sectMeta(meta)}</div>}
         {children}
       </section>
     );
@@ -1293,7 +1274,7 @@ function Sect({ title, children, style, titlePad, accent, ...rest }) {
   const tiles = LOOK === "tiles";
   return (
     <section {...rest} data-sect style={{ background: tiles ? C.panelHi : C.panel, border: `1px solid ${tiles ? C.panelHi : C.line}`, borderRadius: tiles ? 16 : 20, padding: tiles ? "12px 13px" : "14px 15px", marginTop: tiles ? 8 : 12, ...style }}>
-      {title && <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: tiles ? C.chalk : C.dim, opacity: tiles ? 0.8 : 1, marginBottom: 10, padding: titlePad || 0 }}>{title}</div>}
+      {title && <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: tiles ? C.chalk : C.dim, opacity: tiles ? 0.8 : 1, marginBottom: 10, padding: titlePad || 0, ...SECT_HEAD }}><span>{title}</span>{sectMeta(meta)}</div>}
       {children}
     </section>
   );
@@ -1319,21 +1300,21 @@ function ExitPrompt({ onStay, onLeave }) {
 // Section title with a quiet count on the right (Profile: ranks, badges).
 function SectionHead({ title, meta }) {
   return (
-    <div data-section-head style={{ ...sectionTitle, display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 12 }}>
+    <div data-section-head style={{ ...sectionTitle, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
       <span>{title}</span>
-      {meta && <span style={{ fontFamily: BODY, fontSize: 12, color: C.dim, fontWeight: 600, textAlign: "right", lineHeight: 1.35, paddingBottom: 3 }}>{meta}</span>}
+      {meta && <span style={{ fontSize: 12, color: C.dim, fontWeight: 600, letterSpacing: 0, textTransform: "none", textAlign: "right" }}>{meta}</span>}
     </div>
   );
 }
 // One number tile (Profile): label top left, icon top right, the number below (same spot in every tile), a quiet line at the bottom.
-function StatTile({ label, value, icon, color, sub, children, data }) {
+function StatTile({ label, value, icon, color, sub, children, data, compact }) {
   return (
-    <div data-stat={data} style={{ ...card, ...tileR(), padding: "13px 15px", display: "flex", flexDirection: "column", minWidth: 0 }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+    <div data-stat={data} style={{ ...card, ...tileR(), padding: compact ? "11px 12px" : "13px 15px", display: "flex", flexDirection: "column", minWidth: 0 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6 }}>
         <span style={{ fontSize: 12, color: C.dim, fontWeight: 600, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{label}</span>
-        <span aria-hidden="true" style={{ fontSize: 17, lineHeight: 1, flexShrink: 0 }}>{icon}</span>
+        <span aria-hidden="true" style={{ fontSize: compact ? 14 : 17, lineHeight: 1, flexShrink: 0 }}>{icon}</span>
       </div>
-      <div style={{ fontFamily: DISPLAY, fontSize: 36, fontWeight: 900, color: color || C.chalk, lineHeight: 1, marginTop: 8, fontVariantNumeric: "tabular-nums" }}>{value}</div>
+      <div style={{ fontFamily: DISPLAY, fontSize: compact ? 30 : 36, fontWeight: 900, color: color || C.chalk, lineHeight: 1, marginTop: 8, fontVariantNumeric: "tabular-nums" }}>{value}</div>
       {children}
       {sub && <div style={{ fontSize: 11.5, color: C.dim, marginTop: "auto", paddingTop: 7, lineHeight: 1.35 }}>{sub}</div>}
     </div>
@@ -1553,12 +1534,8 @@ function ChallengesCard({ history }) {
   const end = addDays(wk, 6);
   const left = daysBetween(dateKey(), end) + 1;
   return (
-    <div style={{ ...card, padding: "14px 15px" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
-        <div style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, color: C.chalk }}>{T("weeklyChallenges")}</div>
-        <div style={{ fontSize: 12, color: C.dim }}>{T("chLeft", { done: doneN, left: TP("days", left) })}</div>
-      </div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 10 }}>
+    <Sect title={T("weeklyChallenges")} meta={T("chLeft", { done: doneN, left: TP("days", left) })} accent={C.sky} data-challenges>
+      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         {list.map(c => (
           <div key={c.id} style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div className={c.done ? "pop" : ""} style={{ width: 36, height: 36, borderRadius: 11, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, background: c.done ? C.mint : C.panelHi }}>{c.done ? "✓" : c.icon}</div>
@@ -1567,7 +1544,7 @@ function ChallengesCard({ history }) {
                 <span style={{ fontSize: 14, fontWeight: 600, color: c.done ? C.mint : C.chalk }}>{L.ch[c.id]}</span>
                 <span style={{ fontSize: 12, fontWeight: 700, color: c.done ? C.mint : C.sky, whiteSpace: "nowrap" }}>+{c.xp} XP</span>
               </div>
-              <div style={{ height: 7, background: C.panelHi, borderRadius: 99, marginTop: 5, overflow: "hidden" }}>
+              <div style={{ height: 5, background: `${C.chalk}14`, borderRadius: 99, marginTop: 6, overflow: "hidden" }}>
                 <div style={{ height: "100%", width: `${(c.v / c.goal) * 100}%`, background: c.done ? C.mint : C.sky, borderRadius: 99, transition: "width .6s ease-out" }} />
               </div>
               <div style={{ fontSize: 11, color: C.dim, marginTop: 3 }}>{c.v} / {c.goal}</div>
@@ -1575,8 +1552,8 @@ function ChallengesCard({ history }) {
           </div>
         ))}
       </div>
-      <div style={{ fontSize: 12, color: C.dim, marginTop: 10 }}>{T("chFooter")}</div>
-    </div>
+      <div style={{ fontSize: 12, color: C.dim, marginTop: 12 }}>{T("chFooter")}</div>
+    </Sect>
   );
 }
 
@@ -1836,7 +1813,7 @@ function BirthdayCard({ profile, ui, setUi }) {
   if (!show) return null;
   const age = ageOn(profile.birth, today);
   return (
-    <div data-bday className="pop" style={{ position: "relative", marginBottom: 16, borderRadius: 20, padding: "16px 44px 16px 16px", background: `linear-gradient(135deg, ${C.signal}33, #ff7ab633 55%, ${C.sky}33)`, border: `2px solid ${C.signal}` }}>
+    <div data-bday className="cardIn" style={{ position: "relative", marginBottom: 16, borderRadius: 20, padding: "16px 44px 16px 16px", background: `linear-gradient(135deg, ${C.signal}33, #ff7ab633 55%, ${C.sky}33)`, border: `2px solid ${C.signal}` }}>
       {burst && <Confetti count={90} />}
       <CloseX onClick={() => setUi({ ...ui, bdayHidden: today })} />
       <div style={{ fontSize: 34, lineHeight: 1 }}>🎂🎉</div>
@@ -2221,7 +2198,7 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
       {upd && <UpdateCard onOpen={upd.open} onClose={upd.close} />}
       {profile && <BirthdayCard profile={profile} ui={ui} setUi={setUi} />}
       {showDone && (
-        <div style={{ position: "relative", background: "#173f3a", border: `1.5px solid ${C.mint}`, borderRadius: 18, padding: "14px 40px 14px 16px", display: "flex", alignItems: "center", gap: 14, marginBottom: 14 }}>
+        <div style={{ position: "relative", background: `${C.mint}1f`, border: `1.5px solid ${C.mint}`, borderRadius: 18, padding: "14px 40px 14px 16px", display: "flex", alignItems: "center", gap: 14, marginBottom: 14 }}>
           <CloseX color="#bfe9d4" onClick={() => setUi({ ...ui, doneHiddenTs: lastTs })} />
           <div className="pop" style={{ width: 46, height: 46, borderRadius: 99, background: C.mint, color: C.ink, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, fontWeight: 900, flexShrink: 0 }}>✓</div>
           <div>
@@ -2258,10 +2235,10 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
       )}
 
       {dailyText && (
-        <div style={{ position: "relative", padding: "4px 40px 4px 14px", borderLeft: `4px solid ${C.signal}` }}>
-          <div style={{ fontFamily: DISPLAY, fontSize: 27, fontWeight: 800, lineHeight: 1.1, color: C.chalk }}>{dailyText}</div>
+        <Sect data-daily style={{ position: "relative", ...(LOOK === "flat" ? {} : { paddingRight: 44 }) }}>
+          <div style={{ borderLeft: `3px solid ${C.signal}`, paddingLeft: 12, fontFamily: DISPLAY, fontSize: 24, fontWeight: 800, lineHeight: 1.12, color: C.chalk }}>{dailyText}</div>
           <CloseX onClick={() => setUi({ ...ui, dailyHidden: today })} />
-        </div>
+        </Sect>
       )}
 
       {onGo && <HintCard ui={ui} setUi={setUi} onGo={onGo} />}
@@ -2366,7 +2343,7 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
       {!active && <FloatStart show={!rowSeen} day={day.id} rounds={rounds} setRounds={setRounds} onStart={() => { unlockAudio(); onStart(day.id, rounds); }} />}
 
       <HomeKcal history={history} kcal={kcal} setKcal={setKcal} onOpen={() => onGo("calories")} />
-      <div style={{ marginTop: LOOK === "flat" ? 22 : LOOK === "tiles" ? 8 : 12 }}><ChallengesCard history={history} /></div>
+      <ChallengesCard history={history} />
     </div>
   );
 }
@@ -2589,8 +2566,22 @@ function KcalStreakChip({ history, small }) {
   return <span data-kc-streak={st.n} data-all-hit={allHit ? 1 : 0} title={T("kcStreakTip")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: small ? 12 : 13, fontWeight: 800, padding: small ? "3px 8px" : "4px 10px", borderRadius: 99, background: allHit ? `${KC_HIT}33` : `${KC_HIT}18`, color: KC_HIT, border: `1.5px solid ${KC_HIT}${allHit ? "" : "77"}`, whiteSpace: "nowrap" }}>🥗 {TP("kcStreakDays", st.n)}</span>;
 }
 // The last 7 days: a dot per day with its weekday under it; today also shows its date (Michael, Oct 10: plain dots made no sense).
-function KcalWeekDots({ history }) {
+function KcalWeekDots({ history, full }) {
   const today = dateKey(), wd = weekdaysShort(); // Monday first
+  // full (Calories, 1.4.0): the same strip as the week on Home (day above, a rounded square below), in amber.
+  if (full) return (
+    <div data-kc-week style={{ display: "flex", gap: 6 }} aria-label={T("kcWeekAria")}>
+      {kcalWeek(history).map(w => {
+        const d = parseKey(w.k), isT = w.k === today;
+        return (
+          <div key={w.k} style={{ flex: 1, textAlign: "center" }} title={fmtDate(w.k)}>
+            <div style={{ fontSize: 11, color: isT ? C.chalk : C.dim, fontWeight: isT ? 700 : 500, marginBottom: 4 }}>{wd[(d.getDay() + 6) % 7]}</div>
+            <div data-kc-day={w.kind || "none"} style={{ height: 30, borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 900, color: C.ink, background: w.kind === "hit" ? KC_HIT : w.kind === "log" ? KC_LOG : "transparent", border: `1.5px solid ${w.kind === "hit" ? KC_HIT : w.kind === "log" ? KC_LOG : isT ? C.chalk : C.line}` }}>{w.kind === "hit" ? "✓" : ""}</div>
+          </div>
+        );
+      })}
+    </div>
+  );
   return (
     <div data-kc-week style={{ display: "flex", gap: 6, alignItems: "flex-start" }} aria-label={T("kcWeekAria")}>
       {kcalWeek(history).map(w => {
@@ -2950,23 +2941,20 @@ function Calories({ history, profile, setProfile, kcal, setKcal }) {
       </div>
       {how && <TargetBreakdown kcal={kcal} age={age} history={history} day={today} target={target} />}
       {isNative && <HealthCard kcal={kcal} setKcal={setKcal} />}
-      <div data-kc-streak-card style={{ ...card, padding: "12px 15px", marginTop: 10, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
-        <div style={{ minWidth: 0 }}>
-          <div style={{ fontSize: 13, color: C.chalk, fontWeight: 700 }}>{kcalLine(kcalNow(history))}</div>
-          <div style={{ fontSize: 11, color: C.dim, marginTop: 3 }}>{T("kcLegend")}</div>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}><KcalStreakChip history={history} /><KcalWeekDots history={history} /></div>
-      </div>
+      {/* 1.4.0: same box + label as everywhere; "left today" is already in the big card above, so no second line here */}
+      <Sect data-kc-streak-card title={T("secWeek")} meta={<KcalStreakChip history={history} small />} style={{ marginTop: 10 }}>
+        <KcalWeekDots history={history} full />
+        <div style={{ fontSize: 11, color: C.dim, marginTop: 8, lineHeight: 1.4 }}>{T("kcLegend")}</div>
+      </Sect>
 
-      <div style={{ ...card, padding: "14px 15px", marginTop: 10 }}>
-        <div style={{ fontSize: 14, fontWeight: 800, color: C.chalk, marginBottom: 8 }}>{T("kcAddTitle")}</div>
+      <Sect title={T("kcAddTitle")} style={{ marginTop: 10 }}>
         <div style={{ display: "flex", gap: 8 }}>
           <input value={amount} onChange={e => setAmount(e.target.value.replace(/[^0-9]/g, "").slice(0, 4))} onKeyDown={e => { if (e.key === "Enter") add(); }} inputMode="numeric" placeholder="kcal" aria-label={T("kcAmount")} style={{ ...field, flex: 1 }} />
           <input value={note} onChange={e => setNote(e.target.value)} onKeyDown={e => { if (e.key === "Enter") add(); }} placeholder={T("kcNote")} aria-label={T("kcNote")} style={{ ...field, flex: 1.6 }} />
         </div>
         <button onClick={add} disabled={!Number(amount)} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 10, padding: 15, opacity: Number(amount) ? 1 : 0.5 }}>{Number(amount) ? T("kcAddBtn", { n: nf(Number(amount)) }) : T("kcAddBtn0")}</button>
         {(dayTotal(kcal, today) > 0 || ((kcal.log || {})[today] || []).length > 0) && <div style={{ marginTop: 12 }}><DayEntries kcal={kcal} day={today} onRemove={remove} /></div>}
-      </div>
+      </Sect>
 
       {days.length > 0 && (
         <>
@@ -3288,16 +3276,11 @@ function HistoryTab({ history, onDelete, onSaveEntry, editDate, onEditOpened }) 
   }, [editDate]);
   const sets = history.reduce((a, e) => a + setsIn(e), 0);
   const prs = history.reduce((a, e) => a + ((e.prs && e.prs.length) || 0), 0);
-  const tiles = [[T("tileTrainings"), history.length], [T("tileSets"), sets], [T("tilePRs"), prs]];
+  const tiles = [[T("tileTrainings"), history.length, "🏋️"], [T("tileSets"), sets, "🔁"], [T("tilePRs"), prs, "🏆"]];
   return (
     <div className="scr" style={{ padding: "16px 18px 110px", maxWidth: 460, margin: "0 auto" }}>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 14 }}>
-        {tiles.map(([l, v]) => (
-          <div key={l} style={{ ...card, padding: "12px 10px", textAlign: "center" }}>
-            <div style={{ fontFamily: DISPLAY, fontSize: 34, fontWeight: 900, lineHeight: 1, color: C.chalk }}>{v}</div>
-            <div style={{ fontSize: 12, color: C.dim, marginTop: 4 }}>{l}</div>
-          </div>
-        ))}
+      <div data-stat-grid style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 8 }}>
+        {tiles.map(([l, v, ic]) => <StatTile key={l} label={l} icon={ic} value={v} compact />)}
       </div>
       {editing !== null && (
         <EntryEditor key={String(editing)} entry={editing === "new" ? null : history[editing]} nextDay={DAYS[nextDayIdx(history)].id}
@@ -3309,9 +3292,9 @@ function HistoryTab({ history, onDelete, onSaveEntry, editDate, onEditOpened }) 
       <div style={sectionTitle}>{T("progress")}</div>
       <ProgressChart history={history} />
       <div style={sectionTitle}>{T("workoutsTitle")}</div>
-      <button onClick={() => { sfxTap(); setEditing("new"); }} style={{ ...ghostBtn, width: "100%", padding: "12px 14px", fontSize: 14, color: C.chalk, marginBottom: 10, textAlign: "left" }}>
-        {T("addWorkout")}
-        <div style={{ fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2 }}>{T("addWorkoutD")}</div>
+      <button data-add-workout onClick={() => { sfxTap(); setEditing("new"); }} style={{ ...btnBase, ...card, ...tileR(), width: "100%", padding: "13px 15px", fontSize: 15, color: C.chalk, marginBottom: 10, textAlign: "left", display: "flex", alignItems: "center", gap: 10 }}>
+        <span style={{ flex: 1, minWidth: 0 }}>{T("addWorkout").replace(/^➕\s*/, "")}<span style={{ display: "block", fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2 }}>{T("addWorkoutD")}</span></span>
+        <span aria-hidden="true" style={{ fontSize: 22, color: C.sky, lineHeight: 1, flexShrink: 0 }}>+</span>
       </button>
       {history.length === 0 && <div style={{ color: C.dim, fontSize: 14 }}>{T("noHistory")}</div>}
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -3428,7 +3411,6 @@ function ProfileTab({ history, profile, setProfile, onFreeze, kcal }) {
       </div>
 
       <div data-freeze-card style={{ ...card, ...tileR(), padding: "13px 15px", marginTop: 8, display: "flex", alignItems: "center", gap: 12 }}>
-        <div style={{ fontSize: 22, width: 22, textAlign: "center", flexShrink: 0 }}>🧊</div>
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: 15, fontWeight: 700, color: C.chalk }}>{T("freezeTitle", { n: fz, max: META.giftThisYear ? 3 : 2 })}</div>
           <div style={{ fontSize: 12, color: C.dim, lineHeight: 1.45 }}>{T("freezeDesc")}</div>
@@ -3457,7 +3439,7 @@ function ProfileTab({ history, profile, setProfile, onFreeze, kcal }) {
         })}
       </div>
 
-      <SectionHead title={T("badgesTitle")} meta={<>{T("achCount", { n: ach.filter(a => a.step).length, max: ach.length })}<br />{T("achTiers", { n: ach.reduce((x, a) => x + a.step, 0), max: ach.reduce((x, a) => x + a.at.length, 0) })}</>} />
+      <SectionHead title={T("badgesTitle")} meta={<>{T("achCount", { n: ach.filter(a => a.step).length, max: ach.length })} · {T("achTiers", { n: ach.reduce((x, a) => x + a.step, 0), max: ach.reduce((x, a) => x + a.at.length, 0) })}</>} />
       <div data-badges-box style={{ ...card, padding: 8, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
         {ach.map((a, ai) => {
           const r = a.tier ? RANKS[a.tier - 1] : null;
@@ -3493,6 +3475,8 @@ function Toggle({ on }) {
     </span>
   );
 }
+// Row titles without a leading emoji (1.4.0: rows in a list look alike; icons, if any, sit on the right).
+const noEmo = t => String(t).replace(/^[\p{Extended_Pictographic}\u{1F1E6}-\u{1F1FF}\uFE0F\u200D]+\s*/u, "");
 // "today 9:41", "yesterday 21:05", or the date and time.
 function fmtWhen(ts) {
   const d = new Date(ts), k = dateKey(d), time = d.toLocaleTimeString(LANG, { hour: "2-digit", minute: "2-digit" });
@@ -3507,7 +3491,7 @@ function BackupsSheet({ onClose, onRestore, autoOn }) {
   useEffect(() => { load(); }, []);
   const small = { ...btnBase, background: C.panelHi, color: C.chalk, padding: "7px 11px", fontSize: 13, borderRadius: 10 };
   return (
-    <Sheet title={T("bkFolder")} onClose={onClose}>
+    <Sheet title={noEmo(T("bkFolder"))} onClose={onClose}>
       <div style={{ fontSize: 13, color: C.dim, lineHeight: 1.5 }}>{T("bkSheetD", { dir: `Documents/${BK_DIR}` })}</div>
       {files === null ? null : !files.length ? <div data-bk-empty style={{ marginTop: 14, fontSize: 14, color: C.dim }}>{T("bkEmpty")}</div> : (
         <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 8 }}>
@@ -3569,7 +3553,7 @@ function ExercisesPage({ settings, set, history, onBack }) {
     <div>
       {howEx && <HowTo id={howEx} history={history} onClose={() => setHowEx(null)} />}
       <button onClick={() => { sfxTap(); onBack(); }} style={{ ...ghostBtn, marginTop: 10, padding: "8px 12px" }}>‹ {T("tabSettings")}</button>
-      <div style={{ ...sectionTitle, marginTop: 14 }}>{T("exTitle")}</div>
+      <div style={{ fontFamily: DISPLAY, fontSize: 28, fontWeight: 900, color: C.chalk, margin: "14px 0 10px" }}>{T("exTitle")}</div>
       <div style={{ fontSize: 13, color: C.dim, lineHeight: 1.55 }}>{T("exIntro")}</div>
       {ALT_GROUPS.map((g, gi) => {
         const onN = g.filter(x => !off.has(x)).length;
@@ -3774,7 +3758,7 @@ function SettingsTab({ settings, setSettings, history, profile, setProfile, onIm
       <div style={card}>
         <button onClick={() => openPage("exercises")} style={{ ...rowBtn(true), display: "flex", alignItems: "center", gap: 10 }}>
           <span style={{ flex: 1 }}>
-            {T("exMenu")}
+            {noEmo(T("exMenu"))}
             <span style={{ display: "block", fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2 }}>{T("exMenuD")}</span>
           </span>
           <span aria-hidden="true" style={{ color: C.dim, fontSize: 20 }}>›</span>
@@ -3787,21 +3771,21 @@ function SettingsTab({ settings, setSettings, history, profile, setProfile, onIm
       <div style={sectionTitle}>{T("dataBackup")}</div>
       <div style={card}>
         <button onClick={exportBackup} style={rowBtn(true)}>
-          {T("backupSave")}
+          {noEmo(T("backupSave"))}
           <div style={{ fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2 }}>{isNative ? T("backupSaveDApp", { dir: `Documents/${BK_DIR}` }) : T("backupSaveD")}</div>
         </button>
         {bkSupported() && (
           <>
-            <SettingRow title={T("autoBk")} desc={<>{T("autoBkD", { dir: `Documents/${BK_DIR}` })}<span data-autobk-status={autoBk ? (autoBk.ok ? "ok" : "err") : "none"} style={{ display: "block", marginTop: 4, color: autoBk && !autoBk.ok ? "#ff8a80" : autoBk ? C.mint : C.dim }}>{!settings.autoBackup ? null : !autoBk ? T("autoBkNone") : autoBk.ok ? T("autoBkLast", { time: fmtWhen(autoBk.ts) }) : T("autoBkErr", { e: autoBk.err || "?" })}</span></>}
+            <SettingRow title={noEmo(T("autoBk"))} desc={<>{T("autoBkD", { dir: `Documents/${BK_DIR}` })}<span data-autobk-status={autoBk ? (autoBk.ok ? "ok" : "err") : "none"} style={{ display: "block", marginTop: 4, color: autoBk && !autoBk.ok ? "#ff8a80" : autoBk ? C.mint : C.dim }}>{!settings.autoBackup ? null : !autoBk ? T("autoBkNone") : autoBk.ok ? T("autoBkLast", { time: fmtWhen(autoBk.ts) }) : T("autoBkErr", { e: autoBk.err || "?" })}</span></>}
               on={settings.autoBackup} onClick={() => { const v = !settings.autoBackup; set("autoBackup", v); sfxTap(); if (v) onAutoBackup(true); }} />
             <button data-bk-open onClick={() => { sfxTap(); setBkOpen(true); }} style={{ ...rowBtn(false), display: "flex", alignItems: "center", gap: 10 }}>
-              <span style={{ flex: 1 }}>{T("bkFolder")}<span style={{ display: "block", fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2 }}>{T("bkFolderD", { dir: `Documents/${BK_DIR}` })}</span></span>
+              <span style={{ flex: 1 }}>{noEmo(T("bkFolder"))}<span style={{ display: "block", fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2 }}>{T("bkFolderD", { dir: `Documents/${BK_DIR}` })}</span></span>
               <span aria-hidden="true" style={{ color: C.dim, fontSize: 20 }}>›</span>
             </button>
           </>
         )}
         <button onClick={() => fileRef.current && fileRef.current.click()} style={rowBtn(false)}>
-          {T("backupLoad")}
+          {noEmo(T("backupLoad"))}
           <div style={{ fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2 }}>{T("backupLoadD")}</div>
         </button>
         {pending && (
@@ -3821,23 +3805,22 @@ function SettingsTab({ settings, setSettings, history, profile, setProfile, onIm
             setProfile({ ...profile, streakResetTs: Date.now(), freezeDays: profile.freezeDays || [] }); setConfirmReset(false); setMsg(T("msgStreakReset"));
           }}
           style={{ ...rowBtn(false), color: confirmReset ? "#ff8a80" : C.chalk }}>
-          {confirmReset ? T("resetStreakConfirm") : T("resetStreak")}
+          {confirmReset ? noEmo(T("resetStreakConfirm")) : noEmo(T("resetStreak"))}
           <div style={{ fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2 }}>{T("resetStreakD")}</div>
         </button>
         <button onClick={() => { sfxTap(); setMsg(""); setResetAll(true); }} style={{ ...rowBtn(false), color: "#ff8a80" }}>
-          {T("resetAll")}
+          {noEmo(T("resetAll"))}
           <div style={{ fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2 }}>{T("resetAllD")}</div>
         </button>
       </div>
       {msg && <div role="status" style={{ fontSize: 13, color: msg.startsWith("✓") ? C.mint : C.dim, marginTop: 8 }}>{msg}</div>}
 
-      <button onClick={() => { sfxTap(); openExternal(SUPPORT_URL); }} data-support style={{ ...btnBase, ...card, width: "100%", marginTop: 22, display: "flex", alignItems: "center", gap: 12, padding: "13px 15px", color: C.chalk, textAlign: "left" }}>
-        <span style={{ fontSize: 22 }} aria-hidden="true">💛</span>
+      <button onClick={() => { sfxTap(); openExternal(SUPPORT_URL); }} data-support style={{ ...btnBase, ...card, ...tileR(), width: "100%", marginTop: 22, display: "flex", alignItems: "center", gap: 12, padding: "13px 15px", color: C.chalk, textAlign: "left" }}>
         <span style={{ minWidth: 0, flex: 1 }}>
           <span style={{ display: "block", fontSize: 15, fontWeight: 800 }}>{T("support")}</span>
           <span style={{ display: "block", fontSize: 12, fontWeight: 500, color: C.dim, marginTop: 2 }}>{T("supportDesc")}</span>
         </span>
-        <span style={{ color: C.dim, fontSize: 18 }}>›</span>
+        <span aria-hidden="true" style={{ fontSize: 20, lineHeight: 1, flexShrink: 0 }}>💛</span>
       </button>
       <div style={{ fontSize: 12, color: C.dim, textAlign: "center", marginTop: 26, lineHeight: 1.6, display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
         <Logo size={44} />
@@ -3860,7 +3843,7 @@ function Warmup({ done, setDone, onNext }) {
           <div key={w.id} style={{ display: "flex", alignItems: "stretch", gap: 8 }}>
             <button onClick={() => { const n = [...done]; n[i] = !n[i]; if (n[i]) sfxCheck(); setDone(n); }} aria-pressed={!!done[i]}
               style={{ ...btnBase, flex: 1, textAlign: "left", display: "flex", alignItems: "center", gap: 14, padding: "14px 15px",
-                background: done[i] ? "#173f3a" : C.panel, border: `1.5px solid ${done[i] ? C.mint : C.line}`, color: C.chalk }}>
+                background: done[i] ? `${C.mint}1f` : LOOK === "liquid" ? "rgba(255,255,255,.07)" : C.panel, border: `1.5px solid ${done[i] ? C.mint : C.line}`, color: C.chalk }}>
               <div key={done[i] ? "on" : "off"} className={done[i] ? "pop" : ""} style={{ width: 30, height: 30, borderRadius: 99, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center",
                 border: `2px solid ${done[i] ? C.mint : C.dim}`, background: done[i] ? C.mint : "transparent", color: C.ink, fontSize: 16, fontWeight: 900 }}>{done[i] ? "✓" : ""}</div>
               <div>
@@ -3869,7 +3852,7 @@ function Warmup({ done, setDone, onNext }) {
                 <div style={{ fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2 }}>{w.why}</div>
               </div>
             </button>
-            <button onClick={() => openYT(w.yt)} aria-label={T("videoOf", { name: w.name })} style={{ ...btnBase, background: C.panel, border: `1.5px solid ${C.line}`, color: C.dim, padding: "0 13px", fontSize: 14 }}>▶</button>
+            <button data-search-howto onClick={() => { sfxTap(); searchHowTo(w.name); }} aria-label={T("searchOf", { name: w.name })} style={{ ...btnBase, background: "transparent", border: `1.5px solid ${C.line}`, color: C.dim, padding: "0 13px", fontSize: 14 }}>🔎</button>
           </div>
         ))}
       </div>
@@ -3992,7 +3975,7 @@ function Work({ item, rounds, history, sessionResults, onRecord, onSwap, exclude
         const hit = ex.type === "reps" && goal !== null && reps >= goal;
         const unit = ex.type === "time" ? " s" : unitStr(ex.unit);
         return (
-          <div data-goal style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 10, background: hit ? `${C.mint}1f` : C.panel, border: `1.5px solid ${hit ? C.mint : C.signal}66`, borderRadius: 14, padding: "9px 12px" }}>
+          <div data-goal style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 10, background: hit ? `${C.mint}1f` : LOOK === "liquid" ? "rgba(255,255,255,.07)" : C.panel, border: `1.5px solid ${hit ? C.mint : C.signal}66`, borderRadius: 14, padding: "9px 12px", ...(LOOK === "liquid" ? { backdropFilter: "blur(18px)", WebkitBackdropFilter: "blur(18px)" } : {}) }}>
             <span className={hit ? "pop" : ""} key={hit ? "hit" : "aim"} style={{ fontFamily: DISPLAY, fontWeight: 900, fontSize: 20, lineHeight: 1, color: hit ? C.mint : C.signal, border: `2px solid ${hit ? C.mint : C.signal}`, borderRadius: 10, padding: "3px 7px", flexShrink: 0 }}>{hit ? "✓" : ex.type === "time" ? "↑" : "+1"}</span>
             <div style={{ fontSize: 13, color: C.chalk, lineHeight: 1.4 }}>
               {goal === null ? T("goalTop", { v: `${prevVal}${unit}` }) : hit ? T("goalHit", { v: `${goal}${unit}` }) : T("goalLine", { v: `${prevVal}${unit}`, g: `${goal}${unit}` })}
@@ -4032,8 +4015,9 @@ function Work({ item, rounds, history, sessionResults, onRecord, onSwap, exclude
               ))}
             </div>
           )}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 18, marginTop: split ? 14 : 26 }}>
-            <button className="b3d" onClick={() => { sfxTap(); setReps(Math.max(0, reps - 1)); }} aria-label={T("less")} style={{ ...btnBase, width: 64, height: 64, borderRadius: 99, background: C.panelHi, color: C.chalk, fontSize: 32, "--e": "#0a1734" }}>−</button>
+          {/* 1.4.0 (Michael): − and + sit exactly in line with the number; the label and the record line go below */}
+          <div data-counter style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 18, marginTop: split ? 14 : 26 }}>
+            <button className={LOOK === "liquid" ? "" : "b3d"} onClick={() => { sfxTap(); setReps(Math.max(0, reps - 1)); }} aria-label={T("less")} style={stepBtn()}>−</button>
             <div style={{ textAlign: "center", minWidth: 120 }}>
               {typing ? (
                 <input data-reps-input type="number" inputMode="numeric" pattern="[0-9]*" min={0} max={999} autoFocus defaultValue={reps} aria-label={T("typeReps")}
@@ -4044,10 +4028,12 @@ function Work({ item, rounds, history, sessionResults, onRecord, onSwap, exclude
               ) : (
                 <button data-reps onClick={() => { sfxTap(); setTyping(true); }} aria-label={`${reps}. ${T("typeReps")}`} key={reps} className="bump" style={{ ...btnBase, background: "transparent", padding: 0, fontFamily: DISPLAY, fontSize: 132, fontWeight: 900, lineHeight: 0.85, color: best !== null && reps > best ? C.signal : C.chalk, borderBottom: `2px dashed ${C.line}` }}>{reps}</button>
               )}
-              <div style={{ fontSize: 13, color: C.dim, marginTop: 4 }}>{T("reps")}{ex.unit ? ` ${perUnit(ex.unit)}` : ""}</div>
-              <div style={{ height: 22, marginTop: 4, fontSize: 14, fontWeight: 800, color: C.signal }}>{best !== null && reps > best ? <span className="pop" style={{ display: "inline-block" }}>{rankIdx(item.id, reps) > rankIdx(item.id, best) ? `${RANKS[rankIdx(item.id, reps)].icon} ${T("newRank", { rank: RANKS[rankIdx(item.id, reps)].name })}` : T("pr")}</span> : ""}</div>
             </div>
-            <button className="b3d" onClick={() => { const n = reps + 1; if (best !== null && n === best + 1) sfxRecord(); else sfxTap(); setReps(n); }} aria-label={T("more")} style={{ ...btnBase, width: 64, height: 64, borderRadius: 99, background: C.panelHi, color: C.chalk, fontSize: 32, "--e": "#0a1734" }}>+</button>
+            <button className={LOOK === "liquid" ? "" : "b3d"} onClick={() => { const n = reps + 1; if (best !== null && n === best + 1) sfxRecord(); else sfxTap(); setReps(n); }} aria-label={T("more")} style={stepBtn()}>+</button>
+          </div>
+          <div style={{ textAlign: "center" }}>
+              <div style={{ fontSize: 13, color: C.dim, marginTop: 4 }}>{T("reps")}{ex.unit ? ` ${perUnit(ex.unit)}` : ""}</div>
+            <div style={{ height: 22, marginTop: 4, fontSize: 14, fontWeight: 800, color: C.signal }}>{best !== null && reps > best ? <span className="pop" style={{ display: "inline-block" }}>{rankIdx(item.id, reps) > rankIdx(item.id, best) ? `${RANKS[rankIdx(item.id, reps)].icon} ${T("newRank", { rank: RANKS[rankIdx(item.id, reps)].name })}` : T("pr")}</span> : ""}</div>
           </div>
           <div style={{ fontSize: 12, color: C.dim, textAlign: "center", marginTop: 10 }}>{T(prevVal !== null ? "countHint" : "countHint0")}</div>
           {split && side === "L" && rightReps !== null && rightReps !== reps && (
@@ -4228,7 +4214,7 @@ function CoolItem({ def, done, onDone }) {
   const stop = () => { setPh("idle"); setEndAt(null); if (ph === "hold") onDone(); };
 
   return (
-    <div style={{ background: done ? "#173f3a" : C.panel, border: `1.5px solid ${done ? C.mint : ph !== "idle" ? C.sky : C.line}`, borderRadius: 16, padding: "14px 15px" }}>
+    <div style={{ background: done ? `${C.mint}1f` : LOOK === "liquid" ? "rgba(255,255,255,.07)" : C.panel, border: `1.5px solid ${done ? C.mint : ph !== "idle" ? C.sky : C.line}`, borderRadius: 16, padding: "14px 15px" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: 16, fontWeight: 700, color: C.chalk }}>{def.name}</div>
@@ -4240,13 +4226,13 @@ function CoolItem({ def, done, onDone }) {
         {ph !== "idle" && <button onClick={stop} style={{ ...ghostBtn, padding: "8px 12px" }}>{T("stop")}</button>}
         {done && ph === "idle" && <span style={{ color: C.mint, fontSize: 22, fontWeight: 900 }}>✓</span>}
       </div>
-      <div style={{ fontSize: 13, color: "#cdd6f0", marginTop: 8, lineHeight: 1.55 }}>{def.why}</div>
+      <div style={{ fontSize: 13, color: `${C.chalk}d9`, marginTop: 8, lineHeight: 1.55 }}>{def.why}</div>
       <button onClick={() => setOpen(!open)} aria-expanded={open} style={{ ...btnBase, background: "transparent", color: C.dim, fontSize: 12, padding: "8px 0 0", fontWeight: 600 }}>{open ? T("hideHowTo") : T("showHowTo")}</button>
       {open && (
-        <div style={{ fontSize: 13, color: "#cdd6f0", lineHeight: 1.55, marginTop: 6 }}>
+        <div style={{ fontSize: 13, color: `${C.chalk}d9`, lineHeight: 1.55, marginTop: 6 }}>
           {def.fig && <ExFigure id={def.fig} />}
           {def.how}
-          <button onClick={() => openYT(def.yt)} style={{ ...btnBase, display: "block", marginTop: 8, background: "transparent", color: C.sky, fontSize: 13, padding: 0 }}>{T("video")}</button>
+          <button data-search-howto onClick={() => { sfxTap(); searchHowTo(def.name); }} style={{ ...btnBase, display: "block", marginTop: 8, background: "transparent", color: C.sky, fontSize: 13, padding: 0 }}>{T("searchWeb")}</button>
         </div>
       )}
     </div>
@@ -4329,28 +4315,28 @@ function Summary({ entry, xpBefore = 0, xpGained, newCh = [], newAch = [], histo
         )}
       </div>
       {newCh.length > 0 && (
-        <div className="pop" style={{ marginTop: 14, background: "#173f3a", border: `2px solid ${C.mint}`, borderRadius: 16, padding: "12px 16px" }}>
+        <div className="cardIn" style={{ marginTop: 14, background: `${C.mint}1f`, border: `2px solid ${C.mint}`, borderRadius: 16, padding: "12px 16px" }}>
           {newCh.map(c => (
             <div key={c.id} style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, color: C.mint, lineHeight: 1.2 }}>{T("challengeDone", { text: L.ch[c.id] })} <span style={{ color: C.sky }}>+{c.xp} XP</span></div>
           ))}
         </div>
       )}
       {newAch.length > 0 && (
-        <div className="pop" data-newach style={{ marginTop: 14, border: `2px solid ${C.sky}`, borderRadius: 16, padding: "12px 16px" }}>
+        <div className="cardIn" data-newach style={{ marginTop: 14, border: `2px solid ${C.sky}`, borderRadius: 16, padding: "12px 16px" }}>
           {newAch.map(a => (
             <div key={a.k} style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, color: RANKS[a.tier - 1].color, lineHeight: 1.2 }}>{a.icon} {T("achUp", { name: a.name, rank: `${RANKS[a.tier - 1].icon} ${RANKS[a.tier - 1].name}` })}</div>
           ))}
         </div>
       )}
       {entry.rankUps && entry.rankUps.length > 0 && (
-        <div className="pop" style={{ marginTop: 14, border: `2px solid ${C.signal}`, borderRadius: 16, padding: "12px 16px" }}>
+        <div className="cardIn" style={{ marginTop: 14, border: `2px solid ${C.signal}`, borderRadius: 16, padding: "12px 16px" }}>
           {entry.rankUps.map(ru => (
             <div key={ru.id} style={{ fontFamily: DISPLAY, fontSize: 26, fontWeight: 900, color: RANKS[ru.to].color, lineHeight: 1.15 }}>{RANKS[ru.to].icon} {EX[ru.id] ? EX[ru.id].name : ru.id}: {RANKS[ru.to].name}</div>
           ))}
         </div>
       )}
       {entry.prs && entry.prs.length > 0 && (
-        <div className="pop" style={{ marginTop: 14, background: C.signal, color: C.signalInk, borderRadius: 16, padding: "14px 16px" }}>
+        <div className="cardIn" style={{ marginTop: 14, background: C.signal, color: C.signalInk, borderRadius: 16, padding: "14px 16px" }}>
           <div style={{ fontFamily: DISPLAY, fontSize: 32, fontWeight: 900, lineHeight: 1 }}>🏆 {TP("prs", entry.prs.length)}</div>
           <div style={{ fontSize: 14, fontWeight: 600, marginTop: 4 }}>{entry.items.filter(it => entry.prs.includes(it.id)).map(exName).join(", ")}</div>
         </div>
@@ -4525,6 +4511,7 @@ export default function App() {
   if (LOOK === "glass") card = { background: `linear-gradient(160deg, ${C.panelHi}, ${C.panel} 60%)`, border: `1px solid ${C.chalk}14`, borderRadius: 24, boxShadow: "0 10px 30px rgba(0,0,0,.28)" };
   if (LOOK === "accent") card = { background: C.panel, border: `1px solid ${C.line}`, borderLeft: `4px solid ${C.chalk}40`, borderRadius: 16 };
   if (LOOK === "liquid") card = LIQUID();
+  if (LOOK === "liquid") sectionTitle = { ...sectionTitle, color: `${C.chalk}b3` };
   // The liquid background sits at z-index -1: it shows only when body has no background of its own (html keeps the colour).
   try { document.documentElement.style.background = C.ink; document.body.style.background = LOOK === "liquid" ? "transparent" : C.ink; } catch (_) {}
   applyLang(settings.lang || detectLang());
@@ -4608,7 +4595,8 @@ export default function App() {
   useEffect(() => {
     if (!loaded || !settingsLoaded || newsChecked) return;
     setNewsChecked(true);
-    if (bigVer(settings.seenVersion) === bigVer(APP_VERSION)) {
+    // (a seenVersion newer than the app comes from the old website numbering, e.g. Browser beta 1.4.2: show What's new)
+    if (bigVer(settings.seenVersion) === bigVer(APP_VERSION) && verCmp(settings.seenVersion, APP_VERSION) <= 0) {
       // small update: show the card now and remember the version right away, so it's gone next time
       if (newsUnseen(settings.seenVersion)) { setUpdCard(true); setSettings({ ...settings, seenVersion: APP_VERSION }); }
       return;
@@ -4692,12 +4680,13 @@ export default function App() {
         .scr{animation:scrIn .28s ease-out both}
         :root{--sat:var(--safe-area-inset-top,env(safe-area-inset-top,0px));--sab:var(--safe-area-inset-bottom,env(safe-area-inset-bottom,0px))}
         .sheetBox{box-sizing:border-box;max-height:86vh;max-height:calc(100dvh - 24px - var(--sat) - var(--sab))}
-        .exq::after{content:"?"} .exq{position:relative} .exq::before{content:"";position:absolute;inset:-10px}
+        .exq::after{content:"?"} .exq{position:relative} .exq::before{content:"";position:absolute;inset:-4px}
         .noBar{scrollbar-width:none}.noBar::-webkit-scrollbar{display:none}
         @keyframes bump{0%{transform:scale(.82)}55%{transform:scale(1.12)}100%{transform:scale(1)}}
         .bump{animation:bump .22s ease-out}
         @keyframes pop{0%{transform:scale(0);opacity:0}60%{transform:scale(1.2);opacity:1}100%{transform:scale(1);opacity:1}}
         .pop{animation:pop .4s cubic-bezier(.2,1.4,.4,1) both}
+        @keyframes cardIn{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:none}} .cardIn{animation:cardIn .45s cubic-bezier(.2,.9,.3,1) both}
         @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
         .pulse{animation:pulse .5s ease-in-out infinite}
         @keyframes wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-14deg)}75%{transform:rotate(14deg)}}

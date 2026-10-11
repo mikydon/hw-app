@@ -10,6 +10,20 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 
 <!-- New version: add a "## x.y.z (date)" section on top (web-only history uses "## Browser beta x.y.z (date)"). On a push to main, .github/workflows/build.yml builds everything and .github/scripts/releases.sh creates/updates the releases (commit = the push, or the one in a commit comment). -->
 
+## 1.4.0 (2026-10-11)
+
+**A big update: a new APK** (download it in the app and tap Install; your data stays). Compared with 1.3.1:
+
+| | Before (1.3.1) | Now (1.4.0) |
+|---|---|---|
+| Backups *(Android app only)* | "Save backup" opened the share menu; nothing was ever saved by itself | backups go to **Documents/HW App** on the phone. New **Automatic backup** switch: every day (and a few seconds after every change, e.g. a finished workout) a fresh `hw-app-auto-backup.json` replaces the old one; it is never written while the app has no data, so a reset or a fresh install can't overwrite a good backup. Backups you save yourself are never deleted automatically. Settings → Backups in the phone lists them to restore, share or delete (two taps). Android 8–10 ask once for storage access |
+| Badges | 11 badge families | 21: also how long you've been training, Health Connect (Iron = one kind of data, Gold = also weight & height, Diamond = also food calories; kept after disconnecting), early bird (start before 8:00), night owl (after 20:00), time trained, A + B + C, stretching, plank hold, calorie target hits (±10 %) and 10,000-step days. Profile shows badges and levels earned |
+| Profile | numbers and emojis placed differently in every tile | every tile the same: label, icon on the right, the number in the same spot |
+| Design | each screen had its own headings and boxes | the same section labels and boxes on every screen; the calorie week uses the same strip as the training week; list rows without leading emojis |
+| Leaving the app *(Android app only)* | back on the main screen closed the app at once | the first back asks "Leave the app?"; a second back or Leave closes it |
+| "?" next to exercises | big | smaller and quieter, same tap area |
+| Videos | one fixed YouTube link per exercise (sometimes a different variation than the drawing) | "Search the web" opens a search for how to do the exercise, in the app's language |
+
 ## 1.3.1 (2026-10-10)
 
 - Liquid glass: the ☰ menu panel now has the same colourful background as the rest of the app; before, it was a flat dark panel.
