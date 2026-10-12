@@ -50,7 +50,18 @@ const out = await build({
 });
 const js = out.outputFiles[0].text;
 if (js.includes("</script")) throw new Error("bundle contains </script");
-const html = readFileSync("template.html", "utf8").replace("/*FONTS*/", () => fontCss).replace("/*APP*/", () => js);
+// The cloud code (Firebase, 1.5.0) is its own bundle, kept as plain text and run only when an account is used
+// (src/cloud-lazy.js). @capacitor/core comes from the app bundle (window.__hwCap), so there is one copy of it.
+const capShim = { name: "cap-shim", setup(b) {
+  b.onResolve({ filter: /^@capacitor\/core$/ }, () => ({ path: "cap", namespace: "cap-shim" }));
+  b.onLoad({ filter: /.*/, namespace: "cap-shim" }, () => ({ contents: "const c = window.__hwCap; export const Capacitor = c.Capacitor; export const registerPlugin = c.registerPlugin; export const WebPlugin = c.WebPlugin;", loader: "js" }));
+} };
+const cloudOut = await build({
+  entryPoints: ["src/cloud.js"], bundle: true, minify: true, write: false, format: "iife", globalName: "HWCloud",
+  target: "es2020", define: { "process.env.NODE_ENV": '"production"' }, plugins: [capShim],
+});
+const cloudJs = cloudOut.outputFiles[0].text.replace(/<\/script/gi, "<\\/script");
+const html = readFileSync("template.html", "utf8").replace("/*FONTS*/", () => fontCss).replace("/*APP*/", () => js).replace("/*CLOUD*/", () => cloudJs);
 writeFileSync("index.html", html);
 
 // Android app / live-update bundle

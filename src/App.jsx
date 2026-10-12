@@ -1,7 +1,7 @@
 import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { isNative, pushBack, setRootBack, exitApp, vibratePattern, keepScreenOn, openExternal, saveBackupFile, bkSupported, bkWrite, bkList, bkRead, bkDelete, bkShare, BK_DIR, BK_AUTO, checkForUpdate, lastUpdate, lastGh, applyUpdateNow, latestApk, isTestBuild, apkState, onApk, apkSupported, apkRestore, apkDownload, apkCanInstall, apkAllow, apkInstall, onAppResume, healthState, healthConnect, healthSettings, healthSteps, healthFoodItems, healthBody, shareText, copyText } from "./native.js";
-import { cloud, NICK_RE, SHARE_BASE, cleanCode, fmtCode } from "./cloud.js";
+import { cloud, NICK_RE, SHARE_BASE, cleanCode, fmtCode } from "./cloud-lazy.js";
 import { L, LANG, t as T, tp as TP, fmt, setLang, detectLang, LANGS, fmtLong, fmtShortDM, fmtMonthYear, weekdaysShort, capFirst } from "./i18n/index.js";
 
 // ─── DESIGN TOKENS ──────────────────────────────────────────────────────────
@@ -1348,7 +1348,7 @@ function StatTile({ label, value, icon, color, sub, children, data, compact }) {
 const SCREENS = ["train", "calories", "history", "profile", "friends", "settings"];
 const SCREEN_TITLE = { train: "tabTrain", calories: "tabCalories", history: "tabHistory", profile: "tabProfile", friends: "tabFriends", settings: "tabSettings" };
 
-function MenuButton({ open, onClick, btnRef, label }) {
+function MenuButton({ open, onClick, btnRef, label, badge }) {
   const bar = (y, rot) => ({ position: "absolute", left: 11, width: 20, height: 2.6, borderRadius: 2, background: C.chalk, top: open ? 20 : y, transform: open ? `rotate(${rot}deg)` : "none", transition: "top .22s ease, transform .22s ease, opacity .18s" });
   return (
     <button ref={btnRef} onClick={onClick} aria-label={label || (open ? T("menuClose") : T("menuOpen"))} aria-expanded={open} data-menu-btn
@@ -1356,6 +1356,7 @@ function MenuButton({ open, onClick, btnRef, label }) {
       <span style={bar(13, 45)} />
       <span style={{ ...bar(20, 0), opacity: open ? 0 : 1 }} />
       <span style={bar(27, -45)} />
+      {badge > 0 && !open && <span data-menu-badge={badge} aria-hidden="true" style={{ position: "absolute", top: -4, right: -4, minWidth: 17, height: 17, borderRadius: 9, padding: "0 4px", boxSizing: "border-box", background: "#ff5a5a", color: "#fff", fontSize: 10.5, fontWeight: 800, lineHeight: "17px", fontFamily: BODY, border: `2px solid ${C.ink}` }}>{badge > 9 ? "9+" : badge}</span>}
     </button>
   );
 }
@@ -1406,7 +1407,7 @@ function AboutBox({ gh, dl, onNews }) {
   );
 }
 
-function TopBar({ screen, history, menuOpen, onMenu, onGo, dlPct }) {
+function TopBar({ screen, history, menuOpen, onMenu, onGo, dlPct, badge }) {
   const now = useClock();
   const ap = useApk();
   const prog = ap.kind === "downloading" ? ap.pct || 0 : dlPct; // a download in progress: a thin line under the bar on every screen
@@ -1446,7 +1447,7 @@ function TopBar({ screen, history, menuOpen, onMenu, onGo, dlPct }) {
         </div>
         <button onClick={() => onGo && onGo("profile")} data-chip="streak" style={{ ...btnBase, ...chip(st.n ? "#ffa94d" : C.dim), ...pill }} aria-label={T("streakAria", { n: st.n })}><span className={st.n ? "wiggle" : ""}>🔥</span>{st.n}</button>
         <button onClick={() => onGo && onGo("profile")} data-chip="level" style={{ ...btnBase, ...chip(C.sky), ...pill }} aria-label={T("levelAria", { n: lv.lvl })}>⚡{lv.lvl}</button>
-        <MenuButton open={menuOpen} onClick={onMenu} />
+        <MenuButton open={menuOpen} onClick={onMenu} badge={badge} />
         {typeof prog === "number" && <div data-top-prog={Math.round(prog)} role="progressbar" aria-valuenow={Math.round(prog)} aria-valuemin={0} aria-valuemax={100} style={{ position: "absolute", left: 18, bottom: 4, height: 3, width: `calc((100% - 36px) * ${Math.max(2, Math.min(100, prog)) / 100})`, background: C.sky, borderRadius: 3, transition: "width .3s", boxShadow: `0 0 8px ${C.sky}` }} />}
         </div>
       </div>
@@ -1466,7 +1467,7 @@ function TabIcon({ name, active }) {
 }
 
 // Slide-in drawer from the right with everything in the app. Rendered into <body> (like Sheet).
-function MenuDrawer({ open, screen, history, profile, session, onGo, onResume, onClose, onNews, gh, dl }) {
+function MenuDrawer({ open, screen, history, profile, session, onGo, onResume, onClose, onNews, gh, dl, badge }) {
   const [shown, setShown] = useState(open);
   useEffect(() => { if (open) setShown(true); else { const t = setTimeout(() => setShown(false), 260); return () => clearTimeout(t); } }, [open]);
   const closeRef = useRef(null);
@@ -1485,7 +1486,7 @@ function MenuDrawer({ open, screen, history, profile, session, onGo, onResume, o
   const lv = levelInfo(totalXP(history));
   const st = streakInfo(history, dateKey());
   const kcs = kcalNow(history);
-  const items = SCREENS.map(id => ({ id, label: T(SCREEN_TITLE[id]), desc: id === "calories" && kcs ? T("kcMenu", { e: nf(kcs.eaten), t: nf(kcs.target) }) : T("menuD_" + id) }));
+  const items = SCREENS.map(id => ({ id, label: T(SCREEN_TITLE[id]), desc: id === "calories" && kcs ? T("kcMenu", { e: nf(kcs.eaten), t: nf(kcs.target) }) : id === "friends" && badge ? T("frMenuNew", { n: badge }) : T("menuD_" + id), badge: id === "friends" ? badge : 0 }));
   return createPortal(
     <div role="dialog" aria-modal="true" aria-label={T("mainMenu")} className={open ? "drawerOn" : "drawerOff"} style={{ position: "fixed", inset: 0, zIndex: 60 }}>
       <div onClick={onClose} className="drawerBg" style={{ position: "absolute", inset: 0, background: "rgba(3,8,20,.6)" }} />
@@ -1515,8 +1516,9 @@ function MenuDrawer({ open, screen, history, profile, session, onGo, onResume, o
                 <span style={{ width: 40, height: 40, borderRadius: 12, background: on ? `${C.signal}26` : LOOK === "liquid" ? "rgba(255,255,255,.08)" : C.panelHi, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><TabIcon name={it.id} active={on} /></span>
                 <span style={{ minWidth: 0 }}>
                   <span style={{ display: "block", fontSize: 16, fontWeight: 800 }}>{it.label}</span>
-                  <span style={{ display: "block", fontSize: 12, fontWeight: 500, color: C.dim, marginTop: 1 }}>{it.desc}</span>
+                  <span style={{ display: "block", fontSize: 12, fontWeight: it.badge ? 700 : 500, color: it.badge ? C.signal : C.dim, marginTop: 1 }}>{it.desc}</span>
                 </span>
+                {it.badge > 0 && <span style={{ marginLeft: "auto", minWidth: 20, height: 20, borderRadius: 10, padding: "0 6px", boxSizing: "border-box", background: "#ff5a5a", color: "#fff", fontSize: 11.5, fontWeight: 800, lineHeight: "20px", textAlign: "center", flexShrink: 0 }}>{it.badge}</span>}
               </button>
             );
           })}
@@ -3684,7 +3686,7 @@ function PersonRow({ p, rank, me, onClick, right, first }) {
 }
 
 // Someone's card: stats, and add / remove / block / report.
-function PersonSheet({ p, isFriend, onAdd, onRemove, onBlock, onReport, onClose }) {
+function PersonSheet({ p, isFriend, onAdd, onChat, onRemove, onBlock, onReport, onClose }) {
   const [sure, setSure] = useState(null);
   const [msg, setMsg] = useState("");
   const twoTap = (k, fn) => { if (sure !== k) { setSure(k); setTimeout(() => setSure(s => (s === k ? null : s)), 4000); return; } setSure(null); fn(); };
@@ -3700,6 +3702,7 @@ function PersonSheet({ p, isFriend, onAdd, onRemove, onBlock, onReport, onClose 
       </div>
       <div style={{ display: "flex", gap: 8, marginTop: 16, flexWrap: "wrap" }}>
         {!isFriend && onAdd && <button data-ps-add onClick={() => { sfxTap(); onAdd(p).then(setMsg); }} style={{ ...small, background: C.signal, color: C.signalInk, flexBasis: "100%" }}>{T("frAddBtn")}</button>}
+        {isFriend && onChat && <button data-ps-chat onClick={() => { sfxTap(); onChat(p); }} style={{ ...small, background: C.signal, color: C.signalInk, flexBasis: "100%" }}>{T("chWrite")}</button>}
         {isFriend && <button data-ps-remove onClick={() => twoTap("rm", () => onRemove(p))} style={{ ...small, color: sure === "rm" ? "#ff8a80" : C.chalk }}>{sure === "rm" ? T("frRemoveSure") : T("frRemove")}</button>}
         <button data-ps-block onClick={() => twoTap("bl", () => onBlock(p))} style={{ ...small, color: sure === "bl" ? "#ff8a80" : C.chalk }}>{sure === "bl" ? T("frBlockSure") : T("frBlock")}</button>
         <button data-ps-report onClick={() => { sfxTap(); onReport(p).then(setMsg); }} style={small}>{T("frReport")}</button>
@@ -3710,7 +3713,7 @@ function PersonSheet({ p, isFriend, onAdd, onRemove, onBlock, onReport, onClose 
   );
 }
 
-function FriendsTab({ acct, history, profile, onSignIn, onCreate, onRename, onSetGlobal }) {
+function FriendsTab({ acct, history, profile, social, chatWith, setChatWith, onBlocked, onSignIn, onCreate, onRename, onSetGlobal }) {
   const [age16, setAge16] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
@@ -3748,7 +3751,7 @@ function FriendsTab({ acct, history, profile, onSignIn, onCreate, onRename, onSe
     );
   }
   if (!acct.prof) return <NickSetup initial={nickFrom(profile.name && profile.name !== "User" ? profile.name : "")} onSave={onCreate} />;
-  return <FriendsMain acct={acct} history={history} profile={profile} onRename={onRename} onSetGlobal={onSetGlobal} />;
+  return <FriendsMain acct={acct} history={history} profile={profile} social={social} chatWith={chatWith} setChatWith={setChatWith} onBlocked={onBlocked} onRename={onRename} onSetGlobal={onSetGlobal} />;
 }
 
 function NickSetup({ initial, onSave, onCancel, title }) {
@@ -3774,41 +3777,31 @@ function NickSetup({ initial, onSave, onCancel, title }) {
   return <div className="scr" data-fr-nicksetup style={{ padding: "6px 18px 110px", maxWidth: 460, margin: "0 auto" }}><Sect title={T("frNickTitle")}>{body}</Sect></div>;
 }
 
-function FriendsMain({ acct, history, profile, onRename, onSetGlobal }) {
+function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, chatWith, setChatWith, onBlocked }) {
   const me = { uid: acct.uid, ...acct.prof, ...cloudStats(history) };
-  const [tab, setTab] = useState(() => (sessionStorage.getItem("hw-add") ? "friends" : "board"));
+  const [tab, setTab] = useState(() => (sessionStorage.getItem("hw-add") ? "friends" : chatWith ? "chats" : "board"));
   const [scope, setScope] = useState("friends"); // board: friends | world
-  const [friends, setFriends] = useState(null);
-  const [reqs, setReqs] = useState(null);
   const [world, setWorld] = useState(null);
-  const [blocked, setBlocked] = useState(() => cloudMem().blocked || []);
+  const blocked = social.blocked || [];
+  const friends = social.friends ? social.friends.filter(f => !blocked.includes(f.uid)) : null;
+  const reqs = social.reqs;
   const [add, setAdd] = useState(() => sessionStorage.getItem("hw-add") || "");
   const [addMsg, setAddMsg] = useState("");
   const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState("");
+  const [err, setErr] = useState(social.err || "");
   const [sheet, setSheet] = useState(null);
   const [rename, setRename] = useState(false);
   const [shareMsg, setShareMsg] = useState("");
-  const load = what => {
-    setErr("");
-    const c = cloud();
-    if (what !== "world") {
-      c.friends().then(f => setFriends(f.filter(x => !x.missing))).catch(e => { setFriends(f => f || []); setErr(cloudErr(e)); });
-      c.requests().then(r => {
-        const bl = cloudMem().blocked || [];
-        r.filter(x => x.missing || bl.includes(x.uid)).forEach(x => c.decline(x.uid).catch(() => {}));
-        setReqs(r.filter(x => !x.missing && !bl.includes(x.uid)));
-      }).catch(e => { setReqs(q => q || []); setErr(cloudErr(e)); });
-    }
-    if (what === "world" || (what === "all" && scope === "world")) c.world(50).then(setWorld).catch(e => { setWorld(w => w || []); setErr(cloudErr(e)); });
-  };
-  useEffect(() => { load("all"); try { sessionStorage.removeItem("hw-add"); } catch (_) {} }, []);
-  useEffect(() => { if (scope === "world" && world === null) load("world"); }, [scope]);
+  useEffect(() => { if (social.err) setErr(social.err); }, [social.err]);
+  const loadWorld = () => { setErr(""); cloud().world(50).then(setWorld).catch(e => { setWorld(w => w || []); setErr(cloudErr(e)); }); };
+  useEffect(() => { try { sessionStorage.removeItem("hw-add"); } catch (_) {} }, []);
+  useEffect(() => { if (scope === "world" && world === null) loadWorld(); }, [scope]);
   const friendIds = (friends || []).map(f => f.uid);
   const sendTo = async (uid, nick) => {
     if (uid === acct.uid) return T("frSelf");
     if (friendIds.includes(uid)) return T("frAlready");
-    await cloud().sendRequest(uid);
+    const r = await cloud().sendRequest(uid);
+    if (r === "accepted") return T("frBoth", { nick });
     setCloudMem({ sent: [...new Set([...(cloudMem().sent || []), uid])].slice(-200) });
     return T("frSent", { nick });
   };
@@ -3827,21 +3820,23 @@ function FriendsMain({ acct, history, profile, onRename, onSetGlobal }) {
     } catch (e) { setAddMsg(cloudErr(e)); }
     finally { setBusy(false); }
   };
-  const act = (fn, after) => fn().then(() => { sfxCheck(); after && after(); load("all"); }).catch(e => setErr(cloudErr(e)));
+  const act = (fn, after) => fn().then(() => { sfxCheck(); after && after(); }).catch(e => setErr(cloudErr(e)));
   const block = p => {
-    const bl = [...new Set([...blocked, p.uid])];
-    setBlocked(bl); setCloudMem({ blocked: bl });
+    onBlocked([...new Set([...blocked, p.uid])]);
     const c = cloud();
-    Promise.all([friendIds.includes(p.uid) ? c.removeFriend(p.uid) : null, c.decline(p.uid).catch(() => {})]).catch(() => {}).finally(() => load("all"));
-    setSheet(null);
+    Promise.all([friendIds.includes(p.uid) ? c.removeFriend(p.uid) : null, c.decline(p.uid).catch(() => {})]).catch(() => {});
+    setSheet(null); if (chatWith === p.uid) setChatWith(null);
   };
-  const report = p => cloud().report(p.uid, "profile").then(() => T("frReported")).catch(cloudErr);
+  const report = (p, what = "profile") => cloud().report(p.uid, what).then(() => T("frReported")).catch(cloudErr);
   const link = `${SHARE_BASE}?add=${me.code}`;
   const share = () => { sfxTap(); shareText(T("frShareText", { code: fmtCode(me.code), url: link })).then(r => { if (r === "copied") { setShareMsg(T("copied")); setTimeout(() => setShareMsg(""), 2500); } }); };
   const copy = () => { sfxTap(); copyText(fmtCode(me.code)).then(() => { setShareMsg(T("copied")); setTimeout(() => setShareMsg(""), 2500); }); };
-  const seg = (on, onClick, label, data) => (
+  const seg = (on, onClick, label, data, badge) => (
     <button data-seg={data} aria-pressed={on} onClick={() => { sfxTap(); onClick(); }}
-      style={{ ...btnBase, flex: 1, padding: "9px 6px", fontSize: 14, borderRadius: 11, background: on ? C.chalk : "transparent", color: on ? C.ink : C.dim }}>{label}</button>
+      style={{ ...btnBase, flex: 1, minWidth: 0, padding: "9px 4px", fontSize: 14, borderRadius: 11, background: on ? C.chalk : "transparent", color: on ? C.ink : C.dim, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, whiteSpace: "nowrap" }}>
+      <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{label}</span>
+      {badge > 0 && <span data-badge={badge} style={{ minWidth: 18, height: 18, borderRadius: 9, padding: "0 5px", background: "#ff5a5a", color: "#fff", fontSize: 11, fontWeight: 800, lineHeight: "18px", boxSizing: "border-box", flexShrink: 0 }}>{badge}</span>}
+    </button>
   );
   const segBox = { display: "flex", gap: 4, padding: 4, borderRadius: 14, background: SOFT(), marginTop: 14 };
   const chipSeg = (on, onClick, label, data) => (
@@ -3849,13 +3844,23 @@ function FriendsMain({ acct, history, profile, onRename, onSetGlobal }) {
       style={{ ...btnBase, padding: "6px 12px", fontSize: 12.5, borderRadius: 99, background: on ? `${C.signal}22` : "transparent", color: on ? C.signal : C.dim, border: `1.5px solid ${on ? `${C.signal}66` : C.line}`, whiteSpace: "nowrap", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis" }}>{label}</button>
   );
   const board = scope === "friends"
-    ? (friends ? [me, ...friends.filter(f => !blocked.includes(f.uid))].sort((a, b) => (b.xp || 0) - (a.xp || 0)) : null)
+    ? (friends ? [me, ...friends].sort((a, b) => (b.xp || 0) - (a.xp || 0)) : null)
     : (world ? world.filter(w => !blocked.includes(w.uid)).map(w => (w.uid === acct.uid ? { ...w, ...me } : w)) : null);
+  const people = Object.fromEntries([...(friends || []), ...(reqs || []), ...(world || [])].map(p => [p.uid, p]));
+  const chats = (social.chats || []).filter(c => !blocked.includes(c.other)).sort((a, b) => b.last.ts - a.last.ts);
+  const unread = c => c.last.from !== acct.uid && c.last.ts > ((social.read || {})[c.cid] || 0);
+  if (chatWith) {
+    const p = people[chatWith] || { uid: chatWith, nick: "…" };
+    return <ChatView me={acct.uid} other={p} canWrite={friendIds.includes(chatWith)} onBack={() => setChatWith(null)} onOpen={() => { sfxTap(); setSheet(p); }}
+      sheet={sheet && <PersonSheet p={sheet} isFriend={friendIds.includes(sheet.uid)} onClose={() => setSheet(null)} onAdd={x => sendTo(x.uid, x.nick).catch(cloudErr)}
+        onRemove={x => act(() => cloud().removeFriend(x.uid), () => setSheet(null))} onBlock={block} onReport={x => report(x)} />}
+      onReport={text => report(p, "message: " + text.slice(0, 280))} />;
+  }
   return (
     <div className="scr" data-fr-main style={{ padding: "6px 18px 110px", maxWidth: 460, margin: "0 auto" }}>
-      {sheet && <PersonSheet p={sheet} isFriend={friendIds.includes(sheet.uid)} onClose={() => setSheet(null)}
+      {sheet && <PersonSheet p={sheet} isFriend={friendIds.includes(sheet.uid)} onClose={() => setSheet(null)} onChat={friendIds.includes(sheet.uid) ? x => { setSheet(null); setChatWith(x.uid); } : null}
         onAdd={p => sendTo(p.uid, p.nick).catch(cloudErr)} onRemove={p => act(() => cloud().removeFriend(p.uid), () => setSheet(null))}
-        onBlock={block} onReport={report} />}
+        onBlock={block} onReport={p => report(p)} />}
       {rename && <NickSetup initial={acct.prof.nick} title={T("frRename")} onCancel={() => setRename(false)} onSave={n => onRename(n).then(() => setRename(false))} />}
       <Sect>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -3876,21 +3881,22 @@ function FriendsMain({ acct, history, profile, onRename, onSetGlobal }) {
       </Sect>
       <div role="tablist" style={segBox}>
         {seg(tab === "board", () => setTab("board"), T("frBoard"), "board")}
-        {seg(tab === "friends", () => setTab("friends"), reqs && reqs.length ? `${T("frFriends")} · ${reqs.length}` : T("frFriends"), "friends")}
+        {seg(tab === "friends", () => setTab("friends"), T("frFriends"), "friends", reqs ? reqs.length : 0)}
+        {seg(tab === "chats", () => setTab("chats"), T("chMsgs"), "chats", chats.filter(unread).length)}
       </div>
       {err && <div role="alert" style={{ fontSize: 13, color: "#ff8a80", marginTop: 10 }}>{err}</div>}
       {tab === "board" ? (
         <>
           {scope === "world" && (
             <div style={{ ...card, ...tileR(), marginTop: 10, overflow: "hidden" }}>
-              <SettingRow first title={T("frWorldJoin")} desc={T("frWorldJoinD")} on={!!acct.prof.global} onClick={() => { sfxTap(); onSetGlobal(!acct.prof.global).then(() => setTimeout(() => load("world"), 400)).catch(e => setErr(cloudErr(e))); }} />
+              <SettingRow first title={T("frWorldJoin")} desc={T("frWorldJoinD")} on={!!acct.prof.global} onClick={() => { sfxTap(); onSetGlobal(!acct.prof.global).then(() => setTimeout(loadWorld, 400)).catch(e => setErr(cloudErr(e))); }} />
             </div>
           )}
           <Sect style={{ padding: "12px 0 4px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "0 12px 10px" }}>
               {chipSeg(scope === "friends", () => setScope("friends"), T("frBoardFriends"), "scope-friends")}
               {chipSeg(scope === "world", () => setScope("world"), T("frBoardWorld"), "scope-world")}
-              <button data-fr-refresh onClick={() => { sfxTap(); load(scope === "world" ? "world" : "all"); }} aria-label={T("frRefresh")} style={{ ...btnBase, background: "transparent", color: C.dim, padding: "4px 6px", fontSize: 17, marginLeft: "auto", flexShrink: 0 }}>↻</button>
+              {scope === "world" && <button data-fr-refresh onClick={() => { sfxTap(); loadWorld(); }} aria-label={T("frRefresh")} style={{ ...btnBase, background: "transparent", color: C.dim, padding: "4px 6px", fontSize: 17, marginLeft: "auto", flexShrink: 0 }}>↻</button>}
             </div>
             {board === null ? <div style={{ padding: "6px 16px 12px", color: C.dim, fontSize: 14 }}>{T("frLoading")}</div>
               : scope === "world" && !board.length ? <div style={{ padding: "6px 16px 12px", color: C.dim, fontSize: 14 }}>{T("frWorldEmpty")}</div>
@@ -3898,7 +3904,7 @@ function FriendsMain({ acct, history, profile, onRename, onSetGlobal }) {
             {scope === "friends" && friends && !friends.length && <div style={{ padding: "10px 16px 12px", color: C.dim, fontSize: 13, lineHeight: 1.5, borderTop: `1px solid ${C.line}` }}>{T("frNoFriends")}</div>}
           </Sect>
         </>
-      ) : (
+      ) : tab === "friends" ? (
         <>
           <Sect title={T("frAdd")}>
             <div style={{ display: "flex", gap: 8 }}>
@@ -3922,11 +3928,141 @@ function FriendsMain({ acct, history, profile, onRename, onSetGlobal }) {
           <Sect title={T("frFriends")} meta={friends ? String(friends.length) : ""} style={{ padding: "15px 0 4px" }} titlePad="0 16px">
             {friends === null ? <div style={{ padding: "6px 16px 12px", color: C.dim, fontSize: 14 }}>{T("frLoading")}</div>
               : !friends.length ? <div style={{ padding: "6px 16px 12px", color: C.dim, fontSize: 13, lineHeight: 1.5 }}>{T("frNoFriends")}</div>
-              : friends.filter(f => !blocked.includes(f.uid)).map((p, i) => <PersonRow key={p.uid} p={p} first={i === 0} onClick={() => { sfxTap(); setSheet(p); }} />)}
+              : friends.map((p, i) => <PersonRow key={p.uid} p={p} first={i === 0} onClick={() => { sfxTap(); setSheet(p); }} />)}
           </Sect>
         </>
+      ) : (
+        <Sect title={T("chMsgs")} style={{ padding: "15px 0 4px" }} titlePad="0 16px">
+          {social.chats === null ? <div style={{ padding: "6px 16px 12px", color: C.dim, fontSize: 14 }}>{T("frLoading")}</div>
+            : !chats.length ? <div data-ch-empty style={{ padding: "6px 16px 12px", color: C.dim, fontSize: 13, lineHeight: 1.5 }}>{friends && friends.length ? T("chEmpty") : T("chNoFriends")}</div>
+            : chats.map((c, i) => {
+              const p = people[c.other] || { uid: c.other, nick: "…" }, u = unread(c);
+              return (
+                <button key={c.cid} data-chat={c.other} data-unread={u ? 1 : 0} onClick={() => { sfxTap(); setChatWith(c.other); }}
+                  style={{ ...btnBase, width: "100%", display: "flex", alignItems: "center", gap: 11, padding: "10px 14px", background: "transparent", color: C.chalk, textAlign: "left", borderRadius: 0, borderTop: i ? `1px solid ${C.line}` : "none" }}>
+                  <PersonAvatar p={p} size={40} />
+                  <span style={{ flex: 1, minWidth: 0 }}>
+                    <span style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+                      <span style={{ flex: 1, minWidth: 0, fontSize: 15, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.nick}</span>
+                      <span style={{ fontSize: 11, color: u ? C.signal : C.dim, flexShrink: 0 }}>{chTime(c.last.ts)}</span>
+                    </span>
+                    <span style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 2 }}>
+                      <span style={{ flex: 1, minWidth: 0, fontSize: 13, color: u ? C.chalk : C.dim, fontWeight: u ? 700 : 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.last.from === acct.uid ? `${T("chYou")}: ` : ""}{c.last.text}</span>
+                      {u && <span aria-label={T("chNew")} style={{ width: 9, height: 9, borderRadius: 5, background: C.signal, flexShrink: 0 }} />}
+                    </span>
+                  </span>
+                </button>
+              );
+            })}
+        </Sect>
       )}
     </div>
+  );
+}
+// "9:41", "yesterday", or a short date.
+function chTime(ts) {
+  const d = new Date(ts), k = dateKey(d);
+  if (k === dateKey()) return d.toLocaleTimeString(LANG, { hour: "2-digit", minute: "2-digit" });
+  if (k === addDays(dateKey(), -1)) return T("yesterday");
+  return fmtShortDM(d);
+}
+// One chat with a friend: messages live while it's open; the newest at the bottom, the box to write under it.
+function ChatView({ me, other, canWrite, onBack, onOpen, onReport, sheet }) {
+  const [msgs, setMsgs] = useState(null);
+  const [text, setText] = useState("");
+  const [err, setErr] = useState("");
+  const [menu, setMenu] = useState(null); // message id with its small menu open
+  const [msg, setMsg] = useState("");
+  const endRef = useRef(null);
+  useBack(onBack);
+  useEffect(() => {
+    let off = null;
+    try { off = cloud().watchMsgs(other.uid, m => { setMsgs(m); markRead(chatIdOf(me, other.uid), m.length ? m[m.length - 1].ts : Date.now()); }, e => setErr(cloudErr(e))); } catch (e) { setErr(cloudErr(e)); }
+    return () => { if (off) off(); };
+  }, [other.uid]);
+  useEffect(() => { try { endRef.current && endRef.current.scrollIntoView({ block: "end" }); } catch (_) {} }, [msgs && msgs.length]);
+  const send = () => {
+    const t = text.trim();
+    if (!t || !canWrite) return;
+    setText(""); setErr("");
+    cloud().sendMsg(other.uid, t).then(() => sfxTap()).catch(e => { setErr(cloudErr(e)); setText(t); });
+  };
+  let lastDay = "";
+  return (
+    <div className="scr" data-chat-view={other.uid} style={{ padding: "6px 14px 14px", maxWidth: 460, margin: "0 auto", minHeight: "calc(100dvh - 104px - var(--sat))", boxSizing: "border-box", display: "flex", flexDirection: "column" }}>
+      {sheet}
+      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "6px 2px 10px" }}>
+        <button data-chat-back onClick={() => { sfxTap(); onBack(); }} aria-label={T("back")} style={{ ...btnBase, background: SOFT(), color: C.chalk, width: 38, height: 38, borderRadius: 12, fontSize: 20, flexShrink: 0 }}>‹</button>
+        <button onClick={onOpen} style={{ ...btnBase, background: "transparent", color: C.chalk, padding: 0, display: "flex", alignItems: "center", gap: 10, minWidth: 0, flex: 1, textAlign: "left" }}>
+          <PersonAvatar p={other} size={38} />
+          <span style={{ minWidth: 0 }}>
+            <span style={{ display: "block", fontSize: 17, fontWeight: 900, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{other.nick}</span>
+            <span style={{ display: "block", fontSize: 12, color: C.dim }}>⚡{other.lvl || 1} · 🔥 {other.streak || 0}</span>
+          </span>
+        </button>
+      </div>
+      <div data-chat-msgs style={{ display: "flex", flexDirection: "column", justifyContent: "flex-end", gap: 4, flex: 1 }}>
+        {msgs === null ? <div style={{ color: C.dim, fontSize: 14, textAlign: "center", padding: 20 }}>{T("frLoading")}</div>
+          : !msgs.length ? <div style={{ color: C.dim, fontSize: 13, textAlign: "center", padding: "24px 10px", lineHeight: 1.5 }}>{T("chStart", { nick: other.nick })}</div>
+          : msgs.map(m => {
+            const mine = m.from === me, day = dateKey(new Date(m.ts)), sep = day !== lastDay; lastDay = day;
+            return (
+              <div key={m.id} style={{ display: "contents" }}>
+                {sep && <div style={{ textAlign: "center", fontSize: 11, color: C.dim, margin: "10px 0 4px", fontWeight: 700 }}>{capFirst(fmtDate(day))}</div>}
+                <div data-msg={mine ? "me" : "them"} style={{ display: "flex", justifyContent: mine ? "flex-end" : "flex-start" }}>
+                  <button onClick={() => setMenu(menu === m.id ? null : m.id)} style={{ ...btnBase, maxWidth: "80%", padding: "8px 12px 6px", borderRadius: 18, borderBottomRightRadius: mine ? 6 : 18, borderBottomLeftRadius: mine ? 18 : 6, background: mine ? C.signal : LOOK === "liquid" ? "rgba(255,255,255,.12)" : C.panelHi, color: mine ? C.signalInk : C.chalk, textAlign: "left", fontWeight: 500, fontSize: 15, lineHeight: 1.4, whiteSpace: "pre-wrap", overflowWrap: "anywhere", opacity: m.pending ? 0.7 : 1 }}>
+                    {m.text}
+                    <span style={{ display: "block", fontSize: 10.5, opacity: 0.65, textAlign: "right", marginTop: 2 }}>{new Date(m.ts).toLocaleTimeString(LANG, { hour: "2-digit", minute: "2-digit" })}</span>
+                  </button>
+                </div>
+                {menu === m.id && !mine && (
+                  <div style={{ display: "flex", justifyContent: "flex-start" }}>
+                    <button data-msg-report onClick={() => { setMenu(null); onReport(m.text).then(setMsg); }} style={{ ...btnBase, background: "transparent", color: "#ff8a80", fontSize: 12, padding: "2px 8px" }}>{T("chReport")}</button>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        <div ref={endRef} />
+      </div>
+      {msg && <div role="status" style={{ fontSize: 12, color: msg.startsWith("✓") ? C.mint : "#ff8a80", marginTop: 8, textAlign: "center" }}>{msg}</div>}
+      {err && <div role="alert" style={{ fontSize: 13, color: "#ff8a80", marginTop: 8 }}>{err}</div>}
+      {canWrite ? (
+        <div style={{ display: "flex", gap: 8, alignItems: "flex-end", marginTop: 12, position: "sticky", bottom: "calc(10px + var(--sab))", padding: 6, borderRadius: 22, ...card }}>
+          <textarea data-chat-input value={text} rows={1} maxLength={1000} onChange={e => setText(e.target.value)} placeholder={T("chPh")} aria-label={T("chPh")}
+            onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey && !isNative) { e.preventDefault(); send(); } }}
+            onFocus={() => setTimeout(() => { try { endRef.current.scrollIntoView({ block: "end" }); } catch (_) {} }, 300)}
+            style={{ flex: 1, minWidth: 0, resize: "none", fontFamily: BODY, fontSize: 16, padding: "9px 12px", borderRadius: 16, border: "none", background: "transparent", color: C.chalk, outline: "none", maxHeight: 120, lineHeight: 1.35 }} />
+          <button data-chat-send onClick={send} disabled={!text.trim()} aria-label={T("chSend")} style={{ ...btnBase, width: 40, height: 40, borderRadius: 20, background: text.trim() ? C.signal : C.panelHi, color: text.trim() ? C.signalInk : C.dim, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12l15-7-5 15-2.6-6.4L4 12z" fill="currentColor" /></svg>
+          </button>
+        </div>
+      ) : <div data-chat-readonly style={{ fontSize: 13, color: C.dim, textAlign: "center", marginTop: 14 }}>{T("chNotFriends")}</div>}
+    </div>
+  );
+}
+const chatIdOf = (a, b) => [a, b].sort().join("_");
+// Read up to: per chat, the newest message time seen (only on this phone).
+const markRead = (cid, ts) => { const r = cloudMem().read || {}; if ((r[cid] || 0) >= ts) return; setCloudMem({ read: { ...r, [cid]: ts } }); window.dispatchEvent(new Event("hw-read")); };
+
+// A short notice at the top when a friend request or a message arrives while the app is open (1.5.0, Michael:
+// "live notifications"). Tap opens it; it slides away by itself after 5 s. Phone notifications while the app is
+// closed would need a server to send them (not on the free plan yet).
+function LiveNotice({ n, people, onOpen, onClose }) {
+  const [shown, setShown] = useState(false);
+  useEffect(() => { setShown(true); const t = setTimeout(() => setShown(false), 5000), u = setTimeout(onClose, 5400); return () => { clearTimeout(t); clearTimeout(u); }; }, [n.id]);
+  const p = n.p || people[n.uid] || { nick: "…" };
+  return createPortal(
+    <div data-live-notice={n.kind} className={"liveN" + (shown ? " on" : "")} style={{ position: "fixed", left: 0, right: 0, top: "calc(var(--sat) + 8px)", zIndex: 75, display: "flex", justifyContent: "center", padding: "0 12px", pointerEvents: "none" }}>
+      <button onClick={() => { setShown(false); onOpen(n); }} style={{ ...btnBase, pointerEvents: "auto", width: "100%", maxWidth: 440, display: "flex", alignItems: "center", gap: 11, padding: "10px 12px", borderRadius: 20, background: C.panelHi, border: `1px solid ${C.line}`, boxShadow: "0 12px 30px rgba(0,0,0,.45)", color: C.chalk, textAlign: "left", fontFamily: BODY, ...(LOOK === "liquid" ? LIQUID_FLOAT() : LOOK === "glass" ? { ...GLASS(), borderRadius: 20 } : {}) }}>
+        <PersonAvatar p={p} size={38} />
+        <span style={{ flex: 1, minWidth: 0 }}>
+          <span style={{ display: "block", fontSize: 14, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{n.kind === "req" ? T("ntReq", { nick: p.nick }) : p.nick}</span>
+          <span style={{ display: "block", fontSize: 13, color: C.dim, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", marginTop: 1 }}>{n.kind === "req" ? T("ntReqD") : n.text}</span>
+        </span>
+      </button>
+    </div>,
+    document.body
   );
 }
 
@@ -5088,6 +5224,45 @@ export default function App() {
     importAll(d);
   };
   const restoreFromCloud = async () => { const b = await cloud().loadBackup(); if (!b || !b.json) return T("acNoBackup"); applyCloudJson(b.json); cloudReady.current = true; return T("msgRestored"); };
+  // Live friend requests, friends and chats while the app is open (1.5.0). New requests and messages show a short
+  // in-app notice (LiveNotice) unless that chat is open; the counts show on ☰, in the menu and on the Friends tabs.
+  const [social, setSocial] = useState({ reqs: null, friends: null, chats: null, blocked: cloudMem().blocked || [], read: cloudMem().read || {} });
+  const [chatWith, setChatWith] = useState(null);
+  const [notice, setNotice] = useState(null);
+  const chatWithRef = useRef(null); chatWithRef.current = screen === "friends" ? chatWith : null;
+  const busyRef = useRef(false); busyRef.current = !!(session && session.phase !== "summary");
+  const onFriendsRef = useRef(false); onFriendsRef.current = screen === "friends" && !(session && sessionOpen);
+  const setBlocked = bl => { setCloudMem({ blocked: bl }); setSocial(x => ({ ...x, blocked: bl })); };
+  useEffect(() => { const f = () => setSocial(x => ({ ...x, read: cloudMem().read || {} })); window.addEventListener("hw-read", f); return () => window.removeEventListener("hw-read", f); }, []);
+  useEffect(() => {
+    if (acct.st !== "in" || !acct.prof) { setSocial(x => ({ ...x, reqs: null, friends: null, chats: null })); return; }
+    const c = cloud(), offs = [], seen = { reqs: null, chats: null }, me = acct.uid;
+    const fail = e => setSocial(x => ({ ...x, err: cloudErr(e) }));
+    // no notice on the Friends screen itself: the lists there update live and show the badges
+    const ping = n => { if (onFriendsRef.current) return; setNotice({ ...n, id: Date.now() }); if (!busyRef.current) sfxTap(); if ((window._wset || {}).vibrate) vibratePattern([40]); };
+    try {
+      offs.push(c.watchRequests(r => {
+        const bl = cloudMem().blocked || [];
+        r.filter(x => x.missing || bl.includes(x.uid)).forEach(x => c.decline(x.uid).catch(() => {}));
+        const ok = r.filter(x => !x.missing && !bl.includes(x.uid));
+        if (seen.reqs) { const fresh = ok.find(x => !seen.reqs.includes(x.uid)); if (fresh) ping({ kind: "req", p: fresh }); }
+        seen.reqs = ok.map(x => x.uid);
+        setSocial(x => ({ ...x, reqs: ok, err: "" }));
+      }, fail));
+      offs.push(c.watchFriends(f => setSocial(x => ({ ...x, friends: f.filter(y => !y.missing) })), fail));
+      offs.push(c.watchChats(ch => {
+        if (seen.chats) {
+          const bl = cloudMem().blocked || [];
+          const fresh = ch.find(k => k.last.from && k.last.from !== me && !bl.includes(k.other) && k.last.ts > (seen.chats[k.cid] || 0) && chatWithRef.current !== k.other);
+          if (fresh) ping({ kind: "msg", uid: fresh.other, text: fresh.last.text });
+        }
+        seen.chats = Object.fromEntries(ch.map(k => [k.cid, k.last.ts]));
+        setSocial(x => ({ ...x, chats: ch }));
+      }, fail));
+    } catch (e) { fail(e); }
+    return () => offs.forEach(f => { try { f && f(); } catch (_) {} });
+  }, [acct.st, acct.prof && acct.prof.code]);
+  const socialCount = (social.reqs || []).length + (social.chats || []).filter(k => k.last.from !== acct.uid && !social.blocked.includes(k.other) && k.last.ts > (social.read[k.cid] || 0)).length;
   // Stats for the leaderboard: sent when they change (and once a day, for the streak).
   useEffect(() => {
     if (acct.st !== "in" || !acct.prof || !loaded || !profLoaded) return;
@@ -5140,7 +5315,7 @@ export default function App() {
   useEffect(() => { if (!session || sessionOpen) window.scrollTo?.(0, 0); }, [session?.phase, session?.pos]);
   useEffect(() => { window.scrollTo?.(0, 0); }, [screen, sessionOpen]);
   const [histEdit, setHistEdit] = useState(null); // date whose workout opens in the History editor
-  const go = (id, opt) => { if (id !== screen) sfxTap(); setScreen(id); setMenuOpen(false); if (session) setSessionOpen(false); setHistEdit(opt && opt.edit ? opt.edit : null); };
+  const go = (id, opt) => { if (id !== screen) sfxTap(); setScreen(id); setMenuOpen(false); if (session) setSessionOpen(false); setHistEdit(opt && opt.edit ? opt.edit : null); setChatWith(null); };
   const [howId, setHowId] = useState(null);
   openHowToGlobal = setHowId;
   // Android back with nothing open: minimize the workout, then go Home, then ask before leaving (1.4.0, Michael:
@@ -5239,6 +5414,7 @@ export default function App() {
         .haloBit{animation:halo 1.8s ease-in-out var(--d) infinite}
         @keyframes titleIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
         .titleIn{animation:titleIn .28s ease-out both}
+        .liveN{transform:translateY(calc(-100% - 20px - var(--sat)));opacity:0;transition:transform .4s cubic-bezier(.2,.9,.25,1.1),opacity .25s ease}.liveN.on{transform:none;opacity:1}
         .tbOut{position:sticky;top:0;z-index:20;display:flow-root;pointer-events:none;padding:calc(var(--sat) + 6px) 10px 2px}
         .tbOut::before{content:"";position:absolute;left:0;right:0;top:0;height:calc(var(--sat) + 22px);background:linear-gradient(180deg,var(--tbFade) var(--sat),transparent);opacity:0;visibility:hidden;transition:opacity .35s ease,visibility 0s .35s}
         .tbOut.fl::before{opacity:1;visibility:visible;transition:opacity .35s ease}
@@ -5271,7 +5447,7 @@ export default function App() {
           )}
           {(!session || !sessionOpen) && (
             <>
-              <TopBar dlPct={dl && dl.kind === "downloading" ? dl.pct || 0 : null} screen={screen} history={history} menuOpen={menuOpen} onGo={go} onMenu={() => { sfxTap(); setMenuOpen(o => !o); }} />
+              <TopBar badge={socialCount} dlPct={dl && dl.kind === "downloading" ? dl.pct || 0 : null} screen={screen} history={history} menuOpen={menuOpen} onGo={go} onMenu={() => { sfxTap(); setMenuOpen(o => !o); }} />
               <div key={screen}>
                 {screen === "train" && <TrainTab onSetup={st => setOnboard(st)} dl={dl} onDlClose={() => setDl(null)} kcal={kcal} setKcal={setKcal} history={history} onStart={start} onFreeze={applyFreeze} ui={ui} setUi={setUi} active={session} onResume={resume} profile={profile} onGo={go} upd={updCard ? { open: () => { setUpdCard(false); setNewsAt(APP_VERSION); setNewsOpen(true); }, close: () => setUpdCard(false) } : null}
                   apk={apkUpd ? { info: apkUpd, close: () => setApkUpd(null) } : null} />}
@@ -5284,14 +5460,16 @@ export default function App() {
                   kcal={kcal} autoBk={autoBk} onAutoBackup={runAutoBackup}
                   onResetAll={() => { setHistory([]); setProfile({ ...profile, freezeDays: [], skips: {}, streakResetTs: 0, bdays: [], bdayGifts: [] }); setUi({}); if (kcal) setKcal({ ...kcal, log: {} }); }}
                   onImport={importAll} acct={acct} cloudBk={cloudBk} onAcctOpen={() => go("friends")} onCloudRestore={restoreFromCloud} onSignOut={signOut} onDeleteAccount={deleteAccount} />}
-                {screen === "friends" && <FriendsTab acct={acct} history={history} profile={profile} onSignIn={signIn} onCreate={createProfile} onRename={renameNick} onSetGlobal={setGlobal} />}
+                {screen === "friends" && <FriendsTab acct={acct} history={history} profile={profile} social={social} chatWith={chatWith} setChatWith={setChatWith} onBlocked={setBlocked} onSignIn={signIn} onCreate={createProfile} onRename={renameNick} onSetGlobal={setGlobal} />}
               </div>
               {session && session.phase !== "summary" && <MiniPlayer session={session} live={live} onOpen={resume} />}
               {exitAsk && <ExitPrompt onStay={() => { sfxTap(); setExitAsk(false); }} onLeave={() => { setExitAsk(false); exitApp(); }} />}
             </>
           )}
-          <MenuDrawer gh={gh} dl={dl} open={menuOpen} screen={screen} history={history} profile={profile} session={session && session.phase !== "summary" ? session : null}
+          <MenuDrawer badge={socialCount} gh={gh} dl={dl} open={menuOpen} screen={screen} history={history} profile={profile} session={session && session.phase !== "summary" ? session : null}
             onGo={go} onResume={resume} onClose={() => setMenuOpen(false)} onNews={() => { setMenuOpen(false); setNewsOpen(true); }} />
+          {notice && <LiveNotice n={notice} people={Object.fromEntries([...(social.friends || []), ...(social.reqs || [])].map(x => [x.uid, x]))} onClose={() => setNotice(null)}
+            onOpen={n => { setNotice(null); go("friends"); setChatWith(n.kind === "msg" ? n.uid : null); }} />}
           {rsOffer && <CloudRestoreSheet offer={rsOffer} onClose={() => setRsOffer(null)}
             onRestore={() => { try { applyCloudJson(rsOffer.json); cloudReady.current = true; sfxCheck(); } catch (_) {} setRsOffer(null); }}
             onKeep={() => { cloudReady.current = true; setRsOffer(null); }} />}
