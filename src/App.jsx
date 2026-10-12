@@ -2055,6 +2055,7 @@ function Onboarding({ start = 0, profile, setProfile, kcal, setKcal, onDone, acc
   const [acctStep] = useState(() => acct.st !== "in" && !!onSignIn && (typeof start === "number" ? start === 0 : start === "acct"));
   const [age16, setAge16] = useState(false);
   const [gName, setGName] = useState(""); // name from Google / the cloud profile, used when the name step is skipped
+  const [fromCloud, setFromCloud] = useState([]); // steps filled in from the account's cloud backup (1.5.0)
   const signedIn = acct.st === "in";
   const needNick = signedIn && !acct.prof && !!onCreate;
   const steps = [...(acctStep ? ["acct"] : []), "name", ...(hcAvail ? ["hc"] : []), "sex", "birth", "height", "weight", "activity", "goal"];
@@ -2092,8 +2093,18 @@ function Onboarding({ start = 0, profile, setProfile, kcal, setKcal, onDone, acc
     if (!age16 || busy) return;
     unlockAudio(); setBusy(true); setErr("");
     onSignIn().then(r => {
-      const n = (r.prof && r.prof.nick) || nickFrom(String(r.name || "").split(/\s+/)[0]);
-      if (n) { setGName(n); if (!name.trim()) setName(n); }
+      // details saved with the account (a cloud backup without workouts) fill in the steps, marked "from your account"
+      const g = r.got, gp = (g && g.profile) || {}, gk = (g && g.kcal) || {}, f = (g && g.fields) || [], ids = [];
+      if (f.includes("name") && gp.name) { setName(gp.name); ids.push("name"); }
+      if (f.includes("sex") && gk.sex) { setSex(gk.sex); ids.push("sex"); }
+      if (f.includes("birth") && gp.birth && gp.birth.y) { setYear(String(gp.birth.y)); setMonth(gp.birth.m || 0); setDay(gp.birth.d || 0); ids.push("birth"); }
+      if (f.includes("height") && gk.height) { setHeight(String(gk.height)); ids.push("height"); }
+      if (f.includes("weight") && gk.weight) { setWeight(String(gk.weight)); ids.push("weight"); }
+      if (f.includes("activity") && gk.activity) { setActivity(gk.activity); ids.push("activity"); }
+      if (f.includes("goal") && gk.goal) ids.push("goal");
+      setFromCloud(ids);
+      const n = (f.includes("name") && gp.name) || (r.prof && r.prof.nick) || nickFrom(String(r.name || "").split(/\s+/)[0]);
+      if (n) { setGName(n); if (!name.trim() && !ids.includes("name")) setName(n); }
     }).catch(e => setErr(cloudErr(e))).finally(() => setBusy(false));
   };
   const next = confirmed => {
@@ -2111,7 +2122,7 @@ function Onboarding({ start = 0, profile, setProfile, kcal, setKcal, onDone, acc
       const y = Number(year);
       if (!y || y < thisYear - 100 || y > thisYear - 10) { setErr(T("kcErrYear")); return; }
       if (month && !day) { setErr(T("kcErrDate")); return; }
-      if (!month && confirmed !== true) { setAskDate(true); return; }
+      if (!month && confirmed !== true && !cl("birth")) { setAskDate(true); return; }
       setProfile({ ...profile, birth: { y, m: month || null, d: month ? Math.min(day, daysIn) : null } });
     } else if (id === "height") { const h = Number(height); if (h < 100 || h > 250) { setErr(T("kcErrHeight")); return; } if (h !== (kcal || {}).height) saveK({ height: h, hTs: Date.now(), hSrc: "me" }); }
     else if (id === "weight") { const w = Number(weight); if (w < 30 || w > 300) { setErr(T("kcErrWeight")); return; } if (w !== (kcal || {}).weight) saveK({ weight: w, wTs: Date.now(), wSrc: "me" }); }
@@ -2133,7 +2144,11 @@ function Onboarding({ start = 0, profile, setProfile, kcal, setKcal, onDone, acc
     </div>
   );
   const sub = { fontSize: 12, color: C.dim, fontWeight: 800, margin: "16px 0 7px", textTransform: "uppercase", letterSpacing: ".04em" };
-  const hcChip = <div data-ob-fromhc style={{ display: "inline-flex", alignItems: "center", gap: 6, margin: "10px 0 18px", padding: "5px 11px", borderRadius: 99, background: `${C.mint}1f`, border: `1px solid ${C.mint}66`, color: C.mint, fontSize: 13, fontWeight: 700 }}>✓ {T("obFromHc")}</div>;
+  const chipS = { display: "inline-flex", alignItems: "center", gap: 6, margin: "10px 0 18px", padding: "5px 11px", borderRadius: 99, background: `${C.mint}1f`, border: `1px solid ${C.mint}66`, color: C.mint, fontSize: 13, fontWeight: 700 };
+  const hcChip = <div data-ob-fromhc style={chipS}>✓ {T("obFromHc")}</div>;
+  // filled in from the account: the chip takes the place of the step's explanation, like Health Connect's
+  const cl = id => fromCloud.includes(id);
+  const about = (step, txt) => (cl(step) ? <div data-ob-fromcloud={step} style={chipS}>✓ {T("obFromCloud")}</div> : desc(txt));
   return (
     <div data-onboard={step} data-ob-step={id} style={wrapS}>
       {askDate && (
@@ -2174,7 +2189,7 @@ function Onboarding({ start = 0, profile, setProfile, kcal, setKcal, onDone, acc
         {id === "name" && <>
           <Logo size={56} />
           <div style={{ marginTop: 14 }}>{title(T("obHello"))}</div>
-          {desc(needNick ? T("obNameNick") : T("obName"))}
+          {about("name", needNick ? T("obNameNick") : T("obName"))}
           <input className="obf" data-ob-name value={name} maxLength={needNick ? 20 : 24} autoFocus onChange={e => { setName(needNick ? e.target.value.replace(/\s/g, "_") : e.target.value); setErr(""); }} onKeyDown={e => { if (e.key === "Enter" && name.trim()) next(); }} placeholder={T("obNamePh")} aria-label={T("obNamePh")} style={bigField} />
         </>}
         {id === "hc" && <>
@@ -2195,7 +2210,7 @@ function Onboarding({ start = 0, profile, setProfile, kcal, setKcal, onDone, acc
         </>}
         {id === "sex" && <>
           {title(T("kcSex"))}
-          {desc(T("obSexD"))}
+          {about("sex", T("obSexD"))}
           <div role="radiogroup" aria-label={T("kcSex")} style={{ display: "flex", gap: 10 }}>
             {[["m", "kcMale", "♂"], ["f", "kcFemale", "♀"]].map(([v, k, ic]) => (
               <button key={v} role="radio" aria-checked={sex === v} data-ob-sex={v} onClick={() => { sfxTap(); setSex(v); }}
@@ -2208,7 +2223,7 @@ function Onboarding({ start = 0, profile, setProfile, kcal, setKcal, onDone, acc
         </>}
         {id === "birth" && <>
           {title(T("obBirthT"))}
-          {desc(T("obBirthD"))}
+          {about("birth", T("obBirthD"))}
           <div style={{ ...sub, marginTop: 0 }}>{T("kcYear")} <span style={{ color: "#ff8a80" }}>*</span></div>
           {numField(year, v => setYear(v), 4, "2000", "", T("kcYear"))}
           <div style={sub}>{T("kcMonth")}</div>
@@ -2218,11 +2233,11 @@ function Onboarding({ start = 0, profile, setProfile, kcal, setKcal, onDone, acc
             <DayGrid value={day} max={daysIn} onChange={v => { setDay(v); setErr(""); }} />
           </>}
         </>}
-        {id === "height" && <>{title(T("obHeightT"))}{hcFilled.height ? hcChip : desc(T("obHeightD"))}{numField(height, setHeight, 3, "0", "cm", T("kcHeight"))}</>}
-        {id === "weight" && <>{title(T("obWeightT"))}{hcFilled.weight ? hcChip : desc(T("obWeightD"))}{numField(weight, setWeight, 3, String(idealKg(Number(height)) || 0), "kg", T("kcWeight"))}</>}
+        {id === "height" && <>{title(T("obHeightT"))}{hcFilled.height ? hcChip : about("height", T("obHeightD"))}{numField(height, setHeight, 3, "0", "cm", T("kcHeight"))}</>}
+        {id === "weight" && <>{title(T("obWeightT"))}{hcFilled.weight ? hcChip : about("weight", T("obWeightD"))}{numField(weight, setWeight, 3, String(idealKg(Number(height)) || 0), "kg", T("kcWeight"))}</>}
         {id === "activity" && <>
           {title(T("obActT"))}
-          {desc(T("kcActivityHint"))}
+          {about("activity", T("kcActivityHint"))}
           <div role="radiogroup" aria-label={T("kcActivity")} style={{ display: "flex", flexDirection: "column", gap: 7 }}>
             {ACTIVITY.map(([a]) => (
               <button key={a} role="radio" aria-checked={activity === a} data-ob-act={a} onClick={() => { sfxTap(); setActivity(a); }}
@@ -2235,13 +2250,13 @@ function Onboarding({ start = 0, profile, setProfile, kcal, setKcal, onDone, acc
         </>}
         {id === "goal" && <>
           {title(T("obGoalTitle"))}
-          {desc(T("kcPickBody"))}
+          {about("goal", T("kcPickBody"))}
           {!miss.length && age !== null
             ? <KcalGoals kcal={kcal} age={age} onPick={goal => { sfxCheck(); setKcal({ ...kcal, goal }); onDone(); }} />
             : <div data-ob-nodata style={{ fontSize: 14, color: C.signal, lineHeight: 1.5 }}>{T("setupNoKcal", { what: miss.map(f => T("setup_" + f)).join(", ") })}</div>}
         </>}
         {err && <div role="alert" style={{ fontSize: 14, color: "#ff8a80", fontWeight: 700, marginTop: 12 }}>{err}</div>}
-        {id !== "goal" && (id !== "hc" || filled) && (id !== "acct" || filled) && <button data-ob-next disabled={!filled || busy} onClick={() => next()} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 22, opacity: filled && !busy ? 1 : 0.45 }}>{busy ? "…" : T("obNext")}</button>}
+        {(id !== "goal" || (cl("goal") && kcal && kcal.goal)) && (id !== "hc" || filled) && (id !== "acct" || filled) && <button data-ob-next disabled={!filled || busy} onClick={() => next()} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 22, opacity: filled && !busy ? 1 : 0.45 }}>{busy ? "…" : T("obNext")}</button>}
         {id !== "hc" && (id !== "acct" || !filled) && <button data-ob-skip onClick={() => {
             sfxTap();
             // a name that came from Google stays when this step is skipped
@@ -5250,10 +5265,36 @@ export default function App() {
   const cloudReady = useRef(false); // uploads wait until we know the cloud backup isn't bigger than this phone's data
   const lastCloud = useRef("");
   const setProf = prof => { setCloudMem({ prof }); setAcct(a => ({ ...a, prof })); };
-  // Offer the cloud backup when it has more workouts than this phone; otherwise start uploading.
-  const checkCloudBackup = hist => cloud().loadBackup().then(b => {
-    if (b && b.json && (b.n || 0) > hist.length) setRsOffer(b); else cloudReady.current = true;
-  }).catch(() => {});
+  const cloudN = useRef(null); // workouts in the cloud backup, once known (0 = none there or a backup without workouts)
+  // A cloud backup without workouts (1.5.0, Michael: sign in on a new phone and the setup is already filled in): what
+  // this phone doesn't have yet comes from it (name, photo, birth date, gender, height, weight, activity, goal…), and
+  // during the first-start setup also the settings (theme, language, sounds…). Nothing this phone has is replaced.
+  const fillFromCloud = json => {
+    const d = JSON.parse(json);
+    if (!BACKUP_IDS.includes(d.app)) return null;
+    const empty = v => v === undefined || v === null || v === "" || (Array.isArray(v) ? !v.length : typeof v === "object" && !Object.keys(v).length);
+    const fill = (local, from) => {
+      const out = { ...(local || {}) }, got = [];
+      Object.entries(from || {}).forEach(([k, v]) => { if (!empty(v) && (empty(out[k]) || (k === "name" && out[k] === "User"))) { out[k] = v; got.push(k); } });
+      return [out, got];
+    };
+    const [p, gp] = fill(profile, d.profile), [k, gk] = fill(kcal, d.kcal);
+    if (gp.length) setProfile(p);
+    if (gk.length) setKcal({ ...k, log: k.log || {} });
+    if (d.settings && onboard !== null) { const { onboarded, ...rest } = d.settings; setSettings({ ...DEFAULT_SETTINGS, ...rest, onboarded: settings.onboarded }); }
+    return { profile: p, kcal: k, fields: [...gp, ...gk] };
+  };
+  // Offer the cloud backup when it has more workouts than this phone; otherwise start uploading (after filling in
+  // what's missing here from a backup without workouts, when this phone has none either).
+  const takeCloudBackup = (b, hist, fill) => {
+    if (b && b.json && (b.n || 0) > hist.length) { setRsOffer(b); return null; }
+    cloudN.current = b ? b.n || 0 : 0;
+    let got = null;
+    if (fill && b && b.json && !hist.length) { try { got = fillFromCloud(b.json); } catch (_) {} }
+    cloudReady.current = true;
+    return got;
+  };
+  const checkCloudBackup = hist => cloud().loadBackup().then(b => takeCloudBackup(b, hist, false)).catch(() => {});
   useEffect(() => {
     if (!cloudMem().uid || !loaded) return;
     cloud().init().then(u => {
@@ -5269,14 +5310,15 @@ export default function App() {
     const p = await cloud().getProfile(u.uid);
     setCloudMem({ uid: u.uid, prof: p, bk: null, synced: "" }); setCloudBk(null);
     setAcct({ st: "in", uid: u.uid, prof: p }); sfxCheck();
-    checkCloudBackup(history);
-    return { uid: u.uid, name: u.name || "", prof: p };
+    let got = null;
+    try { got = takeCloudBackup(await cloud().loadBackup(), history, true); } catch (_) {}
+    return { uid: u.uid, name: u.name || "", prof: p, got };
   };
   const createProfile = async nick => { const p = await cloud().createProfile({ nick, global: false, pfp: await smallPfp(profile.pfp), ...cloudStats(history) }); setProf(p); sfxCheck(); };
   const renameNick = async nick => { await cloud().renameNick(acct.prof.nick, nick); const p = { ...acct.prof, nick }; await cloud().saveProfile({ ...p, pfp: await smallPfp(profile.pfp), ...cloudStats(history) }); setProf(p); sfxCheck(); };
   const setGlobal = async on => { const p = { ...acct.prof, global: on }; await cloud().saveProfile({ ...p, pfp: await smallPfp(profile.pfp), ...cloudStats(history) }); setProf(p); };
-  const signOut = async () => { await cloud().signOut(); setCloudMem({ uid: null, prof: null, bk: null, synced: "" }); setCloudBk(null); cloudReady.current = false; setAcct({ st: "out" }); };
-  const goneLocal = () => { try { localStorage.removeItem(CLOUD_KEY); } catch (_) {} setCloudBk(null); cloudReady.current = false; setChatWith(null); setAcct({ st: "out" }); };
+  const signOut = async () => { await cloud().signOut(); setCloudMem({ uid: null, prof: null, bk: null, synced: "" }); setCloudBk(null); cloudReady.current = false; cloudN.current = null; setAcct({ st: "out" }); };
+  const goneLocal = () => { try { localStorage.removeItem(CLOUD_KEY); } catch (_) {} setCloudBk(null); cloudReady.current = false; cloudN.current = null; setChatWith(null); setAcct({ st: "out" }); };
   const deleteAccount = async () => {
     try { await cloud().deleteAccount({ ...acct.prof, sent: cloudMem().sent || [] }); }
     catch (e) {
@@ -5293,7 +5335,7 @@ export default function App() {
     if (d.kcal && kcal) { const keep = {}; ["steps", "food", "foodItems", "healthOn", "weight", "wTs", "wSrc", "height", "hTs", "hSrc"].forEach(x => { if (kcal[x] !== undefined && d.kcal[x] === undefined) keep[x] = kcal[x]; }); d.kcal = { ...d.kcal, ...keep }; }
     importAll(d);
   };
-  const restoreFromCloud = async () => { const b = await cloud().loadBackup(); if (!b || !b.json) return T("acNoBackup"); applyCloudJson(b.json); cloudReady.current = true; return T("msgRestored"); };
+  const restoreFromCloud = async () => { const b = await cloud().loadBackup(); if (!b || !b.json) return T("acNoBackup"); applyCloudJson(b.json); cloudReady.current = true; cloudN.current = b.n || 0; return T("msgRestored"); };
   // Live friend requests, friends and chats while the app is open (1.5.0). New requests and messages show a short
   // in-app notice (LiveNotice) unless that chat is open; the counts show on ☰, in the menu and on the Friends tabs.
   const [social, setSocial] = useState({ reqs: null, friends: null, chats: null, blocked: cloudMem().blocked || [], read: cloudMem().read || {} });
@@ -5356,15 +5398,16 @@ export default function App() {
     }, 2500);
     return () => { dead = true; clearTimeout(t); };
   }, [acct.st, acct.prof, history, profile.pfp, loaded, profLoaded]);
-  // Automatic cloud backup, a few seconds after any change; never with an empty history (it would wipe the cloud copy).
+  // Automatic cloud backup, a few seconds after any change. Without workouts here only while the cloud copy has none
+  // either (setup details, 1.5.0), so an empty phone never wipes workouts saved in the cloud.
   useEffect(() => {
-    if (acct.st !== "in" || !acct.prof || !cloudReady.current || !loaded || !settingsLoaded || !profLoaded || !kcalLoaded || !history.length) return;
+    if (acct.st !== "in" || !acct.prof || !cloudReady.current || !loaded || !settingsLoaded || !profLoaded || !kcalLoaded || (!history.length && cloudN.current !== 0)) return;
     const t = setTimeout(() => {
       const json = cloudBackupJson(history, profile, settings, kcal);
       const key = json.replace(/"exportedAt":"[^"]*",/, "");
       if (key === lastCloud.current) return;
       const save = bk => { setCloudMem({ bk }); setCloudBk(bk); };
-      cloud().saveBackup(json, history.length).then(() => { lastCloud.current = key; save({ ts: Date.now(), ok: true }); })
+      cloud().saveBackup(json, history.length).then(() => { lastCloud.current = key; cloudN.current = history.length; save({ ts: Date.now(), ok: true }); })
         .catch(e => save({ ts: Date.now(), ok: false, err: String((e && (e.code || e.message)) || e).slice(0, 120) }));
     }, 6000);
     return () => clearTimeout(t);
@@ -5515,12 +5558,12 @@ export default function App() {
         <>
           {rsOffer && <CloudRestoreSheet offer={rsOffer} onClose={() => setRsOffer(null)}
             onRestore={() => {
-              try { applyCloudJson(rsOffer.json); cloudReady.current = true; sfxCheck(); } catch (_) {}
+              try { applyCloudJson(rsOffer.json); cloudReady.current = true; cloudN.current = rsOffer.n || 0; sfxCheck(); } catch (_) {}
               setRsOffer(null);
               // restored during the first-start setup: everything is there, so the setup ends
               if (onboard !== null) { setOnboard(null); window.scrollTo(0, 0); }
             }}
-            onKeep={() => { cloudReady.current = true; setRsOffer(null); }} />}
+            onKeep={() => { cloudReady.current = true; cloudN.current = rsOffer.n || 0; setRsOffer(null); }} />}
           {onboard !== null && !session ? (
             <Onboarding start={onboard} profile={profile} setProfile={setProfile} kcal={kcal} setKcal={setKcal} acct={acct} onSignIn={signIn} onCreate={createProfile}
               onDone={() => { setOnboard(null); setUi({ ...ui, setupHidden: false }); if (!settings.onboarded) setSettings({ ...settings, onboarded: true }); window.scrollTo(0, 0); }} />
