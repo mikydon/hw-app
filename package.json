@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@capacitor-community/keep-awake": "^8.0.1",
+    "@capacitor-firebase/authentication": "8.5.2",
     "@capacitor/android": "^8.5.3",
     "@capacitor/app": "^8.1.2",
     "@capacitor/browser": "^8.0.5",
@@ -17,6 +18,7 @@
     "@capacitor/share": "^8.0.3",
     "@capgo/capacitor-health": "8.11.8",
     "@capgo/capacitor-updater": "^8.52.1",
+    "firebase": "12.19.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },

@@ -45,7 +45,7 @@ const out = await build({
   write: false,
   jsx: "automatic",
   loader: { ".jsx": "jsx" },
-  target: "es2018",
+  target: "es2020",
   define: { "process.env.NODE_ENV": '"production"' },
 });
 const js = out.outputFiles[0].text;

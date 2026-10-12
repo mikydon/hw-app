@@ -10,6 +10,17 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 
 <!-- New version: add a "## x.y.z (date)" section on top (web-only history uses "## Browser beta x.y.z (date)"). On a push to main, .github/workflows/build.yml builds everything and .github/scripts/releases.sh creates/updates the releases (commit = the push, or the one in a commit comment). -->
 
+## 1.5.0 (2026-10-12)
+
+**A big update: a new APK** (download it in the app and tap Install; your data stays). Compared with 1.4.3:
+
+| | Before (1.4.3) | Now (1.5.0) |
+|---|---|---|
+| Friends | HW App was just you and your phone | optional account: sign in with Google (16+) and pick a nickname. Add friends by friend code (`HW-…`), a share link or their nickname; accept or decline requests; remove, block or report anyone. Without an account nothing changes and the app makes no cloud connections |
+| Leaderboard | your level and streak were only on your phone | compare level, streak and workouts with your friends, and, only if you switch it on, in the world top 50 |
+| Cloud backup | backups were files you kept yourself | while you're signed in, a backup is saved to the cloud a few seconds after every change; only you can read it, and Health Connect data is never uploaded. On a new phone, sign in and restore it (the app offers it when the cloud has more workouts) |
+| Account | there were no accounts | Settings → Account & cloud: restore from the cloud, sign out, or delete the account with everything about it on the server. The privacy policy explains what is stored (Google Firebase, Frankfurt) |
+
 ## 1.4.3 (2026-10-12)
 
 - The Glass layout looks more like real glass: a sheen from the top-left corner, a soft diagonal reflection, a bright rim along the top edge, and a dim glow of the theme colours behind the boxes (one background layer, drawn once). The floating Start bar, the top bar and the ☰ menu match it. Still opaque boxes without blur, so it stays light on the phone.

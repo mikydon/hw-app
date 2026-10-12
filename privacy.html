@@ -23,9 +23,9 @@
 <body>
 <main>
   <h1>HW App privacy policy</h1>
-  <p class="dim">Last updated: October 10, 2026 (app 1.3.0: weight and height) · applies to the HW App Android app and the website https://mikydon.github.io/hw-app/</p>
+  <p class="dim">Last updated: October 12, 2026 (app 1.5.0: optional account, friends, leaderboard and cloud backup) · applies to the HW App Android app and the website https://mikydon.github.io/hw-app/</p>
 
-  <div class="box"><strong>In short:</strong> everything you enter stays on your device. HW App has no accounts, no servers of its own, no ads, no analytics and no tracking. Nothing you enter is sent to the developer or sold to anyone.</div>
+  <div class="box"><strong>In short:</strong> without an account, everything you enter stays on your device. An account is optional (16+): it adds friends, a leaderboard and a cloud backup, stored with Google Firebase. Others see only your nickname, photo, level, streak and number of workouts. Health Connect data never leaves your device. HW App has no ads, no analytics and no tracking, and nothing is sold to anyone.</div>
 
   <h2>What the app stores</h2>
   <ul>
@@ -34,7 +34,19 @@
     <li>Calorie data, if you use the calorie calculator: gender, height, weight, activity level, goal and the calories you log.</li>
     <li>Settings, such as language, theme and sounds.</li>
   </ul>
-  <p>All of this is saved only on your device (in the app's storage, or in your browser's storage on the website). A backup file is created only when you tap "Save backup", and you decide where it goes.</p>
+  <p>All of this is saved on your device (in the app's storage, or in your browser's storage on the website). Backup files are created when you tap "Save backup" or turn on "Automatic backup" (Android app: in Documents/HW App on your phone). If you have an account, a cloud backup is stored as described below.</p>
+
+  <h2>Account, friends and cloud backup (optional)</h2>
+  <p>You can use HW App without an account. If you sign in (Friends in the menu, or Settings → Account &amp; cloud), you confirm that you are 16 or older. Sign-in uses your Google account through <a href="https://firebase.google.com/support/privacy">Google Firebase</a> (Firebase Authentication and Cloud Firestore, operated by Google as a service provider; the database is in Frankfurt, Germany, europe-west3). The account is used like this:</p>
+  <ul>
+    <li><strong>Sign-in:</strong> Firebase Authentication keeps your account ID and the details Google provides at sign-in (your email address, name and profile picture link) so you can sign in again. HW App does not show them to anyone and does not use them for anything else.</li>
+    <li><strong>Public profile (seen by other signed-in users):</strong> the nickname you choose, a small copy of your profile photo if you set one, your level, XP, streak and number of workouts, and your friend code. Your friends see it in your friends' leaderboard; people who have your code or nickname can find it and send you a friend request.</li>
+    <li><strong>World leaderboard:</strong> only if you switch it on; then the same public profile appears in the world top 50. You can switch it off any time.</li>
+    <li><strong>Friends:</strong> who your friends are and open friend requests. Blocking someone is stored only on your device.</li>
+    <li><strong>Cloud backup:</strong> while you are signed in, a copy of your backup (workouts, profile, settings and the calorie data you entered yourself) is saved a few seconds after every change, so you can restore it on another phone. Only you can read it. <strong>Data from Health Connect (steps, food calories from other apps, and weight or height read from Health Connect) is left out and never uploaded.</strong></li>
+    <li><strong>Reports:</strong> if you report a profile, the report (who reported whom, and when) is stored for the developer to review.</li>
+  </ul>
+  <p>Who can read or change what is enforced by the database's security rules (published in the app's source code, <code>firestore.rules</code>). The data is not used for advertising or analytics and is not sold.</p>
 
   <h2>Health Connect (Android app)</h2>
   <p>If you connect Health Connect (on the first start or in Calories), HW App asks for read permissions for <strong>steps</strong>, <strong>weight</strong> and <strong>height</strong>, and, only if you also connect food calories, for <strong>nutrition</strong>. It uses them like this:</p>
@@ -46,7 +58,7 @@
   <ul>
     <li>This data is stored on your device only and is used only for the calorie calculation.</li>
     <li>HW App does not write anything to Health Connect and does not read any other health data.</li>
-    <li>This data is never sent off your device, shared, sold, or used for advertising.</li>
+    <li>This data is never sent off your device, shared, sold, or used for advertising. It is also left out of the cloud backup if you have an account.</li>
     <li>You can disconnect at any time in Calories, and remove the permission in the Health Connect settings.</li>
   </ul>
   <p>The use of information received from Health Connect follows the <a href="https://support.google.com/googleplay/android-developer/answer/12991134">Health Connect policy requirements</a>, including the limited use requirements.</p>
@@ -55,14 +67,16 @@
   <ul>
     <li><strong>Updates (Android app):</strong> once per start the app downloads a small file (<code>update.json</code>) from GitHub to see whether a newer version exists, and downloads the update itself from GitHub. GitHub sees a normal web request (for example your IP address), as with any website.</li>
     <li><strong>Website:</strong> the website asks the GitHub API for the newest app version to show it in the menu.</li>
-    <li><strong>Links you tap</strong> (exercise videos on YouTube, Patreon, GitHub) open those services, which have their own privacy policies.</li>
+    <li><strong>Account (optional):</strong> only if you signed in, the app talks to Google Firebase as described above.</li>
+    <li><strong>Links you tap</strong> (a web search for an exercise, Patreon, GitHub) open those services, which have their own privacy policies.</li>
   </ul>
 
   <h2>Deleting your data</h2>
-  <p>Settings → "Start over from zero" removes your workouts and progress. Uninstalling the app (or clearing the website's data in your browser) removes everything.</p>
+  <p>Settings → "Start over from zero" removes your workouts and progress on the device. Uninstalling the app (or clearing the website's data in your browser) removes everything on the device.</p>
+  <p><strong>Deleting your account:</strong> Settings → Account &amp; cloud → Delete account removes your account, public profile, nickname, friend code, friends, open requests and cloud backup from the server right away (the data on your phone stays). If you can no longer open the app, ask for the deletion by opening an issue at <a href="https://github.com/mikydon/hw-app/issues">github.com/mikydon/hw-app/issues</a> with your nickname or friend code (no other personal details needed); it is done within 30 days.</p>
 
   <h2>Children</h2>
-  <p>HW App is not aimed at children. The calorie calculator advises users under 18 not to cut or bulk hard without a doctor's advice.</p>
+  <p>HW App is not aimed at children. Accounts are only for people aged 16 or older (the app does not offer sign-in if the birth date entered shows a younger age). The calorie calculator advises users under 18 not to cut or bulk hard without a doctor's advice.</p>
 
   <h2>Contact</h2>
   <p>Questions: open an issue at <a href="https://github.com/mikydon/hw-app/issues">github.com/mikydon/hw-app/issues</a>.</p>

@@ -64,6 +64,24 @@ export function openExternal(url) {
   try { window.open(url, "_blank"); } catch (_) {}
 }
 
+// ─── Share a text (friend code link, 1.5.0) ────────────────────────────────
+// App: Android's share sheet. Website: the browser's share sheet if it has one, otherwise the clipboard.
+// Resolves to "shared", "copied" or "cancelled".
+export async function shareText(text) {
+  try {
+    if (isNative) { await Share.share({ text }); return "shared"; }
+    if (navigator.share) { await navigator.share({ text }); return "shared"; }
+  } catch (e) { if (/cancel|abort/i.test(String(e && (e.name + e.message)))) return "cancelled"; }
+  await copyText(text);
+  return "copied";
+}
+export async function copyText(text) {
+  try { await navigator.clipboard.writeText(text); return; } catch (_) {}
+  const t = document.createElement("textarea"); t.value = text; document.body.appendChild(t); t.select();
+  try { document.execCommand("copy"); } catch (_) {}
+  t.remove();
+}
+
 // ─── Backup file ───────────────────────────────────────────────────────────
 // Website: downloads the file. App: writes it to the app cache and opens Android's share sheet
 // (save to Files / Drive, or send it). Resolves to "saved", "shared" or "cancelled".
