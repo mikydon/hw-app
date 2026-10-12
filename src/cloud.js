@@ -54,6 +54,8 @@ async function googleCredential() {
   if (!tok) throw Object.assign(new Error("no token"), { code: "cancelled" });
   return GoogleAuthProvider.credential(tok);
 }
+// The native Google sign-out can take a while (or never answer when nobody is signed in natively): wait at most 3 s.
+const nativeSignOut = () => (native() ? Promise.race([FirebaseAuthentication.signOut().catch(() => {}), new Promise(r => setTimeout(r, 3000))]) : Promise.resolve());
 const pick = (o, keys) => Object.fromEntries(keys.filter(k => o[k] !== undefined).map(k => [k, o[k]]));
 const PROFILE_KEYS = ["nick", "pfp", "xp", "lvl", "streak", "n", "code", "global"];
 async function profilesOf(uids) {
@@ -72,9 +74,10 @@ export const impl = {
     if (native()) await signInWithCredential(auth, await googleCredential());
     else await signInWithPopup(auth, new GoogleAuthProvider());
     user = { uid: auth.currentUser.uid };
-    return user;
+    // the Google name only fills in the nickname field at the first start (it isn't stored in the cloud)
+    return { ...user, name: auth.currentUser.displayName || "" };
   },
-  async signOut() { boot(); if (native()) { try { await FirebaseAuthentication.signOut(); } catch (_) {} } await fbSignOut(auth); user = null; },
+  async signOut() { boot(); await nativeSignOut(); await fbSignOut(auth); user = null; subs.forEach(f => f(null)); },
   async getProfile(u = uid()) { const s = await getDoc(d("profiles", u)); return s.exists() ? { uid: u, ...s.data() } : null; },
   // First time: reserve the nickname and a friend code, then the profile. Nickname taken → error code "nick-taken".
   async createProfile(p) {
@@ -163,8 +166,13 @@ export const impl = {
   async saveBackup(json, n) { await setDoc(d("backups", uid()), { json, n, ts: serverTimestamp() }); },
   async loadBackup() { const s = await getDoc(d("backups", uid())); if (!s.exists()) return null; const v = s.data(); return { json: v.json, n: v.n, ts: v.ts && v.ts.toMillis ? v.ts.toMillis() : 0 }; },
   // Everything about this account, then the account itself. Google asks again if the last sign-in is too old.
+  // 1.5.0 (Michael: after deleting, the account buttons stayed): Google is asked to confirm FIRST (Firebase only deletes
+  // a sign-in that is recent, and asking later could leave the data gone but the account still signed in when the
+  // confirmation was cancelled). Then the data, then the account, then signed out here, whatever the native side does.
   async deleteAccount(p) {
     const me = uid();
+    if (native()) await reauthenticateWithCredential(auth.currentUser, await googleCredential());
+    else await reauthenticateWithPopup(auth.currentUser, new GoogleAuthProvider());
     const fr = await getDocs(collection(db, "friends", me, "list")).catch(() => ({ docs: [] }));
     const inbox = await getDocs(collection(db, "inbox", me, "from")).catch(() => ({ docs: [] }));
     // Chats: every message and the chat itself (members may delete; the other person loses the chat too).
@@ -183,14 +191,7 @@ export const impl = {
     ["profiles", "board", "backups"].forEach(c => b.delete(d(c, me)));
     await b.commit();
     try { await auth.currentUser.delete(); }
-    catch (e) {
-      if (!e || e.code !== "auth/requires-recent-login") throw e;
-      if (native()) await reauthenticateWithCredential(auth.currentUser, await googleCredential());
-      else await reauthenticateWithPopup(auth.currentUser, new GoogleAuthProvider());
-      await auth.currentUser.delete();
-    }
-    if (native()) { try { await FirebaseAuthentication.signOut(); } catch (_) {} }
-    user = null; subs.forEach(f => f(null));
+    finally { await nativeSignOut(); try { await fbSignOut(auth); } catch (_) {} user = null; subs.forEach(f => f(null)); }
   },
 };
 

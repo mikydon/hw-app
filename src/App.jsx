@@ -2040,17 +2040,24 @@ function DayGrid({ value, max, onChange }) {
     </div>
   );
 }
-function Onboarding({ start = 0, profile, setProfile, kcal, setKcal, onDone }) {
+function Onboarding({ start = 0, profile, setProfile, kcal, setKcal, onDone, acct = { st: "out" }, onSignIn, onCreate }) {
   const thisYear = parseKey(dateKey()).getFullYear();
   const k0 = kcal || {}, b0 = profile.birth || {};
-  const [id, setId] = useState(typeof start === "number" ? OB_STEPS[start] || "name" : start);
+  const [id, setId] = useState(typeof start === "number" ? (start === 0 && acct.st !== "in" && onSignIn ? "acct" : OB_STEPS[start] || "name") : start);
   const [dir, setDir] = useState(1);
   // App only: offer Health Connect right after the name (steps, weight and height come from there; age and gender don't).
   const [hcAvail, setHcAvail] = useState(false);
   const [hcRes, setHcRes] = useState(null); // null | "busy" | {ok, w, h} | "denied"
   useEffect(() => { if (isNative) healthState().then(st => setHcAvail(!!(st && st.available))).catch(() => {}); }, []);
   const hcFilled = hcRes && hcRes.ok ? { height: !!hcRes.h, weight: !!hcRes.w } : {};
-  const steps = ["name", ...(hcAvail ? ["hc"] : []), "sex", "birth", ...(hcFilled.height ? [] : ["height"]), ...(hcFilled.weight ? [] : ["weight"]), "activity", "goal"];
+  // 1.5.0 (Michael): sign in with Google first (fills in the nickname, offers the cloud backup), and values read from
+  // Health Connect stay as their own steps, filled in, so they can just be confirmed or skipped.
+  const [acctStep] = useState(() => acct.st !== "in" && !!onSignIn && (typeof start === "number" ? start === 0 : start === "acct"));
+  const [age16, setAge16] = useState(false);
+  const [gName, setGName] = useState(""); // name from Google / the cloud profile, used when the name step is skipped
+  const signedIn = acct.st === "in";
+  const needNick = signedIn && !acct.prof && !!onCreate;
+  const steps = [...(acctStep ? ["acct"] : []), "name", ...(hcAvail ? ["hc"] : []), "sex", "birth", "height", "weight", "activity", "goal"];
   const step = Math.max(0, steps.indexOf(id));
   const [name, setName] = useState(profile.name && profile.name !== "User" ? profile.name : "");
   const [sex, setSex] = useState(k0.sex || "");
@@ -2079,8 +2086,25 @@ function Onboarding({ start = 0, profile, setProfile, kcal, setKcal, onDone }) {
   const saveK = patch => setKcal({ ...(kcal || {}), ...patch, log: (kcal && kcal.log) || {} });
   const daysIn = month ? new Date(Number(year) || 2000, month, 0).getDate() : 31;
   const num = (v, max) => v.replace(/[^0-9]/g, "").slice(0, max);
-  const filled = { name: !!name.trim(), hc: !!(hcRes && hcRes.ok), sex: !!sex, birth: year.length === 4, height: !!height, weight: !!weight, activity: !!activity, goal: true }[id];
+  const filled = { acct: signedIn, name: !!name.trim(), hc: !!(hcRes && hcRes.ok), sex: !!sex, birth: year.length === 4, height: !!height, weight: !!weight, activity: !!activity, goal: true }[id];
+  const [busy, setBusy] = useState(false);
+  const signIn = () => {
+    if (!age16 || busy) return;
+    unlockAudio(); setBusy(true); setErr("");
+    onSignIn().then(r => {
+      const n = (r.prof && r.prof.nick) || nickFrom(String(r.name || "").split(/\s+/)[0]);
+      if (n) { setGName(n); if (!name.trim()) setName(n); }
+    }).catch(e => setErr(cloudErr(e))).finally(() => setBusy(false));
+  };
   const next = confirmed => {
+    if (id === "name" && needNick) {
+      // signed in without a cloud profile yet: the name becomes the nickname for friends (must be free)
+      const nick = nickFrom(name.trim());
+      if (!NICK_RE.test(nick)) { setErr(T("frNickBad")); return; }
+      setBusy(true); setErr("");
+      onCreate(nick).then(() => { setProfile({ ...profile, name: name.trim() }); sfxCheck(); goTo(step + 1); }).catch(e => setErr(cloudErr(e))).finally(() => setBusy(false));
+      return;
+    }
     if (id === "name") setProfile({ ...profile, name: name.trim() });
     else if (id === "sex") saveK({ sex });
     else if (id === "birth") {
@@ -2109,6 +2133,7 @@ function Onboarding({ start = 0, profile, setProfile, kcal, setKcal, onDone }) {
     </div>
   );
   const sub = { fontSize: 12, color: C.dim, fontWeight: 800, margin: "16px 0 7px", textTransform: "uppercase", letterSpacing: ".04em" };
+  const hcChip = <div data-ob-fromhc style={{ display: "inline-flex", alignItems: "center", gap: 6, margin: "10px 0 18px", padding: "5px 11px", borderRadius: 99, background: `${C.mint}1f`, border: `1px solid ${C.mint}66`, color: C.mint, fontSize: 13, fontWeight: 700 }}>✓ {T("obFromHc")}</div>;
   return (
     <div data-onboard={step} data-ob-step={id} style={wrapS}>
       {askDate && (
@@ -2128,11 +2153,29 @@ function Onboarding({ start = 0, profile, setProfile, kcal, setKcal, onDone }) {
       </div>
       <div style={{ fontSize: 12, color: C.dim, fontWeight: 700, marginBottom: 18 }}>{T("obStep", { n: step + 1, m: steps.length })}</div>
       <div key={id} className={dir > 0 ? "obIn" : "obBack"}>
+        {id === "acct" && <>
+          <Logo size={56} />
+          <div style={{ marginTop: 14 }}>{title(T("obAcctT"))}</div>
+          {desc(T("obAcctD"))}
+          {signedIn ? (
+            <div data-ob-acct="ok" style={{ ...card, padding: "13px 15px", borderColor: `${C.mint}99` }}>
+              <div style={{ fontSize: 15, fontWeight: 800, color: C.mint }}>✓ {T("obAcctOk")}{gName || (acct.prof && acct.prof.nick) ? ` · ${gName || acct.prof.nick}` : ""}</div>
+            </div>
+          ) : <>
+            <button data-ob-age role="checkbox" aria-checked={age16} onClick={() => { sfxTap(); setAge16(v => !v); }}
+              style={{ ...btnBase, width: "100%", display: "flex", alignItems: "flex-start", gap: 12, padding: "6px 4px", background: "transparent", color: C.chalk, textAlign: "left", fontSize: 14, fontWeight: 600, lineHeight: 1.45 }}>
+              <span aria-hidden="true" style={{ width: 22, height: 22, borderRadius: 7, flexShrink: 0, border: `2px solid ${age16 ? C.mint : C.line}`, background: age16 ? C.mint : "transparent", color: C.ink, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 900 }}>{age16 ? "✓" : ""}</span>
+              <span>{T("frAge", { n: ACCOUNT_AGE })}</span>
+            </button>
+            <button onClick={() => { sfxTap(); openExternal(PRIVACY_URL); }} style={{ ...btnBase, background: "transparent", color: C.sky, fontSize: 13, padding: "4px 4px 0 38px" }}>{T("privacyLink")} ›</button>
+            <button data-ob-signin onClick={signIn} disabled={!age16 || busy} className="b3d" style={{ ...bigBtn(C.chalk, C.ink), marginTop: 14, opacity: age16 ? 1 : 0.45, display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}><GLogo />{busy ? T("frSigning") : T("frSignIn")}</button>
+          </>}
+        </>}
         {id === "name" && <>
           <Logo size={56} />
           <div style={{ marginTop: 14 }}>{title(T("obHello"))}</div>
-          {desc(T("obName"))}
-          <input className="obf" data-ob-name value={name} maxLength={24} autoFocus onChange={e => setName(e.target.value)} onKeyDown={e => { if (e.key === "Enter" && name.trim()) next(); }} placeholder={T("obNamePh")} aria-label={T("obNamePh")} style={bigField} />
+          {desc(needNick ? T("obNameNick") : T("obName"))}
+          <input className="obf" data-ob-name value={name} maxLength={needNick ? 20 : 24} autoFocus onChange={e => { setName(needNick ? e.target.value.replace(/\s/g, "_") : e.target.value); setErr(""); }} onKeyDown={e => { if (e.key === "Enter" && name.trim()) next(); }} placeholder={T("obNamePh")} aria-label={T("obNamePh")} style={bigField} />
         </>}
         {id === "hc" && <>
           <div aria-hidden="true" style={{ fontSize: 44, lineHeight: 1 }}>👟⚖️</div>
@@ -2175,8 +2218,8 @@ function Onboarding({ start = 0, profile, setProfile, kcal, setKcal, onDone }) {
             <DayGrid value={day} max={daysIn} onChange={v => { setDay(v); setErr(""); }} />
           </>}
         </>}
-        {id === "height" && <>{title(T("obHeightT"))}{desc(T("obHeightD"))}{numField(height, setHeight, 3, "0", "cm", T("kcHeight"))}</>}
-        {id === "weight" && <>{title(T("obWeightT"))}{desc(T("obWeightD"))}{numField(weight, setWeight, 3, String(idealKg(Number(height)) || 0), "kg", T("kcWeight"))}</>}
+        {id === "height" && <>{title(T("obHeightT"))}{hcFilled.height ? hcChip : desc(T("obHeightD"))}{numField(height, setHeight, 3, "0", "cm", T("kcHeight"))}</>}
+        {id === "weight" && <>{title(T("obWeightT"))}{hcFilled.weight ? hcChip : desc(T("obWeightD"))}{numField(weight, setWeight, 3, String(idealKg(Number(height)) || 0), "kg", T("kcWeight"))}</>}
         {id === "activity" && <>
           {title(T("obActT"))}
           {desc(T("kcActivityHint"))}
@@ -2198,8 +2241,13 @@ function Onboarding({ start = 0, profile, setProfile, kcal, setKcal, onDone }) {
             : <div data-ob-nodata style={{ fontSize: 14, color: C.signal, lineHeight: 1.5 }}>{T("setupNoKcal", { what: miss.map(f => T("setup_" + f)).join(", ") })}</div>}
         </>}
         {err && <div role="alert" style={{ fontSize: 14, color: "#ff8a80", fontWeight: 700, marginTop: 12 }}>{err}</div>}
-        {id !== "goal" && (id !== "hc" || filled) && <button data-ob-next disabled={!filled} onClick={() => next()} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 22, opacity: filled ? 1 : 0.45 }}>{T("obNext")}</button>}
-        {id !== "hc" && <button data-ob-skip onClick={() => { sfxTap(); goTo(step + 1); }} style={{ ...ghostBtn, display: "block", margin: "12px auto 0" }}>{T("obSkip")}</button>}
+        {id !== "goal" && (id !== "hc" || filled) && (id !== "acct" || filled) && <button data-ob-next disabled={!filled || busy} onClick={() => next()} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 22, opacity: filled && !busy ? 1 : 0.45 }}>{busy ? "…" : T("obNext")}</button>}
+        {id !== "hc" && (id !== "acct" || !filled) && <button data-ob-skip onClick={() => {
+            sfxTap();
+            // a name that came from Google stays when this step is skipped
+            if (id === "name" && gName && name.trim() === gName) setProfile({ ...profile, name: gName });
+            goTo(step + 1);
+          }} style={{ ...ghostBtn, display: "block", margin: "12px auto 0" }}>{T("obSkip")}</button>}
       </div>
     </div>
   );
@@ -3667,6 +3715,8 @@ function cloudErr(e) {
   return T("frErr", { e: c.replace(/^auth\//, "") || "?" });
 }
 const nickFrom = name => String(name || "").normalize("NFC").replace(/\s+/g, "_").replace(/[^\p{L}\p{N}_.-]/gu, "").slice(0, 20);
+// Google's "G" on the sign-in buttons
+function GLogo() { return <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.6 5.4 2.7 13.3l7.9 6.1C12.5 13.6 17.8 9.5 24 9.5z"/><path fill="#4285F4" d="M46.1 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.4c-.5 2.9-2.2 5.3-4.6 6.9l7.4 5.7c4.3-4 6.9-9.9 6.9-16.6z"/><path fill="#FBBC05" d="M10.6 28.6c-.5-1.4-.8-3-.8-4.6s.3-3.2.8-4.6l-7.9-6.1C1 16.6 0 20.2 0 24s1 7.4 2.7 10.7l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.4-5.7c-2.1 1.4-4.8 2.3-8.5 2.3-6.2 0-11.5-4.1-13.4-9.9l-7.9 6.1C6.6 42.6 14.6 48 24 48z"/></svg>; }
 function PersonAvatar({ p, size = 40 }) { return <Avatar profile={{ name: p.nick || "?", pfp: p.pfp || null }} size={size} />; }
 
 // One row of a leaderboard or the friends list.
@@ -3740,7 +3790,7 @@ function FriendsTab({ acct, history, profile, social, chatWith, setChatWith, onB
             <button data-privacy onClick={() => { sfxTap(); openExternal(PRIVACY_URL); }} style={{ ...btnBase, background: "transparent", color: C.sky, fontSize: 13, padding: "4px 4px 0 38px" }}>{T("privacyLink")} ›</button>
             <button data-fr-signin onClick={go} disabled={!age16 || busy} className="b3d"
               style={{ ...bigBtn(C.chalk, C.ink), marginTop: 14, display: "flex", alignItems: "center", justifyContent: "center", gap: 10, opacity: age16 ? 1 : 0.45 }}>
-              <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.6 5.4 2.7 13.3l7.9 6.1C12.5 13.6 17.8 9.5 24 9.5z"/><path fill="#4285F4" d="M46.1 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.4c-.5 2.9-2.2 5.3-4.6 6.9l7.4 5.7c4.3-4 6.9-9.9 6.9-16.6z"/><path fill="#FBBC05" d="M10.6 28.6c-.5-1.4-.8-3-.8-4.6s.3-3.2.8-4.6l-7.9-6.1C1 16.6 0 20.2 0 24s1 7.4 2.7 10.7l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.4-5.7c-2.1 1.4-4.8 2.3-8.5 2.3-6.2 0-11.5-4.1-13.4-9.9l-7.9 6.1C6.6 42.6 14.6 48 24 48z"/></svg>
+              <GLogo />
               {busy ? T("frSigning") : T("frSignIn")}
             </button>
           </>
@@ -4109,7 +4159,7 @@ function AccountBox({ acct, cloudBk, onOpen, onRestore, onSignOut, onDelete }) {
             setSure(false); run("del", onDelete);
           }} style={{ ...rowBtn(false), color: "#ff8a80", display: "block" }}>
           {busy === "del" ? "…" : sure ? T("acDeleteSure") : T("acDelete")}
-          {sub(T("acDeleteD"))}
+          {sub(`${T("acDeleteD")} ${T("acDelGoogle")}`)}
         </button>
       </div>
       {msg && <div role="status" style={{ fontSize: 13, color: msg.startsWith("✓") ? C.mint : "#ff8a80", marginTop: 8 }}>{msg}</div>}
@@ -5208,21 +5258,35 @@ export default function App() {
     if (!cloudMem().uid || !loaded) return;
     cloud().init().then(u => {
       if (!u) { setCloudMem({ uid: null, prof: null }); setAcct({ st: "out" }); return; }
+      // if Firebase ends the session (account deleted, signed out elsewhere…), the app follows
+      try { cloud().onUser(x => { if (!x) { setCloudMem({ uid: null, prof: null }); setAcct(a => (a.st === "in" ? { st: "out" } : a)); } }); } catch (_) {}
       return cloud().getProfile(u.uid).then(p => { setCloudMem({ uid: u.uid, prof: p }); setAcct({ st: "in", uid: u.uid, prof: p }); checkCloudBackup(history); });
     }).catch(() => setAcct(a => ({ ...a, st: "in" }))); // offline: keep the remembered profile
   }, [loaded]);
   const signIn = async () => {
     const u = await cloud().signIn();
+    try { cloud().onUser(x => { if (!x) { setCloudMem({ uid: null, prof: null }); setAcct(a => (a.st === "in" ? { st: "out" } : a)); } }); } catch (_) {}
     const p = await cloud().getProfile(u.uid);
     setCloudMem({ uid: u.uid, prof: p, bk: null, synced: "" }); setCloudBk(null);
     setAcct({ st: "in", uid: u.uid, prof: p }); sfxCheck();
     checkCloudBackup(history);
+    return { uid: u.uid, name: u.name || "", prof: p };
   };
   const createProfile = async nick => { const p = await cloud().createProfile({ nick, global: false, pfp: await smallPfp(profile.pfp), ...cloudStats(history) }); setProf(p); sfxCheck(); };
   const renameNick = async nick => { await cloud().renameNick(acct.prof.nick, nick); const p = { ...acct.prof, nick }; await cloud().saveProfile({ ...p, pfp: await smallPfp(profile.pfp), ...cloudStats(history) }); setProf(p); sfxCheck(); };
   const setGlobal = async on => { const p = { ...acct.prof, global: on }; await cloud().saveProfile({ ...p, pfp: await smallPfp(profile.pfp), ...cloudStats(history) }); setProf(p); };
   const signOut = async () => { await cloud().signOut(); setCloudMem({ uid: null, prof: null, bk: null, synced: "" }); setCloudBk(null); cloudReady.current = false; setAcct({ st: "out" }); };
-  const deleteAccount = async () => { await cloud().deleteAccount({ ...acct.prof, sent: cloudMem().sent || [] }); try { localStorage.removeItem(CLOUD_KEY); } catch (_) {} setCloudBk(null); cloudReady.current = false; setAcct({ st: "out" }); return T("acDeleted"); };
+  const goneLocal = () => { try { localStorage.removeItem(CLOUD_KEY); } catch (_) {} setCloudBk(null); cloudReady.current = false; setChatWith(null); setAcct({ st: "out" }); };
+  const deleteAccount = async () => {
+    try { await cloud().deleteAccount({ ...acct.prof, sent: cloudMem().sent || [] }); }
+    catch (e) {
+      // cancelled at Google's confirmation: nothing was deleted
+      if (/cancel|popup-closed|12501/i.test(String((e && (e.code || e.message)) || ""))) return T("acDelCancelled");
+      throw e;
+    }
+    goneLocal();
+    return T("acDeleted");
+  };
   const applyCloudJson = json => {
     const d = JSON.parse(json);
     if (!BACKUP_IDS.includes(d.app) || !Array.isArray(d.history)) throw Object.assign(new Error("bad"), { code: "bad-backup" });
@@ -5449,8 +5513,16 @@ export default function App() {
         <div style={{ padding: 40, display: "flex", flexDirection: "column", alignItems: "center", gap: 12, color: C.dim }}><Logo size={64} />{T("loading")}</div>
       ) : (
         <>
+          {rsOffer && <CloudRestoreSheet offer={rsOffer} onClose={() => setRsOffer(null)}
+            onRestore={() => {
+              try { applyCloudJson(rsOffer.json); cloudReady.current = true; sfxCheck(); } catch (_) {}
+              setRsOffer(null);
+              // restored during the first-start setup: everything is there, so the setup ends
+              if (onboard !== null) { setOnboard(null); window.scrollTo(0, 0); }
+            }}
+            onKeep={() => { cloudReady.current = true; setRsOffer(null); }} />}
           {onboard !== null && !session ? (
-            <Onboarding start={onboard} profile={profile} setProfile={setProfile} kcal={kcal} setKcal={setKcal}
+            <Onboarding start={onboard} profile={profile} setProfile={setProfile} kcal={kcal} setKcal={setKcal} acct={acct} onSignIn={signIn} onCreate={createProfile}
               onDone={() => { setOnboard(null); setUi({ ...ui, setupHidden: false }); if (!settings.onboarded) setSettings({ ...settings, onboarded: true }); window.scrollTo(0, 0); }} />
           ) : <>
           {session && (
@@ -5487,9 +5559,6 @@ export default function App() {
             onGo={go} onResume={resume} onClose={() => setMenuOpen(false)} onNews={() => { setMenuOpen(false); setNewsOpen(true); }} />
           {notice && <LiveNotice n={notice} people={Object.fromEntries([...(social.friends || []), ...(social.reqs || [])].map(x => [x.uid, x]))} onClose={() => setNotice(null)}
             onOpen={n => { setNotice(null); go("friends"); setChatWith(n.kind === "msg" ? n.uid : null); }} />}
-          {rsOffer && <CloudRestoreSheet offer={rsOffer} onClose={() => setRsOffer(null)}
-            onRestore={() => { try { applyCloudJson(rsOffer.json); cloudReady.current = true; sfxCheck(); } catch (_) {} setRsOffer(null); }}
-            onKeep={() => { cloudReady.current = true; setRsOffer(null); }} />}
           {skipOpen && <SkipSheet freezes={freezesAvailable(history)} onSave={saveSkip} onClose={() => setSkipOpen(false)} />}
       {howId && <HowTo id={howId} history={history} onClose={() => setHowId(null)} />}
           {newsOpen && <WhatsNew at={newsAt} onClose={() => { setNewsOpen(false); setNewsAt(null); if (settings.seenVersion !== APP_VERSION || !settings.seenApp) setSettings({ ...settings, seenVersion: APP_VERSION, seenApp: true }); }} />}
