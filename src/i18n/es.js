@@ -1030,6 +1030,7 @@ export default {
     ["Clasificación", "Tu nivel y tu racha solo estaban en tu móvil.", "Compara nivel, racha y entrenamientos con tus amigos. Si quieres, actívate en el top 50 mundial."],
     ["Copia en la nube", "Las copias eran archivos que tenías que guardar tú.", "Con la sesión iniciada, una copia se guarda sola en la nube unos segundos después de cada cambio. Solo tú la ves y los datos de Health Connect se quedan en el móvil. En un móvil nuevo, inicia sesión y restáurala."],
     ["Cuenta", "No había cuentas.", "Ajustes → Cuenta y nube: restaurar desde la nube, cerrar sesión o borrar la cuenta junto con todo lo que hay de ella en el servidor."],
+    ["Selector de fecha", "Elegir una fecha en el Historial abría el calendario gris del móvil.", "Un calendario con los colores de la app; los días futuros no se pueden elegir."],
   ],
   news14: [
     ["📱 Copias de seguridad", "Guardar copia abría el menú de compartir y nada se guardaba solo.", "Las copias van a Documents/HW App en tu móvil. Activa la copia automática en Ajustes: cada día (y después de cada entreno) una copia nueva sustituye a la anterior. Las que guardes tú se quedan hasta que las borres. Restaúralas, compártelas o bórralas en Ajustes → Copias en el móvil."],

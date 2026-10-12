@@ -1030,6 +1030,7 @@ export default {
     ["Leaderboard", "Your level and streak were only on your phone.", "Compare level, streak and workouts with your friends. If you want, switch yourself into the world top 50."],
     ["Cloud backup", "Backups were files you had to keep yourself.", "When you're signed in, a backup goes to the cloud by itself a few seconds after every change. Only you can see it, and Health Connect data stays on the phone. On a new phone, sign in and restore it."],
     ["Account", "There were no accounts.", "Settings → Account & cloud: restore from the cloud, sign out, or delete the account together with everything about it on the server."],
+    ["Date picker", "Picking a date in History opened the phone's grey calendar.", "A calendar in the app's own colours; days in the future can't be picked."],
   ],
   news14: [
     ["📱 Backups", "Save backup opened the share menu, and nothing was ever saved by itself.", "Backups go to Documents/HW App on your phone. Turn on Automatic backup in Settings: every day (and after every workout) a fresh copy replaces the old one. Backups you save yourself stay until you delete them. Restore, share or delete them in Settings → Backups in the phone."],

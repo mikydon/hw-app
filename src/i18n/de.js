@@ -1030,6 +1030,7 @@ export default {
     ["Bestenliste", "Dein Level und deine Serie gab es nur auf deinem Handy.", "Vergleiche Level, Serie und Trainings mit deinen Freunden. Wenn du willst, schalte dich in die Welt-Top-50."],
     ["Cloud-Sicherung", "Sicherungen waren Dateien, um die du dich selbst kümmern musstest.", "Wenn du angemeldet bist, geht ein paar Sekunden nach jeder Änderung automatisch eine Sicherung in die Cloud. Nur du siehst sie, und Daten aus Health Connect bleiben auf dem Handy. Auf einem neuen Handy meldest du dich an und stellst sie wieder her."],
     ["Konto", "Es gab keine Konten.", "Einstellungen → Konto & Cloud: aus der Cloud wiederherstellen, abmelden oder das Konto samt allem, was auf dem Server dazu liegt, löschen."],
+    ["Datumsauswahl", "Die Datumsauswahl im Verlauf öffnete den grauen Kalender des Handys.", "Ein Kalender in den Farben der App; zukünftige Tage lassen sich nicht wählen."],
   ],
   news14: [
     ["📱 Sicherungen", "„Sicherung speichern“ öffnete das Teilen-Menü, von selbst wurde nichts gespeichert.", "Sicherungen landen in Documents/HW App auf dem Handy. Schalte in den Einstellungen die automatische Sicherung ein: jeden Tag (und nach jedem Training) ersetzt eine frische Kopie die alte. Selbst gespeicherte Sicherungen bleiben, bis du sie löschst. Wiederherstellen, teilen oder löschen unter Einstellungen → Sicherungen auf dem Handy."],

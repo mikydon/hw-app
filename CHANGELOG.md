@@ -20,6 +20,7 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 | Leaderboard | your level and streak were only on your phone | compare level, streak and workouts with your friends, and, only if you switch it on, in the world top 50 |
 | Cloud backup | backups were files you kept yourself | while you're signed in, a backup is saved to the cloud a few seconds after every change; only you can read it, and Health Connect data is never uploaded. On a new phone, sign in and restore it (the app offers it when the cloud has more workouts) |
 | Account | there were no accounts | Settings → Account & cloud: restore from the cloud, sign out, or delete the account with everything about it on the server. The privacy policy explains what is stored (Google Firebase, Frankfurt) |
+| Date picker | picking a date in History opened the phone's grey calendar | a calendar in the app's own colours (future days can't be picked); the text cursor and selection use the app's yellow |
 
 ## 1.4.3 (2026-10-12)
 

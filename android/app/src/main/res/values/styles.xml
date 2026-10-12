@@ -9,7 +9,14 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <!-- 1.5.0 (Michael: nothing grey that isn't the app): Android's own bits inside the app (text cursor and
+         selection handles, any dialog the WebView opens) use the app's yellow and dark navy, never the default teal/grey. -->
     <style name="AppTheme.NoActionBar" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="colorPrimary">#0E1B36</item>
+        <item name="colorPrimaryDark">#0E1B36</item>
+        <item name="colorAccent">#FFD23F</item>
+        <item name="colorControlActivated">#FFD23F</item>
+        <item name="android:textColorHighlight">#66FFD23F</item>
         <item name="android:windowBackground">@color/ic_launcher_background</item>
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>

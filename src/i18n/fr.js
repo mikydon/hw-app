@@ -1030,6 +1030,7 @@ export default {
     ["Classement", "Ton niveau et ta série n'existaient que sur ton téléphone.", "Compare niveau, série et entraînements avec tes amis. Si tu veux, active-toi dans le top 50 mondial."],
     ["Sauvegarde dans le cloud", "Les sauvegardes étaient des fichiers à garder toi-même.", "Quand tu es connecté, une sauvegarde part toute seule dans le cloud quelques secondes après chaque changement. Toi seul la vois, et les données de Health Connect restent sur le téléphone. Sur un nouveau téléphone, connecte-toi et restaure-la."],
     ["Compte", "Il n'y avait pas de comptes.", "Réglages → Compte et cloud : restaurer depuis le cloud, se déconnecter, ou supprimer le compte avec tout ce qui le concerne sur le serveur."],
+    ["Choix de la date", "Choisir une date dans l'Historique ouvrait le calendrier gris du téléphone.", "Un calendrier aux couleurs de l'appli ; les jours futurs ne peuvent pas être choisis."],
   ],
   news14: [
     ["📱 Sauvegardes", "Enregistrer une sauvegarde ouvrait le menu Partager, et rien ne s'enregistrait tout seul.", "Les sauvegardes vont dans Documents/HW App sur ton téléphone. Active la sauvegarde automatique dans les Réglages : chaque jour (et après chaque séance) une copie neuve remplace l'ancienne. Celles que tu enregistres toi-même restent jusqu'à ce que tu les supprimes. Restaure, partage ou supprime-les dans Réglages → Sauvegardes sur le téléphone."],

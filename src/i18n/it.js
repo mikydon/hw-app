@@ -1030,6 +1030,7 @@ export default {
     ["Classifica", "Livello e serie erano solo sul tuo telefono.", "Confronta livello, serie e allenamenti con i tuoi amici. Se vuoi, attivati nella top 50 mondiale."],
     ["Backup nel cloud", "I backup erano file da conservare da solo.", "Quando hai effettuato l'accesso, un backup va da solo nel cloud pochi secondi dopo ogni modifica. Lo vedi solo tu e i dati di Health Connect restano sul telefono. Su un nuovo telefono, accedi e ripristinalo."],
     ["Account", "Non c'erano account.", "Impostazioni → Account e cloud: ripristina dal cloud, esci, oppure elimina l'account insieme a tutto ciò che lo riguarda sul server."],
+    ["Scelta della data", "Scegliere una data nella Cronologia apriva il calendario grigio del telefono.", "Un calendario con i colori dell'app; i giorni futuri non si possono scegliere."],
   ],
   news14: [
     ["📱 Backup", "Salva backup apriva il menu Condividi e niente si salvava da solo.", "I backup vanno in Documents/HW App sul telefono. Attiva il backup automatico nelle Impostazioni: ogni giorno (e dopo ogni allenamento) una copia nuova sostituisce la vecchia. Quelli che salvi tu restano finché non li cancelli. Ripristinali, condividili o eliminali in Impostazioni → Backup nel telefono."],

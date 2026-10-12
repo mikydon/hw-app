@@ -1030,6 +1030,7 @@ export default {
     ["Rebríček", "Level a séria boli len v tvojom mobile.", "Porovnávaj level, sériu a tréningy s priateľmi. Ak chceš, zapni sa do svetovej top 50."],
     ["Záloha v cloude", "Zálohy boli súbory, o ktoré si sa musel starať sám.", "Keď si prihlásený, záloha sa sama uloží do cloudu pár sekúnd po každej zmene. Vidíš ju len ty a údaje z Health Connect ostávajú v mobile. V novom mobile sa prihlásiš a obnovíš ju."],
     ["Účet", "Účty neexistovali.", "Nastavenia → Účet a cloud: obnovenie z cloudu, odhlásenie alebo zmazanie účtu spolu so všetkým, čo o ňom je na serveri."],
+    ["Výber dátumu", "Výber dátumu v Histórii otvoril sivý kalendár telefónu.", "Kalendár vo farbách appky; budúce dni sa vybrať nedajú."],
   ],
   news14: [
     ["📱 Zálohy", "Uložiť zálohu otvorilo menu Zdieľať a samo sa neukladalo nič.", "Zálohy sa ukladajú do Documents/HW App v telefóne. V Nastaveniach zapni Automatickú zálohu: každý deň (a po každom tréningu) nahradí starú zálohu nová. Zálohy, ktoré uložíš sám, ostanú, kým ich nezmažeš. Obnoviť, zdieľať alebo zmazať ich môžeš v Nastavenia → Zálohy v telefóne."],

@@ -1030,6 +1030,7 @@ export default {
     ["Ranking", "Poziom i seria były tylko w twoim telefonie.", "Porównuj poziom, serię i treningi ze znajomymi. Jeśli chcesz, włącz się do światowego top 50."],
     ["Kopia w chmurze", "Kopie zapasowe to były pliki, o które musiałeś dbać sam.", "Gdy jesteś zalogowany, kopia sama zapisuje się w chmurze kilka sekund po każdej zmianie. Widzisz ją tylko ty, a dane z Health Connect zostają w telefonie. Na nowym telefonie zaloguj się i ją przywróć."],
     ["Konto", "Nie było kont.", "Ustawienia → Konto i chmura: przywracanie z chmury, wylogowanie albo usunięcie konta razem ze wszystkim, co o nim jest na serwerze."],
+    ["Wybór daty", "Wybór daty w Historii otwierał szary kalendarz telefonu.", "Kalendarz w kolorach aplikacji; przyszłych dni nie da się wybrać."],
   ],
   news14: [
     ["📱 Kopie zapasowe", "Zapisz kopię otwierało menu Udostępnij i nic nie zapisywało się samo.", "Kopie trafiają do Documents/HW App w telefonie. W Ustawieniach włącz Automatyczną kopię: codziennie (i po każdym treningu) nowa kopia zastępuje starą. Kopie zapisane przez ciebie zostają, dopóki ich nie usuniesz. Przywrócisz, udostępnisz lub usuniesz je w Ustawienia → Kopie w telefonie."],

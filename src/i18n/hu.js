@@ -1030,6 +1030,7 @@ export default {
     ["Ranglista", "A szinted és a sorozatod csak a telefonodon volt.", "Hasonlítsd össze a szintet, a sorozatot és az edzéseket a barátaiddal. Ha szeretnéd, kapcsold be magad a világ top 50-be."],
     ["Felhőmentés", "A mentések fájlok voltak, amikre neked kellett vigyázni.", "Ha be vagy jelentkezve, minden változás után pár másodperccel magától mentés készül a felhőbe. Csak te látod, a Health Connect adatai pedig a telefonon maradnak. Új telefonon jelentkezz be, és állítsd vissza."],
     ["Fiók", "Nem voltak fiókok.", "Beállítások → Fiók és felhő: visszaállítás a felhőből, kijelentkezés, vagy a fiók törlése mindazzal együtt, ami a szerveren róla van."],
+    ["Dátumválasztó", "Az Előzményekben a dátumválasztás a telefon szürke naptárát nyitotta meg.", "Naptár az app saját színeiben; jövőbeli napot nem lehet választani."],
   ],
   news14: [
     ["📱 Mentések", "A Mentés a megosztás menüt nyitotta meg, és semmi sem mentődött magától.", "A mentések a telefon Documents/HW App mappájába kerülnek. A Beállításokban kapcsold be az Automatikus mentést: minden nap (és minden edzés után) friss mentés lép a régi helyére. A saját mentéseid megmaradnak, amíg nem törlöd őket. Visszaállítani, megosztani vagy törölni a Beállítások → Mentések a telefonon alatt tudod."],

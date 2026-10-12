@@ -1030,6 +1030,7 @@ export default {
     ["Classificação", "O teu nível e a tua sequência só existiam no teu telemóvel.", "Compara nível, sequência e treinos com os teus amigos. Se quiseres, liga-te ao top 50 mundial."],
     ["Cópia na nuvem", "As cópias eram ficheiros que tinhas de guardar tu.", "Com sessão iniciada, uma cópia vai sozinha para a nuvem alguns segundos depois de cada alteração. Só tu a vês e os dados do Health Connect ficam no telemóvel. Num telemóvel novo, inicia sessão e restaura-a."],
     ["Conta", "Não havia contas.", "Definições → Conta e nuvem: restaurar da nuvem, terminar sessão ou eliminar a conta com tudo o que dela existe no servidor."],
+    ["Escolha da data", "Escolher uma data no Histórico abria o calendário cinzento do telemóvel.", "Um calendário com as cores da app; os dias futuros não podem ser escolhidos."],
   ],
   news14: [
     ["📱 Cópias de segurança", "Guardar cópia abria o menu de partilha e nada se guardava sozinho.", "As cópias vão para Documents/HW App no telemóvel. Liga a cópia automática nas Definições: todos os dias (e depois de cada treino) uma cópia nova substitui a antiga. As que guardares tu ficam até as apagares. Restaura, partilha ou apaga-as em Definições → Cópias no telemóvel."],

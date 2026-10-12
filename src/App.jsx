@@ -1978,6 +1978,45 @@ function withBody(k, body) {
 // Month and day pickers in the app's colours (Michael, Oct 10: the phone's grey dropdowns looked ugly).
 const monthNames = style => Array.from({ length: 12 }, (_, i) => new Date(2000, i, 1).toLocaleString(LANG, { month: style }));
 const pickBtn = on => ({ ...btnBase, padding: "11px 0", fontSize: 14, minWidth: 0, background: on ? C.signal : C.panel, color: on ? C.signalInk : C.chalk, border: `1.5px solid ${on ? C.signal : C.line}`, "--e": on ? EDGE[C.signal] || "transparent" : "transparent" });
+// The app's own date picker (1.5.0, Michael: the phone's grey date dialog didn't belong to the app). A field that
+// opens a sheet with a month calendar in the theme; days after `max` can't be picked.
+function DateField({ value, max, onChange, label, field }) {
+  const [open, setOpen] = useState(false);
+  const [ym, setYm] = useState(() => { const d = parseKey(value || max); return [d.getFullYear(), d.getMonth()]; });
+  const [y, m] = ym;
+  const first = new Date(y, m, 1), days = new Date(y, m + 1, 0).getDate(), lead = (first.getDay() + 6) % 7;
+  const maxD = parseKey(max), canNext = y < maxD.getFullYear() || (y === maxD.getFullYear() && m < maxD.getMonth());
+  const shift = n => { sfxTap(); const d = new Date(y, m + n, 1); setYm([d.getFullYear(), d.getMonth()]); };
+  const today = dateKey();
+  const cells = [...Array(lead).fill(null), ...Array.from({ length: days }, (_, i) => i + 1)];
+  return (
+    <>
+      <button data-date-field onClick={() => { sfxTap(); const d = parseKey(value || max); setYm([d.getFullYear(), d.getMonth()]); setOpen(true); }} aria-haspopup="dialog" aria-label={`${label}: ${value ? fmtDate(value, true) : ""}`}
+        style={{ ...field, width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, textAlign: "left", cursor: "pointer" }}>
+        <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{value ? capFirst(fmtDate(value, true)) : "—"}</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" style={{ flexShrink: 0 }}><rect x="3.5" y="5" width="17" height="15" rx="3" fill="none" stroke={C.dim} strokeWidth="2" /><path d="M3.5 10h17M8 3v4M16 3v4" fill="none" stroke={C.dim} strokeWidth="2" strokeLinecap="round" /></svg>
+      </button>
+      {open && (
+        <Sheet title={label} onClose={() => setOpen(false)} short>
+          <div data-date-sheet style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+            <button onClick={() => shift(-1)} aria-label={T("prevMonth")} style={{ ...ghostBtn, padding: "6px 14px", fontSize: 18 }}>‹</button>
+            <div style={{ fontFamily: DISPLAY, fontSize: 22, fontWeight: 900, color: C.chalk }}>{capFirst(fmtMonthYear(first))}</div>
+            <button onClick={() => canNext && shift(1)} disabled={!canNext} aria-label={T("nextMonth")} style={{ ...ghostBtn, padding: "6px 14px", fontSize: 18, opacity: canNext ? 1 : 0.3 }}>›</button>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, minmax(0, 1fr))", gap: 5 }}>
+            {weekdaysShort().map(w => <div key={w} style={{ textAlign: "center", fontSize: 11, fontWeight: 700, color: C.dim, paddingBottom: 2 }}>{w}</div>)}
+            {cells.map((d, i) => {
+              if (!d) return <span key={"e" + i} />;
+              const k = `${y}-${pad(m + 1)}-${pad(d)}`, on = k === value, off = k > max;
+              return <button key={k} data-date={k} disabled={off} aria-pressed={on} onClick={() => { sfxTap(); onChange(k); setOpen(false); }}
+                style={{ ...pickBtn(on), padding: "10px 0", fontVariantNumeric: "tabular-nums", opacity: off ? 0.3 : 1, cursor: off ? "default" : "pointer", ...(k === today && !on ? { borderColor: C.chalk } : {}) }}>{d}</button>;
+            })}
+          </div>
+        </Sheet>
+      )}
+    </>
+  );
+}
 function MonthGrid({ value, onChange }) {
   return (
     <div data-month-grid role="radiogroup" aria-label={T("kcMonth")} style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 6 }}>
@@ -3223,7 +3262,7 @@ function EntryEditor({ entry, nextDay, onSave, onDelete, onClose }) {
       <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 14 }}>
         <div>
           <div style={label}>{T("fDate")}</div>
-          <input type="date" value={date} max={today} onChange={e => { setDate(e.target.value); setErr(""); }} aria-label={T("fDate")} style={{ ...field, width: "100%", colorScheme: "dark" }} />
+          <DateField value={date} max={today} label={T("fDate")} field={field} onChange={v => { setDate(v); setErr(""); }} />
         </div>
         <div style={{ display: "flex", gap: 12 }}>
           <div style={{ flex: 3 }}>
@@ -5175,6 +5214,7 @@ export default function App() {
         .sheetBox{box-sizing:border-box;max-height:86vh;max-height:calc(100dvh - 24px - var(--sat) - var(--sab))}
         .exq::after{content:"?"} .exq{position:relative} .exq::before{content:"";position:absolute;inset:-4px}
         .noBar{scrollbar-width:none}.noBar::-webkit-scrollbar{display:none}
+        ::selection{background:${C.signal}55;color:${C.chalk}} input,textarea{caret-color:${C.signal};accent-color:${C.signal}}
         @keyframes bump{0%{transform:scale(.82)}55%{transform:scale(1.12)}100%{transform:scale(1)}}
         .bump{animation:bump .22s ease-out}
         @keyframes pop{0%{transform:scale(0);opacity:0}60%{transform:scale(1.2);opacity:1}100%{transform:scale(1);opacity:1}}
