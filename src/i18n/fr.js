@@ -1049,7 +1049,7 @@ export default {
     "Barre du haut : tout en haut de la page, elle remplit maintenant l'écran d'un bord à l'autre, sans ligne en haut ni sur les côtés.",
   ],
   news151: [
-    "Barre du haut : quand tu fais défiler, elle se détache du bord supérieur comme une goutte d'eau : elle s'étire en un col fin, se détache, oscille un instant et une petite goutte rejaillit. En remontant tout en haut, elle se refond avec le bord. Avant, un fond se fondait simplement dans l'autre.",
+    "Barre du haut : quand tu fais défiler, elle se détache du bord supérieur comme une goutte d'eau : elle s'étire en un col fin, se détache, oscille un instant et une petite goutte rejaillit. En remontant tout en haut, elle se refond avec le bord. Avant, un fond se fondait simplement dans l'autre. Si tu changes de sens en cours de route, elle repart en douceur de là où elle est.",
   ],
   news15: [
     ["Amis", "HW App, c'était juste toi et ton téléphone.", "Connecte-toi avec Google (facultatif, dès 16 ans) et choisis un pseudo. Ajoute des amis par code, lien ou pseudo, accepte ou refuse les demandes, et retire, bloque ou signale qui tu veux. Sans compte, tout fonctionne comme avant."],

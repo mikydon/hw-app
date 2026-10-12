@@ -1049,7 +1049,7 @@ export default {
     "Górny pasek: na samej górze strony wypełnia ekran od krawędzi do krawędzi, bez linii u góry i po bokach.",
   ],
   news151: [
-    "Górny pasek: przy przewijaniu odrywa się od górnej krawędzi jak kropla wody: wyciąga się w cienką szyjkę, odrywa, chwilę się kołysze, a mała kropla chlapie z powrotem. Gdy wrócisz na górę, znów zlewa się z krawędzią. Wcześniej jedno tło po prostu przenikało w drugie.",
+    "Górny pasek: przy przewijaniu odrywa się od górnej krawędzi jak kropla wody: wyciąga się w cienką szyjkę, odrywa, chwilę się kołysze, a mała kropla chlapie z powrotem. Gdy wrócisz na górę, znów zlewa się z krawędzią. Wcześniej jedno tło po prostu przenikało w drugie. Gdy w połowie zmienisz kierunek, płynnie wraca od miejsca, w którym jest.",
   ],
   news15: [
     ["Znajomi", "HW App to był tylko ty i twój telefon.", "Zaloguj się przez Google (dobrowolnie, od 16 lat) i wybierz pseudonim. Dodawaj znajomych kodem, linkiem lub po pseudonimie, akceptuj lub odrzucaj zaproszenia, a każdego możesz usunąć, zablokować lub zgłosić. Bez konta wszystko działa jak dotąd."],

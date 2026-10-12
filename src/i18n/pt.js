@@ -1049,7 +1049,7 @@ export default {
     "Barra superior: no topo da página, agora preenche o ecrã de uma ponta à outra, sem linha em cima nem dos lados.",
   ],
   news151: [
-    "Barra superior: ao rolar, ela se solta da borda de cima como uma gota d'água: estica-se num pescoço fino, solta-se, balança um instante e uma gotinha respinga de volta. Ao voltar ao topo, ela se funde de novo com a borda. Antes, um fundo apenas se misturava com o outro.",
+    "Barra superior: ao rolar, ela se solta da borda de cima como uma gota d'água: estica-se num pescoço fino, solta-se, balança um instante e uma gotinha respinga de volta. Ao voltar ao topo, ela se funde de novo com a borda. Antes, um fundo apenas se misturava com o outro. Se mudar de direção no meio, ela volta suavemente de onde está.",
   ],
   news15: [
     ["Amigos", "A HW App eras só tu e o teu telemóvel.", "Inicia sessão com o Google (opcional, a partir dos 16) e escolhe uma alcunha. Adiciona amigos por código, link ou alcunha, aceita ou recusa pedidos, e remove, bloqueia ou denuncia quem quiseres. Sem conta, tudo funciona como antes."],

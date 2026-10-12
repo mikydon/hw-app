@@ -12,7 +12,7 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 
 ## 1.5.1 (2026-10-12)
 
-- Top bar: when you scroll down, it now comes off the top edge like a drop of water: the sides pull in, the part over the status bar stretches into a thin neck, snaps, the bar wobbles for a moment and a small drop splashes back in. Scrolling back to the top plays it the other way: a drip and a bump reach for each other, join, and the bar flows back into the edge. Before, the full-width bar and the floating box just faded into each other. The shape is drawn only during the ~0.7 s of the move; the bar's content never moves.
+- Top bar: when you scroll down, it now comes off the top edge like a drop of water: the sides pull in, the part over the status bar stretches into a thin neck, snaps, the bar wobbles for a moment and a small drop splashes back in. Scrolling back to the top plays it the other way: a drip and a bump reach for each other, join, and the bar flows back into the edge. Before, the full-width bar and the floating box just faded into each other. If you change direction halfway, the same drop slows down and goes back from where it is (never two animations at once, never a jump). The shape is drawn only during the ~0.7 s of the move; the bar's content never moves.
 
 ## 1.5.0 (2026-10-12)
 

@@ -1473,24 +1473,33 @@ function TopBar({ screen, history, menuOpen, onMenu, onGo, dlPct, badge }) {
   useLayoutEffect(() => {
     const out = outRef.current, goo = gooRef.current, wrap = wrapRef.current;
     if (!out || !goo || !wrap) return;
-    const g = gs.current || (gs.current = { p: fl ? 1 : 0, raf: 0, t: 0 });
+    const g = gs.current || (gs.current = { p: fl ? 1 : 0, v: 0, raf: 0, t: 0 });
     const to = fl ? 1 : 0;
     if (g.p === to && !g.raf) return;
     cancelAnimationFrame(g.raf); clearTimeout(g.t); g.raf = 0;
     let reduce = false;
     try { reduce = matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (_) {}
-    if (reduce) { g.p = to; out.removeAttribute("data-goo"); goo.style.visibility = "hidden"; return; }
+    if (reduce) { g.p = to; g.v = 0; out.removeAttribute("data-goo"); goo.style.visibility = "hidden"; return; }
     out.setAttribute("data-goo", ""); // before measuring: the measurement applies styles, and the box must not start fading in
     const W = goo.offsetWidth, H = goo.offsetHeight, S = H - wrap.offsetHeight, ins = (W - wrap.offsetWidth) / 2;
     const dur = to ? 720 : 620;
     goo.style.visibility = "visible";
+    // Michael (Oct 12): scrolling back mid-move must not jump or run two moves at once. There is only ever one shape
+    // and one progress value: a change of direction brakes the running move and plays it back from where it is
+    // (speed eases through zero in ~140 ms) instead of restarting or cutting to the other end.
+    const vMax = 1 / dur, acc = vMax / 140;
+    const run = (g.run = (g.run || 0) + 1); // a frame of an older run (already cancelled) never draws again
     let last = performance.now();
     const step = now => {
-      g.p = to ? Math.min(1, g.p + (now - last) / dur) : Math.max(0, g.p - (now - last) / dur); last = now;
+      if (g.run !== run) return;
+      const dt = Math.min(50, now - last); last = now;
+      const vt = to ? vMax : -vMax;
+      g.v += Math.max(-acc * dt, Math.min(acc * dt, vt - g.v));
+      g.p = Math.max(0, Math.min(1, g.p + g.v * dt));
       goo.style.clipPath = `path("${gooPath(g.p, W, H, S, ins)}")`;
       if (g.p !== to) { g.raf = requestAnimationFrame(step); return; }
-      g.raf = 0; out.removeAttribute("data-goo");
-      g.t = setTimeout(() => { goo.style.visibility = "hidden"; }, 240); // the box fades in over the same shape first
+      g.raf = 0; g.v = 0; out.removeAttribute("data-goo");
+      g.t = setTimeout(() => { if (g.run === run && !g.raf) goo.style.visibility = "hidden"; }, 240); // the box fades in over the same shape first
     };
     step(last);
   }, [fl]);

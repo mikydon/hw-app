@@ -1049,7 +1049,7 @@ export default {
     "Barra superior: arriba del todo ahora llena la pantalla de borde a borde, sin línea arriba ni a los lados.",
   ],
   news151: [
-    "Barra superior: al desplazarte, se despega del borde superior como una gota de agua: se estira en un cuello fino, se suelta, se balancea un momento y una gotita salpica de vuelta. Al volver arriba, se funde otra vez con el borde. Antes un fondo solo se fundía con el otro.",
+    "Barra superior: al desplazarte, se despega del borde superior como una gota de agua: se estira en un cuello fino, se suelta, se balancea un momento y una gotita salpica de vuelta. Al volver arriba, se funde otra vez con el borde. Antes un fondo solo se fundía con el otro. Si cambias de dirección a mitad, vuelve suavemente desde donde está.",
   ],
   news15: [
     ["Amigos", "HW App eras solo tú y tu móvil.", "Inicia sesión con Google (opcional, desde los 16) y elige un apodo. Añade amigos por código, enlace o apodo, acepta o rechaza solicitudes, y quita, bloquea o denuncia a quien sea. Sin cuenta todo funciona como antes."],

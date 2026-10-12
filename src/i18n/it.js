@@ -1049,7 +1049,7 @@ export default {
     "Barra in alto: in cima alla pagina ora riempie lo schermo da bordo a bordo, senza linea in alto o ai lati.",
   ],
   news151: [
-    "Barra in alto: quando scorri, si stacca dal bordo superiore come una goccia d'acqua: si allunga in un collo sottile, si stacca, oscilla un attimo e una gocciolina rimbalza dentro. Tornando in cima, si fonde di nuovo con il bordo. Prima uno sfondo sfumava semplicemente nell'altro.",
+    "Barra in alto: quando scorri, si stacca dal bordo superiore come una goccia d'acqua: si allunga in un collo sottile, si stacca, oscilla un attimo e una gocciolina rimbalza dentro. Tornando in cima, si fonde di nuovo con il bordo. Prima uno sfondo sfumava semplicemente nell'altro. Se cambi direzione a metà, torna indietro dolcemente da dove si trova.",
   ],
   news15: [
     ["Amici", "HW App eri solo tu e il tuo telefono.", "Accedi con Google (facoltativo, dai 16 anni) e scegli un nickname. Aggiungi amici con codice, link o nickname, accetta o rifiuta le richieste, e rimuovi, blocca o segnala chiunque. Senza account tutto funziona come prima."],

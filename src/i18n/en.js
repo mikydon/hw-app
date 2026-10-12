@@ -1049,7 +1049,7 @@ export default {
     "Top bar: at the top of the page it now fills the screen edge to edge, without a line at the top or sides.",
   ],
   news151: [
-    "Top bar: when you scroll, it now comes off the top edge like a drop of water: it stretches into a thin neck, snaps off, wobbles for a moment and a small drop splashes back in. Scrolling back to the top, it flows together with the edge again. Before, one background simply faded into the other.",
+    "Top bar: when you scroll, it now comes off the top edge like a drop of water: it stretches into a thin neck, snaps off, wobbles for a moment and a small drop splashes back in. Scrolling back to the top, it flows together with the edge again. Before, one background simply faded into the other. If you change direction halfway, it smoothly goes back from where it is.",
   ],
   news15: [
     ["Friends", "HW App was just you and your phone.", "Sign in with Google (optional, 16+) and pick a nickname. Add friends by code, share link or nickname, accept or decline requests, and remove, block or report anyone. Without an account everything works as before."],

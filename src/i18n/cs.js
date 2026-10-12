@@ -1049,7 +1049,7 @@ export default {
     "Horní lišta: když jsi úplně nahoře, vyplňuje obrazovku od kraje ke kraji, bez čáry nahoře a po stranách.",
   ],
   news151: [
-    "Horní lišta: když scrolluješ, odlepí se od horního okraje jako kapka vody: natáhne se do tenkého krčku, utrhne se, chvilku se zhoupne a malá kapka šplouchne zpátky. Když se vrátíš nahoru, zase se s okrajem slije. Dřív se jedno pozadí jen prolínalo do druhého.",
+    "Horní lišta: když scrolluješ, odlepí se od horního okraje jako kapka vody: natáhne se do tenkého krčku, utrhne se, chvilku se zhoupne a malá kapka šplouchne zpátky. Když se vrátíš nahoru, zase se s okrajem slije. Dřív se jedno pozadí jen prolínalo do druhého. Když v půlce změníš směr, plynule se vrátí odtamtud, kde právě je.",
   ],
   news15: [
     ["Přátelé", "HW App byla jen ty a tvůj telefon.", "Přihlas se přes Google (dobrovolně, od 16 let) a vyber si přezdívku. Přátele přidáš kódem, odkazem nebo podle přezdívky, žádosti přijmeš nebo odmítneš a kohokoli můžeš odebrat, zablokovat či nahlásit. Bez účtu vše funguje jako dosud."],
