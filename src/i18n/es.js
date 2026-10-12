@@ -1048,6 +1048,9 @@ export default {
     "El diseño Cristal se parece más al cristal real: un brillo desde la esquina, un reflejo suave, un borde superior claro y un suave resplandor de los colores del tema detrás de las cajas. La barra de inicio y el menú ☰ combinan con él, y sigue siendo ligero para el móvil.",
     "Barra superior: arriba del todo ahora llena la pantalla de borde a borde, sin línea arriba ni a los lados.",
   ],
+  news151: [
+    "Barra superior: al desplazarte, se despega del borde superior como una gota de agua: se estira en un cuello fino, se suelta, se balancea un momento y una gotita salpica de vuelta. Al volver arriba, se funde otra vez con el borde. Antes un fondo solo se fundía con el otro.",
+  ],
   news15: [
     ["Amigos", "HW App eras solo tú y tu móvil.", "Inicia sesión con Google (opcional, desde los 16) y elige un apodo. Añade amigos por código, enlace o apodo, acepta o rechaza solicitudes, y quita, bloquea o denuncia a quien sea. Sin cuenta todo funciona como antes."],
     ["Clasificación", "Tu nivel y tu racha solo estaban en tu móvil.", "Compara nivel, racha y entrenamientos con tus amigos. Si quieres, actívate en el top 50 mundial."],

@@ -1048,6 +1048,9 @@ export default {
     "La disposition Verre ressemble davantage à du vrai verre : un reflet depuis le coin, une réflexion douce, un bord supérieur clair et une douce lueur des couleurs du thème derrière les blocs. La barre de démarrage et le menu ☰ sont assortis, et le téléphone n'est toujours pas sollicité.",
     "Barre du haut : tout en haut de la page, elle remplit maintenant l'écran d'un bord à l'autre, sans ligne en haut ni sur les côtés.",
   ],
+  news151: [
+    "Barre du haut : quand tu fais défiler, elle se détache du bord supérieur comme une goutte d'eau : elle s'étire en un col fin, se détache, oscille un instant et une petite goutte rejaillit. En remontant tout en haut, elle se refond avec le bord. Avant, un fond se fondait simplement dans l'autre.",
+  ],
   news15: [
     ["Amis", "HW App, c'était juste toi et ton téléphone.", "Connecte-toi avec Google (facultatif, dès 16 ans) et choisis un pseudo. Ajoute des amis par code, lien ou pseudo, accepte ou refuse les demandes, et retire, bloque ou signale qui tu veux. Sans compte, tout fonctionne comme avant."],
     ["Classement", "Ton niveau et ta série n'existaient que sur ton téléphone.", "Compare niveau, série et entraînements avec tes amis. Si tu veux, active-toi dans le top 50 mondial."],

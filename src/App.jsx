@@ -31,7 +31,7 @@ const THEMES = {
   slate:  { ink: "#15181d", panel: "#1f242b", panelHi: "#2a313a", line: "#3a434f", chalk: "#f1f4f8", dim: "#9aa6b4", edge: "#0e1115" },
   coffee: { ink: "#1c140f", panel: "#2a1f17", panelHi: "#382a20", line: "#4d3a2c", chalk: "#fbf3ec", dim: "#b8a291", edge: "#130d09" },
 };
-const APP_VERSION = "1.5.0";
+const APP_VERSION = "1.5.1";
 // Big Shoulders has no Cyrillic, so Oswald (also condensed) covers Ukrainian. The browser only
 // downloads the Oswald unicode ranges a page actually uses.
 const DISPLAY = "'Big Shoulders Display', 'Oswald', 'Arial Narrow', Impact, sans-serif";
@@ -1407,6 +1407,41 @@ function AboutBox({ gh, dl, onNews }) {
   );
 }
 
+// The top bar's water-drop detach (1.5.1, Michael: "ako keď hodíš niečo do vody"). One shape that goes from the plate
+// hanging from the top edge (p = 0) to the floating box (p = 1); the goo layer is clipped to it frame by frame.
+// 0–0.5: the sides pull in and the part over the status bar thins into a neck hanging from the top edge.
+// 0.5: the neck snaps. 0.5–1: the drip goes back up into the edge, the bump sinks into the box, the box's top edge
+// wobbles, and a small drop splashes up and falls back in. Going back plays it backwards: drip and bump reach for
+// each other, join, and the neck widens until the box is the plate again. Every subpath is clockwise (union).
+const gLerp = (a, b, t) => a + (b - a) * t;
+const gInOut = t => (t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2);
+const gOut = t => 1 - (1 - t) ** 3;
+function gooPath(p, W, H, S, ins) {
+  const f = n => Math.round(n * 10) / 10, cx = W / 2, parts = [];
+  const rr = (x0, y0, x1, y1, rt, rb) => `M${f(x0 + rt)} ${f(y0)}H${f(x1 - rt)}A${f(rt)} ${f(rt)} 0 0 1 ${f(x1)} ${f(y0 + rt)}V${f(y1 - rb)}A${f(rb)} ${f(rb)} 0 0 1 ${f(x1 - rb)} ${f(y1)}H${f(x0 + rb)}A${f(rb)} ${f(rb)} 0 0 1 ${f(x0)} ${f(y1 - rb)}V${f(y0 + rt)}A${f(rt)} ${f(rt)} 0 0 1 ${f(x0 + rt)} ${f(y0)}Z`;
+  if (p < 0.5) {
+    // the neck pulls the box up and makes it a little narrower (stretch)…
+    const a = gInOut(p / 0.5), x = ins * a + 1.5 * a * a, rt = 24 * a;
+    parts.push(rr(x, S - 3 * a * a, W - x, H, rt, gLerp(26, 24, a)));
+    const wT = gLerp(W, 30, a), wB = gLerp(W, 36, a), wM = W * (1 - a) ** 1.6, yB = S + rt + 1;
+    const xT = cx - wT / 2, xB = cx - wB / 2, xM = cx - wM / 2;
+    parts.push(`M${f(xT)} 0H${f(W - xT)}C${f(W - xM)} ${f(yB * 0.2)} ${f(W - xM)} ${f(yB * 0.8)} ${f(W - xB)} ${f(yB)}H${f(xB)}C${f(xM)} ${f(yB * 0.8)} ${f(xM)} ${f(yB * 0.2)} ${f(xT)} 0Z`);
+  } else {
+    const b = (p - 0.5) / 0.5;
+    // …and after the snap it springs back: squashed (lower and wider), stretched, settling (damped spring)
+    const w = -3 * Math.exp(-4.5 * b) * Math.cos(2 * Math.PI * 1.5 * b) * (1 - b), top = S + w;
+    parts.push(rr(ins - 0.5 * w, top, W - ins + 0.5 * w, H, 24, 24));
+    const hd = S * 0.45 * (1 - gOut(Math.min(1, b * 1.4))), wd = 30;
+    if (hd > 0.3) parts.push(`M${f(cx - wd / 2)} 0H${f(cx + wd / 2)}C${f(cx + wd * 0.15)} ${f(hd * 0.35)} ${f(cx + wd * 0.3)} ${f(hd)} ${f(cx)} ${f(hd)}C${f(cx - wd * 0.3)} ${f(hd)} ${f(cx - wd * 0.15)} ${f(hd * 0.35)} ${f(cx - wd / 2)} 0Z`);
+    const hb = S * 0.45 * (1 - gOut(Math.min(1, b * 1.6))), wb = 36;
+    if (hb > 0.3) parts.push(`M${f(cx - wb / 2)} ${f(top + 2)}C${f(cx - wb * 0.15)} ${f(top - hb * 0.35)} ${f(cx - wb * 0.3)} ${f(top - hb)} ${f(cx)} ${f(top - hb)}C${f(cx + wb * 0.3)} ${f(top - hb)} ${f(cx + wb * 0.15)} ${f(top - hb * 0.35)} ${f(cx + wb / 2)} ${f(top + 2)}Z`);
+    const r = 4 * (1 - b ** 3), yd = S * 0.5 - S * 0.3 * Math.sin(Math.PI * b) + S * 0.5 * b * b;
+    if (r > 0.4) parts.push(`M${f(cx + r)} ${f(yd)}A${f(r)} ${f(r)} 0 1 1 ${f(cx - r)} ${f(yd)}A${f(r)} ${f(r)} 0 1 1 ${f(cx + r)} ${f(yd)}Z`);
+  }
+  const bh = 3 * (1 - p);
+  if (bh > 0.2) parts.push(`M0 0H${f(W)}V${f(bh)}H0Z`);
+  return parts.join("");
+}
 function TopBar({ screen, history, menuOpen, onMenu, onGo, dlPct, badge }) {
   const now = useClock();
   const ap = useApk();
@@ -1431,10 +1466,40 @@ function TopBar({ screen, history, menuOpen, onMenu, onGo, dlPct, badge }) {
     check();
     return () => { window.removeEventListener("scroll", on); if (raf) cancelAnimationFrame(raf); };
   }, []);
+  // 1.5.1: the plate doesn't cross-fade into the box any more; a liquid shape (gooPath) carries it over. The goo layer
+  // has the plate's background and only a clip-path changes per frame (~0.7 s, a small repaint); before and after,
+  // the plain plate or box shows as before. Content never moves.
+  const outRef = useRef(null), gooRef = useRef(null), wrapRef = useRef(null), gs = useRef(null);
+  useLayoutEffect(() => {
+    const out = outRef.current, goo = gooRef.current, wrap = wrapRef.current;
+    if (!out || !goo || !wrap) return;
+    const g = gs.current || (gs.current = { p: fl ? 1 : 0, raf: 0, t: 0 });
+    const to = fl ? 1 : 0;
+    if (g.p === to && !g.raf) return;
+    cancelAnimationFrame(g.raf); clearTimeout(g.t); g.raf = 0;
+    let reduce = false;
+    try { reduce = matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (_) {}
+    if (reduce) { g.p = to; out.removeAttribute("data-goo"); goo.style.visibility = "hidden"; return; }
+    out.setAttribute("data-goo", ""); // before measuring: the measurement applies styles, and the box must not start fading in
+    const W = goo.offsetWidth, H = goo.offsetHeight, S = H - wrap.offsetHeight, ins = (W - wrap.offsetWidth) / 2;
+    const dur = to ? 720 : 620;
+    goo.style.visibility = "visible";
+    let last = performance.now();
+    const step = now => {
+      g.p = to ? Math.min(1, g.p + (now - last) / dur) : Math.max(0, g.p - (now - last) / dur); last = now;
+      goo.style.clipPath = `path("${gooPath(g.p, W, H, S, ins)}")`;
+      if (g.p !== to) { g.raf = requestAnimationFrame(step); return; }
+      g.raf = 0; out.removeAttribute("data-goo");
+      g.t = setTimeout(() => { goo.style.visibility = "hidden"; }, 240); // the box fades in over the same shape first
+    };
+    step(last);
+  }, [fl]);
+  useEffect(() => () => { const g = gs.current; if (g) { cancelAnimationFrame(g.raf); clearTimeout(g.t); } }, []);
   const box = liquid ? { ...LIQUID_FLOAT(), boxShadow: GLASS_EDGE } : LOOK === "glass" ? { ...GLASS(), borderRadius: undefined, boxShadow: "inset 0 1px 0 rgba(255,255,255,.22), inset 0 -1px 0 rgba(255,255,255,.06)" } : { background: LOOK === "tiles" ? C.panelHi : C.panel, border: `1px solid ${C.line}` };
   return (
-    <div data-topbar data-topbar-float={fl ? 1 : 0} className={"tbOut" + (fl ? " fl" : "")} style={{ "--tbFade": C.ink }}>
-      <div className="tbWrap">
+    <div ref={outRef} data-topbar data-topbar-float={fl ? 1 : 0} className={"tbOut" + (fl ? " fl" : "")} style={{ "--tbFade": C.ink }}>
+      <div ref={wrapRef} className="tbWrap">
+        <div aria-hidden="true" ref={gooRef} data-topbar-goo className="tbGoo" style={{ background: box.background }} />
         <div aria-hidden="true" className="tbPill" style={{ ...box, boxShadow: `${liquid ? GLASS_EDGE + ", " : ""}0 10px 26px rgba(0,0,0,.3)` }} />
         <div aria-hidden="true" data-topbar-plate className="tbPlate" style={{ background: box.background, borderBottom: box.border }} />
         <div data-topbar-box className="tbBox">
@@ -5544,12 +5609,13 @@ export default function App() {
         .tbOut.fl::before{opacity:1;visibility:visible;transition:opacity .35s ease}
         .tbWrap{position:relative;max-width:440px;margin:0 auto}
         .tbBox{pointer-events:auto;position:relative;z-index:3;display:flex;align-items:center;gap:8px;padding:11px 13px 11px 19px}
-        .tbPill{position:absolute;inset:0;border-radius:24px;opacity:0;visibility:hidden;transition:opacity .3s ease,visibility 0s .3s}
-        .tbOut.fl .tbPill{opacity:1;visibility:visible;transition:opacity .3s ease}
-        .tbPlate{position:absolute;z-index:2;pointer-events:none;left:-10px;right:-10px;bottom:0;top:calc(-6px - var(--sat));border-radius:0 0 26px 26px;transform-origin:50% 100%;transition:transform .5s cubic-bezier(.22,1,.36,1),opacity .38s ease}
-        .tbOut.fl .tbPlate{opacity:0;visibility:hidden;transform:scale(.952,.7);transition:transform .5s cubic-bezier(.22,1,.36,1),opacity .38s ease,visibility 0s .5s}
-        @media (max-width: 380px){.tbOut{padding-left:6px;padding-right:6px}.tbPlate{left:-6px;right:-6px}.tbBox{padding:11px 9px 11px 13px;gap:6px}}
-        @media (prefers-reduced-motion: reduce){.tbOut::before,.tbOut.fl::before,.tbPlate,.tbOut.fl .tbPlate,.tbPill,.tbOut.fl .tbPill{transition:none}}
+        .tbPill{position:absolute;z-index:2;inset:0;border-radius:24px;opacity:0;visibility:hidden;transition:opacity .22s ease,visibility 0s .22s}
+        .tbOut.fl:not([data-goo]) .tbPill{opacity:1;visibility:visible;transition:opacity .22s ease}
+        .tbPlate{position:absolute;z-index:2;pointer-events:none;left:-10px;right:-10px;bottom:0;top:calc(-6px - var(--sat));border-radius:0 0 26px 26px}
+        .tbOut.fl .tbPlate,.tbOut[data-goo] .tbPlate{visibility:hidden}
+        .tbGoo{position:absolute;z-index:1;pointer-events:none;left:-10px;right:-10px;bottom:0;top:calc(-6px - var(--sat));visibility:hidden}
+        @media (max-width: 380px){.tbOut{padding-left:6px;padding-right:6px}.tbPlate,.tbGoo{left:-6px;right:-6px}.tbBox{padding:11px 9px 11px 13px;gap:6px}}
+        @media (prefers-reduced-motion: reduce){.tbOut::before,.tbOut.fl::before,.tbPill,.tbOut.fl .tbPill{transition:none}}
         @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}.conf{display:none}}
       `}</style>
       {!loaded ? (

@@ -1048,6 +1048,9 @@ export default {
     "Glass layout looks more like real glass: a sheen from the corner, a soft reflection, a bright top edge and a soft glow of the theme colours behind the boxes. The Start bar and the ☰ menu match it, and it stays light on the phone.",
     "Top bar: at the top of the page it now fills the screen edge to edge, without a line at the top or sides.",
   ],
+  news151: [
+    "Top bar: when you scroll, it now comes off the top edge like a drop of water: it stretches into a thin neck, snaps off, wobbles for a moment and a small drop splashes back in. Scrolling back to the top, it flows together with the edge again. Before, one background simply faded into the other.",
+  ],
   news15: [
     ["Friends", "HW App was just you and your phone.", "Sign in with Google (optional, 16+) and pick a nickname. Add friends by code, share link or nickname, accept or decline requests, and remove, block or report anyone. Without an account everything works as before."],
     ["Leaderboard", "Your level and streak were only on your phone.", "Compare level, streak and workouts with your friends. If you want, switch yourself into the world top 50."],

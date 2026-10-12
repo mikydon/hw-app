@@ -1048,6 +1048,9 @@ export default {
     "O layout Vidro parece mais vidro de verdade: um brilho a partir do canto, um reflexo suave, uma borda superior clara e um brilho suave das cores do tema atrás das caixas. A barra de início e o menu ☰ combinam com ele, e continua leve para o telemóvel.",
     "Barra superior: no topo da página, agora preenche o ecrã de uma ponta à outra, sem linha em cima nem dos lados.",
   ],
+  news151: [
+    "Barra superior: ao rolar, ela se solta da borda de cima como uma gota d'água: estica-se num pescoço fino, solta-se, balança um instante e uma gotinha respinga de volta. Ao voltar ao topo, ela se funde de novo com a borda. Antes, um fundo apenas se misturava com o outro.",
+  ],
   news15: [
     ["Amigos", "A HW App eras só tu e o teu telemóvel.", "Inicia sessão com o Google (opcional, a partir dos 16) e escolhe uma alcunha. Adiciona amigos por código, link ou alcunha, aceita ou recusa pedidos, e remove, bloqueia ou denuncia quem quiseres. Sem conta, tudo funciona como antes."],
     ["Classificação", "O teu nível e a tua sequência só existiam no teu telemóvel.", "Compara nível, sequência e treinos com os teus amigos. Se quiseres, liga-te ao top 50 mundial."],

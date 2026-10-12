@@ -1048,6 +1048,9 @@ export default {
     "Rozloženie Sklo vyzerá viac ako skutočné sklo: odlesk z rohu, jemný odraz, svetlá horná hrana a jemná žiara farieb témy za boxmi. Lišta so štartom a menu ☰ k nemu ladia a mobil to stále nezaťažuje.",
     "Horná lišta: keď si úplne hore, vypĺňa obrazovku od kraja po kraj, bez čiary hore a po bokoch.",
   ],
+  news151: [
+    "Horná lišta: keď scrolluješ, odlepí sa od horného okraja ako kvapka vody: natiahne sa do tenkého krčka, odtrhne sa, chvíľu sa zhupne a malá kvapka šplechne späť. Keď sa vrátiš hore, zase sa s okrajom zleje. Predtým sa jedno pozadie len prelínalo do druhého.",
+  ],
   news15: [
     ["Priatelia", "HW App bola len ty a tvoj mobil.", "Prihlás sa cez Google (dobrovoľne, od 16 rokov) a vyber si prezývku. Priateľov pridáš kódom, odkazom alebo podľa prezývky, žiadosti prijmeš alebo odmietneš a kohokoľvek môžeš odstrániť, zablokovať či nahlásiť. Bez účtu všetko funguje ako doteraz."],
     ["Rebríček", "Level a séria boli len v tvojom mobile.", "Porovnávaj level, sériu a tréningy s priateľmi. Ak chceš, zapni sa do svetovej top 50."],

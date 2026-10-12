@@ -1048,6 +1048,9 @@ export default {
     "Das Layout Glas sieht echtem Glas ähnlicher: ein Glanz aus der Ecke, eine sanfte Spiegelung, eine helle Oberkante und ein sanftes Leuchten der Themenfarben hinter den Boxen. Die Startleiste und das ☰-Menü passen dazu, und das Handy wird weiterhin kaum belastet.",
     "Obere Leiste: ganz oben auf der Seite füllt sie den Bildschirm jetzt von Rand zu Rand, ohne Linie oben oder an den Seiten.",
   ],
+  news151: [
+    "Obere Leiste: Beim Scrollen löst sie sich wie ein Wassertropfen vom oberen Rand: Sie zieht sich zu einem dünnen Hals, reißt ab, wippt kurz nach, und ein kleiner Tropfen spritzt zurück. Scrollst du wieder nach oben, fließt sie wieder mit dem Rand zusammen. Vorher wurde ein Hintergrund nur in den anderen überblendet.",
+  ],
   news15: [
     ["Freunde", "HW App war nur du und dein Handy.", "Melde dich mit Google an (freiwillig, ab 16) und wähle einen Spitznamen. Füge Freunde per Code, Link oder Spitzname hinzu, nimm Anfragen an oder lehne sie ab, und entferne, blockiere oder melde jeden. Ohne Konto funktioniert alles wie bisher."],
     ["Bestenliste", "Dein Level und deine Serie gab es nur auf deinem Handy.", "Vergleiche Level, Serie und Trainings mit deinen Freunden. Wenn du willst, schalte dich in die Welt-Top-50."],

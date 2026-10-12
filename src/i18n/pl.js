@@ -1048,6 +1048,9 @@ export default {
     "Układ Szkło wygląda bardziej jak prawdziwe szkło: połysk od rogu, delikatne odbicie, jasna górna krawędź i delikatna poświata kolorów motywu za polami. Pasek startu i menu ☰ do niego pasują, a telefon nadal się nie męczy.",
     "Górny pasek: na samej górze strony wypełnia ekran od krawędzi do krawędzi, bez linii u góry i po bokach.",
   ],
+  news151: [
+    "Górny pasek: przy przewijaniu odrywa się od górnej krawędzi jak kropla wody: wyciąga się w cienką szyjkę, odrywa, chwilę się kołysze, a mała kropla chlapie z powrotem. Gdy wrócisz na górę, znów zlewa się z krawędzią. Wcześniej jedno tło po prostu przenikało w drugie.",
+  ],
   news15: [
     ["Znajomi", "HW App to był tylko ty i twój telefon.", "Zaloguj się przez Google (dobrowolnie, od 16 lat) i wybierz pseudonim. Dodawaj znajomych kodem, linkiem lub po pseudonimie, akceptuj lub odrzucaj zaproszenia, a każdego możesz usunąć, zablokować lub zgłosić. Bez konta wszystko działa jak dotąd."],
     ["Ranking", "Poziom i seria były tylko w twoim telefonie.", "Porównuj poziom, serię i treningi ze znajomymi. Jeśli chcesz, włącz się do światowego top 50."],

@@ -1048,6 +1048,9 @@ export default {
     "Az Üveg elrendezés jobban hasonlít a valódi üvegre: csillanás a sarokból, lágy tükröződés, világos felső él és a téma színeinek halvány fénye a dobozok mögött. Az indítósáv és a ☰ menü illik hozzá, és a telefont továbbra sem terheli.",
     "Felső sáv: az oldal tetején most szélétől széléig kitölti a képernyőt, vonal nélkül felül és oldalt.",
   ],
+  news151: [
+    "Felső sáv: görgetéskor úgy válik le a felső szélről, mint egy vízcsepp: vékony nyakká nyúlik, elszakad, egy pillanatig ringatózik, és egy kis csepp visszacsobban. Ha visszagörgetsz a tetejére, újra összefolyik a széllel. Korábban az egyik háttér csak átúszott a másikba.",
+  ],
   news15: [
     ["Barátok", "A HW App csak rólad és a telefonodról szólt.", "Jelentkezz be Google-fiókkal (önkéntes, 16 éves kortól), és válassz becenevet. Barátokat kóddal, linkkel vagy becenévvel adhatsz hozzá, a kéréseket elfogadhatod vagy elutasíthatod, és bárkit eltávolíthatsz, letilthatsz vagy jelenthetsz. Fiók nélkül minden úgy működik, mint eddig."],
     ["Ranglista", "A szinted és a sorozatod csak a telefonodon volt.", "Hasonlítsd össze a szintet, a sorozatot és az edzéseket a barátaiddal. Ha szeretnéd, kapcsold be magad a világ top 50-be."],
