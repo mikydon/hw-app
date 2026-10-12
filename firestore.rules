@@ -69,6 +69,26 @@ service cloud.firestore {
       allow create, update: if isMe(uid) && only(['json', 'n', 'ts']) && data().json is string
         && data().json.size() < 900000 && intIn(data().n, 0, 100000) && nowTs();
     }
+    // Chats (1.5.0): only the two people in the chat id (their uids, sorted, joined by "_") can read it;
+    // writing needs them to be friends right now. Either of them can delete (account deletion).
+    function members(cid) { return cid.split('_'); }
+    function inChat(cid) { return signedIn() && members(cid).size() == 2 && request.auth.uid in members(cid); }
+    function otherIn(cid) { return members(cid)[0] == request.auth.uid ? members(cid)[1] : members(cid)[0]; }
+    function friendsWith(o) { return exists(/databases/$(database)/documents/friends/$(request.auth.uid)/list/$(o)); }
+    function textOk(t, max) { return t is string && t.size() >= 1 && t.size() <= max; }
+    match /chats/{cid} {
+      allow get, delete: if inChat(cid);
+      allow list: if signedIn() && request.auth.uid in resource.data.m;
+      allow create, update: if inChat(cid) && friendsWith(otherIn(cid)) && only(['m', 'last'])
+        && data().m == members(cid) && members(cid)[0] < members(cid)[1]
+        && data().last.keys().hasOnly(['from', 'text', 'ts']) && data().last.from == request.auth.uid
+        && textOk(data().last.text, 120) && data().last.ts == request.time;
+      match /msgs/{mid} {
+        allow read, delete: if inChat(cid);
+        allow create: if inChat(cid) && friendsWith(otherIn(cid)) && only(['from', 'text', 'ts'])
+          && data().from == request.auth.uid && textOk(data().text, 1000) && nowTs();
+      }
+    }
     // Reports about a profile: anyone signed in can send one; only the developer reads them (console).
     match /reports/{id} {
       allow create: if signedIn() && only(['by', 'about', 'reason', 'ts']) && data().by == request.auth.uid

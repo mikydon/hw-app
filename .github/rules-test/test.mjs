@@ -2,7 +2,7 @@
 // Every case says who tries what and whether the rules must allow it. Results show up as annotations on the run.
 import { readFileSync } from "node:fs";
 import { initializeTestEnvironment, assertSucceeds, assertFails } from "@firebase/rules-unit-testing";
-import { doc, getDoc, setDoc, deleteDoc, collection, getDocs, query, orderBy, limit, writeBatch, addDoc, serverTimestamp } from "firebase/firestore";
+import { doc, getDoc, setDoc, deleteDoc, collection, getDocs, query, where, orderBy, limit, writeBatch, addDoc, serverTimestamp } from "firebase/firestore";
 
 const env = await initializeTestEnvironment({ projectId: "demo-hw-app", firestore: { rules: readFileSync("firestore.rules", "utf8"), host: "127.0.0.1", port: 8080 } });
 const as = u => (u ? env.authenticatedContext(u) : env.unauthenticatedContext()).firestore();
@@ -93,6 +93,38 @@ await t("bob reports a profile", true, () => addDoc(collection(as("bob"), "repor
 await t("a report in someone else's name is refused", false, () => addDoc(collection(as("bob"), "reports"), { by: "alice", about: "carol", reason: "x", ts: serverTimestamp() }));
 await t("reports can't be read in the app", false, () => getDocs(collection(as("bob"), "reports")));
 await t("other collections are closed", false, () => setDoc(doc(as("bob"), "anything", "x"), { a: 1 }));
+
+console.log("chats");
+await setDoc(doc(as("bob"), "inbox", "alice", "from", "bob"), { ts: serverTimestamp() });
+await setDoc(doc(as("alice"), "inbox", "bob", "from", "alice"), { ts: serverTimestamp() });
+await t("both asked: accepting writes both lists and removes both requests in one batch", true, () => {
+  const db = as("alice"), b = writeBatch(db);
+  b.set(doc(db, "friends", "alice", "list", "bob"), { ts: serverTimestamp() }); b.set(doc(db, "friends", "bob", "list", "alice"), { ts: serverTimestamp() });
+  b.delete(doc(db, "inbox", "alice", "from", "bob")); b.delete(doc(db, "inbox", "bob", "from", "alice"));
+  return b.commit();
+});
+await t("accepting again when already friends only removes the request (no second write of the lists)", false, () => setDoc(doc(as("bob"), "friends", "bob", "list", "alice"), { ts: serverTimestamp() }));
+const send = (u, cid, text, extra = {}) => { const db = as(u), b = writeBatch(db); b.set(doc(collection(db, "chats", cid, "msgs")), { from: u, text, ts: serverTimestamp(), ...extra }); b.set(doc(db, "chats", cid), { m: cid.split("_"), last: { from: u, text: text.slice(0, 120), ts: serverTimestamp() } }); return b.commit(); };
+await t("alice writes to her friend bob", true, () => send("alice", "alice_bob", "Ahoj! 💪"));
+await t("bob answers", true, () => send("bob", "alice_bob", "Čau"));
+await t("bob reads the messages", true, () => getDocs(query(collection(as("bob"), "chats", "alice_bob", "msgs"), orderBy("ts"))));
+await t("bob lists his chats", true, () => getDocs(query(collection(as("bob"), "chats"), where("m", "array-contains", "bob"))));
+await t("carol can't read their chat", false, () => getDocs(collection(as("carol"), "chats", "alice_bob", "msgs")));
+await t("carol can't list chats she isn't in", false, () => getDocs(query(collection(as("carol"), "chats"), where("m", "array-contains", "alice"))));
+await t("carol can't write to a non-friend", false, () => send("carol", "alice_carol", "hi"));
+await t("nobody writes in someone else's name", false, () => { const db = as("bob"); return setDoc(doc(collection(db, "chats", "alice_bob", "msgs")), { from: "alice", text: "x", ts: serverTimestamp() }); });
+await t("empty messages are refused", false, () => send("bob", "alice_bob", ""));
+await t("messages over 1000 characters are refused", false, () => send("bob", "alice_bob", "x".repeat(1001)));
+await t("chat ids must be the two uids in sorted order", false, () => send("bob", "bob_alice", "hi"));
+await t("after unfriending, no more messages", false, async () => {
+  const db = as("bob"), b = writeBatch(db); b.delete(doc(db, "friends", "bob", "list", "alice")); b.delete(doc(db, "friends", "alice", "list", "bob")); await b.commit();
+  return send("bob", "alice_bob", "still there?");
+});
+await t("but the old chat stays readable for both", true, () => getDocs(collection(as("alice"), "chats", "alice_bob", "msgs")));
+await t("a member can delete the chat (account deletion)", true, async () => {
+  const s = await getDocs(collection(as("alice"), "chats", "alice_bob", "msgs"));
+  const db = as("alice"), b = writeBatch(db); s.docs.forEach(m => b.delete(doc(db, "chats", "alice_bob", "msgs", m.id))); b.delete(doc(db, "chats", "alice_bob")); return b.commit();
+});
 
 console.log("deleting an account");
 await t("deleting a nickname that doesn't exist is harmless", true, () => deleteDoc(doc(as("carol"), "nicks", "never_was")));
