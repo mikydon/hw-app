@@ -3976,9 +3976,15 @@ function ChatView({ me, other, canWrite, onBack, onOpen, onReport, sheet }) {
   const endRef = useRef(null);
   useBack(onBack);
   useEffect(() => {
-    let off = null;
-    try { off = cloud().watchMsgs(other.uid, m => { setMsgs(m); markRead(chatIdOf(me, other.uid), m.length ? m[m.length - 1].ts : Date.now()); }, e => setErr(cloudErr(e))); } catch (e) { setErr(cloudErr(e)); }
-    return () => { if (off) off(); };
+    // On an error: show it instead of "Loading…" and listen again after 10 s.
+    let off = null, t = null, dead = false;
+    const run = () => {
+      if (dead) return;
+      const again = e => { setErr(cloudErr(e)); setMsgs(m => m || []); try { off && off(); } catch (_) {} off = null; clearTimeout(t); t = setTimeout(run, 10000); };
+      try { off = cloud().watchMsgs(other.uid, m => { setErr(""); setMsgs(m); markRead(chatIdOf(me, other.uid), m.length ? m[m.length - 1].ts : Date.now()); }, again); } catch (e) { again(e); }
+    };
+    run();
+    return () => { dead = true; clearTimeout(t); try { off && off(); } catch (_) {} };
   }, [other.uid]);
   useEffect(() => { try { endRef.current && endRef.current.scrollIntoView({ block: "end" }); } catch (_) {} }, [msgs && msgs.length]);
   const send = () => {
@@ -5240,17 +5246,28 @@ export default function App() {
     const fail = e => setSocial(x => ({ ...x, err: cloudErr(e) }));
     // no notice on the Friends screen itself: the lists there update live and show the badges
     const ping = n => { if (onFriendsRef.current) return; setNotice({ ...n, id: Date.now() }); if (!busyRef.current) sfxTap(); if ((window._wset || {}).vibrate) vibratePattern([40]); };
+    // A listener that fails (offline, rules just changed…) stops for good in Firestore: try again after 20 s.
+    const keep = (start, onData) => {
+      let off = null, t = null, dead = false;
+      const run = () => {
+        if (dead) return;
+        const again = e => { fail(e); try { off && off(); } catch (_) {} off = null; clearTimeout(t); t = setTimeout(run, 20000); };
+        try { off = start(d => { onData(d); setSocial(x => (x.err ? { ...x, err: "" } : x)); }, again); } catch (e) { again(e); }
+      };
+      run();
+      return () => { dead = true; clearTimeout(t); try { off && off(); } catch (_) {} };
+    };
     try {
-      offs.push(c.watchRequests(r => {
+      offs.push(keep((ok, er) => c.watchRequests(ok, er), r => {
         const bl = cloudMem().blocked || [];
         r.filter(x => x.missing || bl.includes(x.uid)).forEach(x => c.decline(x.uid).catch(() => {}));
         const ok = r.filter(x => !x.missing && !bl.includes(x.uid));
         if (seen.reqs) { const fresh = ok.find(x => !seen.reqs.includes(x.uid)); if (fresh) ping({ kind: "req", p: fresh }); }
         seen.reqs = ok.map(x => x.uid);
-        setSocial(x => ({ ...x, reqs: ok, err: "" }));
-      }, fail));
-      offs.push(c.watchFriends(f => setSocial(x => ({ ...x, friends: f.filter(y => !y.missing) })), fail));
-      offs.push(c.watchChats(ch => {
+        setSocial(x => ({ ...x, reqs: ok }));
+      }));
+      offs.push(keep((ok, er) => c.watchFriends(ok, er), f => setSocial(x => ({ ...x, friends: f.filter(y => !y.missing) }))));
+      offs.push(keep((ok, er) => c.watchChats(ok, er), ch => {
         if (seen.chats) {
           const bl = cloudMem().blocked || [];
           const fresh = ch.find(k => k.last.from && k.last.from !== me && !bl.includes(k.other) && k.last.ts > (seen.chats[k.cid] || 0) && chatWithRef.current !== k.other);
@@ -5258,7 +5275,7 @@ export default function App() {
         }
         seen.chats = Object.fromEntries(ch.map(k => [k.cid, k.last.ts]));
         setSocial(x => ({ ...x, chats: ch }));
-      }, fail));
+      }));
     } catch (e) { fail(e); }
     return () => offs.forEach(f => { try { f && f(); } catch (_) {} });
   }, [acct.st, acct.prof && acct.prof.code]);
