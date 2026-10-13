@@ -136,6 +136,7 @@ await t("bob sets the chat colour", true, () => setDoc(doc(as("bob"), "chats", "
 await t("only the app's colours", false, () => setDoc(doc(as("bob"), "chats", "alice_bob"), { m: ["alice", "bob"], th: "#ff0000" }, { merge: true }));
 await t("a colour change can't rewrite the last message", false, () => setDoc(doc(as("bob"), "chats", "alice_bob"), { m: ["alice", "bob"], th: "sky", last: { from: "alice", text: "fake", ts: serverTimestamp() } }, { merge: true }));
 await t("a message keeps the colour (merge)", true, () => { const db = as("alice"), b = writeBatch(db); b.set(doc(collection(db, "chats", "alice_bob", "msgs")), { from: "alice", text: "farba!", ts: serverTimestamp() }); b.set(doc(db, "chats", "alice_bob"), { m: ["alice", "bob"], last: { from: "alice", text: "farba!", ts: serverTimestamp() } }, { merge: true }); return b.commit(); });
+await t("an older app (1.5.1) still sends in a coloured chat (writes it without the colour)", true, () => send("bob", "alice_bob", "z 1.5.1"));
 await t("carol can't colour their chat", false, () => setDoc(doc(as("carol"), "chats", "alice_bob"), { m: ["alice", "bob"], th: "red" }, { merge: true }));
 await t("no colour for a chat with a non-friend", false, () => setDoc(doc(as("alice"), "chats", "alice_carol"), { m: ["alice", "carol"], th: "mint" }, { merge: true }));
 await t("bob lists his chats", true, () => getDocs(query(collection(as("bob"), "chats"), where("m", "array-contains", "bob"))));

@@ -90,7 +90,8 @@ service cloud.firestore {
       allow update: if inChat(cid) && friendsWith(otherIn(cid)) && only(['m', 'last', 'th'])
         && data().m == resource.data.m
         && (data().get('last', null) == resource.data.get('last', null) || lastOk())
-        && (data().get('th', null) == resource.data.get('th', null) || themeOk(data().th));
+        // (an older app, 1.5.1, rewrites the chat without the colour when it sends: allowed, the colour just resets)
+        && (data().get('th', null) == resource.data.get('th', null) || !('th' in data()) || themeOk(data().th));
       // 1.5.2: a reply carries a short copy of the message it answers (re); the sender can edit the text of their own
       // message for 15 minutes (ed = when), nothing else changes.
       function reOk(r) { return r is map && r.keys().hasOnly(['id', 'from', 'text']) && r.id is string && r.id.size() <= 40
