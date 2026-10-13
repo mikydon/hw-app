@@ -1070,7 +1070,7 @@ export default {
     "I link nei messaggi si aprono nel browser.",
     "Mentre leggi messaggi vecchi, la chat non salta più in fondo: compare il pulsante «Nuovi messaggi». Il campo di scrittura non copre più i messaggi più recenti.",
     "Reazioni come su Instagram: tieni premuto un messaggio per ❤️ 😂 😮 😢 😡 👍 o la freccia con tutte le emoji; doppio tocco = ❤️. Tocca le reazioni per vedere chi ha reagito.",
-    "Colore della chat: tocca il pallino colorato in alto nella chat e scegli tra 14 colori; lo vedete entrambi.",
+    "Colore della chat: tocca il pallino colorato in alto nella chat e scegli tra 26 colori; lo vedete entrambi.",
   ],
   news151: [
     "Barra in alto: quando scorri, si stacca dal bordo superiore come una goccia d'acqua: si allunga in un collo sottile, si stacca, oscilla un attimo e una gocciolina rimbalza dentro. Tornando in cima, si fonde di nuovo con il bordo. Prima uno sfondo sfumava semplicemente nell'altro. Se cambi direzione a metà, torna indietro dolcemente da dove si trova.",

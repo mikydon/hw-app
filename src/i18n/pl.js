@@ -1070,7 +1070,7 @@ export default {
     "Linki w wiadomościach otwierają się w przeglądarce.",
     "Gdy czytasz starsze wiadomości, czat już nie przeskakuje w dół: pojawia się przycisk „Nowe wiadomości”. Pole pisania nie zasłania już najnowszych wiadomości.",
     "Reakcje jak na Instagramie: przytrzymaj wiadomość dla ❤️ 😂 😮 😢 😡 👍 lub strzałki ze wszystkimi emoji, podwójne dotknięcie = ❤️. Dotknij reakcji, by zobaczyć, kto zareagował.",
-    "Kolor czatu: dotknij kolorowej kropki w nagłówku czatu i wybierz jeden z 14 kolorów; widzicie go oboje.",
+    "Kolor czatu: dotknij kolorowej kropki w nagłówku czatu i wybierz jeden z 26 kolorów; widzicie go oboje.",
   ],
   news151: [
     "Górny pasek: przy przewijaniu odrywa się od górnej krawędzi jak kropla wody: wyciąga się w cienką szyjkę, odrywa, chwilę się kołysze, a mała kropla chlapie z powrotem. Gdy wrócisz na górę, znów zlewa się z krawędzią. Wcześniej jedno tło po prostu przenikało w drugie. Gdy w połowie zmienisz kierunek, płynnie wraca od miejsca, w którym jest.",

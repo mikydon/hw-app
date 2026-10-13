@@ -78,7 +78,8 @@ service cloud.firestore {
     function textOk(t, max) { return t is string && t.size() >= 1 && t.size() <= max; }
     // 1.5.2: th = the chat's colour, set by either of them (one of the app's colours); "last" is only written with a
     // new message by its sender (a chat may exist with just a colour).
-    function themeOk(t) { return t in ['y', 'mint', 'sky', 'pink', 'violet', 'orange', 'red', 'white', 'sunset', 'ocean', 'aurora', 'insta', 'berry', 'night']; }
+    function themeOk(t) { return t in ['y', 'mint', 'sky', 'pink', 'violet', 'orange', 'red', 'white', 'lime', 'teal', 'coral', 'indigo', 'rose', 'grey',
+      'sunset', 'ocean', 'aurora', 'insta', 'berry', 'night', 'fire', 'candy', 'forest', 'mono', 'peach', 'galaxy']; }
     function lastOk() { return data().last.keys().hasOnly(['from', 'text', 'ts']) && data().last.from == request.auth.uid
         && textOk(data().last.text, 120) && data().last.ts == request.time; }
     match /chats/{cid} {

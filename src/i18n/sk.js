@@ -1070,7 +1070,7 @@ export default {
     "Odkazy v správach sa otvoria v prehliadači.",
     "Keď čítaš staršie správy, chat už neskočí dole: ukáže sa tlačidlo „Nové správy“. Pole na písanie už neprekrýva najnovšie správy.",
     "Reakcie ako na Instagrame: podrž správu pre ❤️ 😂 😮 😢 😡 👍 alebo šípku so všetkými emoji, dvojité ťuknutie = ❤️. Ťukni na reakcie a uvidíš, kto ako reagoval.",
-    "Farba chatu: ťukni na farebnú bodku v hlavičke chatu a vyber si zo 14 farieb, uvidíte ju obaja.",
+    "Farba chatu: ťukni na farebnú bodku v hlavičke chatu a vyber si zo 26 farieb, uvidíte ju obaja.",
   ],
   news151: [
     "Horná lišta: keď scrolluješ, odlepí sa od horného okraja ako kvapka vody: natiahne sa do tenkého krčka, odtrhne sa, chvíľu sa zhupne a malá kvapka šplechne späť. Keď sa vrátiš hore, zase sa s okrajom zleje. Predtým sa jedno pozadie len prelínalo do druhého. Keď v polovici zmeníš smer, plynule sa vráti odtiaľ, kde práve je.",

@@ -1070,7 +1070,7 @@ export default {
     "Os links nas mensagens abrem no navegador.",
     "Enquanto você lê mensagens antigas, o chat não pula mais para baixo: aparece o botão «Novas mensagens». O campo de texto não cobre mais as mensagens mais recentes.",
     "Reações como no Instagram: segure uma mensagem para ❤️ 😂 😮 😢 😡 👍 ou a seta com todos os emojis; toque duplo = ❤️. Toque nas reações para ver quem reagiu.",
-    "Cor do chat: toque no ponto colorido no topo do chat e escolha uma de 14 cores; vocês dois a veem.",
+    "Cor do chat: toque no ponto colorido no topo do chat e escolha uma de 26 cores; vocês dois a veem.",
   ],
   news151: [
     "Barra superior: ao rolar, ela se solta da borda de cima como uma gota d'água: estica-se num pescoço fino, solta-se, balança um instante e uma gotinha respinga de volta. Ao voltar ao topo, ela se funde de novo com a borda. Antes, um fundo apenas se misturava com o outro. Se mudar de direção no meio, ela volta suavemente de onde está.",

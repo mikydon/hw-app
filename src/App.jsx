@@ -4137,10 +4137,15 @@ const ICON_FLAG = "M5 21V4m0 0h11l-2 4 2 4H5";
 const CHAT_THEMES = [
   { id: "y" }, { id: "mint", bg: "#5fe3a1", ink: "#0b2a1b" }, { id: "sky", bg: "#7cc4ff", ink: "#0a2035" },
   { id: "pink", bg: "#ff7ab6", ink: "#2e0a1b" }, { id: "violet", bg: "#a78bfa", ink: "#1c1036" }, { id: "orange", bg: "#ff9f43", ink: "#2b1600" },
-  { id: "red", bg: "#ff6b6b", ink: "#2b0606" }, { id: "white", bg: "#eef2ff", ink: "#111827" },
+  { id: "red", bg: "#ff6b6b", ink: "#2b0606" }, { id: "white", bg: "#eef2ff", ink: "#111827" }, { id: "lime", bg: "#b5f05a", ink: "#162400" },
+  { id: "teal", bg: "#2dd4bf", ink: "#032420" }, { id: "coral", bg: "#ff8a65", ink: "#2b0d04" }, { id: "indigo", bg: "#818cf8", ink: "#0f1240" },
+  { id: "rose", bg: "#fb7185", ink: "#2d0610" }, { id: "grey", bg: "#a3acb9", ink: "#11161d" },
   { id: "sunset", bg: "linear-gradient(135deg,#ffb36b,#ff5e8a)", ink: "#2b0a10" }, { id: "ocean", bg: "linear-gradient(135deg,#2563eb,#0e7490)", ink: "#ffffff" },
   { id: "aurora", bg: "linear-gradient(135deg,#4ade80,#2dd4bf)", ink: "#04140f" }, { id: "insta", bg: "linear-gradient(135deg,#d62976,#962fbf 55%,#4f5bd5)", ink: "#ffffff" },
   { id: "berry", bg: "linear-gradient(135deg,#b8a4e3,#fbc2eb)", ink: "#26103a" }, { id: "night", bg: "linear-gradient(135deg,#4338ca,#7c3aed)", ink: "#ffffff" },
+  { id: "fire", bg: "linear-gradient(135deg,#f5af19,#f12711)", ink: "#1f0700" }, { id: "candy", bg: "linear-gradient(135deg,#f093fb,#f5576c)", ink: "#2a0614" },
+  { id: "forest", bg: "linear-gradient(135deg,#38ef7d,#11998e)", ink: "#03140f" }, { id: "mono", bg: "linear-gradient(135deg,#4a4a4a,#141414)", ink: "#ffffff" },
+  { id: "peach", bg: "linear-gradient(135deg,#ffecd2,#fcb69f)", ink: "#2b130a" }, { id: "galaxy", bg: "linear-gradient(135deg,#2a5298,#1e3c72)", ink: "#ffffff" },
 ];
 const chatTheme = id => { const t = CHAT_THEMES.find(x => x.id === id && x.bg) || null; return t ? { bg: t.bg, ink: t.ink } : { bg: C.signal, ink: C.signalInk }; };
 // Every emoji, with the recently used ones first (remembered on this phone only).
@@ -4201,11 +4206,11 @@ function ChatThemeSheet({ th, onPick, onClose }) {
       <div style={{ display: "flex", justifyContent: "flex-end", margin: "14px 0" }}>
         <div data-theme-preview style={{ padding: "9px 13px", borderRadius: 18, borderBottomRightRadius: 6, background: cur.bg, color: cur.ink, fontSize: 15, fontWeight: 500, transition: "background .3s" }}>{T("chThemeSample")}</div>
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 10 }}>
+      <div data-theme-grid style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 12, padding: "4px 2px" }}>
         {CHAT_THEMES.map(t => {
           const c = chatTheme(t.id), on = (th || "y") === t.id;
           return <button key={t.id} data-chat-theme={t.id} aria-pressed={on} aria-label={t.id} onClick={() => { sfxTap(); onPick(t.id); }}
-            style={{ ...btnBase, aspectRatio: "1", borderRadius: 99, background: c.bg, border: `3px solid ${on ? C.chalk : "transparent"}`, boxShadow: on ? `0 0 0 2px ${C.panel} inset` : "none", transform: on ? "scale(1.06)" : "scale(1)", transition: "transform .2s, border-color .2s" }} />;
+            style={{ ...btnBase, aspectRatio: "1", padding: 0, border: "none", borderRadius: 99, background: c.bg, backgroundOrigin: "border-box", boxShadow: on ? `0 0 0 3px ${C.panel}, 0 0 0 5px ${C.chalk}` : "inset 0 0 0 1px rgba(255,255,255,.12)", transform: on ? "scale(.9)" : "scale(1)", transition: "transform .25s cubic-bezier(.34,1.56,.64,1), box-shadow .2s" }} />;
         })}
       </div>
     </Sheet>
@@ -4266,9 +4271,12 @@ function MsgBubble({ m, mine, me, other, onQuote, lifted, th, burst }) {
   return (
     <div data-msg-bubble style={{ position: "relative", padding: "8px 12px 6px", borderRadius: 18, borderBottomRightRadius: mine ? 6 : 18, borderBottomLeftRadius: mine ? 18 : 6, background: mine ? tc.bg : LOOK === "liquid" ? "rgba(255,255,255,.14)" : C.panelHi, color: mine ? tc.ink : C.chalk, fontWeight: 500, fontSize: 15, lineHeight: 1.4, whiteSpace: "pre-wrap", overflowWrap: "anywhere", opacity: m.pending ? 0.7 : 1, boxShadow: lifted ? "0 14px 34px rgba(0,0,0,.45)" : "none", fontFamily: BODY }}>
       {m.re && (
-        <button data-msg-quote onClick={e => { e.stopPropagation(); onQuote && onQuote(m.re.id); }} style={{ ...btnBase, display: "block", width: "100%", textAlign: "left", margin: "0 0 6px", padding: "5px 9px", borderRadius: 11, borderLeft: `3px solid ${mine ? "rgba(0,0,0,.45)" : C.signal}`, background: mine ? "rgba(0,0,0,.09)" : "rgba(255,255,255,.07)", color: "inherit", fontSize: 12.5, lineHeight: 1.35, fontWeight: 500 }}>
-          <span style={{ display: "block", fontWeight: 800, fontSize: 11.5, opacity: 0.8 }}>{who(m.re)}</span>
-          <span style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", opacity: 0.85 }}>{m.re.text}</span>
+        <button data-msg-quote onClick={e => { e.stopPropagation(); onQuote && onQuote(m.re.id); }} style={{ ...btnBase, display: "flex", alignItems: "stretch", gap: 8, width: "100%", textAlign: "left", margin: "0 0 6px", padding: "6px 10px 6px 7px", borderRadius: 12, background: mine ? "rgba(0,0,0,.1)" : "rgba(255,255,255,.07)", color: "inherit", fontSize: 12.5, lineHeight: 1.35, fontWeight: 500 }}>
+          <span aria-hidden="true" style={{ width: 3, borderRadius: 3, flexShrink: 0, background: mine ? "currentColor" : C.signal, opacity: mine ? 0.45 : 1 }} />
+          <span style={{ minWidth: 0 }}>
+            <span style={{ display: "block", fontWeight: 800, fontSize: 11.5, opacity: 0.8 }}>{who(m.re)}</span>
+            <span style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", opacity: 0.85 }}>{m.re.text}</span>
+          </span>
         </button>
       )}
       <span>{linkify(m.text, mine ? tc.ink : C.sky)}</span>
@@ -4304,7 +4312,7 @@ function MsgMenu({ at, m, mine, me, other, th, onClose, onReply, onCopy, onEdit,
   const side = mine ? { right: Math.max(8, window.innerWidth - at.right) } : { left: Math.max(8, at.left) };
   const myRx = (m.rx || {})[me];
   return createPortal(
-    <div data-msg-menu onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 80, background: on ? "rgba(0,0,0,.55)" : "rgba(0,0,0,0)", transition: "background .22s", fontFamily: BODY }}>
+    <div data-msg-menu onClick={onClose} onContextMenu={e => e.preventDefault()} style={{ position: "fixed", inset: 0, zIndex: 80, userSelect: "none", WebkitUserSelect: "none", WebkitTouchCallout: "none", background: on ? "rgba(0,0,0,.55)" : "rgba(0,0,0,0)", transition: "background .22s", fontFamily: BODY }}>
       <div data-rx-bar onClick={e => e.stopPropagation()} style={{ position: "absolute", top: stackTop, ...side, display: "flex", alignItems: "center", gap: 2, padding: "6px 6px", borderRadius: 99, background: C.panelHi, border: `1px solid ${C.line}`, boxShadow: "0 14px 34px rgba(0,0,0,.45)", opacity: on ? 1 : 0, transform: on ? "translateY(0) scale(1)" : "translateY(8px) scale(.9)", transformOrigin: mine ? "100% 100%" : "0 100%", transition: "opacity .2s, transform .3s cubic-bezier(.34,1.56,.64,1)" }}>
         {EMO_QUICK.map((e, i) => (
           <button key={e} data-rx-quick={e} onClick={() => onReact(myRx === e ? null : e)} aria-pressed={myRx === e}
@@ -4372,9 +4380,12 @@ function ChatView({ me, other, canWrite, onBack, onOpen, onReport, sheet, th: th
     const lm = msgs[msgs.length - 1];
     if (lm.id === lastId.current) return;
     const newOne = lastId.current !== null; lastId.current = lm.id;
-    if (first.current) { first.current = false; toBottom(false); requestAnimationFrame(() => toBottom(false)); return; }
+    // opening a chat (also again from the list) always starts at the newest message
+    if (first.current) { first.current = false; atBottom.current = true; toBottom(false); requestAnimationFrame(() => toBottom(false)); setTimeout(() => toBottom(false), 200); setTimeout(() => toBottom(false), 600); return; }
     if (!newOne) return;
-    if (atBottom.current || lm.from === me) { toBottom(true); setUnseen(0); } else setUnseen(n => n + 1);
+    // Michael (Oct 14): also your own message scrolls down only while you're at the bottom; reading the history, it stays
+    if (atBottom.current) { toBottom(true); setUnseen(0); setTimeout(() => { if (atBottom.current) toBottom(false); }, 450); }
+    else setUnseen(n => n + 1);
   }, [msgs]);
   const focusInput = () => setTimeout(() => { try { inputRef.current && inputRef.current.focus(); } catch (_) {} }, 30);
   const startReply = m => { setEditing(null); setReply(m); setMenu(null); focusInput(); };
@@ -4398,6 +4409,8 @@ function ChatView({ me, other, canWrite, onBack, onOpen, onReport, sheet, th: th
     }
     const re = reply ? { id: reply.id, from: reply.from, text: reply.text.slice(0, 120) } : null;
     setText(""); setReply(null);
+    // Michael (Oct 14): the keyboard stays open after sending
+    try { const el = inputRef.current; if (el && document.activeElement !== el) el.focus({ preventScroll: true }); } catch (_) {}
     cloud().sendMsg(other.uid, t, re).then(() => sfxTap()).catch(e => { setErr(cloudErr(e)); setText(t); setReply(re && msgs.find(x => x.id === re.id) || null); });
   };
   const react = (m, e) => {
@@ -4478,7 +4491,7 @@ function ChatView({ me, other, canWrite, onBack, onOpen, onReport, sheet, th: th
                 onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey && !isNative) { e.preventDefault(); send(); } if (e.key === "Escape" && bar) cancelBar(); }}
                 onFocus={() => { if (atBottom.current) setTimeout(() => toBottom(false), 300); }}
                 style={{ flex: 1, minWidth: 0, resize: "none", fontFamily: BODY, fontSize: 16, padding: "9px 12px", borderRadius: 16, border: "none", background: "transparent", color: C.chalk, outline: "none", maxHeight: 120, lineHeight: 1.35 }} />
-              <button data-chat-send onClick={send} disabled={!text.trim()} aria-label={editing ? T("chEdit") : T("chSend")} style={{ ...btnBase, width: 40, height: 40, borderRadius: 20, background: text.trim() ? C.signal : C.panelHi, color: text.trim() ? C.signalInk : C.dim, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <button data-chat-send onPointerDown={e => e.preventDefault()} onMouseDown={e => e.preventDefault()} onClick={send} disabled={!text.trim()} aria-label={editing ? T("chEdit") : T("chSend")} style={{ ...btnBase, width: 40, height: 40, borderRadius: 20, background: text.trim() ? C.signal : C.panelHi, color: text.trim() ? C.signalInk : C.dim, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
                 {editing ? <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
                   : <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12l15-7-5 15-2.6-6.4L4 12z" fill="currentColor" /></svg>}
               </button>

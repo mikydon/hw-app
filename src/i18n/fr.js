@@ -1070,7 +1070,7 @@ export default {
     "Les liens des messages s'ouvrent dans le navigateur.",
     "Quand tu lis d'anciens messages, le chat ne saute plus en bas : un bouton « Nouveaux messages » apparaît. Le champ de saisie ne cache plus les derniers messages.",
     "Réactions comme sur Instagram : garde un message appuyé pour ❤️ 😂 😮 😢 😡 👍 ou la flèche avec tous les emoji ; double toucher = ❤️. Touche les réactions pour voir qui a réagi.",
-    "Couleur du chat : touche le point de couleur en haut du chat et choisis parmi 14 couleurs ; vous la voyez tous les deux.",
+    "Couleur du chat : touche le point de couleur en haut du chat et choisis parmi 26 couleurs ; vous la voyez tous les deux.",
   ],
   news151: [
     "Barre du haut : quand tu fais défiler, elle se détache du bord supérieur comme une goutte d'eau : elle s'étire en un col fin, se détache, oscille un instant et une petite goutte rejaillit. En remontant tout en haut, elle se refond avec le bord. Avant, un fond se fondait simplement dans l'autre. Si tu changes de sens en cours de route, elle repart en douceur de là où elle est.",

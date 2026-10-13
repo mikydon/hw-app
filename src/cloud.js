@@ -155,7 +155,10 @@ export const impl = {
     const cid = chatId(uid(), other);
     return onSnapshot(query(collection(db, "chats", cid, "msgs"), orderBy("ts"), limitToLast(150)), s => cb(s.docs.map(x => {
       const v = x.data(), ms = t => (t && t.toMillis ? t.toMillis() : t ? Date.now() : 0);
-      return { id: x.id, from: v.from, text: v.text, ts: ms(v.ts) || Date.now(), ed: ms(v.ed), rx: v.rx && typeof v.rx === "object" ? v.rx : null, re: v.re && v.re.id ? { id: v.re.id, from: v.re.from, text: v.re.text || "" } : null, pending: x.metadata.hasPendingWrites };
+      return { id: x.id, from: v.from, text: v.text, ts: ms(v.ts) || Date.now(), ed: ms(v.ed), rx: v.rx && typeof v.rx === "object" ? v.rx : null, re: v.re && v.re.id ? { id: v.re.id, from: v.re.from, text: v.re.text || "" } : null,
+        // "pending" = still being sent (its server time isn't there yet); a reaction or an edit on its way doesn't count
+        // (1.5.2, Michael: reacting dimmed the message and blocked it for a moment)
+        pending: x.metadata.hasPendingWrites && !v.ts };
     })), onErr);
   },
   async sendMsg(other, text, re) {

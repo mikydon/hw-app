@@ -1070,7 +1070,7 @@ export default {
     "Az üzenetekben lévő linkek a böngészőben nyílnak meg.",
     "Ha régebbi üzeneteket olvasol, a csevegés már nem ugrik le: megjelenik az „Új üzenetek” gomb. A beviteli mező már nem takarja a legújabb üzeneteket.",
     "Reakciók, mint az Instagramon: tartsd lenyomva az üzenetet a ❤️ 😂 😮 😢 😡 👍 vagy a nyíl (minden emoji) eléréséhez, dupla koppintás = ❤️. Koppints a reakciókra, és látod, ki hogyan reagált.",
-    "Csevegés színe: koppints a színes pöttyre a csevegés fejlécében, és válassz a 14 színből; mindketten látjátok.",
+    "Csevegés színe: koppints a színes pöttyre a csevegés fejlécében, és válassz a 26 színből; mindketten látjátok.",
   ],
   news151: [
     "Felső sáv: görgetéskor úgy válik le a felső szélről, mint egy vízcsepp: vékony nyakká nyúlik, elszakad, egy pillanatig ringatózik, és egy kis csepp visszacsobban. Ha visszagörgetsz a tetejére, újra összefolyik a széllel. Korábban az egyik háttér csak átúszott a másikba. Ha félúton irányt váltasz, onnan folyik vissza simán, ahol éppen tart.",

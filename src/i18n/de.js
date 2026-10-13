@@ -1070,7 +1070,7 @@ export default {
     "Links in Nachrichten öffnen sich im Browser.",
     "Während du ältere Nachrichten liest, springt der Chat nicht mehr nach unten: Stattdessen erscheint „Neue Nachrichten“. Das Eingabefeld verdeckt die neuesten Nachrichten nicht mehr.",
     "Reaktionen wie bei Instagram: Halte eine Nachricht für ❤️ 😂 😮 😢 😡 👍 oder den Pfeil mit allen Emoji, Doppeltippen = ❤️. Tippe auf die Reaktionen, um zu sehen, wer reagiert hat.",
-    "Chatfarbe: Tippe auf den Farbpunkt oben im Chat und wähle eine von 14 Farben; ihr seht sie beide.",
+    "Chatfarbe: Tippe auf den Farbpunkt oben im Chat und wähle eine von 26 Farben; ihr seht sie beide.",
   ],
   news151: [
     "Obere Leiste: Beim Scrollen löst sie sich wie ein Wassertropfen vom oberen Rand: Sie zieht sich zu einem dünnen Hals, reißt ab, wippt kurz nach, und ein kleiner Tropfen spritzt zurück. Scrollst du wieder nach oben, fließt sie wieder mit dem Rand zusammen. Vorher wurde ein Hintergrund nur in den anderen überblendet. Wechselst du mittendrin die Richtung, läuft sie von dort aus sanft zurück.",

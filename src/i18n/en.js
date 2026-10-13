@@ -1070,7 +1070,7 @@ export default {
     "Links in messages open in the browser.",
     "The chat no longer jumps down while you read older messages: a “New messages” button appears instead. The input no longer covers the newest messages.",
     "Reactions like Instagram: hold a message for ❤️ 😂 😮 😢 😡 👍 or the arrow for every emoji; double tap = ❤️. Tap the reactions to see who reacted.",
-    "Chat colour: tap the colour dot in the chat's header and pick one of 14 colours; you both see it.",
+    "Chat colour: tap the colour dot in the chat's header and pick one of 26 colours; you both see it.",
   ],
   news151: [
     "Top bar: when you scroll, it now comes off the top edge like a drop of water: it stretches into a thin neck, snaps off, wobbles for a moment and a small drop splashes back in. Scrolling back to the top, it flows together with the edge again. Before, one background simply faded into the other. If you change direction halfway, it smoothly goes back from where it is.",
