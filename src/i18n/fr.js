@@ -405,6 +405,14 @@ export default {
     chReplySelf: "Réponse à toi-même",
     chEditing: "Modification du message",
     chNewMsgs: "Nouveaux messages",
+    chReact: "Réaction",
+    chReacts: "Réactions",
+    chRemoveReact: "Touche pour retirer",
+    chTheme: "Couleur du chat",
+    chThemeD: "Vous voyez tous les deux la couleur.",
+    chThemeSample: "Tes messages ressembleront à ça 👋",
+    chMoreEmoji: "Plus d'emoji",
+    chRecent: "Utilisés récemment",
     chPh: "Message",
     chSend: "Envoyer",
     chNotFriends: "Vous n'êtes plus amis, tu ne peux donc plus écrire ici.",
@@ -988,6 +996,7 @@ export default {
     child: ["Fesses sur les talons, bras loin devant"],
   },
 
+  emoCats: ["Smileys", "Personnes et gestes", "Cœurs", "Sport et loisirs", "Nourriture et boissons", "Animaux et nature", "Voyages et lieux", "Objets", "Symboles"],
   ch: {
     w3: "Fais 3 séances",
     pr1: "Bats un record perso",
@@ -1060,6 +1069,8 @@ export default {
     "Messages comme sur Instagram : fais glisser un message vers le milieu pour répondre, garde-le appuyé pour Répondre, Copier, Modifier (les tiens, 15 minutes) et Signaler. La réponse affiche une petite citation ; touche-la pour revenir à l'original.",
     "Les liens des messages s'ouvrent dans le navigateur.",
     "Quand tu lis d'anciens messages, le chat ne saute plus en bas : un bouton « Nouveaux messages » apparaît. Le champ de saisie ne cache plus les derniers messages.",
+    "Réactions comme sur Instagram : garde un message appuyé pour ❤️ 😂 😮 😢 😡 👍 ou la flèche avec tous les emoji ; double toucher = ❤️. Touche les réactions pour voir qui a réagi.",
+    "Couleur du chat : touche le point de couleur en haut du chat et choisis parmi 14 couleurs ; vous la voyez tous les deux.",
   ],
   news151: [
     "Barre du haut : quand tu fais défiler, elle se détache du bord supérieur comme une goutte d'eau : elle s'étire en un col fin, se détache, oscille un instant et une petite goutte rejaillit. En remontant tout en haut, elle se refond avec le bord. Avant, un fond se fondait simplement dans l'autre. Si tu changes de sens en cours de route, elle repart en douceur de là où elle est.",

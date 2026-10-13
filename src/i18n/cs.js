@@ -405,6 +405,14 @@ export default {
     chReplySelf: "Odpovídáš sobě",
     chEditing: "Upravuješ zprávu",
     chNewMsgs: "Nové zprávy",
+    chReact: "Reakce",
+    chReacts: "Reakce",
+    chRemoveReact: "Klepni a odstraníš",
+    chTheme: "Barva chatu",
+    chThemeD: "Barvu uvidíte oba.",
+    chThemeSample: "Takhle budou vypadat tvoje zprávy 👋",
+    chMoreEmoji: "Další emoji",
+    chRecent: "Naposledy použité",
     chPh: "Zpráva",
     chSend: "Odeslat",
     chNotFriends: "Už nejste přátelé, takže sem nemůžeš psát.",
@@ -988,6 +996,7 @@ export default {
     child: ["Pánev na paty, paže daleko dopředu"],
   },
 
+  emoCats: ["Smajlíci", "Lidé a gesta", "Srdce", "Sport a zábava", "Jídlo a pití", "Zvířata a příroda", "Cestování a místa", "Předměty", "Symboly"],
   ch: {
     w3: "Dej 3 tréninky",
     pr1: "Překonej osobní rekord",
@@ -1060,6 +1069,8 @@ export default {
     "Zprávy jako na Instagramu: přetáhni zprávu ke středu a odpovíš na ni, podrž ji pro Odpovědět, Kopírovat, Upravit (svou, 15 minut) a Nahlásit. Odpověď ukáže malou citaci, klepnutím na ni skočíš na původní zprávu.",
     "Odkazy ve zprávách se otevřou v prohlížeči.",
     "Když čteš starší zprávy, chat už neskočí dolů: objeví se tlačítko „Nové zprávy“. Pole pro psaní už nepřekrývá nejnovější zprávy.",
+    "Reakce jako na Instagramu: podrž zprávu pro ❤️ 😂 😮 😢 😡 👍 nebo šipku se všemi emoji, dvojité klepnutí = ❤️. Klepni na reakce a uvidíš, kdo jak reagoval.",
+    "Barva chatu: klepni na barevnou tečku v záhlaví chatu a vyber si ze 14 barev, uvidíte ji oba.",
   ],
   news151: [
     "Horní lišta: když scrolluješ, odlepí se od horního okraje jako kapka vody: natáhne se do tenkého krčku, utrhne se, chvilku se zhoupne a malá kapka šplouchne zpátky. Když se vrátíš nahoru, zase se s okrajem slije. Dřív se jedno pozadí jen prolínalo do druhého. Když v půlce změníš směr, plynule se vrátí odtamtud, kde právě je.",

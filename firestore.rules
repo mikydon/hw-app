@@ -76,13 +76,21 @@ service cloud.firestore {
     function otherIn(cid) { return members(cid)[0] == request.auth.uid ? members(cid)[1] : members(cid)[0]; }
     function friendsWith(o) { return exists(/databases/$(database)/documents/friends/$(request.auth.uid)/list/$(o)); }
     function textOk(t, max) { return t is string && t.size() >= 1 && t.size() <= max; }
+    // 1.5.2: th = the chat's colour, set by either of them (one of the app's colours); "last" is only written with a
+    // new message by its sender (a chat may exist with just a colour).
+    function themeOk(t) { return t in ['y', 'mint', 'sky', 'pink', 'violet', 'orange', 'red', 'white', 'sunset', 'ocean', 'aurora', 'insta', 'berry', 'night']; }
+    function lastOk() { return data().last.keys().hasOnly(['from', 'text', 'ts']) && data().last.from == request.auth.uid
+        && textOk(data().last.text, 120) && data().last.ts == request.time; }
     match /chats/{cid} {
       allow get, delete: if inChat(cid);
       allow list: if signedIn() && request.auth.uid in resource.data.m;
-      allow create, update: if inChat(cid) && friendsWith(otherIn(cid)) && only(['m', 'last'])
+      allow create: if inChat(cid) && friendsWith(otherIn(cid)) && only(['m', 'last', 'th'])
         && data().m == members(cid) && members(cid)[0] < members(cid)[1]
-        && data().last.keys().hasOnly(['from', 'text', 'ts']) && data().last.from == request.auth.uid
-        && textOk(data().last.text, 120) && data().last.ts == request.time;
+        && (!('last' in data()) || lastOk()) && (!('th' in data()) || themeOk(data().th));
+      allow update: if inChat(cid) && friendsWith(otherIn(cid)) && only(['m', 'last', 'th'])
+        && data().m == resource.data.m
+        && (data().get('last', null) == resource.data.get('last', null) || lastOk())
+        && (data().get('th', null) == resource.data.get('th', null) || themeOk(data().th));
       // 1.5.2: a reply carries a short copy of the message it answers (re); the sender can edit the text of their own
       // message for 15 minutes (ed = when), nothing else changes.
       function reOk(r) { return r is map && r.keys().hasOnly(['id', 'from', 'text']) && r.id is string && r.id.size() <= 40
@@ -92,10 +100,16 @@ service cloud.firestore {
         allow create: if inChat(cid) && friendsWith(otherIn(cid)) && only(['from', 'text', 'ts', 're'])
           && data().from == request.auth.uid && textOk(data().text, 1000) && nowTs()
           && (!('re' in data()) || reOk(data().re));
-        allow update: if inChat(cid) && friendsWith(otherIn(cid)) && resource.data.from == request.auth.uid
-          && data().diff(resource.data).affectedKeys().hasOnly(['text', 'ed'])
-          && textOk(data().text, 1000) && data().ed == request.time
-          && request.time < resource.data.ts + duration.value(15, 'm');
+        // either: the sender edits the text (15 min), or anyone in the chat sets/removes only their own reaction
+        allow update: if inChat(cid) && friendsWith(otherIn(cid)) && (
+          (resource.data.from == request.auth.uid
+            && data().diff(resource.data).affectedKeys().hasOnly(['text', 'ed'])
+            && textOk(data().text, 1000) && data().ed == request.time
+            && request.time < resource.data.ts + duration.value(15, 'm'))
+          || (data().diff(resource.data).affectedKeys().hasOnly(['rx']) && data().rx is map
+            && data().rx.diff(resource.data.get('rx', {})).affectedKeys().hasOnly([request.auth.uid])
+            && (!(request.auth.uid in data().rx)
+              || (data().rx[request.auth.uid] is string && data().rx[request.auth.uid].size() >= 1 && data().rx[request.auth.uid].size() <= 16))));
       }
     }
     // Reports about a profile: anyone signed in can send one; only the developer reads them (console).

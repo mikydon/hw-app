@@ -405,6 +405,14 @@ export default {
     chReplySelf: "Rispondi a te stesso",
     chEditing: "Modifica del messaggio",
     chNewMsgs: "Nuovi messaggi",
+    chReact: "Reazione",
+    chReacts: "Reazioni",
+    chRemoveReact: "Tocca per rimuoverla",
+    chTheme: "Colore della chat",
+    chThemeD: "Il colore lo vedete entrambi.",
+    chThemeSample: "I tuoi messaggi avranno questo aspetto 👋",
+    chMoreEmoji: "Altre emoji",
+    chRecent: "Usate di recente",
     chPh: "Messaggio",
     chSend: "Invia",
     chNotFriends: "Non siete più amici, quindi qui non puoi scrivere.",
@@ -988,6 +996,7 @@ export default {
     child: ["Fianchi sui talloni, braccia ben avanti"],
   },
 
+  emoCats: ["Faccine", "Persone e gesti", "Cuori", "Sport e svago", "Cibo e bevande", "Animali e natura", "Viaggi e luoghi", "Oggetti", "Simboli"],
   ch: {
     w3: "Fai 3 allenamenti",
     pr1: "Batti un record personale",
@@ -1060,6 +1069,8 @@ export default {
     "Messaggi come su Instagram: trascina un messaggio verso il centro per rispondere, tienilo premuto per Rispondi, Copia, Modifica (i tuoi, 15 minuti) e Segnala. La risposta mostra una piccola citazione; toccala per tornare all'originale.",
     "I link nei messaggi si aprono nel browser.",
     "Mentre leggi messaggi vecchi, la chat non salta più in fondo: compare il pulsante «Nuovi messaggi». Il campo di scrittura non copre più i messaggi più recenti.",
+    "Reazioni come su Instagram: tieni premuto un messaggio per ❤️ 😂 😮 😢 😡 👍 o la freccia con tutte le emoji; doppio tocco = ❤️. Tocca le reazioni per vedere chi ha reagito.",
+    "Colore della chat: tocca il pallino colorato in alto nella chat e scegli tra 14 colori; lo vedete entrambi.",
   ],
   news151: [
     "Barra in alto: quando scorri, si stacca dal bordo superiore come una goccia d'acqua: si allunga in un collo sottile, si stacca, oscilla un attimo e una gocciolina rimbalza dentro. Tornando in cima, si fonde di nuovo con il bordo. Prima uno sfondo sfumava semplicemente nell'altro. Se cambi direzione a metà, torna indietro dolcemente da dove si trova.",

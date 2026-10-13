@@ -2,7 +2,7 @@
 // Every case says who tries what and whether the rules must allow it. Results show up as annotations on the run.
 import { readFileSync } from "node:fs";
 import { initializeTestEnvironment, assertSucceeds, assertFails } from "@firebase/rules-unit-testing";
-import { doc, getDoc, setDoc, deleteDoc, updateDoc, collection, getDocs, query, where, orderBy, limit, writeBatch, addDoc, serverTimestamp, Timestamp } from "firebase/firestore";
+import { doc, getDoc, setDoc, deleteDoc, updateDoc, deleteField, collection, getDocs, query, where, orderBy, limit, writeBatch, addDoc, serverTimestamp, Timestamp } from "firebase/firestore";
 
 const env = await initializeTestEnvironment({ projectId: "demo-hw-app", firestore: { rules: readFileSync("firestore.rules", "utf8"), host: "127.0.0.1", port: 8080 } });
 const as = u => (u ? env.authenticatedContext(u) : env.unauthenticatedContext()).firestore();
@@ -124,6 +124,20 @@ await t("bob can't edit alice's message", false, () => edit("bob", "mine", { tex
 await t("an edit can't change who wrote it", false, () => edit("alice", "mine", { text: "x", from: "bob", ed: serverTimestamp() }));
 await t("an edit can't be empty", false, () => edit("alice", "mine", { text: "", ed: serverTimestamp() }));
 await t("after 15 minutes the message can't be edited", false, () => edit("alice", "old", { text: "neskoro", ed: serverTimestamp() }));
+// 1.5.2: reactions and the chat colour
+await t("bob reacts to alice's message", true, () => edit("bob", "mine", { "rx.bob": "❤️" }));
+await t("alice reacts too (own key only)", true, () => edit("alice", "mine", { "rx.alice": "😂" }));
+await t("bob can't change alice's reaction", false, () => edit("bob", "mine", { "rx.alice": "😡" }));
+await t("bob removes his reaction", true, () => edit("bob", "mine", { "rx.bob": deleteField() }));
+await t("a reaction can't be a long text", false, () => edit("bob", "mine", { "rx.bob": "x".repeat(17) }));
+await t("a reaction can't change the text at the same time", false, () => edit("bob", "mine", { "rx.bob": "👍", text: "hack" }));
+await t("reacting works on old messages too", true, () => edit("bob", "old", { "rx.bob": "👍" }));
+await t("bob sets the chat colour", true, () => setDoc(doc(as("bob"), "chats", "alice_bob"), { m: ["alice", "bob"], th: "ocean" }, { merge: true }));
+await t("only the app's colours", false, () => setDoc(doc(as("bob"), "chats", "alice_bob"), { m: ["alice", "bob"], th: "#ff0000" }, { merge: true }));
+await t("a colour change can't rewrite the last message", false, () => setDoc(doc(as("bob"), "chats", "alice_bob"), { m: ["alice", "bob"], th: "sky", last: { from: "alice", text: "fake", ts: serverTimestamp() } }, { merge: true }));
+await t("a message keeps the colour (merge)", true, () => { const db = as("alice"), b = writeBatch(db); b.set(doc(collection(db, "chats", "alice_bob", "msgs")), { from: "alice", text: "farba!", ts: serverTimestamp() }); b.set(doc(db, "chats", "alice_bob"), { m: ["alice", "bob"], last: { from: "alice", text: "farba!", ts: serverTimestamp() } }, { merge: true }); return b.commit(); });
+await t("carol can't colour their chat", false, () => setDoc(doc(as("carol"), "chats", "alice_bob"), { m: ["alice", "bob"], th: "red" }, { merge: true }));
+await t("no colour for a chat with a non-friend", false, () => setDoc(doc(as("alice"), "chats", "alice_carol"), { m: ["alice", "carol"], th: "mint" }, { merge: true }));
 await t("bob lists his chats", true, () => getDocs(query(collection(as("bob"), "chats"), where("m", "array-contains", "bob"))));
 await t("carol can't read their chat", false, () => getDocs(collection(as("carol"), "chats", "alice_bob", "msgs")));
 await t("carol can't list chats she isn't in", false, () => getDocs(query(collection(as("carol"), "chats"), where("m", "array-contains", "alice"))));

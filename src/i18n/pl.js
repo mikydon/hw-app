@@ -405,6 +405,14 @@ export default {
     chReplySelf: "Odpowiadasz sobie",
     chEditing: "Edytujesz wiadomość",
     chNewMsgs: "Nowe wiadomości",
+    chReact: "Reakcja",
+    chReacts: "Reakcje",
+    chRemoveReact: "Dotknij, aby usunąć",
+    chTheme: "Kolor czatu",
+    chThemeD: "Kolor widzicie oboje.",
+    chThemeSample: "Tak będą wyglądać twoje wiadomości 👋",
+    chMoreEmoji: "Więcej emoji",
+    chRecent: "Ostatnio używane",
     chPh: "Wiadomość",
     chSend: "Wyślij",
     chNotFriends: "Nie jesteście już znajomymi, więc nie możesz tu pisać.",
@@ -988,6 +996,7 @@ export default {
     child: ["Biodra na piętach, ręce daleko z przodu"],
   },
 
+  emoCats: ["Buźki", "Ludzie i gesty", "Serca", "Sport i zabawa", "Jedzenie i picie", "Zwierzęta i natura", "Podróże i miejsca", "Przedmioty", "Symbole"],
   ch: {
     w3: "Zrób 3 treningi",
     pr1: "Pobij rekord życiowy",
@@ -1060,6 +1069,8 @@ export default {
     "Wiadomości jak na Instagramie: przesuń wiadomość do środka, aby odpowiedzieć, przytrzymaj ją, aby Odpowiedzieć, Kopiować, Edytować (swoją, przez 15 minut) i Zgłosić. Odpowiedź pokazuje mały cytat, dotknij go, aby przejść do oryginału.",
     "Linki w wiadomościach otwierają się w przeglądarce.",
     "Gdy czytasz starsze wiadomości, czat już nie przeskakuje w dół: pojawia się przycisk „Nowe wiadomości”. Pole pisania nie zasłania już najnowszych wiadomości.",
+    "Reakcje jak na Instagramie: przytrzymaj wiadomość dla ❤️ 😂 😮 😢 😡 👍 lub strzałki ze wszystkimi emoji, podwójne dotknięcie = ❤️. Dotknij reakcji, by zobaczyć, kto zareagował.",
+    "Kolor czatu: dotknij kolorowej kropki w nagłówku czatu i wybierz jeden z 14 kolorów; widzicie go oboje.",
   ],
   news151: [
     "Górny pasek: przy przewijaniu odrywa się od górnej krawędzi jak kropla wody: wyciąga się w cienką szyjkę, odrywa, chwilę się kołysze, a mała kropla chlapie z powrotem. Gdy wrócisz na górę, znów zlewa się z krawędzią. Wcześniej jedno tło po prostu przenikało w drugie. Gdy w połowie zmienisz kierunek, płynnie wraca od miejsca, w którym jest.",

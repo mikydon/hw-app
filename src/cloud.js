@@ -14,14 +14,14 @@
 //   friends/{me}/list/{uid}  {ts}: written for both people in one batch when a request is accepted
 //   backups/{uid}            {json, ts, n}: the automatic cloud backup (owner only)
 //   reports/{auto id}        {by, about, reason, ts}: a reported profile (create only; read in the console)
-//   chats/{a_b}              {m: [a, b], last: {from, text, ts}} (a_b = the two uids sorted); only between friends
-//   chats/{a_b}/msgs/{id}    {from, text, ts, re?: {id, from, text} (a reply, 1.5.2), ed?: ts (edited, 1.5.2: own, within 15 min)}
+//   chats/{a_b}              {m: [a, b], last: {from, text, ts}, th?: chat colour (1.5.2)} (a_b = the two uids sorted); only between friends
+//   chats/{a_b}/msgs/{id}    {from, text, ts, re?: {id, from, text} (a reply, 1.5.2), ed?: ts (edited, 1.5.2: own, within 15 min), rx?: {uid: emoji} (reactions, 1.5.2)}
 // Live updates (friend requests, friends, chats, messages) use Firestore listeners while the app is open
 // (1.5.0, Michael: requests showed up only after switching tabs).
 import { initializeApp } from "firebase/app";
 import { initializeAuth, indexedDBLocalPersistence, browserLocalPersistence, browserPopupRedirectResolver, GoogleAuthProvider,
   signInWithPopup, signInWithCredential, signOut as fbSignOut, onAuthStateChanged, reauthenticateWithPopup, reauthenticateWithCredential } from "firebase/auth";
-import { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, query, where, orderBy, limit, limitToLast, getDocs, writeBatch, addDoc, updateDoc, serverTimestamp, onSnapshot } from "firebase/firestore";
+import { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, query, where, orderBy, limit, limitToLast, getDocs, writeBatch, addDoc, updateDoc, serverTimestamp, onSnapshot, deleteField } from "firebase/firestore";
 import { Capacitor } from "@capacitor/core";
 import { CODE_CHARS, nickKey, cleanCode, chatId } from "./cloud-shared.js";
 import { FirebaseAuthentication } from "@capacitor-firebase/authentication";
@@ -147,14 +147,15 @@ export const impl = {
     const me = uid();
     return onSnapshot(query(collection(db, "chats"), where("m", "array-contains", me)), s => cb(s.docs.map(x => {
       const v = x.data(), l = v.last || {};
-      return { cid: x.id, other: (v.m || []).find(u => u !== me), last: { from: l.from, text: l.text || "", ts: l.ts && l.ts.toMillis ? l.ts.toMillis() : Date.now() } };
+      // a chat that only has a colour so far (no message yet) has no "last": ts 0, so it is neither listed nor unread
+      return { cid: x.id, other: (v.m || []).find(u => u !== me), th: v.th || "", last: { from: l.from || null, text: l.text || "", ts: l.ts && l.ts.toMillis ? l.ts.toMillis() : l.from ? Date.now() : 0 } };
     })), onErr);
   },
   watchMsgs(other, cb, onErr) {
     const cid = chatId(uid(), other);
     return onSnapshot(query(collection(db, "chats", cid, "msgs"), orderBy("ts"), limitToLast(150)), s => cb(s.docs.map(x => {
       const v = x.data(), ms = t => (t && t.toMillis ? t.toMillis() : t ? Date.now() : 0);
-      return { id: x.id, from: v.from, text: v.text, ts: ms(v.ts) || Date.now(), ed: ms(v.ed), re: v.re && v.re.id ? { id: v.re.id, from: v.re.from, text: v.re.text || "" } : null, pending: x.metadata.hasPendingWrites };
+      return { id: x.id, from: v.from, text: v.text, ts: ms(v.ts) || Date.now(), ed: ms(v.ed), rx: v.rx && typeof v.rx === "object" ? v.rx : null, re: v.re && v.re.id ? { id: v.re.id, from: v.re.from, text: v.re.text || "" } : null, pending: x.metadata.hasPendingWrites };
     })), onErr);
   },
   async sendMsg(other, text, re) {
@@ -162,13 +163,23 @@ export const impl = {
     const m = { from: me, text: t, ts: serverTimestamp() };
     if (re && re.id) m.re = { id: String(re.id).slice(0, 40), from: String(re.from || "").slice(0, 128), text: String(re.text || "").slice(0, 120) };
     b.set(doc(collection(db, "chats", cid, "msgs")), m);
-    b.set(d("chats", cid), { m: cid.split("_"), last: { from: me, text: t.slice(0, 120), ts: serverTimestamp() } });
+    b.set(d("chats", cid), { m: cid.split("_"), last: { from: me, text: t.slice(0, 120), ts: serverTimestamp() } }, { merge: true }); // keeps the chat colour
     await b.commit();
   },
   // Own messages can be edited for 15 minutes (like Instagram); the chat list keeps the first text.
   async editMsg(other, id, text) {
     const cid = chatId(uid(), other);
     await updateDoc(doc(db, "chats", cid, "msgs", id), { text: String(text).slice(0, 1000), ed: serverTimestamp() });
+  },
+  // Reactions (1.5.2): one emoji per person per message; null takes yours away.
+  async react(other, id, emoji) {
+    const me = uid(), cid = chatId(me, other);
+    await updateDoc(doc(db, "chats", cid, "msgs", id), { [`rx.${me}`]: emoji ? String(emoji).slice(0, 16) : deleteField() });
+  },
+  // The chat's colour (1.5.2): both people see it, like a chat theme on Instagram.
+  async setChatTheme(other, th) {
+    const cid = chatId(uid(), other);
+    await setDoc(d("chats", cid), { m: cid.split("_"), th }, { merge: true });
   },
   async report(about, reason) { await addDoc(collection(db, "reports"), { by: uid(), about, reason: String(reason || "").slice(0, 300), ts: serverTimestamp() }); },
   async saveBackup(json, n) { await setDoc(d("backups", uid()), { json, n, ts: serverTimestamp() }); },

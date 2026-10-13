@@ -405,6 +405,14 @@ export default {
     chReplySelf: "Respondendo a você mesmo",
     chEditing: "Editando mensagem",
     chNewMsgs: "Novas mensagens",
+    chReact: "Reação",
+    chReacts: "Reações",
+    chRemoveReact: "Toque para remover",
+    chTheme: "Cor do chat",
+    chThemeD: "Vocês dois veem a cor.",
+    chThemeSample: "Suas mensagens vão ficar assim 👋",
+    chMoreEmoji: "Mais emojis",
+    chRecent: "Usados recentemente",
     chPh: "Mensagem",
     chSend: "Enviar",
     chNotFriends: "Já não são amigos, por isso não podes escrever aqui.",
@@ -988,6 +996,7 @@ export default {
     child: ["Quadril nos calcanhares, braços bem à frente"],
   },
 
+  emoCats: ["Carinhas", "Pessoas e gestos", "Corações", "Esporte e diversão", "Comida e bebida", "Animais e natureza", "Viagens e lugares", "Objetos", "Símbolos"],
   ch: {
     w3: "Faça 3 treinos",
     pr1: "Bata um recorde pessoal",
@@ -1060,6 +1069,8 @@ export default {
     "Mensagens como no Instagram: deslize uma mensagem para o meio para responder, segure-a para Responder, Copiar, Editar (as suas, 15 minutos) e Denunciar. A resposta mostra uma pequena citação; toque nela para ir à original.",
     "Os links nas mensagens abrem no navegador.",
     "Enquanto você lê mensagens antigas, o chat não pula mais para baixo: aparece o botão «Novas mensagens». O campo de texto não cobre mais as mensagens mais recentes.",
+    "Reações como no Instagram: segure uma mensagem para ❤️ 😂 😮 😢 😡 👍 ou a seta com todos os emojis; toque duplo = ❤️. Toque nas reações para ver quem reagiu.",
+    "Cor do chat: toque no ponto colorido no topo do chat e escolha uma de 14 cores; vocês dois a veem.",
   ],
   news151: [
     "Barra superior: ao rolar, ela se solta da borda de cima como uma gota d'água: estica-se num pescoço fino, solta-se, balança um instante e uma gotinha respinga de volta. Ao voltar ao topo, ela se funde de novo com a borda. Antes, um fundo apenas se misturava com o outro. Se mudar de direção no meio, ela volta suavemente de onde está.",

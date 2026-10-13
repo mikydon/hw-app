@@ -2,6 +2,7 @@ import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { isNative, pushBack, setRootBack, exitApp, vibratePattern, keepScreenOn, openExternal, saveBackupFile, bkSupported, bkWrite, bkList, bkRead, bkDelete, bkShare, BK_DIR, BK_AUTO, checkForUpdate, lastUpdate, lastGh, applyUpdateNow, latestApk, isTestBuild, apkState, onApk, apkSupported, apkRestore, apkDownload, apkCanInstall, apkAllow, apkInstall, onAppResume, healthState, healthConnect, healthSettings, healthSteps, healthFoodItems, healthBody, shareText, copyText } from "./native.js";
 import { cloud, NICK_RE, SHARE_BASE, cleanCode, fmtCode } from "./cloud-lazy.js";
+import { QUICK as EMO_QUICK, EMOJI } from "./emoji.js";
 import { L, LANG, t as T, tp as TP, fmt, setLang, detectLang, LANGS, fmtLong, fmtShortDM, fmtMonthYear, weekdaysShort, capFirst } from "./i18n/index.js";
 
 // ─── DESIGN TOKENS ──────────────────────────────────────────────────────────
@@ -3986,11 +3987,11 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
     ? (friends ? [me, ...friends].sort((a, b) => (b.xp || 0) - (a.xp || 0)) : null)
     : (world ? world.filter(w => !blocked.includes(w.uid)).map(w => (w.uid === acct.uid ? { ...w, ...me } : w)) : null);
   const people = Object.fromEntries([...(friends || []), ...(reqs || []), ...(world || [])].map(p => [p.uid, p]));
-  const chats = (social.chats || []).filter(c => !blocked.includes(c.other)).sort((a, b) => b.last.ts - a.last.ts);
+  const chats = (social.chats || []).filter(c => !blocked.includes(c.other) && c.last.ts > 0).sort((a, b) => b.last.ts - a.last.ts);
   const unread = c => c.last.from !== acct.uid && c.last.ts > ((social.read || {})[c.cid] || 0);
   if (chatWith) {
     const p = people[chatWith] || { uid: chatWith, nick: "…" };
-    return <ChatView me={acct.uid} other={p} canWrite={friendIds.includes(chatWith)} onBack={() => setChatWith(null)} onOpen={() => { sfxTap(); setSheet(p); }}
+    return <ChatView me={acct.uid} other={p} th={((social.chats || []).find(c => c.other === chatWith) || {}).th} canWrite={friendIds.includes(chatWith)} onBack={() => setChatWith(null)} onOpen={() => { sfxTap(); setSheet(p); }}
       sheet={sheet && <PersonSheet p={sheet} isFriend={friendIds.includes(sheet.uid)} onClose={() => setSheet(null)} onAdd={x => sendTo(x.uid, x.nick).catch(cloudErr)}
         onRemove={x => act(() => cloud().removeFriend(x.uid), () => setSheet(null))} onBlock={block} onReport={x => report(x)} />}
       onReport={text => report(p, "message: " + text.slice(0, 280))} />;
@@ -4131,10 +4132,89 @@ const ICON_REPLY = "M9 14L4 9l5-5M4 9h10.5A5.5 5.5 0 0 1 20 14.5V20";
 const ICON_COPY = "M9 9h10v11H9zM5 15V4h10";
 const ICON_EDIT = "M4 20h4L19 9l-4-4L4 16v4zM13.5 6.5l4 4";
 const ICON_FLAG = "M5 21V4m0 0h11l-2 4 2 4H5";
+// Chat colours (1.5.2, Michael): the colour of your own bubbles, chosen in the chat's 🎨 and seen by both of you
+// (stored on the chat, like a theme on Instagram). Text colour per colour keeps the contrast readable.
+const CHAT_THEMES = [
+  { id: "y" }, { id: "mint", bg: "#5fe3a1", ink: "#0b2a1b" }, { id: "sky", bg: "#7cc4ff", ink: "#0a2035" },
+  { id: "pink", bg: "#ff7ab6", ink: "#2e0a1b" }, { id: "violet", bg: "#a78bfa", ink: "#1c1036" }, { id: "orange", bg: "#ff9f43", ink: "#2b1600" },
+  { id: "red", bg: "#ff6b6b", ink: "#2b0606" }, { id: "white", bg: "#eef2ff", ink: "#111827" },
+  { id: "sunset", bg: "linear-gradient(135deg,#ffb36b,#ff5e8a)", ink: "#2b0a10" }, { id: "ocean", bg: "linear-gradient(135deg,#2563eb,#0e7490)", ink: "#ffffff" },
+  { id: "aurora", bg: "linear-gradient(135deg,#4ade80,#2dd4bf)", ink: "#04140f" }, { id: "insta", bg: "linear-gradient(135deg,#d62976,#962fbf 55%,#4f5bd5)", ink: "#ffffff" },
+  { id: "berry", bg: "linear-gradient(135deg,#b8a4e3,#fbc2eb)", ink: "#26103a" }, { id: "night", bg: "linear-gradient(135deg,#4338ca,#7c3aed)", ink: "#ffffff" },
+];
+const chatTheme = id => { const t = CHAT_THEMES.find(x => x.id === id && x.bg) || null; return t ? { bg: t.bg, ink: t.ink } : { bg: C.signal, ink: C.signalInk }; };
+// Every emoji, with the recently used ones first (remembered on this phone only).
+const recentEmo = () => (cloudMem().emo || []).slice(0, 16);
+const useEmo = e => setCloudMem({ emo: [e, ...(cloudMem().emo || []).filter(x => x !== e)].slice(0, 24) });
+function EmojiSheet({ onPick, onClose }) {
+  const [cat, setCat] = useState(0);
+  const box = useRef(null), secs = useRef([]);
+  const recent = recentEmo();
+  const cats = [...(recent.length ? [["recent", "🕘", recent]] : []), ...EMOJI];
+  const names = { recent: T("chRecent"), ...Object.fromEntries(EMOJI.map(([k], i) => [k, (L.emoCats || [])[i] || k])) };
+  const jump = i => { setCat(i); const el = secs.current[i]; if (el && box.current) box.current.scrollTo({ top: el.offsetTop - box.current.offsetTop, behavior: "smooth" }); };
+  const onScroll = () => { const b = box.current; if (!b) return; let k = 0; secs.current.forEach((el, i) => { if (el && el.offsetTop - b.offsetTop - 8 <= b.scrollTop) k = i; }); setCat(k); };
+  return (
+    <Sheet title={T("chReact")} onClose={onClose}>
+      <div data-emoji-tabs style={{ display: "flex", gap: 2, overflowX: "auto", scrollbarWidth: "none", margin: "-4px -4px 8px", paddingBottom: 6, borderBottom: `1px solid ${C.line}` }}>
+        {cats.map(([k, ic], i) => (
+          <button key={k} onClick={() => { sfxTap(); jump(i); }} aria-label={names[k]} aria-pressed={cat === i}
+            style={{ ...btnBase, flex: "0 0 auto", width: 40, height: 38, borderRadius: 12, fontSize: 21, background: cat === i ? `${C.chalk}1a` : "transparent", transition: "background .2s" }}>{ic}</button>
+        ))}
+      </div>
+      <div ref={box} onScroll={onScroll} data-emoji-grid style={{ maxHeight: "46dvh", overflowY: "auto", margin: "0 -6px", padding: "0 6px" }}>
+        {cats.map(([k, , list], i) => (
+          <div key={k} ref={el => (secs.current[i] = el)}>
+            <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: C.dim, margin: "10px 2px 6px" }}>{names[k]}</div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(42px, 1fr))", gap: 2 }}>
+              {list.map((e, j) => <button key={e + j} data-emoji={e} onClick={() => { useEmo(e); onPick(e); }} style={{ ...btnBase, height: 44, borderRadius: 12, fontSize: 27, background: "transparent", lineHeight: 1 }}>{e}</button>)}
+            </div>
+          </div>
+        ))}
+      </div>
+    </Sheet>
+  );
+}
+// Who reacted how; your own one can be taken away here.
+function ReactSheet({ m, me, other, onRemove, onClose }) {
+  const rows = Object.entries(m.rx || {});
+  return (
+    <Sheet title={T("chReacts")} onClose={onClose} short>
+      {rows.map(([u, e]) => (
+        <div key={u} data-react-row={u === me ? "me" : "them"} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderTop: `1px solid ${C.line}` }}>
+          {u === me ? <span style={{ width: 38, height: 38, borderRadius: 99, background: C.panelHi, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, color: C.chalk }}>{T("chYou").slice(0, 1)}</span> : <PersonAvatar p={other} size={38} />}
+          <span style={{ flex: 1, minWidth: 0, fontSize: 15, fontWeight: 800, color: C.chalk }}>{u === me ? T("chYou") : other.nick}
+            {u === me && <button data-react-remove onClick={() => { sfxTap(); onRemove(); }} style={{ ...btnBase, display: "block", background: "transparent", color: C.dim, fontSize: 12, padding: "2px 0 0", fontWeight: 600 }}>{T("chRemoveReact")}</button>}
+          </span>
+          <span style={{ fontSize: 28, lineHeight: 1 }}>{e}</span>
+        </div>
+      ))}
+    </Sheet>
+  );
+}
+// The chat's colour picker: a preview bubble and the swatches.
+function ChatThemeSheet({ th, onPick, onClose }) {
+  const cur = chatTheme(th);
+  return (
+    <Sheet title={T("chTheme")} onClose={onClose} short>
+      <div style={{ fontSize: 13, color: C.dim, lineHeight: 1.5, marginTop: -6 }}>{T("chThemeD")}</div>
+      <div style={{ display: "flex", justifyContent: "flex-end", margin: "14px 0" }}>
+        <div data-theme-preview style={{ padding: "9px 13px", borderRadius: 18, borderBottomRightRadius: 6, background: cur.bg, color: cur.ink, fontSize: 15, fontWeight: 500, transition: "background .3s" }}>{T("chThemeSample")}</div>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 10 }}>
+        {CHAT_THEMES.map(t => {
+          const c = chatTheme(t.id), on = (th || "y") === t.id;
+          return <button key={t.id} data-chat-theme={t.id} aria-pressed={on} aria-label={t.id} onClick={() => { sfxTap(); onPick(t.id); }}
+            style={{ ...btnBase, aspectRatio: "1", borderRadius: 99, background: c.bg, border: `3px solid ${on ? C.chalk : "transparent"}`, boxShadow: on ? `0 0 0 2px ${C.panel} inset` : "none", transform: on ? "scale(1.06)" : "scale(1)", transition: "transform .2s, border-color .2s" }} />;
+        })}
+      </div>
+    </Sheet>
+  );
+}
 // One message: swipe toward the middle to answer, hold for the menu. touch-action pan-y keeps vertical scrolling
 // with the browser and gives the horizontal drag to us.
-function MsgRow({ m, mine, onReply, onMenu, children }) {
-  const ref = useRef(null), arrow = useRef(null), st = useRef(null);
+function MsgRow({ m, mine, onReply, onMenu, onDouble, children }) {
+  const ref = useRef(null), arrow = useRef(null), st = useRef(null), lastTap = useRef(0);
   const dir = mine ? -1 : 1, TH = 56;
   const set = (d, anim) => {
     const el = ref.current; if (!el) return;
@@ -4142,7 +4222,15 @@ function MsgRow({ m, mine, onReply, onMenu, children }) {
     el.style.transform = d ? `translateX(${d * dir}px)` : "";
     const a = arrow.current; if (a) { const k = Math.min(1, d / TH); a.style.opacity = String(k); a.style.transform = `scale(${0.5 + 0.5 * k})`; a.style.transition = anim ? "opacity .25s, transform .25s" : "none"; }
   };
-  const end = () => { const s = st.current; st.current = null; if (!s) return; clearTimeout(s.lp); if (s.sw) { if (s.d >= TH) onReply(); set(0, true); } };
+  const end = e => {
+    const s = st.current; st.current = null; if (!s) return; clearTimeout(s.lp);
+    if (s.sw) { if (s.d >= TH) onReply(); set(0, true); return; }
+    // a quick second tap = ❤️ (like Instagram); not on links and not after a long hold
+    if (e && e.type === "pointerup" && !(e.target && e.target.closest && e.target.closest("a,[data-msg-quote],[data-msg-rx]"))) {
+      const now = Date.now();
+      if (now - lastTap.current < 320) { lastTap.current = 0; onDouble && onDouble(); } else lastTap.current = now;
+    }
+  };
   const down = e => {
     if (m.pending || (e.pointerType === "mouse" && e.button !== 0)) return;
     const s = { x: e.clientX, y: e.clientY, d: 0, sw: false, fired: false, id: e.pointerId };
@@ -4172,38 +4260,64 @@ function MsgRow({ m, mine, onReply, onMenu, children }) {
   );
 }
 // The bubble itself (also drawn lifted above the dimmed chat when its menu is open).
-function MsgBubble({ m, mine, me, other, onQuote, lifted }) {
+function MsgBubble({ m, mine, me, other, onQuote, lifted, th, burst }) {
   const who = r => (r.from === me ? T("chYou") : other.nick);
+  const tc = chatTheme(th);
   return (
-    <div data-msg-bubble style={{ padding: "8px 12px 6px", borderRadius: 18, borderBottomRightRadius: mine ? 6 : 18, borderBottomLeftRadius: mine ? 18 : 6, background: mine ? C.signal : LOOK === "liquid" ? "rgba(255,255,255,.14)" : C.panelHi, color: mine ? C.signalInk : C.chalk, fontWeight: 500, fontSize: 15, lineHeight: 1.4, whiteSpace: "pre-wrap", overflowWrap: "anywhere", opacity: m.pending ? 0.7 : 1, boxShadow: lifted ? "0 14px 34px rgba(0,0,0,.45)" : "none", fontFamily: BODY }}>
+    <div data-msg-bubble style={{ position: "relative", padding: "8px 12px 6px", borderRadius: 18, borderBottomRightRadius: mine ? 6 : 18, borderBottomLeftRadius: mine ? 18 : 6, background: mine ? tc.bg : LOOK === "liquid" ? "rgba(255,255,255,.14)" : C.panelHi, color: mine ? tc.ink : C.chalk, fontWeight: 500, fontSize: 15, lineHeight: 1.4, whiteSpace: "pre-wrap", overflowWrap: "anywhere", opacity: m.pending ? 0.7 : 1, boxShadow: lifted ? "0 14px 34px rgba(0,0,0,.45)" : "none", fontFamily: BODY }}>
       {m.re && (
         <button data-msg-quote onClick={e => { e.stopPropagation(); onQuote && onQuote(m.re.id); }} style={{ ...btnBase, display: "block", width: "100%", textAlign: "left", margin: "0 0 6px", padding: "5px 9px", borderRadius: 11, borderLeft: `3px solid ${mine ? "rgba(0,0,0,.45)" : C.signal}`, background: mine ? "rgba(0,0,0,.09)" : "rgba(255,255,255,.07)", color: "inherit", fontSize: 12.5, lineHeight: 1.35, fontWeight: 500 }}>
           <span style={{ display: "block", fontWeight: 800, fontSize: 11.5, opacity: 0.8 }}>{who(m.re)}</span>
           <span style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", opacity: 0.85 }}>{m.re.text}</span>
         </button>
       )}
-      <span>{linkify(m.text, mine ? C.signalInk : C.sky)}</span>
+      <span>{linkify(m.text, mine ? tc.ink : C.sky)}</span>
+      {burst && <span aria-hidden="true" className="rxBurst">❤️</span>}
       <span style={{ display: "block", fontSize: 10.5, opacity: 0.65, textAlign: "right", marginTop: 2 }}>{m.ed ? `${T("chEdited")} · ` : ""}{new Date(m.ts).toLocaleTimeString(LANG, { hour: "2-digit", minute: "2-digit" })}</span>
     </div>
   );
 }
+function MsgReacts({ m, me, mine, onOpen }) {
+  const rx = Object.entries(m.rx || {});
+  if (!rx.length) return null;
+  const emo = [...new Set(rx.map(([, e]) => e))].slice(0, 3), minePick = (m.rx || {})[me];
+  return (
+    <button data-msg-rx={rx.length} onClick={e => { e.stopPropagation(); sfxTap(); onOpen(); }} aria-label={T("chReacts")}
+      className="rxIn" style={{ ...btnBase, position: "relative", zIndex: 1, marginTop: -7, [mine ? "marginRight" : "marginLeft"]: 10, display: "inline-flex", alignItems: "center", gap: 2, padding: "2px 7px", borderRadius: 99, background: minePick ? C.panelHi : C.panel, border: `2px solid ${C.ink}`, fontSize: 14, lineHeight: 1.2, color: C.chalk }}>
+      {emo.map(e => <span key={e}>{e}</span>)}{rx.length > 1 && <span style={{ fontSize: 11, fontWeight: 800, marginLeft: 3 }}>{rx.length}</span>}
+    </button>
+  );
+}
 // Hold menu: the chat dims, the message lifts where it was, the actions sit under it (above it near the bottom).
-function MsgMenu({ at, m, mine, me, other, onClose, onReply, onCopy, onEdit, onReport }) {
+function MsgMenu({ at, m, mine, me, other, th, onClose, onReply, onCopy, onEdit, onReport, onReact, onMore }) {
   const [on, setOn] = useState(false);
   useBack(onClose);
   useEffect(() => { const r = requestAnimationFrame(() => setOn(true)); return () => cancelAnimationFrame(r); }, []);
   const vh = window.innerHeight, rows = [["reply", ICON_REPLY, T("chReply"), onReply], ["copy", ICON_COPY, T("chCopy"), onCopy]];
   if (canEditMsg(m, me)) rows.push(["edit", ICON_EDIT, T("chEdit"), onEdit]);
   if (!mine) rows.push(["report", ICON_FLAG, T("chReport"), onReport, "#ff8a80"]);
-  const menuH = rows.length * 49 + 12, below = at.bottom + 10 + menuH < vh - 16;
-  const top = Math.max(70, Math.min(at.top, vh - 16 - menuH - 10 - at.height));
+  // reactions above the message, actions under it; the whole stack is moved only as much as needed to fit
+  const BAR = 52, menuH = rows.length * 49 + 12, bh = Math.min(at.height, vh * 0.4);
+  const minTop = 12, total = BAR + 10 + bh + 12 + menuH;
+  const stackTop = Math.max(minTop, Math.min(at.top - BAR - 10, vh - 16 - total));
+  const bubTop = stackTop + BAR + 10, below = true, top = bubTop;
   const side = mine ? { right: Math.max(8, window.innerWidth - at.right) } : { left: Math.max(8, at.left) };
+  const myRx = (m.rx || {})[me];
   return createPortal(
     <div data-msg-menu onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 80, background: on ? "rgba(0,0,0,.55)" : "rgba(0,0,0,0)", transition: "background .22s", fontFamily: BODY }}>
-      <div style={{ position: "absolute", top: below ? at.top : top, ...side, width: at.width, transform: on ? "scale(1.03)" : "scale(1)", transformOrigin: mine ? "100% 50%" : "0 50%", transition: "transform .28s cubic-bezier(.34,1.56,.64,1)" }}>
-        <MsgBubble m={m} mine={mine} me={me} other={other} lifted />
+      <div data-rx-bar onClick={e => e.stopPropagation()} style={{ position: "absolute", top: stackTop, ...side, display: "flex", alignItems: "center", gap: 2, padding: "6px 6px", borderRadius: 99, background: C.panelHi, border: `1px solid ${C.line}`, boxShadow: "0 14px 34px rgba(0,0,0,.45)", opacity: on ? 1 : 0, transform: on ? "translateY(0) scale(1)" : "translateY(8px) scale(.9)", transformOrigin: mine ? "100% 100%" : "0 100%", transition: "opacity .2s, transform .3s cubic-bezier(.34,1.56,.64,1)" }}>
+        {EMO_QUICK.map((e, i) => (
+          <button key={e} data-rx-quick={e} onClick={() => onReact(myRx === e ? null : e)} aria-pressed={myRx === e}
+            style={{ ...btnBase, width: 40, height: 40, borderRadius: 99, fontSize: 25, lineHeight: 1, background: myRx === e ? `${C.chalk}24` : "transparent", transform: on ? "scale(1)" : "scale(.4)", transition: `transform .35s cubic-bezier(.34,1.56,.64,1) ${40 + i * 30}ms` }}>{e}</button>
+        ))}
+        <button data-rx-more onClick={onMore} aria-label={T("chMoreEmoji")} style={{ ...btnBase, width: 40, height: 40, borderRadius: 99, background: `${C.chalk}14`, color: C.chalk, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
+        </button>
       </div>
-      <div onClick={e => e.stopPropagation()} role="menu" style={{ position: "absolute", ...(below ? { top: at.bottom + 12 } : { top: top + at.height + 12 }), ...side, width: 220, padding: 6, borderRadius: 18, background: C.panelHi, border: `1px solid ${C.line}`, boxShadow: "0 18px 40px rgba(0,0,0,.5)", opacity: on ? 1 : 0, transform: on ? "translateY(0) scale(1)" : "translateY(-6px) scale(.96)", transformOrigin: mine ? "100% 0" : "0 0", transition: "opacity .2s, transform .26s cubic-bezier(.22,1,.36,1)" }}>
+      <div style={{ position: "absolute", top: bubTop, ...side, width: at.width, maxHeight: bh, overflow: "hidden", borderRadius: 18, transform: on ? "scale(1.03)" : "scale(1)", transformOrigin: mine ? "100% 50%" : "0 50%", transition: "transform .28s cubic-bezier(.34,1.56,.64,1)" }}>
+        <MsgBubble m={m} mine={mine} me={me} other={other} th={th} lifted />
+      </div>
+      <div onClick={e => e.stopPropagation()} role="menu" style={{ position: "absolute", top: bubTop + bh + 12, ...side, width: 220, padding: 6, borderRadius: 18, background: C.panelHi, border: `1px solid ${C.line}`, boxShadow: "0 18px 40px rgba(0,0,0,.5)", opacity: on ? 1 : 0, transform: on ? "translateY(0) scale(1)" : "translateY(-6px) scale(.96)", transformOrigin: mine ? "100% 0" : "0 0", transition: "opacity .2s, transform .26s cubic-bezier(.22,1,.36,1)" }}>
         {rows.map(([k, ic, label, fn, col], i) => (
           <button key={k} role="menuitem" data-msg-act={k} onClick={() => { sfxTap(); fn(); }} style={{ ...btnBase, width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, padding: "12px 12px", borderRadius: 12, background: "transparent", color: col || C.chalk, fontSize: 15, fontWeight: 700, borderTop: i ? `1px solid ${C.line}` : "none" }}>
             {label}<MsgIcon d={ic} c={col} />
@@ -4214,8 +4328,15 @@ function MsgMenu({ at, m, mine, me, other, onClose, onReply, onCopy, onEdit, onR
     document.body
   );
 }
-function ChatView({ me, other, canWrite, onBack, onOpen, onReport, sheet }) {
+function ChatView({ me, other, canWrite, onBack, onOpen, onReport, sheet, th: thSaved }) {
   const [msgs, setMsgs] = useState(null);
+  const [thLocal, setThLocal] = useState(null); // picked here, until the chat's colour comes back from the cloud
+  const th = thLocal !== null ? thLocal : thSaved || "y";
+  useEffect(() => { if (thLocal !== null && (thSaved || "y") === thLocal) setThLocal(null); }, [thSaved]);
+  const [themeOpen, setThemeOpen] = useState(false);
+  const [emojiFor, setEmojiFor] = useState(null); // message whose full emoji list is open
+  const [rxFor, setRxFor] = useState(null); // message whose reactions list is open
+  const [burst, setBurst] = useState(null); // message id that just got a ❤️ by a double tap
   const [text, setText] = useState("");
   const [err, setErr] = useState("");
   const [menu, setMenu] = useState(null); // {m, at: rect} while a message's hold menu is open
@@ -4279,13 +4400,26 @@ function ChatView({ me, other, canWrite, onBack, onOpen, onReport, sheet }) {
     setText(""); setReply(null);
     cloud().sendMsg(other.uid, t, re).then(() => sfxTap()).catch(e => { setErr(cloudErr(e)); setText(t); setReply(re && msgs.find(x => x.id === re.id) || null); });
   };
+  const react = (m, e) => {
+    if (!canWrite || !m) return;
+    if (e) { buzz(10); sfxTap(); }
+    cloud().react(other.uid, m.id, e).catch(er => setErr(cloudErr(er)));
+  };
+  const heart = m => { const mineRx = (m.rx || {})[me]; react(m, mineRx === "❤️" ? null : "❤️"); if (mineRx !== "❤️") { setBurst(m.id); setTimeout(() => setBurst(b => (b === m.id ? null : b)), 900); } };
+  const pickTheme = id => { setThLocal(id); cloud().setChatTheme(other.uid, id).catch(er => { setThLocal(null); setErr(cloudErr(er)); }); };
   let lastDay = "";
   const bar = editing || reply;
+  const liveRx = rxFor && msgs ? msgs.find(x => x.id === rxFor) : null;
   return (
     <div className="scr" data-chat-view={other.uid} style={{ padding: canWrite ? "6px 14px 0" : "6px 14px 14px", maxWidth: 460, margin: "0 auto", minHeight: "calc(100dvh - 104px - var(--sat))", boxSizing: "border-box", display: "flex", flexDirection: "column" }}>
       {sheet}
       <style>{`.msgFlash [data-msg-bubble]{animation:msgFlash 1.1s ease}@keyframes msgFlash{0%,100%{filter:none}25%{filter:brightness(1.35)}}`}</style>
-      {menu && <MsgMenu at={menu.at} m={menu.m} mine={menu.m.from === me} me={me} other={other} onClose={() => setMenu(null)}
+      <style>{`.rxBurst{position:absolute;left:50%;top:50%;font-size:44px;line-height:1;transform:translate(-50%,-50%) scale(0);animation:rxBurst .85s cubic-bezier(.34,1.56,.64,1) forwards;pointer-events:none;filter:drop-shadow(0 6px 14px rgba(0,0,0,.4))}@keyframes rxBurst{0%{transform:translate(-50%,-50%) scale(0);opacity:0}35%{transform:translate(-50%,-50%) scale(1.15);opacity:1}70%{transform:translate(-50%,-50%) scale(1);opacity:1}100%{transform:translate(-50%,-90%) scale(.8);opacity:0}}.rxIn{animation:rxIn .35s cubic-bezier(.34,1.56,.64,1)}@keyframes rxIn{from{transform:scale(.3);opacity:0}}`}</style>
+      {themeOpen && <ChatThemeSheet th={th} onPick={pickTheme} onClose={() => setThemeOpen(false)} />}
+      {emojiFor && <EmojiSheet onPick={e => { const m = emojiFor; setEmojiFor(null); react(m, e); }} onClose={() => setEmojiFor(null)} />}
+      {liveRx && liveRx.rx && Object.keys(liveRx.rx).length > 0 && <ReactSheet m={liveRx} me={me} other={other} onRemove={() => { react(liveRx, null); setRxFor(null); }} onClose={() => setRxFor(null)} />}
+      {menu && <MsgMenu at={menu.at} m={menu.m} mine={menu.m.from === me} me={me} other={other} th={th} onClose={() => setMenu(null)}
+        onReact={e => { const m = menu.m; setMenu(null); react(m, e); }} onMore={() => { const m = menu.m; setMenu(null); setEmojiFor(m); }}
         onReply={() => startReply(menu.m)} onEdit={() => startEdit(menu.m)}
         onCopy={() => { copyText(menu.m.text); setMenu(null); setMsg(T("copied")); setTimeout(() => setMsg(""), 1800); }}
         onReport={() => { const m = menu.m; setMenu(null); onReport(m.text).then(setMsg); }} />}
@@ -4298,6 +4432,9 @@ function ChatView({ me, other, canWrite, onBack, onOpen, onReport, sheet }) {
             <span style={{ display: "block", fontSize: 12, color: C.dim }}>⚡{other.lvl || 1} · 🔥 {other.streak || 0}</span>
           </span>
         </button>
+        {canWrite && <button data-chat-theme-open onClick={() => { sfxTap(); setThemeOpen(true); }} aria-label={T("chTheme")} style={{ ...btnBase, width: 38, height: 38, borderRadius: 12, background: SOFT(), flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <span aria-hidden="true" style={{ width: 18, height: 18, borderRadius: 99, background: chatTheme(th).bg, boxShadow: `0 0 0 2px ${C.chalk}55` }} />
+        </button>}
       </div>
       <div data-chat-msgs style={{ display: "flex", flexDirection: "column", justifyContent: "flex-end", gap: 4, flex: 1 }}>
         {msgs === null ? <div style={{ color: C.dim, fontSize: 14, textAlign: "center", padding: 20 }}>{T("frLoading")}</div>
@@ -4307,8 +4444,9 @@ function ChatView({ me, other, canWrite, onBack, onOpen, onReport, sheet }) {
             return (
               <div key={m.id} style={{ display: "contents" }}>
                 {sep && <div style={{ textAlign: "center", fontSize: 11, color: C.dim, margin: "10px 0 4px", fontWeight: 700 }}>{capFirst(fmtDate(day))}</div>}
-                <MsgRow m={m} mine={mine} onReply={() => canWrite && startReply(m)} onMenu={el => { if (!el) return; const r = el.getBoundingClientRect(); setMenu({ m, at: { top: r.top, bottom: r.bottom, left: r.left, right: r.right, width: r.width, height: r.height } }); }}>
-                  <MsgBubble m={m} mine={mine} me={me} other={other} onQuote={jumpTo} />
+                <MsgRow m={m} mine={mine} onReply={() => canWrite && startReply(m)} onDouble={() => heart(m)} onMenu={el => { if (!el) return; const b = el.querySelector("[data-msg-bubble]") || el; const r = b.getBoundingClientRect(); setMenu({ m, at: { top: r.top, bottom: r.bottom, left: r.left, right: r.right, width: r.width, height: r.height } }); }}>
+                  <MsgBubble m={m} mine={mine} me={me} other={other} onQuote={jumpTo} th={th} burst={burst === m.id} />
+                  <MsgReacts m={m} me={me} mine={mine} onOpen={() => setRxFor(m.id)} />
                 </MsgRow>
               </div>
             );

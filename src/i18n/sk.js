@@ -405,6 +405,14 @@ export default {
     chReplySelf: "Odpovedáš sebe",
     chEditing: "Upravuješ správu",
     chNewMsgs: "Nové správy",
+    chReact: "Reakcia",
+    chReacts: "Reakcie",
+    chRemoveReact: "Ťukni a odstrániš",
+    chTheme: "Farba chatu",
+    chThemeD: "Farbu uvidíte obaja.",
+    chThemeSample: "Takto budú vyzerať tvoje správy 👋",
+    chMoreEmoji: "Ďalšie emoji",
+    chRecent: "Naposledy použité",
     chPh: "Správa",
     chSend: "Odoslať",
     chNotFriends: "Už nie ste priatelia, takže sem nemôžeš písať.",
@@ -988,6 +996,7 @@ export default {
     child: ["Zadok na päty, ruky ďaleko pred seba"],
   },
 
+  emoCats: ["Smajlíky", "Ľudia a gestá", "Srdcia", "Šport a zábava", "Jedlo a pitie", "Zvieratá a príroda", "Cestovanie a miesta", "Predmety", "Symboly"],
   ch: {
     w3: "Odcvič 3 tréningy",
     pr1: "Prekonaj osobný rekord",
@@ -1060,6 +1069,8 @@ export default {
     "Správy ako na Instagrame: potiahni správu k stredu a odpovieš na ňu, podrž ju pre Odpovedať, Kopírovať, Upraviť (svoju, 15 minút) a Nahlásiť. Odpoveď ukáže malú citáciu, ťuknutím na ňu skočíš na pôvodnú správu.",
     "Odkazy v správach sa otvoria v prehliadači.",
     "Keď čítaš staršie správy, chat už neskočí dole: ukáže sa tlačidlo „Nové správy“. Pole na písanie už neprekrýva najnovšie správy.",
+    "Reakcie ako na Instagrame: podrž správu pre ❤️ 😂 😮 😢 😡 👍 alebo šípku so všetkými emoji, dvojité ťuknutie = ❤️. Ťukni na reakcie a uvidíš, kto ako reagoval.",
+    "Farba chatu: ťukni na farebnú bodku v hlavičke chatu a vyber si zo 14 farieb, uvidíte ju obaja.",
   ],
   news151: [
     "Horná lišta: keď scrolluješ, odlepí sa od horného okraja ako kvapka vody: natiahne sa do tenkého krčka, odtrhne sa, chvíľu sa zhupne a malá kvapka šplechne späť. Keď sa vrátiš hore, zase sa s okrajom zleje. Predtým sa jedno pozadie len prelínalo do druhého. Keď v polovici zmeníš smer, plynule sa vráti odtiaľ, kde práve je.",

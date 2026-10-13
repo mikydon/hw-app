@@ -14,7 +14,9 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 
 - Messages, like Instagram: swipe a message toward the middle to answer it (a friend's to the right, your own to the left); the answer shows a small quote of it, and tapping the quote jumps to the original. Hold a message for a menu: Reply, Copy, Edit (your own, for 15 minutes; it then says "edited") and Report. Links in messages open in the browser.
 - The chat stays where you are reading: new messages scroll it down only while you are at the bottom (or when you wrote them); otherwise a "New messages" button appears above the input. The input no longer covers the newest messages when the keyboard is closed.
-- Needs the updated Firestore rules (replies and edits).
+- Reactions like Instagram: hold a message and tap ❤️ 😂 😮 😢 😡 👍, or the arrow for every emoji (recently used first); double tap = ❤️. Reactions show small under the message; tap them to see who reacted and to take yours back.
+- Chat colour: 🎨 in the chat's header, 14 colours and gradients for your own messages; you both see it.
+- Needs the updated Firestore rules (replies, edits, reactions, chat colour).
 
 ## 1.5.1 (2026-10-12)
 
