@@ -10,6 +10,12 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 
 <!-- New version: add a "## x.y.z (date)" section on top (web-only history uses "## Browser beta x.y.z (date)"). On a push to main, .github/workflows/build.yml builds everything and .github/scripts/releases.sh creates/updates the releases (commit = the push, or the one in a commit comment). -->
 
+## 1.5.2 (2026-10-14)
+
+- Messages, like Instagram: swipe a message toward the middle to answer it (a friend's to the right, your own to the left); the answer shows a small quote of it, and tapping the quote jumps to the original. Hold a message for a menu: Reply, Copy, Edit (your own, for 15 minutes; it then says "edited") and Report. Links in messages open in the browser.
+- The chat stays where you are reading: new messages scroll it down only while you are at the bottom (or when you wrote them); otherwise a "New messages" button appears above the input. The input no longer covers the newest messages when the keyboard is closed.
+- Needs the updated Firestore rules (replies and edits).
+
 ## 1.5.1 (2026-10-12)
 
 - Top bar: when you scroll down, it now comes off the top edge like a drop of water: the sides pull in, the part over the status bar stretches into a thin neck, snaps, the bar wobbles for a moment and a small drop splashes back in. Scrolling back to the top plays it the other way: a drip and a bump reach for each other, join, and the bar flows back into the edge. Before, the full-width bar and the floating box just faded into each other. If you change direction halfway, the same drop slows down and goes back from where it is (never two animations at once, never a jump). The shape is drawn only during the ~0.7 s of the move; the bar's content never moves.

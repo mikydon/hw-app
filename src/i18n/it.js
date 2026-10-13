@@ -397,6 +397,14 @@ export default {
     chNew: "nuovo",
     chStart: "Saluta {nick} 👋",
     chReport: "Segnala il messaggio",
+    chReply: "Rispondi",
+    chCopy: "Copia",
+    chEdit: "Modifica",
+    chEdited: "modificato",
+    chReplyTo: "Rispondi a {nick}",
+    chReplySelf: "Rispondi a te stesso",
+    chEditing: "Modifica del messaggio",
+    chNewMsgs: "Nuovi messaggi",
     chPh: "Messaggio",
     chSend: "Invia",
     chNotFriends: "Non siete più amici, quindi qui non puoi scrivere.",
@@ -1047,6 +1055,11 @@ export default {
   news143: [
     "Il layout Vetro sembra più vetro vero: un riflesso dall'angolo, un leggero bagliore, un bordo superiore chiaro e una tenue luce dei colori del tema dietro i riquadri. La barra di avvio e il menu ☰ si abbinano, e il telefono resta leggero.",
     "Barra in alto: in cima alla pagina ora riempie lo schermo da bordo a bordo, senza linea in alto o ai lati.",
+  ],
+  news152: [
+    "Messaggi come su Instagram: trascina un messaggio verso il centro per rispondere, tienilo premuto per Rispondi, Copia, Modifica (i tuoi, 15 minuti) e Segnala. La risposta mostra una piccola citazione; toccala per tornare all'originale.",
+    "I link nei messaggi si aprono nel browser.",
+    "Mentre leggi messaggi vecchi, la chat non salta più in fondo: compare il pulsante «Nuovi messaggi». Il campo di scrittura non copre più i messaggi più recenti.",
   ],
   news151: [
     "Barra in alto: quando scorri, si stacca dal bordo superiore come una goccia d'acqua: si allunga in un collo sottile, si stacca, oscilla un attimo e una gocciolina rimbalza dentro. Tornando in cima, si fonde di nuovo con il bordo. Prima uno sfondo sfumava semplicemente nell'altro. Se cambi direzione a metà, torna indietro dolcemente da dove si trova.",

@@ -397,6 +397,14 @@ export default {
     chNew: "new",
     chStart: "Say hi to {nick} 👋",
     chReport: "Report this message",
+    chReply: "Reply",
+    chCopy: "Copy",
+    chEdit: "Edit",
+    chEdited: "edited",
+    chReplyTo: "Replying to {nick}",
+    chReplySelf: "Replying to yourself",
+    chEditing: "Editing message",
+    chNewMsgs: "New messages",
     chPh: "Message",
     chSend: "Send",
     chNotFriends: "You're no longer friends, so you can't write here.",
@@ -1047,6 +1055,11 @@ export default {
   news143: [
     "Glass layout looks more like real glass: a sheen from the corner, a soft reflection, a bright top edge and a soft glow of the theme colours behind the boxes. The Start bar and the ☰ menu match it, and it stays light on the phone.",
     "Top bar: at the top of the page it now fills the screen edge to edge, without a line at the top or sides.",
+  ],
+  news152: [
+    "Messages like Instagram: swipe a message toward the middle to reply, hold it for Reply, Copy, Edit (your own, for 15 minutes) and Report. The reply shows a small quote; tap it to jump to the original.",
+    "Links in messages open in the browser.",
+    "The chat no longer jumps down while you read older messages: a “New messages” button appears instead. The input no longer covers the newest messages.",
   ],
   news151: [
     "Top bar: when you scroll, it now comes off the top edge like a drop of water: it stretches into a thin neck, snaps off, wobbles for a moment and a small drop splashes back in. Scrolling back to the top, it flows together with the edge again. Before, one background simply faded into the other. If you change direction halfway, it smoothly goes back from where it is.",

@@ -397,6 +397,14 @@ export default {
     chNew: "nové",
     chStart: "Napíš {nick} ahoj 👋",
     chReport: "Nahlásiť správu",
+    chReply: "Odpovedať",
+    chCopy: "Kopírovať",
+    chEdit: "Upraviť",
+    chEdited: "upravené",
+    chReplyTo: "Odpovedáš: {nick}",
+    chReplySelf: "Odpovedáš sebe",
+    chEditing: "Upravuješ správu",
+    chNewMsgs: "Nové správy",
     chPh: "Správa",
     chSend: "Odoslať",
     chNotFriends: "Už nie ste priatelia, takže sem nemôžeš písať.",
@@ -1047,6 +1055,11 @@ export default {
   news143: [
     "Rozloženie Sklo vyzerá viac ako skutočné sklo: odlesk z rohu, jemný odraz, svetlá horná hrana a jemná žiara farieb témy za boxmi. Lišta so štartom a menu ☰ k nemu ladia a mobil to stále nezaťažuje.",
     "Horná lišta: keď si úplne hore, vypĺňa obrazovku od kraja po kraj, bez čiary hore a po bokoch.",
+  ],
+  news152: [
+    "Správy ako na Instagrame: potiahni správu k stredu a odpovieš na ňu, podrž ju pre Odpovedať, Kopírovať, Upraviť (svoju, 15 minút) a Nahlásiť. Odpoveď ukáže malú citáciu, ťuknutím na ňu skočíš na pôvodnú správu.",
+    "Odkazy v správach sa otvoria v prehliadači.",
+    "Keď čítaš staršie správy, chat už neskočí dole: ukáže sa tlačidlo „Nové správy“. Pole na písanie už neprekrýva najnovšie správy.",
   ],
   news151: [
     "Horná lišta: keď scrolluješ, odlepí sa od horného okraja ako kvapka vody: natiahne sa do tenkého krčka, odtrhne sa, chvíľu sa zhupne a malá kvapka šplechne späť. Keď sa vrátiš hore, zase sa s okrajom zleje. Predtým sa jedno pozadie len prelínalo do druhého. Keď v polovici zmeníš smer, plynule sa vráti odtiaľ, kde práve je.",

@@ -2,7 +2,7 @@
 // Every case says who tries what and whether the rules must allow it. Results show up as annotations on the run.
 import { readFileSync } from "node:fs";
 import { initializeTestEnvironment, assertSucceeds, assertFails } from "@firebase/rules-unit-testing";
-import { doc, getDoc, setDoc, deleteDoc, collection, getDocs, query, where, orderBy, limit, writeBatch, addDoc, serverTimestamp } from "firebase/firestore";
+import { doc, getDoc, setDoc, deleteDoc, updateDoc, collection, getDocs, query, where, orderBy, limit, writeBatch, addDoc, serverTimestamp, Timestamp } from "firebase/firestore";
 
 const env = await initializeTestEnvironment({ projectId: "demo-hw-app", firestore: { rules: readFileSync("firestore.rules", "utf8"), host: "127.0.0.1", port: 8080 } });
 const as = u => (u ? env.authenticatedContext(u) : env.unauthenticatedContext()).firestore();
@@ -108,6 +108,22 @@ const send = (u, cid, text, extra = {}) => { const db = as(u), b = writeBatch(db
 await t("alice writes to her friend bob", true, () => send("alice", "alice_bob", "Ahoj! 💪"));
 await t("bob answers", true, () => send("bob", "alice_bob", "Čau"));
 await t("bob reads the messages", true, () => getDocs(query(collection(as("bob"), "chats", "alice_bob", "msgs"), orderBy("ts"))));
+// 1.5.2: replies and edits
+await t("bob replies to a message (short copy of it in re)", true, () => send("bob", "alice_bob", "jasné", { re: { id: "m1", from: "alice", text: "Ahoj! 💪" } }));
+await t("a reply with anything else in re is refused", false, () => send("bob", "alice_bob", "x", { re: { id: "m1", from: "alice", text: "a", extra: 1 } }));
+await t("a reply quoting over 120 characters is refused", false, () => send("bob", "alice_bob", "x", { re: { id: "m1", from: "alice", text: "y".repeat(121) } }));
+await env.withSecurityRulesDisabled(async c => {
+  const db = c.firestore();
+  await setDoc(doc(db, "chats", "alice_bob", "msgs", "mine"), { from: "alice", text: "preklep", ts: Timestamp.fromMillis(Date.now() - 60e3) });
+  await setDoc(doc(db, "chats", "alice_bob", "msgs", "old"), { from: "alice", text: "dávno", ts: Timestamp.fromMillis(Date.now() - 20 * 60e3) });
+});
+const edit = (u, id, data) => updateDoc(doc(as(u), "chats", "alice_bob", "msgs", id), data);
+await t("alice edits her own message within 15 minutes", true, () => edit("alice", "mine", { text: "opravené", ed: serverTimestamp() }));
+await t("an edit must say when (ed = now)", false, () => edit("alice", "mine", { text: "bez času" }));
+await t("bob can't edit alice's message", false, () => edit("bob", "mine", { text: "hack", ed: serverTimestamp() }));
+await t("an edit can't change who wrote it", false, () => edit("alice", "mine", { text: "x", from: "bob", ed: serverTimestamp() }));
+await t("an edit can't be empty", false, () => edit("alice", "mine", { text: "", ed: serverTimestamp() }));
+await t("after 15 minutes the message can't be edited", false, () => edit("alice", "old", { text: "neskoro", ed: serverTimestamp() }));
 await t("bob lists his chats", true, () => getDocs(query(collection(as("bob"), "chats"), where("m", "array-contains", "bob"))));
 await t("carol can't read their chat", false, () => getDocs(collection(as("carol"), "chats", "alice_bob", "msgs")));
 await t("carol can't list chats she isn't in", false, () => getDocs(query(collection(as("carol"), "chats"), where("m", "array-contains", "alice"))));

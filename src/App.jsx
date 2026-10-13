@@ -31,7 +31,7 @@ const THEMES = {
   slate:  { ink: "#15181d", panel: "#1f242b", panelHi: "#2a313a", line: "#3a434f", chalk: "#f1f4f8", dim: "#9aa6b4", edge: "#0e1115" },
   coffee: { ink: "#1c140f", panel: "#2a1f17", panelHi: "#382a20", line: "#4d3a2c", chalk: "#fbf3ec", dim: "#b8a291", edge: "#130d09" },
 };
-const APP_VERSION = "1.5.1";
+const APP_VERSION = "1.5.2";
 // Big Shoulders has no Cyrillic, so Oswald (also condensed) covers Ukrainian. The browser only
 // downloads the Oswald unicode ranges a page actually uses.
 const DISPLAY = "'Big Shoulders Display', 'Oswald', 'Arial Narrow', Impact, sans-serif";
@@ -4106,13 +4106,125 @@ function chTime(ts) {
   return fmtShortDM(d);
 }
 // One chat with a friend: messages live while it's open; the newest at the bottom, the box to write under it.
+// 1.5.2 (Michael, Oct 13): messages like Instagram. Swipe a message toward the middle to answer it (friend's to the
+// right, own to the left), hold it for a menu (Answer / Copy / Edit own within 15 min / Report), links open in the
+// browser, the answered message shows as a small quote. New messages scroll the chat down only while you are at the
+// bottom (or wrote them yourself); otherwise a "New messages" pill waits above the input.
+const MSG_EDIT_MS = 15 * 60e3;
+const canEditMsg = (m, me) => m.from === me && !m.pending && Date.now() - m.ts < MSG_EDIT_MS - 5000;
+const LINK_RE = /(https?:\/\/[^\s<>"]+|www\.[^\s<>"]+\.[^\s<>"]+)/gi;
+function linkify(text, color) {
+  const out = []; let last = 0, m; LINK_RE.lastIndex = 0;
+  while ((m = LINK_RE.exec(text))) {
+    let url = m[0]; const trail = url.match(/[.,!?;:)\]]+$/); if (trail) url = url.slice(0, -trail[0].length);
+    if (m.index > last) out.push(text.slice(last, m.index));
+    const href = /^https?:/i.test(url) ? url : "https://" + url;
+    out.push(<a key={m.index} data-msg-link href={href} draggable={false} onClick={e => { e.preventDefault(); e.stopPropagation(); openExternal(href); }} style={{ color, textDecoration: "underline", textUnderlineOffset: 2, overflowWrap: "anywhere" }}>{url}</a>);
+    last = m.index + url.length; LINK_RE.lastIndex = last;
+  }
+  if (last < text.length) out.push(text.slice(last));
+  return out;
+}
+const buzz = ms => { if ((window._wset || {}).vibrate) vibratePattern([ms]); };
+const MsgIcon = ({ d, c }) => <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" style={{ flexShrink: 0 }}><path d={d} fill="none" stroke={c || "currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>;
+const ICON_REPLY = "M9 14L4 9l5-5M4 9h10.5A5.5 5.5 0 0 1 20 14.5V20";
+const ICON_COPY = "M9 9h10v11H9zM5 15V4h10";
+const ICON_EDIT = "M4 20h4L19 9l-4-4L4 16v4zM13.5 6.5l4 4";
+const ICON_FLAG = "M5 21V4m0 0h11l-2 4 2 4H5";
+// One message: swipe toward the middle to answer, hold for the menu. touch-action pan-y keeps vertical scrolling
+// with the browser and gives the horizontal drag to us.
+function MsgRow({ m, mine, onReply, onMenu, children }) {
+  const ref = useRef(null), arrow = useRef(null), st = useRef(null);
+  const dir = mine ? -1 : 1, TH = 56;
+  const set = (d, anim) => {
+    const el = ref.current; if (!el) return;
+    el.style.transition = anim ? "transform .3s cubic-bezier(.22,1,.36,1)" : "none";
+    el.style.transform = d ? `translateX(${d * dir}px)` : "";
+    const a = arrow.current; if (a) { const k = Math.min(1, d / TH); a.style.opacity = String(k); a.style.transform = `scale(${0.5 + 0.5 * k})`; a.style.transition = anim ? "opacity .25s, transform .25s" : "none"; }
+  };
+  const end = () => { const s = st.current; st.current = null; if (!s) return; clearTimeout(s.lp); if (s.sw) { if (s.d >= TH) onReply(); set(0, true); } };
+  const down = e => {
+    if (m.pending || (e.pointerType === "mouse" && e.button !== 0)) return;
+    const s = { x: e.clientX, y: e.clientY, d: 0, sw: false, fired: false, id: e.pointerId };
+    s.lp = setTimeout(() => { if (st.current !== s || s.sw) return; st.current = null; buzz(12); onMenu(ref.current); }, 450);
+    st.current = s;
+  };
+  const move = e => {
+    const s = st.current; if (!s) return;
+    const dx = e.clientX - s.x, dy = e.clientY - s.y;
+    if (!s.sw) {
+      if (Math.abs(dx) < 9 && Math.abs(dy) < 9) return;
+      clearTimeout(s.lp);
+      if (Math.abs(dx) > Math.abs(dy) * 1.3 && dx * dir > 0) { s.sw = true; try { e.currentTarget.setPointerCapture(e.pointerId); } catch (_) {} }
+      else { st.current = null; return; }
+    }
+    let d = dx * dir; d = d < 0 ? 0 : d > TH ? TH + (d - TH) * 0.25 : d;
+    if (d >= TH && !s.fired) { s.fired = true; buzz(10); } else if (d < TH) s.fired = false;
+    s.d = d; set(d, false);
+  };
+  return (
+    <div data-msg={mine ? "me" : "them"} data-msg-id={m.id} onPointerDown={down} onPointerMove={move} onPointerUp={end} onPointerCancel={end}
+      onContextMenu={e => { e.preventDefault(); if (!m.pending) onMenu(ref.current); }} onDragStart={e => e.preventDefault()}
+      style={{ position: "relative", display: "flex", justifyContent: mine ? "flex-end" : "flex-start", touchAction: "pan-y", WebkitTouchCallout: "none", userSelect: "none", WebkitUserSelect: "none" }}>
+      <span ref={arrow} aria-hidden="true" style={{ position: "absolute", top: "50%", marginTop: -15, [mine ? "right" : "left"]: 2, width: 30, height: 30, borderRadius: 99, background: C.panelHi, color: C.chalk, display: "flex", alignItems: "center", justifyContent: "center", opacity: 0, transform: "scale(.5)" }}><MsgIcon d={ICON_REPLY} /></span>
+      <div ref={ref} style={{ maxWidth: "80%", minWidth: 0, display: "flex", flexDirection: "column", alignItems: mine ? "flex-end" : "flex-start" }}>{children}</div>
+    </div>
+  );
+}
+// The bubble itself (also drawn lifted above the dimmed chat when its menu is open).
+function MsgBubble({ m, mine, me, other, onQuote, lifted }) {
+  const who = r => (r.from === me ? T("chYou") : other.nick);
+  return (
+    <div data-msg-bubble style={{ padding: "8px 12px 6px", borderRadius: 18, borderBottomRightRadius: mine ? 6 : 18, borderBottomLeftRadius: mine ? 18 : 6, background: mine ? C.signal : LOOK === "liquid" ? "rgba(255,255,255,.14)" : C.panelHi, color: mine ? C.signalInk : C.chalk, fontWeight: 500, fontSize: 15, lineHeight: 1.4, whiteSpace: "pre-wrap", overflowWrap: "anywhere", opacity: m.pending ? 0.7 : 1, boxShadow: lifted ? "0 14px 34px rgba(0,0,0,.45)" : "none", fontFamily: BODY }}>
+      {m.re && (
+        <button data-msg-quote onClick={e => { e.stopPropagation(); onQuote && onQuote(m.re.id); }} style={{ ...btnBase, display: "block", width: "100%", textAlign: "left", margin: "0 0 6px", padding: "5px 9px", borderRadius: 11, borderLeft: `3px solid ${mine ? "rgba(0,0,0,.45)" : C.signal}`, background: mine ? "rgba(0,0,0,.09)" : "rgba(255,255,255,.07)", color: "inherit", fontSize: 12.5, lineHeight: 1.35, fontWeight: 500 }}>
+          <span style={{ display: "block", fontWeight: 800, fontSize: 11.5, opacity: 0.8 }}>{who(m.re)}</span>
+          <span style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", opacity: 0.85 }}>{m.re.text}</span>
+        </button>
+      )}
+      <span>{linkify(m.text, mine ? C.signalInk : C.sky)}</span>
+      <span style={{ display: "block", fontSize: 10.5, opacity: 0.65, textAlign: "right", marginTop: 2 }}>{m.ed ? `${T("chEdited")} · ` : ""}{new Date(m.ts).toLocaleTimeString(LANG, { hour: "2-digit", minute: "2-digit" })}</span>
+    </div>
+  );
+}
+// Hold menu: the chat dims, the message lifts where it was, the actions sit under it (above it near the bottom).
+function MsgMenu({ at, m, mine, me, other, onClose, onReply, onCopy, onEdit, onReport }) {
+  const [on, setOn] = useState(false);
+  useBack(onClose);
+  useEffect(() => { const r = requestAnimationFrame(() => setOn(true)); return () => cancelAnimationFrame(r); }, []);
+  const vh = window.innerHeight, rows = [["reply", ICON_REPLY, T("chReply"), onReply], ["copy", ICON_COPY, T("chCopy"), onCopy]];
+  if (canEditMsg(m, me)) rows.push(["edit", ICON_EDIT, T("chEdit"), onEdit]);
+  if (!mine) rows.push(["report", ICON_FLAG, T("chReport"), onReport, "#ff8a80"]);
+  const menuH = rows.length * 49 + 12, below = at.bottom + 10 + menuH < vh - 16;
+  const top = Math.max(70, Math.min(at.top, vh - 16 - menuH - 10 - at.height));
+  const side = mine ? { right: Math.max(8, window.innerWidth - at.right) } : { left: Math.max(8, at.left) };
+  return createPortal(
+    <div data-msg-menu onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 80, background: on ? "rgba(0,0,0,.55)" : "rgba(0,0,0,0)", transition: "background .22s", fontFamily: BODY }}>
+      <div style={{ position: "absolute", top: below ? at.top : top, ...side, width: at.width, transform: on ? "scale(1.03)" : "scale(1)", transformOrigin: mine ? "100% 50%" : "0 50%", transition: "transform .28s cubic-bezier(.34,1.56,.64,1)" }}>
+        <MsgBubble m={m} mine={mine} me={me} other={other} lifted />
+      </div>
+      <div onClick={e => e.stopPropagation()} role="menu" style={{ position: "absolute", ...(below ? { top: at.bottom + 12 } : { top: top + at.height + 12 }), ...side, width: 220, padding: 6, borderRadius: 18, background: C.panelHi, border: `1px solid ${C.line}`, boxShadow: "0 18px 40px rgba(0,0,0,.5)", opacity: on ? 1 : 0, transform: on ? "translateY(0) scale(1)" : "translateY(-6px) scale(.96)", transformOrigin: mine ? "100% 0" : "0 0", transition: "opacity .2s, transform .26s cubic-bezier(.22,1,.36,1)" }}>
+        {rows.map(([k, ic, label, fn, col], i) => (
+          <button key={k} role="menuitem" data-msg-act={k} onClick={() => { sfxTap(); fn(); }} style={{ ...btnBase, width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, padding: "12px 12px", borderRadius: 12, background: "transparent", color: col || C.chalk, fontSize: 15, fontWeight: 700, borderTop: i ? `1px solid ${C.line}` : "none" }}>
+            {label}<MsgIcon d={ic} c={col} />
+          </button>
+        ))}
+      </div>
+    </div>,
+    document.body
+  );
+}
 function ChatView({ me, other, canWrite, onBack, onOpen, onReport, sheet }) {
   const [msgs, setMsgs] = useState(null);
   const [text, setText] = useState("");
   const [err, setErr] = useState("");
-  const [menu, setMenu] = useState(null); // message id with its small menu open
+  const [menu, setMenu] = useState(null); // {m, at: rect} while a message's hold menu is open
+  const [reply, setReply] = useState(null); // the message being answered
+  const [editing, setEditing] = useState(null); // own message being edited
+  const [unseen, setUnseen] = useState(0); // new messages that arrived while scrolled up
   const [msg, setMsg] = useState("");
-  const endRef = useRef(null);
+  const inputRef = useRef(null);
+  const atBottom = useRef(true), lastId = useRef(null), first = useRef(true);
   useBack(onBack);
   useEffect(() => {
     // On an error: show it instead of "Loading…" and listen again after 10 s.
@@ -4125,17 +4237,58 @@ function ChatView({ me, other, canWrite, onBack, onOpen, onReport, sheet }) {
     run();
     return () => { dead = true; clearTimeout(t); try { off && off(); } catch (_) {} };
   }, [other.uid]);
-  useEffect(() => { try { endRef.current && endRef.current.scrollIntoView({ block: "end" }); } catch (_) {} }, [msgs && msgs.length]);
+  // The chat scrolls with the page: "at the bottom" = the end of the page is in view (the input is sticky below).
+  const toBottom = smooth => { try { window.scrollTo({ top: document.documentElement.scrollHeight, behavior: smooth ? "smooth" : "auto" }); } catch (_) { window.scrollTo(0, 1e7); } };
+  useEffect(() => {
+    const on = () => { const b = window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 90; atBottom.current = b; if (b) setUnseen(0); };
+    // keyboard opening/closing changes the visible height: keep the newest message in view if it was
+    const vv = window.visualViewport, onVv = () => { if (atBottom.current) toBottom(false); };
+    window.addEventListener("scroll", on, { passive: true }); vv && vv.addEventListener("resize", onVv);
+    return () => { window.removeEventListener("scroll", on); vv && vv.removeEventListener("resize", onVv); };
+  }, []);
+  useLayoutEffect(() => {
+    if (!msgs || !msgs.length) return;
+    const lm = msgs[msgs.length - 1];
+    if (lm.id === lastId.current) return;
+    const newOne = lastId.current !== null; lastId.current = lm.id;
+    if (first.current) { first.current = false; toBottom(false); requestAnimationFrame(() => toBottom(false)); return; }
+    if (!newOne) return;
+    if (atBottom.current || lm.from === me) { toBottom(true); setUnseen(0); } else setUnseen(n => n + 1);
+  }, [msgs]);
+  const focusInput = () => setTimeout(() => { try { inputRef.current && inputRef.current.focus(); } catch (_) {} }, 30);
+  const startReply = m => { setEditing(null); setReply(m); setMenu(null); focusInput(); };
+  const startEdit = m => { setReply(null); setEditing(m); setText(m.text); setMenu(null); focusInput(); };
+  const cancelBar = () => { if (editing) setText(""); setEditing(null); setReply(null); };
+  const jumpTo = id => {
+    const el = document.querySelector(`[data-msg-id="${id}"]`);
+    if (!el) return;
+    try { el.scrollIntoView({ block: "center", behavior: "smooth" }); } catch (_) {}
+    el.classList.remove("msgFlash"); void el.offsetWidth; el.classList.add("msgFlash");
+  };
   const send = () => {
     const t = text.trim();
     if (!t || !canWrite) return;
-    setText(""); setErr("");
-    cloud().sendMsg(other.uid, t).then(() => sfxTap()).catch(e => { setErr(cloudErr(e)); setText(t); });
+    setErr("");
+    if (editing) {
+      const m = editing; setEditing(null); setText("");
+      if (t === m.text) return;
+      cloud().editMsg(other.uid, m.id, t).then(() => sfxTap()).catch(e => { setErr(cloudErr(e)); setEditing(m); setText(t); });
+      return;
+    }
+    const re = reply ? { id: reply.id, from: reply.from, text: reply.text.slice(0, 120) } : null;
+    setText(""); setReply(null);
+    cloud().sendMsg(other.uid, t, re).then(() => sfxTap()).catch(e => { setErr(cloudErr(e)); setText(t); setReply(re && msgs.find(x => x.id === re.id) || null); });
   };
   let lastDay = "";
+  const bar = editing || reply;
   return (
-    <div className="scr" data-chat-view={other.uid} style={{ padding: "6px 14px 14px", maxWidth: 460, margin: "0 auto", minHeight: "calc(100dvh - 104px - var(--sat))", boxSizing: "border-box", display: "flex", flexDirection: "column" }}>
+    <div className="scr" data-chat-view={other.uid} style={{ padding: canWrite ? "6px 14px 0" : "6px 14px 14px", maxWidth: 460, margin: "0 auto", minHeight: "calc(100dvh - 104px - var(--sat))", boxSizing: "border-box", display: "flex", flexDirection: "column" }}>
       {sheet}
+      <style>{`.msgFlash [data-msg-bubble]{animation:msgFlash 1.1s ease}@keyframes msgFlash{0%,100%{filter:none}25%{filter:brightness(1.35)}}`}</style>
+      {menu && <MsgMenu at={menu.at} m={menu.m} mine={menu.m.from === me} me={me} other={other} onClose={() => setMenu(null)}
+        onReply={() => startReply(menu.m)} onEdit={() => startEdit(menu.m)}
+        onCopy={() => { copyText(menu.m.text); setMenu(null); setMsg(T("copied")); setTimeout(() => setMsg(""), 1800); }}
+        onReport={() => { const m = menu.m; setMenu(null); onReport(m.text).then(setMsg); }} />}
       <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "6px 2px 10px" }}>
         <button data-chat-back onClick={() => { sfxTap(); onBack(); }} aria-label={T("back")} style={{ ...btnBase, background: SOFT(), color: C.chalk, width: 38, height: 38, borderRadius: 12, fontSize: 20, flexShrink: 0 }}>‹</button>
         <button onClick={onOpen} style={{ ...btnBase, background: "transparent", color: C.chalk, padding: 0, display: "flex", alignItems: "center", gap: 10, minWidth: 0, flex: 1, textAlign: "left" }}>
@@ -4154,33 +4307,45 @@ function ChatView({ me, other, canWrite, onBack, onOpen, onReport, sheet }) {
             return (
               <div key={m.id} style={{ display: "contents" }}>
                 {sep && <div style={{ textAlign: "center", fontSize: 11, color: C.dim, margin: "10px 0 4px", fontWeight: 700 }}>{capFirst(fmtDate(day))}</div>}
-                <div data-msg={mine ? "me" : "them"} style={{ display: "flex", justifyContent: mine ? "flex-end" : "flex-start" }}>
-                  <button onClick={() => setMenu(menu === m.id ? null : m.id)} style={{ ...btnBase, maxWidth: "80%", padding: "8px 12px 6px", borderRadius: 18, borderBottomRightRadius: mine ? 6 : 18, borderBottomLeftRadius: mine ? 18 : 6, background: mine ? C.signal : LOOK === "liquid" ? "rgba(255,255,255,.12)" : C.panelHi, color: mine ? C.signalInk : C.chalk, textAlign: "left", fontWeight: 500, fontSize: 15, lineHeight: 1.4, whiteSpace: "pre-wrap", overflowWrap: "anywhere", opacity: m.pending ? 0.7 : 1 }}>
-                    {m.text}
-                    <span style={{ display: "block", fontSize: 10.5, opacity: 0.65, textAlign: "right", marginTop: 2 }}>{new Date(m.ts).toLocaleTimeString(LANG, { hour: "2-digit", minute: "2-digit" })}</span>
-                  </button>
-                </div>
-                {menu === m.id && !mine && (
-                  <div style={{ display: "flex", justifyContent: "flex-start" }}>
-                    <button data-msg-report onClick={() => { setMenu(null); onReport(m.text).then(setMsg); }} style={{ ...btnBase, background: "transparent", color: "#ff8a80", fontSize: 12, padding: "2px 8px" }}>{T("chReport")}</button>
-                  </div>
-                )}
+                <MsgRow m={m} mine={mine} onReply={() => canWrite && startReply(m)} onMenu={el => { if (!el) return; const r = el.getBoundingClientRect(); setMenu({ m, at: { top: r.top, bottom: r.bottom, left: r.left, right: r.right, width: r.width, height: r.height } }); }}>
+                  <MsgBubble m={m} mine={mine} me={me} other={other} onQuote={jumpTo} />
+                </MsgRow>
               </div>
             );
           })}
-        <div ref={endRef} />
       </div>
       {msg && <div role="status" style={{ fontSize: 12, color: msg.startsWith("✓") ? C.mint : "#ff8a80", marginTop: 8, textAlign: "center" }}>{msg}</div>}
       {err && <div role="alert" style={{ fontSize: 13, color: "#ff8a80", marginTop: 8 }}>{err}</div>}
       {canWrite ? (
-        <div style={{ display: "flex", gap: 8, alignItems: "flex-end", marginTop: 12, position: "sticky", bottom: "calc(10px + var(--sab))", padding: 6, borderRadius: 22, ...card }}>
-          <textarea data-chat-input value={text} rows={1} maxLength={1000} onChange={e => setText(e.target.value)} placeholder={T("chPh")} aria-label={T("chPh")}
-            onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey && !isNative) { e.preventDefault(); send(); } }}
-            onFocus={() => setTimeout(() => { try { endRef.current.scrollIntoView({ block: "end" }); } catch (_) {} }, 300)}
-            style={{ flex: 1, minWidth: 0, resize: "none", fontFamily: BODY, fontSize: 16, padding: "9px 12px", borderRadius: 16, border: "none", background: "transparent", color: C.chalk, outline: "none", maxHeight: 120, lineHeight: 1.35 }} />
-          <button data-chat-send onClick={send} disabled={!text.trim()} aria-label={T("chSend")} style={{ ...btnBase, width: 40, height: 40, borderRadius: 20, background: text.trim() ? C.signal : C.panelHi, color: text.trim() ? C.signalInk : C.dim, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12l15-7-5 15-2.6-6.4L4 12z" fill="currentColor" /></svg>
-          </button>
+        // the input sits on a strip of the background, so messages scrolling under it never show around it
+        <div data-chat-dock style={{ position: "sticky", bottom: 0, marginTop: 4, marginLeft: -14, marginRight: -14, padding: "12px 14px calc(10px + var(--sab))", zIndex: 2, background: `linear-gradient(to bottom, ${C.ink}00, ${C.ink} 12px)` }}>
+          {unseen > 0 && (
+            <button data-chat-new onClick={() => { sfxTap(); setUnseen(0); toBottom(true); }} style={{ ...btnBase, position: "absolute", bottom: "calc(100% + 2px)", left: "50%", transform: "translateX(-50%)", display: "flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 99, background: C.chalk, color: C.ink, fontSize: 13, fontWeight: 800, boxShadow: "0 8px 22px rgba(0,0,0,.4)", whiteSpace: "nowrap" }}>
+              ↓ {T("chNewMsgs")}
+            </button>
+          )}
+          <div style={{ padding: 6, borderRadius: 22, ...card }}>
+            {bar && (
+              <div data-chat-bar={editing ? "edit" : "reply"} style={{ display: "flex", alignItems: "center", gap: 10, padding: "6px 6px 8px 10px", margin: "0 0 4px", borderBottom: `1px solid ${C.line}` }}>
+                <MsgIcon d={editing ? ICON_EDIT : ICON_REPLY} c={C.signal} />
+                <span style={{ flex: 1, minWidth: 0 }}>
+                  <span style={{ display: "block", fontSize: 12, fontWeight: 800, color: C.signal }}>{editing ? T("chEditing") : reply.from === me ? T("chReplySelf") : T("chReplyTo", { nick: other.nick })}</span>
+                  <span style={{ display: "block", fontSize: 13, color: C.dim, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{(editing || reply).text}</span>
+                </span>
+                <button data-chat-bar-x onClick={() => { sfxTap(); cancelBar(); }} aria-label={T("close")} style={{ ...btnBase, width: 30, height: 30, borderRadius: 99, background: "transparent", color: C.dim, fontSize: 18, flexShrink: 0 }}>✕</button>
+              </div>
+            )}
+            <div style={{ display: "flex", gap: 8, alignItems: "flex-end" }}>
+              <textarea ref={inputRef} data-chat-input value={text} rows={1} maxLength={1000} onChange={e => setText(e.target.value)} placeholder={T("chPh")} aria-label={T("chPh")}
+                onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey && !isNative) { e.preventDefault(); send(); } if (e.key === "Escape" && bar) cancelBar(); }}
+                onFocus={() => { if (atBottom.current) setTimeout(() => toBottom(false), 300); }}
+                style={{ flex: 1, minWidth: 0, resize: "none", fontFamily: BODY, fontSize: 16, padding: "9px 12px", borderRadius: 16, border: "none", background: "transparent", color: C.chalk, outline: "none", maxHeight: 120, lineHeight: 1.35 }} />
+              <button data-chat-send onClick={send} disabled={!text.trim()} aria-label={editing ? T("chEdit") : T("chSend")} style={{ ...btnBase, width: 40, height: 40, borderRadius: 20, background: text.trim() ? C.signal : C.panelHi, color: text.trim() ? C.signalInk : C.dim, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                {editing ? <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                  : <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12l15-7-5 15-2.6-6.4L4 12z" fill="currentColor" /></svg>}
+              </button>
+            </div>
+          </div>
         </div>
       ) : <div data-chat-readonly style={{ fontSize: 13, color: C.dim, textAlign: "center", marginTop: 14 }}>{T("chNotFriends")}</div>}
     </div>

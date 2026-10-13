@@ -397,6 +397,14 @@ export default {
     chNew: "neu",
     chStart: "Sag {nick} Hallo 👋",
     chReport: "Nachricht melden",
+    chReply: "Antworten",
+    chCopy: "Kopieren",
+    chEdit: "Bearbeiten",
+    chEdited: "bearbeitet",
+    chReplyTo: "Antwort an {nick}",
+    chReplySelf: "Antwort an dich selbst",
+    chEditing: "Nachricht bearbeiten",
+    chNewMsgs: "Neue Nachrichten",
     chPh: "Nachricht",
     chSend: "Senden",
     chNotFriends: "Ihr seid keine Freunde mehr, deshalb kannst du hier nicht schreiben.",
@@ -1047,6 +1055,11 @@ export default {
   news143: [
     "Das Layout Glas sieht echtem Glas ähnlicher: ein Glanz aus der Ecke, eine sanfte Spiegelung, eine helle Oberkante und ein sanftes Leuchten der Themenfarben hinter den Boxen. Die Startleiste und das ☰-Menü passen dazu, und das Handy wird weiterhin kaum belastet.",
     "Obere Leiste: ganz oben auf der Seite füllt sie den Bildschirm jetzt von Rand zu Rand, ohne Linie oben oder an den Seiten.",
+  ],
+  news152: [
+    "Nachrichten wie bei Instagram: Wische eine Nachricht zur Mitte, um zu antworten, halte sie gedrückt für Antworten, Kopieren, Bearbeiten (eigene, 15 Minuten) und Melden. Die Antwort zeigt ein kleines Zitat; tippe darauf, um zum Original zu springen.",
+    "Links in Nachrichten öffnen sich im Browser.",
+    "Während du ältere Nachrichten liest, springt der Chat nicht mehr nach unten: Stattdessen erscheint „Neue Nachrichten“. Das Eingabefeld verdeckt die neuesten Nachrichten nicht mehr.",
   ],
   news151: [
     "Obere Leiste: Beim Scrollen löst sie sich wie ein Wassertropfen vom oberen Rand: Sie zieht sich zu einem dünnen Hals, reißt ab, wippt kurz nach, und ein kleiner Tropfen spritzt zurück. Scrollst du wieder nach oben, fließt sie wieder mit dem Rand zusammen. Vorher wurde ein Hintergrund nur in den anderen überblendet. Wechselst du mittendrin die Richtung, läuft sie von dort aus sanft zurück.",

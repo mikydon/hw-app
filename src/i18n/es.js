@@ -397,6 +397,14 @@ export default {
     chNew: "nuevo",
     chStart: "Saluda a {nick} 👋",
     chReport: "Denunciar el mensaje",
+    chReply: "Responder",
+    chCopy: "Copiar",
+    chEdit: "Editar",
+    chEdited: "editado",
+    chReplyTo: "Respondiendo a {nick}",
+    chReplySelf: "Respondiéndote a ti",
+    chEditing: "Editando mensaje",
+    chNewMsgs: "Mensajes nuevos",
     chPh: "Mensaje",
     chSend: "Enviar",
     chNotFriends: "Ya no sois amigos, así que no puedes escribir aquí.",
@@ -1047,6 +1055,11 @@ export default {
   news143: [
     "El diseño Cristal se parece más al cristal real: un brillo desde la esquina, un reflejo suave, un borde superior claro y un suave resplandor de los colores del tema detrás de las cajas. La barra de inicio y el menú ☰ combinan con él, y sigue siendo ligero para el móvil.",
     "Barra superior: arriba del todo ahora llena la pantalla de borde a borde, sin línea arriba ni a los lados.",
+  ],
+  news152: [
+    "Mensajes como en Instagram: desliza un mensaje hacia el centro para responder, mantenlo pulsado para Responder, Copiar, Editar (los tuyos, 15 minutos) y Denunciar. La respuesta muestra una pequeña cita; tócala para ir al original.",
+    "Los enlaces de los mensajes se abren en el navegador.",
+    "Mientras lees mensajes antiguos, el chat ya no salta hacia abajo: aparece el botón «Mensajes nuevos». El campo de texto ya no tapa los mensajes más nuevos.",
   ],
   news151: [
     "Barra superior: al desplazarte, se despega del borde superior como una gota de agua: se estira en un cuello fino, se suelta, se balancea un momento y una gotita salpica de vuelta. Al volver arriba, se funde otra vez con el borde. Antes un fondo solo se fundía con el otro. Si cambias de dirección a mitad, vuelve suavemente desde donde está.",

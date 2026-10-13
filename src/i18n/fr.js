@@ -397,6 +397,14 @@ export default {
     chNew: "nouveau",
     chStart: "Dis bonjour à {nick} 👋",
     chReport: "Signaler le message",
+    chReply: "Répondre",
+    chCopy: "Copier",
+    chEdit: "Modifier",
+    chEdited: "modifié",
+    chReplyTo: "Réponse à {nick}",
+    chReplySelf: "Réponse à toi-même",
+    chEditing: "Modification du message",
+    chNewMsgs: "Nouveaux messages",
     chPh: "Message",
     chSend: "Envoyer",
     chNotFriends: "Vous n'êtes plus amis, tu ne peux donc plus écrire ici.",
@@ -1047,6 +1055,11 @@ export default {
   news143: [
     "La disposition Verre ressemble davantage à du vrai verre : un reflet depuis le coin, une réflexion douce, un bord supérieur clair et une douce lueur des couleurs du thème derrière les blocs. La barre de démarrage et le menu ☰ sont assortis, et le téléphone n'est toujours pas sollicité.",
     "Barre du haut : tout en haut de la page, elle remplit maintenant l'écran d'un bord à l'autre, sans ligne en haut ni sur les côtés.",
+  ],
+  news152: [
+    "Messages comme sur Instagram : fais glisser un message vers le milieu pour répondre, garde-le appuyé pour Répondre, Copier, Modifier (les tiens, 15 minutes) et Signaler. La réponse affiche une petite citation ; touche-la pour revenir à l'original.",
+    "Les liens des messages s'ouvrent dans le navigateur.",
+    "Quand tu lis d'anciens messages, le chat ne saute plus en bas : un bouton « Nouveaux messages » apparaît. Le champ de saisie ne cache plus les derniers messages.",
   ],
   news151: [
     "Barre du haut : quand tu fais défiler, elle se détache du bord supérieur comme une goutte d'eau : elle s'étire en un col fin, se détache, oscille un instant et une petite goutte rejaillit. En remontant tout en haut, elle se refond avec le bord. Avant, un fond se fondait simplement dans l'autre. Si tu changes de sens en cours de route, elle repart en douceur de là où elle est.",

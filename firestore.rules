@@ -1,5 +1,5 @@
 rules_version = '2';
-// HW App (1.5.0): who may read and write what. Paste into Firebase console → Firestore → Rules → Publish.
+// HW App (1.5.2): who may read and write what. Paste into Firebase console → Firestore → Rules → Publish.
 // Tested in CI against the Firestore emulator (.github/rules-test). Anything not allowed here is denied.
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -83,10 +83,19 @@ service cloud.firestore {
         && data().m == members(cid) && members(cid)[0] < members(cid)[1]
         && data().last.keys().hasOnly(['from', 'text', 'ts']) && data().last.from == request.auth.uid
         && textOk(data().last.text, 120) && data().last.ts == request.time;
+      // 1.5.2: a reply carries a short copy of the message it answers (re); the sender can edit the text of their own
+      // message for 15 minutes (ed = when), nothing else changes.
+      function reOk(r) { return r is map && r.keys().hasOnly(['id', 'from', 'text']) && r.id is string && r.id.size() <= 40
+        && r.from is string && r.from.size() <= 128 && r.text is string && r.text.size() <= 120; }
       match /msgs/{mid} {
         allow read, delete: if inChat(cid);
-        allow create: if inChat(cid) && friendsWith(otherIn(cid)) && only(['from', 'text', 'ts'])
-          && data().from == request.auth.uid && textOk(data().text, 1000) && nowTs();
+        allow create: if inChat(cid) && friendsWith(otherIn(cid)) && only(['from', 'text', 'ts', 're'])
+          && data().from == request.auth.uid && textOk(data().text, 1000) && nowTs()
+          && (!('re' in data()) || reOk(data().re));
+        allow update: if inChat(cid) && friendsWith(otherIn(cid)) && resource.data.from == request.auth.uid
+          && data().diff(resource.data).affectedKeys().hasOnly(['text', 'ed'])
+          && textOk(data().text, 1000) && data().ed == request.time
+          && request.time < resource.data.ts + duration.value(15, 'm');
       }
     }
     // Reports about a profile: anyone signed in can send one; only the developer reads them (console).

@@ -397,6 +397,14 @@ export default {
     chNew: "nova",
     chStart: "Diz olá a {nick} 👋",
     chReport: "Denunciar a mensagem",
+    chReply: "Responder",
+    chCopy: "Copiar",
+    chEdit: "Editar",
+    chEdited: "editada",
+    chReplyTo: "Respondendo a {nick}",
+    chReplySelf: "Respondendo a você mesmo",
+    chEditing: "Editando mensagem",
+    chNewMsgs: "Novas mensagens",
     chPh: "Mensagem",
     chSend: "Enviar",
     chNotFriends: "Já não são amigos, por isso não podes escrever aqui.",
@@ -1047,6 +1055,11 @@ export default {
   news143: [
     "O layout Vidro parece mais vidro de verdade: um brilho a partir do canto, um reflexo suave, uma borda superior clara e um brilho suave das cores do tema atrás das caixas. A barra de início e o menu ☰ combinam com ele, e continua leve para o telemóvel.",
     "Barra superior: no topo da página, agora preenche o ecrã de uma ponta à outra, sem linha em cima nem dos lados.",
+  ],
+  news152: [
+    "Mensagens como no Instagram: deslize uma mensagem para o meio para responder, segure-a para Responder, Copiar, Editar (as suas, 15 minutos) e Denunciar. A resposta mostra uma pequena citação; toque nela para ir à original.",
+    "Os links nas mensagens abrem no navegador.",
+    "Enquanto você lê mensagens antigas, o chat não pula mais para baixo: aparece o botão «Novas mensagens». O campo de texto não cobre mais as mensagens mais recentes.",
   ],
   news151: [
     "Barra superior: ao rolar, ela se solta da borda de cima como uma gota d'água: estica-se num pescoço fino, solta-se, balança um instante e uma gotinha respinga de volta. Ao voltar ao topo, ela se funde de novo com a borda. Antes, um fundo apenas se misturava com o outro. Se mudar de direção no meio, ela volta suavemente de onde está.",

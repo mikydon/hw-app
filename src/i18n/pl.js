@@ -397,6 +397,14 @@ export default {
     chNew: "nowe",
     chStart: "Przywitaj się z {nick} 👋",
     chReport: "Zgłoś wiadomość",
+    chReply: "Odpowiedz",
+    chCopy: "Kopiuj",
+    chEdit: "Edytuj",
+    chEdited: "edytowano",
+    chReplyTo: "Odpowiadasz: {nick}",
+    chReplySelf: "Odpowiadasz sobie",
+    chEditing: "Edytujesz wiadomość",
+    chNewMsgs: "Nowe wiadomości",
     chPh: "Wiadomość",
     chSend: "Wyślij",
     chNotFriends: "Nie jesteście już znajomymi, więc nie możesz tu pisać.",
@@ -1047,6 +1055,11 @@ export default {
   news143: [
     "Układ Szkło wygląda bardziej jak prawdziwe szkło: połysk od rogu, delikatne odbicie, jasna górna krawędź i delikatna poświata kolorów motywu za polami. Pasek startu i menu ☰ do niego pasują, a telefon nadal się nie męczy.",
     "Górny pasek: na samej górze strony wypełnia ekran od krawędzi do krawędzi, bez linii u góry i po bokach.",
+  ],
+  news152: [
+    "Wiadomości jak na Instagramie: przesuń wiadomość do środka, aby odpowiedzieć, przytrzymaj ją, aby Odpowiedzieć, Kopiować, Edytować (swoją, przez 15 minut) i Zgłosić. Odpowiedź pokazuje mały cytat, dotknij go, aby przejść do oryginału.",
+    "Linki w wiadomościach otwierają się w przeglądarce.",
+    "Gdy czytasz starsze wiadomości, czat już nie przeskakuje w dół: pojawia się przycisk „Nowe wiadomości”. Pole pisania nie zasłania już najnowszych wiadomości.",
   ],
   news151: [
     "Górny pasek: przy przewijaniu odrywa się od górnej krawędzi jak kropla wody: wyciąga się w cienką szyjkę, odrywa, chwilę się kołysze, a mała kropla chlapie z powrotem. Gdy wrócisz na górę, znów zlewa się z krawędzią. Wcześniej jedno tło po prostu przenikało w drugie. Gdy w połowie zmienisz kierunek, płynnie wraca od miejsca, w którym jest.",

@@ -15,13 +15,13 @@
 //   backups/{uid}            {json, ts, n}: the automatic cloud backup (owner only)
 //   reports/{auto id}        {by, about, reason, ts}: a reported profile (create only; read in the console)
 //   chats/{a_b}              {m: [a, b], last: {from, text, ts}} (a_b = the two uids sorted); only between friends
-//   chats/{a_b}/msgs/{id}    {from, text, ts}
+//   chats/{a_b}/msgs/{id}    {from, text, ts, re?: {id, from, text} (a reply, 1.5.2), ed?: ts (edited, 1.5.2: own, within 15 min)}
 // Live updates (friend requests, friends, chats, messages) use Firestore listeners while the app is open
 // (1.5.0, Michael: requests showed up only after switching tabs).
 import { initializeApp } from "firebase/app";
 import { initializeAuth, indexedDBLocalPersistence, browserLocalPersistence, browserPopupRedirectResolver, GoogleAuthProvider,
   signInWithPopup, signInWithCredential, signOut as fbSignOut, onAuthStateChanged, reauthenticateWithPopup, reauthenticateWithCredential } from "firebase/auth";
-import { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, query, where, orderBy, limit, limitToLast, getDocs, writeBatch, addDoc, serverTimestamp, onSnapshot } from "firebase/firestore";
+import { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, query, where, orderBy, limit, limitToLast, getDocs, writeBatch, addDoc, updateDoc, serverTimestamp, onSnapshot } from "firebase/firestore";
 import { Capacitor } from "@capacitor/core";
 import { CODE_CHARS, nickKey, cleanCode, chatId } from "./cloud-shared.js";
 import { FirebaseAuthentication } from "@capacitor-firebase/authentication";
@@ -153,14 +153,22 @@ export const impl = {
   watchMsgs(other, cb, onErr) {
     const cid = chatId(uid(), other);
     return onSnapshot(query(collection(db, "chats", cid, "msgs"), orderBy("ts"), limitToLast(150)), s => cb(s.docs.map(x => {
-      const v = x.data(); return { id: x.id, from: v.from, text: v.text, ts: v.ts && v.ts.toMillis ? v.ts.toMillis() : Date.now(), pending: x.metadata.hasPendingWrites };
+      const v = x.data(), ms = t => (t && t.toMillis ? t.toMillis() : t ? Date.now() : 0);
+      return { id: x.id, from: v.from, text: v.text, ts: ms(v.ts) || Date.now(), ed: ms(v.ed), re: v.re && v.re.id ? { id: v.re.id, from: v.re.from, text: v.re.text || "" } : null, pending: x.metadata.hasPendingWrites };
     })), onErr);
   },
-  async sendMsg(other, text) {
+  async sendMsg(other, text, re) {
     const me = uid(), cid = chatId(me, other), t = String(text).slice(0, 1000), b = writeBatch(db);
-    b.set(doc(collection(db, "chats", cid, "msgs")), { from: me, text: t, ts: serverTimestamp() });
+    const m = { from: me, text: t, ts: serverTimestamp() };
+    if (re && re.id) m.re = { id: String(re.id).slice(0, 40), from: String(re.from || "").slice(0, 128), text: String(re.text || "").slice(0, 120) };
+    b.set(doc(collection(db, "chats", cid, "msgs")), m);
     b.set(d("chats", cid), { m: cid.split("_"), last: { from: me, text: t.slice(0, 120), ts: serverTimestamp() } });
     await b.commit();
+  },
+  // Own messages can be edited for 15 minutes (like Instagram); the chat list keeps the first text.
+  async editMsg(other, id, text) {
+    const cid = chatId(uid(), other);
+    await updateDoc(doc(db, "chats", cid, "msgs", id), { text: String(text).slice(0, 1000), ed: serverTimestamp() });
   },
   async report(about, reason) { await addDoc(collection(db, "reports"), { by: uid(), about, reason: String(reason || "").slice(0, 300), ts: serverTimestamp() }); },
   async saveBackup(json, n) { await setDoc(d("backups", uid()), { json, n, ts: serverTimestamp() }); },

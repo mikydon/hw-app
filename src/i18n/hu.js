@@ -397,6 +397,14 @@ export default {
     chNew: "új",
     chStart: "Köszönj {nick} felhasználónak 👋",
     chReport: "Üzenet jelentése",
+    chReply: "Válasz",
+    chCopy: "Másolás",
+    chEdit: "Szerkesztés",
+    chEdited: "szerkesztve",
+    chReplyTo: "Válasz neki: {nick}",
+    chReplySelf: "Válasz magadnak",
+    chEditing: "Üzenet szerkesztése",
+    chNewMsgs: "Új üzenetek",
     chPh: "Üzenet",
     chSend: "Küldés",
     chNotFriends: "Már nem vagytok barátok, ezért ide nem írhatsz.",
@@ -1047,6 +1055,11 @@ export default {
   news143: [
     "Az Üveg elrendezés jobban hasonlít a valódi üvegre: csillanás a sarokból, lágy tükröződés, világos felső él és a téma színeinek halvány fénye a dobozok mögött. Az indítósáv és a ☰ menü illik hozzá, és a telefont továbbra sem terheli.",
     "Felső sáv: az oldal tetején most szélétől széléig kitölti a képernyőt, vonal nélkül felül és oldalt.",
+  ],
+  news152: [
+    "Üzenetek, mint az Instagramon: húzd az üzenetet a közép felé a válaszhoz, tartsd lenyomva a Válasz, Másolás, Szerkesztés (sajátot, 15 percig) és Jelentés menühöz. A válasz kis idézetet mutat, koppints rá, és az eredetihez ugrasz.",
+    "Az üzenetekben lévő linkek a böngészőben nyílnak meg.",
+    "Ha régebbi üzeneteket olvasol, a csevegés már nem ugrik le: megjelenik az „Új üzenetek” gomb. A beviteli mező már nem takarja a legújabb üzeneteket.",
   ],
   news151: [
     "Felső sáv: görgetéskor úgy válik le a felső szélről, mint egy vízcsepp: vékony nyakká nyúlik, elszakad, egy pillanatig ringatózik, és egy kis csepp visszacsobban. Ha visszagörgetsz a tetejére, újra összefolyik a széllel. Korábban az egyik háttér csak átúszott a másikba. Ha félúton irányt váltasz, onnan folyik vissza simán, ahol éppen tart.",
