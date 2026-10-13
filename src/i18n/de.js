@@ -1065,6 +1065,9 @@ export default {
     "Das Layout Glas sieht echtem Glas ähnlicher: ein Glanz aus der Ecke, eine sanfte Spiegelung, eine helle Oberkante und ein sanftes Leuchten der Themenfarben hinter den Boxen. Die Startleiste und das ☰-Menü passen dazu, und das Handy wird weiterhin kaum belastet.",
     "Obere Leiste: ganz oben auf der Seite füllt sie den Bildschirm jetzt von Rand zu Rand, ohne Linie oben oder an den Seiten.",
   ],
+  news153: [
+    "📱 Schließt du die Update-Karte auf dem Startbildschirm, wird sie nur ausgeblendet: Die neue Version bleibt unten im ☰-Menü, wo du sie herunterladen und installieren kannst.",
+  ],
   news152: [
     "Nachrichten wie bei Instagram: Wische eine Nachricht zur Mitte, um zu antworten, halte sie gedrückt für Antworten, Kopieren, Bearbeiten (eigene, 15 Minuten) und Melden. Die Antwort zeigt ein kleines Zitat; tippe darauf, um zum Original zu springen.",
     "Links in Nachrichten öffnen sich im Browser.",

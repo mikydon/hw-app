@@ -1065,6 +1065,9 @@ export default {
     "El diseño Cristal se parece más al cristal real: un brillo desde la esquina, un reflejo suave, un borde superior claro y un suave resplandor de los colores del tema detrás de las cajas. La barra de inicio y el menú ☰ combinan con él, y sigue siendo ligero para el móvil.",
     "Barra superior: arriba del todo ahora llena la pantalla de borde a borde, sin línea arriba ni a los lados.",
   ],
+  news153: [
+    "📱 Cerrar la tarjeta de actualización en la pantalla principal solo la oculta: la nueva versión sigue abajo en el menú ☰, donde puedes descargarla e instalarla.",
+  ],
   news152: [
     "Mensajes como en Instagram: desliza un mensaje hacia el centro para responder, mantenlo pulsado para Responder, Copiar, Editar (los tuyos, 15 minutos) y Denunciar. La respuesta muestra una pequeña cita; tócala para ir al original.",
     "Los enlaces de los mensajes se abren en el navegador.",

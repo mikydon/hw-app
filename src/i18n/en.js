@@ -1065,6 +1065,9 @@ export default {
     "Glass layout looks more like real glass: a sheen from the corner, a soft reflection, a bright top edge and a soft glow of the theme colours behind the boxes. The Start bar and the ☰ menu match it, and it stays light on the phone.",
     "Top bar: at the top of the page it now fills the screen edge to edge, without a line at the top or sides.",
   ],
+  news153: [
+    "📱 Closing the update card on the main screen only hides it: the new version stays at the bottom of the ☰ menu, where you can download and install it.",
+  ],
   news152: [
     "Messages like Instagram: swipe a message toward the middle to reply, hold it for Reply, Copy, Edit (your own, for 15 minutes) and Report. The reply shows a small quote; tap it to jump to the original.",
     "Links in messages open in the browser.",

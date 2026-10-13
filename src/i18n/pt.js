@@ -1065,6 +1065,9 @@ export default {
     "O layout Vidro parece mais vidro de verdade: um brilho a partir do canto, um reflexo suave, uma borda superior clara e um brilho suave das cores do tema atrás das caixas. A barra de início e o menu ☰ combinam com ele, e continua leve para o telemóvel.",
     "Barra superior: no topo da página, agora preenche o ecrã de uma ponta à outra, sem linha em cima nem dos lados.",
   ],
+  news153: [
+    "📱 Fechar o cartão de atualização na tela principal só o esconde: a nova versão continua no fim do menu ☰, onde você pode baixá-la e instalá-la.",
+  ],
   news152: [
     "Mensagens como no Instagram: deslize uma mensagem para o meio para responder, segure-a para Responder, Copiar, Editar (as suas, 15 minutos) e Denunciar. A resposta mostra uma pequena citação; toque nela para ir à original.",
     "Os links nas mensagens abrem no navegador.",

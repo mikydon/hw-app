@@ -1065,6 +1065,9 @@ export default {
     "Układ Szkło wygląda bardziej jak prawdziwe szkło: połysk od rogu, delikatne odbicie, jasna górna krawędź i delikatna poświata kolorów motywu za polami. Pasek startu i menu ☰ do niego pasują, a telefon nadal się nie męczy.",
     "Górny pasek: na samej górze strony wypełnia ekran od krawędzi do krawędzi, bez linii u góry i po bokach.",
   ],
+  news153: [
+    "📱 Zamknięcie karty aktualizacji na ekranie głównym tylko ją ukrywa: nowa wersja zostaje na dole menu ☰, gdzie ją pobierzesz i zainstalujesz.",
+  ],
   news152: [
     "Wiadomości jak na Instagramie: przesuń wiadomość do środka, aby odpowiedzieć, przytrzymaj ją, aby Odpowiedzieć, Kopiować, Edytować (swoją, przez 15 minut) i Zgłosić. Odpowiedź pokazuje mały cytat, dotknij go, aby przejść do oryginału.",
     "Linki w wiadomościach otwierają się w przeglądarce.",

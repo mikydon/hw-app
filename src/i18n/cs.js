@@ -1065,6 +1065,9 @@ export default {
     "Rozložení Sklo vypadá víc jako skutečné sklo: odlesk z rohu, jemný odraz, světlá horní hrana a jemná záře barev motivu za boxy. Lišta se startem a menu ☰ k němu ladí a telefon to pořád nezatěžuje.",
     "Horní lišta: když jsi úplně nahoře, vyplňuje obrazovku od kraje ke kraji, bez čáry nahoře a po stranách.",
   ],
+  news153: [
+    "📱 Když zavřeš kartu s aktualizací na hlavní obrazovce, jen se skryje: nová verze zůstane dole v menu ☰, kde ji stáhneš a nainstaluješ.",
+  ],
   news152: [
     "Zprávy jako na Instagramu: přetáhni zprávu ke středu a odpovíš na ni, podrž ji pro Odpovědět, Kopírovat, Upravit (svou, 15 minut) a Nahlásit. Odpověď ukáže malou citaci, klepnutím na ni skočíš na původní zprávu.",
     "Odkazy ve zprávách se otevřou v prohlížeči.",

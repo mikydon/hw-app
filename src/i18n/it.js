@@ -1065,6 +1065,9 @@ export default {
     "Il layout Vetro sembra più vetro vero: un riflesso dall'angolo, un leggero bagliore, un bordo superiore chiaro e una tenue luce dei colori del tema dietro i riquadri. La barra di avvio e il menu ☰ si abbinano, e il telefono resta leggero.",
     "Barra in alto: in cima alla pagina ora riempie lo schermo da bordo a bordo, senza linea in alto o ai lati.",
   ],
+  news153: [
+    "📱 Chiudere la scheda dell'aggiornamento nella schermata principale la nasconde soltanto: la nuova versione resta in fondo al menu ☰, dove puoi scaricarla e installarla.",
+  ],
   news152: [
     "Messaggi come su Instagram: trascina un messaggio verso il centro per rispondere, tienilo premuto per Rispondi, Copia, Modifica (i tuoi, 15 minuti) e Segnala. La risposta mostra una piccola citazione; toccala per tornare all'originale.",
     "I link nei messaggi si aprono nel browser.",

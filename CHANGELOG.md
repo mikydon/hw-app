@@ -10,6 +10,10 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 
 <!-- New version: add a "## x.y.z (date)" section on top (web-only history uses "## Browser beta x.y.z (date)"). On a push to main, .github/workflows/build.yml builds everything and .github/scripts/releases.sh creates/updates the releases (commit = the push, or the one in a commit comment). -->
 
+## 1.5.3 (2026-10-14)
+
+- *(Android app only)* Closing the "new version" card on the main screen only hides it there: the update stays in the ☰ menu (at the bottom, next to the version), where you can download and install it, or switch on a downloaded small update. Before, after ✕ the only way was GitHub.
+
 ## 1.5.2 (2026-10-14)
 
 - Messages, like Instagram: swipe a message toward the middle to answer it (a friend's to the right, your own to the left); the answer shows a small quote of it, and tapping the quote jumps to the original. Hold a message for a menu: Reply, Copy, Edit (your own, for 15 minutes; it then says "edited") and Report. Links in messages open in the browser.

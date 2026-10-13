@@ -32,7 +32,7 @@ const THEMES = {
   slate:  { ink: "#15181d", panel: "#1f242b", panelHi: "#2a313a", line: "#3a434f", chalk: "#f1f4f8", dim: "#9aa6b4", edge: "#0e1115" },
   coffee: { ink: "#1c140f", panel: "#2a1f17", panelHi: "#382a20", line: "#4d3a2c", chalk: "#fbf3ec", dim: "#b8a291", edge: "#130d09" },
 };
-const APP_VERSION = "1.5.2";
+const APP_VERSION = "1.5.3";
 // Big Shoulders has no Cyrillic, so Oswald (also condensed) covers Ukrainian. The browser only
 // downloads the Oswald unicode ranges a page actually uses.
 const DISPLAY = "'Big Shoulders Display', 'Oswald', 'Arial Narrow', Impact, sans-serif";
@@ -1370,7 +1370,7 @@ function useClock() {
 }
 // App only: one small line in the menu with the result of the last update check.
 // Menu: one box about the app: version + What's new, newest on GitHub (tap = releases), update state, Android link.
-function AboutBox({ gh, dl, onNews }) {
+function AboutBox({ gh, dl, onNews, apk, busy }) {
   const u = isNative ? lastUpdate() : null;
   const newer = gh && verCmp(gh, APP_VERSION) > 0;
   const row = { ...btnBase, width: "100%", display: "flex", alignItems: "center", gap: 8, background: "transparent", padding: "11px 0", textAlign: "left", borderRadius: 0, borderTop: `1px solid ${C.line}` };
@@ -1391,6 +1391,13 @@ function AboutBox({ gh, dl, onNews }) {
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}><Logo size={30} /><span style={{ fontSize: 14, fontWeight: 800, color: C.chalk }}>HW App {APP_VERSION}</span></div>
         {onNews && <button onClick={onNews} data-news-btn style={{ ...btnBase, background: "transparent", color: C.sky, fontSize: 13, padding: "4px 0" }}>{T("newsLink")} ›</button>}
       </div>
+      {apk && <div data-menu-apk style={{ borderTop: `1px solid ${C.line}`, padding: "10px 0 4px" }}><ApkUpdateCard info={apk} busy={busy} inMenu /></div>}
+      {!apk && isNative && dl && dl.kind === "ready" && !busy && (
+        <button data-menu-dl-now onClick={() => { sfxTap(); applyUpdateNow(dl.id); }} style={{ ...row, color: C.mint, fontSize: 13, fontWeight: 800 }}>
+          <span style={{ flex: 1, minWidth: 0 }}>✓ {T("updReady", { v: dl.v })}</span>
+          <span style={{ fontSize: 12, padding: "5px 10px", borderRadius: 99, background: C.mint, color: C.ink }}>{T("updReadyNow")}</span>
+        </button>
+      )}
       {gh && (
         <button data-gh={gh} onClick={() => { sfxTap(); openExternal("https://github.com/mikydon/hw-app/releases/latest"); }} style={{ ...row, color: newer ? C.mint : C.dim, fontSize: 13, fontWeight: 700 }}>
           <span style={{ flex: 1, minWidth: 0 }}>{T("ghLatest", { v: gh })}</span>
@@ -1544,7 +1551,7 @@ function TabIcon({ name, active }) {
 }
 
 // Slide-in drawer from the right with everything in the app. Rendered into <body> (like Sheet).
-function MenuDrawer({ open, screen, history, profile, session, onGo, onResume, onClose, onNews, gh, dl, badge }) {
+function MenuDrawer({ open, screen, history, profile, session, onGo, onResume, onClose, onNews, gh, dl, badge, apk, busy }) {
   const [shown, setShown] = useState(open);
   useEffect(() => { if (open) setShown(true); else { const t = setTimeout(() => setShown(false), 260); return () => clearTimeout(t); } }, [open]);
   const closeRef = useRef(null);
@@ -1600,7 +1607,7 @@ function MenuDrawer({ open, screen, history, profile, session, onGo, onResume, o
             );
           })}
         </div>
-        <AboutBox gh={gh} dl={dl} onNews={onNews} />
+        <AboutBox gh={gh} dl={dl} onNews={onNews} apk={apk} busy={busy} />
       </nav>
     </div>,
     document.body
@@ -1846,7 +1853,7 @@ function UpdateCard({ onOpen, onClose }) {
 // app with a progress bar (Michael, Oct 10: never leave the app for the browser) and installed only when the user
 // taps "Install", never during a workout. Android then shows its own install confirmation.
 function useApk() { const [s, setS] = useState(apkState()); useEffect(() => { const off = onApk(setS); setS(apkState()); return off; }, []); return s; } // re-read: it may have changed before subscribing
-function ApkUpdateCard({ info, busy, onClose }) {
+function ApkUpdateCard({ info, busy, onClose, inMenu }) {
   const st = useApk();
   const [perm, setPerm] = useState(false); // "install unknown apps" not allowed yet: explain + open Settings
   useEffect(() => onAppResume(async () => { if (await apkCanInstall()) setPerm(false); }), []);
@@ -1859,7 +1866,7 @@ function ApkUpdateCard({ info, busy, onClose }) {
   const link = { ...btnBase, background: "transparent", color: col, fontSize: 14, padding: "6px 0 0", textAlign: "left" };
   const solid = { ...btnBase, background: col, color: C.ink, padding: "9px 14px", fontSize: 14, marginTop: 10 };
   return (
-    <div data-apk-update={s.kind} className="titleIn" style={{ ...card, position: "relative", padding: "14px 40px 14px 16px", marginBottom: 14, borderColor: `${col}99` }}>
+    <div data-apk-update={s.kind} className="titleIn" style={inMenu ? { position: "relative" } : { ...card, position: "relative", padding: "14px 40px 14px 16px", marginBottom: 14, borderColor: `${col}99` }}>
       <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
         <span style={{ fontSize: 26, lineHeight: 1.1 }}>{s.kind === "ready" ? "✅" : s.kind === "downloading" ? "⬇️" : s.kind === "error" ? "⚠️" : "📲"}</span>
         <div style={{ minWidth: 0, flex: 1 }}>
@@ -1895,7 +1902,7 @@ function ApkUpdateCard({ info, busy, onClose }) {
           </>}
         </div>
       </div>
-      {s.kind !== "downloading" && <CloseX onClick={onClose} />}
+      {s.kind !== "downloading" && onClose && <CloseX onClick={onClose} />}
     </div>
   );
 }
@@ -5858,6 +5865,9 @@ export default function App() {
   });
   // App only: look for a new version once per start (a new APK, or a small update for the next start).
   const [apkUpd, setApkUpd] = useState(null);
+  // ✕ on Home only hides the cards; the update stays in the ☰ menu (1.5.3, Michael: after ✕ the only way was GitHub)
+  const [apkHidden, setApkHidden] = useState(false);
+  const [dlHidden, setDlHidden] = useState(false);
   const [dl, setDl] = useState(null); // small update: {kind: downloading|ready, v, pct, id}
   const [gh, setGh] = useState(() => (lastGh() || {}).v || null); // newest version on GitHub
   // App: steps from Health Connect, once per start (the last 7 days, so a missed day is filled in too).
@@ -5983,8 +5993,8 @@ export default function App() {
             <>
               <TopBar head={screen === "friends" ? topHead : null} badge={socialCount} dlPct={dl && dl.kind === "downloading" ? dl.pct || 0 : null} screen={screen} history={history} menuOpen={menuOpen} onGo={go} onMenu={() => { sfxTap(); setMenuOpen(o => !o); }} />
               <div key={screen}>
-                {screen === "train" && <TrainTab onSetup={st => setOnboard(st)} dl={dl} onDlClose={() => setDl(null)} kcal={kcal} setKcal={setKcal} history={history} onStart={start} onFreeze={applyFreeze} ui={ui} setUi={setUi} active={session} onResume={resume} profile={profile} onGo={go} upd={updCard ? { open: () => { setUpdCard(false); setNewsAt(APP_VERSION); setNewsOpen(true); }, close: () => setUpdCard(false) } : null}
-                  apk={apkUpd ? { info: apkUpd, close: () => setApkUpd(null) } : null} />}
+                {screen === "train" && <TrainTab onSetup={st => setOnboard(st)} dl={dlHidden ? null : dl} onDlClose={() => setDlHidden(true)} kcal={kcal} setKcal={setKcal} history={history} onStart={start} onFreeze={applyFreeze} ui={ui} setUi={setUi} active={session} onResume={resume} profile={profile} onGo={go} upd={updCard ? { open: () => { setUpdCard(false); setNewsAt(APP_VERSION); setNewsOpen(true); }, close: () => setUpdCard(false) } : null}
+                  apk={apkUpd && !apkHidden ? { info: apkUpd, close: () => setApkHidden(true) } : null} />}
                 {screen === "history" && <HistoryTab history={history} editDate={histEdit} onEditOpened={() => setHistEdit(null)}
                   onDelete={idx => editHistory(h => h.filter((_, i) => i !== idx))}
                   onSaveEntry={(idx, entry) => editHistory(h => (idx === null ? [...h, entry] : h.map((e, i) => (i === idx ? entry : e))))} />}
@@ -6000,7 +6010,7 @@ export default function App() {
               {exitAsk && <ExitPrompt onStay={() => { sfxTap(); setExitAsk(false); }} onLeave={() => { setExitAsk(false); exitApp(); }} />}
             </>
           )}
-          <MenuDrawer badge={socialCount} gh={gh} dl={dl} open={menuOpen} screen={screen} history={history} profile={profile} session={session && session.phase !== "summary" ? session : null}
+          <MenuDrawer apk={apkUpd} busy={!!(session && session.phase !== "summary")} badge={socialCount} gh={gh} dl={dl} open={menuOpen} screen={screen} history={history} profile={profile} session={session && session.phase !== "summary" ? session : null}
             onGo={go} onResume={resume} onClose={() => setMenuOpen(false)} onNews={() => { setMenuOpen(false); setNewsOpen(true); }} />
           {notice && <LiveNotice n={notice} people={Object.fromEntries([...(social.friends || []), ...(social.reqs || [])].map(x => [x.uid, x]))} onClose={() => setNotice(null)}
             onOpen={n => { setNotice(null); go("friends"); setChatWith(n.kind === "msg" ? n.uid : null); }} />}

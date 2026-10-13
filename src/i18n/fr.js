@@ -1065,6 +1065,9 @@ export default {
     "La disposition Verre ressemble davantage à du vrai verre : un reflet depuis le coin, une réflexion douce, un bord supérieur clair et une douce lueur des couleurs du thème derrière les blocs. La barre de démarrage et le menu ☰ sont assortis, et le téléphone n'est toujours pas sollicité.",
     "Barre du haut : tout en haut de la page, elle remplit maintenant l'écran d'un bord à l'autre, sans ligne en haut ni sur les côtés.",
   ],
+  news153: [
+    "📱 Fermer la carte de mise à jour sur l'écran principal la masque seulement : la nouvelle version reste en bas du menu ☰, où tu peux la télécharger et l'installer.",
+  ],
   news152: [
     "Messages comme sur Instagram : fais glisser un message vers le milieu pour répondre, garde-le appuyé pour Répondre, Copier, Modifier (les tiens, 15 minutes) et Signaler. La réponse affiche une petite citation ; touche-la pour revenir à l'original.",
     "Les liens des messages s'ouvrent dans le navigateur.",
