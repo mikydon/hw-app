@@ -16,7 +16,7 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 - The chat stays where you are reading: new messages scroll it down only while you are at the bottom (or when you wrote them); otherwise a "New messages" button appears above the input. The input no longer covers the newest messages when the keyboard is closed.
 - Reactions like Instagram: hold a message and tap ❤️ 😂 😮 😢 😡 👍, or the arrow for every emoji (recently used first); double tap = ❤️. Reactions show small under the message; tap them to see who reacted and to take yours back.
 - Chat colour: 🎨 in the chat's header, 26 colours and gradients for your own messages; you both see it.
-- Sending keeps the keyboard open; your own message scrolls the chat down only while you're at the bottom; opening a chat always starts at the newest message. Holding a message no longer selects its text.
+- Sending keeps the keyboard open; your own message scrolls the chat down only while you're at the bottom; opening a chat always starts at the newest message. Holding a message no longer selects its text. The chat's header (back, friend, colour) sits in the top bar, so it stays on screen while you scroll.
 - Needs the updated Firestore rules (replies, edits, reactions, chat colour).
 
 ## 1.5.1 (2026-10-12)

@@ -1443,7 +1443,7 @@ function gooPath(p, W, H, S, ins) {
   if (bh > 0.2) parts.push(`M0 0H${f(W)}V${f(bh)}H0Z`);
   return parts.join("");
 }
-function TopBar({ screen, history, menuOpen, onMenu, onGo, dlPct, badge }) {
+function TopBar({ screen, history, menuOpen, onMenu, onGo, dlPct, badge, head }) {
   const now = useClock();
   const ap = useApk();
   const prog = ap.kind === "downloading" ? ap.pct || 0 : dlPct; // a download in progress: a thin line under the bar on every screen
@@ -1513,6 +1513,7 @@ function TopBar({ screen, history, menuOpen, onMenu, onGo, dlPct, badge }) {
         <div aria-hidden="true" className="tbPill" style={{ ...box, boxShadow: `${liquid ? GLASS_EDGE + ", " : ""}0 10px 26px rgba(0,0,0,.3)` }} />
         <div aria-hidden="true" data-topbar-plate className="tbPlate" style={{ background: box.background, borderBottom: box.border }} />
         <div data-topbar-box className="tbBox">
+        {head ? head : <>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div key={screen} className="titleIn" style={{ fontFamily: DISPLAY, fontSize: CJK.test(T(SCREEN_TITLE[screen])) ? 21 : 24, fontWeight: 900, lineHeight: 1.05, color: C.chalk, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{T(SCREEN_TITLE[screen])}</div>
           <div style={{ display: "flex", gap: 5, fontSize: 12, color: bdayToday() ? C.signal : C.dim, fontWeight: bdayToday() ? 800 : 400, marginTop: 2, whiteSpace: "nowrap" }}>
@@ -1523,6 +1524,7 @@ function TopBar({ screen, history, menuOpen, onMenu, onGo, dlPct, badge }) {
         <button onClick={() => onGo && onGo("profile")} data-chip="streak" style={{ ...btnBase, ...chip(st.n ? "#ffa94d" : C.dim), ...pill }} aria-label={T("streakAria", { n: st.n })}><span className={st.n ? "wiggle" : ""}>🔥</span>{st.n}</button>
         <button onClick={() => onGo && onGo("profile")} data-chip="level" style={{ ...btnBase, ...chip(C.sky), ...pill }} aria-label={T("levelAria", { n: lv.lvl })}>⚡{lv.lvl}</button>
         <MenuButton open={menuOpen} onClick={onMenu} badge={badge} />
+        </>}
         {typeof prog === "number" && <div data-top-prog={Math.round(prog)} role="progressbar" aria-valuenow={Math.round(prog)} aria-valuemin={0} aria-valuemax={100} style={{ position: "absolute", left: 18, bottom: 4, height: 3, width: `calc((100% - 36px) * ${Math.max(2, Math.min(100, prog)) / 100})`, background: C.sky, borderRadius: 3, transition: "width .3s", boxShadow: `0 0 8px ${C.sky}` }} />}
         </div>
       </div>
@@ -3853,7 +3855,7 @@ function PersonSheet({ p, isFriend, onAdd, onChat, onRemove, onBlock, onReport, 
   );
 }
 
-function FriendsTab({ acct, history, profile, social, chatWith, setChatWith, onBlocked, onSignIn, onCreate, onRename, onSetGlobal }) {
+function FriendsTab({ acct, history, profile, social, chatWith, setChatWith, onBlocked, onSignIn, onCreate, onRename, onSetGlobal, setTopHead }) {
   const [age16, setAge16] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
@@ -3891,7 +3893,7 @@ function FriendsTab({ acct, history, profile, social, chatWith, setChatWith, onB
     );
   }
   if (!acct.prof) return <NickSetup initial={nickFrom(profile.name && profile.name !== "User" ? profile.name : "")} onSave={onCreate} />;
-  return <FriendsMain acct={acct} history={history} profile={profile} social={social} chatWith={chatWith} setChatWith={setChatWith} onBlocked={onBlocked} onRename={onRename} onSetGlobal={onSetGlobal} />;
+  return <FriendsMain acct={acct} history={history} profile={profile} social={social} chatWith={chatWith} setChatWith={setChatWith} onBlocked={onBlocked} onRename={onRename} onSetGlobal={onSetGlobal} setTopHead={setTopHead} />;
 }
 
 function NickSetup({ initial, onSave, onCancel, title }) {
@@ -3917,7 +3919,7 @@ function NickSetup({ initial, onSave, onCancel, title }) {
   return <div className="scr" data-fr-nicksetup style={{ padding: "6px 18px 110px", maxWidth: 460, margin: "0 auto" }}><Sect title={T("frNickTitle")}>{body}</Sect></div>;
 }
 
-function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, chatWith, setChatWith, onBlocked }) {
+function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, chatWith, setChatWith, onBlocked, setTopHead }) {
   const me = { uid: acct.uid, ...acct.prof, ...cloudStats(history) };
   const [tab, setTab] = useState(() => (sessionStorage.getItem("hw-add") ? "friends" : chatWith ? "chats" : "board"));
   const [scope, setScope] = useState("friends"); // board: friends | world
@@ -3991,7 +3993,7 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
   const unread = c => c.last.from !== acct.uid && c.last.ts > ((social.read || {})[c.cid] || 0);
   if (chatWith) {
     const p = people[chatWith] || { uid: chatWith, nick: "…" };
-    return <ChatView me={acct.uid} other={p} th={((social.chats || []).find(c => c.other === chatWith) || {}).th} canWrite={friendIds.includes(chatWith)} onBack={() => setChatWith(null)} onOpen={() => { sfxTap(); setSheet(p); }}
+    return <ChatView setTopHead={setTopHead} me={acct.uid} other={p} th={((social.chats || []).find(c => c.other === chatWith) || {}).th} canWrite={friendIds.includes(chatWith)} onBack={() => setChatWith(null)} onOpen={() => { sfxTap(); setSheet(p); }}
       sheet={sheet && <PersonSheet p={sheet} isFriend={friendIds.includes(sheet.uid)} onClose={() => setSheet(null)} onAdd={x => sendTo(x.uid, x.nick).catch(cloudErr)}
         onRemove={x => act(() => cloud().removeFriend(x.uid), () => setSheet(null))} onBlock={block} onReport={x => report(x)} />}
       onReport={text => report(p, "message: " + text.slice(0, 280))} />;
@@ -4336,7 +4338,7 @@ function MsgMenu({ at, m, mine, me, other, th, onClose, onReply, onCopy, onEdit,
     document.body
   );
 }
-function ChatView({ me, other, canWrite, onBack, onOpen, onReport, sheet, th: thSaved }) {
+function ChatView({ me, other, canWrite, onBack, onOpen, onReport, sheet, th: thSaved, setTopHead }) {
   const [msgs, setMsgs] = useState(null);
   const [thLocal, setThLocal] = useState(null); // picked here, until the chat's colour comes back from the cloud
   const th = thLocal !== null ? thLocal : thSaved || "y";
@@ -4420,6 +4422,25 @@ function ChatView({ me, other, canWrite, onBack, onOpen, onReport, sheet, th: th
   };
   const heart = m => { const mineRx = (m.rx || {})[me]; react(m, mineRx === "❤️" ? null : "❤️"); if (mineRx !== "❤️") { setBurst(m.id); setTimeout(() => setBurst(b => (b === m.id ? null : b)), 900); } };
   const pickTheme = id => { setThLocal(id); cloud().setChatTheme(other.uid, id).catch(er => { setThLocal(null); setErr(cloudErr(er)); }); };
+  const head = (
+    <div data-chat-head style={{ display: "flex", alignItems: "center", gap: 10, flex: 1, minWidth: 0, pointerEvents: "auto" }}>
+      <button data-chat-back onClick={() => { sfxTap(); onBack(); }} aria-label={T("back")} style={{ ...btnBase, background: SOFT(), color: C.chalk, width: 38, height: 38, borderRadius: 12, fontSize: 22, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+      </button>
+      <button onClick={onOpen} style={{ ...btnBase, background: "transparent", color: C.chalk, padding: 0, display: "flex", alignItems: "center", gap: 10, minWidth: 0, flex: 1, textAlign: "left" }}>
+        <PersonAvatar p={other} size={38} />
+        <span style={{ minWidth: 0 }}>
+          <span style={{ display: "block", fontSize: 17, fontWeight: 900, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{other.nick}</span>
+          <span style={{ display: "block", fontSize: 12, color: C.dim }}>⚡{other.lvl || 1} · 🔥 {other.streak || 0}</span>
+        </span>
+      </button>
+      {canWrite && <button data-chat-theme-open onClick={() => { sfxTap(); setThemeOpen(true); }} aria-label={T("chTheme")} style={{ ...btnBase, width: 38, height: 38, borderRadius: 12, background: SOFT(), flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <span aria-hidden="true" style={{ width: 18, height: 18, borderRadius: 99, background: chatTheme(th).bg, boxShadow: `0 0 0 2px ${C.chalk}55` }} />
+      </button>}
+    </div>
+  );
+  useEffect(() => { setTopHead && setTopHead(head); }, [other.uid, other.nick, other.lvl, other.streak, other.pfp, th, canWrite]);
+  useEffect(() => () => { setTopHead && setTopHead(null); }, []);
   let lastDay = "";
   const bar = editing || reply;
   const liveRx = rxFor && msgs ? msgs.find(x => x.id === rxFor) : null;
@@ -4436,19 +4457,6 @@ function ChatView({ me, other, canWrite, onBack, onOpen, onReport, sheet, th: th
         onReply={() => startReply(menu.m)} onEdit={() => startEdit(menu.m)}
         onCopy={() => { copyText(menu.m.text); setMenu(null); setMsg(T("copied")); setTimeout(() => setMsg(""), 1800); }}
         onReport={() => { const m = menu.m; setMenu(null); onReport(m.text).then(setMsg); }} />}
-      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "6px 2px 10px" }}>
-        <button data-chat-back onClick={() => { sfxTap(); onBack(); }} aria-label={T("back")} style={{ ...btnBase, background: SOFT(), color: C.chalk, width: 38, height: 38, borderRadius: 12, fontSize: 20, flexShrink: 0 }}>‹</button>
-        <button onClick={onOpen} style={{ ...btnBase, background: "transparent", color: C.chalk, padding: 0, display: "flex", alignItems: "center", gap: 10, minWidth: 0, flex: 1, textAlign: "left" }}>
-          <PersonAvatar p={other} size={38} />
-          <span style={{ minWidth: 0 }}>
-            <span style={{ display: "block", fontSize: 17, fontWeight: 900, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{other.nick}</span>
-            <span style={{ display: "block", fontSize: 12, color: C.dim }}>⚡{other.lvl || 1} · 🔥 {other.streak || 0}</span>
-          </span>
-        </button>
-        {canWrite && <button data-chat-theme-open onClick={() => { sfxTap(); setThemeOpen(true); }} aria-label={T("chTheme")} style={{ ...btnBase, width: 38, height: 38, borderRadius: 12, background: SOFT(), flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <span aria-hidden="true" style={{ width: 18, height: 18, borderRadius: 99, background: chatTheme(th).bg, boxShadow: `0 0 0 2px ${C.chalk}55` }} />
-        </button>}
-      </div>
       <div data-chat-msgs style={{ display: "flex", flexDirection: "column", justifyContent: "flex-end", gap: 4, flex: 1 }}>
         {msgs === null ? <div style={{ color: C.dim, fontSize: 14, textAlign: "center", padding: 20 }}>{T("frLoading")}</div>
           : !msgs.length ? <div style={{ color: C.dim, fontSize: 13, textAlign: "center", padding: "24px 10px", lineHeight: 1.5 }}>{T("chStart", { nick: other.nick })}</div>
@@ -5730,6 +5738,9 @@ export default function App() {
   // in-app notice (LiveNotice) unless that chat is open; the counts show on ☰, in the menu and on the Friends tabs.
   const [social, setSocial] = useState({ reqs: null, friends: null, chats: null, blocked: cloudMem().blocked || [], read: cloudMem().read || {} });
   const [chatWith, setChatWith] = useState(null);
+  // 1.5.2 (Michael: the chat's back button scrolled away; like Instagram it must stay on top): an open chat puts its
+  // header (back, friend, colour) into the top bar instead of the screen title.
+  const [topHead, setTopHead] = useState(null);
   const [notice, setNotice] = useState(null);
   const chatWithRef = useRef(null); chatWithRef.current = screen === "friends" ? chatWith : null;
   const busyRef = useRef(false); busyRef.current = !!(session && session.phase !== "summary");
@@ -5970,7 +5981,7 @@ export default function App() {
           )}
           {(!session || !sessionOpen) && (
             <>
-              <TopBar badge={socialCount} dlPct={dl && dl.kind === "downloading" ? dl.pct || 0 : null} screen={screen} history={history} menuOpen={menuOpen} onGo={go} onMenu={() => { sfxTap(); setMenuOpen(o => !o); }} />
+              <TopBar head={screen === "friends" ? topHead : null} badge={socialCount} dlPct={dl && dl.kind === "downloading" ? dl.pct || 0 : null} screen={screen} history={history} menuOpen={menuOpen} onGo={go} onMenu={() => { sfxTap(); setMenuOpen(o => !o); }} />
               <div key={screen}>
                 {screen === "train" && <TrainTab onSetup={st => setOnboard(st)} dl={dl} onDlClose={() => setDl(null)} kcal={kcal} setKcal={setKcal} history={history} onStart={start} onFreeze={applyFreeze} ui={ui} setUi={setUi} active={session} onResume={resume} profile={profile} onGo={go} upd={updCard ? { open: () => { setUpdCard(false); setNewsAt(APP_VERSION); setNewsOpen(true); }, close: () => setUpdCard(false) } : null}
                   apk={apkUpd ? { info: apkUpd, close: () => setApkUpd(null) } : null} />}
@@ -5983,7 +5994,7 @@ export default function App() {
                   kcal={kcal} autoBk={autoBk} onAutoBackup={runAutoBackup}
                   onResetAll={() => { setHistory([]); setProfile({ ...profile, freezeDays: [], skips: {}, streakResetTs: 0, bdays: [], bdayGifts: [] }); setUi({}); if (kcal) setKcal({ ...kcal, log: {} }); }}
                   onImport={importAll} acct={acct} cloudBk={cloudBk} onAcctOpen={() => go("friends")} onCloudRestore={restoreFromCloud} onSignOut={signOut} onDeleteAccount={deleteAccount} />}
-                {screen === "friends" && <FriendsTab acct={acct} history={history} profile={profile} social={social} chatWith={chatWith} setChatWith={setChatWith} onBlocked={setBlocked} onSignIn={signIn} onCreate={createProfile} onRename={renameNick} onSetGlobal={setGlobal} />}
+                {screen === "friends" && <FriendsTab setTopHead={setTopHead} acct={acct} history={history} profile={profile} social={social} chatWith={chatWith} setChatWith={setChatWith} onBlocked={setBlocked} onSignIn={signIn} onCreate={createProfile} onRename={renameNick} onSetGlobal={setGlobal} />}
               </div>
               {session && session.phase !== "summary" && <MiniPlayer session={session} live={live} onOpen={resume} />}
               {exitAsk && <ExitPrompt onStay={() => { sfxTap(); setExitAsk(false); }} onLeave={() => { setExitAsk(false); exitApp(); }} />}
