@@ -1072,6 +1072,10 @@ export default {
     "Il layout Vetro sembra più vetro vero: un riflesso dall'angolo, un leggero bagliore, un bordo superiore chiaro e una tenue luce dei colori del tema dietro i riquadri. La barra di avvio e il menu ☰ si abbinano, e il telefono resta leggero.",
     "Barra in alto: in cima alla pagina ora riempie lo schermo da bordo a bordo, senza linea in alto o ai lati.",
   ],
+  news154: [
+    "Puoi scorrere tra Oggi ed Esercizi ovunque nella pagina, anche nello spazio vuoto sotto le schede.",
+    "La barra in alto resta arrotondata mentre si stacca e ritorna, senza striscia piatta né angoli squadrati.",
+  ],
   news153: [
     "Schermata principale in due pagine: scorri o tocca in alto Oggi / Esercizi. Oggi: la settimana in alto, il giorno grande + Inizia e i riquadri di calorie e sfide della settimana (ognuna con i progressi). Esercizi: gli esercizi del giorno.",
     "Nella schermata principale un solo avviso alla volta, il più importante.",

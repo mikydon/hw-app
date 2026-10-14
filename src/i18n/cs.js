@@ -1072,6 +1072,10 @@ export default {
     "Rozložení Sklo vypadá víc jako skutečné sklo: odlesk z rohu, jemný odraz, světlá horní hrana a jemná záře barev motivu za boxy. Lišta se startem a menu ☰ k němu ladí a telefon to pořád nezatěžuje.",
     "Horní lišta: když jsi úplně nahoře, vyplňuje obrazovku od kraje ke kraji, bez čáry nahoře a po stranách.",
   ],
+  news154: [
+    "Mezi Dnes a Cviky se dá přetáhnout kdekoli na stránce, i na prázdném místě pod kartami.",
+    "Horní lišta je oblá i během odlepování a připojování, bez rovného proužku a hranatých rohů.",
+  ],
   news153: [
     "Hlavní obrazovka má dvě stránky: přetáhni nebo klepni nahoře na Dnes / Cviky. Dnes: týden nahoře, velký den + Start a dlaždice kalorií a výzev týdne (každá s postupem). Cviky: cviky dne.",
     "Na hlavní obrazovce je najednou jen jedno upozornění, to nejdůležitější.",

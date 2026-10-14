@@ -1072,6 +1072,10 @@ export default {
     "Das Layout Glas sieht echtem Glas ähnlicher: ein Glanz aus der Ecke, eine sanfte Spiegelung, eine helle Oberkante und ein sanftes Leuchten der Themenfarben hinter den Boxen. Die Startleiste und das ☰-Menü passen dazu, und das Handy wird weiterhin kaum belastet.",
     "Obere Leiste: ganz oben auf der Seite füllt sie den Bildschirm jetzt von Rand zu Rand, ohne Linie oben oder an den Seiten.",
   ],
+  news154: [
+    "Zwischen Heute und Übungen wischst du überall auf der Seite, auch auf der leeren Fläche unter den Karten.",
+    "Die obere Leiste bleibt beim Ablösen und Zurückfließen rund, ohne flachen Streifen und eckige Ecken.",
+  ],
   news153: [
     "Startbildschirm in zwei Seiten: Wische oder tippe oben auf Heute / Übungen. Heute: die Woche oben, der große Tag + Start und Kacheln für Kalorien und die Wochen-Challenges (jede mit Fortschritt). Übungen: die Übungen des Tages.",
     "Auf dem Startbildschirm immer nur ein Hinweis, der wichtigste zuerst.",

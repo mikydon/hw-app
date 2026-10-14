@@ -1072,6 +1072,10 @@ export default {
     "O layout Vidro parece mais vidro de verdade: um brilho a partir do canto, um reflexo suave, uma borda superior clara e um brilho suave das cores do tema atrás das caixas. A barra de início e o menu ☰ combinam com ele, e continua leve para o telemóvel.",
     "Barra superior: no topo da página, agora preenche o ecrã de uma ponta à outra, sem linha em cima nem dos lados.",
   ],
+  news154: [
+    "Dá para deslizar entre Hoje e Exercícios em qualquer parte da página, também no espaço vazio abaixo dos cartões.",
+    "A barra de cima continua arredondada ao se soltar e voltar, sem faixa reta nem cantos quadrados.",
+  ],
   news153: [
     "Tela principal em duas páginas: deslize ou toque em cima em Hoje / Exercícios. Hoje: a semana no topo, o dia grande + Começar e blocos de calorias e desafios da semana (cada um com o progresso). Exercícios: os exercícios do dia.",
     "Na tela principal só um aviso por vez, o mais importante.",

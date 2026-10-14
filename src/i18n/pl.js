@@ -1072,6 +1072,10 @@ export default {
     "Układ Szkło wygląda bardziej jak prawdziwe szkło: połysk od rogu, delikatne odbicie, jasna górna krawędź i delikatna poświata kolorów motywu za polami. Pasek startu i menu ☰ do niego pasują, a telefon nadal się nie męczy.",
     "Górny pasek: na samej górze strony wypełnia ekran od krawędzi do krawędzi, bez linii u góry i po bokach.",
   ],
+  news154: [
+    "Między Dziś a Ćwiczeniami przesuniesz w dowolnym miejscu strony, także na pustym miejscu pod kartami.",
+    "Górny pasek jest zaokrąglony także podczas odklejania i powrotu, bez płaskiego paska i kanciastych rogów.",
+  ],
   news153: [
     "Ekran główny ma dwie strony: przesuń lub dotknij u góry Dziś / Ćwiczenia. Dziś: tydzień u góry, duży dzień + Start oraz kafelki kalorii i wyzwań tygodnia (każde z postępem). Ćwiczenia: ćwiczenia dnia.",
     "Na ekranie głównym jest naraz tylko jedno powiadomienie, najważniejsze.",

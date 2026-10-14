@@ -32,7 +32,7 @@ const THEMES = {
   slate:  { ink: "#15181d", panel: "#1f242b", panelHi: "#2a313a", line: "#3a434f", chalk: "#f1f4f8", dim: "#9aa6b4", edge: "#0e1115" },
   coffee: { ink: "#1c140f", panel: "#2a1f17", panelHi: "#382a20", line: "#4d3a2c", chalk: "#fbf3ec", dim: "#b8a291", edge: "#130d09" },
 };
-const APP_VERSION = "1.5.3";
+const APP_VERSION = "1.5.4";
 // Big Shoulders has no Cyrillic, so Oswald (also condensed) covers Ukrainian. The browser only
 // downloads the Oswald unicode ranges a page actually uses.
 const DISPLAY = "'Big Shoulders Display', 'Oswald', 'Arial Narrow', Impact, sans-serif";
@@ -1458,30 +1458,52 @@ const gOut = t => 1 - (1 - t) ** 3;
 function gooPath(p, W, H, S, ins) {
   const f = n => Math.round(n * 10) / 10, cx = W / 2, parts = [];
   const rr = (x0, y0, x1, y1, rt, rb) => `M${f(x0 + rt)} ${f(y0)}H${f(x1 - rt)}A${f(rt)} ${f(rt)} 0 0 1 ${f(x1)} ${f(y0 + rt)}V${f(y1 - rb)}A${f(rb)} ${f(rb)} 0 0 1 ${f(x1 - rb)} ${f(y1)}H${f(x0 + rb)}A${f(rb)} ${f(rb)} 0 0 1 ${f(x0)} ${f(y1 - rb)}V${f(y0 + rt)}A${f(rt)} ${f(rt)} 0 0 1 ${f(x0 + rt)} ${f(y0)}Z`;
+  // 1.5.4 (Michael, Oct 14: "oblé aj keď sa to pripája"): no flat strips or square corners anywhere in the move. The
+  // plate's link to the top edge is a liquid bridge with concave fillets at both ends: it meets the top edge and the
+  // box's top edge with a horizontal tangent (like water hanging from a ceiling), so every join is rounded.
+  // u = 0: a dimple in a straight side (it leaves the top edge and lands on the box's side going straight down, so the
+  // hollow is a soft lens with tapered ends); u = 1: a bridge with fillets (horizontal at the top edge and on the box).
+  const bridge = (hT, hM, hB, y0, yEnd, u) => {
+    const yM = y0 + (yEnd - y0) * 0.45, L = cx - hT, M = cx - hM, B = cx - hB, Lr = cx + hT, Mr = cx + hM, Br = cx + hB;
+    const c1 = (fx, gx) => `${f(gLerp(fx, gx, u))} ${f(gLerp(y0 + 0.5 * (yM - y0), y0, u))}`; // top: down the side (u 0) → along the top edge (u 1)
+    const c4 = (fx, gx) => `${f(gLerp(fx, gx, u))} ${f(gLerp(yEnd - 0.5 * (yEnd - yM), yEnd, u))}`; // landing: down the box side → along the box top
+    const m1 = f(y0 + 0.5 * (yM - y0)), m2 = f(yM + 0.5 * (yEnd - yM));
+    // clockwise like the box (nonzero fill: shapes drawn the same way add up instead of cutting holes)
+    return `M${f(L)} ${f(y0)}H${f(Lr)}C${c1(Lr, Lr - 0.55 * (hT - hM))} ${f(Mr)} ${m1} ${f(Mr)} ${f(yM)}C${f(Mr)} ${m2} ${c4(Br, Br - 0.55 * (hB - hM))} ${f(Br)} ${f(yEnd)}`
+      + `H${f(B)}C${c4(B, B + 0.55 * (hB - hM))} ${f(M)} ${m2} ${f(M)} ${f(yM)}C${f(M)} ${m1} ${c1(L, L + 0.55 * (hT - hM))} ${f(L)} ${f(y0)}Z`;
+  };
   if (p < 0.5) {
-    // at rest: the plate, edge to edge (1.5.3, Michael picked this over a rounded box hanging from the edge).
-    // On the way out the sides pull in, the part over the status bar thins into a neck, the box is pulled up a little
-    // and gets narrower (stretch)…
-    const a = gInOut(p / 0.5), x = ins * a + 1.5 * a * a, rt = 24 * a;
-    parts.push(rr(x, S - 3 * a * a, W - x, H, rt, gLerp(26, 24, a)));
-    const wT = gLerp(W, 30, a), wB = gLerp(W, 36, a), wM = W * (1 - a) ** 1.6, yB = S + rt + 1;
-    const xT = cx - wT / 2, xB = cx - wB / 2, xM = cx - wM / 2;
-    parts.push(`M${f(xT)} 0H${f(W - xT)}C${f(W - xM)} ${f(yB * 0.2)} ${f(W - xM)} ${f(yB * 0.8)} ${f(W - xB)} ${f(yB)}H${f(xB)}C${f(xM)} ${f(yB * 0.8)} ${f(xM)} ${f(yB * 0.2)} ${f(xT)} 0Z`);
-    const bh = 3 * (1 - p);
-    if (bh > 0.2) parts.push(`M0 0H${f(W)}V${f(bh)}H0Z`);
+    // at rest: the plate, edge to edge. On the way out the sides pull in, the box's top corners round off, and the part
+    // over the status bar becomes a bridge that thins into a neck (wide feet on the top edge and on the box)…
+    // The bridge starts as wide as the box and narrows from there. While the hollow beside it is shallow it is a dimple
+    // in one straight side (no corner on the box yet); the deeper it gets, the more the box's top corners round off and
+    // the bridge lands on the box's top edge with a fillet, exactly where a corner starts: always soft, never a slot or
+    // a sharp inner corner (Michael, Oct 14).
+    const t = p / 0.5, a = gInOut(t), x = ins * a + 1.5 * a * a, top = S - 3 * a * a, half = W / 2 - x;
+    const hM = half * (1 - a), d = half - hM, rt = Math.min(24, 0.45 * d);
+    parts.push(rr(x, top, W - x, H, rt, gLerp(26, 24, a)));
+    const hB = Math.max(hM, gLerp(half - rt, 18, a * a));
+    // The hollow beside the bridge is a rounded bay from the start: it opens just above the box (about twice as tall as
+    // it is deep) and grows up to the top edge. Above a small bay the plate still runs up to the top edge, with its
+    // own rounded bottom corner, so the bay has a round lip above and a round box corner below (no tips, no corners).
+    const y0 = Math.max(0, top - Math.min(top, 2.2 * d));
+    if (y0 > 0.3) parts.push(rr(x, -40, W - x, y0 + 1, 0, Math.min(rt, (y0 + 41) / 2)));
+    // once the bay reaches the top edge, the feet on the top edge gather in toward the neck
+    const v = gInOut(Math.max(0, Math.min(1, (2.2 * d - top) / Math.max(1, top * 1.6))));
+    const hT = Math.max(hM, gLerp(half - rt, hM + gLerp(Math.min(12, S * 0.35), 15, a), v));
+    parts.push(bridge(hT, hM, hB, y0, top + 2, 1));
   } else {
     const b = (p - 0.5) / 0.5;
     // …and after the snap it springs back: squashed (lower and wider), stretched, settling (damped spring)
     const w = -3 * Math.exp(-4.5 * b) * Math.cos(2 * Math.PI * 1.5 * b) * (1 - b), top = S + w;
     parts.push(rr(ins - 0.5 * w, top, W - ins + 0.5 * w, H, 24, 24));
+    // the drip left on the top edge and the bump on the box shrink back; both have rounded feet (no corners)
     const hd = S * 0.45 * (1 - gOut(Math.min(1, b * 1.4))), wd = 30;
-    if (hd > 0.3) parts.push(`M${f(cx - wd / 2)} 0H${f(cx + wd / 2)}C${f(cx + wd * 0.15)} ${f(hd * 0.35)} ${f(cx + wd * 0.3)} ${f(hd)} ${f(cx)} ${f(hd)}C${f(cx - wd * 0.3)} ${f(hd)} ${f(cx - wd * 0.15)} ${f(hd * 0.35)} ${f(cx - wd / 2)} 0Z`);
+    if (hd > 0.3) parts.push(`M${f(cx - wd / 2)} 0H${f(cx + wd / 2)}C${f(cx + wd * 0.2)} 0 ${f(cx + wd * 0.28)} ${f(hd)} ${f(cx)} ${f(hd)}C${f(cx - wd * 0.28)} ${f(hd)} ${f(cx - wd * 0.2)} 0 ${f(cx - wd / 2)} 0Z`);
     const hb = S * 0.45 * (1 - gOut(Math.min(1, b * 1.6))), wb = 36;
-    if (hb > 0.3) parts.push(`M${f(cx - wb / 2)} ${f(top + 2)}C${f(cx - wb * 0.15)} ${f(top - hb * 0.35)} ${f(cx - wb * 0.3)} ${f(top - hb)} ${f(cx)} ${f(top - hb)}C${f(cx + wb * 0.3)} ${f(top - hb)} ${f(cx + wb * 0.15)} ${f(top - hb * 0.35)} ${f(cx + wb / 2)} ${f(top + 2)}Z`);
+    if (hb > 0.3) parts.push(`M${f(cx - wb / 2)} ${f(top + 2)}C${f(cx - wb * 0.2)} ${f(top + 2)} ${f(cx - wb * 0.28)} ${f(top - hb)} ${f(cx)} ${f(top - hb)}C${f(cx + wb * 0.28)} ${f(top - hb)} ${f(cx + wb * 0.2)} ${f(top + 2)} ${f(cx + wb / 2)} ${f(top + 2)}Z`);
     const r = 4 * (1 - b ** 3), yd = S * 0.5 - S * 0.3 * Math.sin(Math.PI * b) + S * 0.5 * b * b;
     if (r > 0.4) parts.push(`M${f(cx + r)} ${f(yd)}A${f(r)} ${f(r)} 0 1 1 ${f(cx - r)} ${f(yd)}A${f(r)} ${f(r)} 0 1 1 ${f(cx + r)} ${f(yd)}Z`);
-    const bh = 3 * (1 - b);
-    if (bh > 0.2) parts.push(`M0 0H${f(W)}V${f(bh)}H0Z`);
   }
   return parts.join("");
 }
@@ -2565,14 +2587,6 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
     el.addEventListener("scroll", on, { passive: true });
     return () => { el.removeEventListener("scroll", on); if (raf) cancelAnimationFrame(raf); };
   }, []);
-  // the pager is as tall as the page you're on (pages have different lengths; the window does the vertical scrolling)
-  useLayoutEffect(() => {
-    const el = pages.current[page]; if (!el) return;
-    const fit = () => setPagerH(el.offsetHeight);
-    fit();
-    if (typeof ResizeObserver === "undefined") return;
-    const ro = new ResizeObserver(fit); ro.observe(el); return () => ro.disconnect();
-  }, [page]);
 
   // One notice at a time (Michael marked it in design A), the most important first. A download in progress and a new
   // APK always show (rare and important).
@@ -2587,6 +2601,20 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
     dailyText && "daily",
   ].filter(Boolean);
   const notice = notices[0];
+  // the pager is as tall as the page you're on (pages have different lengths; the window does the vertical scrolling),
+  // but at least down to the bottom of the screen: the empty space under a short page is part of the pager, so a
+  // swipe there switches pages too (Michael, Oct 14: swiping only worked on the cards)
+  useLayoutEffect(() => {
+    const el = pages.current[page], pg = pager.current; if (!el || !pg) return;
+    const fit = () => { const top = pg.getBoundingClientRect().top + window.scrollY; setPagerH(Math.max(el.offsetHeight, Math.round(window.innerHeight - top))); };
+    fit();
+    window.addEventListener("resize", fit);
+    if (typeof ResizeObserver === "undefined") return () => window.removeEventListener("resize", fit);
+    // the page, and the screen around the pager (a notice above it opening or closing moves its top); a new height
+    // that is the same as before changes nothing, so this settles at once
+    const ro = new ResizeObserver(fit); ro.observe(el); if (pg.parentElement) ro.observe(pg.parentElement);
+    return () => { ro.disconnect(); window.removeEventListener("resize", fit); };
+  }, [page]);
   const ntBox = (key, color, kids, onClose, extra = {}) => (
     <div {...extra} className="cardIn" style={{ ...card, position: "relative", padding: "11px 40px 11px 14px", marginBottom: 12, display: "flex", alignItems: "center", gap: 11, borderColor: `${color}66`, ...(extra.style || {}) }}>
       <CloseX onClick={onClose} />

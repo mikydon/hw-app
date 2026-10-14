@@ -1072,6 +1072,10 @@ export default {
     "El diseño Cristal se parece más al cristal real: un brillo desde la esquina, un reflejo suave, un borde superior claro y un suave resplandor de los colores del tema detrás de las cajas. La barra de inicio y el menú ☰ combinan con él, y sigue siendo ligero para el móvil.",
     "Barra superior: arriba del todo ahora llena la pantalla de borde a borde, sin línea arriba ni a los lados.",
   ],
+  news154: [
+    "Puedes deslizar entre Hoy y Ejercicios en cualquier parte de la página, también en el espacio vacío bajo las tarjetas.",
+    "La barra superior sigue redondeada al despegarse y volver, sin franja plana ni esquinas en ángulo.",
+  ],
   news153: [
     "Pantalla principal en dos páginas: desliza o toca arriba Hoy / Ejercicios. Hoy: la semana arriba, el día grande + Empezar y fichas de calorías y retos semanales (cada uno con su progreso). Ejercicios: los ejercicios del día.",
     "En la pantalla principal solo un aviso a la vez, el más importante.",

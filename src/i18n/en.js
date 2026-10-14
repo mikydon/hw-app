@@ -1072,6 +1072,10 @@ export default {
     "Glass layout looks more like real glass: a sheen from the corner, a soft reflection, a bright top edge and a soft glow of the theme colours behind the boxes. The Start bar and the ☰ menu match it, and it stays light on the phone.",
     "Top bar: at the top of the page it now fills the screen edge to edge, without a line at the top or sides.",
   ],
+  news154: [
+    "Swiping between Today and Exercises works anywhere on the page, also on the empty space under the cards.",
+    "The top bar stays rounded while it comes off the top and flows back, with no flat strip or square corners.",
+  ],
   news153: [
     "Main screen in two pages: swipe or tap Today / Exercises at the top. Today: this week on top, the big day + Start, and tiles for calories and the weekly challenges (each one with its progress). Exercises: the day's exercises.",
     "Only one notice at a time on the main screen, the most important first.",

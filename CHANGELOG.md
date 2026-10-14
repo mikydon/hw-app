@@ -10,6 +10,11 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 
 <!-- New version: add a "## x.y.z (date)" section on top (web-only history uses "## Browser beta x.y.z (date)"). On a push to main, .github/workflows/build.yml builds everything and .github/scripts/releases.sh creates/updates the releases (commit = the push, or the one in a commit comment). -->
 
+## 1.5.4 (2026-10-14)
+
+- Main screen: swiping between Today and Exercises also works on the empty space under the cards (the page now reaches the bottom of the screen). Before, it only worked on the cards themselves.
+- The top bar stays rounded while it comes off the top and flows back: its link to the top edge is a liquid bridge with rounded feet, and the box rounds its corners right away. Before, a thin flat strip and square corners showed at the edges during the move.
+
 ## 1.5.3 (2026-10-14)
 
 - Main screen in two pages you swipe between (or switch at the top): **Today** has this week on top (green = workout, amber line = calories logged, orange = calorie goal met), the big day with A/B/C and 19 / 13 min + Start, and two tiles: calories (eaten / target with a bar) and the weekly challenges with each challenge and its progress (tap for the full list). **Exercises** has the day's exercises. Only one notice at a time (done today, update, setup, hint or the daily line), the most important first. Before, everything was on one long page.

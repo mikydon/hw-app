@@ -1072,6 +1072,10 @@ export default {
     "La disposition Verre ressemble davantage à du vrai verre : un reflet depuis le coin, une réflexion douce, un bord supérieur clair et une douce lueur des couleurs du thème derrière les blocs. La barre de démarrage et le menu ☰ sont assortis, et le téléphone n'est toujours pas sollicité.",
     "Barre du haut : tout en haut de la page, elle remplit maintenant l'écran d'un bord à l'autre, sans ligne en haut ni sur les côtés.",
   ],
+  news154: [
+    "Tu peux glisser entre Aujourd'hui et Exercices n'importe où sur la page, même dans l'espace vide sous les cartes.",
+    "La barre du haut reste arrondie quand elle se détache et revient, sans bande plate ni coins carrés.",
+  ],
   news153: [
     "Écran principal en deux pages : fais glisser ou touche en haut Aujourd'hui / Exercices. Aujourd'hui : la semaine en haut, le grand jour + Commencer et des tuiles calories et défis de la semaine (chacun avec sa progression). Exercices : les exercices du jour.",
     "Un seul message à la fois sur l'écran principal, le plus important d'abord.",

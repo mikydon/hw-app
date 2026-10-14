@@ -1072,6 +1072,10 @@ export default {
     "Az Üveg elrendezés jobban hasonlít a valódi üvegre: csillanás a sarokból, lágy tükröződés, világos felső él és a téma színeinek halvány fénye a dobozok mögött. Az indítósáv és a ☰ menü illik hozzá, és a telefont továbbra sem terheli.",
     "Felső sáv: az oldal tetején most szélétől széléig kitölti a képernyőt, vonal nélkül felül és oldalt.",
   ],
+  news154: [
+    "A Ma és a Gyakorlatok között bárhol lapozhatsz az oldalon, a kártyák alatti üres részen is.",
+    "A felső sáv leváláskor és visszatéréskor is lekerekített marad, lapos csík és szögletes sarkok nélkül.",
+  ],
   news153: [
     "A főképernyő két oldalból áll: húzd el, vagy koppints fent a Ma / Gyakorlatok fülre. Ma: a hét felül, a nagy nap + Start, valamint kalória- és heti kihívás-csempék (mindegyik a haladással). Gyakorlatok: a nap gyakorlatai.",
     "A főképernyőn egyszerre csak egy értesítés látszik, a legfontosabb.",
