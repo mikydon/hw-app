@@ -1080,6 +1080,10 @@ export default {
     "Glass layout looks more like real glass: a sheen from the corner, a soft reflection, a bright top edge and a soft glow of the theme colours behind the boxes. The Start bar and the ☰ menu match it, and it stays light on the phone.",
     "Top bar: at the top of the page it now fills the screen edge to edge, without a line at the top or sides.",
   ],
+  news156: [
+    "Smoother animations: opening and closing boxes (the arrows), switching pages and the Calories screen no longer stutter, and everything moves a little faster.",
+    "The floating Start bar now slides away in one piece instead of falling apart.",
+  ],
   news155: [
     "Calories in three pages you swipe between, like the main screen: Today, Calendar and Details, with this week on top.",
     "Calorie calendar: every day of the month in amber (light = logged, solid ✓ = on target); tap a day to see what you ate.",

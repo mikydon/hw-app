@@ -10,6 +10,11 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 
 <!-- New version: add a "## x.y.z (date)" section on top (web-only history uses "## Browser beta x.y.z (date)"). On a push to main, .github/workflows/build.yml builds everything and .github/scripts/releases.sh creates/updates the releases (commit = the push, or the one in a commit comment). -->
 
+## 1.5.6 (2026-10-14)
+
+- Smoother animations. Opening and closing boxes (the arrows in Calories, History and the warm-up), switching pages and the Calories screen no longer stutter: the swipe pages set their height directly instead of redrawing the whole screen on every frame, and a box that opens only redraws itself. Every animation is also a little shorter. Before, they felt stuck and slow, especially on a phone.
+- The floating Start bar slides away in one piece; only its arrival is staggered. Before, its buttons faded at different speeds and it seemed to fall apart. It also no longer shows up now and then while the Start button on the page is already in view (when the page moved out and back within one frame, the app read the older of the two reports).
+
 ## 1.5.5 (2026-10-14)
 
 - Calories in three pages you swipe between (or switch at the top), like the main screen: **Today** (eaten / target, how the target is calculated, logging food, what you ate today), **Calendar** and **Details** (your data and goal). This week's calorie strip sits at the very top. Before, everything was on one long page.

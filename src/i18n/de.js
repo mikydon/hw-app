@@ -1080,6 +1080,10 @@ export default {
     "Das Layout Glas sieht echtem Glas ähnlicher: ein Glanz aus der Ecke, eine sanfte Spiegelung, eine helle Oberkante und ein sanftes Leuchten der Themenfarben hinter den Boxen. Die Startleiste und das ☰-Menü passen dazu, und das Handy wird weiterhin kaum belastet.",
     "Obere Leiste: ganz oben auf der Seite füllt sie den Bildschirm jetzt von Rand zu Rand, ohne Linie oben oder an den Seiten.",
   ],
+  news156: [
+    "Flüssigere Animationen: Aufklappen (die Pfeile), Seitenwechsel und Kalorien ruckeln nicht mehr, und alles ist etwas schneller.",
+    "Die Start-Leiste verschwindet in einem Stück, statt in Teile zu zerfallen.",
+  ],
   news155: [
     "Kalorien sind drei Seiten zum Wischen wie der Startbildschirm: Heute, Kalender und Daten, die Woche ganz oben.",
     "Kalorienkalender: jeder Tag des Monats in Orange (hell = eingetragen, voll ✓ = im Ziel); tippe auf einen Tag, um zu sehen, was du gegessen hast.",

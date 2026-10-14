@@ -1080,6 +1080,10 @@ export default {
     "Rozložení Sklo vypadá víc jako skutečné sklo: odlesk z rohu, jemný odraz, světlá horní hrana a jemná záře barev motivu za boxy. Lišta se startem a menu ☰ k němu ladí a telefon to pořád nezatěžuje.",
     "Horní lišta: když jsi úplně nahoře, vyplňuje obrazovku od kraje ke kraji, bez čáry nahoře a po stranách.",
   ],
+  news156: [
+    "Plynulejší animace: rozbalování (šipky), přepínání stránek a Kalorie se už nezasekávají a vše je o kousek rychlejší.",
+    "Panel se Startem se schová najednou celý, už se přitom nerozpadá na kousky.",
+  ],
   news155: [
     "Kalorie jsou tři stránky, mezi kterými se posouvá jako na hlavní obrazovce: Dnes, Kalendář a Údaje, týden je úplně nahoře.",
     "Kalendář kalorií: každý den v měsíci oranžově (světlá = zapsáno, plná ✓ = v cíli); ťukni na den a uvidíš, co jsi jedl.",

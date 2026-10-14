@@ -1080,6 +1080,10 @@ export default {
     "El diseño Cristal se parece más al cristal real: un brillo desde la esquina, un reflejo suave, un borde superior claro y un suave resplandor de los colores del tema detrás de las cajas. La barra de inicio y el menú ☰ combinan con él, y sigue siendo ligero para el móvil.",
     "Barra superior: arriba del todo ahora llena la pantalla de borde a borde, sin línea arriba ni a los lados.",
   ],
+  news156: [
+    "Animaciones más fluidas: desplegar (las flechas), cambiar de página y Calorías ya no se traban, y todo va un poco más rápido.",
+    "La barra de Inicio se oculta entera, ya no se deshace en trozos.",
+  ],
   news155: [
     "Calorías son tres páginas que se deslizan como la pantalla principal: Hoy, Calendario y Datos, con la semana arriba.",
     "Calendario de calorías: cada día del mes en naranja (claro = anotado, lleno ✓ = en objetivo); toca un día para ver qué comiste.",

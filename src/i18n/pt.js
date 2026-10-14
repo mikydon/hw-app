@@ -1080,6 +1080,10 @@ export default {
     "O layout Vidro parece mais vidro de verdade: um brilho a partir do canto, um reflexo suave, uma borda superior clara e um brilho suave das cores do tema atrás das caixas. A barra de início e o menu ☰ combinam com ele, e continua leve para o telemóvel.",
     "Barra superior: no topo da página, agora preenche o ecrã de uma ponta à outra, sem linha em cima nem dos lados.",
   ],
+  news156: [
+    "Animações mais fluidas: abrir (as setas), mudar de página e as Calorias já não engasgam, e tudo é um pouco mais rápido.",
+    "A barra Iniciar esconde-se inteira, já não se desfaz aos pedaços.",
+  ],
   news155: [
     "As Calorias são três páginas para deslizar como o ecrã principal: Hoje, Calendário e Dados, com a semana no topo.",
     "Calendário de calorias: cada dia do mês a laranja (claro = registado, cheio ✓ = no objetivo); toca num dia para ver o que comeste.",

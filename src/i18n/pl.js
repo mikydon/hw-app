@@ -1080,6 +1080,10 @@ export default {
     "Układ Szkło wygląda bardziej jak prawdziwe szkło: połysk od rogu, delikatne odbicie, jasna górna krawędź i delikatna poświata kolorów motywu za polami. Pasek startu i menu ☰ do niego pasują, a telefon nadal się nie męczy.",
     "Górny pasek: na samej górze strony wypełnia ekran od krawędzi do krawędzi, bez linii u góry i po bokach.",
   ],
+  news156: [
+    "Płynniejsze animacje: rozwijanie (strzałki), przełączanie stron i Kalorie już się nie zacinają, a wszystko jest trochę szybsze.",
+    "Pasek ze Startem chowa się w całości, już nie rozpada się na kawałki.",
+  ],
   news155: [
     "Kalorie to trzy strony przesuwane jak ekran główny: Dziś, Kalendarz i Dane, a tydzień jest na samej górze.",
     "Kalendarz kalorii: każdy dzień miesiąca na pomarańczowo (jasny = zapisane, pełny ✓ = w celu); stuknij dzień, by zobaczyć, co jadłeś.",

@@ -1080,6 +1080,10 @@ export default {
     "Az Üveg elrendezés jobban hasonlít a valódi üvegre: csillanás a sarokból, lágy tükröződés, világos felső él és a téma színeinek halvány fénye a dobozok mögött. Az indítósáv és a ☰ menü illik hozzá, és a telefont továbbra sem terheli.",
     "Felső sáv: az oldal tetején most szélétől széléig kitölti a képernyőt, vonal nélkül felül és oldalt.",
   ],
+  news156: [
+    "Simább animációk: a lenyitás (nyilak), a lapozás és a Kalóriák már nem akadoznak, és minden kicsit gyorsabb.",
+    "A Start sáv egyben tűnik el, már nem esik szét darabokra.",
+  ],
   news155: [
     "A Kalóriák három lapozható oldal, mint a főképernyő: Ma, Naptár és Adatok, a hét legfelül.",
     "Kalórianaptár: a hónap minden napja narancssárgán (világos = rögzítve, teli ✓ = célban); koppints egy napra, és látod, mit ettél.",

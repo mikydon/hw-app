@@ -1,4 +1,4 @@
-import { useState, useEffect, useLayoutEffect, useRef } from "react";
+import { useState, useEffect, useLayoutEffect, useRef, memo } from "react";
 import { createPortal } from "react-dom";
 import { isNative, pushBack, setRootBack, exitApp, vibratePattern, keepScreenOn, openExternal, saveBackupFile, bkSupported, bkWrite, bkList, bkRead, bkDelete, bkShare, BK_DIR, BK_AUTO, checkForUpdate, lastUpdate, lastGh, applyUpdateNow, latestApk, isTestBuild, apkState, onApk, apkSupported, apkRestore, apkDownload, apkCanInstall, apkAllow, apkInstall, onAppResume, healthState, healthConnect, healthSettings, healthSteps, healthFoodItems, healthBody, shareText, copyText } from "./native.js";
 import { cloud, NICK_RE, SHARE_BASE, cleanCode, fmtCode } from "./cloud-lazy.js";
@@ -32,7 +32,7 @@ const THEMES = {
   slate:  { ink: "#15181d", panel: "#1f242b", panelHi: "#2a313a", line: "#3a434f", chalk: "#f1f4f8", dim: "#9aa6b4", edge: "#0e1115" },
   coffee: { ink: "#1c140f", panel: "#2a1f17", panelHi: "#382a20", line: "#4d3a2c", chalk: "#fbf3ec", dim: "#b8a291", edge: "#130d09" },
 };
-const APP_VERSION = "1.5.5";
+const APP_VERSION = "1.5.6";
 // Big Shoulders has no Cyrillic, so Oswald (also condensed) covers Ukrainian. The browser only
 // downloads the Oswald unicode ranges a page actually uses.
 const DISPLAY = "'Big Shoulders Display', 'Oswald', 'Arial Narrow', Impact, sans-serif";
@@ -957,8 +957,9 @@ function useBack(fn, on = true, low = false) {
 //          the same glide with a tiny settle at the end
 //  spring= only rewards and things you just touched (✓, reactions, emoji, a number that changes)
 //  exit  = anything leaving: faster, accelerating away
-// Lengths: t1 small changes (colour, icons), t2 moves and expanders, t3 floating boxes arriving, out = leaving.
-const MO = { ease: "cubic-bezier(.22,1,.36,1)", pop: "cubic-bezier(.2,.9,.25,1.12)", spring: "cubic-bezier(.34,1.56,.64,1)", exit: "cubic-bezier(.5,0,.75,.2)", t1: ".2s", t2: ".32s", t3: ".42s", out: ".24s", fill: ".6s" };
+// Lengths: t1 small changes (colour, icons), t2 moves and expanders, t3 floating boxes arriving, out = leaving
+// (shortened in 1.5.6, Michael: "spomalené").
+const MO = { ease: "cubic-bezier(.22,1,.36,1)", pop: "cubic-bezier(.2,.9,.25,1.12)", spring: "cubic-bezier(.34,1.56,.64,1)", exit: "cubic-bezier(.5,0,.75,.2)", t1: ".18s", t2: ".28s", t3: ".36s", out: ".2s", fill: ".5s" };
 const reducedMotion = () => { try { return window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (_) { return false; } };
 // Bottom sheet: slides up from the bottom (pop) over a dimming background. When it closes, it is gone for the app at
 // once, and a static copy of it (no buttons, no test hooks) slides down and is removed: so a sheet opened right after
@@ -1376,11 +1377,13 @@ function Chevron({ open, color, size = 14 }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true" style={{ flexShrink: 0, transform: open ? "rotate(180deg)" : "none", transition: `transform ${MO.t2} ${MO.ease}` }}><path d="M6 9l6 6 6-6" fill="none" stroke={color || C.dim} strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" /></svg>;
 }
 // A section box whose title row opens and closes it (Calories: Health Connect, logging food).
-function FoldSect({ title, meta, open, onToggle, children, style, ...rest }) {
+// It keeps its own open/closed state (1.5.6: a tap re-renders only this box, not the whole screen behind it).
+function FoldSect({ title, meta, defOpen = true, onToggle, children, style, ...rest }) {
+  const [open, setOpen] = useState(defOpen);
   const tiles = LOOK === "tiles";
   return (
     <Sect {...rest} style={{ padding: 0, ...style }}>
-      <button onClick={() => { sfxTap(); onToggle(); }} aria-expanded={!!open} data-fold-head
+      <button onClick={() => { sfxTap(); const v = !open; setOpen(v); onToggle && onToggle(v); }} aria-expanded={!!open} data-fold-head
         style={{ ...btnBase, width: "100%", display: "flex", alignItems: "center", gap: 10, padding: tiles ? "12px 13px" : "14px 15px", background: "transparent", color: C.chalk, textAlign: "left", borderRadius: "inherit" }}>
         <span style={{ flex: 1, minWidth: 0, fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: tiles ? C.chalk : C.dim, opacity: tiles ? 0.8 : 1 }}>{title}</span>
         {meta && <span style={{ fontSize: 12, fontWeight: 800, color: C.dim, whiteSpace: "nowrap" }}>{meta}</span>}
@@ -2617,7 +2620,6 @@ function SetupCard({ profile, kcal, onFix, onClose }) {
 function usePager(name, n) {
   const pager = useRef(null), pages = useRef([]), knob = useRef(null);
   const [page, setPage] = useState(0);
-  const [h, setH] = useState(null);
   const [pagerEl, setPagerEl] = useState(null); // the strip may appear later (Calories shows a form first)
   // A tap on a tab more than one page away (Calories 1 ↔ 3): "snap-stop: always" (one page per swipe) would stop the
   // smooth scroll on the page in between, and a page change halfway (the strip takes that page's height) would cut it
@@ -2632,30 +2634,37 @@ function usePager(name, n) {
     requestAnimationFrame(() => { el.addEventListener("scrollend", done); setTimeout(done, 1000); go(); });
   };
   useBack(() => goPage(0), page > 0, true);
-  useEffect(() => {
+  // The strip's height is set straight on the element (1.5.5 fix, Michael: animations felt stuck and slow): no React
+  // render and no CSS transition, so a box opening on a page, or the page itself, moves at full speed. While moving
+  // between two pages it is as tall as the taller one (nothing gets cut off mid-swipe); at rest, as tall as the page
+  // you're on, but at least down to the bottom of the screen (a swipe on the empty space under a short page works).
+  useLayoutEffect(() => {
     const el = pager.current; if (!el) return;
     if (page) el.scrollLeft = page * el.clientWidth; // a strip that came back (after a form) stays on the same page
     if (knob.current) knob.current.style.transform = `translateX(${page * 100}%)`;
+    let last = -1;
+    const fit = () => {
+      const p = Math.max(0, Math.min(n - 1, el.scrollLeft / Math.max(1, el.clientWidth)));
+      const lo = pages.current[Math.floor(p)], hi = pages.current[Math.ceil(p)];
+      const top = el.getBoundingClientRect().top + window.scrollY;
+      const h = Math.max(lo ? lo.offsetHeight : 0, hi ? hi.offsetHeight : 0, Math.round(window.innerHeight - top));
+      if (h !== last) { last = h; el.style.height = h + "px"; }
+      return p;
+    };
+    fit();
     let raf = 0;
     const on = () => { if (raf) return; raf = requestAnimationFrame(() => {
-      raf = 0; const p = Math.max(0, Math.min(n - 1, el.scrollLeft / Math.max(1, el.clientWidth)));
+      raf = 0; const p = fit();
       if (knob.current) knob.current.style.transform = `translateX(${p * 100}%)`;
-      if (!el.classList.contains("jump")) setPage(Math.round(p));
+      if (!el.classList.contains("jump")) { const r = Math.round(p); setPage(x => (x === r ? x : r)); }
     }); };
     el.addEventListener("scroll", on, { passive: true });
-    return () => { el.removeEventListener("scroll", on); if (raf) cancelAnimationFrame(raf); };
-  }, [pagerEl]);
-  useLayoutEffect(() => {
-    const el = pages.current[page], pg = pager.current; if (!el || !pg) return;
-    const fit = () => { const top = pg.getBoundingClientRect().top + window.scrollY; setH(Math.max(el.offsetHeight, Math.round(window.innerHeight - top))); };
-    fit();
     window.addEventListener("resize", fit);
-    if (typeof ResizeObserver === "undefined") return () => window.removeEventListener("resize", fit);
-    // the page, and the screen around the strip (a notice above it opening or closing moves its top); the same
-    // height as before changes nothing, so this settles at once
-    const ro = new ResizeObserver(fit); ro.observe(el); if (pg.parentElement) ro.observe(pg.parentElement);
-    return () => { ro.disconnect(); window.removeEventListener("resize", fit); };
-  }, [page, pagerEl]);
+    // every page and the screen around the strip (a notice above it opening or closing moves its top)
+    const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(() => fit()) : null;
+    if (ro) { pages.current.forEach(x => x && ro.observe(x)); if (el.parentElement) ro.observe(el.parentElement); }
+    return () => { el.removeEventListener("scroll", on); window.removeEventListener("resize", fit); if (ro) ro.disconnect(); if (raf) cancelAnimationFrame(raf); };
+  }, [pagerEl]);
   const tabs = labels => (
     <div {...{ [`data-${name}-tabs`]: 1 }} role="tablist" style={{ position: "relative", display: "flex", padding: 3, borderRadius: 13, ...SUNK(), marginBottom: 12 }}>
       <span ref={knob} aria-hidden="true" style={{ position: "absolute", top: 3, bottom: 3, left: 3, width: `calc((100% - 6px) / ${n})`, borderRadius: 10, background: C.chalk, boxShadow: "0 2px 6px rgba(0,0,0,.3)", transition: "none" }} />
@@ -2665,7 +2674,7 @@ function usePager(name, n) {
       ))}
     </div>
   );
-  const pagerProps = { ref: node => { pager.current = node; if (node !== pagerEl) setPagerEl(node); }, className: "swPager", [`data-${name}-pager`]: page, style: { height: h || "auto" } };
+  const pagerProps = { ref: node => { pager.current = node; if (node !== pagerEl) setPagerEl(node); }, className: "swPager", [`data-${name}-pager`]: page };
   const pageProps = i => ({ ref: el => (pages.current[i] = el), className: "swPage", [`data-${name}-page`]: String(i), "aria-hidden": page !== i });
   return { page, goPage, tabs, pagerProps, pageProps };
 }
@@ -2682,7 +2691,8 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
   const [rowSeen, setRowSeen] = useState(true);
   useEffect(() => {
     const el = roundsRow.current; if (!el || typeof IntersectionObserver === "undefined") return;
-    const io = new IntersectionObserver(([e]) => setRowSeen(e.isIntersecting), { threshold: 0.6 });
+    // several entries can come in one batch (it moved out and back in within a frame): the last one is the current state
+    const io = new IntersectionObserver(es => setRowSeen(es[es.length - 1].isIntersecting), { threshold: 0.6 });
     io.observe(el); return () => io.disconnect();
   }, [active]);
   const [howEx, setHowEx] = useState(null);
@@ -3256,7 +3266,7 @@ function KcalGoals({ kcal, age, onPick }) {
 }
 
 // App only: steps from Health Connect (Samsung Health, Google Fit, Fitbit… all write there).
-function HealthCard({ kcal, setKcal, open, onToggle }) {
+function HealthCard({ kcal, setKcal, defOpen, onToggle }) {
   const [st, setSt] = useState(null); // {available, granted, reason}
   const [busy, setBusy] = useState(false);
   const [denied, setDenied] = useState(false);
@@ -3366,7 +3376,7 @@ function HealthCard({ kcal, setKcal, open, onToggle }) {
   );
   const on = kcal.healthOn && st && st.granted;
   return (
-    <FoldSect data-health-card title={T("hcTitle")} meta={on ? `👟 ${nf(steps || 0)}` : null} open={open} onToggle={onToggle} style={{ marginTop: 10 }}>
+    <FoldSect data-health-card title={T("hcTitle")} meta={on ? `👟 ${nf(steps || 0)}` : null} defOpen={defOpen} onToggle={onToggle} style={{ marginTop: 10 }}>
       {body}
     </FoldSect>
   );
@@ -3461,9 +3471,7 @@ function Calories({ history, profile, setProfile, kcal, setKcal }) {
   const [amount, setAmount] = useState("");
   const [note, setNote] = useState("");
   const [openDay, setOpenDay] = useState(null);
-  const [how, setHow] = useState(false);
   const pg = usePager("kc", 3);
-  const [, bumpFold] = useState(0);
   const foldDef = useRef(null);
   if (!foldDef.current) { const f = kcal && kcal.healthFood === true; foldDef.current = { hc: !(kcal && kcal.healthOn && f), log: !f }; }
   const age = ageOn(profile.birth, today);
@@ -3535,7 +3543,6 @@ function Calories({ history, profile, setProfile, kcal, setKcal }) {
   // Health Connect and logging fold away; when food comes from Health Connect both start folded (nothing to type).
   // folded or not is decided when Calories opens (connecting food right here doesn't snap the box shut)
   const fold = k => (KC_FOLD[k] === undefined ? foldDef.current[k] : KC_FOLD[k]);
-  const toggle = k => { KC_FOLD[k] = !fold(k); bumpFold(n => n + 1); };
   return (
     <div className="scr" style={{ padding: "16px 0 110px", maxWidth: 460, margin: "0 auto" }}>
       <div style={{ padding: "0 18px" }}>
@@ -3547,29 +3554,9 @@ function Calories({ history, profile, setProfile, kcal, setKcal }) {
       </div>
       <div {...pg.pagerProps}>
         <div {...pg.pageProps(0)}>
-          <div style={{ ...card, padding: "16px", display: "flex", alignItems: "center", gap: 16 }} data-kctoday>
-            <div style={{ position: "relative", width: 150, height: 150, flexShrink: 0 }}>
-              <svg width="150" height="150" style={{ transform: "rotate(-90deg)" }}>
-                <circle cx="75" cy="75" r={R} fill="none" stroke={C.panelHi} strokeWidth="12" />
-                <circle cx="75" cy="75" r={R} fill="none" stroke={over ? "#ff8a80" : C.mint} strokeWidth="12" strokeLinecap="round" strokeDasharray={CIRC} strokeDashoffset={CIRC * (1 - pct)} style={{ transition: `stroke-dashoffset ${MO.fill} ${MO.ease}` }} />
-              </svg>
-              <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-                <div key={eaten} className="bump" style={{ fontFamily: DISPLAY, fontSize: 38, fontWeight: 900, lineHeight: 0.9, color: C.chalk }}>{nf(eaten)}</div>
-                <div style={{ fontSize: 12, color: C.dim }}>{T("kcOf", { n: nf(target) })}</div>
-              </div>
-            </div>
-            <div style={{ minWidth: 0 }}>
-              <div style={{ fontSize: 12, color: C.dim }}>{T("kcToday")}</div>
-              <div style={{ fontFamily: DISPLAY, fontSize: 30, fontWeight: 900, lineHeight: 1, color: over ? "#ff8a80" : C.mint, marginTop: 2 }}>{over ? T("kcOver", { n: nf(-left) }) : T("kcLeft", { n: nf(left) })}</div>
-              <div style={{ fontSize: 12, color: C.dim, marginTop: 6, lineHeight: 1.45 }}>{goalName}</div>
-              {wk > 0 && <div style={{ fontSize: 12, color: C.sky, marginTop: 3, fontWeight: 700 }}>{T("kcWorkoutToday", { n: nf(wk) })}</div>}
-              {stepsKcal(kcal, today) > 0 && <div data-steps-kcal style={{ fontSize: 12, color: C.sky, marginTop: 3, fontWeight: 700 }}>{T("hcStepsKcal", { n: nf(stepsKcal(kcal, today)) })}</div>}
-              <button data-kc-how onClick={() => { sfxTap(); setHow(h => !h); }} aria-expanded={how} style={{ ...btnBase, display: "inline-flex", alignItems: "center", gap: 5, background: "transparent", color: C.sky, fontSize: 12, padding: "6px 0 0" }}>{T("kcHowTitle")}<Chevron open={how} color={C.sky} size={12} /></button>
-            </div>
-          </div>
-          <Expand open={how}><div style={{ paddingTop: 10 }}><TargetBreakdown kcal={kcal} age={age} history={history} day={today} target={target} /></div></Expand>
-          {isNative && <HealthCard kcal={kcal} setKcal={setKcal} open={fold("hc")} onToggle={() => toggle("hc")} />}
-          <FoldSect data-kc-log title={T("kcAddTitle")} open={fold("log")} onToggle={() => toggle("log")} style={{ marginTop: 10 }}>
+          <KcTodayRing kcal={kcal} age={age} history={history} today={today} target={target} eaten={eaten} left={left} pct={pct} over={over} wk={wk} goalName={goalName} />
+          {isNative && <HealthCard kcal={kcal} setKcal={setKcal} defOpen={fold("hc")} onToggle={v => (KC_FOLD.hc = v)} />}
+          <FoldSect data-kc-log title={T("kcAddTitle")} defOpen={fold("log")} onToggle={v => (KC_FOLD.log = v)} style={{ marginTop: 10 }}>
             <div style={{ display: "flex", gap: 8 }}>
               <input value={amount} onChange={e => setAmount(e.target.value.replace(/[^0-9]/g, "").slice(0, 4))} onKeyDown={e => { if (e.key === "Enter") add(); }} inputMode="numeric" placeholder="kcal" aria-label={T("kcAmount")} style={{ ...field, flex: 1 }} />
               <input value={note} onChange={e => setNote(e.target.value)} onKeyDown={e => { if (e.key === "Enter") add(); }} placeholder={T("kcNote")} aria-label={T("kcNote")} style={{ ...field, flex: 1.6 }} />
@@ -3617,6 +3604,36 @@ function Calories({ history, profile, setProfile, kcal, setKcal }) {
         </div>
       </div>
     </div>
+  );
+}
+// The day's ring with "how is the target calculated?" under it; it keeps its own open state (1.5.6).
+function KcTodayRing({ kcal, age, history, today, target, eaten, left, pct, over, wk, goalName }) {
+  const [how, setHow] = useState(false);
+  const R = 64, CIRC = 2 * Math.PI * R;
+  return (
+    <>
+            <div style={{ ...card, padding: "16px", display: "flex", alignItems: "center", gap: 16 }} data-kctoday>
+              <div style={{ position: "relative", width: 150, height: 150, flexShrink: 0 }}>
+                <svg width="150" height="150" style={{ transform: "rotate(-90deg)" }}>
+                  <circle cx="75" cy="75" r={R} fill="none" stroke={C.panelHi} strokeWidth="12" />
+                  <circle cx="75" cy="75" r={R} fill="none" stroke={over ? "#ff8a80" : C.mint} strokeWidth="12" strokeLinecap="round" strokeDasharray={CIRC} strokeDashoffset={CIRC * (1 - pct)} style={{ transition: `stroke-dashoffset ${MO.fill} ${MO.ease}` }} />
+                </svg>
+                <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+                  <div key={eaten} className="bump" style={{ fontFamily: DISPLAY, fontSize: 38, fontWeight: 900, lineHeight: 0.9, color: C.chalk }}>{nf(eaten)}</div>
+                  <div style={{ fontSize: 12, color: C.dim }}>{T("kcOf", { n: nf(target) })}</div>
+                </div>
+              </div>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontSize: 12, color: C.dim }}>{T("kcToday")}</div>
+                <div style={{ fontFamily: DISPLAY, fontSize: 30, fontWeight: 900, lineHeight: 1, color: over ? "#ff8a80" : C.mint, marginTop: 2 }}>{over ? T("kcOver", { n: nf(-left) }) : T("kcLeft", { n: nf(left) })}</div>
+                <div style={{ fontSize: 12, color: C.dim, marginTop: 6, lineHeight: 1.45 }}>{goalName}</div>
+                {wk > 0 && <div style={{ fontSize: 12, color: C.sky, marginTop: 3, fontWeight: 700 }}>{T("kcWorkoutToday", { n: nf(wk) })}</div>}
+                {stepsKcal(kcal, today) > 0 && <div data-steps-kcal style={{ fontSize: 12, color: C.sky, marginTop: 3, fontWeight: 700 }}>{T("hcStepsKcal", { n: nf(stepsKcal(kcal, today)) })}</div>}
+                <button data-kc-how onClick={() => { sfxTap(); setHow(h => !h); }} aria-expanded={how} style={{ ...btnBase, display: "inline-flex", alignItems: "center", gap: 5, background: "transparent", color: C.sky, fontSize: 12, padding: "6px 0 0" }}>{T("kcHowTitle")}<Chevron open={how} color={C.sky} size={12} /></button>
+              </div>
+            </div>
+            <Expand open={how}><div style={{ paddingTop: 10 }}><TargetBreakdown kcal={kcal} age={age} history={history} day={today} target={target} /></div></Expand>
+    </>
   );
 }
 // Folded/unfolded state of the Calories boxes while the app is open (a choice made here sticks until the app restarts).
@@ -3743,6 +3760,9 @@ function MonthCalendar({ history }) {
   );
 }
 
+// History re-renders when a workout opens or closes; the calendar and chart only change with the history (1.5.6).
+const MonthCalendarM = memo(MonthCalendar);
+const ProgressChartM = memo(props => <ProgressChart {...props} />);
 function ProgressChart({ history }) {
   const withData = Object.keys(RANK_AT).filter(id => history.some(e => e.items.some(it => it.id === id)));
   const [sel, setSel] = useState(withData.includes("k1") ? "k1" : withData[0]);
@@ -3963,9 +3983,9 @@ function HistoryTab({ history, onDelete, onSaveEntry, editDate, onEditOpened }) 
           onSave={e => { onSaveEntry(editing === "new" ? null : editing, e); setEditing(null); setOpen(null); }}
           onDelete={() => { onDelete(editing); setEditing(null); setOpen(null); }} />
       )}
-      <MonthCalendar history={history} />
+      <MonthCalendarM history={history} />
       <div style={sectionTitle}>{T("progress")}</div>
-      <ProgressChart history={history} />
+      <ProgressChartM history={history} />
       <div style={sectionTitle}>{T("workoutsTitle")}</div>
       <button data-add-workout onClick={() => { sfxTap(); setEditing("new"); }} style={{ ...btnBase, ...card, ...tileR(), width: "100%", padding: "13px 15px", fontSize: 15, color: C.chalk, marginBottom: 10, textAlign: "left", display: "flex", alignItems: "center", gap: 10 }}>
         <span style={{ flex: 1, minWidth: 0 }}>{T("addWorkout").replace(/^➕\s*/, "")}<span style={{ display: "block", fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2 }}>{T("addWorkoutD")}</span></span>
@@ -6355,10 +6375,10 @@ export default function App() {
         .fstart{transform:translateY(calc(100% + 24px));opacity:0;transition:transform ${MO.out} ${MO.exit},opacity ${MO.out} ease}
         .fstart.on{transition:transform ${MO.t3} ${MO.pop},opacity ${MO.t1} ease}
         .fstart.on{transform:none;opacity:1}
-        .fstart .fsq{transform:scale(.6);opacity:0;transition:transform ${MO.t3} ${MO.spring} var(--d,0ms),opacity ${MO.t1} ease var(--d,0ms)}
-        .fstart.on .fsq{transform:none;opacity:1}
+        @keyframes fsqIn{from{transform:scale(.6);opacity:0}to{transform:none;opacity:1}}
+        .fstart.on .fsq{animation:fsqIn ${MO.t3} ${MO.spring} var(--d,0ms) backwards}
         .fstart.on .fsq.b3d:active{transform:translateY(4px)}
-        @media (prefers-reduced-motion: reduce){.fstart,.fstart .fsq{transition:none}}
+        @media (prefers-reduced-motion: reduce){.fstart,.fstart .fsq{transition:none;animation:none}}
         .obf:focus{border-color:${C.signal}!important;box-shadow:0 0 0 3px ${C.signal}2e}
         @keyframes obIn{from{opacity:0;transform:translateX(26px)}to{opacity:1;transform:none}}
         @keyframes obBack{from{opacity:0;transform:translateX(-26px)}to{opacity:1;transform:none}}
@@ -6373,7 +6393,7 @@ export default function App() {
         .sheetGhost>.sheetDim{animation:dFadeOut ${MO.out} ease-in both} .sheetGhost>.sheetGhostBox{box-sizing:border-box;animation:shOut ${MO.out} ${MO.exit} both}
         .sheetBox{box-sizing:border-box;max-height:86vh;max-height:calc(100dvh - 24px - var(--sat) - var(--sab))}
         .exq::after{content:"?"} .exq{position:relative} .exq::before{content:"";position:absolute;inset:-4px}
-        .swPager{display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;align-items:flex-start;transition:height ${MO.t2} ${MO.ease}}.swPager::-webkit-scrollbar{display:none}.swPage{flex:0 0 100%;min-width:0;box-sizing:border-box;scroll-snap-align:start;scroll-snap-stop:always;padding:0 18px 18px}.swPager.jump>.swPage{scroll-snap-stop:normal}
+        .swPager{display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;align-items:flex-start}.swPager::-webkit-scrollbar{display:none}.swPage{flex:0 0 100%;min-width:0;box-sizing:border-box;scroll-snap-align:start;scroll-snap-stop:always;padding:0 18px 18px}.swPager.jump>.swPage{scroll-snap-stop:normal}
         .noBar{scrollbar-width:none}.noBar::-webkit-scrollbar{display:none}
         ::selection{background:${C.signal}55;color:${C.chalk}} input,textarea{caret-color:${C.signal};accent-color:${C.signal}}
         @keyframes bump{0%{transform:scale(.82)}55%{transform:scale(1.12)}100%{transform:scale(1)}}
