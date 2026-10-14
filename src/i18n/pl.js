@@ -433,6 +433,16 @@ export default {
     chWrite: "Napisz wiadomość",
     ntReq: "{nick} chce być twoim znajomym",
     ntReqD: "Dotknij, aby zaakceptować lub odrzucić",
+    ntAcc: "Ty i {nick} jesteście teraz znajomymi",
+    ntAccD: "Stuknij i napisz pierwszą wiadomość",
+    pushTitle: "Powiadomienia w telefonie",
+    pushD: "Wiadomości i zaproszenia do znajomych, także gdy aplikacja jest zamknięta.",
+    pushDenied: "Powiadomienia HW App są wyłączone w telefonie. Włącz je w ustawieniach Androida → Aplikacje → HW App → Powiadomienia.",
+    pushChannel: "Znajomi i wiadomości",
+    hzTitle: "Płynność ekranu",
+    hzMax: "Najwyższa ({n} Hz)",
+    hzMaxNoN: "Najwyższa",
+    hzD: "Najwyższa, na jaką pozwala telefon, jest płynniejsza; 60 Hz oszczędza baterię.",
     frMenuNew: "Nowe: {n}",
     obAcctT: "Masz konto?",
     obAcctD: "Zaloguj się przez Google, a aplikacja uzupełni pseudonim i zaproponuje kopię z chmury. Konto jest dobrowolne, możesz to pominąć.",
@@ -1079,6 +1089,10 @@ export default {
   news143: [
     "Układ Szkło wygląda bardziej jak prawdziwe szkło: połysk od rogu, delikatne odbicie, jasna górna krawędź i delikatna poświata kolorów motywu za polami. Pasek startu i menu ☰ do niego pasują, a telefon nadal się nie męczy.",
     "Górny pasek: na samej górze strony wypełnia ekran od krawędzi do krawędzi, bez linii u góry i po bokach.",
+  ],
+  news16: [
+    ["📱 Powiadomienia", "Nowe wiadomości i zaproszenia widziałeś tylko przy otwartej aplikacji.", "Telefon powiadomi cię o nowej wiadomości, zaproszeniu do znajomych lub jego przyjęciu także przy zamkniętej aplikacji. Stuknięcie otwiera czat albo Znajomych. Wyłączysz to w Ustawienia → Konto i chmura; od zablokowanych osób nic nie przychodzi."],
+    ["📱 Płynność ekranu", "Aplikacja działała z taką częstotliwością, jaką przydzielił jej telefon.", "Aplikacja prosi o najwyższą częstotliwość odświeżania, na jaką pozwala telefon (np. 120 Hz). W Ustawieniach możesz wybrać też 60 Hz, które oszczędza baterię."],
   ],
   news158: [
     "Rozwijanie i zwijanie strzałkami jest przerobione tak, by rysował je układ graficzny: strona od razu dostaje nowy kształt, pola poniżej płynnie się przesuwają, a treść łagodnie się pojawia, więc nic już nie skacze.",

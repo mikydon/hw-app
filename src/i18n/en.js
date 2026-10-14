@@ -433,6 +433,16 @@ export default {
     chWrite: "Write a message",
     ntReq: "{nick} wants to be friends",
     ntReqD: "Tap to accept or decline",
+    ntAcc: "You and {nick} are friends now",
+    ntAccD: "Tap to write the first message",
+    pushTitle: "Phone notifications",
+    pushD: "Messages and friend requests, also when the app is closed.",
+    pushDenied: "Notifications are turned off for HW App in your phone. Turn them on in Android settings → Apps → HW App → Notifications.",
+    pushChannel: "Friends and messages",
+    hzTitle: "Screen smoothness",
+    hzMax: "Highest ({n} Hz)",
+    hzMaxNoN: "Highest",
+    hzD: "The highest the phone allows is smoother; 60 Hz saves battery.",
     frMenuNew: "{n} new",
     obAcctT: "Got an account?",
     obAcctD: "Sign in with Google and the app fills in your nickname and offers your cloud backup. An account is optional, you can skip this.",
@@ -1079,6 +1089,10 @@ export default {
   news143: [
     "Glass layout looks more like real glass: a sheen from the corner, a soft reflection, a bright top edge and a soft glow of the theme colours behind the boxes. The Start bar and the ☰ menu match it, and it stays light on the phone.",
     "Top bar: at the top of the page it now fills the screen edge to edge, without a line at the top or sides.",
+  ],
+  news16: [
+    ["📱 Notifications", "You only saw new messages and friend requests while the app was open.", "Your phone tells you about a new message, a friend request or an accepted request also when the app is closed. A tap opens that chat or Friends. Switch it off in Settings → Account & cloud; nothing comes from people you blocked."],
+    ["📱 Screen smoothness", "The app ran at whatever refresh rate the phone gave it.", "The app asks for the highest refresh rate your phone allows (e.g. 120 Hz). In Settings you can pick 60 Hz instead to save battery."],
   ],
   news158: [
     "Opening and closing with the arrows is rebuilt to run on the graphics chip: the page takes its new shape at once, the boxes below slide smoothly and the content fades in, so it no longer moves in steps.",

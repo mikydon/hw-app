@@ -7,3 +7,5 @@ export const nickKey = n => String(n || "").normalize("NFC").trim().toLowerCase(
 export const cleanCode = c => String(c || "").toUpperCase().replace(/^HW-?/, "").replace(/[^A-Z0-9]/g, "");
 export const fmtCode = c => (c ? `HW-${c}` : "");
 export const chatId = (a, b) => [a, b].sort().join("_");
+// The push notification server (1.6.0, worker/): a Cloudflare Worker. Empty = not set up yet (nothing is sent).
+export const PUSH_URL = "https://hw-app-push.hw-app.workers.dev";

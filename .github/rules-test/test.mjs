@@ -2,7 +2,7 @@
 // Every case says who tries what and whether the rules must allow it. Results show up as annotations on the run.
 import { readFileSync } from "node:fs";
 import { initializeTestEnvironment, assertSucceeds, assertFails } from "@firebase/rules-unit-testing";
-import { doc, getDoc, setDoc, deleteDoc, updateDoc, deleteField, collection, getDocs, query, where, orderBy, limit, writeBatch, addDoc, serverTimestamp, Timestamp } from "firebase/firestore";
+import { doc, getDoc, setDoc, deleteDoc, updateDoc, deleteField, collection, getDocs, query, where, orderBy, limit, writeBatch, addDoc, serverTimestamp, Timestamp, arrayUnion } from "firebase/firestore";
 
 const env = await initializeTestEnvironment({ projectId: "demo-hw-app", firestore: { rules: readFileSync("firestore.rules", "utf8"), host: "127.0.0.1", port: 8080 } });
 const as = u => (u ? env.authenticatedContext(u) : env.unauthenticatedContext()).firestore();
@@ -157,11 +157,24 @@ await t("a member can delete the chat (account deletion)", true, async () => {
   const db = as("alice"), b = writeBatch(db); s.docs.forEach(m => b.delete(doc(db, "chats", "alice_bob", "msgs", m.id))); b.delete(doc(db, "chats", "alice_bob")); return b.commit();
 });
 
+console.log("phone notifications (1.6.0)");
+const pushDoc = (over = {}) => ({ t: ["tok1"], lang: "sk", off: false, blk: [], ts: serverTimestamp(), ...over });
+await t("alice saves her phone's token", true, () => setDoc(doc(as("alice"), "push", "alice"), pushDoc()));
+await t("alice adds a second phone (merge)", true, () => setDoc(doc(as("alice"), "push", "alice"), { t: arrayUnion("tok2"), ts: serverTimestamp(), lang: "sk", off: false, blk: [] }, { merge: true }));
+await t("alice reads hers", true, () => getDoc(doc(as("alice"), "push", "alice")));
+await t("bob can't read alice's tokens", false, () => getDoc(doc(as("bob"), "push", "alice")));
+await t("bob can't write alice's tokens", false, () => setDoc(doc(as("bob"), "push", "alice"), pushDoc({ t: ["evil"] })));
+await t("more than 5 phones is refused", false, () => setDoc(doc(as("alice"), "push", "alice"), pushDoc({ t: ["1", "2", "3", "4", "5", "6"] })));
+await t("unknown fields are refused", false, () => setDoc(doc(as("alice"), "push", "alice"), pushDoc({ x: 1 })));
+await t("off must be true/false", false, () => setDoc(doc(as("alice"), "push", "alice"), pushDoc({ off: "no" })));
+await t("alice switches notifications off and blocks carol", true, () => setDoc(doc(as("alice"), "push", "alice"), { off: true, blk: ["carol"], lang: "sk", ts: serverTimestamp() }, { merge: true }));
+await t("alice deletes it", true, () => deleteDoc(doc(as("alice"), "push", "alice")));
+
 console.log("deleting an account");
 await t("deleting a nickname that doesn't exist is harmless", true, () => deleteDoc(doc(as("carol"), "nicks", "never_was")));
 await t("carol deletes everything of hers", true, () => {
   const db = as("carol"), b = writeBatch(db);
-  ["profiles", "board", "backups"].forEach(c => b.delete(doc(db, c, "carol")));
+  ["profiles", "board", "backups", "push"].forEach(c => b.delete(doc(db, c, "carol")));
   b.delete(doc(db, "nicks", "carol")); b.delete(doc(db, "codes", "CCCCCC"));
   return b.commit();
 });

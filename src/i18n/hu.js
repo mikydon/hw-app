@@ -433,6 +433,16 @@ export default {
     chWrite: "Üzenet írása",
     ntReq: "{nick} barátod szeretne lenni",
     ntReqD: "Koppints az elfogadáshoz vagy elutasításhoz",
+    ntAcc: "Te és {nick} mostantól barátok vagytok",
+    ntAccD: "Koppints, és írd meg az első üzenetet",
+    pushTitle: "Értesítések a telefonon",
+    pushD: "Üzenetek és barátkérések, akkor is, ha az app be van zárva.",
+    pushDenied: "A HW App értesítései ki vannak kapcsolva a telefonon. Kapcsold be az Android beállításaiban → Alkalmazások → HW App → Értesítések.",
+    pushChannel: "Barátok és üzenetek",
+    hzTitle: "Képernyő simasága",
+    hzMax: "Legmagasabb ({n} Hz)",
+    hzMaxNoN: "Legmagasabb",
+    hzD: "A telefon által engedett legmagasabb simább; a 60 Hz kíméli az akkut.",
     frMenuNew: "Új: {n}",
     obAcctT: "Van fiókod?",
     obAcctD: "Jelentkezz be Google-fiókkal, és az app kitölti a becenevedet, és felajánlja a felhőmentést. A fiók önkéntes, ezt kihagyhatod.",
@@ -1079,6 +1089,10 @@ export default {
   news143: [
     "Az Üveg elrendezés jobban hasonlít a valódi üvegre: csillanás a sarokból, lágy tükröződés, világos felső él és a téma színeinek halvány fénye a dobozok mögött. Az indítósáv és a ☰ menü illik hozzá, és a telefont továbbra sem terheli.",
     "Felső sáv: az oldal tetején most szélétől széléig kitölti a képernyőt, vonal nélkül felül és oldalt.",
+  ],
+  news16: [
+    ["📱 Értesítések", "Az új üzeneteket és barátkéréseket csak nyitott appnál láttad.", "A telefon szól az új üzenetről, barátkérésről vagy annak elfogadásáról akkor is, ha az app be van zárva. Koppintásra a chat vagy a Barátok nyílik meg. Kikapcsolod: Beállítások → Fiók és felhő; letiltott emberektől semmi sem jön."],
+    ["📱 Képernyő simasága", "Az app azon a frissítési frekvencián futott, amit a telefon adott neki.", "Az app a telefon által engedett legmagasabb frissítési frekvenciát kéri (pl. 120 Hz). A Beállításokban 60 Hz-et is választhatsz, ami kíméli az akkut."],
   ],
   news158: [
     "A nyilakkal való lenyitást és összecsukást átírtam, hogy a grafikus chip rajzolja: az oldal azonnal felveszi az új alakját, az alatta lévő dobozok simán csúsznak, a tartalom finoman megjelenik, így már nem lépcsőzetes.",

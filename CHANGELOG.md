@@ -10,6 +10,17 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 
 <!-- New version: add a "## x.y.z (date)" section on top (web-only history uses "## Browser beta x.y.z (date)"). On a push to main, .github/workflows/build.yml builds everything and .github/scripts/releases.sh creates/updates the releases (commit = the push, or the one in a commit comment). -->
 
+## 1.6.0 (2026-10-14)
+
+**A big update: a new APK** (download it in the app and tap Install; your data stays). Compared with 1.5.8:
+
+| | Before (1.5.8) | Now (1.6.0) |
+|---|---|---|
+| Notifications *(Android app only)* | new messages, friend requests and accepted requests showed only while the app was open | your phone notifies you also when the app is closed: the sender's nickname and the message, or the friend request, in your language. A tap opens that chat or Friends. Android 13+ asks for permission once; switch it off in Settings → Account & cloud. Nothing comes from people you blocked, and only things that really happened are sent: a small server of HW App (Cloudflare Workers, free plan) checks every notification in the database first and keeps nothing. Signing out removes this phone |
+| Screen smoothness *(Android app only)* | the app ran at whatever refresh rate the phone gave it | the app asks for the highest refresh rate the phone allows (e.g. 120 Hz) from the first frame; Settings → Appearance lets you pick 60 Hz to save battery |
+
+The privacy policy explains what notifications store (this phone's notification address, language, on/off and who you blocked).
+
 ## 1.5.8 (2026-10-14)
 
 - Opening and closing with the arrows (Calories boxes, "how is the target calculated?", workouts in History, warm-up and cool-down instructions) is rebuilt so the graphics chip does the moving: the page takes its new layout at once, the boxes below slide from where they were to where they are now (transform), and the content fades in or out (opacity). Both run on the browser's compositor, so they stay smooth even while the app is busy. A box with nothing below it grows or shrinks on its own. Before, the box's height was animated, which redid the layout and repainted every card (with its shadow) on every frame, so on a phone it moved in visible steps.

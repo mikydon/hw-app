@@ -433,6 +433,16 @@ export default {
     chWrite: "Napísať správu",
     ntReq: "{nick} chce byť tvoj priateľ",
     ntReqD: "Ťukni a prijmi alebo odmietni",
+    ntAcc: "Ty a {nick} ste teraz priatelia",
+    ntAccD: "Ťukni a napíš prvú správu",
+    pushTitle: "Upozornenia v mobile",
+    pushD: "Správy a žiadosti o priateľstvo, aj keď je appka zatvorená.",
+    pushDenied: "Upozornenia pre HW App sú v mobile vypnuté. Zapni ich v nastaveniach Androidu → Aplikácie → HW App → Upozornenia.",
+    pushChannel: "Priatelia a správy",
+    hzTitle: "Plynulosť obrazovky",
+    hzMax: "Najvyššia ({n} Hz)",
+    hzMaxNoN: "Najvyššia",
+    hzD: "Najvyššia, akú mobil dovolí, je plynulejšia; 60 Hz šetrí batériu.",
     frMenuNew: "Nové: {n}",
     obAcctT: "Máš účet?",
     obAcctD: "Prihlás sa cez Google a appka ti vyplní prezývku a ponúkne zálohu z cloudu. Účet je dobrovoľný, môžeš to preskočiť.",
@@ -1079,6 +1089,10 @@ export default {
   news143: [
     "Rozloženie Sklo vyzerá viac ako skutočné sklo: odlesk z rohu, jemný odraz, svetlá horná hrana a jemná žiara farieb témy za boxmi. Lišta so štartom a menu ☰ k nemu ladia a mobil to stále nezaťažuje.",
     "Horná lišta: keď si úplne hore, vypĺňa obrazovku od kraja po kraj, bez čiary hore a po bokoch.",
+  ],
+  news16: [
+    ["📱 Upozornenia", "Nové správy a žiadosti o priateľstvo si videl len vtedy, keď bola appka otvorená.", "Mobil ťa upozorní na novú správu, žiadosť o priateľstvo alebo jej prijatie aj vtedy, keď je appka zatvorená. Ťuknutím sa otvorí rovno chat alebo Priatelia. Vypneš to v Nastavenia → Účet a cloud; od zablokovaných ľudí nič nechodí."],
+    ["📱 Plynulosť obrazovky", "Appka bežala na takej frekvencii, akú jej pridelil mobil.", "Appka požiada o najvyššiu obnovovaciu frekvenciu, akú mobil dovolí (napr. 120 Hz). V Nastaveniach si môžeš vybrať aj 60 Hz, ktoré šetria batériu."],
   ],
   news158: [
     "Rozbaľovanie a zbaľovanie šípkami je prerobené tak, aby ho kreslil grafický čip: stránka hneď dostane nový tvar, boxy pod ním plynulo zájdu dole alebo hore a obsah sa jemne objaví, takže už to neide po krokoch.",

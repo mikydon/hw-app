@@ -1,0 +1,6 @@
+# HW App push server (1.6.0). Deployed by .github/workflows/push-worker.yml; the secret FIREBASE_SERVICE_ACCOUNT is
+# set by the same workflow from the GitHub secret of the same name.
+name = "hw-app-push"
+main = "index.js"
+compatibility_date = "2025-09-01"
+workers_dev = true

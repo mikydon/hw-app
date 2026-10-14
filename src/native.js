@@ -378,3 +378,40 @@ export async function healthSteps(days = 7, type = "steps") {
     return out;
   } catch (_) { return null; }
 }
+
+// ── Phone notifications (1.6.0) ────────────────────────────────────────────────────────────────────────────────
+// Firebase Cloud Messaging through @capacitor-firebase/messaging (native side only: registered by name, so its web
+// part, which would pull Firebase into the main bundle, is never loaded). Older APKs (before 1.6.0) don't have it.
+const FcmPlugin = registerPlugin("FirebaseMessaging");
+export const pushSupported = () => isNative && Capacitor.isPluginAvailable("FirebaseMessaging");
+// "granted" | "denied" | "prompt" (Android 13+ asks; older Android always allows)
+export async function pushPermission(ask) {
+  if (!pushSupported()) return "denied";
+  try { const r = ask ? await FcmPlugin.requestPermissions() : await FcmPlugin.checkPermissions(); return r.receive || "denied"; } catch (_) { return "denied"; }
+}
+// The "Friends and messages" channel (Android 8+); its name follows the app's language.
+export async function pushChannel(name) {
+  if (!pushSupported()) return;
+  try { await FcmPlugin.createChannel({ id: "social", name, importance: 4, visibility: 1, vibration: true, lights: true, lightColor: "#FFD23F" }); } catch (_) {}
+}
+export async function pushToken() { if (!pushSupported()) return null; try { return (await FcmPlugin.getToken()).token || null; } catch (_) { return null; } }
+export async function pushDeleteToken() { if (!pushSupported()) return; try { await FcmPlugin.deleteToken(); } catch (_) {} }
+// A tap on a notification (also when it started the app): fn({kind, from, cid})
+export function onPushTap(fn) {
+  if (!pushSupported()) return () => {};
+  const h = FcmPlugin.addListener("notificationActionPerformed", e => { const d = (e && e.notification && e.notification.data) || {}; if (d.kind) fn(d); });
+  return () => { Promise.resolve(h).then(x => x && x.remove && x.remove()).catch(() => {}); };
+}
+// A new token from Firebase (it can change now and then)
+export function onPushToken(fn) {
+  if (!pushSupported()) return () => {};
+  const h = FcmPlugin.addListener("tokenReceived", e => e && e.token && fn(e.token));
+  return () => { Promise.resolve(h).then(x => x && x.remove && x.remove()).catch(() => {}); };
+}
+
+// ── Screen refresh rate (1.6.0) ─────────────────────────────────────────────────────────────────────────────────
+// The app's own plugin (HwDisplayPlugin.java): "max" = the highest the phone allows, "60" = 60 Hz.
+const HwDisplay = registerPlugin("HwDisplay");
+export const hzSupported = () => isNative && Capacitor.isPluginAvailable("HwDisplay");
+export async function hzInfo() { if (!hzSupported()) return null; try { return await HwDisplay.info(); } catch (_) { return null; } }
+export async function hzSet(mode) { if (!hzSupported()) return; try { await HwDisplay.set({ mode: mode === "60" ? "60" : "max" }); } catch (_) {} }

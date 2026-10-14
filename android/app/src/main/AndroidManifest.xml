@@ -11,6 +11,11 @@
         android:requestLegacyExternalStorage="true"
         android:theme="@style/AppTheme">
 
+        <!-- 1.6.0 phone notifications (Firebase Cloud Messaging): white mark, the app's yellow, the "social" channel -->
+        <meta-data android:name="com.google.firebase.messaging.default_notification_icon" android:resource="@drawable/ic_stat_hw" />
+        <meta-data android:name="com.google.firebase.messaging.default_notification_color" android:resource="@color/hw_notify" />
+        <meta-data android:name="com.google.firebase.messaging.default_notification_channel_id" android:value="social" />
+
         <activity
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode|navigation|density"
             android:name=".MainActivity"

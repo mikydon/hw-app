@@ -433,6 +433,16 @@ export default {
     chWrite: "Escribir un mensaje",
     ntReq: "{nick} quiere ser tu amigo",
     ntReqD: "Toca para aceptar o rechazar",
+    ntAcc: "Tú y {nick} ya sois amigos",
+    ntAccD: "Toca y escribe el primer mensaje",
+    pushTitle: "Notificaciones en el móvil",
+    pushD: "Mensajes y solicitudes de amistad, también con la app cerrada.",
+    pushDenied: "Las notificaciones de HW App están desactivadas en el móvil. Actívalas en Ajustes de Android → Aplicaciones → HW App → Notificaciones.",
+    pushChannel: "Amigos y mensajes",
+    hzTitle: "Fluidez de la pantalla",
+    hzMax: "Máxima ({n} Hz)",
+    hzMaxNoN: "Máxima",
+    hzD: "La máxima que permite el móvil es más fluida; 60 Hz ahorra batería.",
     frMenuNew: "Nuevos: {n}",
     obAcctT: "¿Tienes cuenta?",
     obAcctD: "Inicia sesión con Google y la app rellenará tu apodo y te ofrecerá tu copia de la nube. La cuenta es opcional, puedes saltarlo.",
@@ -1079,6 +1089,10 @@ export default {
   news143: [
     "El diseño Cristal se parece más al cristal real: un brillo desde la esquina, un reflejo suave, un borde superior claro y un suave resplandor de los colores del tema detrás de las cajas. La barra de inicio y el menú ☰ combinan con él, y sigue siendo ligero para el móvil.",
     "Barra superior: arriba del todo ahora llena la pantalla de borde a borde, sin línea arriba ni a los lados.",
+  ],
+  news16: [
+    ["📱 Notificaciones", "Los mensajes nuevos y las solicitudes de amistad solo los veías con la app abierta.", "El móvil te avisa de un mensaje nuevo, una solicitud de amistad o su aceptación también con la app cerrada. Un toque abre ese chat o Amigos. Desactívalo en Ajustes → Cuenta y nube; de las personas bloqueadas no llega nada."],
+    ["📱 Fluidez de la pantalla", "La app iba a la frecuencia que le daba el móvil.", "La app pide la frecuencia de actualización más alta que permite tu móvil (p. ej. 120 Hz). En Ajustes puedes elegir 60 Hz para ahorrar batería."],
   ],
   news158: [
     "Abrir y cerrar con las flechas ahora lo dibuja el chip gráfico: la página toma su nueva forma al instante, las cajas de abajo se deslizan suave y el contenido aparece poco a poco, sin saltos.",

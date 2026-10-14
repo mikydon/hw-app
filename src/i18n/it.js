@@ -433,6 +433,16 @@ export default {
     chWrite: "Scrivi un messaggio",
     ntReq: "{nick} vuole essere tuo amico",
     ntReqD: "Tocca per accettare o rifiutare",
+    ntAcc: "Tu e {nick} ora siete amici",
+    ntAccD: "Tocca e scrivi il primo messaggio",
+    pushTitle: "Notifiche sul telefono",
+    pushD: "Messaggi e richieste di amicizia, anche con l’app chiusa.",
+    pushDenied: "Le notifiche di HW App sono disattivate sul telefono. Attivale in Impostazioni Android → App → HW App → Notifiche.",
+    pushChannel: "Amici e messaggi",
+    hzTitle: "Fluidità dello schermo",
+    hzMax: "Massima ({n} Hz)",
+    hzMaxNoN: "Massima",
+    hzD: "La massima consentita dal telefono è più fluida; 60 Hz risparmia batteria.",
     frMenuNew: "Nuovi: {n}",
     obAcctT: "Hai un account?",
     obAcctD: "Accedi con Google: l'app compila il tuo nickname e ti propone il backup nel cloud. L'account è facoltativo, puoi saltare.",
@@ -1079,6 +1089,10 @@ export default {
   news143: [
     "Il layout Vetro sembra più vetro vero: un riflesso dall'angolo, un leggero bagliore, un bordo superiore chiaro e una tenue luce dei colori del tema dietro i riquadri. La barra di avvio e il menu ☰ si abbinano, e il telefono resta leggero.",
     "Barra in alto: in cima alla pagina ora riempie lo schermo da bordo a bordo, senza linea in alto o ai lati.",
+  ],
+  news16: [
+    ["📱 Notifiche", "Vedevi nuovi messaggi e richieste di amicizia solo con l’app aperta.", "Il telefono ti avvisa di un nuovo messaggio, di una richiesta di amicizia o della sua accettazione anche con l’app chiusa. Un tocco apre la chat o Amici. Disattivale in Impostazioni → Account e cloud; dalle persone bloccate non arriva niente."],
+    ["📱 Fluidità dello schermo", "L’app girava alla frequenza che le assegnava il telefono.", "L’app chiede la frequenza di aggiornamento più alta consentita dal telefono (es. 120 Hz). Nelle Impostazioni puoi scegliere 60 Hz per risparmiare batteria."],
   ],
   news158: [
     "Aprire e chiudere con le frecce ora lo disegna il chip grafico: la pagina prende subito la nuova forma, i riquadri sotto scorrono fluidi e il contenuto appare dolcemente, senza scatti.",

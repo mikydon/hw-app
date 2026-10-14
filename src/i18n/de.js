@@ -433,6 +433,16 @@ export default {
     chWrite: "Nachricht schreiben",
     ntReq: "{nick} möchte befreundet sein",
     ntReqD: "Tippen zum Annehmen oder Ablehnen",
+    ntAcc: "Du und {nick} seid jetzt befreundet",
+    ntAccD: "Tippe und schreib die erste Nachricht",
+    pushTitle: "Benachrichtigungen am Handy",
+    pushD: "Nachrichten und Freundschaftsanfragen, auch wenn die App geschlossen ist.",
+    pushDenied: "Benachrichtigungen für HW App sind am Handy aus. Schalte sie in den Android-Einstellungen ein → Apps → HW App → Benachrichtigungen.",
+    pushChannel: "Freunde und Nachrichten",
+    hzTitle: "Bildschirm-Flüssigkeit",
+    hzMax: "Höchste ({n} Hz)",
+    hzMaxNoN: "Höchste",
+    hzD: "Die höchste, die das Handy erlaubt, ist flüssiger; 60 Hz spart Akku.",
     frMenuNew: "Neu: {n}",
     obAcctT: "Hast du ein Konto?",
     obAcctD: "Melde dich mit Google an: Die App füllt deinen Spitznamen aus und bietet deine Cloud-Sicherung an. Das Konto ist freiwillig, du kannst das überspringen.",
@@ -1079,6 +1089,10 @@ export default {
   news143: [
     "Das Layout Glas sieht echtem Glas ähnlicher: ein Glanz aus der Ecke, eine sanfte Spiegelung, eine helle Oberkante und ein sanftes Leuchten der Themenfarben hinter den Boxen. Die Startleiste und das ☰-Menü passen dazu, und das Handy wird weiterhin kaum belastet.",
     "Obere Leiste: ganz oben auf der Seite füllt sie den Bildschirm jetzt von Rand zu Rand, ohne Linie oben oder an den Seiten.",
+  ],
+  news16: [
+    ["📱 Benachrichtigungen", "Neue Nachrichten und Freundschaftsanfragen hast du nur bei geöffneter App gesehen.", "Dein Handy meldet eine neue Nachricht, eine Freundschaftsanfrage oder ihre Annahme auch bei geschlossener App. Ein Tipp öffnet den Chat oder Freunde. Abschalten unter Einstellungen → Konto & Cloud; von blockierten Personen kommt nichts."],
+    ["📱 Bildschirm-Flüssigkeit", "Die App lief mit der Bildwiederholrate, die ihr das Handy gab.", "Die App fragt nach der höchsten Bildwiederholrate, die dein Handy erlaubt (z. B. 120 Hz). In den Einstellungen kannst du stattdessen 60 Hz wählen, das spart Akku."],
   ],
   news158: [
     "Auf- und Zuklappen mit den Pfeilen läuft jetzt über den Grafikchip: Die Seite bekommt sofort ihre neue Form, die Boxen darunter gleiten sanft, und der Inhalt blendet weich ein, also kein Ruckeln mehr.",

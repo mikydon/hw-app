@@ -433,6 +433,16 @@ export default {
     chWrite: "Écrire un message",
     ntReq: "{nick} veut être ton ami",
     ntReqD: "Touche pour accepter ou refuser",
+    ntAcc: "Toi et {nick} êtes maintenant amis",
+    ntAccD: "Touche pour écrire le premier message",
+    pushTitle: "Notifications sur le téléphone",
+    pushD: "Messages et demandes d’ami, même quand l’app est fermée.",
+    pushDenied: "Les notifications de HW App sont désactivées sur le téléphone. Active-les dans Paramètres Android → Applications → HW App → Notifications.",
+    pushChannel: "Amis et messages",
+    hzTitle: "Fluidité de l’écran",
+    hzMax: "Maximale ({n} Hz)",
+    hzMaxNoN: "Maximale",
+    hzD: "La plus haute que permet le téléphone est plus fluide ; 60 Hz économise la batterie.",
     frMenuNew: "Nouveaux : {n}",
     obAcctT: "Tu as un compte ?",
     obAcctD: "Connecte-toi avec Google : l'appli remplit ton pseudo et te propose ta sauvegarde du cloud. Le compte est facultatif, tu peux passer cette étape.",
@@ -1079,6 +1089,10 @@ export default {
   news143: [
     "La disposition Verre ressemble davantage à du vrai verre : un reflet depuis le coin, une réflexion douce, un bord supérieur clair et une douce lueur des couleurs du thème derrière les blocs. La barre de démarrage et le menu ☰ sont assortis, et le téléphone n'est toujours pas sollicité.",
     "Barre du haut : tout en haut de la page, elle remplit maintenant l'écran d'un bord à l'autre, sans ligne en haut ni sur les côtés.",
+  ],
+  news16: [
+    ["📱 Notifications", "Tu ne voyais les nouveaux messages et demandes d’ami que l’app ouverte.", "Ton téléphone te prévient d’un nouveau message, d’une demande d’ami ou de son acceptation même quand l’app est fermée. Une touche ouvre la discussion ou Amis. Désactive-les dans Réglages → Compte et cloud ; rien n’arrive des personnes bloquées."],
+    ["📱 Fluidité de l’écran", "L’app tournait à la fréquence que le téléphone lui donnait.", "L’app demande la fréquence de rafraîchissement la plus haute que permet ton téléphone (p. ex. 120 Hz). Dans Réglages, tu peux choisir 60 Hz pour économiser la batterie."],
   ],
   news158: [
     "Ouvrir et fermer avec les flèches passe maintenant par la puce graphique : la page prend tout de suite sa nouvelle forme, les blocs en dessous glissent en douceur et le contenu apparaît doucement, sans saccades.",

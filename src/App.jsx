@@ -1,6 +1,6 @@
 import { useState, useEffect, useLayoutEffect, useRef, memo } from "react";
 import { createPortal } from "react-dom";
-import { isNative, pushBack, setRootBack, exitApp, vibratePattern, keepScreenOn, openExternal, saveBackupFile, bkSupported, bkWrite, bkList, bkRead, bkDelete, bkShare, BK_DIR, BK_AUTO, checkForUpdate, lastUpdate, lastGh, applyUpdateNow, latestApk, isTestBuild, apkState, onApk, apkSupported, apkRestore, apkDownload, apkCanInstall, apkAllow, apkInstall, onAppResume, healthState, healthConnect, healthSettings, healthSteps, healthFoodItems, healthBody, shareText, copyText } from "./native.js";
+import { isNative, pushBack, setRootBack, exitApp, vibratePattern, keepScreenOn, openExternal, saveBackupFile, bkSupported, bkWrite, bkList, bkRead, bkDelete, bkShare, BK_DIR, BK_AUTO, checkForUpdate, lastUpdate, lastGh, applyUpdateNow, latestApk, isTestBuild, apkState, onApk, apkSupported, apkRestore, apkDownload, apkCanInstall, apkAllow, apkInstall, onAppResume, healthState, healthConnect, healthSettings, healthSteps, healthFoodItems, healthBody, shareText, copyText, pushSupported, pushPermission, pushChannel, pushToken, pushDeleteToken, onPushTap, onPushToken, hzSupported, hzInfo, hzSet } from "./native.js";
 import { cloud, NICK_RE, SHARE_BASE, cleanCode, fmtCode } from "./cloud-lazy.js";
 import { QUICK as EMO_QUICK, EMOJI } from "./emoji.js";
 import { L, LANG, t as T, tp as TP, fmt, setLang, detectLang, LANGS, fmtLong, fmtShortDM, fmtMonthYear, weekdaysShort, capFirst } from "./i18n/index.js";
@@ -32,7 +32,7 @@ const THEMES = {
   slate:  { ink: "#15181d", panel: "#1f242b", panelHi: "#2a313a", line: "#3a434f", chalk: "#f1f4f8", dim: "#9aa6b4", edge: "#0e1115" },
   coffee: { ink: "#1c140f", panel: "#2a1f17", panelHi: "#382a20", line: "#4d3a2c", chalk: "#fbf3ec", dim: "#b8a291", edge: "#130d09" },
 };
-const APP_VERSION = "1.5.8";
+const APP_VERSION = "1.6.0";
 // Big Shoulders has no Cyrillic, so Oswald (also condensed) covers Ukrainian. The browser only
 // downloads the Oswald unicode ranges a page actually uses.
 const DISPLAY = "'Big Shoulders Display', 'Oswald', 'Arial Narrow', Impact, sans-serif";
@@ -5087,7 +5087,7 @@ function LiveNotice({ n, people, onOpen, onClose }) {
 }
 
 // Settings → Account & cloud: who is signed in, the cloud backup, sign out, delete the account.
-function AccountBox({ acct, cloudBk, onOpen, onRestore, onSignOut, onDelete }) {
+function AccountBox({ acct, cloudBk, onOpen, onRestore, onSignOut, onDelete, settings, set }) {
   const [sure, setSure] = useState(false);
   const [busy, setBusy] = useState("");
   const [msg, setMsg] = useState("");
@@ -5114,6 +5114,7 @@ function AccountBox({ acct, cloudBk, onOpen, onRestore, onSignOut, onDelete }) {
           {sub(T("acBackupD"))}
           <span data-cloud-bk={cloudBk ? (cloudBk.ok ? "ok" : "err") : "none"} style={{ display: "block", fontSize: 12, marginTop: 4, color: cloudBk && !cloudBk.ok ? "#ff8a80" : cloudBk ? C.mint : C.dim }}>{!cloudBk ? T("acBkNone") : cloudBk.ok ? T("acBkLast", { time: fmtWhen(cloudBk.ts) }) : T("acBkErr", { e: cloudBk.err || "?" })}</span>
         </div>
+        {pushSupported() && settings && set && <PushRow settings={settings} set={set} />}
         <button data-acct-restore onClick={() => run("rs", onRestore)} style={rowBtn(false)}>
           <span style={{ flex: 1 }}>{busy === "rs" ? "…" : T("acRestore")}{sub(T("acRestoreD"))}</span>
         </button>
@@ -5128,6 +5129,42 @@ function AccountBox({ acct, cloudBk, onOpen, onRestore, onSignOut, onDelete }) {
       </div>
       {msg && <div role="status" style={{ fontSize: 13, color: msg.startsWith("✓") ? C.mint : "#ff8a80", marginTop: 8 }}>{msg}</div>}
     </>
+  );
+}
+
+// Phone notifications on/off (1.6.0, app only, signed in). Turning them on asks Android (13+) for permission; when
+// the phone has them blocked, a line says where to allow them.
+function PushRow({ settings, set }) {
+  const on = settings.push !== false;
+  const [perm, setPerm] = useState(null);
+  useEffect(() => { pushPermission(false).then(setPerm); }, []);
+  const flipPush = async () => {
+    const v = !on; set("push", v);
+    if (v) setPerm(await pushPermission(true));
+  };
+  return (
+    <div data-push-row style={{ borderTop: `1px solid ${C.line}` }}>
+      <SettingRow first title={T("pushTitle")} desc={T("pushD")} on={on} onClick={flipPush} />
+      {on && perm === "denied" && <div data-push-denied style={{ fontSize: 12, color: C.signal, lineHeight: 1.45, padding: "0 16px 12px" }}>{T("pushDenied")}</div>}
+    </div>
+  );
+}
+// Screen refresh rate (1.6.0, Michael: "the highest the phone allows, or 60"): app only.
+function HzRow({ settings, set, first }) {
+  const [info, setInfo] = useState(null);
+  useEffect(() => { hzInfo().then(setInfo); }, []);
+  const mode = settings.hz === "60" ? "60" : "max";
+  const pick = m => { sfxTap(); set("hz", m); hzSet(m); };
+  const btn = on => ({ ...btnBase, flex: 1, minWidth: 0, padding: "10px 6px", fontSize: 13, ...(on ? { background: C.chalk, border: `1px solid ${C.chalk}`, color: C.ink } : { ...SUNK(), color: C.dim }) });
+  return (
+    <div data-hz style={{ padding: "13px 16px", borderTop: first ? "none" : `1px solid ${C.line}` }}>
+      <div style={{ fontSize: 15, fontWeight: 700, color: C.chalk }}>{T("hzTitle")}</div>
+      <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
+        <button data-hz-opt="max" aria-pressed={mode === "max"} onClick={() => pick("max")} style={btn(mode === "max")}>{info && info.max > 60 ? T("hzMax", { n: info.max }) : T("hzMaxNoN")}</button>
+        <button data-hz-opt="60" aria-pressed={mode === "60"} onClick={() => pick("60")} style={btn(mode === "60")}>60 Hz</button>
+      </div>
+      <div style={{ fontSize: 12, color: C.dim, marginTop: 6, lineHeight: 1.45 }}>{T("hzD")}</div>
+    </div>
   );
 }
 
@@ -5346,6 +5383,7 @@ function SettingsTab({ initPage, settings, setSettings, history, profile, setPro
         })}
       </div>
       <div style={{ fontSize: 12, color: C.dim, marginTop: 6, lineHeight: 1.45 }}>{T("lookHint")}</div>
+      {hzSupported() && <div style={{ ...card, marginTop: 10 }}><HzRow settings={settings} set={set} first /></div>}
 
       <div style={sectionTitle}>{T("sounds")}</div>
       <div style={card}>
@@ -5379,7 +5417,7 @@ function SettingsTab({ initPage, settings, setSettings, history, profile, setPro
       </div>
 
       <div style={sectionTitle}>{T("acTitle")}</div>
-      <AccountBox acct={acct || { st: "out" }} cloudBk={cloudBk} onOpen={onAcctOpen} onRestore={onCloudRestore} onSignOut={onSignOut} onDelete={onDeleteAccount} />
+      <AccountBox acct={acct || { st: "out" }} cloudBk={cloudBk} onOpen={onAcctOpen} onRestore={onCloudRestore} onSignOut={onSignOut} onDelete={onDeleteAccount} settings={settings} set={set} />
 
       <div style={sectionTitle}>{T("dataBackup")}</div>
       <div style={card}>
@@ -6266,7 +6304,7 @@ export default function App() {
   const createProfile = async nick => { const p = await cloud().createProfile({ nick, global: false, pfp: await smallPfp(profile.pfp), ...cloudStats(history) }); setProf(p); sfxCheck(); };
   const renameNick = async nick => { await cloud().renameNick(acct.prof.nick, nick); const p = { ...acct.prof, nick }; await cloud().saveProfile({ ...p, pfp: await smallPfp(profile.pfp), ...cloudStats(history) }); setProf(p); sfxCheck(); };
   const setGlobal = async on => { const p = { ...acct.prof, global: on }; await cloud().saveProfile({ ...p, pfp: await smallPfp(profile.pfp), ...cloudStats(history) }); setProf(p); };
-  const signOut = async () => { await cloud().signOut(); setCloudMem({ uid: null, prof: null, bk: null, synced: "" }); setCloudBk(null); cloudReady.current = false; cloudN.current = null; setAcct({ st: "out" }); };
+  const signOut = async () => { const tk = cloudMem().pushTok; if (tk) { await cloud().dropPush(tk).catch(() => {}); await pushDeleteToken(); setCloudMem({ pushTok: null }); } await cloud().signOut(); setCloudMem({ uid: null, prof: null, bk: null, synced: "" }); setCloudBk(null); cloudReady.current = false; cloudN.current = null; setAcct({ st: "out" }); };
   const goneLocal = () => { try { localStorage.removeItem(CLOUD_KEY); } catch (_) {} setCloudBk(null); cloudReady.current = false; cloudN.current = null; setChatWith(null); setAcct({ st: "out" }); };
   const deleteAccount = async () => {
     try { await cloud().deleteAccount({ ...acct.prof, sent: cloudMem().sent || [] }); }
@@ -6337,6 +6375,31 @@ export default function App() {
     } catch (e) { fail(e); }
     return () => offs.forEach(f => { try { f && f(); } catch (_) {} });
   }, [acct.st, acct.prof && acct.prof.code]);
+  // Phone notifications (1.6.0, app only): this phone's FCM token, language, on/off and blocked people go to
+  // push/{uid}; the push server reads them. Android 13+ asks for permission once (first time signed in).
+  useEffect(() => {
+    if (acct.st !== "in" || !acct.prof || !pushSupported()) return;
+    let dead = false;
+    const on = settings.push !== false;
+    (async () => {
+      await pushChannel(T("pushChannel"));
+      let perm = await pushPermission(false);
+      if (on && perm === "prompt" && !cloudMem().pushAsked) { setCloudMem({ pushAsked: true }); perm = await pushPermission(true); }
+      const token = on && perm === "granted" ? await pushToken() : null;
+      if (dead) return;
+      if (token) setCloudMem({ pushTok: token });
+      await cloud().savePush({ token, lang: LANG, off: !on || perm !== "granted", blk: social.blocked || [] }).catch(() => {});
+    })();
+    const offTok = onPushToken(t => { if (settings.push === false) return; setCloudMem({ pushTok: t }); cloud().savePush({ token: t, lang: LANG, off: false, blk: social.blocked || [] }).catch(() => {}); });
+    return () => { dead = true; offTok(); };
+  }, [acct.st, acct.prof && acct.prof.code, settings.push, settings.lang, (social.blocked || []).join(",")]);
+  // A tap on a notification: straight to that chat, or to Friends for a request (also when it started the app).
+  useEffect(() => onPushTap(d => {
+    setScreen("friends"); setMenuOpen(false); setChatWith(d.kind === "msg" && d.from ? d.from : null);
+    if (session) setSessionOpen(false);
+  }), [session]);
+  // Screen refresh rate (1.6.0): the saved choice (MainActivity applies it too, before the first frame)
+  useEffect(() => { if (hzSupported() && loaded) hzSet(settings.hz === "60" ? "60" : "max"); }, [loaded]);
   const socialCount = (social.reqs || []).length + (social.chats || []).filter(k => k.last.from !== acct.uid && !social.blocked.includes(k.other) && k.last.ts > (social.read[k.cid] || 0)).length;
   // Stats for the leaderboard: sent when they change (and once a day, for the streak).
   useEffect(() => {

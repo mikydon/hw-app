@@ -433,6 +433,16 @@ export default {
     chWrite: "Napsat zprávu",
     ntReq: "{nick} chce být tvůj přítel",
     ntReqD: "Ťukni a přijmi nebo odmítni",
+    ntAcc: "Ty a {nick} jste teď přátelé",
+    ntAccD: "Ťukni a napiš první zprávu",
+    pushTitle: "Oznámení v mobilu",
+    pushD: "Zprávy a žádosti o přátelství, i když je aplikace zavřená.",
+    pushDenied: "Oznámení pro HW App jsou v mobilu vypnutá. Zapni je v nastavení Androidu → Aplikace → HW App → Oznámení.",
+    pushChannel: "Přátelé a zprávy",
+    hzTitle: "Plynulost obrazovky",
+    hzMax: "Nejvyšší ({n} Hz)",
+    hzMaxNoN: "Nejvyšší",
+    hzD: "Nejvyšší, jakou mobil dovolí, je plynulejší; 60 Hz šetří baterii.",
     frMenuNew: "Nové: {n}",
     obAcctT: "Máš účet?",
     obAcctD: "Přihlas se přes Google a aplikace ti vyplní přezdívku a nabídne zálohu z cloudu. Účet je dobrovolný, můžeš to přeskočit.",
@@ -1079,6 +1089,10 @@ export default {
   news143: [
     "Rozložení Sklo vypadá víc jako skutečné sklo: odlesk z rohu, jemný odraz, světlá horní hrana a jemná záře barev motivu za boxy. Lišta se startem a menu ☰ k němu ladí a telefon to pořád nezatěžuje.",
     "Horní lišta: když jsi úplně nahoře, vyplňuje obrazovku od kraje ke kraji, bez čáry nahoře a po stranách.",
+  ],
+  news16: [
+    ["📱 Oznámení", "Nové zprávy a žádosti o přátelství jsi viděl jen tehdy, když byla aplikace otevřená.", "Mobil tě upozorní na novou zprávu, žádost o přátelství nebo její přijetí i tehdy, když je aplikace zavřená. Ťuknutím se otevře přímo chat nebo Přátelé. Vypneš to v Nastavení → Účet a cloud; od zablokovaných lidí nic nechodí."],
+    ["📱 Plynulost obrazovky", "Aplikace běžela na takové frekvenci, jakou jí přidělil mobil.", "Aplikace požádá o nejvyšší obnovovací frekvenci, jakou mobil dovolí (např. 120 Hz). V Nastavení si můžeš vybrat i 60 Hz, které šetří baterii."],
   ],
   news158: [
     "Rozbalování a sbalování šipkami je předělané tak, aby ho kreslil grafický čip: stránka hned dostane nový tvar, boxy pod ním plynule sjedou dolů nebo nahoru a obsah se jemně objeví, takže už to nejde po krocích.",

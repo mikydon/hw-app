@@ -14,6 +14,8 @@
 //   friends/{me}/list/{uid}  {ts}: written for both people in one batch when a request is accepted
 //   backups/{uid}            {json, ts, n}: the automatic cloud backup (owner only)
 //   reports/{auto id}        {by, about, reason, ts}: a reported profile (create only; read in the console)
+//   push/{uid}               {t: [FCM tokens of your phones], lang, off, blk: [blocked uids], ts}: phone notifications
+//                            (1.6.0, owner only; the push server reads it with its own key)
 //   chats/{a_b}              {m: [a, b], last: {from, text, ts}, th?: chat colour (1.5.2)} (a_b = the two uids sorted); only between friends
 //   chats/{a_b}/msgs/{id}    {from, text, ts, re?: {id, from, text} (a reply, 1.5.2), ed?: ts (edited, 1.5.2: own, within 15 min), rx?: {uid: emoji} (reactions, 1.5.2)}
 // Live updates (friend requests, friends, chats, messages) use Firestore listeners while the app is open
@@ -21,9 +23,9 @@
 import { initializeApp } from "firebase/app";
 import { initializeAuth, indexedDBLocalPersistence, browserLocalPersistence, browserPopupRedirectResolver, GoogleAuthProvider,
   signInWithPopup, signInWithCredential, signOut as fbSignOut, onAuthStateChanged, reauthenticateWithPopup, reauthenticateWithCredential } from "firebase/auth";
-import { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, query, where, orderBy, limit, limitToLast, getDocs, writeBatch, addDoc, updateDoc, serverTimestamp, onSnapshot, deleteField } from "firebase/firestore";
+import { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, query, where, orderBy, limit, limitToLast, getDocs, writeBatch, addDoc, updateDoc, serverTimestamp, onSnapshot, deleteField, arrayUnion, arrayRemove } from "firebase/firestore";
 import { Capacitor } from "@capacitor/core";
-import { CODE_CHARS, nickKey, cleanCode, chatId } from "./cloud-shared.js";
+import { CODE_CHARS, nickKey, cleanCode, chatId, PUSH_URL } from "./cloud-shared.js";
 import { FirebaseAuthentication } from "@capacitor-firebase/authentication";
 
 const CONFIG = {
@@ -63,6 +65,12 @@ async function profilesOf(uids) {
   return out;
 }
 
+// Ask the push server to tell `to` about what just happened (1.6.0). It checks everything itself in Firestore, so
+// this only names the event; never waits, never fails the action that called it.
+function notify(kind, to) {
+  if (!PUSH_URL || !auth || !auth.currentUser || !to) return;
+  auth.currentUser.getIdToken().then(t => fetch(PUSH_URL + "/notify", { method: "POST", headers: { authorization: "Bearer " + t, "content-type": "application/json" }, body: JSON.stringify({ kind, to }) })).catch(() => {});
+}
 export const impl = {
   available: true,
   // Resolves with the signed-in user ({uid}) or null once Firebase knows (it restores the session itself).
@@ -123,6 +131,7 @@ export const impl = {
     const theirs = await getDoc(d("inbox", me, "from", to));
     if (theirs.exists()) { await impl.accept(to); return "accepted"; }
     await setDoc(d("inbox", to, "from", me), { ts: serverTimestamp() });
+    notify("req", to);
     return "sent";
   },
   async requests() { const s = await getDocs(collection(db, "inbox", uid(), "from")); return profilesOf(s.docs.map(x => x.id)); },
@@ -135,6 +144,7 @@ export const impl = {
     b.delete(d("inbox", me, "from", from));
     b.delete(d("inbox", from, "from", me));
     await b.commit();
+    if (!already) notify("acc", from);
   },
   async decline(from) { await deleteDoc(d("inbox", uid(), "from", from)); },
   async friends() { const s = await getDocs(collection(db, "friends", uid(), "list")); return profilesOf(s.docs.map(x => x.id)); },
@@ -168,6 +178,7 @@ export const impl = {
     b.set(doc(collection(db, "chats", cid, "msgs")), m);
     b.set(d("chats", cid), { m: cid.split("_"), last: { from: me, text: t.slice(0, 120), ts: serverTimestamp() } }, { merge: true }); // keeps the chat colour
     await b.commit();
+    notify("msg", other);
   },
   // Own messages can be edited for 15 minutes (like Instagram); the chat list keeps the first text.
   async editMsg(other, id, text) {
@@ -184,6 +195,17 @@ export const impl = {
     const cid = chatId(uid(), other);
     await setDoc(d("chats", cid), { m: cid.split("_"), th }, { merge: true });
   },
+  // This phone's notification token and choices (1.6.0). token null = only update lang/off/blk.
+  // At most 5 phones: a new token pushes out the oldest (old phones also drop out when FCM says they're gone).
+  async savePush({ token, lang, off, blk }) {
+    const v = { lang: String(lang || "en").slice(0, 5), off: !!off, blk: (blk || []).slice(0, 500), ts: serverTimestamp() };
+    if (token) {
+      const cur = await getDoc(d("push", uid())).then(x => (x.exists() && Array.isArray(x.data().t) ? x.data().t : [])).catch(() => []);
+      if (!cur.includes(token)) v.t = cur.length < 5 ? arrayUnion(String(token)) : [...cur.slice(-4), String(token)];
+    }
+    await setDoc(d("push", uid()), v, { merge: true });
+  },
+  async dropPush(token) { if (token) await setDoc(d("push", uid()), { t: arrayRemove(String(token)), ts: serverTimestamp() }, { merge: true }); },
   async report(about, reason) { await addDoc(collection(db, "reports"), { by: uid(), about, reason: String(reason || "").slice(0, 300), ts: serverTimestamp() }); },
   async saveBackup(json, n) { await setDoc(d("backups", uid()), { json, n, ts: serverTimestamp() }); },
   async loadBackup() { const s = await getDoc(d("backups", uid())); if (!s.exists()) return null; const v = s.data(); return { json: v.json, n: v.n, ts: v.ts && v.ts.toMillis ? v.ts.toMillis() : 0 }; },
@@ -210,7 +232,7 @@ export const impl = {
     (p && p.sent || []).forEach(t => b.delete(d("inbox", t, "from", me)));
     if (p && p.nick) b.delete(d("nicks", nickKey(p.nick)));
     if (p && p.code) b.delete(d("codes", p.code));
-    ["profiles", "board", "backups"].forEach(c => b.delete(d(c, me)));
+    ["profiles", "board", "backups", "push"].forEach(c => b.delete(d(c, me)));
     await b.commit();
     try { await auth.currentUser.delete(); }
     finally { await nativeSignOut(); try { await fbSignOut(auth); } catch (_) {} user = null; subs.forEach(f => f(null)); }

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 1.6.0: accent of phone notifications (the app's yellow) -->
+    <color name="hw_notify">#FFD23F</color>
+</resources>

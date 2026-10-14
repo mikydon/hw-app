@@ -1,0 +1,64 @@
+name: Push server
+# Deploys the push notification server (worker/, a Cloudflare Worker on the free plan) whenever it changes.
+# Needs three repository secrets (Settings → Secrets and variables → Actions), set by Michael:
+#   CLOUDFLARE_API_TOKEN      a Cloudflare API token from the "Edit Cloudflare Workers" template
+#   CLOUDFLARE_ACCOUNT_ID     the Cloudflare account id
+#   FIREBASE_SERVICE_ACCOUNT  the service account key JSON (Firebase console → Project settings → Service accounts)
+# Without them the job only says what is missing. The worker's address is shown as a notice after a deploy.
+on:
+  push:
+    paths: ["worker/**", ".github/workflows/push-worker.yml"]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: push-worker
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: Notification texts match the app
+        run: |
+          node worker/gen-texts.mjs
+          git diff --exit-code worker/texts.js || { echo "::error::worker/texts.js is out of date: run node worker/gen-texts.mjs and commit it"; exit 1; }
+      - name: Secrets present?
+        id: sec
+        env:
+          A: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          B: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          C: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          missing=""
+          [ -z "$A" ] && missing="$missing CLOUDFLARE_API_TOKEN"
+          [ -z "$B" ] && missing="$missing CLOUDFLARE_ACCOUNT_ID"
+          [ -z "$C" ] && missing="$missing FIREBASE_SERVICE_ACCOUNT"
+          if [ -n "$missing" ]; then echo "::warning title=Push server not deployed::Missing secrets:$missing"; echo "ok=0" >> "$GITHUB_OUTPUT"; exit 0; fi
+          echo "$C" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const j=JSON.parse(s);if(!j.client_email||!j.private_key||j.project_id!=="hw-app-mikydon"){console.log("::error title=FIREBASE_SERVICE_ACCOUNT::not a service account key of hw-app-mikydon");process.exit(1)}})'
+          echo "ok=1" >> "$GITHUB_OUTPUT"
+      - name: Deploy
+        id: deploy
+        if: steps.sec.outputs.ok == '1'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: worker
+          secrets: |
+            FIREBASE_SERVICE_ACCOUNT
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+      - name: Address and health check
+        if: steps.sec.outputs.ok == '1'
+        env:
+          URL0: ${{ steps.deploy.outputs.deployment-url }}
+          OUT: ${{ steps.deploy.outputs.command-output }}
+        run: |
+          URL="${URL0:-$(echo "$OUT" | grep -o 'https://[A-Za-z0-9.-]*workers\.dev' | head -1)}"
+          echo "::notice title=Push server address::$URL"
+          code=$(curl -s -o /tmp/r -w "%{http_code}" "$URL/" || true)
+          echo "::notice title=Push server health::HTTP $code $(cat /tmp/r 2>/dev/null)"
