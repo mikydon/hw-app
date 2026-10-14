@@ -32,7 +32,7 @@ const THEMES = {
   slate:  { ink: "#15181d", panel: "#1f242b", panelHi: "#2a313a", line: "#3a434f", chalk: "#f1f4f8", dim: "#9aa6b4", edge: "#0e1115" },
   coffee: { ink: "#1c140f", panel: "#2a1f17", panelHi: "#382a20", line: "#4d3a2c", chalk: "#fbf3ec", dim: "#b8a291", edge: "#130d09" },
 };
-const APP_VERSION = "1.5.4";
+const APP_VERSION = "1.5.5";
 // Big Shoulders has no Cyrillic, so Oswald (also condensed) covers Ukrainian. The browser only
 // downloads the Oswald unicode ranges a page actually uses.
 const DISPLAY = "'Big Shoulders Display', 'Oswald', 'Arial Narrow', Impact, sans-serif";
@@ -950,14 +950,47 @@ function useBack(fn, on = true, low = false) {
   const ref = useRef(fn); ref.current = fn;
   useEffect(() => (on ? pushBack(() => ref.current && ref.current(), low) : undefined), [on]);
 }
+// ─── MOTION (1.5.5, Michael: "nech všetko logicky sedí") ─────────────────────
+// One set of curves and lengths for the whole app, so the same kind of thing always moves the same way:
+//  ease  = moving into place / changing size (new screen, swipe pages, expanders, the menu, heights)
+//  pop   = a floating box arriving (sheets from the bottom, the Start bar, notices, the mini player, dialogs):
+//          the same glide with a tiny settle at the end
+//  spring= only rewards and things you just touched (✓, reactions, emoji, a number that changes)
+//  exit  = anything leaving: faster, accelerating away
+// Lengths: t1 small changes (colour, icons), t2 moves and expanders, t3 floating boxes arriving, out = leaving.
+const MO = { ease: "cubic-bezier(.22,1,.36,1)", pop: "cubic-bezier(.2,.9,.25,1.12)", spring: "cubic-bezier(.34,1.56,.64,1)", exit: "cubic-bezier(.5,0,.75,.2)", t1: ".2s", t2: ".32s", t3: ".42s", out: ".24s", fill: ".6s" };
+const reducedMotion = () => { try { return window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (_) { return false; } };
+// Bottom sheet: slides up from the bottom (pop) over a dimming background. When it closes, it is gone for the app at
+// once, and a static copy of it (no buttons, no test hooks) slides down and is removed: so a sheet opened right after
+// never gets caught by an old one's timer, and nothing waits for the animation.
+function sheetGhost(wrap) {
+  try {
+    const real = wrap.querySelector(".sheetBox"); if (!real) return;
+    const g = wrap.cloneNode(true), box = g.querySelector(".sheetBox");
+    g.className = "sheetGhost"; g.setAttribute("aria-hidden", "true"); g.style.pointerEvents = "none";
+    box.className = "sheetGhostBox"; box.style.height = real.getBoundingClientRect().height + "px";
+    g.querySelectorAll("*").forEach(el => { [...el.attributes].forEach(a => { if (a.name.startsWith("data-") || a.name === "id" || a.name === "role" || a.name.startsWith("aria-")) el.removeAttribute(a.name); }); if ("disabled" in el) el.disabled = true; });
+    document.body.appendChild(g);
+    box.scrollTop = real.scrollTop;
+    let gone = false;
+    const rm = () => { if (gone) return; gone = true; g.remove(); };
+    box.addEventListener("animationend", rm);
+    setTimeout(rm, 600);
+  } catch (_) {}
+}
 function Sheet({ title, onClose, children, short }) {
-  useBack(onClose);
+  const wrap = useRef(null), done = useRef(false);
+  const close = () => { if (done.current) return; done.current = true; onClose(); };
+  useBack(close);
+  // however it closes (✕, outside, back, or the screen behind it removing it after an action), it slides down
+  useLayoutEffect(() => { const node = wrap.current; return () => { if (node && node.isConnected && !reducedMotion()) sheetGhost(node); }; }, []);
   return createPortal(
-    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(5,10,24,0.82)", ...(LOOK === "liquid" ? { background: "rgba(5,10,24,0.66)" } : {}), zIndex: 100, display: "flex", alignItems: "flex-end", justifyContent: "center", padding: "calc(12px + var(--sat)) 12px calc(12px + var(--sab))" }}>
-      <div onClick={e => e.stopPropagation()} className="sheetBox" style={{ ...(short ? { maxHeight: "70dvh" } : {}), background: C.panel, borderRadius: 22, padding: "22px 20px 26px", width: "100%", maxWidth: 460, border: `1px solid ${C.line}`, overflowY: "auto", overscrollBehavior: "contain", fontFamily: BODY, ...(LOOK === "liquid" ? { background: `${C.panel}f2`, border: "1px solid rgba(255,255,255,.16)", borderRadius: 26, boxShadow: "inset 0 1px 0 rgba(255,255,255,.14), 0 20px 50px rgba(0,0,0,.4)" } : {}) }}>
+    <div ref={wrap} className="sheetWrap" onClick={close} style={{ position: "fixed", inset: 0, zIndex: 100, display: "flex", alignItems: "flex-end", justifyContent: "center", padding: "calc(12px + var(--sat)) 12px calc(12px + var(--sab))" }}>
+      <div className="sheetDim" aria-hidden="true" style={{ position: "absolute", inset: 0, background: LOOK === "liquid" ? "rgba(5,10,24,0.66)" : "rgba(5,10,24,0.82)" }} />
+      <div onClick={e => e.stopPropagation()} className="sheetBox" style={{ position: "relative", ...(short ? { maxHeight: "70dvh" } : {}), background: C.panel, borderRadius: 22, padding: "22px 20px 26px", width: "100%", maxWidth: 460, border: `1px solid ${C.line}`, overflowY: "auto", overscrollBehavior: "contain", fontFamily: BODY, ...(LOOK === "liquid" ? { background: `${C.panel}f2`, border: "1px solid rgba(255,255,255,.16)", borderRadius: 26, boxShadow: "inset 0 1px 0 rgba(255,255,255,.14), 0 20px 50px rgba(0,0,0,.4)" } : {}) }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, marginBottom: 14 }}>
           <div style={{ fontFamily: DISPLAY, fontSize: 30, fontWeight: 800, lineHeight: 1, color: C.chalk }}>{title}</div>
-          <button onClick={onClose} aria-label={T("close")} style={{ ...btnBase, background: C.panelHi, color: C.dim, padding: "7px 12px", fontSize: 14 }}>✕</button>
+          <button onClick={close} aria-label={T("close")} style={{ ...btnBase, background: C.panelHi, color: C.dim, padding: "7px 12px", fontSize: 14 }}>✕</button>
         </div>
         <div style={{ fontSize: 15, color: `${C.chalk}d9`, lineHeight: 1.65 }}>{children}</div>
       </div>
@@ -1306,6 +1339,58 @@ function Sect({ title, meta, children, style, titlePad, accent, ...rest }) {
   );
 }
 
+// ─── EXPANDER (1.5.5, Michael: one animated way to open and close things, used everywhere) ──────
+// The box grows from 0 to its content's height (and back) with the app's "ease" curve while the content fades in;
+// once open it is a normal box again (height auto), so whatever changes inside just flows. Closed content is
+// unmounted after the animation, as before.
+function Expand({ open, children, style, ...rest }) {
+  const ref = useRef(null), first = useRef(true), timer = useRef(0);
+  const [mounted, setMounted] = useState(open);
+  if (open && !mounted) setMounted(true);
+  useLayoutEffect(() => {
+    const el = ref.current; if (!el) return;
+    if (first.current) { first.current = false; if (!open) { el.style.height = "0px"; el.style.overflow = "hidden"; } return; }
+    clearTimeout(timer.current);
+    const end = () => { clearTimeout(timer.current); el.removeEventListener("transitionend", onEnd); el.style.transition = ""; el.style.overflow = open ? "" : "hidden"; el.style.height = open ? "" : "0px"; if (!open) setMounted(false); };
+    const onEnd = e => { if (e.target === el && e.propertyName === "height") end(); };
+    if (reducedMotion()) { end(); return; }
+    const from = el.getBoundingClientRect().height;
+    el.style.transition = "none"; el.style.overflow = "hidden"; el.style.height = "";
+    const to = open ? el.scrollHeight : 0;
+    el.style.height = from + "px";
+    void el.offsetHeight; // start from where it is now (also when it turns around halfway)
+    el.style.transition = `height ${MO.t2} ${MO.ease}`;
+    el.style.height = to + "px";
+    el.addEventListener("transitionend", onEnd);
+    timer.current = setTimeout(end, 450); // safety net if no transitionend comes (same height, hidden tab)
+    return () => { el.removeEventListener("transitionend", onEnd); clearTimeout(timer.current); };
+  }, [open]);
+  return (
+    <div ref={ref} data-expand={open ? "open" : "closed"} {...rest} style={style}>
+      <div style={{ opacity: open ? 1 : 0, transform: open ? "none" : "translateY(-6px)", transition: `opacity ${open ? MO.t2 : MO.t1} ease, transform ${MO.t2} ${MO.ease}` }}>{mounted && children}</div>
+    </div>
+  );
+}
+// The arrow next to anything that opens: turns from pointing down to up with the same curve.
+function Chevron({ open, color, size = 14 }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true" style={{ flexShrink: 0, transform: open ? "rotate(180deg)" : "none", transition: `transform ${MO.t2} ${MO.ease}` }}><path d="M6 9l6 6 6-6" fill="none" stroke={color || C.dim} strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" /></svg>;
+}
+// A section box whose title row opens and closes it (Calories: Health Connect, logging food).
+function FoldSect({ title, meta, open, onToggle, children, style, ...rest }) {
+  const tiles = LOOK === "tiles";
+  return (
+    <Sect {...rest} style={{ padding: 0, ...style }}>
+      <button onClick={() => { sfxTap(); onToggle(); }} aria-expanded={!!open} data-fold-head
+        style={{ ...btnBase, width: "100%", display: "flex", alignItems: "center", gap: 10, padding: tiles ? "12px 13px" : "14px 15px", background: "transparent", color: C.chalk, textAlign: "left", borderRadius: "inherit" }}>
+        <span style={{ flex: 1, minWidth: 0, fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: tiles ? C.chalk : C.dim, opacity: tiles ? 0.8 : 1 }}>{title}</span>
+        {meta && <span style={{ fontSize: 12, fontWeight: 800, color: C.dim, whiteSpace: "nowrap" }}>{meta}</span>}
+        <Chevron open={open} />
+      </button>
+      <Expand open={open}><div style={{ padding: tiles ? "0 13px 12px" : "0 15px 15px" }}>{children}</div></Expand>
+    </Sect>
+  );
+}
+
 // Rounded corners of small tiles: never as round as the big liquid boxes (26 px), so text never comes near a corner.
 const tileR = () => ({ borderRadius: Math.min(card.borderRadius || 20, 20) });
 // "Really leave?" after the first back on Home (app only). 1.5.3 (Michael, Oct 14): in the middle of the screen as one box
@@ -1330,7 +1415,7 @@ function ExitPrompt({ onStay, onLeave, history, session }) {
   return createPortal(
     <div data-exit-back onClick={onStay} style={{ position: "fixed", inset: 0, zIndex: 90, display: "flex", alignItems: "center", justifyContent: "center", padding: "calc(16px + var(--sat)) 16px calc(16px + var(--sab))", background: on ? "rgba(0,0,0,.55)" : "rgba(0,0,0,0)", transition: "background .25s", fontFamily: BODY }}>
       <div data-exit-ask role="alertdialog" aria-modal="true" aria-label={title} onClick={e => e.stopPropagation()}
-        style={{ ...box, width: "min(100%, 380px)", boxSizing: "border-box", padding: "20px 18px 18px", opacity: on ? 1 : 0, transform: on ? "scale(1)" : "scale(.92)", transition: "opacity .22s, transform .34s cubic-bezier(.34,1.4,.64,1)" }}>
+        style={{ ...box, width: "min(100%, 380px)", boxSizing: "border-box", padding: "20px 18px 18px", opacity: on ? 1 : 0, transform: on ? "scale(1)" : "scale(.92)", transition: `opacity ${MO.t1}, transform ${MO.t3} ${MO.pop}` }}>
         <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: C.dim }}>HW App</div>
         <div data-exit-title style={{ fontFamily: DISPLAY, fontWeight: 900, fontSize: CJK.test(title) ? 30 : 40, lineHeight: 0.95, letterSpacing: -0.5, color: C.chalk, marginTop: 8, overflowWrap: "anywhere" }}>{title}</div>
         <div data-exit-line style={{ fontSize: 14, color: C.dim, marginTop: 10, lineHeight: 1.5 }}>{exitLine(history || [], session)}</div>
@@ -1381,7 +1466,7 @@ const SCREENS = ["train", "calories", "history", "profile", "friends", "settings
 const SCREEN_TITLE = { train: "tabTrain", calories: "tabCalories", history: "tabHistory", profile: "tabProfile", friends: "tabFriends", settings: "tabSettings" };
 
 function MenuButton({ open, onClick, btnRef, label, badge }) {
-  const bar = (y, rot) => ({ position: "absolute", left: 11, width: 20, height: 2.6, borderRadius: 2, background: C.chalk, top: open ? 20 : y, transform: open ? `rotate(${rot}deg)` : "none", transition: "top .22s ease, transform .22s ease, opacity .18s" });
+  const bar = (y, rot) => ({ position: "absolute", left: 11, width: 20, height: 2.6, borderRadius: 2, background: C.chalk, top: open ? 20 : y, transform: open ? `rotate(${rot}deg)` : "none", transition: `top ${MO.t1} ${MO.ease}, transform ${MO.t1} ${MO.ease}, opacity ${MO.t1}` });
   return (
     <button ref={btnRef} onClick={onClick} aria-label={label || (open ? T("menuClose") : T("menuOpen"))} aria-expanded={open} data-menu-btn
       style={{ ...btnBase, position: "relative", width: 42, height: 42, padding: 0, borderRadius: 13, background: open ? C.panelHi : C.panel, border: `1.5px solid ${C.line}`, flexShrink: 0, ...(LOOK === "liquid" ? { ...LIQUID_PILL(), background: open ? "rgba(255,255,255,.16)" : "rgba(255,255,255,.09)" } : {}) }}>
@@ -1738,7 +1823,7 @@ function HomeTiles({ history, onCalories }) {
   const left = daysBetween(dateKey(), addDays(wk, 6)) + 1;
   const tile = { flex: 1, minWidth: 0, marginTop: 12, cursor: "pointer", display: "flex", flexDirection: "column", ...(LOOK === "flat" ? { ...card, padding: "13px 14px" } : { padding: "13px 14px" }) };
   const label = t => <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: C.dim, ...SECT_HEAD }}>{t}</div>;
-  const bar = (v, col) => <span style={{ display: "block", height: 5, borderRadius: 99, background: `${C.chalk}14`, overflow: "hidden", marginTop: 8 }}><span style={{ display: "block", width: `${Math.min(1, v) * 100}%`, height: "100%", borderRadius: 99, background: col, transition: "width .6s ease-out" }} /></span>;
+  const bar = (v, col) => <span style={{ display: "block", height: 5, borderRadius: 99, background: `${C.chalk}14`, overflow: "hidden", marginTop: 8 }}><span style={{ display: "block", width: `${Math.min(1, v) * 100}%`, height: "100%", borderRadius: 99, background: col, transition: `width ${MO.fill} ${MO.ease}` }} /></span>;
   const pct = s ? Math.min(1, s.eaten / Math.max(1, s.target)) : 0, kcol = s && s.hit ? KC_HIT : s && s.left < 0 ? "#ff8a80" : C.signal;
   const key = fn => e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); fn(); } };
   const openCal = () => { sfxTap(); onCalories(); }, openCh = () => { sfxTap(); setSheet(true); };
@@ -1793,7 +1878,7 @@ function ChallengeRows({ history }) {
                 <span style={{ fontSize: 12, fontWeight: 700, color: c.done ? C.mint : C.sky, whiteSpace: "nowrap" }}>+{c.xp} XP</span>
               </div>
               <div style={{ height: 5, background: `${C.chalk}14`, borderRadius: 99, marginTop: 6, overflow: "hidden" }}>
-                <div style={{ height: "100%", width: `${(c.v / c.goal) * 100}%`, background: c.done ? C.mint : C.sky, borderRadius: 99, transition: "width .6s ease-out" }} />
+                <div style={{ height: "100%", width: `${(c.v / c.goal) * 100}%`, background: c.done ? C.mint : C.sky, borderRadius: 99, transition: `width ${MO.fill} ${MO.ease}` }} />
               </div>
               <div style={{ fontSize: 11, color: C.dim, marginTop: 3 }}>{c.v} / {c.goal}</div>
             </div>
@@ -1822,7 +1907,7 @@ function ChallengesCard({ history }) {
                 <span style={{ fontSize: 12, fontWeight: 700, color: c.done ? C.mint : C.sky, whiteSpace: "nowrap" }}>+{c.xp} XP</span>
               </div>
               <div style={{ height: 5, background: `${C.chalk}14`, borderRadius: 99, marginTop: 6, overflow: "hidden" }}>
-                <div style={{ height: "100%", width: `${(c.v / c.goal) * 100}%`, background: c.done ? C.mint : C.sky, borderRadius: 99, transition: "width .6s ease-out" }} />
+                <div style={{ height: "100%", width: `${(c.v / c.goal) * 100}%`, background: c.done ? C.mint : C.sky, borderRadius: 99, transition: `width ${MO.fill} ${MO.ease}` }} />
               </div>
               <div style={{ fontSize: 11, color: C.dim, marginTop: 3 }}>{c.v} / {c.goal}</div>
             </div>
@@ -1917,7 +2002,7 @@ function WhatsNew({ onClose, at }) {
         </div>
       )}
       <div ref={track} onScroll={onScroll} data-news-track className="noBar"
-        style={{ display: "flex", alignItems: "flex-start", overflowX: "auto", overflowY: "hidden", scrollSnapType: "x mandatory", overscrollBehaviorX: "contain", height: h || "auto", transition: "height .25s ease" }}>
+        style={{ display: "flex", alignItems: "flex-start", overflowX: "auto", overflowY: "hidden", scrollSnapType: "x mandatory", overscrollBehaviorX: "contain", height: h || "auto", transition: `height ${MO.t2} ${MO.ease}` }}>
         {pages.map((x, i) => (
           <section key={x.v} ref={el => (refs.current[i] = el)} data-news-page={x.v} aria-hidden={i !== pg}
             style={{ flex: "0 0 100%", minWidth: 0, scrollSnapAlign: "start", scrollSnapStop: "always", boxSizing: "border-box", padding: "0 1px" }}>
@@ -2167,14 +2252,17 @@ function FloatStart({ show, day, rounds, setRounds, onStart }) {
   return createPortal(
     <div data-fstart={show ? "on" : "off"} aria-hidden={!show} className={"fstart" + (show ? " on" : "")}
       style={{ position: "fixed", left: 0, right: 0, bottom: "calc(var(--sab, 0px) + 12px)", zIndex: 40, display: "flex", justifyContent: "center", padding: "0 12px", pointerEvents: show ? "auto" : "none" }}>
-      <div data-fstart-box style={{ display: "flex", gap: 8, width: "100%", maxWidth: 436, padding: 8, borderRadius: 22, background: `${C.ink}f5`, border: `1px solid ${C.line}`, boxShadow: "0 12px 34px rgba(0,0,0,.5)", ...(LOOK === "liquid" ? { ...LIQUID_FLOAT(), borderRadius: 26 } : LOOK === "glass" ? { ...GLASS(), borderRadius: 22, boxShadow: "inset 0 1px 0 rgba(255,255,255,.22), 0 12px 34px rgba(0,0,0,.5)" } : {}) }}>
+      <div data-fstart-box style={{ display: "flex", gap: 10, width: "100%", maxWidth: 436, padding: 10, borderRadius: 26, background: `${C.ink}f5`, border: `1px solid ${C.line}`, boxShadow: "0 12px 34px rgba(0,0,0,.5)", ...(LOOK === "liquid" ? { ...LIQUID_FLOAT(), borderRadius: 26 } : LOOK === "glass" ? { ...GLASS(), borderRadius: 26, boxShadow: "inset 0 1px 0 rgba(255,255,255,.22), 0 12px 34px rgba(0,0,0,.5)" } : {}) }}>
         {[3, 2].map((n, i) => (
-          <button key={n} tabIndex={show ? 0 : -1} data-fround={n} aria-pressed={rounds === n} aria-label={T("roundsBtn", { n, m: n === 2 ? 13 : 19 })} onClick={() => { sfxTap(); setRounds(n); }} className="fsq" style={{ ...btnBase, "--d": `${60 + i * 50}ms`, width: 58, flexShrink: 0, borderRadius: 14, padding: "6px 0", ...(rounds === n ? { background: C.chalk, border: `1px solid ${C.chalk}` } : SUNK()), color: rounds === n ? C.ink : C.dim, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", lineHeight: 1 }}>
-            <span style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900 }}>{n === 2 ? 13 : 19}</span>
-            <span style={{ fontSize: 10, fontWeight: 800, marginTop: 2 }}>min</span>
+          <button key={n} tabIndex={show ? 0 : -1} data-fround={n} aria-pressed={rounds === n} aria-label={T("roundsBtn", { n, m: n === 2 ? 13 : 19 })} onClick={() => { sfxTap(); setRounds(n); }} className="fsq" style={{ ...btnBase, "--d": `${60 + i * 50}ms`, width: 74, flexShrink: 0, borderRadius: 17, padding: "12px 0", ...(rounds === n ? { background: C.chalk, border: `1px solid ${C.chalk}` } : SUNK()), color: rounds === n ? C.ink : C.dim, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", lineHeight: 1 }}>
+            <span style={{ fontFamily: DISPLAY, fontSize: 32, fontWeight: 900 }}>{n === 2 ? 13 : 19}</span>
+            <span style={{ fontSize: 11, fontWeight: 800, marginTop: 3 }}>min</span>
           </button>
         ))}
-        <button tabIndex={show ? 0 : -1} data-fstart-go onClick={onStart} className="b3d fsq" style={{ ...bigBtn(C.signal, C.signalInk), "--d": "160ms", flex: 1, minWidth: 0, padding: "10px 12px", fontSize: 17, borderRadius: 14 }}>{T("startDay", { d: day })}</button>
+        <button tabIndex={show ? 0 : -1} data-fstart-go onClick={onStart} className="b3d fsq" style={{ ...bigBtn(C.signal, C.signalInk), "--d": "160ms", flex: 1, minWidth: 0, padding: "12px 12px", fontSize: 21, borderRadius: 17 }}>
+          {T("startDay", { d: day })}
+          <span data-fstart-rounds style={{ display: "block", fontSize: 12, fontWeight: 700, opacity: 0.75, marginTop: 3 }}>{T("roundsBtn", { n: rounds, m: rounds === 2 ? 13 : 19 })}</span>
+        </button>
       </div>
     </div>,
     document.body
@@ -2520,7 +2608,69 @@ function SetupCard({ profile, kcal, onFix, onClose }) {
   );
 }
 
-function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, profile, onGo, upd, apk, kcal, setKcal, dl, onDlClose, onSetup }) {
+// ─── SWIPE PAGES (Home 1.5.3, shared with Calories in 1.5.5) ──────────────────────────────────────────────────
+// Pages side by side in a horizontal scroll-snap strip: swipe anywhere, or tap the switch on top (works with a mouse);
+// the switch's knob follows the finger. Android back on a later page goes to the first one (after any open sheet).
+// The strip is as tall as the page you're on (pages have different lengths; the window scrolls vertically), but at
+// least down to the bottom of the screen, so a swipe on the empty space under a short page works too (1.5.4).
+// name → data-<name>-tabs / -tab / -pager / -page for tests.
+function usePager(name, n) {
+  const pager = useRef(null), pages = useRef([]), knob = useRef(null);
+  const [page, setPage] = useState(0);
+  const [h, setH] = useState(null);
+  const [pagerEl, setPagerEl] = useState(null); // the strip may appear later (Calories shows a form first)
+  // A tap on a tab more than one page away (Calories 1 ↔ 3): "snap-stop: always" (one page per swipe) would stop the
+  // smooth scroll on the page in between, and a page change halfway (the strip takes that page's height) would cut it
+  // short, so for that jump the snap stop is lifted and only the knob follows; the page is taken when the scroll ends.
+  const goPage = i => {
+    const el = pager.current; if (!el) return; sfxTap();
+    const go = () => { try { el.scrollTo({ left: i * el.clientWidth, behavior: "smooth" }); } catch (_) { el.scrollLeft = i * el.clientWidth; } };
+    const cur = Math.round(el.scrollLeft / Math.max(1, el.clientWidth));
+    if (Math.abs(i - cur) < 2) return go();
+    el.classList.add("jump");
+    const done = () => { if (!el.classList.contains("jump")) return; el.classList.remove("jump"); el.removeEventListener("scrollend", done); setPage(Math.max(0, Math.min(n - 1, Math.round(el.scrollLeft / Math.max(1, el.clientWidth))))); };
+    requestAnimationFrame(() => { el.addEventListener("scrollend", done); setTimeout(done, 1000); go(); });
+  };
+  useBack(() => goPage(0), page > 0, true);
+  useEffect(() => {
+    const el = pager.current; if (!el) return;
+    if (page) el.scrollLeft = page * el.clientWidth; // a strip that came back (after a form) stays on the same page
+    if (knob.current) knob.current.style.transform = `translateX(${page * 100}%)`;
+    let raf = 0;
+    const on = () => { if (raf) return; raf = requestAnimationFrame(() => {
+      raf = 0; const p = Math.max(0, Math.min(n - 1, el.scrollLeft / Math.max(1, el.clientWidth)));
+      if (knob.current) knob.current.style.transform = `translateX(${p * 100}%)`;
+      if (!el.classList.contains("jump")) setPage(Math.round(p));
+    }); };
+    el.addEventListener("scroll", on, { passive: true });
+    return () => { el.removeEventListener("scroll", on); if (raf) cancelAnimationFrame(raf); };
+  }, [pagerEl]);
+  useLayoutEffect(() => {
+    const el = pages.current[page], pg = pager.current; if (!el || !pg) return;
+    const fit = () => { const top = pg.getBoundingClientRect().top + window.scrollY; setH(Math.max(el.offsetHeight, Math.round(window.innerHeight - top))); };
+    fit();
+    window.addEventListener("resize", fit);
+    if (typeof ResizeObserver === "undefined") return () => window.removeEventListener("resize", fit);
+    // the page, and the screen around the strip (a notice above it opening or closing moves its top); the same
+    // height as before changes nothing, so this settles at once
+    const ro = new ResizeObserver(fit); ro.observe(el); if (pg.parentElement) ro.observe(pg.parentElement);
+    return () => { ro.disconnect(); window.removeEventListener("resize", fit); };
+  }, [page, pagerEl]);
+  const tabs = labels => (
+    <div {...{ [`data-${name}-tabs`]: 1 }} role="tablist" style={{ position: "relative", display: "flex", padding: 3, borderRadius: 13, ...SUNK(), marginBottom: 12 }}>
+      <span ref={knob} aria-hidden="true" style={{ position: "absolute", top: 3, bottom: 3, left: 3, width: `calc((100% - 6px) / ${n})`, borderRadius: 10, background: C.chalk, boxShadow: "0 2px 6px rgba(0,0,0,.3)", transition: "none" }} />
+      {labels.map((lb, i) => (
+        <button key={i} role="tab" aria-selected={page === i} {...{ [`data-${name}-tab`]: i }} onClick={() => goPage(i)}
+          style={{ ...btnBase, position: "relative", flex: 1, minWidth: 0, padding: "7px 2px", borderRadius: 10, background: "transparent", color: page === i ? C.ink : C.dim, fontSize: 13, fontWeight: 800, transition: `color ${MO.t1}`, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{lb}</button>
+      ))}
+    </div>
+  );
+  const pagerProps = { ref: node => { pager.current = node; if (node !== pagerEl) setPagerEl(node); }, className: "swPager", [`data-${name}-pager`]: page, style: { height: h || "auto" } };
+  const pageProps = i => ({ ref: el => (pages.current[i] = el), className: "swPage", [`data-${name}-page`]: String(i), "aria-hidden": page !== i });
+  return { page, goPage, tabs, pagerProps, pageProps };
+}
+
+function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, profile, onGo, upd, apk, kcal, setKcal, dl, onDlClose, onSetup, settings, setSettings }) {
   const today = dateKey();
   // Make sure today's daily line and the "done" card texts are picked (and saved) before painting.
   useLayoutEffect(() => { const n = uiForToday(ui, history, today, profile); if (n !== ui) setUi(n); });
@@ -2571,22 +2721,7 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
   // Page 1 "Today": one notice at a time, the big day + Start, this week (green = workout, amber = calories), calories
   // and the weekly challenges. Page 2: the day's exercises. A small switch on top shows where you are (and works with
   // a mouse); Android back on page 2 goes to page 1.
-  const pager = useRef(null), pages = useRef([]), knob = useRef(null);
-  const [page, setPage] = useState(0);
-  const [pagerH, setPagerH] = useState(null);
-  const goPage = n => { const el = pager.current; if (!el) return; sfxTap(); try { el.scrollTo({ left: n * el.clientWidth, behavior: "smooth" }); } catch (_) { el.scrollLeft = n * el.clientWidth; } };
-  useBack(() => goPage(0), page === 1, true); // a sheet opened from page 2 closes first
-  useEffect(() => {
-    const el = pager.current; if (!el) return;
-    let raf = 0;
-    const on = () => { if (raf) return; raf = requestAnimationFrame(() => {
-      raf = 0; const p = Math.max(0, Math.min(1, el.scrollLeft / Math.max(1, el.clientWidth)));
-      if (knob.current) knob.current.style.transform = `translateX(${p * 100}%)`;
-      setPage(p > 0.5 ? 1 : 0);
-    }); };
-    el.addEventListener("scroll", on, { passive: true });
-    return () => { el.removeEventListener("scroll", on); if (raf) cancelAnimationFrame(raf); };
-  }, []);
+  const pg = usePager("home", 2);
 
   // One notice at a time (Michael marked it in design A), the most important first. A download in progress and a new
   // APK always show (rare and important).
@@ -2601,20 +2736,6 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
     dailyText && "daily",
   ].filter(Boolean);
   const notice = notices[0];
-  // the pager is as tall as the page you're on (pages have different lengths; the window does the vertical scrolling),
-  // but at least down to the bottom of the screen: the empty space under a short page is part of the pager, so a
-  // swipe there switches pages too (Michael, Oct 14: swiping only worked on the cards)
-  useLayoutEffect(() => {
-    const el = pages.current[page], pg = pager.current; if (!el || !pg) return;
-    const fit = () => { const top = pg.getBoundingClientRect().top + window.scrollY; setPagerH(Math.max(el.offsetHeight, Math.round(window.innerHeight - top))); };
-    fit();
-    window.addEventListener("resize", fit);
-    if (typeof ResizeObserver === "undefined") return () => window.removeEventListener("resize", fit);
-    // the page, and the screen around the pager (a notice above it opening or closing moves its top); a new height
-    // that is the same as before changes nothing, so this settles at once
-    const ro = new ResizeObserver(fit); ro.observe(el); if (pg.parentElement) ro.observe(pg.parentElement);
-    return () => { ro.disconnect(); window.removeEventListener("resize", fit); };
-  }, [page]);
   const ntBox = (key, color, kids, onClose, extra = {}) => (
     <div {...extra} className="cardIn" style={{ ...card, position: "relative", padding: "11px 40px 11px 14px", marginBottom: 12, display: "flex", alignItems: "center", gap: 11, borderColor: `${color}66`, ...(extra.style || {}) }}>
       <CloseX onClick={onClose} />
@@ -2622,6 +2743,21 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
     </div>
   );
 
+  // A / B / C: on the day card and above the exercises (1.5.5), the same choice in both places
+  const dayPicker = (style, tag) => (
+    <div role="radiogroup" aria-label={T("pickDay")} data-day-picker={tag || "hero"} style={{ display: "flex", gap: 8, ...style }}>
+      {DAYS.map((d, i) => (
+        <button key={d.id} role="radio" aria-checked={i === dayIdx} onClick={() => { sfxTap(); setDayIdx(i); }}
+          style={{ ...btnBase, flex: 1, padding: "10px 0", fontFamily: DISPLAY, fontSize: 22, fontWeight: 800,
+            ...(i === dayIdx ? { background: C.chalk, border: `1px solid ${C.chalk}` } : SUNK()), color: i === dayIdx ? C.ink : C.dim, transition: `background ${MO.t1}, box-shadow ${MO.t1}` }}>
+          {d.id}{i === auto && <span style={{ fontFamily: BODY, fontSize: 10, fontWeight: 600, marginLeft: 5, verticalAlign: "middle" }}>{T("upNext")}</span>}
+        </button>
+      ))}
+    </div>
+  );
+  // Quick workout settings under the exercises (1.5.5, Michael: the page was half empty): the same switches as
+  // Settings → Workout, and Settings → Exercises one tap away.
+  const setS = (k, v) => { const n = { ...settings, [k]: v }; window._wset = n; setSettings(n); };
   const hero = (
     <Sect data-home-hero style={{ padding: LOOK === "flat" ? 0 : "18px 18px 16px" }}>
       <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: C.dim }}>{doneToday ? T("nextWorkout") : T("homeToday")}</div>
@@ -2634,15 +2770,7 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
       )}
       {st.frozenToday && <div style={{ fontSize: 13, color: C.sky, marginTop: 8 }}>{T("frozenToday")}</div>}
       {(META.skips || {})[dateKey()] && <div data-skip-today style={{ fontSize: 13, color: C.dim, marginTop: 4 }}>{T("skipSaved", { r: `${skipIcon(META.skips[dateKey()].r)} ${T("skip_" + META.skips[dateKey()].r)}${META.skips[dateKey()].note ? ` (${META.skips[dateKey()].note})` : ""}` })}</div>}
-      <div role="radiogroup" aria-label={T("pickDay")} style={{ display: "flex", gap: 8, marginTop: 18 }}>
-        {DAYS.map((d, i) => (
-          <button key={d.id} role="radio" aria-checked={i === dayIdx} onClick={() => { sfxTap(); setDayIdx(i); }}
-            style={{ ...btnBase, flex: 1, padding: "10px 0", fontFamily: DISPLAY, fontSize: 22, fontWeight: 800,
-              ...(i === dayIdx ? { background: C.chalk, border: `1px solid ${C.chalk}` } : SUNK()), color: i === dayIdx ? C.ink : C.dim, transition: "background .2s, box-shadow .2s" }}>
-            {d.id}{i === auto && <span style={{ fontFamily: BODY, fontSize: 10, fontWeight: 600, marginLeft: 5, verticalAlign: "middle" }}>{T("upNext")}</span>}
-          </button>
-        ))}
-      </div>
+      {dayPicker({ marginTop: 18 })}
       {/* Same shape as the floating bar (Michael, Oct 10): two squares 19 / 13 min and a wide Start */}
       <div ref={roundsRow} data-rounds-row style={{ display: "flex", gap: 8, alignItems: "stretch", marginTop: 16 }}>
         {[3, 2].map(n => (
@@ -2691,9 +2819,8 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
   );
 
   return (
-    <div className="scr" style={{ padding: "16px 0 110px", maxWidth: 460, margin: "0 auto" }}>
+    <div className="scr" style={{ padding: "16px 0 132px", maxWidth: 460, margin: "0 auto" }}>
       {howEx && <HowTo id={howEx} history={history} onClose={() => setHowEx(null)} />}
-      <style>{`.homePager{display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;align-items:flex-start;transition:height .32s cubic-bezier(.22,1,.36,1)}.homePager::-webkit-scrollbar{display:none}.homePage{flex:0 0 100%;min-width:0;box-sizing:border-box;scroll-snap-align:start;scroll-snap-stop:always;padding:0 18px 18px}`}</style>
 
       <div style={{ padding: "0 18px" }}>
       <UpdateBanner dl={dl} busy={!!active} onClose={onDlClose} />
@@ -2742,23 +2869,18 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
       ), () => setUi({ ...ui, dailyHidden: today }), { "data-daily": 1 })}
       </div>
 
-      <div data-home-tabs role="tablist" style={{ position: "relative", display: "flex", padding: 3, borderRadius: 13, ...SUNK(), marginBottom: 12 }}>
-        <span ref={knob} aria-hidden="true" style={{ position: "absolute", top: 3, bottom: 3, left: 3, width: "calc(50% - 3px)", borderRadius: 10, background: C.chalk, boxShadow: "0 2px 6px rgba(0,0,0,.3)", transition: "none" }} />
-        {[T("homeToday"), T("secExercises")].map((lb, i) => (
-          <button key={i} role="tab" aria-selected={page === i} data-home-tab={i} onClick={() => goPage(i)}
-            style={{ ...btnBase, position: "relative", flex: 1, padding: "7px 0", borderRadius: 10, background: "transparent", color: page === i ? C.ink : C.dim, fontSize: 13, fontWeight: 800, transition: "color .2s" }}>{lb}</button>
-        ))}
-      </div>
+      {pg.tabs([T("homeToday"), T("secExercises")])}
       </div>
 
-      <div ref={pager} className="homePager" data-home-pager={page} style={{ height: pagerH || "auto" }}>
-        <div ref={el => (pages.current[0] = el)} className="homePage" data-home-page="0" aria-hidden={page !== 0}>
+      <div {...pg.pagerProps}>
+        <div {...pg.pageProps(0)}>
           {weekCard}
           {hero}
           <HomeTiles history={history} onCalories={() => onGo("calories")} />
         </div>
-        <div ref={el => (pages.current[1] = el)} className="homePage" data-home-page="1" aria-hidden={page !== 1}>
+        <div {...pg.pageProps(1)}>
           <Sect title={`${T("secExercises")} · ${T("dayN", { d: day.id })}`} accent={C.sky} titlePad="0 15px" style={LOOK === "flat" ? { marginTop: 0 } : { padding: "12px 0 4px", marginTop: 0 }}>
+          {dayPicker({ padding: LOOK === "flat" ? "0 0 12px" : "0 15px 12px" }, "ex")}
           <div style={LOOK === "flat" ? { ...card } : { borderTop: `1px solid ${C.line}` }}>
             {day.ids.map((slot, i) => {
               const id = effId(slot);
@@ -2791,6 +2913,22 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
           </div>
           <div style={{ fontSize: 12, color: C.dim, marginTop: 8, padding: LOOK === "flat" ? 0 : "0 15px 8px" }}>{T("tapHint")}</div>
           </Sect>
+          {settings && setSettings && (
+            <Sect data-wset title={T("wsTitle")} accent={C.sky} titlePad="0 15px" style={LOOK === "flat" ? {} : { padding: "12px 0 0" }}>
+              <div style={LOOK === "flat" ? { ...card } : { borderTop: `1px solid ${C.line}` }}>
+                <button data-wset-ex onClick={() => onGo && onGo("settings", { page: "exercises" })} style={{ ...btnBase, width: "100%", background: "transparent", color: C.chalk, padding: "13px 16px", textAlign: "left", borderRadius: 0, display: "flex", alignItems: "center", gap: 10, fontSize: 15 }}>
+                  <span style={{ flex: 1, minWidth: 0 }}>
+                    <span style={{ display: "block", fontWeight: 700 }}>{noEmo(T("exMenu"))}</span>
+                    <span style={{ display: "block", fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2, lineHeight: 1.4 }}>{T("exMenuD")}</span>
+                  </span>
+                  <span aria-hidden="true" style={{ color: C.dim, fontSize: 20 }}>›</span>
+                </button>
+                <SettingRow title={T("sndTimer")} desc={T("sndTimerD")} on={settings.sndTimer} onClick={() => { unlockAudio(); const v = !settings.sndTimer; setS("sndTimer", v); if (v) soundExercise(); }} />
+                <SettingRow title={T("vibrate")} desc={T("vibrateD")} on={settings.vibrate} onClick={() => { const v = !settings.vibrate; setS("vibrate", v); if (v) vibratePattern([160]); }} />
+                <SettingRow title={T("keepAwake")} desc={T("keepAwakeD")} on={settings.keepAwake} onClick={() => setS("keepAwake", !settings.keepAwake)} />
+              </div>
+            </Sect>
+          )}
           <div style={{ fontSize: 12, color: C.dim, margin: "12px 4px 0", lineHeight: 1.5 }}>{T("roundsHint")}</div>
         </div>
       </div>
@@ -3075,7 +3213,7 @@ function HomeKcal({ history, kcal, setKcal, onOpen }) {
         <span data-home-kcal-eaten style={{ fontFamily: DISPLAY, fontSize: 34, fontWeight: 900, lineHeight: 1, color: C.chalk }}>{nf(s.eaten)}</span>
         <span style={{ fontSize: 13, color: C.dim }}>{T("kcOf", { n: nf(s.target) })}</span>
       </span>
-      <span style={{ display: "block", height: 5, borderRadius: 99, background: `${C.chalk}14`, marginTop: 10, overflow: "hidden" }}><span style={{ display: "block", width: `${pct * 100}%`, height: "100%", borderRadius: 99, background: col, transition: "width .5s ease-out" }} /></span>
+      <span style={{ display: "block", height: 5, borderRadius: 99, background: `${C.chalk}14`, marginTop: 10, overflow: "hidden" }}><span style={{ display: "block", width: `${pct * 100}%`, height: "100%", borderRadius: 99, background: col, transition: `width ${MO.fill} ${MO.ease}` }} /></span>
       <span style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 9 }}>
         <span data-home-kcal-line style={{ flex: 1, fontSize: 13, color: s.hit ? KC_HIT : C.dim, lineHeight: 1.45 }}>{kcalLine(s)}</span>
         <span aria-hidden="true" data-home-kcal-open style={{ color: C.dim, fontSize: 20, lineHeight: 1 }}>›</span>
@@ -3118,7 +3256,7 @@ function KcalGoals({ kcal, age, onPick }) {
 }
 
 // App only: steps from Health Connect (Samsung Health, Google Fit, Fitbit… all write there).
-function HealthCard({ kcal, setKcal }) {
+function HealthCard({ kcal, setKcal, open, onToggle }) {
   const [st, setSt] = useState(null); // {available, granted, reason}
   const [busy, setBusy] = useState(false);
   const [denied, setDenied] = useState(false);
@@ -3226,14 +3364,34 @@ function HealthCard({ kcal, setKcal }) {
       </div>
     </>
   );
+  const on = kcal.healthOn && st && st.granted;
   return (
-    <div data-health-card style={{ ...card, padding: "14px 15px", marginTop: 10 }}>
-      <div style={{ fontSize: 14, fontWeight: 800, color: C.chalk, marginBottom: 8 }}>👟 {T("hcTitle")}</div>
+    <FoldSect data-health-card title={T("hcTitle")} meta={on ? `👟 ${nf(steps || 0)}` : null} open={open} onToggle={onToggle} style={{ marginTop: 10 }}>
       {body}
-    </div>
+    </FoldSect>
   );
 }
 
+// The app a Health Connect entry came from, by name (1.5.5, Michael: "com.sec.android.app.shealth" looked like a web
+// address). Health Connect only gives the package id, so well-known food and fitness apps are named here; any other id
+// becomes a readable word from it ("com.example.calorie_counter" → "Calorie counter").
+const HC_APPS = {
+  "com.sec.android.app.shealth": "Samsung Health", "com.google.android.apps.fitness": "Google Fit", "com.google.android.apps.healthdata": "Health Connect",
+  "com.myfitnesspal.android": "MyFitnessPal", "com.fitbit.FitbitMobile": "Fitbit", "com.sillens.shapeupclub": "Lifesum", "com.fatsecret.android": "FatSecret",
+  "com.yazio.android": "YAZIO", "com.cronometer.android": "Cronometer", "com.garmin.android.apps.connectmobile": "Garmin Connect", "com.withings.wiscale2": "Withings",
+  "com.ouraring.oura": "Oura", "com.huawei.health": "Huawei Health", "io.github.mikydon.hwapp": "HW App",
+};
+function hcAppName(x) {
+  const id = String((x && (x.app || x.src)) || "").trim();
+  if (!id) return T("hcFoodRow");
+  if (HC_APPS[id]) return HC_APPS[id];
+  if (x.src && x.src !== id && !/^[a-z0-9_]+(\.[a-z0-9_]+)+$/i.test(x.src)) return x.src; // a device name the plugin gave
+  if (!/^[a-z0-9_]+(\.[a-z0-9_]+)+$/i.test(id)) return id; // already a name
+  const skip = new Set(["com", "org", "net", "io", "de", "uk", "co", "app", "apps", "android", "mobile", "client", "prod", "release", "free", "pro"]);
+  const part = id.split(".").reverse().find(w => !skip.has(w.toLowerCase())) || id.split(".").pop();
+  const words = part.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/[_-]+/g, " ").trim();
+  return words.charAt(0).toUpperCase() + words.slice(1);
+}
 // One day's food, oldest first: own entries (✕ to delete) and, when food is connected, every entry from Health Connect
 // with its time and the app it came from (Michael, Oct 10). Own entries are dimmed when only Health Connect counts that day.
 function DayEntries({ kcal, day, onRemove, pad = "8px 0" }) {
@@ -3246,8 +3404,8 @@ function DayEntries({ kcal, day, onRemove, pad = "8px 0" }) {
       {ign && own.length > 0 && <div data-own-ignored style={{ fontSize: 12, color: KC_HIT, lineHeight: 1.45, padding: "4px 0 2px" }}>{T("kcOwnIgnored")}</div>}
       {rows.map((x, i) => (
         <div key={(x.hc ? "h" : "o") + x.ts + "-" + i} data-entry={x.hc ? "hc" : "own"} style={{ display: "flex", alignItems: "center", gap: 8, padding: pad, borderTop: `1px solid ${C.line}`, opacity: x.own && ign ? 0.5 : 1 }}>
-          <span style={{ fontSize: 12, color: C.dim, width: 44, flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>{time(x.ts)}</span>
-          <span style={{ flex: 1, fontSize: 14, color: C.chalk, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{x.hc ? <><span aria-hidden="true">🍽️ </span><span style={{ color: C.dim }}>{x.src || T("hcFoodRow")}</span></> : (x.note || "—")}</span>
+          <span data-entry-time style={{ fontSize: 12, color: C.dim, minWidth: 44, flexShrink: 0, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>{time(x.ts)}</span>
+          <span style={{ flex: 1, fontSize: 14, color: C.chalk, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{x.hc ? <><span aria-hidden="true">🍽️ </span><span data-entry-app style={{ color: C.dim }}>{hcAppName(x)}</span></> : (x.note || "—")}</span>
           <span style={{ fontFamily: DISPLAY, fontSize: 20, fontWeight: 800, color: x.hc ? KC_HIT : C.chalk, textDecoration: x.own && ign ? "line-through" : "none" }}>{nf(x.kcal)}</span>
           {x.own ? <button onClick={() => onRemove(day, x.ts)} aria-label={T("kcDelete")} style={{ ...btnBase, background: "transparent", color: C.dim, padding: "4px 8px", fontSize: 15 }}>✕</button> : <span style={{ width: 31, flexShrink: 0 }} />}
         </div>
@@ -3304,6 +3462,10 @@ function Calories({ history, profile, setProfile, kcal, setKcal }) {
   const [note, setNote] = useState("");
   const [openDay, setOpenDay] = useState(null);
   const [how, setHow] = useState(false);
+  const pg = usePager("kc", 3);
+  const [, bumpFold] = useState(0);
+  const foldDef = useRef(null);
+  if (!foldDef.current) { const f = kcal && kcal.healthFood === true; foldDef.current = { hc: !(kcal && kcal.healthOn && f), log: !f }; }
   const age = ageOn(profile.birth, today);
   const ready = kcal && kcal.sex && kcal.height && kcal.weight && kcal.activity && age !== null;
   const saveSetup = (k, birth) => {
@@ -3368,84 +3530,146 @@ function Calories({ history, profile, setProfile, kcal, setKcal }) {
   const goalName = kcal.goal.type === "maintain" ? T("kcMaintainT") : T(kcal.goal.type === "lose" ? "kcRateLose" : "kcRateGain", { kg: kcal.goal.rate.toLocaleString(LANG) });
   const field = { fontFamily: BODY, fontSize: 16, fontWeight: 700, padding: "11px 12px", borderRadius: 12, border: `1.5px solid ${C.line}`, background: C.ink, color: C.chalk, outline: "none", boxSizing: "border-box", minWidth: 0 };
   const R = 64, CIRC = 2 * Math.PI * R;
-  return wrap(
-    <>
-      <div style={{ ...card, padding: "16px", display: "flex", alignItems: "center", gap: 16 }} data-kctoday>
-        <div style={{ position: "relative", width: 150, height: 150, flexShrink: 0 }}>
-          <svg width="150" height="150" style={{ transform: "rotate(-90deg)" }}>
-            <circle cx="75" cy="75" r={R} fill="none" stroke={C.panelHi} strokeWidth="12" />
-            <circle cx="75" cy="75" r={R} fill="none" stroke={over ? "#ff8a80" : C.mint} strokeWidth="12" strokeLinecap="round" strokeDasharray={CIRC} strokeDashoffset={CIRC * (1 - pct)} style={{ transition: "stroke-dashoffset .6s ease-out" }} />
-          </svg>
-          <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-            <div key={eaten} className="bump" style={{ fontFamily: DISPLAY, fontSize: 38, fontWeight: 900, lineHeight: 0.9, color: C.chalk }}>{nf(eaten)}</div>
-            <div style={{ fontSize: 12, color: C.dim }}>{T("kcOf", { n: nf(target) })}</div>
+  // 1.5.5 (Michael, Oct 13–14): the week on top, then three swipe pages like Home: Today (the day's number, Health
+  // Connect, logging food), Calendar (every day's calories, tap a day for its entries) and Details (your data and goal).
+  // Health Connect and logging fold away; when food comes from Health Connect both start folded (nothing to type).
+  // folded or not is decided when Calories opens (connecting food right here doesn't snap the box shut)
+  const fold = k => (KC_FOLD[k] === undefined ? foldDef.current[k] : KC_FOLD[k]);
+  const toggle = k => { KC_FOLD[k] = !fold(k); bumpFold(n => n + 1); };
+  return (
+    <div className="scr" style={{ padding: "16px 0 110px", maxWidth: 460, margin: "0 auto" }}>
+      <div style={{ padding: "0 18px" }}>
+        <Sect data-kc-streak-card title={T("secWeek")} meta={<KcalStreakChip history={history} small />} style={{ marginTop: 0, marginBottom: 12 }}>
+          <KcalWeekDots history={history} full />
+          <div style={{ fontSize: 11, color: C.dim, marginTop: 8, lineHeight: 1.4 }}>{T("kcLegend")}</div>
+        </Sect>
+        {pg.tabs([T("kcToday"), T("kcTabCal"), T("kcTabMe")])}
+      </div>
+      <div {...pg.pagerProps}>
+        <div {...pg.pageProps(0)}>
+          <div style={{ ...card, padding: "16px", display: "flex", alignItems: "center", gap: 16 }} data-kctoday>
+            <div style={{ position: "relative", width: 150, height: 150, flexShrink: 0 }}>
+              <svg width="150" height="150" style={{ transform: "rotate(-90deg)" }}>
+                <circle cx="75" cy="75" r={R} fill="none" stroke={C.panelHi} strokeWidth="12" />
+                <circle cx="75" cy="75" r={R} fill="none" stroke={over ? "#ff8a80" : C.mint} strokeWidth="12" strokeLinecap="round" strokeDasharray={CIRC} strokeDashoffset={CIRC * (1 - pct)} style={{ transition: `stroke-dashoffset ${MO.fill} ${MO.ease}` }} />
+              </svg>
+              <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+                <div key={eaten} className="bump" style={{ fontFamily: DISPLAY, fontSize: 38, fontWeight: 900, lineHeight: 0.9, color: C.chalk }}>{nf(eaten)}</div>
+                <div style={{ fontSize: 12, color: C.dim }}>{T("kcOf", { n: nf(target) })}</div>
+              </div>
+            </div>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontSize: 12, color: C.dim }}>{T("kcToday")}</div>
+              <div style={{ fontFamily: DISPLAY, fontSize: 30, fontWeight: 900, lineHeight: 1, color: over ? "#ff8a80" : C.mint, marginTop: 2 }}>{over ? T("kcOver", { n: nf(-left) }) : T("kcLeft", { n: nf(left) })}</div>
+              <div style={{ fontSize: 12, color: C.dim, marginTop: 6, lineHeight: 1.45 }}>{goalName}</div>
+              {wk > 0 && <div style={{ fontSize: 12, color: C.sky, marginTop: 3, fontWeight: 700 }}>{T("kcWorkoutToday", { n: nf(wk) })}</div>}
+              {stepsKcal(kcal, today) > 0 && <div data-steps-kcal style={{ fontSize: 12, color: C.sky, marginTop: 3, fontWeight: 700 }}>{T("hcStepsKcal", { n: nf(stepsKcal(kcal, today)) })}</div>}
+              <button data-kc-how onClick={() => { sfxTap(); setHow(h => !h); }} aria-expanded={how} style={{ ...btnBase, display: "inline-flex", alignItems: "center", gap: 5, background: "transparent", color: C.sky, fontSize: 12, padding: "6px 0 0" }}>{T("kcHowTitle")}<Chevron open={how} color={C.sky} size={12} /></button>
+            </div>
           </div>
+          <Expand open={how}><div style={{ paddingTop: 10 }}><TargetBreakdown kcal={kcal} age={age} history={history} day={today} target={target} /></div></Expand>
+          {isNative && <HealthCard kcal={kcal} setKcal={setKcal} open={fold("hc")} onToggle={() => toggle("hc")} />}
+          <FoldSect data-kc-log title={T("kcAddTitle")} open={fold("log")} onToggle={() => toggle("log")} style={{ marginTop: 10 }}>
+            <div style={{ display: "flex", gap: 8 }}>
+              <input value={amount} onChange={e => setAmount(e.target.value.replace(/[^0-9]/g, "").slice(0, 4))} onKeyDown={e => { if (e.key === "Enter") add(); }} inputMode="numeric" placeholder="kcal" aria-label={T("kcAmount")} style={{ ...field, flex: 1 }} />
+              <input value={note} onChange={e => setNote(e.target.value)} onKeyDown={e => { if (e.key === "Enter") add(); }} placeholder={T("kcNote")} aria-label={T("kcNote")} style={{ ...field, flex: 1.6 }} />
+            </div>
+            <button onClick={add} disabled={!Number(amount)} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 10, padding: 15, opacity: Number(amount) ? 1 : 0.5 }}>{Number(amount) ? T("kcAddBtn", { n: nf(Number(amount)) }) : T("kcAddBtn0")}</button>
+          </FoldSect>
+          {(dayTotal(kcal, today) > 0 || ((kcal.log || {})[today] || []).length > 0) && (
+            <Sect data-kc-today-list title={T("kcTodayList")} meta={`${nf(eaten)} kcal`} style={{ marginTop: 10 }}>
+              <DayEntries kcal={kcal} day={today} onRemove={remove} />
+            </Sect>
+          )}
         </div>
-        <div style={{ minWidth: 0 }}>
-          <div style={{ fontSize: 12, color: C.dim }}>{T("kcToday")}</div>
-          <div style={{ fontFamily: DISPLAY, fontSize: 30, fontWeight: 900, lineHeight: 1, color: over ? "#ff8a80" : C.mint, marginTop: 2 }}>{over ? T("kcOver", { n: nf(-left) }) : T("kcLeft", { n: nf(left) })}</div>
-          <div style={{ fontSize: 12, color: C.dim, marginTop: 6, lineHeight: 1.45 }}>{goalName}</div>
-          {wk > 0 && <div style={{ fontSize: 12, color: C.sky, marginTop: 3, fontWeight: 700 }}>{T("kcWorkoutToday", { n: nf(wk) })}</div>}
-          {stepsKcal(kcal, today) > 0 && <div data-steps-kcal style={{ fontSize: 12, color: C.sky, marginTop: 3, fontWeight: 700 }}>{T("hcStepsKcal", { n: nf(stepsKcal(kcal, today)) })}</div>}
-          <button data-kc-how onClick={() => { sfxTap(); setHow(h => !h); }} aria-expanded={how} style={{ ...btnBase, background: "transparent", color: C.sky, fontSize: 12, padding: "6px 0 0" }}>{T("kcHowTitle")} {how ? "▴" : "▾"}</button>
+        <div {...pg.pageProps(1)}>
+          <KcalCalendar history={history} kcal={kcal} profile={profile} age={age} sel={openDay || today} onSel={d => { sfxTap(); setOpenDay(d); }} />
+          {(() => {
+            const d = openDay || today, tot = dayTotal(kcal, d), tg = kcalTarget(kcal, ageOn(profile.birth, d) ?? age, history, d), s2 = kcalNow(history, d);
+            const has = tot > 0 || ((kcal.log || {})[d] || []).length > 0;
+            return (
+              <Sect data-kc-day-detail={d} key={d} className="titleIn" title={capFirst(fmtDate(d, true))} style={{ marginTop: 10 }}
+                meta={<span style={{ color: s2 && s2.hit ? KC_HIT : tot > tg * 1.1 ? "#ff8a80" : tot ? C.chalk : C.dim, fontWeight: 800 }}>{nf(tot)} / {nf(tg)}</span>}>
+                {LOOK === "flat" && <div style={{ display: "flex", justifyContent: "space-between", gap: 8, fontSize: 13, fontWeight: 800, color: C.chalk, marginBottom: 6 }}><span>{capFirst(fmtDate(d, true))}</span><span>{nf(tot)} / {nf(tg)}</span></div>}
+                {has ? <DayEntries kcal={kcal} day={d} onRemove={remove} /> : <div style={{ fontSize: 13, color: C.dim, lineHeight: 1.5 }}>{T("kcDayEmpty")}</div>}
+              </Sect>
+            );
+          })()}
+        </div>
+        <div {...pg.pageProps(2)}>
+          <Sect title={T("kcSettings")} data-kcsettings style={{ marginTop: 0 }}>
+            <div style={{ fontSize: 14, color: C.chalk, lineHeight: 1.6 }}>
+              {T("kcSummary", { sex: T(kcal.sex === "f" ? "kcFemale" : "kcMale"), age, h: kcal.height, w: kcal.weight })}<br />
+              <span style={{ color: C.dim }}>{T("kcAct_" + kcal.activity)}</span>
+              {(kcal.wSrc === "hc" || kcal.hSrc === "hc") && <span data-kc-body-hc style={{ display: "block", fontSize: 12, color: C.mint, marginTop: 4 }}>⚖️ {T("hcBodyOn", { w: kcal.weight, h: kcal.height })}</span>}
+            </div>
+            <div style={{ fontSize: 14, color: C.chalk, lineHeight: 1.5, marginTop: 10, paddingTop: 10, borderTop: `1px solid ${C.line}` }}>
+              <span style={{ display: "block", fontSize: 12, color: C.dim }}>{T("kcGoalNow")}</span>
+              <span data-kc-goal-name style={{ fontWeight: 800 }}>{goalName}</span>
+            </div>
+            <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+              <button onClick={() => { sfxTap(); setEditing(true); }} style={{ ...ghostBtn, flex: 1 }}>{T("kcEdit")}</button>
+              <button onClick={() => { sfxTap(); setChangingGoal(true); }} style={{ ...ghostBtn, flex: 1, color: C.sky, borderColor: `${C.sky}88` }}>{T("kcChangeGoal")}</button>
+            </div>
+            <div style={{ fontSize: 12, color: C.dim, lineHeight: 1.5, marginTop: 10 }}>{T("kcAutoAge")}</div>
+          </Sect>
+          <div style={{ fontSize: 11, color: C.dim, lineHeight: 1.5, margin: "12px 4px 0" }}>{T("kcDisclaimer")}</div>
         </div>
       </div>
-      {how && <TargetBreakdown kcal={kcal} age={age} history={history} day={today} target={target} />}
-      {isNative && <HealthCard kcal={kcal} setKcal={setKcal} />}
-      {/* 1.4.0: same box + label as everywhere; "left today" is already in the big card above, so no second line here */}
-      <Sect data-kc-streak-card title={T("secWeek")} meta={<KcalStreakChip history={history} small />} style={{ marginTop: 10 }}>
-        <KcalWeekDots history={history} full />
-        <div style={{ fontSize: 11, color: C.dim, marginTop: 8, lineHeight: 1.4 }}>{T("kcLegend")}</div>
-      </Sect>
-
-      <Sect title={T("kcAddTitle")} style={{ marginTop: 10 }}>
-        <div style={{ display: "flex", gap: 8 }}>
-          <input value={amount} onChange={e => setAmount(e.target.value.replace(/[^0-9]/g, "").slice(0, 4))} onKeyDown={e => { if (e.key === "Enter") add(); }} inputMode="numeric" placeholder="kcal" aria-label={T("kcAmount")} style={{ ...field, flex: 1 }} />
-          <input value={note} onChange={e => setNote(e.target.value)} onKeyDown={e => { if (e.key === "Enter") add(); }} placeholder={T("kcNote")} aria-label={T("kcNote")} style={{ ...field, flex: 1.6 }} />
+    </div>
+  );
+}
+// Folded/unfolded state of the Calories boxes while the app is open (a choice made here sticks until the app restarts).
+const KC_FOLD = {};
+// Calories calendar (1.5.5): a month of days in amber: light = logged, solid with ✓ = target hit (±10 %), and the
+// day's total under its number. Tap a day to see what was eaten (the box under the calendar).
+function KcalCalendar({ history, kcal, sel, onSel }) {
+  const today = dateKey(), t = parseKey(sel || today);
+  const [ym, setYm] = useState([t.getFullYear(), t.getMonth()]);
+  const [y, m] = ym;
+  const first = new Date(y, m, 1), days = new Date(y, m + 1, 0).getDate(), lead = (first.getDay() + 6) % 7;
+  const td = parseKey(today), canNext = y < td.getFullYear() || (y === td.getFullYear() && m < td.getMonth());
+  const shift = n => { sfxTap(); const d = new Date(y, m + n, 1); setYm([d.getFullYear(), d.getMonth()]); };
+  const cells = [...Array(lead).fill(null), ...Array.from({ length: days }, (_, i) => i + 1)];
+  let logged = 0, hits = 0;
+  const info = {};
+  for (let d = 1; d <= days; d++) {
+    const k = `${y}-${pad(m + 1)}-${pad(d)}`; if (k > today) break;
+    const s = kcalNow(history, k); if (s && s.logged) { logged++; if (s.hit) hits++; }
+    info[k] = s && s.logged ? { kind: s.hit ? "hit" : "log", tot: s.eaten } : null;
+  }
+  const short = n => (n >= 1000 ? (n / 1000).toLocaleString(LANG, { maximumFractionDigits: 1 }) + "k" : String(n));
+  return (
+    <Sect data-kc-cal style={{ marginTop: 0 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+        <button onClick={() => shift(-1)} aria-label={T("prevMonth")} style={{ ...ghostBtn, padding: "4px 12px", fontSize: 16 }}>‹</button>
+        <div style={{ textAlign: "center", minWidth: 0 }}>
+          <div key={`${y}-${m}`} className="titleIn" style={{ fontFamily: DISPLAY, fontSize: 22, fontWeight: 900, color: C.chalk }}>{capFirst(fmtMonthYear(first))}</div>
+          <div data-kc-cal-count style={{ fontSize: 12, color: C.dim }}>{T("kcMonthLogged", { n: logged })} · <span style={{ color: hits ? KC_HIT : C.dim }}>{T("kcMonthHit", { n: hits })}</span></div>
         </div>
-        <button onClick={add} disabled={!Number(amount)} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 10, padding: 15, opacity: Number(amount) ? 1 : 0.5 }}>{Number(amount) ? T("kcAddBtn", { n: nf(Number(amount)) }) : T("kcAddBtn0")}</button>
-        {(dayTotal(kcal, today) > 0 || ((kcal.log || {})[today] || []).length > 0) && <div style={{ marginTop: 12 }}><DayEntries kcal={kcal} day={today} onRemove={remove} /></div>}
-      </Sect>
-
-      {days.length > 0 && (
-        <>
-          <div style={sectionTitle}>{T("kcHistory")}</div>
-          <div style={{ ...card }}>
-            {days.map((d, i) => {
-              const tot = dayTotal(kcal, d);
-              const tg = kcalTarget(kcal, ageOn(profile.birth, d) ?? age, history, d);
-              const o = openDay === d;
-              return (
-                <div key={d} style={{ borderTop: i ? `1px solid ${C.line}` : "none" }}>
-                  <button onClick={() => { sfxTap(); setOpenDay(o ? null : d); }} aria-expanded={o} style={{ ...btnBase, width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "12px 15px", background: "transparent", color: C.chalk, textAlign: "left", borderRadius: 0 }}>
-                    <span style={{ flex: 1, fontSize: 14, fontWeight: 700 }}>{capFirst(fmtDate(d))}</span>
-                    <span style={{ fontSize: 13, color: tot > tg ? "#ff8a80" : C.mint, fontWeight: 800 }}>{nf(tot)}</span>
-                    <span style={{ fontSize: 12, color: C.dim }}>/ {nf(tg)}</span>
-                    <span style={{ color: C.dim, fontSize: 12 }}>{o ? "▾" : "▸"}</span>
-                  </button>
-                  {o && <div data-day-open={d} style={{ padding: "0 15px 6px" }}><DayEntries kcal={kcal} day={d} onRemove={remove} pad="6px 0" /></div>}
-                </div>
-              );
-            })}
-          </div>
-        </>
-      )}
-
-      <div style={sectionTitle}>{T("kcSettings")}</div>
-      <div style={{ ...card, padding: "13px 15px" }} data-kcsettings>
-        <div style={{ fontSize: 14, color: C.chalk, lineHeight: 1.6 }}>
-          {T("kcSummary", { sex: T(kcal.sex === "f" ? "kcFemale" : "kcMale"), age, h: kcal.height, w: kcal.weight })}<br />
-          <span style={{ color: C.dim }}>{T("kcAct_" + kcal.activity)}</span>
-          {(kcal.wSrc === "hc" || kcal.hSrc === "hc") && <span data-kc-body-hc style={{ display: "block", fontSize: 12, color: C.mint, marginTop: 4 }}>⚖️ {T("hcBodyOn", { w: kcal.weight, h: kcal.height })}</span>}
-        </div>
-        <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
-          <button onClick={() => { sfxTap(); setEditing(true); }} style={{ ...ghostBtn, flex: 1 }}>{T("kcEdit")}</button>
-          <button onClick={() => { sfxTap(); setChangingGoal(true); }} style={{ ...ghostBtn, flex: 1, color: C.sky, borderColor: `${C.sky}88` }}>{T("kcChangeGoal")}</button>
-        </div>
-        <div style={{ fontSize: 12, color: C.dim, lineHeight: 1.5, marginTop: 10 }}>{T("kcAutoAge")}</div>
+        <button onClick={() => canNext && shift(1)} disabled={!canNext} aria-label={T("nextMonth")} style={{ ...ghostBtn, padding: "4px 12px", fontSize: 16, opacity: canNext ? 1 : 0.3 }}>›</button>
       </div>
-      <div style={{ fontSize: 11, color: C.dim, lineHeight: 1.5, marginTop: 12 }}>{T("kcDisclaimer")}</div>
-    </>
+      <div key={`${y}-${m}`} className="titleIn" style={{ display: "grid", gridTemplateColumns: "repeat(7, minmax(0, 1fr))", gap: 5 }}>
+        {weekdaysShort().map(w => <div key={w} style={{ fontSize: 11, color: C.dim, textAlign: "center", fontWeight: 600 }}>{w}</div>)}
+        {cells.map((d, i) => {
+          if (!d) return <span key={"e" + i} />;
+          const k = `${y}-${pad(m + 1)}-${pad(d)}`, fut = k > today, x = info[k], on = k === sel, isT = k === today;
+          const bg = x ? (x.kind === "hit" ? KC_HIT : KC_LOG) : "transparent";
+          return (
+            <button key={k} data-kc-cal-day={k} data-kc-cal-kind={x ? x.kind : "none"} disabled={fut} aria-pressed={on} onClick={() => onSel(k)} aria-label={`${fmtDate(k)}${x ? ` · ${nf(x.tot)} kcal` : ""}`}
+              style={{ ...btnBase, position: "relative", aspectRatio: "1", minWidth: 0, padding: 0, borderRadius: 10, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 1, background: bg, color: x ? C.ink : fut ? `${C.dim}66` : C.chalk,
+                border: `1.5px solid ${on ? C.chalk : x ? bg : isT ? C.dim : "transparent"}`, boxShadow: on ? `0 0 0 2px ${C.chalk}` : "none", transition: `box-shadow ${MO.t1}, border-color ${MO.t1}`, cursor: fut ? "default" : "pointer" }}>
+              <span style={{ fontSize: 13, fontWeight: x || isT ? 800 : 500, lineHeight: 1 }}>{d}</span>
+              {x && <span style={{ fontSize: 9, fontWeight: 800, lineHeight: 1, opacity: 0.8 }}>{x.kind === "hit" ? "✓" : short(x.tot)}</span>}
+            </button>
+          );
+        })}
+      </div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "6px 14px", fontSize: 11, color: C.dim, marginTop: 10 }}>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}><span style={{ width: 12, height: 12, borderRadius: 4, background: KC_LOG }} />{T("calLegLog")}</span>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}><span style={{ width: 12, height: 12, borderRadius: 4, background: KC_HIT }} />{T("calLegHit")}</span>
+      </div>
+    </Sect>
   );
 }
 
@@ -3762,9 +3986,10 @@ function HistoryTab({ history, onDelete, onSaveEntry, editDate, onEditOpened }) 
                   <div style={{ fontSize: 12, color: C.dim }}>{TP("rounds", s.rounds || 2)}, {TP("sets", setsIn(s))}{s.prs && s.prs.length ? `, 🏆 ${s.prs.length}` : ""}</div>
                 </div>
                 <div style={{ fontFamily: DISPLAY, fontSize: 20, fontWeight: 800, color: C.sky }}>+{xpFor(s)} XP</div>
+                <Chevron open={isOpen} />
               </button>
-              {isOpen && (
-                <div style={{ marginTop: 10 }}>
+              <Expand open={isOpen}>
+                <div style={{ paddingTop: 10 }}>
                   {s.items.map(it => {
                     const b = EX[it.id] ? bestUntil(history, it.id, idx) : null;
                     const r = RANKS[EX[it.id] ? rankIdx(it.id, b) : 0];
@@ -3786,7 +4011,7 @@ function HistoryTab({ history, onDelete, onSaveEntry, editDate, onEditOpened }) 
                     </button>
                   </div>
                 </div>
-              )}
+              </Expand>
             </div>
           );
         })}
@@ -3855,7 +4080,7 @@ function ProfileTab({ history, profile, setProfile, onFreeze, kcal }) {
         <StatTile data="streak" label={T("streak")} icon={<span className={st.n ? "wiggle" : ""}>🔥</span>} value={st.n} color="#ffa94d" sub={<span style={{ color: st.gap === 2 ? C.signal : C.dim }}>{st.gap === 2 ? T("streakRisk") : T("streakHold")}</span>} />
         <StatTile data="level" label={T("level")} icon="⚡" value={lv.lvl} color={C.sky} sub={T("xpLine", { into: lv.into, need: lv.need, total: xp })}>
           <div style={{ height: 6, background: `${C.chalk}14`, borderRadius: 99, marginTop: 8, overflow: "hidden" }}>
-            <div style={{ height: "100%", width: `${(lv.into / lv.need) * 100}%`, background: C.sky, borderRadius: 99, transition: "width .6s ease-out" }} />
+            <div style={{ height: "100%", width: `${(lv.into / lv.need) * 100}%`, background: C.sky, borderRadius: 99, transition: `width ${MO.fill} ${MO.ease}` }} />
           </div>
         </StatTile>
         {stats.map(([l, v, ic]) => <StatTile key={l} label={l} icon={ic} value={v} />)}
@@ -3906,7 +4131,7 @@ function ProfileTab({ history, profile, setProfile, onFreeze, kcal }) {
                 <div aria-hidden="true" style={{ fontSize: 20, lineHeight: 1, flexShrink: 0, filter: r ? "none" : "grayscale(1)", opacity: r ? 1 : 0.5 }}>{a.icon}</div>
               </div>
               <div style={{ height: 5, background: `${C.chalk}14`, borderRadius: 99, marginTop: 9, overflow: "hidden" }}>
-                <div style={{ height: "100%", width: `${pct}%`, background: r ? r.color : C.dim, borderRadius: 99, transition: "width .6s ease-out" }} />
+                <div style={{ height: "100%", width: `${pct}%`, background: r ? r.color : C.dim, borderRadius: 99, transition: `width ${MO.fill} ${MO.ease}` }} />
               </div>
               <div style={{ fontSize: 11, color: C.dim, marginTop: 5, lineHeight: 1.35 }}>{a.next === null ? T("achMax") : `${T("achNext", { rank: RANKS[a.nextRank].name })} ${a.desc}`}</div>
             </div>
@@ -4887,8 +5112,8 @@ function ExercisesPage({ settings, set, history, onBack }) {
   );
 }
 
-function SettingsTab({ settings, setSettings, history, profile, setProfile, onImport, onResetAll, kcal, autoBk, onAutoBackup, acct, cloudBk, onAcctOpen, onCloudRestore, onSignOut, onDeleteAccount }) {
-  const [page, setPage] = useState(null); // null | "exercises"
+function SettingsTab({ initPage, settings, setSettings, history, profile, setProfile, onImport, onResetAll, kcal, autoBk, onAutoBackup, acct, cloudBk, onAcctOpen, onCloudRestore, onSignOut, onDeleteAccount }) {
+  const [page, setPage] = useState(initPage || null); // null | "exercises"
   useBack(() => setPage(null), page === "exercises");
   const [langOpen, setLangOpen] = useState(false);
   const [resetAll, setResetAll] = useState(false);
@@ -5517,14 +5742,14 @@ function CoolItem({ def, done, onDone }) {
         {done && ph === "idle" && <span style={{ color: C.mint, fontSize: 22, fontWeight: 900 }}>✓</span>}
       </div>
       <div style={{ fontSize: 13, color: `${C.chalk}d9`, marginTop: 8, lineHeight: 1.55 }}>{def.why}</div>
-      <button onClick={() => setOpen(!open)} aria-expanded={open} style={{ ...btnBase, background: "transparent", color: C.dim, fontSize: 12, padding: "8px 0 0", fontWeight: 600 }}>{open ? T("hideHowTo") : T("showHowTo")}</button>
-      {open && (
-        <div style={{ fontSize: 13, color: `${C.chalk}d9`, lineHeight: 1.55, marginTop: 6 }}>
+      <button onClick={() => setOpen(!open)} aria-expanded={open} style={{ ...btnBase, background: "transparent", color: C.dim, fontSize: 12, padding: "8px 0 0", fontWeight: 600 }}><span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>{T(open ? "hideHowTo" : "showHowTo").replace(/^[▸▾▴►▼]\s*/, "")}<Chevron open={open} size={12} /></span></button>
+      <Expand open={open}>
+        <div style={{ fontSize: 13, color: `${C.chalk}d9`, lineHeight: 1.55, paddingTop: 6 }}>
           {def.fig && <ExFigure id={def.fig} />}
           {def.how}
           <button data-search-howto onClick={() => { sfxTap(); searchHowTo(def.name); }} style={{ ...btnBase, display: "block", marginTop: 8, background: "transparent", color: C.sky, fontSize: 13, padding: 0 }}>{T("searchWeb")}</button>
         </div>
-      )}
+      </Expand>
     </div>
   );
 }
@@ -6067,8 +6292,9 @@ export default function App() {
 
   useEffect(() => { if (!session || sessionOpen) window.scrollTo?.(0, 0); }, [session?.phase, session?.pos]);
   useEffect(() => { window.scrollTo?.(0, 0); }, [screen, sessionOpen]);
+  const [setPage0, setSetPage] = useState(null); // Settings opens on this page (1.5.5: "exercises" from Home)
   const [histEdit, setHistEdit] = useState(null); // date whose workout opens in the History editor
-  const go = (id, opt) => { if (id !== screen) sfxTap(); setScreen(id); setMenuOpen(false); if (session) setSessionOpen(false); setHistEdit(opt && opt.edit ? opt.edit : null); setChatWith(null); };
+  const go = (id, opt) => { if (id !== screen) sfxTap(); setScreen(id); setMenuOpen(false); if (session) setSessionOpen(false); setHistEdit(opt && opt.edit ? opt.edit : null); setSetPage(opt && opt.page ? opt.page : null); setChatWith(null); };
   const [howId, setHowId] = useState(null);
   openHowToGlobal = setHowId;
   // Android back with nothing open: minimize the workout, then go Home, then ask before leaving (1.4.0, Michael:
@@ -6126,30 +6352,35 @@ export default function App() {
       <style>{`
         button:focus-visible{outline:3px solid ${C.signal};outline-offset:2px}
         [data-reps-input]::-webkit-inner-spin-button,[data-reps-input]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
-        .fstart{transform:translateY(calc(100% + 24px));opacity:0;transition:transform .42s cubic-bezier(.2,.9,.25,1.12),opacity .25s ease}
+        .fstart{transform:translateY(calc(100% + 24px));opacity:0;transition:transform ${MO.out} ${MO.exit},opacity ${MO.out} ease}
+        .fstart.on{transition:transform ${MO.t3} ${MO.pop},opacity ${MO.t1} ease}
         .fstart.on{transform:none;opacity:1}
-        .fstart .fsq{transform:scale(.6);opacity:0;transition:transform .38s cubic-bezier(.2,.9,.3,1.3) var(--d,0ms),opacity .2s ease var(--d,0ms)}
+        .fstart .fsq{transform:scale(.6);opacity:0;transition:transform ${MO.t3} ${MO.spring} var(--d,0ms),opacity ${MO.t1} ease var(--d,0ms)}
         .fstart.on .fsq{transform:none;opacity:1}
         .fstart.on .fsq.b3d:active{transform:translateY(4px)}
         @media (prefers-reduced-motion: reduce){.fstart,.fstart .fsq{transition:none}}
         .obf:focus{border-color:${C.signal}!important;box-shadow:0 0 0 3px ${C.signal}2e}
         @keyframes obIn{from{opacity:0;transform:translateX(26px)}to{opacity:1;transform:none}}
         @keyframes obBack{from{opacity:0;transform:translateX(-26px)}to{opacity:1;transform:none}}
-        .obIn{animation:obIn .3s cubic-bezier(.2,.8,.3,1) both}.obBack{animation:obBack .3s cubic-bezier(.2,.8,.3,1) both}
+        .obIn{animation:obIn ${MO.t2} ${MO.ease} both}.obBack{animation:obBack ${MO.t2} ${MO.ease} both}
         .b3d{transition:transform .08s ease, box-shadow .08s ease; box-shadow:0 5px 0 var(--e, transparent)}
         .b3d:active{transform:translateY(4px); box-shadow:0 1px 0 var(--e, transparent)}
         @keyframes scrIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
-        .scr{animation:scrIn .28s ease-out both}
+        .scr{animation:scrIn ${MO.t2} ${MO.ease} both}
         :root{--sat:var(--safe-area-inset-top,env(safe-area-inset-top,0px));--sab:var(--safe-area-inset-bottom,env(safe-area-inset-bottom,0px))}
+        @keyframes shIn{from{opacity:0;transform:translateY(48px)}to{opacity:1;transform:none}} @keyframes shOut{from{opacity:1;transform:none}to{opacity:0;transform:translateY(48px)}}
+        .sheetDim{animation:dFadeIn ${MO.t2} ease both} .sheetWrap>.sheetBox{animation:shIn ${MO.t3} ${MO.pop} both}
+        .sheetGhost>.sheetDim{animation:dFadeOut ${MO.out} ease-in both} .sheetGhost>.sheetGhostBox{box-sizing:border-box;animation:shOut ${MO.out} ${MO.exit} both}
         .sheetBox{box-sizing:border-box;max-height:86vh;max-height:calc(100dvh - 24px - var(--sat) - var(--sab))}
         .exq::after{content:"?"} .exq{position:relative} .exq::before{content:"";position:absolute;inset:-4px}
+        .swPager{display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;align-items:flex-start;transition:height ${MO.t2} ${MO.ease}}.swPager::-webkit-scrollbar{display:none}.swPage{flex:0 0 100%;min-width:0;box-sizing:border-box;scroll-snap-align:start;scroll-snap-stop:always;padding:0 18px 18px}.swPager.jump>.swPage{scroll-snap-stop:normal}
         .noBar{scrollbar-width:none}.noBar::-webkit-scrollbar{display:none}
         ::selection{background:${C.signal}55;color:${C.chalk}} input,textarea{caret-color:${C.signal};accent-color:${C.signal}}
         @keyframes bump{0%{transform:scale(.82)}55%{transform:scale(1.12)}100%{transform:scale(1)}}
-        .bump{animation:bump .22s ease-out}
+        .bump{animation:bump ${MO.t1} ${MO.spring}}
         @keyframes pop{0%{transform:scale(0);opacity:0}60%{transform:scale(1.2);opacity:1}100%{transform:scale(1);opacity:1}}
-        .pop{animation:pop .4s cubic-bezier(.2,1.4,.4,1) both}
-        @keyframes cardIn{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:none}} .cardIn{animation:cardIn .45s cubic-bezier(.2,.9,.3,1) both}
+        .pop{animation:pop ${MO.t3} ${MO.spring} both}
+        @keyframes cardIn{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:none}} .cardIn{animation:cardIn ${MO.t3} ${MO.pop} both}
         @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
         .pulse{animation:pulse .5s ease-in-out infinite}
         @keyframes wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-14deg)}75%{transform:rotate(14deg)}}
@@ -6159,17 +6390,17 @@ export default function App() {
         @keyframes dFadeIn{from{opacity:0}to{opacity:1}} @keyframes dFadeOut{from{opacity:1}to{opacity:0}}
         @keyframes dIn{from{transform:translateX(104%)}to{transform:none}} @keyframes dOut{from{transform:none}to{transform:translateX(104%)}}
         @keyframes dItem{from{opacity:0;transform:translateX(26px)}to{opacity:1;transform:none}}
-        .drawerOff{pointer-events:none} .drawerOn .drawerBg{animation:dFadeIn .25s ease-out both} .drawerOff .drawerBg{animation:dFadeOut .26s ease-in both}
-        .drawerOn .drawerPanel{animation:dIn .34s cubic-bezier(.2,.9,.3,1) both} .drawerOff .drawerPanel{animation:dOut .26s cubic-bezier(.5,0,.75,.2) both}
+        .drawerOff{pointer-events:none} .drawerOn .drawerBg{animation:dFadeIn ${MO.t2} ease both} .drawerOff .drawerBg{animation:dFadeOut ${MO.out} ease-in both}
+        .drawerOn .drawerPanel{animation:dIn ${MO.t2} ${MO.ease} both} .drawerOff .drawerPanel{animation:dOut ${MO.out} ${MO.exit} both}
         .drawerPanel{will-change:transform;contain:layout paint}
         .drawerItem{transition:background .15s} .drawerItem:active{transform:scale(.98)}
         @keyframes miniIn{from{opacity:0;transform:translate(-50%,40px) scale(.94)}to{opacity:1;transform:translate(-50%,0)}}
-        .miniIn{animation:miniIn .38s cubic-bezier(.2,1.2,.4,1) both}
+        .miniIn{animation:miniIn ${MO.t3} ${MO.pop} both}
         @keyframes halo{0%,100%{transform:translateY(0) rotate(0) scale(1)}50%{transform:translateY(-5px) rotate(12deg) scale(1.15)}}
         .haloBit{animation:halo 1.8s ease-in-out var(--d) infinite}
         @keyframes titleIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-        .titleIn{animation:titleIn .28s ease-out both}
-        .liveN{transform:translateY(calc(-100% - 20px - var(--sat)));opacity:0;transition:transform .4s cubic-bezier(.2,.9,.25,1.1),opacity .25s ease}.liveN.on{transform:none;opacity:1}
+        .titleIn{animation:titleIn ${MO.t2} ${MO.ease} both}
+        .liveN{transform:translateY(calc(-100% - 20px - var(--sat)));opacity:0;transition:transform ${MO.out} ${MO.exit},opacity ${MO.out} ease}.liveN.on{transform:none;opacity:1;transition:transform ${MO.t3} ${MO.pop},opacity ${MO.t1} ease}
         .tbOut{position:sticky;top:0;z-index:20;display:flow-root;pointer-events:none;padding:calc(var(--sat) + 6px) 10px 2px}
         .tbOut::before{content:"";position:absolute;left:0;right:0;top:0;height:calc(var(--sat) + 22px);background:linear-gradient(180deg,var(--tbFade) var(--sat),transparent);opacity:0;visibility:hidden;transition:opacity .35s ease,visibility 0s .35s}
         .tbOut.fl::before{opacity:1;visibility:visible;transition:opacity .35s ease}
@@ -6211,14 +6442,14 @@ export default function App() {
             <>
               <TopBar head={screen === "friends" ? topHead : null} badge={socialCount} dlPct={dl && dl.kind === "downloading" ? dl.pct || 0 : null} screen={screen} history={history} menuOpen={menuOpen} onGo={go} onMenu={() => { sfxTap(); setMenuOpen(o => !o); }} />
               <div key={screen}>
-                {screen === "train" && <TrainTab onSetup={st => setOnboard(st)} dl={dlHidden ? null : dl} onDlClose={() => setDlHidden(true)} kcal={kcal} setKcal={setKcal} history={history} onStart={start} onFreeze={applyFreeze} ui={ui} setUi={setUi} active={session} onResume={resume} profile={profile} onGo={go} upd={updCard ? { open: () => { setUpdCard(false); setNewsAt(APP_VERSION); setNewsOpen(true); }, close: () => setUpdCard(false) } : null}
+                {screen === "train" && <TrainTab settings={settings} setSettings={setSettings} onSetup={st => setOnboard(st)} dl={dlHidden ? null : dl} onDlClose={() => setDlHidden(true)} kcal={kcal} setKcal={setKcal} history={history} onStart={start} onFreeze={applyFreeze} ui={ui} setUi={setUi} active={session} onResume={resume} profile={profile} onGo={go} upd={updCard ? { open: () => { setUpdCard(false); setNewsAt(APP_VERSION); setNewsOpen(true); }, close: () => setUpdCard(false) } : null}
                   apk={apkUpd && !apkHidden ? { info: apkUpd, close: () => setApkHidden(true) } : null} />}
                 {screen === "history" && <HistoryTab history={history} editDate={histEdit} onEditOpened={() => setHistEdit(null)}
                   onDelete={idx => editHistory(h => h.filter((_, i) => i !== idx))}
                   onSaveEntry={(idx, entry) => editHistory(h => (idx === null ? [...h, entry] : h.map((e, i) => (i === idx ? entry : e))))} />}
                 {screen === "profile" && <ProfileTab history={history} profile={profile} setProfile={setProfile} onFreeze={applyFreeze} kcal={kcal} />}
                 {screen === "calories" && <Calories history={history} profile={profile} setProfile={setProfile} kcal={kcal} setKcal={setKcal} />}
-                {screen === "settings" && <SettingsTab settings={settings} setSettings={setSettings} history={history} profile={profile} setProfile={setProfile}
+                {screen === "settings" && <SettingsTab initPage={setPage0} settings={settings} setSettings={setSettings} history={history} profile={profile} setProfile={setProfile}
                   kcal={kcal} autoBk={autoBk} onAutoBackup={runAutoBackup}
                   onResetAll={() => { setHistory([]); setProfile({ ...profile, freezeDays: [], skips: {}, streakResetTs: 0, bdays: [], bdayGifts: [] }); setUi({}); if (kcal) setKcal({ ...kcal, log: {} }); }}
                   onImport={importAll} acct={acct} cloudBk={cloudBk} onAcctOpen={() => go("friends")} onCloudRestore={restoreFromCloud} onSignOut={signOut} onDeleteAccount={deleteAccount} />}

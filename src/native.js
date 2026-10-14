@@ -357,7 +357,9 @@ export async function healthFoodItems(days = 7) {
       const d = new Date(s.startDate), kcal = Math.round(Number(s.value) || 0);
       if (!kcal) continue;
       const k = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-      (out[k] = out[k] || []).push({ ts: d.getTime(), kcal, src: String(s.sourceName || "").slice(0, 40) });
+      // app = the package that wrote it (1.5.5: shown as the app's name, never the raw id); src = what the plugin calls the
+      // source (the package again, or a device like "Samsung SM-S911B")
+      (out[k] = out[k] || []).push({ ts: d.getTime(), kcal, src: String(s.sourceName || "").slice(0, 40), app: String(s.sourceId || "").slice(0, 80) });
     }
     return out;
   } catch (_) { return null; }

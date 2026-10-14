@@ -10,6 +10,16 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 
 <!-- New version: add a "## x.y.z (date)" section on top (web-only history uses "## Browser beta x.y.z (date)"). On a push to main, .github/workflows/build.yml builds everything and .github/scripts/releases.sh creates/updates the releases (commit = the push, or the one in a commit comment). -->
 
+## 1.5.5 (2026-10-14)
+
+- Calories in three pages you swipe between (or switch at the top), like the main screen: **Today** (eaten / target, how the target is calculated, logging food, what you ate today), **Calendar** and **Details** (your data and goal). This week's calorie strip sits at the very top. Before, everything was on one long page.
+- Calorie calendar: every day of the month in amber (light = logged, solid with ✓ = within 10 % of the target, with the day's total under the date); tap a day to see what you ate that day. It replaces the "Previous days" list.
+- Logging food folds away with one tap on its title; when food comes from Health Connect, it starts folded.
+- *(Android app only)* The Health Connect box folds away too; it starts folded when food comes from Health Connect.
+- *(Android app only)* Food from Health Connect is listed with the app's name (Samsung Health, MyFitnessPal, Google Fit…) and the time stays on one line. Before, it showed a code like "com.sec.android.app.shealth", and a time like "10:50 AM" broke into two lines.
+- One animation style for the whole app: sheets slide up from the bottom and back down when closed (before, they appeared and vanished at once), everything that opens and closes (workouts in History, "how is the target calculated?", warm-up and cool-down instructions, the calorie boxes) grows and shrinks smoothly with a turning arrow, and screens, menus, notices and dialogs share the same curves and lengths.
+- The floating Start bar is bigger (larger 19 / 13 min squares and Start button, with the rounds under it). The Exercises page has the A/B/C switch above the exercises and a "Workout settings" box (Exercises in Settings, countdown sounds, vibration, keep the screen on), so the page isn't half empty any more.
+
 ## 1.5.4 (2026-10-14)
 
 - Main screen: swiping between Today and Exercises also works on the empty space under the cards (the page now reaches the bottom of the screen). Before, it only worked on the cards themselves.
