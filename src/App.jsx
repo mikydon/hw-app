@@ -32,7 +32,7 @@ const THEMES = {
   slate:  { ink: "#15181d", panel: "#1f242b", panelHi: "#2a313a", line: "#3a434f", chalk: "#f1f4f8", dim: "#9aa6b4", edge: "#0e1115" },
   coffee: { ink: "#1c140f", panel: "#2a1f17", panelHi: "#382a20", line: "#4d3a2c", chalk: "#fbf3ec", dim: "#b8a291", edge: "#130d09" },
 };
-const APP_VERSION = "1.5.7";
+const APP_VERSION = "1.5.8";
 // Big Shoulders has no Cyrillic, so Oswald (also condensed) covers Ukrainian. The browser only
 // downloads the Oswald unicode ranges a page actually uses.
 const DISPLAY = "'Big Shoulders Display', 'Oswald', 'Arial Narrow', Impact, sans-serif";
@@ -1340,35 +1340,80 @@ function Sect({ title, meta, children, style, titlePad, accent, ...rest }) {
   );
 }
 
-// ─── EXPANDER (1.5.5, Michael: one animated way to open and close things, used everywhere) ──────
-// The box grows from 0 to its content's height (and back) with the app's "ease" curve while the content fades in;
-// once open it is a normal box again (height auto), so whatever changes inside just flows. Closed content is
-// unmounted after the animation, as before.
+// ─── EXPANDER (1.5.5; 1.5.8 rebuilt for speed, Michael: "šípky sekajú, ako po fotkách", wants 100+ fps) ──────
+// The page takes its new layout at once (one layout, no height animation that redoes layout and repaints every card
+// with its shadow on every frame). What makes it look animated runs on the GPU only (transform and opacity, the
+// browser's compositor, so it stays smooth even when the app is busy):
+//  - everything below the box (the next cards on the page) slides from where it was to where it is now (FLIP),
+//  - the box's content fades in (or out) with a small drift.
+// Opening, the cards below slide down and uncover the new content like a curtain; closing, they slide up over it while
+// it fades. A box with nothing below it grows/shrinks its height instead (nothing else moves, so that is cheap).
+// While a box closes, a swipe strip around it keeps its height until the cards have slid up (nothing gets cut off).
+let EXPANDING = 0;
+const expandDone = new Set(); // swipe strips refit when a box has finished moving
+const FLIP_STOP = ".swPage, .scr, .sheetBox, [data-flip-root]";
+function flipFollowers(el) {
+  const out = [];
+  for (let n = el; n && n !== document.body && out.length < 40; n = n.parentElement) {
+    if (n !== el && n.matches && n.matches(FLIP_STOP)) break;
+    for (let x = n.nextElementSibling; x && out.length < 40; x = x.nextElementSibling) {
+      const pos = getComputedStyle(x).position;
+      if (pos === "static" || pos === "relative") out.push(x);
+    }
+    if (n.matches && n.matches(FLIP_STOP)) break;
+  }
+  return out;
+}
 function Expand({ open, children, style, ...rest }) {
-  const ref = useRef(null), first = useRef(true), timer = useRef(0);
+  const ref = useRef(null), inner = useRef(null), first = useRef(true), before = useRef(null), anims = useRef([]), done = useRef(null);
   const [mounted, setMounted] = useState(open);
   if (open && !mounted) setMounted(true);
+  // where the cards below were, read before React changes the page (render phase of this box)
+  if (!first.current && ref.current && before.current === null && open !== (ref.current.dataset.expand === "open")) {
+    const f = flipFollowers(ref.current);
+    before.current = { f, tops: f.map(x => x.getBoundingClientRect().top), h: ref.current.getBoundingClientRect().height };
+  }
   useLayoutEffect(() => {
-    const el = ref.current; if (!el) return;
+    const el = ref.current, box = inner.current; if (!el) return;
     if (first.current) { first.current = false; if (!open) { el.style.height = "0px"; el.style.overflow = "hidden"; } return; }
-    clearTimeout(timer.current);
-    const end = () => { clearTimeout(timer.current); el.removeEventListener("transitionend", onEnd); el.style.transition = ""; el.style.overflow = open ? "" : "hidden"; el.style.height = open ? "" : "0px"; if (!open) setMounted(false); };
-    const onEnd = e => { if (e.target === el && e.propertyName === "height") end(); };
-    if (reducedMotion()) { end(); return; }
-    const from = el.getBoundingClientRect().height;
-    el.style.transition = "none"; el.style.overflow = "hidden"; el.style.height = "";
-    const to = open ? el.scrollHeight : 0;
-    el.style.height = from + "px";
-    void el.offsetHeight; // start from where it is now (also when it turns around halfway)
-    el.style.transition = `height ${MO.t2} ${MO.ease}`;
-    el.style.height = to + "px";
-    el.addEventListener("transitionend", onEnd);
-    timer.current = setTimeout(end, 450); // safety net if no transitionend comes (same height, hidden tab)
-    return () => { el.removeEventListener("transitionend", onEnd); clearTimeout(timer.current); };
+    anims.current.forEach(a => { try { a.cancel(); } catch (_) {} }); anims.current = [];
+    if (done.current) { done.current(true); done.current = null; }
+    const b = before.current; before.current = null;
+    const finish = () => {
+      if (open) { anims.current.forEach(a => { try { a.cancel(); } catch (_) {} }); anims.current = []; } // back to plain styles
+      el.style.transition = ""; el.style.overflow = open ? "" : "hidden"; el.style.height = open ? "" : "0px";
+      if (!open) setMounted(false);
+      EXPANDING = Math.max(0, EXPANDING - 1); expandDone.forEach(fn => fn());
+    };
+    let ended = false;
+    const end = cancelled => { if (ended) return; ended = true; if (!cancelled) finish(); else EXPANDING = Math.max(0, EXPANDING - 1); };
+    done.current = end;
+    EXPANDING++;
+    if (reducedMotion() || !b) { end(); return; }
+    // the new layout, at once
+    el.style.transition = "none"; el.style.overflow = open ? "" : "visible"; el.style.height = open ? "" : "0px";
+    const f = b.f.filter(x => x.isConnected), tops = f.map(x => x.getBoundingClientRect().top);
+    const moving = f.map((x, k) => [x, b.tops[b.f.indexOf(x)] - tops[k]]).filter(([, dy]) => Math.abs(dy) > 0.5);
+    const opt = { duration: parseFloat(MO.t2) * 1000, easing: MO.ease };
+    const list = [];
+    if (moving.length) {
+      for (const [x, dy] of moving) list.push(x.animate([{ transform: `translateY(${dy}px)` }, { transform: "translateY(0)" }], opt));
+    } else {
+      // nothing below: the box itself grows or shrinks (only it changes size)
+      const to = open ? el.scrollHeight : 0;
+      el.style.overflow = "hidden";
+      list.push(el.animate([{ height: b.h + "px" }, { height: to + "px" }], opt));
+      el.style.height = open ? "" : "0px";
+    }
+    if (box) list.push(box.animate(open ? [{ opacity: 0, transform: "translateY(-8px)" }, { opacity: 1, transform: "none" }] : [{ opacity: 1, transform: "none" }, { opacity: 0, transform: "translateY(-8px)" }], { ...opt, duration: open ? opt.duration : parseFloat(MO.t1) * 1000, fill: "both" }));
+    anims.current = list;
+    Promise.all(list.map(a => a.finished)).then(() => { if (done.current === end) { done.current = null; end(false); } }, () => {});
+    return undefined;
   }, [open]);
+  useEffect(() => () => { anims.current.forEach(a => { try { a.cancel(); } catch (_) {} }); if (done.current) done.current(true); }, []);
   return (
     <div ref={ref} data-expand={open ? "open" : "closed"} {...rest} style={style}>
-      <div style={{ opacity: open ? 1 : 0, transform: open ? "none" : "translateY(-6px)", transition: `opacity ${open ? MO.t2 : MO.t1} ease, transform ${MO.t2} ${MO.ease}` }}>{mounted && children}</div>
+      <div ref={inner}>{mounted && children}</div>
     </div>
   );
 }
@@ -2652,9 +2697,14 @@ function usePager(name, n) {
     if (knob.current) knob.current.style.transform = `translateX(${page * 100}%)`;
     let last = -1, moving = false, idle = 0, raf = 0;
     const setH = h => { if (h !== last) { last = h; el.style.height = h + "px"; } };
-    const floor = () => Math.round(window.innerHeight - (el.getBoundingClientRect().top + window.scrollY));
+    // the strip's top in the page from layout (offsetTop), not from the screen: while the screen slides in (14 px
+    // transform) the screen position is off, and the strip ended 14 px short of the bottom
+    const floor = () => { let t = 0; for (let x = el; x; x = x.offsetParent) t += x.offsetTop; return Math.round(window.innerHeight - t); };
     const pos = () => Math.max(0, Math.min(n - 1, el.scrollLeft / Math.max(1, el.clientWidth)));
-    const fitRest = () => { const pg = pages.current[Math.round(pos())]; setH(Math.max(pg ? pg.offsetHeight : 0, floor())); };
+    // while a box on the page closes, never shrink (the cards sliding up would be cut off); refit when it is done
+    const fitRest = () => { const pg = pages.current[Math.round(pos())]; const h = Math.max(pg ? pg.offsetHeight : 0, floor()); if (EXPANDING && h < last) return; setH(h); };
+    const refit = () => { if (!moving && !EXPANDING) fitRest(); };
+    expandDone.add(refit);
     const grow = () => { if (moving) return; moving = true; setH(Math.max(floor(), ...pages.current.map(x => (x ? x.offsetHeight : 0)))); };
     const settle = () => {
       clearTimeout(idle);
@@ -2685,7 +2735,7 @@ function usePager(name, n) {
     if (ro) { pages.current.forEach(x => x && ro.observe(x)); if (el.parentElement) ro.observe(el.parentElement); }
     return () => {
       el.removeEventListener("scroll", on); el.removeEventListener("scrollend", settle); el.removeEventListener("pointerdown", touch); el.removeEventListener("touchstart", touch);
-      window.removeEventListener("resize", fitRest); if (ro) ro.disconnect(); if (raf) cancelAnimationFrame(raf); clearTimeout(idle);
+      window.removeEventListener("resize", fitRest); expandDone.delete(refit); if (ro) ro.disconnect(); if (raf) cancelAnimationFrame(raf); clearTimeout(idle);
       if (c.stop) c.stop(); c.grow = c.settle = null;
     };
   }, [pagerEl]);

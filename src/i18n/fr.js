@@ -1080,6 +1080,9 @@ export default {
     "La disposition Verre ressemble davantage à du vrai verre : un reflet depuis le coin, une réflexion douce, un bord supérieur clair et une douce lueur des couleurs du thème derrière les blocs. La barre de démarrage et le menu ☰ sont assortis, et le téléphone n'est toujours pas sollicité.",
     "Barre du haut : tout en haut de la page, elle remplit maintenant l'écran d'un bord à l'autre, sans ligne en haut ni sur les côtés.",
   ],
+  news158: [
+    "Ouvrir et fermer avec les flèches passe maintenant par la puce graphique : la page prend tout de suite sa nouvelle forme, les blocs en dessous glissent en douceur et le contenu apparaît doucement, sans saccades.",
+  ],
   news157: [
     "Changer de page avec les onglets en haut (écran principal et Calories) glisse en douceur : plus de saut instantané ni de va-et-vient vers la page du milieu ou la dernière.",
   ],

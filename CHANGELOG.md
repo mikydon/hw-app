@@ -10,6 +10,11 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 
 <!-- New version: add a "## x.y.z (date)" section on top (web-only history uses "## Browser beta x.y.z (date)"). On a push to main, .github/workflows/build.yml builds everything and .github/scripts/releases.sh creates/updates the releases (commit = the push, or the one in a commit comment). -->
 
+## 1.5.8 (2026-10-14)
+
+- Opening and closing with the arrows (Calories boxes, "how is the target calculated?", workouts in History, warm-up and cool-down instructions) is rebuilt so the graphics chip does the moving: the page takes its new layout at once, the boxes below slide from where they were to where they are now (transform), and the content fades in or out (opacity). Both run on the browser's compositor, so they stay smooth even while the app is busy. A box with nothing below it grows or shrinks on its own. Before, the box's height was animated, which redid the layout and repainted every card (with its shadow) on every frame, so on a phone it moved in visible steps.
+- The swipe area on the main screen and in Calories always reaches the bottom of the screen. Before, it could end 14 px short when it was measured while the screen was still sliding in, so a swipe at the very bottom did nothing.
+
 ## 1.5.7 (2026-10-14)
 
 - Switching pages with the tabs on top (main screen and Calories) glides smoothly in about a third of a second, with the knob following. Before, it sometimes jumped there at once (main screen), bounced back and forth on the way to the middle page, or jumped straight to the last page (Calories): every redraw re-attached the page strip and stopped the move halfway, and the browser's own smooth scrolling fought with page snapping. The app now moves the strip itself; a finger on the strip takes over at once.

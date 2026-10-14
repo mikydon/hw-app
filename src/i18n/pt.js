@@ -1080,6 +1080,9 @@ export default {
     "O layout Vidro parece mais vidro de verdade: um brilho a partir do canto, um reflexo suave, uma borda superior clara e um brilho suave das cores do tema atrás das caixas. A barra de início e o menu ☰ combinam com ele, e continua leve para o telemóvel.",
     "Barra superior: no topo da página, agora preenche o ecrã de uma ponta à outra, sem linha em cima nem dos lados.",
   ],
+  news158: [
+    "Abrir e fechar com as setas agora é desenhado pelo chip gráfico: a página ganha logo a nova forma, as caixas abaixo deslizam suavemente e o conteúdo aparece devagar, sem solavancos.",
+  ],
   news157: [
     "Mudar de página com os separadores no topo (ecrã principal e Calorias) desliza suavemente: sem salto instantâneo nem vaivém ao ir para a página do meio ou a última.",
   ],

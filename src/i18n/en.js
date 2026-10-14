@@ -1080,6 +1080,9 @@ export default {
     "Glass layout looks more like real glass: a sheen from the corner, a soft reflection, a bright top edge and a soft glow of the theme colours behind the boxes. The Start bar and the ☰ menu match it, and it stays light on the phone.",
     "Top bar: at the top of the page it now fills the screen edge to edge, without a line at the top or sides.",
   ],
+  news158: [
+    "Opening and closing with the arrows is rebuilt to run on the graphics chip: the page takes its new shape at once, the boxes below slide smoothly and the content fades in, so it no longer moves in steps.",
+  ],
   news157: [
     "Switching pages with the tabs on top (main screen and Calories) glides smoothly: no more instant jump, and no bouncing back and forth when going to the middle or the last page.",
   ],
