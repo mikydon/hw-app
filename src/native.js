@@ -401,13 +401,13 @@ export async function pushTokenWhy() {
   try { const t = (await FcmPlugin.getToken()).token; return t ? { token: t } : { err: "no-token" }; } catch (e) { return { err: "token " + String((e && (e.code || e.message)) || e).slice(0, 60) }; }
 }
 export async function pushDeleteToken() { if (!pushSupported()) return; try { await FcmPlugin.deleteToken(); } catch (_) {} }
-// A tap on a notification (also when it started the app): fn({kind, from, cid})
+// A tap on a notification (also when it started the app): fn({kind, uid, cid}) (uid = the sender; "from" is reserved by FCM)
 export function onPushTap(fn) {
   if (!pushSupported()) return () => {};
   const h = FcmPlugin.addListener("notificationActionPerformed", e => { const d = (e && e.notification && e.notification.data) || {}; if (d.kind) fn(d); });
   return () => { Promise.resolve(h).then(x => x && x.remove && x.remove()).catch(() => {}); };
 }
-// A notification that arrived while the app is open (Android shows nothing then): fn({kind, from, cid})
+// A notification that arrived while the app is open (Android shows nothing then): fn({kind, uid, cid})
 export function onPushReceived(fn) {
   if (!pushSupported()) return () => {};
   const h = FcmPlugin.addListener("notificationReceived", e => { const d = (e && e.notification && e.notification.data) || {}; fn(d); });

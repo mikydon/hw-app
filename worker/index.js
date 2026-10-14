@@ -96,7 +96,8 @@ export async function notify({ kind, to, from, sa, fetchFn = fetch, now = Date.n
   if (!push || !Array.isArray(push.t) || !push.t.length) return { sent: 0, why: "no-phone" };
   if (push.off === true) return { sent: 0, why: "off" };
   if (kind !== "test" && Array.isArray(push.blk) && push.blk.includes(from)) return { sent: 0, why: "blocked" };
-  let title = "HW App", body = "", data = { kind, from };
+  // data keys: "from" (and gcm…, google…) are reserved by FCM (400 INVALID_ARGUMENT), so the sender is "uid"
+  let title = "HW App", body = "", data = { kind, uid: from };
   const prof = await getDoc(`profiles/${from}`, tok, fetchFn);
   const nick = (prof && prof.nick) || "HW App";
   const lang = typeof push.lang === "string" ? push.lang : "en";

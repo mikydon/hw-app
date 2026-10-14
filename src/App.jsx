@@ -6432,7 +6432,7 @@ export default function App() {
   // A tap on a notification: straight to that chat, or to Friends for a request (also when it started the app).
   useEffect(() => onPushTap(d => {
     if (d.kind === "test") return; // the test notification only opens the app
-    setScreen("friends"); setMenuOpen(false); setChatWith(d.kind === "msg" && d.from ? d.from : null);
+    setScreen("friends"); setMenuOpen(false); const who = d.uid || d.from; setChatWith(d.kind === "msg" && who ? who : null);
     if (session) setSessionOpen(false);
   }), [session]);
   // Screen refresh rate (1.6.0): the saved choice (MainActivity applies it too, before the first frame)
