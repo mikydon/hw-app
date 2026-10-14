@@ -4,3 +4,8 @@ name = "hw-app-push"
 main = "index.js"
 compatibility_date = "2025-09-01"
 workers_dev = true
+
+# Workers Logs (free plan): what the server decided for each request, kept a few days in the Cloudflare dashboard
+# (Workers & Pages → hw-app-push → Logs). Only the kind and the outcome are logged, never ids or message texts.
+[observability]
+enabled = true

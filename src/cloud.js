@@ -205,6 +205,19 @@ export const impl = {
     }
     await setDoc(d("push", uid()), v, { merge: true });
   },
+  // The Settings test button (1.6.0): the server sends a notification to my own phones and says what happened:
+  // {sent, why: ok|no-phone|off|fcm|dup, err?} or {why: "auth"|"server"|"net", err}
+  async pushTest() {
+    if (!PUSH_URL) return { why: "net", err: "no server" };
+    const t = await auth.currentUser.getIdToken();
+    let r;
+    try { r = await fetch(PUSH_URL + "/notify", { method: "POST", headers: { authorization: "Bearer " + t, "content-type": "application/json" }, body: JSON.stringify({ kind: "test", to: uid() }) }); }
+    catch (e) { return { why: "net", err: String((e && e.message) || e).slice(0, 60) }; }
+    const j = await r.json().catch(() => ({}));
+    if (r.status === 401) return { why: "auth", err: j.detail || "401" };
+    if (!r.ok) return { why: "server", err: j.detail || String(r.status) };
+    return j;
+  },
   async dropPush(token) { if (token) await setDoc(d("push", uid()), { t: arrayRemove(String(token)), ts: serverTimestamp() }, { merge: true }); },
   async report(about, reason) { await addDoc(collection(db, "reports"), { by: uid(), about, reason: String(reason || "").slice(0, 300), ts: serverTimestamp() }); },
   async saveBackup(json, n) { await setDoc(d("backups", uid()), { json, n, ts: serverTimestamp() }); },

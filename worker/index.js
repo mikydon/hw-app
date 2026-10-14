@@ -1,7 +1,8 @@
 // HW App push server (1.6.0): a Cloudflare Worker (free plan) that sends phone notifications through Firebase Cloud
 // Messaging when someone writes to you, sends you a friend request or accepts yours, also while the app is closed.
 //
-// The app calls POST /notify with {kind: "msg" | "req" | "acc", to, cid?} and its Firebase sign-in token. Nothing in
+// The app calls POST /notify with {kind: "msg" | "req" | "acc" | "test", to} and its Firebase sign-in token ("test" =
+// the Settings button: a notification to your own phones, with the reason when it fails). Nothing in
 // the request is trusted: the sender comes from the verified token, and the notification is only sent when Firestore
 // shows that the thing really just happened (the newest message in your chat is theirs and is new, the request is in
 // your inbox, you are now friends). The text of a message is read from Firestore, never taken from the request.
@@ -67,7 +68,7 @@ export async function accessToken(sa, fetchFn = fetch, now = Date.now()) {
 
 // ── Firestore REST ──
 const val = v => (!v ? undefined : "stringValue" in v ? v.stringValue : "booleanValue" in v ? v.booleanValue : "integerValue" in v ? +v.integerValue
-  : "timestampValue" in v ? Date.parse(v.timestampValue) : "arrayValue" in v ? (v.arrayValue.values || []).map(val) : "mapValue" in v ? fields(v.mapValue.fields || {}) : "nullValue" in v ? null : undefined);
+  : "doubleValue" in v ? +v.doubleValue : "timestampValue" in v ? Date.parse(v.timestampValue) : "arrayValue" in v ? (v.arrayValue.values || []).map(val) : "mapValue" in v ? fields(v.mapValue.fields || {}) : "nullValue" in v ? null : undefined);
 const fields = f => Object.fromEntries(Object.entries(f || {}).map(([k, v]) => [k, val(v)]));
 async function getDoc(path, tok, fetchFn) {
   const r = await fetchFn(`${FS}/${path}`, { headers: { authorization: "Bearer " + tok } });
@@ -89,17 +90,19 @@ const lineOf = (lang, k, nick) => {
 
 // The whole check-and-send for one request. Returns {sent, why}.
 export async function notify({ kind, to, from, sa, fetchFn = fetch, now = Date.now() }) {
-  if (!["msg", "req", "acc"].includes(kind) || typeof to !== "string" || !/^[A-Za-z0-9]{6,128}$/.test(to) || to === from) return { sent: 0, why: "bad" };
+  if (!["msg", "req", "acc", "test"].includes(kind) || typeof to !== "string" || !/^[A-Za-z0-9]{6,128}$/.test(to) || (kind === "test") !== (to === from)) return { sent: 0, why: "bad" };
   const tok = await accessToken(sa, fetchFn, now);
   const push = await getDoc(`push/${to}`, tok, fetchFn);
   if (!push || !Array.isArray(push.t) || !push.t.length) return { sent: 0, why: "no-phone" };
   if (push.off === true) return { sent: 0, why: "off" };
-  if (Array.isArray(push.blk) && push.blk.includes(from)) return { sent: 0, why: "blocked" };
+  if (kind !== "test" && Array.isArray(push.blk) && push.blk.includes(from)) return { sent: 0, why: "blocked" };
   let title = "HW App", body = "", data = { kind, from };
   const prof = await getDoc(`profiles/${from}`, tok, fetchFn);
   const nick = (prof && prof.nick) || "HW App";
   const lang = typeof push.lang === "string" ? push.lang : "en";
-  if (kind === "msg") {
+  if (kind === "test") {
+    title = lineOf(lang, "ntTest", nick); body = lineOf(lang, "ntTestD", nick);
+  } else if (kind === "msg") {
     if (!(await getDoc(`friends/${to}/list/${from}`, tok, fetchFn))) return { sent: 0, why: "not-friends" };
     const cid = chatId(from, to), chat = await getDoc(`chats/${cid}`, tok, fetchFn);
     const last = chat && chat.last;
@@ -115,11 +118,12 @@ export async function notify({ kind, to, from, sa, fetchFn = fetch, now = Date.n
     title = lineOf(lang, "ntAcc", nick); body = lineOf(lang, "ntAccD", nick);
   }
   // the same event only once (an app that calls twice, or someone calling again for the same message)
+  // (a test at most every 10 s)
   const key = `${kind}:${from}:${to}:${kind === "msg" ? data.cid + ":" + body : ""}`;
   for (const [k, t] of seen) if (now - t > FRESH_MS) seen.delete(k);
-  if (seen.has(key)) return { sent: 0, why: "dup" };
+  if (seen.has(key) && (kind !== "test" || now - seen.get(key) < 10000)) return { sent: 0, why: "dup" };
   seen.set(key, now);
-  let sent = 0;
+  let sent = 0, err = "";
   const keep = [];
   for (const t of push.t.slice(0, 5)) {
     const r = await fetchFn(`https://fcm.googleapis.com/v1/projects/${PROJECT}/messages:send`, {
@@ -130,11 +134,13 @@ export async function notify({ kind, to, from, sa, fetchFn = fetch, now = Date.n
     if (r.ok) { sent++; keep.push(t); continue; }
     const e = await r.json().catch(() => ({}));
     const code = JSON.stringify(e);
+    const det = ((e.error && e.error.details) || []).map(x => x.errorCode).filter(Boolean)[0];
+    err = err || `${r.status} ${det || (e.error && e.error.status) || ""}`.trim();
     if (r.status === 404 || code.includes("UNREGISTERED")) continue; // that phone no longer has the app: drop it
     keep.push(t);
   }
   if (keep.length !== push.t.length) await setTokens(to, keep, tok, fetchFn).catch(() => {});
-  return { sent, why: sent ? "ok" : "fcm" };
+  return sent ? { sent, why: "ok", phones: push.t.length } : { sent: 0, why: "fcm", err, phones: push.t.length };
 }
 
 export default {
@@ -147,13 +153,18 @@ export default {
     if (req.method !== "POST" || url.pathname !== "/notify") return json({ error: "not found" }, 404, cors);
     let from;
     try { from = await verifyIdToken((req.headers.get("authorization") || "").replace(/^Bearer\s+/i, "")); }
-    catch (_) { return json({ error: "auth" }, 401, cors); }
+    catch (e) { console.log(JSON.stringify({ error: "auth", detail: String(e.message || e).slice(0, 40) })); return json({ error: "auth", detail: String(e.message || e).slice(0, 40) }, 401, cors); }
     let b;
     try { b = await req.json(); } catch (_) { return json({ error: "body" }, 400, cors); }
     try {
       const sa = JSON.parse(env.FIREBASE_SERVICE_ACCOUNT);
       const r = await notify({ kind: b.kind, to: b.to, from, sa });
+      console.log(JSON.stringify({ kind: b.kind, ...r }));
       return json(r, 200, cors);
-    } catch (e) { return json({ error: "server", detail: String(e.message || e).slice(0, 80) }, 500, cors); }
+    } catch (e) {
+      const detail = String(e.message || e).slice(0, 80);
+      console.log(JSON.stringify({ kind: b && b.kind, error: detail }));
+      return json({ error: "server", detail }, 500, cors);
+    }
   },
 };

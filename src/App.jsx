@@ -1,6 +1,6 @@
 import { useState, useEffect, useLayoutEffect, useRef, memo } from "react";
 import { createPortal } from "react-dom";
-import { isNative, pushBack, setRootBack, exitApp, vibratePattern, keepScreenOn, openExternal, saveBackupFile, bkSupported, bkWrite, bkList, bkRead, bkDelete, bkShare, BK_DIR, BK_AUTO, checkForUpdate, lastUpdate, lastGh, applyUpdateNow, latestApk, isTestBuild, apkState, onApk, apkSupported, apkRestore, apkDownload, apkCanInstall, apkAllow, apkInstall, onAppResume, healthState, healthConnect, healthSettings, healthSteps, healthFoodItems, healthBody, shareText, copyText, pushSupported, pushPermission, pushChannel, pushToken, pushDeleteToken, onPushTap, onPushToken, hzSupported, hzInfo, hzSet } from "./native.js";
+import { isNative, pushBack, setRootBack, exitApp, vibratePattern, keepScreenOn, openExternal, saveBackupFile, bkSupported, bkWrite, bkList, bkRead, bkDelete, bkShare, BK_DIR, BK_AUTO, checkForUpdate, lastUpdate, lastGh, applyUpdateNow, latestApk, isTestBuild, apkState, onApk, apkSupported, apkRestore, apkDownload, apkCanInstall, apkAllow, apkInstall, onAppResume, healthState, healthConnect, healthSettings, healthSteps, healthFoodItems, healthBody, shareText, copyText, pushSupported, pushPermission, pushChannel, pushToken, pushTokenWhy, pushDeleteToken, onPushTap, onPushToken, onPushReceived, hzSupported, hzInfo, hzSet } from "./native.js";
 import { cloud, NICK_RE, SHARE_BASE, cleanCode, fmtCode } from "./cloud-lazy.js";
 import { QUICK as EMO_QUICK, EMOJI } from "./emoji.js";
 import { L, LANG, t as T, tp as TP, fmt, setLang, detectLang, LANGS, fmtLong, fmtShortDM, fmtMonthYear, weekdaysShort, capFirst } from "./i18n/index.js";
@@ -5109,7 +5109,7 @@ function AccountBox({ acct, cloudBk, onOpen, onRestore, onSignOut, onDelete, set
           <span style={{ flex: 1, minWidth: 0 }}>{acct.prof ? T("acSignedIn", { nick: acct.prof.nick }) : T("acSignedInNoNick")}{sub(acct.prof ? fmtCode(acct.prof.code) : T("frNickTitle"))}</span>
           <span aria-hidden="true" style={{ color: C.dim, fontSize: 20 }}>›</span>
         </button>
-        <div style={{ ...rowBtn(false), display: "block", cursor: "default" }}>
+        <div style={{ ...rowBtn(false), display: "block", cursor: "default", boxSizing: "border-box" }}>
           {T("acBackup")}
           {sub(T("acBackupD"))}
           <span data-cloud-bk={cloudBk ? (cloudBk.ok ? "ok" : "err") : "none"} style={{ display: "block", fontSize: 12, marginTop: 4, color: cloudBk && !cloudBk.ok ? "#ff8a80" : cloudBk ? C.mint : C.dim }}>{!cloudBk ? T("acBkNone") : cloudBk.ok ? T("acBkLast", { time: fmtWhen(cloudBk.ts) }) : T("acBkErr", { e: cloudBk.err || "?" })}</span>
@@ -5132,20 +5132,63 @@ function AccountBox({ acct, cloudBk, onOpen, onRestore, onSignOut, onDelete, set
   );
 }
 
+// Registers this phone for notifications (1.6.0): channel, permission (asked once, or when `ask`), FCM token, then
+// push/{uid} with the language, on/off and blocked people. Resolves {perm, token, err} (err: why the token or the save
+// failed, shown by the test button). `alive()` false = a newer run took over, so this one saves nothing.
+let PUSH_BLK = [];
+async function pushRegister({ on, ask, alive = () => true }) {
+  await pushChannel(T("pushChannel"));
+  let perm = await pushPermission(false);
+  if (on && perm === "prompt" && (ask || !cloudMem().pushAsked)) { setCloudMem({ pushAsked: true }); perm = await pushPermission(true); }
+  let token = null, err = "";
+  if (on && perm === "granted") { const r = await pushTokenWhy(); token = r.token || null; err = r.err || ""; }
+  if (!alive()) return { perm, token, err };
+  if (token) setCloudMem({ pushTok: token });
+  try { await cloud().savePush({ token, lang: LANG, off: !on || perm !== "granted", blk: PUSH_BLK }); }
+  catch (e) { err = err || "save " + String((e && (e.code || e.message)) || e).slice(0, 50); }
+  return { perm, token, err };
+}
 // Phone notifications on/off (1.6.0, app only, signed in). Turning them on asks Android (13+) for permission; when
 // the phone has them blocked, a line says where to allow them.
+// The test button sends a notification to this account's own phones through the push server and follows it to the
+// end: registered? sent by Google? arrived here? (an open app gets it as an event, Android shows nothing then).
 function PushRow({ settings, set }) {
   const on = settings.push !== false;
   const [perm, setPerm] = useState(null);
+  const [test, setTest] = useState(null); // {st: busy|wait|got|late|err, e}
+  const got = useRef(0), timer = useRef(0);
   useEffect(() => { pushPermission(false).then(setPerm); }, []);
+  useEffect(() => {
+    const off = onPushReceived(d => { if (d.kind !== "test") return; got.current = Date.now(); setTest(t => (t && (t.st === "wait" || t.st === "late") ? { st: "got" } : t)); });
+    return () => { off(); clearTimeout(timer.current); };
+  }, []);
   const flipPush = async () => {
-    const v = !on; set("push", v);
+    const v = !on; set("push", v); setTest(null);
     if (v) setPerm(await pushPermission(true));
   };
+  const runTest = async () => {
+    if (test && (test.st === "busy" || test.st === "wait")) return;
+    sfxTap(); setTest({ st: "busy" }); clearTimeout(timer.current);
+    got.current = 0;
+    const reg = await pushRegister({ on: true, ask: true });
+    setPerm(reg.perm);
+    if (reg.perm !== "granted") { setTest(null); return; } // the "turned off in Android" line explains it
+    if (!reg.token || reg.err) { setTest({ st: "err", e: reg.err || "no-token" }); return; }
+    const r = await cloud().pushTest().catch(e => ({ why: "net", err: String((e && (e.code || e.message)) || e).slice(0, 50) }));
+    if (r.why !== "ok") { setTest({ st: "err", e: [r.why, r.err].filter(Boolean).join(" ") }); return; }
+    if (got.current) { setTest({ st: "got" }); return; } // it was faster than the server's answer
+    setTest({ st: "wait" });
+    timer.current = setTimeout(() => setTest(t => (t && t.st === "wait" ? { st: "late" } : t)), 15000);
+  };
+  const line = !test || test.st === "busy" ? null : test.st === "wait" ? [T("pushTestOk"), C.dim] : test.st === "got" ? [T("pushTestGot"), C.mint] : test.st === "late" ? [T("pushTestLate"), C.signal] : [T("pushTestErr", { e: test.e }), "#ff8a80"];
   return (
     <div data-push-row style={{ borderTop: `1px solid ${C.line}` }}>
       <SettingRow first title={T("pushTitle")} desc={T("pushD")} on={on} onClick={flipPush} />
       {on && perm === "denied" && <div data-push-denied style={{ fontSize: 12, color: C.signal, lineHeight: 1.45, padding: "0 16px 12px" }}>{T("pushDenied")}</div>}
+      {on && <div style={{ padding: "0 16px 13px" }}>
+        <button data-push-test onClick={runTest} disabled={!!test && (test.st === "busy" || test.st === "wait")} style={{ ...ghostBtn, padding: "9px 14px", opacity: test && (test.st === "busy" || test.st === "wait") ? 0.6 : 1 }}>{test && test.st === "busy" ? "…" : T("pushTest")}</button>
+        {line && <div data-push-test-st={test.st} role="status" style={{ fontSize: 12, color: line[1], lineHeight: 1.45, marginTop: 8 }}>{line[0]}</div>}
+      </div>}
     </div>
   );
 }
@@ -6381,20 +6424,14 @@ export default function App() {
     if (acct.st !== "in" || !acct.prof || !pushSupported()) return;
     let dead = false;
     const on = settings.push !== false;
-    (async () => {
-      await pushChannel(T("pushChannel"));
-      let perm = await pushPermission(false);
-      if (on && perm === "prompt" && !cloudMem().pushAsked) { setCloudMem({ pushAsked: true }); perm = await pushPermission(true); }
-      const token = on && perm === "granted" ? await pushToken() : null;
-      if (dead) return;
-      if (token) setCloudMem({ pushTok: token });
-      await cloud().savePush({ token, lang: LANG, off: !on || perm !== "granted", blk: social.blocked || [] }).catch(() => {});
-    })();
-    const offTok = onPushToken(t => { if (settings.push === false) return; setCloudMem({ pushTok: t }); cloud().savePush({ token: t, lang: LANG, off: false, blk: social.blocked || [] }).catch(() => {}); });
+    PUSH_BLK = social.blocked || [];
+    pushRegister({ on, ask: false, alive: () => !dead }).catch(() => {});
+    const offTok = onPushToken(t => { if (settings.push === false) return; setCloudMem({ pushTok: t }); cloud().savePush({ token: t, lang: LANG, off: false, blk: PUSH_BLK }).catch(() => {}); });
     return () => { dead = true; offTok(); };
   }, [acct.st, acct.prof && acct.prof.code, settings.push, settings.lang, (social.blocked || []).join(",")]);
   // A tap on a notification: straight to that chat, or to Friends for a request (also when it started the app).
   useEffect(() => onPushTap(d => {
+    if (d.kind === "test") return; // the test notification only opens the app
     setScreen("friends"); setMenuOpen(false); setChatWith(d.kind === "msg" && d.from ? d.from : null);
     if (session) setSessionOpen(false);
   }), [session]);

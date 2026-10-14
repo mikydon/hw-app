@@ -395,11 +395,22 @@ export async function pushChannel(name) {
   try { await FcmPlugin.createChannel({ id: "social", name, importance: 4, visibility: 1, vibration: true, lights: true, lightColor: "#FFD23F" }); } catch (_) {}
 }
 export async function pushToken() { if (!pushSupported()) return null; try { return (await FcmPlugin.getToken()).token || null; } catch (_) { return null; } }
+// The same, but says why it failed (for the test button): {token} | {err}
+export async function pushTokenWhy() {
+  if (!pushSupported()) return { err: "no-plugin" };
+  try { const t = (await FcmPlugin.getToken()).token; return t ? { token: t } : { err: "no-token" }; } catch (e) { return { err: "token " + String((e && (e.code || e.message)) || e).slice(0, 60) }; }
+}
 export async function pushDeleteToken() { if (!pushSupported()) return; try { await FcmPlugin.deleteToken(); } catch (_) {} }
 // A tap on a notification (also when it started the app): fn({kind, from, cid})
 export function onPushTap(fn) {
   if (!pushSupported()) return () => {};
   const h = FcmPlugin.addListener("notificationActionPerformed", e => { const d = (e && e.notification && e.notification.data) || {}; if (d.kind) fn(d); });
+  return () => { Promise.resolve(h).then(x => x && x.remove && x.remove()).catch(() => {}); };
+}
+// A notification that arrived while the app is open (Android shows nothing then): fn({kind, from, cid})
+export function onPushReceived(fn) {
+  if (!pushSupported()) return () => {};
+  const h = FcmPlugin.addListener("notificationReceived", e => { const d = (e && e.notification && e.notification.data) || {}; fn(d); });
   return () => { Promise.resolve(h).then(x => x && x.remove && x.remove()).catch(() => {}); };
 }
 // A new token from Firebase (it can change now and then)

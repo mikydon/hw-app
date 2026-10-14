@@ -4,84 +4,112 @@ export default {
   "ntReq": "{nick} chce být tvůj přítel",
   "ntReqD": "Ťukni a přijmi nebo odmítni",
   "ntAcc": "Ty a {nick} jste teď přátelé",
-  "ntAccD": "Ťukni a napiš první zprávu"
+  "ntAccD": "Ťukni a napiš první zprávu",
+  "ntTest": "Zkušební upozornění",
+  "ntTestD": "Funguje to! Takhle ti budou chodit zprávy a žádosti o přátelství."
  },
  "de": {
   "ntReq": "{nick} möchte befreundet sein",
   "ntReqD": "Tippen zum Annehmen oder Ablehnen",
   "ntAcc": "Du und {nick} seid jetzt befreundet",
-  "ntAccD": "Tippe und schreib die erste Nachricht"
+  "ntAccD": "Tippe und schreib die erste Nachricht",
+  "ntTest": "Testbenachrichtigung",
+  "ntTestD": "Es funktioniert! So kommen Nachrichten und Freundschaftsanfragen an."
  },
  "en": {
   "ntReq": "{nick} wants to be friends",
   "ntReqD": "Tap to accept or decline",
   "ntAcc": "You and {nick} are friends now",
-  "ntAccD": "Tap to write the first message"
+  "ntAccD": "Tap to write the first message",
+  "ntTest": "Test notification",
+  "ntTestD": "It works! Messages and friend requests will arrive like this."
  },
  "es": {
   "ntReq": "{nick} quiere ser tu amigo",
   "ntReqD": "Toca para aceptar o rechazar",
   "ntAcc": "Tú y {nick} ya sois amigos",
-  "ntAccD": "Toca y escribe el primer mensaje"
+  "ntAccD": "Toca y escribe el primer mensaje",
+  "ntTest": "Notificación de prueba",
+  "ntTestD": "¡Funciona! Así llegarán los mensajes y las solicitudes de amistad."
  },
  "fr": {
   "ntReq": "{nick} veut être ton ami",
   "ntReqD": "Touche pour accepter ou refuser",
   "ntAcc": "Toi et {nick} êtes maintenant amis",
-  "ntAccD": "Touche pour écrire le premier message"
+  "ntAccD": "Touche pour écrire le premier message",
+  "ntTest": "Notification de test",
+  "ntTestD": "Ça marche ! Les messages et demandes d'ami arriveront comme ça."
  },
  "hu": {
   "ntReq": "{nick} barátod szeretne lenni",
   "ntReqD": "Koppints az elfogadáshoz vagy elutasításhoz",
   "ntAcc": "Te és {nick} mostantól barátok vagytok",
-  "ntAccD": "Koppints, és írd meg az első üzenetet"
+  "ntAccD": "Koppints, és írd meg az első üzenetet",
+  "ntTest": "Próbaértesítés",
+  "ntTestD": "Működik! Így érkeznek majd az üzenetek és a barátkérések."
  },
  "it": {
   "ntReq": "{nick} vuole essere tuo amico",
   "ntReqD": "Tocca per accettare o rifiutare",
   "ntAcc": "Tu e {nick} ora siete amici",
-  "ntAccD": "Tocca e scrivi il primo messaggio"
+  "ntAccD": "Tocca e scrivi il primo messaggio",
+  "ntTest": "Notifica di prova",
+  "ntTestD": "Funziona! Messaggi e richieste di amicizia arriveranno così."
  },
  "ja": {
   "ntReq": "{nick} さんがフレンドになりたがっています",
   "ntReqD": "タップして承認または拒否",
   "ntAcc": "{nick}さんと友だちになりました",
-  "ntAccD": "タップして最初のメッセージを送ろう"
+  "ntAccD": "タップして最初のメッセージを送ろう",
+  "ntTest": "テスト通知",
+  "ntTestD": "成功です！メッセージや友達リクエストはこのように届きます。"
  },
  "ko": {
   "ntReq": "{nick}님이 친구가 되고 싶어 합니다",
   "ntReqD": "탭하여 수락하거나 거절하세요",
   "ntAcc": "이제 {nick}님과 친구예요",
-  "ntAccD": "눌러서 첫 메시지를 보내 보세요"
+  "ntAccD": "눌러서 첫 메시지를 보내 보세요",
+  "ntTest": "테스트 알림",
+  "ntTestD": "잘 됩니다! 메시지와 친구 요청이 이렇게 도착해요."
  },
  "pl": {
   "ntReq": "{nick} chce być twoim znajomym",
   "ntReqD": "Dotknij, aby zaakceptować lub odrzucić",
   "ntAcc": "Ty i {nick} jesteście teraz znajomymi",
-  "ntAccD": "Stuknij i napisz pierwszą wiadomość"
+  "ntAccD": "Stuknij i napisz pierwszą wiadomość",
+  "ntTest": "Powiadomienie testowe",
+  "ntTestD": "Działa! Tak będą przychodzić wiadomości i zaproszenia do znajomych."
  },
  "pt": {
   "ntReq": "{nick} quer ser teu amigo",
   "ntReqD": "Toca para aceitar ou recusar",
   "ntAcc": "Tu e {nick} agora são amigos",
-  "ntAccD": "Toca e escreve a primeira mensagem"
+  "ntAccD": "Toca e escreve a primeira mensagem",
+  "ntTest": "Notificação de teste",
+  "ntTestD": "Funciona! É assim que vão chegar as mensagens e os pedidos de amizade."
  },
  "sk": {
   "ntReq": "{nick} chce byť tvoj priateľ",
   "ntReqD": "Ťukni a prijmi alebo odmietni",
   "ntAcc": "Ty a {nick} ste teraz priatelia",
-  "ntAccD": "Ťukni a napíš prvú správu"
+  "ntAccD": "Ťukni a napíš prvú správu",
+  "ntTest": "Skúšobné upozornenie",
+  "ntTestD": "Funguje to! Takto ti budú chodiť správy a žiadosti o priateľstvo."
  },
  "uk": {
   "ntReq": "{nick} хоче дружити",
   "ntReqD": "Торкнися, щоб прийняти чи відхилити",
   "ntAcc": "Ти і {nick} тепер друзі",
-  "ntAccD": "Торкнися й напиши перше повідомлення"
+  "ntAccD": "Торкнися й напиши перше повідомлення",
+  "ntTest": "Тестове сповіщення",
+  "ntTestD": "Працює! Так надходитимуть повідомлення й запити в друзі."
  },
  "zh": {
   "ntReq": "{nick} 想加你为好友",
   "ntReqD": "点按即可接受或拒绝",
   "ntAcc": "你和 {nick} 现在是好友了",
-  "ntAccD": "点一下发第一条消息"
+  "ntAccD": "点一下发第一条消息",
+  "ntTest": "测试通知",
+  "ntTestD": "成功了！消息和好友请求会这样送达。"
  }
 };
