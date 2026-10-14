@@ -1080,6 +1080,9 @@ export default {
     "Układ Szkło wygląda bardziej jak prawdziwe szkło: połysk od rogu, delikatne odbicie, jasna górna krawędź i delikatna poświata kolorów motywu za polami. Pasek startu i menu ☰ do niego pasują, a telefon nadal się nie męczy.",
     "Górny pasek: na samej górze strony wypełnia ekran od krawędzi do krawędzi, bez linii u góry i po bokach.",
   ],
+  news157: [
+    "Przełączanie stron przyciskami u góry (ekran główny i Kalorie) przesuwa się płynnie: bez nagłego skoku i bez szarpania na boki przy środkowej i ostatniej stronie.",
+  ],
   news156: [
     "Płynniejsze animacje: rozwijanie (strzałki), przełączanie stron i Kalorie już się nie zacinają, a wszystko jest trochę szybsze.",
     "Pasek ze Startem chowa się w całości, już nie rozpada się na kawałki.",

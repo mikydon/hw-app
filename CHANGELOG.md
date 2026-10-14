@@ -10,6 +10,10 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 
 <!-- New version: add a "## x.y.z (date)" section on top (web-only history uses "## Browser beta x.y.z (date)"). On a push to main, .github/workflows/build.yml builds everything and .github/scripts/releases.sh creates/updates the releases (commit = the push, or the one in a commit comment). -->
 
+## 1.5.7 (2026-10-14)
+
+- Switching pages with the tabs on top (main screen and Calories) glides smoothly in about a third of a second, with the knob following. Before, it sometimes jumped there at once (main screen), bounced back and forth on the way to the middle page, or jumped straight to the last page (Calories): every redraw re-attached the page strip and stopped the move halfway, and the browser's own smooth scrolling fought with page snapping. The app now moves the strip itself; a finger on the strip takes over at once.
+
 ## 1.5.6 (2026-10-14)
 
 - Smoother animations. Opening and closing boxes (the arrows in Calories, History and the warm-up), switching pages and the Calories screen no longer stutter: the swipe pages set their height directly instead of redrawing the whole screen on every frame, and a box that opens only redraws itself. Every animation is also a little shorter. Before, they felt stuck and slow, especially on a phone.

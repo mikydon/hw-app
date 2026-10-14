@@ -1080,6 +1080,9 @@ export default {
     "La disposition Verre ressemble davantage à du vrai verre : un reflet depuis le coin, une réflexion douce, un bord supérieur clair et une douce lueur des couleurs du thème derrière les blocs. La barre de démarrage et le menu ☰ sont assortis, et le téléphone n'est toujours pas sollicité.",
     "Barre du haut : tout en haut de la page, elle remplit maintenant l'écran d'un bord à l'autre, sans ligne en haut ni sur les côtés.",
   ],
+  news157: [
+    "Changer de page avec les onglets en haut (écran principal et Calories) glisse en douceur : plus de saut instantané ni de va-et-vient vers la page du milieu ou la dernière.",
+  ],
   news156: [
     "Animations plus fluides : déplier (les flèches), changer de page et les Calories ne saccadent plus, et tout va un peu plus vite.",
     "La barre Démarrer disparaît d’un seul bloc au lieu de se défaire en morceaux.",

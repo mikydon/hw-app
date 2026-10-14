@@ -1080,6 +1080,9 @@ export default {
     "Il layout Vetro sembra più vetro vero: un riflesso dall'angolo, un leggero bagliore, un bordo superiore chiaro e una tenue luce dei colori del tema dietro i riquadri. La barra di avvio e il menu ☰ si abbinano, e il telefono resta leggero.",
     "Barra in alto: in cima alla pagina ora riempie lo schermo da bordo a bordo, senza linea in alto o ai lati.",
   ],
+  news157: [
+    "Cambiare pagina con le schede in alto (schermata principale e Calorie) scorre fluido: niente più salto istantaneo né avanti e indietro verso la pagina centrale o l’ultima.",
+  ],
   news156: [
     "Animazioni più fluide: aprire (le frecce), cambiare pagina e le Calorie non scattano più, e tutto è un po’ più veloce.",
     "La barra Avvia sparisce tutta insieme, non si sfalda più a pezzi.",

@@ -1080,6 +1080,9 @@ export default {
     "Rozloženie Sklo vyzerá viac ako skutočné sklo: odlesk z rohu, jemný odraz, svetlá horná hrana a jemná žiara farieb témy za boxmi. Lišta so štartom a menu ☰ k nemu ladia a mobil to stále nezaťažuje.",
     "Horná lišta: keď si úplne hore, vypĺňa obrazovku od kraja po kraj, bez čiary hore a po bokoch.",
   ],
+  news157: [
+    "Prepínanie stránok tlačidlami hore (hlavná obrazovka aj Kalórie) plynule prejde: už neskočí naraz a pri strednej ani poslednej stránke sa nemyká zo strany na stranu.",
+  ],
   news156: [
     "Plynulejšie animácie: rozbaľovanie (šípky), prepínanie stránok a Kalórie sa už nezasekávajú a všetko je o kúsok rýchlejšie.",
     "Panel so Štartom sa skryje naraz celý, už sa pri tom nerozpadá na kúsky.",

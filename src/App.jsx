@@ -32,7 +32,7 @@ const THEMES = {
   slate:  { ink: "#15181d", panel: "#1f242b", panelHi: "#2a313a", line: "#3a434f", chalk: "#f1f4f8", dim: "#9aa6b4", edge: "#0e1115" },
   coffee: { ink: "#1c140f", panel: "#2a1f17", panelHi: "#382a20", line: "#4d3a2c", chalk: "#fbf3ec", dim: "#b8a291", edge: "#130d09" },
 };
-const APP_VERSION = "1.5.6";
+const APP_VERSION = "1.5.7";
 // Big Shoulders has no Cyrillic, so Oswald (also condensed) covers Ukrainian. The browser only
 // downloads the Oswald unicode ranges a page actually uses.
 const DISPLAY = "'Big Shoulders Display', 'Oswald', 'Arial Narrow', Impact, sans-serif";
@@ -2618,52 +2618,76 @@ function SetupCard({ profile, kcal, onFix, onClose }) {
 // least down to the bottom of the screen, so a swipe on the empty space under a short page works too (1.5.4).
 // name → data-<name>-tabs / -tab / -pager / -page for tests.
 function usePager(name, n) {
-  const pager = useRef(null), pages = useRef([]), knob = useRef(null);
+  const pager = useRef(null), pages = useRef([]), knob = useRef(null), ctl = useRef({});
   const [page, setPage] = useState(0);
   const [pagerEl, setPagerEl] = useState(null); // the strip may appear later (Calories shows a form first)
-  // A tap on a tab more than one page away (Calories 1 ↔ 3): "snap-stop: always" (one page per swipe) would stop the
-  // smooth scroll on the page in between, and a page change halfway (the strip takes that page's height) would cut it
-  // short, so for that jump the snap stop is lifted and only the knob follows; the page is taken when the scroll ends.
+  // 1.5.7 (Michael, video: a tab tap jumped instantly or swung back and forth): a tab tap no longer uses the browser's
+  // smooth scroll, which on Android fights with scroll-snap (and with any size change) and can jump or bounce. The app
+  // moves the strip itself with the app's ease curve while snapping is off, and the knob follows the strip. A finger
+  // on the strip stops that move at once and the normal swipe takes over.
   const goPage = i => {
     const el = pager.current; if (!el) return; sfxTap();
-    const go = () => { try { el.scrollTo({ left: i * el.clientWidth, behavior: "smooth" }); } catch (_) { el.scrollLeft = i * el.clientWidth; } };
-    const cur = Math.round(el.scrollLeft / Math.max(1, el.clientWidth));
-    if (Math.abs(i - cur) < 2) return go();
-    el.classList.add("jump");
-    const done = () => { if (!el.classList.contains("jump")) return; el.classList.remove("jump"); el.removeEventListener("scrollend", done); setPage(Math.max(0, Math.min(n - 1, Math.round(el.scrollLeft / Math.max(1, el.clientWidth))))); };
-    requestAnimationFrame(() => { el.addEventListener("scrollend", done); setTimeout(done, 1000); go(); });
+    const c = ctl.current, W = Math.max(1, el.clientWidth), from = el.scrollLeft, to = i * W;
+    if (c.stop) c.stop();
+    if (Math.abs(to - from) < 1) return;
+    if (reducedMotion()) { el.scrollLeft = to; return; }
+    const dur = 300 + 90 * Math.min(2, Math.abs(to - from) / W - 1 > 0 ? 1 : 0), t0 = performance.now();
+    const ease = t => 1 - Math.pow(1 - t, 4); // close to MO.ease: quick start, soft landing
+    let raf = 0, live = true;
+    el.classList.add("anim"); c.grow && c.grow();
+    const stop = () => { if (!live) return; live = false; cancelAnimationFrame(raf); el.classList.remove("anim"); c.stop = null; c.settle && c.settle(); };
+    c.stop = stop;
+    const step = now => { if (!live) return; const t = Math.min(1, (now - t0) / dur); el.scrollLeft = from + (to - from) * ease(t); if (t < 1) raf = requestAnimationFrame(step); else stop(); };
+    raf = requestAnimationFrame(step);
   };
   useBack(() => goPage(0), page > 0, true);
-  // The strip's height is set straight on the element (1.5.5 fix, Michael: animations felt stuck and slow): no React
-  // render and no CSS transition, so a box opening on a page, or the page itself, moves at full speed. While moving
-  // between two pages it is as tall as the taller one (nothing gets cut off mid-swipe); at rest, as tall as the page
-  // you're on, but at least down to the bottom of the screen (a swipe on the empty space under a short page works).
+  // Height (1.5.6/1.5.7): set straight on the element, never animated. At rest the strip is as tall as the page you're
+  // on, but at least down to the bottom of the screen (a swipe on the empty space under a short page works). While it
+  // moves, it is as tall as the tallest page and does not change: a size change mid-move makes the browser snap again,
+  // which looked like the strip bouncing between pages.
   useLayoutEffect(() => {
     const el = pager.current; if (!el) return;
+    const c = ctl.current;
     if (page) el.scrollLeft = page * el.clientWidth; // a strip that came back (after a form) stays on the same page
     if (knob.current) knob.current.style.transform = `translateX(${page * 100}%)`;
-    let last = -1;
-    const fit = () => {
-      const p = Math.max(0, Math.min(n - 1, el.scrollLeft / Math.max(1, el.clientWidth)));
-      const lo = pages.current[Math.floor(p)], hi = pages.current[Math.ceil(p)];
-      const top = el.getBoundingClientRect().top + window.scrollY;
-      const h = Math.max(lo ? lo.offsetHeight : 0, hi ? hi.offsetHeight : 0, Math.round(window.innerHeight - top));
-      if (h !== last) { last = h; el.style.height = h + "px"; }
-      return p;
+    let last = -1, moving = false, idle = 0, raf = 0;
+    const setH = h => { if (h !== last) { last = h; el.style.height = h + "px"; } };
+    const floor = () => Math.round(window.innerHeight - (el.getBoundingClientRect().top + window.scrollY));
+    const pos = () => Math.max(0, Math.min(n - 1, el.scrollLeft / Math.max(1, el.clientWidth)));
+    const fitRest = () => { const pg = pages.current[Math.round(pos())]; setH(Math.max(pg ? pg.offsetHeight : 0, floor())); };
+    const grow = () => { if (moving) return; moving = true; setH(Math.max(floor(), ...pages.current.map(x => (x ? x.offsetHeight : 0)))); };
+    const settle = () => {
+      clearTimeout(idle);
+      if (c.stop || !moving) { if (!c.stop) fitRest(); return; } // still moving by itself / nothing to do
+      moving = false; fitRest();
+      const r = Math.round(pos()); setPage(x => (x === r ? x : r));
     };
-    fit();
-    let raf = 0;
-    const on = () => { if (raf) return; raf = requestAnimationFrame(() => {
-      raf = 0; const p = fit();
-      if (knob.current) knob.current.style.transform = `translateX(${p * 100}%)`;
-      if (!el.classList.contains("jump")) { const r = Math.round(p); setPage(x => (x === r ? x : r)); }
-    }); };
+    c.grow = grow; c.settle = settle;
+    const on = () => {
+      grow();
+      clearTimeout(idle); idle = setTimeout(settle, 160); // when "scrollend" isn't there
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0; const p = pos();
+        if (knob.current) knob.current.style.transform = `translateX(${p * 100}%)`;
+        if (!c.stop) { const r = Math.round(p); setPage(x => (x === r ? x : r)); }
+      });
+    };
+    const touch = () => { if (c.stop) c.stop(); };
     el.addEventListener("scroll", on, { passive: true });
-    window.addEventListener("resize", fit);
+    el.addEventListener("scrollend", settle);
+    el.addEventListener("pointerdown", touch, { passive: true });
+    el.addEventListener("touchstart", touch, { passive: true });
+    window.addEventListener("resize", fitRest);
+    fitRest();
     // every page and the screen around the strip (a notice above it opening or closing moves its top)
-    const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(() => fit()) : null;
+    const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(() => { if (!moving) fitRest(); }) : null;
     if (ro) { pages.current.forEach(x => x && ro.observe(x)); if (el.parentElement) ro.observe(el.parentElement); }
-    return () => { el.removeEventListener("scroll", on); window.removeEventListener("resize", fit); if (ro) ro.disconnect(); if (raf) cancelAnimationFrame(raf); };
+    return () => {
+      el.removeEventListener("scroll", on); el.removeEventListener("scrollend", settle); el.removeEventListener("pointerdown", touch); el.removeEventListener("touchstart", touch);
+      window.removeEventListener("resize", fitRest); if (ro) ro.disconnect(); if (raf) cancelAnimationFrame(raf); clearTimeout(idle);
+      if (c.stop) c.stop(); c.grow = c.settle = null;
+    };
   }, [pagerEl]);
   const tabs = labels => (
     <div {...{ [`data-${name}-tabs`]: 1 }} role="tablist" style={{ position: "relative", display: "flex", padding: 3, borderRadius: 13, ...SUNK(), marginBottom: 12 }}>
@@ -2674,7 +2698,11 @@ function usePager(name, n) {
       ))}
     </div>
   );
-  const pagerProps = { ref: node => { pager.current = node; if (node !== pagerEl) setPagerEl(node); }, className: "swPager", [`data-${name}-pager`]: page };
+  // one ref function for the hook's whole life: a new one on every render made React detach and re-attach the strip,
+  // which restarted everything (and stopped a page move halfway)
+  const refFn = useRef(null);
+  if (!refFn.current) refFn.current = node => { pager.current = node; setPagerEl(node); };
+  const pagerProps = { ref: refFn.current, className: "swPager", [`data-${name}-pager`]: page };
   const pageProps = i => ({ ref: el => (pages.current[i] = el), className: "swPage", [`data-${name}-page`]: String(i), "aria-hidden": page !== i });
   return { page, goPage, tabs, pagerProps, pageProps };
 }
@@ -6393,7 +6421,7 @@ export default function App() {
         .sheetGhost>.sheetDim{animation:dFadeOut ${MO.out} ease-in both} .sheetGhost>.sheetGhostBox{box-sizing:border-box;animation:shOut ${MO.out} ${MO.exit} both}
         .sheetBox{box-sizing:border-box;max-height:86vh;max-height:calc(100dvh - 24px - var(--sat) - var(--sab))}
         .exq::after{content:"?"} .exq{position:relative} .exq::before{content:"";position:absolute;inset:-4px}
-        .swPager{display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;align-items:flex-start}.swPager::-webkit-scrollbar{display:none}.swPage{flex:0 0 100%;min-width:0;box-sizing:border-box;scroll-snap-align:start;scroll-snap-stop:always;padding:0 18px 18px}.swPager.jump>.swPage{scroll-snap-stop:normal}
+        .swPager{display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;align-items:flex-start}.swPager::-webkit-scrollbar{display:none}.swPage{flex:0 0 100%;min-width:0;box-sizing:border-box;scroll-snap-align:start;scroll-snap-stop:always;padding:0 18px 18px}.swPager.anim{scroll-snap-type:none}
         .noBar{scrollbar-width:none}.noBar::-webkit-scrollbar{display:none}
         ::selection{background:${C.signal}55;color:${C.chalk}} input,textarea{caret-color:${C.signal};accent-color:${C.signal}}
         @keyframes bump{0%{transform:scale(.82)}55%{transform:scale(1.12)}100%{transform:scale(1)}}

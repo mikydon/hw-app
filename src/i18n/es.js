@@ -1080,6 +1080,9 @@ export default {
     "El diseño Cristal se parece más al cristal real: un brillo desde la esquina, un reflejo suave, un borde superior claro y un suave resplandor de los colores del tema detrás de las cajas. La barra de inicio y el menú ☰ combinan con él, y sigue siendo ligero para el móvil.",
     "Barra superior: arriba del todo ahora llena la pantalla de borde a borde, sin línea arriba ni a los lados.",
   ],
+  news157: [
+    "Cambiar de página con las pestañas de arriba (pantalla principal y Calorías) se desliza suave: sin salto instantáneo ni vaivén al ir a la página del medio o la última.",
+  ],
   news156: [
     "Animaciones más fluidas: desplegar (las flechas), cambiar de página y Calorías ya no se traban, y todo va un poco más rápido.",
     "La barra de Inicio se oculta entera, ya no se deshace en trozos.",

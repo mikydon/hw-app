@@ -1080,6 +1080,9 @@ export default {
     "Az Üveg elrendezés jobban hasonlít a valódi üvegre: csillanás a sarokból, lágy tükröződés, világos felső él és a téma színeinek halvány fénye a dobozok mögött. Az indítósáv és a ☰ menü illik hozzá, és a telefont továbbra sem terheli.",
     "Felső sáv: az oldal tetején most szélétől széléig kitölti a képernyőt, vonal nélkül felül és oldalt.",
   ],
+  news157: [
+    "A lapok váltása a felső gombokkal (főképernyő és Kalóriák) simán úszik: nincs hirtelen ugrás, és a középső vagy utolsó lapnál sem rángat ide-oda.",
+  ],
   news156: [
     "Simább animációk: a lenyitás (nyilak), a lapozás és a Kalóriák már nem akadoznak, és minden kicsit gyorsabb.",
     "A Start sáv egyben tűnik el, már nem esik szét darabokra.",
