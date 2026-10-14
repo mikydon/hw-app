@@ -946,9 +946,9 @@ function searchHowTo(name) { openExternal("https://www.google.com/search?q=" + e
 // makes the screen the containing block for position:fixed, so the sheet used to be placed
 // relative to the (long, scrolled) page instead of the phone screen and ended up off-screen.
 // Android back button closes the newest open sheet.
-function useBack(fn, on = true) {
+function useBack(fn, on = true, low = false) {
   const ref = useRef(fn); ref.current = fn;
-  useEffect(() => (on ? pushBack(() => ref.current && ref.current()) : undefined), [on]);
+  useEffect(() => (on ? pushBack(() => ref.current && ref.current(), low) : undefined), [on]);
 }
 function Sheet({ title, onClose, children, short }) {
   useBack(onClose);
@@ -1231,6 +1231,10 @@ let card = { background: C.panel, border: `1px solid ${C.line}`, borderRadius: 1
 let LOOK = "cards";
 // A soft inner tile inside a box (badges, ranks): visible but quiet, on any look.
 const SOFT = () => (LOOK === "tiles" ? `${C.ink}55` : LOOK === "liquid" ? "rgba(255,255,255,.06)" : `${C.chalk}0d`);
+// "Pressed in" (1.5.3, Michael liked the unselected 13-min square on the floating bar: "like a hole"): a choice that isn't
+// picked sits a little below the surface (darker than the card, shadow from the top edge, a faint light rim below),
+// the picked one stands out bright. Used by every switch of this kind: rounds, A/B/C, page tabs, month/day pickers…
+const SUNK = () => ({ background: "rgba(0,0,0,.24)", border: "1px solid rgba(0,0,0,.28)", boxShadow: "inset 0 2px 5px rgba(0,0,0,.38), inset 0 -1px 0 rgba(255,255,255,.07)" });
 // "Liquid glass" (Michael, Oct 10: like on iPhones): translucent frosted boxes over soft colour blobs of the theme.
 // 1.4.1 (Michael: "sekavá"): the boxes no longer blur what is behind them. Behind a box there is only the soft colour
 // background, which is already blurry, so it looks the same, but a blur per box made every scroll frame expensive
@@ -1304,17 +1308,44 @@ function Sect({ title, meta, children, style, titlePad, accent, ...rest }) {
 
 // Rounded corners of small tiles: never as round as the big liquid boxes (26 px), so text never comes near a corner.
 const tileR = () => ({ borderRadius: Math.min(card.borderRadius || 20, 20) });
-// "Really leave?" at the bottom after the first back on Home (app only).
-function ExitPrompt({ onStay, onLeave }) {
+// "Really leave?" after the first back on Home (app only). 1.5.3 (Michael, Oct 14): in the middle of the screen as one box
+// like the day card, buttons like Workout length (a square + a wide button), it stays until you choose (no timer):
+// Stay, a tap outside or Leave / a second back. One line says what leaving means today (workout waiting, done, rest day).
+function exitLine(history, session) {
+  if (session) return T("exitSession");
+  const today = dateKey(), last = history[history.length - 1];
+  const day = T("dayN", { d: DAYS[nextDayIdx(history)].id });
+  if (!last) return T("exitTodo", { day });
+  const gap = daysBetween(last.date, today);
+  if (gap <= 0) return T("exitDone");
+  if (gap === 1) return T("exitRest", { day });
+  return T("exitTodo", { day });
+}
+function ExitPrompt({ onStay, onLeave, history, session }) {
+  const [on, setOn] = useState(false);
+  useEffect(() => { const r = requestAnimationFrame(() => setOn(true)); return () => cancelAnimationFrame(r); }, []);
+  // the same box as the day card on Home (opaque in every look, so nothing shows through)
+  const box = LOOK === "glass" ? GLASS() : LOOK === "liquid" ? { ...LIQUID_FLOAT(), borderRadius: 26 } : LOOK === "tiles" ? { ...card, borderRadius: 20, boxShadow: "0 22px 50px rgba(0,0,0,.5)" } : { background: C.panel, border: `1px solid ${C.line}`, borderRadius: 20, boxShadow: "0 22px 50px rgba(0,0,0,.5)" };
+  const title = T("exitAskTitle");
   return createPortal(
-    <div data-exit-ask role="alertdialog" aria-label={T("exitAskTitle")} className="miniIn"
-      style={{ position: "fixed", left: "50%", bottom: "calc(14px + var(--sab))", transform: "translateX(-50%)", zIndex: 90, width: "min(calc(100vw - 24px), 436px)", display: "flex", alignItems: "center", gap: 10, padding: "12px 12px 12px 16px", borderRadius: 20, background: C.panelHi, border: `1px solid ${C.line}`, boxShadow: "0 12px 34px rgba(0,0,0,.45)", fontFamily: BODY, ...(LOOK === "liquid" ? { ...LIQUID_FLOAT(), borderRadius: 24 } : {}) }}>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 15, fontWeight: 800, color: C.chalk }}>{T("exitAskTitle")}</div>
-        <div style={{ fontSize: 12, color: C.dim, marginTop: 2 }}>{T("exitAskD")}</div>
+    <div data-exit-back onClick={onStay} style={{ position: "fixed", inset: 0, zIndex: 90, display: "flex", alignItems: "center", justifyContent: "center", padding: "calc(16px + var(--sat)) 16px calc(16px + var(--sab))", background: on ? "rgba(0,0,0,.55)" : "rgba(0,0,0,0)", transition: "background .25s", fontFamily: BODY }}>
+      <div data-exit-ask role="alertdialog" aria-modal="true" aria-label={title} onClick={e => e.stopPropagation()}
+        style={{ ...box, width: "min(100%, 380px)", boxSizing: "border-box", padding: "20px 18px 18px", opacity: on ? 1 : 0, transform: on ? "scale(1)" : "scale(.92)", transition: "opacity .22s, transform .34s cubic-bezier(.34,1.4,.64,1)" }}>
+        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: C.dim }}>HW App</div>
+        <div data-exit-title style={{ fontFamily: DISPLAY, fontWeight: 900, fontSize: CJK.test(title) ? 30 : 40, lineHeight: 0.95, letterSpacing: -0.5, color: C.chalk, marginTop: 8, overflowWrap: "anywhere" }}>{title}</div>
+        <div data-exit-line style={{ fontSize: 14, color: C.dim, marginTop: 10, lineHeight: 1.5 }}>{exitLine(history || [], session)}</div>
+        <div style={{ display: "flex", gap: 8, alignItems: "stretch", marginTop: 18 }}>
+          <button data-exit-stay onClick={onStay} aria-label={T("exitStay")}
+            style={{ ...btnBase, width: 76, flexShrink: 0, padding: "8px 2px", borderRadius: 14, ...SUNK(), color: C.chalk, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3 }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14L4 9l5-5M4 9h10.5a5.5 5.5 0 010 11H11" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            <span style={{ fontSize: 11, fontWeight: 800, lineHeight: 1.1, maxWidth: "100%", overflowWrap: "anywhere" }}>{T("exitStay")}</span>
+          </button>
+          <button data-exit-yes onClick={onLeave} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), flex: 1, minWidth: 0, fontSize: 17, padding: "10px 10px", borderRadius: 14 }}>
+            {T("exitYes")}
+            <span style={{ display: "block", fontSize: 11, fontWeight: 700, opacity: 0.75, marginTop: 2 }}>{T("exitAgain")}</span>
+          </button>
+        </div>
       </div>
-      <button data-exit-stay onClick={onStay} style={{ ...btnBase, background: "transparent", color: C.chalk, padding: "9px 10px", fontSize: 14 }}>{T("exitStay")}</button>
-      <button data-exit-yes onClick={onLeave} style={{ ...btnBase, background: C.signal, color: C.signalInk, padding: "9px 14px", fontSize: 14, borderRadius: 12 }}>{T("exitYes")}</button>
     </div>,
     document.body
   );
@@ -1428,12 +1459,16 @@ function gooPath(p, W, H, S, ins) {
   const f = n => Math.round(n * 10) / 10, cx = W / 2, parts = [];
   const rr = (x0, y0, x1, y1, rt, rb) => `M${f(x0 + rt)} ${f(y0)}H${f(x1 - rt)}A${f(rt)} ${f(rt)} 0 0 1 ${f(x1)} ${f(y0 + rt)}V${f(y1 - rb)}A${f(rb)} ${f(rb)} 0 0 1 ${f(x1 - rb)} ${f(y1)}H${f(x0 + rb)}A${f(rb)} ${f(rb)} 0 0 1 ${f(x0)} ${f(y1 - rb)}V${f(y0 + rt)}A${f(rt)} ${f(rt)} 0 0 1 ${f(x0 + rt)} ${f(y0)}Z`;
   if (p < 0.5) {
-    // the neck pulls the box up and makes it a little narrower (stretch)…
+    // at rest: the plate, edge to edge (1.5.3, Michael picked this over a rounded box hanging from the edge).
+    // On the way out the sides pull in, the part over the status bar thins into a neck, the box is pulled up a little
+    // and gets narrower (stretch)…
     const a = gInOut(p / 0.5), x = ins * a + 1.5 * a * a, rt = 24 * a;
     parts.push(rr(x, S - 3 * a * a, W - x, H, rt, gLerp(26, 24, a)));
     const wT = gLerp(W, 30, a), wB = gLerp(W, 36, a), wM = W * (1 - a) ** 1.6, yB = S + rt + 1;
     const xT = cx - wT / 2, xB = cx - wB / 2, xM = cx - wM / 2;
     parts.push(`M${f(xT)} 0H${f(W - xT)}C${f(W - xM)} ${f(yB * 0.2)} ${f(W - xM)} ${f(yB * 0.8)} ${f(W - xB)} ${f(yB)}H${f(xB)}C${f(xM)} ${f(yB * 0.8)} ${f(xM)} ${f(yB * 0.2)} ${f(xT)} 0Z`);
+    const bh = 3 * (1 - p);
+    if (bh > 0.2) parts.push(`M0 0H${f(W)}V${f(bh)}H0Z`);
   } else {
     const b = (p - 0.5) / 0.5;
     // …and after the snap it springs back: squashed (lower and wider), stretched, settling (damped spring)
@@ -1445,9 +1480,9 @@ function gooPath(p, W, H, S, ins) {
     if (hb > 0.3) parts.push(`M${f(cx - wb / 2)} ${f(top + 2)}C${f(cx - wb * 0.15)} ${f(top - hb * 0.35)} ${f(cx - wb * 0.3)} ${f(top - hb)} ${f(cx)} ${f(top - hb)}C${f(cx + wb * 0.3)} ${f(top - hb)} ${f(cx + wb * 0.15)} ${f(top - hb * 0.35)} ${f(cx + wb / 2)} ${f(top + 2)}Z`);
     const r = 4 * (1 - b ** 3), yd = S * 0.5 - S * 0.3 * Math.sin(Math.PI * b) + S * 0.5 * b * b;
     if (r > 0.4) parts.push(`M${f(cx + r)} ${f(yd)}A${f(r)} ${f(r)} 0 1 1 ${f(cx - r)} ${f(yd)}A${f(r)} ${f(r)} 0 1 1 ${f(cx + r)} ${f(yd)}Z`);
+    const bh = 3 * (1 - b);
+    if (bh > 0.2) parts.push(`M0 0H${f(W)}V${f(bh)}H0Z`);
   }
-  const bh = 3 * (1 - p);
-  if (bh > 0.2) parts.push(`M0 0H${f(W)}V${f(bh)}H0Z`);
   return parts.join("");
 }
 function TopBar({ screen, history, menuOpen, onMenu, onGo, dlPct, badge, head }) {
@@ -1466,6 +1501,13 @@ function TopBar({ screen, history, menuOpen, onMenu, onGo, dlPct, badge, head })
   // fade over the status bar comes in. Only opacity and transform animate (the compositor does it, no repaint, no
   // layout), and a finished plate or fade is hidden so it isn't drawn on every scrolled frame.
   const [fl, setFl] = useState(() => typeof window !== "undefined" && window.scrollY > 12);
+  // 1.5.3 (Michael, on a PC: the plate's square top corner showed next to the window edge): the plate (and the drop
+  // shape) always reach the window's edges, however wide the window is; the floating box keeps the column's width.
+  useLayoutEffect(() => {
+    const fit = () => { const o = outRef.current, w = wrapRef.current; if (!o || !w) return; const vw = document.documentElement.clientWidth; o.style.setProperty("--tbExt", `${Math.max(0, (vw - w.offsetWidth) / 2)}px`); };
+    fit(); window.addEventListener("resize", fit);
+    return () => window.removeEventListener("resize", fit);
+  }, []);
   useEffect(() => {
     let raf = 0;
     const check = () => { raf = 0; const y = window.scrollY; setFl(f => (f ? y > 4 : y > 12)); };
@@ -1478,18 +1520,27 @@ function TopBar({ screen, history, menuOpen, onMenu, onGo, dlPct, badge, head })
   // has the plate's background and only a clip-path changes per frame (~0.7 s, a small repaint); before and after,
   // the plain plate or box shows as before. Content never moves.
   const outRef = useRef(null), gooRef = useRef(null), wrapRef = useRef(null), gs = useRef(null);
+  // The shape layer is also the plate at rest (1.5.3): drawn at p = 0 when the page is at the top, redrawn on resize.
+  const gooDims = () => { const goo = gooRef.current, wrap = wrapRef.current; const W = goo.offsetWidth, H = goo.offsetHeight; return [W, H, H - wrap.offsetHeight, (W - wrap.offsetWidth) / 2]; };
+  const drawRest = () => { const g = gs.current, goo = gooRef.current; if (!goo || !wrapRef.current || (g && (g.raf || g.p !== 0))) return; goo.style.clipPath = `path("${gooPath(0, ...gooDims())}")`; goo.style.visibility = "visible"; };
+  useLayoutEffect(() => {
+    drawRest();
+    let t = 0; const on = () => { clearTimeout(t); t = setTimeout(drawRest, 60); };
+    window.addEventListener("resize", on);
+    return () => { clearTimeout(t); window.removeEventListener("resize", on); };
+  }, []);
   useLayoutEffect(() => {
     const out = outRef.current, goo = gooRef.current, wrap = wrapRef.current;
     if (!out || !goo || !wrap) return;
     const g = gs.current || (gs.current = { p: fl ? 1 : 0, v: 0, raf: 0, t: 0 });
     const to = fl ? 1 : 0;
-    if (g.p === to && !g.raf) return;
+    if (g.p === to && !g.raf) { if (!fl) drawRest(); return; }
     cancelAnimationFrame(g.raf); clearTimeout(g.t); g.raf = 0;
     let reduce = false;
     try { reduce = matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (_) {}
-    if (reduce) { g.p = to; g.v = 0; out.removeAttribute("data-goo"); goo.style.visibility = "hidden"; return; }
+    if (reduce) { g.p = to; g.v = 0; out.removeAttribute("data-goo"); if (to) goo.style.visibility = "hidden"; else drawRest(); return; }
     out.setAttribute("data-goo", ""); // before measuring: the measurement applies styles, and the box must not start fading in
-    const W = goo.offsetWidth, H = goo.offsetHeight, S = H - wrap.offsetHeight, ins = (W - wrap.offsetWidth) / 2;
+    const [W, H, S, ins] = gooDims();
     const dur = to ? 720 : 620;
     goo.style.visibility = "visible";
     // Michael (Oct 12): scrolling back mid-move must not jump or run two moves at once. There is only ever one shape
@@ -1507,7 +1558,7 @@ function TopBar({ screen, history, menuOpen, onMenu, onGo, dlPct, badge, head })
       goo.style.clipPath = `path("${gooPath(g.p, W, H, S, ins)}")`;
       if (g.p !== to) { g.raf = requestAnimationFrame(step); return; }
       g.raf = 0; g.v = 0; out.removeAttribute("data-goo");
-      g.t = setTimeout(() => { if (g.run === run && !g.raf) goo.style.visibility = "hidden"; }, 240); // the box fades in over the same shape first
+      if (to) g.t = setTimeout(() => { if (g.run === run && !g.raf) goo.style.visibility = "hidden"; }, 240); // the box fades in over the same shape first
     };
     step(last);
   }, [fl]);
@@ -1516,9 +1567,8 @@ function TopBar({ screen, history, menuOpen, onMenu, onGo, dlPct, badge, head })
   return (
     <div ref={outRef} data-topbar data-topbar-float={fl ? 1 : 0} className={"tbOut" + (fl ? " fl" : "")} style={{ "--tbFade": C.ink }}>
       <div ref={wrapRef} className="tbWrap">
-        <div aria-hidden="true" ref={gooRef} data-topbar-goo className="tbGoo" style={{ background: box.background }} />
+        <div aria-hidden="true" ref={gooRef} data-topbar-goo data-topbar-plate className="tbGoo" style={{ background: box.background }} />
         <div aria-hidden="true" className="tbPill" style={{ ...box, boxShadow: `${liquid ? GLASS_EDGE + ", " : ""}0 10px 26px rgba(0,0,0,.3)` }} />
-        <div aria-hidden="true" data-topbar-plate className="tbPlate" style={{ background: box.background, borderBottom: box.border }} />
         <div data-topbar-box className="tbBox">
         {head ? head : <>
         <div style={{ flex: 1, minWidth: 0 }}>
@@ -1656,6 +1706,82 @@ function MiniPlayer({ session, live, onOpen }) {
   );
 }
 
+// Home (1.5.3, Michael marked them in design A): two tiles side by side. Calories: today's number, the target and a bar
+// (tap: Calories). Challenges: done/3 and the days left, each challenge as a short line with its progress (Michael: the
+// descriptions must be visible); tap opens the full list with XP.
+function HomeTiles({ history, onCalories }) {
+  const [sheet, setSheet] = useState(false);
+  const s = kcalNow(history);
+  const wk = weekKey(dateKey()), list = challengeStatus(history, wk), doneN = list.filter(c => c.done).length;
+  const left = daysBetween(dateKey(), addDays(wk, 6)) + 1;
+  const tile = { flex: 1, minWidth: 0, marginTop: 12, cursor: "pointer", display: "flex", flexDirection: "column", ...(LOOK === "flat" ? { ...card, padding: "13px 14px" } : { padding: "13px 14px" }) };
+  const label = t => <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: C.dim, ...SECT_HEAD }}>{t}</div>;
+  const bar = (v, col) => <span style={{ display: "block", height: 5, borderRadius: 99, background: `${C.chalk}14`, overflow: "hidden", marginTop: 8 }}><span style={{ display: "block", width: `${Math.min(1, v) * 100}%`, height: "100%", borderRadius: 99, background: col, transition: "width .6s ease-out" }} /></span>;
+  const pct = s ? Math.min(1, s.eaten / Math.max(1, s.target)) : 0, kcol = s && s.hit ? KC_HIT : s && s.left < 0 ? "#ff8a80" : C.signal;
+  const key = fn => e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); fn(); } };
+  const openCal = () => { sfxTap(); onCalories(); }, openCh = () => { sfxTap(); setSheet(true); };
+  return (
+    <div data-home-tiles style={{ display: "flex", gap: 10, alignItems: "stretch" }}>
+      <Sect role="button" tabIndex={0} data-home-kcal={s ? "on" : "setup"} onClick={openCal} onKeyDown={key(openCal)} aria-label={s ? `${T("kcHomeTitle")}: ${nf(s.eaten)} ${T("kcOf", { n: nf(s.target) })}` : T("kcHomeSetup")} style={tile}>
+        {label(T("kcTile"))}
+        {s ? <>
+          <span style={{ display: "flex", alignItems: "baseline", gap: 4, marginTop: 8, flexWrap: "wrap" }}>
+            <span data-home-kcal-eaten style={{ fontFamily: DISPLAY, fontSize: 34, fontWeight: 900, lineHeight: 1, color: C.chalk }}>{nf(s.eaten)}</span>
+            <span style={{ fontSize: 12, color: C.dim, whiteSpace: "nowrap" }}>/ {nf(s.target)}</span>
+          </span>
+          {bar(pct, kcol)}
+          <span data-home-kcal-line style={{ display: "block", fontSize: 12, color: s.hit ? KC_HIT : C.dim, lineHeight: 1.4, marginTop: 8 }}>{kcalLine(s)}</span>
+        </> : <>
+          <span style={{ display: "block", fontSize: 14, fontWeight: 800, color: C.chalk, marginTop: 8, lineHeight: 1.3 }}>{T("kcHomeSetup")}</span>
+          <span style={{ display: "block", fontSize: 12, color: C.dim, marginTop: 4, lineHeight: 1.4 }}>{T("kcHomeSetupD")}</span>
+        </>}
+      </Sect>
+      <Sect role="button" tabIndex={0} data-home-ch onClick={openCh} onKeyDown={key(openCh)} aria-label={T("weeklyChallenges")} style={tile}>
+        {label(T("chTile"))}
+        <span style={{ display: "flex", alignItems: "baseline", gap: 4, marginTop: 8 }}>
+          <span style={{ fontFamily: DISPLAY, fontSize: 34, fontWeight: 900, lineHeight: 1, color: doneN === 3 ? C.mint : C.chalk }}>{doneN}/3</span>
+          <span style={{ fontSize: 12, color: C.dim, whiteSpace: "nowrap" }}>· {TP("days", left)}</span>
+        </span>
+        {bar(list.reduce((a, c) => a + Math.min(1, c.v / c.goal), 0) / 3, doneN === 3 ? C.mint : C.sky)}
+        <span style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 9 }}>
+          {list.map(c => (
+            <span key={c.id} data-home-ch-row={c.id} style={{ display: "flex", alignItems: "flex-start", gap: 6, fontSize: 12, lineHeight: 1.3, color: c.done ? C.mint : C.chalk }}>
+              <span aria-hidden="true" style={{ width: 16, flexShrink: 0, textAlign: "center" }}>{c.done ? "✓" : c.icon}</span>
+              <span style={{ flex: 1, minWidth: 0 }}>{L.ch[c.id]}</span>
+              <span style={{ color: c.done ? C.mint : C.dim, fontWeight: 700, whiteSpace: "nowrap" }}>{Math.min(c.v, c.goal)}/{c.goal}</span>
+            </span>
+          ))}
+        </span>
+      </Sect>
+      {sheet && <Sheet title={T("weeklyChallenges")} onClose={() => setSheet(false)} short><ChallengeRows history={history} /></Sheet>}
+    </div>
+  );
+}
+function ChallengeRows({ history }) {
+  const list = challengeStatus(history, weekKey(dateKey()));
+  return (
+    <>
+      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        {list.map(c => (
+          <div key={c.id} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div className={c.done ? "pop" : ""} style={{ width: 36, height: 36, borderRadius: 11, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, background: c.done ? C.mint : C.panelHi }}>{c.done ? "✓" : c.icon}</div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
+                <span style={{ fontSize: 14, fontWeight: 600, color: c.done ? C.mint : C.chalk }}>{L.ch[c.id]}</span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: c.done ? C.mint : C.sky, whiteSpace: "nowrap" }}>+{c.xp} XP</span>
+              </div>
+              <div style={{ height: 5, background: `${C.chalk}14`, borderRadius: 99, marginTop: 6, overflow: "hidden" }}>
+                <div style={{ height: "100%", width: `${(c.v / c.goal) * 100}%`, background: c.done ? C.mint : C.sky, borderRadius: 99, transition: "width .6s ease-out" }} />
+              </div>
+              <div style={{ fontSize: 11, color: C.dim, marginTop: 3 }}>{c.v} / {c.goal}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div style={{ fontSize: 12, color: C.dim, marginTop: 12 }}>{T("chFooter")}</div>
+    </>
+  );
+}
 function ChallengesCard({ history }) {
   const wk = weekKey(dateKey());
   const list = challengeStatus(history, wk);
@@ -2021,7 +2147,7 @@ function FloatStart({ show, day, rounds, setRounds, onStart }) {
       style={{ position: "fixed", left: 0, right: 0, bottom: "calc(var(--sab, 0px) + 12px)", zIndex: 40, display: "flex", justifyContent: "center", padding: "0 12px", pointerEvents: show ? "auto" : "none" }}>
       <div data-fstart-box style={{ display: "flex", gap: 8, width: "100%", maxWidth: 436, padding: 8, borderRadius: 22, background: `${C.ink}f5`, border: `1px solid ${C.line}`, boxShadow: "0 12px 34px rgba(0,0,0,.5)", ...(LOOK === "liquid" ? { ...LIQUID_FLOAT(), borderRadius: 26 } : LOOK === "glass" ? { ...GLASS(), borderRadius: 22, boxShadow: "inset 0 1px 0 rgba(255,255,255,.22), 0 12px 34px rgba(0,0,0,.5)" } : {}) }}>
         {[3, 2].map((n, i) => (
-          <button key={n} tabIndex={show ? 0 : -1} data-fround={n} aria-pressed={rounds === n} aria-label={T("roundsBtn", { n, m: n === 2 ? 13 : 19 })} onClick={() => { sfxTap(); setRounds(n); }} className="fsq" style={{ ...btnBase, "--d": `${60 + i * 50}ms`, width: 58, flexShrink: 0, borderRadius: 14, padding: "6px 0", background: rounds === n ? C.chalk : C.panel, color: rounds === n ? C.ink : C.dim, border: `1.5px solid ${rounds === n ? C.chalk : C.line}`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", lineHeight: 1, ...(LOOK === "liquid" && rounds !== n ? { ...LIQUID_PILL(), color: C.chalk } : {}) }}>
+          <button key={n} tabIndex={show ? 0 : -1} data-fround={n} aria-pressed={rounds === n} aria-label={T("roundsBtn", { n, m: n === 2 ? 13 : 19 })} onClick={() => { sfxTap(); setRounds(n); }} className="fsq" style={{ ...btnBase, "--d": `${60 + i * 50}ms`, width: 58, flexShrink: 0, borderRadius: 14, padding: "6px 0", ...(rounds === n ? { background: C.chalk, border: `1px solid ${C.chalk}` } : SUNK()), color: rounds === n ? C.ink : C.dim, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", lineHeight: 1 }}>
             <span style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900 }}>{n === 2 ? 13 : 19}</span>
             <span style={{ fontSize: 10, fontWeight: 800, marginTop: 2 }}>min</span>
           </button>
@@ -2063,7 +2189,7 @@ function withBody(k, body) {
 }
 // Month and day pickers in the app's colours (Michael, Oct 10: the phone's grey dropdowns looked ugly).
 const monthNames = style => Array.from({ length: 12 }, (_, i) => new Date(2000, i, 1).toLocaleString(LANG, { month: style }));
-const pickBtn = on => ({ ...btnBase, padding: "11px 0", fontSize: 14, minWidth: 0, background: on ? C.signal : C.panel, color: on ? C.signalInk : C.chalk, border: `1.5px solid ${on ? C.signal : C.line}`, "--e": on ? EDGE[C.signal] || "transparent" : "transparent" });
+const pickBtn = on => ({ ...btnBase, padding: "11px 0", fontSize: 14, minWidth: 0, ...(on ? { background: C.signal, border: `1px solid ${C.signal}` } : SUNK()), color: on ? C.signalInk : C.chalk, "--e": on ? EDGE[C.signal] || "transparent" : "transparent" });
 // The app's own date picker (1.5.0, Michael: the phone's grey date dialog didn't belong to the app). A field that
 // opens a sheet with a month calendar in the theme; days after `max` can't be picked.
 function DateField({ value, max, onChange, label, field }) {
@@ -2298,7 +2424,7 @@ function Onboarding({ start = 0, profile, setProfile, kcal, setKcal, onDone, acc
           <div role="radiogroup" aria-label={T("kcSex")} style={{ display: "flex", gap: 10 }}>
             {[["m", "kcMale", "♂"], ["f", "kcFemale", "♀"]].map(([v, k, ic]) => (
               <button key={v} role="radio" aria-checked={sex === v} data-ob-sex={v} onClick={() => { sfxTap(); setSex(v); }}
-                style={{ ...btnBase, flex: 1, padding: "22px 0 18px", borderRadius: 18, display: "flex", flexDirection: "column", alignItems: "center", gap: 6, background: sex === v ? C.signal : C.panel, border: `2px solid ${sex === v ? C.signal : C.line}`, color: sex === v ? C.signalInk : C.chalk, transition: "background .2s, color .2s" }}>
+                style={{ ...btnBase, flex: 1, padding: "22px 0 18px", borderRadius: 18, display: "flex", flexDirection: "column", alignItems: "center", gap: 6, ...(sex === v ? { background: C.signal, border: `1px solid ${C.signal}` } : SUNK()), color: sex === v ? C.signalInk : C.chalk, transition: "background .2s, color .2s, box-shadow .2s" }}>
                 <span aria-hidden="true" style={{ fontSize: 34, lineHeight: 1 }}>{ic}</span>
                 <span style={{ fontSize: 17, fontWeight: 800 }}>{T(k)}</span>
               </button>
@@ -2413,146 +2539,89 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
     const done = new Set(history.map(x => x.date));
     return weekdaysShort().map((lb, i) => {
       const d = new Date(mon); d.setDate(mon.getDate() + i);
-      const k = dateKey(d);
-      return { lb, k, on: done.has(k), isToday: k === today };
+      const k = dateKey(d), ks = k <= today ? kcalNow(history, k) : null;
+      return { lb, k, on: done.has(k), isToday: k === today, kc: ks && ks.hit ? "hit" : ks && ks.logged ? "log" : null };
     });
   })();
   const weekCount = week.filter(w => w.on).length;
 
-  return (
-    <div className="scr" style={{ padding: "16px 18px 110px", maxWidth: 460, margin: "0 auto" }}>
-      {howEx && <HowTo id={howEx} history={history} onClose={() => setHowEx(null)} />}
+  // ─── 1.5.3 (Michael, Oct 13): Home as two pages you swipe between, like a phone's home screen. ───
+  // Page 1 "Today": one notice at a time, the big day + Start, this week (green = workout, amber = calories), calories
+  // and the weekly challenges. Page 2: the day's exercises. A small switch on top shows where you are (and works with
+  // a mouse); Android back on page 2 goes to page 1.
+  const pager = useRef(null), pages = useRef([]), knob = useRef(null);
+  const [page, setPage] = useState(0);
+  const [pagerH, setPagerH] = useState(null);
+  const goPage = n => { const el = pager.current; if (!el) return; sfxTap(); try { el.scrollTo({ left: n * el.clientWidth, behavior: "smooth" }); } catch (_) { el.scrollLeft = n * el.clientWidth; } };
+  useBack(() => goPage(0), page === 1, true); // a sheet opened from page 2 closes first
+  useEffect(() => {
+    const el = pager.current; if (!el) return;
+    let raf = 0;
+    const on = () => { if (raf) return; raf = requestAnimationFrame(() => {
+      raf = 0; const p = Math.max(0, Math.min(1, el.scrollLeft / Math.max(1, el.clientWidth)));
+      if (knob.current) knob.current.style.transform = `translateX(${p * 100}%)`;
+      setPage(p > 0.5 ? 1 : 0);
+    }); };
+    el.addEventListener("scroll", on, { passive: true });
+    return () => { el.removeEventListener("scroll", on); if (raf) cancelAnimationFrame(raf); };
+  }, []);
+  // the pager is as tall as the page you're on (pages have different lengths; the window does the vertical scrolling)
+  useLayoutEffect(() => {
+    const el = pages.current[page]; if (!el) return;
+    const fit = () => setPagerH(el.offsetHeight);
+    fit();
+    if (typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(fit); ro.observe(el); return () => ro.disconnect();
+  }, [page]);
 
-      <UpdateBanner dl={dl} busy={!!active} onClose={onDlClose} />
-      {apk && <ApkUpdateCard info={apk.info} busy={!!active} onClose={apk.close} />}
-      {profile && !(ui && ui.setupHidden) && <SetupCard profile={profile} kcal={kcal} onFix={onSetup} onClose={() => setUi({ ...ui, setupHidden: true })} />}
-      {upd && <UpdateCard onOpen={upd.open} onClose={upd.close} />}
-      {profile && <BirthdayCard profile={profile} ui={ui} setUi={setUi} />}
-      {showDone && (
-        <div style={{ position: "relative", background: `${C.mint}1f`, border: `1.5px solid ${C.mint}`, borderRadius: 18, padding: "14px 40px 14px 16px", display: "flex", alignItems: "center", gap: 14, marginBottom: 14 }}>
-          <CloseX color="#bfe9d4" onClick={() => setUi({ ...ui, doneHiddenTs: lastTs })} />
-          <div className="pop" style={{ width: 46, height: 46, borderRadius: 99, background: C.mint, color: C.ink, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, fontWeight: 900, flexShrink: 0 }}>✓</div>
-          <div>
-            <div style={{ fontFamily: DISPLAY, fontSize: 32, fontWeight: 900, lineHeight: 0.95, color: C.mint }}>{L.doneTitles[dv.t % L.doneTitles.length]}</div>
-            <div style={{ fontSize: 14, color: C.chalk, marginTop: 4, fontWeight: 600 }}>{fmt(L.doneSubs[dv.s % L.doneSubs.length], { day: last.day })}</div>
-            <div style={{ fontSize: 12, color: "#bfe9d4", marginTop: 4, lineHeight: 1.5 }}>{last.items.map(it => `${exName(it)} ${it.res.map(r => fmtRes(r, "")).join("/")}`).join(", ")}</div>
-          </div>
-        </div>
-      )}
+  // One notice at a time (Michael marked it in design A), the most important first. A download in progress and a new
+  // APK always show (rare and important).
+  const hint = ui.hint && ui.hint.date === today && ui.hintHidden !== today ? HINTS.find(x => x.k === ui.hint.k) : null;
+  const notices = [
+    profile && bdayToday() && ui.bdayHidden !== today && "bday",
+    showDone && "done",
+    upd && "upd",
+    history.length === 0 && !ui.welcomeHidden && "welcome", // a new user first sees what the app is, then what is missing
+    profile && !(ui && ui.setupHidden) && (() => { const m = missingSetup(profile, kcal); return m.name || m.kcal.length || m.goal; })() && "setup",
+    hint && onGo && "hint",
+    dailyText && "daily",
+  ].filter(Boolean);
+  const notice = notices[0];
+  const ntBox = (key, color, kids, onClose, extra = {}) => (
+    <div {...extra} className="cardIn" style={{ ...card, position: "relative", padding: "11px 40px 11px 14px", marginBottom: 12, display: "flex", alignItems: "center", gap: 11, borderColor: `${color}66`, ...(extra.style || {}) }}>
+      <CloseX onClick={onClose} />
+      {kids}
+    </div>
+  );
 
-      {history.length === 0 && !ui.welcomeHidden && (
-        <div style={{ ...card, position: "relative", padding: "15px 16px", marginBottom: 16, borderColor: C.signal }}>
-          <CloseX onClick={() => setUi({ ...ui, welcomeHidden: true })} />
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <Logo size={46} />
-            <div>
-              <div style={{ fontFamily: DISPLAY, fontSize: 30, fontWeight: 900, color: C.signal, lineHeight: 1 }}>{T("welcomeTitle")}</div>
-              <div style={{ fontFamily: DISPLAY, fontSize: 15, fontWeight: 800, color: C.dim, letterSpacing: 1, marginTop: 2 }}>HW APP</div>
-            </div>
-          </div>
-          <div style={{ fontSize: 14, color: C.chalk, lineHeight: 1.55, marginTop: 8 }}>
-            {T("welcome1")}
-          </div>
-          <div style={{ fontSize: 13, color: C.dim, lineHeight: 1.55, marginTop: 8 }}>
-            {T("welcome2")}
-          </div>
-          {isNative && onGo && (
-            <div data-move style={{ fontSize: 13, color: C.sky, lineHeight: 1.55, marginTop: 10, paddingTop: 10, borderTop: `1px solid ${C.line}` }}>
-              {T("welcomeMove")}
-              <button onClick={() => { sfxTap(); onGo("settings"); }} style={{ ...btnBase, display: "block", background: "transparent", color: C.signal, fontSize: 14, padding: "6px 0 0" }}>{T("welcomeMoveBtn")} ›</button>
-            </div>
-          )}
-        </div>
-      )}
-
-      {dailyText && (
-        <Sect data-daily style={{ position: "relative", ...(LOOK === "flat" ? {} : { paddingRight: 44 }) }}>
-          <div style={{ borderLeft: `3px solid ${C.signal}`, paddingLeft: 12, fontFamily: DISPLAY, fontSize: 24, fontWeight: 800, lineHeight: 1.12, color: C.chalk }}>{dailyText}</div>
-          <CloseX onClick={() => setUi({ ...ui, dailyHidden: today })} />
-        </Sect>
-      )}
-
-      {onGo && <HintCard ui={ui} setUi={setUi} onGo={onGo} />}
-      <Sect title={T("secWeek")} accent={C.mint} style={LOOK === "flat" ? { marginTop: 16 } : {}}>
-      <div style={{ display: "flex", gap: 6 }} aria-label={T("weekLine", { count: TP("workouts", weekCount) })}>
-        {week.map(w => (
-          <button key={w.k} data-week-day={w.k} onClick={() => onGo && onGo("history", w.on ? { edit: w.k } : null)} aria-label={`${w.lb} ${fmtDate(w.k)}${w.on ? " ✓" : ""}`}
-            style={{ ...btnBase, flex: 1, textAlign: "center", background: "transparent", padding: 0, color: "inherit" }}>
-            <div style={{ fontSize: 11, color: w.isToday ? C.chalk : C.dim, fontWeight: w.isToday ? 700 : 500, marginBottom: 4 }}>{w.lb}</div>
-            <div style={{ height: 30, borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 900,
-              background: w.on ? C.mint : "transparent", color: C.ink, border: `1.5px solid ${w.on ? C.mint : w.isToday ? C.chalk : C.line}` }}>{w.on ? "✓" : ""}</div>
-          </button>
-        ))}
-      </div>
-      <div style={{ fontSize: 12, color: C.dim, marginTop: 6 }}>{T("weekLine", { count: TP("workouts", weekCount) })}</div>
-      </Sect>
-
-      <Sect style={LOOK === "flat" ? { marginTop: 22 } : {}}>
-      <div style={{ fontSize: 14, color: C.dim }}>{doneToday ? T("nextWorkout") : T("todayWorkout")}</div>
-      <div data-day-title style={{ fontFamily: DISPLAY, fontWeight: 900, fontSize: fitSize(T("dayN", { d: day.id }).replace(/\s/g, "_"), doneToday ? 72 : 96, 6), lineHeight: 0.85, paddingBottom: "0.16em", letterSpacing: -1, color: C.chalk, marginTop: 4 }}>
+  const hero = (
+    <Sect data-home-hero style={{ padding: LOOK === "flat" ? 0 : "18px 18px 16px" }}>
+      <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: C.dim }}>{doneToday ? T("nextWorkout") : T("homeToday")}</div>
+      <div data-day-title style={{ fontFamily: DISPLAY, fontWeight: 900, fontSize: fitSize(T("dayN", { d: day.id }).replace(/\s/g, "_"), doneToday ? 84 : 112, 6), lineHeight: 0.85, paddingBottom: "0.16em", letterSpacing: -1, color: C.chalk, marginTop: 8 }}>
         {T("dayN", { d: day.id })}
       </div>
-      <div data-day-status style={{ fontSize: 14, color: !doneToday && gap !== null && gap >= 2 ? C.signal : C.dim, marginTop: 6, lineHeight: 1.5 }}>{status}</div>
+      <div data-day-status style={{ fontSize: 14, color: !doneToday && gap !== null && gap >= 2 ? C.signal : C.dim, marginTop: 8, lineHeight: 1.5 }}>{status}</div>
       {!doneToday && st.gap === 2 && st.n > 0 && !st.frozenToday && !(META.skips || {})[dateKey()] && (
         <button data-skip-btn onClick={onFreeze} style={{ ...ghostBtn, marginTop: 10, color: C.sky, borderColor: C.sky }}>{T("skipBtn")}</button>
       )}
       {st.frozenToday && <div style={{ fontSize: 13, color: C.sky, marginTop: 8 }}>{T("frozenToday")}</div>}
       {(META.skips || {})[dateKey()] && <div data-skip-today style={{ fontSize: 13, color: C.dim, marginTop: 4 }}>{T("skipSaved", { r: `${skipIcon(META.skips[dateKey()].r)} ${T("skip_" + META.skips[dateKey()].r)}${META.skips[dateKey()].note ? ` (${META.skips[dateKey()].note})` : ""}` })}</div>}
-
       <div role="radiogroup" aria-label={T("pickDay")} style={{ display: "flex", gap: 8, marginTop: 18 }}>
         {DAYS.map((d, i) => (
           <button key={d.id} role="radio" aria-checked={i === dayIdx} onClick={() => { sfxTap(); setDayIdx(i); }}
             style={{ ...btnBase, flex: 1, padding: "10px 0", fontFamily: DISPLAY, fontSize: 22, fontWeight: 800,
-              background: i === dayIdx ? C.chalk : "transparent", color: i === dayIdx ? C.ink : C.dim,
-              border: `1.5px solid ${i === dayIdx ? C.chalk : C.line}` }}>
+              ...(i === dayIdx ? { background: C.chalk, border: `1px solid ${C.chalk}` } : SUNK()), color: i === dayIdx ? C.ink : C.dim, transition: "background .2s, box-shadow .2s" }}>
             {d.id}{i === auto && <span style={{ fontFamily: BODY, fontSize: 10, fontWeight: 600, marginLeft: 5, verticalAlign: "middle" }}>{T("upNext")}</span>}
           </button>
         ))}
       </div>
-      </Sect>
-
-      <Sect title={T("secExercises")} accent={C.sky} titlePad="0 15px" style={LOOK === "flat" ? {} : { padding: "12px 0 4px" }}>
-      <div style={LOOK === "flat" ? { ...card } : { borderTop: `1px solid ${LOOK === "tiles" ? C.line : C.line}` }}>
-        {day.ids.map((slot, i) => {
-          const id = effId(slot);
-          const ex = EX[id];
-          const l = lastFor(history, id);
-          const b = bestFor(history, id);
-          const n = rankNext(id, b);
-          return (
-            <button key={id} onClick={() => setHowEx(id)}
-              style={{ ...btnBase, display: "flex", width: "100%", alignItems: "center", gap: 12, textAlign: "left", background: "transparent", color: C.chalk, padding: "14px 16px", borderRadius: 0, borderTop: i ? `1px solid ${C.line}` : "none" }}>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 16, fontWeight: 700 }}>{ex.name}<ExQ id={id} onOpen={() => setHowEx(id)} /></div>
-                <div style={{ fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2 }}>{ex.muscles}</div>
-                <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 5, flexWrap: "wrap" }}>
-                  <RankBadge id={id} best={b} small />
-                  {n && <span style={{ fontSize: 11, color: C.dim, fontWeight: 500 }}>{n.rank.icon} {T("toNext", { n: n.need })}</span>}
-                </div>
-                {levelUpFor(history, id) && <div style={{ fontSize: 12, color: C.signal, fontWeight: 700, marginTop: 3 }}>{T("harderShort")}</div>}
-                {id !== slot && <div style={{ fontSize: 12, color: C.sky, fontWeight: 600, marginTop: 3 }}>{T("replacing", { name: EX[slot].name })}</div>}
-              </div>
-              <div style={{ textAlign: "right", flexShrink: 0 }}>
-                <div style={{ fontFamily: DISPLAY, fontSize: 20, fontWeight: 800, color: l ? C.chalk : C.dim }}>
-                  {l ? l.res.map(r => fmtRes(r, "")).join(" / ") : T("newEx")}
-                </div>
-                <div style={{ fontSize: 11, color: C.dim, fontWeight: 500 }}>{l ? `${T("lastTime")}${ex.unit ? ` (${perUnit(ex.unit)})` : ""}` : T("tapInfo")}</div>
-              </div>
-            </button>
-          );
-        })}
-      </div>
-      <div style={{ fontSize: 12, color: C.dim, marginTop: 8, padding: LOOK === "flat" ? 0 : "0 15px 8px" }}>{T("tapHint")}</div>
-      </Sect>
-
-      <Sect title={T("secLength")} accent={C.signal} style={LOOK === "flat" ? { marginTop: 14 } : {}}>
       {/* Same shape as the floating bar (Michael, Oct 10): two squares 19 / 13 min and a wide Start */}
-      <div ref={roundsRow} data-rounds-row style={{ display: "flex", gap: 8, alignItems: "stretch", marginTop: 10 }}>
+      <div ref={roundsRow} data-rounds-row style={{ display: "flex", gap: 8, alignItems: "stretch", marginTop: 16 }}>
         {[3, 2].map(n => (
           <button key={n} onClick={() => { sfxTap(); setRounds(n); }} aria-pressed={rounds === n} data-rounds={n} aria-label={T("roundsBtn", { n, m: n === 2 ? 13 : 19 })}
-            style={{ ...btnBase, position: "relative", width: 64, flexShrink: 0, padding: "8px 0", borderRadius: 14, background: rounds === n ? C.chalk : "transparent", color: rounds === n ? C.ink : C.dim, border: `1.5px solid ${rounds === n ? C.chalk : C.line}`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", lineHeight: 1 }}>
+            style={{ ...btnBase, position: "relative", width: 64, flexShrink: 0, padding: "8px 0", borderRadius: 14, ...(rounds === n ? { background: C.chalk, border: `1px solid ${C.chalk}` } : SUNK()), color: rounds === n ? C.ink : C.dim, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", transition: "background .2s, box-shadow .2s" }}>
             {n === 3 && <span data-rec style={{ position: "absolute", top: -9, left: "50%", transform: "translateX(-50%)", whiteSpace: "nowrap", fontSize: 9, fontWeight: 900, letterSpacing: 0.3, padding: "2px 6px", borderRadius: 99, background: C.mint, color: C.ink }}>{T("roundsRec")}</span>}
-            <span style={{ fontFamily: DISPLAY, fontSize: 26, fontWeight: 900 }}>{n === 2 ? 13 : 19}</span>
+            <span style={{ fontFamily: DISPLAY, fontSize: 26, fontWeight: 900, lineHeight: 1 }}>{n === 2 ? 13 : 19}</span>
             <span style={{ fontSize: 10, fontWeight: 800, marginTop: 2 }}>min</span>
           </button>
         ))}
@@ -2569,12 +2638,135 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
           </div>
         )}
       </div>
-      <div style={{ fontSize: 12, color: C.dim, marginTop: 10, lineHeight: 1.5 }}>{T("roundsHint")}</div>
-      </Sect>
-      {!active && <FloatStart show={!rowSeen} day={day.id} rounds={rounds} setRounds={setRounds} onStart={() => { unlockAudio(); onStart(day.id, rounds); }} />}
+    </Sect>
+  );
 
-      <HomeKcal history={history} kcal={kcal} setKcal={setKcal} onOpen={() => onGo("calories")} />
-      <ChallengesCard history={history} />
+  const weekCard = (
+    <Sect title={T("secWeek")} style={{ marginTop: 0 }} meta={<span data-week-count style={{ color: weekCount ? C.mint : C.dim, fontWeight: 800 }}>{weekCount} / 3–4</span>} accent={C.mint}>
+      <div style={{ display: "flex", gap: 6 }} aria-label={T("weekLine", { count: TP("workouts", weekCount) })}>
+        {week.map(w => (
+          <button key={w.k} data-week-day={w.k} data-week-kc={w.kc || "none"} onClick={() => onGo && onGo("history", w.on ? { edit: w.k } : null)} aria-label={`${w.lb} ${fmtDate(w.k)}${w.on ? " ✓" : ""}`}
+            style={{ ...btnBase, flex: 1, textAlign: "center", background: "transparent", padding: 0, color: "inherit" }}>
+            <div style={{ fontSize: 11, color: w.isToday ? C.chalk : C.dim, fontWeight: w.isToday ? 800 : 500, marginBottom: 5 }}>{w.lb}</div>
+            <div style={{ height: 26, borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 900,
+              background: w.on ? C.mint : "transparent", color: C.ink, border: `1.5px solid ${w.on ? C.mint : w.isToday ? C.chalk : C.line}` }}>{w.on ? "✓" : ""}</div>
+            <div style={{ height: 5, borderRadius: 99, marginTop: 4, background: w.kc === "hit" ? KC_HIT : w.kc === "log" ? KC_LOG : `${C.chalk}12` }} />
+          </button>
+        ))}
+      </div>
+      <div style={{ display: "flex", gap: 14, fontSize: 11, color: C.dim, marginTop: 9 }}>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}><span style={{ width: 10, height: 10, borderRadius: 3, background: C.mint }} />{T("calLegTrain")}</span>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}><span style={{ width: 12, height: 4, borderRadius: 99, background: KC_LOG }} />{T("calLegLog")}</span>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}><span style={{ width: 12, height: 4, borderRadius: 99, background: KC_HIT }} />{T("calLegHit")}</span>
+      </div>
+    </Sect>
+  );
+
+  return (
+    <div className="scr" style={{ padding: "16px 0 110px", maxWidth: 460, margin: "0 auto" }}>
+      {howEx && <HowTo id={howEx} history={history} onClose={() => setHowEx(null)} />}
+      <style>{`.homePager{display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;align-items:flex-start;transition:height .32s cubic-bezier(.22,1,.36,1)}.homePager::-webkit-scrollbar{display:none}.homePage{flex:0 0 100%;min-width:0;box-sizing:border-box;scroll-snap-align:start;scroll-snap-stop:always;padding:0 18px 18px}`}</style>
+
+      <div style={{ padding: "0 18px" }}>
+      <UpdateBanner dl={dl} busy={!!active} onClose={onDlClose} />
+      {apk && <ApkUpdateCard info={apk.info} busy={!!active} onClose={apk.close} />}
+      <div data-notice={notice || "none"}>
+      {notice === "bday" && <BirthdayCard profile={profile} ui={ui} setUi={setUi} />}
+      {notice === "setup" && <SetupCard profile={profile} kcal={kcal} onFix={onSetup} onClose={() => setUi({ ...ui, setupHidden: true })} />}
+      {notice === "upd" && <UpdateCard onOpen={upd.open} onClose={upd.close} />}
+      {notice === "done" && ntBox("done", C.mint, <>
+        <div className="pop" style={{ width: 38, height: 38, borderRadius: 99, background: C.mint, color: C.ink, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, fontWeight: 900, flexShrink: 0 }}>✓</div>
+        <div style={{ minWidth: 0 }}>
+          <div style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, lineHeight: 1, color: C.mint }}>{L.doneTitles[dv.t % L.doneTitles.length]}</div>
+          <div style={{ fontSize: 13, color: C.chalk, marginTop: 3, fontWeight: 600 }}>{fmt(L.doneSubs[dv.s % L.doneSubs.length], { day: last.day })}</div>
+          <div style={{ fontSize: 12, color: C.dim, marginTop: 3, lineHeight: 1.45, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{last.items.map(it => `${exName(it)} ${it.res.map(r => fmtRes(r, "")).join("/")}`).join(", ")}</div>
+        </div>
+      </>, () => setUi({ ...ui, doneHiddenTs: lastTs }), { "data-done-card": 1 })}
+      {notice === "welcome" && (
+        <div style={{ ...card, position: "relative", padding: "15px 16px", marginBottom: 12, borderColor: C.signal }}>
+          <CloseX onClick={() => setUi({ ...ui, welcomeHidden: true })} />
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <Logo size={46} />
+            <div>
+              <div style={{ fontFamily: DISPLAY, fontSize: 30, fontWeight: 900, color: C.signal, lineHeight: 1 }}>{T("welcomeTitle")}</div>
+              <div style={{ fontFamily: DISPLAY, fontSize: 15, fontWeight: 800, color: C.dim, letterSpacing: 1, marginTop: 2 }}>HW APP</div>
+            </div>
+          </div>
+          <div style={{ fontSize: 14, color: C.chalk, lineHeight: 1.55, marginTop: 8 }}>{T("welcome1")}</div>
+          <div style={{ fontSize: 13, color: C.dim, lineHeight: 1.55, marginTop: 8 }}>{T("welcome2")}</div>
+          {isNative && onGo && (
+            <div data-move style={{ fontSize: 13, color: C.sky, lineHeight: 1.55, marginTop: 10, paddingTop: 10, borderTop: `1px solid ${C.line}` }}>
+              {T("welcomeMove")}
+              <button onClick={() => { sfxTap(); onGo("settings"); }} style={{ ...btnBase, display: "block", background: "transparent", color: C.signal, fontSize: 14, padding: "6px 0 0" }}>{T("welcomeMoveBtn")} ›</button>
+            </div>
+          )}
+        </div>
+      )}
+      {notice === "hint" && ntBox("hint", C.sky, <>
+        <div aria-hidden="true" style={{ fontSize: 19, lineHeight: 1, flexShrink: 0 }}>💡</div>
+        <div style={{ minWidth: 0, fontSize: 14, color: C.chalk, lineHeight: 1.4 }}>
+          {T("hint_" + hint.k)}
+          {hint.go && <button onClick={() => { setUi({ ...ui, hintHidden: today }); onGo(hint.go); }} style={{ ...btnBase, display: "inline", background: "transparent", color: C.sky, padding: "0 0 0 6px", fontSize: 13, whiteSpace: "nowrap" }}>{T("hintGo")} ›</button>}
+        </div>
+      </>, () => setUi({ ...ui, hintHidden: today }), { "data-hint": hint.k })}
+      {notice === "daily" && ntBox("daily", C.signal, (
+        <div style={{ borderLeft: `3px solid ${C.signal}`, paddingLeft: 11, fontFamily: DISPLAY, fontSize: 19, fontWeight: 800, lineHeight: 1.15, color: C.chalk }}>{dailyText}</div>
+      ), () => setUi({ ...ui, dailyHidden: today }), { "data-daily": 1 })}
+      </div>
+
+      <div data-home-tabs role="tablist" style={{ position: "relative", display: "flex", padding: 3, borderRadius: 13, ...SUNK(), marginBottom: 12 }}>
+        <span ref={knob} aria-hidden="true" style={{ position: "absolute", top: 3, bottom: 3, left: 3, width: "calc(50% - 3px)", borderRadius: 10, background: C.chalk, boxShadow: "0 2px 6px rgba(0,0,0,.3)", transition: "none" }} />
+        {[T("homeToday"), T("secExercises")].map((lb, i) => (
+          <button key={i} role="tab" aria-selected={page === i} data-home-tab={i} onClick={() => goPage(i)}
+            style={{ ...btnBase, position: "relative", flex: 1, padding: "7px 0", borderRadius: 10, background: "transparent", color: page === i ? C.ink : C.dim, fontSize: 13, fontWeight: 800, transition: "color .2s" }}>{lb}</button>
+        ))}
+      </div>
+      </div>
+
+      <div ref={pager} className="homePager" data-home-pager={page} style={{ height: pagerH || "auto" }}>
+        <div ref={el => (pages.current[0] = el)} className="homePage" data-home-page="0" aria-hidden={page !== 0}>
+          {weekCard}
+          {hero}
+          <HomeTiles history={history} onCalories={() => onGo("calories")} />
+        </div>
+        <div ref={el => (pages.current[1] = el)} className="homePage" data-home-page="1" aria-hidden={page !== 1}>
+          <Sect title={`${T("secExercises")} · ${T("dayN", { d: day.id })}`} accent={C.sky} titlePad="0 15px" style={LOOK === "flat" ? { marginTop: 0 } : { padding: "12px 0 4px", marginTop: 0 }}>
+          <div style={LOOK === "flat" ? { ...card } : { borderTop: `1px solid ${C.line}` }}>
+            {day.ids.map((slot, i) => {
+              const id = effId(slot);
+              const ex = EX[id];
+              const l = lastFor(history, id);
+              const b = bestFor(history, id);
+              const n = rankNext(id, b);
+              return (
+                <button key={id} onClick={() => setHowEx(id)}
+                  style={{ ...btnBase, display: "flex", width: "100%", alignItems: "center", gap: 12, textAlign: "left", background: "transparent", color: C.chalk, padding: "14px 16px", borderRadius: 0, borderTop: i ? `1px solid ${C.line}` : "none" }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 16, fontWeight: 700 }}>{ex.name}<ExQ id={id} onOpen={() => setHowEx(id)} /></div>
+                    <div style={{ fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2 }}>{ex.muscles}</div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 5, flexWrap: "wrap" }}>
+                      <RankBadge id={id} best={b} small />
+                      {n && <span style={{ fontSize: 11, color: C.dim, fontWeight: 500 }}>{n.rank.icon} {T("toNext", { n: n.need })}</span>}
+                    </div>
+                    {levelUpFor(history, id) && <div style={{ fontSize: 12, color: C.signal, fontWeight: 700, marginTop: 3 }}>{T("harderShort")}</div>}
+                    {id !== slot && <div style={{ fontSize: 12, color: C.sky, fontWeight: 600, marginTop: 3 }}>{T("replacing", { name: EX[slot].name })}</div>}
+                  </div>
+                  <div style={{ textAlign: "right", flexShrink: 0 }}>
+                    <div style={{ fontFamily: DISPLAY, fontSize: 20, fontWeight: 800, color: l ? C.chalk : C.dim }}>
+                      {l ? l.res.map(r => fmtRes(r, "")).join(" / ") : T("newEx")}
+                    </div>
+                    <div style={{ fontSize: 11, color: C.dim, fontWeight: 500 }}>{l ? `${T("lastTime")}${ex.unit ? ` (${perUnit(ex.unit)})` : ""}` : T("tapInfo")}</div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+          <div style={{ fontSize: 12, color: C.dim, marginTop: 8, padding: LOOK === "flat" ? 0 : "0 15px 8px" }}>{T("tapHint")}</div>
+          </Sect>
+          <div style={{ fontSize: 12, color: C.dim, margin: "12px 4px 0", lineHeight: 1.5 }}>{T("roundsHint")}</div>
+        </div>
+      </div>
+      {!active && <FloatStart show={!rowSeen} day={day.id} rounds={rounds} setRounds={setRounds} onStart={() => { unlockAudio(); onStart(day.id, rounds); }} />}
     </div>
   );
 }
@@ -3987,10 +4179,10 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
       {badge > 0 && <span data-badge={badge} style={{ minWidth: 18, height: 18, borderRadius: 9, padding: "0 5px", background: "#ff5a5a", color: "#fff", fontSize: 11, fontWeight: 800, lineHeight: "18px", boxSizing: "border-box", flexShrink: 0 }}>{badge}</span>}
     </button>
   );
-  const segBox = { display: "flex", gap: 4, padding: 4, borderRadius: 14, background: SOFT(), marginTop: 14 };
+  const segBox = { display: "flex", gap: 4, padding: 4, borderRadius: 14, ...SUNK(), marginTop: 14 };
   const chipSeg = (on, onClick, label, data) => (
     <button data-seg={data} aria-pressed={on} onClick={() => { sfxTap(); onClick(); }}
-      style={{ ...btnBase, padding: "6px 12px", fontSize: 12.5, borderRadius: 99, background: on ? `${C.signal}22` : "transparent", color: on ? C.signal : C.dim, border: `1.5px solid ${on ? `${C.signal}66` : C.line}`, whiteSpace: "nowrap", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis" }}>{label}</button>
+      style={{ ...btnBase, padding: "6px 12px", fontSize: 12.5, borderRadius: 99, ...(on ? { background: `${C.signal}22`, border: `1px solid ${C.signal}66` } : SUNK()), color: on ? C.signal : C.dim, whiteSpace: "nowrap", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis" }}>{label}</button>
   );
   const board = scope === "friends"
     ? (friends ? [me, ...friends].sort((a, b) => (b.xp || 0) - (a.xp || 0)) : null)
@@ -4157,7 +4349,7 @@ const CHAT_THEMES = [
   { id: "peach", bg: "linear-gradient(135deg,#ffecd2,#fcb69f)", ink: "#2b130a" }, { id: "galaxy", bg: "linear-gradient(135deg,#2a5298,#1e3c72)", ink: "#ffffff" },
 ];
 const chatTheme = id => { const t = CHAT_THEMES.find(x => x.id === id && x.bg) || null; return t ? { bg: t.bg, ink: t.ink } : { bg: C.signal, ink: C.signalInk }; };
-// Every emoji, with the recently used ones first (remembered on this phone only).
+// Every emoji, with the recently used ones first (every reaction you give, newest first; remembered on this phone only).
 const recentEmo = () => (cloudMem().emo || []).slice(0, 16);
 const useEmo = e => setCloudMem({ emo: [e, ...(cloudMem().emo || []).filter(x => x !== e)].slice(0, 24) });
 function EmojiSheet({ onPick, onClose }) {
@@ -4181,7 +4373,7 @@ function EmojiSheet({ onPick, onClose }) {
           <div key={k} ref={el => (secs.current[i] = el)}>
             <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: C.dim, margin: "10px 2px 6px" }}>{names[k]}</div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(42px, 1fr))", gap: 2 }}>
-              {list.map((e, j) => <button key={e + j} data-emoji={e} onClick={() => { useEmo(e); onPick(e); }} style={{ ...btnBase, height: 44, borderRadius: 12, fontSize: 27, background: "transparent", lineHeight: 1 }}>{e}</button>)}
+              {list.map((e, j) => <button key={e + j} data-emoji={e} onClick={() => onPick(e)} style={{ ...btnBase, height: 44, borderRadius: 12, fontSize: 27, background: "transparent", lineHeight: 1 }}>{e}</button>)}
             </div>
           </div>
         ))}
@@ -4424,7 +4616,8 @@ function ChatView({ me, other, canWrite, onBack, onOpen, onReport, sheet, th: th
   };
   const react = (m, e) => {
     if (!canWrite || !m) return;
-    if (e) { buzz(10); sfxTap(); }
+    // every reaction (quick bar, double tap, full list) goes into the recently used list (Michael, Oct 14)
+    if (e) { buzz(10); sfxTap(); useEmo(e); }
     cloud().react(other.uid, m.id, e).catch(er => setErr(cloudErr(er)));
   };
   const heart = m => { const mineRx = (m.rx || {})[me]; react(m, mineRx === "❤️" ? null : "❤️"); if (mineRx !== "❤️") { setBurst(m.id); setTimeout(() => setBurst(b => (b === m.id ? null : b)), 900); } };
@@ -5851,9 +6044,8 @@ export default function App() {
   const [howId, setHowId] = useState(null);
   openHowToGlobal = setHowId;
   // Android back with nothing open: minimize the workout, then go Home, then ask before leaving (1.4.0, Michael:
-  // like other apps, "really leave?"; a second back within a few seconds or "Leave" closes the app).
+  // like other apps, "really leave?"; a second back or "Leave" closes the app; since 1.5.3 it stays until you choose).
   const [exitAsk, setExitAsk] = useState(false);
-  useEffect(() => { if (!exitAsk) return; const t = setTimeout(() => setExitAsk(false), 3500); return () => clearTimeout(t); }, [exitAsk]);
   useEffect(() => {
     setRootBack(() => {
       if (session && sessionOpen) { setSessionOpen(false); return true; }
@@ -5957,10 +6149,8 @@ export default function App() {
         .tbBox{pointer-events:auto;position:relative;z-index:3;display:flex;align-items:center;gap:8px;padding:11px 13px 11px 19px}
         .tbPill{position:absolute;z-index:2;inset:0;border-radius:24px;opacity:0;visibility:hidden;transition:opacity .22s ease,visibility 0s .22s}
         .tbOut.fl:not([data-goo]) .tbPill{opacity:1;visibility:visible;transition:opacity .22s ease}
-        .tbPlate{position:absolute;z-index:2;pointer-events:none;left:-10px;right:-10px;bottom:0;top:calc(-6px - var(--sat));border-radius:0 0 26px 26px}
-        .tbOut.fl .tbPlate,.tbOut[data-goo] .tbPlate{visibility:hidden}
-        .tbGoo{position:absolute;z-index:1;pointer-events:none;left:-10px;right:-10px;bottom:0;top:calc(-6px - var(--sat));visibility:hidden}
-        @media (max-width: 380px){.tbOut{padding-left:6px;padding-right:6px}.tbPlate,.tbGoo{left:-6px;right:-6px}.tbBox{padding:11px 9px 11px 13px;gap:6px}}
+        .tbGoo{position:absolute;z-index:1;pointer-events:none;left:calc(-1 * var(--tbExt, 10px));right:calc(-1 * var(--tbExt, 10px));bottom:0;top:calc(-6px - var(--sat));visibility:hidden}
+        @media (max-width: 380px){.tbOut{padding-left:6px;padding-right:6px}.tbBox{padding:11px 9px 11px 13px;gap:6px}}
         @media (prefers-reduced-motion: reduce){.tbOut::before,.tbOut.fl::before,.tbPill,.tbOut.fl .tbPill{transition:none}}
         @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}.conf{display:none}}
       `}</style>
@@ -6007,7 +6197,7 @@ export default function App() {
                 {screen === "friends" && <FriendsTab setTopHead={setTopHead} acct={acct} history={history} profile={profile} social={social} chatWith={chatWith} setChatWith={setChatWith} onBlocked={setBlocked} onSignIn={signIn} onCreate={createProfile} onRename={renameNick} onSetGlobal={setGlobal} />}
               </div>
               {session && session.phase !== "summary" && <MiniPlayer session={session} live={live} onOpen={resume} />}
-              {exitAsk && <ExitPrompt onStay={() => { sfxTap(); setExitAsk(false); }} onLeave={() => { setExitAsk(false); exitApp(); }} />}
+              {exitAsk && <ExitPrompt history={history} session={session} onStay={() => { sfxTap(); setExitAsk(false); }} onLeave={() => { setExitAsk(false); exitApp(); }} />}
             </>
           )}
           <MenuDrawer apk={apkUpd} busy={!!(session && session.phase !== "summary")} badge={socialCount} gh={gh} dl={dl} open={menuOpen} screen={screen} history={history} profile={profile} session={session && session.phase !== "summary" ? session : null}

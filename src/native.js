@@ -16,7 +16,8 @@ export const isNative = Capacitor.isNativePlatform();
 // With nothing open, App.jsx decides (minimize the workout, go Home, or leave the app).
 const backStack = [];
 let rootBack = null;
-export function pushBack(fn) { const h = { fn }; backStack.push(h); return () => { const i = backStack.indexOf(h); if (i >= 0) backStack.splice(i, 1); }; }
+// low = the lowest layer (e.g. Home page 2 → page 1): anything opened on top of it, even later, closes first
+export function pushBack(fn, low) { const h = { fn }; if (low) backStack.unshift(h); else backStack.push(h); return () => { const i = backStack.indexOf(h); if (i >= 0) backStack.splice(i, 1); }; }
 export function setRootBack(fn) { rootBack = fn; }
 export function exitApp() { if (isNative) CapApp.minimizeApp().catch(() => CapApp.exitApp()); }
 if (isNative) {

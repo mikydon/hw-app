@@ -12,6 +12,11 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 
 ## 1.5.3 (2026-10-14)
 
+- Main screen in two pages you swipe between (or switch at the top): **Today** has this week on top (green = workout, amber line = calories logged, orange = calorie goal met), the big day with A/B/C and 19 / 13 min + Start, and two tiles: calories (eaten / target with a bar) and the weekly challenges with each challenge and its progress (tap for the full list). **Exercises** has the day's exercises. Only one notice at a time (done today, update, setup, hint or the daily line), the most important first. Before, everything was on one long page.
+- Switches that aren't picked (A/B/C, 19 / 13 min, page tabs, month and day pickers, the Friends tabs) look pressed into the surface; the picked one stands out.
+- The top bar's plate always reaches both edges of the window (on a PC its square corner showed next to the edge).
+- Chat: "Recently used" in the emoji list now remembers every reaction you give (also from the quick bar and the double tap ❤️), newest first. Before, only emoji picked from the full list were kept.
+- *(Android app only)* "Leave the app?" after a back on the main screen is now a box in the middle of the screen like the day card, with a square Stay button and a wide Leave button like the workout length. It stays until you choose (Stay, a tap next to it, Leave or one more back) and says what today means: a workout waiting, done today, a rest day or a minimized workout. Before, it was a strip at the bottom that went away by itself after 3.5 s.
 - *(Android app only)* Closing the "new version" card on the main screen only hides it there: the update stays in the ☰ menu (at the bottom, next to the version), where you can download and install it, or switch on a downloaded small update. Before, after ✕ the only way was GitHub.
 
 ## 1.5.2 (2026-10-14)
