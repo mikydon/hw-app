@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- GitHub build ("direct", 1.6.1): a new APK is downloaded inside the app and handed to Android's installer when the
+     user taps "Install" (1.2.0). Google Play restricts this permission, so the Play build ("play") doesn't have it. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+</manifest>

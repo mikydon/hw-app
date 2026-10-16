@@ -124,7 +124,9 @@ jobs:
             # the merged manifest of the Play build: no APK installing; list the permissions as a notice
             mf=$(grep -l "uses-permission" $(find android/app/build/intermediates -path "*playRelease*" -name AndroidManifest.xml) | head -1)
             [ -n "$mf" ] || { echo "::error::merged Play manifest not found"; exit 1; }
-            if grep -q "REQUEST_INSTALL_PACKAGES" "$mf"; then echo "::error::the Play build still asks for REQUEST_INSTALL_PACKAGES ($mf)"; exit 1; fi
+            if grep -q "uses-permission.*REQUEST_INSTALL_PACKAGES" "$mf"; then echo "::error::the Play build still asks for REQUEST_INSTALL_PACKAGES ($mf): $(grep -m3 "uses-permission.*REQUEST_INSTALL_PACKAGES" "$mf" | tr -s ' ' | tr '\n' ' ')"; exit 1; fi
+            dmf=$(grep -l "uses-permission" $(find android/app/build/intermediates -path "*directRelease*" -name AndroidManifest.xml) | head -1)
+            grep -q "uses-permission.*REQUEST_INSTALL_PACKAGES" "$dmf" || { echo "::error::the GitHub APK lost REQUEST_INSTALL_PACKAGES (in-app APK updates)"; exit 1; }
             perms=$(grep -o 'uses-permission[^>]*android:name="[^"]*"' "$mf" | sed 's/.*android:name="//; s/"$//; s/android\.permission\.//' | sort -u | tr '\n' ' ')
             echo "::notice title=Google Play build permissions::$perms"
           fi
