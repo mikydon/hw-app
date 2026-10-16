@@ -114,6 +114,10 @@ export async function saveBackupFile(name, text) {
 // from here (they stay in the folder and can be restored with "Load a backup").
 export const BK_DIR = "HW App";
 export const BK_AUTO = "hw-app-auto-backup.json";
+// 1.6.2 (Michael: two accounts on one phone): the automatic backup belongs to the account whose data is on the
+// phone, so a second account never replaces the first one's file. No account = the plain name (as before).
+export const bkAutoFile = id => (id ? `hw-app-auto-backup-${String(id).replace(/[^A-Za-z0-9]/g, "").slice(0, 8)}.json` : BK_AUTO);
+const AUTO_RE = /^hw-app-auto-backup(?:-([A-Za-z0-9]+))?\.json$/;
 const bkPath = name => `${BK_DIR}/${name}`;
 export const bkSupported = () => isNative;
 export async function bkWrite(name, text) {
@@ -126,7 +130,7 @@ export async function bkList() {
     const r = await Filesystem.readdir({ path: BK_DIR, directory: Directory.Documents });
     return (r.files || [])
       .filter(f => (f.type ? f.type === "file" : true) && /\.json$/i.test(f.name))
-      .map(f => ({ name: f.name, size: f.size || 0, mtime: f.mtime || 0, auto: f.name === BK_AUTO }))
+      .map(f => { const m = AUTO_RE.exec(f.name); return { name: f.name, size: f.size || 0, mtime: f.mtime || 0, auto: !!m, acct: m && m[1] ? m[1] : "" }; })
       .sort((a, b) => (b.auto - a.auto) || (b.mtime - a.mtime) || b.name.localeCompare(a.name));
   } catch (_) { return []; }
 }

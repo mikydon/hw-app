@@ -10,6 +10,20 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 
 <!-- New version: add a "## x.y.z (date)" section on top (web-only history uses "## Browser beta x.y.z (date)"). On a push to main, .github/workflows/build.yml builds everything and .github/scripts/releases.sh creates/updates the releases (commit = the push, or the one in a commit comment). -->
 
+## 1.6.2 (2026-10-16)
+
+- The world leaderboard no longer shows profile photos, only the nickname and the numbers. Friends still see your photo.
+- After you report a profile or a message, the app offers to block that person right away (one tap).
+- Friend requests from people who aren't your friends yet show no profile photo.
+- Signing in with a different account now asks whether to keep the data on the phone or start fresh with that account's cloud backup. Before, the previous account's name and theme stayed on the phone and were saved into the new account's backup.
+- *(Android app only)* The calorie days badge now also counts days with food from Samsung Health (Health Connect); it only counted food logged in the app.
+- *(Android app only)* The automatic backup in Documents/HW App is kept per account (`hw-app-auto-backup-<id>.json`), so a second account on the same phone no longer replaces the first one's file.
+- In Messages, hold a chat to delete it. It disappears only for you (the friend keeps their copy); a new message brings the chat back.
+- Signing out takes the app back to the very first start: everything on the phone, including the theme, is cleared (it stays in your cloud backup; the latest state is uploaded first, and if that fails nothing is cleared), so nothing mixes with the next account. That also disconnects Health Connect inside the app (connect it again in Calories). Signing out isn't possible during a workout. Backup files in the phone's folder are only loaded by hand.
+- The "Reset streak" and "Start over from zero" buttons are removed from Settings.
+- In the Glass and Liquid glass looks, the thin edge of the cards is the same on both sides (on the left it disappeared under the light reflection).
+- The rules are written down: the text next to the world leaderboard switch and the [privacy policy](https://mikydon.github.io/hw-app/privacy.html) say that offensive nicknames or photos can be reported and are removed.
+
 ## 1.6.1 (2026-10-16)
 
 - The date in the top bar is shown without the year, so it no longer gets cut off next to the streak and level chips (it was cut to "Friday, 10/16/20…" on many phones).

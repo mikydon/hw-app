@@ -1,6 +1,6 @@
 import { useState, useEffect, useLayoutEffect, useRef, memo } from "react";
 import { createPortal } from "react-dom";
-import { isNative, pushBack, setRootBack, exitApp, vibratePattern, keepScreenOn, openExternal, saveBackupFile, bkSupported, bkWrite, bkList, bkRead, bkDelete, bkShare, BK_DIR, BK_AUTO, checkForUpdate, lastUpdate, lastGh, applyUpdateNow, latestApk, isTestBuild, apkState, onApk, apkSupported, apkRestore, apkDownload, apkCanInstall, apkAllow, apkInstall, onAppResume, healthState, healthConnect, healthSettings, healthSteps, healthFoodItems, healthBody, shareText, copyText, pushSupported, pushPermission, pushChannel, pushToken, pushTokenWhy, pushDeleteToken, onPushTap, onPushToken, onPushReceived, hzSupported, hzInfo, hzSet, isPlay } from "./native.js";
+import { isNative, pushBack, setRootBack, exitApp, vibratePattern, keepScreenOn, openExternal, saveBackupFile, bkSupported, bkWrite, bkList, bkRead, bkDelete, bkShare, BK_DIR, bkAutoFile, checkForUpdate, lastUpdate, lastGh, applyUpdateNow, latestApk, isTestBuild, apkState, onApk, apkSupported, apkRestore, apkDownload, apkCanInstall, apkAllow, apkInstall, onAppResume, healthState, healthConnect, healthSettings, healthSteps, healthFoodItems, healthBody, shareText, copyText, pushSupported, pushPermission, pushChannel, pushToken, pushTokenWhy, pushDeleteToken, onPushTap, onPushToken, onPushReceived, hzSupported, hzInfo, hzSet, isPlay } from "./native.js";
 import { cloud, NICK_RE, SHARE_BASE, cleanCode, fmtCode } from "./cloud-lazy.js";
 import { QUICK as EMO_QUICK, EMOJI } from "./emoji.js";
 import { L, LANG, t as T, tp as TP, fmt, setLang, detectLang, LANGS, fmtLong, fmtShortDM, fmtMonthYear, weekdaysShort, capFirst } from "./i18n/index.js";
@@ -32,7 +32,7 @@ const THEMES = {
   slate:  { ink: "#15181d", panel: "#1f242b", panelHi: "#2a313a", line: "#3a434f", chalk: "#f1f4f8", dim: "#9aa6b4", edge: "#0e1115" },
   coffee: { ink: "#1c140f", panel: "#2a1f17", panelHi: "#382a20", line: "#4d3a2c", chalk: "#fbf3ec", dim: "#b8a291", edge: "#130d09" },
 };
-const APP_VERSION = "1.6.1";
+const APP_VERSION = "1.6.2";
 // Big Shoulders has no Cyrillic, so Oswald (also condensed) covers Ukrainian. The browser only
 // downloads the Oswald unicode ranges a page actually uses.
 const DISPLAY = "'Big Shoulders Display', 'Oswald', 'Arial Narrow', Impact, sans-serif";
@@ -1217,7 +1217,8 @@ function achExtra(profile, kcal, history) {
   if (history) for (const d of new Set([...Object.keys(log), ...Object.keys(k.food || {})])) { const s = kcalNow(history, d); if (s && s.hit) kcalHits++; }
   return {
     bdays: ((profile && profile.bdays) || []).length,
-    kcalDays: Object.keys(log).filter(d => log[d] && log[d].length).length,
+    // 1.6.2 (Michael: food from Samsung Health didn't count): every day with eaten calories, own or from Health Connect
+    kcalDays: [...new Set([...Object.keys(log), ...Object.keys(k.food || {})])].filter(d => dayTotal(k, d) > 0).length,
     kcalHits,
     steps10k: Object.keys(steps).filter(d => steps[d] >= 10000).length,
     hc: Math.max(hcLevel(k), k.hcBest || 0),
@@ -1280,14 +1281,14 @@ const SUNK = () => ({ background: "rgba(0,0,0,.24)", border: "1px solid rgba(0,0
 // costs raster time while scrolling); painted once, nothing runs per frame.
 const GLASS_SHEEN = "linear-gradient(130deg, rgba(255,255,255,.2) 0%, rgba(255,255,255,.07) 28%, rgba(255,255,255,0) 50%, rgba(255,255,255,0) 61%, rgba(255,255,255,.075) 68%, rgba(255,255,255,0) 76%)";
 const GLASS_EDGE = "inset 0 1px 0 rgba(255,255,255,.38), inset 0 -1px 0 rgba(255,255,255,.14), inset 0 0 0 1px rgba(255,255,255,.06)";
-const LIQUID = () => ({ background: `${GLASS_SHEEN}, rgba(255,255,255,.07)`, border: "1px solid rgba(255,255,255,.14)", borderRadius: 26, boxShadow: GLASS_EDGE });
+const LIQUID = () => ({ background: `${GLASS_SHEEN}, rgba(255,255,255,.07)`, border: "1px solid rgba(255,255,255,.27)", backgroundClip: "padding-box", borderRadius: 26, boxShadow: GLASS_EDGE });
 // The same glass for the bars and floating panels (top bar, floating start, mini player, menu, sheets; Michael, Oct 10:
 // "tam sa to applajnut musí tiež"), and small glass pills for the chips and buttons on them.
 // A dark layer under the white tint keeps text readable when something bright (a white button) passes behind.
 // 1.4.1: no blur at all any more (Michael: still laggy in Liquid glass, menu too). A more opaque tint keeps text
 // readable when content scrolls under the bar; the look stays glassy over the colour background.
 const LIQUID_BAR = (dark = "f0") => ({ background: `linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.04)), ${C.ink}${dark}` });
-const LIQUID_FLOAT = () => ({ background: `${GLASS_SHEEN}, linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.04)), ${C.ink}ee`, border: "1px solid rgba(255,255,255,.18)", boxShadow: `${GLASS_EDGE}, 0 10px 24px rgba(0,0,0,.3)` });
+const LIQUID_FLOAT = () => ({ background: `${GLASS_SHEEN}, linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.04)), ${C.ink}ee`, border: "1px solid rgba(255,255,255,.28)", backgroundClip: "padding-box", boxShadow: `${GLASS_EDGE}, 0 10px 24px rgba(0,0,0,.3)` });
 const LIQUID_PILL = () => ({ background: "linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,.05))", border: "1px solid rgba(255,255,255,.18)", boxShadow: "inset 0 1px 0 rgba(255,255,255,.30), inset 0 -1px 0 rgba(0,0,0,.16)" });
 // The colour blobs of the theme: the page background, and the ☰ menu panel gets its own copy (1.3.1, Michael: the
 // menu looked different, a flat dark panel, because it only blurred the dimmed page behind it).
@@ -1301,7 +1302,7 @@ function LiquidBg() {
 // a faint diagonal reflection, a bright rim along the top edge, a light one at the bottom, and a soft shadow. The
 // page gets a dim glow of the theme colours (one layer, painted once) so the glass has something to sit on.
 const GLASS_LOOK_SHEEN = "linear-gradient(130deg, rgba(255,255,255,.14) 0%, rgba(255,255,255,.045) 28%, rgba(255,255,255,0) 50%, rgba(255,255,255,0) 61%, rgba(255,255,255,.06) 68%, rgba(255,255,255,0) 76%)";
-const GLASS = () => ({ background: `${GLASS_LOOK_SHEEN}, linear-gradient(160deg, ${C.panelHi}, ${C.panel} 62%)`, border: `1px solid ${C.chalk}1c`, borderRadius: 24, boxShadow: "inset 0 1px 0 rgba(255,255,255,.22), inset 0 -1px 0 rgba(255,255,255,.06), 0 8px 22px rgba(0,0,0,.28)" });
+const GLASS = () => ({ background: `${GLASS_LOOK_SHEEN}, linear-gradient(160deg, ${C.panelHi}, ${C.panel} 62%)`, border: `1px solid ${C.chalk}3a`, backgroundClip: "padding-box", borderRadius: 24, boxShadow: "inset 0 1px 0 rgba(255,255,255,.22), inset 0 -1px 0 rgba(255,255,255,.06), 0 8px 22px rgba(0,0,0,.28)" });
 const glassGrad = () => `radial-gradient(70% 45% at 0% 0%, ${C.sky}40, transparent 70%), radial-gradient(60% 40% at 100% 45%, ${C.signal}26, transparent 70%), radial-gradient(70% 45% at 10% 100%, ${C.mint}26, transparent 70%), ${C.ink}`;
 // The − / + buttons of the rep counter: theme colours (and glass in the liquid look), never a fixed navy edge.
 const stepBtn = () => ({ ...btnBase, width: 64, height: 64, borderRadius: 99, background: C.panelHi, color: C.chalk, fontSize: 32, lineHeight: 1, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, "--e": EDGE[C.panelHi], ...(LOOK === "liquid" ? LIQUID_PILL() : {}) });
@@ -4259,7 +4260,7 @@ function fmtWhen(ts) {
   return k === dateKey() ? `${T("today")} ${time}` : k === addDays(dateKey(), -1) ? `${T("yesterday")} ${time}` : `${fmtDate(k, true)} ${time}`;
 }
 // Backups in Documents/HW App (app only): restore, share or delete. The automatic one is first.
-function BackupsSheet({ onClose, onRestore, autoOn }) {
+function BackupsSheet({ onClose, onRestore, autoOn, myId }) {
   const [files, setFiles] = useState(null);
   const [sure, setSure] = useState(null);
   const [err, setErr] = useState("");
@@ -4274,7 +4275,7 @@ function BackupsSheet({ onClose, onRestore, autoOn }) {
           {files.map(f => (
             <div key={f.name} data-bk-file={f.name} data-bk-auto={f.auto ? 1 : 0} style={{ background: SOFT(), borderRadius: 14, padding: "11px 12px" }}>
               <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-                <span style={{ fontSize: 15, fontWeight: 800, color: C.chalk, flex: 1, minWidth: 0 }}>{f.auto ? `🔄 ${T("bkAutoName")}` : `💾 ${f.mtime ? fmtWhen(f.mtime) : f.name}`}</span>
+                <span style={{ fontSize: 15, fontWeight: 800, color: C.chalk, flex: 1, minWidth: 0 }}>{f.auto ? `🔄 ${T("bkAutoName")}${f.acct ? ` · ${f.acct === myId ? T("bkThisAcct") : T("bkOtherAcct")}` : ""}` : `💾 ${f.mtime ? fmtWhen(f.mtime) : f.name}`}</span>
                 <span style={{ fontSize: 12, color: C.dim, flexShrink: 0 }}>{Math.max(1, Math.round(f.size / 1024))} kB</span>
               </div>
               <div style={{ fontSize: 12, color: C.dim, marginTop: 2, overflowWrap: "anywhere" }}>{f.auto ? (f.mtime ? `${T("bkUpdated")} ${fmtWhen(f.mtime)}` : f.name) + (autoOn ? "" : ` · ${T("bkAutoOff")}`) : f.name}</div>
@@ -4318,6 +4319,21 @@ const CLOUD_KEY = "domaci-trening-v1-cloud"; // {uid, prof, bk: {ts, ok, err}, s
 const cloudMem = () => { try { return JSON.parse(localStorage.getItem(CLOUD_KEY) || "null") || {}; } catch (_) { return {}; } };
 const setCloudMem = patch => { const m = { ...cloudMem(), ...patch }; try { localStorage.setItem(CLOUD_KEY, JSON.stringify(m)); } catch (_) {} return m; };
 const ACCOUNT_AGE = 16;
+// 1.6.2: lists that belong to one account (who you blocked, chats you deleted, what you read, recent emoji, requests
+// you sent). memUid = whose they are now; the other accounts' lists wait in acctMem[uid], so nothing mixes and
+// nothing is lost when someone signs out and back in.
+const ACCT_MEM = ["blocked", "clr", "read", "emo", "sent"];
+const swapAcctMem = to => {
+  const m = cloudMem(), all = { ...(m.acctMem || {}) };
+  if (m.memUid) all[m.memUid] = Object.fromEntries(ACCT_MEM.filter(k => m[k] !== undefined).map(k => [k, m[k]]));
+  const got = (to && all[to]) || {};
+  const patch = { acctMem: all, memUid: to || null };
+  ACCT_MEM.forEach(k => { patch[k] = got[k] !== undefined ? got[k] : k === "clr" || k === "read" ? {} : []; });
+  return setCloudMem(patch);
+};
+// FNV-1a: a short fingerprint of the last uploaded backup (cloudMem().bkHash), to know without the network that
+// the cloud already has exactly what is on the phone.
+const strHash = s => { let h = 0x811c9dc5; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193); } return (h >>> 0).toString(36) + ":" + s.length; };
 // The cloud copy of a backup: the same file, without anything that came from Health Connect.
 function cloudBackupJson(history, profile, settings, kcal) {
   let k = kcal ? { ...kcal } : null;
@@ -4356,6 +4372,8 @@ function cloudErr(e) {
   if (/cancel|popup-closed|user-cancel|12501/i.test(c)) return "";
   if (/network|unavailable|offline|failed-to-fetch|deadline/i.test(c)) return T("frOffline");
   if (c === "nick-taken") return T("frNickTaken");
+  if (c === "so-backup") return T("acSignOutNoBk");
+  if (c === "so-workout") return T("acSignOutWorkout");
   return T("frErr", { e: c.replace(/^auth\//, "") || "?" });
 }
 const nickFrom = name => String(name || "").normalize("NFC").replace(/\s+/g, "_").replace(/[^\p{L}\p{N}_.-]/gu, "").slice(0, 20);
@@ -4383,6 +4401,7 @@ function PersonRow({ p, rank, me, onClick, right, first }) {
 function PersonSheet({ p, isFriend, onAdd, onChat, onRemove, onBlock, onReport, onClose }) {
   const [sure, setSure] = useState(null);
   const [msg, setMsg] = useState("");
+  const [reported, setReported] = useState(false);
   const twoTap = (k, fn) => { if (sure !== k) { setSure(k); setTimeout(() => setSure(s => (s === k ? null : s)), 4000); return; } setSure(null); fn(); };
   const small = { ...btnBase, background: C.panelHi, color: C.chalk, padding: "10px 12px", fontSize: 14, borderRadius: 12, flex: 1 };
   return (
@@ -4399,10 +4418,11 @@ function PersonSheet({ p, isFriend, onAdd, onChat, onRemove, onBlock, onReport, 
         {isFriend && onChat && <button data-ps-chat onClick={() => { sfxTap(); onChat(p); }} style={{ ...small, background: C.signal, color: C.signalInk, flexBasis: "100%" }}>{T("chWrite")}</button>}
         {isFriend && <button data-ps-remove onClick={() => twoTap("rm", () => onRemove(p))} style={{ ...small, color: sure === "rm" ? "#ff8a80" : C.chalk }}>{sure === "rm" ? T("frRemoveSure") : T("frRemove")}</button>}
         <button data-ps-block onClick={() => twoTap("bl", () => onBlock(p))} style={{ ...small, color: sure === "bl" ? "#ff8a80" : C.chalk }}>{sure === "bl" ? T("frBlockSure") : T("frBlock")}</button>
-        <button data-ps-report onClick={() => { sfxTap(); onReport(p).then(setMsg); }} style={small}>{T("frReport")}</button>
+        <button data-ps-report onClick={() => { sfxTap(); onReport(p).then(m => { setMsg(m); setReported(String(m).startsWith("✓")); }); }} style={small}>{T("frReport")}</button>
       </div>
       <div style={{ fontSize: 12, color: C.dim, marginTop: 10, lineHeight: 1.45 }}>{T("frReportD")}</div>
       {msg && <div role="status" style={{ fontSize: 13, color: msg.startsWith("✓") ? C.mint : "#ff8a80", marginTop: 10 }}>{msg}</div>}
+      {reported && <button data-ps-block-too onClick={() => { sfxTap(); onBlock(p); }} style={{ ...small, flex: "none", width: "100%", marginTop: 10, color: "#ff8a80" }}>{T("frBlockToo", { nick: p.nick })}</button>}
     </Sheet>
   );
 }
@@ -4484,10 +4504,13 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState(social.err || "");
   const [sheet, setSheet] = useState(null);
+  const [clr, setClr] = useState(() => cloudMem().clr || {}); // 1.6.2: chats deleted for me: {chatId: time}; only newer messages show again
+  const [delChat, setDelChat] = useState(null);
+  const holdRef = useRef({ t: 0, fired: false });
   const [rename, setRename] = useState(false);
   const [shareMsg, setShareMsg] = useState("");
   useEffect(() => { if (social.err) setErr(social.err); }, [social.err]);
-  const loadWorld = () => { setErr(""); cloud().world(50).then(setWorld).catch(e => { setWorld(w => w || []); setErr(cloudErr(e)); }); };
+  const loadWorld = () => { setErr(""); cloud().world(50).then(w => setWorld(w.map(x => ({ ...x, pfp: null })))).catch(e => { setWorld(w => w || []); setErr(cloudErr(e)); }); };
   useEffect(() => { try { sessionStorage.removeItem("hw-add"); } catch (_) {} }, []);
   useEffect(() => { if (scope === "world" && world === null) loadWorld(); }, [scope]);
   const friendIds = (friends || []).map(f => f.uid);
@@ -4540,21 +4563,30 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
   const board = scope === "friends"
     ? (friends ? [me, ...friends].sort((a, b) => (b.xp || 0) - (a.xp || 0)) : null)
     : (world ? world.filter(w => !blocked.includes(w.uid)).map(w => (w.uid === acct.uid ? { ...w, ...me } : w)) : null);
-  const people = Object.fromEntries([...(friends || []), ...(reqs || []), ...(world || [])].map(p => [p.uid, p]));
-  const chats = (social.chats || []).filter(c => !blocked.includes(c.other) && c.last.ts > 0).sort((a, b) => b.last.ts - a.last.ts);
-  const unread = c => c.last.from !== acct.uid && c.last.ts > ((social.read || {})[c.cid] || 0);
+  const people = Object.fromEntries([...(world || []), ...(reqs || []), ...(friends || [])].map(p => [p.uid, p]));
+  const chats = (social.chats || []).filter(c => !blocked.includes(c.other) && c.last.ts > Math.max(0, clr[c.cid] || 0)).sort((a, b) => b.last.ts - a.last.ts);
+  const unread = c => c.last.from !== acct.uid && c.last.ts > Math.max((social.read || {})[c.cid] || 0, clr[c.cid] || 0);
+  const deleteChat = c => { const m = { ...clr, [c.cid]: Date.now() }; setClr(m); setCloudMem({ clr: m }); setDelChat(null); sfxTap(); };
+  const holdStart = c => { holdRef.current.fired = false; clearTimeout(holdRef.current.t); holdRef.current.t = setTimeout(() => { holdRef.current.fired = true; vibrate([30]); setDelChat(c); }, 480); };
+  const holdEnd = () => clearTimeout(holdRef.current.t);
   if (chatWith) {
     const p = people[chatWith] || { uid: chatWith, nick: "…" };
     return <ChatView setTopHead={setTopHead} me={acct.uid} other={p} th={((social.chats || []).find(c => c.other === chatWith) || {}).th} canWrite={friendIds.includes(chatWith)} onBack={() => setChatWith(null)} onOpen={() => { sfxTap(); setSheet(p); }}
       sheet={sheet && <PersonSheet p={sheet} isFriend={friendIds.includes(sheet.uid)} onClose={() => setSheet(null)} onAdd={x => sendTo(x.uid, x.nick).catch(cloudErr)}
         onRemove={x => act(() => cloud().removeFriend(x.uid), () => setSheet(null))} onBlock={block} onReport={x => report(x)} />}
-      onReport={text => report(p, "message: " + text.slice(0, 280))} />;
+      onReport={text => report(p, "message: " + text.slice(0, 280))} onBlock={block} />;
   }
   return (
     <div className="scr" data-fr-main style={{ padding: "6px 18px 110px", maxWidth: 460, margin: "0 auto" }}>
       {sheet && <PersonSheet p={sheet} isFriend={friendIds.includes(sheet.uid)} onClose={() => setSheet(null)} onChat={friendIds.includes(sheet.uid) ? x => { setSheet(null); setChatWith(x.uid); } : null}
         onAdd={p => sendTo(p.uid, p.nick).catch(cloudErr)} onRemove={p => act(() => cloud().removeFriend(p.uid), () => setSheet(null))}
         onBlock={block} onReport={p => report(p)} />}
+      {delChat && (() => { const dp = people[delChat.other] || { nick: "…" }; return (
+        <Sheet title={T("chDelTitle", { nick: dp.nick })} onClose={() => setDelChat(null)} short>
+          <div style={{ lineHeight: 1.5 }}>{T("chDelBody", { nick: dp.nick })}</div>
+          <button data-chat-del-yes onClick={() => deleteChat(delChat)} className="b3d" style={{ ...bigBtn("#c62828", "#fff"), marginTop: 16, fontSize: 15, padding: 14, "--e": "#7f1414" }}>{T("chDelYes")}</button>
+          <button data-chat-del-no onClick={() => setDelChat(null)} style={{ ...ghostBtn, width: "100%", marginTop: 10, padding: 12 }}>{T("cancel")}</button>
+        </Sheet>); })()}
       {rename && <NickSetup initial={acct.prof.nick} title={T("frRename")} onCancel={() => setRename(false)} onSave={n => onRename(n).then(() => setRename(false))} />}
       <Sect>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -4632,7 +4664,8 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
             : chats.map((c, i) => {
               const p = people[c.other] || { uid: c.other, nick: "…" }, u = unread(c);
               return (
-                <button key={c.cid} data-chat={c.other} data-unread={u ? 1 : 0} onClick={() => { sfxTap(); setChatWith(c.other); }}
+                <button key={c.cid} data-chat={c.other} data-unread={u ? 1 : 0} onClick={() => { if (holdRef.current.fired) { holdRef.current.fired = false; return; } sfxTap(); setChatWith(c.other); }}
+                  onPointerDown={() => holdStart(c)} onPointerUp={holdEnd} onPointerLeave={holdEnd} onPointerCancel={holdEnd} onContextMenu={e => { e.preventDefault(); holdEnd(); holdRef.current.fired = true; setDelChat(c); }}
                   style={{ ...btnBase, width: "100%", display: "flex", alignItems: "center", gap: 11, padding: "10px 14px", background: "transparent", color: C.chalk, textAlign: "left", borderRadius: 0, borderTop: i ? `1px solid ${C.line}` : "none" }}>
                   <PersonAvatar p={p} size={40} />
                   <span style={{ flex: 1, minWidth: 0 }}>
@@ -4890,8 +4923,9 @@ function MsgMenu({ at, m, mine, me, other, th, onClose, onReply, onCopy, onEdit,
     document.body
   );
 }
-function ChatView({ me, other, canWrite, onBack, onOpen, onReport, sheet, th: thSaved, setTopHead }) {
+function ChatView({ me, other, canWrite, onBack, onOpen, onReport, onBlock, sheet, th: thSaved, setTopHead }) {
   const [msgs, setMsgs] = useState(null);
+  const [repOffer, setRepOffer] = useState(false);
   const [thLocal, setThLocal] = useState(null); // picked here, until the chat's colour comes back from the cloud
   const th = thLocal !== null ? thLocal : thSaved || "y";
   useEffect(() => { if (thLocal !== null && (thSaved || "y") === thLocal) setThLocal(null); }, [thSaved]);
@@ -4915,7 +4949,7 @@ function ChatView({ me, other, canWrite, onBack, onOpen, onReport, sheet, th: th
     const run = () => {
       if (dead) return;
       const again = e => { setErr(cloudErr(e)); setMsgs(m => m || []); try { off && off(); } catch (_) {} off = null; clearTimeout(t); t = setTimeout(run, 10000); };
-      try { off = cloud().watchMsgs(other.uid, m => { setErr(""); setMsgs(m); markRead(chatIdOf(me, other.uid), m.length ? m[m.length - 1].ts : Date.now()); }, again); } catch (e) { again(e); }
+      try { off = cloud().watchMsgs(other.uid, m0 => { const m = m0.filter(x => x.ts > ((cloudMem().clr || {})[chatIdOf(me, other.uid)] || 0)); setErr(""); setMsgs(m); markRead(chatIdOf(me, other.uid), m.length ? m[m.length - 1].ts : Date.now()); }, again); } catch (e) { again(e); }
     };
     run();
     return () => { dead = true; clearTimeout(t); try { off && off(); } catch (_) {} };
@@ -5009,7 +5043,7 @@ function ChatView({ me, other, canWrite, onBack, onOpen, onReport, sheet, th: th
         onReact={e => { const m = menu.m; setMenu(null); react(m, e); }} onMore={() => { const m = menu.m; setMenu(null); setEmojiFor(m); }}
         onReply={() => startReply(menu.m)} onEdit={() => startEdit(menu.m)}
         onCopy={() => { copyText(menu.m.text); setMenu(null); setMsg(T("copied")); setTimeout(() => setMsg(""), 1800); }}
-        onReport={() => { const m = menu.m; setMenu(null); onReport(m.text).then(setMsg); }} />}
+        onReport={() => { const m = menu.m; setMenu(null); onReport(m.text).then(r => { setMsg(r); setRepOffer(String(r).startsWith("✓")); }); }} />}
       <div data-chat-msgs style={{ display: "flex", flexDirection: "column", justifyContent: "flex-end", gap: 4, flex: 1 }}>
         {msgs === null ? <div style={{ color: C.dim, fontSize: 14, textAlign: "center", padding: 20 }}>{T("frLoading")}</div>
           : !msgs.length ? <div style={{ color: C.dim, fontSize: 13, textAlign: "center", padding: "24px 10px", lineHeight: 1.5 }}>{T("chStart", { nick: other.nick })}</div>
@@ -5027,6 +5061,7 @@ function ChatView({ me, other, canWrite, onBack, onOpen, onReport, sheet, th: th
           })}
       </div>
       {msg && <div role="status" style={{ fontSize: 12, color: msg.startsWith("✓") ? C.mint : "#ff8a80", marginTop: 8, textAlign: "center" }}>{msg}</div>}
+      {repOffer && onBlock && <button data-chat-block-too onClick={() => { sfxTap(); onBlock(other); }} style={{ ...btnBase, display: "block", margin: "8px auto 0", background: C.panelHi, color: "#ff8a80", padding: "9px 14px", fontSize: 13, borderRadius: 12 }}>{T("frBlockToo", { nick: other.nick })}</button>}
       {err && <div role="alert" style={{ fontSize: 13, color: "#ff8a80", marginTop: 8 }}>{err}</div>}
       {canWrite ? (
         // the input sits on a strip of the background, so messages scrolling under it never show around it
@@ -5091,6 +5126,7 @@ function LiveNotice({ n, people, onOpen, onClose }) {
 // Settings → Account & cloud: who is signed in, the cloud backup, sign out, delete the account.
 function AccountBox({ acct, cloudBk, onOpen, onRestore, onSignOut, onDelete, settings, set }) {
   const [sure, setSure] = useState(false);
+  const [soSure, setSoSure] = useState(false);
   const [busy, setBusy] = useState("");
   const [msg, setMsg] = useState("");
   const rowBtn = first => ({ ...btnBase, width: "100%", background: "transparent", color: C.chalk, padding: "13px 16px", textAlign: "left", borderRadius: 0, borderTop: first ? "none" : `1px solid ${C.line}`, fontSize: 15, display: "flex", alignItems: "center", gap: 10 });
@@ -5120,7 +5156,13 @@ function AccountBox({ acct, cloudBk, onOpen, onRestore, onSignOut, onDelete, set
         <button data-acct-restore onClick={() => run("rs", onRestore)} style={rowBtn(false)}>
           <span style={{ flex: 1 }}>{busy === "rs" ? "…" : T("acRestore")}{sub(T("acRestoreD"))}</span>
         </button>
-        <button data-acct-signout onClick={() => run("so", onSignOut)} style={rowBtn(false)}>{busy === "so" ? "…" : T("acSignOut")}</button>
+        <button data-acct-signout onClick={() => {
+            if (!soSure) { setSoSure(true); setTimeout(() => setSoSure(false), 4000); return; }
+            setSoSure(false); run("so", onSignOut);
+          }} style={{ ...rowBtn(false), color: soSure ? "#ff8a80" : C.chalk, display: "block" }}>
+          {busy === "so" ? "…" : soSure ? T("acSignOutSure") : T("acSignOut")}
+          {sub(T("acSignOutD"))}
+        </button>
         <button data-acct-delete onClick={() => {
             if (!sure) { setSure(true); setTimeout(() => setSure(false), 4000); return; }
             setSure(false); run("del", onDelete);
@@ -5214,6 +5256,18 @@ function HzRow({ settings, set, first }) {
 }
 
 // After signing in (or at start), when the cloud has a backup with more workouts than this phone.
+function SwitchAccountSheet({ onFresh, onKeep, onCancel }) {
+  return (
+    <Sheet title={T("swTitle")} onClose={onCancel} short>
+      <div style={{ lineHeight: 1.5 }}>{T("swBody")}</div>
+      <button data-sw-fresh onClick={onFresh} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 16, fontSize: 15, padding: 14 }}>{T("swFresh")}</button>
+      <div style={{ fontSize: 12, color: C.dim, margin: "6px 4px 0", lineHeight: 1.45 }}>{T("swFreshD")}</div>
+      <button data-sw-keep onClick={onKeep} style={{ ...ghostBtn, width: "100%", marginTop: 12, padding: 12, fontSize: 14 }}>{T("swKeep")}</button>
+      <div style={{ fontSize: 12, color: C.dim, margin: "6px 4px 0", lineHeight: 1.45 }}>{T("swKeepD")}</div>
+      <button data-sw-cancel onClick={onCancel} style={{ ...btnBase, display: "block", margin: "12px auto 0", background: "transparent", color: C.dim, fontSize: 14, padding: "8px 14px" }}>{T("cancel")}</button>
+    </Sheet>
+  );
+}
 function CloudRestoreSheet({ offer, onRestore, onKeep, onClose }) {
   return (
     <Sheet title={T("rsTitle")} onClose={onClose} short>
@@ -5292,12 +5346,10 @@ function ExercisesPage({ settings, set, history, onBack }) {
   );
 }
 
-function SettingsTab({ initPage, settings, setSettings, history, profile, setProfile, onImport, onResetAll, kcal, autoBk, onAutoBackup, acct, cloudBk, onAcctOpen, onCloudRestore, onSignOut, onDeleteAccount }) {
+function SettingsTab({ initPage, settings, setSettings, history, profile, setProfile, onImport, kcal, autoBk, onAutoBackup, acct, cloudBk, onAcctOpen, onCloudRestore, onSignOut, onDeleteAccount }) {
   const [page, setPage] = useState(initPage || null); // null | "exercises"
   useBack(() => setPage(null), page === "exercises");
   const [langOpen, setLangOpen] = useState(false);
-  const [resetAll, setResetAll] = useState(false);
-  const [confirmReset, setConfirmReset] = useState(false);
   const [copied, setCopied] = useState(false);
   const [msg, setMsg] = useState("");
   const [pending, setPending] = useState(null);
@@ -5354,18 +5406,8 @@ function SettingsTab({ initPage, settings, setSettings, history, profile, setPro
 
   return (
     <div className="scr" key="main" style={{ padding: "6px 18px 110px", maxWidth: 460, margin: "0 auto" }}>
-      {resetAll && (
-        <Sheet title={T("resetAllTitle")} onClose={() => setResetAll(false)}>
-          <div>{T("resetAllBody", { count: TP("workouts", history.length) })}</div>
-          <button onClick={exportBackup} className="b3d" style={{ ...bigBtn(C.panelHi, C.chalk), marginTop: 16, fontSize: 15, padding: 14 }}>{T("resetAllBackup")}</button>
-          <button onClick={() => { onResetAll(); setResetAll(false); setMsg(T("msgResetAll")); sfxCheck(); }} className="b3d"
-            style={{ ...bigBtn("#c62828", "#fff"), marginTop: 10, fontSize: 15, padding: 14, "--e": "#7f1414" }}>{T("resetAllYes")}</button>
-          <button onClick={() => setResetAll(false)} style={{ ...ghostBtn, width: "100%", marginTop: 10, padding: 12 }}>{T("cancel")}</button>
-          {msg && <div role="status" style={{ fontSize: 13, color: msg.startsWith("✓") ? C.mint : C.dim, marginTop: 10 }}>{msg}</div>}
-        </Sheet>
-      )}
       <input ref={fileRef} type="file" accept="application/json,.json" onChange={readBackup} style={{ display: "none" }} />
-      {bkOpen && <BackupsSheet onClose={() => setBkOpen(false)} onRestore={txt => { if (loadBackupText(txt)) setBkOpen(false); }} autoOn={!!settings.autoBackup} />}
+      {bkOpen && <BackupsSheet onClose={() => setBkOpen(false)} onRestore={txt => { if (loadBackupText(txt)) setBkOpen(false); }} autoOn={!!settings.autoBackup} myId={String(cloudMem().owner || (acct.st === "in" ? acct.uid : "")).replace(/[^A-Za-z0-9]/g, "").slice(0, 8)} />}
 
       <div style={sectionTitle}>{T("language")}</div>
       {/* One row with the current language; the full list opens in a scrollable sheet, so more languages fit later. */}
@@ -5496,18 +5538,6 @@ function SettingsTab({ initPage, settings, setSettings, history, profile, setPro
         {settings.aiCopy && (
           <button onClick={copyAll} style={rowBtn(false)}>{copied ? T("copied") : T("copyAllAI")}</button>
         )}
-        <button onClick={() => {
-            if (!confirmReset) { setConfirmReset(true); setTimeout(() => setConfirmReset(false), 4000); return; }
-            setProfile({ ...profile, streakResetTs: Date.now(), freezeDays: profile.freezeDays || [] }); setConfirmReset(false); setMsg(T("msgStreakReset"));
-          }}
-          style={{ ...rowBtn(false), color: confirmReset ? "#ff8a80" : C.chalk }}>
-          {confirmReset ? noEmo(T("resetStreakConfirm")) : noEmo(T("resetStreak"))}
-          <div style={{ fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2 }}>{T("resetStreakD")}</div>
-        </button>
-        <button onClick={() => { sfxTap(); setMsg(""); setResetAll(true); }} style={{ ...rowBtn(false), color: "#ff8a80" }}>
-          {noEmo(T("resetAll"))}
-          <div style={{ fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2 }}>{T("resetAllD")}</div>
-        </button>
       </div>
       {msg && <div role="status" style={{ fontSize: 13, color: msg.startsWith("✓") ? C.mint : C.dim, marginTop: 8 }}>{msg}</div>}
 
@@ -6277,7 +6307,7 @@ export default function App() {
     if (!hasData && !force) return;
     if (!hasData) { const info = { ts: Date.now(), day: dateKey(), ok: false, err: T("autoBkEmpty") }; setAutoBk(info); return; }
     const save = info => { try { localStorage.setItem(AUTOBK_KEY, JSON.stringify(info)); } catch (_) {} setAutoBk(info); };
-    bkWrite(BK_AUTO, backupJson(history, profile, settings, k))
+    bkWrite(bkAutoFile(cloudMem().owner || (acct.st === "in" ? acct.uid : "")), backupJson(history, profile, settings, k))
       .then(() => save({ ts: Date.now(), day: dateKey(), ok: true }))
       .catch(e => save({ ts: Date.now(), day: dateKey(), ok: false, err: String((e && e.message) || e).slice(0, 120) }));
   };
@@ -6294,6 +6324,7 @@ export default function App() {
   const [acct, setAcct] = useState(() => (cloudMem().uid ? { st: "loading", uid: cloudMem().uid, prof: cloudMem().prof || null } : { st: "out" }));
   const [cloudBk, setCloudBk] = useState(() => cloudMem().bk || null);
   const [rsOffer, setRsOffer] = useState(null);
+  const [swOffer, setSwOffer] = useState(null); // 1.6.2: signed in as another account than the one whose data is on this phone: {uid, b: its cloud backup}
   const cloudReady = useRef(false); // uploads wait until we know the cloud backup isn't bigger than this phone's data
   const lastCloud = useRef("");
   const setProf = prof => { setCloudMem({ prof }); setAcct(a => ({ ...a, prof })); };
@@ -6333,24 +6364,65 @@ export default function App() {
       if (!u) { setCloudMem({ uid: null, prof: null }); setAcct({ st: "out" }); return; }
       // if Firebase ends the session (account deleted, signed out elsewhere…), the app follows
       try { cloud().onUser(x => { if (!x) { setCloudMem({ uid: null, prof: null }); setAcct(a => (a.st === "in" ? { st: "out" } : a)); } }); } catch (_) {}
-      return cloud().getProfile(u.uid).then(p => { setCloudMem({ uid: u.uid, prof: p }); setAcct({ st: "in", uid: u.uid, prof: p }); checkCloudBackup(history); });
+      return cloud().getProfile(u.uid).then(p => { setCloudMem({ uid: u.uid, prof: p, ...(cloudMem().owner ? {} : { owner: u.uid }), ...(cloudMem().memUid ? {} : { memUid: u.uid }) }); setAcct({ st: "in", uid: u.uid, prof: p }); checkCloudBackup(history); });
     }).catch(() => setAcct(a => ({ ...a, st: "in" }))); // offline: keep the remembered profile
   }, [loaded]);
   const signIn = async () => {
     const u = await cloud().signIn();
     try { cloud().onUser(x => { if (!x) { setCloudMem({ uid: null, prof: null }); setAcct(a => (a.st === "in" ? { st: "out" } : a)); } }); } catch (_) {}
     const p = await cloud().getProfile(u.uid);
-    setCloudMem({ uid: u.uid, prof: p, bk: null, synced: "" }); setCloudBk(null);
+    setCloudMem({ uid: u.uid, prof: p, bk: null, synced: "", bkHash: null }); setCloudBk(null);
+    { const m0 = cloudMem(); // lists from before 1.6.2 (no owner noted, nothing set aside) belong to whoever signs in first
+      const m = m0.memUid === u.uid ? m0 : !m0.memUid && !m0.acctMem ? setCloudMem({ memUid: u.uid }) : swapAcctMem(u.uid);
+      setSocial(x => ({ ...x, blocked: m.blocked || [], read: m.read || {} })); }
     setAcct({ st: "in", uid: u.uid, prof: p }); sfxCheck();
     let got = null;
+    // 1.6.2 (Michael: signing in with another account kept the old account's name and theme and uploaded them):
+    // data on this phone belongs to the account that was signed in before; ask what to do before anything is uploaded.
+    const own = cloudMem().owner, hasData = history.length > 0 || (profile.name && profile.name !== "User");
+    if (own && own !== u.uid && hasData) {
+      let b = null; try { b = await cloud().loadBackup(); } catch (_) {}
+      cloudReady.current = false; setSwOffer({ uid: u.uid, b, nick: (p && p.nick) || "" });
+      return { uid: u.uid, name: u.name || "", prof: p, got: null, switching: true };
+    }
+    setCloudMem({ owner: u.uid });
     try { got = takeCloudBackup(await cloud().loadBackup(), history, true); } catch (_) {}
     return { uid: u.uid, name: u.name || "", prof: p, got };
   };
   const createProfile = async nick => { const p = await cloud().createProfile({ nick, global: false, pfp: await smallPfp(profile.pfp), ...cloudStats(history) }); setProf(p); sfxCheck(); };
   const renameNick = async nick => { await cloud().renameNick(acct.prof.nick, nick); const p = { ...acct.prof, nick }; await cloud().saveProfile({ ...p, pfp: await smallPfp(profile.pfp), ...cloudStats(history) }); setProf(p); sfxCheck(); };
   const setGlobal = async on => { const p = { ...acct.prof, global: on }; await cloud().saveProfile({ ...p, pfp: await smallPfp(profile.pfp), ...cloudStats(history) }); setProf(p); };
-  const signOut = async () => { const tk = cloudMem().pushTok; if (tk) { await cloud().dropPush(tk).catch(() => {}); await pushDeleteToken(); setCloudMem({ pushTok: null }); } await cloud().signOut(); setCloudMem({ uid: null, prof: null, bk: null, synced: "" }); setCloudBk(null); cloudReady.current = false; cloudN.current = null; setAcct({ st: "out" }); };
-  const goneLocal = () => { try { localStorage.removeItem(CLOUD_KEY); } catch (_) {} setCloudBk(null); cloudReady.current = false; cloudN.current = null; setChatWith(null); setAcct({ st: "out" }); };
+  // 1.6.2 (Michael): signing out returns the app to its very first start. Everything on this phone (workouts, profile,
+  // settings, theme, calories, hints, the other account's chat/blocked lists) is cleared, so nothing from one account
+  // can mix with the next. It stays in the account's cloud backup; the latest state is uploaded first, and if that
+  // fails nothing is cleared. The backup files in Documents/HW App stay and are only ever loaded by hand.
+  const signOut = async () => {
+    // a running workout isn't in the history yet, so it would be lost
+    if (session && session.phase !== "summary") throw Object.assign(new Error("so-workout"), { code: "so-workout" });
+    if (!swOffer && (history.length > 0 || cloudN.current === 0)) {
+      const json = cloudBackupJson(history, profile, settings, kcal), key = json.replace(/"exportedAt":"[^"]*",/, "");
+      // already in the cloud (this session, or the last upload before a restart had exactly this content)
+      if (key !== lastCloud.current && strHash(key) !== cloudMem().bkHash) {
+        // the cloud has more workouts than this phone (restore offer still open): uploading would replace them
+        if (rsOffer) throw Object.assign(new Error("so-backup"), { code: "so-backup" });
+        try { await cloud().saveBackup(json, history.length); } catch (_) { throw Object.assign(new Error("so-backup"), { code: "so-backup" }); }
+      }
+    }
+    if (settings.autoBackup) { try { runAutoBackup(); } catch (_) {} }
+    const tk = cloudMem().pushTok; if (tk) { await cloud().dropPush(tk).catch(() => {}); await pushDeleteToken(); }
+    await cloud().signOut();
+    const kept = swapAcctMem(null);
+    try { localStorage.setItem(CLOUD_KEY, JSON.stringify({ pushAsked: kept.pushAsked, acctMem: kept.acctMem })); localStorage.removeItem(AUTOBK_KEY); } catch (_) {}
+    setSocial(x => ({ ...x, reqs: null, friends: null, chats: null, blocked: [], read: {} }));
+    setCloudBk(null); cloudReady.current = false; cloudN.current = null; lastCloud.current = ""; setChatWith(null); setRsOffer(null); setSwOffer(null); setAcct({ st: "out" });
+    setSession(null); setSessionOpen(true); setLive(null);
+    setHistory([]); setProfile({ name: "User", pfp: null, freezeDays: [], streakResetTs: 0 });
+    setSettings({ ...DEFAULT_SETTINGS, seenVersion: settings.seenVersion, seenApp: true });
+    setKcal(null); setUi({});
+    setScreen("train"); setMenuOpen(false); window.scrollTo(0, 0);
+    setOnboard(0);
+  };
+  const goneLocal = () => { try { const m = cloudMem(), all = { ...(m.acctMem || {}) }; delete all[acct.uid]; localStorage.setItem(CLOUD_KEY, JSON.stringify({ pushAsked: m.pushAsked, acctMem: all })); } catch (_) {} setCloudBk(null); cloudReady.current = false; cloudN.current = null; setChatWith(null); setAcct({ st: "out" }); };
   const deleteAccount = async () => {
     try { await cloud().deleteAccount({ ...acct.prof, sent: cloudMem().sent || [] }); }
     catch (e) {
@@ -6366,6 +6438,31 @@ export default function App() {
     if (!BACKUP_IDS.includes(d.app) || !Array.isArray(d.history)) throw Object.assign(new Error("bad"), { code: "bad-backup" });
     if (d.kcal && kcal) { const keep = {}; ["steps", "food", "foodItems", "healthOn", "weight", "wTs", "wSrc", "height", "hTs", "hSrc"].forEach(x => { if (kcal[x] !== undefined && d.kcal[x] === undefined) keep[x] = kcal[x]; }); d.kcal = { ...d.kcal, ...keep }; }
     importAll(d);
+  };
+  // 1.6.2: the phone holds another account's data. "Fresh": wipe it and take this account's cloud backup (if any);
+  // "keep": this phone's data now belongs to this account (as before 1.6.2).
+  const swFresh = () => {
+    const o = swOffer; setSwOffer(null); if (!o) return;
+    let d = null; try { d = o.b && o.b.json ? JSON.parse(o.b.json) : null; } catch (_) {}
+    if (d && !(BACKUP_IDS.includes(d.app) && Array.isArray(d.history))) d = null;
+    setHistory(d ? d.history : []);
+    setProfile({ name: o.nick || "User", pfp: null, freezeDays: [], streakResetTs: 0, ...((d && d.profile) || {}) });
+    setSettings({ ...DEFAULT_SETTINGS, onboarded: true, seenVersion: settings.seenVersion, seenApp: true, ...((d && d.settings) || {}), ...(d && d.settings ? {} : { lang: settings.lang }) });
+    setKcal(d && d.kcal ? d.kcal : null);
+    setCloudMem({ owner: o.uid }); cloudN.current = d ? o.b.n || 0 : 0; lastCloud.current = ""; cloudReady.current = true; sfxCheck();
+  };
+  // ✕ / back / Cancel: don't use this account here after all; it is signed out again and nothing on the phone changes
+  const swCancel = async () => {
+    if (!swOffer) return; setSwOffer(null);
+    const tk = cloudMem().pushTok; if (tk) { await cloud().dropPush(tk).catch(() => {}); await pushDeleteToken().catch(() => {}); }
+    try { await cloud().signOut(); } catch (_) {}
+    setCloudMem({ uid: null, prof: null, bk: null, synced: "", bkHash: null, pushTok: null }); setCloudBk(null);
+    { const m = swapAcctMem(cloudMem().owner || null); setSocial(x => ({ ...x, blocked: m.blocked || [], read: m.read || {} })); }
+    cloudReady.current = false; cloudN.current = null; setChatWith(null); setAcct({ st: "out" });
+  };
+  const swKeep = () => {
+    const o = swOffer; setSwOffer(null); if (!o) return;
+    setCloudMem({ owner: o.uid }); try { takeCloudBackup(o.b, history, true); } catch (_) {} sfxCheck();
   };
   const restoreFromCloud = async () => { const b = await cloud().loadBackup(); if (!b || !b.json) return T("acNoBackup"); applyCloudJson(b.json); cloudReady.current = true; cloudN.current = b.n || 0; return T("msgRestored"); };
   // Live friend requests, friends and chats while the app is open (1.5.0). New requests and messages show a short
@@ -6402,7 +6499,8 @@ export default function App() {
       offs.push(keep((ok, er) => c.watchRequests(ok, er), r => {
         const bl = cloudMem().blocked || [];
         r.filter(x => x.missing || bl.includes(x.uid)).forEach(x => c.decline(x.uid).catch(() => {}));
-        const ok = r.filter(x => !x.missing && !bl.includes(x.uid));
+        // 1.6.2: someone who isn't a friend yet shows no photo (a request can come from anyone)
+        const ok = r.filter(x => !x.missing && !bl.includes(x.uid)).map(x => ({ ...x, pfp: null }));
         if (seen.reqs) { const fresh = ok.find(x => !seen.reqs.includes(x.uid)); if (fresh) ping({ kind: "req", p: fresh }); }
         seen.reqs = ok.map(x => x.uid);
         setSocial(x => ({ ...x, reqs: ok }));
@@ -6439,10 +6537,10 @@ export default function App() {
   }), [session]);
   // Screen refresh rate (1.6.0): the saved choice (MainActivity applies it too, before the first frame)
   useEffect(() => { if (hzSupported() && loaded) hzSet(settings.hz === "60" ? "60" : "max"); }, [loaded]);
-  const socialCount = (social.reqs || []).length + (social.chats || []).filter(k => k.last.from !== acct.uid && !social.blocked.includes(k.other) && k.last.ts > (social.read[k.cid] || 0)).length;
+  const socialCount = (social.reqs || []).length + (social.chats || []).filter(k => k.last.from !== acct.uid && !social.blocked.includes(k.other) && k.last.ts > Math.max(social.read[k.cid] || 0, (cloudMem().clr || {})[k.cid] || 0)).length;
   // Stats for the leaderboard: sent when they change (and once a day, for the streak).
   useEffect(() => {
-    if (acct.st !== "in" || !acct.prof || !loaded || !profLoaded) return;
+    if (acct.st !== "in" || !acct.prof || !loaded || !profLoaded || swOffer) return;
     let dead = false;
     const t = setTimeout(async () => {
       const s = { ...acct.prof, ...cloudStats(history), pfp: await smallPfp(profile.pfp) };
@@ -6451,21 +6549,21 @@ export default function App() {
       cloud().saveProfile(s).then(() => setCloudMem({ synced: key })).catch(() => {});
     }, 2500);
     return () => { dead = true; clearTimeout(t); };
-  }, [acct.st, acct.prof, history, profile.pfp, loaded, profLoaded]);
+  }, [acct.st, acct.prof, history, profile.pfp, loaded, profLoaded, swOffer]);
   // Automatic cloud backup, a few seconds after any change. Without workouts here only while the cloud copy has none
   // either (setup details, 1.5.0), so an empty phone never wipes workouts saved in the cloud.
   useEffect(() => {
-    if (acct.st !== "in" || !acct.prof || !cloudReady.current || !loaded || !settingsLoaded || !profLoaded || !kcalLoaded || (!history.length && cloudN.current !== 0)) return;
+    if (acct.st !== "in" || !acct.prof || !cloudReady.current || swOffer || !loaded || !settingsLoaded || !profLoaded || !kcalLoaded || (!history.length && cloudN.current !== 0)) return;
     const t = setTimeout(() => {
       const json = cloudBackupJson(history, profile, settings, kcal);
       const key = json.replace(/"exportedAt":"[^"]*",/, "");
       if (key === lastCloud.current) return;
       const save = bk => { setCloudMem({ bk }); setCloudBk(bk); };
-      cloud().saveBackup(json, history.length).then(() => { lastCloud.current = key; cloudN.current = history.length; save({ ts: Date.now(), ok: true }); })
+      cloud().saveBackup(json, history.length).then(() => { lastCloud.current = key; setCloudMem({ bkHash: strHash(key) }); cloudN.current = history.length; save({ ts: Date.now(), ok: true }); })
         .catch(e => save({ ts: Date.now(), ok: false, err: String((e && (e.code || e.message)) || e).slice(0, 120) }));
     }, 6000);
     return () => clearTimeout(t);
-  }, [acct.st, acct.prof, history, profile, settings, kcal, loaded, settingsLoaded, profLoaded, kcalLoaded, rsOffer]);
+  }, [acct.st, acct.prof, history, profile, settings, kcal, loaded, settingsLoaded, profLoaded, kcalLoaded, rsOffer, swOffer]);
   const [newsAt, setNewsAt] = useState(null);
   const [onboard, setOnboard] = useState(null); // step to show the first-start setup at, or null
   const [obChecked, setObChecked] = useState(false);
@@ -6617,7 +6715,8 @@ export default function App() {
         <div style={{ padding: 40, display: "flex", flexDirection: "column", alignItems: "center", gap: 12, color: C.dim }}><Logo size={64} />{T("loading")}</div>
       ) : (
         <>
-          {rsOffer && <CloudRestoreSheet offer={rsOffer} onClose={() => setRsOffer(null)}
+          {swOffer && <SwitchAccountSheet onFresh={swFresh} onKeep={swKeep} onCancel={swCancel} />}
+          {rsOffer && !swOffer && <CloudRestoreSheet offer={rsOffer} onClose={() => setRsOffer(null)}
             onRestore={() => {
               try { applyCloudJson(rsOffer.json); cloudReady.current = true; cloudN.current = rsOffer.n || 0; sfxCheck(); } catch (_) {}
               setRsOffer(null);
@@ -6651,7 +6750,6 @@ export default function App() {
                 {screen === "calories" && <Calories history={history} profile={profile} setProfile={setProfile} kcal={kcal} setKcal={setKcal} />}
                 {screen === "settings" && <SettingsTab initPage={setPage0} settings={settings} setSettings={setSettings} history={history} profile={profile} setProfile={setProfile}
                   kcal={kcal} autoBk={autoBk} onAutoBackup={runAutoBackup}
-                  onResetAll={() => { setHistory([]); setProfile({ ...profile, freezeDays: [], skips: {}, streakResetTs: 0, bdays: [], bdayGifts: [] }); setUi({}); if (kcal) setKcal({ ...kcal, log: {} }); }}
                   onImport={importAll} acct={acct} cloudBk={cloudBk} onAcctOpen={() => go("friends")} onCloudRestore={restoreFromCloud} onSignOut={signOut} onDeleteAccount={deleteAccount} />}
                 {screen === "friends" && <FriendsTab setTopHead={setTopHead} acct={acct} history={history} profile={profile} social={social} chatWith={chatWith} setChatWith={setChatWith} onBlocked={setBlocked} onSignIn={signIn} onCreate={createProfile} onRename={renameNick} onSetGlobal={setGlobal} />}
               </div>

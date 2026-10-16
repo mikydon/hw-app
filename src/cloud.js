@@ -119,7 +119,7 @@ export const impl = {
     const me = uid(), data = { ...pick(p, PROFILE_KEYS), global: !!p.global, ts: serverTimestamp() };
     const b = writeBatch(db);
     b.set(d("profiles", me), data);
-    if (p.global) b.set(d("board", me), { nick: p.nick, pfp: p.pfp || null, xp: p.xp, lvl: p.lvl, streak: p.streak, n: p.n, ts: serverTimestamp() });
+    if (p.global) b.set(d("board", me), { nick: p.nick, pfp: null, xp: p.xp, lvl: p.lvl, streak: p.streak, n: p.n, ts: serverTimestamp() });
     else b.delete(d("board", me));
     await b.commit();
   },
@@ -149,7 +149,7 @@ export const impl = {
   async decline(from) { await deleteDoc(d("inbox", uid(), "from", from)); },
   async friends() { const s = await getDocs(collection(db, "friends", uid(), "list")); return profilesOf(s.docs.map(x => x.id)); },
   async removeFriend(other) { const me = uid(), b = writeBatch(db); b.delete(d("friends", me, "list", other)); b.delete(d("friends", other, "list", me)); await b.commit(); },
-  async world(n = 50) { const s = await getDocs(query(collection(db, "board"), orderBy("xp", "desc"), limit(n))); return s.docs.map(x => ({ uid: x.id, ...x.data() })); },
+  async world(n = 50) { const s = await getDocs(query(collection(db, "board"), orderBy("xp", "desc"), limit(n))); return s.docs.map(x => ({ uid: x.id, ...x.data(), pfp: null })); },
   // Live lists. Each returns a function that stops listening. Errors go to onErr (offline, rules…).
   watchRequests(cb, onErr) { return onSnapshot(collection(db, "inbox", uid(), "from"), s => profilesOf(s.docs.map(x => x.id)).then(cb), onErr); },
   watchFriends(cb, onErr) { return onSnapshot(collection(db, "friends", uid(), "list"), s => profilesOf(s.docs.map(x => x.id)).then(cb), onErr); },

@@ -23,9 +23,9 @@
 <body>
 <main>
   <h1>HW App privacy policy</h1>
-  <p class="dim">Last updated: October 14, 2026 (app 1.6.0: phone notifications; 1.5.0: optional account, friends, leaderboard and cloud backup) · applies to the HW App Android app and the website https://mikydon.github.io/hw-app/</p>
+  <p class="dim">Last updated: October 16, 2026 (app 1.6.2: rules for nicknames and photos, no photos in the world leaderboard; 1.6.0: phone notifications; 1.5.0: optional account, friends, leaderboard and cloud backup) · applies to the HW App Android app and the website https://mikydon.github.io/hw-app/</p>
 
-  <div class="box"><strong>In short:</strong> without an account, everything you enter stays on your device. An account is optional (16+): it adds friends, a leaderboard, messages between friends and a cloud backup, stored with Google Firebase. Others see only your nickname, photo, level, streak and number of workouts. Health Connect data never leaves your device. HW App has no ads, no analytics and no tracking, and nothing is sold to anyone.</div>
+  <div class="box"><strong>In short:</strong> without an account, everything you enter stays on your device. An account is optional (16+): it adds friends, a leaderboard, messages between friends and a cloud backup, stored with Google Firebase. Others see only your nickname, level, streak and number of workouts, and your friends also see your photo. Health Connect data never leaves your device. HW App has no ads, no analytics and no tracking, and nothing is sold to anyone.</div>
 
   <h2>What the app stores</h2>
   <ul>
@@ -40,8 +40,9 @@
   <p>You can use HW App without an account. If you sign in (Friends in the menu, or Settings → Account &amp; cloud), you confirm that you are 16 or older. Sign-in uses your Google account through <a href="https://firebase.google.com/support/privacy">Google Firebase</a> (Firebase Authentication and Cloud Firestore, operated by Google as a service provider; the database is in Frankfurt, Germany, europe-west3). The account is used like this:</p>
   <ul>
     <li><strong>Sign-in:</strong> Firebase Authentication keeps your account ID and the details Google provides at sign-in (your email address, name and profile picture link) so you can sign in again. HW App does not show them to anyone and does not use them for anything else.</li>
-    <li><strong>Public profile (seen by other signed-in users):</strong> the nickname you choose, a small copy of your profile photo if you set one, your level, XP, streak and number of workouts, and your friend code. Your friends see it in your friends' leaderboard; people who have your code or nickname can find it and send you a friend request.</li>
-    <li><strong>World leaderboard:</strong> only if you switch it on; then the same public profile appears in the world top 50. You can switch it off any time.</li>
+    <li><strong>Public profile (seen by other signed-in users):</strong> the nickname you choose, a small copy of your profile photo if you set one, your level, XP, streak and number of workouts, and your friend code. Your friends see it in your friends' leaderboard; people who have your code or nickname can find it and send you a friend request. The app shows your photo only to your friends (not in the world leaderboard and not with a friend request), although it is stored in this profile, which other signed-in users' apps can read.</li>
+    <li><strong>World leaderboard:</strong> only if you switch it on; then your nickname, level, XP, streak and number of workouts appear in the world top 50 (your photo is not shown there). You can switch it off any time.</li>
+    <li><strong>Rules for what others see:</strong> nicknames and photos must not be offensive, sexual or hateful. Anyone can report a profile or a message in the app and block a person. Reported profiles are reviewed by the developer; offending nicknames, photos or accounts are removed from the leaderboard or deleted.</li>
     <li><strong>Friends:</strong> who your friends are and open friend requests. Who you blocked is stored on your device and, in the Android app with notifications on, in your notification settings below, so blocked people can't send you notifications.</li>
     <li><strong>Cloud backup:</strong> while you are signed in, a copy of your backup (workouts, profile, settings and the calorie data you entered yourself) is saved a few seconds after every change, so you can restore it on another phone. Only you can read it. <strong>Data from Health Connect (steps, food calories from other apps, and weight or height read from Health Connect) is left out and never uploaded.</strong></li>
     <li><strong>Messages:</strong> messages you write to a friend (text and time) are stored so that you and that friend can read them. Only the two of you can read a chat; it is not end-to-end encrypted. Deleting your account deletes your chats with all their messages.</li>
@@ -74,7 +75,7 @@
   </ul>
 
   <h2>Deleting your data</h2>
-  <p>Settings → "Start over from zero" removes your workouts and progress on the device. Uninstalling the app (or clearing the website's data in your browser) removes everything on the device.</p>
+  <p>Signing out of your account clears everything on the device (it stays in your account's cloud backup). Uninstalling the app (or clearing the website's data in your browser) removes everything on the device.</p>
   <p><strong>Deleting your account:</strong> Settings → Account &amp; cloud → Delete account removes your account, public profile, nickname, friend code, friends, open requests, chats, notification settings and cloud backup from the server right away (the data on your phone stays). You can also do it on the website (sign in with the same Google account), see <a href="delete-account.html">Delete your HW App account</a>. If you can no longer sign in, ask for the deletion by e-mail to <a href="mailto:hwapp.support@gmail.com">hwapp.support@gmail.com</a> or by opening an issue at <a href="https://github.com/mikydon/hw-app/issues">github.com/mikydon/hw-app/issues</a> with your nickname or friend code (no other personal details needed); it is done within 30 days.</p>
 
   <h2>Children</h2>
