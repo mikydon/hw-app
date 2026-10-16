@@ -174,8 +174,20 @@ export function lastGh() { try { return JSON.parse(localStorage.getItem(UPD_KEY 
 export function lastUpdate() { try { return JSON.parse(localStorage.getItem(UPD_KEY) || "null"); } catch (_) { return null; } }
 const errMsg = e => String((e && (e.message || e.errorMessage)) || e || "?").slice(0, 120);
 
+// Which build this is (1.6.1): "web", "direct" (the APK from GitHub) or "play" (Google Play). The Play build never
+// updates itself (Play policy: only Play updates an app from Play): no update.json, no web bundles, no APKs.
+const HwBuild = registerPlugin("HwBuild");
+let store = isNative ? null : "web";
+export async function buildStore() {
+  if (store) return store;
+  if (!Capacitor.isPluginAvailable("HwBuild")) return (store = "direct"); // APKs before 1.6.1
+  try { store = (await HwBuild.info()).store === "play" ? "play" : "direct"; } catch (_) { store = "direct"; }
+  return store;
+}
+export const isPlay = () => store === "play";
+
 export async function checkForUpdate(appVersion, busy = false, onState = () => {}) {
-  if (!isNative) return null;
+  if (!isNative || (await buildStore()) === "play") return null;
   let failed = null;
   try { const f = await CapacitorUpdater.getFailedUpdate(); if (f && f.bundle && f.bundle.version) failed = f.bundle.version; } catch (_) {}
   // A small update downloaded on an earlier start: switch to it right now, at the start.
@@ -240,7 +252,7 @@ function apkSet(s) { apk = s; apkSubs.forEach(f => { try { f(s); } catch (_) {} 
 export const apkState = () => apk;
 export function onApk(fn) { apkSubs.add(fn); return () => { apkSubs.delete(fn); }; }
 const apkName = v => `hw-app-${v}.apk`;
-export const apkSupported = () => isNative && Capacitor.isPluginAvailable("ApkInstaller");
+export const apkSupported = () => isNative && store !== "play" && Capacitor.isPluginAvailable("ApkInstaller");
 let testBuild = null;
 // The test APK ("HW App Test", id ….test) may download the newest release even when it isn't newer, to try the flow.
 export async function isTestBuild() {

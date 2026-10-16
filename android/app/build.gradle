@@ -39,6 +39,22 @@ android {
             }
         }
     }
+    // 1.6.1: two ways the app reaches phones.
+    // - direct: the APK on GitHub (updates itself: new APKs in the app, small updates as web bundles)
+    // - play:   the bundle (.aab) for Google Play; Play is the only updater there (Device and Network Abuse policy),
+    //           so the permission to install APKs is removed (src/play/AndroidManifest.xml) and the app's own
+    //           updates are off (the web code asks HwBuild.info() which one it is).
+    flavorDimensions = ["dist"]
+    productFlavors {
+        direct {
+            dimension "dist"
+            resValue "string", "hw_store", "direct"
+        }
+        play {
+            dimension "dist"
+            resValue "string", "hw_store", "play"
+        }
+    }
     buildTypes {
         debug {
             applicationIdSuffix ".test"

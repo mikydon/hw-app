@@ -46,7 +46,7 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <!-- 1.2.0: a new APK is downloaded inside the app and handed to Android's installer when the user taps "Install".
-         Google Play restricts this permission; remove it if the app is ever published there (Play updates the app itself). -->
+         Google Play restricts this permission: the Play build removes it (src/play/AndroidManifest.xml, 1.6.1). -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <!-- 1.4.0: backups in Documents/HW App. Android 11+ needs no permission for the app's own files there; Android 8–10
          ask for storage access once (requestLegacyExternalStorage keeps Android 10 on the old file access). -->
@@ -96,4 +96,7 @@
     <uses-permission android:name="android.permission.health.WRITE_HYDRATION" tools:node="remove" />
     <uses-permission android:name="android.permission.health.WRITE_NUTRITION" tools:node="remove" />
     <uses-permission android:name="android.permission.health.READ_EXERCISE" tools:node="remove" />
+    <!-- 1.6.1: newer versions of the health plugin also declare VO2 max; the app never uses it -->
+    <uses-permission android:name="android.permission.health.READ_VO2_MAX" tools:node="remove" />
+    <uses-permission android:name="android.permission.health.WRITE_VO2_MAX" tools:node="remove" />
 </manifest>

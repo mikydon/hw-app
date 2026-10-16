@@ -1,6 +1,6 @@
 import { useState, useEffect, useLayoutEffect, useRef, memo } from "react";
 import { createPortal } from "react-dom";
-import { isNative, pushBack, setRootBack, exitApp, vibratePattern, keepScreenOn, openExternal, saveBackupFile, bkSupported, bkWrite, bkList, bkRead, bkDelete, bkShare, BK_DIR, BK_AUTO, checkForUpdate, lastUpdate, lastGh, applyUpdateNow, latestApk, isTestBuild, apkState, onApk, apkSupported, apkRestore, apkDownload, apkCanInstall, apkAllow, apkInstall, onAppResume, healthState, healthConnect, healthSettings, healthSteps, healthFoodItems, healthBody, shareText, copyText, pushSupported, pushPermission, pushChannel, pushToken, pushTokenWhy, pushDeleteToken, onPushTap, onPushToken, onPushReceived, hzSupported, hzInfo, hzSet } from "./native.js";
+import { isNative, pushBack, setRootBack, exitApp, vibratePattern, keepScreenOn, openExternal, saveBackupFile, bkSupported, bkWrite, bkList, bkRead, bkDelete, bkShare, BK_DIR, BK_AUTO, checkForUpdate, lastUpdate, lastGh, applyUpdateNow, latestApk, isTestBuild, apkState, onApk, apkSupported, apkRestore, apkDownload, apkCanInstall, apkAllow, apkInstall, onAppResume, healthState, healthConnect, healthSettings, healthSteps, healthFoodItems, healthBody, shareText, copyText, pushSupported, pushPermission, pushChannel, pushToken, pushTokenWhy, pushDeleteToken, onPushTap, onPushToken, onPushReceived, hzSupported, hzInfo, hzSet, isPlay } from "./native.js";
 import { cloud, NICK_RE, SHARE_BASE, cleanCode, fmtCode } from "./cloud-lazy.js";
 import { QUICK as EMO_QUICK, EMOJI } from "./emoji.js";
 import { L, LANG, t as T, tp as TP, fmt, setLang, detectLang, LANGS, fmtLong, fmtShortDM, fmtMonthYear, weekdaysShort, capFirst } from "./i18n/index.js";
@@ -1534,8 +1534,10 @@ function useClock() {
 }
 // App only: one small line in the menu with the result of the last update check.
 // Menu: one box about the app: version + What's new, newest on GitHub (tap = releases), update state, Android link.
-function AboutBox({ gh, dl, onNews, apk, busy }) {
-  const u = isNative ? lastUpdate() : null;
+// Google Play build (1.6.1): Play does the updates, so no GitHub version or update state here.
+function AboutBox({ gh: gh0, dl, onNews, apk, busy }) {
+  const play = isPlay(), gh = play ? null : gh0;
+  const u = isNative && !play ? lastUpdate() : null;
   const newer = gh && verCmp(gh, APP_VERSION) > 0;
   const row = { ...btnBase, width: "100%", display: "flex", alignItems: "center", gap: 8, background: "transparent", padding: "11px 0", textAlign: "left", borderRadius: 0, borderTop: `1px solid ${C.line}` };
   let status = null;

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Google Play build (1.6.1): Play updates the app itself, so the app must not install APKs
+     (REQUEST_INSTALL_PACKAGES is restricted on Play and the in-app APK update is off in this build). -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" tools:node="remove" />
+</manifest>

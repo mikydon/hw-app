@@ -39,7 +39,7 @@ BETA_NOTE = ("> **Browser beta:** the web version from before the Android app. N
              "The \"Source code\" files below are added by GitHub to every release and are only for developers.\n\n")
 APP_NOTE = ("> **Android app.** On your phone, download **HW-App-{v}.apk** below and open it to install. "
             "Only the APK is needed: `hw-app-web-{v}.zip` and `update.json` are for the app's automatic updates, "
-            "the \"Source code\" files only for developers.\n>\n"
+            "{aab}the \"Source code\" files only for developers.\n>\n"
             "> - If Android asks, allow installing apps from your browser.\n"
             "> - Google Play Protect may say *App blocked to protect your device*, because the app isn't from the Play Store. "
             "Tap **Install anyway** (on some phones it's under *More details*).\n"
@@ -60,6 +60,11 @@ for p in re.split(r"^## ", s, flags=re.M)[1:]:
         # drop the "a small update arrives by itself" intro and points about that release's own files ("below")
         paras = [q for q in re.split(r"\n(?=- |\S)", b) if not q.startswith("A small update") and " below " not in q]
         small.setdefault((int(m.group(1)), int(m.group(2))), []).append((head.split(" (")[0], "\n".join(paras).strip()))
+# 1.6.1+: the Google Play bundle is attached too
+def aab_note(ver):
+    n = [int(x) for x in ver.split(".")]
+    return f"`HW-App-{ver}-play.aab` is the same version for Google Play, " if n >= [1, 6, 1] else ""
+
 def also(ver):
     x, y, z = (int(n) for n in ver.split(".")[:3])
     if z or y == 0 or (x, y - 1) not in small: return ""
@@ -79,7 +84,7 @@ for p in re.split(r"^## ", s, flags=re.M)[1:]:
     body = re.sub(r"<!--.*?-->\n?", "", body, flags=re.S).strip()
     kind = "beta" if beta else "app"
     path = f"/tmp/notes-{kind}-{ver}.md"
-    open(path, "w", encoding="utf-8").write((BETA_NOTE if beta else APP_NOTE.format(v=ver)) + body + ("" if beta else also(ver)) + "\n")
+    open(path, "w", encoding="utf-8").write((BETA_NOTE if beta else APP_NOTE.format(v=ver, aab=aab_note(ver))) + body + ("" if beta else also(ver)) + "\n")
     tag = f"beta-v{ver}" if beta else f"v{ver}"
     title = f"HW App Browser beta {ver} ({date})" if beta else f"HW App {ver} ({date})"
     out.append((kind, ver, tag, title, c.group(1) if c else "-", path))  # "-": bash read drops empty tab fields
@@ -164,6 +169,7 @@ while IFS=$'\t' read -r kind ver tag title commit notes; do
     continue
   fi
   files=("$DIST/HW-App-$ver.apk" "$DIST/hw-app-web-$ver.zip" "$DIST/update.json")
+  [ -f "$DIST/HW-App-$ver-play.aab" ] && files+=("$DIST/HW-App-$ver-play.aab") # 1.6.1+: for Google Play
   for f in "${files[@]}"; do [ -f "$f" ] || { echo "::error::missing $f"; exit 1; }; done
   if has_release "$tag"; then
     sync_text "$tag" "$title" "$notes"

@@ -1,6 +1,6 @@
 name: Build and release
 # On every push: build the website bundle, the test APK ("HW App Test") and, when the signing key
-# secrets exist, the real APK.
+# secrets exist, the real APK (GitHub build, flavor "direct") and the Google Play bundle (.aab, flavor "play", 1.6.1).
 # - other branches: the test APK goes to the "test-build" pre-release (always the newest one)
 # - main: releases are synced with CHANGELOG.md (.github/scripts/releases.sh); the current app
 #   version gets its APK, the live-update zip and update.json attached
@@ -42,7 +42,7 @@ jobs:
       - run: npx cap sync android
       - name: Test APK (HW App Test)
         working-directory: android
-        run: ./gradlew --no-daemon assembleDebug -PappVersionName=${{ steps.ver.outputs.version }} -PappVersionCode=${{ steps.ver.outputs.code }}
+        run: ./gradlew --no-daemon assembleDirectDebug -PappVersionName=${{ steps.ver.outputs.version }} -PappVersionCode=${{ steps.ver.outputs.code }}
       # Checks the key before using it and reports problems as annotations (never the secrets themselves).
       - name: Signing key from secrets
         id: sign
@@ -76,7 +76,7 @@ jobs:
           fi
           echo "keystore OK, alias found"
           echo "signed=true" >> "$GITHUB_OUTPUT"
-      - name: Real APK (signed)
+      - name: Real APK and Google Play bundle (signed)
         id: real
         if: steps.sign.outputs.signed == 'true'
         continue-on-error: true
@@ -88,7 +88,7 @@ jobs:
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           set -o pipefail
-          if ! ./gradlew --no-daemon assembleRelease -PappVersionName=${{ steps.ver.outputs.version }} -PappVersionCode=${{ steps.ver.outputs.code }} 2>&1 | tee "$RUNNER_TEMP/release.log"; then
+          if ! ./gradlew --no-daemon assembleDirectRelease bundlePlayRelease -PappVersionName=${{ steps.ver.outputs.version }} -PappVersionCode=${{ steps.ver.outputs.code }} 2>&1 | tee "$RUNNER_TEMP/release.log"; then
             why=$(grep -A6 "What went wrong" "$RUNNER_TEMP/release.log" | head -8 | tr '\n' ' '); why=${why//"$ANDROID_KEYSTORE_PASSWORD"/***}
             echo "::error::Real APK build failed: ${why:-see the log}"
             exit 1
@@ -100,15 +100,33 @@ jobs:
         run: |
           rm -f "$RUNNER_TEMP/release.jks"
           mkdir dist
-          cp android/app/build/outputs/apk/debug/app-debug.apk "dist/HW-App-Test-$V.apk"
+          cp android/app/build/outputs/apk/direct/debug/app-direct-debug.apk "dist/HW-App-Test-$V.apk"
           tsigner=$(ls -d "$ANDROID_HOME"/build-tools/*/ | sort -V | tail -1)apksigner
           "$tsigner" verify "dist/HW-App-Test-$V.apk" || { echo "::error::test APK signature check failed"; exit 1; }
           (cd www && zip -qrX "../dist/hw-app-web-$V.zip" .)
-          if [ "$SIGNED" = "true" ] && [ -f android/app/build/outputs/apk/release/app-release.apk ]; then
-            cp android/app/build/outputs/apk/release/app-release.apk "dist/HW-App-$V.apk"
+          if [ "$SIGNED" = "true" ] && [ -f android/app/build/outputs/apk/direct/release/app-direct-release.apk ]; then
+            cp android/app/build/outputs/apk/direct/release/app-direct-release.apk "dist/HW-App-$V.apk"
             signer=$(ls -d "$ANDROID_HOME"/build-tools/*/ | sort -V | tail -1)apksigner
             cert=$("$signer" verify --print-certs "dist/HW-App-$V.apk" | grep -m2 "DN:\|SHA-256" | tr '\n' ' ')
             echo "::notice::Real APK $V signed. $cert"
+          fi
+          # Google Play bundle (1.6.1): signed with the same key (Play's upload key = the app signing key Michael gives Play)
+          aab=android/app/build/outputs/bundle/playRelease/app-play-release.aab
+          if [ "$SIGNED" = "true" ] && [ -f "$aab" ]; then
+            jarsigner -verify "$aab" >/dev/null || { echo "::error::Play bundle signature check failed"; exit 1; }
+            fp=$(keytool -printcert -jarfile "$aab" | grep -m1 "SHA256:" | sed 's/.*SHA256: *//' | tr -d ':' | tr 'A-F' 'a-f')
+            cp "$aab" "dist/HW-App-$V-play.aab"
+            if [ "$fp" = "40c63283d3dae2aef66eaf11106541505cb12127120d508b066d4ef676410e1c" ]; then
+              echo "::notice::Google Play bundle $V signed with the release key ($fp)"
+            else
+              echo "::error::Google Play bundle $V is signed with an unexpected key: $fp"; exit 1
+            fi
+            # the merged manifest of the Play build: no APK installing; list the permissions as a notice
+            mf=$(grep -l "uses-permission" $(find android/app/build/intermediates -path "*playRelease*" -name AndroidManifest.xml) | head -1)
+            [ -n "$mf" ] || { echo "::error::merged Play manifest not found"; exit 1; }
+            if grep -q "REQUEST_INSTALL_PACKAGES" "$mf"; then echo "::error::the Play build still asks for REQUEST_INSTALL_PACKAGES ($mf)"; exit 1; fi
+            perms=$(grep -o 'uses-permission[^>]*android:name="[^"]*"' "$mf" | sed 's/.*android:name="//; s/"$//; s/android\.permission\.//' | sort -u | tr '\n' ' ')
+            echo "::notice title=Google Play build permissions::$perms"
           fi
           node .github/scripts/update-json.mjs "$V" > dist/update.json
           cat dist/update.json
