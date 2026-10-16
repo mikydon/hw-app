@@ -1101,6 +1101,10 @@ export default {
     ["📱 Értesítések", "Az új üzeneteket és barátkéréseket csak nyitott appnál láttad.", "A telefon szól az új üzenetről, barátkérésről vagy annak elfogadásáról akkor is, ha az app be van zárva. Koppintásra a chat vagy a Barátok nyílik meg. Kikapcsolod: Beállítások → Fiók és felhő; letiltott emberektől semmi sem jön."],
     ["📱 Képernyő simasága", "Az app azon a frissítési frekvencián futott, amit a telefon adott neki.", "Az app a telefon által engedett legmagasabb frissítési frekvenciát kéri (pl. 120 Hz). A Beállításokban 60 Hz-et is választhatsz, ami kíméli az akkut."],
   ],
+  news161: [
+    "A fenti dátum már nem vágódik le: év nélkül jelenik meg.",
+    "Hogyan törölheted a fiókodat app nélkül is (a weboldalon vagy kérésre), most külön oldalon olvasható, a link az adatvédelmi irányelvekben van.",
+  ],
   news158: [
     "A nyilakkal való lenyitást és összecsukást átírtam, hogy a grafikus chip rajzolja: az oldal azonnal felveszi az új alakját, az alatta lévő dobozok simán csúsznak, a tartalom finoman megjelenik, így már nem lépcsőzetes.",
   ],

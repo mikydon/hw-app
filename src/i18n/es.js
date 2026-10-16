@@ -1101,6 +1101,10 @@ export default {
     ["📱 Notificaciones", "Los mensajes nuevos y las solicitudes de amistad solo los veías con la app abierta.", "El móvil te avisa de un mensaje nuevo, una solicitud de amistad o su aceptación también con la app cerrada. Un toque abre ese chat o Amigos. Desactívalo en Ajustes → Cuenta y nube; de las personas bloqueadas no llega nada."],
     ["📱 Fluidez de la pantalla", "La app iba a la frecuencia que le daba el móvil.", "La app pide la frecuencia de actualización más alta que permite tu móvil (p. ej. 120 Hz). En Ajustes puedes elegir 60 Hz para ahorrar batería."],
   ],
+  news161: [
+    "La fecha de arriba ya no se corta: se muestra sin el año.",
+    "Cómo borrar tu cuenta también sin la app (en la web o pidiéndolo) está ahora en su propia página, enlazada desde la política de privacidad.",
+  ],
   news158: [
     "Abrir y cerrar con las flechas ahora lo dibuja el chip gráfico: la página toma su nueva forma al instante, las cajas de abajo se deslizan suave y el contenido aparece poco a poco, sin saltos.",
   ],

@@ -1101,6 +1101,10 @@ export default {
     ["📱 Upozornenia", "Nové správy a žiadosti o priateľstvo si videl len vtedy, keď bola appka otvorená.", "Mobil ťa upozorní na novú správu, žiadosť o priateľstvo alebo jej prijatie aj vtedy, keď je appka zatvorená. Ťuknutím sa otvorí rovno chat alebo Priatelia. Vypneš to v Nastavenia → Účet a cloud; od zablokovaných ľudí nič nechodí."],
     ["📱 Plynulosť obrazovky", "Appka bežala na takej frekvencii, akú jej pridelil mobil.", "Appka požiada o najvyššiu obnovovaciu frekvenciu, akú mobil dovolí (napr. 120 Hz). V Nastaveniach si môžeš vybrať aj 60 Hz, ktoré šetria batériu."],
   ],
+  news161: [
+    "Dátum hore sa už neodsekne: zobrazuje sa bez roku.",
+    "Ako zmazať účet aj bez appky (na webe alebo na požiadanie) je teraz na samostatnej stránke, odkaz je v zásadách ochrany súkromia.",
+  ],
   news158: [
     "Rozbaľovanie a zbaľovanie šípkami je prerobené tak, aby ho kreslil grafický čip: stránka hneď dostane nový tvar, boxy pod ním plynulo zájdu dole alebo hore a obsah sa jemne objaví, takže už to neide po krokoch.",
   ],

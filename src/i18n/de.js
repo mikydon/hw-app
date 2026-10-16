@@ -1101,6 +1101,10 @@ export default {
     ["📱 Benachrichtigungen", "Neue Nachrichten und Freundschaftsanfragen hast du nur bei geöffneter App gesehen.", "Dein Handy meldet eine neue Nachricht, eine Freundschaftsanfrage oder ihre Annahme auch bei geschlossener App. Ein Tipp öffnet den Chat oder Freunde. Abschalten unter Einstellungen → Konto & Cloud; von blockierten Personen kommt nichts."],
     ["📱 Bildschirm-Flüssigkeit", "Die App lief mit der Bildwiederholrate, die ihr das Handy gab.", "Die App fragt nach der höchsten Bildwiederholrate, die dein Handy erlaubt (z. B. 120 Hz). In den Einstellungen kannst du stattdessen 60 Hz wählen, das spart Akku."],
   ],
+  news161: [
+    "Das Datum oben wird nicht mehr abgeschnitten: es steht jetzt ohne Jahr da.",
+    "Wie du dein Konto auch ohne App löschst (auf der Website oder auf Anfrage), steht jetzt auf einer eigenen Seite, verlinkt in der Datenschutzerklärung.",
+  ],
   news158: [
     "Auf- und Zuklappen mit den Pfeilen läuft jetzt über den Grafikchip: Die Seite bekommt sofort ihre neue Form, die Boxen darunter gleiten sanft, und der Inhalt blendet weich ein, also kein Ruckeln mehr.",
   ],

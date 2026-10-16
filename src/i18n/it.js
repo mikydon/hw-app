@@ -1101,6 +1101,10 @@ export default {
     ["📱 Notifiche", "Vedevi nuovi messaggi e richieste di amicizia solo con l’app aperta.", "Il telefono ti avvisa di un nuovo messaggio, di una richiesta di amicizia o della sua accettazione anche con l’app chiusa. Un tocco apre la chat o Amici. Disattivale in Impostazioni → Account e cloud; dalle persone bloccate non arriva niente."],
     ["📱 Fluidità dello schermo", "L’app girava alla frequenza che le assegnava il telefono.", "L’app chiede la frequenza di aggiornamento più alta consentita dal telefono (es. 120 Hz). Nelle Impostazioni puoi scegliere 60 Hz per risparmiare batteria."],
   ],
+  news161: [
+    "La data in alto non viene più tagliata: ora è mostrata senza l'anno.",
+    "Come eliminare il tuo account anche senza l'app (sul sito o su richiesta) è ora spiegato in una pagina a parte, collegata dall'informativa sulla privacy.",
+  ],
   news158: [
     "Aprire e chiudere con le frecce ora lo disegna il chip grafico: la pagina prende subito la nuova forma, i riquadri sotto scorrono fluidi e il contenuto appare dolcemente, senza scatti.",
   ],

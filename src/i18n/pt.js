@@ -1101,6 +1101,10 @@ export default {
     ["📱 Notificações", "Só vias mensagens novas e pedidos de amizade com a app aberta.", "O telemóvel avisa-te de uma mensagem nova, de um pedido de amizade ou da sua aceitação mesmo com a app fechada. Um toque abre essa conversa ou Amigos. Desliga em Ajustes → Conta e nuvem; de pessoas bloqueadas não chega nada."],
     ["📱 Fluidez do ecrã", "A app corria à frequência que o telemóvel lhe dava.", "A app pede a frequência de atualização mais alta que o telemóvel permite (ex.: 120 Hz). Nos Ajustes podes escolher 60 Hz para poupar bateria."],
   ],
+  news161: [
+    "A data no topo já não fica cortada: aparece sem o ano.",
+    "Como eliminar a tua conta também sem a app (no site ou a pedido) está agora numa página própria, com ligação na política de privacidade.",
+  ],
   news158: [
     "Abrir e fechar com as setas agora é desenhado pelo chip gráfico: a página ganha logo a nova forma, as caixas abaixo deslizam suavemente e o conteúdo aparece devagar, sem solavancos.",
   ],

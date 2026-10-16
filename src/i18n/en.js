@@ -1101,6 +1101,10 @@ export default {
     ["📱 Notifications", "You only saw new messages and friend requests while the app was open.", "Your phone tells you about a new message, a friend request or an accepted request also when the app is closed. A tap opens that chat or Friends. Switch it off in Settings → Account & cloud; nothing comes from people you blocked."],
     ["📱 Screen smoothness", "The app ran at whatever refresh rate the phone gave it.", "The app asks for the highest refresh rate your phone allows (e.g. 120 Hz). In Settings you can pick 60 Hz instead to save battery."],
   ],
+  news161: [
+    "The date at the top no longer gets cut off: it is shown without the year.",
+    "How to delete your account, also without the app (on the website or by request), is now on its own page, linked from the privacy policy.",
+  ],
   news158: [
     "Opening and closing with the arrows is rebuilt to run on the graphics chip: the page takes its new shape at once, the boxes below slide smoothly and the content fades in, so it no longer moves in steps.",
   ],

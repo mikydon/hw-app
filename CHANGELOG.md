@@ -10,6 +10,13 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 
 <!-- New version: add a "## x.y.z (date)" section on top (web-only history uses "## Browser beta x.y.z (date)"). On a push to main, .github/workflows/build.yml builds everything and .github/scripts/releases.sh creates/updates the releases (commit = the push, or the one in a commit comment). -->
 
+## 1.6.1 (2026-10-16)
+
+- The date in the top bar is shown without the year, so it no longer gets cut off next to the streak and level chips (it was cut to "Friday, 10/16/20…" on many phones).
+- A new page, [Delete your HW App account](https://mikydon.github.io/hw-app/delete-account.html), explains how to delete your account in the app, on the website without the app, or by request; the privacy policy links to it.
+- Getting ready for Google Play: every release now also has `HW-App-x-play.aab`, the same version for Google Play. That build can't install APKs and doesn't update itself, because only Google Play may update an app installed from Google Play; the APK on GitHub keeps updating itself as before.
+- *(Android app only, new APK installs)* The app no longer lists VO2 max (read and write) among its Health Connect permissions; it never used it (a newer version of the health plugin had added it).
+
 ## 1.6.0 (2026-10-15)
 
 **A big update: a new APK** (download it in the app and tap Install; your data stays). Compared with 1.5.8:

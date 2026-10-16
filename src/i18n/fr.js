@@ -1101,6 +1101,10 @@ export default {
     ["📱 Notifications", "Tu ne voyais les nouveaux messages et demandes d’ami que l’app ouverte.", "Ton téléphone te prévient d’un nouveau message, d’une demande d’ami ou de son acceptation même quand l’app est fermée. Une touche ouvre la discussion ou Amis. Désactive-les dans Réglages → Compte et cloud ; rien n’arrive des personnes bloquées."],
     ["📱 Fluidité de l’écran", "L’app tournait à la fréquence que le téléphone lui donnait.", "L’app demande la fréquence de rafraîchissement la plus haute que permet ton téléphone (p. ex. 120 Hz). Dans Réglages, tu peux choisir 60 Hz pour économiser la batterie."],
   ],
+  news161: [
+    "La date en haut n'est plus coupée : elle s'affiche sans l'année.",
+    "Comment supprimer ton compte aussi sans l'appli (sur le site ou sur demande) est maintenant expliqué sur une page à part, liée depuis la politique de confidentialité.",
+  ],
   news158: [
     "Ouvrir et fermer avec les flèches passe maintenant par la puce graphique : la page prend tout de suite sa nouvelle forme, les blocs en dessous glissent en douceur et le contenu apparaît doucement, sans saccades.",
   ],

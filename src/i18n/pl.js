@@ -1101,6 +1101,10 @@ export default {
     ["📱 Powiadomienia", "Nowe wiadomości i zaproszenia widziałeś tylko przy otwartej aplikacji.", "Telefon powiadomi cię o nowej wiadomości, zaproszeniu do znajomych lub jego przyjęciu także przy zamkniętej aplikacji. Stuknięcie otwiera czat albo Znajomych. Wyłączysz to w Ustawienia → Konto i chmura; od zablokowanych osób nic nie przychodzi."],
     ["📱 Płynność ekranu", "Aplikacja działała z taką częstotliwością, jaką przydzielił jej telefon.", "Aplikacja prosi o najwyższą częstotliwość odświeżania, na jaką pozwala telefon (np. 120 Hz). W Ustawieniach możesz wybrać też 60 Hz, które oszczędza baterię."],
   ],
+  news161: [
+    "Data u góry nie jest już ucinana: wyświetla się bez roku.",
+    "Jak usunąć konto także bez aplikacji (na stronie lub na prośbę) jest teraz na osobnej stronie, link jest w polityce prywatności.",
+  ],
   news158: [
     "Rozwijanie i zwijanie strzałkami jest przerobione tak, by rysował je układ graficzny: strona od razu dostaje nowy kształt, pola poniżej płynnie się przesuwają, a treść łagodnie się pojawia, więc nic już nie skacze.",
   ],
