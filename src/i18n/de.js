@@ -1117,6 +1117,9 @@ export default {
     ["📱 Benachrichtigungen", "Neue Nachrichten und Freundschaftsanfragen hast du nur bei geöffneter App gesehen.", "Dein Handy meldet eine neue Nachricht, eine Freundschaftsanfrage oder ihre Annahme auch bei geschlossener App. Ein Tipp öffnet den Chat oder Freunde. Abschalten unter Einstellungen → Konto & Cloud; von blockierten Personen kommt nichts."],
     ["📱 Bildschirm-Flüssigkeit", "Die App lief mit der Bildwiederholrate, die ihr das Handy gab.", "Die App fragt nach der höchsten Bildwiederholrate, die dein Handy erlaubt (z. B. 120 Hz). In den Einstellungen kannst du stattdessen 60 Hz wählen, das spart Akku."],
   ],
+  news163: [
+    "📱 Hinter den Kulissen: Die Version aus Google Play ist jetzt mit demselben Schlüssel signiert wie die von GitHub, es ist also dieselbe App. Für dich ändert sich nichts.",
+  ],
   news162: [
     "Dein Foto wird in der Weltrangliste nicht mehr gezeigt, nur Spitzname und Zahlen. Freunde sehen es weiterhin.",
     "Nach dem Melden eines Profils oder einer Nachricht kannst du die Person gleich blockieren.",

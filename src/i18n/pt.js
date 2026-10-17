@@ -1117,6 +1117,9 @@ export default {
     ["📱 Notificações", "Só vias mensagens novas e pedidos de amizade com a app aberta.", "O telemóvel avisa-te de uma mensagem nova, de um pedido de amizade ou da sua aceitação mesmo com a app fechada. Um toque abre essa conversa ou Amigos. Desliga em Ajustes → Conta e nuvem; de pessoas bloqueadas não chega nada."],
     ["📱 Fluidez do ecrã", "A app corria à frequência que o telemóvel lhe dava.", "A app pede a frequência de atualização mais alta que o telemóvel permite (ex.: 120 Hz). Nos Ajustes podes escolher 60 Hz para poupar bateria."],
   ],
+  news163: [
+    "📱 Nos bastidores: a versão do Google Play agora está assinada com a mesma chave da versão do GitHub, por isso é o mesmo app. Para você nada muda.",
+  ],
   news162: [
     "A tua foto já não aparece na classificação mundial, só a alcunha e os números. Os amigos continuam a vê-la.",
     "Depois de denunciar um perfil ou uma mensagem, podes bloquear essa pessoa logo a seguir.",

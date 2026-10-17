@@ -1117,6 +1117,9 @@ export default {
     ["📱 Upozornenia", "Nové správy a žiadosti o priateľstvo si videl len vtedy, keď bola appka otvorená.", "Mobil ťa upozorní na novú správu, žiadosť o priateľstvo alebo jej prijatie aj vtedy, keď je appka zatvorená. Ťuknutím sa otvorí rovno chat alebo Priatelia. Vypneš to v Nastavenia → Účet a cloud; od zablokovaných ľudí nič nechodí."],
     ["📱 Plynulosť obrazovky", "Appka bežala na takej frekvencii, akú jej pridelil mobil.", "Appka požiada o najvyššiu obnovovaciu frekvenciu, akú mobil dovolí (napr. 120 Hz). V Nastaveniach si môžeš vybrať aj 60 Hz, ktoré šetria batériu."],
   ],
+  news163: [
+    "📱 Pod kapotou: verzia z Google Play je teraz podpísaná rovnakým kľúčom ako tá z GitHubu, takže ide o tú istú appku. Pre teba sa nič nemení.",
+  ],
   news162: [
     "Tvoja fotka sa už vo svetovom rebríčku nezobrazuje, len prezývka a čísla. Priatelia ju vidia ďalej.",
     "Po nahlásení profilu alebo správy môžeš toho človeka hneď aj zablokovať.",

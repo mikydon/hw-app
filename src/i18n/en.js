@@ -1117,6 +1117,9 @@ export default {
     ["📱 Notifications", "You only saw new messages and friend requests while the app was open.", "Your phone tells you about a new message, a friend request or an accepted request also when the app is closed. A tap opens that chat or Friends. Switch it off in Settings → Account & cloud; nothing comes from people you blocked."],
     ["📱 Screen smoothness", "The app ran at whatever refresh rate the phone gave it.", "The app asks for the highest refresh rate your phone allows (e.g. 120 Hz). In Settings you can pick 60 Hz instead to save battery."],
   ],
+  news163: [
+    "📱 Behind the scenes: the version from Google Play is now signed with the same key as the one from GitHub, so both are the same app. Nothing changes for you.",
+  ],
   news162: [
     "Your photo is no longer shown in the world leaderboard, only your nickname and numbers. Friends still see it.",
     "After reporting a profile or a message, you can block that person right away.",
