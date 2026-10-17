@@ -42,7 +42,14 @@ jobs:
       - run: npx cap sync android
       - name: Test APK (HW App Test)
         working-directory: android
-        run: ./gradlew --no-daemon assembleDirectDebug -PappVersionName=${{ steps.ver.outputs.version }} -PappVersionCode=${{ steps.ver.outputs.code }}
+        # Job logs can't be read from Claude sessions, so a failure is reported as annotations (R8 errors, missing rules).
+        run: |
+          set -o pipefail
+          if ! ./gradlew --no-daemon assembleDirectDebug -PappVersionName=${{ steps.ver.outputs.version }} -PappVersionCode=${{ steps.ver.outputs.code }} 2>&1 | tee "$RUNNER_TEMP/debug.log"; then
+            grep -E "^(ERROR|e: )|Missing class|What went wrong|R8|> " "$RUNNER_TEMP/debug.log" | head -25 | while IFS= read -r l; do echo "::error::${l}"; done
+            for f in $(find app/build/outputs/mapping -name missing_rules.txt 2>/dev/null); do echo "::error::missing_rules.txt: $(grep -v '^#' "$f" | tr '\n' ' ' | cut -c1-1500)"; done
+            exit 1
+          fi
       # Checks the key before using it and reports problems as annotations (never the secrets themselves).
       - name: Signing key from secrets
         id: sign
