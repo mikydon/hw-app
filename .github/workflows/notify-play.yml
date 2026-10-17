@@ -1,0 +1,29 @@
+name: Notify Google Play users
+# 1.6.5 (Michael, Oct 17): after Google has approved a version in Play Console, run this once
+# (Actions → Notify Google Play users → Run workflow). Every Google Play app with "new version" notifications on
+# gets "HW App x.y.z is out · Update it in Google Play" in its language (topics upd-play-<lang>).
+# Leave the version empty to use the current one in src/App.jsx.
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version (empty = the current one, e.g. 1.6.5)"
+        required: false
+        default: ""
+permissions:
+  contents: read
+jobs:
+  notify:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: Send
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          V: ${{ inputs.version }}
+        run: |
+          v="$V"; [ -n "$v" ] || v=$(grep -oP 'APP_VERSION = "\K[^"]+' src/App.jsx)
+          node .github/scripts/notify-update.mjs play "$v"

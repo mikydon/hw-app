@@ -180,9 +180,22 @@ jobs:
           name: dist
           path: dist
       - name: Sync releases with CHANGELOG.md
+        id: sync
         env:
           GH_TOKEN: ${{ github.token }}
           APP_VERSION: ${{ needs.build.outputs.version }}
           SIGNED: ${{ needs.build.outputs.signed }}
           DIST: dist
         run: .github/scripts/releases.sh
+      # 1.6.5: "HW App x.y.z is out" to the GitHub app (topics upd-direct-<lang>), once, when its release is created.
+      # The Google Play app gets it from the "Notify Google Play users" workflow after Google approved the version.
+      - uses: actions/setup-node@v7
+        if: steps.sync.outputs.created != ''
+        with:
+          node-version: 22
+      - name: Notify the GitHub app about the new version
+        if: steps.sync.outputs.created != ''
+        continue-on-error: true
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: node .github/scripts/notify-update.mjs direct "${{ steps.sync.outputs.created }}"

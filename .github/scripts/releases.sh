@@ -185,5 +185,7 @@ while IFS=$'\t' read -r kind ver tag title commit notes; do
     fi
     echo "creating $tag at $target with the APK"
     run gh release create "$tag" --repo "$REPO" --target "$target" --title "$title" --notes-file "$notes" --latest "${files[@]}"
+    # 1.6.5: a new app version was just released → the workflow sends the "new version" notification
+    [ -n "${GITHUB_OUTPUT:-}" ] && echo "created=$ver" >> "$GITHUB_OUTPUT"
   fi
 done < /tmp/sections.tsv

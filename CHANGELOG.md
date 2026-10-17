@@ -10,15 +10,13 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 
 <!-- New version: add a "## x.y.z (date)" section on top (web-only history uses "## Browser beta x.y.z (date)"). On a push to main, .github/workflows/build.yml builds everything and .github/scripts/releases.sh creates/updates the releases (commit = the push, or the one in a commit comment). -->
 
-## 1.7.0 (2026-10-17)
+## 1.6.5 (2026-10-17)
 
-**A big update: a new APK** (download it in the app and tap Install; your data stays). Compared with 1.6.4:
-
-| | Before (1.6.4) | Now (1.7.0) |
-|---|---|---|
-| Friend links | a friend's link (`…/hw-app/?add=CODE`) always opened the website, so the friend was added there | the link is now `https://mikydon.github.io/hw-app/add/?c=CODE` and opens the app right on Friends with the code filled in *(Android app, verified Android App Link)*. Without the app it opens the website as before; on an Android phone the website offers "Open in the app" (useful when a messenger opens links in its own browser). Older links still work on the website |
-| Updates from Google Play *(Android app only)* | the app installed from Google Play showed no update at all (it must not update itself from GitHub) | when Google Play has a newer version for you, a card on the main screen and in the ☰ menu says so; Play downloads it inside the app (Google Play in-app updates, you can keep training) and one tap on Restart installs it and opens the new version, never during a workout. If Play doesn't allow an in-app update, its store page opens. The GitHub app keeps updating from GitHub |
-| App size *(Android app only)* | the native code was not optimized: 19 MB of DEX code, a 9.2 MB APK (Google Play flagged "DEX code optimization below threshold") | the native code is shrunk, optimized and obfuscated with R8: 8.2 MB of DEX code, a ~6 MB APK, nothing changes in how it works |
+- Friend links are now `https://mikydon.github.io/hw-app/add/?c=CODE` and open the app right on Friends with the code filled in *(Android App Link: the app from Google Play or the 1.6.5 APK)*. Without the app the website opens as before; on an Android phone it offers "Open in the app" (useful when a messenger opens links in its own browser). Older `?add=` links still work on the website.
+- Settings → Account & cloud: a "Back up now" button uploads the cloud backup right away (same rule as the automatic one: a phone without workouts never replaces a cloud copy that has some).
+- *(Android app only)* A notification when a new version comes out, for everyone with notifications allowed (signed in or not; Android 13+ asks once at the start; switch in Settings). The GitHub app gets it when the release is published; the Google Play app once the version is approved in Google Play.
+- *(Android app only)* The app from Google Play shows a card when Google Play has a newer version for you (Google Play's in-app update check). It never points to GitHub.
+- *(Android app only)* The native code is shrunk and optimized with R8 (Google Play flagged "DEX code optimization below threshold"): 8.2 MB of DEX code instead of 19.1 MB, a ~6 MB APK instead of 9.2 MB. The GitHub app gets this, the friend links and the update card with the 1.6.5 APK; the small update itself works on older APKs too.
 
 ## 1.6.4 (2026-10-17)
 

@@ -1,6 +1,6 @@
 import { useState, useEffect, useLayoutEffect, useRef, memo } from "react";
 import { createPortal } from "react-dom";
-import { isNative, pushBack, setRootBack, exitApp, vibratePattern, keepScreenOn, openExternal, saveBackupFile, bkSupported, bkWrite, bkWriteAuto, bkList, bkRead, bkDelete, bkShare, BK_DIR, bkAutoFile, checkForUpdate, lastUpdate, lastGh, applyUpdateNow, latestApk, isTestBuild, apkState, onApk, apkSupported, apkRestore, apkDownload, apkCanInstall, apkAllow, apkInstall, onAppResume, healthState, healthConnect, healthSettings, healthSteps, healthFoodItems, healthBody, shareText, copyText, pushSupported, pushPermission, pushChannel, pushToken, pushTokenWhy, pushDeleteToken, onPushTap, onPushToken, onPushReceived, hzSupported, hzInfo, hzSet, isPlay, playCheck, playStart, playComplete, onAppUrl } from "./native.js";
+import { isNative, pushBack, setRootBack, exitApp, vibratePattern, keepScreenOn, openExternal, saveBackupFile, bkSupported, bkWrite, bkWriteAuto, bkList, bkRead, bkDelete, bkShare, BK_DIR, bkAutoFile, checkForUpdate, lastUpdate, lastGh, applyUpdateNow, latestApk, isTestBuild, apkState, onApk, apkSupported, apkRestore, apkDownload, apkCanInstall, apkAllow, apkInstall, onAppResume, healthState, healthConnect, healthSettings, healthSteps, healthFoodItems, healthBody, shareText, copyText, pushSupported, pushPermission, pushChannel, pushToken, pushTokenWhy, pushDeleteToken, onPushTap, onPushToken, onPushReceived, hzSupported, hzInfo, hzSet, isPlay, playCheck, playOpenStore, PLAY_STORE_LINK, updTopic, onAppUrl } from "./native.js";
 import { cloud, NICK_RE, SHARE_BASE, cleanCode, fmtCode } from "./cloud-lazy.js";
 import { QUICK as EMO_QUICK, EMOJI } from "./emoji.js";
 import { L, LANG, t as T, tp as TP, fmt, setLang, detectLang, LANGS, fmtLong, fmtShortDM, fmtMonthYear, weekdaysShort, capFirst } from "./i18n/index.js";
@@ -32,7 +32,7 @@ const THEMES = {
   slate:  { ink: "#15181d", panel: "#1f242b", panelHi: "#2a313a", line: "#3a434f", chalk: "#f1f4f8", dim: "#9aa6b4", edge: "#0e1115" },
   coffee: { ink: "#1c140f", panel: "#2a1f17", panelHi: "#382a20", line: "#4d3a2c", chalk: "#fbf3ec", dim: "#b8a291", edge: "#130d09" },
 };
-const APP_VERSION = "1.7.0";
+const APP_VERSION = "1.6.5";
 // Big Shoulders has no Cyrillic, so Oswald (also condensed) covers Ukrainian. The browser only
 // downloads the Oswald unicode ranges a page actually uses.
 const DISPLAY = "'Big Shoulders Display', 'Oswald', 'Arial Narrow', Impact, sans-serif";
@@ -2144,10 +2144,11 @@ function ApkUpdateCard({ info, busy, onClose, inMenu }) {
   useEffect(() => onAppResume(async () => { if (await apkCanInstall()) setPerm(false); }), []);
   const s = st.v === info.version ? st : { kind: "idle" };
   const inApp = apkSupported();
-  // 1.7.0: an app from Google Play updates through Play (in-app update), never from GitHub
+  // 1.6.5: an app from Google Play only says that Play has a newer version (never GitHub); the button to the store
+  // page comes with PLAY_STORE_LINK once the app is public (Michael, Oct 17)
   const play = !!info.play;
-  const download = () => { sfxTap(); if (play) playStart(); else if (inApp && info.url) apkDownload(info); else openExternal(info.url || "https://github.com/mikydon/hw-app/releases/latest"); };
-  const install = async () => { sfxTap(); if (play) { playComplete(); return; } if (!(await apkCanInstall())) { setPerm(true); return; } setPerm(false); apkInstall(); };
+  const download = () => { sfxTap(); if (play) playOpenStore(); else if (inApp && info.url) apkDownload(info); else openExternal(info.url || "https://github.com/mikydon/hw-app/releases/latest"); };
+  const install = async () => { sfxTap(); if (!(await apkCanInstall())) { setPerm(true); return; } setPerm(false); apkInstall(); };
   const pct = Math.max(0, Math.min(100, Math.round(s.pct || 0)));
   const col = s.kind === "error" ? "#ff8a80" : s.kind === "ready" ? C.mint : s.kind === "downloading" ? C.sky : C.mint;
   const link = { ...btnBase, background: "transparent", color: col, fontSize: 14, padding: "6px 0 0", textAlign: "left" };
@@ -2163,7 +2164,7 @@ function ApkUpdateCard({ info, busy, onClose, inMenu }) {
           </div>
           {s.kind === "idle" && <>
             <div style={{ fontSize: 12, color: C.dim, lineHeight: 1.45, marginTop: 2 }}>{T(play ? "playUpdBody" : inApp ? "apkUpdBody" : "apkUpdBodyWeb")}</div>
-            <button onClick={download} data-apk-download style={link}>{T(play ? "playUpdBtn" : "apkUpdBtn")} ›</button>
+            {(!play || PLAY_STORE_LINK) && <button onClick={download} data-apk-download style={link}>{T(play ? "playUpdBtn" : "apkUpdBtn")} ›</button>}
           </>}
           {s.kind === "downloading" && <>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 8 }}>
@@ -2173,8 +2174,8 @@ function ApkUpdateCard({ info, busy, onClose, inMenu }) {
             <div style={{ fontSize: 12, color: C.dim, lineHeight: 1.45, marginTop: 6 }}>{T("apkDlD")}</div>
           </>}
           {s.kind === "ready" && (busy ? <div data-apk-busy style={{ fontSize: 12, color: C.signal, lineHeight: 1.45, marginTop: 4 }}>{T("apkBusy")}</div> : <>
-            <div style={{ fontSize: 12, color: C.dim, lineHeight: 1.45, marginTop: 2 }}>{T(play ? "playReadyD" : "apkReadyD")}</div>
-            {play ? <button data-apk-install onClick={install} style={solid}>{T("playRestart")}</button> : perm ? <>
+            <div style={{ fontSize: 12, color: C.dim, lineHeight: 1.45, marginTop: 2 }}>{T("apkReadyD")}</div>
+            {perm ? <>
               <div data-apk-perm style={{ fontSize: 12, color: C.chalk, lineHeight: 1.5, marginTop: 8, background: C.panelHi, borderRadius: 12, padding: "9px 11px" }}>{T("apkPermD")}</div>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 <button data-apk-allow onClick={() => { sfxTap(); apkAllow(); }} style={solid}>{T("apkPermBtn")}</button>
@@ -4313,7 +4314,7 @@ function SettingRow({ title, desc, on, onClick, first }) {
 }
 
 // ─── ACCOUNT, FRIENDS, LEADERBOARD (1.5.0) ──────────────────────────────────
-// A friend's link: …/hw-app/add/?c=CODE (1.7.0) or the older …/hw-app/?add=CODE → the formatted code, else "".
+// A friend's link: …/hw-app/add/?c=CODE (1.6.5) or the older …/hw-app/?add=CODE → the formatted code, else "".
 function addFromUrl(u) {
   try {
     const x = new URL(u);
@@ -4577,7 +4578,7 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
     setSheet(null); if (chatWith === p.uid) setChatWith(null);
   };
   const report = (p, what = "profile") => cloud().report(p.uid, what).then(() => T("frReported")).catch(cloudErr);
-  const link = `${SHARE_BASE}add/?c=${me.code}`; // 1.7.0: opens the app when it is installed (App Links), else the website
+  const link = `${SHARE_BASE}add/?c=${me.code}`; // 1.6.5: opens the app when it is installed (App Links), else the website
   const share = () => { sfxTap(); shareText(T("frShareText", { code: fmtCode(me.code), url: link })).then(r => { if (r === "copied") { setShareMsg(T("copied")); setTimeout(() => setShareMsg(""), 2500); } }); };
   const copy = () => { sfxTap(); copyText(fmtCode(me.code)).then(() => { setShareMsg(T("copied")); setTimeout(() => setShareMsg(""), 2500); }); };
   const seg = (on, onClick, label, data, badge) => (
@@ -5156,7 +5157,7 @@ function LiveNotice({ n, people, onOpen, onClose }) {
 }
 
 // Settings → Account & cloud: who is signed in, the cloud backup, sign out, delete the account.
-function AccountBox({ acct, cloudBk, onOpen, onRestore, onSignOut, onDelete, settings, set }) {
+function AccountBox({ acct, cloudBk, onOpen, onRestore, onBackupNow, onSignOut, onDelete, settings, set }) {
   const [sure, setSure] = useState(false);
   const [soSure, setSoSure] = useState(false);
   const [busy, setBusy] = useState("");
@@ -5183,6 +5184,8 @@ function AccountBox({ acct, cloudBk, onOpen, onRestore, onSignOut, onDelete, set
           {T("acBackup")}
           {sub(T("acBackupD"))}
           <span data-cloud-bk={cloudBk ? (cloudBk.ok ? "ok" : "err") : "none"} style={{ display: "block", fontSize: 12, marginTop: 4, color: cloudBk && !cloudBk.ok ? "#ff8a80" : cloudBk ? C.mint : C.dim }}>{!cloudBk ? T("acBkNone") : cloudBk.ok ? T("acBkLast", { time: fmtWhen(cloudBk.ts) }) : T("acBkErr", { e: cloudBk.err || "?" })}</span>
+          {onBackupNow && <button data-cloud-bk-now onClick={() => { sfxTap(); run("bk", onBackupNow); }} disabled={busy === "bk"}
+            style={{ ...btnBase, marginTop: 10, padding: "8px 14px", borderRadius: 99, fontSize: 13, background: C.panelHi, color: C.chalk, border: `1px solid ${C.line}` }}>{busy === "bk" ? T("acBkNowBusy") : T("acBkNow")}</button>}
         </div>
         {pushSupported() && settings && set && <PushRow settings={settings} set={set} />}
         <button data-acct-restore onClick={() => run("rs", onRestore)} style={rowBtn(false)}>
@@ -5378,7 +5381,7 @@ function ExercisesPage({ settings, set, history, onBack }) {
   );
 }
 
-function SettingsTab({ initPage, settings, setSettings, history, profile, setProfile, onImport, kcal, autoBk, onAutoBackup, acct, cloudBk, onAcctOpen, onCloudRestore, onSignOut, onDeleteAccount }) {
+function SettingsTab({ initPage, settings, setSettings, history, profile, setProfile, onImport, kcal, autoBk, onAutoBackup, acct, cloudBk, onAcctOpen, onCloudRestore, onCloudBackupNow, onSignOut, onDeleteAccount }) {
   const [page, setPage] = useState(initPage || null); // null | "exercises"
   useBack(() => setPage(null), page === "exercises");
   const [langOpen, setLangOpen] = useState(false);
@@ -5533,10 +5536,11 @@ function SettingsTab({ initPage, settings, setSettings, history, profile, setPro
         <SettingRow title={T("vibrate")} desc={`${T("vibrateD")} ${T("vibrateHint")}`} on={settings.vibrate} onClick={() => { set("vibrate", !settings.vibrate); if (!settings.vibrate) vibratePattern([160]); }} />
         <SettingRow title={T("keepAwake")} desc={T("keepAwakeD")} on={settings.keepAwake} onClick={() => set("keepAwake", !settings.keepAwake)} />
         <SettingRow title={T("aiCopy")} desc={T("aiCopyD")} on={settings.aiCopy} onClick={() => set("aiCopy", !settings.aiCopy)} />
+        {pushSupported() && <div data-upd-notif><SettingRow title={T("updNotif")} desc={T("updNotifD")} on={settings.updNotif !== false} onClick={() => set("updNotif", settings.updNotif === false)} /></div>}
       </div>
 
       <div style={sectionTitle}>{T("acTitle")}</div>
-      <AccountBox acct={acct || { st: "out" }} cloudBk={cloudBk} onOpen={onAcctOpen} onRestore={onCloudRestore} onSignOut={onSignOut} onDelete={onDeleteAccount} settings={settings} set={set} />
+      <AccountBox acct={acct || { st: "out" }} cloudBk={cloudBk} onOpen={onAcctOpen} onRestore={onCloudRestore} onBackupNow={onCloudBackupNow} onSignOut={onSignOut} onDelete={onDeleteAccount} settings={settings} set={set} />
 
       <div style={sectionTitle}>{T("dataBackup")}</div>
       <div style={card}>
@@ -6564,7 +6568,7 @@ export default function App() {
   }, [acct.st, acct.prof && acct.prof.code, settings.push, settings.lang, (social.blocked || []).join(",")]);
   // A tap on a notification: straight to that chat, or to Friends for a request (also when it started the app).
   useEffect(() => onPushTap(d => {
-    if (d.kind === "test") return; // the test notification only opens the app
+    if (d.kind === "test" || d.kind === "upd") return; // the test and "new version" notifications only open the app
     setScreen("friends"); setMenuOpen(false); const who = d.uid || d.from; setChatWith(d.kind === "msg" && who ? who : null);
     if (session) setSessionOpen(false);
   }), [session]);
@@ -6597,6 +6601,19 @@ export default function App() {
     }, 6000);
     return () => clearTimeout(t);
   }, [acct.st, acct.prof, history, profile, settings, kcal, loaded, settingsLoaded, profLoaded, kcalLoaded, rsOffer, swOffer]);
+  // 1.6.5 (Michael, Oct 17): "Back up now" in Settings → Account & cloud, the same upload as the automatic one, right
+  // away. Same safety rule: a phone without workouts never replaces a cloud copy that has some.
+  const cloudBackupNow = async () => {
+    if (acct.st !== "in" || !acct.prof) throw new Error("not-signed-in");
+    if (swOffer || rsOffer || !cloudReady.current) return T("acBkNowWait"); // the cloud copy isn't compared with this phone yet
+    if (!history.length && cloudN.current !== 0) return T("acBkNowEmpty");
+    const json = cloudBackupJson(history, profile, settings, kcal), key = json.replace(/"exportedAt":"[^"]*",/, "");
+    const save = bk => { setCloudMem({ bk }); setCloudBk(bk); };
+    try { await cloud().saveBackup(json, history.length); }
+    catch (e) { save({ ts: Date.now(), ok: false, err: String((e && (e.code || e.message)) || e).slice(0, 120) }); throw e; }
+    lastCloud.current = key; setCloudMem({ bkHash: strHash(key) }); cloudN.current = history.length; save({ ts: Date.now(), ok: true });
+    return "✓ " + T("acBkNowDone");
+  };
   const [newsAt, setNewsAt] = useState(null);
   const [onboard, setOnboard] = useState(null); // step to show the first-start setup at, or null
   const [obChecked, setObChecked] = useState(false);
@@ -6605,6 +6622,12 @@ export default function App() {
     setObChecked(true);
     if (!settings.onboarded && history.length === 0 && (!profile.name || profile.name === "User")) setOnboard(0);
   }, [loaded, settingsLoaded, profLoaded]);
+  // 1.6.5: "a new version is out" notifications for everyone (signed in or not): the FCM topic for this app and
+  // language; Android 13+ asks for notifications at the first start (after the first-start setup, if it shows).
+  useEffect(() => {
+    if (!isNative || !loaded || !settingsLoaded || !obChecked || onboard !== null) return;
+    updTopic({ on: settings.updNotif !== false, lang: LANG, channelName: T("updChannel"), ask: true }).catch(() => {});
+  }, [loaded, settingsLoaded, obChecked, onboard, settings.updNotif, settings.lang]);
   useEffect(() => {
     if (!loaded || !settingsLoaded || newsChecked) return;
     setNewsChecked(true);
@@ -6665,13 +6688,13 @@ export default function App() {
       // A new big version → its APK. The test APK may always fetch the newest release, to try the flow.
       let a = r && r.apk;
       if (!a && latestApk() && await isTestBuild()) a = { ...latestApk(), test: true };
-      if (!a) a = await playCheck(); // 1.7.0: the app from Google Play asks Play (checkForUpdate skips it)
+      if (!a) a = await playCheck(); // 1.6.5: the app from Google Play asks Play (checkForUpdate skips it)
       if (a) setApkUpd(a);
       apkRestore(a && a.version); // an APK downloaded earlier is ready again; old ones are deleted
     }).catch(() => {});
   }, [loaded]);
   const resume = () => { sfxTap(); setMenuOpen(false); setSessionOpen(true); };
-  // 1.7.0 (Michael, Oct 17: a friend's link opened the website): the app owns …/hw-app/add/ links (App Links,
+  // 1.6.5 (Michael, Oct 17: a friend's link opened the website): the app owns …/hw-app/add/ links (App Links,
   // assetlinks.json on mikydon.github.io), so a tapped link opens the app on Friends with the code filled in.
   const [addSeq, setAddSeq] = useState(0);
   useEffect(() => onAppUrl(u => {
@@ -6793,7 +6816,7 @@ export default function App() {
                 {screen === "calories" && <Calories history={history} profile={profile} setProfile={setProfile} kcal={kcal} setKcal={setKcal} />}
                 {screen === "settings" && <SettingsTab initPage={setPage0} settings={settings} setSettings={setSettings} history={history} profile={profile} setProfile={setProfile}
                   kcal={kcal} autoBk={autoBk} onAutoBackup={runAutoBackup}
-                  onImport={importAll} acct={acct} cloudBk={cloudBk} onAcctOpen={() => go("friends")} onCloudRestore={restoreFromCloud} onSignOut={signOut} onDeleteAccount={deleteAccount} />}
+                  onImport={importAll} acct={acct} cloudBk={cloudBk} onAcctOpen={() => go("friends")} onCloudRestore={restoreFromCloud} onCloudBackupNow={cloudBackupNow} onSignOut={signOut} onDeleteAccount={deleteAccount} />}
                 {screen === "friends" && <OpenInApp />}
                 {screen === "friends" && <FriendsTab key={"fr" + addSeq} setTopHead={setTopHead} acct={acct} history={history} profile={profile} social={social} chatWith={chatWith} setChatWith={setChatWith} onBlocked={setBlocked} onSignIn={signIn} onCreate={createProfile} onRename={renameNick} onSetGlobal={setGlobal} />}
               </div>
