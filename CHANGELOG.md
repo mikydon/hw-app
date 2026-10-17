@@ -17,7 +17,7 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 - Settings → Account & cloud: a "Back up now" button uploads the cloud backup right away (same rule as the automatic one: a phone without workouts never replaces a cloud copy that has some).
 - *(Android app only)* A notification when a new version comes out, for everyone with notifications allowed (signed in or not; Android 13+ asks once at the start; switch in Settings). The GitHub app gets it when the release is published; the Google Play app once the version is approved in Google Play.
 - *(Android app only)* The app from Google Play shows a card when Google Play has a newer version for you (Google Play's in-app update check). It never points to GitHub.
-- *(Android app only)* The native code is shrunk and optimized with R8 (Google Play flagged "DEX code optimization below threshold"): 8.2 MB of DEX code instead of 19.1 MB, a ~6 MB APK instead of 9.2 MB. The GitHub app gets this, the friend links and the update card with the 1.6.5 APK; the small update itself works on older APKs too.
+- *(Android app only)* The native code is shrunk and optimized with R8 (Google Play flagged "DEX code optimization below threshold"): 4.6 MB of DEX code instead of 19.1 MB, a 4.1 MB APK instead of 9.2 MB (less than half). The GitHub app gets this, the friend links and the update card with the 1.6.5 APK; the small update itself works on older APKs too.
 
 ## 1.6.4 (2026-10-17)
 
