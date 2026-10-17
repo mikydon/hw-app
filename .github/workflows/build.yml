@@ -46,7 +46,8 @@ jobs:
         run: |
           set -o pipefail
           if ! ./gradlew --no-daemon assembleDirectDebug -PappVersionName=${{ steps.ver.outputs.version }} -PappVersionCode=${{ steps.ver.outputs.code }} 2>&1 | tee "$RUNNER_TEMP/debug.log"; then
-            grep -E "^(ERROR|e: )|Missing class|What went wrong|R8|> " "$RUNNER_TEMP/debug.log" | head -25 | while IFS= read -r l; do echo "::error::${l}"; done
+            echo "::error::$(grep -A12 'What went wrong' "$RUNNER_TEMP/debug.log" | head -14 | tr '\n' ' ' | cut -c1-1800)"
+            echo "::error::$(grep -E '^ERROR|Missing class|R8:' "$RUNNER_TEMP/debug.log" | head -20 | tr '\n' ' ' | cut -c1-3000)"
             for f in $(find app/build/outputs/mapping -name missing_rules.txt 2>/dev/null); do echo "::error::missing_rules.txt: $(grep -v '^#' "$f" | tr '\n' ' ' | cut -c1-1500)"; done
             exit 1
           fi
