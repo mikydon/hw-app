@@ -1117,6 +1117,9 @@ export default {
     ["📱 Powiadomienia", "Nowe wiadomości i zaproszenia widziałeś tylko przy otwartej aplikacji.", "Telefon powiadomi cię o nowej wiadomości, zaproszeniu do znajomych lub jego przyjęciu także przy zamkniętej aplikacji. Stuknięcie otwiera czat albo Znajomych. Wyłączysz to w Ustawienia → Konto i chmura; od zablokowanych osób nic nie przychodzi."],
     ["📱 Płynność ekranu", "Aplikacja działała z taką częstotliwością, jaką przydzielił jej telefon.", "Aplikacja prosi o najwyższą częstotliwość odświeżania, na jaką pozwala telefon (np. 120 Hz). W Ustawieniach możesz wybrać też 60 Hz, które oszczędza baterię."],
   ],
+  news165: [
+    "📱 Pod maską: natywny kod aplikacji jest teraz zoptymalizowany i skompresowany (wymaga tego Google Play), więc aplikacja zajmuje mniej miejsca. W działaniu nic się nie zmienia.",
+  ],
   news164: [
     "📱 Automatyczna kopia zapasowa działa też po ponownej instalacji aplikacji. Android nie pozwala nowej instalacji nadpisać pliku starej, więc aplikacja zapisuje teraz kopię w nowym pliku obok (stary zostaje w Documents/HW App).",
   ],

@@ -1117,6 +1117,9 @@ export default {
     ["📱 Upozornenia", "Nové správy a žiadosti o priateľstvo si videl len vtedy, keď bola appka otvorená.", "Mobil ťa upozorní na novú správu, žiadosť o priateľstvo alebo jej prijatie aj vtedy, keď je appka zatvorená. Ťuknutím sa otvorí rovno chat alebo Priatelia. Vypneš to v Nastavenia → Účet a cloud; od zablokovaných ľudí nič nechodí."],
     ["📱 Plynulosť obrazovky", "Appka bežala na takej frekvencii, akú jej pridelil mobil.", "Appka požiada o najvyššiu obnovovaciu frekvenciu, akú mobil dovolí (napr. 120 Hz). V Nastaveniach si môžeš vybrať aj 60 Hz, ktoré šetria batériu."],
   ],
+  news165: [
+    "📱 Pod kapotou: natívny kód appky je teraz optimalizovaný a zhustený (vyžaduje to Google Play), takže appka zaberá menej miesta. Na fungovaní sa nič nemení.",
+  ],
   news164: [
     "📱 Automatická záloha funguje aj po preinštalovaní appky. Android nedovolí novej inštalácii prepísať súbor tej starej, preto appka teraz uloží zálohu do nového súboru vedľa neho (starý ostane v Documents/HW App).",
   ],

@@ -19,3 +19,31 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# ─── HW App (1.6.5, R8 on) ───────────────────────────────────────────────
+# Readable crash stacks in Play (the mapping file is in the bundle).
+-keepattributes SourceFile,LineNumberTable,*Annotation*,Signature,InnerClasses,EnclosingMethod
+-renamesourcefileattribute SourceFile
+
+# Capacitor's own consumer rules keep every Plugin subclass (ours included: ApkInstaller, HwVibrate, HwDisplay, HwBuild)
+# and their @PluginMethod methods. The live updater ships its rules only for its own build, not as consumer rules,
+# so they are repeated here (it reaches into the bridge by name).
+-keep class ee.forgr.capacitor_updater.** { *; }
+-keep class com.getcapacitor.Bridge {
+    com.getcapacitor.MessageHandler msgHandler;
+}
+-keep class com.getcapacitor.MessageHandler { *; }
+-keep class com.getcapacitor.PluginCall {
+    <init>(com.getcapacitor.MessageHandler, java.lang.String, java.lang.String, java.lang.String, com.getcapacitor.JSObject);
+}
+-keep class * implements com.getcapacitor.PluginHandle {
+    public void invoke(java.lang.String, com.getcapacitor.PluginCall);
+}
+# The updater looks these up with Class.forName / getMethod.
+-keep class androidx.webkit.WebViewFeature { public static *; }
+-keep class androidx.webkit.WebViewCompat { public static *; }
+
+# The JavaScript bridge (also in the default file; kept explicit on purpose).
+-keepclassmembers class * {
+    @android.webkit.JavascriptInterface <methods>;
+}

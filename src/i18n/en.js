@@ -1117,6 +1117,9 @@ export default {
     ["📱 Notifications", "You only saw new messages and friend requests while the app was open.", "Your phone tells you about a new message, a friend request or an accepted request also when the app is closed. A tap opens that chat or Friends. Switch it off in Settings → Account & cloud; nothing comes from people you blocked."],
     ["📱 Screen smoothness", "The app ran at whatever refresh rate the phone gave it.", "The app asks for the highest refresh rate your phone allows (e.g. 120 Hz). In Settings you can pick 60 Hz instead to save battery."],
   ],
+  news165: [
+    "📱 Behind the scenes: the app's native code is now optimized and compacted (Google Play asks for it), so the app takes less space. Nothing changes in how it works.",
+  ],
   news164: [
     "📱 Automatic backup works again after reinstalling the app. Android doesn't let a new install replace the file of the old one, so the app now saves into a new file next to it (the old one stays in Documents/HW App).",
   ],

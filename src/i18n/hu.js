@@ -1117,6 +1117,9 @@ export default {
     ["📱 Értesítések", "Az új üzeneteket és barátkéréseket csak nyitott appnál láttad.", "A telefon szól az új üzenetről, barátkérésről vagy annak elfogadásáról akkor is, ha az app be van zárva. Koppintásra a chat vagy a Barátok nyílik meg. Kikapcsolod: Beállítások → Fiók és felhő; letiltott emberektől semmi sem jön."],
     ["📱 Képernyő simasága", "Az app azon a frissítési frekvencián futott, amit a telefon adott neki.", "Az app a telefon által engedett legmagasabb frissítési frekvenciát kéri (pl. 120 Hz). A Beállításokban 60 Hz-et is választhatsz, ami kíméli az akkut."],
   ],
+  news165: [
+    "📱 A háttérben: az alkalmazás natív kódja mostantól optimalizált és tömörített (a Google Play ezt kéri), így kevesebb helyet foglal. A működésben semmi sem változik.",
+  ],
   news164: [
     "📱 Az automatikus mentés az alkalmazás újratelepítése után is működik. Az Android nem engedi, hogy az új telepítés felülírja a régi fájlját, ezért az alkalmazás most egy új fájlba ment mellette (a régi a Documents/HW App mappában marad).",
   ],

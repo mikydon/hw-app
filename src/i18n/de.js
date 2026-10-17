@@ -1117,6 +1117,9 @@ export default {
     ["📱 Benachrichtigungen", "Neue Nachrichten und Freundschaftsanfragen hast du nur bei geöffneter App gesehen.", "Dein Handy meldet eine neue Nachricht, eine Freundschaftsanfrage oder ihre Annahme auch bei geschlossener App. Ein Tipp öffnet den Chat oder Freunde. Abschalten unter Einstellungen → Konto & Cloud; von blockierten Personen kommt nichts."],
     ["📱 Bildschirm-Flüssigkeit", "Die App lief mit der Bildwiederholrate, die ihr das Handy gab.", "Die App fragt nach der höchsten Bildwiederholrate, die dein Handy erlaubt (z. B. 120 Hz). In den Einstellungen kannst du stattdessen 60 Hz wählen, das spart Akku."],
   ],
+  news165: [
+    "📱 Hinter den Kulissen: Der native Code der App ist jetzt optimiert und verkleinert (Google Play verlangt das), daher braucht die App weniger Platz. An der Bedienung ändert sich nichts.",
+  ],
   news164: [
     "📱 Die automatische Sicherung funktioniert auch nach einer Neuinstallation der App. Android lässt eine neue Installation die Datei der alten nicht überschreiben, deshalb speichert die App jetzt in eine neue Datei daneben (die alte bleibt in Documents/HW App).",
   ],

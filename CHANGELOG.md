@@ -10,6 +10,10 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 
 <!-- New version: add a "## x.y.z (date)" section on top (web-only history uses "## Browser beta x.y.z (date)"). On a push to main, .github/workflows/build.yml builds everything and .github/scripts/releases.sh creates/updates the releases (commit = the push, or the one in a commit comment). -->
 
+## 1.6.5 (2026-10-17)
+
+- *(Android app only)* Behind the scenes: the native code is now shrunk, optimized and obfuscated with R8 (Google Play flagged "DEX code optimization below threshold", required from February 2027 for apps with more than 10 MB of DEX code). The app takes less space; nothing changes in how it works.
+
 ## 1.6.4 (2026-10-17)
 
 - *(Android app only)* Automatic backup works again after reinstalling the app. Android 11+ doesn't let a new install replace a file the old install created ("open failed: EACCES"), so the app now writes the automatic backup into the next free name (`…-2.json`) and keeps using it. The old file stays in Documents/HW App and can still be restored with "Restore from backup".

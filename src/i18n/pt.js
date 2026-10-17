@@ -1117,6 +1117,9 @@ export default {
     ["📱 Notificações", "Só vias mensagens novas e pedidos de amizade com a app aberta.", "O telemóvel avisa-te de uma mensagem nova, de um pedido de amizade ou da sua aceitação mesmo com a app fechada. Um toque abre essa conversa ou Amigos. Desliga em Ajustes → Conta e nuvem; de pessoas bloqueadas não chega nada."],
     ["📱 Fluidez do ecrã", "A app corria à frequência que o telemóvel lhe dava.", "A app pede a frequência de atualização mais alta que o telemóvel permite (ex.: 120 Hz). Nos Ajustes podes escolher 60 Hz para poupar bateria."],
   ],
+  news165: [
+    "📱 Nos bastidores: o código nativo do app agora está otimizado e compactado (o Google Play exige isso), por isso o app ocupa menos espaço. Nada muda no funcionamento.",
+  ],
   news164: [
     "📱 O backup automático volta a funcionar depois de reinstalar o app. O Android não deixa uma nova instalação substituir o arquivo da anterior, por isso o app agora salva num novo arquivo ao lado (o antigo fica em Documents/HW App).",
   ],
