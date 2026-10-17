@@ -117,12 +117,29 @@ export const BK_AUTO = "hw-app-auto-backup.json";
 // 1.6.2 (Michael: two accounts on one phone): the automatic backup belongs to the account whose data is on the
 // phone, so a second account never replaces the first one's file. No account = the plain name (as before).
 export const bkAutoFile = id => (id ? `hw-app-auto-backup-${String(id).replace(/[^A-Za-z0-9]/g, "").slice(0, 8)}.json` : BK_AUTO);
-const AUTO_RE = /^hw-app-auto-backup(?:-([A-Za-z0-9]+))?\.json$/;
+// 1.6.4 (Michael, Oct 17: "open failed: EACCES" after reinstalling the app): Android 11+ attributes a file to the
+// install that created it, so an automatic backup left by an earlier install (or the GitHub app before the Play one)
+// can't be opened for writing and isn't even listed. bkWriteAuto then uses the next free name (-2 … -99) and the app
+// remembers it (`file` in the autobk info). The old file stays in the folder for "Load a backup".
+const AUTO_RE = /^hw-app-auto-backup(?:-([A-Za-z0-9]{8}))?(?:-([2-9]|[1-9][0-9]))?\.json$/;
+const isDenied = e => /EACCES|EPERM|Permission denied|not permitted/i.test(String((e && e.message) || e));
 const bkPath = name => `${BK_DIR}/${name}`;
 export const bkSupported = () => isNative;
 export async function bkWrite(name, text) {
   const res = await Filesystem.writeFile({ path: bkPath(name), data: text, directory: Directory.Documents, encoding: Encoding.UTF8, recursive: true });
   return res.uri;
+}
+export async function bkWriteAuto(name, text, prev) {
+  const base = name.replace(/\.json$/, ""), names = [];
+  if (prev && prev.startsWith(base + "-") && /^-([2-9]|[1-9][0-9])\.json$/.test(prev.slice(base.length))) names.push(prev); // the name that worked last time
+  names.push(name);
+  for (let i = 2; i <= 99; i++) names.push(`${base}-${i}.json`); // every reinstall locks one more name
+  let err;
+  for (const n of [...new Set(names)]) {
+    try { await bkWrite(n, text); return n; }
+    catch (e) { err = e; if (!isDenied(e)) throw e; }
+  }
+  throw err;
 }
 // Newest first: [{name, size, mtime, auto}]
 export async function bkList() {

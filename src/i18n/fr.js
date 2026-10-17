@@ -1117,6 +1117,9 @@ export default {
     ["📱 Notifications", "Tu ne voyais les nouveaux messages et demandes d’ami que l’app ouverte.", "Ton téléphone te prévient d’un nouveau message, d’une demande d’ami ou de son acceptation même quand l’app est fermée. Une touche ouvre la discussion ou Amis. Désactive-les dans Réglages → Compte et cloud ; rien n’arrive des personnes bloquées."],
     ["📱 Fluidité de l’écran", "L’app tournait à la fréquence que le téléphone lui donnait.", "L’app demande la fréquence de rafraîchissement la plus haute que permet ton téléphone (p. ex. 120 Hz). Dans Réglages, tu peux choisir 60 Hz pour économiser la batterie."],
   ],
+  news164: [
+    "📱 La sauvegarde automatique fonctionne aussi après avoir réinstallé l'appli. Android ne laisse pas une nouvelle installation remplacer le fichier de l'ancienne, donc l'appli enregistre maintenant dans un nouveau fichier à côté (l'ancien reste dans Documents/HW App).",
+  ],
   news163: [
     "📱 En coulisses : la version de Google Play est désormais signée avec la même clé que celle de GitHub, c'est donc la même appli. Rien ne change pour toi.",
   ],

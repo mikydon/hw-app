@@ -1,6 +1,6 @@
 import { useState, useEffect, useLayoutEffect, useRef, memo } from "react";
 import { createPortal } from "react-dom";
-import { isNative, pushBack, setRootBack, exitApp, vibratePattern, keepScreenOn, openExternal, saveBackupFile, bkSupported, bkWrite, bkList, bkRead, bkDelete, bkShare, BK_DIR, bkAutoFile, checkForUpdate, lastUpdate, lastGh, applyUpdateNow, latestApk, isTestBuild, apkState, onApk, apkSupported, apkRestore, apkDownload, apkCanInstall, apkAllow, apkInstall, onAppResume, healthState, healthConnect, healthSettings, healthSteps, healthFoodItems, healthBody, shareText, copyText, pushSupported, pushPermission, pushChannel, pushToken, pushTokenWhy, pushDeleteToken, onPushTap, onPushToken, onPushReceived, hzSupported, hzInfo, hzSet, isPlay } from "./native.js";
+import { isNative, pushBack, setRootBack, exitApp, vibratePattern, keepScreenOn, openExternal, saveBackupFile, bkSupported, bkWrite, bkWriteAuto, bkList, bkRead, bkDelete, bkShare, BK_DIR, bkAutoFile, checkForUpdate, lastUpdate, lastGh, applyUpdateNow, latestApk, isTestBuild, apkState, onApk, apkSupported, apkRestore, apkDownload, apkCanInstall, apkAllow, apkInstall, onAppResume, healthState, healthConnect, healthSettings, healthSteps, healthFoodItems, healthBody, shareText, copyText, pushSupported, pushPermission, pushChannel, pushToken, pushTokenWhy, pushDeleteToken, onPushTap, onPushToken, onPushReceived, hzSupported, hzInfo, hzSet, isPlay } from "./native.js";
 import { cloud, NICK_RE, SHARE_BASE, cleanCode, fmtCode } from "./cloud-lazy.js";
 import { QUICK as EMO_QUICK, EMOJI } from "./emoji.js";
 import { L, LANG, t as T, tp as TP, fmt, setLang, detectLang, LANGS, fmtLong, fmtShortDM, fmtMonthYear, weekdaysShort, capFirst } from "./i18n/index.js";
@@ -32,7 +32,7 @@ const THEMES = {
   slate:  { ink: "#15181d", panel: "#1f242b", panelHi: "#2a313a", line: "#3a434f", chalk: "#f1f4f8", dim: "#9aa6b4", edge: "#0e1115" },
   coffee: { ink: "#1c140f", panel: "#2a1f17", panelHi: "#382a20", line: "#4d3a2c", chalk: "#fbf3ec", dim: "#b8a291", edge: "#130d09" },
 };
-const APP_VERSION = "1.6.3";
+const APP_VERSION = "1.6.4";
 // Big Shoulders has no Cyrillic, so Oswald (also condensed) covers Ukrainian. The browser only
 // downloads the Oswald unicode ranges a page actually uses.
 const DISPLAY = "'Big Shoulders Display', 'Oswald', 'Arial Narrow', Impact, sans-serif";
@@ -2018,7 +2018,8 @@ const newsUnseen = seen => !!seen && bigVer(seen) === bigVer(APP_VERSION) && new
 // at = a version to open on (the card after a small update opens the current version's page)
 function WhatsNew({ onClose, at }) {
   const pages = newsPages();
-  const start = at ? Math.max(0, pages.findIndex(x => x.v === at)) : 0;
+  // 1.6.4: a version with only 📱 lines has no page on the website, so open on the newest page up to it
+  const start = at ? pages.reduce((b, x, i) => (verCmp(x.v, at) <= 0 ? i : b), 0) : 0;
   const [pg, setPg] = useState(start);
   const [h, setH] = useState(null);
   const [prog, setProg] = useState(start); // scroll position in pages (1.5 = halfway from page 2 to 3), drives the dots
@@ -6307,8 +6308,9 @@ export default function App() {
     if (!hasData && !force) return;
     if (!hasData) { const info = { ts: Date.now(), day: dateKey(), ok: false, err: T("autoBkEmpty") }; setAutoBk(info); return; }
     const save = info => { try { localStorage.setItem(AUTOBK_KEY, JSON.stringify(info)); } catch (_) {} setAutoBk(info); };
-    bkWrite(bkAutoFile(cloudMem().owner || (acct.st === "in" ? acct.uid : "")), backupJson(history, profile, settings, k))
-      .then(() => save({ ts: Date.now(), day: dateKey(), ok: true }))
+    const prev = autoBkInfo();
+    bkWriteAuto(bkAutoFile(cloudMem().owner || (acct.st === "in" ? acct.uid : "")), backupJson(history, profile, settings, k), prev && prev.file)
+      .then(file => save({ ts: Date.now(), day: dateKey(), ok: true, file }))
       .catch(e => save({ ts: Date.now(), day: dateKey(), ok: false, err: String((e && e.message) || e).slice(0, 120) }));
   };
   useEffect(() => {

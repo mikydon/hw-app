@@ -1117,6 +1117,9 @@ export default {
     ["📱 Oznámení", "Nové zprávy a žádosti o přátelství jsi viděl jen tehdy, když byla aplikace otevřená.", "Mobil tě upozorní na novou zprávu, žádost o přátelství nebo její přijetí i tehdy, když je aplikace zavřená. Ťuknutím se otevře přímo chat nebo Přátelé. Vypneš to v Nastavení → Účet a cloud; od zablokovaných lidí nic nechodí."],
     ["📱 Plynulost obrazovky", "Aplikace běžela na takové frekvenci, jakou jí přidělil mobil.", "Aplikace požádá o nejvyšší obnovovací frekvenci, jakou mobil dovolí (např. 120 Hz). V Nastavení si můžeš vybrat i 60 Hz, které šetří baterii."],
   ],
+  news164: [
+    "📱 Automatická záloha funguje i po přeinstalování aplikace. Android nedovolí nové instalaci přepsat soubor té staré, proto aplikace teď uloží zálohu do nového souboru vedle něj (starý zůstane v Documents/HW App).",
+  ],
   news163: [
     "📱 Pod kapotou: verze z Google Play je nyní podepsaná stejným klíčem jako ta z GitHubu, takže jde o stejnou aplikaci. Pro tebe se nic nemění.",
   ],

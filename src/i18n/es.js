@@ -1117,6 +1117,9 @@ export default {
     ["📱 Notificaciones", "Los mensajes nuevos y las solicitudes de amistad solo los veías con la app abierta.", "El móvil te avisa de un mensaje nuevo, una solicitud de amistad o su aceptación también con la app cerrada. Un toque abre ese chat o Amigos. Desactívalo en Ajustes → Cuenta y nube; de las personas bloqueadas no llega nada."],
     ["📱 Fluidez de la pantalla", "La app iba a la frecuencia que le daba el móvil.", "La app pide la frecuencia de actualización más alta que permite tu móvil (p. ej. 120 Hz). En Ajustes puedes elegir 60 Hz para ahorrar batería."],
   ],
+  news164: [
+    "📱 La copia de seguridad automática vuelve a funcionar tras reinstalar la app. Android no deja que una instalación nueva sobrescriba el archivo de la anterior, así que la app ahora guarda en un archivo nuevo a su lado (el antiguo se queda en Documents/HW App).",
+  ],
   news163: [
     "📱 Entre bastidores: la versión de Google Play ahora está firmada con la misma clave que la de GitHub, así que es la misma app. Para ti no cambia nada.",
   ],

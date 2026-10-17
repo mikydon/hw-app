@@ -1117,6 +1117,9 @@ export default {
     ["📱 Notifiche", "Vedevi nuovi messaggi e richieste di amicizia solo con l’app aperta.", "Il telefono ti avvisa di un nuovo messaggio, di una richiesta di amicizia o della sua accettazione anche con l’app chiusa. Un tocco apre la chat o Amici. Disattivale in Impostazioni → Account e cloud; dalle persone bloccate non arriva niente."],
     ["📱 Fluidità dello schermo", "L’app girava alla frequenza che le assegnava il telefono.", "L’app chiede la frequenza di aggiornamento più alta consentita dal telefono (es. 120 Hz). Nelle Impostazioni puoi scegliere 60 Hz per risparmiare batteria."],
   ],
+  news164: [
+    "📱 Il backup automatico funziona anche dopo aver reinstallato l'app. Android non permette a una nuova installazione di sovrascrivere il file di quella vecchia, quindi ora l'app salva in un nuovo file accanto (quello vecchio resta in Documents/HW App).",
+  ],
   news163: [
     "📱 Dietro le quinte: la versione di Google Play ora è firmata con la stessa chiave di quella di GitHub, quindi è la stessa app. Per te non cambia nulla.",
   ],
