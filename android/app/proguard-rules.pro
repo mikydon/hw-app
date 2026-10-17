@@ -47,3 +47,7 @@
 -keepclassmembers class * {
     @android.webkit.JavascriptInterface <methods>;
 }
+
+# @capacitor-firebase/authentication has handlers for every sign-in provider; we only include Google
+# (rgcfaIncludeGoogle), so the Facebook SDK classes it mentions are absent on purpose.
+-dontwarn com.facebook.**
