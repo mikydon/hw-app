@@ -1,6 +1,6 @@
 import { useState, useEffect, useLayoutEffect, useRef, memo } from "react";
 import { createPortal } from "react-dom";
-import { isNative, pushBack, setRootBack, exitApp, vibratePattern, keepScreenOn, openExternal, saveBackupFile, bkSupported, bkWrite, bkWriteAuto, bkList, bkRead, bkDelete, bkShare, BK_DIR, bkAutoFile, checkForUpdate, lastUpdate, lastGh, applyUpdateNow, latestApk, isTestBuild, apkState, onApk, apkSupported, apkRestore, apkDownload, apkCanInstall, apkAllow, apkInstall, onAppResume, healthState, healthConnect, healthSettings, healthSteps, healthFoodItems, healthBody, shareText, copyText, pushSupported, pushPermission, pushChannel, pushToken, pushTokenWhy, pushDeleteToken, onPushTap, onPushToken, onPushReceived, hzSupported, hzInfo, hzSet, isPlay } from "./native.js";
+import { isNative, pushBack, setRootBack, exitApp, vibratePattern, keepScreenOn, openExternal, saveBackupFile, bkSupported, bkWrite, bkWriteAuto, bkList, bkRead, bkDelete, bkShare, BK_DIR, bkAutoFile, checkForUpdate, lastUpdate, lastGh, applyUpdateNow, latestApk, isTestBuild, apkState, onApk, apkSupported, apkRestore, apkDownload, apkCanInstall, apkAllow, apkInstall, onAppResume, healthState, healthConnect, healthSettings, healthSteps, healthFoodItems, healthBody, shareText, copyText, pushSupported, pushPermission, pushChannel, pushToken, pushTokenWhy, pushDeleteToken, onPushTap, onPushToken, onPushReceived, hzSupported, hzInfo, hzSet, isPlay, playCheck, playStart, playComplete, onAppUrl } from "./native.js";
 import { cloud, NICK_RE, SHARE_BASE, cleanCode, fmtCode } from "./cloud-lazy.js";
 import { QUICK as EMO_QUICK, EMOJI } from "./emoji.js";
 import { L, LANG, t as T, tp as TP, fmt, setLang, detectLang, LANGS, fmtLong, fmtShortDM, fmtMonthYear, weekdaysShort, capFirst } from "./i18n/index.js";
@@ -32,7 +32,7 @@ const THEMES = {
   slate:  { ink: "#15181d", panel: "#1f242b", panelHi: "#2a313a", line: "#3a434f", chalk: "#f1f4f8", dim: "#9aa6b4", edge: "#0e1115" },
   coffee: { ink: "#1c140f", panel: "#2a1f17", panelHi: "#382a20", line: "#4d3a2c", chalk: "#fbf3ec", dim: "#b8a291", edge: "#130d09" },
 };
-const APP_VERSION = "1.6.5";
+const APP_VERSION = "1.7.0";
 // Big Shoulders has no Cyrillic, so Oswald (also condensed) covers Ukrainian. The browser only
 // downloads the Oswald unicode ranges a page actually uses.
 const DISPLAY = "'Big Shoulders Display', 'Oswald', 'Arial Narrow', Impact, sans-serif";
@@ -2144,8 +2144,10 @@ function ApkUpdateCard({ info, busy, onClose, inMenu }) {
   useEffect(() => onAppResume(async () => { if (await apkCanInstall()) setPerm(false); }), []);
   const s = st.v === info.version ? st : { kind: "idle" };
   const inApp = apkSupported();
-  const download = () => { sfxTap(); if (inApp && info.url) apkDownload(info); else openExternal(info.url || "https://github.com/mikydon/hw-app/releases/latest"); };
-  const install = async () => { sfxTap(); if (!(await apkCanInstall())) { setPerm(true); return; } setPerm(false); apkInstall(); };
+  // 1.7.0: an app from Google Play updates through Play (in-app update), never from GitHub
+  const play = !!info.play;
+  const download = () => { sfxTap(); if (play) playStart(); else if (inApp && info.url) apkDownload(info); else openExternal(info.url || "https://github.com/mikydon/hw-app/releases/latest"); };
+  const install = async () => { sfxTap(); if (play) { playComplete(); return; } if (!(await apkCanInstall())) { setPerm(true); return; } setPerm(false); apkInstall(); };
   const pct = Math.max(0, Math.min(100, Math.round(s.pct || 0)));
   const col = s.kind === "error" ? "#ff8a80" : s.kind === "ready" ? C.mint : s.kind === "downloading" ? C.sky : C.mint;
   const link = { ...btnBase, background: "transparent", color: col, fontSize: 14, padding: "6px 0 0", textAlign: "left" };
@@ -2160,8 +2162,8 @@ function ApkUpdateCard({ info, busy, onClose, inMenu }) {
             {info.test && <span data-apk-test style={{ marginLeft: 6, fontSize: 10, fontWeight: 900, padding: "2px 6px", borderRadius: 6, background: C.signal, color: C.signalInk, verticalAlign: "middle" }}>{T("apkTestTag")}</span>}
           </div>
           {s.kind === "idle" && <>
-            <div style={{ fontSize: 12, color: C.dim, lineHeight: 1.45, marginTop: 2 }}>{T(inApp ? "apkUpdBody" : "apkUpdBodyWeb")}</div>
-            <button onClick={download} data-apk-download style={link}>{T("apkUpdBtn")} ›</button>
+            <div style={{ fontSize: 12, color: C.dim, lineHeight: 1.45, marginTop: 2 }}>{T(play ? "playUpdBody" : inApp ? "apkUpdBody" : "apkUpdBodyWeb")}</div>
+            <button onClick={download} data-apk-download style={link}>{T(play ? "playUpdBtn" : "apkUpdBtn")} ›</button>
           </>}
           {s.kind === "downloading" && <>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 8 }}>
@@ -2171,8 +2173,8 @@ function ApkUpdateCard({ info, busy, onClose, inMenu }) {
             <div style={{ fontSize: 12, color: C.dim, lineHeight: 1.45, marginTop: 6 }}>{T("apkDlD")}</div>
           </>}
           {s.kind === "ready" && (busy ? <div data-apk-busy style={{ fontSize: 12, color: C.signal, lineHeight: 1.45, marginTop: 4 }}>{T("apkBusy")}</div> : <>
-            <div style={{ fontSize: 12, color: C.dim, lineHeight: 1.45, marginTop: 2 }}>{T("apkReadyD")}</div>
-            {perm ? <>
+            <div style={{ fontSize: 12, color: C.dim, lineHeight: 1.45, marginTop: 2 }}>{T(play ? "playReadyD" : "apkReadyD")}</div>
+            {play ? <button data-apk-install onClick={install} style={solid}>{T("playRestart")}</button> : perm ? <>
               <div data-apk-perm style={{ fontSize: 12, color: C.chalk, lineHeight: 1.5, marginTop: 8, background: C.panelHi, borderRadius: 12, padding: "9px 11px" }}>{T("apkPermD")}</div>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 <button data-apk-allow onClick={() => { sfxTap(); apkAllow(); }} style={solid}>{T("apkPermBtn")}</button>
@@ -4311,6 +4313,35 @@ function SettingRow({ title, desc, on, onClick, first }) {
 }
 
 // ─── ACCOUNT, FRIENDS, LEADERBOARD (1.5.0) ──────────────────────────────────
+// A friend's link: …/hw-app/add/?c=CODE (1.7.0) or the older …/hw-app/?add=CODE → the formatted code, else "".
+function addFromUrl(u) {
+  try {
+    const x = new URL(u);
+    if (x.hostname !== "mikydon.github.io" || !x.pathname.startsWith("/hw-app")) return "";
+    const c = cleanCode(x.searchParams.get("c") || x.searchParams.get("add") || "").slice(0, 6);
+    return c ? fmtCode(c) : "";
+  } catch (_) { return ""; }
+}
+// Website on an Android phone, opened from a friend's link (the app wasn't opened: not installed, or the messenger
+// opened the link in its own browser): one card to open the same link in the app (Chrome's intent: link).
+function OpenInApp() {
+  const [code] = useState(() => { try { return sessionStorage.getItem("hw-link-add") || ""; } catch (_) { return ""; } });
+  const [hide, setHide] = useState(false);
+  if (isNative || !code || hide || !/Android/i.test(navigator.userAgent || "")) return null;
+  const href = `intent://mikydon.github.io/hw-app/add/?c=${encodeURIComponent(code)}#Intent;scheme=https;package=io.github.mikydon.hwapp;end`;
+  return (
+    <div data-open-app style={{ maxWidth: 460, margin: "0 auto", padding: "6px 18px 0", boxSizing: "border-box" }}>
+      <div style={{ ...card, position: "relative", padding: "14px 40px 14px 16px", display: "flex", gap: 12, alignItems: "center" }}>
+        <span style={{ fontSize: 26 }}>📱</span>
+        <div style={{ minWidth: 0 }}>
+          <div style={{ fontSize: 14, fontWeight: 700, color: C.chalk, lineHeight: 1.45 }}>{T("frOpenApp")}</div>
+          <a href={href} data-open-app-btn onClick={() => sfxTap()} style={{ display: "inline-block", paddingTop: 4, color: C.signal, fontSize: 14, fontWeight: 800, textDecoration: "none" }}>{T("frOpenAppBtn")} ›</a>
+        </div>
+        <CloseX onClick={() => { try { sessionStorage.removeItem("hw-link-add"); } catch (_) {} setHide(true); }} />
+      </div>
+    </div>
+  );
+}
 function history_replace() { try { window.history.replaceState(null, "", location.pathname + location.hash); } catch (_) {} }
 // Michael (Oct 12): accounts on Firebase (free Spark plan), friends by code/link and by nickname, a friends
 // leaderboard plus an opt-in world leaderboard, and an automatic cloud backup. The app works without an account;
@@ -4546,7 +4577,7 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
     setSheet(null); if (chatWith === p.uid) setChatWith(null);
   };
   const report = (p, what = "profile") => cloud().report(p.uid, what).then(() => T("frReported")).catch(cloudErr);
-  const link = `${SHARE_BASE}?add=${me.code}`;
+  const link = `${SHARE_BASE}add/?c=${me.code}`; // 1.7.0: opens the app when it is installed (App Links), else the website
   const share = () => { sfxTap(); shareText(T("frShareText", { code: fmtCode(me.code), url: link })).then(r => { if (r === "copied") { setShareMsg(T("copied")); setTimeout(() => setShareMsg(""), 2500); } }); };
   const copy = () => { sfxTap(); copyText(fmtCode(me.code)).then(() => { setShareMsg(T("copied")); setTimeout(() => setShareMsg(""), 2500); }); };
   const seg = (on, onClick, label, data, badge) => (
@@ -6219,7 +6250,7 @@ export default function App() {
   const [screen, setScreen] = useState(() => {
     try {
       const add = new URLSearchParams(location.search).get("add");
-      if (add) { sessionStorage.setItem("hw-add", fmtCode(cleanCode(add).slice(0, 6))); history_replace(); return "friends"; }
+      if (add) { sessionStorage.setItem("hw-add", fmtCode(cleanCode(add).slice(0, 6))); sessionStorage.setItem("hw-link-add", cleanCode(add).slice(0, 6)); history_replace(); return "friends"; }
     } catch (_) {}
     return "train";
   });
@@ -6634,11 +6665,21 @@ export default function App() {
       // A new big version → its APK. The test APK may always fetch the newest release, to try the flow.
       let a = r && r.apk;
       if (!a && latestApk() && await isTestBuild()) a = { ...latestApk(), test: true };
+      if (!a) a = await playCheck(); // 1.7.0: the app from Google Play asks Play (checkForUpdate skips it)
       if (a) setApkUpd(a);
       apkRestore(a && a.version); // an APK downloaded earlier is ready again; old ones are deleted
     }).catch(() => {});
   }, [loaded]);
   const resume = () => { sfxTap(); setMenuOpen(false); setSessionOpen(true); };
+  // 1.7.0 (Michael, Oct 17: a friend's link opened the website): the app owns …/hw-app/add/ links (App Links,
+  // assetlinks.json on mikydon.github.io), so a tapped link opens the app on Friends with the code filled in.
+  const [addSeq, setAddSeq] = useState(0);
+  useEffect(() => onAppUrl(u => {
+    const c = addFromUrl(u);
+    if (!c) return;
+    try { sessionStorage.setItem("hw-add", c); } catch (_) {}
+    setMenuOpen(false); setSessionOpen(false); setScreen("friends"); setAddSeq(n => n + 1);
+  }), []);
 
   const start = (dayId, rounds) => {
     const day = DAYS.find(d => d.id === dayId);
@@ -6753,7 +6794,8 @@ export default function App() {
                 {screen === "settings" && <SettingsTab initPage={setPage0} settings={settings} setSettings={setSettings} history={history} profile={profile} setProfile={setProfile}
                   kcal={kcal} autoBk={autoBk} onAutoBackup={runAutoBackup}
                   onImport={importAll} acct={acct} cloudBk={cloudBk} onAcctOpen={() => go("friends")} onCloudRestore={restoreFromCloud} onSignOut={signOut} onDeleteAccount={deleteAccount} />}
-                {screen === "friends" && <FriendsTab setTopHead={setTopHead} acct={acct} history={history} profile={profile} social={social} chatWith={chatWith} setChatWith={setChatWith} onBlocked={setBlocked} onSignIn={signIn} onCreate={createProfile} onRename={renameNick} onSetGlobal={setGlobal} />}
+                {screen === "friends" && <OpenInApp />}
+                {screen === "friends" && <FriendsTab key={"fr" + addSeq} setTopHead={setTopHead} acct={acct} history={history} profile={profile} social={social} chatWith={chatWith} setChatWith={setChatWith} onBlocked={setBlocked} onSignIn={signIn} onCreate={createProfile} onRename={renameNick} onSetGlobal={setGlobal} />}
               </div>
               {session && session.phase !== "summary" && <MiniPlayer session={session} live={live} onOpen={resume} />}
               {exitAsk && <ExitPrompt history={history} session={session} onStay={() => { sfxTap(); setExitAsk(false); }} onLeave={() => { setExitAsk(false); exitApp(); }} />}

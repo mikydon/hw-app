@@ -29,6 +29,16 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
+            <!-- 1.7.0: a friend's link (https://mikydon.github.io/hw-app/add/?c=CODE) opens the app (App Link,
+                 verified by https://mikydon.github.io/.well-known/assetlinks.json); only /hw-app/add, so the
+                 website, privacy policy etc. still open in the browser. -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="mikydon.github.io" android:pathPrefix="/hw-app/add" />
+            </intent-filter>
+
         </activity>
 
         <provider

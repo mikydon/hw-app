@@ -70,6 +70,10 @@ export default {
     updBtn: "Pozri, čo je nové",
     msgBackupShared: "✓ Záloha je pripravená. Ulož ju do Súborov alebo na Disk Google, prípadne si ju pošli.",
     apkUpdTitle: "Nová verzia appky: {v}",
+    playUpdBody: "Google Play ju stiahne na pozadí a appku môžeš medzitým normálne používať, aj cvičiť. Tvoje dáta ostanú.",
+    playUpdBtn: "Aktualizovať",
+    playReadyD: "Ťukni na Reštartovať, keď práve necvičíš. Appka sa reštartuje už v novej verzii. Dáta ostanú.",
+    playRestart: "Reštartovať",
     apkUpdBody: "Väčší update s novým APK. Stiahne sa priamo tu v appke a nainštaluješ ho, keď sa ti to bude hodiť. Tvoje dáta ostanú.",
     apkUpdBtn: "Stiahnuť",
     apkTestTag: "TEST",
@@ -349,6 +353,8 @@ export default {
     frCopy: "Skopírovať kód",
     frShare: "Zdieľať",
     frShareText: "Trénuj so mnou v HW App! Môj kód: {code} {url}",
+    frOpenApp: "Máš HW App v tomto mobile? Pridaj si kamaráta priamo v appke.",
+    frOpenAppBtn: "Otvoriť v appke",
     frBoard: "Rebríček",
     frFriends: "Priatelia",
     frWorld: "Svet",
@@ -1113,12 +1119,14 @@ export default {
     "Rozloženie Sklo vyzerá viac ako skutočné sklo: odlesk z rohu, jemný odraz, svetlá horná hrana a jemná žiara farieb témy za boxmi. Lišta so štartom a menu ☰ k nemu ladia a mobil to stále nezaťažuje.",
     "Horná lišta: keď si úplne hore, vypĺňa obrazovku od kraja po kraj, bez čiary hore a po bokoch.",
   ],
+  news17: [
+    ["Odkazy na priateľov", "Odkaz od kamaráta sa vždy otvoril na webe, takže si si ho pridal tam.", "Odkaz otvorí appku rovno v Priateľoch s vyplneným kódom. Bez appky sa otvorí web ako doteraz a v Android mobile ponúkne otvoriť appku."],
+    ["📱 Aktualizácie z Google Play", "Appka z Google Play ti o novej verzii nedala vedieť.", "Keď má Google Play novú verziu, ukáže sa kartička. Play ju stiahne priamo v appke (môžeš ďalej cvičiť) a jedným ťuknutím sa appka reštartuje v novej verzii, nikdy nie počas tréningu."],
+    ["📱 Menšia appka", "Natívny kód appky nebol optimalizovaný (na stiahnutie ~9 MB).", "Natívny kód je zhustený a optimalizovaný, ako to žiada Google Play, takže appka je asi o tretinu menšia (~6 MB). Na fungovaní sa nič nemení."],
+  ],
   news16: [
     ["📱 Upozornenia", "Nové správy a žiadosti o priateľstvo si videl len vtedy, keď bola appka otvorená.", "Mobil ťa upozorní na novú správu, žiadosť o priateľstvo alebo jej prijatie aj vtedy, keď je appka zatvorená. Ťuknutím sa otvorí rovno chat alebo Priatelia. Vypneš to v Nastavenia → Účet a cloud; od zablokovaných ľudí nič nechodí."],
     ["📱 Plynulosť obrazovky", "Appka bežala na takej frekvencii, akú jej pridelil mobil.", "Appka požiada o najvyššiu obnovovaciu frekvenciu, akú mobil dovolí (napr. 120 Hz). V Nastaveniach si môžeš vybrať aj 60 Hz, ktoré šetria batériu."],
-  ],
-  news165: [
-    "📱 Pod kapotou: natívny kód appky je teraz optimalizovaný a zhustený (vyžaduje to Google Play), takže appka zaberá menej miesta. Na fungovaní sa nič nemení.",
   ],
   news164: [
     "📱 Automatická záloha funguje aj po preinštalovaní appky. Android nedovolí novej inštalácii prepísať súbor tej starej, preto appka teraz uloží zálohu do nového súboru vedľa neho (starý ostane v Documents/HW App).",

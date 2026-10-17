@@ -70,6 +70,10 @@ export default {
     updBtn: "Nézd meg az újdonságokat",
     msgBackupShared: "✓ A mentés kész. Mentsd a Fájlokba vagy a Google Drive-ra, vagy küldd el magadnak.",
     apkUpdTitle: "Új appverzió: {v}",
+    playUpdBody: "A Google Play a háttérben letölti, közben nyugodtan használhatod az alkalmazást, akár edzhetsz is. Az adataid megmaradnak.",
+    playUpdBtn: "Frissítés",
+    playReadyD: "Koppints az Újraindításra, amikor éppen nem edzel. Az alkalmazás már az új verzióval indul újra. Az adatok megmaradnak.",
+    playRestart: "Újraindítás",
     apkUpdBody: "Nagyobb frissítés új APK-val. Itt, az appban töltődik le, és akkor telepíted, amikor neked jó. Az adataid megmaradnak.",
     apkUpdBtn: "Letöltés",
     apkTestTag: "TESZT",
@@ -349,6 +353,8 @@ export default {
     frCopy: "Kód másolása",
     frShare: "Megosztás",
     frShareText: "Eddz velem a HW Appban! A kódom: {code} {url}",
+    frOpenApp: "Megvan a HW App ezen a telefonon? Add hozzá a barátodat közvetlenül az alkalmazásban.",
+    frOpenAppBtn: "Megnyitás az alkalmazásban",
     frBoard: "Ranglista",
     frFriends: "Barátok",
     frWorld: "Világ",
@@ -1113,12 +1119,14 @@ export default {
     "Az Üveg elrendezés jobban hasonlít a valódi üvegre: csillanás a sarokból, lágy tükröződés, világos felső él és a téma színeinek halvány fénye a dobozok mögött. Az indítósáv és a ☰ menü illik hozzá, és a telefont továbbra sem terheli.",
     "Felső sáv: az oldal tetején most szélétől széléig kitölti a képernyőt, vonal nélkül felül és oldalt.",
   ],
+  news17: [
+    ["Barátlinkek", "Egy barát linkje mindig a weboldalt nyitotta meg, így ott adtad hozzá.", "A link az alkalmazást nyitja meg, rögtön a Barátoknál, kitöltött kóddal. Alkalmazás nélkül a weboldal nyílik meg, mint eddig, és Androidos telefonon felajánlja az alkalmazás megnyitását."],
+    ["📱 Frissítések a Google Playről", "A Google Playről telepített alkalmazás nem szólt az új verzióról.", "Ha a Google Playen új verzió van, egy kártya jelzi. A Play az alkalmazáson belül tölti le (közben edzhetsz), és egy koppintással az alkalmazás az új verzióval indul újra, edzés közben soha."],
+    ["📱 Kisebb alkalmazás", "Az alkalmazás natív kódja nem volt optimalizálva (kb. 9 MB letöltés).", "A natív kód tömörítve és optimalizálva van, ahogy a Google Play kéri, így az alkalmazás nagyjából harmadával kisebb (kb. 6 MB). A működésben semmi sem változik."],
+  ],
   news16: [
     ["📱 Értesítések", "Az új üzeneteket és barátkéréseket csak nyitott appnál láttad.", "A telefon szól az új üzenetről, barátkérésről vagy annak elfogadásáról akkor is, ha az app be van zárva. Koppintásra a chat vagy a Barátok nyílik meg. Kikapcsolod: Beállítások → Fiók és felhő; letiltott emberektől semmi sem jön."],
     ["📱 Képernyő simasága", "Az app azon a frissítési frekvencián futott, amit a telefon adott neki.", "Az app a telefon által engedett legmagasabb frissítési frekvenciát kéri (pl. 120 Hz). A Beállításokban 60 Hz-et is választhatsz, ami kíméli az akkut."],
-  ],
-  news165: [
-    "📱 A háttérben: az alkalmazás natív kódja mostantól optimalizált és tömörített (a Google Play ezt kéri), így kevesebb helyet foglal. A működésben semmi sem változik.",
   ],
   news164: [
     "📱 Az automatikus mentés az alkalmazás újratelepítése után is működik. Az Android nem engedi, hogy az új telepítés felülírja a régi fájlját, ezért az alkalmazás most egy új fájlba ment mellette (a régi a Documents/HW App mappában marad).",

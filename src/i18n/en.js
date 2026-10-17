@@ -70,6 +70,10 @@ export default {
     updBtn: "See what's new",
     msgBackupShared: "✓ Backup ready. Save it to Files or Google Drive, or send it to yourself.",
     apkUpdTitle: "New app version: {v}",
+    playUpdBody: "Google Play downloads it in the background while you keep using the app, even during a workout. Your data stays.",
+    playUpdBtn: "Update",
+    playReadyD: "Tap Restart when you're not training. The app restarts in the new version. Your data stays.",
+    playRestart: "Restart",
     apkUpdBody: "A bigger update with a new APK. It downloads right here in the app and you install it when it suits you. Your data stays.",
     apkUpdBtn: "Download",
     apkTestTag: "TEST",
@@ -349,6 +353,8 @@ export default {
     frCopy: "Copy the code",
     frShare: "Share",
     frShareText: "Train with me in HW App! My friend code: {code} {url}",
+    frOpenApp: "Have HW App on this phone? Add your friend right in the app.",
+    frOpenAppBtn: "Open in the app",
     frBoard: "Leaderboard",
     frFriends: "Friends",
     frWorld: "World",
@@ -1113,12 +1119,14 @@ export default {
     "Glass layout looks more like real glass: a sheen from the corner, a soft reflection, a bright top edge and a soft glow of the theme colours behind the boxes. The Start bar and the ☰ menu match it, and it stays light on the phone.",
     "Top bar: at the top of the page it now fills the screen edge to edge, without a line at the top or sides.",
   ],
+  news17: [
+    ["Friend links", "A friend's link always opened the website, so the friend was added there.", "The link opens the app right on Friends with the code filled in. Without the app it opens the website as before, and on an Android phone the website offers to open the app."],
+    ["📱 Updates from Google Play", "The app from Google Play didn't tell you about a new version.", "When Google Play has a new version, a card says so. Play downloads it right in the app (you can keep training) and one tap restarts the app in the new version, never during a workout."],
+    ["📱 Smaller app", "The app's native code wasn't optimized (about 9 MB to download).", "The native code is shrunk and optimized, as Google Play asks, so the app is about a third smaller (about 6 MB). Nothing changes in how it works."],
+  ],
   news16: [
     ["📱 Notifications", "You only saw new messages and friend requests while the app was open.", "Your phone tells you about a new message, a friend request or an accepted request also when the app is closed. A tap opens that chat or Friends. Switch it off in Settings → Account & cloud; nothing comes from people you blocked."],
     ["📱 Screen smoothness", "The app ran at whatever refresh rate the phone gave it.", "The app asks for the highest refresh rate your phone allows (e.g. 120 Hz). In Settings you can pick 60 Hz instead to save battery."],
-  ],
-  news165: [
-    "📱 Behind the scenes: the app's native code is now optimized and compacted (Google Play asks for it), so the app takes less space. Nothing changes in how it works.",
   ],
   news164: [
     "📱 Automatic backup works again after reinstalling the app. Android doesn't let a new install replace the file of the old one, so the app now saves into a new file next to it (the old one stays in Documents/HW App).",

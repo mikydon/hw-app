@@ -10,9 +10,15 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 
 <!-- New version: add a "## x.y.z (date)" section on top (web-only history uses "## Browser beta x.y.z (date)"). On a push to main, .github/workflows/build.yml builds everything and .github/scripts/releases.sh creates/updates the releases (commit = the push, or the one in a commit comment). -->
 
-## 1.6.5 (2026-10-17)
+## 1.7.0 (2026-10-17)
 
-- *(Android app only)* Behind the scenes: the native code is now shrunk, optimized and obfuscated with R8 (Google Play flagged "DEX code optimization below threshold", required from February 2027 for apps with more than 10 MB of DEX code). The app takes less space; nothing changes in how it works.
+**A big update: a new APK** (download it in the app and tap Install; your data stays). Compared with 1.6.4:
+
+| | Before (1.6.4) | Now (1.7.0) |
+|---|---|---|
+| Friend links | a friend's link (`…/hw-app/?add=CODE`) always opened the website, so the friend was added there | the link is now `https://mikydon.github.io/hw-app/add/?c=CODE` and opens the app right on Friends with the code filled in *(Android app, verified Android App Link)*. Without the app it opens the website as before; on an Android phone the website offers "Open in the app" (useful when a messenger opens links in its own browser). Older links still work on the website |
+| Updates from Google Play *(Android app only)* | the app installed from Google Play showed no update at all (it must not update itself from GitHub) | when Google Play has a newer version for you, a card on the main screen and in the ☰ menu says so; Play downloads it inside the app (Google Play in-app updates, you can keep training) and one tap on Restart installs it and opens the new version, never during a workout. If Play doesn't allow an in-app update, its store page opens. The GitHub app keeps updating from GitHub |
+| App size *(Android app only)* | the native code was not optimized: 19 MB of DEX code, a 9.2 MB APK (Google Play flagged "DEX code optimization below threshold") | the native code is shrunk, optimized and obfuscated with R8: 8.2 MB of DEX code, a ~6 MB APK, nothing changes in how it works |
 
 ## 1.6.4 (2026-10-17)
 

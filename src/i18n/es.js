@@ -70,6 +70,10 @@ export default {
     updBtn: "Mira las novedades",
     msgBackupShared: "✓ Copia lista. Guárdala en Archivos o en Google Drive, o envíatela.",
     apkUpdTitle: "Nueva versión de la app: {v}",
+    playUpdBody: "Google Play la descarga en segundo plano mientras sigues usando la app, incluso entrenando. Tus datos se mantienen.",
+    playUpdBtn: "Actualizar",
+    playReadyD: "Toca Reiniciar cuando no estés entrenando. La app se reinicia ya en la nueva versión. Tus datos se mantienen.",
+    playRestart: "Reiniciar",
     apkUpdBody: "Una actualización grande con un APK nuevo. Se descarga aquí mismo, en la app, y la instalas cuando te venga bien. Tus datos se quedan.",
     apkUpdBtn: "Descargar",
     apkTestTag: "TEST",
@@ -349,6 +353,8 @@ export default {
     frCopy: "Copiar el código",
     frShare: "Compartir",
     frShareText: "¡Entrena conmigo en HW App! Mi código: {code} {url}",
+    frOpenApp: "¿Tienes HW App en este móvil? Añade a tu amigo directamente en la app.",
+    frOpenAppBtn: "Abrir en la app",
     frBoard: "Clasificación",
     frFriends: "Amigos",
     frWorld: "Mundo",
@@ -1113,12 +1119,14 @@ export default {
     "El diseño Cristal se parece más al cristal real: un brillo desde la esquina, un reflejo suave, un borde superior claro y un suave resplandor de los colores del tema detrás de las cajas. La barra de inicio y el menú ☰ combinan con él, y sigue siendo ligero para el móvil.",
     "Barra superior: arriba del todo ahora llena la pantalla de borde a borde, sin línea arriba ni a los lados.",
   ],
+  news17: [
+    ["Enlaces de amigos", "El enlace de un amigo siempre abría la web, así que lo añadías allí.", "El enlace abre la app directamente en Amigos con el código ya escrito. Sin la app se abre la web como antes y, en un móvil Android, la web ofrece abrir la app."],
+    ["📱 Actualizaciones desde Google Play", "La app de Google Play no te avisaba de una versión nueva.", "Cuando Google Play tiene una versión nueva, una tarjeta lo indica. Play la descarga dentro de la app (puedes seguir entrenando) y con un toque la app se reinicia en la nueva versión, nunca durante un entrenamiento."],
+    ["📱 App más pequeña", "El código nativo de la app no estaba optimizado (unos 9 MB de descarga).", "El código nativo está compactado y optimizado, como pide Google Play, así que la app es aproximadamente un tercio más pequeña (unos 6 MB). Su funcionamiento no cambia."],
+  ],
   news16: [
     ["📱 Notificaciones", "Los mensajes nuevos y las solicitudes de amistad solo los veías con la app abierta.", "El móvil te avisa de un mensaje nuevo, una solicitud de amistad o su aceptación también con la app cerrada. Un toque abre ese chat o Amigos. Desactívalo en Ajustes → Cuenta y nube; de las personas bloqueadas no llega nada."],
     ["📱 Fluidez de la pantalla", "La app iba a la frecuencia que le daba el móvil.", "La app pide la frecuencia de actualización más alta que permite tu móvil (p. ej. 120 Hz). En Ajustes puedes elegir 60 Hz para ahorrar batería."],
-  ],
-  news165: [
-    "📱 Entre bastidores: el código nativo de la app ahora está optimizado y compactado (lo pide Google Play), así que la app ocupa menos espacio. Su funcionamiento no cambia.",
   ],
   news164: [
     "📱 La copia de seguridad automática vuelve a funcionar tras reinstalar la app. Android no deja que una instalación nueva sobrescriba el archivo de la anterior, así que la app ahora guarda en un archivo nuevo a su lado (el antiguo se queda en Documents/HW App).",

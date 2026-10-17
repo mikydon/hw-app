@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>HW App · Add a friend</title>
+<!-- A friend's link (app 1.7.0+): https://mikydon.github.io/hw-app/add/?c=CODE. With HW App installed on Android,
+     the link opens the app itself (App Links, /.well-known/assetlinks.json on mikydon.github.io); everywhere else
+     this page hands the code to the website, which fills it in on Friends (and offers to open the app). -->
+<script>
+  (function () {
+    var c = (new URLSearchParams(location.search).get("c") || "").replace(/[^A-Za-z0-9-]/g, "").slice(0, 12);
+    location.replace("../" + (c ? "?add=" + encodeURIComponent(c) : ""));
+  })();
+</script>
+<style>body{margin:0;background:#0f1b2d;color:#f4f1ea;font:16px system-ui,sans-serif;display:flex;min-height:100vh;align-items:center;justify-content:center}a{color:#ffd23f}</style>
+</head>
+<body><p><a href="../">HW App</a></p></body>
+</html>

@@ -70,6 +70,10 @@ export default {
     updBtn: "Veja as novidades",
     msgBackupShared: "✓ Backup pronto. Salve em Arquivos ou no Google Drive, ou envie para você mesmo.",
     apkUpdTitle: "Nova versão do app: {v}",
+    playUpdBody: "O Google Play baixa em segundo plano enquanto você continua usando o app, até durante o treino. Seus dados continuam.",
+    playUpdBtn: "Atualizar",
+    playReadyD: "Toque em Reiniciar quando não estiver treinando. O app reinicia já na nova versão. Seus dados continuam.",
+    playRestart: "Reiniciar",
     apkUpdBody: "Uma atualização grande com um APK novo. Ela é baixada aqui mesmo no app e você instala quando for melhor para você. Seus dados continuam.",
     apkUpdBtn: "Baixar",
     apkTestTag: "TESTE",
@@ -349,6 +353,8 @@ export default {
     frCopy: "Copiar o código",
     frShare: "Partilhar",
     frShareText: "Treina comigo na HW App! O meu código: {code} {url}",
+    frOpenApp: "Tem o HW App neste celular? Adicione seu amigo direto no app.",
+    frOpenAppBtn: "Abrir no app",
     frBoard: "Classificação",
     frFriends: "Amigos",
     frWorld: "Mundo",
@@ -1113,12 +1119,14 @@ export default {
     "O layout Vidro parece mais vidro de verdade: um brilho a partir do canto, um reflexo suave, uma borda superior clara e um brilho suave das cores do tema atrás das caixas. A barra de início e o menu ☰ combinam com ele, e continua leve para o telemóvel.",
     "Barra superior: no topo da página, agora preenche o ecrã de uma ponta à outra, sem linha em cima nem dos lados.",
   ],
+  news17: [
+    ["Links de amigos", "O link de um amigo sempre abria o site, então você o adicionava lá.", "O link abre o app direto em Amigos com o código preenchido. Sem o app, abre o site como antes e, num celular Android, o site oferece abrir o app."],
+    ["📱 Atualizações pelo Google Play", "O app do Google Play não avisava sobre uma nova versão.", "Quando o Google Play tem uma nova versão, um cartão avisa. O Play baixa direto no app (você pode continuar treinando) e um toque reinicia o app na nova versão, nunca durante um treino."],
+    ["📱 App menor", "O código nativo do app não era otimizado (cerca de 9 MB para baixar).", "O código nativo está compactado e otimizado, como o Google Play pede, por isso o app ficou cerca de um terço menor (cerca de 6 MB). Nada muda no funcionamento."],
+  ],
   news16: [
     ["📱 Notificações", "Só vias mensagens novas e pedidos de amizade com a app aberta.", "O telemóvel avisa-te de uma mensagem nova, de um pedido de amizade ou da sua aceitação mesmo com a app fechada. Um toque abre essa conversa ou Amigos. Desliga em Ajustes → Conta e nuvem; de pessoas bloqueadas não chega nada."],
     ["📱 Fluidez do ecrã", "A app corria à frequência que o telemóvel lhe dava.", "A app pede a frequência de atualização mais alta que o telemóvel permite (ex.: 120 Hz). Nos Ajustes podes escolher 60 Hz para poupar bateria."],
-  ],
-  news165: [
-    "📱 Nos bastidores: o código nativo do app agora está otimizado e compactado (o Google Play exige isso), por isso o app ocupa menos espaço. Nada muda no funcionamento.",
   ],
   news164: [
     "📱 O backup automático volta a funcionar depois de reinstalar o app. O Android não deixa uma nova instalação substituir o arquivo da anterior, por isso o app agora salva num novo arquivo ao lado (o antigo fica em Documents/HW App).",

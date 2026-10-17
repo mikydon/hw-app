@@ -8,6 +8,7 @@ import { Filesystem, Directory, Encoding } from "@capacitor/filesystem";
 import { Share } from "@capacitor/share";
 import { CapacitorUpdater } from "@capgo/capacitor-updater";
 import { Health } from "@capgo/capacitor-health";
+import { AppUpdate } from "@capawesome/capacitor-app-update";
 
 export const isNative = Capacitor.isNativePlatform();
 
@@ -328,6 +329,88 @@ export async function apkInstall() {
   if (apk.kind !== "ready") return false;
   try { await ApkInstaller.install({ path: apk.path }); return true; }
   catch (e) { apkSet({ ...apk, err: errMsg(e) }); return false; }
+}
+// ─── Updates from Google Play (app 1.7.0) ──────────────────────────────────
+// Michael (Oct 17): an app from Google Play showed no update at all (1.6.1 turned the GitHub check off there, as Play
+// requires) and must never send people to GitHub. Play's own in-app updates (Play Core, through
+// @capawesome/capacitor-app-update) say whether Play has a newer version for this user. "Update" opens Play's small
+// dialog, Play downloads it in the background (progress events), and "Restart" (completeFlexibleUpdate) installs it
+// and starts the new version. Same states as the GitHub APK (apkState), so the same card and top-bar line show it.
+// Play reports a version code; ours is major·1000000 + minor·10000 + patch·100 + 4th (.github/scripts/version.mjs).
+export const verFromCode = c => {
+  const n = Number(c) || 0, a = Math.floor(n / 1e6), b = Math.floor(n / 1e4) % 100, p = Math.floor(n / 100) % 100, q = n % 100;
+  return n ? (q ? `${a}.${b}.${p}.${q}` : `${a}.${b}.${p}`) : "";
+};
+const PLAY = { avail: 2, inProgress: 3, pending: 1, downloading: 2, installing: 3, installed: 4, failed: 5, canceled: 6, downloaded: 11, ok: 0, canceledRes: 1 };
+let playSub = null, playPoll = null, playV = "";
+const playOn = async () => isNative && (await buildStore()) === "play" && Capacitor.isPluginAvailable("AppUpdate");
+function playState(st, bytes, total) {
+  const v = playV;
+  if (st === PLAY.downloaded) { stopPlayPoll(); apkSet({ kind: "ready", v, play: true }); }
+  else if (st === PLAY.downloading || st === PLAY.pending) apkSet({ kind: "downloading", v, play: true, pct: total > 0 ? Math.min(100, (bytes / total) * 100) : (apk.kind === "downloading" ? apk.pct || 0 : 0) });
+  else if (st === PLAY.failed) { stopPlayPoll(); apkSet({ kind: "error", v, play: true, err: "Google Play" }); }
+  else if (st === PLAY.canceled) { stopPlayPoll(); apkSet({ kind: "idle" }); }
+}
+function playListen() {
+  if (playSub) return;
+  playSub = AppUpdate.addListener("onFlexibleUpdateStateChange", e => { if (e) playState(e.installStatus, Number(e.bytesDownloaded) || 0, Number(e.totalBytesToDownload) || 0); });
+}
+function stopPlayPoll() { if (playPoll) { clearInterval(playPoll); playPoll = null; } }
+// A download Play started before this app start has no progress events: ask Play every few seconds until it is done.
+function startPlayPoll() {
+  if (playPoll) return;
+  playPoll = setInterval(() => { AppUpdate.getAppUpdateInfo().then(i => playState(i.installStatus, 0, 0)).catch(() => {}); }, 4000);
+}
+// Once per start: {version, play: true} when Play has a newer version for this user, else null.
+export async function playCheck() {
+  if (!(await playOn())) return null;
+  try {
+    const i = await AppUpdate.getAppUpdateInfo();
+    const v = verFromCode(i.availableVersionCode);
+    if (!v) return null;
+    playV = v;
+    if (i.installStatus === PLAY.downloaded) { apkSet({ kind: "ready", v, play: true }); return { version: v, play: true }; }
+    if (i.updateAvailability === PLAY.avail || i.updateAvailability === PLAY.inProgress) {
+      if (i.installStatus === PLAY.downloading || i.installStatus === PLAY.pending) { playListen(); playState(i.installStatus, 0, 0); startPlayPoll(); }
+      return { version: v, play: true };
+    }
+  } catch (_) {}
+  return null;
+}
+// "Update": Play's dialog, then the download in the background. If Play doesn't allow an in-app update for this
+// install, its store page opens instead (never GitHub).
+export async function playStart() {
+  if (!(await playOn()) || apk.kind === "downloading") return;
+  playListen();
+  try {
+    await AppUpdate.getAppUpdateInfo(); // the plugin needs fresh info right before starting
+    const r = await AppUpdate.startFlexibleUpdate();
+    const code = r ? r.code : -1;
+    if (code === PLAY.ok) { if (apk.kind !== "ready") apkSet({ kind: "downloading", v: playV, play: true, pct: apk.kind === "downloading" ? apk.pct || 0 : 0 }); }
+    else if (code === PLAY.canceledRes) apkSet({ kind: "idle" });
+    else { apkSet({ kind: "idle" }); await AppUpdate.openAppStore(); }
+  } catch (e) { apkSet({ kind: "error", v: playV, play: true, err: errMsg(e) }); }
+}
+// "Restart": Play installs the downloaded version and starts it.
+export async function playComplete() {
+  if (apk.kind !== "ready" || !apk.play) return;
+  try { await AppUpdate.completeFlexibleUpdate(); } catch (e) { apkSet({ ...apk, err: errMsg(e) }); }
+}
+export async function playOpenStore() { try { await AppUpdate.openAppStore(); } catch (_) {} }
+
+// 1.7.0: links the app owns (App Links: https://mikydon.github.io/hw-app/add/…). A link tapped while the app runs
+// arrives as appUrlOpen; a link that started the app is its launch URL (handled once, a reload doesn't repeat it).
+export function onAppUrl(fn) {
+  if (!isNative) return () => {};
+  let h = null, gone = false;
+  CapApp.addListener("appUrlOpen", e => { if (e && e.url) fn(e.url); }).then(x => { h = x; if (gone) x.remove(); }).catch(() => {});
+  CapApp.getLaunchUrl().then(r => {
+    const u = r && r.url;
+    if (gone || !u) return;
+    try { if (sessionStorage.getItem("hw-launch-url") === u) return; sessionStorage.setItem("hw-launch-url", u); } catch (_) {}
+    fn(u);
+  }).catch(() => {});
+  return () => { gone = true; if (h) h.remove(); };
 }
 export function onAppResume(fn) {
   if (!isNative) return () => {};

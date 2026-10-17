@@ -70,6 +70,10 @@ export default {
     updBtn: "Voir les nouveautés",
     msgBackupShared: "✓ Sauvegarde prête. Enregistre-la dans Fichiers ou sur Google Drive, ou envoie-la-toi.",
     apkUpdTitle: "Nouvelle version de l'appli : {v}",
+    playUpdBody: "Google Play la télécharge en arrière-plan pendant que tu continues d'utiliser l'appli, même à l'entraînement. Tes données restent.",
+    playUpdBtn: "Mettre à jour",
+    playReadyD: "Touche Redémarrer quand tu ne t'entraînes pas. L'appli redémarre dans la nouvelle version. Tes données restent.",
+    playRestart: "Redémarrer",
     apkUpdBody: "Une grosse mise à jour avec un nouvel APK. Elle se télécharge ici, dans l'appli, et tu l'installes quand ça te convient. Tes données restent.",
     apkUpdBtn: "Télécharger",
     apkTestTag: "TEST",
@@ -349,6 +353,8 @@ export default {
     frCopy: "Copier le code",
     frShare: "Partager",
     frShareText: "Entraîne-toi avec moi dans HW App ! Mon code : {code} {url}",
+    frOpenApp: "Tu as HW App sur ce téléphone ? Ajoute ton ami directement dans l'appli.",
+    frOpenAppBtn: "Ouvrir dans l'appli",
     frBoard: "Classement",
     frFriends: "Amis",
     frWorld: "Monde",
@@ -1113,12 +1119,14 @@ export default {
     "La disposition Verre ressemble davantage à du vrai verre : un reflet depuis le coin, une réflexion douce, un bord supérieur clair et une douce lueur des couleurs du thème derrière les blocs. La barre de démarrage et le menu ☰ sont assortis, et le téléphone n'est toujours pas sollicité.",
     "Barre du haut : tout en haut de la page, elle remplit maintenant l'écran d'un bord à l'autre, sans ligne en haut ni sur les côtés.",
   ],
+  news17: [
+    ["Liens d'amis", "Le lien d'un ami ouvrait toujours le site, donc tu l'ajoutais là-bas.", "Le lien ouvre l'appli directement sur Amis avec le code déjà rempli. Sans l'appli, le site s'ouvre comme avant et, sur un téléphone Android, il propose d'ouvrir l'appli."],
+    ["📱 Mises à jour via Google Play", "L'appli installée depuis Google Play ne signalait pas de nouvelle version.", "Quand Google Play a une nouvelle version, une carte l'indique. Play la télécharge dans l'appli (tu peux continuer à t'entraîner) et un seul toucher redémarre l'appli dans la nouvelle version, jamais pendant un entraînement."],
+    ["📱 Appli plus légère", "Le code natif de l'appli n'était pas optimisé (environ 9 Mo à télécharger).", "Le code natif est compacté et optimisé, comme le demande Google Play, donc l'appli est environ un tiers plus légère (environ 6 Mo). Rien ne change à son fonctionnement."],
+  ],
   news16: [
     ["📱 Notifications", "Tu ne voyais les nouveaux messages et demandes d’ami que l’app ouverte.", "Ton téléphone te prévient d’un nouveau message, d’une demande d’ami ou de son acceptation même quand l’app est fermée. Une touche ouvre la discussion ou Amis. Désactive-les dans Réglages → Compte et cloud ; rien n’arrive des personnes bloquées."],
     ["📱 Fluidité de l’écran", "L’app tournait à la fréquence que le téléphone lui donnait.", "L’app demande la fréquence de rafraîchissement la plus haute que permet ton téléphone (p. ex. 120 Hz). Dans Réglages, tu peux choisir 60 Hz pour économiser la batterie."],
-  ],
-  news165: [
-    "📱 En coulisses : le code natif de l'appli est désormais optimisé et compacté (Google Play le demande), donc l'appli prend moins de place. Rien ne change à son fonctionnement.",
   ],
   news164: [
     "📱 La sauvegarde automatique fonctionne aussi après avoir réinstallé l'appli. Android ne laisse pas une nouvelle installation remplacer le fichier de l'ancienne, donc l'appli enregistre maintenant dans un nouveau fichier à côté (l'ancien reste dans Documents/HW App).",

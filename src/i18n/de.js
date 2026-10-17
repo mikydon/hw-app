@@ -70,6 +70,10 @@ export default {
     updBtn: "Sieh dir an, was neu ist",
     msgBackupShared: "✓ Backup bereit. Speichere es in „Dateien“ oder auf Google Drive oder schick es dir selbst.",
     apkUpdTitle: "Neue App-Version: {v}",
+    playUpdBody: "Google Play lädt sie im Hintergrund herunter, du kannst die App währenddessen normal nutzen, sogar trainieren. Deine Daten bleiben.",
+    playUpdBtn: "Aktualisieren",
+    playReadyD: "Tippe auf Neu starten, wenn du gerade nicht trainierst. Die App startet in der neuen Version neu. Deine Daten bleiben.",
+    playRestart: "Neu starten",
     apkUpdBody: "Ein größeres Update mit neuer APK. Sie wird direkt hier in der App geladen, und du installierst sie, wann es dir passt. Deine Daten bleiben.",
     apkUpdBtn: "Herunterladen",
     apkTestTag: "TEST",
@@ -349,6 +353,8 @@ export default {
     frCopy: "Code kopieren",
     frShare: "Teilen",
     frShareText: "Trainier mit mir in HW App! Mein Code: {code} {url}",
+    frOpenApp: "Hast du HW App auf diesem Handy? Füge deinen Freund direkt in der App hinzu.",
+    frOpenAppBtn: "In der App öffnen",
     frBoard: "Bestenliste",
     frFriends: "Freunde",
     frWorld: "Welt",
@@ -1113,12 +1119,14 @@ export default {
     "Das Layout Glas sieht echtem Glas ähnlicher: ein Glanz aus der Ecke, eine sanfte Spiegelung, eine helle Oberkante und ein sanftes Leuchten der Themenfarben hinter den Boxen. Die Startleiste und das ☰-Menü passen dazu, und das Handy wird weiterhin kaum belastet.",
     "Obere Leiste: ganz oben auf der Seite füllt sie den Bildschirm jetzt von Rand zu Rand, ohne Linie oben oder an den Seiten.",
   ],
+  news17: [
+    ["Freundeslinks", "Der Link eines Freundes öffnete immer die Website, also hast du ihn dort hinzugefügt.", "Der Link öffnet die App direkt bei Freunde mit eingetragenem Code. Ohne App öffnet sich wie bisher die Website, und auf einem Android-Handy bietet sie an, die App zu öffnen."],
+    ["📱 Updates über Google Play", "Die App aus Google Play hat dir eine neue Version nicht angezeigt.", "Hat Google Play eine neue Version, zeigt eine Karte das an. Play lädt sie direkt in der App herunter (du kannst weiter trainieren), und ein Tipp startet die App in der neuen Version neu, nie während eines Trainings."],
+    ["📱 Kleinere App", "Der native Code der App war nicht optimiert (ca. 9 MB Download).", "Der native Code ist verkleinert und optimiert, wie Google Play es verlangt, daher ist die App etwa ein Drittel kleiner (ca. 6 MB). An der Bedienung ändert sich nichts."],
+  ],
   news16: [
     ["📱 Benachrichtigungen", "Neue Nachrichten und Freundschaftsanfragen hast du nur bei geöffneter App gesehen.", "Dein Handy meldet eine neue Nachricht, eine Freundschaftsanfrage oder ihre Annahme auch bei geschlossener App. Ein Tipp öffnet den Chat oder Freunde. Abschalten unter Einstellungen → Konto & Cloud; von blockierten Personen kommt nichts."],
     ["📱 Bildschirm-Flüssigkeit", "Die App lief mit der Bildwiederholrate, die ihr das Handy gab.", "Die App fragt nach der höchsten Bildwiederholrate, die dein Handy erlaubt (z. B. 120 Hz). In den Einstellungen kannst du stattdessen 60 Hz wählen, das spart Akku."],
-  ],
-  news165: [
-    "📱 Hinter den Kulissen: Der native Code der App ist jetzt optimiert und verkleinert (Google Play verlangt das), daher braucht die App weniger Platz. An der Bedienung ändert sich nichts.",
   ],
   news164: [
     "📱 Die automatische Sicherung funktioniert auch nach einer Neuinstallation der App. Android lässt eine neue Installation die Datei der alten nicht überschreiben, deshalb speichert die App jetzt in eine neue Datei daneben (die alte bleibt in Documents/HW App).",

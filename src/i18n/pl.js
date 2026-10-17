@@ -70,6 +70,10 @@ export default {
     updBtn: "Zobacz, co nowego",
     msgBackupShared: "✓ Kopia gotowa. Zapisz ją w Plikach lub na Dysku Google albo wyślij ją sobie.",
     apkUpdTitle: "Nowa wersja aplikacji: {v}",
+    playUpdBody: "Google Play pobierze ją w tle, a w tym czasie możesz normalnie korzystać z aplikacji, nawet ćwiczyć. Twoje dane zostaną.",
+    playUpdBtn: "Aktualizuj",
+    playReadyD: "Dotknij Uruchom ponownie, kiedy nie ćwiczysz. Aplikacja uruchomi się już w nowej wersji. Dane zostaną.",
+    playRestart: "Uruchom ponownie",
     apkUpdBody: "Większa aktualizacja z nowym APK. Pobierze się tutaj, w aplikacji, a zainstalujesz ją, kiedy będzie ci pasować. Twoje dane zostaną.",
     apkUpdBtn: "Pobierz",
     apkTestTag: "TEST",
@@ -349,6 +353,8 @@ export default {
     frCopy: "Skopiuj kod",
     frShare: "Udostępnij",
     frShareText: "Trenuj ze mną w HW App! Mój kod: {code} {url}",
+    frOpenApp: "Masz HW App na tym telefonie? Dodaj znajomego bezpośrednio w aplikacji.",
+    frOpenAppBtn: "Otwórz w aplikacji",
     frBoard: "Ranking",
     frFriends: "Znajomi",
     frWorld: "Świat",
@@ -1113,12 +1119,14 @@ export default {
     "Układ Szkło wygląda bardziej jak prawdziwe szkło: połysk od rogu, delikatne odbicie, jasna górna krawędź i delikatna poświata kolorów motywu za polami. Pasek startu i menu ☰ do niego pasują, a telefon nadal się nie męczy.",
     "Górny pasek: na samej górze strony wypełnia ekran od krawędzi do krawędzi, bez linii u góry i po bokach.",
   ],
+  news17: [
+    ["Linki do znajomych", "Link od znajomego zawsze otwierał stronę, więc dodawałeś go tam.", "Link otwiera aplikację od razu w Znajomych z wpisanym kodem. Bez aplikacji otwiera się strona jak dotąd, a na telefonie z Androidem proponuje otwarcie aplikacji."],
+    ["📱 Aktualizacje z Google Play", "Aplikacja z Google Play nie informowała o nowej wersji.", "Gdy Google Play ma nową wersję, pojawia się karta. Play pobiera ją w aplikacji (możesz dalej ćwiczyć), a jedno dotknięcie uruchamia aplikację ponownie w nowej wersji, nigdy w trakcie treningu."],
+    ["📱 Mniejsza aplikacja", "Natywny kod aplikacji nie był zoptymalizowany (ok. 9 MB do pobrania).", "Natywny kod jest skompresowany i zoptymalizowany, jak wymaga Google Play, więc aplikacja jest o około jedną trzecią mniejsza (ok. 6 MB). W działaniu nic się nie zmienia."],
+  ],
   news16: [
     ["📱 Powiadomienia", "Nowe wiadomości i zaproszenia widziałeś tylko przy otwartej aplikacji.", "Telefon powiadomi cię o nowej wiadomości, zaproszeniu do znajomych lub jego przyjęciu także przy zamkniętej aplikacji. Stuknięcie otwiera czat albo Znajomych. Wyłączysz to w Ustawienia → Konto i chmura; od zablokowanych osób nic nie przychodzi."],
     ["📱 Płynność ekranu", "Aplikacja działała z taką częstotliwością, jaką przydzielił jej telefon.", "Aplikacja prosi o najwyższą częstotliwość odświeżania, na jaką pozwala telefon (np. 120 Hz). W Ustawieniach możesz wybrać też 60 Hz, które oszczędza baterię."],
-  ],
-  news165: [
-    "📱 Pod maską: natywny kod aplikacji jest teraz zoptymalizowany i skompresowany (wymaga tego Google Play), więc aplikacja zajmuje mniej miejsca. W działaniu nic się nie zmienia.",
   ],
   news164: [
     "📱 Automatyczna kopia zapasowa działa też po ponownej instalacji aplikacji. Android nie pozwala nowej instalacji nadpisać pliku starej, więc aplikacja zapisuje teraz kopię w nowym pliku obok (stary zostaje w Documents/HW App).",

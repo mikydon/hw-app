@@ -70,6 +70,10 @@ export default {
     updBtn: "Scopri le novità",
     msgBackupShared: "✓ Backup pronto. Salvalo in File o su Google Drive, oppure invialo a te stesso.",
     apkUpdTitle: "Nuova versione dell'app: {v}",
+    playUpdBody: "Google Play la scarica in background mentre continui a usare l'app, anche durante l'allenamento. I tuoi dati restano.",
+    playUpdBtn: "Aggiorna",
+    playReadyD: "Tocca Riavvia quando non ti stai allenando. L'app si riavvia nella nuova versione. I tuoi dati restano.",
+    playRestart: "Riavvia",
     apkUpdBody: "Un aggiornamento grande con un nuovo APK. Si scarica qui nell'app e lo installi quando ti va bene. I tuoi dati restano.",
     apkUpdBtn: "Scarica",
     apkTestTag: "TEST",
@@ -349,6 +353,8 @@ export default {
     frCopy: "Copia il codice",
     frShare: "Condividi",
     frShareText: "Allenati con me su HW App! Il mio codice: {code} {url}",
+    frOpenApp: "Hai HW App su questo telefono? Aggiungi il tuo amico direttamente nell'app.",
+    frOpenAppBtn: "Apri nell'app",
     frBoard: "Classifica",
     frFriends: "Amici",
     frWorld: "Mondo",
@@ -1113,12 +1119,14 @@ export default {
     "Il layout Vetro sembra più vetro vero: un riflesso dall'angolo, un leggero bagliore, un bordo superiore chiaro e una tenue luce dei colori del tema dietro i riquadri. La barra di avvio e il menu ☰ si abbinano, e il telefono resta leggero.",
     "Barra in alto: in cima alla pagina ora riempie lo schermo da bordo a bordo, senza linea in alto o ai lati.",
   ],
+  news17: [
+    ["Link degli amici", "Il link di un amico apriva sempre il sito, quindi lo aggiungevi lì.", "Il link apre l'app direttamente su Amici con il codice già inserito. Senza l'app si apre il sito come prima e, su un telefono Android, propone di aprire l'app."],
+    ["📱 Aggiornamenti da Google Play", "L'app di Google Play non ti avvisava di una nuova versione.", "Quando Google Play ha una nuova versione, una scheda te lo dice. Play la scarica direttamente nell'app (puoi continuare ad allenarti) e con un tocco l'app si riavvia nella nuova versione, mai durante un allenamento."],
+    ["📱 App più leggera", "Il codice nativo dell'app non era ottimizzato (circa 9 MB da scaricare).", "Il codice nativo è compattato e ottimizzato, come chiede Google Play, quindi l'app è circa un terzo più piccola (circa 6 MB). Il funzionamento non cambia."],
+  ],
   news16: [
     ["📱 Notifiche", "Vedevi nuovi messaggi e richieste di amicizia solo con l’app aperta.", "Il telefono ti avvisa di un nuovo messaggio, di una richiesta di amicizia o della sua accettazione anche con l’app chiusa. Un tocco apre la chat o Amici. Disattivale in Impostazioni → Account e cloud; dalle persone bloccate non arriva niente."],
     ["📱 Fluidità dello schermo", "L’app girava alla frequenza che le assegnava il telefono.", "L’app chiede la frequenza di aggiornamento più alta consentita dal telefono (es. 120 Hz). Nelle Impostazioni puoi scegliere 60 Hz per risparmiare batteria."],
-  ],
-  news165: [
-    "📱 Dietro le quinte: il codice nativo dell'app ora è ottimizzato e compattato (lo richiede Google Play), quindi l'app occupa meno spazio. Il funzionamento non cambia.",
   ],
   news164: [
     "📱 Il backup automatico funziona anche dopo aver reinstallato l'app. Android non permette a una nuova installazione di sovrascrivere il file di quella vecchia, quindi ora l'app salva in un nuovo file accanto (quello vecchio resta in Documents/HW App).",
