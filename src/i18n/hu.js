@@ -1138,6 +1138,7 @@ export default {
     "📱 Értesítés, amikor új verzió jelenik meg (az Android egyszer rákérdez; a Beállításokban kikapcsolhatod).",
     "📱 A Google Playről telepített alkalmazás szól, ha a Google Playen új verzió van.",
     "📱 Az 1.6.5-ös APK nagyjából harmadával kisebb (a natív kód optimalizált).",
+    "Kalóriák: a „Cél módosítása” és az „Adatok szerkesztése” már nem nyílik meg nagy üres hellyel a tetején.",
   ],
   news164: [
     "📱 Az automatikus mentés az alkalmazás újratelepítése után is működik. Az Android nem engedi, hogy az új telepítés felülírja a régi fájlját, ezért az alkalmazás most egy új fájlba ment mellette (a régi a Documents/HW App mappában marad).",

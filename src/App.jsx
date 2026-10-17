@@ -2744,6 +2744,9 @@ function usePager(name, n) {
       el.removeEventListener("scroll", on); el.removeEventListener("scrollend", settle); el.removeEventListener("pointerdown", touch); el.removeEventListener("touchstart", touch);
       window.removeEventListener("resize", fitRest); expandDone.delete(refit); if (ro) ro.disconnect(); if (raf) cancelAnimationFrame(raf); clearTimeout(idle);
       if (c.stop) c.stop(); c.grow = c.settle = null;
+      // 1.6.5 (Michael, Oct 17: "Change goal" in Calories opened with a huge empty gap): when the strip goes away
+      // (a form takes its place), React may reuse its <div> for the next element, which then kept the strip's height.
+      el.style.height = ""; el.classList.remove("anim");
     };
   }, [pagerEl]);
   const tabs = labels => (

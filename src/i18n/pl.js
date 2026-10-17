@@ -1138,6 +1138,7 @@ export default {
     "📱 Powiadomienie, gdy wyjdzie nowa wersja (Android zapyta raz; wyłączysz to w Ustawieniach).",
     "📱 Aplikacja z Google Play informuje, gdy Google Play ma nową wersję.",
     "📱 APK 1.6.5 jest o około jedną trzecią mniejsze (natywny kod jest zoptymalizowany).",
+    "Kalorie: „Zmień cel” i „Edytuj dane” nie otwierają się już z dużym pustym miejscem u góry.",
   ],
   news164: [
     "📱 Automatyczna kopia zapasowa działa też po ponownej instalacji aplikacji. Android nie pozwala nowej instalacji nadpisać pliku starej, więc aplikacja zapisuje teraz kopię w nowym pliku obok (stary zostaje w Documents/HW App).",

@@ -1138,6 +1138,7 @@ export default {
     "📱 Eine Benachrichtigung, wenn eine neue Version erscheint (Android fragt einmal; in den Einstellungen abschaltbar).",
     "📱 Die App aus Google Play zeigt an, wenn Google Play eine neue Version hat.",
     "📱 Die APK 1.6.5 ist etwa ein Drittel kleiner (der native Code ist optimiert).",
+    "Kalorien: „Ziel ändern“ und „Daten bearbeiten“ öffnen sich nicht mehr mit einer großen Lücke oben.",
   ],
   news164: [
     "📱 Die automatische Sicherung funktioniert auch nach einer Neuinstallation der App. Android lässt eine neue Installation die Datei der alten nicht überschreiben, deshalb speichert die App jetzt in eine neue Datei daneben (die alte bleibt in Documents/HW App).",

@@ -1138,6 +1138,7 @@ export default {
     "📱 Notifikácia, keď vyjde nová verzia (Android sa raz spýta; vypneš to v Nastaveniach).",
     "📱 Appka z Google Play ti dá vedieť, keď má Google Play novú verziu.",
     "📱 APK 1.6.5 je asi o tretinu menšie (natívny kód je optimalizovaný).",
+    "Kalórie: „Zmeniť cieľ“ a „Upraviť údaje“ sa už neotvoria s veľkým prázdnym miestom hore.",
   ],
   news164: [
     "📱 Automatická záloha funguje aj po preinštalovaní appky. Android nedovolí novej inštalácii prepísať súbor tej starej, preto appka teraz uloží zálohu do nového súboru vedľa neho (starý ostane v Documents/HW App).",

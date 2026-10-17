@@ -1138,6 +1138,7 @@ export default {
     "📱 Une notification quand une nouvelle version sort (Android le demande une fois ; désactivable dans les Réglages).",
     "📱 L'appli de Google Play te prévient quand Google Play a une nouvelle version.",
     "📱 L'APK 1.6.5 est environ un tiers plus légère (le code natif est optimisé).",
+    "Calories : « Changer d'objectif » et « Modifier les infos » ne s'ouvrent plus avec un grand vide en haut.",
   ],
   news164: [
     "📱 La sauvegarde automatique fonctionne aussi après avoir réinstallé l'appli. Android ne laisse pas une nouvelle installation remplacer le fichier de l'ancienne, donc l'appli enregistre maintenant dans un nouveau fichier à côté (l'ancien reste dans Documents/HW App).",

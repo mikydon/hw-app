@@ -1138,6 +1138,7 @@ export default {
     "📱 Una notificación cuando sale una nueva versión (Android lo pregunta una vez; se desactiva en Ajustes).",
     "📱 La app de Google Play te avisa cuando Google Play tiene una nueva versión.",
     "📱 La APK 1.6.5 es aproximadamente un tercio más pequeña (el código nativo está optimizado).",
+    "Calorías: «Cambiar objetivo» y «Editar datos» ya no se abren con un gran espacio vacío arriba.",
   ],
   news164: [
     "📱 La copia de seguridad automática vuelve a funcionar tras reinstalar la app. Android no deja que una instalación nueva sobrescriba el archivo de la anterior, así que la app ahora guarda en un archivo nuevo a su lado (el antiguo se queda en Documents/HW App).",

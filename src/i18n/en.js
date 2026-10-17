@@ -1138,6 +1138,7 @@ export default {
     "📱 A notification when a new version comes out (Android asks once; switch it off in Settings).",
     "📱 The app from Google Play tells you when Google Play has a new version.",
     "📱 The 1.6.5 APK is about a third smaller (the native code is optimized).",
+    "Calories: \"Change goal\" and \"Edit details\" no longer open with a big empty space at the top.",
   ],
   news164: [
     "📱 Automatic backup works again after reinstalling the app. Android doesn't let a new install replace the file of the old one, so the app now saves into a new file next to it (the old one stays in Documents/HW App).",

@@ -13,6 +13,7 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 ## 1.6.5 (2026-10-17)
 
 - Friend links are now `https://mikydon.github.io/hw-app/add/?c=CODE` and open the app right on Friends with the code filled in *(Android App Link: the app from Google Play or the 1.6.5 APK)*. Without the app the website opens as before; on an Android phone it offers "Open in the app" (useful when a messenger opens links in its own browser). Older `?add=` links still work on the website.
+- Calories: "Change goal" and "Edit details" opened with a big empty space at the top (the swipe pages' height stayed on the element React reused for the form; since 1.5.5). Fixed.
 - Settings → Account & cloud: a "Back up now" button uploads the cloud backup right away (same rule as the automatic one: a phone without workouts never replaces a cloud copy that has some).
 - *(Android app only)* A notification when a new version comes out, for everyone with notifications allowed (signed in or not; Android 13+ asks once at the start; switch in Settings). The GitHub app gets it when the release is published; the Google Play app once the version is approved in Google Play.
 - *(Android app only)* The app from Google Play shows a card when Google Play has a newer version for you (Google Play's in-app update check). It never points to GitHub.

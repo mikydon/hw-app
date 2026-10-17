@@ -1138,6 +1138,7 @@ export default {
     "📱 Uma notificação quando sai uma nova versão (o Android pergunta uma vez; dá para desligar nos Ajustes).",
     "📱 O app do Google Play avisa quando o Google Play tem uma nova versão.",
     "📱 O APK 1.6.5 é cerca de um terço menor (o código nativo está otimizado).",
+    "Calorias: \"Mudar meta\" e \"Editar dados\" não abrem mais com um grande espaço vazio no topo.",
   ],
   news164: [
     "📱 O backup automático volta a funcionar depois de reinstalar o app. O Android não deixa uma nova instalação substituir o arquivo da anterior, por isso o app agora salva num novo arquivo ao lado (o antigo fica em Documents/HW App).",
