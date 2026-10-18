@@ -437,7 +437,6 @@ export default {
     acEmailBad: "Falsche E-Mail oder falsches Passwort.",
     acEmailMany: "Zu viele Versuche. Versuch es in ein paar Minuten noch einmal.",
     acDelPw: "Gib unten dein Passwort ein und tippe noch einmal auf Konto löschen.",
-    acEmailOpen: "Mit E-Mail und Passwort anmelden",
     acEmailInvalid: "Das sieht nicht wie eine E-Mail-Adresse aus.",
     acResetSent: "Falls {email} ein Konto hat, kommt dort ein Link für ein neues Passwort an (schau auch im Spam nach).",
     acNewTitle: "Neues Konto mit E-Mail",
@@ -445,8 +444,9 @@ export default {
     acPwAgainPh: "Neues Passwort wiederholen",
     acPwMismatch: "Die Passwörter stimmen nicht überein.",
     acNewGo: "Konto erstellen",
-    acHaveAcct: "Ich habe ein Konto",
-    acNoAcct: "Kein Konto? Erstell eins",
+    acOr: "oder",
+    acNoAcctQ: "Kein Konto?",
+    acHaveAcctQ: "Schon ein Konto?",
     acForgot: "Passwort vergessen?",
     acPwChange: "Passwort ändern",
     acPwAdd: "Passwort hinzufügen",
@@ -1218,6 +1218,9 @@ export default {
   news143: [
     "Das Layout Glas sieht echtem Glas ähnlicher: ein Glanz aus der Ecke, eine sanfte Spiegelung, eine helle Oberkante und ein sanftes Leuchten der Themenfarben hinter den Boxen. Die Startleiste und das ☰-Menü passen dazu, und das Handy wird weiterhin kaum belastet.",
     "Obere Leiste: ganz oben auf der Seite füllt sie den Bildschirm jetzt von Rand zu Rand, ohne Linie oben oder an den Seiten.",
+  ],
+  news172: [
+    "Die Anmeldung sieht aus wie in den meisten Apps: zuerst E-Mail und Passwort, dann „oder“ und der Google-Button.",
   ],
   news171: [
     "Anmeldung mit E-Mail und Passwort neben Google: erstell ein Konto oder lass dir einen Link für ein neues Passwort schicken, wenn du es vergessen hast.",

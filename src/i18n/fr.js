@@ -437,7 +437,6 @@ export default {
     acEmailBad: "E-mail ou mot de passe incorrect.",
     acEmailMany: "Trop de tentatives. Réessaie dans quelques minutes.",
     acDelPw: "Saisis ton mot de passe ci-dessous, puis touche à nouveau Supprimer le compte.",
-    acEmailOpen: "Se connecter par e-mail et mot de passe",
     acEmailInvalid: "Ça ne ressemble pas à une adresse e-mail.",
     acResetSent: "Si {email} a un compte, un lien pour choisir un nouveau mot de passe y arrive (regarde aussi les spams).",
     acNewTitle: "Nouveau compte avec e-mail",
@@ -445,8 +444,9 @@ export default {
     acPwAgainPh: "Nouveau mot de passe, encore une fois",
     acPwMismatch: "Les mots de passe ne correspondent pas.",
     acNewGo: "Créer le compte",
-    acHaveAcct: "J'ai déjà un compte",
-    acNoAcct: "Pas de compte ? Crée-le",
+    acOr: "ou",
+    acNoAcctQ: "Pas de compte ?",
+    acHaveAcctQ: "Déjà un compte ?",
     acForgot: "Mot de passe oublié ?",
     acPwChange: "Changer le mot de passe",
     acPwAdd: "Ajouter un mot de passe",
@@ -1218,6 +1218,9 @@ export default {
   news143: [
     "La disposition Verre ressemble davantage à du vrai verre : un reflet depuis le coin, une réflexion douce, un bord supérieur clair et une douce lueur des couleurs du thème derrière les blocs. La barre de démarrage et le menu ☰ sont assortis, et le téléphone n'est toujours pas sollicité.",
     "Barre du haut : tout en haut de la page, elle remplit maintenant l'écran d'un bord à l'autre, sans ligne en haut ni sur les côtés.",
+  ],
+  news172: [
+    "La connexion ressemble à celle de la plupart des applis : d'abord e-mail et mot de passe, puis « ou » et le bouton Google.",
   ],
   news171: [
     "Connexion par e-mail et mot de passe à côté de Google : crée un compte ou reçois un lien pour un nouveau mot de passe si tu l'as oublié.",

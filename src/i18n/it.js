@@ -437,7 +437,6 @@ export default {
     acEmailBad: "E-mail o password errata.",
     acEmailMany: "Troppi tentativi. Riprova tra qualche minuto.",
     acDelPw: "Scrivi la password qui sotto e tocca di nuovo Elimina account.",
-    acEmailOpen: "Accedi con e-mail e password",
     acEmailInvalid: "Non sembra un indirizzo e-mail.",
     acResetSent: "Se {email} ha un account, arriverà un link per impostare una nuova password (controlla anche lo spam).",
     acNewTitle: "Nuovo account con e-mail",
@@ -445,8 +444,9 @@ export default {
     acPwAgainPh: "Ripeti la nuova password",
     acPwMismatch: "Le password non coincidono.",
     acNewGo: "Crea account",
-    acHaveAcct: "Ho già un account",
-    acNoAcct: "Non hai un account? Crealo",
+    acOr: "oppure",
+    acNoAcctQ: "Non hai un account?",
+    acHaveAcctQ: "Hai già un account?",
     acForgot: "Password dimenticata?",
     acPwChange: "Cambia password",
     acPwAdd: "Aggiungi una password",
@@ -1218,6 +1218,9 @@ export default {
   news143: [
     "Il layout Vetro sembra più vetro vero: un riflesso dall'angolo, un leggero bagliore, un bordo superiore chiaro e una tenue luce dei colori del tema dietro i riquadri. La barra di avvio e il menu ☰ si abbinano, e il telefono resta leggero.",
     "Barra in alto: in cima alla pagina ora riempie lo schermo da bordo a bordo, senza linea in alto o ai lati.",
+  ],
+  news172: [
+    "L'accesso è come nella maggior parte delle app: prima e-mail e password, poi «oppure» e il pulsante Google.",
   ],
   news171: [
     "Accesso con e-mail e password accanto a Google: crea un account o ricevi un link per una nuova password se l'hai dimenticata.",

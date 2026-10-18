@@ -437,7 +437,6 @@ export default {
     acEmailBad: "Nesprávný e-mail nebo heslo.",
     acEmailMany: "Příliš mnoho pokusů. Zkus to za pár minut.",
     acDelPw: "Napiš níže heslo a ťukni znovu na Smazat účet.",
-    acEmailOpen: "Přihlásit se e-mailem a heslem",
     acEmailInvalid: "Tohle nevypadá jako e-mailová adresa.",
     acResetSent: "Pokud má {email} účet, přijde na něj odkaz na nové heslo (podívej se i do spamu).",
     acNewTitle: "Nový účet s e-mailem",
@@ -445,8 +444,9 @@ export default {
     acPwAgainPh: "Nové heslo ještě jednou",
     acPwMismatch: "Hesla se neshodují.",
     acNewGo: "Vytvořit účet",
-    acHaveAcct: "Už mám účet",
-    acNoAcct: "Nemáš účet? Vytvoř si ho",
+    acOr: "nebo",
+    acNoAcctQ: "Nemáš účet?",
+    acHaveAcctQ: "Už máš účet?",
     acForgot: "Zapomenuté heslo?",
     acPwChange: "Změnit heslo",
     acPwAdd: "Přidat heslo",
@@ -1218,6 +1218,9 @@ export default {
   news143: [
     "Rozložení Sklo vypadá víc jako skutečné sklo: odlesk z rohu, jemný odraz, světlá horní hrana a jemná záře barev motivu za boxy. Lišta se startem a menu ☰ k němu ladí a telefon to pořád nezatěžuje.",
     "Horní lišta: když jsi úplně nahoře, vyplňuje obrazovku od kraje ke kraji, bez čáry nahoře a po stranách.",
+  ],
+  news172: [
+    "Přihlášení vypadá jako ve většině aplikací: nejdřív e-mail a heslo, potom „nebo“ a tlačítko Google.",
   ],
   news171: [
     "Přihlášení e-mailem a heslem vedle Googlu: vytvoř si účet nebo si nech poslat odkaz na nové heslo, když ho zapomeneš.",

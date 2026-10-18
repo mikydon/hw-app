@@ -437,7 +437,6 @@ export default {
     acEmailBad: "电子邮件或密码错误。",
     acEmailMany: "尝试次数过多，请几分钟后再试。",
     acDelPw: "请在下方输入密码，然后再次点按“删除账号”。",
-    acEmailOpen: "使用电子邮件和密码登录",
     acEmailInvalid: "这看起来不像电子邮件地址。",
     acResetSent: "如果 {email} 有账号，会收到一个设置新密码的链接（也请查看垃圾邮件）。",
     acNewTitle: "用电子邮件创建新账号",
@@ -445,8 +444,9 @@ export default {
     acPwAgainPh: "再次输入新密码",
     acPwMismatch: "两次输入的密码不一致。",
     acNewGo: "创建账号",
-    acHaveAcct: "我已有账号",
-    acNoAcct: "没有账号？创建一个",
+    acOr: "或",
+    acNoAcctQ: "没有账号？",
+    acHaveAcctQ: "已有账号？",
     acForgot: "忘记密码？",
     acPwChange: "修改密码",
     acPwAdd: "添加密码",
@@ -1217,6 +1217,9 @@ export default {
   news143: [
     "“玻璃”布局更像真正的玻璃：角落的光泽、柔和的反光、明亮的上边缘，以及方框后面主题颜色的柔光。开始栏和 ☰ 菜单与之匹配，手机负担依然很小。",
     "顶部栏：在页面顶部时，现在会从一边到另一边填满屏幕，顶部和两侧没有线条。",
+  ],
+  news172: [
+    "登录页面和大多数应用一样：先是电子邮件和密码，然后是“或”和 Google 按钮。",
   ],
   news171: [
     "在 Google 旁边新增电子邮件和密码登录：可以创建账号，忘记密码时可以收到设置新密码的链接。",

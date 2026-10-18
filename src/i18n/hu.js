@@ -437,7 +437,6 @@ export default {
     acEmailBad: "Hibás e-mail vagy jelszó.",
     acEmailMany: "Túl sok próbálkozás. Próbáld újra pár perc múlva.",
     acDelPw: "Írd be lent a jelszót, majd koppints újra a Fiók törlésére.",
-    acEmailOpen: "Bejelentkezés e-maillel és jelszóval",
     acEmailInvalid: "Ez nem tűnik e-mail-címnek.",
     acResetSent: "Ha a(z) {email} címhez tartozik fiók, oda érkezik egy link az új jelszóhoz (nézd meg a spamet is).",
     acNewTitle: "Új fiók e-maillel",
@@ -445,8 +444,9 @@ export default {
     acPwAgainPh: "Új jelszó még egyszer",
     acPwMismatch: "A jelszavak nem egyeznek.",
     acNewGo: "Fiók létrehozása",
-    acHaveAcct: "Már van fiókom",
-    acNoAcct: "Nincs fiókod? Hozz létre egyet",
+    acOr: "vagy",
+    acNoAcctQ: "Nincs fiókod?",
+    acHaveAcctQ: "Van már fiókod?",
     acForgot: "Elfelejtett jelszó?",
     acPwChange: "Jelszó módosítása",
     acPwAdd: "Jelszó hozzáadása",
@@ -1218,6 +1218,9 @@ export default {
   news143: [
     "Az Üveg elrendezés jobban hasonlít a valódi üvegre: csillanás a sarokból, lágy tükröződés, világos felső él és a téma színeinek halvány fénye a dobozok mögött. Az indítósáv és a ☰ menü illik hozzá, és a telefont továbbra sem terheli.",
     "Felső sáv: az oldal tetején most szélétől széléig kitölti a képernyőt, vonal nélkül felül és oldalt.",
+  ],
+  news172: [
+    "A bejelentkezés úgy néz ki, mint a legtöbb alkalmazásban: előbb e-mail és jelszó, utána „vagy” és a Google-gomb.",
   ],
   news171: [
     "Belépés e-maillel és jelszóval a Google mellett: hozz létre fiókot, vagy kérj linket új jelszóhoz, ha elfelejtetted.",

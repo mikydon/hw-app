@@ -437,7 +437,6 @@ export default {
     acEmailBad: "Wrong e-mail or password.",
     acEmailMany: "Too many attempts. Try again in a few minutes.",
     acDelPw: "Type your password below, then tap Delete account again.",
-    acEmailOpen: "Sign in with e-mail and password",
     acEmailInvalid: "That doesn't look like an e-mail address.",
     acResetSent: "If {email} has an account, a link to set a new password is on its way (check spam too).",
     acNewTitle: "New account with e-mail",
@@ -445,8 +444,9 @@ export default {
     acPwAgainPh: "New password again",
     acPwMismatch: "The passwords don't match.",
     acNewGo: "Create account",
-    acHaveAcct: "I have an account",
-    acNoAcct: "No account? Create one",
+    acOr: "or",
+    acNoAcctQ: "No account?",
+    acHaveAcctQ: "Have an account?",
     acForgot: "Forgot password?",
     acPwChange: "Change password",
     acPwAdd: "Add a password",
@@ -1218,6 +1218,9 @@ export default {
   news143: [
     "Glass layout looks more like real glass: a sheen from the corner, a soft reflection, a bright top edge and a soft glow of the theme colours behind the boxes. The Start bar and the ☰ menu match it, and it stays light on the phone.",
     "Top bar: at the top of the page it now fills the screen edge to edge, without a line at the top or sides.",
+  ],
+  news172: [
+    "The sign-in page looks like in most apps: e-mail and password first, then \"or\" and the Google button.",
   ],
   news171: [
     "Sign in with e-mail and password, next to Google: create an account, or get a link to set a new password if you forgot it.",

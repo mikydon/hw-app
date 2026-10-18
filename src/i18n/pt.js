@@ -437,7 +437,6 @@ export default {
     acEmailBad: "E-mail ou palavra-passe incorretos.",
     acEmailMany: "Demasiadas tentativas. Tenta de novo daqui a uns minutos.",
     acDelPw: "Escreve a palavra-passe abaixo e toca de novo em Eliminar conta.",
-    acEmailOpen: "Entrar com e-mail e palavra-passe",
     acEmailInvalid: "Isto não parece um endereço de e-mail.",
     acResetSent: "Se {email} tiver conta, vai receber um link para criar uma nova palavra-passe (vê também o spam).",
     acNewTitle: "Conta nova com e-mail",
@@ -445,8 +444,9 @@ export default {
     acPwAgainPh: "Nova palavra-passe outra vez",
     acPwMismatch: "As palavras-passe não coincidem.",
     acNewGo: "Criar conta",
-    acHaveAcct: "Já tenho conta",
-    acNoAcct: "Não tens conta? Cria uma",
+    acOr: "ou",
+    acNoAcctQ: "Não tens conta?",
+    acHaveAcctQ: "Já tens conta?",
     acForgot: "Esqueceste a palavra-passe?",
     acPwChange: "Mudar palavra-passe",
     acPwAdd: "Adicionar palavra-passe",
@@ -1218,6 +1218,9 @@ export default {
   news143: [
     "O layout Vidro parece mais vidro de verdade: um brilho a partir do canto, um reflexo suave, uma borda superior clara e um brilho suave das cores do tema atrás das caixas. A barra de início e o menu ☰ combinam com ele, e continua leve para o telemóvel.",
     "Barra superior: no topo da página, agora preenche o ecrã de uma ponta à outra, sem linha em cima nem dos lados.",
+  ],
+  news172: [
+    "O início de sessão está como na maioria das apps: primeiro e-mail e palavra-passe, depois «ou» e o botão Google.",
   ],
   news171: [
     "Entrar com e-mail e palavra-passe ao lado do Google: cria uma conta ou recebe um link para uma nova palavra-passe se a esqueceste.",

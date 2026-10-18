@@ -437,7 +437,6 @@ export default {
     acEmailBad: "E-mail o contraseña incorrectos.",
     acEmailMany: "Demasiados intentos. Prueba de nuevo en unos minutos.",
     acDelPw: "Escribe tu contraseña abajo y vuelve a tocar Eliminar cuenta.",
-    acEmailOpen: "Iniciar sesión con e-mail y contraseña",
     acEmailInvalid: "Eso no parece una dirección de e-mail.",
     acResetSent: "Si {email} tiene cuenta, recibirá un enlace para crear una contraseña nueva (mira también en spam).",
     acNewTitle: "Cuenta nueva con e-mail",
@@ -445,8 +444,9 @@ export default {
     acPwAgainPh: "Repite la contraseña nueva",
     acPwMismatch: "Las contraseñas no coinciden.",
     acNewGo: "Crear cuenta",
-    acHaveAcct: "Ya tengo cuenta",
-    acNoAcct: "¿No tienes cuenta? Créala",
+    acOr: "o",
+    acNoAcctQ: "¿No tienes cuenta?",
+    acHaveAcctQ: "¿Ya tienes cuenta?",
     acForgot: "¿Olvidaste la contraseña?",
     acPwChange: "Cambiar contraseña",
     acPwAdd: "Añadir contraseña",
@@ -1218,6 +1218,9 @@ export default {
   news143: [
     "El diseño Cristal se parece más al cristal real: un brillo desde la esquina, un reflejo suave, un borde superior claro y un suave resplandor de los colores del tema detrás de las cajas. La barra de inicio y el menú ☰ combinan con él, y sigue siendo ligero para el móvil.",
     "Barra superior: arriba del todo ahora llena la pantalla de borde a borde, sin línea arriba ni a los lados.",
+  ],
+  news172: [
+    "El inicio de sesión se ve como en la mayoría de apps: primero e-mail y contraseña, luego «o» y el botón de Google.",
   ],
   news171: [
     "Inicio de sesión con e-mail y contraseña junto a Google: crea una cuenta o pide un enlace para una contraseña nueva si la olvidaste.",
