@@ -622,6 +622,8 @@ export default {
     revLevel: "レベルアップ",
     revRecord: "新記録",
     revOf: "{n}/{max}",
+    revRare: "レアな予感…",
+    revEpic: "伝説級の予感…！",
     achUp: "{name}：{rank}",
     maxBest: "、最高 {v}",
     pvOpen: "プロフィールを見る",

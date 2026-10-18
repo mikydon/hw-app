@@ -622,6 +622,8 @@ export default {
     revLevel: "Szintlépés",
     revRecord: "Új rekord",
     revOf: "{n}/{max}",
+    revRare: "Ez ritkának tűnik…",
+    revEpic: "Valami legendás…!",
     achUp: "{name}: {rank}",
     maxBest: ", max. {v}",
     pvOpen: "Profil megnyitása",

@@ -6615,14 +6615,20 @@ function revealList(entry, newAch, xpBefore, gained) {
 function revealSfx(r) {
   const S = [523, 587, 659, 784, 880, 1047, 1175, 1319, 1568, 1760, 2093, 2349, 2637];
   const n = [];
-  [392, 440, 494, 523].forEach((f, k) => n.push([f * (1 + r * 0.05), k * 0.045, 0.05]));
-  const len = 3 + Math.ceil(r / 1.5), off = Math.floor(r / 2); let t = 0.26;
+  // the charge while the card shakes (faster and higher for rarer cards), then the reveal when it turns
+  [330, 370, 392, 440, 494, 523, 587].forEach((f, k) => n.push([f * (1 + r * 0.05), k * 0.055, 0.05]));
+  const len = 3 + Math.ceil(r / 1.5), off = Math.floor(r / 2); let t = 0.44;
   for (let k = 0; k < len; k++) { n.push([S[Math.min(S.length - 1, k + off)], t, 0.11]); t += 0.07; }
   const top = S[Math.min(S.length - 1, len + off)], d = 0.55 + r * 0.09;
   n.push([top, t, d], [top * 0.75, t, d], [top * 0.5, t, d]);
   if (r >= 4) [2093, 2637, 3136, 2637, 3136, 4186].slice(0, r - 1).forEach((f, k) => n.push([f, t + 0.14 + k * 0.07, 0.09]));
+  if (r >= 2) n.push([98, t + 0.22, 0.22], [131, t + 0.22, 0.18]); // a low thud when the rank lands
   melody(n, "triangle", 0.26);
 }
+// a card being dealt: a quick swish down, a bit brighter for rare ones
+const dealSfx = r => melody([[1500 + r * 120, 0, 0.03], [1150 + r * 90, 0.03, 0.03], [850 + r * 60, 0.06, 0.04], [620, 0.1, 0.06]], "sine", 0.14);
+// taking a card: a bright two-note ding
+const collectSfx = () => melody([[1319, 0, 0.06], [1760, 0.06, 0.16]], "sine", 0.2);
 function RevBurst({ col, n }) {
   const [bits] = useState(() => Array.from({ length: n }, (_, k) => {
     const a = (k / n) * Math.PI * 2 + Math.random() * 0.5, dist = 120 + Math.random() * 170;
@@ -6632,15 +6638,27 @@ function RevBurst({ col, n }) {
     {bits.map((b, k) => <span key={k} className="revBit" style={{ width: b.s, height: b.s, background: b.c, borderRadius: b.star ? 2 : 99, transform: b.star ? "rotate(45deg)" : undefined, "--tx": b.tx, "--ty": b.ty, "--d": b.d, boxShadow: `0 0 8px ${b.c}` }} />)}
   </div>;
 }
+// sparkles blinking around a rare card while it is still face down
+function RevTwinkle({ col, n }) {
+  const [bits] = useState(() => Array.from({ length: n }, (_, k) => {
+    const side = k % 4, u = Math.random();
+    const [x, y] = side === 0 ? [u * 100, -4] : side === 1 ? [104, u * 100] : side === 2 ? [u * 100, 104] : [-4, u * 100];
+    return { x, y, s: 5 + Math.random() * 6, dl: `${(Math.random() * 1.4).toFixed(2)}s`, du: `${(0.9 + Math.random() * 0.9).toFixed(2)}s` };
+  }));
+  return <div aria-hidden="true" style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 2 }}>
+    {bits.map((b, k) => <span key={k} className="revTw" style={{ left: `${b.x}%`, top: `${b.y}%`, width: b.s, height: b.s, background: k % 2 ? "#fff" : col, boxShadow: `0 0 10px ${col}`, "--dl": b.dl, "--du": b.du }} />)}
+  </div>;
+}
 function RewardReveal({ items, onDone }) {
   const [i, setI] = useState(0);
   const [open, setOpen] = useState(false);
   useBack(() => onDone(), true);
+  useEffect(() => { if (items[i]) dealSfx(items[i].r); }, [i]);
   const it = items[i];
   if (!it) return null;
   const col = it.col, r = it.r, last = i + 1 >= items.length;
   const flip = () => { if (open) return; setOpen(true); revealSfx(r); vibrate(REV_BUZZ[Math.max(0, Math.min(6, r))]); };
-  const next = e => { e.stopPropagation(); sfxTap(); if (last) onDone(); else { setI(i + 1); setOpen(false); } };
+  const next = e => { e.stopPropagation(); collectSfx(); if (last) onDone(); else { setI(i + 1); setOpen(false); } };
   const kindLabel = T({ pr: "revRecord", ach: "revBadge", rank: "revRank", lvl: "revLevel" }[it.kind]);
   return createPortal(
     <div data-reveal={items.length} className={open && r >= 5 ? "revShake" : undefined} onClick={flip}
@@ -6649,12 +6667,13 @@ function RewardReveal({ items, onDone }) {
         <span data-reveal-count style={{ fontSize: 13, fontWeight: 800, color: C.dim, letterSpacing: 0.5 }}>{items.length > 1 ? T("revOf", { n: i + 1, max: items.length }) : ""}</span>
         {!last && <button type="button" data-reveal-skip onClick={e => { e.stopPropagation(); sfxTap(); onDone(); }} style={{ ...btnBase, background: "transparent", color: C.dim, fontSize: 13, fontWeight: 700, padding: "8px 4px" }}>{T("revSkip")}</button>}
       </div>
-      <div key={i} style={{ position: "relative", width: "min(78vw, 300px)", aspectRatio: "3 / 4" }}>
+      <div key={i} className="revDeal" style={{ position: "relative", width: "min(78vw, 300px)", aspectRatio: "3 / 4" }}>
         <div aria-hidden="true" className="revRays" style={{ background: `repeating-conic-gradient(from 0deg, ${col}55 0deg 7deg, transparent 7deg 22deg)`, opacity: open ? 1 : 0, "--rs": `${Math.max(7, 16 - r * 1.4)}s` }} />
         {open && <RevBurst col={col} n={16 + r * 8} />}
         {open && <div aria-hidden="true" className="revFlash" style={{ "--fo": Math.min(0.75, 0.2 + r * 0.09) }} />}
         <div data-reveal-card data-kind={it.kind} data-rarity={r} data-state={open ? "face" : "back"} className={"revCard" + (open ? " on" : "")} style={{ "--wob": `${1.2 + r * 0.7}deg`, "--wt": `${Math.max(0.35, 1.1 - r * 0.12)}s` }}>
-          <div className="revBack" style={{ background: `radial-gradient(90% 70% at 50% 40%, ${col}66, transparent 75%), repeating-linear-gradient(45deg, ${col}12 0 10px, transparent 10px 20px), ${C.ink}`, border: `2px solid ${col}`, boxShadow: `0 0 ${18 + r * 9}px ${col}${r >= 4 ? "cc" : "88"}, inset 0 0 ${24 + r * 6}px ${col}55` }}>
+          {r >= 4 && !open && <RevTwinkle col={col} n={6 + (r - 3) * 4} />}
+          <div className={"revBack" + (r >= 6 ? " revPrism" : "")} style={{ background: `radial-gradient(90% 70% at 50% 40%, ${col}66, transparent 75%), repeating-linear-gradient(45deg, ${col}12 0 10px, transparent 10px 20px), ${C.ink}`, border: `2px solid ${col}`, boxShadow: `0 0 ${18 + r * 9}px ${col}${r >= 4 ? "cc" : "88"}, inset 0 0 ${24 + r * 6}px ${col}55` }}>
             <span style={{ fontFamily: DISPLAY, fontSize: 96, fontWeight: 900, color: col, textShadow: `0 0 ${12 + r * 5}px ${col}`, lineHeight: 1 }}>?</span>
           </div>
           <div className={"revFace" + (r >= 4 ? " foil" : "")} style={{ background: `radial-gradient(100% 70% at 50% 30%, ${col}55, transparent 80%), ${C.ink}`, border: `2px solid ${col}`, boxShadow: `0 0 ${24 + r * 12}px ${col}aa` }}>
@@ -6669,7 +6688,10 @@ function RewardReveal({ items, onDone }) {
       <div style={{ height: 96, display: "flex", alignItems: "center", justifyContent: "center", marginTop: 22, width: "100%", maxWidth: 340 }}>
         {open
           ? <button type="button" data-reveal-next onClick={next} className="b3d cardIn" style={{ ...bigBtn(col, "#0b0f1c"), animationDelay: ".35s" }}>{last ? T("revDone") : T("revNext")}</button>
-          : <div className="revTap" style={{ fontSize: 15, fontWeight: 800, color: col, letterSpacing: 0.4 }}>{T("revTap")}</div>}
+          : <div style={{ textAlign: "center" }}>
+              {r >= 4 && <div data-reveal-rare className="revTap" style={{ fontFamily: DISPLAY, fontSize: 22, fontWeight: 900, color: col, textShadow: `0 0 12px ${col}`, marginBottom: 6 }}>{T(r >= 6 ? "revEpic" : "revRare")}</div>}
+              <div className="revTap" style={{ fontSize: 15, fontWeight: 800, color: r >= 4 ? C.chalk : col, letterSpacing: 0.4 }}>{T("revTap")}</div>
+            </div>}
       </div>
     </div>,
     document.body
@@ -7520,24 +7542,31 @@ export default function App() {
         .bump{animation:bump ${MO.t1} ${MO.spring}}
         @keyframes pop{0%{transform:scale(0);opacity:0}60%{transform:scale(1.2);opacity:1}100%{transform:scale(1);opacity:1}}
         .revCard{position:absolute;inset:0;transform-style:preserve-3d;transition:transform .62s ${MO.pop};animation:revWob var(--wt) ease-in-out infinite alternate}
-        .revCard.on{transform:rotateY(180deg);animation:revPop .62s ${MO.pop}}
+        .revCard.on{transform:rotateY(180deg);animation:revPop .82s cubic-bezier(.3,.7,.25,1)}
         .revBack,.revFace{position:absolute;inset:0;border-radius:24px;backface-visibility:hidden;-webkit-backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:22px 18px;box-sizing:border-box}
         .revFace{transform:rotateY(180deg)}
         @keyframes revWob{from{transform:rotate(calc(var(--wob) * -1)) scale(.98)}to{transform:rotate(var(--wob)) scale(1.02)}}
-        @keyframes revPop{0%{transform:rotateY(0) scale(1)}45%{transform:rotateY(100deg) scale(1.14)}100%{transform:rotateY(180deg) scale(1)}}
+        @keyframes revPop{0%{transform:rotateY(0) rotate(0) scale(1)}8%{transform:rotateY(0) rotate(-5deg) scale(1.03)}16%{transform:rotateY(0) rotate(5deg) scale(1.06)}24%{transform:rotateY(0) rotate(-4deg) scale(1.08)}34%{transform:rotateY(0) rotate(0) scale(1.1)}68%{transform:rotateY(115deg) rotate(0) scale(1.18)}100%{transform:rotateY(180deg) rotate(0) scale(1)}}
         .revRays{position:absolute;left:50%;top:50%;width:200vmax;height:200vmax;margin:-100vmax 0 0 -100vmax;border-radius:50%;-webkit-mask:radial-gradient(closest-side,#000 8%,transparent 42%);mask:radial-gradient(closest-side,#000 8%,transparent 42%);transition:opacity .5s ease;animation:revSpin var(--rs) linear infinite;pointer-events:none}
         @keyframes revSpin{to{transform:rotate(360deg)}}
-        .revBit{position:absolute;left:0;top:0;animation:revFly var(--d) cubic-bezier(.15,.8,.3,1) .22s both}
+        .revBit{position:absolute;left:0;top:0;animation:revFly var(--d) cubic-bezier(.15,.8,.3,1) .44s both}
         @keyframes revFly{0%{transform:translate(-50%,-50%) scale(.3);opacity:1}80%{opacity:1}100%{transform:translate(calc(var(--tx) - 50%),calc(var(--ty) - 50%)) scale(1);opacity:0}}
-        .revFlash{position:fixed;inset:-50vmax;background:#fff;pointer-events:none;animation:revFlash .55s ease-out .22s both}
+        .revFlash{position:fixed;inset:-50vmax;background:#fff;pointer-events:none;animation:revFlash .55s ease-out .44s both}
         @keyframes revFlash{0%{opacity:0}15%{opacity:var(--fo)}100%{opacity:0}}
-        .revIcon{animation:revIcon .7s ${MO.spring} .3s both}
+        .revIcon{animation:revIcon .7s ${MO.spring} .5s both,revBob 2.2s ease-in-out 1.3s infinite alternate}
+        @keyframes revBob{from{transform:translateY(0) scale(1)}to{transform:translateY(-7px) scale(1.04)}}
         @keyframes revIcon{0%{transform:scale(.2) rotate(-25deg)}100%{transform:scale(1) rotate(0)}}
-        .revStamp{animation:revStamp .45s ${MO.spring} .55s both}
+        .revStamp{animation:revStamp .45s ${MO.spring} .72s both}
         @keyframes revStamp{0%{transform:scale(2.4);opacity:0}100%{transform:scale(1);opacity:1}}
         .revTap{animation:revTap 1.1s ease-in-out infinite alternate}
         @keyframes revTap{from{opacity:.55}to{opacity:1}}
-        .revShake{animation:revShake .5s ease .25s}
+        .revShake{animation:revShake .5s ease .46s}
+        .revDeal{animation:revDeal .55s ${MO.pop} both}
+        @keyframes revDeal{from{transform:translateY(55vh) rotate(-18deg) scale(.6);opacity:0}to{transform:none;opacity:1}}
+        .revTw{position:absolute;border-radius:2px;transform:translate(-50%,-50%) rotate(45deg) scale(0);animation:revTw var(--du) ease-in-out var(--dl) infinite}
+        @keyframes revTw{0%,100%{transform:translate(-50%,-50%) rotate(45deg) scale(0);opacity:0}50%{transform:translate(-50%,-50%) rotate(45deg) scale(1);opacity:1}}
+        .revPrism{animation:revHue 2.6s linear infinite}
+        @keyframes revHue{to{filter:hue-rotate(360deg)}}
         @keyframes revShake{0%,100%{transform:translate(0,0)}15%{transform:translate(-7px,3px)}30%{transform:translate(6px,-4px)}45%{transform:translate(-5px,-2px)}60%{transform:translate(4px,3px)}80%{transform:translate(-2px,1px)}}
         .foil{position:relative;overflow:hidden}.foil::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(105deg,transparent 38%,rgba(255,255,255,.16) 46%,rgba(255,255,255,.32) 50%,rgba(255,255,255,.16) 54%,transparent 62%);transform:translateX(-120%);animation:foil 3.4s ease-in-out infinite}
         @keyframes foil{0%,55%{transform:translateX(-120%)}100%{transform:translateX(120%)}}.revFace.foil{position:absolute}
@@ -7577,7 +7606,7 @@ export default function App() {
         @media (max-width: 380px){.tbOut{padding-left:6px;padding-right:6px}.tbBox{padding:11px 9px 11px 13px;gap:6px}}
         @media (prefers-reduced-motion: reduce){.tbOut::before,.tbOut.fl::before,.tbPill,.tbOut.fl .tbPill{transition:none}}
         .sysEmo,.sysEmo *{font-family:${BODY_SYS}!important}
-        @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}.conf,.revBit,.revFlash{display:none}}
+        @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}.conf,.revBit,.revFlash,.revTw{display:none}}
       `}</style>
       {!loaded ? (
         <div style={{ padding: 40, display: "flex", flexDirection: "column", alignItems: "center", gap: 12, color: C.dim }}><Logo size={64} />{T("loading")}</div>

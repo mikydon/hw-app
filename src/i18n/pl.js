@@ -622,6 +622,8 @@ export default {
     revLevel: "Nowy poziom",
     revRecord: "Nowy rekord",
     revOf: "{n} z {max}",
+    revRare: "To wygląda na rzadkie…",
+    revEpic: "Coś legendarnego…!",
     achUp: "{name}: {rank}",
     maxBest: ", maks. {v}",
     pvOpen: "Zobacz profil",

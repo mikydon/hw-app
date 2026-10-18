@@ -622,6 +622,8 @@ export default {
     revLevel: "Nový level",
     revRecord: "Nový rekord",
     revOf: "{n} z {max}",
+    revRare: "Toto vyzerá vzácne…",
+    revEpic: "Niečo legendárne…!",
     achUp: "{name}: {rank}",
     maxBest: ", max {v}",
     pvOpen: "Zobraziť profil",

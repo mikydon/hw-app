@@ -622,6 +622,8 @@ export default {
     revLevel: "Новий рівень",
     revRecord: "Новий рекорд",
     revOf: "{n} з {max}",
+    revRare: "Схоже на щось рідкісне…",
+    revEpic: "Щось легендарне…!",
     achUp: "{name}: {rank}",
     maxBest: ", макс. {v}",
     pvOpen: "Переглянути профіль",

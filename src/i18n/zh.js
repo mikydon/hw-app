@@ -622,6 +622,8 @@ export default {
     revLevel: "升级",
     revRecord: "新纪录",
     revOf: "{n}/{max}",
+    revRare: "看起来很稀有……",
+    revEpic: "传说级的东西……！",
     achUp: "{name}：{rank}",
     maxBest: "，最高 {v}",
     pvOpen: "查看资料",

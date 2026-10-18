@@ -622,6 +622,8 @@ export default {
     revLevel: "레벨 업",
     revRecord: "새 기록",
     revOf: "{n}/{max}",
+    revRare: "희귀해 보여요…",
+    revEpic: "전설급인데요…!",
     achUp: "{name}: {rank}",
     maxBest: ", 최고 {v}",
     pvOpen: "프로필 보기",
