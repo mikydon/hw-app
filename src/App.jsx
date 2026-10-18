@@ -4351,9 +4351,10 @@ function SlotTile({ sl, m, i, onTap, own }) {
       <span style={{ fontSize: 11, fontWeight: 800, color: col }}>{sub}</span>
     </div>
   );
-  let body, style = {};
+  let body, style = {}, rar = 0; // Gold and up get the moving foil shine
   if (sl.kind === "rk" || sl.kind === "rk3") {
     const items = sl.ids.map(id => { const r = RANKS[rankIdx(id, m.rk[id])]; return { id, r }; });
+    rar = Math.max(...sl.ids.map(id => rankIdx(id, m.rk[id])));
     style = glow(items[0].r.color);
     body = sl.kind === "rk" ? (() => { const { id, r } = items[0]; return (<>
       <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: 0.8, textTransform: "uppercase", color: C.dim }}>{T("pfT_rk")}</div>
@@ -4370,6 +4371,7 @@ function SlotTile({ sl, m, i, onTap, own }) {
     </>);
   } else if (sl.kind === "ach" || sl.kind === "ach3") {
     const items = sl.ids.map(k => m.ach.find(a => a.k === k));
+    rar = Math.max(...items.map(a => a.tier - 1));
     style = glow(RANKS[items[0].tier - 1].color);
     body = sl.kind === "ach" ? (() => { const a = items[0], r = RANKS[a.tier - 1]; return (<>
       <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: 0.8, textTransform: "uppercase", color: C.dim }}>{T("pfT_ach")}</div>
@@ -4395,7 +4397,7 @@ function SlotTile({ sl, m, i, onTap, own }) {
       <div style={{ fontFamily: DISPLAY, fontSize: k === "since" ? 22 : 34, fontWeight: 900, lineHeight: 1, marginTop: "auto", paddingTop: 10, fontVariantNumeric: "tabular-nums" }}>{fmtStat(m, k)}</div>
     </>);
   }
-  return <button type="button" data-slot={i} data-slot-kind={sl.kind} data-slot-set={sl.set ? 1 : 0} className="cardIn" onClick={() => { sfxTap(); onTap(sl, i); }} style={{ ...base, ...style }}>{pen}{body}</button>;
+  return <button type="button" data-slot={i} data-slot-kind={sl.kind} data-slot-set={sl.set ? 1 : 0} className={"cardIn" + (rar >= 4 ? " foil" : "")} onClick={() => { sfxTap(); onTap(sl, i); }} style={{ ...base, ...style }}>{pen}{body}</button>;
 }
 
 // Badges page: all of them with the progress, closest to the next level first, finished last.
@@ -4412,7 +4414,7 @@ function BadgesList({ m, focus }) {
         {list.map(a => {
           const r = a.tier ? RANKS[a.tier - 1] : null, nr = a.next === null ? null : RANKS[a.nextRank];
           return (
-            <div key={a.k} data-ach-row={a.k} data-ach={a.k} data-tier={a.tier} data-pct={Math.round(inTier(a) * 100)} className={focus && focus.k === a.k ? "achFlash" : undefined}
+            <div key={a.k} data-ach-row={a.k} data-ach={a.k} data-tier={a.tier} data-pct={Math.round(inTier(a) * 100)} className={[focus && focus.k === a.k && "achFlash", a.tier >= 5 && "foil"].filter(Boolean).join(" ") || undefined}
               style={{ ...card, ...tileR(), padding: "11px 12px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <div aria-hidden="true" style={{ fontSize: 24, lineHeight: 1, flexShrink: 0, filter: r ? "none" : "grayscale(1)", opacity: r ? 1 : 0.55 }}>{a.icon}</div>
@@ -4422,7 +4424,9 @@ function BadgesList({ m, focus }) {
                 </div>
                 <div data-ach-num style={{ textAlign: "right", flexShrink: 0 }}>
                   <div style={{ fontFamily: DISPLAY, fontSize: 18, fontWeight: 900, color: C.chalk, lineHeight: 1, whiteSpace: "nowrap" }}>{a.next === null ? "✓" : `${val(a, a.v)} / ${val(a, a.next)}`}</div>
-                  {a.next !== null && <div style={{ fontSize: 11, color: C.dim, marginTop: 3, whiteSpace: "nowrap" }}>{T("achLeft", { n: val(a, a.next - a.v) })}</div>}
+                  {a.next !== null && (inTier(a) >= 0.8
+                    ? <div data-near className="nearPulse" style={{ fontSize: 11.5, fontWeight: 900, color: nr.color, marginTop: 3, whiteSpace: "nowrap" }}>{T("achLeft", { n: val(a, a.next - a.v) })}!</div>
+                    : <div style={{ fontSize: 11, color: C.dim, marginTop: 3, whiteSpace: "nowrap" }}>{T("achLeft", { n: val(a, a.next - a.v) })}</div>)}
                 </div>
               </div>
               <div aria-hidden="true" style={{ display: "flex", gap: 3, marginTop: 10 }}>
@@ -4452,7 +4456,7 @@ function RanksList({ m, onPick, focus }) {
           const prev = ri ? at[ri - 1] : 0, next = ri < at.length ? at[ri] : null, inR = next === null ? 1 : Math.max(0, Math.min(1, ((b || 0) - prev) / (next - prev)));
           const Tag = onPick ? "button" : "div";
           return (
-            <Tag key={id} data-rank-row={id} data-rank={ri} onClick={onPick ? () => { sfxTap(); onPick(id); } : undefined} className={focus && focus.k === id ? "achFlash" : undefined}
+            <Tag key={id} data-rank-row={id} data-rank={ri} onClick={onPick ? () => { sfxTap(); onPick(id); } : undefined} className={[focus && focus.k === id && "achFlash", ri >= 4 && "foil"].filter(Boolean).join(" ") || undefined}
               style={{ ...(onPick ? btnBase : {}), fontWeight: 400, textAlign: "left", width: "100%", color: C.chalk, ...card, ...tileR(), padding: "11px 12px", display: "block" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <div aria-hidden="true" style={{ fontSize: 24, lineHeight: 1, flexShrink: 0, opacity: has ? 1 : 0.45 }}>{r.icon}</div>
@@ -4462,7 +4466,9 @@ function RanksList({ m, onPick, focus }) {
                 </div>
                 <div style={{ textAlign: "right", flexShrink: 0 }}>
                   <div style={{ fontFamily: DISPLAY, fontSize: 18, fontWeight: 900, lineHeight: 1, whiteSpace: "nowrap" }}>{next === null ? `${b}${rankUnit(id)} ✓` : `${b || 0} / ${next}${rankUnit(id)}`}</div>
-                  {next !== null && <div style={{ fontSize: 11, color: C.dim, marginTop: 3, whiteSpace: "nowrap" }}>{T("achLeft", { n: `${next - (b || 0)}${rankUnit(id)}` })}</div>}
+                  {next !== null && (has && inR >= 0.8
+                    ? <div data-near className="nearPulse" style={{ fontSize: 11.5, fontWeight: 900, color: RANKS[ri + 1].color, marginTop: 3, whiteSpace: "nowrap" }}>{T("achLeft", { n: `${next - (b || 0)}${rankUnit(id)}` })}!</div>
+                    : <div style={{ fontSize: 11, color: C.dim, marginTop: 3, whiteSpace: "nowrap" }}>{T("achLeft", { n: `${next - (b || 0)}${rankUnit(id)}` })}</div>)}
                 </div>
               </div>
               <div aria-hidden="true" style={{ display: "flex", gap: 3, marginTop: 10 }}>
@@ -6587,6 +6593,89 @@ function Cool({ onFinish }) {
   );
 }
 
+// ─── REWARD REVEAL (1.7.0; Michael, Oct 18, 16:53: badges "more extreme, like gambling: a really good feeling") ───
+// The thrill of opening a card, but only for what you earned (never chance, never money): after a workout every new
+// record, badge level, exercise rank and level comes as a face-down card glowing in its rarity colour, wobbling more
+// the rarer it is. A tap flips it: light rays, a burst, a flash, a rising sound and a vibration, all bigger with the
+// rarity (Diamond also shakes the screen). The cards come from the most common to the rarest, so the best is last.
+const REV_KIND = { pr: 0, ach: 1, rank: 2, lvl: 3 };
+const REV_BUZZ = [[30], [40], [50, 30, 60], [60, 40, 90], [70, 40, 70, 40, 160], [80, 40, 80, 40, 80, 40, 220], [110, 50, 110, 50, 110, 50, 340]];
+function revealList(entry, newAch, xpBefore, gained) {
+  if (!entry) return [];
+  const out = [];
+  if (entry.prs && entry.prs.length) out.push({ kind: "pr", r: Math.min(3, entry.prs.length), icon: "🏆", name: TP("prs", entry.prs.length), sub: entry.items.filter(it => entry.prs.includes(it.id)).map(exName).join(", "), col: C.signal });
+  newAch.forEach(a => { const rk = RANKS[a.tier - 1]; out.push({ kind: "ach", k: a.k, r: a.tier - 1, icon: a.icon, name: a.name, rank: rk, col: rk.color }); });
+  (entry.rankUps || []).forEach(ru => { const rk = RANKS[ru.to]; out.push({ kind: "rank", k: ru.id, r: ru.to, icon: rk.icon, name: EX[ru.id] ? EX[ru.id].name : ru.id, rank: rk, col: rk.color }); });
+  const l0 = levelInfo(xpBefore).lvl, l1 = levelInfo(xpBefore + gained).lvl;
+  if (l1 > l0) { const r = lvRank(l1); out.push({ kind: "lvl", r, icon: "⚡", name: `${T("level")} ${l1}`, col: C.sky }); }
+  return out.sort((a, b) => a.r - b.r || REV_KIND[a.kind] - REV_KIND[b.kind]);
+}
+// One melody per flip (scheduled on the audio clock): a quick riser, then an arpeggio that climbs higher and longer
+// with the rarity, a chord, and sparkles from Gold up.
+function revealSfx(r) {
+  const S = [523, 587, 659, 784, 880, 1047, 1175, 1319, 1568, 1760, 2093, 2349, 2637];
+  const n = [];
+  [392, 440, 494, 523].forEach((f, k) => n.push([f * (1 + r * 0.05), k * 0.045, 0.05]));
+  const len = 3 + Math.ceil(r / 1.5), off = Math.floor(r / 2); let t = 0.26;
+  for (let k = 0; k < len; k++) { n.push([S[Math.min(S.length - 1, k + off)], t, 0.11]); t += 0.07; }
+  const top = S[Math.min(S.length - 1, len + off)], d = 0.55 + r * 0.09;
+  n.push([top, t, d], [top * 0.75, t, d], [top * 0.5, t, d]);
+  if (r >= 4) [2093, 2637, 3136, 2637, 3136, 4186].slice(0, r - 1).forEach((f, k) => n.push([f, t + 0.14 + k * 0.07, 0.09]));
+  melody(n, "triangle", 0.26);
+}
+function RevBurst({ col, n }) {
+  const [bits] = useState(() => Array.from({ length: n }, (_, k) => {
+    const a = (k / n) * Math.PI * 2 + Math.random() * 0.5, dist = 120 + Math.random() * 170;
+    return { tx: `${Math.round(Math.cos(a) * dist)}px`, ty: `${Math.round(Math.sin(a) * dist)}px`, s: 4 + Math.random() * 7, c: [col, "#ffffff", C.signal, col][k % 4], d: `${(0.7 + Math.random() * 0.5).toFixed(2)}s`, star: k % 3 === 0 };
+  }));
+  return <div aria-hidden="true" style={{ position: "absolute", left: "50%", top: "50%", width: 0, height: 0, pointerEvents: "none" }}>
+    {bits.map((b, k) => <span key={k} className="revBit" style={{ width: b.s, height: b.s, background: b.c, borderRadius: b.star ? 2 : 99, transform: b.star ? "rotate(45deg)" : undefined, "--tx": b.tx, "--ty": b.ty, "--d": b.d, boxShadow: `0 0 8px ${b.c}` }} />)}
+  </div>;
+}
+function RewardReveal({ items, onDone }) {
+  const [i, setI] = useState(0);
+  const [open, setOpen] = useState(false);
+  useBack(() => onDone(), true);
+  const it = items[i];
+  if (!it) return null;
+  const col = it.col, r = it.r, last = i + 1 >= items.length;
+  const flip = () => { if (open) return; setOpen(true); revealSfx(r); vibrate(REV_BUZZ[Math.max(0, Math.min(6, r))]); };
+  const next = e => { e.stopPropagation(); sfxTap(); if (last) onDone(); else { setI(i + 1); setOpen(false); } };
+  const kindLabel = T({ pr: "revRecord", ach: "revBadge", rank: "revRank", lvl: "revLevel" }[it.kind]);
+  return createPortal(
+    <div data-reveal={items.length} className={open && r >= 5 ? "revShake" : undefined} onClick={flip}
+      style={{ position: "fixed", inset: 0, zIndex: 95, background: `radial-gradient(70% 50% at 50% 45%, ${col}${open ? "40" : "22"}, transparent 70%), rgba(4,7,16,.97)`, transition: `background ${MO.t3}`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "calc(var(--sat, 0px) + 18px) 20px calc(var(--sab, 0px) + 26px)", boxSizing: "border-box", fontFamily: BODY, color: C.chalk, cursor: open ? "default" : "pointer", userSelect: "none", overflow: "hidden" }}>
+      <div style={{ position: "absolute", top: "calc(var(--sat, 0px) + 16px)", left: 18, right: 18, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <span data-reveal-count style={{ fontSize: 13, fontWeight: 800, color: C.dim, letterSpacing: 0.5 }}>{items.length > 1 ? T("revOf", { n: i + 1, max: items.length }) : ""}</span>
+        {!last && <button type="button" data-reveal-skip onClick={e => { e.stopPropagation(); sfxTap(); onDone(); }} style={{ ...btnBase, background: "transparent", color: C.dim, fontSize: 13, fontWeight: 700, padding: "8px 4px" }}>{T("revSkip")}</button>}
+      </div>
+      <div key={i} style={{ position: "relative", width: "min(78vw, 300px)", aspectRatio: "3 / 4" }}>
+        <div aria-hidden="true" className="revRays" style={{ background: `repeating-conic-gradient(from 0deg, ${col}55 0deg 7deg, transparent 7deg 22deg)`, opacity: open ? 1 : 0, "--rs": `${Math.max(7, 16 - r * 1.4)}s` }} />
+        {open && <RevBurst col={col} n={16 + r * 8} />}
+        {open && <div aria-hidden="true" className="revFlash" style={{ "--fo": Math.min(0.75, 0.2 + r * 0.09) }} />}
+        <div data-reveal-card data-kind={it.kind} data-rarity={r} data-state={open ? "face" : "back"} className={"revCard" + (open ? " on" : "")} style={{ "--wob": `${1.2 + r * 0.7}deg`, "--wt": `${Math.max(0.35, 1.1 - r * 0.12)}s` }}>
+          <div className="revBack" style={{ background: `radial-gradient(90% 70% at 50% 40%, ${col}66, transparent 75%), repeating-linear-gradient(45deg, ${col}12 0 10px, transparent 10px 20px), ${C.ink}`, border: `2px solid ${col}`, boxShadow: `0 0 ${18 + r * 9}px ${col}${r >= 4 ? "cc" : "88"}, inset 0 0 ${24 + r * 6}px ${col}55` }}>
+            <span style={{ fontFamily: DISPLAY, fontSize: 96, fontWeight: 900, color: col, textShadow: `0 0 ${12 + r * 5}px ${col}`, lineHeight: 1 }}>?</span>
+          </div>
+          <div className={"revFace" + (r >= 4 ? " foil" : "")} style={{ background: `radial-gradient(100% 70% at 50% 30%, ${col}55, transparent 80%), ${C.ink}`, border: `2px solid ${col}`, boxShadow: `0 0 ${24 + r * 12}px ${col}aa` }}>
+            <div style={{ fontSize: 11.5, fontWeight: 900, letterSpacing: 1.6, textTransform: "uppercase", color: col }}>{kindLabel}</div>
+            <div aria-hidden="true" className={open ? "revIcon" : undefined} style={{ fontSize: 84, lineHeight: 1, margin: "18px 0 14px", filter: `drop-shadow(0 0 ${10 + r * 4}px ${col})` }}>{it.icon}</div>
+            <div style={{ fontFamily: DISPLAY, fontSize: it.name.length > 18 ? 24 : 30, fontWeight: 900, lineHeight: 1.05, textAlign: "center" }}>{it.name}</div>
+            {it.rank && <div data-reveal-rank className={open ? "revStamp" : undefined} style={{ marginTop: 12, fontFamily: DISPLAY, fontSize: 26 + r * 2, fontWeight: 900, letterSpacing: 1, color: col, textTransform: "uppercase", textShadow: `0 0 ${8 + r * 4}px ${col}` }}>{it.rank.icon} {it.rank.name}</div>}
+            {it.sub && <div style={{ marginTop: 10, fontSize: 13, color: C.dim, textAlign: "center", lineHeight: 1.4 }}>{it.sub}</div>}
+          </div>
+        </div>
+      </div>
+      <div style={{ height: 96, display: "flex", alignItems: "center", justifyContent: "center", marginTop: 22, width: "100%", maxWidth: 340 }}>
+        {open
+          ? <button type="button" data-reveal-next onClick={next} className="b3d cardIn" style={{ ...bigBtn(col, "#0b0f1c"), animationDelay: ".35s" }}>{last ? T("revDone") : T("revNext")}</button>
+          : <div className="revTap" style={{ fontSize: 15, fontWeight: 800, color: col, letterSpacing: 0.4 }}>{T("revTap")}</div>}
+      </div>
+    </div>,
+    document.body
+  );
+}
+
 // ─── SESSION: SUMMARY ───────────────────────────────────────────────────────
 function Summary({ entry, xpBefore = 0, xpGained, newCh = [], newAch = [], history, onClose }) {
   const [copied, setCopied] = useState(false);
@@ -6609,6 +6698,9 @@ function Summary({ entry, xpBefore = 0, xpGained, newCh = [], newAch = [], histo
   const st = entry ? streakInfo(history, entry.date) : { n: 0 };
   const [finishLine] = useState(() => (bdayToday() ? T("bdayFinish") : pick(L.finish)));
   const text = entry ? logText(entry) : "";
+  // tests turn the card reveal off (window.__hwNoReveal) unless they test it
+  const [rev] = useState(() => (window.__hwNoReveal ? [] : revealList(entry, newAch, xpBefore, gained)));
+  const [revOn, setRevOn] = useState(rev.length > 0);
   const copy = async () => {
     try { await navigator.clipboard.writeText(text); }
     catch (_) { const t = document.createElement("textarea"); t.value = text; document.body.appendChild(t); t.select(); try { document.execCommand("copy"); } catch (__) {} document.body.removeChild(t); }
@@ -6625,7 +6717,7 @@ function Summary({ entry, xpBefore = 0, xpGained, newCh = [], newAch = [], histo
   }
   return (
     <div>
-      <Confetti />
+      {revOn ? <RewardReveal items={rev} onDone={() => setRevOn(false)} /> : <Confetti />}
       <div className="pop" style={{ fontFamily: DISPLAY, fontSize: 60, fontWeight: 900, lineHeight: 0.95, color: C.mint }}>{T("great")}</div>
       <div style={{ fontSize: 16, color: C.chalk, marginTop: 8, fontWeight: 600, lineHeight: 1.4 }}>{finishLine}</div>
       <div style={{ fontSize: 13, color: C.dim, marginTop: 4 }}>{T("dayDate", { d: entry.day, date: fmtDate(entry.date, true) })}</div>
@@ -7427,6 +7519,30 @@ export default function App() {
         @keyframes bump{0%{transform:scale(.82)}55%{transform:scale(1.12)}100%{transform:scale(1)}}
         .bump{animation:bump ${MO.t1} ${MO.spring}}
         @keyframes pop{0%{transform:scale(0);opacity:0}60%{transform:scale(1.2);opacity:1}100%{transform:scale(1);opacity:1}}
+        .revCard{position:absolute;inset:0;transform-style:preserve-3d;transition:transform .62s ${MO.pop};animation:revWob var(--wt) ease-in-out infinite alternate}
+        .revCard.on{transform:rotateY(180deg);animation:revPop .62s ${MO.pop}}
+        .revBack,.revFace{position:absolute;inset:0;border-radius:24px;backface-visibility:hidden;-webkit-backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:22px 18px;box-sizing:border-box}
+        .revFace{transform:rotateY(180deg)}
+        @keyframes revWob{from{transform:rotate(calc(var(--wob) * -1)) scale(.98)}to{transform:rotate(var(--wob)) scale(1.02)}}
+        @keyframes revPop{0%{transform:rotateY(0) scale(1)}45%{transform:rotateY(100deg) scale(1.14)}100%{transform:rotateY(180deg) scale(1)}}
+        .revRays{position:absolute;left:50%;top:50%;width:200vmax;height:200vmax;margin:-100vmax 0 0 -100vmax;border-radius:50%;-webkit-mask:radial-gradient(closest-side,#000 8%,transparent 42%);mask:radial-gradient(closest-side,#000 8%,transparent 42%);transition:opacity .5s ease;animation:revSpin var(--rs) linear infinite;pointer-events:none}
+        @keyframes revSpin{to{transform:rotate(360deg)}}
+        .revBit{position:absolute;left:0;top:0;animation:revFly var(--d) cubic-bezier(.15,.8,.3,1) .22s both}
+        @keyframes revFly{0%{transform:translate(-50%,-50%) scale(.3);opacity:1}80%{opacity:1}100%{transform:translate(calc(var(--tx) - 50%),calc(var(--ty) - 50%)) scale(1);opacity:0}}
+        .revFlash{position:fixed;inset:-50vmax;background:#fff;pointer-events:none;animation:revFlash .55s ease-out .22s both}
+        @keyframes revFlash{0%{opacity:0}15%{opacity:var(--fo)}100%{opacity:0}}
+        .revIcon{animation:revIcon .7s ${MO.spring} .3s both}
+        @keyframes revIcon{0%{transform:scale(.2) rotate(-25deg)}100%{transform:scale(1) rotate(0)}}
+        .revStamp{animation:revStamp .45s ${MO.spring} .55s both}
+        @keyframes revStamp{0%{transform:scale(2.4);opacity:0}100%{transform:scale(1);opacity:1}}
+        .revTap{animation:revTap 1.1s ease-in-out infinite alternate}
+        @keyframes revTap{from{opacity:.55}to{opacity:1}}
+        .revShake{animation:revShake .5s ease .25s}
+        @keyframes revShake{0%,100%{transform:translate(0,0)}15%{transform:translate(-7px,3px)}30%{transform:translate(6px,-4px)}45%{transform:translate(-5px,-2px)}60%{transform:translate(4px,3px)}80%{transform:translate(-2px,1px)}}
+        .foil{position:relative;overflow:hidden}.foil::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(105deg,transparent 38%,rgba(255,255,255,.16) 46%,rgba(255,255,255,.32) 50%,rgba(255,255,255,.16) 54%,transparent 62%);transform:translateX(-120%);animation:foil 3.4s ease-in-out infinite}
+        @keyframes foil{0%,55%{transform:translateX(-120%)}100%{transform:translateX(120%)}}.revFace.foil{position:absolute}
+        .nearPulse{animation:nearPulse 1.2s ease-in-out infinite alternate}
+        @keyframes nearPulse{from{opacity:.65}to{opacity:1}}
         .pop{animation:pop ${MO.t3} ${MO.spring} both}
         @keyframes cardIn{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:none}} .cardIn{animation:cardIn ${MO.t3} ${MO.pop} both}
         @keyframes barIn{from{transform:scaleX(0)}to{transform:none}} .pvBar{transform-origin:left;animation:barIn ${MO.fill} ${MO.ease} .15s both}
@@ -7461,7 +7577,7 @@ export default function App() {
         @media (max-width: 380px){.tbOut{padding-left:6px;padding-right:6px}.tbBox{padding:11px 9px 11px 13px;gap:6px}}
         @media (prefers-reduced-motion: reduce){.tbOut::before,.tbOut.fl::before,.tbPill,.tbOut.fl .tbPill{transition:none}}
         .sysEmo,.sysEmo *{font-family:${BODY_SYS}!important}
-        @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}.conf{display:none}}
+        @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}.conf,.revBit,.revFlash{display:none}}
       `}</style>
       {!loaded ? (
         <div style={{ padding: 40, display: "flex", flexDirection: "column", alignItems: "center", gap: 12, color: C.dim }}><Logo size={64} />{T("loading")}</div>
