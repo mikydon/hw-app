@@ -31,7 +31,9 @@
 // (1.5.0, Michael: requests showed up only after switching tabs).
 import { initializeApp } from "firebase/app";
 import { initializeAuth, indexedDBLocalPersistence, browserLocalPersistence, browserPopupRedirectResolver, GoogleAuthProvider,
-  signInWithPopup, signInWithCredential, signOut as fbSignOut, onAuthStateChanged, reauthenticateWithPopup, reauthenticateWithCredential } from "firebase/auth";
+  signInWithPopup, signInWithCredential, signOut as fbSignOut, onAuthStateChanged, reauthenticateWithPopup, reauthenticateWithCredential,
+  signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, sendEmailVerification, updatePassword,
+  linkWithCredential, EmailAuthProvider } from "firebase/auth";
 import { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, query, where, orderBy, limit, limitToLast, getDocs, writeBatch, addDoc, updateDoc, serverTimestamp, onSnapshot, deleteField, arrayUnion, arrayRemove } from "firebase/firestore";
 import { Capacitor } from "@capacitor/core";
 import { CODE_CHARS, nickKey, cleanCode, chatId, PUSH_URL } from "./cloud-shared.js";
@@ -58,6 +60,7 @@ function boot() {
   onAuthStateChanged(auth, u => { user = u ? { uid: u.uid } : null; subs.forEach(f => f(user)); });
 }
 const d = (...p) => doc(db, ...p);
+let emailPw = null;
 const uid = () => { if (!user) throw Object.assign(new Error("signed out"), { code: "signed-out" }); return user.uid; };
 async function googleCredential() {
   const r = await FirebaseAuthentication.signInWithGoogle({ skipNativeAuth: true });
@@ -87,15 +90,53 @@ export const impl = {
   init() { boot(); return new Promise(res => { const off = onAuthStateChanged(auth, u => { off(); res(u ? { uid: u.uid } : null); }); }); },
   onUser(fn) { subs.add(fn); return () => subs.delete(fn); },
   user: () => user,
-  async signIn() {
+  // 1.7.1 (Michael, Oct 18: Google Play's reviewer couldn't sign in, a Google account always asks a new device for a
+  // code; then "for everyone"): e-mail + password next to Google: sign in, or create an account (`create`, a
+  // confirmation e-mail goes out in the app's language). Firebase keeps only a hash of the password; the app keeps it
+  // in memory for this session only, to confirm "delete account"; never saved.
+  async signIn(cred) {
     boot();
-    if (native()) await signInWithCredential(auth, await googleCredential());
+    if (cred && cred.email) {
+      const em = String(cred.email).trim();
+      if (cred.lang) auth.languageCode = cred.lang;
+      if (cred.create) { const r = await createUserWithEmailAndPassword(auth, em, cred.pw || ""); sendEmailVerification(r.user).catch(() => {}); }
+      else await signInWithEmailAndPassword(auth, em, cred.pw || "");
+      emailPw = cred.pw || "";
+    }
+    else if (native()) await signInWithCredential(auth, await googleCredential());
     else await signInWithPopup(auth, new GoogleAuthProvider());
     user = { uid: auth.currentUser.uid };
     // the Google name only fills in the nickname field at the first start (it isn't stored in the cloud)
     return { ...user, name: auth.currentUser.displayName || "" };
   },
-  async signOut() { boot(); await nativeSignOut(); await fbSignOut(auth); user = null; subs.forEach(f => f(null)); },
+  // How this account signs in (Settings → Password)
+  authInfo() {
+    const cu = auth && auth.currentUser; if (!cu) return null;
+    const ps = cu.providerData.map(x => x.providerId);
+    return { email: cu.email || "", google: ps.includes("google.com"), password: ps.includes("password"), verified: !!cu.emailVerified };
+  },
+  // "Forgot password": Firebase e-mails a link to its page where a new password is set (also sent for unknown
+  // addresses' sake silently: the answer never says whether an account exists).
+  async resetPw(email, lang) { boot(); if (lang) auth.languageCode = lang; await sendPasswordResetEmail(auth, String(email).trim()); },
+  async resendVerify(lang) { boot(); if (lang) auth.languageCode = lang; await sendEmailVerification(auth.currentUser); },
+  // Change: the old password confirms it first. Add (Google-only account): a password for the same e-mail.
+  async changePw(oldPw, newPw) {
+    const cu = auth.currentUser;
+    await reauthenticateWithCredential(cu, EmailAuthProvider.credential(cu.email, oldPw));
+    await updatePassword(cu, newPw); emailPw = newPw;
+  },
+  async addPw(newPw) {
+    const cu = auth.currentUser, cred = () => EmailAuthProvider.credential(cu.email, newPw);
+    try { await linkWithCredential(cu, cred()); }
+    catch (e) {
+      if (!/requires-recent-login/.test(String(e && e.code))) throw e;
+      if (native()) await reauthenticateWithCredential(cu, await googleCredential());
+      else await reauthenticateWithPopup(cu, new GoogleAuthProvider());
+      await linkWithCredential(cu, cred());
+    }
+    emailPw = newPw;
+  },
+  async signOut() { boot(); emailPw = null; await nativeSignOut(); await fbSignOut(auth); user = null; subs.forEach(f => f(null)); },
   async getProfile(u = uid()) { const s = await getDoc(d("profiles", u)); return s.exists() ? { uid: u, ...s.data() } : null; },
   // First time: reserve the nickname and a friend code, then the profile. Nickname taken → error code "nick-taken".
   async createProfile(p) {
@@ -263,9 +304,13 @@ export const impl = {
   // a sign-in that is recent, and asking later could leave the data gone but the account still signed in when the
   // confirmation was cancelled). Then the data, then the account, then signed out here, whatever the native side does.
   async deleteAccount(p) {
-    const me = uid();
-    if (native()) await reauthenticateWithCredential(auth.currentUser, await googleCredential());
-    else await reauthenticateWithPopup(auth.currentUser, new GoogleAuthProvider());
+    const me = uid(), cu = auth.currentUser, ps = cu.providerData.map(x => x.providerId), pw = (p && p.pw) || emailPw;
+    // confirm first: the password (typed again after a restart) or Google; nothing is deleted without it
+    if (ps.includes("password") && (pw || !ps.includes("google.com"))) {
+      if (!pw) throw Object.assign(new Error("password needed"), { code: "need-pw" });
+      await reauthenticateWithCredential(cu, EmailAuthProvider.credential(cu.email, pw));
+    } else if (native()) await reauthenticateWithCredential(cu, await googleCredential());
+    else await reauthenticateWithPopup(cu, new GoogleAuthProvider());
     const fr = await getDocs(collection(db, "friends", me, "list")).catch(() => ({ docs: [] }));
     const inbox = await getDocs(collection(db, "inbox", me, "from")).catch(() => ({ docs: [] }));
     // Chats: every message and the chat itself (members may delete; the other person loses the chat too).
