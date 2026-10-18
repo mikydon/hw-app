@@ -190,6 +190,10 @@ await t("since must be a date (YYYY-MM-DD)", false, () => setDoc(doc(as("erin"),
 await t("since may be empty (no workouts yet)", true, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ since: null })));
 await t("badges must be a small map", false, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ ach: Object.fromEntries(Array.from({ length: 41 }, (_, i) => ["a" + i, 1])) })));
 await t("timestamps come from the server", false, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ ts: new Date(0) })));
+await t("showcase + badge values + records are fine", true, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ av: { workouts: 13, streak: 9 }, show: ["rk:k1", "ach3:workouts,streak,reps", "st:reps", ""], prs: 4 })));
+await t("a showcase over 10 fields is refused", false, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ show: Array.from({ length: 11 }, () => "st:reps") })));
+await t("badge values must be a small map", false, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ av: Object.fromEntries(Array.from({ length: 41 }, (_, i) => ["a" + i, 1])) })));
+await t("records must be a whole number", false, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ prs: "4" })));
 await t("frank can't write erin's card", false, () => setDoc(doc(as("frank"), "cards", "erin"), cardDoc()));
 await t("signed-out visitor can't read a card", false, () => getDoc(card(null)));
 await t("vis friends: her friend frank reads it", true, () => getDoc(card("frank")));

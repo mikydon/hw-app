@@ -14,7 +14,8 @@
 //   friends/{me}/list/{uid}  {ts}: written for both people in one batch when a request is accepted
 //   backups/{uid}            {json, ts, n}: the automatic cloud backup (owner only)
 //   reports/{auto id}        {by, about, reason, ts}: a reported profile (create only; read in the console)
-//   cards/{uid}              {vis, lvl, xp, streak, best, n, reps, min, since, ach: {badge: tier}, rk: {exercise: best}, ts}:
+//   cards/{uid}              {vis, lvl, xp, streak, best, n, reps, min, prs, since, ach: {badge: tier}, av: {badge: value},
+//                            rk: {exercise: best}, show: [showcase fields], ts}:
 //                            the profile others can open (1.7.0, like Steam); vis = friends | all | none decides who
 //   blocks/{uid}             {b: [uids], ts}: who you blocked (1.7.0, owner only); keeps them off your card; your other
 //                            devices read it too
@@ -68,7 +69,7 @@ async function googleCredential() {
 const nativeSignOut = () => (native() ? Promise.race([FirebaseAuthentication.signOut().catch(() => {}), new Promise(r => setTimeout(r, 3000))]) : Promise.resolve());
 const pick = (o, keys) => Object.fromEntries(keys.filter(k => o[k] !== undefined).map(k => [k, o[k]]));
 const PROFILE_KEYS = ["nick", "pfp", "xp", "lvl", "streak", "n", "code", "global"];
-const CARD_KEYS = ["lvl", "xp", "streak", "best", "n", "reps", "min", "since", "ach", "rk"];
+const CARD_KEYS = ["lvl", "xp", "streak", "best", "n", "reps", "min", "since", "ach", "rk", "av", "show", "prs"];
 async function profilesOf(uids) {
   const out = await Promise.all(uids.map(u => getDoc(d("profiles", u)).then(s => (s.exists() ? { uid: u, ...s.data() } : { uid: u, missing: true })).catch(() => ({ uid: u, missing: true }))));
   return out;

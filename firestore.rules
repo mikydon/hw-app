@@ -45,9 +45,10 @@ service cloud.firestore {
     }
     // Profile cards (1.7.0, like a Steam profile): level, streaks, workouts, reps, time, badge tiers and exercise ranks.
     // vis = who may open it: 'friends' (default), 'all' (anyone signed in) or 'none' (only you). People you blocked
-    // (blocks/{uid}) never can. A card is written in parts (stats, or only vis), so every field is optional.
+    // (blocks/{uid}) never can. A card is written in parts (stats, or only vis), so every field is optional. av = badge
+    // values (progress), show = the showcase fields (1.7.0).
     function cardOk() {
-      return only(['vis', 'lvl', 'xp', 'streak', 'best', 'n', 'reps', 'min', 'since', 'ach', 'rk', 'ts'])
+      return only(['vis', 'lvl', 'xp', 'streak', 'best', 'n', 'reps', 'min', 'prs', 'since', 'ach', 'av', 'rk', 'show', 'ts'])
         && data().get('vis', 'friends') in ['friends', 'all', 'none']
         && intIn(data().get('lvl', 1), 1, 100000) && intIn(data().get('xp', 0), 0, 100000000)
         && intIn(data().get('streak', 0), 0, 100000) && intIn(data().get('best', 0), 0, 100000)
@@ -56,6 +57,9 @@ service cloud.firestore {
         && (data().get('since', null) == null || (data().since is string && data().since.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')))
         && data().get('ach', {}) is map && data().get('ach', {}).size() <= 40
         && data().get('rk', {}) is map && data().get('rk', {}).size() <= 40
+        && data().get('av', {}) is map && data().get('av', {}).size() <= 40
+        && data().get('show', []) is list && data().get('show', []).size() <= 10
+        && intIn(data().get('prs', 0), 0, 1000000)
         && nowTs();
     }
     function notBlockedBy(owner) {
