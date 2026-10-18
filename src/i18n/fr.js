@@ -588,6 +588,7 @@ export default {
     achTiers: "{n}/{max} niveaux",
     achCount: "{n}/{max} badges",
     achLocked: "verrouillé",
+    achLockedList: "Pas encore obtenus ({n})",
     achMax: "Niveau maximal. Chapeau ! 🎩",
     achNext: "Suivant : {rank} –",
     achUp: "{name} : {rank}",

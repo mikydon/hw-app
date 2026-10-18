@@ -588,6 +588,7 @@ export default {
     achTiers: "{n}/{max} レベル",
     achCount: "{n}/{max} バッジ",
     achLocked: "未獲得",
+    achLockedList: "未獲得（{n}）",
     achMax: "最高レベル。脱帽です！🎩",
     achNext: "次：{rank} –",
     achUp: "{name}：{rank}",

@@ -588,6 +588,7 @@ export default {
     achTiers: "{n}/{max} szint",
     achCount: "{n}/{max} jelvény",
     achLocked: "zárolva",
+    achLockedList: "Még nincs meg ({n})",
     achMax: "Legmagasabb szint. Le a kalappal! 🎩",
     achNext: "Következő: {rank} –",
     achUp: "{name}: {rank}",

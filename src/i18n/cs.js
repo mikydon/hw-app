@@ -588,6 +588,7 @@ export default {
     achTiers: "{n}/{max} úrovní",
     achCount: "{n}/{max} odznaků",
     achLocked: "zamčeno",
+    achLockedList: "Ještě nezískané ({n})",
     achMax: "Nejvyšší úroveň. Klobouk dolů! 🎩",
     achNext: "Další: {rank} –",
     achUp: "{name}: {rank}",

@@ -588,6 +588,7 @@ export default {
     achTiers: "{n}/{max} Stufen",
     achCount: "{n}/{max} Abzeichen",
     achLocked: "gesperrt",
+    achLockedList: "Noch nicht verdient ({n})",
     achMax: "Höchste Stufe. Hut ab! 🎩",
     achNext: "Nächste: {rank} –",
     achUp: "{name}: {rank}",

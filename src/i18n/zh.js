@@ -588,6 +588,7 @@ export default {
     achTiers: "{n}/{max} 级",
     achCount: "{n}/{max} 枚徽章",
     achLocked: "未解锁",
+    achLockedList: "尚未获得（{n}）",
     achMax: "最高级。佩服！🎩",
     achNext: "下一级：{rank} –",
     achUp: "{name}：{rank}",

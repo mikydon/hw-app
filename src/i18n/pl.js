@@ -588,6 +588,7 @@ export default {
     achTiers: "{n}/{max} poziomów",
     achCount: "{n}/{max} odznak",
     achLocked: "zablokowane",
+    achLockedList: "Jeszcze nie zdobyte ({n})",
     achMax: "Najwyższy poziom. Czapki z głów! 🎩",
     achNext: "Następny: {rank} –",
     achUp: "{name}: {rank}",

@@ -588,6 +588,7 @@ export default {
     achTiers: "{n}/{max} niveles",
     achCount: "{n}/{max} insignias",
     achLocked: "bloqueado",
+    achLockedList: "Aún sin conseguir ({n})",
     achMax: "Nivel máximo. ¡Chapó! 🎩",
     achNext: "Siguiente: {rank} –",
     achUp: "{name}: {rank}",

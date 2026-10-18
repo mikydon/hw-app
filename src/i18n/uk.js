@@ -588,6 +588,7 @@ export default {
     achTiers: "{n}/{max} рівнів",
     achCount: "{n}/{max} значків",
     achLocked: "закрито",
+    achLockedList: "Ще не здобуті ({n})",
     achMax: "Найвищий рівень. Респект! 🎩",
     achNext: "Далі: {rank} –",
     achUp: "{name}: {rank}",

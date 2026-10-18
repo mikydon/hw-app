@@ -588,6 +588,7 @@ export default {
     achTiers: "{n}/{max} 단계",
     achCount: "{n}/{max} 배지",
     achLocked: "잠김",
+    achLockedList: "아직 얻지 못함 ({n})",
     achMax: "최고 단계. 존경해요! 🎩",
     achNext: "다음: {rank} –",
     achUp: "{name}: {rank}",

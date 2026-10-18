@@ -4161,8 +4161,9 @@ function HistoryTab({ history, onDelete, onSaveEntry, editDate, onEditOpened }) 
 // ─── TAB 3: PROFILE ──────────────────────────────────────────────────────────
 // The exercise ranks box (Profile, and someone's profile card in 1.7.0): one quiet tile per program exercise with
 // its rank and best set. bests = {exercise id: best or null}; onPick opens the exercise (own profile only).
-function RanksBox({ bests, onPick, bare }) {
-  const ids = Object.keys(RANK_AT);
+function RanksBox({ bests, onPick, bare, only, anim = 0 }) {
+  // only = just the exercises with a result (someone else's profile: no empty tiles); anim = stagger start (ms)
+  const ids = Object.keys(RANK_AT).filter(id => !only || (bests[id] !== null && bests[id] !== undefined));
   return (
     <div data-ranks-box style={{ ...(bare ? {} : { ...card, padding: 8 }), display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
       {ids.map((id, ri) => {
@@ -4170,7 +4171,7 @@ function RanksBox({ bests, onPick, bare }) {
         const r = RANKS[rankIdx(id, b)];
         const Tag = onPick ? "button" : "div";
         return (
-          <Tag key={id} data-rank-tile={id} onClick={onPick ? () => onPick(id) : undefined} style={{ ...(onPick ? btnBase : {}), textAlign: "left", background: SOFT(), border: "none", borderRadius: 12, padding: "10px 11px", color: C.chalk, display: "flex", flexDirection: "column", gridColumn: ids.length % 2 && ri === ids.length - 1 ? "1 / -1" : undefined }}>
+          <Tag key={id} data-rank-tile={id} className={anim ? "cardIn" : undefined} onClick={onPick ? () => onPick(id) : undefined} style={{ ...(anim ? { animationDelay: `${anim + ri * 35}ms` } : {}), ...(onPick ? btnBase : {}), textAlign: "left", background: SOFT(), border: "none", borderRadius: 12, padding: "10px 11px", color: C.chalk, display: "flex", flexDirection: "column", gridColumn: ids.length % 2 && ri === ids.length - 1 ? "1 / -1" : undefined }}>
             <div style={{ display: "flex", alignItems: "flex-start", gap: 6, width: "100%" }}>
               <span style={{ flex: 1, minWidth: 0, fontSize: 13, fontWeight: 700, lineHeight: 1.25 }}>{EX[id].name}</span>
               <span aria-hidden="true" style={{ fontSize: 16, lineHeight: 1, flexShrink: 0 }}>{r.icon}</span>
@@ -4191,6 +4192,7 @@ function ProfileTab({ history, profile, setProfile, onFreeze, kcal, acct, vis, o
   const [howEx, setHowEx] = useState(null);
   const [err, setErr] = useState("");
   const [preview, setPreview] = useState(false);
+  const [lockedOpen, setLockedOpen] = useState(false);
   const [visErr, setVisErr] = useState("");
   const today = dateKey();
   const xp = totalXP(history);
@@ -4292,13 +4294,14 @@ function ProfileTab({ history, profile, setProfile, onFreeze, kcal, acct, vis, o
       </Sect>
 
       <Sect title={T("badgesTitle")} flatTitle meta={<>{T("achCount", { n: ach.filter(a => a.step).length, max: ach.length })} · {T("achTiers", { n: ach.reduce((x, a) => x + a.step, 0), max: ach.reduce((x, a) => x + a.at.length, 0) })}</>}>
-      <div data-badges-box style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
-        {ach.map((a, ai) => {
+      {/* 1.7.0 (Michael: nothing that isn't needed): earned badges first; the ones still locked wait under one row */}
+      {(() => {
+        const tile = (a, ai, list) => {
           const r = a.tier ? RANKS[a.tier - 1] : null;
           const prev = a.step ? a.at[a.step - 1] : 0;
           const pct = a.next === null ? 100 : Math.max(0, Math.min(100, ((a.v - prev) / (a.next - prev)) * 100));
           return (
-            <div key={a.k} data-ach={a.k} data-tier={a.tier} style={{ background: SOFT(), borderRadius: 12, padding: "10px 11px", gridColumn: ach.length % 2 && ai === ach.length - 1 ? "1 / -1" : undefined }}>
+            <div key={a.k} data-ach={a.k} data-tier={a.tier} style={{ background: SOFT(), borderRadius: 12, padding: "10px 11px", gridColumn: list.length % 2 && ai === list.length - 1 ? "1 / -1" : undefined }}>
               <div style={{ display: "flex", alignItems: "flex-start", gap: 6 }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 13, fontWeight: 800, color: C.chalk, lineHeight: 1.2 }}>{a.name}</div>
@@ -4312,8 +4315,24 @@ function ProfileTab({ history, profile, setProfile, onFreeze, kcal, acct, vis, o
               <div style={{ fontSize: 11, color: C.dim, marginTop: 5, lineHeight: 1.35 }}>{a.next === null ? T("achMax") : `${T("achNext", { rank: RANKS[a.nextRank].name })} ${a.desc}`}</div>
             </div>
           );
-        })}
-      </div>
+        };
+        const won = ach.filter(a => a.step), locked = ach.filter(a => !a.step);
+        return (
+          <>
+            {won.length > 0 && <div data-badges-box style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>{won.map((a, i) => tile(a, i, won))}</div>}
+            {locked.length > 0 && (
+              <>
+                <button data-badges-locked aria-expanded={lockedOpen} onClick={() => { sfxTap(); setLockedOpen(o => !o); }} style={{ ...btnBase, width: "100%", marginTop: won.length ? 8 : 0, padding: "10px 12px", borderRadius: 12, background: "transparent", border: `1px dashed ${C.line}`, color: C.dim, fontSize: 13, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <span>🔒 {T("achLockedList", { n: locked.length })}</span><Chevron open={lockedOpen} />
+                </button>
+                <Expand open={lockedOpen}>
+                  <div data-badges-box={won.length ? undefined : ""} style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, paddingTop: 8 }}>{locked.map((a, i) => tile(a, i, locked))}</div>
+                </Expand>
+              </>
+            )}
+          </>
+        );
+      })()}
       </Sect>
 
     </div>
@@ -4564,6 +4583,18 @@ function PersonSheet({ p, isFriend, onAdd, onChat, onRemove, onBlock, onReport, 
   );
 }
 
+// A number that counts up to its value when it first shows (profile tiles, 1.7.0); instant with reduced motion.
+function CountUp({ n, ms = 650 }) {
+  const [v, setV] = useState(() => (reducedMotion() ? n : 0));
+  useEffect(() => {
+    if (reducedMotion()) { setV(n); return; }
+    let raf, t0;
+    const step = t => { if (!t0) t0 = t; const k = Math.min(1, (t - t0) / ms); setV(Math.round(n * (1 - Math.pow(1 - k, 3)))); if (k < 1) raf = requestAnimationFrame(step); };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [n]);
+  return nf(v);
+}
 // Someone's profile (1.7.0, like a Steam profile): level, streaks, workouts, reps, time, exercise ranks and badges.
 // Loaded from cards/{uid}; the rules decide whether we may open it (friends only / everyone / only them, blocked).
 // self + card = the preview of your own profile, made from this phone's data (nothing to load).
@@ -4596,37 +4627,52 @@ function ProfileView({ p, isFriend, self, card: given, onClose }) {
           </div>
         )}
         {st.err && <div role="alert" style={{ fontSize: 13, color: "#ff8a80", marginTop: 14 }}>{st.err}</div>}
-        {c && (
+        {c && (() => {
+          // 1.7.0 (Michael: "nech tam nie sú elementy zbytočne"): only what this person really has. Level and workouts
+          // always; streaks, reps and time once they are above zero; exercises with a result; badges they earned.
+          const tiles = [
+            ["pv-level", T("level"), "⚡", c.lvl, C.sky, T("pvXp", { n: nf(c.xp) }), true],
+            ["pv-n", T("statTrainings"), "🏋️", c.n, null, null, true],
+            ["pv-streak", T("streak"), "🔥", c.streak, "#ffa94d", null, c.streak > 0],
+            ["pv-best", T("statBestStreak"), "🏆", c.best, null, null, c.best > 0],
+            ["pv-reps", T("statReps"), "📊", c.reps, null, null, c.reps > 0],
+            ["pv-time", T("pvTime"), "⏱️", c.min, null, null, c.min > 0],
+          ].filter(x => x[6]);
+          const ranked = Object.keys(RANK_AT).filter(id => c.rk[id] !== null);
+          let d = 0; const next = () => (d += 40);
+          return (
           <>
             <div data-pv-stats style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 16 }}>
-              <StatTile compact data="pv-level" label={T("level")} icon="⚡" value={c.lvl} color={C.sky} sub={T("pvXp", { n: nf(c.xp) })}>
-                <div style={{ height: 5, background: `${C.chalk}14`, borderRadius: 99, marginTop: 8, overflow: "hidden" }}><div style={{ height: "100%", width: `${(lv.into / lv.need) * 100}%`, background: C.sky, borderRadius: 99 }} /></div>
-              </StatTile>
-              <StatTile compact data="pv-streak" label={T("streak")} icon="🔥" value={c.streak} color="#ffa94d" />
-              <StatTile compact data="pv-best" label={T("statBestStreak")} icon="🏆" value={c.best} />
-              <StatTile compact data="pv-n" label={T("statTrainings")} icon="🏋️" value={c.n} />
-              <StatTile compact data="pv-reps" label={T("statReps")} icon="📊" value={nf(c.reps)} />
-              <StatTile compact data="pv-time" label={T("pvTime")} icon="⏱️" value={fmtMins(c.min)} />
+              {tiles.map(([data, label, icon, v, color, sub], i) => (
+                <div key={data} className="cardIn" style={{ animationDelay: `${next()}ms`, gridColumn: tiles.length % 2 && i === tiles.length - 1 ? "1 / -1" : undefined, display: "grid" }}>
+                  <StatTile compact data={data} label={label} icon={icon} value={data === "pv-time" ? fmtMins(c.min) : <CountUp n={v} />} color={color} sub={sub}>
+                    {data === "pv-level" && <div style={{ height: 5, background: `${C.chalk}14`, borderRadius: 99, marginTop: 8, overflow: "hidden" }}><div className="pvBar" style={{ height: "100%", width: `${(lv.into / lv.need) * 100}%`, background: C.sky, borderRadius: 99 }} /></div>}
+                  </StatTile>
+                </div>
+              ))}
             </div>
-            <SectionHead title={T("ranksTitle")} meta={T("achTiers", { n: rankSum, max: Object.keys(RANK_AT).length * (RANKS.length - 1) })} />
-            <RanksBox bests={c.rk} />
-            <SectionHead title={T("badgesTitle")} meta={T("achCount", { n: got.length, max: shown.length })} />
-            {!got.length ? <div data-pv-nobadges style={{ fontSize: 13, color: C.dim, padding: "2px 4px" }}>{T("pvNoBadges")}</div> : (
+            {ranked.length > 0 && <>
+              <SectionHead title={T("ranksTitle")} meta={T("achTiers", { n: rankSum, max: Object.keys(RANK_AT).length * (RANKS.length - 1) })} />
+              <RanksBox bests={c.rk} only anim={next()} />
+            </>}
+            {got.length > 0 && <>
+              <SectionHead title={T("badgesTitle")} meta={T("achCount", { n: got.length, max: shown.length })} />
               <div data-pv-badges style={{ ...card, padding: 8, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
                 {got.map((a, i) => { const r = RANKS[c.ach[a.k] - 1]; return (
-                  <div key={a.k} data-pv-ach={a.k} data-tier={c.ach[a.k]} style={{ background: SOFT(), borderRadius: 12, padding: "10px 11px", display: "flex", alignItems: "flex-start", gap: 6, gridColumn: got.length % 2 && i === got.length - 1 ? "1 / -1" : undefined }}>
+                  <div key={a.k} data-pv-ach={a.k} data-tier={c.ach[a.k]} className="cardIn" style={{ animationDelay: `${d + 80 + ranked.length * 35 + i * 35}ms`, background: SOFT(), borderRadius: 12, padding: "10px 11px", display: "flex", alignItems: "flex-start", gap: 6, gridColumn: got.length % 2 && i === got.length - 1 ? "1 / -1" : undefined }}>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: 13, fontWeight: 800, color: C.chalk, lineHeight: 1.2 }}>{L.ach[a.k][0]}</div>
                       <div style={{ fontSize: 12, fontWeight: 700, color: r.color, marginTop: 2 }}>{r.icon} {r.name}</div>
                     </div>
-                    <div aria-hidden="true" style={{ fontSize: 20, lineHeight: 1, flexShrink: 0 }}>{a.icon}</div>
+                    <div aria-hidden="true" style={{ fontSize: 22, lineHeight: 1, flexShrink: 0 }}>{a.icon}</div>
                   </div>
                 ); })}
               </div>
-            )}
+            </>}
+            {!ranked.length && !got.length && <div data-pv-nobadges style={{ fontSize: 13, color: C.dim, textAlign: "center", marginTop: 16 }}>{T("pvNoBadges")}</div>}
             {!self && c.ts > 0 && <div style={{ fontSize: 12, color: C.dim, marginTop: 14, textAlign: "center" }}>{T("pvUpdated", { when: fmtWhen(c.ts) })}</div>}
           </>
-        )}
+          ); })()}
       </div>
     </Sheet>
   );
@@ -6962,6 +7008,7 @@ export default function App() {
         @keyframes pop{0%{transform:scale(0);opacity:0}60%{transform:scale(1.2);opacity:1}100%{transform:scale(1);opacity:1}}
         .pop{animation:pop ${MO.t3} ${MO.spring} both}
         @keyframes cardIn{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:none}} .cardIn{animation:cardIn ${MO.t3} ${MO.pop} both}
+        @keyframes barIn{from{transform:scaleX(0)}to{transform:none}} .pvBar{transform-origin:left;animation:barIn ${MO.fill} ${MO.ease} .15s both}
         @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
         .pulse{animation:pulse .5s ease-in-out infinite}
         @keyframes wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-14deg)}75%{transform:rotate(14deg)}}
