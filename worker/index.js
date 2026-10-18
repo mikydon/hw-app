@@ -130,7 +130,7 @@ export async function notify({ kind, to, from, sa, fetchFn = fetch, now = Date.n
     const r = await fetchFn(`https://fcm.googleapis.com/v1/projects/${PROJECT}/messages:send`, {
       method: "POST", headers: { authorization: "Bearer " + tok, "content-type": "application/json" },
       body: JSON.stringify({ message: { token: t, notification: { title, body }, data,
-        android: { priority: "HIGH", notification: { channel_id: "social", tag: data.cid || kind + "_" + from, color: "#FFD23F", icon: "ic_stat_hw" } } } }),
+        android: { priority: "HIGH", notification: { channel_id: "social", tag: data.cid || kind + "_" + from, color: "#A78BFA", icon: "ic_stat_hw" } } } }),
     });
     if (r.ok) { sent++; keep.push(t); continue; }
     const e = await r.json().catch(() => ({}));

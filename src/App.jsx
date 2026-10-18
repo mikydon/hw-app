@@ -16,8 +16,8 @@ const C = {
   line: "#2c4679",
   chalk: "#eef2ff",
   dim: "#93a3c9",
-  signal: "#ffd23f",
-  signalInk: "#1d1700",
+  signal: "#a78bfa", // 1.7.0 (Michael, Oct 18: "žltá je taká meh"): violet instead of yellow (#ffd23f), in every theme
+  signalInk: "#170a38",
   mint: "#5fe3a1",
   sky: "#7cc4ff",
 };
@@ -886,10 +886,27 @@ function RankLadder({ id, best }) {
 
 // ─── SHARED UI ──────────────────────────────────────────────────────────────
 const btnBase = { border: "none", cursor: "pointer", fontFamily: BODY, fontWeight: 700, borderRadius: 14 };
-const EDGE = { [C.signal]: "#c29300", [C.chalk]: "#8e9cc2", [C.panelHi]: "#0f2147", [C.mint]: "#2b9e66", "#e62117": "#9b120c" };
-function applyTheme(id) {
+const EDGE = { [C.signal]: "#6f4fd6", [C.chalk]: "#8e9cc2", [C.panelHi]: "#0f2147", [C.mint]: "#2b9e66", "#e62117": "#9b120c" };
+// 1.7.0 (Michael, Oct 18: "žltá je taká meh" → "nech si môžu vybrať z viacerých"): the main colour (buttons, Start,
+// highlights) is a choice in Settings → Appearance, violet by default; yellow was the colour until 1.6.x.
+// [colour, text on it, darker edge of 3D buttons]; every one has ≥ 4.5 contrast with its text and on the dark themes.
+// Michael (Oct 18): the other colours follow the choice so nothing looks alike: done/workouts (mint) and the calorie
+// colours (logged / target hit) move away from the main colour when they would be close to it.
+const ACCENTS = {
+  violet: { c: ["#a78bfa", "#170a38", "#6f4fd6"] },
+  yellow: { c: ["#ffd23f", "#1d1700", "#c29300"] },
+  pink:   { c: ["#ff5fa2", "#2b0716", "#c4336f"] },
+  cyan:   { c: ["#2ee6d6", "#00221f", "#14a397"], mint: ["#b6ea4f", "#7aa62a"] },
+  orange: { c: ["#ff9f43", "#2a1300", "#c46a12"], kc: ["#ff5fa2", "#ffb8d6"] },
+  coral:  { c: ["#ff6b6b", "#2b0707", "#c43c3c"], kc: ["#ffc53d", "#ffe9a8"] },
+};
+function applyTheme(id, accent) {
   const t = THEMES[id] || THEMES.navy;
   Object.keys(t).forEach(k => { if (k !== "edge") C[k] = t[k]; });
+  const a = ACCENTS[accent] || ACCENTS.violet, m = a.mint || ["#5fe3a1", "#2b9e66"], k = a.kc || ["#ff8c1a", "#ffd98a"];
+  C.signal = a.c[0]; C.signalInk = a.c[1]; EDGE[a.c[0]] = a.c[2];
+  C.mint = m[0]; EDGE[m[0]] = m[1];
+  KC_HIT = k[0]; KC_LOG = k[1];
   EDGE[C.panelHi] = t.edge;
   EDGE[C.chalk] = "#8e9cc2";
   try {
@@ -1309,8 +1326,9 @@ const stepBtn = () => ({ ...btnBase, width: 64, height: 64, borderRadius: 99, ba
 // Section title row: the title on the left, an optional quiet count/chip on the right (same on every screen).
 const SECT_HEAD = { display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 };
 const sectMeta = meta => meta ? <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: 0, textTransform: "none", color: C.dim, opacity: 1, whiteSpace: "nowrap" }}>{meta}</span> : null;
-function Sect({ title, meta, children, style, titlePad, accent, ...rest }) {
-  if (LOOK === "flat") return <div {...rest} style={{ marginTop: 18, ...style }}>{children}</div>;
+function Sect({ title, meta, children, style, titlePad, accent, flatTitle, ...rest }) {
+  // flat = no boxes; flatTitle (1.7.0: History, Profile, Settings) keeps the title as a quiet label above the content
+  if (LOOK === "flat") return <div {...rest} style={{ marginTop: 18, ...style, ...(flatTitle ? { padding: 0 } : {}) }}>{flatTitle && title && <div style={{ ...sectionTitle, margin: "4px 4px 8px", ...SECT_HEAD }}><span>{title}</span>{sectMeta(meta)}</div>}{children}</div>;
   if (LOOK === "liquid") return (
     <section {...rest} data-sect style={{ ...LIQUID(), padding: "15px 16px", marginTop: 12, ...style }}>
       {title && <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: C.chalk, opacity: 0.7, marginBottom: 10, padding: titlePad || 0, ...SECT_HEAD }}><span>{title}</span>{sectMeta(meta)}</div>}
@@ -1339,6 +1357,11 @@ function Sect({ title, meta, children, style, titlePad, accent, ...rest }) {
       {children}
     </section>
   );
+}
+// 1.7.0 (polish in the style of the looks): a box of full-width rows (Settings, History, Account) with its title inside,
+// like the sections on Home, so every look (cards, tiles, glass, Liquid glass, accent bars, flat) applies to them too.
+function ListSect({ title, meta, children, style, ...rest }) {
+  return <Sect title={title} meta={meta} flatTitle titlePad="0 16px" style={{ padding: "14px 0 2px", ...style }} {...rest}>{children}</Sect>;
 }
 
 // ─── EXPANDER (1.5.5; 1.5.8 rebuilt for speed, Michael: "šípky sekajú, ako po fotkách", wants 100+ fps) ──────
@@ -3219,7 +3242,8 @@ function kcalNow(history, day = dateKey()) {
 }
 // Calories are amber everywhere (Michael, Oct 10: workouts green, calories a different colour):
 // logged = soft amber, target hit = solid amber with ✓.
-const KC_HIT = "#ff8c1a", KC_LOG = "#ffd98a";
+// (set by applyTheme: they change with the main colour, 1.7.0)
+var KC_HIT = "#ff8c1a", KC_LOG = "#ffd98a";
 // Days in a row with calories logged, up to today (today counts once something is logged; until then the streak
 // from yesterday still stands). hits = how many of them hit the target.
 function kcalStreak(history) {
@@ -3805,7 +3829,7 @@ function MonthCalendar({ history }) {
   const count = Object.keys(byDate).filter(k => k.startsWith(`${y}-${pad(m + 1)}`)).length;
   const shift = n => { sfxTap(); const d = new Date(y, m + n, 1); setYm([d.getFullYear(), d.getMonth()]); };
   return (
-    <div style={{ ...card, padding: "14px 14px 12px" }}>
+    <Sect data-month-cal style={{ padding: "14px 14px 12px", marginTop: 0 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
         <button onClick={() => shift(-1)} aria-label={T("prevMonth")} style={{ ...ghostBtn, padding: "4px 12px", fontSize: 16 }}>‹</button>
         <div style={{ textAlign: "center" }}>
@@ -3844,7 +3868,7 @@ function MonthCalendar({ history }) {
         })}
       </div>
       <CalLegend />
-    </div>
+    </Sect>
   );
 }
 
@@ -3872,7 +3896,7 @@ function ProgressChart({ history }) {
   const unit = EX[sel].type === "time" ? " s" : "";
   const nextAt = at.find(v => v > Math.max(...vals));
   return (
-    <div style={{ ...card, padding: "14px 14px 10px" }}>
+    <Sect title={T("progress")} flatTitle data-progress style={{ padding: "14px 14px 10px" }} titlePad="0 2px">
       <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 8, marginBottom: 6 }}>
         {withData.map(id => (
           <button key={id} onClick={() => { sfxTap(); setSel(id); setTip(null); }} style={{ ...btnBase, flexShrink: 0, padding: "6px 11px", fontSize: 12, background: sel === id ? C.chalk : "transparent", color: sel === id ? C.ink : C.dim, border: `1.5px solid ${sel === id ? C.chalk : C.line}` }}>{EX[id].name}</button>
@@ -3903,7 +3927,7 @@ function ProgressChart({ history }) {
         ))}
       </svg>
       <div style={{ fontSize: 12, color: C.dim }}>{T("chartHint")}</div>
-    </div>
+    </Sect>
   );
 }
 
@@ -4072,28 +4096,27 @@ function HistoryTab({ history, onDelete, onSaveEntry, editDate, onEditOpened }) 
           onDelete={() => { onDelete(editing); setEditing(null); setOpen(null); }} />
       )}
       <MonthCalendarM history={history} />
-      <div style={sectionTitle}>{T("progress")}</div>
       <ProgressChartM history={history} />
-      <div style={sectionTitle}>{T("workoutsTitle")}</div>
-      <button data-add-workout onClick={() => { sfxTap(); setEditing("new"); }} style={{ ...btnBase, ...card, ...tileR(), width: "100%", padding: "13px 15px", fontSize: 15, color: C.chalk, marginBottom: 10, textAlign: "left", display: "flex", alignItems: "center", gap: 10 }}>
-        <span style={{ flex: 1, minWidth: 0 }}>{T("addWorkout").replace(/^➕\s*/, "")}<span style={{ display: "block", fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2 }}>{T("addWorkoutD")}</span></span>
-        <span aria-hidden="true" style={{ fontSize: 22, color: C.sky, lineHeight: 1, flexShrink: 0 }}>+</span>
-      </button>
-      {history.length === 0 && <div style={{ color: C.dim, fontSize: 14 }}>{T("noHistory")}</div>}
-      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+      {/* 1.7.0: the workouts are rows in one box (like the friends list), the newest open */}
+      <ListSect title={T("workoutsTitle")} meta={history.length ? String(history.length) : ""} data-workouts>
+        <button data-add-workout onClick={() => { sfxTap(); setEditing("new"); }} style={{ ...btnBase, width: "100%", padding: "11px 16px 13px", fontSize: 15, color: C.chalk, background: "transparent", borderRadius: 0, textAlign: "left", display: "flex", alignItems: "center", gap: 10 }}>
+          <span style={{ flex: 1, minWidth: 0 }}>{T("addWorkout").replace(/^➕\s*/, "")}<span style={{ display: "block", fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2 }}>{T("addWorkoutD")}</span></span>
+          <span aria-hidden="true" style={{ fontSize: 22, color: C.sky, lineHeight: 1, flexShrink: 0 }}>+</span>
+        </button>
+        {history.length === 0 && <div style={{ color: C.dim, fontSize: 14, padding: "12px 16px", borderTop: `1px solid ${C.line}` }}>{T("noHistory")}</div>}
         {history.slice().reverse().map((s, ri) => {
           const idx = history.length - 1 - ri;
           const isOpen = open === idx || ri === 0;
           return (
-            <div key={`${s.date}-${idx}`} style={{ ...card, padding: "13px 15px" }}>
+            <div key={`${s.date}-${idx}`} data-workout-row style={{ padding: "12px 16px", borderTop: `1px solid ${C.line}` }}>
               <button onClick={() => { sfxTap(); setOpen(open === idx ? null : idx); }} aria-expanded={isOpen}
                 style={{ ...btnBase, width: "100%", background: "transparent", color: C.chalk, padding: 0, textAlign: "left", display: "flex", alignItems: "center", gap: 10, borderRadius: 0 }}>
-                <div style={{ width: 40, height: 40, borderRadius: 12, background: C.panelHi, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, flexShrink: 0 }}>{s.day}</div>
-                <div style={{ flex: 1 }}>
+                <div style={{ width: 40, height: 40, borderRadius: 12, background: SOFT(), display: "flex", alignItems: "center", justifyContent: "center", fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, flexShrink: 0 }}>{s.day}</div>
+                <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 15, fontWeight: 700 }}>{capFirst(fmtDate(s.date, true))}</div>
                   <div style={{ fontSize: 12, color: C.dim }}>{TP("rounds", s.rounds || 2)}, {TP("sets", setsIn(s))}{s.prs && s.prs.length ? `, 🏆 ${s.prs.length}` : ""}</div>
                 </div>
-                <div style={{ fontFamily: DISPLAY, fontSize: 20, fontWeight: 800, color: C.sky }}>+{xpFor(s)} XP</div>
+                <div style={{ fontFamily: DISPLAY, fontSize: 20, fontWeight: 800, color: C.sky, flexShrink: 0 }}>+{xpFor(s)} XP</div>
                 <Chevron open={isOpen} />
               </button>
               <Expand open={isOpen}>
@@ -4123,7 +4146,7 @@ function HistoryTab({ history, onDelete, onSaveEntry, editDate, onEditOpened }) 
             </div>
           );
         })}
-      </div>
+      </ListSect>
     </div>
   );
 }
@@ -4131,10 +4154,10 @@ function HistoryTab({ history, onDelete, onSaveEntry, editDate, onEditOpened }) 
 // ─── TAB 3: PROFILE ──────────────────────────────────────────────────────────
 // The exercise ranks box (Profile, and someone's profile card in 1.7.0): one quiet tile per program exercise with
 // its rank and best set. bests = {exercise id: best or null}; onPick opens the exercise (own profile only).
-function RanksBox({ bests, onPick }) {
+function RanksBox({ bests, onPick, bare }) {
   const ids = Object.keys(RANK_AT);
   return (
-    <div data-ranks-box style={{ ...card, padding: 8, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+    <div data-ranks-box style={{ ...(bare ? {} : { ...card, padding: 8 }), display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
       {ids.map((id, ri) => {
         const b = bests[id] ?? null;
         const r = RANKS[rankIdx(id, b)];
@@ -4234,8 +4257,7 @@ function ProfileTab({ history, profile, setProfile, onFreeze, kcal, acct, vis, o
 
 
       {/* 1.7.0: who can open your profile (like Steam): friends (default), everyone signed in, or only you */}
-      <SectionHead title={T("pvWho")} />
-      <div data-pv-who style={{ ...card, ...tileR(), padding: "12px 13px" }}>
+      <Sect title={T("pvWho")} flatTitle data-pv-who>
         {acct && acct.st === "in" && acct.prof ? (
           <>
             <div role="radiogroup" aria-label={T("pvWho")} style={{ display: "flex", gap: 4, padding: 4, borderRadius: 13, ...SUNK() }}>
@@ -4256,13 +4278,14 @@ function ProfileTab({ history, profile, setProfile, onFreeze, kcal, acct, vis, o
             <button data-pv-signin onClick={() => { sfxTap(); onFriends && onFriends(); }} style={{ ...btnBase, background: C.signal, color: C.signalInk, padding: "9px 12px", fontSize: 13, borderRadius: 10, flexShrink: 0 }}>{T("pvSignInBtn")}</button>
           </div>
         )}
-      </div>
+      </Sect>
 
-      <SectionHead title={T("ranksTitle")} meta={T("achTiers", { n: rankLv, max: Object.keys(RANK_AT).length * (RANKS.length - 1) })} />
-      <RanksBox bests={Object.fromEntries(Object.keys(RANK_AT).map(id => [id, bestFor(history, id)]))} onPick={setHowEx} />
+      <Sect title={T("ranksTitle")} flatTitle meta={T("achTiers", { n: rankLv, max: Object.keys(RANK_AT).length * (RANKS.length - 1) })}>
+        <RanksBox bare bests={Object.fromEntries(Object.keys(RANK_AT).map(id => [id, bestFor(history, id)]))} onPick={setHowEx} />
+      </Sect>
 
-      <SectionHead title={T("badgesTitle")} meta={<>{T("achCount", { n: ach.filter(a => a.step).length, max: ach.length })} · {T("achTiers", { n: ach.reduce((x, a) => x + a.step, 0), max: ach.reduce((x, a) => x + a.at.length, 0) })}</>} />
-      <div data-badges-box style={{ ...card, padding: 8, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+      <Sect title={T("badgesTitle")} flatTitle meta={<>{T("achCount", { n: ach.filter(a => a.step).length, max: ach.length })} · {T("achTiers", { n: ach.reduce((x, a) => x + a.step, 0), max: ach.reduce((x, a) => x + a.at.length, 0) })}</>}>
+      <div data-badges-box style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
         {ach.map((a, ai) => {
           const r = a.tier ? RANKS[a.tier - 1] : null;
           const prev = a.step ? a.at[a.step - 1] : 0;
@@ -4284,6 +4307,7 @@ function ProfileTab({ history, profile, setProfile, onFreeze, kcal, acct, vis, o
           );
         })}
       </div>
+      </Sect>
 
     </div>
   );
@@ -5310,16 +5334,16 @@ function AccountBox({ acct, cloudBk, onOpen, onRestore, onBackupNow, onSignOut, 
   const sub = t => <span style={{ display: "block", fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2 }}>{t}</span>;
   const run = (k, fn) => { setBusy(k); setMsg(""); fn().then(m => m && setMsg(m)).catch(e => setMsg(cloudErr(e))).finally(() => setBusy("")); };
   if (acct.st !== "in") return (
-    <div style={card}>
+    <ListSect title={T("acTitle")}>
       <button data-acct-signin onClick={() => { sfxTap(); onOpen(); }} style={rowBtn(true)}>
         <span style={{ flex: 1 }}>{T("acSignIn")}{sub(T("acSignInD"))}</span>
         <span aria-hidden="true" style={{ color: C.dim, fontSize: 20 }}>›</span>
       </button>
-    </div>
+    </ListSect>
   );
   return (
     <>
-      <div style={card} data-acct>
+      <ListSect title={T("acTitle")} data-acct>
         <button onClick={() => { sfxTap(); onOpen(); }} style={rowBtn(true)}>
           <span style={{ flex: 1, minWidth: 0 }}>{acct.prof ? T("acSignedIn", { nick: acct.prof.nick }) : T("acSignedInNoNick")}{sub(acct.prof ? fmtCode(acct.prof.code) : T("frNickTitle"))}</span>
           <span aria-hidden="true" style={{ color: C.dim, fontSize: 20 }}>›</span>
@@ -5349,7 +5373,7 @@ function AccountBox({ acct, cloudBk, onOpen, onRestore, onBackupNow, onSignOut, 
           {busy === "del" ? "…" : sure ? T("acDeleteSure") : T("acDelete")}
           {sub(`${T("acDeleteD")} ${T("acDelGoogle")}`)}
         </button>
-      </div>
+      </ListSect>
       {msg && <div role="status" style={{ fontSize: 13, color: msg.startsWith("✓") ? C.mint : "#ff8a80", marginTop: 8 }}>{msg}</div>}
     </>
   );
@@ -5588,15 +5612,16 @@ function SettingsTab({ initPage, settings, setSettings, history, profile, setPro
       <input ref={fileRef} type="file" accept="application/json,.json" onChange={readBackup} style={{ display: "none" }} />
       {bkOpen && <BackupsSheet onClose={() => setBkOpen(false)} onRestore={txt => { if (loadBackupText(txt)) setBkOpen(false); }} autoOn={!!settings.autoBackup} myId={String(cloudMem().owner || (acct.st === "in" ? acct.uid : "")).replace(/[^A-Za-z0-9]/g, "").slice(0, 8)} />}
 
-      <div style={sectionTitle}>{T("language")}</div>
       {/* One row with the current language; the full list opens in a scrollable sheet, so more languages fit later. */}
       {(() => { const cur = LANGS.find(l => l.code === curLang) || LANGS[0]; return (
-        <button onClick={() => { sfxTap(); setLangOpen(true); }} aria-haspopup="dialog" aria-label={`${T("language")}: ${cur.name}`}
-          style={{ ...btnBase, ...card, width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "13px 16px", textAlign: "left", fontSize: 16, color: C.chalk }}>
-          <span aria-hidden="true" style={{ fontSize: 22 }}>{cur.flag}</span>
-          <span style={{ flex: 1 }}>{cur.name}</span>
-          <span aria-hidden="true" style={{ color: C.dim, fontSize: 20 }}>›</span>
-        </button>
+        <ListSect title={T("language")} data-set-lang style={{ padding: "14px 0 0" }}>
+          <button onClick={() => { sfxTap(); setLangOpen(true); }} aria-haspopup="dialog" aria-label={`${T("language")}: ${cur.name}`}
+            style={{ ...btnBase, width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "8px 16px 13px", textAlign: "left", fontSize: 16, color: C.chalk, background: "transparent", borderRadius: 0 }}>
+            <span aria-hidden="true" style={{ fontSize: 22 }}>{cur.flag}</span>
+            <span style={{ flex: 1 }}>{cur.name}</span>
+            <span aria-hidden="true" style={{ color: C.dim, fontSize: 20 }}>›</span>
+          </button>
+        </ListSect>
       ); })()}
       {langOpen && (
         <Sheet title={T("language")} onClose={() => setLangOpen(false)}>
@@ -5617,7 +5642,7 @@ function SettingsTab({ initPage, settings, setSettings, history, profile, setPro
         </Sheet>
       )}
 
-      <div style={sectionTitle}>{T("appearance")}</div>
+      <Sect title={T("appearance")} flatTitle data-set-look>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
         {Object.entries(THEMES).map(([id, t]) => (
           <button key={id} onClick={() => { sfxTap(); set("theme", id); }} aria-pressed={settings.theme === id}
@@ -5632,6 +5657,16 @@ function SettingsTab({ initPage, settings, setSettings, history, profile, setPro
           </button>
         ))}
       </div>
+      <div style={{ fontSize: 13, color: C.chalk, fontWeight: 800, margin: "14px 0 8px" }}>{T("accentTitle")}</div>
+      <div role="radiogroup" aria-label={T("accentTitle")} data-accents style={{ display: "flex", justifyContent: "space-between", gap: 6 }}>
+        {Object.entries(ACCENTS).map(([id, { c: [col, ink] }]) => { const on = (settings.accent || "violet") === id; return (
+          <button key={id} role="radio" aria-checked={on} aria-label={T("accent_" + id)} title={T("accent_" + id)} data-accent={id} onClick={() => { sfxTap(); set("accent", id); }}
+            style={{ ...btnBase, width: 44, height: 44, borderRadius: 99, padding: 0, flexShrink: 0, background: "transparent", border: `2px solid ${on ? C.chalk : "transparent"}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <span aria-hidden="true" style={{ width: 32, height: 32, borderRadius: 99, background: col, display: "flex", alignItems: "center", justifyContent: "center", color: ink, fontSize: 16, fontWeight: 900 }}>{on ? "✓" : ""}</span>
+          </button>
+        ); })}
+      </div>
+      <div style={{ fontSize: 12, color: C.dim, marginTop: 6 }}>{T("accent_" + (ACCENTS[settings.accent] ? settings.accent : "violet"))}</div>
       <div style={{ fontSize: 13, color: C.chalk, fontWeight: 800, margin: "14px 0 8px" }}>{T("lookTitle")}</div>
       <div role="radiogroup" aria-label={T("lookTitle")} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
         {["liquid", "cards", "tiles", "glass", "accent", "flat"].map(id => {
@@ -5649,10 +5684,10 @@ function SettingsTab({ initPage, settings, setSettings, history, profile, setPro
         })}
       </div>
       <div style={{ fontSize: 12, color: C.dim, marginTop: 6, lineHeight: 1.45 }}>{T("lookHint")}</div>
-      {hzSupported() && <div style={{ ...card, marginTop: 10 }}><HzRow settings={settings} set={set} first /></div>}
+      {hzSupported() && <div style={{ marginTop: 12, borderRadius: 14, background: SOFT(), overflow: "hidden" }}><HzRow settings={settings} set={set} first /></div>}
+      </Sect>
 
-      <div style={sectionTitle}>{T("sounds")}</div>
-      <div style={card}>
+      <ListSect title={T("sounds")}>
         <SettingRow first title={T("sndTap")} desc={T("sndTapD")} on={settings.sndTap} onClick={() => flip("sndTap")} />
         <SettingRow title={T("sndFx")} desc={T("sndFxD")} on={settings.sndFx} onClick={() => flip("sndFx")} />
         <SettingRow title={T("sndTimer")} desc={T("sndTimerD")} on={settings.sndTimer} onClick={() => flip("sndTimer")} />
@@ -5666,10 +5701,9 @@ function SettingsTab({ initPage, settings, setSettings, history, profile, setPro
           </div>
           <div style={{ fontSize: 12, color: C.dim, marginTop: 6 }}>{T("volHint")}</div>
         </div>
-      </div>
+      </ListSect>
 
-      <div style={sectionTitle}>{T("trainingSettings")}</div>
-      <div style={card}>
+      <ListSect title={T("trainingSettings")}>
         <button onClick={() => openPage("exercises")} style={{ ...rowBtn(true), display: "flex", alignItems: "center", gap: 10 }}>
           <span style={{ flex: 1 }}>
             {noEmo(T("exMenu"))}
@@ -5681,13 +5715,11 @@ function SettingsTab({ initPage, settings, setSettings, history, profile, setPro
         <SettingRow title={T("keepAwake")} desc={T("keepAwakeD")} on={settings.keepAwake} onClick={() => set("keepAwake", !settings.keepAwake)} />
         <SettingRow title={T("aiCopy")} desc={T("aiCopyD")} on={settings.aiCopy} onClick={() => set("aiCopy", !settings.aiCopy)} />
         {pushSupported() && <div data-upd-notif><SettingRow title={T("updNotif")} desc={T("updNotifD")} on={settings.updNotif !== false} onClick={() => set("updNotif", settings.updNotif === false)} /></div>}
-      </div>
+      </ListSect>
 
-      <div style={sectionTitle}>{T("acTitle")}</div>
       <AccountBox acct={acct || { st: "out" }} cloudBk={cloudBk} onOpen={onAcctOpen} onRestore={onCloudRestore} onBackupNow={onCloudBackupNow} onSignOut={onSignOut} onDelete={onDeleteAccount} settings={settings} set={set} />
 
-      <div style={sectionTitle}>{T("dataBackup")}</div>
-      <div style={card}>
+      <ListSect title={T("dataBackup")}>
         <button onClick={exportBackup} style={rowBtn(true)}>
           {noEmo(T("backupSave"))}
           <div style={{ fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2 }}>{isNative ? T("backupSaveDApp", { dir: `Documents/${BK_DIR}` }) : T("backupSaveD")}</div>
@@ -5718,7 +5750,7 @@ function SettingsTab({ initPage, settings, setSettings, history, profile, setPro
         {settings.aiCopy && (
           <button onClick={copyAll} style={rowBtn(false)}>{copied ? T("copied") : T("copyAllAI")}</button>
         )}
-      </div>
+      </ListSect>
       {msg && <div role="status" style={{ fontSize: 13, color: msg.startsWith("✓") ? C.mint : C.dim, marginTop: 8 }}>{msg}</div>}
 
       <button onClick={() => { sfxTap(); openExternal(SUPPORT_URL); }} data-support style={{ ...btnBase, ...card, ...tileR(), width: "100%", marginTop: 22, display: "flex", alignItems: "center", gap: 12, padding: "13px 15px", color: C.chalk, textAlign: "left" }}>
@@ -6418,7 +6450,7 @@ export default function App() {
   const editHistory = fn => setHistory(h => recomputeFlags(sortHistory(fn(h))));
   META = { kcal, skips: profile.skips || {}, freezeDays: profile.freezeDays || [], streakResetTs: profile.streakResetTs || 0, bonusFreezes: (profile.bdayGifts || []).length, giftThisYear: (profile.bdayGifts || []).includes(parseKey(dateKey()).getFullYear()), birth: profile.birth || null };
   window._wset = settings;
-  applyTheme(settings.theme);
+  applyTheme(settings.theme, settings.accent);
   LOOK = settings.look || "cards";
   if (LOOK === "tiles") card = { background: C.panelHi, border: `1px solid ${C.panelHi}`, borderRadius: 16 };
   if (LOOK === "glass") card = GLASS();

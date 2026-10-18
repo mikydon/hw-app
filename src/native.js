@@ -464,7 +464,7 @@ export async function pushPermission(ask) {
 // The "Friends and messages" channel (Android 8+); its name follows the app's language.
 export async function pushChannel(name) {
   if (!pushSupported()) return;
-  try { await FcmPlugin.createChannel({ id: "social", name, importance: 4, visibility: 1, vibration: true, lights: true, lightColor: "#FFD23F" }); } catch (_) {}
+  try { await FcmPlugin.createChannel({ id: "social", name, importance: 4, visibility: 1, vibration: true, lights: true, lightColor: "#A78BFA" }); } catch (_) {}
 }
 export async function pushToken() { if (!pushSupported()) return null; try { return (await FcmPlugin.getToken()).token || null; } catch (_) { return null; } }
 // The same, but says why it failed (for the test button): {token} | {err}
