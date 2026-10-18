@@ -585,7 +585,6 @@ export default {
     achTiers: "{n}/{max} szint",
     achCount: "{n}/{max} jelvény",
     achLocked: "zárolva",
-    achLockedList: "Még nincs meg ({n})",
     achMax: "Legmagasabb szint. Le a kalappal! 🎩",
     achNext: "Következő: {rank} –",
     achSheetD: "Elöl azok, amelyekhez a legközelebb vagy; a befejezettek a végén.",
@@ -1163,7 +1162,7 @@ export default {
     ["Fő szín", "Az alkalmazás mindig sárga volt.", "A sárga marad a fő szín, de a Beállítások → Megjelenés → Fő szín alatt választhatsz lilát, rózsaszínt, türkizt, narancsot vagy korallt is; az edzések és a kalóriák színei eltolódnak, hogy ne üssék egymást."],
     ["Tablet és számítógép", "Tableten vagy számítógépen az alkalmazás egyetlen keskeny telefonos oszlop volt középen.", "Tablet szélességtől a képernyők kihasználják a helyet: az Edzés és a Kalóriák egymás mellett mutatja az oldalait, a többi képernyő két oszlopos, számítógépen pedig a menü bal oldalt nyitva marad. Telefonon semmi sem változik."],
     ["3D emojik", "Az alkalmazás emojijai (🔥, 🏆, a jelvények…) minden telefonon másképp néztek ki.", "Most a Microsoft 3D Fluent Emoji készlete, ugyanaz minden Androidon és a Chrome-alapú böngészőkben (a Safari és a Firefox a sajátját használja). Az üzenetek a telefonod emojijait használják, így ott minden emoji működik."],
-    ["Rendezettebb képernyők", "Az Előzmények, a Kalóriák, a Beállítások és a Profil másképp nézett ki, mint az Edzés, és a Profil az összes még meg nem szerzett jelvényt is felsorolta.", "Minden elrendezésben ugyanazokat a dobozokat használják, mint az Edzés. A Profil azt mutatja, ami a tiéd; a még megszerzendő jelvények egy sor alatt összecsukva várnak. Koppints a Jelvényekre (vagy bármelyik jelvényre), és látod mindet, meg azt is, mennyi hiányzik a következő szintig."],
+    ["Rendezettebb képernyők", "Az Előzmények, a Kalóriák, a Beállítások és a Profil másképp nézett ki, mint az Edzés, és a Profil az összes még meg nem szerzett jelvényt is felsorolta.", "Minden elrendezésben ugyanazokat a dobozokat használják, mint az Edzés. A Profil a megszerzett jelvényeidet mutatja; „Az összes jelvény és a haladásod” (vagy egy jelvényre koppintás) mindet megmutatja, és azt is, mennyi hiányzik a következő szintig."],
     ["Biztonságosabb világ top 50", "A jelentett profil a világ top 50-ben maradt, amíg a fejlesztő meg nem nézte.", "Ha 90 napon belül három különböző ember jelent egy profilt, az azonnal kikerül a világ top 50-ből, és idegenek nem nyithatják meg (a barátok igen). Az illető az alkalmazásban látja, miért, és írhat, ha tévedés."],
   ],
   news16: [

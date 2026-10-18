@@ -585,7 +585,6 @@ export default {
     achTiers: "{n}/{max} levels",
     achCount: "{n}/{max} badges",
     achLocked: "locked",
-    achLockedList: "Not earned yet ({n})",
     achMax: "Top level. Hats off! 🎩",
     achNext: "Next: {rank} –",
     achSheetD: "Closest to the next level first; finished badges at the end.",
@@ -1163,7 +1162,7 @@ export default {
     ["Main colour", "The app was always yellow.", "Yellow stays the main colour, but Settings → Appearance → Main colour lets you pick violet, pink, turquoise, orange or coral instead; the workout and calorie colours shift so nothing clashes."],
     ["Tablet and computer", "On a tablet or a computer the app was one narrow phone column in the middle.", "From tablet width the screens use the space: Workout and Calories show their pages side by side, the other screens have two columns, and on a computer the menu stays open on the left. On a phone nothing changes."],
     ["3D emoji", "The app's emoji (🔥, 🏆, the badges…) looked different on every phone.", "They are Microsoft's 3D Fluent Emoji now, the same on every Android phone and in Chrome-based browsers (Safari and Firefox keep their own). Messages keep your phone's emoji, so every emoji works there."],
-    ["Tidier screens", "History, Calories, Settings and Profile looked different from the Workout screen, and Profile listed every badge you hadn't earned yet.", "They use the same boxes as the Workout screen in every look. Profile shows what you have; the badges still to earn wait folded under one row. Tap Badges (or any badge) to see all of them and how far you are from the next level."],
+    ["Tidier screens", "History, Calories, Settings and Profile looked different from the Workout screen, and Profile listed every badge you hadn't earned yet.", "They use the same boxes as the Workout screen in every look. Profile shows the badges you have; “All badges and your progress” (or a tap on any badge) lists all of them with how far you are from the next level."],
     ["Safer world top 50", "A reported profile stayed in the world top 50 until the developer had looked at it.", "When three different people report a profile within 90 days, it leaves the world top 50 at once and strangers can't open it (friends still can). That person sees why in the app and can write if it's a mistake."],
   ],
   news16: [

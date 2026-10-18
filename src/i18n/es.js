@@ -585,7 +585,6 @@ export default {
     achTiers: "{n}/{max} niveles",
     achCount: "{n}/{max} insignias",
     achLocked: "bloqueado",
-    achLockedList: "Aún sin conseguir ({n})",
     achMax: "Nivel máximo. ¡Chapó! 🎩",
     achNext: "Siguiente: {rank} –",
     achSheetD: "Primero las que tienes más cerca; las terminadas al final.",
@@ -1163,7 +1162,7 @@ export default {
     ["Color principal", "La app siempre era amarilla.", "El amarillo sigue siendo el color principal, pero en Ajustes → Apariencia → Color principal puedes elegir violeta, rosa, turquesa, naranja o coral; los colores de entrenamientos y calorías cambian para que nada choque."],
     ["Tablet y ordenador", "En una tablet o un ordenador la app era una estrecha columna de móvil en el centro.", "Desde el ancho de una tablet las pantallas aprovechan el espacio: Entrenar y Calorías muestran sus páginas una al lado de otra, las demás pantallas tienen dos columnas y en el ordenador el menú queda abierto a la izquierda. En el móvil no cambia nada."],
     ["Emoji 3D", "Los emoji de la app (🔥, 🏆, las insignias…) se veían distintos en cada móvil.", "Ahora son los 3D Fluent Emoji de Microsoft, iguales en todos los Android y en navegadores basados en Chrome (Safari y Firefox mantienen los suyos). Los mensajes usan los emoji de tu móvil, así que allí funciona cualquiera."],
-    ["Pantallas más ordenadas", "Historial, Calorías, Ajustes y Perfil se veían distintos de Entrenar, y Perfil listaba también todas las insignias que aún no tienes.", "Usan las mismas cajas que Entrenar en cada diseño. Perfil muestra lo que tienes; las insignias por conseguir esperan plegadas bajo una sola fila. Toca Insignias (o cualquier insignia) para verlas todas y cuánto te falta para el siguiente nivel."],
+    ["Pantallas más ordenadas", "Historial, Calorías, Ajustes y Perfil se veían distintos de Entrenar, y Perfil listaba también todas las insignias que aún no tienes.", "Usan las mismas cajas que Entrenar en cada diseño. El perfil muestra las insignias que tienes; «Todas las insignias y tu progreso» (o tocar una insignia) las muestra todas y cuánto te falta para el siguiente nivel."],
     ["Top 50 mundial más seguro", "Un perfil denunciado seguía en el top 50 mundial hasta que el desarrollador lo revisaba.", "Cuando tres personas distintas denuncian un perfil en 90 días, sale al instante del top 50 mundial y los desconocidos no pueden abrirlo (los amigos sí). Esa persona ve el motivo en la app y puede escribir si es un error."],
   ],
   news16: [

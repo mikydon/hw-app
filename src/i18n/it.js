@@ -585,7 +585,6 @@ export default {
     achTiers: "{n}/{max} livelli",
     achCount: "{n}/{max} badge",
     achLocked: "bloccato",
-    achLockedList: "Non ancora ottenuti ({n})",
     achMax: "Livello massimo. Tanto di cappello! 🎩",
     achNext: "Prossimo: {rank} –",
     achSheetD: "Prima quelle a cui sei più vicino; quelle completate alla fine.",
@@ -1163,7 +1162,7 @@ export default {
     ["Colore principale", "L'app era sempre gialla.", "Il giallo resta il colore principale, ma in Impostazioni → Aspetto → Colore principale puoi scegliere viola, rosa, turchese, arancione o corallo; i colori di allenamenti e calorie si spostano perché nulla stoni."],
     ["Tablet e computer", "Su un tablet o un computer l'app era una stretta colonna da telefono al centro.", "Dalla larghezza di un tablet gli schermi sfruttano lo spazio: Allenamento e Calorie mostrano le loro pagine affiancate, le altre schermate hanno due colonne e sul computer il menu resta aperto a sinistra. Sul telefono non cambia nulla."],
     ["Emoji 3D", "Le emoji dell'app (🔥, 🏆, i badge…) avevano un aspetto diverso su ogni telefono.", "Ora sono le 3D Fluent Emoji di Microsoft, uguali su ogni Android e nei browser basati su Chrome (Safari e Firefox mantengono le loro). I messaggi usano le emoji del tuo telefono, quindi lì funzionano tutte."],
-    ["Schermate più ordinate", "Storico, Calorie, Impostazioni e Profilo erano diverse da Allenamento, e Profilo elencava anche tutte le medaglie che non hai ancora.", "Usano gli stessi riquadri di Allenamento in ogni layout. Il Profilo mostra quello che hai; le medaglie ancora da ottenere aspettano chiuse sotto una sola riga. Tocca Medaglie (o una medaglia qualsiasi) per vederle tutte e quanto ti manca al livello successivo."],
+    ["Schermate più ordinate", "Storico, Calorie, Impostazioni e Profilo erano diverse da Allenamento, e Profilo elencava anche tutte le medaglie che non hai ancora.", "Usano gli stessi riquadri di Allenamento in ogni layout. Il profilo mostra le medaglie che hai; «Tutte le medaglie e i tuoi progressi» (o un tocco su una medaglia) le mostra tutte e quanto ti manca al livello successivo."],
     ["Top 50 mondiale più sicura", "Un profilo segnalato restava nella top 50 mondiale finché lo sviluppatore non lo controllava.", "Quando tre persone diverse segnalano un profilo entro 90 giorni, esce subito dalla top 50 mondiale e gli sconosciuti non possono aprirlo (gli amici sì). Quella persona vede il motivo nell'app e può scrivere se è un errore."],
   ],
   news16: [

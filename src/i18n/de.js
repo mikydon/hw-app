@@ -585,7 +585,6 @@ export default {
     achTiers: "{n}/{max} Stufen",
     achCount: "{n}/{max} Abzeichen",
     achLocked: "gesperrt",
-    achLockedList: "Noch nicht verdient ({n})",
     achMax: "Höchste Stufe. Hut ab! 🎩",
     achNext: "Nächste: {rank} –",
     achSheetD: "Zuerst die, denen du am nächsten bist; fertige am Ende.",
@@ -1163,7 +1162,7 @@ export default {
     ["Hauptfarbe", "Die App war immer gelb.", "Gelb bleibt die Hauptfarbe, aber unter Einstellungen → Darstellung → Hauptfarbe kannst du stattdessen Violett, Pink, Türkis, Orange oder Koralle wählen; die Farben für Trainings und Kalorien verschieben sich, damit nichts kollidiert."],
     ["Tablet und Computer", "Auf einem Tablet oder Computer war die App eine schmale Handy-Spalte in der Mitte.", "Ab Tablet-Breite nutzen die Bildschirme den Platz: Training und Kalorien zeigen ihre Seiten nebeneinander, die anderen Bildschirme haben zwei Spalten, und am Computer bleibt das Menü links offen. Auf dem Handy ändert sich nichts."],
     ["3D-Emojis", "Die Emojis der App (🔥, 🏆, die Abzeichen…) sahen auf jedem Handy anders aus.", "Jetzt sind es Microsofts 3D Fluent Emoji, gleich auf jedem Android-Handy und in Chrome-basierten Browsern (Safari und Firefox behalten ihre eigenen). Nachrichten nutzen die Emojis deines Handys, dort funktioniert also jedes Emoji."],
-    ["Aufgeräumtere Bildschirme", "Verlauf, Kalorien, Einstellungen und Profil sahen anders aus als Training, und das Profil listete auch alle Abzeichen, die du noch nicht hast.", "Sie nutzen in jeder Darstellung dieselben Kästen wie Training. Das Profil zeigt, was du hast; die noch offenen Abzeichen warten eingeklappt unter einer Zeile. Tippe auf Abzeichen (oder ein beliebiges Abzeichen), um alle zu sehen und wie viel dir bis zur nächsten Stufe fehlt."],
+    ["Aufgeräumtere Bildschirme", "Verlauf, Kalorien, Einstellungen und Profil sahen anders aus als Training, und das Profil listete auch alle Abzeichen, die du noch nicht hast.", "Sie nutzen in jeder Darstellung dieselben Kästen wie Training. Das Profil zeigt die Abzeichen, die du hast; „Alle Abzeichen und dein Fortschritt“ (oder ein Tipp auf ein Abzeichen) zeigt alle und wie viel dir bis zur nächsten Stufe fehlt."],
     ["Sicherere Welt-Top-50", "Ein gemeldetes Profil blieb in den Welt-Top-50, bis der Entwickler es sich angesehen hatte.", "Melden drei verschiedene Personen ein Profil innerhalb von 90 Tagen, verschwindet es sofort aus den Welt-Top-50 und Fremde können es nicht öffnen (Freunde schon). Die Person sieht in der App, warum, und kann schreiben, falls es ein Irrtum ist."],
   ],
   news16: [

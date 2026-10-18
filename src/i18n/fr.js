@@ -585,7 +585,6 @@ export default {
     achTiers: "{n}/{max} niveaux",
     achCount: "{n}/{max} badges",
     achLocked: "verrouillé",
-    achLockedList: "Pas encore obtenus ({n})",
     achMax: "Niveau maximal. Chapeau ! 🎩",
     achNext: "Suivant : {rank} –",
     achSheetD: "D'abord ceux dont tu es le plus proche ; les terminés à la fin.",
@@ -1163,7 +1162,7 @@ export default {
     ["Couleur principale", "L'appli était toujours jaune.", "Le jaune reste la couleur principale, mais dans Réglages → Apparence → Couleur principale tu peux choisir violet, rose, turquoise, orange ou corail ; les couleurs des séances et des calories changent pour que rien ne jure."],
     ["Tablette et ordinateur", "Sur une tablette ou un ordinateur, l'appli était une étroite colonne de téléphone au milieu.", "À partir de la largeur d'une tablette, les écrans utilisent la place : Entraînement et Calories montrent leurs pages côte à côte, les autres écrans ont deux colonnes, et sur ordinateur le menu reste ouvert à gauche. Sur téléphone, rien ne change."],
     ["Emoji 3D", "Les emoji de l'appli (🔥, 🏆, les badges…) étaient différents sur chaque téléphone.", "Ce sont maintenant les 3D Fluent Emoji de Microsoft, identiques sur chaque Android et dans les navigateurs basés sur Chrome (Safari et Firefox gardent les leurs). Les messages utilisent les emoji de ton téléphone, donc tous y fonctionnent."],
-    ["Écrans plus ordonnés", "Historique, Calories, Réglages et Profil ne ressemblaient pas à Entraînement, et Profil listait aussi tous les badges que tu n'as pas encore.", "Ils utilisent les mêmes cadres qu'Entraînement dans chaque disposition. Profil montre ce que tu as ; les badges à gagner attendent repliés sous une seule ligne. Touche Badges (ou n'importe quel badge) pour les voir tous et ce qu'il te manque pour le niveau suivant."],
+    ["Écrans plus ordonnés", "Historique, Calories, Réglages et Profil ne ressemblaient pas à Entraînement, et Profil listait aussi tous les badges que tu n'as pas encore.", "Ils utilisent les mêmes cadres qu'Entraînement dans chaque disposition. Le profil montre les badges que tu as ; « Tous les badges et ta progression » (ou un badge touché) les montre tous avec ce qu'il te manque pour le niveau suivant."],
     ["Top 50 mondial plus sûr", "Un profil signalé restait dans le top 50 mondial jusqu'à ce que le développeur l'examine.", "Quand trois personnes différentes signalent un profil en 90 jours, il quitte aussitôt le top 50 mondial et les inconnus ne peuvent plus l'ouvrir (les amis si). La personne voit pourquoi dans l'appli et peut écrire si c'est une erreur."],
   ],
   news16: [

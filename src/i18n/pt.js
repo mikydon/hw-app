@@ -585,7 +585,6 @@ export default {
     achTiers: "{n}/{max} níveis",
     achCount: "{n}/{max} medalhas",
     achLocked: "bloqueado",
-    achLockedList: "Ainda por conquistar ({n})",
     achMax: "Nível máximo. Tiro o chapéu! 🎩",
     achNext: "Próximo: {rank} –",
     achSheetD: "Primeiro as que estás mais perto de conseguir; as concluídas no fim.",
@@ -1163,7 +1162,7 @@ export default {
     ["Cor principal", "A app era sempre amarela.", "O amarelo continua a ser a cor principal, mas em Ajustes → Aparência → Cor principal podes escolher violeta, rosa, turquesa, laranja ou coral; as cores dos treinos e das calorias mudam para nada chocar."],
     ["Tablet e computador", "Num tablet ou computador a app era uma coluna estreita de telemóvel no meio.", "A partir da largura de um tablet os ecrãs aproveitam o espaço: Treino e Calorias mostram as suas páginas lado a lado, os outros ecrãs têm duas colunas e no computador o menu fica aberto à esquerda. No telemóvel nada muda."],
     ["Emoji 3D", "Os emoji da app (🔥, 🏆, os emblemas…) pareciam diferentes em cada telemóvel.", "Agora são os 3D Fluent Emoji da Microsoft, iguais em todos os Android e em browsers baseados no Chrome (Safari e Firefox mantêm os seus). As mensagens usam os emoji do teu telemóvel, por isso lá funciona qualquer um."],
-    ["Ecrãs mais arrumados", "Histórico, Calorias, Ajustes e Perfil pareciam diferentes do Treino, e o Perfil listava também todas as medalhas que ainda não tens.", "Usam as mesmas caixas que o Treino em cada aspeto. O Perfil mostra o que tens; as medalhas por conquistar esperam fechadas sob uma só linha. Toca em Medalhas (ou em qualquer medalha) para as veres todas e quanto falta para o próximo nível."],
+    ["Ecrãs mais arrumados", "Histórico, Calorias, Ajustes e Perfil pareciam diferentes do Treino, e o Perfil listava também todas as medalhas que ainda não tens.", "Usam as mesmas caixas que o Treino em cada aspeto. O perfil mostra as medalhas que tens; «Todas as medalhas e o teu progresso» (ou tocar numa medalha) mostra todas e quanto falta para o próximo nível."],
     ["Top 50 mundial mais seguro", "Um perfil denunciado ficava no top 50 mundial até o programador o ver.", "Quando três pessoas diferentes denunciam um perfil em 90 dias, ele sai logo do top 50 mundial e desconhecidos não o conseguem abrir (amigos sim). Essa pessoa vê o motivo na app e pode escrever se for um erro."],
   ],
   news16: [

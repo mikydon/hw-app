@@ -585,7 +585,6 @@ export default {
     achTiers: "{n}/{max} poziomów",
     achCount: "{n}/{max} odznak",
     achLocked: "zablokowane",
-    achLockedList: "Jeszcze nie zdobyte ({n})",
     achMax: "Najwyższy poziom. Czapki z głów! 🎩",
     achNext: "Następny: {rank} –",
     achSheetD: "Najpierw te, do których masz najbliżej; ukończone na końcu.",
@@ -1163,7 +1162,7 @@ export default {
     ["Główny kolor", "Aplikacja była zawsze żółta.", "Żółty zostaje głównym kolorem, ale w Ustawienia → Wygląd → Główny kolor możesz wybrać też fioletowy, różowy, turkusowy, pomarańczowy albo koralowy; kolory treningów i kalorii przesuwają się, żeby się nie gryzły."],
     ["Tablet i komputer", "Na tablecie lub komputerze aplikacja była jedną wąską kolumną telefonu na środku.", "Od szerokości tabletu ekrany wykorzystują miejsce: Trening i Kalorie pokazują swoje strony obok siebie, pozostałe ekrany mają dwie kolumny, a na komputerze menu zostaje otwarte po lewej. Na telefonie nic się nie zmienia."],
     ["Emoji 3D", "Emoji w aplikacji (🔥, 🏆, odznaki…) wyglądały na każdym telefonie inaczej.", "Teraz to 3D Fluent Emoji od Microsoftu, takie same na każdym Androidzie i w przeglądarkach opartych na Chrome (Safari i Firefox mają własne). Wiadomości używają emoji twojego telefonu, więc działa tam każde."],
-    ["Porządniejsze ekrany", "Historia, Kalorie, Ustawienia i Profil wyglądały inaczej niż Trening, a Profil wypisywał też wszystkie odznaki, których jeszcze nie masz.", "Mają takie same pola jak Trening w każdym układzie. Profil pokazuje to, co masz; odznaki do zdobycia czekają zwinięte pod jednym wierszem. Stuknij Odznaki (albo dowolną odznakę), aby zobaczyć wszystkie i ile brakuje ci do następnego poziomu."],
+    ["Porządniejsze ekrany", "Historia, Kalorie, Ustawienia i Profil wyglądały inaczej niż Trening, a Profil wypisywał też wszystkie odznaki, których jeszcze nie masz.", "Mają takie same pola jak Trening w każdym układzie. Profil pokazuje odznaki, które masz; „Wszystkie odznaki i twój postęp” (albo stuknięcie odznaki) pokazuje wszystkie i ile brakuje ci do następnego poziomu."],
     ["Bezpieczniejsze światowe top 50", "Zgłoszony profil zostawał w światowym top 50, dopóki twórca go nie sprawdził.", "Gdy w ciągu 90 dni trzy różne osoby zgłoszą profil, od razu znika on ze światowego top 50 i obcy go nie otworzą (znajomi tak). Ta osoba zobaczy w aplikacji dlaczego i może napisać, jeśli to pomyłka."],
   ],
   news16: [

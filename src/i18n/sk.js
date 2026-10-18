@@ -585,7 +585,6 @@ export default {
     achTiers: "{n}/{max} úrovní",
     achCount: "{n}/{max} odznakov",
     achLocked: "zamknuté",
-    achLockedList: "Ešte nezískané ({n})",
     achMax: "Najvyššia úroveň. Klobúk dole! 🎩",
     achNext: "Ďalšia: {rank} –",
     achSheetD: "Najprv tie, ktorým si najbližšie; hotové na konci.",
@@ -1163,7 +1162,7 @@ export default {
     ["Hlavná farba", "Appka bola vždy žltá.", "Žltá ostáva hlavnou farbou, ale v Nastavenia → Vzhľad → Hlavná farba si môžeš vybrať aj fialovú, ružovú, tyrkysovú, oranžovú alebo koralovú; farby tréningov a kalórií sa posunú, aby sa nebili."],
     ["Tablet a počítač", "Na tablete alebo počítači bola appka jeden úzky mobilný stĺpec v strede.", "Od šírky tabletu obrazovky využijú miesto: Tréning a Kalórie ukážu svoje stránky vedľa seba, ostatné obrazovky majú dva stĺpce a na počítači zostáva menu otvorené vľavo. Na mobile sa nič nemení."],
     ["3D emoji", "Emoji v appke (🔥, 🏆, odznaky…) vyzerali na každom mobile inak.", "Teraz sú to 3D Fluent Emoji od Microsoftu, rovnaké na každom Androide a v prehliadačoch postavených na Chrome (Safari a Firefox majú svoje). Správy používajú emoji tvojho mobilu, takže tam funguje každé."],
-    ["Upratanejšie obrazovky", "História, Kalórie, Nastavenia a Profil vyzerali inak ako Tréning a Profil vypisoval aj všetky odznaky, ktoré ešte nemáš.", "Majú rovnaké boxy ako Tréning v každom rozložení. Profil ukazuje to, čo máš; odznaky, ktoré ešte len získaš, čakajú zbalené pod jedným riadkom. Ťukni na Odznaky (alebo na hociktorý odznak) a uvidíš všetky aj to, koľko ti chýba do ďalšej úrovne."],
+    ["Upratanejšie obrazovky", "História, Kalórie, Nastavenia a Profil vyzerali inak ako Tréning a Profil vypisoval aj všetky odznaky, ktoré ešte nemáš.", "Majú rovnaké boxy ako Tréning v každom rozložení. Profil ukazuje odznaky, ktoré máš; „Všetky odznaky a tvoj postup“ (alebo ťuknutie na odznak) ukáže všetky aj to, koľko ti chýba do ďalšej úrovne."],
     ["Bezpečnejšia svetová top 50", "Nahlásený profil zostal vo svetovej top 50, kým sa naň nepozrel vývojár.", "Keď profil do 90 dní nahlásia traja rôzni ľudia, hneď zmizne zo svetovej top 50 a cudzí ho neotvoria (priatelia áno). Ten človek v appke uvidí prečo a ak je to omyl, môže napísať."],
   ],
   news16: [

@@ -4303,7 +4303,7 @@ function BadgesSheet({ ach, focus, onClose }) {
         {list.map((a, i) => {
           const r = a.tier ? RANKS[a.tier - 1] : null, nr = a.next === null ? null : RANKS[a.nextRank];
           return (
-            <div key={a.k} ref={el => (refs.current[a.k] = el)} data-ach-row={a.k} data-pct={Math.round(inTier(a) * 100)} className="cardIn"
+            <div key={a.k} ref={el => (refs.current[a.k] = el)} data-ach-row={a.k} data-ach={a.k} data-tier={a.tier} data-pct={Math.round(inTier(a) * 100)} className="cardIn"
               style={{ "--d": `${Math.min(i, 10) * 25}ms`, animationDelay: `${Math.min(i, 10) * 25}ms`, background: SOFT(), borderRadius: 14, padding: "11px 12px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <div aria-hidden="true" style={{ fontSize: 24, lineHeight: 1, flexShrink: 0, filter: r ? "none" : "grayscale(1)", opacity: r ? 1 : 0.55 }}>{a.icon}</div>
@@ -4339,7 +4339,6 @@ function ProfileTab({ history, profile, setProfile, onFreeze, kcal, acct, vis, o
   const [howEx, setHowEx] = useState(null);
   const [err, setErr] = useState("");
   const [preview, setPreview] = useState(false);
-  const [lockedOpen, setLockedOpen] = useState(false);
   const [badgeSheet, setBadgeSheet] = useState(null); // null, or {k} = the badge to show first
   const [visErr, setVisErr] = useState("");
   const today = dateKey();
@@ -4471,16 +4470,12 @@ function ProfileTab({ history, profile, setProfile, onFreeze, kcal, acct, vis, o
         return (
           <>
             {won.length > 0 && <div data-badges-box style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>{won.map((a, i) => tile(a, i, won))}</div>}
-            {locked.length > 0 && (
-              <>
-                <button data-badges-locked aria-expanded={lockedOpen} onClick={() => { sfxTap(); setLockedOpen(o => !o); }} style={{ ...btnBase, width: "100%", marginTop: won.length ? 8 : 0, padding: "10px 12px", borderRadius: 12, background: "transparent", border: `1px dashed ${C.line}`, color: C.dim, fontSize: 13, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <span>🔒 {T("achLockedList", { n: locked.length })}</span><Chevron open={lockedOpen} />
-                </button>
-                <Expand open={lockedOpen}>
-                  <div data-badges-box={won.length ? undefined : ""} style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, paddingTop: 8 }}>{locked.map((a, i) => tile(a, i, locked))}</div>
-                </Expand>
-              </>
-            )}
+            {/* Michael (Oct 18): a clear button to all badges and how far each one is (the › in the title was too small) */}
+            <button type="button" data-badges-all onClick={() => { sfxTap(); setBadgeSheet({}); }} style={{ ...btnBase, width: "100%", marginTop: won.length ? 8 : 0, padding: "12px 13px", borderRadius: 12, background: SOFT(), color: C.chalk, fontSize: 14, display: "flex", alignItems: "center", gap: 10, textAlign: "left" }}>
+              <span style={{ flex: 1, minWidth: 0 }}>{T("achOpenAll")}</span>
+              {locked.length > 0 && <span style={{ fontSize: 12.5, fontWeight: 600, color: C.dim, whiteSpace: "nowrap" }}>🔒 {locked.length}</span>}
+              <span aria-hidden="true" style={{ fontSize: 20, lineHeight: 1, color: C.signal }}>›</span>
+            </button>
           </>
         );
       })()}
