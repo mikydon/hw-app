@@ -10,6 +10,12 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 
 <!-- New version: add a "## x.y.z (date)" section on top (web-only history uses "## Browser beta x.y.z (date)"). On a push to main, .github/workflows/build.yml builds everything and .github/scripts/releases.sh creates/updates the releases (commit = the push, or the one in a commit comment). -->
 
+## 1.7.1 (2026-10-18)
+
+- Sign in with e-mail and password, next to Google (Friends and the first start): create an account (a confirmation e-mail is sent), sign in, or get a link to set a new password if you forgot it. Google Play's reviewers needed this: a Google account always asks a new device for a code, so they couldn't sign in.
+- Settings → Account & cloud → Password: change your password (your current one confirms it), add a password to a Google account so you can also sign in with that e-mail, get a reset link, or send the e-mail confirmation again.
+- Deleting an e-mail account is confirmed with its password (Google accounts: Google, as before).
+
 ## 1.7.0 (2026-10-18)
 
 **A big update: a new APK** (download it in the app and tap Install; your data stays). Compared with 1.6.5:

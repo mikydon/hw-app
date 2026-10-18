@@ -33,7 +33,7 @@ const THEMES = {
   slate:  { ink: "#15181d", panel: "#1f242b", panelHi: "#2a313a", line: "#3a434f", chalk: "#f1f4f8", dim: "#9aa6b4", edge: "#0e1115" },
   coffee: { ink: "#1c140f", panel: "#2a1f17", panelHi: "#382a20", line: "#4d3a2c", chalk: "#fbf3ec", dim: "#b8a291", edge: "#130d09" },
 };
-const APP_VERSION = "1.7.0";
+const APP_VERSION = "1.7.1";
 // Big Shoulders has no Cyrillic, so Oswald (also condensed) covers Ukrainian. The browser only
 // downloads the Oswald unicode ranges a page actually uses.
 // 1.7.0: 'HW Emoji' = the app's own emoji (Fluent 3D, fonts/hw-emoji.ttf) for the emoji the app shows; BODY_SYS
@@ -2575,10 +2575,10 @@ function Onboarding({ start = 0, profile, setProfile, kcal, setKcal, onDone, acc
   const num = (v, max) => v.replace(/[^0-9]/g, "").slice(0, max);
   const filled = { acct: signedIn, name: !!name.trim(), hc: !!(hcRes && hcRes.ok), sex: !!sex, birth: year.length === 4, height: !!height, weight: !!weight, activity: !!activity, goal: true }[id];
   const [busy, setBusy] = useState(false);
-  const signIn = () => {
+  const signIn = cred => {
     if (!age16 || busy) return;
     unlockAudio(); setBusy(true); setErr("");
-    onSignIn().then(r => {
+    onSignIn(cred && cred.email ? cred : undefined).then(r => {
       // details saved with the account (a cloud backup without workouts) fill in the steps, marked "from your account"
       const g = r.got, gp = (g && g.profile) || {}, gk = (g && g.kcal) || {}, f = (g && g.fields) || [], ids = [];
       if (f.includes("name") && gp.name) { setName(gp.name); ids.push("name"); }
@@ -2669,7 +2669,8 @@ function Onboarding({ start = 0, profile, setProfile, kcal, setKcal, onDone, acc
               <span>{T("frAge", { n: ACCOUNT_AGE })}</span>
             </button>
             <button onClick={() => { sfxTap(); openExternal(PRIVACY_URL); }} style={{ ...btnBase, background: "transparent", color: C.sky, fontSize: 13, padding: "4px 4px 0 38px" }}>{T("privacyLink")} <Arrow size="1.25em" style={{ verticalAlign: "-0.08em" }} /></button>
-            <button data-ob-signin onClick={signIn} disabled={!age16 || busy} className="b3d" style={{ ...bigBtn(C.chalk, C.ink), marginTop: 14, opacity: age16 ? 1 : 0.45, display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}><GLogo />{busy ? T("frSigning") : T("frSignIn")}</button>
+            <button data-ob-signin onClick={() => signIn()} disabled={!age16 || busy} className="b3d" style={{ ...bigBtn(C.chalk, C.ink), marginTop: 14, opacity: age16 ? 1 : 0.45, display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}><GLogo />{busy ? T("frSigning") : T("frSignIn")}</button>
+            <EmailSignIn ok={age16} busy={busy} onGo={signIn} />
           </>}
         </>}
         {id === "name" && <>
@@ -4939,11 +4940,96 @@ function cloudErr(e) {
   if (c === "nick-taken") return T("frNickTaken");
   if (c === "so-backup") return T("acSignOutNoBk");
   if (c === "so-workout") return T("acSignOutWorkout");
+  if (/email-already-in-use|credential-already-in-use|provider-already-linked/i.test(c)) return T("acEmailUsed");
+  if (/weak-password|password-does-not-meet/i.test(c)) return T("acPwWeak", { n: PW_MIN });
+  if (/requires-recent-login/i.test(c)) return T("acRelogin");
+  if (/invalid-email/i.test(c)) return T("acEmailInvalid");
+  if (/invalid-credential|wrong-password|user-not-found|missing-password|invalid-login/i.test(c)) return T("acEmailBad");
+  if (/too-many-requests/i.test(c)) return T("acEmailMany");
+  if (c === "need-pw") return T("acDelPw");
   return T("frErr", { e: c.replace(/^auth\//, "") || "?" });
 }
 const nickFrom = name => String(name || "").normalize("NFC").replace(/\s+/g, "_").replace(/[^\p{L}\p{N}_.-]/gu, "").slice(0, 20);
 // Google's "G" on the sign-in buttons
 function GLogo() { return <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.6 5.4 2.7 13.3l7.9 6.1C12.5 13.6 17.8 9.5 24 9.5z"/><path fill="#4285F4" d="M46.1 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.4c-.5 2.9-2.2 5.3-4.6 6.9l7.4 5.7c4.3-4 6.9-9.9 6.9-16.6z"/><path fill="#FBBC05" d="M10.6 28.6c-.5-1.4-.8-3-.8-4.6s.3-3.2.8-4.6l-7.9-6.1C1 16.6 0 20.2 0 24s1 7.4 2.7 10.7l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.4-5.7c-2.1 1.4-4.8 2.3-8.5 2.3-6.2 0-11.5-4.1-13.4-9.9l-7.9 6.1C6.6 42.6 14.6 48 24 48z"/></svg>; }
+// 1.7.1 (Michael, Oct 18): e-mail + password next to Google, for everyone: sign in, create an account (a confirmation
+// e-mail goes out) or "forgot password" (Firebase e-mails a link to set a new one). Passwords: at least 8 characters.
+const PW_MIN = 8;
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const pwField = { display: "block", width: "100%", boxSizing: "border-box", fontFamily: BODY, fontSize: 16, padding: "12px 14px", borderRadius: 14, border: `1.5px solid ${C.line}`, background: C.panel, color: C.chalk, outline: "none", marginTop: 8 };
+function EmailSignIn({ ok, busy, onGo }) {
+  const [open, setOpen] = useState(false);
+  const [mode, setMode] = useState("in"); // in | new
+  const [email, setEmail] = useState("");
+  const [pw, setPw] = useState("");
+  const [pw2, setPw2] = useState("");
+  const [note, setNote] = useState(null); // {ok, t}
+  const [sending, setSending] = useState(false);
+  const em = email.trim(), isNew = mode === "new";
+  const can = ok && !busy && EMAIL_RE.test(em) && (isNew ? pw.length >= PW_MIN && pw === pw2 : pw.length > 0);
+  const go = () => { if (!can) return; sfxTap(); setNote(null); onGo({ email: em, pw, create: isNew, lang: LANG }); };
+  const forgot = () => {
+    if (!EMAIL_RE.test(em)) { setNote({ ok: false, t: T("acEmailInvalid") }); return; }
+    sfxTap(); setSending(true); setNote(null);
+    cloud().resetPw(em, LANG).then(() => setNote({ ok: true, t: T("acResetSent", { email: em }) })).catch(e => setNote({ ok: false, t: cloudErr(e) })).finally(() => setSending(false));
+  };
+  const link = { ...btnBase, background: "transparent", color: C.dim, fontSize: 13, fontWeight: 700, padding: "8px 4px", textDecoration: "underline", textUnderlineOffset: 3 };
+  return (
+    <div data-email-box={open ? mode : "closed"} style={{ marginTop: 12, textAlign: "center" }}>
+      {!open ? (
+        <button type="button" data-email-open onClick={() => { sfxTap(); setOpen(true); }} style={{ ...link, fontSize: 13.5 }}>{T("acEmailOpen")}</button>
+      ) : (
+        <div className="cardIn" style={{ textAlign: "left" }}>
+          <div style={{ fontSize: 12, color: C.dim, fontWeight: 800, textTransform: "uppercase", letterSpacing: ".04em", marginTop: 4 }}>{isNew ? T("acNewTitle") : T("acEmailOpen")}</div>
+          <input data-email-input type="email" inputMode="email" autoComplete={isNew ? "email" : "username"} autoCapitalize="off" spellCheck={false} value={email} onChange={e => setEmail(e.target.value)} placeholder={T("acEmailPh")} aria-label={T("acEmailPh")} style={pwField} />
+          <input data-pw-input type="password" autoComplete={isNew ? "new-password" : "current-password"} value={pw} onChange={e => setPw(e.target.value)} onKeyDown={e => { if (e.key === "Enter" && !isNew) go(); }} placeholder={isNew ? T("acPwNewPh", { n: PW_MIN }) : T("acPwPh")} aria-label={T("acPwPh")} style={pwField} />
+          {isNew && <input data-pw2-input type="password" autoComplete="new-password" value={pw2} onChange={e => setPw2(e.target.value)} onKeyDown={e => { if (e.key === "Enter") go(); }} placeholder={T("acPwAgainPh")} aria-label={T("acPwAgainPh")} style={pwField} />}
+          {isNew && pw2 && pw !== pw2 && <div data-pw-mismatch style={{ fontSize: 12.5, color: "#ff8a80", marginTop: 6 }}>{T("acPwMismatch")}</div>}
+          <button type="button" data-email-signin onClick={go} disabled={!can} className="b3d" style={{ ...bigBtn(C.panelHi, C.chalk), marginTop: 10, opacity: can ? 1 : 0.45 }}>{busy ? T("frSigning") : isNew ? T("acNewGo") : T("acEmailGo")}</button>
+          <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 4, marginTop: 4 }}>
+            <button type="button" data-email-mode onClick={() => { sfxTap(); setMode(isNew ? "in" : "new"); setNote(null); setPw2(""); }} style={link}>{isNew ? T("acHaveAcct") : T("acNoAcct")}</button>
+            {!isNew && <button type="button" data-pw-forgot onClick={forgot} disabled={sending} style={link}>{sending ? "…" : T("acForgot")}</button>}
+          </div>
+          {note && <div role="status" data-email-note={note.ok ? "ok" : "err"} style={{ fontSize: 13, lineHeight: 1.45, color: note.ok ? C.mint : "#ff8a80", marginTop: 6 }}>{note.t}</div>}
+        </div>
+      )}
+    </div>
+  );
+}
+// Settings → Account → Password: change it (the old one confirms), add one to a Google account, or get a reset link.
+function PwSheet({ onClose }) {
+  const info = (() => { try { return cloud().authInfo(); } catch (_) { return null; } })() || { email: "", password: false, google: false, verified: true };
+  const has = info.password;
+  const [old, setOld] = useState("");
+  const [pw, setPw] = useState("");
+  const [pw2, setPw2] = useState("");
+  const [busy, setBusy] = useState("");
+  const [note, setNote] = useState(null);
+  const can = !busy && pw.length >= PW_MIN && pw === pw2 && (!has || old.length > 0);
+  const save = () => {
+    if (!can) return; sfxTap(); setBusy("save"); setNote(null);
+    (has ? cloud().changePw(old, pw) : cloud().addPw(pw))
+      .then(() => { sfxCheck(); setOld(""); setPw(""); setPw2(""); setNote({ ok: true, t: has ? T("acPwChanged") : T("acPwAdded", { email: info.email }) }); })
+      .catch(e => setNote({ ok: false, t: cloudErr(e) })).finally(() => setBusy(""));
+  };
+  const mail = (k, fn, okText) => { sfxTap(); setBusy(k); setNote(null); fn().then(() => setNote({ ok: true, t: okText })).catch(e => setNote({ ok: false, t: cloudErr(e) })).finally(() => setBusy("")); };
+  const link = { ...btnBase, background: "transparent", color: C.sky, fontSize: 13.5, fontWeight: 700, padding: "8px 0" };
+  return (
+    <Sheet title={has ? T("acPwChange") : T("acPwAdd")} onClose={onClose}>
+      <div data-pw-sheet={has ? "change" : "add"}>
+        <div style={{ fontSize: 13.5, color: C.dim, lineHeight: 1.5 }}>{has ? T("acPwChangeD", { email: info.email }) : T("acPwAddD", { email: info.email })}</div>
+        {has && <input data-pw-old type="password" autoComplete="current-password" value={old} onChange={e => setOld(e.target.value)} placeholder={T("acPwOldPh")} aria-label={T("acPwOldPh")} style={pwField} />}
+        <input data-pw-new type="password" autoComplete="new-password" value={pw} onChange={e => setPw(e.target.value)} placeholder={T("acPwNewPh", { n: PW_MIN })} aria-label={T("acPwNewPh", { n: PW_MIN })} style={pwField} />
+        <input data-pw-new2 type="password" autoComplete="new-password" value={pw2} onChange={e => setPw2(e.target.value)} onKeyDown={e => { if (e.key === "Enter") save(); }} placeholder={T("acPwAgainPh")} aria-label={T("acPwAgainPh")} style={pwField} />
+        {pw2 && pw !== pw2 && <div data-pw-mismatch style={{ fontSize: 12.5, color: "#ff8a80", marginTop: 6 }}>{T("acPwMismatch")}</div>}
+        <button type="button" data-pw-save onClick={save} disabled={!can} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 12, opacity: can ? 1 : 0.45 }}>{busy === "save" ? "…" : T("acPwSave")}</button>
+        {has && <button type="button" data-pw-forgot onClick={() => mail("reset", () => cloud().resetPw(info.email, LANG), T("acResetSent", { email: info.email }))} disabled={!!busy} style={link}>{busy === "reset" ? "…" : T("acForgot")}</button>}
+        {has && !info.verified && <div style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.45, marginTop: 4 }}>{T("acNotVerified")} <button type="button" data-pw-verify onClick={() => mail("ver", () => cloud().resendVerify(LANG), T("acVerifySent", { email: info.email }))} disabled={!!busy} style={{ ...link, padding: 0, fontSize: 12.5 }}>{T("acVerifyAgain")}</button></div>}
+        {note && <div role="status" data-pw-note={note.ok ? "ok" : "err"} style={{ fontSize: 13, lineHeight: 1.45, color: note.ok ? C.mint : "#ff8a80", marginTop: 8 }}>{note.t}</div>}
+      </div>
+    </Sheet>
+  );
+}
 function PersonAvatar({ p, size = 40 }) { return <Avatar profile={{ name: p.nick || "?", pfp: p.pfp || null }} size={size} />; }
 
 // One row of a leaderboard or the friends list.
@@ -5018,7 +5104,7 @@ function FriendsTab({ acct, history, profile, social, chatWith, setChatWith, onB
   const tooYoung = age !== null && age < ACCOUNT_AGE;
   if (acct.st === "loading") return <div className="scr" style={{ padding: "30px 18px", maxWidth: 460, margin: "0 auto", color: C.dim, textAlign: "center" }}>{T("frLoading")}</div>;
   if (acct.st !== "in") {
-    const go = () => { if (!age16 || busy) return; setBusy(true); setErr(""); onSignIn().catch(e => setErr(cloudErr(e))).finally(() => setBusy(false)); };
+    const go = cred => { if (!age16 || busy) return; setBusy(true); setErr(""); onSignIn(cred && cred.email ? cred : undefined).catch(e => setErr(cloudErr(e))).finally(() => setBusy(false)); };
     return (
       <div className="scr" data-fr-out style={{ padding: "6px 18px 110px", maxWidth: 460, margin: "0 auto" }}>
         <Sect title={T("frIntroTitle")}>
@@ -5035,11 +5121,12 @@ function FriendsTab({ acct, history, profile, social, chatWith, setChatWith, onB
               <span>{T("frAge", { n: ACCOUNT_AGE })}</span>
             </button>
             <button data-privacy onClick={() => { sfxTap(); openExternal(PRIVACY_URL); }} style={{ ...btnBase, background: "transparent", color: C.sky, fontSize: 13, padding: "4px 4px 0 38px" }}>{T("privacyLink")} <Arrow size="1.25em" style={{ verticalAlign: "-0.08em" }} /></button>
-            <button data-fr-signin onClick={go} disabled={!age16 || busy} className="b3d"
+            <button data-fr-signin onClick={() => go()} disabled={!age16 || busy} className="b3d"
               style={{ ...bigBtn(C.chalk, C.ink), marginTop: 14, display: "flex", alignItems: "center", justifyContent: "center", gap: 10, opacity: age16 ? 1 : 0.45 }}>
               <GLogo />
               {busy ? T("frSigning") : T("frSignIn")}
             </button>
+            <EmailSignIn ok={age16} busy={busy} onGo={go} />
           </>
         )}
         {err && <div role="alert" style={{ fontSize: 13, color: "#ff8a80", marginTop: 10 }}>{err}</div>}
@@ -5731,12 +5818,15 @@ function LiveNotice({ n, people, onOpen, onClose }) {
 // Settings → Account & cloud: who is signed in, the cloud backup, sign out, delete the account.
 function AccountBox({ acct, cloudBk, onOpen, onRestore, onBackupNow, onSignOut, onDelete, settings, set }) {
   const [sure, setSure] = useState(false);
+  const [askPw, setAskPw] = useState(false); // e-mail account after a restart: the password confirms the deletion
+  const [pwOpen, setPwOpen] = useState(false);
+  const [delPw, setDelPw] = useState("");
   const [soSure, setSoSure] = useState(false);
   const [busy, setBusy] = useState("");
   const [msg, setMsg] = useState("");
   const rowBtn = first => ({ ...btnBase, width: "100%", background: "transparent", color: C.chalk, padding: "13px 16px", textAlign: "left", borderRadius: 0, borderTop: first ? "none" : `1px solid ${C.line}`, fontSize: 15, display: "flex", alignItems: "center", gap: 10 });
   const sub = t => <span style={{ display: "block", fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2 }}>{t}</span>;
-  const run = (k, fn) => { setBusy(k); setMsg(""); fn().then(m => m && setMsg(m)).catch(e => setMsg(cloudErr(e))).finally(() => setBusy("")); };
+  const run = (k, fn) => { setBusy(k); setMsg(""); fn().then(m => m && setMsg(m)).catch(e => { if (e && e.code === "need-pw") setAskPw(true); setMsg(cloudErr(e)); }).finally(() => setBusy("")); };
   if (acct.st !== "in") return (
     <ListSect title={T("acTitle")}>
       <button data-acct-signin onClick={() => { sfxTap(); onOpen(); }} style={rowBtn(true)}>
@@ -5759,6 +5849,10 @@ function AccountBox({ acct, cloudBk, onOpen, onRestore, onBackupNow, onSignOut, 
           {onBackupNow && <button data-cloud-bk-now onClick={() => { sfxTap(); run("bk", onBackupNow); }} disabled={busy === "bk"}
             style={{ ...btnBase, marginTop: 10, padding: "8px 14px", borderRadius: 99, fontSize: 13, background: C.panelHi, color: C.chalk, border: `1px solid ${C.line}` }}>{busy === "bk" ? T("acBkNowBusy") : T("acBkNow")}</button>}
         </div>
+        <button data-acct-pw onClick={() => { sfxTap(); setPwOpen(true); }} style={rowBtn(false)}>
+          <span style={{ flex: 1, minWidth: 0 }}>{T("acPwRow")}{sub(T("acPwRowD"))}</span>
+          <Arrow />
+        </button>
         {pushSupported() && settings && set && <PushRow settings={settings} set={set} />}
         <button data-acct-restore onClick={() => run("rs", onRestore)} style={rowBtn(false)}>
           <span style={{ flex: 1 }}>{busy === "rs" ? "…" : T("acRestore")}{sub(T("acRestoreD"))}</span>
@@ -5772,13 +5866,18 @@ function AccountBox({ acct, cloudBk, onOpen, onRestore, onBackupNow, onSignOut, 
         </button>
         <button data-acct-delete onClick={() => {
             if (!sure) { setSure(true); setTimeout(() => setSure(false), 4000); return; }
-            setSure(false); run("del", onDelete);
+            setSure(false); run("del", () => onDelete(askPw ? delPw : undefined));
           }} style={{ ...rowBtn(false), color: "#ff8a80", display: "block" }}>
           {busy === "del" ? "…" : sure ? T("acDeleteSure") : T("acDelete")}
           {sub(`${T("acDeleteD")} ${T("acDelGoogle")}`)}
         </button>
+        {askPw && <div style={{ padding: "0 16px 14px" }}>
+          <input data-del-pw type="password" autoComplete="current-password" value={delPw} onChange={e => setDelPw(e.target.value)} placeholder={T("acPwPh")} aria-label={T("acPwPh")}
+            style={{ display: "block", width: "100%", boxSizing: "border-box", fontFamily: BODY, fontSize: 16, padding: "11px 14px", borderRadius: 12, border: `1.5px solid ${C.line}`, background: C.panel, color: C.chalk, outline: "none" }} />
+        </div>}
       </ListSect>
       {msg && <div role="status" style={{ fontSize: 13, color: msg.startsWith("✓") ? C.mint : "#ff8a80", marginTop: 8 }}>{msg}</div>}
+      {pwOpen && <PwSheet onClose={() => setPwOpen(false)} />}
     </>
   );
 }
@@ -7089,8 +7188,8 @@ export default function App() {
       return cloud().getProfile(u.uid).then(p => { setCloudMem({ uid: u.uid, prof: p, ...(cloudMem().owner ? {} : { owner: u.uid }), ...(cloudMem().memUid ? {} : { memUid: u.uid }) }); setAcct({ st: "in", uid: u.uid, prof: p }); }); // the backup listener below merges the account's data
     }).catch(() => setAcct(a => ({ ...a, st: "in" }))); // offline: keep the remembered profile
   }, [loaded]);
-  const signIn = async () => {
-    const u = await cloud().signIn();
+  const signIn = async cred => {
+    const u = await cloud().signIn(cred);
     try { cloud().onUser(x => { if (!x) { setCloudMem({ uid: null, prof: null }); setAcct(a => (a.st === "in" ? { st: "out" } : a)); } }); } catch (_) {}
     const p = await cloud().getProfile(u.uid);
     setCloudMem({ uid: u.uid, prof: p, bk: null, synced: "", bkHash: null }); setCloudBk(null);
@@ -7155,8 +7254,8 @@ export default function App() {
     setOnboard(0);
   };
   const goneLocal = () => { try { const m = cloudMem(), all = { ...(m.acctMem || {}) }; delete all[acct.uid]; localStorage.setItem(CLOUD_KEY, JSON.stringify({ pushAsked: m.pushAsked, acctMem: all })); localStorage.removeItem(SYNC_KEY); } catch (_) {} setCloudBk(null); cloudReady.current = false; cloudN.current = null; setChatWith(null); setAcct({ st: "out" }); };
-  const deleteAccount = async () => {
-    try { await cloud().deleteAccount({ ...acct.prof, sent: cloudMem().sent || [] }); }
+  const deleteAccount = async pw => {
+    try { await cloud().deleteAccount({ ...acct.prof, sent: cloudMem().sent || [], pw }); }
     catch (e) {
       // cancelled at Google's confirmation: nothing was deleted
       if (/cancel|popup-closed|12501/i.test(String((e && (e.code || e.message)) || ""))) return T("acDelCancelled");
