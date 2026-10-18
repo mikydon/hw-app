@@ -437,7 +437,6 @@ export default {
     acEmailBad: "Nieprawidłowy e-mail lub hasło.",
     acEmailMany: "Zbyt wiele prób. Spróbuj za kilka minut.",
     acDelPw: "Wpisz poniżej hasło i stuknij ponownie Usuń konto.",
-    acEmailOpen: "Zaloguj się e-mailem i hasłem",
     acEmailInvalid: "To nie wygląda na adres e-mail.",
     acResetSent: "Jeśli {email} ma konto, przyjdzie na nie link do nowego hasła (sprawdź też spam).",
     acNewTitle: "Nowe konto z e-mailem",
@@ -445,8 +444,9 @@ export default {
     acPwAgainPh: "Nowe hasło jeszcze raz",
     acPwMismatch: "Hasła nie są takie same.",
     acNewGo: "Utwórz konto",
-    acHaveAcct: "Mam już konto",
-    acNoAcct: "Nie masz konta? Utwórz je",
+    acOr: "albo",
+    acNoAcctQ: "Nie masz konta?",
+    acHaveAcctQ: "Masz już konto?",
     acForgot: "Nie pamiętasz hasła?",
     acPwChange: "Zmień hasło",
     acPwAdd: "Dodaj hasło",
@@ -1218,6 +1218,9 @@ export default {
   news143: [
     "Układ Szkło wygląda bardziej jak prawdziwe szkło: połysk od rogu, delikatne odbicie, jasna górna krawędź i delikatna poświata kolorów motywu za polami. Pasek startu i menu ☰ do niego pasują, a telefon nadal się nie męczy.",
     "Górny pasek: na samej górze strony wypełnia ekran od krawędzi do krawędzi, bez linii u góry i po bokach.",
+  ],
+  news172: [
+    "Logowanie wygląda jak w większości aplikacji: najpierw e-mail i hasło, potem „albo” i przycisk Google.",
   ],
   news171: [
     "Logowanie e-mailem i hasłem obok Google: utwórz konto albo poproś o link do nowego hasła, gdy je zapomnisz.",

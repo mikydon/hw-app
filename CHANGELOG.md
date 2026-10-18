@@ -10,6 +10,10 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 
 <!-- New version: add a "## x.y.z (date)" section on top (web-only history uses "## Browser beta x.y.z (date)"). On a push to main, .github/workflows/build.yml builds everything and .github/scripts/releases.sh creates/updates the releases (commit = the push, or the one in a commit comment). -->
 
+## 1.7.2 (2026-10-18)
+
+- The sign-in page (Friends and the first start) looks like in most apps: e-mail and password first with "Forgot password?" and "No account? Create account", then "or" and the Google button.
+
 ## 1.7.1 (2026-10-18)
 
 - Sign in with e-mail and password, next to Google (Friends and the first start): create an account (a confirmation e-mail is sent), sign in, or get a link to set a new password if you forgot it. Google Play's reviewers needed this: a Google account always asks a new device for a code, so they couldn't sign in.

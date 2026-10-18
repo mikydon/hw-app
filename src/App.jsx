@@ -33,7 +33,7 @@ const THEMES = {
   slate:  { ink: "#15181d", panel: "#1f242b", panelHi: "#2a313a", line: "#3a434f", chalk: "#f1f4f8", dim: "#9aa6b4", edge: "#0e1115" },
   coffee: { ink: "#1c140f", panel: "#2a1f17", panelHi: "#382a20", line: "#4d3a2c", chalk: "#fbf3ec", dim: "#b8a291", edge: "#130d09" },
 };
-const APP_VERSION = "1.7.1";
+const APP_VERSION = "1.7.2";
 // Big Shoulders has no Cyrillic, so Oswald (also condensed) covers Ukrainian. The browser only
 // downloads the Oswald unicode ranges a page actually uses.
 // 1.7.0: 'HW Emoji' = the app's own emoji (Fluent 3D, fonts/hw-emoji.ttf) for the emoji the app shows; BODY_SYS
@@ -2669,8 +2669,8 @@ function Onboarding({ start = 0, profile, setProfile, kcal, setKcal, onDone, acc
               <span>{T("frAge", { n: ACCOUNT_AGE })}</span>
             </button>
             <button onClick={() => { sfxTap(); openExternal(PRIVACY_URL); }} style={{ ...btnBase, background: "transparent", color: C.sky, fontSize: 13, padding: "4px 4px 0 38px" }}>{T("privacyLink")} <Arrow size="1.25em" style={{ verticalAlign: "-0.08em" }} /></button>
-            <button data-ob-signin onClick={() => signIn()} disabled={!age16 || busy} className="b3d" style={{ ...bigBtn(C.chalk, C.ink), marginTop: 14, opacity: age16 ? 1 : 0.45, display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}><GLogo />{busy ? T("frSigning") : T("frSignIn")}</button>
-            <EmailSignIn ok={age16} busy={busy} onGo={signIn} />
+            <EmailSignIn ok={age16} busy={busy} onGo={signIn}
+              google={<button data-ob-signin onClick={() => signIn()} disabled={!age16 || busy} className="b3d" style={{ ...bigBtn(C.chalk, C.ink), opacity: age16 ? 1 : 0.45, display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}><GLogo />{T("frSignIn")}</button>} />
           </>}
         </>}
         {id === "name" && <>
@@ -4957,8 +4957,8 @@ function GLogo() { return <svg width="20" height="20" viewBox="0 0 48 48" aria-h
 const PW_MIN = 8;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const pwField = { display: "block", width: "100%", boxSizing: "border-box", fontFamily: BODY, fontSize: 16, padding: "12px 14px", borderRadius: 14, border: `1.5px solid ${C.line}`, background: C.panel, color: C.chalk, outline: "none", marginTop: 8 };
-function EmailSignIn({ ok, busy, onGo }) {
-  const [open, setOpen] = useState(false);
+// 1.7.2 (Michael: "like most apps"): the e-mail form comes first, then "or" and the Google button (`google`).
+function EmailSignIn({ ok, busy, onGo, google }) {
   const [mode, setMode] = useState("in"); // in | new
   const [email, setEmail] = useState("");
   const [pw, setPw] = useState("");
@@ -4975,24 +4975,25 @@ function EmailSignIn({ ok, busy, onGo }) {
   };
   const link = { ...btnBase, background: "transparent", color: C.dim, fontSize: 13, fontWeight: 700, padding: "8px 4px", textDecoration: "underline", textUnderlineOffset: 3 };
   return (
-    <div data-email-box={open ? mode : "closed"} style={{ marginTop: 12, textAlign: "center" }}>
-      {!open ? (
-        <button type="button" data-email-open onClick={() => { sfxTap(); setOpen(true); }} style={{ ...link, fontSize: 13.5 }}>{T("acEmailOpen")}</button>
-      ) : (
-        <div className="cardIn" style={{ textAlign: "left" }}>
-          <div style={{ fontSize: 12, color: C.dim, fontWeight: 800, textTransform: "uppercase", letterSpacing: ".04em", marginTop: 4 }}>{isNew ? T("acNewTitle") : T("acEmailOpen")}</div>
-          <input data-email-input type="email" inputMode="email" autoComplete={isNew ? "email" : "username"} autoCapitalize="off" spellCheck={false} value={email} onChange={e => setEmail(e.target.value)} placeholder={T("acEmailPh")} aria-label={T("acEmailPh")} style={pwField} />
-          <input data-pw-input type="password" autoComplete={isNew ? "new-password" : "current-password"} value={pw} onChange={e => setPw(e.target.value)} onKeyDown={e => { if (e.key === "Enter" && !isNew) go(); }} placeholder={isNew ? T("acPwNewPh", { n: PW_MIN }) : T("acPwPh")} aria-label={T("acPwPh")} style={pwField} />
-          {isNew && <input data-pw2-input type="password" autoComplete="new-password" value={pw2} onChange={e => setPw2(e.target.value)} onKeyDown={e => { if (e.key === "Enter") go(); }} placeholder={T("acPwAgainPh")} aria-label={T("acPwAgainPh")} style={pwField} />}
-          {isNew && pw2 && pw !== pw2 && <div data-pw-mismatch style={{ fontSize: 12.5, color: "#ff8a80", marginTop: 6 }}>{T("acPwMismatch")}</div>}
-          <button type="button" data-email-signin onClick={go} disabled={!can} className="b3d" style={{ ...bigBtn(C.panelHi, C.chalk), marginTop: 10, opacity: can ? 1 : 0.45 }}>{busy ? T("frSigning") : isNew ? T("acNewGo") : T("acEmailGo")}</button>
-          <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 4, marginTop: 4 }}>
-            <button type="button" data-email-mode onClick={() => { sfxTap(); setMode(isNew ? "in" : "new"); setNote(null); setPw2(""); }} style={link}>{isNew ? T("acHaveAcct") : T("acNoAcct")}</button>
-            {!isNew && <button type="button" data-pw-forgot onClick={forgot} disabled={sending} style={link}>{sending ? "…" : T("acForgot")}</button>}
-          </div>
-          {note && <div role="status" data-email-note={note.ok ? "ok" : "err"} style={{ fontSize: 13, lineHeight: 1.45, color: note.ok ? C.mint : "#ff8a80", marginTop: 6 }}>{note.t}</div>}
+    <div data-email-box={mode} style={{ marginTop: 6 }}>
+      {isNew && <div style={{ fontSize: 12, color: C.dim, fontWeight: 800, textTransform: "uppercase", letterSpacing: ".04em", marginTop: 8 }}>{T("acNewTitle")}</div>}
+      <input data-email-input type="email" inputMode="email" autoComplete={isNew ? "email" : "username"} autoCapitalize="off" spellCheck={false} value={email} onChange={e => setEmail(e.target.value)} placeholder={T("acEmailPh")} aria-label={T("acEmailPh")} style={pwField} />
+      <input data-pw-input type="password" autoComplete={isNew ? "new-password" : "current-password"} value={pw} onChange={e => setPw(e.target.value)} onKeyDown={e => { if (e.key === "Enter" && !isNew) go(); }} placeholder={isNew ? T("acPwNewPh", { n: PW_MIN }) : T("acPwPh")} aria-label={T("acPwPh")} style={pwField} />
+      {isNew && <input data-pw2-input type="password" autoComplete="new-password" value={pw2} onChange={e => setPw2(e.target.value)} onKeyDown={e => { if (e.key === "Enter") go(); }} placeholder={T("acPwAgainPh")} aria-label={T("acPwAgainPh")} style={pwField} />}
+      {isNew && pw2 && pw !== pw2 && <div data-pw-mismatch style={{ fontSize: 12.5, color: "#ff8a80", marginTop: 6 }}>{T("acPwMismatch")}</div>}
+      {!isNew && <div style={{ textAlign: "right" }}><button type="button" data-pw-forgot onClick={forgot} disabled={sending} style={{ ...link, padding: "8px 2px 0" }}>{sending ? "…" : T("acForgot")}</button></div>}
+      <button type="button" data-email-signin onClick={go} disabled={!can} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 12, opacity: can ? 1 : 0.45 }}>{busy ? T("frSigning") : isNew ? T("acNewGo") : T("acEmailGo")}</button>
+      {note && <div role="status" data-email-note={note.ok ? "ok" : "err"} style={{ fontSize: 13, lineHeight: 1.45, color: note.ok ? C.mint : "#ff8a80", marginTop: 8 }}>{note.t}</div>}
+      <div style={{ textAlign: "center", marginTop: 6 }}>
+        <span style={{ fontSize: 13.5, color: C.dim }}>{isNew ? T("acHaveAcctQ") : T("acNoAcctQ")} </span>
+        <button type="button" data-email-mode onClick={() => { sfxTap(); setMode(isNew ? "in" : "new"); setNote(null); setPw2(""); }} style={{ ...link, color: C.signal, textDecoration: "none", padding: "8px 2px", fontSize: 13.5 }}>{isNew ? T("acEmailGo") : T("acNewGo")}</button>
+      </div>
+      {google && <>
+        <div aria-hidden="true" style={{ display: "flex", alignItems: "center", gap: 12, margin: "10px 0 12px", color: C.dim, fontSize: 12.5, fontWeight: 700 }}>
+          <span style={{ flex: 1, height: 1, background: C.line }} />{T("acOr")}<span style={{ flex: 1, height: 1, background: C.line }} />
         </div>
-      )}
+        {google}
+      </>}
     </div>
   );
 }
@@ -5121,12 +5122,12 @@ function FriendsTab({ acct, history, profile, social, chatWith, setChatWith, onB
               <span>{T("frAge", { n: ACCOUNT_AGE })}</span>
             </button>
             <button data-privacy onClick={() => { sfxTap(); openExternal(PRIVACY_URL); }} style={{ ...btnBase, background: "transparent", color: C.sky, fontSize: 13, padding: "4px 4px 0 38px" }}>{T("privacyLink")} <Arrow size="1.25em" style={{ verticalAlign: "-0.08em" }} /></button>
-            <button data-fr-signin onClick={() => go()} disabled={!age16 || busy} className="b3d"
-              style={{ ...bigBtn(C.chalk, C.ink), marginTop: 14, display: "flex", alignItems: "center", justifyContent: "center", gap: 10, opacity: age16 ? 1 : 0.45 }}>
-              <GLogo />
-              {busy ? T("frSigning") : T("frSignIn")}
-            </button>
-            <EmailSignIn ok={age16} busy={busy} onGo={go} />
+            <EmailSignIn ok={age16} busy={busy} onGo={go}
+              google={<button data-fr-signin onClick={() => go()} disabled={!age16 || busy} className="b3d"
+                style={{ ...bigBtn(C.chalk, C.ink), display: "flex", alignItems: "center", justifyContent: "center", gap: 10, opacity: age16 ? 1 : 0.45 }}>
+                <GLogo />
+                {T("frSignIn")}
+              </button>} />
           </>
         )}
         {err && <div role="alert" style={{ fontSize: 13, color: "#ff8a80", marginTop: 10 }}>{err}</div>}

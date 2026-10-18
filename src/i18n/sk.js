@@ -437,7 +437,6 @@ export default {
     acEmailBad: "Nesprávny e-mail alebo heslo.",
     acEmailMany: "Priveľa pokusov. Skús to o pár minút.",
     acDelPw: "Napíš nižšie heslo a ťukni znova na Zmazať účet.",
-    acEmailOpen: "Prihlásiť sa e-mailom a heslom",
     acEmailInvalid: "Toto nevyzerá ako e-mailová adresa.",
     acResetSent: "Ak má {email} účet, príde naň odkaz na nové heslo (pozri aj spam).",
     acNewTitle: "Nový účet s e-mailom",
@@ -445,8 +444,9 @@ export default {
     acPwAgainPh: "Nové heslo ešte raz",
     acPwMismatch: "Heslá sa nezhodujú.",
     acNewGo: "Vytvoriť účet",
-    acHaveAcct: "Už mám účet",
-    acNoAcct: "Nemáš účet? Vytvor si ho",
+    acOr: "alebo",
+    acNoAcctQ: "Nemáš účet?",
+    acHaveAcctQ: "Už máš účet?",
     acForgot: "Zabudnuté heslo?",
     acPwChange: "Zmeniť heslo",
     acPwAdd: "Pridať heslo",
@@ -1218,6 +1218,9 @@ export default {
   news143: [
     "Rozloženie Sklo vyzerá viac ako skutočné sklo: odlesk z rohu, jemný odraz, svetlá horná hrana a jemná žiara farieb témy za boxmi. Lišta so štartom a menu ☰ k nemu ladia a mobil to stále nezaťažuje.",
     "Horná lišta: keď si úplne hore, vypĺňa obrazovku od kraja po kraj, bez čiary hore a po bokoch.",
+  ],
+  news172: [
+    "Prihlásenie vyzerá ako vo väčšine appiek: najprv e-mail a heslo, potom „alebo“ a tlačidlo Google.",
   ],
   news171: [
     "Prihlásenie e-mailom a heslom vedľa Googlu: vytvor si účet alebo si nechaj poslať odkaz na nové heslo, keď ho zabudneš.",
