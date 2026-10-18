@@ -660,7 +660,6 @@ export default {
     claimOpen: "Öffnen",
     claimTap: "Neue Stufe · zum Öffnen tippen",
     claimD: "Deine verdienten Abzeichen und Ränge warten als Karten.",
-    pushAllow: "Benachrichtigungen erlauben",
     achUp: "{name}: {rank}",
     maxBest: ", max. {v}",
     pvOpen: "Profil ansehen",
@@ -1227,7 +1226,7 @@ export default {
   news174: [
     "Verdiente Abzeichen und Ränge warten jetzt im Profil als verdeckte Karten: Tippe auf eine oder auf der Profilseite auf Öffnen und öffne sie wie nach einem Training. Das ☰-Menü zeigt, wie viele warten.",
     "📱 Nach einer Neuinstallation fragt die App wieder nach Benachrichtigungen und meldet sich wieder für Benachrichtigungen zu neuen Versionen an (vorher glaubte sie wegen der von Android wiederhergestellten Daten, das sei schon erledigt).",
-    "📱 Einstellungen: ein Button „Benachrichtigungen erlauben“, wenn Android noch nicht gefragt hat.",
+    "📱 Einstellungen: Die Benachrichtigungs-Schalter sind aus, solange Android keine Benachrichtigungen erlaubt; wenn du einen einschaltest, fragt Android nach der Erlaubnis.",
   ],
   news173: [
     "Die Bildschirmflüssigkeit ist standardmäßig 60 Hz (spart Akku); die höchste Bildrate wählst du unter Einstellungen → Aussehen.",

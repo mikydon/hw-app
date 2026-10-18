@@ -14,7 +14,7 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 
 - Badges and exercise ranks you have earned now wait on your profile as face-down cards until you open them: tap one on the Badges or Ranks page, or Open on the Profile page, and they flip like the reward cards after a workout (rarest last). The ☰ menu counts how many are waiting. Everything earned before this update starts face down. Others always see your real badges and ranks.
 - *(Android app only)* After reinstalling the app, it asks for notification permission again and subscribes to "new version" notifications again. Android's automatic backup restored the old app data, so the app thought it had already done both, and a reinstalled phone stayed silent.
-- *(Android app only)* Settings shows an "Allow notifications" button while Android hasn't been asked yet (for example, after the question was dismissed).
+- *(Android app only)* Settings: the notification switches show what really happens. They are off while Android doesn't allow notifications, and turning one on asks Android for permission (if Android won't ask any more, the line under it says where to allow them).
 
 ## 1.7.3 (2026-10-18)
 

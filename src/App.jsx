@@ -5931,21 +5931,23 @@ async function pushRegister({ on, ask, alive = () => true }) {
 // The test button sends a notification to this account's own phones through the push server and follows it to the
 // end: registered? sent by Google? arrived here? (an open app gets it as an event, Android shows nothing then).
 // "New version" notifications (1.6.5) + the same "turned off in Android" line as PushRow when Android blocks them (1.7.3)
+// 1.7.4 (Michael, Oct 18): the switch shows what really happens: off while Android doesn't allow notifications, and
+// turning it on asks Android (when Android won't ask any more, the line under it says where to allow them).
 function UpdNotifRow({ settings, set }) {
-  const on = settings.updNotif !== false;
   const [perm, setPerm] = useState(null);
+  const want = settings.updNotif !== false, on = want && perm !== "denied" && perm !== "prompt";
   useEffect(() => { const chk = () => { if (!document.hidden) pushPermission(false).then(setPerm); }; chk(); document.addEventListener("visibilitychange", chk); return () => document.removeEventListener("visibilitychange", chk); }, []);
   return (
     <div data-upd-notif>
-      <SettingRow title={T("updNotif")} desc={T("updNotifD")} on={on} onClick={async () => { const v = !on; set("updNotif", v); if (v) setPerm(await pushPermission(true)); }} />
-      {on && perm === "denied" && <div data-upd-denied style={{ fontSize: 12, color: C.signal, lineHeight: 1.45, padding: "0 16px 12px" }}>{T("pushDenied")}</div>}
-      {on && perm === "prompt" && <div style={{ padding: "0 16px 13px" }}><button type="button" data-upd-allow onClick={async () => { sfxTap(); setPerm(await pushPermission(true)); }} style={{ ...ghostBtn, padding: "9px 14px" }}>{T("pushAllow")}</button></div>}
+      <SettingRow title={T("updNotif")} desc={T("updNotifD")} on={on} onClick={async () => { if (on) { set("updNotif", false); return; } set("updNotif", true); setPerm(await pushPermission(true)); }} />
+      {want && perm === "denied" && <div data-upd-denied style={{ fontSize: 12, color: C.signal, lineHeight: 1.45, padding: "0 16px 12px" }}>{T("pushDenied")}</div>}
     </div>
   );
 }
 function PushRow({ settings, set }) {
-  const on = settings.push !== false;
   const [perm, setPerm] = useState(null);
+  // 1.7.4: off while Android doesn't allow notifications; turning it on asks Android and registers this phone
+  const want = settings.push !== false, on = want && perm !== "denied" && perm !== "prompt";
   const [test, setTest] = useState(null); // {st: busy|wait|got|late|err, e}
   const got = useRef(0), timer = useRef(0);
   // 1.7.3 (Michael, Oct 18: "it says notifications aren't allowed, but they are"): the answer was read only when the
@@ -5957,8 +5959,10 @@ function PushRow({ settings, set }) {
     return () => { off(); clearTimeout(timer.current); };
   }, []);
   const flipPush = async () => {
-    const v = !on; set("push", v); setTest(null);
-    if (v) setPerm(await pushPermission(true));
+    setTest(null);
+    if (on) { set("push", false); return; }
+    set("push", true);
+    const r = await pushRegister({ on: true, ask: true }); setPerm(r.perm);
   };
   const runTest = async () => {
     if (test && (test.st === "busy" || test.st === "wait")) return;
@@ -5978,9 +5982,7 @@ function PushRow({ settings, set }) {
   return (
     <div data-push-row style={{ borderTop: `1px solid ${C.line}` }}>
       <SettingRow first title={T("pushTitle")} desc={T("pushD")} on={on} onClick={flipPush} />
-      {on && perm === "denied" && <div data-push-denied style={{ fontSize: 12, color: C.signal, lineHeight: 1.45, padding: "0 16px 12px" }}>{T("pushDenied")}</div>}
-      {/* 1.7.4: Android hasn't asked yet (e.g. after a reinstall): nothing came before, the phone just stayed silent */}
-      {on && perm === "prompt" && <div style={{ padding: "0 16px 8px" }}><button type="button" data-push-allow onClick={async () => { sfxTap(); const r = await pushRegister({ on: true, ask: true }); setPerm(r.perm); }} style={{ ...bigBtn(C.signal, C.signalInk), padding: "10px 14px", fontSize: 14 }}>{T("pushAllow")}</button></div>}
+      {want && perm === "denied" && <div data-push-denied style={{ fontSize: 12, color: C.signal, lineHeight: 1.45, padding: "0 16px 12px" }}>{T("pushDenied")}</div>}
       {on && <div style={{ padding: "0 16px 13px" }}>
         <button data-push-test onClick={runTest} disabled={!!test && (test.st === "busy" || test.st === "wait")} style={{ ...ghostBtn, padding: "9px 14px", opacity: test && (test.st === "busy" || test.st === "wait") ? 0.6 : 1 }}>{test && test.st === "busy" ? "…" : T("pushTest")}</button>
         {line && <div data-push-test-st={test.st} role="status" style={{ fontSize: 12, color: line[1], lineHeight: 1.45, marginTop: 8 }}>{line[0]}</div>}

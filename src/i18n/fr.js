@@ -660,7 +660,6 @@ export default {
     claimOpen: "Ouvrir",
     claimTap: "Nouveau niveau · touche pour ouvrir",
     claimD: "Les badges et rangs que tu as gagnés t’attendent sous forme de cartes.",
-    pushAllow: "Autoriser les notifications",
     achUp: "{name} : {rank}",
     maxBest: ", max {v}",
     pvOpen: "Voir le profil",
@@ -1227,7 +1226,7 @@ export default {
   news174: [
     "Les badges et rangs que tu as gagnés attendent maintenant sur ton profil, en cartes face cachée : touche-en une, ou Ouvrir sur la page Profil, et ouvre-les comme après une séance. Le menu ☰ indique combien attendent.",
     "📱 Après une réinstallation, l’app redemande l’autorisation des notifications et se réabonne aux notifications de nouvelle version (avant, à cause des données restaurées par Android, elle croyait que c’était déjà fait).",
-    "📱 Réglages : un bouton « Autoriser les notifications » quand Android n’a pas encore demandé.",
+    "📱 Réglages : les interrupteurs de notifications sont désactivés tant qu’Android ne les autorise pas, et en activer un fait demander l’autorisation par Android.",
   ],
   news173: [
     "La fluidité de l'écran est à 60 Hz par défaut (économise la batterie) ; la fréquence la plus élevée se choisit dans Réglages → Apparence.",

@@ -660,7 +660,6 @@ export default {
     claimOpen: "Abrir",
     claimTap: "Nuevo nivel · toca para abrir",
     claimD: "Las insignias y rangos que has ganado te esperan como cartas.",
-    pushAllow: "Permitir notificaciones",
     achUp: "{name}: {rank}",
     maxBest: ", máx. {v}",
     pvOpen: "Ver perfil",
@@ -1227,7 +1226,7 @@ export default {
   news174: [
     "Las insignias y rangos que has ganado ahora esperan en tu perfil como cartas boca abajo: toca una, o Abrir en la página Perfil, y ábrelas como después de un entrenamiento. El menú ☰ muestra cuántas esperan.",
     "📱 Tras reinstalar la app, vuelve a pedir permiso para notificaciones y vuelve a suscribirse a los avisos de nueva versión (antes, por los datos que restauraba Android, creía que ya lo tenía).",
-    "📱 Ajustes: un botón «Permitir notificaciones» cuando Android aún no lo ha preguntado.",
+    "📱 Ajustes: los interruptores de notificaciones están apagados mientras Android no las permita, y al activar uno Android pide el permiso.",
   ],
   news173: [
     "La fluidez de pantalla es 60 Hz por defecto (ahorra batería); la frecuencia más alta se elige en Ajustes → Apariencia.",

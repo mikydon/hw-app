@@ -660,7 +660,6 @@ export default {
     claimOpen: "Megnyitás",
     claimTap: "Új szint · koppints a megnyitáshoz",
     claimD: "A megszerzett jelvények és rangok kártyaként várnak.",
-    pushAllow: "Értesítések engedélyezése",
     achUp: "{name}: {rank}",
     maxBest: ", max. {v}",
     pvOpen: "Profil megnyitása",
@@ -1227,7 +1226,7 @@ export default {
   news174: [
     "A megszerzett jelvények és rangok most lefordított kártyaként várnak a profilodon: koppints egyre, vagy a Profil oldalon a Megnyitásra, és nyisd ki őket, mint edzés után. A ☰ menü mutatja, hány vár.",
     "📱 Újratelepítés után az app újra rákérdez az értesítésekre, és újra feliratkozik az új verzió értesítéseire (korábban az Android által visszaállított adatok miatt azt hitte, ez már megvan).",
-    "📱 Beállítások: „Értesítések engedélyezése” gomb, ha az Android még nem kérdezett rá.",
+    "📱 Beállítások: az értesítési kapcsolók ki vannak kapcsolva, amíg az Android nem engedélyezi az értesítéseket, és ha bekapcsolsz egyet, az Android engedélyt kér.",
   ],
   news173: [
     "A kijelző alapból 60 Hz-en fut (kíméli az akkut); a legmagasabb frissítési gyakoriság a Beállítások → Megjelenés alatt választható.",

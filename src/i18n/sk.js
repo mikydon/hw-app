@@ -660,7 +660,6 @@ export default {
     claimOpen: "Otvoriť",
     claimTap: "Nová úroveň · ťukni a otvor",
     claimD: "Odznaky a ranky, ktoré si získal, čakajú ako kartičky.",
-    pushAllow: "Povoliť upozornenia",
     achUp: "{name}: {rank}",
     maxBest: ", max {v}",
     pvOpen: "Zobraziť profil",
@@ -1227,7 +1226,7 @@ export default {
   news174: [
     "Odznaky a ranky, ktoré si získal, teraz čakajú na profile ako kartičky otočené dole: ťukni na jednu alebo na Otvoriť na stránke Profil a otvor ich ako po tréningu. Menu ☰ ukazuje, koľko ich čaká.",
     "📱 Po preinštalovaní sa appka znova opýta na upozornenia a znova sa prihlási na upozornenia o novej verzii (predtým si kvôli obnoveným dátam z Androidu myslela, že to už má).",
-    "📱 Nastavenia: tlačidlo „Povoliť upozornenia“, keď sa Android ešte nepýtal.",
+    "📱 Nastavenia: prepínače upozornení sú vypnuté, kým ich Android nepovolí, a keď jeden zapneš, Android sa opýta na povolenie.",
   ],
   news173: [
     "Plynulosť obrazovky je predvolene 60 Hz (šetrí batériu); najvyššia frekvencia je na výber v Nastavenia → Vzhľad.",

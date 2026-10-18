@@ -660,7 +660,6 @@ export default {
     claimOpen: "Otwórz",
     claimTap: "Nowy poziom · dotknij, aby otworzyć",
     claimD: "Zdobyte odznaki i rangi czekają jako karty.",
-    pushAllow: "Zezwól na powiadomienia",
     achUp: "{name}: {rank}",
     maxBest: ", maks. {v}",
     pvOpen: "Zobacz profil",
@@ -1227,7 +1226,7 @@ export default {
   news174: [
     "Zdobyte odznaki i rangi czekają teraz na profilu jako karty odwrócone rewersem: dotknij jednej albo Otwórz na stronie Profil i otwórz je jak po treningu. Menu ☰ pokazuje, ile ich czeka.",
     "📱 Po ponownej instalacji aplikacja znów pyta o powiadomienia i znów zapisuje się na powiadomienia o nowej wersji (wcześniej przez dane przywrócone przez Androida myślała, że już to ma).",
-    "📱 Ustawienia: przycisk „Zezwól na powiadomienia”, gdy Android jeszcze nie pytał.",
+    "📱 Ustawienia: przełączniki powiadomień są wyłączone, dopóki Android ich nie zezwoli, a włączenie jednego wyświetla prośbę Androida o zgodę.",
   ],
   news173: [
     "Płynność ekranu to domyślnie 60 Hz (oszczędza baterię); najwyższą częstotliwość wybierzesz w Ustawienia → Wygląd.",

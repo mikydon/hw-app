@@ -660,7 +660,6 @@ export default {
     claimOpen: "Open",
     claimTap: "New level · tap to open",
     claimD: "Badges and ranks you earned are waiting as cards.",
-    pushAllow: "Allow notifications",
     achUp: "{name}: {rank}",
     maxBest: ", max {v}",
     pvOpen: "View profile",
@@ -1227,7 +1226,7 @@ export default {
   news174: [
     "Badges and ranks you have earned now wait on your profile as face-down cards: tap one, or Open on the Profile page, and open them like after a workout. The ☰ menu shows how many are waiting.",
     "📱 After reinstalling the app, it asks for notifications again and signs up for new-version notifications again (before, Android's restored data made it think it already had).",
-    "📱 Settings: an \"Allow notifications\" button when Android hasn't been asked yet.",
+    "📱 Settings: the notification switches are off while Android doesn't allow notifications, and turning one on asks Android for permission.",
   ],
   news173: [
     "Screen smoothness is 60 Hz by default (saves battery); the highest refresh rate is a choice in Settings → Appearance.",

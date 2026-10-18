@@ -660,7 +660,6 @@ export default {
     claimOpen: "Apri",
     claimTap: "Nuovo livello · tocca per aprire",
     claimD: "I badge e i ranghi che hai ottenuto ti aspettano come carte.",
-    pushAllow: "Consenti notifiche",
     achUp: "{name}: {rank}",
     maxBest: ", max {v}",
     pvOpen: "Vedi profilo",
@@ -1227,7 +1226,7 @@ export default {
   news174: [
     "I badge e i ranghi che hai ottenuto ora ti aspettano sul profilo come carte coperte: toccane una, o Apri nella pagina Profilo, e aprile come dopo un allenamento. Il menu ☰ mostra quante ne aspettano.",
     "📱 Dopo una reinstallazione l’app chiede di nuovo il permesso per le notifiche e si iscrive di nuovo agli avvisi di nuova versione (prima, per i dati ripristinati da Android, credeva di averlo già).",
-    "📱 Impostazioni: un pulsante «Consenti notifiche» quando Android non l’ha ancora chiesto.",
+    "📱 Impostazioni: gli interruttori delle notifiche sono spenti finché Android non le consente, e accenderne uno fa chiedere il permesso ad Android.",
   ],
   news173: [
     "La fluidità dello schermo è 60 Hz di default (fa risparmiare batteria); la frequenza più alta si sceglie in Impostazioni → Aspetto.",
