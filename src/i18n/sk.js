@@ -657,6 +657,9 @@ export default {
     revOf: "{n} z {max}",
     revRare: "Toto vyzerá vzácne…",
     revEpic: "Niečo legendárne…!",
+    claimOpen: "Otvoriť",
+    claimTap: "Nová úroveň · ťukni a otvor",
+    claimD: "Odznaky a ranky, ktoré si získal, čakajú ako kartičky.",
     achUp: "{name}: {rank}",
     maxBest: ", max {v}",
     pvOpen: "Zobraziť profil",
@@ -889,6 +892,7 @@ export default {
     rounds: { one: "{n} kolo", few: "{n} kolá", other: "{n} kôl" },
     sets: { one: "{n} séria", few: "{n} série", other: "{n} sérií" },
     prs: { one: "{n} osobný rekord", few: "{n} osobné rekordy", other: "{n} osobných rekordov" },
+    claimN: { one: "{n} odmena na otvorenie", few: "{n} odmeny na otvorenie", other: "{n} odmien na otvorenie" },
     weeks: { one: "{n} týždeň", few: "{n} týždne", other: "{n} týždňov" },
     pushups: { one: "{n} klik", few: "{n} kliky", other: "{n} klikov" },
     reps: { one: "{n} opakovanie", few: "{n} opakovania", other: "{n} opakovaní" },
@@ -1218,6 +1222,11 @@ export default {
   news143: [
     "Rozloženie Sklo vyzerá viac ako skutočné sklo: odlesk z rohu, jemný odraz, svetlá horná hrana a jemná žiara farieb témy za boxmi. Lišta so štartom a menu ☰ k nemu ladia a mobil to stále nezaťažuje.",
     "Horná lišta: keď si úplne hore, vypĺňa obrazovku od kraja po kraj, bez čiary hore a po bokoch.",
+  ],
+  news174: [
+    "Odznaky a ranky, ktoré si získal, teraz čakajú na profile ako kartičky otočené dole: ťukni na jednu alebo na Otvoriť na stránke Profil a otvor ich ako po tréningu. Menu ☰ ukazuje, koľko ich čaká.",
+    "📱 Po preinštalovaní sa appka znova opýta na upozornenia a znova sa prihlási na upozornenia o novej verzii (predtým si kvôli obnoveným dátam z Androidu myslela, že to už má).",
+    "📱 Nastavenia: prepínače upozornení sú vypnuté, kým ich Android nepovolí, a keď jeden zapneš, Android sa opýta na povolenie.",
   ],
   news173: [
     "Plynulosť obrazovky je predvolene 60 Hz (šetrí batériu); najvyššia frekvencia je na výber v Nastavenia → Vzhľad.",

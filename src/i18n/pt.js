@@ -657,6 +657,9 @@ export default {
     revOf: "{n} de {max}",
     revRare: "Isto parece raro…",
     revEpic: "Algo lendário…!",
+    claimOpen: "Abrir",
+    claimTap: "Novo nível · toca para abrir",
+    claimD: "Os emblemas e ranks que ganhaste esperam por ti como cartas.",
     achUp: "{name}: {rank}",
     maxBest: ", máx. {v}",
     pvOpen: "Ver perfil",
@@ -889,6 +892,7 @@ export default {
     rounds: { one: "{n} rodada", many: "{n} rodadas", other: "{n} rodadas" },
     sets: { one: "{n} série", many: "{n} séries", other: "{n} séries" },
     prs: { one: "{n} recorde pessoal", many: "{n} recordes pessoais", other: "{n} recordes pessoais" },
+    claimN: { one: "{n} recompensa por abrir", many: "{n} recompensas por abrir", other: "{n} recompensas por abrir" },
     weeks: { one: "{n} semana", many: "{n} semanas", other: "{n} semanas" },
     pushups: { one: "{n} flexão", many: "{n} flexões", other: "{n} flexões" },
     reps: { one: "{n} repetição", many: "{n} repetições", other: "{n} repetições" },
@@ -1218,6 +1222,11 @@ export default {
   news143: [
     "O layout Vidro parece mais vidro de verdade: um brilho a partir do canto, um reflexo suave, uma borda superior clara e um brilho suave das cores do tema atrás das caixas. A barra de início e o menu ☰ combinam com ele, e continua leve para o telemóvel.",
     "Barra superior: no topo da página, agora preenche o ecrã de uma ponta à outra, sem linha em cima nem dos lados.",
+  ],
+  news174: [
+    "Os emblemas e ranks que ganhaste agora esperam no teu perfil como cartas viradas para baixo: toca numa, ou em Abrir na página Perfil, e abre-as como depois de um treino. O menu ☰ mostra quantas esperam.",
+    "📱 Depois de reinstalar, a app volta a pedir as notificações e volta a subscrever os avisos de nova versão (antes, por causa dos dados restaurados pelo Android, achava que já o tinha).",
+    "📱 Definições: os interruptores das notificações ficam desligados enquanto o Android não as permitir, e ligar um faz o Android pedir a permissão.",
   ],
   news173: [
     "A fluidez do ecrã é 60 Hz por predefinição (poupa bateria); a frequência mais alta escolhe-se em Definições → Aspeto.",

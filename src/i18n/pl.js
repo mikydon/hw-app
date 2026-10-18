@@ -657,6 +657,9 @@ export default {
     revOf: "{n} z {max}",
     revRare: "To wygląda na rzadkie…",
     revEpic: "Coś legendarnego…!",
+    claimOpen: "Otwórz",
+    claimTap: "Nowy poziom · dotknij, aby otworzyć",
+    claimD: "Zdobyte odznaki i rangi czekają jako karty.",
     achUp: "{name}: {rank}",
     maxBest: ", maks. {v}",
     pvOpen: "Zobacz profil",
@@ -889,6 +892,7 @@ export default {
     rounds: { one: "{n} runda", few: "{n} rundy", many: "{n} rund", other: "{n} rund" },
     sets: { one: "{n} seria", few: "{n} serie", many: "{n} serii", other: "{n} serii" },
     prs: { one: "{n} rekord życiowy", few: "{n} rekordy życiowe", many: "{n} rekordów życiowych", other: "{n} rekordów życiowych" },
+    claimN: { one: "{n} nagroda do otwarcia", few: "{n} nagrody do otwarcia", many: "{n} nagród do otwarcia", other: "{n} nagrody do otwarcia" },
     weeks: { one: "{n} tydzień", few: "{n} tygodnie", many: "{n} tygodni", other: "{n} tygodni" },
     pushups: { one: "{n} pompka", few: "{n} pompki", many: "{n} pompek", other: "{n} pompek" },
     reps: { one: "{n} powtórzenie", few: "{n} powtórzenia", many: "{n} powtórzeń", other: "{n} powtórzeń" },
@@ -1218,6 +1222,11 @@ export default {
   news143: [
     "Układ Szkło wygląda bardziej jak prawdziwe szkło: połysk od rogu, delikatne odbicie, jasna górna krawędź i delikatna poświata kolorów motywu za polami. Pasek startu i menu ☰ do niego pasują, a telefon nadal się nie męczy.",
     "Górny pasek: na samej górze strony wypełnia ekran od krawędzi do krawędzi, bez linii u góry i po bokach.",
+  ],
+  news174: [
+    "Zdobyte odznaki i rangi czekają teraz na profilu jako karty odwrócone rewersem: dotknij jednej albo Otwórz na stronie Profil i otwórz je jak po treningu. Menu ☰ pokazuje, ile ich czeka.",
+    "📱 Po ponownej instalacji aplikacja znów pyta o powiadomienia i znów zapisuje się na powiadomienia o nowej wersji (wcześniej przez dane przywrócone przez Androida myślała, że już to ma).",
+    "📱 Ustawienia: przełączniki powiadomień są wyłączone, dopóki Android ich nie zezwoli, a włączenie jednego wyświetla prośbę Androida o zgodę.",
   ],
   news173: [
     "Płynność ekranu to domyślnie 60 Hz (oszczędza baterię); najwyższą częstotliwość wybierzesz w Ustawienia → Wygląd.",

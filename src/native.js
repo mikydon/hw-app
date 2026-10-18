@@ -457,9 +457,37 @@ export async function healthSteps(days = 7, type = "steps") {
 const FcmPlugin = registerPlugin("FirebaseMessaging");
 export const pushSupported = () => isNative && Capacitor.isPluginAvailable("FirebaseMessaging");
 // "granted" | "denied" | "prompt" (Android 13+ asks; older Android always allows)
+// 1.7.4: one Android question at a time (the update topic and the account could ask together at a start; a second
+// request while the dialog is open could leave the first one without an answer).
+let permAsk = null;
 export async function pushPermission(ask) {
   if (!pushSupported()) return "denied";
-  try { const r = ask ? await FcmPlugin.requestPermissions() : await FcmPlugin.checkPermissions(); return r.receive || "denied"; } catch (_) { return "denied"; }
+  if (ask) {
+    if (!permAsk) permAsk = FcmPlugin.requestPermissions().then(r => r.receive || "denied", () => "denied").finally(() => { permAsk = null; });
+    return permAsk;
+  }
+  try { const r = await FcmPlugin.checkPermissions(); return r.receive || "denied"; } catch (_) { return "denied"; }
+}
+// 1.7.4 (Michael, Oct 18: no notifications after reinstalling): Android's automatic backup brings this app's data back
+// on a reinstall (localStorage too), so the memory of this install came back with it: "already asked for
+// notifications" (the new install never asked, and Android starts it at "not allowed") and "already subscribed to the
+// new-version topic" (the new install's token never subscribed). The cache folder is never backed up, so a small file
+// there tells a new install apart; when it is missing, that memory is dropped. (Updating to 1.7.4 also counts once:
+// it only means one more subscribe, and one question if notifications were never answered.)
+const INSTALL_MARK = "hw-install-mark";
+let installP = null;
+export function installCheck() {
+  if (!isNative) return Promise.resolve(false);
+  return installP || (installP = (async () => {
+    try { await Filesystem.stat({ path: INSTALL_MARK, directory: Directory.Cache }); return false; } catch (_) {}
+    try {
+      localStorage.removeItem(UPD_TOPIC_KEY);
+      const c = JSON.parse(localStorage.getItem("domaci-trening-v1-cloud") || "null");
+      if (c && c.pushAsked) { delete c.pushAsked; localStorage.setItem("domaci-trening-v1-cloud", JSON.stringify(c)); }
+    } catch (_) {}
+    try { await Filesystem.writeFile({ path: INSTALL_MARK, data: String(Date.now()), directory: Directory.Cache, encoding: Encoding.UTF8 }); } catch (_) {}
+    return true;
+  })());
 }
 // The "Friends and messages" channel (Android 8+); its name follows the app's language.
 export async function pushChannel(name) {
@@ -504,11 +532,14 @@ export async function updTopic({ on, lang, channelName, ask }) {
   if (!pushSupported()) return null;
   const store = (await buildStore()) === "play" ? "play" : "direct";
   const want = on ? `upd-${store}-${String(lang || "en").replace(/[^a-z]/g, "")}` : "";
+  await installCheck();
   const m = updMem();
   try { await FcmPlugin.createChannel({ id: "updates", name: channelName, importance: 3, visibility: 1 }); } catch (_) {}
   // first start (Michael: ask right away): Android 13+ asks for notifications once
   if (on && ask && !m.asked) { setUpdMem({ asked: true }); await pushPermission(false).then(p => (p === "prompt" ? pushPermission(true) : p)); }
-  if (m.topic === want) return want;
+  // 1.7.4: subscribed again at every start (cheap, and harmless when already subscribed): a subscription belongs to
+  // the phone's token, so one kept only in memory can be gone (new token, reinstall) without the app knowing.
+  if (m.topic === want) { if (want) FcmPlugin.subscribeToTopic({ topic: want }).catch(() => {}); return want; }
   try {
     if (m.topic) await FcmPlugin.unsubscribeFromTopic({ topic: m.topic });
     if (want) await FcmPlugin.subscribeToTopic({ topic: want });

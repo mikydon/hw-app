@@ -67,6 +67,8 @@ export function mergeProfile(lp, rp, ml, mr, first) {
   else { const [n, o] = order(lp, rp, ml, mr); out = { ...o, ...n }; }
   PROFILE_LISTS.forEach(k => { const u = [...new Set([...(lp[k] || []), ...(rp[k] || [])])].sort(); if (u.length || lp[k] || rp[k]) out[k] = u; });
   PROFILE_MAPS.forEach(k => { if (lp[k] || rp[k]) { const [n, o] = first ? [rp, lp] : order(lp, rp, ml, mr); out[k] = { ...(o[k] || {}), ...(n[k] || {}) }; } });
+  // 1.7.4: opened reward cards (claim) only ever go up, so both sides' highest level counts
+  if (lp.claim || rp.claim) out.claim = { a: maxMap((lp.claim || {}).a, (rp.claim || {}).a), r: maxMap((lp.claim || {}).r, (rp.claim || {}).r) };
   if (!out.name) out.name = lp.name || rp.name || "User";
   return out;
 }

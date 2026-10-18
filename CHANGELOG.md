@@ -10,6 +10,12 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 
 <!-- New version: add a "## x.y.z (date)" section on top (web-only history uses "## Browser beta x.y.z (date)"). On a push to main, .github/workflows/build.yml builds everything and .github/scripts/releases.sh creates/updates the releases (commit = the push, or the one in a commit comment). -->
 
+## 1.7.4 (2026-10-18)
+
+- Badges and exercise ranks you have earned now wait on your profile as face-down cards until you open them: tap one on the Badges or Ranks page, or Open on the Profile page, and they flip like the reward cards after a workout (rarest last). The ☰ menu counts how many are waiting. Everything earned before this update starts face down. Others always see your real badges and ranks.
+- *(Android app only)* After reinstalling the app, it asks for notification permission again and subscribes to "new version" notifications again. Android's automatic backup restored the old app data, so the app thought it had already done both, and a reinstalled phone stayed silent.
+- *(Android app only)* Settings: the notification switches show what really happens. They are off while Android doesn't allow notifications, and turning one on asks Android for permission (if Android won't ask any more, the line under it says where to allow them).
+
 ## 1.7.3 (2026-10-18)
 
 - *(Android app only)* Screen smoothness is 60 Hz by default (saves battery); "the highest your phone allows" is a choice in Settings → Appearance. Forcing the highest mode kept phones with adaptive refresh rates from slowing the screen down when nothing moves.

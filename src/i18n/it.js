@@ -657,6 +657,9 @@ export default {
     revOf: "{n} di {max}",
     revRare: "Sembra rara…",
     revEpic: "Qualcosa di leggendario…!",
+    claimOpen: "Apri",
+    claimTap: "Nuovo livello · tocca per aprire",
+    claimD: "I badge e i ranghi che hai ottenuto ti aspettano come carte.",
     achUp: "{name}: {rank}",
     maxBest: ", max {v}",
     pvOpen: "Vedi profilo",
@@ -889,6 +892,7 @@ export default {
     rounds: { one: "{n} giro", many: "{n} giri", other: "{n} giri" },
     sets: { one: "{n} serie", many: "{n} serie", other: "{n} serie" },
     prs: { one: "{n} record personale", many: "{n} record personali", other: "{n} record personali" },
+    claimN: { one: "{n} ricompensa da aprire", many: "{n} ricompense da aprire", other: "{n} ricompense da aprire" },
     weeks: { one: "{n} settimana", many: "{n} settimane", other: "{n} settimane" },
     pushups: { one: "{n} piegamento", many: "{n} piegamenti", other: "{n} piegamenti" },
     reps: { one: "{n} ripetizione", many: "{n} ripetizioni", other: "{n} ripetizioni" },
@@ -1218,6 +1222,11 @@ export default {
   news143: [
     "Il layout Vetro sembra più vetro vero: un riflesso dall'angolo, un leggero bagliore, un bordo superiore chiaro e una tenue luce dei colori del tema dietro i riquadri. La barra di avvio e il menu ☰ si abbinano, e il telefono resta leggero.",
     "Barra in alto: in cima alla pagina ora riempie lo schermo da bordo a bordo, senza linea in alto o ai lati.",
+  ],
+  news174: [
+    "I badge e i ranghi che hai ottenuto ora ti aspettano sul profilo come carte coperte: toccane una, o Apri nella pagina Profilo, e aprile come dopo un allenamento. Il menu ☰ mostra quante ne aspettano.",
+    "📱 Dopo una reinstallazione l’app chiede di nuovo il permesso per le notifiche e si iscrive di nuovo agli avvisi di nuova versione (prima, per i dati ripristinati da Android, credeva di averlo già).",
+    "📱 Impostazioni: gli interruttori delle notifiche sono spenti finché Android non le consente, e accenderne uno fa chiedere il permesso ad Android.",
   ],
   news173: [
     "La fluidità dello schermo è 60 Hz di default (fa risparmiare batteria); la frequenza più alta si sceglie in Impostazioni → Aspetto.",

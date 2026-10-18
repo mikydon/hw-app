@@ -657,6 +657,9 @@ export default {
     revOf: "{n} von {max}",
     revRare: "Das sieht selten aus…",
     revEpic: "Etwas Legendäres…!",
+    claimOpen: "Öffnen",
+    claimTap: "Neue Stufe · zum Öffnen tippen",
+    claimD: "Deine verdienten Abzeichen und Ränge warten als Karten.",
     achUp: "{name}: {rank}",
     maxBest: ", max. {v}",
     pvOpen: "Profil ansehen",
@@ -889,6 +892,7 @@ export default {
     rounds: { one: "{n} Runde", other: "{n} Runden" },
     sets: { one: "{n} Satz", other: "{n} Sätze" },
     prs: { one: "{n} persönlicher Rekord", other: "{n} persönliche Rekorde" },
+    claimN: { one: "{n} Belohnung zum Öffnen", other: "{n} Belohnungen zum Öffnen" },
     weeks: { one: "{n} Woche", other: "{n} Wochen" },
     pushups: { one: "{n} Liegestütz", other: "{n} Liegestütze" },
     reps: { one: "{n} Wiederholung", other: "{n} Wiederholungen" },
@@ -1218,6 +1222,11 @@ export default {
   news143: [
     "Das Layout Glas sieht echtem Glas ähnlicher: ein Glanz aus der Ecke, eine sanfte Spiegelung, eine helle Oberkante und ein sanftes Leuchten der Themenfarben hinter den Boxen. Die Startleiste und das ☰-Menü passen dazu, und das Handy wird weiterhin kaum belastet.",
     "Obere Leiste: ganz oben auf der Seite füllt sie den Bildschirm jetzt von Rand zu Rand, ohne Linie oben oder an den Seiten.",
+  ],
+  news174: [
+    "Verdiente Abzeichen und Ränge warten jetzt im Profil als verdeckte Karten: Tippe auf eine oder auf der Profilseite auf Öffnen und öffne sie wie nach einem Training. Das ☰-Menü zeigt, wie viele warten.",
+    "📱 Nach einer Neuinstallation fragt die App wieder nach Benachrichtigungen und meldet sich wieder für Benachrichtigungen zu neuen Versionen an (vorher glaubte sie wegen der von Android wiederhergestellten Daten, das sei schon erledigt).",
+    "📱 Einstellungen: Die Benachrichtigungs-Schalter sind aus, solange Android keine Benachrichtigungen erlaubt; wenn du einen einschaltest, fragt Android nach der Erlaubnis.",
   ],
   news173: [
     "Die Bildschirmflüssigkeit ist standardmäßig 60 Hz (spart Akku); die höchste Bildrate wählst du unter Einstellungen → Aussehen.",
