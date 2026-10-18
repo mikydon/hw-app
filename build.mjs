@@ -1,6 +1,6 @@
 // Builds the app.
 //   index.html  React bundle inlined into template.html, plus the @font-face rules (website, GitHub Pages)
-//   fonts/      the font files (woff2 from @fontsource, OFL licence), served next to index.html
+//   fonts/      the font files (woff2 from @fontsource, OFL licence; hw-emoji.ttf, MIT), served next to index.html
 //   www/        what goes into the Android app (Capacitor webDir) and into the live-update zip:
 //               index.html + fonts/ (no service worker, no manifest)
 // Usage: npm install && npm run build
@@ -37,6 +37,15 @@ for (const [pkg, weights] of Object.entries(FONTS)) {
 rmSync("fonts", { recursive: true, force: true });
 mkdirSync("fonts");
 for (const [pkg, f] of fontFiles) copyFileSync(`node_modules/@fontsource/${pkg}/files/${f}`, `fonts/${f}`);
+// 1.7.0: the app's own emoji (Microsoft Fluent Emoji 3D, MIT) as a small colour-bitmap font, made by
+// tools/emoji/build_font.py. Only its characters (unicode-range) come from it; listed after the text fonts in App.jsx.
+{
+  const emo = JSON.parse(readFileSync("assets/hw-emoji.json", "utf8"));
+  const cps = [...emo.chars].map(c => "U+" + c.codePointAt(0).toString(16).toUpperCase()).concat("U+FE0F");
+  copyFileSync("assets/hw-emoji.ttf", "fonts/hw-emoji.ttf");
+  copyFileSync("tools/emoji/LICENSE-fluent-emoji.txt", "fonts/hw-emoji-LICENSE.txt");
+  fontCss += `@font-face { font-family: 'HW Emoji'; font-style: normal; font-display: swap; font-weight: 100 900; src:url(fonts/hw-emoji.ttf) format('truetype'); unicode-range: ${cps.join(",")}; }\n`;
+}
 
 const out = await build({
   entryPoints: ["src/main.jsx"],

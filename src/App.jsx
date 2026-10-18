@@ -1,8 +1,9 @@
-import { useState, useEffect, useLayoutEffect, useRef, memo } from "react";
+import { useState, useEffect, useLayoutEffect, useRef, memo, Fragment } from "react";
 import { createPortal } from "react-dom";
 import { isNative, pushBack, setRootBack, exitApp, vibratePattern, keepScreenOn, openExternal, saveBackupFile, bkSupported, bkWrite, bkWriteAuto, bkList, bkRead, bkDelete, bkShare, BK_DIR, bkAutoFile, checkForUpdate, lastUpdate, lastGh, applyUpdateNow, latestApk, isTestBuild, apkState, onApk, apkSupported, apkRestore, apkDownload, apkCanInstall, apkAllow, apkInstall, onAppResume, healthState, healthConnect, healthSettings, healthSteps, healthFoodItems, healthBody, shareText, copyText, pushSupported, pushPermission, pushChannel, pushToken, pushTokenWhy, pushDeleteToken, onPushTap, onPushToken, onPushReceived, hzSupported, hzInfo, hzSet, isPlay, playCheck, playOpenStore, PLAY_STORE_LINK, updTopic, onAppUrl } from "./native.js";
 import { cloud, NICK_RE, SHARE_BASE, cleanCode, fmtCode } from "./cloud-lazy.js";
 import { QUICK as EMO_QUICK, EMOJI } from "./emoji.js";
+import { mergeAll, syncKey, withIds, entryId, stable, SYNC_SETTINGS, kcalShared } from "./sync.js";
 import { L, LANG, t as T, tp as TP, fmt, setLang, detectLang, LANGS, fmtLong, fmtShortDM, fmtMonthYear, weekdaysShort, capFirst } from "./i18n/index.js";
 
 // ─── DESIGN TOKENS ──────────────────────────────────────────────────────────
@@ -16,7 +17,7 @@ const C = {
   line: "#2c4679",
   chalk: "#eef2ff",
   dim: "#93a3c9",
-  signal: "#ffd23f",
+  signal: "#ffd23f", // the main colour; 1.7.0: a choice in Settings → Appearance (yellow by default)
   signalInk: "#1d1700",
   mint: "#5fe3a1",
   sky: "#7cc4ff",
@@ -32,11 +33,18 @@ const THEMES = {
   slate:  { ink: "#15181d", panel: "#1f242b", panelHi: "#2a313a", line: "#3a434f", chalk: "#f1f4f8", dim: "#9aa6b4", edge: "#0e1115" },
   coffee: { ink: "#1c140f", panel: "#2a1f17", panelHi: "#382a20", line: "#4d3a2c", chalk: "#fbf3ec", dim: "#b8a291", edge: "#130d09" },
 };
-const APP_VERSION = "1.6.5";
+const APP_VERSION = "1.7.0";
 // Big Shoulders has no Cyrillic, so Oswald (also condensed) covers Ukrainian. The browser only
 // downloads the Oswald unicode ranges a page actually uses.
-const DISPLAY = "'Big Shoulders Display', 'Oswald', 'Arial Narrow', Impact, sans-serif";
-const BODY = "'Figtree', -apple-system, 'Segoe UI', sans-serif";
+// 1.7.0: 'HW Emoji' = the app's own emoji (Fluent 3D, fonts/hw-emoji.ttf) for the emoji the app shows; BODY_SYS
+// leaves it out for what people type (chat messages, the emoji picker, reactions), which keeps the phone's emoji.
+// The font is a colour-bitmap font (CBDT, like Android's own emoji): Chrome, the Android app and Edge draw it; Safari
+// (every iPhone/iPad browser) and Firefox don't, and would show nothing, so there the phone's emoji stay.
+const HW_EMO = (() => { try { const u = navigator.userAgent; return !/Firefox\/|FxiOS|iPhone|iPad|iPod/.test(u) && !(/Safari\//.test(u) && !/Chrome\/|Chromium\//.test(u)) && !(/Macintosh/.test(u) && navigator.maxTouchPoints > 1); } catch (_) { return false; } })();
+const EMO_F = HW_EMO ? "'HW Emoji', " : "";
+const DISPLAY = `'Big Shoulders Display', 'Oswald', ${EMO_F}'Arial Narrow', Impact, sans-serif`;
+const BODY = `'Figtree', ${EMO_F}-apple-system, 'Segoe UI', sans-serif`;
+const BODY_SYS = "'Figtree', -apple-system, 'Segoe UI', sans-serif";
 // Chinese, Japanese and Korean glyphs are full width (the display font is condensed Latin), so a few big titles get smaller.
 const CJK = /[\u3040-\u30ff\u3400-\u9fff\uac00-\ud7af]/;
 
@@ -887,9 +895,27 @@ function RankLadder({ id, best }) {
 // ─── SHARED UI ──────────────────────────────────────────────────────────────
 const btnBase = { border: "none", cursor: "pointer", fontFamily: BODY, fontWeight: 700, borderRadius: 14 };
 const EDGE = { [C.signal]: "#c29300", [C.chalk]: "#8e9cc2", [C.panelHi]: "#0f2147", [C.mint]: "#2b9e66", "#e62117": "#9b120c" };
-function applyTheme(id) {
+// 1.7.0 (Michael, Oct 18: "žltá je taká meh" → "nech si môžu vybrať z viacerých"): the main colour (buttons, Start,
+// highlights) is a choice in Settings → Appearance. Michael (Oct 18, later): yellow stays the main colour (the app
+// started with it), violet and the others are choices.
+// [colour, text on it, darker edge of 3D buttons]; every one has ≥ 4.5 contrast with its text and on the dark themes.
+// Michael (Oct 18): the other colours follow the choice so nothing looks alike: done/workouts (mint) and the calorie
+// colours (logged / target hit) move away from the main colour when they would be close to it.
+const ACCENTS = {
+  yellow: { c: ["#ffd23f", "#1d1700", "#c29300"] },
+  violet: { c: ["#a78bfa", "#170a38", "#6f4fd6"] },
+  pink:   { c: ["#ff5fa2", "#2b0716", "#c4336f"] },
+  cyan:   { c: ["#2ee6d6", "#00221f", "#14a397"], mint: ["#b6ea4f", "#7aa62a"] },
+  orange: { c: ["#ff9f43", "#2a1300", "#c46a12"], kc: ["#ff5fa2", "#ffb8d6"] },
+  coral:  { c: ["#ff6b6b", "#2b0707", "#c43c3c"], kc: ["#ffc53d", "#ffe9a8"] },
+};
+function applyTheme(id, accent) {
   const t = THEMES[id] || THEMES.navy;
   Object.keys(t).forEach(k => { if (k !== "edge") C[k] = t[k]; });
+  const a = ACCENTS[accent] || ACCENTS.yellow, m = a.mint || ["#5fe3a1", "#2b9e66"], k = a.kc || ["#ff8c1a", "#ffd98a"];
+  C.signal = a.c[0]; C.signalInk = a.c[1]; EDGE[a.c[0]] = a.c[2];
+  C.mint = m[0]; EDGE[m[0]] = m[1];
+  KC_HIT = k[0]; KC_LOG = k[1];
   EDGE[C.panelHi] = t.edge;
   EDGE[C.chalk] = "#8e9cc2";
   try {
@@ -979,7 +1005,7 @@ function sheetGhost(wrap) {
     setTimeout(rm, 600);
   } catch (_) {}
 }
-function Sheet({ title, onClose, children, short }) {
+function Sheet({ title, onClose, children, short, sysEmo }) {
   const wrap = useRef(null), done = useRef(false);
   const close = () => { if (done.current) return; done.current = true; onClose(); };
   useBack(close);
@@ -993,7 +1019,7 @@ function Sheet({ title, onClose, children, short }) {
           <div style={{ fontFamily: DISPLAY, fontSize: 30, fontWeight: 800, lineHeight: 1, color: C.chalk }}>{title}</div>
           <button onClick={close} aria-label={T("close")} style={{ ...btnBase, background: C.panelHi, color: C.dim, padding: "7px 12px", fontSize: 14 }}>✕</button>
         </div>
-        <div style={{ fontSize: 15, color: `${C.chalk}d9`, lineHeight: 1.65 }}>{children}</div>
+        <div className={sysEmo ? "sysEmo" : undefined} style={{ fontSize: 15, color: `${C.chalk}d9`, lineHeight: 1.65 }}>{children}</div>
       </div>
     </div>,
     document.body
@@ -1088,8 +1114,16 @@ const BACKUP_ID = "hw-app";
 const BACKUP_IDS = [BACKUP_ID, "domaci-trening"];
 // The backup file: everything the app knows (manual, automatic and the one offered before a full reset).
 function backupJson(history, profile, settings, kcal) {
-  return JSON.stringify({ app: BACKUP_ID, version: 1, appVersion: APP_VERSION, exportedAt: new Date().toISOString(), history, profile, settings, kcal: kcal || null });
+  const sm = syncMem();
+  return JSON.stringify({ app: BACKUP_ID, version: 1, appVersion: APP_VERSION, exportedAt: new Date().toISOString(), history, profile, settings, kcal: kcal || null, sync: { del: sm.del || {}, kdel: sm.kdel || {}, mod: sm.mod || {} } });
 }
+// Web ↔ phone sync (1.7.0, src/sync.js): {acct: the account this device last merged with, del: deleted workouts
+// {id: when}, kdel: deleted calorie entries {ts: when}, mod: {profile, settings, kcal: when changed here}}. Travels in
+// every backup as "sync". Not cleared by a backup restore; cleared when signing out (everything is).
+const SYNC_KEY = "domaci-trening-v1-sync";
+const syncMem = () => { try { return JSON.parse(localStorage.getItem(SYNC_KEY) || "null") || {}; } catch (_) { return {}; } };
+const setSyncMem = patch => { const m = { ...syncMem(), ...patch }; try { localStorage.setItem(SYNC_KEY, JSON.stringify(m)); } catch (_) {} return m; };
+const syncTomb = (kind, key) => { const m = syncMem(); setSyncMem({ [kind]: { ...(m[kind] || {}), [key]: Date.now() } }); };
 // Automatic backup (app only, 1.4.0): the result of the last run, {ts, day, ok, err}. Not in backups.
 const AUTOBK_KEY = "domaci-trening-v1-autobk";
 const autoBkInfo = () => { try { return JSON.parse(localStorage.getItem(AUTOBK_KEY) || "null"); } catch (_) { return null; } };
@@ -1194,8 +1228,11 @@ function achCounts(history, extra = {}) {
 }
 function achievements(history, extra) {
   const c = achCounts(history, extra);
-  return ACH.map(a => {
-    const v = a.v(c);
+  return ACH.map(a => achFrom(a, a.v(c)));
+}
+// One badge from its value (1.7.0: also for someone else's profile, from the values on their card).
+function achFrom(a, v) {
+  {
     const step = a.at.filter(x => v >= x).length; // 0 = locked
     const tier = a.rk ? (step ? a.rk[step - 1] + 1 : 0) : step; // 1..7 = Wood..Diamond
     const next = step < a.at.length ? a.at[step] : null;
@@ -1203,7 +1240,7 @@ function achievements(history, extra) {
     const goal = next ?? a.at[a.at.length - 1];
     const [name, desc] = L.ach[a.k];
     return { ...a, v, step, tier, next, nextRank, name, desc: fmt(desc, { n: goal, x: a.span ? spanText(goal) : a.pl ? TP(a.pl, goal) : goal }) };
-  });
+  }
 }
 // Health Connect level: 1 = one kind of data (steps), 2 = also weight/height, 3 = everything (also food calories).
 // Kept at its best (kcal.hcBest), so disconnecting later doesn't take the badge away.
@@ -1309,17 +1346,35 @@ const stepBtn = () => ({ ...btnBase, width: 64, height: 64, borderRadius: 99, ba
 // Section title row: the title on the left, an optional quiet count/chip on the right (same on every screen).
 const SECT_HEAD = { display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 };
 const sectMeta = meta => meta ? <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: 0, textTransform: "none", color: C.dim, opacity: 1, whiteSpace: "nowrap" }}>{meta}</span> : null;
-function Sect({ title, meta, children, style, titlePad, accent, ...rest }) {
-  if (LOOK === "flat") return <div {...rest} style={{ marginTop: 18, ...style }}>{children}</div>;
+// 1.7.0 (Michael, Oct 18: "the arrows should be the same in the whole app, I like the ones on Profile"): one arrow for
+// everything that opens something: the main colour, 20 px in rows, 1.25 em after a text link.
+function Arrow({ size = 20, style, dir = "›", ...rest }) {
+  return <span aria-hidden="true" {...rest} style={{ display: "inline-block", fontSize: size, lineHeight: 1, fontWeight: 700, color: C.signal, flexShrink: 0, ...style }}>{dir}</span>;
+}
+function Sect({ title, meta, children, style, titlePad, accent, flatTitle, onHead, headLabel, ...rest }) {
+  // onHead (1.7.0): the title row is a button (e.g. Profile → Badges opens all badges with the progress), with a ›
+  const head = st => {
+    if (!title) return null;
+    if (!onHead) return <div style={{ ...st, ...SECT_HEAD }}><span>{title}</span>{sectMeta(meta)}</div>;
+    return (
+      <button type="button" onClick={() => { sfxTap(); onHead(); }} data-sect-open aria-haspopup="dialog" aria-label={headLabel}
+        style={{ ...st, ...SECT_HEAD, width: "100%", border: "none", background: "transparent", cursor: "pointer", textAlign: "left", fontFamily: BODY, borderRadius: 8 }}>
+        <span>{title}</span>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 6, minWidth: 0 }}>{sectMeta(meta)}<Arrow size={18} style={{ letterSpacing: 0, textTransform: "none" }} /></span>
+      </button>
+    );
+  };
+  // flat = no boxes; flatTitle (1.7.0: History, Profile, Settings) keeps the title as a quiet label above the content
+  if (LOOK === "flat") return <div {...rest} style={{ marginTop: 18, ...style, ...(flatTitle ? { padding: 0 } : {}) }}>{(flatTitle || onHead) && head({ ...sectionTitle, margin: "4px 4px 8px", padding: 0 })}{children}</div>;
   if (LOOK === "liquid") return (
     <section {...rest} data-sect style={{ ...LIQUID(), padding: "15px 16px", marginTop: 12, ...style }}>
-      {title && <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: C.chalk, opacity: 0.7, marginBottom: 10, padding: titlePad || 0, ...SECT_HEAD }}><span>{title}</span>{sectMeta(meta)}</div>}
+      {head({ fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: C.chalk, opacity: 0.7, marginBottom: 10, padding: titlePad || 0 })}
       {children}
     </section>
   );
   if (LOOK === "glass") return (
     <section {...rest} data-sect style={{ ...GLASS(), padding: "15px 16px", marginTop: 12, ...style }}>
-      {title && <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: C.dim, marginBottom: 10, padding: titlePad || 0, ...SECT_HEAD }}><span>{title}</span>{sectMeta(meta)}</div>}
+      {head({ fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: C.dim, marginBottom: 10, padding: titlePad || 0 })}
       {children}
     </section>
   );
@@ -1327,7 +1382,7 @@ function Sect({ title, meta, children, style, titlePad, accent, ...rest }) {
     const a = accent || C.signal;
     return (
       <section {...rest} data-sect style={{ background: C.panel, borderRadius: 16, borderLeft: `4px solid ${a}`, padding: "13px 15px", marginTop: 12, ...style }}>
-        {title && <div style={{ fontSize: 12, fontWeight: 900, letterSpacing: 0.6, textTransform: "uppercase", color: a, marginBottom: 10, padding: titlePad || 0, ...SECT_HEAD }}><span>{title}</span>{sectMeta(meta)}</div>}
+        {head({ fontSize: 12, fontWeight: 900, letterSpacing: 0.6, textTransform: "uppercase", color: a, marginBottom: 10, padding: titlePad || 0 })}
         {children}
       </section>
     );
@@ -1335,10 +1390,41 @@ function Sect({ title, meta, children, style, titlePad, accent, ...rest }) {
   const tiles = LOOK === "tiles";
   return (
     <section {...rest} data-sect style={{ background: tiles ? C.panelHi : C.panel, border: `1px solid ${tiles ? C.panelHi : C.line}`, borderRadius: tiles ? 16 : 20, padding: tiles ? "12px 13px" : "14px 15px", marginTop: tiles ? 8 : 12, ...style }}>
-      {title && <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: tiles ? C.chalk : C.dim, opacity: tiles ? 0.8 : 1, marginBottom: 10, padding: titlePad || 0, ...SECT_HEAD }}><span>{title}</span>{sectMeta(meta)}</div>}
+      {head({ fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: tiles ? C.chalk : C.dim, opacity: tiles ? 0.8 : 1, marginBottom: 10, padding: titlePad || 0 })}
       {children}
     </section>
   );
+}
+// 1.7.0 (polish in the style of the looks): a box of full-width rows (Settings, History, Account) with its title inside,
+// like the sections on Home, so every look (cards, tiles, glass, Liquid glass, accent bars, flat) applies to them too.
+function ListSect({ title, meta, children, style, ...rest }) {
+  return <Sect title={title} meta={meta} flatTitle titlePad="0 16px" style={{ padding: "14px 0 2px", ...style }} {...rest}>{children}</Sect>;
+}
+// ─── TABLET AND PC (1.7.0; Michael, Oct 12: "not one 460 px column") ─────────────────────────────────────────
+// From 760 px wide (a tablet, a phone on its side, a PC window) the screens use the width: the swipe pages of Home and
+// Calories stand side by side, the other screens get two columns. From 1100 px the menu is a side panel that stays
+// open (no ☰). Below 760 px everything is exactly as on a phone.
+const WIDE_Q = "(min-width: 760px)", SIDE_Q = "(min-width: 1100px)";
+const mqNow = q => { try { return matchMedia(q).matches; } catch (_) { return false; } };
+function useMQ(q) {
+  const [m, setM] = useState(() => mqNow(q));
+  useEffect(() => {
+    let l; try { l = matchMedia(q); } catch (_) { return; }
+    const f = () => setM(l.matches);
+    if (l.addEventListener) l.addEventListener("change", f); else l.addListener(f);
+    f();
+    return () => { if (l.removeEventListener) l.removeEventListener("change", f); else l.removeListener(f); };
+  }, [q]);
+  return m;
+}
+const useWide = () => useMQ(WIDE_Q);
+const useSide = () => useMQ(SIDE_Q);
+// Two columns on a wide screen, one after the other on a phone. Each column stops the expander's slide (a box opening
+// in one column doesn't move the other).
+function Cols({ left, right, ...rest }) {
+  const wide = useWide();
+  if (!wide) return <>{left}{right}</>;
+  return <div data-cols className="colsW" {...rest}><div data-flip-root data-col="0">{left}</div><div data-flip-root data-col="1">{right}</div></div>;
 }
 
 // ─── EXPANDER (1.5.5; 1.5.8 rebuilt for speed, Michael: "šípky sekajú, ako po fotkách", wants 100+ fps) ──────
@@ -1556,7 +1642,7 @@ function AboutBox({ gh: gh0, dl, onNews, apk, busy }) {
     <div data-about style={{ margin: "auto 14px 14px", background: C.panel, border: `1px solid ${C.line}`, borderRadius: 18, padding: "4px 14px", ...(LOOK === "liquid" ? { ...LIQUID_PILL(), borderRadius: 20 } : {}) }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, padding: "10px 0" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}><Logo size={30} /><span style={{ fontSize: 14, fontWeight: 800, color: C.chalk }}>HW App {APP_VERSION}</span></div>
-        {onNews && <button onClick={onNews} data-news-btn style={{ ...btnBase, background: "transparent", color: C.sky, fontSize: 13, padding: "4px 0" }}>{T("newsLink")} ›</button>}
+        {onNews && <button onClick={onNews} data-news-btn style={{ ...btnBase, background: "transparent", color: C.sky, fontSize: 13, padding: "4px 0" }}>{T("newsLink")} <Arrow size="1.25em" style={{ verticalAlign: "-0.08em" }} /></button>}
       </div>
       {apk && <div data-menu-apk style={{ borderTop: `1px solid ${C.line}`, padding: "10px 0 4px" }}><ApkUpdateCard info={apk} busy={busy} inMenu /></div>}
       {!apk && isNative && dl && dl.kind === "ready" && !busy && (
@@ -1569,13 +1655,13 @@ function AboutBox({ gh: gh0, dl, onNews, apk, busy }) {
         <button data-gh={gh} onClick={() => { sfxTap(); openExternal("https://github.com/mikydon/hw-app/releases/latest"); }} style={{ ...row, color: newer ? C.mint : C.dim, fontSize: 13, fontWeight: 700 }}>
           <span style={{ flex: 1, minWidth: 0 }}>{T("ghLatest", { v: gh })}</span>
           {newer && <span style={{ fontSize: 10, fontWeight: 900, padding: "2px 7px", borderRadius: 99, background: C.mint, color: C.ink, letterSpacing: 0.3 }}>{T("ghNew")}</span>}
-          <span aria-hidden="true">›</span>
+          <Arrow />
         </button>
       )}
       {status && <div style={{ padding: "10px 0", borderTop: `1px solid ${C.line}` }}>{status}</div>}
       {!isNative && (
         <button onClick={() => { sfxTap(); openExternal("https://github.com/mikydon/hw-app/releases/latest"); }} data-get-android style={{ ...row, color: C.mint, fontSize: 13, fontWeight: 800 }}>
-          <span style={{ flex: 1 }}>{T("getAndroid")}</span><span aria-hidden="true">›</span>
+          <span style={{ flex: 1 }}>{T("getAndroid")}</span><Arrow />
         </button>
       )}
     </div>
@@ -1643,7 +1729,7 @@ function gooPath(p, W, H, S, ins) {
   }
   return parts.join("");
 }
-function TopBar({ screen, history, menuOpen, onMenu, onGo, dlPct, badge, head }) {
+function TopBar({ screen, history, menuOpen, onMenu, onGo, dlPct, badge, head, side }) {
   const now = useClock();
   const ap = useApk();
   const prog = ap.kind === "downloading" ? ap.pct || 0 : dlPct; // a download in progress: a thin line under the bar on every screen
@@ -1662,9 +1748,11 @@ function TopBar({ screen, history, menuOpen, onMenu, onGo, dlPct, badge, head })
   // 1.5.3 (Michael, on a PC: the plate's square top corner showed next to the window edge): the plate (and the drop
   // shape) always reach the window's edges, however wide the window is; the floating box keeps the column's width.
   useLayoutEffect(() => {
-    const fit = () => { const o = outRef.current, w = wrapRef.current; if (!o || !w) return; const vw = document.documentElement.clientWidth; o.style.setProperty("--tbExt", `${Math.max(0, (vw - w.offsetWidth) / 2)}px`); };
+    const fit = () => { const o = outRef.current, w = wrapRef.current; if (!o || !w) return; const vw = o.clientWidth; o.style.setProperty("--tbExt", `${Math.max(0, (vw - w.offsetWidth) / 2)}px`); }; // the bar's own width: a side panel may sit left of it (1.7.0)
     fit(); window.addEventListener("resize", fit);
-    return () => window.removeEventListener("resize", fit);
+    const ro = typeof ResizeObserver !== "undefined" && outRef.current ? new ResizeObserver(fit) : null; // the side panel comes and goes
+    if (ro) ro.observe(outRef.current);
+    return () => { window.removeEventListener("resize", fit); if (ro) ro.disconnect(); };
   }, []);
   useEffect(() => {
     let raf = 0;
@@ -1685,7 +1773,9 @@ function TopBar({ screen, history, menuOpen, onMenu, onGo, dlPct, badge, head })
     drawRest();
     let t = 0; const on = () => { clearTimeout(t); t = setTimeout(drawRest, 60); };
     window.addEventListener("resize", on);
-    return () => { clearTimeout(t); window.removeEventListener("resize", on); };
+    const ro = typeof ResizeObserver !== "undefined" && outRef.current ? new ResizeObserver(on) : null;
+    if (ro) ro.observe(outRef.current);
+    return () => { clearTimeout(t); window.removeEventListener("resize", on); if (ro) ro.disconnect(); };
   }, []);
   useLayoutEffect(() => {
     const out = outRef.current, goo = gooRef.current, wrap = wrapRef.current;
@@ -1738,7 +1828,7 @@ function TopBar({ screen, history, menuOpen, onMenu, onGo, dlPct, badge, head })
         </div>
         <button onClick={() => onGo && onGo("profile")} data-chip="streak" style={{ ...btnBase, ...chip(st.n ? "#ffa94d" : C.dim), ...pill }} aria-label={T("streakAria", { n: st.n })}><span className={st.n ? "wiggle" : ""}>🔥</span>{st.n}</button>
         <button onClick={() => onGo && onGo("profile")} data-chip="level" style={{ ...btnBase, ...chip(C.sky), ...pill }} aria-label={T("levelAria", { n: lv.lvl })}>⚡{lv.lvl}</button>
-        <MenuButton open={menuOpen} onClick={onMenu} badge={badge} />
+        {!side && <MenuButton open={menuOpen} onClick={onMenu} badge={badge} />}
         </>}
         {typeof prog === "number" && <div data-top-prog={Math.round(prog)} role="progressbar" aria-valuenow={Math.round(prog)} aria-valuemin={0} aria-valuemax={100} style={{ position: "absolute", left: 18, bottom: 4, height: 3, width: `calc((100% - 36px) * ${Math.max(2, Math.min(100, prog)) / 100})`, background: C.sky, borderRadius: 3, transition: "width .3s", boxShadow: `0 0 8px ${C.sky}` }} />}
         </div>
@@ -1775,10 +1865,6 @@ function MenuDrawer({ open, screen, history, profile, session, onGo, onResume, o
       try { if (window.matchMedia && matchMedia("(pointer: fine)").matches) requestAnimationFrame(() => { const b = [...document.querySelectorAll("[data-menu-btn]")].find(el => el.offsetParent); (b || back) && (b || back).focus({ preventScroll: true }); }); } catch (_) {} };
   }, [open]);
   if (!shown) return null;
-  const lv = levelInfo(totalXP(history));
-  const st = streakInfo(history, dateKey());
-  const kcs = kcalNow(history);
-  const items = SCREENS.map(id => ({ id, label: T(SCREEN_TITLE[id]), desc: id === "calories" && kcs ? T("kcMenu", { e: nf(kcs.eaten), t: nf(kcs.target) }) : id === "friends" && badge ? T("frMenuNew", { n: badge }) : T("menuD_" + id), badge: id === "friends" ? badge : 0 }));
   return createPortal(
     <div role="dialog" aria-modal="true" aria-label={T("mainMenu")} className={open ? "drawerOn" : "drawerOff"} style={{ position: "fixed", inset: 0, zIndex: 60 }}>
       <div onClick={onClose} className="drawerBg" style={{ position: "absolute", inset: 0, background: "rgba(3,8,20,.6)" }} />
@@ -1787,38 +1873,63 @@ function MenuDrawer({ open, screen, history, profile, session, onGo, onResume, o
           <div style={{ fontFamily: DISPLAY, fontSize: 15, fontWeight: 800, color: C.dim, letterSpacing: 1 }}>HW APP</div>
           <MenuButton open={true} onClick={onClose} btnRef={closeRef} />
         </div>
-        <button onClick={() => onGo("profile")} className="drawerItem" style={{ ...btnBase, "--i": 0, display: "flex", alignItems: "center", gap: 12, margin: "8px 14px 6px", padding: "12px", borderRadius: 18, background: C.panel, border: `1px solid ${C.line}`, color: C.chalk, textAlign: "left", ...(LOOK === "liquid" ? { ...LIQUID_PILL(), borderRadius: 20 } : {}) }}>
-          <BdayHalo size={52}><Avatar profile={profile} size={52} /></BdayHalo>
-          <div style={{ minWidth: 0 }}>
-            <div style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, lineHeight: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{profile.name || T("defaultName")}</div>
-            <div style={{ fontSize: 13, color: C.dim, marginTop: 4 }}><span style={{ color: C.sky, fontWeight: 800 }}>⚡ {lv.lvl}</span> · <span style={{ color: "#ffa94d", fontWeight: 800 }}>🔥 {st.n}</span></div>
-          </div>
-        </button>
-        {session && (
-          <button onClick={onResume} className="drawerItem" data-resume style={{ ...btnBase, "--i": 1, margin: "6px 14px", padding: "13px 14px", borderRadius: 16, background: C.signal, color: C.signalInk, display: "flex", alignItems: "center", gap: 10, fontSize: 15, textAlign: "left" }}>
-            <span style={{ fontSize: 18 }}>▶</span>{T("resumeWorkout", { d: session.day })}
-          </button>
-        )}
-        <div data-nav-box style={{ margin: "6px 14px 12px", padding: "4px", background: C.panel, border: `1px solid ${C.line}`, borderRadius: 18, ...(LOOK === "liquid" ? { ...LIQUID_PILL(), borderRadius: 20 } : {}) }}>
-          {items.map((it, i) => {
-            const on = it.id === screen;
-            return (
-              <button key={it.id} onClick={() => onGo(it.id)} aria-current={on ? "page" : undefined} className="drawerItem" data-screen={it.id}
-                style={{ ...btnBase, "--i": i + 2, width: "100%", display: "flex", alignItems: "center", gap: 14, padding: "10px 10px", margin: "2px 0", borderRadius: 14, background: on ? `${C.signal}1a` : "transparent", color: on ? C.signal : C.chalk, textAlign: "left" }}>
-                <span style={{ width: 40, height: 40, borderRadius: 12, background: on ? `${C.signal}26` : LOOK === "liquid" ? "rgba(255,255,255,.08)" : C.panelHi, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><TabIcon name={it.id} active={on} /></span>
-                <span style={{ minWidth: 0 }}>
-                  <span style={{ display: "block", fontSize: 16, fontWeight: 800 }}>{it.label}</span>
-                  <span style={{ display: "block", fontSize: 12, fontWeight: it.badge ? 700 : 500, color: it.badge ? C.signal : C.dim, marginTop: 1 }}>{it.desc}</span>
-                </span>
-                {it.badge > 0 && <span style={{ marginLeft: "auto", minWidth: 20, height: 20, borderRadius: 10, padding: "0 6px", boxSizing: "border-box", background: "#ff5a5a", color: "#fff", fontSize: 11.5, fontWeight: 800, lineHeight: "20px", textAlign: "center", flexShrink: 0 }}>{it.badge}</span>}
-              </button>
-            );
-          })}
-        </div>
-        <AboutBox gh={gh} dl={dl} onNews={onNews} apk={apk} busy={busy} />
+        <MenuBody screen={screen} history={history} profile={profile} session={session} onGo={onGo} onResume={onResume} onNews={onNews} gh={gh} dl={dl} badge={badge} apk={apk} busy={busy} />
       </nav>
     </div>,
     document.body
+  );
+}
+
+// What the menu holds (profile, back to the workout, the screens, about): in the ☰ drawer, or on a wide screen in the
+// side panel that stays open (1.7.0).
+function MenuBody({ screen, history, profile, session, onGo, onResume, onNews, gh, dl, badge, apk, busy }) {
+  const lv = levelInfo(totalXP(history));
+  const st = streakInfo(history, dateKey());
+  const kcs = kcalNow(history);
+  const items = SCREENS.map(id => ({ id, label: T(SCREEN_TITLE[id]), desc: id === "calories" && kcs ? T("kcMenu", { e: nf(kcs.eaten), t: nf(kcs.target) }) : id === "friends" && badge ? T("frMenuNew", { n: badge }) : T("menuD_" + id), badge: id === "friends" ? badge : 0 }));
+  return (
+    <>
+          <button onClick={() => onGo("profile")} className="drawerItem" style={{ ...btnBase, "--i": 0, display: "flex", alignItems: "center", gap: 12, margin: "8px 14px 6px", padding: "12px", borderRadius: 18, background: C.panel, border: `1px solid ${C.line}`, color: C.chalk, textAlign: "left", ...(LOOK === "liquid" ? { ...LIQUID_PILL(), borderRadius: 20 } : {}) }}>
+            <BdayHalo size={52}><Avatar profile={profile} size={52} /></BdayHalo>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, lineHeight: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{profile.name || T("defaultName")}</div>
+              <div style={{ fontSize: 13, color: C.dim, marginTop: 4 }}><span style={{ color: C.sky, fontWeight: 800 }}>⚡ {lv.lvl}</span> · <span style={{ color: "#ffa94d", fontWeight: 800 }}>🔥 {st.n}</span></div>
+            </div>
+          </button>
+          {session && (
+            <button onClick={onResume} className="drawerItem" data-resume style={{ ...btnBase, "--i": 1, margin: "6px 14px", padding: "13px 14px", borderRadius: 16, background: C.signal, color: C.signalInk, display: "flex", alignItems: "center", gap: 10, fontSize: 15, textAlign: "left" }}>
+              <span style={{ fontSize: 18 }}>▶</span>{T("resumeWorkout", { d: session.day })}
+            </button>
+          )}
+          <div data-nav-box style={{ margin: "6px 14px 12px", padding: "4px", background: C.panel, border: `1px solid ${C.line}`, borderRadius: 18, ...(LOOK === "liquid" ? { ...LIQUID_PILL(), borderRadius: 20 } : {}) }}>
+            {items.map((it, i) => {
+              const on = it.id === screen;
+              return (
+                <button key={it.id} onClick={() => onGo(it.id)} aria-current={on ? "page" : undefined} className="drawerItem" data-screen={it.id}
+                  style={{ ...btnBase, "--i": i + 2, width: "100%", display: "flex", alignItems: "center", gap: 14, padding: "10px 10px", margin: "2px 0", borderRadius: 14, background: on ? `${C.signal}1a` : "transparent", color: on ? C.signal : C.chalk, textAlign: "left" }}>
+                  <span style={{ width: 40, height: 40, borderRadius: 12, background: on ? `${C.signal}26` : LOOK === "liquid" ? "rgba(255,255,255,.08)" : C.panelHi, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><TabIcon name={it.id} active={on} /></span>
+                  <span style={{ minWidth: 0 }}>
+                    <span style={{ display: "block", fontSize: 16, fontWeight: 800 }}>{it.label}</span>
+                    <span style={{ display: "block", fontSize: 12, fontWeight: it.badge ? 700 : 500, color: it.badge ? C.signal : C.dim, marginTop: 1 }}>{it.desc}</span>
+                  </span>
+                  {it.badge > 0 && <span style={{ marginLeft: "auto", minWidth: 20, height: 20, borderRadius: 10, padding: "0 6px", boxSizing: "border-box", background: "#ff5a5a", color: "#fff", fontSize: 11.5, fontWeight: 800, lineHeight: "20px", textAlign: "center", flexShrink: 0 }}>{it.badge}</span>}
+                </button>
+              );
+            })}
+          </div>
+          <AboutBox gh={gh} dl={dl} onNews={onNews} apk={apk} busy={busy} />
+    </>
+  );
+}
+function SideNav(props) {
+  return (
+    <nav data-side-nav aria-label={T("mainMenu")} className="noBar" style={{ fontFamily: BODY, position: "fixed", zIndex: 30, top: 0, left: 0, bottom: 0, width: "var(--side)", boxSizing: "border-box", background: C.ink, borderRight: `1px solid ${C.line}`, ...(LOOK === "liquid" ? { background: liquidGrad(), borderRight: "1px solid rgba(255,255,255,.16)" } : LOOK === "glass" ? { background: glassGrad() } : {}), display: "flex", flexDirection: "column", paddingTop: "var(--sat)", paddingBottom: "var(--sab)", overflowY: "auto" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "18px 18px 4px" }}>
+        <Logo size={30} />
+        <div style={{ fontFamily: DISPLAY, fontSize: 18, fontWeight: 900, color: C.chalk, letterSpacing: 1 }}>HW APP</div>
+      </div>
+      <MenuBody {...props} />
+    </nav>
   );
 }
 
@@ -1846,7 +1957,7 @@ function MiniPlayer({ session, live, onOpen }) {
   const pct = big !== null && total ? big / total : 0;
   return createPortal(
     <button onClick={onOpen} className="miniIn" data-mini aria-label={T("miniOpen")}
-      style={{ ...btnBase, position: "fixed", left: "50%", bottom: "calc(14px + var(--sab))", transform: "translateX(-50%)", zIndex: 40, width: "min(calc(100vw - 24px), 436px)", display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", borderRadius: 20, background: C.panelHi, border: `1.5px solid ${color}88`, boxShadow: "0 12px 34px rgba(0,0,0,.45)", color: C.chalk, textAlign: "left", ...(LOOK === "liquid" ? { ...LIQUID_FLOAT(), border: `1px solid ${color}aa`, borderRadius: 24 } : {}) }}>
+      style={{ ...btnBase, position: "fixed", left: "calc(50% + var(--side, 0px) / 2)", bottom: "calc(14px + var(--sab))", transform: "translateX(-50%)", zIndex: 40, width: "min(calc(100vw - 24px), 436px)", display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", borderRadius: 20, background: C.panelHi, border: `1.5px solid ${color}88`, boxShadow: "0 12px 34px rgba(0,0,0,.45)", color: C.chalk, textAlign: "left", ...(LOOK === "liquid" ? { ...LIQUID_FLOAT(), border: `1px solid ${color}aa`, borderRadius: 24 } : {}) }}>
       <span style={{ position: "relative", width: 48, height: 48, flexShrink: 0 }}>
         <svg width="48" height="48" style={{ transform: "rotate(-90deg)" }}>
           <circle cx="24" cy="24" r="20" fill="none" stroke={C.line} strokeWidth="4" />
@@ -2037,7 +2148,7 @@ function WhatsNew({ onClose, at }) {
   };
   const p = pages[pg] || pages[0];
   const arrow = (dis, on, label, ch) => (
-    <button onClick={on} disabled={dis} aria-label={label} style={{ ...btnBase, width: 34, height: 34, padding: 0, borderRadius: 10, background: C.panelHi, color: dis ? C.line : C.chalk, fontSize: 18, flexShrink: 0 }}>{ch}</button>
+    <button onClick={on} disabled={dis} aria-label={label} style={{ ...btnBase, width: 34, height: 34, padding: 0, borderRadius: 10, background: C.panelHi, color: dis ? C.line : C.signal, fontSize: 20, fontWeight: 700, flexShrink: 0 }}>{ch}</button>
   );
   return (
     <Sheet title={T("newsTitle", { v: p.v })} onClose={onClose}>
@@ -2060,7 +2171,7 @@ function WhatsNew({ onClose, at }) {
             style={{ flex: "0 0 100%", minWidth: 0, scrollSnapAlign: "start", scrollSnapStop: "always", boxSizing: "border-box", padding: "0 1px" }}>
             {x.big ? (<>
               <div data-whatsnew style={{ fontSize: 14, color: C.dim, lineHeight: 1.5, marginBottom: 12 }}>{T("newsIntro")}</div>
-              {pages.length > 1 && <button onClick={() => goTo(1)} data-news-swipe style={{ ...btnBase, background: "transparent", color: C.sky, fontSize: 13, padding: "0 0 12px", textAlign: "left" }}>{T("newsSwipe")}</button>}
+              {pages.length > 1 && <button onClick={() => goTo(1)} data-news-swipe style={{ ...btnBase, background: "transparent", color: C.sky, fontSize: 13, padding: "0 0 12px", textAlign: "left" }}>{T("newsSwipe")} <Arrow size="1.25em" style={{ verticalAlign: "-0.08em" }} /></button>}
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {x.items.map(([title, before, now], j) => (
                   <div key={j} style={{ ...card, padding: "12px 14px" }}>
@@ -2127,7 +2238,7 @@ function UpdateCard({ onOpen, onClose }) {
       <span style={{ fontSize: 26 }}>🎉</span>
       <div style={{ minWidth: 0 }}>
         <div style={{ fontSize: 15, fontWeight: 800, color: C.chalk }}>{T("updTitle", { v: APP_VERSION })}</div>
-        <button onClick={() => { sfxTap(); onOpen(); }} data-update-open style={{ ...btnBase, background: "transparent", color: C.signal, fontSize: 14, padding: "4px 0 0", textAlign: "left" }}>{T("updBtn")} ›</button>
+        <button onClick={() => { sfxTap(); onOpen(); }} data-update-open style={{ ...btnBase, background: "transparent", color: C.signal, fontSize: 14, padding: "4px 0 0", textAlign: "left" }}>{T("updBtn")} <Arrow size="1.25em" style={{ verticalAlign: "-0.08em" }} /></button>
       </div>
       <CloseX onClick={onClose} />
     </div>
@@ -2164,7 +2275,7 @@ function ApkUpdateCard({ info, busy, onClose, inMenu }) {
           </div>
           {s.kind === "idle" && <>
             <div style={{ fontSize: 12, color: C.dim, lineHeight: 1.45, marginTop: 2 }}>{T(play ? "playUpdBody" : inApp ? "apkUpdBody" : "apkUpdBodyWeb")}</div>
-            {(!play || PLAY_STORE_LINK) && <button onClick={download} data-apk-download style={link}>{T(play ? "playUpdBtn" : "apkUpdBtn")} ›</button>}
+            {(!play || PLAY_STORE_LINK) && <button onClick={download} data-apk-download style={link}>{T(play ? "playUpdBtn" : "apkUpdBtn")} <Arrow size="1.25em" style={{ verticalAlign: "-0.08em" }} /></button>}
           </>}
           {s.kind === "downloading" && <>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 8 }}>
@@ -2186,7 +2297,7 @@ function ApkUpdateCard({ info, busy, onClose, inMenu }) {
           </>)}
           {s.kind === "error" && <>
             <div style={{ fontSize: 12, color: C.dim, lineHeight: 1.45, marginTop: 2 }}>{T("apkErrD")}</div>
-            <button data-apk-retry onClick={download} style={link}>{T("apkRetry")} ›</button>
+            <button data-apk-retry onClick={download} style={link}>{T("apkRetry")} <Arrow size="1.25em" style={{ verticalAlign: "-0.08em" }} /></button>
           </>}
         </div>
       </div>
@@ -2200,7 +2311,7 @@ function ApkUpdateCard({ info, busy, onClose, inMenu }) {
 const HINTS = [
   { k: "themes", go: "settings" }, { k: "exercises", go: "settings" }, { k: "calories", go: "calories" },
   { k: "minimize", go: null }, { k: "backup", go: "settings" }, { k: "history", go: "history" },
-  { k: "howto", go: null }, { k: "freeze", go: "profile" }, { k: "language", go: "settings" }, { k: "birthday", go: "calories" },
+  { k: "howto", go: null }, { k: "freeze", go: "profile" }, { k: "profile", go: "profile" }, { k: "language", go: "settings" }, { k: "birthday", go: "calories" },
 ];
 function HintCard({ ui, setUi, onGo }) {
   const today = dateKey();
@@ -2214,7 +2325,7 @@ function HintCard({ ui, setUi, onGo }) {
       <div style={{ minWidth: 0 }}>
         <div style={{ fontSize: 12, fontWeight: 800, color: C.sky }}>{T("hintTitle")}</div>
         <div style={{ fontSize: 14, color: C.chalk, lineHeight: 1.45, marginTop: 2 }}>{T("hint_" + h.k)}</div>
-        {h.go && <button onClick={() => { setUi({ ...ui, hintHidden: today }); onGo(h.go); }} style={{ ...btnBase, background: "transparent", color: C.sky, padding: "6px 0 0", fontSize: 13 }}>{T("hintGo")} ›</button>}
+        {h.go && <button onClick={() => { setUi({ ...ui, hintHidden: today }); onGo(h.go); }} style={{ ...btnBase, background: "transparent", color: C.sky, padding: "6px 0 0", fontSize: 13 }}>{T("hintGo")} <Arrow size="1.25em" style={{ verticalAlign: "-0.08em" }} /></button>}
       </div>
     </div>
   );
@@ -2306,7 +2417,7 @@ function UpdateBanner({ dl, busy, onClose }) {
 function FloatStart({ show, day, rounds, setRounds, onStart }) {
   return createPortal(
     <div data-fstart={show ? "on" : "off"} aria-hidden={!show} className={"fstart" + (show ? " on" : "")}
-      style={{ position: "fixed", left: 0, right: 0, bottom: "calc(var(--sab, 0px) + 12px)", zIndex: 40, display: "flex", justifyContent: "center", padding: "0 12px", pointerEvents: show ? "auto" : "none" }}>
+      style={{ position: "fixed", left: "var(--side, 0px)", right: 0, bottom: "calc(var(--sab, 0px) + 12px)", zIndex: 40, display: "flex", justifyContent: "center", padding: "0 12px", pointerEvents: show ? "auto" : "none" }}>
       <div data-fstart-box style={{ display: "flex", gap: 10, width: "100%", maxWidth: 436, padding: 10, borderRadius: 26, background: `${C.ink}f5`, border: `1px solid ${C.line}`, boxShadow: "0 12px 34px rgba(0,0,0,.5)", ...(LOOK === "liquid" ? { ...LIQUID_FLOAT(), borderRadius: 26 } : LOOK === "glass" ? { ...GLASS(), borderRadius: 26, boxShadow: "inset 0 1px 0 rgba(255,255,255,.22), 0 12px 34px rgba(0,0,0,.5)" } : {}) }}>
         {[3, 2].map((n, i) => (
           <button key={n} tabIndex={show ? 0 : -1} data-fround={n} aria-pressed={rounds === n} aria-label={T("roundsBtn", { n, m: n === 2 ? 13 : 19 })} onClick={() => { sfxTap(); setRounds(n); }} className="fsq" style={{ ...btnBase, "--d": `${60 + i * 50}ms`, width: 74, flexShrink: 0, borderRadius: 17, padding: "12px 0", ...(rounds === n ? { background: C.chalk, border: `1px solid ${C.chalk}` } : SUNK()), color: rounds === n ? C.ink : C.dim, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", lineHeight: 1 }}>
@@ -2376,9 +2487,9 @@ function DateField({ value, max, onChange, label, field }) {
       {open && (
         <Sheet title={label} onClose={() => setOpen(false)} short>
           <div data-date-sheet style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-            <button onClick={() => shift(-1)} aria-label={T("prevMonth")} style={{ ...ghostBtn, padding: "6px 14px", fontSize: 18 }}>‹</button>
+            <button onClick={() => shift(-1)} aria-label={T("prevMonth")} style={{ ...ghostBtn, color: C.signal, padding: "6px 14px", fontSize: 18 }}>‹</button>
             <div style={{ fontFamily: DISPLAY, fontSize: 22, fontWeight: 900, color: C.chalk }}>{capFirst(fmtMonthYear(first))}</div>
-            <button onClick={() => canNext && shift(1)} disabled={!canNext} aria-label={T("nextMonth")} style={{ ...ghostBtn, padding: "6px 14px", fontSize: 18, opacity: canNext ? 1 : 0.3 }}>›</button>
+            <button onClick={() => canNext && shift(1)} disabled={!canNext} aria-label={T("nextMonth")} style={{ ...ghostBtn, color: C.signal, padding: "6px 14px", fontSize: 18, opacity: canNext ? 1 : 0.3 }}>›</button>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(7, minmax(0, 1fr))", gap: 5 }}>
             {weekdaysShort().map(w => <div key={w} style={{ textAlign: "center", fontSize: 11, fontWeight: 700, color: C.dim, paddingBottom: 2 }}>{w}</div>)}
@@ -2557,7 +2668,7 @@ function Onboarding({ start = 0, profile, setProfile, kcal, setKcal, onDone, acc
               <span aria-hidden="true" style={{ width: 22, height: 22, borderRadius: 7, flexShrink: 0, border: `2px solid ${age16 ? C.mint : C.line}`, background: age16 ? C.mint : "transparent", color: C.ink, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 900 }}>{age16 ? "✓" : ""}</span>
               <span>{T("frAge", { n: ACCOUNT_AGE })}</span>
             </button>
-            <button onClick={() => { sfxTap(); openExternal(PRIVACY_URL); }} style={{ ...btnBase, background: "transparent", color: C.sky, fontSize: 13, padding: "4px 4px 0 38px" }}>{T("privacyLink")} ›</button>
+            <button onClick={() => { sfxTap(); openExternal(PRIVACY_URL); }} style={{ ...btnBase, background: "transparent", color: C.sky, fontSize: 13, padding: "4px 4px 0 38px" }}>{T("privacyLink")} <Arrow size="1.25em" style={{ verticalAlign: "-0.08em" }} /></button>
             <button data-ob-signin onClick={signIn} disabled={!age16 || busy} className="b3d" style={{ ...bigBtn(C.chalk, C.ink), marginTop: 14, opacity: age16 ? 1 : 0.45, display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}><GLogo />{busy ? T("frSigning") : T("frSignIn")}</button>
           </>}
         </>}
@@ -2669,10 +2780,20 @@ function SetupCard({ profile, kcal, onFix, onClose }) {
 // The strip is as tall as the page you're on (pages have different lengths; the window scrolls vertically), but at
 // least down to the bottom of the screen, so a swipe on the empty space under a short page works too (1.5.4).
 // name → data-<name>-tabs / -tab / -pager / -page for tests.
-function usePager(name, n) {
+function usePager(name, n, lay) {
   const pager = useRef(null), pages = useRef([]), knob = useRef(null), ctl = useRef({});
   const [page, setPage] = useState(0);
   const [pagerEl, setPagerEl] = useState(null); // the strip may appear later (Calories shows a form first)
+  const wide = useWide(); // 1.7.0: on a wide screen the pages stand side by side (no tabs, no swiping)
+  const [cols, setCols] = useState(n); // how many pages fit next to each other (at least ~340 px each)
+  useLayoutEffect(() => {
+    const el = pager.current; if (!wide || !el) return;
+    const fit = () => setCols(Math.max(1, Math.min(n, Math.floor((el.clientWidth + 18) / 358))));
+    fit();
+    const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(fit) : null;
+    if (ro) ro.observe(el); else window.addEventListener("resize", fit);
+    return () => { if (ro) ro.disconnect(); else window.removeEventListener("resize", fit); };
+  }, [pagerEl, wide]);
   // 1.5.7 (Michael, video: a tab tap jumped instantly or swung back and forth): a tab tap no longer uses the browser's
   // smooth scroll, which on Android fights with scroll-snap (and with any size change) and can jump or bounce. The app
   // moves the strip itself with the app's ease curve while snapping is off, and the knob follows the strip. A finger
@@ -2699,6 +2820,7 @@ function usePager(name, n) {
   // which looked like the strip bouncing between pages.
   useLayoutEffect(() => {
     const el = pager.current; if (!el) return;
+    if (wide) { el.style.height = ""; return; }
     const c = ctl.current;
     if (page) el.scrollLeft = page * el.clientWidth; // a strip that came back (after a form) stays on the same page
     if (knob.current) knob.current.style.transform = `translateX(${page * 100}%)`;
@@ -2748,8 +2870,8 @@ function usePager(name, n) {
       // (a form takes its place), React may reuse its <div> for the next element, which then kept the strip's height.
       el.style.height = ""; el.classList.remove("anim");
     };
-  }, [pagerEl]);
-  const tabs = labels => (
+  }, [pagerEl, wide]);
+  const tabs = labels => wide ? null : (
     <div {...{ [`data-${name}-tabs`]: 1 }} role="tablist" style={{ position: "relative", display: "flex", padding: 3, borderRadius: 13, ...SUNK(), marginBottom: 12 }}>
       <span ref={knob} aria-hidden="true" style={{ position: "absolute", top: 3, bottom: 3, left: 3, width: `calc((100% - 6px) / ${n})`, borderRadius: 10, background: C.chalk, boxShadow: "0 2px 6px rgba(0,0,0,.3)", transition: "none" }} />
       {labels.map((lb, i) => (
@@ -2762,9 +2884,13 @@ function usePager(name, n) {
   // which restarted everything (and stopped a page move halfway)
   const refFn = useRef(null);
   if (!refFn.current) refFn.current = node => { pager.current = node; setPagerEl(node); };
-  const pagerProps = { ref: refFn.current, className: "swPager", [`data-${name}-pager`]: page };
-  const pageProps = i => ({ ref: el => (pages.current[i] = el), className: "swPage", [`data-${name}-page`]: String(i), "aria-hidden": page !== i });
-  return { page, goPage, tabs, pagerProps, pageProps };
+  const ly = wide && lay && lay[cols];
+  const pagerProps = { ref: refFn.current, className: wide ? "swGrid" : "swPager", [`data-${name}-pager`]: page, ...(wide ? { "data-wide": cols, style: { gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`, ...(ly ? { gridTemplateRows: ly.rows } : {}) } } : {}) };
+  // three pages in two columns: the second one stands on the right next to the other two (no gap under the first)
+  // (or a layout the screen gives per column count, e.g. Profile: four pages)
+  const span3 = !wide ? null : ly ? ly.at : n === 3 && cols === 2 ? [{ gridColumn: 1, gridRow: 1 }, { gridColumn: 2, gridRow: "1 / span 2" }, { gridColumn: 1, gridRow: 2 }] : null;
+  const pageProps = i => ({ ref: el => (pages.current[i] = el), className: "swPage", [`data-${name}-page`]: String(i), "aria-hidden": wide ? undefined : page !== i, ...(span3 ? { style: span3[i] } : {}) });
+  return { page, goPage, tabs, pagerProps, pageProps, wide };
 }
 
 function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, profile, onGo, upd, apk, kcal, setKcal, dl, onDlClose, onSetup, settings, setSettings }) {
@@ -2917,7 +3043,7 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
   );
 
   return (
-    <div className="scr" style={{ padding: "16px 0 132px", maxWidth: 460, margin: "0 auto" }}>
+    <div className="scr" style={{ padding: "16px 0 132px", maxWidth: "var(--colMax)", margin: "0 auto" }}>
       {howEx && <HowTo id={howEx} history={history} onClose={() => setHowEx(null)} />}
 
       <div style={{ padding: "0 18px" }}>
@@ -2950,7 +3076,7 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
           {isNative && onGo && (
             <div data-move style={{ fontSize: 13, color: C.sky, lineHeight: 1.55, marginTop: 10, paddingTop: 10, borderTop: `1px solid ${C.line}` }}>
               {T("welcomeMove")}
-              <button onClick={() => { sfxTap(); onGo("settings"); }} style={{ ...btnBase, display: "block", background: "transparent", color: C.signal, fontSize: 14, padding: "6px 0 0" }}>{T("welcomeMoveBtn")} ›</button>
+              <button onClick={() => { sfxTap(); onGo("settings"); }} style={{ ...btnBase, display: "block", background: "transparent", color: C.signal, fontSize: 14, padding: "6px 0 0" }}>{T("welcomeMoveBtn")} <Arrow size="1.25em" style={{ verticalAlign: "-0.08em" }} /></button>
             </div>
           )}
         </div>
@@ -2959,7 +3085,7 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
         <div aria-hidden="true" style={{ fontSize: 19, lineHeight: 1, flexShrink: 0 }}>💡</div>
         <div style={{ minWidth: 0, fontSize: 14, color: C.chalk, lineHeight: 1.4 }}>
           {T("hint_" + hint.k)}
-          {hint.go && <button onClick={() => { setUi({ ...ui, hintHidden: today }); onGo(hint.go); }} style={{ ...btnBase, display: "inline", background: "transparent", color: C.sky, padding: "0 0 0 6px", fontSize: 13, whiteSpace: "nowrap" }}>{T("hintGo")} ›</button>}
+          {hint.go && <button onClick={() => { setUi({ ...ui, hintHidden: today }); onGo(hint.go); }} style={{ ...btnBase, display: "inline", background: "transparent", color: C.sky, padding: "0 0 0 6px", fontSize: 13, whiteSpace: "nowrap" }}>{T("hintGo")} <Arrow size="1.25em" style={{ verticalAlign: "-0.08em" }} /></button>}
         </div>
       </>, () => setUi({ ...ui, hintHidden: today }), { "data-hint": hint.k })}
       {notice === "daily" && ntBox("daily", C.signal, (
@@ -2978,7 +3104,7 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
         </div>
         <div {...pg.pageProps(1)}>
           <Sect title={`${T("secExercises")} · ${T("dayN", { d: day.id })}`} accent={C.sky} titlePad="0 15px" style={LOOK === "flat" ? { marginTop: 0 } : { padding: "12px 0 4px", marginTop: 0 }}>
-          {dayPicker({ padding: LOOK === "flat" ? "0 0 12px" : "0 15px 12px" }, "ex")}
+          {!pg.wide && dayPicker({ padding: LOOK === "flat" ? "0 0 12px" : "0 15px 12px" }, "ex")}
           <div style={LOOK === "flat" ? { ...card } : { borderTop: `1px solid ${C.line}` }}>
             {day.ids.map((slot, i) => {
               const id = effId(slot);
@@ -3019,7 +3145,7 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
                     <span style={{ display: "block", fontWeight: 700 }}>{noEmo(T("exMenu"))}</span>
                     <span style={{ display: "block", fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2, lineHeight: 1.4 }}>{T("exMenuD")}</span>
                   </span>
-                  <span aria-hidden="true" style={{ color: C.dim, fontSize: 20 }}>›</span>
+                  <Arrow />
                 </button>
                 <SettingRow title={T("sndTimer")} desc={T("sndTimerD")} on={settings.sndTimer} onClick={() => { unlockAudio(); const v = !settings.sndTimer; setS("sndTimer", v); if (v) soundExercise(); }} />
                 <SettingRow title={T("vibrate")} desc={T("vibrateD")} on={settings.vibrate} onClick={() => { const v = !settings.vibrate; setS("vibrate", v); if (v) vibratePattern([160]); }} />
@@ -3219,7 +3345,8 @@ function kcalNow(history, day = dateKey()) {
 }
 // Calories are amber everywhere (Michael, Oct 10: workouts green, calories a different colour):
 // logged = soft amber, target hit = solid amber with ✓.
-const KC_HIT = "#ff8c1a", KC_LOG = "#ffd98a";
+// (set by applyTheme: they change with the main colour, 1.7.0)
+var KC_HIT = "#ff8c1a", KC_LOG = "#ffd98a";
 // Days in a row with calories logged, up to today (today counts once something is logged; until then the streak
 // from yesterday still stands). hits = how many of them hit the target.
 function kcalStreak(history) {
@@ -3257,7 +3384,7 @@ function KcalWeekDots({ history, full }) {
   const today = dateKey(), wd = weekdaysShort(); // Monday first
   // full (Calories, 1.4.0): the same strip as the week on Home (day above, a rounded square below), in amber.
   if (full) return (
-    <div data-kc-week style={{ display: "flex", gap: 6 }} aria-label={T("kcWeekAria")}>
+    <div data-kc-week style={{ display: "flex", gap: 6 }} aria-label={`${T("secWeek")}: ${T("calLegLog")}, ${T("calLegHit")}`}>
       {kcalWeek(history).map(w => {
         const d = parseKey(w.k), isT = w.k === today;
         return (
@@ -3270,7 +3397,7 @@ function KcalWeekDots({ history, full }) {
     </div>
   );
   return (
-    <div data-kc-week style={{ display: "flex", gap: 6, alignItems: "flex-start" }} aria-label={T("kcWeekAria")}>
+    <div data-kc-week style={{ display: "flex", gap: 6, alignItems: "flex-start" }} aria-label={`${T("secWeek")}: ${T("calLegLog")}, ${T("calLegHit")}`}>
       {kcalWeek(history).map(w => {
         const d = parseKey(w.k), isT = w.k === today;
         return (
@@ -3294,7 +3421,7 @@ function HomeKcal({ history, kcal, setKcal, onOpen }) {
     return (
       <button data-home-kcal="setup" onClick={() => { sfxTap(); onOpen(); }} style={{ ...btnBase, ...card, width: "100%", marginTop: mt, padding: "14px 16px", display: "flex", alignItems: "center", gap: 12, color: C.chalk, textAlign: "left" }}>
         <span style={{ flex: 1, minWidth: 0 }}><span style={{ display: "block", fontSize: 15, fontWeight: 800 }}>{T("kcHomeSetup")}</span><span style={{ display: "block", fontSize: 12, color: C.dim, marginTop: 3 }}>{T("kcHomeSetupD")}</span></span>
-        <span aria-hidden="true" style={{ color: C.dim, fontSize: 20 }}>›</span>
+        <Arrow />
       </button>
     );
   }
@@ -3314,7 +3441,7 @@ function HomeKcal({ history, kcal, setKcal, onOpen }) {
       <span style={{ display: "block", height: 5, borderRadius: 99, background: `${C.chalk}14`, marginTop: 10, overflow: "hidden" }}><span style={{ display: "block", width: `${pct * 100}%`, height: "100%", borderRadius: 99, background: col, transition: `width ${MO.fill} ${MO.ease}` }} /></span>
       <span style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 9 }}>
         <span data-home-kcal-line style={{ flex: 1, fontSize: 13, color: s.hit ? KC_HIT : C.dim, lineHeight: 1.45 }}>{kcalLine(s)}</span>
-        <span aria-hidden="true" data-home-kcal-open style={{ color: C.dim, fontSize: 20, lineHeight: 1 }}>›</span>
+        <Arrow data-home-kcal-open />
       </span>
     </button>
   );
@@ -3617,6 +3744,7 @@ function Calories({ history, profile, setProfile, kcal, setKcal }) {
   };
   const remove = (day, ts) => {
     sfxTap();
+    syncTomb("kdel", ts); // 1.7.0: stays deleted on the other devices too
     const log = { ...(kcal.log || {}) };
     log[day] = (log[day] || []).filter(x => x.ts !== ts);
     if (!log[day].length) delete log[day];
@@ -3632,11 +3760,14 @@ function Calories({ history, profile, setProfile, kcal, setKcal }) {
   // folded or not is decided when Calories opens (connecting food right here doesn't snap the box shut)
   const fold = k => (KC_FOLD[k] === undefined ? foldDef.current[k] : KC_FOLD[k]);
   return (
-    <div className="scr" style={{ padding: "16px 0 110px", maxWidth: 460, margin: "0 auto" }}>
+    <div className="scr" style={{ padding: "16px 0 110px", maxWidth: "var(--colMax)", margin: "0 auto" }}>
       <div style={{ padding: "0 18px" }}>
         <Sect data-kc-streak-card title={T("secWeek")} meta={<KcalStreakChip history={history} small />} style={{ marginTop: 0, marginBottom: 12 }}>
           <KcalWeekDots history={history} full />
-          <div style={{ fontSize: 11, color: C.dim, marginTop: 8, lineHeight: 1.4 }}>{T("kcLegend")}</div>
+          {/* 1.7.0: colour swatches instead of colour names (the calorie colours change with the main colour) */}
+          <div data-kc-legend style={{ display: "flex", flexWrap: "wrap", gap: "6px 14px", fontSize: 11, color: C.dim, marginTop: 8 }}>
+            {[[KC_LOG, T("calLegLog"), ""], [KC_HIT, `${T("calLegHit")} (±10 %)`, "✓"]].map(([bg, l, mark]) => <span key={l} style={{ display: "inline-flex", alignItems: "center", gap: 5 }}><span style={{ width: 14, height: 14, borderRadius: 4, background: bg, color: "#1a1206", fontSize: 10, fontWeight: 900, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>{mark}</span>{l}</span>)}
+          </div>
         </Sect>
         {pg.tabs([T("kcToday"), T("kcTabCal"), T("kcTabMe")])}
       </div>
@@ -3747,12 +3878,12 @@ function KcalCalendar({ history, kcal, sel, onSel }) {
   return (
     <Sect data-kc-cal style={{ marginTop: 0 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-        <button onClick={() => shift(-1)} aria-label={T("prevMonth")} style={{ ...ghostBtn, padding: "4px 12px", fontSize: 16 }}>‹</button>
+        <button onClick={() => shift(-1)} aria-label={T("prevMonth")} style={{ ...ghostBtn, color: C.signal, padding: "4px 12px", fontSize: 16 }}>‹</button>
         <div style={{ textAlign: "center", minWidth: 0 }}>
           <div key={`${y}-${m}`} className="titleIn" style={{ fontFamily: DISPLAY, fontSize: 22, fontWeight: 900, color: C.chalk }}>{capFirst(fmtMonthYear(first))}</div>
           <div data-kc-cal-count style={{ fontSize: 12, color: C.dim }}>{T("kcMonthLogged", { n: logged })} · <span style={{ color: hits ? KC_HIT : C.dim }}>{T("kcMonthHit", { n: hits })}</span></div>
         </div>
-        <button onClick={() => canNext && shift(1)} disabled={!canNext} aria-label={T("nextMonth")} style={{ ...ghostBtn, padding: "4px 12px", fontSize: 16, opacity: canNext ? 1 : 0.3 }}>›</button>
+        <button onClick={() => canNext && shift(1)} disabled={!canNext} aria-label={T("nextMonth")} style={{ ...ghostBtn, color: C.signal, padding: "4px 12px", fontSize: 16, opacity: canNext ? 1 : 0.3 }}>›</button>
       </div>
       <div key={`${y}-${m}`} className="titleIn" style={{ display: "grid", gridTemplateColumns: "repeat(7, minmax(0, 1fr))", gap: 5 }}>
         {weekdaysShort().map(w => <div key={w} style={{ fontSize: 11, color: C.dim, textAlign: "center", fontWeight: 600 }}>{w}</div>)}
@@ -3805,14 +3936,14 @@ function MonthCalendar({ history }) {
   const count = Object.keys(byDate).filter(k => k.startsWith(`${y}-${pad(m + 1)}`)).length;
   const shift = n => { sfxTap(); const d = new Date(y, m + n, 1); setYm([d.getFullYear(), d.getMonth()]); };
   return (
-    <div style={{ ...card, padding: "14px 14px 12px" }}>
+    <Sect data-month-cal style={{ padding: "14px 14px 12px", marginTop: 0 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-        <button onClick={() => shift(-1)} aria-label={T("prevMonth")} style={{ ...ghostBtn, padding: "4px 12px", fontSize: 16 }}>‹</button>
+        <button onClick={() => shift(-1)} aria-label={T("prevMonth")} style={{ ...ghostBtn, color: C.signal, padding: "4px 12px", fontSize: 16 }}>‹</button>
         <div style={{ textAlign: "center" }}>
           <div style={{ fontFamily: DISPLAY, fontSize: 22, fontWeight: 900, color: C.chalk }}>{capFirst(fmtMonthYear(first))}</div>
           <div style={{ fontSize: 12, color: C.dim }}>{TP("workouts", count)}</div>
         </div>
-        <button onClick={() => shift(1)} aria-label={T("nextMonth")} style={{ ...ghostBtn, padding: "4px 12px", fontSize: 16 }}>›</button>
+        <button onClick={() => shift(1)} aria-label={T("nextMonth")} style={{ ...ghostBtn, color: C.signal, padding: "4px 12px", fontSize: 16 }}>›</button>
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 5 }}>
         {weekdaysShort().map(d => <div key={d} style={{ fontSize: 11, color: C.dim, textAlign: "center", fontWeight: 600 }}>{d}</div>)}
@@ -3844,7 +3975,7 @@ function MonthCalendar({ history }) {
         })}
       </div>
       <CalLegend />
-    </div>
+    </Sect>
   );
 }
 
@@ -3872,7 +4003,7 @@ function ProgressChart({ history }) {
   const unit = EX[sel].type === "time" ? " s" : "";
   const nextAt = at.find(v => v > Math.max(...vals));
   return (
-    <div style={{ ...card, padding: "14px 14px 10px" }}>
+    <Sect title={T("progress")} flatTitle data-progress style={{ padding: "14px 14px 10px" }} titlePad="0 2px">
       <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 8, marginBottom: 6 }}>
         {withData.map(id => (
           <button key={id} onClick={() => { sfxTap(); setSel(id); setTip(null); }} style={{ ...btnBase, flexShrink: 0, padding: "6px 11px", fontSize: 12, background: sel === id ? C.chalk : "transparent", color: sel === id ? C.ink : C.dim, border: `1.5px solid ${sel === id ? C.chalk : C.line}` }}>{EX[id].name}</button>
@@ -3903,7 +4034,7 @@ function ProgressChart({ history }) {
         ))}
       </svg>
       <div style={{ fontSize: 12, color: C.dim }}>{T("chartHint")}</div>
-    </div>
+    </Sect>
   );
 }
 
@@ -3951,7 +4082,7 @@ function EntryEditor({ entry, nextDay, onSave, onDelete, onClose }) {
     const ts = entry && entry.date === date ? entryTs(entry) : isNew && date === today ? Date.now() : parseKey(date).getTime() + tod;
     const base = entry || { warm: false, cool: false, manual: true };
     sfxCheck();
-    onSave({ ...base, date, ts, day, rounds, items });
+    onSave({ ...base, date, ts, day, rounds, items, mts: Date.now() }); // mts: when it was last changed (sync, 1.7.0)
   };
 
   const field = { fontFamily: BODY, fontSize: 16, fontWeight: 700, padding: "9px 10px", borderRadius: 11, border: `1.5px solid ${C.line}`, background: C.ink, color: C.chalk, outline: "none", boxSizing: "border-box" };
@@ -4061,39 +4192,41 @@ function HistoryTab({ history, onDelete, onSaveEntry, editDate, onEditOpened }) 
   const prs = history.reduce((a, e) => a + ((e.prs && e.prs.length) || 0), 0);
   const tiles = [[T("tileTrainings"), history.length, "🏋️"], [T("tileSets"), sets, "🔁"], [T("tilePRs"), prs, "🏆"]];
   return (
-    <div className="scr" style={{ padding: "16px 18px 110px", maxWidth: 460, margin: "0 auto" }}>
-      <div data-stat-grid style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 8 }}>
-        {tiles.map(([l, v, ic]) => <StatTile key={l} label={l} icon={ic} value={v} compact />)}
-      </div>
+    <div className="scr" style={{ padding: "16px 18px 110px", maxWidth: "var(--colMax)", margin: "0 auto" }}>
       {editing !== null && (
         <EntryEditor key={String(editing)} entry={editing === "new" ? null : history[editing]} nextDay={DAYS[nextDayIdx(history)].id}
           onClose={() => setEditing(null)}
           onSave={e => { onSaveEntry(editing === "new" ? null : editing, e); setEditing(null); setOpen(null); }}
           onDelete={() => { onDelete(editing); setEditing(null); setOpen(null); }} />
       )}
+      {/* 1.7.0: on a wide screen the numbers, calendar and chart on the left, the workouts on the right */}
+      <Cols left={<>
+      <div data-stat-grid style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 8 }}>
+        {tiles.map(([l, v, ic]) => <StatTile key={l} label={l} icon={ic} value={v} compact />)}
+      </div>
       <MonthCalendarM history={history} />
-      <div style={sectionTitle}>{T("progress")}</div>
       <ProgressChartM history={history} />
-      <div style={sectionTitle}>{T("workoutsTitle")}</div>
-      <button data-add-workout onClick={() => { sfxTap(); setEditing("new"); }} style={{ ...btnBase, ...card, ...tileR(), width: "100%", padding: "13px 15px", fontSize: 15, color: C.chalk, marginBottom: 10, textAlign: "left", display: "flex", alignItems: "center", gap: 10 }}>
-        <span style={{ flex: 1, minWidth: 0 }}>{T("addWorkout").replace(/^➕\s*/, "")}<span style={{ display: "block", fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2 }}>{T("addWorkoutD")}</span></span>
-        <span aria-hidden="true" style={{ fontSize: 22, color: C.sky, lineHeight: 1, flexShrink: 0 }}>+</span>
-      </button>
-      {history.length === 0 && <div style={{ color: C.dim, fontSize: 14 }}>{T("noHistory")}</div>}
-      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+      </>} right={<>
+      {/* 1.7.0: the workouts are rows in one box (like the friends list), the newest open */}
+      <ListSect title={T("workoutsTitle")} meta={history.length ? String(history.length) : ""} data-workouts>
+        <button data-add-workout onClick={() => { sfxTap(); setEditing("new"); }} style={{ ...btnBase, width: "100%", padding: "11px 16px 13px", fontSize: 15, color: C.chalk, background: "transparent", borderRadius: 0, textAlign: "left", display: "flex", alignItems: "center", gap: 10 }}>
+          <span style={{ flex: 1, minWidth: 0 }}>{T("addWorkout").replace(/^➕\s*/, "")}<span style={{ display: "block", fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2 }}>{T("addWorkoutD")}</span></span>
+          <span aria-hidden="true" style={{ fontSize: 22, color: C.sky, lineHeight: 1, flexShrink: 0 }}>+</span>
+        </button>
+        {history.length === 0 && <div style={{ color: C.dim, fontSize: 14, padding: "12px 16px", borderTop: `1px solid ${C.line}` }}>{T("noHistory")}</div>}
         {history.slice().reverse().map((s, ri) => {
           const idx = history.length - 1 - ri;
           const isOpen = open === idx || ri === 0;
           return (
-            <div key={`${s.date}-${idx}`} style={{ ...card, padding: "13px 15px" }}>
+            <div key={`${s.date}-${idx}`} data-workout-row style={{ padding: "12px 16px", borderTop: `1px solid ${C.line}` }}>
               <button onClick={() => { sfxTap(); setOpen(open === idx ? null : idx); }} aria-expanded={isOpen}
                 style={{ ...btnBase, width: "100%", background: "transparent", color: C.chalk, padding: 0, textAlign: "left", display: "flex", alignItems: "center", gap: 10, borderRadius: 0 }}>
-                <div style={{ width: 40, height: 40, borderRadius: 12, background: C.panelHi, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, flexShrink: 0 }}>{s.day}</div>
-                <div style={{ flex: 1 }}>
+                <div style={{ width: 40, height: 40, borderRadius: 12, background: SOFT(), display: "flex", alignItems: "center", justifyContent: "center", fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, flexShrink: 0 }}>{s.day}</div>
+                <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 15, fontWeight: 700 }}>{capFirst(fmtDate(s.date, true))}</div>
                   <div style={{ fontSize: 12, color: C.dim }}>{TP("rounds", s.rounds || 2)}, {TP("sets", setsIn(s))}{s.prs && s.prs.length ? `, 🏆 ${s.prs.length}` : ""}</div>
                 </div>
-                <div style={{ fontFamily: DISPLAY, fontSize: 20, fontWeight: 800, color: C.sky }}>+{xpFor(s)} XP</div>
+                <div style={{ fontFamily: DISPLAY, fontSize: 20, fontWeight: 800, color: C.sky, flexShrink: 0 }}>+{xpFor(s)} XP</div>
                 <Chevron open={isOpen} />
               </button>
               <Expand open={isOpen}>
@@ -4123,27 +4256,375 @@ function HistoryTab({ history, onDelete, onSaveEntry, editDate, onEditOpened }) 
             </div>
           );
         })}
-      </div>
+      </ListSect>
+      </>} />
     </div>
   );
 }
 
-// ─── TAB 3: PROFILE ──────────────────────────────────────────────────────────
-function ProfileTab({ history, profile, setProfile, onFreeze, kcal }) {
+// ─── TAB 3: PROFILE (1.7.0; Michael, Oct 18, 16:15: "like Steam") ───────────────────────────────────────────
+// Your Profile looks exactly like what others see when they open it: the basics (photo, name, level, streak) on top,
+// then the showcase (fields you fill with what you want to show; more fields unlock with your level), then swipe pages
+// with everything and the progress: Badges | Ranks | Stats. Only you get the edit buttons.
+// Showcase fields unlock at these levels (Michael: the 1st right away, then 5, 15, 30, 60, then doubling; rare and cool).
+const SLOT_LV = [1, 5, 15, 30, 60, 120, 240, 480, 960, 1920];
+const slotsFor = lvl => SLOT_LV.filter(l => lvl >= l).length;
+const PF_STATS = ["n", "reps", "min", "best", "prs", "xp", "since"];
+const SLOT_KINDS = ["rk", "rk3", "ach", "ach3", "st"];
+// the level badge's colour follows the rank colours: Wood under 5, Iron 5+, Bronze 10+, Silver 20+, Gold 30+,
+// Platinum 50+, Diamond 80+
+const lvRank = lvl => (lvl >= 80 ? 6 : lvl >= 50 ? 5 : lvl >= 30 ? 4 : lvl >= 20 ? 3 : lvl >= 10 ? 2 : lvl >= 5 ? 1 : 0);
+// A profile as one model, from this phone (yours) or from a card (someone else's). Badges about calories, steps and
+// Health Connect are only ever in your own model (marked "only you").
+function ownModel(history, profile, kcal) {
+  const xp = totalXP(history), rk = {};
+  Object.keys(RANK_AT).forEach(id => { const b = bestFor(history, id); rk[id] = typeof b === "number" && isFinite(b) ? b : null; });
+  return {
+    own: true, nick: profile.name || T("defaultName"), pfp: profile.pfp || null, lvl: levelInfo(xp).lvl, xp,
+    streak: streakInfo(history, dateKey()).n, best: bestStreak(history), n: history.length, reps: totalReps(history),
+    min: Math.floor(history.reduce((a, e) => a + (e.dur || 0), 0) / 60), prs: history.reduce((a, e) => a + ((e.prs && e.prs.length) || 0), 0),
+    since: history.length ? history.map(e => e.date).sort()[0] : null,
+    ach: achievements(history, achExtra(profile, kcal, history)), rk, show: Array.isArray(profile.show) ? profile.show : [],
+  };
+}
+function cardModel(c, p) {
+  const k = cleanCard(c);
+  return {
+    own: false, nick: p.nick || "?", pfp: p.pfp || null, lvl: k.lvl, xp: k.xp, streak: k.streak, best: k.best, n: k.n, reps: k.reps,
+    min: k.min, prs: k.prs, since: k.since, rk: k.rk, show: k.show,
+    // values when the card has them (1.7.0+), else the lowest value of the level they reached
+    ach: ACH.filter(a => !CARD_HIDE.includes(a.k)).map(a => achFrom(a, k.av[a.k] !== undefined ? k.av[a.k] : (k.ach[a.k] ? a.at[Math.max(0, (a.rk ? a.rk.indexOf(k.ach[a.k] - 1) : k.ach[a.k] - 1))] ?? 0 : 0))),
+  };
+}
+const statVal = (m, k) => (k === "since" ? (m.since ? 1 : 0) : m[k] || 0);
+// The exercises with a result, best first (rank, then how far into the rank).
+const rankedIds = m => Object.keys(RANK_AT).filter(id => m.rk[id] !== null && m.rk[id] !== undefined)
+  .sort((a, b) => rankIdx(b, m.rk[b]) - rankIdx(a, m.rk[a]) || m.rk[b] / RANK_AT[b][0] - m.rk[a] / RANK_AT[a][0]);
+const earnedAch = m => m.ach.filter(a => a.tier && !CARD_HIDE.includes(a.k)).sort((a, b) => b.tier - a.tier || b.v / (b.next || b.v || 1) - a.v / (a.next || a.v || 1));
+// A field's text ("rk:k1", "ach3:workouts,streak,reps", "st:reps") → what to draw, or null when it can't be shown.
+function parseSlot(str, m) {
+  const [kind, rest] = String(str || "").split(":");
+  if (!SLOT_KINDS.includes(kind) || !rest) return null;
+  const ids = [...new Set(rest.split(",").filter(Boolean))].slice(0, kind.endsWith("3") ? 3 : 1);
+  if (kind.startsWith("rk")) { const ok = ids.filter(id => RANK_AT[id] && m.rk[id] !== null && m.rk[id] !== undefined); return ok.length ? { kind, ids: ok } : null; }
+  if (kind.startsWith("ach")) { const ok = ids.filter(k => !CARD_HIDE.includes(k) && m.ach.some(a => a.k === k && a.tier)); return ok.length ? { kind, ids: ok } : null; }
+  return PF_STATS.includes(ids[0]) && statVal(m, ids[0]) > 0 ? { kind, ids } : null;
+}
+const slotStr = sl => `${sl.kind}:${sl.ids.join(",")}`;
+// What the fields show: your choices where you made one, the best of what you have everywhere else ("automatic").
+function showcase(m) {
+  const n = slotsFor(m.lvl), mine = (m.show || []).slice(0, n).map(x => parseSlot(x, m));
+  const used = new Set(mine.filter(Boolean).flatMap(sl => sl.ids.map(id => sl.kind[0] + id)));
+  const free = sl => sl && sl.ids.every(id => !used.has(sl.kind[0] + id));
+  const rks = rankedIds(m), achs = earnedAch(m).map(a => a.k);
+  const cands = [
+    rks[0] && { kind: "rk", ids: [rks[0]] },
+    achs.length > 1 ? { kind: "ach3", ids: achs.slice(0, 3) } : achs[0] && { kind: "ach", ids: [achs[0]] },
+    { kind: "st", ids: ["reps"] }, rks.length > 2 && { kind: "rk3", ids: rks.slice(1, 4) }, { kind: "st", ids: ["min"] },
+    { kind: "st", ids: ["best"] }, { kind: "st", ids: ["prs"] }, { kind: "st", ids: ["n"] }, { kind: "st", ids: ["xp"] },
+    ...achs.slice(3).map(k => ({ kind: "ach", ids: [k] })), ...rks.slice(4).map(id => ({ kind: "rk", ids: [id] })), { kind: "st", ids: ["since"] },
+  ].filter(sl => sl && parseSlot(slotStr(sl), m));
+  const out = [];
+  for (let i = 0; i < n; i++) {
+    if (mine[i]) { out.push({ ...mine[i], set: true }); continue; }
+    const c = cands.find(free);
+    if (!c) { out.push(null); continue; }
+    c.ids.forEach(id => used.add(c.kind[0] + id)); out.push({ ...c, set: false });
+  }
+  return out;
+}
+const fmtStat = (m, k) => (k === "min" ? fmtMins(m.min) : k === "since" ? (m.since ? fmtDate(m.since, true) : "") : <CountUp n={m[k] || 0} />);
+const STAT_UI = { n: ["statTrainings", "🏋️"], reps: ["statReps", "📊"], min: ["pvTime", "⏱️"], best: ["statBestStreak", "🏆"], prs: ["tilePRs", "📈"], xp: ["pfXpTotal", "⚡"], since: ["pfSinceL", "📅"] };
+const rankUnit = id => (EX[id].type === "time" ? " s" : "");
+
+// One showcase field. Others (and you, outside edit) tap it to see the whole list on the page below.
+function SlotTile({ sl, m, i, onTap, own }) {
+  const wide = sl && sl.kind.endsWith("3");
+  const base = { ...btnBase, fontWeight: 400, textAlign: "left", color: C.chalk, borderRadius: 16, padding: "12px 13px", minHeight: 92, position: "relative", overflow: "hidden", gridColumn: wide ? "span 2" : undefined, animationDelay: `${120 + i * 60}ms`, display: "flex", flexDirection: "column" };
+  if (!sl) return <div className="cardIn" style={{ ...base, background: SOFT(), border: `1px dashed ${C.line}`, justifyContent: "center", alignItems: "center", color: C.dim, fontSize: 12.5 }}>{T("pfSlotEmpty")}</div>;
+  const glow = col => ({ background: `radial-gradient(120% 90% at 100% 0%, ${col}33, transparent 60%), ${SOFT()}`, border: `1px solid ${col}40` });
+  const pen = own && <span aria-hidden="true" style={{ position: "absolute", right: 9, top: 8, fontSize: 11, opacity: 0.55 }}>✏️</span>;
+  const mini = (icon, name, sub, col, k) => (
+    <div key={k} style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: 4 }}>
+      <span aria-hidden="true" style={{ fontSize: 26, lineHeight: 1 }}>{icon}</span>
+      <span style={{ fontSize: 12, fontWeight: 800, lineHeight: 1.2, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{name}</span>
+      <span style={{ fontSize: 11, fontWeight: 800, color: col }}>{sub}</span>
+    </div>
+  );
+  let body, style = {}, rar = 0; // Gold and up get the moving foil shine
+  if (sl.kind === "rk" || sl.kind === "rk3") {
+    const items = sl.ids.map(id => { const r = RANKS[rankIdx(id, m.rk[id])]; return { id, r }; });
+    rar = Math.max(...sl.ids.map(id => rankIdx(id, m.rk[id])));
+    style = glow(items[0].r.color);
+    body = sl.kind === "rk" ? (() => { const { id, r } = items[0]; return (<>
+      <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: 0.8, textTransform: "uppercase", color: C.dim }}>{T("pfT_rk")}</div>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 8 }}>
+        <span aria-hidden="true" style={{ fontSize: 32, lineHeight: 1 }}>{r.icon}</span>
+        <span style={{ minWidth: 0 }}>
+          <span style={{ display: "block", fontSize: 14, fontWeight: 800, lineHeight: 1.2 }}>{EX[id].name}</span>
+          <span style={{ display: "block", fontSize: 12, fontWeight: 800, color: r.color, marginTop: 2 }}>{r.name} · {m.rk[id]}{rankUnit(id)}</span>
+        </span>
+      </div>
+    </>); })() : (<>
+      <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: 0.8, textTransform: "uppercase", color: C.dim }}>{T("pfT_rk3")}</div>
+      <div style={{ display: "flex", gap: 8, marginTop: 10 }}>{items.map(({ id, r }) => mini(r.icon, EX[id].name, `${r.name} · ${m.rk[id]}${rankUnit(id)}`, r.color, id))}</div>
+    </>);
+  } else if (sl.kind === "ach" || sl.kind === "ach3") {
+    const items = sl.ids.map(k => m.ach.find(a => a.k === k));
+    rar = Math.max(...items.map(a => a.tier - 1));
+    style = glow(RANKS[items[0].tier - 1].color);
+    body = sl.kind === "ach" ? (() => { const a = items[0], r = RANKS[a.tier - 1]; return (<>
+      <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: 0.8, textTransform: "uppercase", color: C.dim }}>{T("pfT_ach")}</div>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 8 }}>
+        <span aria-hidden="true" style={{ fontSize: 32, lineHeight: 1 }}>{a.icon}</span>
+        <span style={{ minWidth: 0 }}>
+          <span style={{ display: "block", fontSize: 14, fontWeight: 800, lineHeight: 1.2 }}>{a.name}</span>
+          <span style={{ display: "block", fontSize: 12, fontWeight: 800, color: r.color, marginTop: 2 }}>{r.icon} {r.name}</span>
+        </span>
+      </div>
+    </>); })() : (<>
+      <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: 0.8, textTransform: "uppercase", color: C.dim }}>{T("pfT_ach3")}</div>
+      <div style={{ display: "flex", gap: 8, marginTop: 10 }}>{items.map(a => { const r = RANKS[a.tier - 1]; return mini(a.icon, a.name, `${r.icon} ${r.name}`, r.color, a.k); })}</div>
+    </>);
+  } else {
+    const k = sl.ids[0], [lab, icon] = STAT_UI[k];
+    style = glow(k === "best" ? "#ffa94d" : k === "xp" ? C.sky : C.signal);
+    body = (<>
+      <div style={{ display: "flex", justifyContent: "space-between", gap: 6 }}>
+        <span style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: 0.8, textTransform: "uppercase", color: C.dim }}>{T(lab)}</span>
+        <span aria-hidden="true" style={{ fontSize: 16, lineHeight: 1, marginRight: own ? 14 : 0 }}>{icon}</span>
+      </div>
+      <div style={{ fontFamily: DISPLAY, fontSize: k === "since" ? 22 : 34, fontWeight: 900, lineHeight: 1, marginTop: "auto", paddingTop: 10, fontVariantNumeric: "tabular-nums" }}>{fmtStat(m, k)}</div>
+    </>);
+  }
+  return <button type="button" data-slot={i} data-slot-kind={sl.kind} data-slot-set={sl.set ? 1 : 0} className={"cardIn" + (rar >= 4 ? " foil" : "")} onClick={() => { sfxTap(); onTap(sl, i); }} style={{ ...base, ...style }}>{pen}{body}</button>;
+}
+
+// Badges page: all of them with the progress, closest to the next level first, finished last.
+function BadgesList({ m, focus }) {
+  const ach = m.ach.filter(a => m.own || !CARD_HIDE.includes(a.k));
+  const inTier = a => { const prev = a.step ? a.at[a.step - 1] : 0; return a.next === null ? 1 : Math.max(0, Math.min(1, (a.v - prev) / (a.next - prev))); };
+  const val = (a, x) => (a.span ? spanText(x) : a.k === "plank" ? `${nf(x)} s` : nf(x));
+  const list = [...ach].sort((a, b) => (a.next === null) - (b.next === null) || inTier(b) - inTier(a));
+  const won = ach.filter(a => a.step).length;
+  return (
+    <div data-pf-badges>
+      <div style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.5, margin: "0 2px 10px" }}>{T("achCount", { n: won, max: ach.length })} · {T("achTiers", { n: ach.reduce((x, a) => x + a.step, 0), max: ach.reduce((x, a) => x + a.at.length, 0) })} · {T("achSheetD")}</div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {list.map(a => {
+          const r = a.tier ? RANKS[a.tier - 1] : null, nr = a.next === null ? null : RANKS[a.nextRank];
+          return (
+            <div key={a.k} data-ach-row={a.k} data-ach={a.k} data-tier={a.tier} data-pct={Math.round(inTier(a) * 100)} className={[focus && focus.k === a.k && "achFlash", a.tier >= 5 && "foil"].filter(Boolean).join(" ") || undefined}
+              style={{ ...card, ...tileR(), padding: "11px 12px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <div aria-hidden="true" style={{ fontSize: 24, lineHeight: 1, flexShrink: 0, filter: r ? "none" : "grayscale(1)", opacity: r ? 1 : 0.55 }}>{a.icon}</div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 14, fontWeight: 800, color: C.chalk, lineHeight: 1.2 }}>{a.name}{m.own && CARD_HIDE.includes(a.k) && <span data-only-you style={{ fontSize: 10.5, fontWeight: 700, color: C.dim, marginLeft: 6, whiteSpace: "nowrap" }}>· {T("pfOnlyYou")}</span>}</div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: r ? r.color : C.dim, marginTop: 2 }}>{r ? `${r.icon} ${r.name}` : `🔒 ${T("achLocked")}`}</div>
+                </div>
+                <div data-ach-num style={{ textAlign: "right", flexShrink: 0 }}>
+                  <div style={{ fontFamily: DISPLAY, fontSize: 18, fontWeight: 900, color: C.chalk, lineHeight: 1, whiteSpace: "nowrap" }}>{a.next === null ? "✓" : `${val(a, a.v)} / ${val(a, a.next)}`}</div>
+                  {a.next !== null && (inTier(a) >= 0.8
+                    ? <div data-near className="nearPulse" style={{ fontSize: 11.5, fontWeight: 900, color: nr.color, marginTop: 3, whiteSpace: "nowrap" }}>{T("achLeft", { n: val(a, a.next - a.v) })}!</div>
+                    : <div style={{ fontSize: 11, color: C.dim, marginTop: 3, whiteSpace: "nowrap" }}>{T("achLeft", { n: val(a, a.next - a.v) })}</div>)}
+                </div>
+              </div>
+              <div aria-hidden="true" style={{ display: "flex", gap: 3, marginTop: 10 }}>
+                {a.at.map((_, k) => {
+                  const col = RANKS[a.rk ? a.rk[k] : k].color, fill = k < a.step ? 1 : k === a.step ? inTier(a) : 0;
+                  return <span key={k} style={{ flex: 1, height: 6, borderRadius: 99, background: `${C.chalk}14`, overflow: "hidden" }}><span className="pvBar" style={{ display: "block", height: "100%", width: `${fill * 100}%`, background: k < a.step ? col : nr ? nr.color : col, opacity: k < a.step ? 1 : 0.8, borderRadius: 99 }} /></span>;
+                })}
+              </div>
+              <div style={{ fontSize: 11.5, color: C.dim, marginTop: 6, lineHeight: 1.4 }}>{a.next === null ? T("achMax") : `${T("achNext", { rank: nr.name })} ${a.desc}`}</div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+// Ranks page: every exercise with its rank, best set and how far to the next rank; the best first.
+function RanksList({ m, onPick, focus }) {
+  const ids = Object.keys(RANK_AT).sort((a, b) => rankIdx(b, m.rk[b]) - rankIdx(a, m.rk[a]) || (m.rk[b] || 0) / RANK_AT[b][0] - (m.rk[a] || 0) / RANK_AT[a][0]);
+  const lv = ids.reduce((x, id) => x + rankIdx(id, m.rk[id]), 0);
+  return (
+    <div data-pf-ranks>
+      <div style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.5, margin: "0 2px 10px" }}>{T("achTiers", { n: lv, max: ids.length * (RANKS.length - 1) })} · {T("pfRanksD")}</div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {ids.map(id => {
+          const b = m.rk[id], has = b !== null && b !== undefined, ri = rankIdx(id, b), r = RANKS[ri], at = RANK_AT[id];
+          const prev = ri ? at[ri - 1] : 0, next = ri < at.length ? at[ri] : null, inR = next === null ? 1 : Math.max(0, Math.min(1, ((b || 0) - prev) / (next - prev)));
+          const Tag = onPick ? "button" : "div";
+          return (
+            <Tag key={id} data-rank-row={id} data-rank={ri} onClick={onPick ? () => { sfxTap(); onPick(id); } : undefined} className={[focus && focus.k === id && "achFlash", ri >= 4 && "foil"].filter(Boolean).join(" ") || undefined}
+              style={{ ...(onPick ? btnBase : {}), fontWeight: 400, textAlign: "left", width: "100%", color: C.chalk, ...card, ...tileR(), padding: "11px 12px", display: "block" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <div aria-hidden="true" style={{ fontSize: 24, lineHeight: 1, flexShrink: 0, opacity: has ? 1 : 0.45 }}>{r.icon}</div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 14, fontWeight: 800, lineHeight: 1.2 }}>{EX[id].name}</div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: has ? r.color : C.dim, marginTop: 2 }}>{has ? r.name : T("pfNoResult")}</div>
+                </div>
+                <div style={{ textAlign: "right", flexShrink: 0 }}>
+                  <div style={{ fontFamily: DISPLAY, fontSize: 18, fontWeight: 900, lineHeight: 1, whiteSpace: "nowrap" }}>{next === null ? `${b}${rankUnit(id)} ✓` : `${b || 0} / ${next}${rankUnit(id)}`}</div>
+                  {next !== null && (has && inR >= 0.8
+                    ? <div data-near className="nearPulse" style={{ fontSize: 11.5, fontWeight: 900, color: RANKS[ri + 1].color, marginTop: 3, whiteSpace: "nowrap" }}>{T("achLeft", { n: `${next - (b || 0)}${rankUnit(id)}` })}!</div>
+                    : <div style={{ fontSize: 11, color: C.dim, marginTop: 3, whiteSpace: "nowrap" }}>{T("achLeft", { n: `${next - (b || 0)}${rankUnit(id)}` })}</div>)}
+                </div>
+              </div>
+              <div aria-hidden="true" style={{ display: "flex", gap: 3, marginTop: 10 }}>
+                {at.map((_, k) => <span key={k} style={{ flex: 1, height: 6, borderRadius: 99, background: `${C.chalk}14`, overflow: "hidden" }}><span className="pvBar" style={{ display: "block", height: "100%", width: `${(k < ri ? 1 : k === ri ? inR : 0) * 100}%`, background: RANKS[k + 1].color, opacity: k < ri ? 1 : 0.8, borderRadius: 99 }} /></span>)}
+              </div>
+              {next !== null && <div style={{ fontSize: 11.5, color: C.dim, marginTop: 6 }}>{T("achNext", { rank: RANKS[ri + 1].name })} {next}{rankUnit(id)}</div>}
+            </Tag>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+function StatsGrid({ m }) {
+  const ks = PF_STATS.filter(k => k !== "since" || m.since);
+  return (
+    <div data-pf-stats style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+      {ks.map((k, i) => <div key={k} style={{ display: "grid", gridColumn: ks.length % 2 && i === ks.length - 1 ? "1 / -1" : undefined }}><StatTile compact data={"pf-" + k} label={T(STAT_UI[k][0])} icon={STAT_UI[k][1]} value={fmtStat(m, k)} color={k === "best" ? "#ffa94d" : k === "xp" ? C.sky : undefined} /></div>)}
+    </div>
+  );
+}
+
+// The whole profile page; the same for you and for others (own = edit buttons, freezes behind the streak).
+// 1.7.0 (Michael, Oct 18, 16:36: "nie že pôjdeš dole, ale že slidneš doprava na ďalšiu stranu"): four swipe pages like
+// Home: Profile (photo, level, streak, showcase) | Badges | Ranks | Stats. Wide screens: Profile + Stats on the left,
+// Badges and Ranks as long columns next to them.
+const PF_LAY = {
+  // the long columns span one extra 1fr row, so their height never stretches the short rows on the left
+  3: { rows: "auto auto 1fr", at: [{ gridColumn: 1, gridRow: 1 }, { gridColumn: 2, gridRow: "1 / span 3" }, { gridColumn: 3, gridRow: "1 / span 3" }, { gridColumn: 1, gridRow: 2 }] },
+  2: { rows: "auto auto auto 1fr", at: [{ gridColumn: 1, gridRow: 1 }, { gridColumn: 2, gridRow: "1 / span 4" }, { gridColumn: 1, gridRow: 3 }, { gridColumn: 1, gridRow: 2 }] },
+};
+function ProfilePage({ m, own, onEditProfile, onEditSlot, onStreak, onPhoto, onPickRank, extra, top }) {
+  const pg = usePager("pf", 4, PF_LAY);
+  const [focus, setFocus] = useState(null);
+  const lv = levelInfo(m.xp), lr = RANKS[lvRank(m.lvl)];
+  const slots = showcase(m), n = slots.length, nextLv = SLOT_LV[n];
+  const open = (sl, i) => {
+    if (own) return onEditSlot(i);
+    const page = sl.kind.startsWith("ach") ? 1 : sl.kind.startsWith("rk") ? 2 : 3;
+    setFocus({ k: sl.ids[0], t: Date.now() }); pg.goPage(page);
+    setTimeout(() => { const el = document.querySelector(`[data-pf-page="${page}"] .achFlash`); if (el) try { el.scrollIntoView({ block: "center", behavior: "smooth" }); } catch (_) {} }, 380);
+  };
+  return (
+    <>
+      <style>{`@keyframes achFlash{0%,100%{box-shadow:0 0 0 0 transparent}30%{box-shadow:0 0 0 2px ${C.signal}}} .achFlash{animation:achFlash 1.4s ease}`}</style>
+      <div style={{ padding: "0 18px" }}>
+        {top}
+        {pg.tabs([T("tabProfile"), T("badgesTitle"), T("ranksTitle"), T("pfStats")])}
+      </div>
+      <div {...pg.pagerProps}>
+        <div {...pg.pageProps(0)}>
+        {/* the basics: photo, name, level, streak */}
+        <Sect data-pf-hero style={{ marginTop: 0, padding: LOOK === "flat" ? 0 : "16px 16px 14px", position: "relative", overflow: "hidden" }}>
+          <div aria-hidden="true" style={{ position: "absolute", inset: 0, background: `radial-gradient(80% 70% at 0% 0%, ${lr.color}26, transparent 60%)`, pointerEvents: "none" }} />
+          <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 14 }}>
+            <button type="button" onClick={own ? onPhoto : undefined} disabled={!own} aria-label={own ? T("changePhoto") : undefined} className="cardIn" style={{ ...btnBase, background: "transparent", padding: 0, borderRadius: 99, position: "relative", flexShrink: 0, cursor: own ? "pointer" : "default" }}>
+              {own ? <BdayHalo size={80}><Avatar profile={{ name: m.nick, pfp: m.pfp }} size={80} /></BdayHalo> : <Avatar profile={{ name: m.nick, pfp: m.pfp }} size={80} />}
+              {/* Steam-like level badge on the photo */}
+              <span data-pf-level={m.lvl} style={{ position: "absolute", right: -6, bottom: -4, minWidth: 34, height: 34, padding: "0 6px", boxSizing: "border-box", borderRadius: 99, background: C.ink, border: `2.5px solid ${lr.color}`, color: lr.color, fontFamily: DISPLAY, fontSize: 17, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: `0 0 14px ${lr.color}55` }}>{m.lvl}</span>
+            </button>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div data-pf-name style={{ fontFamily: DISPLAY, fontSize: 30, fontWeight: 900, lineHeight: 1, color: C.chalk, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{m.nick}</div>
+              <div style={{ fontSize: 12.5, color: own && bdayToday() ? C.signal : C.dim, fontWeight: own && bdayToday() ? 800 : 400, marginTop: 4 }}>{own && bdayToday() ? T("bdayHero") : m.since ? T("since", { date: fmtDate(m.since, true) }) : T("newMember")}</div>
+            </div>
+            {own && <button type="button" data-pf-edit onClick={() => { sfxTap(); onEditProfile(); }} aria-label={T("pfEdit")} style={{ ...btnBase, alignSelf: "flex-start", background: SOFT(), color: C.chalk, width: 38, height: 38, borderRadius: 12, flexShrink: 0, fontSize: 15 }}>✏️</button>}
+          </div>
+          <div style={{ position: "relative", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 14 }}>
+            <div data-pf-lv style={{ background: SOFT(), borderRadius: 14, padding: "10px 12px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: C.dim, fontWeight: 600 }}><span>{T("level")}</span><span aria-hidden="true">⚡</span></div>
+              <div style={{ fontFamily: DISPLAY, fontSize: 28, fontWeight: 900, color: C.sky, lineHeight: 1, marginTop: 4 }}><CountUp n={m.lvl} /></div>
+              <div style={{ height: 5, background: `${C.chalk}14`, borderRadius: 99, marginTop: 7, overflow: "hidden" }}><div className="pvBar" style={{ height: "100%", width: `${(lv.into / lv.need) * 100}%`, background: C.sky, borderRadius: 99 }} /></div>
+              <div style={{ fontSize: 11, color: C.dim, marginTop: 5 }}>{nf(lv.into)} / {nf(lv.need)} XP</div>
+            </div>
+            <button type="button" data-pf-streak onClick={own ? () => { sfxTap(); onStreak(); } : undefined} disabled={!own} style={{ ...btnBase, fontWeight: 400, textAlign: "left", color: C.chalk, background: SOFT(), borderRadius: 14, padding: "10px 12px", cursor: own ? "pointer" : "default" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: C.dim, fontWeight: 600 }}><span>{T("streak")}</span><span aria-hidden="true" className={m.streak ? "wiggle" : ""}>🔥</span></div>
+              <div style={{ fontFamily: DISPLAY, fontSize: 28, fontWeight: 900, color: "#ffa94d", lineHeight: 1, marginTop: 4 }}><CountUp n={m.streak} /></div>
+              <div style={{ fontSize: 11, color: C.dim, marginTop: 17 }}>{T("pfBestStreak", { n: m.best })}{own && extra && extra.fz !== undefined ? <span data-pf-freezes> · ❄️ {extra.fz}</span> : null}</div>
+            </button>
+          </div>
+        </Sect>
+        {/* the showcase */}
+        <Sect data-pf-showcase title={T("pfShowcase")} meta={T("pfSlots", { n, max: SLOT_LV.length })}>
+          <div data-pf-slots style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gridAutoFlow: "row dense", gap: 8 }}>
+            {slots.map((sl, i) => <SlotTile key={i + (sl ? slotStr(sl) : "")} sl={sl} m={m} i={i} own={own} onTap={open} />)}
+            {own && nextLv && <div data-slot-next={nextLv} className="cardIn" style={{ animationDelay: `${120 + n * 60}ms`, borderRadius: 16, border: `1.5px dashed ${C.line}`, minHeight: 92, padding: "12px 13px", boxSizing: "border-box", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6, color: C.dim, textAlign: "center" }}>
+              <span aria-hidden="true" style={{ fontSize: 20 }}>🔒</span>
+              <span style={{ fontSize: 12, fontWeight: 700, lineHeight: 1.35 }}>{T("pfSlotNext", { lv: nextLv })}</span>
+            </div>}
+          </div>
+          {own && <div style={{ fontSize: 11.5, color: C.dim, lineHeight: 1.45, marginTop: 9 }}>{T("pfShowcaseD")}</div>}
+        </Sect>
+        </div>
+        {/* on a wide screen there are no tabs: each column gets its title */}
+        <div {...pg.pageProps(1)}>{pg.wide && <div data-pf-col-title style={{ ...sectionTitle, marginTop: 0 }}>{T("badgesTitle")}</div>}<BadgesList m={m} focus={focus} /></div>
+        <div {...pg.pageProps(2)}>{pg.wide && <div data-pf-col-title style={{ ...sectionTitle, marginTop: 0 }}>{T("ranksTitle")}</div>}<RanksList m={m} focus={focus} onPick={onPickRank} /></div>
+        <div {...pg.pageProps(3)}>{pg.wide && <div data-pf-col-title style={{ ...sectionTitle, marginTop: 14 }}>{T("pfStats")}</div>}<StatsGrid m={m} /></div>
+      </div>
+    </>
+  );
+}
+
+// Choose what one showcase field shows: automatic (the best), a rank, three ranks, a badge, three badges, a number.
+function SlotSheet({ m, i, cur, onSave, onClose }) {
+  const sl0 = parseSlot(cur, m);
+  const [kind, setKind] = useState(sl0 ? sl0.kind : "auto");
+  const [sel, setSel] = useState(sl0 ? sl0.ids : []);
+  const rks = rankedIds(m), achs = earnedAch(m);
+  const multi = kind.endsWith("3");
+  const pickOne = id => { if (!multi) { onSave(`${kind}:${id}`); return; } setSel(s => (s.includes(id) ? s.filter(x => x !== id) : s.length < 3 ? [...s, id] : s)); sfxTap(); };
+  const opts = kind.startsWith("rk") ? rks.map(id => { const r = RANKS[rankIdx(id, m.rk[id])]; return [id, r.icon, EX[id].name, `${r.name} · ${m.rk[id]}${rankUnit(id)}`]; })
+    : kind.startsWith("ach") ? achs.map(a => [a.k, a.icon, a.name, `${RANKS[a.tier - 1].icon} ${RANKS[a.tier - 1].name}`])
+    : kind === "st" ? PF_STATS.filter(k => statVal(m, k) > 0).map(k => [k, STAT_UI[k][1], T(STAT_UI[k][0]), k === "min" ? fmtMins(m.min) : k === "since" ? fmtDate(m.since, true) : nf(m[k])]) : [];
+  const chip = (k, label) => <button key={k} type="button" data-slot-kind-pick={k} aria-pressed={kind === k} onClick={() => { sfxTap(); setKind(k); setSel([]); }}
+    style={{ ...btnBase, padding: "7px 12px", fontSize: 13, borderRadius: 99, whiteSpace: "nowrap", ...(kind === k ? { background: C.chalk, color: C.ink } : { ...SUNK(), color: C.dim }) }}>{label}</button>;
+  return (
+    <Sheet title={T("pfSlotTitle", { n: i + 1 })} onClose={onClose}>
+      <div data-slot-sheet className="noBar" style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4 }}>
+        {chip("auto", T("pfAuto"))}{SLOT_KINDS.map(k => chip(k, T("pfT_" + k)))}
+      </div>
+      {kind === "auto" ? (
+        <div style={{ marginTop: 14 }}>
+          <div style={{ fontSize: 13.5, color: C.dim, lineHeight: 1.5 }}>{T("pfAutoD")}</div>
+          <button type="button" data-slot-save onClick={() => onSave("")} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 14, fontSize: 15, padding: 14 }}>{T("save")}</button>
+        </div>
+      ) : (
+        <div style={{ marginTop: 12 }}>
+          {multi && <div style={{ fontSize: 12.5, color: C.dim, marginBottom: 8 }}>{T("pfPick3", { n: sel.length })}</div>}
+          {!opts.length && <div style={{ fontSize: 13.5, color: C.dim, lineHeight: 1.5 }}>{T("pfNothingYet")}</div>}
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            {opts.map(([id, icon, name, sub]) => { const on = sel.includes(id); return (
+              <button key={id} type="button" data-slot-opt={id} aria-pressed={on} onClick={() => pickOne(id)}
+                style={{ ...btnBase, fontWeight: 400, display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", borderRadius: 12, textAlign: "left", color: C.chalk, background: on ? `${C.signal}22` : SOFT(), border: `1.5px solid ${on ? C.signal : "transparent"}` }}>
+                <span aria-hidden="true" style={{ fontSize: 22, lineHeight: 1, width: 26, textAlign: "center" }}>{icon}</span>
+                <span style={{ flex: 1, minWidth: 0 }}><span style={{ display: "block", fontSize: 14, fontWeight: 800 }}>{name}</span><span style={{ display: "block", fontSize: 12, color: C.dim, marginTop: 1 }}>{sub}</span></span>
+                {multi ? <span aria-hidden="true" style={{ width: 22, height: 22, borderRadius: 7, border: `2px solid ${on ? C.signal : C.line}`, background: on ? C.signal : "transparent", color: C.signalInk, fontSize: 13, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{on ? sel.indexOf(id) + 1 : ""}</span> : <Arrow />}
+              </button>
+            ); })}
+          </div>
+          {multi && <button type="button" data-slot-save disabled={!sel.length} onClick={() => onSave(`${kind}:${sel.join(",")}`)} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 14, fontSize: 15, padding: 14, opacity: sel.length ? 1 : 0.5 }}>{T("save")}</button>}
+        </div>
+      )}
+    </Sheet>
+  );
+}
+
+function ProfileTab({ history, profile, setProfile, onFreeze, kcal, acct, vis, onVis, onFriends }) {
   const fz = freezesAvailable(history);
   const fileRef = useRef(null);
-  const [editing, setEditing] = useState(false);
-  const [name, setName] = useState(profile.name || "");
   const [howEx, setHowEx] = useState(null);
   const [err, setErr] = useState("");
+  const [sheet, setSheet] = useState(null); // "edit" | "freeze" | {slot: i}
+  const [name, setName] = useState(profile.name || "");
+  const [visErr, setVisErr] = useState("");
   const today = dateKey();
-  const xp = totalXP(history);
-  const lv = levelInfo(xp);
   const st = streakInfo(history, today);
-  const ach = achievements(history, achExtra(profile, kcal, history));
-  const since = history.length ? history.map(e => e.date).sort()[0] : null;
-  const rankLv = Object.keys(RANK_AT).reduce((a, id) => a + rankIdx(id, bestFor(history, id)), 0);
-
+  const m = ownModel(history, profile, kcal);
   const pick = async e => {
     const f = e.target.files && e.target.files[0];
     e.target.value = "";
@@ -4151,102 +4632,119 @@ function ProfileTab({ history, profile, setProfile, onFreeze, kcal }) {
     try { const url = await fileToAvatar(f); setProfile({ ...profile, pfp: url }); setErr(""); sfxCheck(); }
     catch (_) { setErr(T("photoErr")); }
   };
-  const stats = [[T("statTrainings"), history.length, "🏋️"], [T("statSets"), history.reduce((a, e) => a + setsIn(e), 0), "🔁"], [T("statReps"), nf(totalReps(history)), "📊"], [T("statBestStreak"), bestStreak(history), "🏆"]];
-
+  const saveSlot = (i, v) => {
+    const n = slotsFor(m.lvl), cur = showcase(m).map(sl => (sl && sl.set ? slotStr(sl) : ""));
+    const arr = Array.from({ length: n }, (_, k) => (k === i ? v : cur[k] || ""));
+    while (arr.length && !arr[arr.length - 1]) arr.pop();
+    sfxCheck(); setProfile({ ...profile, show: arr }); setSheet(null);
+  };
   return (
-    <div className="scr" style={{ padding: "16px 18px 110px", maxWidth: 460, margin: "0 auto" }}>
+    <div className="scr" style={{ padding: "16px 0 110px", maxWidth: "var(--colMax)", margin: "0 auto" }}>
       {howEx && <HowTo id={howEx} history={history} onClose={() => setHowEx(null)} />}
       <input ref={fileRef} type="file" accept="image/*" onChange={pick} style={{ display: "none" }} />
-
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", paddingTop: 6 }}>
-        <button onClick={() => fileRef.current && fileRef.current.click()} aria-label={T("changePhoto")} style={{ ...btnBase, position: "relative", background: "transparent", padding: 0, borderRadius: 99 }}>
-          <BdayHalo size={104}><Avatar profile={profile} size={104} /></BdayHalo>
-          <span style={{ position: "absolute", right: -2, bottom: -2, width: 34, height: 34, borderRadius: 99, background: C.panelHi, border: `2px solid ${C.ink}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>📷</span>
-        </button>
-        {err && <div style={{ fontSize: 13, color: "#ff8a80", marginTop: 8 }}>{err}</div>}
-        {editing ? (
-          <div data-name-edit style={{ display: "flex", gap: 8, marginTop: 12, marginBottom: 10 }}>
-            <input value={name} onChange={e => setName(e.target.value.slice(0, 24))} autoFocus aria-label={T("nameLabel")}
-              style={{ fontFamily: BODY, fontSize: 18, fontWeight: 700, padding: "8px 12px", borderRadius: 12, border: `1.5px solid ${C.line}`, background: C.panel, color: C.chalk, width: 180, outline: "none" }} />
-            <button onClick={() => { setProfile({ ...profile, name: name.trim() || T("defaultName") }); setEditing(false); sfxCheck(); }} className="b3d" style={{ ...btnBase, background: C.signal, color: C.signalInk, padding: "8px 14px", "--e": EDGE[C.signal] }}>{T("save")}</button>
-          </div>
-        ) : (
-          <button onClick={() => { setName(profile.name || ""); setEditing(true); }} aria-label={`${T("nameLabel")}: ${profile.name || T("defaultName")}`} data-profile-name style={{ ...btnBase, background: "transparent", color: C.chalk, marginTop: 10, padding: "2px 0" }}>
-            {/* the pencil hangs outside the name, so the name itself stays centred under the photo */}
-            <span style={{ position: "relative", display: "inline-block", fontFamily: DISPLAY, fontSize: 36, fontWeight: 900 }}>
-              {profile.name || T("defaultName")}
-              <span aria-hidden="true" data-pencil style={{ position: "absolute", left: "100%", top: "50%", transform: "translateY(-50%)", marginLeft: 8, width: 26, height: 26, borderRadius: 99, background: C.panelHi, border: `1px solid ${C.line}`, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: BODY, fontSize: 12 }}>✏️</span>
-            </span>
-          </button>
-        )}
-        <div style={{ fontSize: 13, color: bdayToday() ? C.signal : C.dim, fontWeight: bdayToday() ? 800 : 400, marginTop: 2 }}>{bdayToday() ? T("bdayHero") : since ? T("since", { date: fmtDate(since, true) }) : T("newMember")}</div>
-      </div>
-
-      {/* 1.4.0 (Michael, Oct 11): every tile the same: label top left, icon top right, the number below at the same
-          place in every tile, one quiet line at the bottom. */}
-      <div data-stat-grid style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 18 }}>
-        <StatTile data="streak" label={T("streak")} icon={<span className={st.n ? "wiggle" : ""}>🔥</span>} value={st.n} color="#ffa94d" sub={<span style={{ color: st.gap === 2 ? C.signal : C.dim }}>{st.gap === 2 ? T("streakRisk") : T("streakHold")}</span>} />
-        <StatTile data="level" label={T("level")} icon="⚡" value={lv.lvl} color={C.sky} sub={T("xpLine", { into: lv.into, need: lv.need, total: xp })}>
-          <div style={{ height: 6, background: `${C.chalk}14`, borderRadius: 99, marginTop: 8, overflow: "hidden" }}>
-            <div style={{ height: "100%", width: `${(lv.into / lv.need) * 100}%`, background: C.sky, borderRadius: 99, transition: `width ${MO.fill} ${MO.ease}` }} />
-          </div>
-        </StatTile>
-        {stats.map(([l, v, ic]) => <StatTile key={l} label={l} icon={ic} value={v} />)}
-      </div>
-
-      <div data-freeze-card style={{ ...card, ...tileR(), padding: "13px 15px", marginTop: 8, display: "flex", alignItems: "center", gap: 12 }}>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 15, fontWeight: 700, color: C.chalk }}>{T("freezeTitle", { n: fz, max: META.giftThisYear ? 3 : 2 })}</div>
-          <div style={{ fontSize: 12, color: C.dim, lineHeight: 1.45 }}>{T("freezeDesc")}</div>
-        </div>
-        <button disabled={!fz || st.frozenToday || (history.length && history[history.length - 1].date === today)} onClick={onFreeze}
-          style={{ ...btnBase, background: fz && !st.frozenToday ? C.sky : C.panelHi, color: fz && !st.frozenToday ? C.ink : C.dim, padding: "9px 12px", fontSize: 13, opacity: !fz || st.frozenToday ? 0.6 : 1 }}>
-          {st.frozenToday ? T("freezeToday") : T("freezeUse")}
-        </button>
-      </div>
-
-
-      <SectionHead title={T("ranksTitle")} meta={T("achTiers", { n: rankLv, max: Object.keys(RANK_AT).length * (RANKS.length - 1) })} />
-      <div data-ranks-box style={{ ...card, padding: 8, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
-        {Object.keys(RANK_AT).map((id, ri, all) => {
-          const b = bestFor(history, id);
-          const r = RANKS[rankIdx(id, b)];
-          return (
-            <button key={id} data-rank-tile={id} onClick={() => setHowEx(id)} style={{ ...btnBase, textAlign: "left", background: SOFT(), border: "none", borderRadius: 12, padding: "10px 11px", color: C.chalk, display: "flex", flexDirection: "column", gridColumn: all.length % 2 && ri === all.length - 1 ? "1 / -1" : undefined }}>
-              <div style={{ display: "flex", alignItems: "flex-start", gap: 6, width: "100%" }}>
-                <span style={{ flex: 1, minWidth: 0, fontSize: 13, fontWeight: 700, lineHeight: 1.25 }}>{EX[id].name}</span>
-                <span aria-hidden="true" style={{ fontSize: 16, lineHeight: 1, flexShrink: 0 }}>{r.icon}</span>
-              </div>
-              <div style={{ fontSize: 12, marginTop: "auto", paddingTop: 5 }}><span style={{ color: r.color, fontWeight: 800 }}>{r.name}</span><span style={{ color: C.dim }}>{b !== null ? T("maxBest", { v: `${b}${EX[id].type === "time" ? " s" : ""}` }) : ""}</span></div>
-            </button>
-          );
-        })}
-      </div>
-
-      <SectionHead title={T("badgesTitle")} meta={<>{T("achCount", { n: ach.filter(a => a.step).length, max: ach.length })} · {T("achTiers", { n: ach.reduce((x, a) => x + a.step, 0), max: ach.reduce((x, a) => x + a.at.length, 0) })}</>} />
-      <div data-badges-box style={{ ...card, padding: 8, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
-        {ach.map((a, ai) => {
-          const r = a.tier ? RANKS[a.tier - 1] : null;
-          const prev = a.step ? a.at[a.step - 1] : 0;
-          const pct = a.next === null ? 100 : Math.max(0, Math.min(100, ((a.v - prev) / (a.next - prev)) * 100));
-          return (
-            <div key={a.k} data-ach={a.k} data-tier={a.tier} style={{ background: SOFT(), borderRadius: 12, padding: "10px 11px", gridColumn: ach.length % 2 && ai === ach.length - 1 ? "1 / -1" : undefined }}>
-              <div style={{ display: "flex", alignItems: "flex-start", gap: 6 }}>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 13, fontWeight: 800, color: C.chalk, lineHeight: 1.2 }}>{a.name}</div>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: r ? r.color : C.dim, marginTop: 2 }}>{r ? `${r.icon} ${r.name}` : `🔒 ${T("achLocked")}`}</div>
-                </div>
-                <div aria-hidden="true" style={{ fontSize: 20, lineHeight: 1, flexShrink: 0, filter: r ? "none" : "grayscale(1)", opacity: r ? 1 : 0.5 }}>{a.icon}</div>
-              </div>
-              <div style={{ height: 5, background: `${C.chalk}14`, borderRadius: 99, marginTop: 9, overflow: "hidden" }}>
-                <div style={{ height: "100%", width: `${pct}%`, background: r ? r.color : C.dim, borderRadius: 99, transition: `width ${MO.fill} ${MO.ease}` }} />
-              </div>
-              <div style={{ fontSize: 11, color: C.dim, marginTop: 5, lineHeight: 1.35 }}>{a.next === null ? T("achMax") : `${T("achNext", { rank: RANKS[a.nextRank].name })} ${a.desc}`}</div>
+      <ProfilePage m={m} own extra={{ fz }} onPhoto={() => fileRef.current && fileRef.current.click()} onEditProfile={() => { setName(profile.name || ""); setSheet("edit"); }}
+        onStreak={() => setSheet("freeze")} onEditSlot={i => setSheet({ slot: i })} onPickRank={setHowEx}
+        top={err ? <div role="alert" style={{ fontSize: 13, color: "#ff8a80", marginBottom: 10 }}>{err}</div> : null} />
+      {sheet && sheet.slot !== undefined && <SlotSheet m={m} i={sheet.slot} cur={(showcase(m)[sheet.slot] || {}).set ? slotStr(showcase(m)[sheet.slot]) : ""} onSave={v => saveSlot(sheet.slot, v)} onClose={() => setSheet(null)} />}
+      {sheet === "freeze" && (
+        <Sheet title={T("streak")} onClose={() => setSheet(null)} short>
+          <div data-freeze-card style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 15, fontWeight: 700, color: C.chalk }}>{T("freezeTitle", { n: fz, max: META.giftThisYear ? 3 : 2 })}</div>
+              <div style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.45, marginTop: 2 }}>{T("freezeDesc")}</div>
             </div>
-          );
-        })}
-      </div>
+            <button disabled={!fz || st.frozenToday || (history.length && history[history.length - 1].date === today)} onClick={() => { onFreeze(); setSheet(null); }}
+              style={{ ...btnBase, background: fz && !st.frozenToday ? C.sky : C.panelHi, color: fz && !st.frozenToday ? C.ink : C.dim, padding: "10px 13px", fontSize: 13, opacity: !fz || st.frozenToday ? 0.6 : 1, flexShrink: 0 }}>
+              {st.frozenToday ? T("freezeToday") : T("freezeUse")}
+            </button>
+          </div>
+          <div style={{ fontSize: 12.5, color: st.gap === 2 ? C.signal : C.dim, marginTop: 12 }}>{st.gap === 2 ? T("streakRisk") : T("streakHold")}</div>
+        </Sheet>
+      )}
+      {sheet === "edit" && (
+        <Sheet title={T("pfEdit")} onClose={() => setSheet(null)}>
+          <div data-pf-edit-sheet style={{ fontSize: 12, color: C.dim, fontWeight: 700, marginBottom: 6 }}>{T("nameLabel")}</div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <input data-name-input value={name} onChange={e => setName(e.target.value.slice(0, 24))} aria-label={T("nameLabel")} className="obf"
+              style={{ fontFamily: BODY, fontSize: 17, fontWeight: 700, padding: "10px 12px", borderRadius: 12, border: `1.5px solid ${C.line}`, background: C.ink, color: C.chalk, flex: 1, minWidth: 0, outline: "none" }} />
+            <button data-name-save onClick={() => { setProfile({ ...profile, name: name.trim() || T("defaultName") }); sfxCheck(); }} disabled={(name.trim() || T("defaultName")) === profile.name}
+              className="b3d" style={{ ...btnBase, background: C.signal, color: C.signalInk, padding: "0 16px", "--e": EDGE[C.signal], opacity: (name.trim() || T("defaultName")) === profile.name ? 0.5 : 1 }}>{T("save")}</button>
+          </div>
+          <button type="button" data-pf-photo onClick={() => fileRef.current && fileRef.current.click()} style={{ ...btnBase, width: "100%", marginTop: 12, padding: "12px 13px", borderRadius: 12, background: SOFT(), color: C.chalk, fontSize: 14, display: "flex", alignItems: "center", gap: 10, textAlign: "left" }}>
+            <span style={{ flex: 1 }}>{T("changePhoto")}</span><Arrow />
+          </button>
+          <div style={{ fontSize: 12, color: C.dim, fontWeight: 700, margin: "18px 0 8px" }}>{T("pvWho")}</div>
+          {acct && acct.st === "in" && acct.prof ? (
+            <div data-pv-who>
+              <div role="radiogroup" aria-label={T("pvWho")} style={{ display: "flex", gap: 4, padding: 4, borderRadius: 13, ...SUNK() }}>
+                {CARD_VIS.map(v => { const on = (vis || "friends") === v; return (
+                  <button key={v} role="radio" aria-checked={on} data-vis={v} data-on={on ? 1 : 0} disabled={vis === undefined} onClick={() => { if (on) return; sfxTap(); setVisErr(""); onVis(v).catch(e => setVisErr(cloudErr(e) || T("frOffline"))); }}
+                    style={{ ...btnBase, flex: 1, minWidth: 0, padding: "9px 4px", fontSize: 13.5, borderRadius: 10, background: on ? C.chalk : "transparent", color: on ? C.ink : C.dim, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", opacity: vis === undefined ? 0.5 : 1 }}>{T("pvVis_" + v)}</button>
+                ); })}
+              </div>
+              <div data-pv-vis-desc style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.5, marginTop: 9 }}>{vis === undefined ? T("frLoading") : T("pvVisD_" + vis)} {T("pvPrivate")}</div>
+              {visErr && <div role="alert" style={{ fontSize: 12.5, color: "#ff8a80", marginTop: 6 }}>{visErr}</div>}
+            </div>
+          ) : (
+            <div data-pv-who style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <div style={{ flex: 1, fontSize: 13, color: C.dim, lineHeight: 1.5 }}>{T("pvSignIn")}</div>
+              <button data-pv-signin onClick={() => { sfxTap(); setSheet(null); onFriends && onFriends(); }} style={{ ...btnBase, background: C.signal, color: C.signalInk, padding: "9px 12px", fontSize: 13, borderRadius: 10, flexShrink: 0 }}>{T("pvSignInBtn")}</button>
+            </div>
+          )}
+          {(profile.show || []).some(Boolean) && <button type="button" data-pf-auto-all onClick={() => { sfxTap(); setProfile({ ...profile, show: [] }); }} style={{ ...btnBase, width: "100%", marginTop: 18, padding: "12px 13px", borderRadius: 12, background: "transparent", border: `1px solid ${C.line}`, color: C.dim, fontSize: 13.5 }}>{T("pfAutoAll")}</button>}
+        </Sheet>
+      )}
+    </div>
+  );
+}
 
+// Someone else's profile (1.7.0): the same page as your own, from their card in the cloud. The rules decide whether
+// we may open it (friends only / everyone / only them, blocked). Opens in Friends with a back button in the top bar.
+function OtherProfile({ p, isFriend, onBack, setTopHead }) {
+  const [st, setSt] = useState({ loading: true });
+  const [howEx, setHowEx] = useState(null);
+  useEffect(() => {
+    let dead = false;
+    cloud().getCard(p.uid).then(c => { if (!dead) setSt(c ? { card: c } : { hidden: true }); })
+      .catch(e => { if (dead) return; setSt(/permission/i.test(String((e && e.code) || (e && e.message) || "")) ? { hidden: true } : { err: cloudErr(e) || T("frOffline") }); });
+    return () => { dead = true; };
+  }, [p.uid]);
+  useEffect(() => {
+    setTopHead && setTopHead(
+      <div data-pv-head style={{ display: "flex", alignItems: "center", gap: 10, flex: 1, minWidth: 0, pointerEvents: "auto" }}>
+        <button data-pv-back onClick={() => { sfxTap(); onBack(); }} aria-label={T("back")} style={{ ...btnBase, background: SOFT(), color: C.chalk, width: 38, height: 38, borderRadius: 12, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+        </button>
+        <span style={{ fontFamily: DISPLAY, fontSize: 22, fontWeight: 900, color: C.chalk, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.nick}</span>
+      </div>
+    );
+  }, [p.uid, p.nick]);
+  useEffect(() => () => { setTopHead && setTopHead(null); }, []);
+  useBack(onBack);
+  const m = st.card ? cardModel(st.card, { nick: p.nick, pfp: isFriend ? p.pfp : null }) : null;
+  return (
+    <div className="scr" data-pv={p.uid} data-pv-state={st.loading ? "loading" : st.hidden ? "hidden" : st.err ? "err" : "ok"} style={{ padding: "6px 0 110px", maxWidth: "var(--colMax)", margin: "0 auto" }}>
+      {howEx && <HowTo id={howEx} history={[]} onClose={() => setHowEx(null)} />}
+      {m ? <ProfilePage m={m} onPickRank={setHowEx} /> : (
+        <div style={{ padding: "0 18px" }}>
+          <Sect style={{ marginTop: 0, display: "flex", alignItems: "center", gap: 14 }}>
+            <Avatar profile={{ name: p.nick || "?", pfp: isFriend ? p.pfp || null : null }} size={64} />
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontFamily: DISPLAY, fontSize: 26, fontWeight: 900, color: C.chalk }}>{p.nick}</div>
+              <div style={{ fontSize: 12.5, color: C.dim, marginTop: 3 }}>⚡{p.lvl || 1} · 🔥 {p.streak || 0}</div>
+            </div>
+          </Sect>
+          {st.loading && <div style={{ fontSize: 13, color: C.dim, textAlign: "center", marginTop: 18 }}>{T("frLoading")}</div>}
+          {st.hidden && (
+            <div data-pv-hidden style={{ ...card, ...tileR(), marginTop: 12, padding: "14px 15px" }}>
+              <div style={{ fontSize: 15, fontWeight: 800, color: C.chalk }}>{T("pvHidden", { nick: p.nick || "?" })}</div>
+              <div style={{ fontSize: 13, color: C.dim, lineHeight: 1.5, marginTop: 4 }}>{T("pvHiddenD")}</div>
+            </div>
+          )}
+          {st.err && <div role="alert" style={{ fontSize: 13, color: "#ff8a80", marginTop: 14 }}>{st.err}</div>}
+        </div>
+      )}
+      {m && st.card && cardNum(st.card.ts) > 0 && <div style={{ fontSize: 12, color: C.dim, marginTop: 6, textAlign: "center" }}>{T("pvUpdated", { when: fmtWhen(cardNum(st.card.ts)) })}</div>}
     </div>
   );
 }
@@ -4339,7 +4837,7 @@ function OpenInApp() {
         <span style={{ fontSize: 26 }}>📱</span>
         <div style={{ minWidth: 0 }}>
           <div style={{ fontSize: 14, fontWeight: 700, color: C.chalk, lineHeight: 1.45 }}>{T("frOpenApp")}</div>
-          <a href={href} data-open-app-btn onClick={() => sfxTap()} style={{ display: "inline-block", paddingTop: 4, color: C.signal, fontSize: 14, fontWeight: 800, textDecoration: "none" }}>{T("frOpenAppBtn")} ›</a>
+          <a href={href} data-open-app-btn onClick={() => sfxTap()} style={{ display: "inline-block", paddingTop: 4, color: C.signal, fontSize: 14, fontWeight: 800, textDecoration: "none" }}>{T("frOpenAppBtn")} <Arrow size="1.25em" style={{ verticalAlign: "-0.08em" }} /></a>
         </div>
         <CloseX onClick={() => { try { sessionStorage.removeItem("hw-link-add"); } catch (_) {} setHide(true); }} />
       </div>
@@ -4402,6 +4900,37 @@ function smallPfp(src) {
   });
 }
 function cloudStats(history) { const xp = totalXP(history); return { xp, lvl: levelInfo(xp).lvl, streak: streakInfo(history, dateKey()).n, n: history.length }; }
+// Profile cards (1.7.0, Michael: like Steam profiles): what friends (or, if you choose, anyone signed in) see when they
+// open your profile. Only training: calorie, step and Health Connect badges never leave the phone for others, and there
+// is no photo in it (friends see the photo they already have from the friends list).
+const CARD_VIS = ["friends", "all", "none"];
+const CARD_HIDE = ["calories", "kcalHit", "steps", "health"];
+function cardData(history, profile) {
+  const xp = totalXP(history), ach = {}, av = {}, rk = {};
+  // av = each badge's value, so others see how far you are (1.7.0, Michael: "aby ľudia videli aký mám progress")
+  achievements(history, achExtra(profile, null, history)).forEach(a => { if (CARD_HIDE.includes(a.k)) return; if (a.tier) ach[a.k] = a.tier; if (a.v > 0) av[a.k] = Math.max(0, Math.floor(a.v)); });
+  Object.keys(RANK_AT).forEach(id => { const b = bestFor(history, id); if (typeof b === "number" && isFinite(b)) rk[id] = Math.max(0, Math.round(b)); });
+  // the showcase exactly as your Profile shows it (your choices, the rest filled with your best)
+  const show = showcase(ownModel(history, profile, null)).map(sl => (sl ? slotStr(sl) : ""));
+  return {
+    lvl: levelInfo(xp).lvl, xp, streak: streakInfo(history, dateKey()).n, best: bestStreak(history), n: history.length,
+    reps: totalReps(history), min: Math.floor(history.reduce((a, e) => a + (e.dur || 0), 0) / 60), prs: history.reduce((a, e) => a + ((e.prs && e.prs.length) || 0), 0),
+    since: history.length ? history.map(e => e.date).sort()[0] : null, ach, av, rk, show,
+  };
+}
+// A card from the cloud is someone else's data: only numbers we know, in sane ranges, are shown.
+const cardNum = v => (typeof v === "number" && isFinite(v) ? Math.max(0, Math.floor(v)) : 0);
+function cleanCard(c) {
+  const ach = {}, av = {}, rk = {};
+  ACH.forEach(a => { if (!CARD_HIDE.includes(a.k)) { const t = Math.min(cardNum(c.ach && c.ach[a.k]), RANKS.length); if (t) ach[a.k] = t; if (c.av && typeof c.av[a.k] === "number") av[a.k] = Math.min(cardNum(c.av[a.k]), 1e9); } });
+  Object.keys(RANK_AT).forEach(id => { const v = c.rk && c.rk[id]; rk[id] = typeof v === "number" && isFinite(v) && v >= 0 ? Math.min(Math.round(v), 99999) : null; });
+  return {
+    lvl: Math.max(1, cardNum(c.lvl)), xp: cardNum(c.xp), streak: cardNum(c.streak), best: cardNum(c.best), n: cardNum(c.n), reps: cardNum(c.reps), min: cardNum(c.min),
+    since: typeof c.since === "string" && /^\d{4}-\d{2}-\d{2}$/.test(c.since) ? c.since : null, ach, av, rk, prs: cardNum(c.prs), ts: cardNum(c.ts), vis: CARD_VIS.includes(c.vis) ? c.vis : "friends",
+    show: Array.isArray(c.show) ? c.show.slice(0, SLOT_LV.length).map(x => (typeof x === "string" ? x.slice(0, 80) : "")) : [],
+  };
+}
+const fmtMins = m => (m >= 60 ? T("pvH", { n: nf(Math.floor(m / 60)) }) : T("pvMin", { n: m }));
 // Short, human error text. Cancelled sign-ins say nothing.
 function cloudErr(e) {
   const c = String((e && e.code) || (e && e.message) || "");
@@ -4434,7 +4963,7 @@ function PersonRow({ p, rank, me, onClick, right, first }) {
 }
 
 // Someone's card: stats, and add / remove / block / report.
-function PersonSheet({ p, isFriend, onAdd, onChat, onRemove, onBlock, onReport, onClose }) {
+function PersonSheet({ p, isFriend, onAdd, onChat, onRemove, onBlock, onReport, onProfile, onClose }) {
   const [sure, setSure] = useState(null);
   const [msg, setMsg] = useState("");
   const [reported, setReported] = useState(false);
@@ -4449,7 +4978,12 @@ function PersonSheet({ p, isFriend, onAdd, onChat, onRemove, onBlock, onReport, 
           <b style={{ fontFamily: DISPLAY, fontSize: 26, color: C.sky }}>⚡{p.lvl || 1}</b><b style={{ fontFamily: DISPLAY, fontSize: 26, color: "#ffa94d" }}>🔥{p.streak || 0}</b><b style={{ fontFamily: DISPLAY, fontSize: 26, color: C.chalk }}>{p.n || 0}</b>
         </div>
       </div>
-      <div style={{ display: "flex", gap: 8, marginTop: 16, flexWrap: "wrap" }}>
+      {onProfile && (
+        <button data-ps-profile onClick={() => { sfxTap(); onProfile(p); }} style={{ ...btnBase, width: "100%", marginTop: 14, padding: "12px 14px", borderRadius: 12, background: SOFT(), color: C.chalk, fontSize: 14, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <span>{T("pvOpen")}</span><Arrow />
+        </button>
+      )}
+      <div style={{ display: "flex", gap: 8, marginTop: onProfile ? 8 : 16, flexWrap: "wrap" }}>
         {!isFriend && onAdd && <button data-ps-add onClick={() => { sfxTap(); onAdd(p).then(setMsg); }} style={{ ...small, background: C.signal, color: C.signalInk, flexBasis: "100%" }}>{T("frAddBtn")}</button>}
         {isFriend && onChat && <button data-ps-chat onClick={() => { sfxTap(); onChat(p); }} style={{ ...small, background: C.signal, color: C.signalInk, flexBasis: "100%" }}>{T("chWrite")}</button>}
         {isFriend && <button data-ps-remove onClick={() => twoTap("rm", () => onRemove(p))} style={{ ...small, color: sure === "rm" ? "#ff8a80" : C.chalk }}>{sure === "rm" ? T("frRemoveSure") : T("frRemove")}</button>}
@@ -4463,7 +4997,20 @@ function PersonSheet({ p, isFriend, onAdd, onChat, onRemove, onBlock, onReport, 
   );
 }
 
-function FriendsTab({ acct, history, profile, social, chatWith, setChatWith, onBlocked, onSignIn, onCreate, onRename, onSetGlobal, setTopHead }) {
+// A number that counts up to its value when it first shows (profile tiles, 1.7.0); instant with reduced motion.
+function CountUp({ n, ms = 650 }) {
+  const [v, setV] = useState(() => (reducedMotion() ? n : 0));
+  useEffect(() => {
+    if (reducedMotion()) { setV(n); return; }
+    let raf, t0;
+    const step = t => { if (!t0) t0 = t; const k = Math.min(1, (t - t0) / ms); setV(Math.round(n * (1 - Math.pow(1 - k, 3)))); if (k < 1) raf = requestAnimationFrame(step); };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [n]);
+  return nf(v);
+}
+
+function FriendsTab({ acct, history, profile, social, chatWith, setChatWith, onBlocked, onSignIn, onCreate, onRename, onSetGlobal, setTopHead, modHidden }) {
   const [age16, setAge16] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
@@ -4487,7 +5034,7 @@ function FriendsTab({ acct, history, profile, social, chatWith, setChatWith, onB
               <span aria-hidden="true" style={{ width: 22, height: 22, borderRadius: 7, flexShrink: 0, border: `2px solid ${age16 ? C.mint : C.line}`, background: age16 ? C.mint : "transparent", color: C.ink, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 900 }}>{age16 ? "✓" : ""}</span>
               <span>{T("frAge", { n: ACCOUNT_AGE })}</span>
             </button>
-            <button data-privacy onClick={() => { sfxTap(); openExternal(PRIVACY_URL); }} style={{ ...btnBase, background: "transparent", color: C.sky, fontSize: 13, padding: "4px 4px 0 38px" }}>{T("privacyLink")} ›</button>
+            <button data-privacy onClick={() => { sfxTap(); openExternal(PRIVACY_URL); }} style={{ ...btnBase, background: "transparent", color: C.sky, fontSize: 13, padding: "4px 4px 0 38px" }}>{T("privacyLink")} <Arrow size="1.25em" style={{ verticalAlign: "-0.08em" }} /></button>
             <button data-fr-signin onClick={go} disabled={!age16 || busy} className="b3d"
               style={{ ...bigBtn(C.chalk, C.ink), marginTop: 14, display: "flex", alignItems: "center", justifyContent: "center", gap: 10, opacity: age16 ? 1 : 0.45 }}>
               <GLogo />
@@ -4501,7 +5048,7 @@ function FriendsTab({ acct, history, profile, social, chatWith, setChatWith, onB
     );
   }
   if (!acct.prof) return <NickSetup initial={nickFrom(profile.name && profile.name !== "User" ? profile.name : "")} onSave={onCreate} />;
-  return <FriendsMain acct={acct} history={history} profile={profile} social={social} chatWith={chatWith} setChatWith={setChatWith} onBlocked={onBlocked} onRename={onRename} onSetGlobal={onSetGlobal} setTopHead={setTopHead} />;
+  return <FriendsMain acct={acct} history={history} profile={profile} social={social} chatWith={chatWith} setChatWith={setChatWith} onBlocked={onBlocked} onRename={onRename} onSetGlobal={onSetGlobal} setTopHead={setTopHead} modHidden={modHidden} />;
 }
 
 function NickSetup({ initial, onSave, onCancel, title }) {
@@ -4527,7 +5074,8 @@ function NickSetup({ initial, onSave, onCancel, title }) {
   return <div className="scr" data-fr-nicksetup style={{ padding: "6px 18px 110px", maxWidth: 460, margin: "0 auto" }}><Sect title={T("frNickTitle")}>{body}</Sect></div>;
 }
 
-function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, chatWith, setChatWith, onBlocked, setTopHead }) {
+function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, chatWith, setChatWith, onBlocked, setTopHead, modHidden }) {
+  const wide = useWide();
   const me = { uid: acct.uid, ...acct.prof, ...cloudStats(history) };
   const [tab, setTab] = useState(() => (sessionStorage.getItem("hw-add") ? "friends" : chatWith ? "chats" : "board"));
   const [scope, setScope] = useState("friends"); // board: friends | world
@@ -4540,6 +5088,7 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState(social.err || "");
   const [sheet, setSheet] = useState(null);
+  const [view, setView] = useState(null); // 1.7.0: whose profile is open (on top of their sheet)
   const [clr, setClr] = useState(() => cloudMem().clr || {}); // 1.6.2: chats deleted for me: {chatId: time}; only newer messages show again
   const [delChat, setDelChat] = useState(null);
   const holdRef = useRef({ t: 0, fired: false });
@@ -4578,7 +5127,7 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
     onBlocked([...new Set([...blocked, p.uid])]);
     const c = cloud();
     Promise.all([friendIds.includes(p.uid) ? c.removeFriend(p.uid) : null, c.decline(p.uid).catch(() => {})]).catch(() => {});
-    setSheet(null); if (chatWith === p.uid) setChatWith(null);
+    setSheet(null); setView(null); if (chatWith === p.uid) setChatWith(null);
   };
   const report = (p, what = "profile") => cloud().report(p.uid, what).then(() => T("frReported")).catch(cloudErr);
   const link = `${SHARE_BASE}add/?c=${me.code}`; // 1.6.5: opens the app when it is installed (App Links), else the website
@@ -4602,21 +5151,26 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
   const people = Object.fromEntries([...(world || []), ...(reqs || []), ...(friends || [])].map(p => [p.uid, p]));
   const chats = (social.chats || []).filter(c => !blocked.includes(c.other) && c.last.ts > Math.max(0, clr[c.cid] || 0)).sort((a, b) => b.last.ts - a.last.ts);
   const unread = c => c.last.from !== acct.uid && c.last.ts > Math.max((social.read || {})[c.cid] || 0, clr[c.cid] || 0);
-  const deleteChat = c => { const m = { ...clr, [c.cid]: Date.now() }; setClr(m); setCloudMem({ clr: m }); setDelChat(null); sfxTap(); };
+  const deleteChat = c => { const m = { ...(cloudMem().clr || {}), [c.cid]: Date.now() }; setClr(m); setCloudMem({ clr: m }); setDelChat(null); sfxTap(); window.dispatchEvent(new Event("hw-read")); };
+  // a chat deleted on another device of this account disappears here too
+  useEffect(() => { const f = () => setClr(cloudMem().clr || {}); window.addEventListener("hw-read", f); return () => window.removeEventListener("hw-read", f); }, []);
   const holdStart = c => { holdRef.current.fired = false; clearTimeout(holdRef.current.t); holdRef.current.t = setTimeout(() => { holdRef.current.fired = true; vibrate([30]); setDelChat(c); }, 480); };
   const holdEnd = () => clearTimeout(holdRef.current.t);
+  // 1.7.0: someone's profile is a page of its own (like a chat), the same page you see as your Profile
+  if (view) return <OtherProfile p={people[view.uid] ? { ...view, ...people[view.uid] } : view} isFriend={friendIds.includes(view.uid)} onBack={() => setView(null)} setTopHead={setTopHead} />;
   if (chatWith) {
     const p = people[chatWith] || { uid: chatWith, nick: "…" };
     return <ChatView setTopHead={setTopHead} me={acct.uid} other={p} th={((social.chats || []).find(c => c.other === chatWith) || {}).th} canWrite={friendIds.includes(chatWith)} onBack={() => setChatWith(null)} onOpen={() => { sfxTap(); setSheet(p); }}
-      sheet={sheet && <PersonSheet p={sheet} isFriend={friendIds.includes(sheet.uid)} onClose={() => setSheet(null)} onAdd={x => sendTo(x.uid, x.nick).catch(cloudErr)}
-        onRemove={x => act(() => cloud().removeFriend(x.uid), () => setSheet(null))} onBlock={block} onReport={x => report(x)} />}
+      sheet={<>{sheet && <PersonSheet p={sheet} isFriend={friendIds.includes(sheet.uid)} onClose={() => setSheet(null)} onAdd={x => sendTo(x.uid, x.nick).catch(cloudErr)}
+        onRemove={x => act(() => cloud().removeFriend(x.uid), () => setSheet(null))} onBlock={block} onReport={x => report(x)} onProfile={setView} />}
+</>}
       onReport={text => report(p, "message: " + text.slice(0, 280))} onBlock={block} />;
   }
   return (
-    <div className="scr" data-fr-main style={{ padding: "6px 18px 110px", maxWidth: 460, margin: "0 auto" }}>
+    <div className="scr" data-fr-main style={{ padding: "6px 18px 110px", maxWidth: "var(--colMax)", margin: "0 auto" }}>
       {sheet && <PersonSheet p={sheet} isFriend={friendIds.includes(sheet.uid)} onClose={() => setSheet(null)} onChat={friendIds.includes(sheet.uid) ? x => { setSheet(null); setChatWith(x.uid); } : null}
         onAdd={p => sendTo(p.uid, p.nick).catch(cloudErr)} onRemove={p => act(() => cloud().removeFriend(p.uid), () => setSheet(null))}
-        onBlock={block} onReport={p => report(p)} />}
+        onBlock={block} onReport={p => report(p)} onProfile={setView} />}
       {delChat && (() => { const dp = people[delChat.other] || { nick: "…" }; return (
         <Sheet title={T("chDelTitle", { nick: dp.nick })} onClose={() => setDelChat(null)} short>
           <div style={{ lineHeight: 1.5 }}>{T("chDelBody", { nick: dp.nick })}</div>
@@ -4624,6 +5178,9 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
           <button data-chat-del-no onClick={() => setDelChat(null)} style={{ ...ghostBtn, width: "100%", marginTop: 10, padding: 12 }}>{T("cancel")}</button>
         </Sheet>); })()}
       {rename && <NickSetup initial={acct.prof.nick} title={T("frRename")} onCancel={() => setRename(false)} onSave={n => onRename(n).then(() => setRename(false))} />}
+      {(() => {
+        // 1.7.0 (tablet/PC): you and your friends on the left; the leaderboard and messages on the right
+        const idCard = (
       <Sect>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <Avatar profile={{ name: me.nick, pfp: profile.pfp }} size={54} />
@@ -4641,15 +5198,16 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
         </div>
         {shareMsg && <div role="status" style={{ fontSize: 12, color: C.mint, marginTop: 6 }}>{shareMsg}</div>}
       </Sect>
-      <div role="tablist" style={segBox}>
-        {seg(tab === "board", () => setTab("board"), T("frBoard"), "board")}
-        {seg(tab === "friends", () => setTab("friends"), T("frFriends"), "friends", reqs ? reqs.length : 0)}
-        {seg(tab === "chats", () => setTab("chats"), T("chMsgs"), "chats", chats.filter(unread).length)}
-      </div>
-      {err && <div role="alert" style={{ fontSize: 13, color: "#ff8a80", marginTop: 10 }}>{err}</div>}
-      {tab === "board" ? (
+        );
+        const boardView = (
         <>
           {scope === "world" && (
+            modHidden ? (
+              <div data-fr-hidden style={{ ...card, ...tileR(), marginTop: 10, padding: "13px 16px" }}>
+                <div style={{ fontSize: 15, fontWeight: 700, color: C.chalk }}>{T("frHiddenT")}</div>
+                <div style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.5, marginTop: 3 }}>{T("frHiddenD")}</div>
+              </div>
+            ) :
             <div style={{ ...card, ...tileR(), marginTop: 10, overflow: "hidden" }}>
               <SettingRow first title={T("frWorldJoin")} desc={T("frWorldJoinD")} on={!!acct.prof.global} onClick={() => { sfxTap(); onSetGlobal(!acct.prof.global).then(() => setTimeout(loadWorld, 400)).catch(e => setErr(cloudErr(e))); }} />
             </div>
@@ -4661,12 +5219,13 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
               {scope === "world" && <button data-fr-refresh onClick={() => { sfxTap(); loadWorld(); }} aria-label={T("frRefresh")} style={{ ...btnBase, background: "transparent", color: C.dim, padding: "4px 6px", fontSize: 17, marginLeft: "auto", flexShrink: 0 }}>↻</button>}
             </div>
             {board === null ? <div style={{ padding: "6px 16px 12px", color: C.dim, fontSize: 14 }}>{T("frLoading")}</div>
-              : scope === "world" && !board.length ? <div style={{ padding: "6px 16px 12px", color: C.dim, fontSize: 14 }}>{T("frWorldEmpty")}</div>
+              : scope === "world" && !board.length ? <div style={{ padding: "6px 16px 12px", color: C.dim, fontSize: 14 }}>{T(modHidden ? "frWorldNone" : "frWorldEmpty")}</div>
               : board.map((p, i) => <PersonRow key={p.uid} p={p} rank={i + 1} me={p.uid === acct.uid} onClick={p.uid === acct.uid ? null : () => { sfxTap(); setSheet(p); }} />)}
             {scope === "friends" && friends && !friends.length && <div style={{ padding: "10px 16px 12px", color: C.dim, fontSize: 13, lineHeight: 1.5, borderTop: `1px solid ${C.line}` }}>{T("frNoFriends")}</div>}
           </Sect>
         </>
-      ) : tab === "friends" ? (
+        );
+        const friendsView = (
         <>
           <Sect title={T("frAdd")}>
             <div style={{ display: "flex", gap: 8 }}>
@@ -4693,7 +5252,8 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
               : friends.map((p, i) => <PersonRow key={p.uid} p={p} first={i === 0} onClick={() => { sfxTap(); setSheet(p); }} />)}
           </Sect>
         </>
-      ) : (
+        );
+        const chatsView = (
         <Sect title={T("chMsgs")} style={{ padding: "15px 0 4px" }} titlePad="0 16px">
           {social.chats === null ? <div style={{ padding: "6px 16px 12px", color: C.dim, fontSize: 14 }}>{T("frLoading")}</div>
             : !chats.length ? <div data-ch-empty style={{ padding: "6px 16px 12px", color: C.dim, fontSize: 13, lineHeight: 1.5 }}>{friends && friends.length ? T("chEmpty") : T("chNoFriends")}</div>
@@ -4710,7 +5270,7 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
                       <span style={{ fontSize: 11, color: u ? C.signal : C.dim, flexShrink: 0 }}>{chTime(c.last.ts)}</span>
                     </span>
                     <span style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 2 }}>
-                      <span style={{ flex: 1, minWidth: 0, fontSize: 13, color: u ? C.chalk : C.dim, fontWeight: u ? 700 : 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.last.from === acct.uid ? `${T("chYou")}: ` : ""}{c.last.text}</span>
+                      <span className="sysEmo" style={{ flex: 1, minWidth: 0, fontSize: 13, color: u ? C.chalk : C.dim, fontWeight: u ? 700 : 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.last.from === acct.uid ? `${T("chYou")}: ` : ""}{c.last.text}</span>
                       {u && <span aria-label={T("chNew")} style={{ width: 9, height: 9, borderRadius: 5, background: C.signal, flexShrink: 0 }} />}
                     </span>
                   </span>
@@ -4718,7 +5278,13 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
               );
             })}
         </Sect>
-      )}
+        );
+        const tabs = list => <div role="tablist" style={segBox}>{list.map(([id, l, n]) => <Fragment key={id}>{seg(tab === id, () => setTab(id), l, id, n)}</Fragment>)}</div>;
+        const nReq = reqs ? reqs.length : 0, nChat = chats.filter(unread).length;
+        if (!wide) return <>{idCard}{tabs([["board", T("frBoard")], ["friends", T("frFriends"), nReq], ["chats", T("chMsgs"), nChat]])}{err && <div role="alert" style={{ fontSize: 13, color: "#ff8a80", marginTop: 10 }}>{err}</div>}{tab === "board" ? boardView : tab === "friends" ? friendsView : chatsView}</>;
+        const rt = tab === "chats" ? "chats" : "board";
+        return <Cols left={<>{idCard}{friendsView}</>} right={<>{tabs([["board", T("frBoard")], ["chats", T("chMsgs"), nChat]])}{err && <div role="alert" style={{ fontSize: 13, color: "#ff8a80", marginTop: 10 }}>{err}</div>}{rt === "board" ? boardView : chatsView}</>} />;
+      })()}
     </div>
   );
 }
@@ -4783,7 +5349,7 @@ function EmojiSheet({ onPick, onClose }) {
   const jump = i => { setCat(i); const el = secs.current[i]; if (el && box.current) box.current.scrollTo({ top: el.offsetTop - box.current.offsetTop, behavior: "smooth" }); };
   const onScroll = () => { const b = box.current; if (!b) return; let k = 0; secs.current.forEach((el, i) => { if (el && el.offsetTop - b.offsetTop - 8 <= b.scrollTop) k = i; }); setCat(k); };
   return (
-    <Sheet title={T("chReact")} onClose={onClose}>
+    <Sheet title={T("chReact")} onClose={onClose} sysEmo>
       <div data-emoji-tabs style={{ display: "flex", gap: 2, overflowX: "auto", scrollbarWidth: "none", margin: "-4px -4px 8px", paddingBottom: 6, borderBottom: `1px solid ${C.line}` }}>
         {cats.map(([k, ic], i) => (
           <button key={k} onClick={() => { sfxTap(); jump(i); }} aria-label={names[k]} aria-pressed={cat === i}
@@ -4807,7 +5373,7 @@ function EmojiSheet({ onPick, onClose }) {
 function ReactSheet({ m, me, other, onRemove, onClose }) {
   const rows = Object.entries(m.rx || {});
   return (
-    <Sheet title={T("chReacts")} onClose={onClose} short>
+    <Sheet title={T("chReacts")} onClose={onClose} short sysEmo>
       {rows.map(([u, e]) => (
         <div key={u} data-react-row={u === me ? "me" : "them"} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderTop: `1px solid ${C.line}` }}>
           {u === me ? <span style={{ width: 38, height: 38, borderRadius: 99, background: C.panelHi, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, color: C.chalk }}>{T("chYou").slice(0, 1)}</span> : <PersonAvatar p={other} size={38} />}
@@ -4935,7 +5501,7 @@ function MsgMenu({ at, m, mine, me, other, th, onClose, onReply, onCopy, onEdit,
   const side = mine ? { right: Math.max(8, window.innerWidth - at.right) } : { left: Math.max(8, at.left) };
   const myRx = (m.rx || {})[me];
   return createPortal(
-    <div data-msg-menu onClick={onClose} onContextMenu={e => e.preventDefault()} style={{ position: "fixed", inset: 0, zIndex: 80, userSelect: "none", WebkitUserSelect: "none", WebkitTouchCallout: "none", background: on ? "rgba(0,0,0,.55)" : "rgba(0,0,0,0)", transition: "background .22s", fontFamily: BODY }}>
+    <div data-msg-menu className="sysEmo" onClick={onClose} onContextMenu={e => e.preventDefault()} style={{ position: "fixed", inset: 0, zIndex: 80, userSelect: "none", WebkitUserSelect: "none", WebkitTouchCallout: "none", background: on ? "rgba(0,0,0,.55)" : "rgba(0,0,0,0)", transition: "background .22s", fontFamily: BODY }}>
       <div data-rx-bar onClick={e => e.stopPropagation()} style={{ position: "absolute", top: stackTop, ...side, display: "flex", alignItems: "center", gap: 2, padding: "6px 6px", borderRadius: 99, background: C.panelHi, border: `1px solid ${C.line}`, boxShadow: "0 14px 34px rgba(0,0,0,.45)", opacity: on ? 1 : 0, transform: on ? "translateY(0) scale(1)" : "translateY(8px) scale(.9)", transformOrigin: mine ? "100% 100%" : "0 100%", transition: "opacity .2s, transform .3s cubic-bezier(.34,1.56,.64,1)" }}>
         {EMO_QUICK.map((e, i) => (
           <button key={e} data-rx-quick={e} onClick={() => onReact(myRx === e ? null : e)} aria-pressed={myRx === e}
@@ -5068,7 +5634,7 @@ function ChatView({ me, other, canWrite, onBack, onOpen, onReport, onBlock, shee
   const bar = editing || reply;
   const liveRx = rxFor && msgs ? msgs.find(x => x.id === rxFor) : null;
   return (
-    <div className="scr" data-chat-view={other.uid} style={{ padding: canWrite ? "6px 14px 0" : "6px 14px 14px", maxWidth: 460, margin: "0 auto", minHeight: "calc(100dvh - 104px - var(--sat))", boxSizing: "border-box", display: "flex", flexDirection: "column" }}>
+    <div className="scr" data-chat-view={other.uid} style={{ padding: canWrite ? "6px 14px 0" : "6px 14px 14px", maxWidth: "min(var(--colMax), 760px)", margin: "0 auto", minHeight: "calc(100dvh - 104px - var(--sat))", boxSizing: "border-box", display: "flex", flexDirection: "column" }}>
       {sheet}
       <style>{`.msgFlash [data-msg-bubble]{animation:msgFlash 1.1s ease}@keyframes msgFlash{0%,100%{filter:none}25%{filter:brightness(1.35)}}`}</style>
       <style>{`.rxBurst{position:absolute;left:50%;top:50%;font-size:44px;line-height:1;transform:translate(-50%,-50%) scale(0);animation:rxBurst .85s cubic-bezier(.34,1.56,.64,1) forwards;pointer-events:none;filter:drop-shadow(0 6px 14px rgba(0,0,0,.4))}@keyframes rxBurst{0%{transform:translate(-50%,-50%) scale(0);opacity:0}35%{transform:translate(-50%,-50%) scale(1.15);opacity:1}70%{transform:translate(-50%,-50%) scale(1);opacity:1}100%{transform:translate(-50%,-90%) scale(.8);opacity:0}}.rxIn{animation:rxIn .35s cubic-bezier(.34,1.56,.64,1)}@keyframes rxIn{from{transform:scale(.3);opacity:0}}`}</style>
@@ -5080,7 +5646,7 @@ function ChatView({ me, other, canWrite, onBack, onOpen, onReport, onBlock, shee
         onReply={() => startReply(menu.m)} onEdit={() => startEdit(menu.m)}
         onCopy={() => { copyText(menu.m.text); setMenu(null); setMsg(T("copied")); setTimeout(() => setMsg(""), 1800); }}
         onReport={() => { const m = menu.m; setMenu(null); onReport(m.text).then(r => { setMsg(r); setRepOffer(String(r).startsWith("✓")); }); }} />}
-      <div data-chat-msgs style={{ display: "flex", flexDirection: "column", justifyContent: "flex-end", gap: 4, flex: 1 }}>
+      <div data-chat-msgs className="sysEmo" style={{ display: "flex", flexDirection: "column", justifyContent: "flex-end", gap: 4, flex: 1 }}>
         {msgs === null ? <div style={{ color: C.dim, fontSize: 14, textAlign: "center", padding: 20 }}>{T("frLoading")}</div>
           : !msgs.length ? <div style={{ color: C.dim, fontSize: 13, textAlign: "center", padding: "24px 10px", lineHeight: 1.5 }}>{T("chStart", { nick: other.nick })}</div>
           : msgs.map(m => {
@@ -5107,7 +5673,7 @@ function ChatView({ me, other, canWrite, onBack, onOpen, onReport, onBlock, shee
               ↓ {T("chNewMsgs")}
             </button>
           )}
-          <div style={{ padding: 6, borderRadius: 22, ...card }}>
+          <div className="sysEmo" style={{ padding: 6, borderRadius: 22, ...card }}>
             {bar && (
               <div data-chat-bar={editing ? "edit" : "reply"} style={{ display: "flex", alignItems: "center", gap: 10, padding: "6px 6px 8px 10px", margin: "0 0 4px", borderBottom: `1px solid ${C.line}` }}>
                 <MsgIcon d={editing ? ICON_EDIT : ICON_REPLY} c={C.signal} />
@@ -5136,6 +5702,9 @@ function ChatView({ me, other, canWrite, onBack, onOpen, onReport, onBlock, shee
 }
 const chatIdOf = (a, b) => [a, b].sort().join("_");
 // Read up to: per chat, the newest message time seen (only on this phone).
+// per chat the later time wins (read / deleted-for-me times only move forward)
+const maxMerge = (a = {}, b = {}) => { const o = { ...(a || {}) }; for (const k in b || {}) if ((b[k] || 0) > (o[k] || 0)) o[k] = b[k]; return o; };
+const aheadOf = (a = {}, b = {}) => Object.fromEntries(Object.entries(a || {}).filter(([k, v]) => (v || 0) > ((b || {})[k] || 0)));
 const markRead = (cid, ts) => { const r = cloudMem().read || {}; if ((r[cid] || 0) >= ts) return; setCloudMem({ read: { ...r, [cid]: ts } }); window.dispatchEvent(new Event("hw-read")); };
 
 // A short notice at the top when a friend request or a message arrives while the app is open (1.5.0, Michael:
@@ -5146,12 +5715,12 @@ function LiveNotice({ n, people, onOpen, onClose }) {
   useEffect(() => { setShown(true); const t = setTimeout(() => setShown(false), 5000), u = setTimeout(onClose, 5400); return () => { clearTimeout(t); clearTimeout(u); }; }, [n.id]);
   const p = n.p || people[n.uid] || { nick: "…" };
   return createPortal(
-    <div data-live-notice={n.kind} className={"liveN" + (shown ? " on" : "")} style={{ position: "fixed", left: 0, right: 0, top: "calc(var(--sat) + 8px)", zIndex: 75, display: "flex", justifyContent: "center", padding: "0 12px", pointerEvents: "none" }}>
+    <div data-live-notice={n.kind} className={"liveN" + (shown ? " on" : "")} style={{ position: "fixed", left: "var(--side, 0px)", right: 0, top: "calc(var(--sat) + 8px)", zIndex: 75, display: "flex", justifyContent: "center", padding: "0 12px", pointerEvents: "none" }}>
       <button onClick={() => { setShown(false); onOpen(n); }} style={{ ...btnBase, pointerEvents: "auto", width: "100%", maxWidth: 440, display: "flex", alignItems: "center", gap: 11, padding: "10px 12px", borderRadius: 20, background: C.panelHi, border: `1px solid ${C.line}`, boxShadow: "0 12px 30px rgba(0,0,0,.45)", color: C.chalk, textAlign: "left", fontFamily: BODY, ...(LOOK === "liquid" ? LIQUID_FLOAT() : LOOK === "glass" ? { ...GLASS(), borderRadius: 20 } : {}) }}>
         <PersonAvatar p={p} size={38} />
         <span style={{ flex: 1, minWidth: 0 }}>
           <span style={{ display: "block", fontSize: 14, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{n.kind === "req" ? T("ntReq", { nick: p.nick }) : p.nick}</span>
-          <span style={{ display: "block", fontSize: 13, color: C.dim, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", marginTop: 1 }}>{n.kind === "req" ? T("ntReqD") : n.text}</span>
+          <span className={n.kind === "req" ? undefined : "sysEmo"} style={{ display: "block", fontSize: 13, color: C.dim, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", marginTop: 1 }}>{n.kind === "req" ? T("ntReqD") : n.text}</span>
         </span>
       </button>
     </div>,
@@ -5169,19 +5738,19 @@ function AccountBox({ acct, cloudBk, onOpen, onRestore, onBackupNow, onSignOut, 
   const sub = t => <span style={{ display: "block", fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2 }}>{t}</span>;
   const run = (k, fn) => { setBusy(k); setMsg(""); fn().then(m => m && setMsg(m)).catch(e => setMsg(cloudErr(e))).finally(() => setBusy("")); };
   if (acct.st !== "in") return (
-    <div style={card}>
+    <ListSect title={T("acTitle")}>
       <button data-acct-signin onClick={() => { sfxTap(); onOpen(); }} style={rowBtn(true)}>
         <span style={{ flex: 1 }}>{T("acSignIn")}{sub(T("acSignInD"))}</span>
-        <span aria-hidden="true" style={{ color: C.dim, fontSize: 20 }}>›</span>
+        <Arrow />
       </button>
-    </div>
+    </ListSect>
   );
   return (
     <>
-      <div style={card} data-acct>
+      <ListSect title={T("acTitle")} data-acct>
         <button onClick={() => { sfxTap(); onOpen(); }} style={rowBtn(true)}>
           <span style={{ flex: 1, minWidth: 0 }}>{acct.prof ? T("acSignedIn", { nick: acct.prof.nick }) : T("acSignedInNoNick")}{sub(acct.prof ? fmtCode(acct.prof.code) : T("frNickTitle"))}</span>
-          <span aria-hidden="true" style={{ color: C.dim, fontSize: 20 }}>›</span>
+          <Arrow />
         </button>
         <div style={{ ...rowBtn(false), display: "block", cursor: "default", boxSizing: "border-box" }}>
           {T("acBackup")}
@@ -5208,7 +5777,7 @@ function AccountBox({ acct, cloudBk, onOpen, onRestore, onBackupNow, onSignOut, 
           {busy === "del" ? "…" : sure ? T("acDeleteSure") : T("acDelete")}
           {sub(`${T("acDeleteD")} ${T("acDelGoogle")}`)}
         </button>
-      </div>
+      </ListSect>
       {msg && <div role="status" style={{ fontSize: 13, color: msg.startsWith("✓") ? C.mint : "#ff8a80", marginTop: 8 }}>{msg}</div>}
     </>
   );
@@ -5306,15 +5875,6 @@ function SwitchAccountSheet({ onFresh, onKeep, onCancel }) {
     </Sheet>
   );
 }
-function CloudRestoreSheet({ offer, onRestore, onKeep, onClose }) {
-  return (
-    <Sheet title={T("rsTitle")} onClose={onClose} short>
-      <div>{T("rsBody", { date: offer.ts ? fmtWhen(offer.ts) : T("unknownDate"), count: TP("workouts", offer.n || 0) })}</div>
-      <button data-rs-yes onClick={onRestore} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 16, fontSize: 15, padding: 14 }}>{T("rsYes")}</button>
-      <button data-rs-keep onClick={onKeep} style={{ ...ghostBtn, width: "100%", marginTop: 10, padding: 12, fontSize: 14 }}>{T("rsKeep")}</button>
-    </Sheet>
-  );
-}
 
 // ─── SETTINGS → EXERCISES ───────────────────────────────────────────────────
 // Every exercise by type, with its how-to, and a switch for "I can do this one". At least one
@@ -5336,7 +5896,7 @@ function ExercisesPage({ settings, set, history, onBack }) {
   return (
     <div>
       {howEx && <HowTo id={howEx} history={history} onClose={() => setHowEx(null)} />}
-      <button onClick={() => { sfxTap(); onBack(); }} style={{ ...ghostBtn, marginTop: 10, padding: "8px 12px" }}>‹ {T("tabSettings")}</button>
+      <button onClick={() => { sfxTap(); onBack(); }} style={{ ...ghostBtn, marginTop: 10, padding: "8px 12px" }}><Arrow dir="‹" size="1.25em" style={{ verticalAlign: "-0.08em", marginRight: 6 }} />{T("tabSettings")}</button>
       <div style={{ fontFamily: DISPLAY, fontSize: 28, fontWeight: 900, color: C.chalk, margin: "14px 0 10px" }}>{T("exTitle")}</div>
       <div style={{ fontSize: 13, color: C.dim, lineHeight: 1.55 }}>{T("exIntro")}</div>
       {ALT_GROUPS.map((g, gi) => {
@@ -5443,19 +6003,22 @@ function SettingsTab({ initPage, settings, setSettings, history, profile, setPro
   }
 
   return (
-    <div className="scr" key="main" style={{ padding: "6px 18px 110px", maxWidth: 460, margin: "0 auto" }}>
+    <div className="scr" key="main" style={{ padding: "6px 18px 110px", maxWidth: "var(--colMax)", margin: "0 auto" }}>
       <input ref={fileRef} type="file" accept="application/json,.json" onChange={readBackup} style={{ display: "none" }} />
       {bkOpen && <BackupsSheet onClose={() => setBkOpen(false)} onRestore={txt => { if (loadBackupText(txt)) setBkOpen(false); }} autoOn={!!settings.autoBackup} myId={String(cloudMem().owner || (acct.st === "in" ? acct.uid : "")).replace(/[^A-Za-z0-9]/g, "").slice(0, 8)} />}
 
-      <div style={sectionTitle}>{T("language")}</div>
+      {/* 1.7.0: on a wide screen language + appearance on the left, the rest on the right */}
+      <Cols left={<>
       {/* One row with the current language; the full list opens in a scrollable sheet, so more languages fit later. */}
       {(() => { const cur = LANGS.find(l => l.code === curLang) || LANGS[0]; return (
-        <button onClick={() => { sfxTap(); setLangOpen(true); }} aria-haspopup="dialog" aria-label={`${T("language")}: ${cur.name}`}
-          style={{ ...btnBase, ...card, width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "13px 16px", textAlign: "left", fontSize: 16, color: C.chalk }}>
-          <span aria-hidden="true" style={{ fontSize: 22 }}>{cur.flag}</span>
-          <span style={{ flex: 1 }}>{cur.name}</span>
-          <span aria-hidden="true" style={{ color: C.dim, fontSize: 20 }}>›</span>
-        </button>
+        <ListSect title={T("language")} data-set-lang style={{ padding: "14px 0 0" }}>
+          <button onClick={() => { sfxTap(); setLangOpen(true); }} aria-haspopup="dialog" aria-label={`${T("language")}: ${cur.name}`}
+            style={{ ...btnBase, width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "8px 16px 13px", textAlign: "left", fontSize: 16, color: C.chalk, background: "transparent", borderRadius: 0 }}>
+            <span aria-hidden="true" style={{ fontSize: 22 }}>{cur.flag}</span>
+            <span style={{ flex: 1 }}>{cur.name}</span>
+            <Arrow />
+          </button>
+        </ListSect>
       ); })()}
       {langOpen && (
         <Sheet title={T("language")} onClose={() => setLangOpen(false)}>
@@ -5472,11 +6035,11 @@ function SettingsTab({ initPage, settings, setSettings, history, profile, setPro
               );
             })}
           </div>
-          <button data-translate-help onClick={() => { sfxTap(); openExternal(TRANSLATE_URL); }} style={{ ...btnBase, background: "transparent", color: C.sky, fontSize: 13, padding: "14px 2px 2px", textAlign: "left", lineHeight: 1.45 }}>{T("translateHelp")}</button>
+          <button data-translate-help onClick={() => { sfxTap(); openExternal(TRANSLATE_URL); }} style={{ ...btnBase, background: "transparent", color: C.sky, fontSize: 13, padding: "14px 2px 2px", textAlign: "left", lineHeight: 1.45 }}>{T("translateHelp")} <Arrow size="1.25em" style={{ verticalAlign: "-0.08em" }} /></button>
         </Sheet>
       )}
 
-      <div style={sectionTitle}>{T("appearance")}</div>
+      <Sect title={T("appearance")} flatTitle data-set-look>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
         {Object.entries(THEMES).map(([id, t]) => (
           <button key={id} onClick={() => { sfxTap(); set("theme", id); }} aria-pressed={settings.theme === id}
@@ -5491,6 +6054,16 @@ function SettingsTab({ initPage, settings, setSettings, history, profile, setPro
           </button>
         ))}
       </div>
+      <div style={{ fontSize: 13, color: C.chalk, fontWeight: 800, margin: "14px 0 8px" }}>{T("accentTitle")}</div>
+      <div role="radiogroup" aria-label={T("accentTitle")} data-accents style={{ display: "flex", justifyContent: "space-between", gap: 6 }}>
+        {Object.entries(ACCENTS).map(([id, { c: [col, ink] }]) => { const on = (settings.accent || "yellow") === id; return (
+          <button key={id} role="radio" aria-checked={on} aria-label={T("accent_" + id)} title={T("accent_" + id)} data-accent={id} onClick={() => { sfxTap(); set("accent", id); }}
+            style={{ ...btnBase, width: 44, height: 44, borderRadius: 99, padding: 0, flexShrink: 0, background: "transparent", border: `2px solid ${on ? C.chalk : "transparent"}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <span aria-hidden="true" style={{ width: 32, height: 32, borderRadius: 99, background: col, display: "flex", alignItems: "center", justifyContent: "center", color: ink, fontSize: 16, fontWeight: 900 }}>{on ? "✓" : ""}</span>
+          </button>
+        ); })}
+      </div>
+      <div style={{ fontSize: 12, color: C.dim, marginTop: 6 }}>{T("accent_" + (ACCENTS[settings.accent] ? settings.accent : "yellow"))}</div>
       <div style={{ fontSize: 13, color: C.chalk, fontWeight: 800, margin: "14px 0 8px" }}>{T("lookTitle")}</div>
       <div role="radiogroup" aria-label={T("lookTitle")} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
         {["liquid", "cards", "tiles", "glass", "accent", "flat"].map(id => {
@@ -5508,10 +6081,10 @@ function SettingsTab({ initPage, settings, setSettings, history, profile, setPro
         })}
       </div>
       <div style={{ fontSize: 12, color: C.dim, marginTop: 6, lineHeight: 1.45 }}>{T("lookHint")}</div>
-      {hzSupported() && <div style={{ ...card, marginTop: 10 }}><HzRow settings={settings} set={set} first /></div>}
-
-      <div style={sectionTitle}>{T("sounds")}</div>
-      <div style={card}>
+      {hzSupported() && <div style={{ marginTop: 12, borderRadius: 14, background: SOFT(), overflow: "hidden" }}><HzRow settings={settings} set={set} first /></div>}
+      </Sect>
+      </>} right={<>
+      <ListSect title={T("sounds")}>
         <SettingRow first title={T("sndTap")} desc={T("sndTapD")} on={settings.sndTap} onClick={() => flip("sndTap")} />
         <SettingRow title={T("sndFx")} desc={T("sndFxD")} on={settings.sndFx} onClick={() => flip("sndFx")} />
         <SettingRow title={T("sndTimer")} desc={T("sndTimerD")} on={settings.sndTimer} onClick={() => flip("sndTimer")} />
@@ -5525,28 +6098,25 @@ function SettingsTab({ initPage, settings, setSettings, history, profile, setPro
           </div>
           <div style={{ fontSize: 12, color: C.dim, marginTop: 6 }}>{T("volHint")}</div>
         </div>
-      </div>
+      </ListSect>
 
-      <div style={sectionTitle}>{T("trainingSettings")}</div>
-      <div style={card}>
+      <ListSect title={T("trainingSettings")}>
         <button onClick={() => openPage("exercises")} style={{ ...rowBtn(true), display: "flex", alignItems: "center", gap: 10 }}>
           <span style={{ flex: 1 }}>
             {noEmo(T("exMenu"))}
             <span style={{ display: "block", fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2 }}>{T("exMenuD")}</span>
           </span>
-          <span aria-hidden="true" style={{ color: C.dim, fontSize: 20 }}>›</span>
+          <Arrow />
         </button>
         <SettingRow title={T("vibrate")} desc={`${T("vibrateD")} ${T("vibrateHint")}`} on={settings.vibrate} onClick={() => { set("vibrate", !settings.vibrate); if (!settings.vibrate) vibratePattern([160]); }} />
         <SettingRow title={T("keepAwake")} desc={T("keepAwakeD")} on={settings.keepAwake} onClick={() => set("keepAwake", !settings.keepAwake)} />
         <SettingRow title={T("aiCopy")} desc={T("aiCopyD")} on={settings.aiCopy} onClick={() => set("aiCopy", !settings.aiCopy)} />
         {pushSupported() && <div data-upd-notif><SettingRow title={T("updNotif")} desc={T("updNotifD")} on={settings.updNotif !== false} onClick={() => set("updNotif", settings.updNotif === false)} /></div>}
-      </div>
+      </ListSect>
 
-      <div style={sectionTitle}>{T("acTitle")}</div>
       <AccountBox acct={acct || { st: "out" }} cloudBk={cloudBk} onOpen={onAcctOpen} onRestore={onCloudRestore} onBackupNow={onCloudBackupNow} onSignOut={onSignOut} onDelete={onDeleteAccount} settings={settings} set={set} />
 
-      <div style={sectionTitle}>{T("dataBackup")}</div>
-      <div style={card}>
+      <ListSect title={T("dataBackup")}>
         <button onClick={exportBackup} style={rowBtn(true)}>
           {noEmo(T("backupSave"))}
           <div style={{ fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2 }}>{isNative ? T("backupSaveDApp", { dir: `Documents/${BK_DIR}` }) : T("backupSaveD")}</div>
@@ -5557,7 +6127,7 @@ function SettingsTab({ initPage, settings, setSettings, history, profile, setPro
               on={settings.autoBackup} onClick={() => { const v = !settings.autoBackup; set("autoBackup", v); sfxTap(); if (v) onAutoBackup(true); }} />
             <button data-bk-open onClick={() => { sfxTap(); setBkOpen(true); }} style={{ ...rowBtn(false), display: "flex", alignItems: "center", gap: 10 }}>
               <span style={{ flex: 1 }}>{noEmo(T("bkFolder"))}<span style={{ display: "block", fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2 }}>{T("bkFolderD", { dir: `Documents/${BK_DIR}` })}</span></span>
-              <span aria-hidden="true" style={{ color: C.dim, fontSize: 20 }}>›</span>
+              <Arrow />
             </button>
           </>
         )}
@@ -5577,7 +6147,7 @@ function SettingsTab({ initPage, settings, setSettings, history, profile, setPro
         {settings.aiCopy && (
           <button onClick={copyAll} style={rowBtn(false)}>{copied ? T("copied") : T("copyAllAI")}</button>
         )}
-      </div>
+      </ListSect>
       {msg && <div role="status" style={{ fontSize: 13, color: msg.startsWith("✓") ? C.mint : C.dim, marginTop: 8 }}>{msg}</div>}
 
       <button onClick={() => { sfxTap(); openExternal(SUPPORT_URL); }} data-support style={{ ...btnBase, ...card, ...tileR(), width: "100%", marginTop: 22, display: "flex", alignItems: "center", gap: 12, padding: "13px 15px", color: C.chalk, textAlign: "left" }}>
@@ -5587,10 +6157,11 @@ function SettingsTab({ initPage, settings, setSettings, history, profile, setPro
         </span>
         <span aria-hidden="true" style={{ fontSize: 20, lineHeight: 1, flexShrink: 0 }}>💛</span>
       </button>
+      </>} />
       <div style={{ fontSize: 12, color: C.dim, textAlign: "center", marginTop: 26, lineHeight: 1.6, display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
         <Logo size={44} />
         <div>{T("about", { v: APP_VERSION })}<br />{T("privacy")}</div>
-        <button data-privacy onClick={() => { sfxTap(); openExternal(PRIVACY_URL); }} style={{ ...btnBase, background: "transparent", color: C.sky, fontSize: 12, padding: "2px 0" }}>{T("privacyLink")} ›</button>
+        <button data-privacy onClick={() => { sfxTap(); openExternal(PRIVACY_URL); }} style={{ ...btnBase, background: "transparent", color: C.sky, fontSize: 12, padding: "2px 0" }}>{T("privacyLink")} <Arrow size="1.25em" style={{ verticalAlign: "-0.08em" }} /></button>
       </div>
     </div>
   );
@@ -6022,6 +6593,111 @@ function Cool({ onFinish }) {
   );
 }
 
+// ─── REWARD REVEAL (1.7.0; Michael, Oct 18, 16:53: badges "more extreme, like gambling: a really good feeling") ───
+// The thrill of opening a card, but only for what you earned (never chance, never money): after a workout every new
+// record, badge level, exercise rank and level comes as a face-down card glowing in its rarity colour, wobbling more
+// the rarer it is. A tap flips it: light rays, a burst, a flash, a rising sound and a vibration, all bigger with the
+// rarity (Diamond also shakes the screen). The cards come from the most common to the rarest, so the best is last.
+const REV_KIND = { pr: 0, ach: 1, rank: 2, lvl: 3 };
+const REV_BUZZ = [[30], [40], [50, 30, 60], [60, 40, 90], [70, 40, 70, 40, 160], [80, 40, 80, 40, 80, 40, 220], [110, 50, 110, 50, 110, 50, 340]];
+function revealList(entry, newAch, xpBefore, gained) {
+  if (!entry) return [];
+  const out = [];
+  if (entry.prs && entry.prs.length) out.push({ kind: "pr", r: Math.min(3, entry.prs.length), icon: "🏆", name: TP("prs", entry.prs.length), sub: entry.items.filter(it => entry.prs.includes(it.id)).map(exName).join(", "), col: C.signal });
+  newAch.forEach(a => { const rk = RANKS[a.tier - 1]; out.push({ kind: "ach", k: a.k, r: a.tier - 1, icon: a.icon, name: a.name, rank: rk, col: rk.color }); });
+  (entry.rankUps || []).forEach(ru => { const rk = RANKS[ru.to]; out.push({ kind: "rank", k: ru.id, r: ru.to, icon: rk.icon, name: EX[ru.id] ? EX[ru.id].name : ru.id, rank: rk, col: rk.color }); });
+  const l0 = levelInfo(xpBefore).lvl, l1 = levelInfo(xpBefore + gained).lvl;
+  if (l1 > l0) { const r = lvRank(l1); out.push({ kind: "lvl", r, icon: "⚡", name: `${T("level")} ${l1}`, col: C.sky }); }
+  return out.sort((a, b) => a.r - b.r || REV_KIND[a.kind] - REV_KIND[b.kind]);
+}
+// One melody per flip (scheduled on the audio clock): a quick riser, then an arpeggio that climbs higher and longer
+// with the rarity, a chord, and sparkles from Gold up.
+function revealSfx(r) {
+  const S = [523, 587, 659, 784, 880, 1047, 1175, 1319, 1568, 1760, 2093, 2349, 2637];
+  const n = [];
+  // the charge while the card shakes (faster and higher for rarer cards), then the reveal when it turns
+  [330, 370, 392, 440, 494, 523, 587].forEach((f, k) => n.push([f * (1 + r * 0.05), k * 0.055, 0.05]));
+  const len = 3 + Math.ceil(r / 1.5), off = Math.floor(r / 2); let t = 0.44;
+  for (let k = 0; k < len; k++) { n.push([S[Math.min(S.length - 1, k + off)], t, 0.11]); t += 0.07; }
+  const top = S[Math.min(S.length - 1, len + off)], d = 0.55 + r * 0.09;
+  n.push([top, t, d], [top * 0.75, t, d], [top * 0.5, t, d]);
+  if (r >= 4) [2093, 2637, 3136, 2637, 3136, 4186].slice(0, r - 1).forEach((f, k) => n.push([f, t + 0.14 + k * 0.07, 0.09]));
+  if (r >= 2) n.push([98, t + 0.22, 0.22], [131, t + 0.22, 0.18]); // a low thud when the rank lands
+  melody(n, "triangle", 0.26);
+}
+// a card being dealt: a quick swish down, a bit brighter for rare ones
+const dealSfx = r => melody([[1500 + r * 120, 0, 0.03], [1150 + r * 90, 0.03, 0.03], [850 + r * 60, 0.06, 0.04], [620, 0.1, 0.06]], "sine", 0.14);
+// taking a card: a bright two-note ding
+const collectSfx = () => melody([[1319, 0, 0.06], [1760, 0.06, 0.16]], "sine", 0.2);
+function RevBurst({ col, n }) {
+  const [bits] = useState(() => Array.from({ length: n }, (_, k) => {
+    const a = (k / n) * Math.PI * 2 + Math.random() * 0.5, dist = 120 + Math.random() * 170;
+    return { tx: `${Math.round(Math.cos(a) * dist)}px`, ty: `${Math.round(Math.sin(a) * dist)}px`, s: 4 + Math.random() * 7, c: [col, "#ffffff", C.signal, col][k % 4], d: `${(0.7 + Math.random() * 0.5).toFixed(2)}s`, star: k % 3 === 0 };
+  }));
+  return <div aria-hidden="true" style={{ position: "absolute", left: "50%", top: "50%", width: 0, height: 0, pointerEvents: "none" }}>
+    {bits.map((b, k) => <span key={k} className="revBit" style={{ width: b.s, height: b.s, background: b.c, borderRadius: b.star ? 2 : 99, transform: b.star ? "rotate(45deg)" : undefined, "--tx": b.tx, "--ty": b.ty, "--d": b.d, boxShadow: `0 0 8px ${b.c}` }} />)}
+  </div>;
+}
+// sparkles blinking around a rare card while it is still face down
+function RevTwinkle({ col, n }) {
+  const [bits] = useState(() => Array.from({ length: n }, (_, k) => {
+    const side = k % 4, u = Math.random();
+    const [x, y] = side === 0 ? [u * 100, -4] : side === 1 ? [104, u * 100] : side === 2 ? [u * 100, 104] : [-4, u * 100];
+    return { x, y, s: 5 + Math.random() * 6, dl: `${(Math.random() * 1.4).toFixed(2)}s`, du: `${(0.9 + Math.random() * 0.9).toFixed(2)}s` };
+  }));
+  return <div aria-hidden="true" style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 2 }}>
+    {bits.map((b, k) => <span key={k} className="revTw" style={{ left: `${b.x}%`, top: `${b.y}%`, width: b.s, height: b.s, background: k % 2 ? "#fff" : col, boxShadow: `0 0 10px ${col}`, "--dl": b.dl, "--du": b.du }} />)}
+  </div>;
+}
+function RewardReveal({ items, onDone }) {
+  const [i, setI] = useState(0);
+  const [open, setOpen] = useState(false);
+  useBack(() => onDone(), true);
+  useEffect(() => { if (items[i]) dealSfx(items[i].r); }, [i]);
+  const it = items[i];
+  if (!it) return null;
+  const col = it.col, r = it.r, last = i + 1 >= items.length;
+  const flip = () => { if (open) return; setOpen(true); revealSfx(r); vibrate(REV_BUZZ[Math.max(0, Math.min(6, r))]); };
+  const next = e => { e.stopPropagation(); collectSfx(); if (last) onDone(); else { setI(i + 1); setOpen(false); } };
+  const kindLabel = T({ pr: "revRecord", ach: "revBadge", rank: "revRank", lvl: "revLevel" }[it.kind]);
+  return createPortal(
+    <div data-reveal={items.length} className={open && r >= 5 ? "revShake" : undefined} onClick={flip}
+      style={{ position: "fixed", inset: 0, zIndex: 95, background: `radial-gradient(70% 50% at 50% 45%, ${col}${open ? "40" : "22"}, transparent 70%), rgba(4,7,16,.97)`, transition: `background ${MO.t3}`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "calc(var(--sat, 0px) + 18px) 20px calc(var(--sab, 0px) + 26px)", boxSizing: "border-box", fontFamily: BODY, color: C.chalk, cursor: open ? "default" : "pointer", userSelect: "none", overflow: "hidden" }}>
+      <div style={{ position: "absolute", top: "calc(var(--sat, 0px) + 16px)", left: 18, right: 18, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <span data-reveal-count style={{ fontSize: 13, fontWeight: 800, color: C.dim, letterSpacing: 0.5 }}>{items.length > 1 ? T("revOf", { n: i + 1, max: items.length }) : ""}</span>
+        {!last && <button type="button" data-reveal-skip onClick={e => { e.stopPropagation(); sfxTap(); onDone(); }} style={{ ...btnBase, background: "transparent", color: C.dim, fontSize: 13, fontWeight: 700, padding: "8px 4px" }}>{T("revSkip")}</button>}
+      </div>
+      <div key={i} className="revDeal" style={{ position: "relative", width: "min(78vw, 300px)", aspectRatio: "3 / 4" }}>
+        <div aria-hidden="true" className="revRays" style={{ background: `repeating-conic-gradient(from 0deg, ${col}55 0deg 7deg, transparent 7deg 22deg)`, opacity: open ? 1 : 0, "--rs": `${Math.max(7, 16 - r * 1.4)}s` }} />
+        {open && <RevBurst col={col} n={16 + r * 8} />}
+        {open && <div aria-hidden="true" className="revFlash" style={{ "--fo": Math.min(0.75, 0.2 + r * 0.09) }} />}
+        <div data-reveal-card data-kind={it.kind} data-rarity={r} data-state={open ? "face" : "back"} className={"revCard" + (open ? " on" : "")} style={{ "--wob": `${1.2 + r * 0.7}deg`, "--wt": `${Math.max(0.35, 1.1 - r * 0.12)}s` }}>
+          {r >= 4 && !open && <RevTwinkle col={col} n={6 + (r - 3) * 4} />}
+          <div className={"revBack" + (r >= 6 ? " revPrism" : "")} style={{ background: `radial-gradient(90% 70% at 50% 40%, ${col}66, transparent 75%), repeating-linear-gradient(45deg, ${col}12 0 10px, transparent 10px 20px), ${C.ink}`, border: `2px solid ${col}`, boxShadow: `0 0 ${18 + r * 9}px ${col}${r >= 4 ? "cc" : "88"}, inset 0 0 ${24 + r * 6}px ${col}55` }}>
+            <span style={{ fontFamily: DISPLAY, fontSize: 96, fontWeight: 900, color: col, textShadow: `0 0 ${12 + r * 5}px ${col}`, lineHeight: 1 }}>?</span>
+          </div>
+          <div className={"revFace" + (r >= 4 ? " foil" : "")} style={{ background: `radial-gradient(100% 70% at 50% 30%, ${col}55, transparent 80%), ${C.ink}`, border: `2px solid ${col}`, boxShadow: `0 0 ${24 + r * 12}px ${col}aa` }}>
+            <div style={{ fontSize: 11.5, fontWeight: 900, letterSpacing: 1.6, textTransform: "uppercase", color: col }}>{kindLabel}</div>
+            <div aria-hidden="true" className={open ? "revIcon" : undefined} style={{ fontSize: 84, lineHeight: 1, margin: "18px 0 14px", filter: `drop-shadow(0 0 ${10 + r * 4}px ${col})` }}>{it.icon}</div>
+            <div style={{ fontFamily: DISPLAY, fontSize: it.name.length > 18 ? 24 : 30, fontWeight: 900, lineHeight: 1.05, textAlign: "center" }}>{it.name}</div>
+            {it.rank && <div data-reveal-rank className={open ? "revStamp" : undefined} style={{ marginTop: 12, fontFamily: DISPLAY, fontSize: 26 + r * 2, fontWeight: 900, letterSpacing: 1, color: col, textTransform: "uppercase", textShadow: `0 0 ${8 + r * 4}px ${col}` }}>{it.rank.icon} {it.rank.name}</div>}
+            {it.sub && <div style={{ marginTop: 10, fontSize: 13, color: C.dim, textAlign: "center", lineHeight: 1.4 }}>{it.sub}</div>}
+          </div>
+        </div>
+      </div>
+      <div style={{ height: 96, display: "flex", alignItems: "center", justifyContent: "center", marginTop: 22, width: "100%", maxWidth: 340 }}>
+        {open
+          ? <button type="button" data-reveal-next onClick={next} className="b3d cardIn" style={{ ...bigBtn(col, "#0b0f1c"), animationDelay: ".35s" }}>{last ? T("revDone") : T("revNext")}</button>
+          : <div style={{ textAlign: "center" }}>
+              {r >= 4 && <div data-reveal-rare className="revTap" style={{ fontFamily: DISPLAY, fontSize: 22, fontWeight: 900, color: col, textShadow: `0 0 12px ${col}`, marginBottom: 6 }}>{T(r >= 6 ? "revEpic" : "revRare")}</div>}
+              <div className="revTap" style={{ fontSize: 15, fontWeight: 800, color: r >= 4 ? C.chalk : col, letterSpacing: 0.4 }}>{T("revTap")}</div>
+            </div>}
+      </div>
+    </div>,
+    document.body
+  );
+}
+
 // ─── SESSION: SUMMARY ───────────────────────────────────────────────────────
 function Summary({ entry, xpBefore = 0, xpGained, newCh = [], newAch = [], history, onClose }) {
   const [copied, setCopied] = useState(false);
@@ -6044,6 +6720,9 @@ function Summary({ entry, xpBefore = 0, xpGained, newCh = [], newAch = [], histo
   const st = entry ? streakInfo(history, entry.date) : { n: 0 };
   const [finishLine] = useState(() => (bdayToday() ? T("bdayFinish") : pick(L.finish)));
   const text = entry ? logText(entry) : "";
+  // tests turn the card reveal off (window.__hwNoReveal) unless they test it
+  const [rev] = useState(() => (window.__hwNoReveal ? [] : revealList(entry, newAch, xpBefore, gained)));
+  const [revOn, setRevOn] = useState(rev.length > 0);
   const copy = async () => {
     try { await navigator.clipboard.writeText(text); }
     catch (_) { const t = document.createElement("textarea"); t.value = text; document.body.appendChild(t); t.select(); try { document.execCommand("copy"); } catch (__) {} document.body.removeChild(t); }
@@ -6060,7 +6739,7 @@ function Summary({ entry, xpBefore = 0, xpGained, newCh = [], newAch = [], histo
   }
   return (
     <div>
-      <Confetti />
+      {revOn ? <RewardReveal items={rev} onDone={() => setRevOn(false)} /> : <Confetti />}
       <div className="pop" style={{ fontFamily: DISPLAY, fontSize: 60, fontWeight: 900, lineHeight: 0.95, color: C.mint }}>{T("great")}</div>
       <div style={{ fontSize: 16, color: C.chalk, marginTop: 8, fontWeight: 600, lineHeight: 1.4 }}>{finishLine}</div>
       <div style={{ fontSize: 13, color: C.dim, marginTop: 4 }}>{T("dayDate", { d: entry.day, date: fmtDate(entry.date, true) })}</div>
@@ -6277,7 +6956,7 @@ export default function App() {
   const editHistory = fn => setHistory(h => recomputeFlags(sortHistory(fn(h))));
   META = { kcal, skips: profile.skips || {}, freezeDays: profile.freezeDays || [], streakResetTs: profile.streakResetTs || 0, bonusFreezes: (profile.bdayGifts || []).length, giftThisYear: (profile.bdayGifts || []).includes(parseKey(dateKey()).getFullYear()), birth: profile.birth || null };
   window._wset = settings;
-  applyTheme(settings.theme);
+  applyTheme(settings.theme, settings.accent);
   LOOK = settings.look || "cards";
   if (LOOK === "tiles") card = { background: C.panelHi, border: `1px solid ${C.panelHi}`, borderRadius: 16 };
   if (LOOK === "glass") card = GLASS();
@@ -6363,48 +7042,51 @@ export default function App() {
   // Firebase starts only for someone who signed in before (cloudMem().uid); everyone else makes no cloud calls.
   const [acct, setAcct] = useState(() => (cloudMem().uid ? { st: "loading", uid: cloudMem().uid, prof: cloudMem().prof || null } : { st: "out" }));
   const [cloudBk, setCloudBk] = useState(() => cloudMem().bk || null);
-  const [rsOffer, setRsOffer] = useState(null);
   const [swOffer, setSwOffer] = useState(null); // 1.6.2: signed in as another account than the one whose data is on this phone: {uid, b: its cloud backup}
   const cloudReady = useRef(false); // uploads wait until we know the cloud backup isn't bigger than this phone's data
   const lastCloud = useRef("");
   const setProf = prof => { setCloudMem({ prof }); setAcct(a => ({ ...a, prof })); };
   const cloudN = useRef(null); // workouts in the cloud backup, once known (0 = none there or a backup without workouts)
-  // A cloud backup without workouts (1.5.0, Michael: sign in on a new phone and the setup is already filled in): what
-  // this phone doesn't have yet comes from it (name, photo, birth date, gender, height, weight, activity, goal…), and
-  // during the first-start setup also the settings (theme, language, sounds…). Nothing this phone has is replaced.
-  const fillFromCloud = json => {
-    const d = JSON.parse(json);
-    if (!BACKUP_IDS.includes(d.app)) return null;
-    const empty = v => v === undefined || v === null || v === "" || (Array.isArray(v) ? !v.length : typeof v === "object" && !Object.keys(v).length);
-    const fill = (local, from) => {
-      const out = { ...(local || {}) }, got = [];
-      Object.entries(from || {}).forEach(([k, v]) => { if (!empty(v) && (empty(out[k]) || (k === "name" && out[k] === "User"))) { out[k] = v; got.push(k); } });
-      return [out, got];
-    };
-    const [p, gp] = fill(profile, d.profile), [k, gk] = fill(kcal, d.kcal);
-    if (gp.length) setProfile(p);
-    if (gk.length) setKcal({ ...k, log: k.log || {} });
-    if (d.settings && onboard !== null) { const { onboarded, ...rest } = d.settings; setSettings({ ...DEFAULT_SETTINGS, ...rest, onboarded: settings.onboarded }); }
-    return { profile: p, kcal: k, fields: [...gp, ...gk] };
+  // ─── Web ↔ phone sync (1.7.0, src/sync.js) ───
+  // The account's cloud backup is the meeting point: when it changes (another phone, the website), it is merged into
+  // this device (nothing is lost, see sync.js), and when this device changes, the merged result is uploaded. The
+  // first merge on a device (a new phone, the setup) takes the account's details and fills in only what is missing.
+  const stRef = useRef({}); stRef.current = { history, profile, settings, kcal };
+  const seenSync = useRef({}); // the last known content of profile / synced settings / calorie details (change = touched here)
+  const lastRemoteKey = useRef(""), lastUpKey = useRef("");
+  const [syncTick, setSyncTick] = useState(0);
+  const histKey = h => stable((h || []).map(e => { const { prs, rankUps, ...r } = e; return { ...r, id: entryId(e) }; }).sort((a, b) => (a.id < b.id ? -1 : 1)));
+  const kcalKey = k => stable([kcalShared(k), k ? k.log || {} : {}]);
+  const pickSync = st => Object.fromEntries(SYNC_SETTINGS.filter(k => st && st[k] !== undefined).map(k => [k, st[k]]));
+  // b = a cloud backup {json, n, ts} or null. Returns {profile, kcal, fields, restored} for the first-start setup.
+  const applyRemote = (b, uid) => {
+    let d = null;
+    try { d = b && b.json ? JSON.parse(b.json) : null; } catch (_) {}
+    if (d && !(BACKUP_IDS.includes(d.app) && Array.isArray(d.history))) d = null;
+    if (!d) { setSyncMem({ acct: uid }); cloudN.current = 0; return null; }
+    const L = { ...stRef.current, sync: syncMem() }, first = syncMem().acct !== uid;
+    const M = mergeAll(L, { ...d, sync: d.sync || {} }, first);
+    lastRemoteKey.current = syncKey(d);
+    if (histKey(M.history) !== histKey(L.history)) { const h = recomputeFlags(sortHistory(M.history)); stRef.current.history = h; setHistory(h); }
+    if (stable(M.profile) !== stable(L.profile)) { seenSync.current.profile = stable(M.profile); stRef.current.profile = M.profile; setProfile(M.profile); }
+    if (stable(pickSync(M.settings)) !== stable(pickSync(L.settings))) { seenSync.current.settings = stable(pickSync(M.settings)); stRef.current.settings = M.settings; setSettings(M.settings); }
+    if (M.kcal && kcalKey(M.kcal) !== kcalKey(L.kcal)) { seenSync.current.kcal = stable(kcalShared(M.kcal)); stRef.current.kcal = M.kcal; setKcal(M.kcal); }
+    setSyncMem({ acct: uid, del: M.sync.del, kdel: M.sync.kdel, mod: M.sync.mod });
+    cloudN.current = b.n || 0;
+    const blank = v => v === undefined || v === null || v === "" || v === "User";
+    const fields = [...["name", "birth"].filter(k => blank((L.profile || {})[k]) && !blank((M.profile || {})[k])),
+      ...["sex", "height", "weight", "activity", "goal"].filter(k => blank((L.kcal || {})[k]) && M.kcal && !blank(M.kcal[k]))];
+    return { profile: M.profile, kcal: M.kcal, fields, restored: !(L.history || []).length && M.history.length > 0 };
   };
-  // Offer the cloud backup when it has more workouts than this phone; otherwise start uploading (after filling in
-  // what's missing here from a backup without workouts, when this phone has none either).
-  const takeCloudBackup = (b, hist, fill) => {
-    if (b && b.json && (b.n || 0) > hist.length) { setRsOffer(b); return null; }
-    cloudN.current = b ? b.n || 0 : 0;
-    let got = null;
-    if (fill && b && b.json && !hist.length) { try { got = fillFromCloud(b.json); } catch (_) {} }
-    cloudReady.current = true;
-    return got;
-  };
-  const checkCloudBackup = hist => cloud().loadBackup().then(b => takeCloudBackup(b, hist, false)).catch(() => {});
+  // Merge what the account has (sign-in, account switch), then uploads may start.
+  const takeCloudBackup = (b, uid) => { const got = applyRemote(b, uid); cloudReady.current = true; setSyncTick(x => x + 1); return got; };
   useEffect(() => {
     if (!cloudMem().uid || !loaded) return;
     cloud().init().then(u => {
       if (!u) { setCloudMem({ uid: null, prof: null }); setAcct({ st: "out" }); return; }
       // if Firebase ends the session (account deleted, signed out elsewhere…), the app follows
       try { cloud().onUser(x => { if (!x) { setCloudMem({ uid: null, prof: null }); setAcct(a => (a.st === "in" ? { st: "out" } : a)); } }); } catch (_) {}
-      return cloud().getProfile(u.uid).then(p => { setCloudMem({ uid: u.uid, prof: p, ...(cloudMem().owner ? {} : { owner: u.uid }), ...(cloudMem().memUid ? {} : { memUid: u.uid }) }); setAcct({ st: "in", uid: u.uid, prof: p }); checkCloudBackup(history); });
+      return cloud().getProfile(u.uid).then(p => { setCloudMem({ uid: u.uid, prof: p, ...(cloudMem().owner ? {} : { owner: u.uid }), ...(cloudMem().memUid ? {} : { memUid: u.uid }) }); setAcct({ st: "in", uid: u.uid, prof: p }); }); // the backup listener below merges the account's data
     }).catch(() => setAcct(a => ({ ...a, st: "in" }))); // offline: keep the remembered profile
   }, [loaded]);
   const signIn = async () => {
@@ -6426,7 +7108,9 @@ export default function App() {
       return { uid: u.uid, name: u.name || "", prof: p, got: null, switching: true };
     }
     setCloudMem({ owner: u.uid });
-    try { got = takeCloudBackup(await cloud().loadBackup(), history, true); } catch (_) {}
+    try { got = takeCloudBackup(await cloud().loadBackup(), u.uid); } catch (_) {}
+    // signed in during the first-start setup and the account has workouts: everything is there, the setup ends
+    if (got && got.restored && onboard !== null) { setOnboard(null); setSettings({ ...stRef.current.settings, onboarded: true }); window.scrollTo(0, 0); }
     return { uid: u.uid, name: u.name || "", prof: p, got };
   };
   const createProfile = async nick => { const p = await cloud().createProfile({ nick, global: false, pfp: await smallPfp(profile.pfp), ...cloudStats(history) }); setProf(p); sfxCheck(); };
@@ -6439,22 +7123,30 @@ export default function App() {
   const signOut = async () => {
     // a running workout isn't in the history yet, so it would be lost
     if (session && session.phase !== "summary") throw Object.assign(new Error("so-workout"), { code: "so-workout" });
-    if (!swOffer && (history.length > 0 || cloudN.current === 0)) {
-      const json = cloudBackupJson(history, profile, settings, kcal), key = json.replace(/"exportedAt":"[^"]*",/, "");
+    if (!swOffer) {
+      let D = { history, profile, settings, kcal };
+      // 1.7.0: not merged with the account yet (offline start, signing out right away): merge with the cloud copy first,
+      // so the upload can't replace anything that is only there
+      if (!cloudReady.current) {
+        try {
+          const b = await cloud().loadBackup(), d = b && b.json ? JSON.parse(b.json) : null;
+          if (d && BACKUP_IDS.includes(d.app) && Array.isArray(d.history)) { const M = mergeAll({ ...D, sync: syncMem() }, { ...d, sync: d.sync || {} }, syncMem().acct !== acct.uid); setSyncMem(M.sync); D = M; }
+        } catch (_) { throw Object.assign(new Error("so-backup"), { code: "so-backup" }); }
+      }
+      const json = cloudBackupJson(D.history, D.profile, D.settings, D.kcal), key = json.replace(/"exportedAt":"[^"]*",/, "");
       // already in the cloud (this session, or the last upload before a restart had exactly this content)
       if (key !== lastCloud.current && strHash(key) !== cloudMem().bkHash) {
-        // the cloud has more workouts than this phone (restore offer still open): uploading would replace them
-        if (rsOffer) throw Object.assign(new Error("so-backup"), { code: "so-backup" });
-        try { await cloud().saveBackup(json, history.length); } catch (_) { throw Object.assign(new Error("so-backup"), { code: "so-backup" }); }
+        try { await cloud().saveBackup(json, D.history.length); } catch (_) { throw Object.assign(new Error("so-backup"), { code: "so-backup" }); }
       }
     }
     if (settings.autoBackup) { try { runAutoBackup(); } catch (_) {} }
     const tk = cloudMem().pushTok; if (tk) { await cloud().dropPush(tk).catch(() => {}); await pushDeleteToken(); }
     await cloud().signOut();
     const kept = swapAcctMem(null);
-    try { localStorage.setItem(CLOUD_KEY, JSON.stringify({ pushAsked: kept.pushAsked, acctMem: kept.acctMem })); localStorage.removeItem(AUTOBK_KEY); } catch (_) {}
+    try { localStorage.setItem(CLOUD_KEY, JSON.stringify({ pushAsked: kept.pushAsked, acctMem: kept.acctMem })); localStorage.removeItem(AUTOBK_KEY); localStorage.removeItem(SYNC_KEY); } catch (_) {}
+    seenSync.current = {}; lastRemoteKey.current = ""; lastUpKey.current = "";
     setSocial(x => ({ ...x, reqs: null, friends: null, chats: null, blocked: [], read: {} }));
-    setCloudBk(null); cloudReady.current = false; cloudN.current = null; lastCloud.current = ""; setChatWith(null); setRsOffer(null); setSwOffer(null); setAcct({ st: "out" });
+    setCloudBk(null); cloudReady.current = false; cloudN.current = null; lastCloud.current = ""; setChatWith(null); setSwOffer(null); setAcct({ st: "out" });
     setSession(null); setSessionOpen(true); setLive(null);
     setHistory([]); setProfile({ name: "User", pfp: null, freezeDays: [], streakResetTs: 0 });
     setSettings({ ...DEFAULT_SETTINGS, seenVersion: settings.seenVersion, seenApp: true });
@@ -6462,7 +7154,7 @@ export default function App() {
     setScreen("train"); setMenuOpen(false); window.scrollTo(0, 0);
     setOnboard(0);
   };
-  const goneLocal = () => { try { const m = cloudMem(), all = { ...(m.acctMem || {}) }; delete all[acct.uid]; localStorage.setItem(CLOUD_KEY, JSON.stringify({ pushAsked: m.pushAsked, acctMem: all })); } catch (_) {} setCloudBk(null); cloudReady.current = false; cloudN.current = null; setChatWith(null); setAcct({ st: "out" }); };
+  const goneLocal = () => { try { const m = cloudMem(), all = { ...(m.acctMem || {}) }; delete all[acct.uid]; localStorage.setItem(CLOUD_KEY, JSON.stringify({ pushAsked: m.pushAsked, acctMem: all })); localStorage.removeItem(SYNC_KEY); } catch (_) {} setCloudBk(null); cloudReady.current = false; cloudN.current = null; setChatWith(null); setAcct({ st: "out" }); };
   const deleteAccount = async () => {
     try { await cloud().deleteAccount({ ...acct.prof, sent: cloudMem().sent || [] }); }
     catch (e) {
@@ -6472,12 +7164,6 @@ export default function App() {
     }
     goneLocal();
     return T("acDeleted");
-  };
-  const applyCloudJson = json => {
-    const d = JSON.parse(json);
-    if (!BACKUP_IDS.includes(d.app) || !Array.isArray(d.history)) throw Object.assign(new Error("bad"), { code: "bad-backup" });
-    if (d.kcal && kcal) { const keep = {}; ["steps", "food", "foodItems", "healthOn", "weight", "wTs", "wSrc", "height", "hTs", "hSrc"].forEach(x => { if (kcal[x] !== undefined && d.kcal[x] === undefined) keep[x] = kcal[x]; }); d.kcal = { ...d.kcal, ...keep }; }
-    importAll(d);
   };
   // 1.6.2: the phone holds another account's data. "Fresh": wipe it and take this account's cloud backup (if any);
   // "keep": this phone's data now belongs to this account (as before 1.6.2).
@@ -6489,6 +7175,9 @@ export default function App() {
     setProfile({ name: o.nick || "User", pfp: null, freezeDays: [], streakResetTs: 0, ...((d && d.profile) || {}) });
     setSettings({ ...DEFAULT_SETTINGS, onboarded: true, seenVersion: settings.seenVersion, seenApp: true, ...((d && d.settings) || {}), ...(d && d.settings ? {} : { lang: settings.lang }) });
     setKcal(d && d.kcal ? d.kcal : null);
+    // 1.7.0: this account's sync memory comes with its data (its deleted workouts stay deleted)
+    try { localStorage.setItem(SYNC_KEY, JSON.stringify({ acct: o.uid, ...((d && d.sync) || {}) })); } catch (_) {}
+    seenSync.current = {}; lastRemoteKey.current = d ? syncKey(d) : ""; lastUpKey.current = "";
     setCloudMem({ owner: o.uid }); cloudN.current = d ? o.b.n || 0 : 0; lastCloud.current = ""; cloudReady.current = true; sfxCheck();
   };
   // ✕ / back / Cancel: don't use this account here after all; it is signed out again and nothing on the phone changes
@@ -6502,9 +7191,14 @@ export default function App() {
   };
   const swKeep = () => {
     const o = swOffer; setSwOffer(null); if (!o) return;
-    setCloudMem({ owner: o.uid }); try { takeCloudBackup(o.b, history, true); } catch (_) {} sfxCheck();
+    // 1.7.0: keep = this phone's details win (marked as just changed), its workouts are joined with the account's
+    const now = Date.now();
+    setSyncMem({ acct: o.uid, mod: { profile: now, settings: now, kcal: now } });
+    setCloudMem({ owner: o.uid }); try { takeCloudBackup(o.b, o.uid); } catch (_) {} sfxCheck();
   };
-  const restoreFromCloud = async () => { const b = await cloud().loadBackup(); if (!b || !b.json) return T("acNoBackup"); applyCloudJson(b.json); cloudReady.current = true; cloudN.current = b.n || 0; return T("msgRestored"); };
+  // Settings → Account & cloud → "Restore from the cloud": since 1.7.0 the account's data is joined with this phone's
+  // (the same merge as the live sync), so nothing on either side is lost.
+  const restoreFromCloud = async () => { const b = await cloud().loadBackup(); if (!b || !b.json) return T("acNoBackup"); takeCloudBackup(b, acct.uid); return T("msgRestored"); };
   // Live friend requests, friends and chats while the app is open (1.5.0). New requests and messages show a short
   // in-app notice (LiveNotice) unless that chat is open; the counts show on ☰, in the menu and on the Friends tabs.
   const [social, setSocial] = useState({ reqs: null, friends: null, chats: null, blocked: cloudMem().blocked || [], read: cloudMem().read || {} });
@@ -6516,7 +7210,8 @@ export default function App() {
   const chatWithRef = useRef(null); chatWithRef.current = screen === "friends" ? chatWith : null;
   const busyRef = useRef(false); busyRef.current = !!(session && session.phase !== "summary");
   const onFriendsRef = useRef(false); onFriendsRef.current = screen === "friends" && !(session && sessionOpen);
-  const setBlocked = bl => { setCloudMem({ blocked: bl }); setSocial(x => ({ ...x, blocked: bl })); };
+  // (a block that arrives from another device also hides that person's open friend request at once)
+  const setBlocked = bl => { setCloudMem({ blocked: bl }); setSocial(x => ({ ...x, blocked: bl, reqs: x.reqs ? x.reqs.filter(r => !bl.includes(r.uid)) : x.reqs })); };
   useEffect(() => { const f = () => setSocial(x => ({ ...x, read: cloudMem().read || {} })); window.addEventListener("hw-read", f); return () => window.removeEventListener("hw-read", f); }, []);
   useEffect(() => {
     if (acct.st !== "in" || !acct.prof) { setSocial(x => ({ ...x, reqs: null, friends: null, chats: null })); return; }
@@ -6590,31 +7285,123 @@ export default function App() {
     }, 2500);
     return () => { dead = true; clearTimeout(t); };
   }, [acct.st, acct.prof, history, profile.pfp, loaded, profLoaded, swOffer]);
-  // Automatic cloud backup, a few seconds after any change. Without workouts here only while the cloud copy has none
-  // either (setup details, 1.5.0), so an empty phone never wipes workouts saved in the cloud.
+  // Profile card (1.7.0): who may open it (vis, read from the cloud once per start: it may have been changed on another
+  // phone or the website), the stats part (when it changes, and once a day for the streak), and the block list the
+  // rules use to keep blocked people off it.
+  const [cardVis, setCardVisMap] = useState(() => cloudMem().cardVis || {});
+  const myVis = acct.st === "in" ? cardVis[acct.uid] : undefined;
+  const putVis = (u, v) => setCardVisMap(m => { const n = { ...m, [u]: v }; setCloudMem({ cardVis: n }); return n; });
+  const visRead = useRef("");
+  const [modHidden, setModHidden] = useState(false); // 1.7.0: hidden from the world top 50 after reports (mod/{uid})
   useEffect(() => {
-    if (acct.st !== "in" || !acct.prof || !cloudReady.current || swOffer || !loaded || !settingsLoaded || !profLoaded || !kcalLoaded || (!history.length && cloudN.current !== 0)) return;
+    if (acct.st !== "in" || !acct.prof || visRead.current === acct.uid) return;
+    const u = acct.uid; visRead.current = u;
+    cloud().getCard(u).then(c => putVis(u, c && CARD_VIS.includes(c.vis) ? c.vis : (cloudMem().cardVis || {})[u] || "friends")).catch(() => { visRead.current = ""; });
+    cloud().getMod().then(m => setModHidden(!!m.hidden)).catch(() => {});
+  }, [acct.st, acct.prof && acct.prof.code]);
+  const setVis = async v => {
+    const u = acct.uid, old = cardVis[u] || "friends";
+    putVis(u, v);
+    try { await cloud().setCardVis(v); sfxCheck(); } catch (e) { putVis(u, old); throw e; }
+  };
+  useEffect(() => {
+    if (acct.st !== "in" || !acct.prof || !loaded || !profLoaded || swOffer) return;
+    let dead = false;
     const t = setTimeout(() => {
-      const json = cloudBackupJson(history, profile, settings, kcal);
-      const key = json.replace(/"exportedAt":"[^"]*",/, "");
-      if (key === lastCloud.current) return;
-      const save = bk => { setCloudMem({ bk }); setCloudBk(bk); };
-      cloud().saveBackup(json, history.length).then(() => { lastCloud.current = key; setCloudMem({ bkHash: strHash(key) }); cloudN.current = history.length; save({ ts: Date.now(), ok: true }); })
-        .catch(e => save({ ts: Date.now(), ok: false, err: String((e && (e.code || e.message)) || e).slice(0, 120) }));
-    }, 6000);
+      const c = cardData(history, profile), key = acct.uid + dateKey() + JSON.stringify(c);
+      if (dead || cloudMem().cardSynced === key) return;
+      cloud().saveCard(c).then(() => setCloudMem({ cardSynced: key })).catch(() => {});
+    }, 3500);
+    return () => { dead = true; clearTimeout(t); };
+  }, [acct.st, acct.prof, history, profile, loaded, profLoaded, swOffer]);
+  // 1.7.0 (Michael: reading or deleting a chat on one device didn't reach the others): who you blocked, which chats you
+  // read and which you deleted for yourself follow the account. Blocking can't be undone in the app, so both lists are
+  // joined; read and deleted times only move forward, so per chat the later time wins. Each device listens and sends only
+  // what the server doesn't have yet.
+  const blkCloud = useRef(null), memCloud = useRef(null);
+  const [blkTick, setBlkTick] = useState(0);
+  useEffect(() => {
+    if (acct.st !== "in" || !acct.prof || swOffer) return;
+    let off = null, offM = null, dead = false, t = 0;
+    blkCloud.current = null; memCloud.current = null;
+    const pushMem = () => {
+      clearTimeout(t);
+      t = setTimeout(() => {
+        const c = memCloud.current; if (!c || dead) return;
+        const m = cloudMem(), r = aheadOf(m.read, c.read), x = aheadOf(m.clr, c.clr);
+        if (!Object.keys(r).length && !Object.keys(x).length) return;
+        memCloud.current = { read: maxMerge(c.read, r), clr: maxMerge(c.clr, x) };
+        cloud().saveChatMem({ ...(Object.keys(r).length ? { read: r } : {}), ...(Object.keys(x).length ? { clr: x } : {}) }).catch(() => { if (memCloud.current) memCloud.current = c; });
+      }, 1200);
+    };
+    try {
+      off = cloud().watchBlocks(v => {
+        if (dead || (v && v.local)) return;
+        const cl = (v && v.b) || [], loc = cloudMem().blocked || [], all = [...new Set([...loc, ...cl])].slice(-500);
+        blkCloud.current = cl;
+        if (all.length > loc.length) setBlocked(all); else setBlkTick(x => x + 1);
+      }, () => {});
+      offM = cloud().watchChatMem(v => {
+        if (dead || (v && v.local)) return;
+        const c = { read: (v && v.read) || {}, clr: (v && v.clr) || {} }, m = cloudMem();
+        memCloud.current = c;
+        const read = maxMerge(m.read, c.read), clr = maxMerge(m.clr, c.clr);
+        if (Object.keys(aheadOf(c.read, m.read)).length || Object.keys(aheadOf(c.clr, m.clr)).length) { setCloudMem({ read, clr }); window.dispatchEvent(new Event("hw-read")); }
+        pushMem();
+      }, () => {});
+    } catch (_) {}
+    window.addEventListener("hw-read", pushMem);
+    return () => { dead = true; clearTimeout(t); window.removeEventListener("hw-read", pushMem); try { off && off(); offM && offM(); } catch (_) {} };
+  }, [acct.st, acct.uid, !!acct.prof, !!swOffer]);
+  useEffect(() => {
+    const cl = blkCloud.current;
+    if (acct.st !== "in" || !acct.prof || swOffer || !cl) return;
+    const bl = social.blocked || [];
+    if (bl.every(u => cl.includes(u))) return;
+    const all = [...new Set([...cl, ...bl])].slice(-500);
+    const t = setTimeout(() => cloud().saveBlocks(all).then(() => { blkCloud.current = all; }).catch(() => {}), 800);
     return () => clearTimeout(t);
-  }, [acct.st, acct.prof, history, profile, settings, kcal, loaded, settingsLoaded, profLoaded, kcalLoaded, rsOffer, swOffer]);
+  }, [acct.st, acct.prof && acct.prof.code, (social.blocked || []).join(","), swOffer, blkTick]);
+  // The account's data changes on another device (or the website): merged in here while the app is open (1.7.0).
+  useEffect(() => {
+    if (acct.st !== "in" || !acct.prof || swOffer || !loaded || !settingsLoaded || !profLoaded || !kcalLoaded) return;
+    let off = null, dead = false;
+    const uid = acct.uid;
+    try { off = cloud().watchBackup(b => { if (dead || (b && b.local)) return; applyRemote(b, uid); cloudReady.current = true; setSyncTick(x => x + 1); }, () => {}); } catch (_) {}
+    return () => { dead = true; try { off && off(); } catch (_) {} };
+  }, [acct.st, acct.uid, !!acct.prof, !!swOffer, loaded, settingsLoaded, profLoaded, kcalLoaded]);
+  // What changed here: old workouts get their id once; profile, synced settings and calorie details remember when they
+  // were changed on this device (the newer side wins when merging).
+  useEffect(() => { if (loaded && history.some(e => !e.id)) setHistory(h => withIds(h)); }, [history, loaded]);
+  const track = (part, v) => { const sn = seenSync.current; if (sn[part] === undefined) { sn[part] = v; return; } if (sn[part] !== v) { sn[part] = v; setSyncMem({ mod: { ...(syncMem().mod || {}), [part]: Date.now() } }); } };
+  useEffect(() => { if (profLoaded) track("profile", stable(profile)); }, [profile, profLoaded]);
+  useEffect(() => { if (settingsLoaded) track("settings", stable(pickSync(settings))); }, [settings, settingsLoaded]);
+  useEffect(() => { if (kcalLoaded) track("kcal", stable(kcalShared(kcal))); }, [kcal, kcalLoaded]);
+  // Upload a few seconds after any change, once this device has merged the account's data (so nothing there is
+  // overwritten), and only when the cloud doesn't have exactly this already.
+  const upKey = () => syncKey({ history, profile, settings, kcal, sync: syncMem() });
+  useEffect(() => {
+    if (acct.st !== "in" || !acct.prof || !cloudReady.current || swOffer || !loaded || !settingsLoaded || !profLoaded || !kcalLoaded) return;
+    const t = setTimeout(() => {
+      const dk = upKey();
+      if (dk === lastRemoteKey.current || dk === lastUpKey.current) return;
+      const json = cloudBackupJson(history, profile, settings, kcal), key = json.replace(/"exportedAt":"[^"]*",/, "");
+      const save = bk => { setCloudMem({ bk }); setCloudBk(bk); };
+      cloud().saveBackup(json, history.length).then(() => { lastUpKey.current = dk; lastCloud.current = key; setCloudMem({ bkHash: strHash(key) }); cloudN.current = history.length; save({ ts: Date.now(), ok: true }); })
+        .catch(e => save({ ts: Date.now(), ok: false, err: String((e && (e.code || e.message)) || e).slice(0, 120) }));
+    }, 4000);
+    return () => clearTimeout(t);
+  }, [acct.st, acct.prof, history, profile, settings, kcal, loaded, settingsLoaded, profLoaded, kcalLoaded, swOffer, syncTick]);
   // 1.6.5 (Michael, Oct 17): "Back up now" in Settings → Account & cloud, the same upload as the automatic one, right
-  // away. Same safety rule: a phone without workouts never replaces a cloud copy that has some.
+  // away (after this device has merged the account's data).
   const cloudBackupNow = async () => {
     if (acct.st !== "in" || !acct.prof) throw new Error("not-signed-in");
-    if (swOffer || rsOffer || !cloudReady.current) return T("acBkNowWait"); // the cloud copy isn't compared with this phone yet
-    if (!history.length && cloudN.current !== 0) return T("acBkNowEmpty");
-    const json = cloudBackupJson(history, profile, settings, kcal), key = json.replace(/"exportedAt":"[^"]*",/, "");
+    if (swOffer || !cloudReady.current) return T("acBkNowWait"); // the cloud copy isn't merged with this phone yet
+    const dk = upKey(), json = cloudBackupJson(history, profile, settings, kcal), key = json.replace(/"exportedAt":"[^"]*",/, "");
     const save = bk => { setCloudMem({ bk }); setCloudBk(bk); };
     try { await cloud().saveBackup(json, history.length); }
     catch (e) { save({ ts: Date.now(), ok: false, err: String((e && (e.code || e.message)) || e).slice(0, 120) }); throw e; }
-    lastCloud.current = key; setCloudMem({ bkHash: strHash(key) }); cloudN.current = history.length; save({ ts: Date.now(), ok: true });
+    lastUpKey.current = dk; lastCloud.current = key; setCloudMem({ bkHash: strHash(key) }); cloudN.current = history.length; save({ ts: Date.now(), ok: true });
     return "✓ " + T("acBkNowDone");
   };
   const [newsAt, setNewsAt] = useState(null);
@@ -6697,6 +7484,11 @@ export default function App() {
     }).catch(() => {});
   }, [loaded]);
   const resume = () => { sfxTap(); setMenuOpen(false); setSessionOpen(true); };
+  // 1.7.0: on a wide screen the menu is a side panel that stays open (not during the setup or an open workout)
+  const side = useSide();
+  const sideOn = side && loaded && onboard === null && !(session && sessionOpen);
+  useLayoutEffect(() => { document.documentElement.style.setProperty("--side", sideOn ? "288px" : "0px"); }, [sideOn]);
+  useEffect(() => { if (sideOn && menuOpen) setMenuOpen(false); }, [sideOn, menuOpen]);
   // 1.6.5 (Michael, Oct 17: a friend's link opened the website): the app owns …/hw-app/add/ links (App Links,
   // assetlinks.json on mikydon.github.io), so a tapped link opens the app on Friends with the code filled in.
   const [addSeq, setAddSeq] = useState(0);
@@ -6714,7 +7506,7 @@ export default function App() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: LOOK === "liquid" ? "transparent" : C.ink, color: C.chalk, fontFamily: BODY }}>
+    <div style={{ minHeight: "100vh", background: LOOK === "liquid" ? "transparent" : C.ink, color: C.chalk, fontFamily: BODY, paddingLeft: "var(--side, 0px)" }}>
       {(LOOK === "liquid" || LOOK === "glass") && <LiquidBg />}
       <style>{`
         button:focus-visible{outline:3px solid ${C.signal};outline-offset:2px}
@@ -6734,7 +7526,10 @@ export default function App() {
         .b3d:active{transform:translateY(4px); box-shadow:0 1px 0 var(--e, transparent)}
         @keyframes scrIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
         .scr{animation:scrIn ${MO.t2} ${MO.ease} both}
-        :root{--sat:var(--safe-area-inset-top,env(safe-area-inset-top,0px));--sab:var(--safe-area-inset-bottom,env(safe-area-inset-bottom,0px))}
+        :root{--sat:var(--safe-area-inset-top,env(safe-area-inset-top,0px));--sab:var(--safe-area-inset-bottom,env(safe-area-inset-bottom,0px));--colMax:460px}
+        @media (min-width: 760px){:root{--colMax:1180px}.sheetWrap{align-items:center!important}}
+        .swGrid{display:grid;align-items:start;padding:0 9px}.swGrid>.swPage{min-width:0;box-sizing:border-box;padding:0 9px 12px}
+        .colsW{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 18px;align-items:start}.colsW>div{min-width:0}.colsW>div>:first-child,.swGrid>.swPage>:first-child{margin-top:0!important}
         @keyframes shIn{from{opacity:0;transform:translateY(48px)}to{opacity:1;transform:none}} @keyframes shOut{from{opacity:1;transform:none}to{opacity:0;transform:translateY(48px)}}
         .sheetDim{animation:dFadeIn ${MO.t2} ease both} .sheetWrap>.sheetBox{animation:shIn ${MO.t3} ${MO.pop} both}
         .sheetGhost>.sheetDim{animation:dFadeOut ${MO.out} ease-in both} .sheetGhost>.sheetGhostBox{box-sizing:border-box;animation:shOut ${MO.out} ${MO.exit} both}
@@ -6746,8 +7541,40 @@ export default function App() {
         @keyframes bump{0%{transform:scale(.82)}55%{transform:scale(1.12)}100%{transform:scale(1)}}
         .bump{animation:bump ${MO.t1} ${MO.spring}}
         @keyframes pop{0%{transform:scale(0);opacity:0}60%{transform:scale(1.2);opacity:1}100%{transform:scale(1);opacity:1}}
+        .revCard{position:absolute;inset:0;transform-style:preserve-3d;transition:transform .62s ${MO.pop};animation:revWob var(--wt) ease-in-out infinite alternate}
+        .revCard.on{transform:rotateY(180deg);animation:revPop .82s cubic-bezier(.3,.7,.25,1)}
+        .revBack,.revFace{position:absolute;inset:0;border-radius:24px;backface-visibility:hidden;-webkit-backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:22px 18px;box-sizing:border-box}
+        .revFace{transform:rotateY(180deg)}
+        @keyframes revWob{from{transform:rotate(calc(var(--wob) * -1)) scale(.98)}to{transform:rotate(var(--wob)) scale(1.02)}}
+        @keyframes revPop{0%{transform:rotateY(0) rotate(0) scale(1)}8%{transform:rotateY(0) rotate(-5deg) scale(1.03)}16%{transform:rotateY(0) rotate(5deg) scale(1.06)}24%{transform:rotateY(0) rotate(-4deg) scale(1.08)}34%{transform:rotateY(0) rotate(0) scale(1.1)}68%{transform:rotateY(115deg) rotate(0) scale(1.18)}100%{transform:rotateY(180deg) rotate(0) scale(1)}}
+        .revRays{position:absolute;left:50%;top:50%;width:200vmax;height:200vmax;margin:-100vmax 0 0 -100vmax;border-radius:50%;-webkit-mask:radial-gradient(closest-side,#000 8%,transparent 42%);mask:radial-gradient(closest-side,#000 8%,transparent 42%);transition:opacity .5s ease;animation:revSpin var(--rs) linear infinite;pointer-events:none}
+        @keyframes revSpin{to{transform:rotate(360deg)}}
+        .revBit{position:absolute;left:0;top:0;animation:revFly var(--d) cubic-bezier(.15,.8,.3,1) .44s both}
+        @keyframes revFly{0%{transform:translate(-50%,-50%) scale(.3);opacity:1}80%{opacity:1}100%{transform:translate(calc(var(--tx) - 50%),calc(var(--ty) - 50%)) scale(1);opacity:0}}
+        .revFlash{position:fixed;inset:-50vmax;background:#fff;pointer-events:none;animation:revFlash .55s ease-out .44s both}
+        @keyframes revFlash{0%{opacity:0}15%{opacity:var(--fo)}100%{opacity:0}}
+        .revIcon{animation:revIcon .7s ${MO.spring} .5s both,revBob 2.2s ease-in-out 1.3s infinite alternate}
+        @keyframes revBob{from{transform:translateY(0) scale(1)}to{transform:translateY(-7px) scale(1.04)}}
+        @keyframes revIcon{0%{transform:scale(.2) rotate(-25deg)}100%{transform:scale(1) rotate(0)}}
+        .revStamp{animation:revStamp .45s ${MO.spring} .72s both}
+        @keyframes revStamp{0%{transform:scale(2.4);opacity:0}100%{transform:scale(1);opacity:1}}
+        .revTap{animation:revTap 1.1s ease-in-out infinite alternate}
+        @keyframes revTap{from{opacity:.55}to{opacity:1}}
+        .revShake{animation:revShake .5s ease .46s}
+        .revDeal{animation:revDeal .55s ${MO.pop} both}
+        @keyframes revDeal{from{transform:translateY(55vh) rotate(-18deg) scale(.6);opacity:0}to{transform:none;opacity:1}}
+        .revTw{position:absolute;border-radius:2px;transform:translate(-50%,-50%) rotate(45deg) scale(0);animation:revTw var(--du) ease-in-out var(--dl) infinite}
+        @keyframes revTw{0%,100%{transform:translate(-50%,-50%) rotate(45deg) scale(0);opacity:0}50%{transform:translate(-50%,-50%) rotate(45deg) scale(1);opacity:1}}
+        .revPrism{animation:revHue 2.6s linear infinite}
+        @keyframes revHue{to{filter:hue-rotate(360deg)}}
+        @keyframes revShake{0%,100%{transform:translate(0,0)}15%{transform:translate(-7px,3px)}30%{transform:translate(6px,-4px)}45%{transform:translate(-5px,-2px)}60%{transform:translate(4px,3px)}80%{transform:translate(-2px,1px)}}
+        .foil{position:relative;overflow:hidden}.foil::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(105deg,transparent 38%,rgba(255,255,255,.16) 46%,rgba(255,255,255,.32) 50%,rgba(255,255,255,.16) 54%,transparent 62%);transform:translateX(-120%);animation:foil 3.4s ease-in-out infinite}
+        @keyframes foil{0%,55%{transform:translateX(-120%)}100%{transform:translateX(120%)}}.revFace.foil{position:absolute}
+        .nearPulse{animation:nearPulse 1.2s ease-in-out infinite alternate}
+        @keyframes nearPulse{from{opacity:.65}to{opacity:1}}
         .pop{animation:pop ${MO.t3} ${MO.spring} both}
         @keyframes cardIn{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:none}} .cardIn{animation:cardIn ${MO.t3} ${MO.pop} both}
+        @keyframes barIn{from{transform:scaleX(0)}to{transform:none}} .pvBar{transform-origin:left;animation:barIn ${MO.fill} ${MO.ease} .15s both}
         @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
         .pulse{animation:pulse .5s ease-in-out infinite}
         @keyframes wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-14deg)}75%{transform:rotate(14deg)}}
@@ -6771,28 +7598,21 @@ export default function App() {
         .tbOut{position:sticky;top:0;z-index:20;display:flow-root;pointer-events:none;padding:calc(var(--sat) + 6px) 10px 2px}
         .tbOut::before{content:"";position:absolute;left:0;right:0;top:0;height:calc(var(--sat) + 22px);background:linear-gradient(180deg,var(--tbFade) var(--sat),transparent);opacity:0;visibility:hidden;transition:opacity .35s ease,visibility 0s .35s}
         .tbOut.fl::before{opacity:1;visibility:visible;transition:opacity .35s ease}
-        .tbWrap{position:relative;max-width:440px;margin:0 auto}
+        .tbWrap{position:relative;max-width:calc(var(--colMax) - 20px);margin:0 auto}
         .tbBox{pointer-events:auto;position:relative;z-index:3;display:flex;align-items:center;gap:8px;padding:11px 13px 11px 19px}
         .tbPill{position:absolute;z-index:2;inset:0;border-radius:24px;opacity:0;visibility:hidden;transition:opacity .22s ease,visibility 0s .22s}
         .tbOut.fl:not([data-goo]) .tbPill{opacity:1;visibility:visible;transition:opacity .22s ease}
         .tbGoo{position:absolute;z-index:1;pointer-events:none;left:calc(-1 * var(--tbExt, 10px));right:calc(-1 * var(--tbExt, 10px));bottom:0;top:calc(-6px - var(--sat));visibility:hidden}
         @media (max-width: 380px){.tbOut{padding-left:6px;padding-right:6px}.tbBox{padding:11px 9px 11px 13px;gap:6px}}
         @media (prefers-reduced-motion: reduce){.tbOut::before,.tbOut.fl::before,.tbPill,.tbOut.fl .tbPill{transition:none}}
-        @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}.conf{display:none}}
+        .sysEmo,.sysEmo *{font-family:${BODY_SYS}!important}
+        @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}.conf,.revBit,.revFlash,.revTw{display:none}}
       `}</style>
       {!loaded ? (
         <div style={{ padding: 40, display: "flex", flexDirection: "column", alignItems: "center", gap: 12, color: C.dim }}><Logo size={64} />{T("loading")}</div>
       ) : (
         <>
           {swOffer && <SwitchAccountSheet onFresh={swFresh} onKeep={swKeep} onCancel={swCancel} />}
-          {rsOffer && !swOffer && <CloudRestoreSheet offer={rsOffer} onClose={() => setRsOffer(null)}
-            onRestore={() => {
-              try { applyCloudJson(rsOffer.json); cloudReady.current = true; cloudN.current = rsOffer.n || 0; sfxCheck(); } catch (_) {}
-              setRsOffer(null);
-              // restored during the first-start setup: everything is there, so the setup ends
-              if (onboard !== null) { setOnboard(null); window.scrollTo(0, 0); }
-            }}
-            onKeep={() => { cloudReady.current = true; cloudN.current = rsOffer.n || 0; setRsOffer(null); }} />}
           {onboard !== null && !session ? (
             <Onboarding start={onboard} profile={profile} setProfile={setProfile} kcal={kcal} setKcal={setKcal} acct={acct} onSignIn={signIn} onCreate={createProfile}
               onDone={() => { setOnboard(null); setUi({ ...ui, setupHidden: false }); if (!settings.onboarded) setSettings({ ...settings, onboarded: true }); window.scrollTo(0, 0); }} />
@@ -6808,25 +7628,27 @@ export default function App() {
           )}
           {(!session || !sessionOpen) && (
             <>
-              <TopBar head={screen === "friends" ? topHead : null} badge={socialCount} dlPct={dl && dl.kind === "downloading" ? dl.pct || 0 : null} screen={screen} history={history} menuOpen={menuOpen} onGo={go} onMenu={() => { sfxTap(); setMenuOpen(o => !o); }} />
+              <TopBar side={sideOn} head={screen === "friends" ? topHead : null} badge={socialCount} dlPct={dl && dl.kind === "downloading" ? dl.pct || 0 : null} screen={screen} history={history} menuOpen={menuOpen} onGo={go} onMenu={() => { sfxTap(); setMenuOpen(o => !o); }} />
               <div key={screen}>
                 {screen === "train" && <TrainTab settings={settings} setSettings={setSettings} onSetup={st => setOnboard(st)} dl={dlHidden ? null : dl} onDlClose={() => setDlHidden(true)} kcal={kcal} setKcal={setKcal} history={history} onStart={start} onFreeze={applyFreeze} ui={ui} setUi={setUi} active={session} onResume={resume} profile={profile} onGo={go} upd={updCard ? { open: () => { setUpdCard(false); setNewsAt(APP_VERSION); setNewsOpen(true); }, close: () => setUpdCard(false) } : null}
                   apk={apkUpd && !apkHidden ? { info: apkUpd, close: () => setApkHidden(true) } : null} />}
                 {screen === "history" && <HistoryTab history={history} editDate={histEdit} onEditOpened={() => setHistEdit(null)}
-                  onDelete={idx => editHistory(h => h.filter((_, i) => i !== idx))}
+                  onDelete={idx => { const e = history[idx]; if (e) syncTomb("del", entryId(e)); editHistory(h => h.filter((_, i) => i !== idx)); }}
                   onSaveEntry={(idx, entry) => editHistory(h => (idx === null ? [...h, entry] : h.map((e, i) => (i === idx ? entry : e))))} />}
-                {screen === "profile" && <ProfileTab history={history} profile={profile} setProfile={setProfile} onFreeze={applyFreeze} kcal={kcal} />}
+                {screen === "profile" && <ProfileTab history={history} profile={profile} setProfile={setProfile} onFreeze={applyFreeze} kcal={kcal} acct={acct} vis={myVis} onVis={setVis} onFriends={() => go("friends")} />}
                 {screen === "calories" && <Calories history={history} profile={profile} setProfile={setProfile} kcal={kcal} setKcal={setKcal} />}
                 {screen === "settings" && <SettingsTab initPage={setPage0} settings={settings} setSettings={setSettings} history={history} profile={profile} setProfile={setProfile}
                   kcal={kcal} autoBk={autoBk} onAutoBackup={runAutoBackup}
                   onImport={importAll} acct={acct} cloudBk={cloudBk} onAcctOpen={() => go("friends")} onCloudRestore={restoreFromCloud} onCloudBackupNow={cloudBackupNow} onSignOut={signOut} onDeleteAccount={deleteAccount} />}
                 {screen === "friends" && <OpenInApp />}
-                {screen === "friends" && <FriendsTab key={"fr" + addSeq} setTopHead={setTopHead} acct={acct} history={history} profile={profile} social={social} chatWith={chatWith} setChatWith={setChatWith} onBlocked={setBlocked} onSignIn={signIn} onCreate={createProfile} onRename={renameNick} onSetGlobal={setGlobal} />}
+                {screen === "friends" && <FriendsTab key={"fr" + addSeq} modHidden={modHidden} setTopHead={setTopHead} acct={acct} history={history} profile={profile} social={social} chatWith={chatWith} setChatWith={setChatWith} onBlocked={setBlocked} onSignIn={signIn} onCreate={createProfile} onRename={renameNick} onSetGlobal={setGlobal} />}
               </div>
               {session && session.phase !== "summary" && <MiniPlayer session={session} live={live} onOpen={resume} />}
               {exitAsk && <ExitPrompt history={history} session={session} onStay={() => { sfxTap(); setExitAsk(false); }} onLeave={() => { setExitAsk(false); exitApp(); }} />}
             </>
           )}
+          {sideOn && <SideNav apk={apkUpd} busy={!!(session && session.phase !== "summary")} badge={socialCount} gh={gh} dl={dl} screen={screen} history={history} profile={profile} session={session && session.phase !== "summary" ? session : null}
+            onGo={go} onResume={resume} onNews={() => setNewsOpen(true)} />}
           <MenuDrawer apk={apkUpd} busy={!!(session && session.phase !== "summary")} badge={socialCount} gh={gh} dl={dl} open={menuOpen} screen={screen} history={history} profile={profile} session={session && session.phase !== "summary" ? session : null}
             onGo={go} onResume={resume} onClose={() => setMenuOpen(false)} onNews={() => { setMenuOpen(false); setNewsOpen(true); }} />
           {notice && <LiveNotice n={notice} people={Object.fromEntries([...(social.friends || []), ...(social.reqs || [])].map(x => [x.uid, x]))} onClose={() => setNotice(null)}

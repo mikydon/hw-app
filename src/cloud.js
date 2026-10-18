@@ -14,6 +14,15 @@
 //   friends/{me}/list/{uid}  {ts}: written for both people in one batch when a request is accepted
 //   backups/{uid}            {json, ts, n}: the automatic cloud backup (owner only)
 //   reports/{auto id}        {by, about, reason, ts}: a reported profile (create only; read in the console)
+//   cards/{uid}              {vis, lvl, xp, streak, best, n, reps, min, prs, since, ach: {badge: tier}, av: {badge: value},
+//                            rk: {exercise: best}, show: [showcase fields], ts}:
+//                            the profile others can open (1.7.0, like Steam); vis = friends | all | none decides who
+//   blocks/{uid}             {b: [uids], ts}: who you blocked (1.7.0, owner only); keeps them off your card; your other
+//                            devices read it too
+//   chatmem/{uid}            {read: {chatId: time}, clr: {chatId: time}, ts}: chats read / deleted for you (1.7.0, owner
+//                            only), so every device of the account knows them
+//   mod/{uid}                {hidden, n, ts}: reported by several people → out of the world top 50 (1.7.0; written by
+//                            the push server only, the person can read it)
 //   push/{uid}               {t: [FCM tokens of your phones], lang, off, blk: [blocked uids], ts}: phone notifications
 //                            (1.6.0, owner only; the push server reads it with its own key)
 //   chats/{a_b}              {m: [a, b], last: {from, text, ts}, th?: chat colour (1.5.2)} (a_b = the two uids sorted); only between friends
@@ -60,6 +69,7 @@ async function googleCredential() {
 const nativeSignOut = () => (native() ? Promise.race([FirebaseAuthentication.signOut().catch(() => {}), new Promise(r => setTimeout(r, 3000))]) : Promise.resolve());
 const pick = (o, keys) => Object.fromEntries(keys.filter(k => o[k] !== undefined).map(k => [k, o[k]]));
 const PROFILE_KEYS = ["nick", "pfp", "xp", "lvl", "streak", "n", "code", "global"];
+const CARD_KEYS = ["lvl", "xp", "streak", "best", "n", "reps", "min", "since", "ach", "rk", "av", "show", "prs"];
 async function profilesOf(uids) {
   const out = await Promise.all(uids.map(u => getDoc(d("profiles", u)).then(s => (s.exists() ? { uid: u, ...s.data() } : { uid: u, missing: true })).catch(() => ({ uid: u, missing: true }))));
   return out;
@@ -117,9 +127,11 @@ export const impl = {
   // Stats and photo; the world leaderboard copy exists only while "global" is on.
   async saveProfile(p) {
     const me = uid(), data = { ...pick(p, PROFILE_KEYS), global: !!p.global, ts: serverTimestamp() };
+    // hidden after reports (1.7.0): the rules refuse a world entry, so the rest is saved without it
+    const hidden = p.global ? await impl.getMod().then(m => m.hidden).catch(() => false) : false;
     const b = writeBatch(db);
     b.set(d("profiles", me), data);
-    if (p.global) b.set(d("board", me), { nick: p.nick, pfp: null, xp: p.xp, lvl: p.lvl, streak: p.streak, n: p.n, ts: serverTimestamp() });
+    if (p.global && !hidden) b.set(d("board", me), { nick: p.nick, pfp: null, xp: p.xp, lvl: p.lvl, streak: p.streak, n: p.n, ts: serverTimestamp() });
     else b.delete(d("board", me));
     await b.commit();
   },
@@ -219,8 +231,32 @@ export const impl = {
     return j;
   },
   async dropPush(token) { if (token) await setDoc(d("push", uid()), { t: arrayRemove(String(token)), ts: serverTimestamp() }, { merge: true }); },
-  async report(about, reason) { await addDoc(collection(db, "reports"), { by: uid(), about, reason: String(reason || "").slice(0, 300), ts: serverTimestamp() }); },
+  // 1.7.0: the push server then counts the reports about that person (several different people → hidden from the
+  // world top 50, mod/{uid})
+  async report(about, reason) { await addDoc(collection(db, "reports"), { by: uid(), about, reason: String(reason || "").slice(0, 300), ts: serverTimestamp() }); notify("rep", about); },
+  async getMod() { const s = await getDoc(d("mod", uid())); return { hidden: s.exists() && s.data().hidden === true }; },
+  // Profile cards (1.7.0). getCard: the card, or null when there is none; a card you may not open (friends only,
+  // only me, blocked) fails with permission-denied, like one that doesn't exist (older app).
+  async getCard(u) { const s = await getDoc(d("cards", u)); if (!s.exists()) return null; const v = s.data(); return { ...v, ts: v.ts && v.ts.toMillis ? v.ts.toMillis() : 0 }; },
+  // The stats part. mergeFields: these fields are replaced whole (a badge or rank that went away after editing the
+  // history goes away here too; plain merge would keep old keys inside the maps), vis stays as it is (it may have been
+  // set on another phone).
+  async saveCard(c) { const v = { ...pick(c, CARD_KEYS), ts: serverTimestamp() }; await setDoc(d("cards", uid()), v, { mergeFields: Object.keys(v) }); },
+  async setCardVis(vis) { await setDoc(d("cards", uid()), { vis, ts: serverTimestamp() }, { merge: true }); },
+  async saveBlocks(list) { await setDoc(d("blocks", uid()), { b: (list || []).slice(-500), ts: serverTimestamp() }); },
+  watchBlocks(cb, onErr) { return onSnapshot(d("blocks", uid()), s => cb(s.exists() ? { b: s.data().b || [], local: s.metadata.hasPendingWrites } : null), onErr); },
+  // only the chats that changed are sent; merge keeps the others
+  async saveChatMem(part) { await setDoc(d("chatmem", uid()), { ...part, ts: serverTimestamp() }, { merge: true }); },
+  watchChatMem(cb, onErr) { return onSnapshot(d("chatmem", uid()), s => cb(s.exists() ? { read: s.data().read || {}, clr: s.data().clr || {}, local: s.metadata.hasPendingWrites } : null), onErr); },
   async saveBackup(json, n) { await setDoc(d("backups", uid()), { json, n, ts: serverTimestamp() }); },
+  // The backup live (1.7.0 sync): another device's change arrives here; local = this device's own write not yet on the server.
+  watchBackup(cb, onErr) {
+    return onSnapshot(d("backups", uid()), { includeMetadataChanges: false }, s => {
+      if (!s.exists()) return cb(null);
+      const v = s.data();
+      cb({ json: v.json, n: v.n, ts: v.ts && v.ts.toMillis ? v.ts.toMillis() : 0, local: s.metadata.hasPendingWrites });
+    }, onErr);
+  },
   async loadBackup() { const s = await getDoc(d("backups", uid())); if (!s.exists()) return null; const v = s.data(); return { json: v.json, n: v.n, ts: v.ts && v.ts.toMillis ? v.ts.toMillis() : 0 }; },
   // Everything about this account, then the account itself. Google asks again if the last sign-in is too old.
   // 1.5.0 (Michael: after deleting, the account buttons stayed): Google is asked to confirm FIRST (Firebase only deletes
@@ -245,7 +281,7 @@ export const impl = {
     (p && p.sent || []).forEach(t => b.delete(d("inbox", t, "from", me)));
     if (p && p.nick) b.delete(d("nicks", nickKey(p.nick)));
     if (p && p.code) b.delete(d("codes", p.code));
-    ["profiles", "board", "backups", "push"].forEach(c => b.delete(d(c, me)));
+    ["profiles", "board", "backups", "push", "cards", "blocks", "chatmem"].forEach(c => b.delete(d(c, me)));
     await b.commit();
     try { await auth.currentUser.delete(); }
     finally { await nativeSignOut(); try { await fbSignOut(auth); } catch (_) {} user = null; subs.forEach(f => f(null)); }

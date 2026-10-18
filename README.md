@@ -40,7 +40,7 @@ Open https://mikydon.github.io/hw-app/ and add it to your home screen (Android C
 What changed in each version: [CHANGELOG.md](CHANGELOG.md).
 
 ## Privacy
-All your data (workouts, calories, name, photo, birth date) is stored only on your device: in the app, or in the browser on the website. Nothing you enter is sent anywhere. If you connect Health Connect, the app reads only your steps, weight and height (and, if you choose, the calories of food logged in other apps), and they stay on your phone. If you clear the browser's data, the website's history is deleted too, so save a backup in Settings first. Full policy: [privacy.html](https://mikydon.github.io/hw-app/privacy.html).
+Without an account, all your data (workouts, calories, name, photo, birth date) is stored only on your device: in the app, or in the browser on the website. An account (optional, 16+) adds friends, a leaderboard, messages, a profile page others can open (you choose who: friends, everyone or only you) and a cloud backup, stored with Google Firebase. If you connect Health Connect, the app reads only your steps, weight and height (and, if you choose, the calories of food logged in other apps), and they stay on your phone. If you clear the browser's data, the website's history is deleted too, so save a backup in Settings first. Full policy: [privacy.html](https://mikydon.github.io/hw-app/privacy.html).
 
 ## For developers
 - Source: `src/App.jsx` (React), entry `src/main.jsx`
@@ -49,3 +49,8 @@ All your data (workouts, calories, name, photo, birth date) is stored only on yo
 - Build: `npm install`, then `npm run build`. This creates `index.html` with everything in one file.
 - The site runs on GitHub Pages from the `main` branch, folder `/` (root).
 - Logo and icons: `assets/mark.svg` (logo), `assets/icon-maskable.svg` (Android icon), `assets/logo-wordmark.svg`.
+- Emoji: the emoji the app shows come from `fonts/hw-emoji.ttf`, made from Microsoft's [Fluent Emoji](https://github.com/microsoft/fluentui-emoji) 3D set (MIT licence, `tools/emoji/LICENSE-fluent-emoji.txt`) by `tools/emoji/build_font.py` (uses Google's `emoji_builder.py`, Apache 2.0). Chat messages keep the phone's emoji.
+
+## Credits
+- Emoji: [Fluent Emoji](https://github.com/microsoft/fluentui-emoji) © Microsoft Corporation, MIT licence.
+- Fonts: Big Shoulders Display, Figtree and Oswald (SIL Open Font License), from [Fontsource](https://fontsource.org).

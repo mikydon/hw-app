@@ -1,5 +1,5 @@
 rules_version = '2';
-// HW App (1.6.0): who may read and write what. Paste into Firebase console → Firestore → Rules → Publish.
+// HW App (1.7.0): who may read and write what. Paste into Firebase console → Firestore → Rules → Publish.
 // Tested in CI against the Firestore emulator (.github/rules-test). Anything not allowed here is denied.
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -28,12 +28,67 @@ service cloud.firestore {
         && getAfter(/databases/$(database)/documents/codes/$(data().code)).data.uid == uid;
       allow delete: if isMe(uid);
     }
-    // World leaderboard: only people who switched it on; read in pages of at most 100.
+    // 1.7.0: mod/{uid} {hidden: true} = reported by several different people (written only by the push server, which
+    // counts the reports); the person can read it, nobody can write it from the app; the developer removes it.
+    function modHidden(u) {
+      return exists(/databases/$(database)/documents/mod/$(u)) && get(/databases/$(database)/documents/mod/$(u)).data.get('hidden', false) == true;
+    }
+    match /mod/{uid} {
+      allow get: if isMe(uid);
+    }
+    // World leaderboard: only people who switched it on; read in pages of at most 100. Hidden after reports: can't join.
     match /board/{uid} {
       allow get: if signedIn();
       allow list: if signedIn() && request.query.limit <= 100;
-      allow create, update: if isMe(uid) && only(['nick', 'pfp', 'xp', 'lvl', 'streak', 'n', 'ts']) && statsOk();
+      allow create, update: if isMe(uid) && only(['nick', 'pfp', 'xp', 'lvl', 'streak', 'n', 'ts']) && statsOk() && !modHidden(uid);
       allow delete: if isMe(uid);
+    }
+    // Profile cards (1.7.0, like a Steam profile): level, streaks, workouts, reps, time, badge tiers and exercise ranks.
+    // vis = who may open it: 'friends' (default), 'all' (anyone signed in) or 'none' (only you). People you blocked
+    // (blocks/{uid}) never can. A card is written in parts (stats, or only vis), so every field is optional. av = badge
+    // values (progress), show = the showcase fields (1.7.0).
+    function cardOk() {
+      return only(['vis', 'lvl', 'xp', 'streak', 'best', 'n', 'reps', 'min', 'prs', 'since', 'ach', 'av', 'rk', 'show', 'ts'])
+        && data().get('vis', 'friends') in ['friends', 'all', 'none']
+        && intIn(data().get('lvl', 1), 1, 100000) && intIn(data().get('xp', 0), 0, 100000000)
+        && intIn(data().get('streak', 0), 0, 100000) && intIn(data().get('best', 0), 0, 100000)
+        && intIn(data().get('n', 0), 0, 100000) && intIn(data().get('reps', 0), 0, 100000000)
+        && intIn(data().get('min', 0), 0, 10000000)
+        && (data().get('since', null) == null || (data().since is string && data().since.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')))
+        && data().get('ach', {}) is map && data().get('ach', {}).size() <= 40
+        && data().get('rk', {}) is map && data().get('rk', {}).size() <= 40
+        && data().get('av', {}) is map && data().get('av', {}).size() <= 40
+        && data().get('show', []) is list && data().get('show', []).size() <= 10
+        && intIn(data().get('prs', 0), 0, 1000000)
+        && nowTs();
+    }
+    function notBlockedBy(owner) {
+      return !exists(/databases/$(database)/documents/blocks/$(owner))
+        || !(request.auth.uid in get(/databases/$(database)/documents/blocks/$(owner)).data.b);
+    }
+    function cardOpen(owner) {
+      let v = resource.data.get('vis', 'friends');
+      return signedIn() && notBlockedBy(owner) && ((v == 'all' && !modHidden(owner))
+        || (v != 'none' && exists(/databases/$(database)/documents/friends/$(owner)/list/$(request.auth.uid))));
+    }
+    match /cards/{uid} {
+      allow get: if isMe(uid) || cardOpen(uid);
+      allow create, update: if isMe(uid) && cardOk();
+      allow delete: if isMe(uid);
+    }
+    // Who you blocked (1.7.0): only you read it; the rules above use it to keep them off your profile card. Your other
+    // devices read it too, so a block made on one reaches all of them.
+    match /blocks/{uid} {
+      allow get, delete: if isMe(uid);
+      allow create, update: if isMe(uid) && only(['b', 'ts']) && data().b is list && data().b.size() <= 500 && nowTs();
+    }
+    // Chats you read and chats you deleted for yourself (1.7.0): {read: {chatId: time}, clr: {chatId: time}}, only you,
+    // so your other devices know them too.
+    match /chatmem/{uid} {
+      allow get, delete: if isMe(uid);
+      allow create, update: if isMe(uid) && only(['read', 'clr', 'ts'])
+        && data().get('read', {}) is map && data().get('read', {}).size() <= 1000
+        && data().get('clr', {}) is map && data().get('clr', {}).size() <= 1000 && nowTs();
     }
     // Unique nicknames and friend codes: one owner each, never taken over (deleting one that isn't there is harmless,
     // so deleting an account still works when this phone remembers an old nickname).
