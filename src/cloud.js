@@ -234,6 +234,14 @@ export const impl = {
   async setCardVis(vis) { await setDoc(d("cards", uid()), { vis, ts: serverTimestamp() }, { merge: true }); },
   async saveBlocks(list) { await setDoc(d("blocks", uid()), { b: (list || []).slice(-500), ts: serverTimestamp() }); },
   async saveBackup(json, n) { await setDoc(d("backups", uid()), { json, n, ts: serverTimestamp() }); },
+  // The backup live (1.7.0 sync): another device's change arrives here; local = this device's own write not yet on the server.
+  watchBackup(cb, onErr) {
+    return onSnapshot(d("backups", uid()), { includeMetadataChanges: false }, s => {
+      if (!s.exists()) return cb(null);
+      const v = s.data();
+      cb({ json: v.json, n: v.n, ts: v.ts && v.ts.toMillis ? v.ts.toMillis() : 0, local: s.metadata.hasPendingWrites });
+    }, onErr);
+  },
   async loadBackup() { const s = await getDoc(d("backups", uid())); if (!s.exists()) return null; const v = s.data(); return { json: v.json, n: v.n, ts: v.ts && v.ts.toMillis ? v.ts.toMillis() : 0 }; },
   // Everything about this account, then the account itself. Google asks again if the last sign-in is too old.
   // 1.5.0 (Michael: after deleting, the account buttons stayed): Google is asked to confirm FIRST (Firebase only deletes

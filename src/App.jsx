@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { isNative, pushBack, setRootBack, exitApp, vibratePattern, keepScreenOn, openExternal, saveBackupFile, bkSupported, bkWrite, bkWriteAuto, bkList, bkRead, bkDelete, bkShare, BK_DIR, bkAutoFile, checkForUpdate, lastUpdate, lastGh, applyUpdateNow, latestApk, isTestBuild, apkState, onApk, apkSupported, apkRestore, apkDownload, apkCanInstall, apkAllow, apkInstall, onAppResume, healthState, healthConnect, healthSettings, healthSteps, healthFoodItems, healthBody, shareText, copyText, pushSupported, pushPermission, pushChannel, pushToken, pushTokenWhy, pushDeleteToken, onPushTap, onPushToken, onPushReceived, hzSupported, hzInfo, hzSet, isPlay, playCheck, playOpenStore, PLAY_STORE_LINK, updTopic, onAppUrl } from "./native.js";
 import { cloud, NICK_RE, SHARE_BASE, cleanCode, fmtCode } from "./cloud-lazy.js";
 import { QUICK as EMO_QUICK, EMOJI } from "./emoji.js";
+import { mergeAll, syncKey, withIds, entryId, stable, SYNC_SETTINGS, kcalShared } from "./sync.js";
 import { L, LANG, t as T, tp as TP, fmt, setLang, detectLang, LANGS, fmtLong, fmtShortDM, fmtMonthYear, weekdaysShort, capFirst } from "./i18n/index.js";
 
 // ─── DESIGN TOKENS ──────────────────────────────────────────────────────────
@@ -1112,8 +1113,16 @@ const BACKUP_ID = "hw-app";
 const BACKUP_IDS = [BACKUP_ID, "domaci-trening"];
 // The backup file: everything the app knows (manual, automatic and the one offered before a full reset).
 function backupJson(history, profile, settings, kcal) {
-  return JSON.stringify({ app: BACKUP_ID, version: 1, appVersion: APP_VERSION, exportedAt: new Date().toISOString(), history, profile, settings, kcal: kcal || null });
+  const sm = syncMem();
+  return JSON.stringify({ app: BACKUP_ID, version: 1, appVersion: APP_VERSION, exportedAt: new Date().toISOString(), history, profile, settings, kcal: kcal || null, sync: { del: sm.del || {}, kdel: sm.kdel || {}, mod: sm.mod || {} } });
 }
+// Web ↔ phone sync (1.7.0, src/sync.js): {acct: the account this device last merged with, del: deleted workouts
+// {id: when}, kdel: deleted calorie entries {ts: when}, mod: {profile, settings, kcal: when changed here}}. Travels in
+// every backup as "sync". Not cleared by a backup restore; cleared when signing out (everything is).
+const SYNC_KEY = "domaci-trening-v1-sync";
+const syncMem = () => { try { return JSON.parse(localStorage.getItem(SYNC_KEY) || "null") || {}; } catch (_) { return {}; } };
+const setSyncMem = patch => { const m = { ...syncMem(), ...patch }; try { localStorage.setItem(SYNC_KEY, JSON.stringify(m)); } catch (_) {} return m; };
+const syncTomb = (kind, key) => { const m = syncMem(); setSyncMem({ [kind]: { ...(m[kind] || {}), [key]: Date.now() } }); };
 // Automatic backup (app only, 1.4.0): the result of the last run, {ts, day, ok, err}. Not in backups.
 const AUTOBK_KEY = "domaci-trening-v1-autobk";
 const autoBkInfo = () => { try { return JSON.parse(localStorage.getItem(AUTOBK_KEY) || "null"); } catch (_) { return null; } };
@@ -3288,7 +3297,7 @@ function KcalWeekDots({ history, full }) {
   const today = dateKey(), wd = weekdaysShort(); // Monday first
   // full (Calories, 1.4.0): the same strip as the week on Home (day above, a rounded square below), in amber.
   if (full) return (
-    <div data-kc-week style={{ display: "flex", gap: 6 }} aria-label={T("kcWeekAria")}>
+    <div data-kc-week style={{ display: "flex", gap: 6 }} aria-label={`${T("secWeek")}: ${T("calLegLog")}, ${T("calLegHit")}`}>
       {kcalWeek(history).map(w => {
         const d = parseKey(w.k), isT = w.k === today;
         return (
@@ -3301,7 +3310,7 @@ function KcalWeekDots({ history, full }) {
     </div>
   );
   return (
-    <div data-kc-week style={{ display: "flex", gap: 6, alignItems: "flex-start" }} aria-label={T("kcWeekAria")}>
+    <div data-kc-week style={{ display: "flex", gap: 6, alignItems: "flex-start" }} aria-label={`${T("secWeek")}: ${T("calLegLog")}, ${T("calLegHit")}`}>
       {kcalWeek(history).map(w => {
         const d = parseKey(w.k), isT = w.k === today;
         return (
@@ -3648,6 +3657,7 @@ function Calories({ history, profile, setProfile, kcal, setKcal }) {
   };
   const remove = (day, ts) => {
     sfxTap();
+    syncTomb("kdel", ts); // 1.7.0: stays deleted on the other devices too
     const log = { ...(kcal.log || {}) };
     log[day] = (log[day] || []).filter(x => x.ts !== ts);
     if (!log[day].length) delete log[day];
@@ -3667,7 +3677,10 @@ function Calories({ history, profile, setProfile, kcal, setKcal }) {
       <div style={{ padding: "0 18px" }}>
         <Sect data-kc-streak-card title={T("secWeek")} meta={<KcalStreakChip history={history} small />} style={{ marginTop: 0, marginBottom: 12 }}>
           <KcalWeekDots history={history} full />
-          <div style={{ fontSize: 11, color: C.dim, marginTop: 8, lineHeight: 1.4 }}>{T("kcLegend")}</div>
+          {/* 1.7.0: colour swatches instead of colour names (the calorie colours change with the main colour) */}
+          <div data-kc-legend style={{ display: "flex", flexWrap: "wrap", gap: "6px 14px", fontSize: 11, color: C.dim, marginTop: 8 }}>
+            {[[KC_LOG, T("calLegLog"), ""], [KC_HIT, `${T("calLegHit")} (±10 %)`, "✓"]].map(([bg, l, mark]) => <span key={l} style={{ display: "inline-flex", alignItems: "center", gap: 5 }}><span style={{ width: 14, height: 14, borderRadius: 4, background: bg, color: "#1a1206", fontSize: 10, fontWeight: 900, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>{mark}</span>{l}</span>)}
+          </div>
         </Sect>
         {pg.tabs([T("kcToday"), T("kcTabCal"), T("kcTabMe")])}
       </div>
@@ -3982,7 +3995,7 @@ function EntryEditor({ entry, nextDay, onSave, onDelete, onClose }) {
     const ts = entry && entry.date === date ? entryTs(entry) : isNew && date === today ? Date.now() : parseKey(date).getTime() + tod;
     const base = entry || { warm: false, cool: false, manual: true };
     sfxCheck();
-    onSave({ ...base, date, ts, day, rounds, items });
+    onSave({ ...base, date, ts, day, rounds, items, mts: Date.now() }); // mts: when it was last changed (sync, 1.7.0)
   };
 
   const field = { fontFamily: BODY, fontSize: 16, fontWeight: 700, padding: "9px 10px", borderRadius: 11, border: `1.5px solid ${C.line}`, background: C.ink, color: C.chalk, outline: "none", boxSizing: "border-box" };
@@ -5524,15 +5537,6 @@ function SwitchAccountSheet({ onFresh, onKeep, onCancel }) {
     </Sheet>
   );
 }
-function CloudRestoreSheet({ offer, onRestore, onKeep, onClose }) {
-  return (
-    <Sheet title={T("rsTitle")} onClose={onClose} short>
-      <div>{T("rsBody", { date: offer.ts ? fmtWhen(offer.ts) : T("unknownDate"), count: TP("workouts", offer.n || 0) })}</div>
-      <button data-rs-yes onClick={onRestore} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 16, fontSize: 15, padding: 14 }}>{T("rsYes")}</button>
-      <button data-rs-keep onClick={onKeep} style={{ ...ghostBtn, width: "100%", marginTop: 10, padding: 12, fontSize: 14 }}>{T("rsKeep")}</button>
-    </Sheet>
-  );
-}
 
 // ─── SETTINGS → EXERCISES ───────────────────────────────────────────────────
 // Every exercise by type, with its how-to, and a switch for "I can do this one". At least one
@@ -6589,48 +6593,51 @@ export default function App() {
   // Firebase starts only for someone who signed in before (cloudMem().uid); everyone else makes no cloud calls.
   const [acct, setAcct] = useState(() => (cloudMem().uid ? { st: "loading", uid: cloudMem().uid, prof: cloudMem().prof || null } : { st: "out" }));
   const [cloudBk, setCloudBk] = useState(() => cloudMem().bk || null);
-  const [rsOffer, setRsOffer] = useState(null);
   const [swOffer, setSwOffer] = useState(null); // 1.6.2: signed in as another account than the one whose data is on this phone: {uid, b: its cloud backup}
   const cloudReady = useRef(false); // uploads wait until we know the cloud backup isn't bigger than this phone's data
   const lastCloud = useRef("");
   const setProf = prof => { setCloudMem({ prof }); setAcct(a => ({ ...a, prof })); };
   const cloudN = useRef(null); // workouts in the cloud backup, once known (0 = none there or a backup without workouts)
-  // A cloud backup without workouts (1.5.0, Michael: sign in on a new phone and the setup is already filled in): what
-  // this phone doesn't have yet comes from it (name, photo, birth date, gender, height, weight, activity, goal…), and
-  // during the first-start setup also the settings (theme, language, sounds…). Nothing this phone has is replaced.
-  const fillFromCloud = json => {
-    const d = JSON.parse(json);
-    if (!BACKUP_IDS.includes(d.app)) return null;
-    const empty = v => v === undefined || v === null || v === "" || (Array.isArray(v) ? !v.length : typeof v === "object" && !Object.keys(v).length);
-    const fill = (local, from) => {
-      const out = { ...(local || {}) }, got = [];
-      Object.entries(from || {}).forEach(([k, v]) => { if (!empty(v) && (empty(out[k]) || (k === "name" && out[k] === "User"))) { out[k] = v; got.push(k); } });
-      return [out, got];
-    };
-    const [p, gp] = fill(profile, d.profile), [k, gk] = fill(kcal, d.kcal);
-    if (gp.length) setProfile(p);
-    if (gk.length) setKcal({ ...k, log: k.log || {} });
-    if (d.settings && onboard !== null) { const { onboarded, ...rest } = d.settings; setSettings({ ...DEFAULT_SETTINGS, ...rest, onboarded: settings.onboarded }); }
-    return { profile: p, kcal: k, fields: [...gp, ...gk] };
+  // ─── Web ↔ phone sync (1.7.0, src/sync.js) ───
+  // The account's cloud backup is the meeting point: when it changes (another phone, the website), it is merged into
+  // this device (nothing is lost, see sync.js), and when this device changes, the merged result is uploaded. The
+  // first merge on a device (a new phone, the setup) takes the account's details and fills in only what is missing.
+  const stRef = useRef({}); stRef.current = { history, profile, settings, kcal };
+  const seenSync = useRef({}); // the last known content of profile / synced settings / calorie details (change = touched here)
+  const lastRemoteKey = useRef(""), lastUpKey = useRef("");
+  const [syncTick, setSyncTick] = useState(0);
+  const histKey = h => stable((h || []).map(e => { const { prs, rankUps, ...r } = e; return { ...r, id: entryId(e) }; }).sort((a, b) => (a.id < b.id ? -1 : 1)));
+  const kcalKey = k => stable([kcalShared(k), k ? k.log || {} : {}]);
+  const pickSync = st => Object.fromEntries(SYNC_SETTINGS.filter(k => st && st[k] !== undefined).map(k => [k, st[k]]));
+  // b = a cloud backup {json, n, ts} or null. Returns {profile, kcal, fields, restored} for the first-start setup.
+  const applyRemote = (b, uid) => {
+    let d = null;
+    try { d = b && b.json ? JSON.parse(b.json) : null; } catch (_) {}
+    if (d && !(BACKUP_IDS.includes(d.app) && Array.isArray(d.history))) d = null;
+    if (!d) { setSyncMem({ acct: uid }); cloudN.current = 0; return null; }
+    const L = { ...stRef.current, sync: syncMem() }, first = syncMem().acct !== uid;
+    const M = mergeAll(L, { ...d, sync: d.sync || {} }, first);
+    lastRemoteKey.current = syncKey(d);
+    if (histKey(M.history) !== histKey(L.history)) { const h = recomputeFlags(sortHistory(M.history)); stRef.current.history = h; setHistory(h); }
+    if (stable(M.profile) !== stable(L.profile)) { seenSync.current.profile = stable(M.profile); stRef.current.profile = M.profile; setProfile(M.profile); }
+    if (stable(pickSync(M.settings)) !== stable(pickSync(L.settings))) { seenSync.current.settings = stable(pickSync(M.settings)); stRef.current.settings = M.settings; setSettings(M.settings); }
+    if (M.kcal && kcalKey(M.kcal) !== kcalKey(L.kcal)) { seenSync.current.kcal = stable(kcalShared(M.kcal)); stRef.current.kcal = M.kcal; setKcal(M.kcal); }
+    setSyncMem({ acct: uid, del: M.sync.del, kdel: M.sync.kdel, mod: M.sync.mod });
+    cloudN.current = b.n || 0;
+    const blank = v => v === undefined || v === null || v === "" || v === "User";
+    const fields = [...["name", "birth"].filter(k => blank((L.profile || {})[k]) && !blank((M.profile || {})[k])),
+      ...["sex", "height", "weight", "activity", "goal"].filter(k => blank((L.kcal || {})[k]) && M.kcal && !blank(M.kcal[k]))];
+    return { profile: M.profile, kcal: M.kcal, fields, restored: !(L.history || []).length && M.history.length > 0 };
   };
-  // Offer the cloud backup when it has more workouts than this phone; otherwise start uploading (after filling in
-  // what's missing here from a backup without workouts, when this phone has none either).
-  const takeCloudBackup = (b, hist, fill) => {
-    if (b && b.json && (b.n || 0) > hist.length) { setRsOffer(b); return null; }
-    cloudN.current = b ? b.n || 0 : 0;
-    let got = null;
-    if (fill && b && b.json && !hist.length) { try { got = fillFromCloud(b.json); } catch (_) {} }
-    cloudReady.current = true;
-    return got;
-  };
-  const checkCloudBackup = hist => cloud().loadBackup().then(b => takeCloudBackup(b, hist, false)).catch(() => {});
+  // Merge what the account has (sign-in, account switch), then uploads may start.
+  const takeCloudBackup = (b, uid) => { const got = applyRemote(b, uid); cloudReady.current = true; setSyncTick(x => x + 1); return got; };
   useEffect(() => {
     if (!cloudMem().uid || !loaded) return;
     cloud().init().then(u => {
       if (!u) { setCloudMem({ uid: null, prof: null }); setAcct({ st: "out" }); return; }
       // if Firebase ends the session (account deleted, signed out elsewhere…), the app follows
       try { cloud().onUser(x => { if (!x) { setCloudMem({ uid: null, prof: null }); setAcct(a => (a.st === "in" ? { st: "out" } : a)); } }); } catch (_) {}
-      return cloud().getProfile(u.uid).then(p => { setCloudMem({ uid: u.uid, prof: p, ...(cloudMem().owner ? {} : { owner: u.uid }), ...(cloudMem().memUid ? {} : { memUid: u.uid }) }); setAcct({ st: "in", uid: u.uid, prof: p }); checkCloudBackup(history); });
+      return cloud().getProfile(u.uid).then(p => { setCloudMem({ uid: u.uid, prof: p, ...(cloudMem().owner ? {} : { owner: u.uid }), ...(cloudMem().memUid ? {} : { memUid: u.uid }) }); setAcct({ st: "in", uid: u.uid, prof: p }); }); // the backup listener below merges the account's data
     }).catch(() => setAcct(a => ({ ...a, st: "in" }))); // offline: keep the remembered profile
   }, [loaded]);
   const signIn = async () => {
@@ -6652,7 +6659,9 @@ export default function App() {
       return { uid: u.uid, name: u.name || "", prof: p, got: null, switching: true };
     }
     setCloudMem({ owner: u.uid });
-    try { got = takeCloudBackup(await cloud().loadBackup(), history, true); } catch (_) {}
+    try { got = takeCloudBackup(await cloud().loadBackup(), u.uid); } catch (_) {}
+    // signed in during the first-start setup and the account has workouts: everything is there, the setup ends
+    if (got && got.restored && onboard !== null) { setOnboard(null); setSettings({ ...stRef.current.settings, onboarded: true }); window.scrollTo(0, 0); }
     return { uid: u.uid, name: u.name || "", prof: p, got };
   };
   const createProfile = async nick => { const p = await cloud().createProfile({ nick, global: false, pfp: await smallPfp(profile.pfp), ...cloudStats(history) }); setProf(p); sfxCheck(); };
@@ -6665,22 +6674,30 @@ export default function App() {
   const signOut = async () => {
     // a running workout isn't in the history yet, so it would be lost
     if (session && session.phase !== "summary") throw Object.assign(new Error("so-workout"), { code: "so-workout" });
-    if (!swOffer && (history.length > 0 || cloudN.current === 0)) {
-      const json = cloudBackupJson(history, profile, settings, kcal), key = json.replace(/"exportedAt":"[^"]*",/, "");
+    if (!swOffer) {
+      let D = { history, profile, settings, kcal };
+      // 1.7.0: not merged with the account yet (offline start, signing out right away): merge with the cloud copy first,
+      // so the upload can't replace anything that is only there
+      if (!cloudReady.current) {
+        try {
+          const b = await cloud().loadBackup(), d = b && b.json ? JSON.parse(b.json) : null;
+          if (d && BACKUP_IDS.includes(d.app) && Array.isArray(d.history)) { const M = mergeAll({ ...D, sync: syncMem() }, { ...d, sync: d.sync || {} }, syncMem().acct !== acct.uid); setSyncMem(M.sync); D = M; }
+        } catch (_) { throw Object.assign(new Error("so-backup"), { code: "so-backup" }); }
+      }
+      const json = cloudBackupJson(D.history, D.profile, D.settings, D.kcal), key = json.replace(/"exportedAt":"[^"]*",/, "");
       // already in the cloud (this session, or the last upload before a restart had exactly this content)
       if (key !== lastCloud.current && strHash(key) !== cloudMem().bkHash) {
-        // the cloud has more workouts than this phone (restore offer still open): uploading would replace them
-        if (rsOffer) throw Object.assign(new Error("so-backup"), { code: "so-backup" });
-        try { await cloud().saveBackup(json, history.length); } catch (_) { throw Object.assign(new Error("so-backup"), { code: "so-backup" }); }
+        try { await cloud().saveBackup(json, D.history.length); } catch (_) { throw Object.assign(new Error("so-backup"), { code: "so-backup" }); }
       }
     }
     if (settings.autoBackup) { try { runAutoBackup(); } catch (_) {} }
     const tk = cloudMem().pushTok; if (tk) { await cloud().dropPush(tk).catch(() => {}); await pushDeleteToken(); }
     await cloud().signOut();
     const kept = swapAcctMem(null);
-    try { localStorage.setItem(CLOUD_KEY, JSON.stringify({ pushAsked: kept.pushAsked, acctMem: kept.acctMem })); localStorage.removeItem(AUTOBK_KEY); } catch (_) {}
+    try { localStorage.setItem(CLOUD_KEY, JSON.stringify({ pushAsked: kept.pushAsked, acctMem: kept.acctMem })); localStorage.removeItem(AUTOBK_KEY); localStorage.removeItem(SYNC_KEY); } catch (_) {}
+    seenSync.current = {}; lastRemoteKey.current = ""; lastUpKey.current = "";
     setSocial(x => ({ ...x, reqs: null, friends: null, chats: null, blocked: [], read: {} }));
-    setCloudBk(null); cloudReady.current = false; cloudN.current = null; lastCloud.current = ""; setChatWith(null); setRsOffer(null); setSwOffer(null); setAcct({ st: "out" });
+    setCloudBk(null); cloudReady.current = false; cloudN.current = null; lastCloud.current = ""; setChatWith(null); setSwOffer(null); setAcct({ st: "out" });
     setSession(null); setSessionOpen(true); setLive(null);
     setHistory([]); setProfile({ name: "User", pfp: null, freezeDays: [], streakResetTs: 0 });
     setSettings({ ...DEFAULT_SETTINGS, seenVersion: settings.seenVersion, seenApp: true });
@@ -6688,7 +6705,7 @@ export default function App() {
     setScreen("train"); setMenuOpen(false); window.scrollTo(0, 0);
     setOnboard(0);
   };
-  const goneLocal = () => { try { const m = cloudMem(), all = { ...(m.acctMem || {}) }; delete all[acct.uid]; localStorage.setItem(CLOUD_KEY, JSON.stringify({ pushAsked: m.pushAsked, acctMem: all })); } catch (_) {} setCloudBk(null); cloudReady.current = false; cloudN.current = null; setChatWith(null); setAcct({ st: "out" }); };
+  const goneLocal = () => { try { const m = cloudMem(), all = { ...(m.acctMem || {}) }; delete all[acct.uid]; localStorage.setItem(CLOUD_KEY, JSON.stringify({ pushAsked: m.pushAsked, acctMem: all })); localStorage.removeItem(SYNC_KEY); } catch (_) {} setCloudBk(null); cloudReady.current = false; cloudN.current = null; setChatWith(null); setAcct({ st: "out" }); };
   const deleteAccount = async () => {
     try { await cloud().deleteAccount({ ...acct.prof, sent: cloudMem().sent || [] }); }
     catch (e) {
@@ -6698,12 +6715,6 @@ export default function App() {
     }
     goneLocal();
     return T("acDeleted");
-  };
-  const applyCloudJson = json => {
-    const d = JSON.parse(json);
-    if (!BACKUP_IDS.includes(d.app) || !Array.isArray(d.history)) throw Object.assign(new Error("bad"), { code: "bad-backup" });
-    if (d.kcal && kcal) { const keep = {}; ["steps", "food", "foodItems", "healthOn", "weight", "wTs", "wSrc", "height", "hTs", "hSrc"].forEach(x => { if (kcal[x] !== undefined && d.kcal[x] === undefined) keep[x] = kcal[x]; }); d.kcal = { ...d.kcal, ...keep }; }
-    importAll(d);
   };
   // 1.6.2: the phone holds another account's data. "Fresh": wipe it and take this account's cloud backup (if any);
   // "keep": this phone's data now belongs to this account (as before 1.6.2).
@@ -6715,6 +6726,9 @@ export default function App() {
     setProfile({ name: o.nick || "User", pfp: null, freezeDays: [], streakResetTs: 0, ...((d && d.profile) || {}) });
     setSettings({ ...DEFAULT_SETTINGS, onboarded: true, seenVersion: settings.seenVersion, seenApp: true, ...((d && d.settings) || {}), ...(d && d.settings ? {} : { lang: settings.lang }) });
     setKcal(d && d.kcal ? d.kcal : null);
+    // 1.7.0: this account's sync memory comes with its data (its deleted workouts stay deleted)
+    try { localStorage.setItem(SYNC_KEY, JSON.stringify({ acct: o.uid, ...((d && d.sync) || {}) })); } catch (_) {}
+    seenSync.current = {}; lastRemoteKey.current = d ? syncKey(d) : ""; lastUpKey.current = "";
     setCloudMem({ owner: o.uid }); cloudN.current = d ? o.b.n || 0 : 0; lastCloud.current = ""; cloudReady.current = true; sfxCheck();
   };
   // ✕ / back / Cancel: don't use this account here after all; it is signed out again and nothing on the phone changes
@@ -6728,9 +6742,14 @@ export default function App() {
   };
   const swKeep = () => {
     const o = swOffer; setSwOffer(null); if (!o) return;
-    setCloudMem({ owner: o.uid }); try { takeCloudBackup(o.b, history, true); } catch (_) {} sfxCheck();
+    // 1.7.0: keep = this phone's details win (marked as just changed), its workouts are joined with the account's
+    const now = Date.now();
+    setSyncMem({ acct: o.uid, mod: { profile: now, settings: now, kcal: now } });
+    setCloudMem({ owner: o.uid }); try { takeCloudBackup(o.b, o.uid); } catch (_) {} sfxCheck();
   };
-  const restoreFromCloud = async () => { const b = await cloud().loadBackup(); if (!b || !b.json) return T("acNoBackup"); applyCloudJson(b.json); cloudReady.current = true; cloudN.current = b.n || 0; return T("msgRestored"); };
+  // Settings → Account & cloud → "Restore from the cloud": since 1.7.0 the account's data is joined with this phone's
+  // (the same merge as the live sync), so nothing on either side is lost.
+  const restoreFromCloud = async () => { const b = await cloud().loadBackup(); if (!b || !b.json) return T("acNoBackup"); takeCloudBackup(b, acct.uid); return T("msgRestored"); };
   // Live friend requests, friends and chats while the app is open (1.5.0). New requests and messages show a short
   // in-app notice (LiveNotice) unless that chat is open; the counts show on ☰, in the menu and on the Friends tabs.
   const [social, setSocial] = useState({ reqs: null, friends: null, chats: null, blocked: cloudMem().blocked || [], read: cloudMem().read || {} });
@@ -6850,31 +6869,46 @@ export default function App() {
     const t = setTimeout(() => cloud().saveBlocks(bl).then(() => setCloudMem({ blkSynced: key })).catch(() => {}), 1500);
     return () => clearTimeout(t);
   }, [acct.st, acct.prof && acct.prof.code, (social.blocked || []).join(","), swOffer]);
-  // Automatic cloud backup, a few seconds after any change. Without workouts here only while the cloud copy has none
-  // either (setup details, 1.5.0), so an empty phone never wipes workouts saved in the cloud.
+  // The account's data changes on another device (or the website): merged in here while the app is open (1.7.0).
   useEffect(() => {
-    if (acct.st !== "in" || !acct.prof || !cloudReady.current || swOffer || !loaded || !settingsLoaded || !profLoaded || !kcalLoaded || (!history.length && cloudN.current !== 0)) return;
+    if (acct.st !== "in" || !acct.prof || swOffer || !loaded || !settingsLoaded || !profLoaded || !kcalLoaded) return;
+    let off = null, dead = false;
+    const uid = acct.uid;
+    try { off = cloud().watchBackup(b => { if (dead || (b && b.local)) return; applyRemote(b, uid); cloudReady.current = true; setSyncTick(x => x + 1); }, () => {}); } catch (_) {}
+    return () => { dead = true; try { off && off(); } catch (_) {} };
+  }, [acct.st, acct.uid, !!acct.prof, !!swOffer, loaded, settingsLoaded, profLoaded, kcalLoaded]);
+  // What changed here: old workouts get their id once; profile, synced settings and calorie details remember when they
+  // were changed on this device (the newer side wins when merging).
+  useEffect(() => { if (loaded && history.some(e => !e.id)) setHistory(h => withIds(h)); }, [history, loaded]);
+  const track = (part, v) => { const sn = seenSync.current; if (sn[part] === undefined) { sn[part] = v; return; } if (sn[part] !== v) { sn[part] = v; setSyncMem({ mod: { ...(syncMem().mod || {}), [part]: Date.now() } }); } };
+  useEffect(() => { if (profLoaded) track("profile", stable(profile)); }, [profile, profLoaded]);
+  useEffect(() => { if (settingsLoaded) track("settings", stable(pickSync(settings))); }, [settings, settingsLoaded]);
+  useEffect(() => { if (kcalLoaded) track("kcal", stable(kcalShared(kcal))); }, [kcal, kcalLoaded]);
+  // Upload a few seconds after any change, once this device has merged the account's data (so nothing there is
+  // overwritten), and only when the cloud doesn't have exactly this already.
+  const upKey = () => syncKey({ history, profile, settings, kcal, sync: syncMem() });
+  useEffect(() => {
+    if (acct.st !== "in" || !acct.prof || !cloudReady.current || swOffer || !loaded || !settingsLoaded || !profLoaded || !kcalLoaded) return;
     const t = setTimeout(() => {
-      const json = cloudBackupJson(history, profile, settings, kcal);
-      const key = json.replace(/"exportedAt":"[^"]*",/, "");
-      if (key === lastCloud.current) return;
+      const dk = upKey();
+      if (dk === lastRemoteKey.current || dk === lastUpKey.current) return;
+      const json = cloudBackupJson(history, profile, settings, kcal), key = json.replace(/"exportedAt":"[^"]*",/, "");
       const save = bk => { setCloudMem({ bk }); setCloudBk(bk); };
-      cloud().saveBackup(json, history.length).then(() => { lastCloud.current = key; setCloudMem({ bkHash: strHash(key) }); cloudN.current = history.length; save({ ts: Date.now(), ok: true }); })
+      cloud().saveBackup(json, history.length).then(() => { lastUpKey.current = dk; lastCloud.current = key; setCloudMem({ bkHash: strHash(key) }); cloudN.current = history.length; save({ ts: Date.now(), ok: true }); })
         .catch(e => save({ ts: Date.now(), ok: false, err: String((e && (e.code || e.message)) || e).slice(0, 120) }));
-    }, 6000);
+    }, 4000);
     return () => clearTimeout(t);
-  }, [acct.st, acct.prof, history, profile, settings, kcal, loaded, settingsLoaded, profLoaded, kcalLoaded, rsOffer, swOffer]);
+  }, [acct.st, acct.prof, history, profile, settings, kcal, loaded, settingsLoaded, profLoaded, kcalLoaded, swOffer, syncTick]);
   // 1.6.5 (Michael, Oct 17): "Back up now" in Settings → Account & cloud, the same upload as the automatic one, right
-  // away. Same safety rule: a phone without workouts never replaces a cloud copy that has some.
+  // away (after this device has merged the account's data).
   const cloudBackupNow = async () => {
     if (acct.st !== "in" || !acct.prof) throw new Error("not-signed-in");
-    if (swOffer || rsOffer || !cloudReady.current) return T("acBkNowWait"); // the cloud copy isn't compared with this phone yet
-    if (!history.length && cloudN.current !== 0) return T("acBkNowEmpty");
-    const json = cloudBackupJson(history, profile, settings, kcal), key = json.replace(/"exportedAt":"[^"]*",/, "");
+    if (swOffer || !cloudReady.current) return T("acBkNowWait"); // the cloud copy isn't merged with this phone yet
+    const dk = upKey(), json = cloudBackupJson(history, profile, settings, kcal), key = json.replace(/"exportedAt":"[^"]*",/, "");
     const save = bk => { setCloudMem({ bk }); setCloudBk(bk); };
     try { await cloud().saveBackup(json, history.length); }
     catch (e) { save({ ts: Date.now(), ok: false, err: String((e && (e.code || e.message)) || e).slice(0, 120) }); throw e; }
-    lastCloud.current = key; setCloudMem({ bkHash: strHash(key) }); cloudN.current = history.length; save({ ts: Date.now(), ok: true });
+    lastUpKey.current = dk; lastCloud.current = key; setCloudMem({ bkHash: strHash(key) }); cloudN.current = history.length; save({ ts: Date.now(), ok: true });
     return "✓ " + T("acBkNowDone");
   };
   const [newsAt, setNewsAt] = useState(null);
@@ -7047,14 +7081,6 @@ export default function App() {
       ) : (
         <>
           {swOffer && <SwitchAccountSheet onFresh={swFresh} onKeep={swKeep} onCancel={swCancel} />}
-          {rsOffer && !swOffer && <CloudRestoreSheet offer={rsOffer} onClose={() => setRsOffer(null)}
-            onRestore={() => {
-              try { applyCloudJson(rsOffer.json); cloudReady.current = true; cloudN.current = rsOffer.n || 0; sfxCheck(); } catch (_) {}
-              setRsOffer(null);
-              // restored during the first-start setup: everything is there, so the setup ends
-              if (onboard !== null) { setOnboard(null); window.scrollTo(0, 0); }
-            }}
-            onKeep={() => { cloudReady.current = true; cloudN.current = rsOffer.n || 0; setRsOffer(null); }} />}
           {onboard !== null && !session ? (
             <Onboarding start={onboard} profile={profile} setProfile={setProfile} kcal={kcal} setKcal={setKcal} acct={acct} onSignIn={signIn} onCreate={createProfile}
               onDone={() => { setOnboard(null); setUi({ ...ui, setupHidden: false }); if (!settings.onboarded) setSettings({ ...settings, onboarded: true }); window.scrollTo(0, 0); }} />
@@ -7075,7 +7101,7 @@ export default function App() {
                 {screen === "train" && <TrainTab settings={settings} setSettings={setSettings} onSetup={st => setOnboard(st)} dl={dlHidden ? null : dl} onDlClose={() => setDlHidden(true)} kcal={kcal} setKcal={setKcal} history={history} onStart={start} onFreeze={applyFreeze} ui={ui} setUi={setUi} active={session} onResume={resume} profile={profile} onGo={go} upd={updCard ? { open: () => { setUpdCard(false); setNewsAt(APP_VERSION); setNewsOpen(true); }, close: () => setUpdCard(false) } : null}
                   apk={apkUpd && !apkHidden ? { info: apkUpd, close: () => setApkHidden(true) } : null} />}
                 {screen === "history" && <HistoryTab history={history} editDate={histEdit} onEditOpened={() => setHistEdit(null)}
-                  onDelete={idx => editHistory(h => h.filter((_, i) => i !== idx))}
+                  onDelete={idx => { const e = history[idx]; if (e) syncTomb("del", entryId(e)); editHistory(h => h.filter((_, i) => i !== idx)); }}
                   onSaveEntry={(idx, entry) => editHistory(h => (idx === null ? [...h, entry] : h.map((e, i) => (i === idx ? entry : e))))} />}
                 {screen === "profile" && <ProfileTab history={history} profile={profile} setProfile={setProfile} onFreeze={applyFreeze} kcal={kcal} acct={acct} vis={myVis} onVis={setVis} onFriends={() => go("friends")} />}
                 {screen === "calories" && <Calories history={history} profile={profile} setProfile={setProfile} kcal={kcal} setKcal={setKcal} />}
