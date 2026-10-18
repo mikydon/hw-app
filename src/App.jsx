@@ -1343,6 +1343,11 @@ const stepBtn = () => ({ ...btnBase, width: 64, height: 64, borderRadius: 99, ba
 // Section title row: the title on the left, an optional quiet count/chip on the right (same on every screen).
 const SECT_HEAD = { display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 };
 const sectMeta = meta => meta ? <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: 0, textTransform: "none", color: C.dim, opacity: 1, whiteSpace: "nowrap" }}>{meta}</span> : null;
+// 1.7.0 (Michael, Oct 18: "the arrows should be the same in the whole app, I like the ones on Profile"): one arrow for
+// everything that opens something: the main colour, 20 px in rows, 1.25 em after a text link.
+function Arrow({ size = 20, style, dir = "›", ...rest }) {
+  return <span aria-hidden="true" {...rest} style={{ display: "inline-block", fontSize: size, lineHeight: 1, fontWeight: 700, color: C.signal, flexShrink: 0, ...style }}>{dir}</span>;
+}
 function Sect({ title, meta, children, style, titlePad, accent, flatTitle, onHead, headLabel, ...rest }) {
   // onHead (1.7.0): the title row is a button (e.g. Profile → Badges opens all badges with the progress), with a ›
   const head = st => {
@@ -1352,7 +1357,7 @@ function Sect({ title, meta, children, style, titlePad, accent, flatTitle, onHea
       <button type="button" onClick={() => { sfxTap(); onHead(); }} data-sect-open aria-haspopup="dialog" aria-label={headLabel}
         style={{ ...st, ...SECT_HEAD, width: "100%", border: "none", background: "transparent", cursor: "pointer", textAlign: "left", fontFamily: BODY, borderRadius: 8 }}>
         <span>{title}</span>
-        <span style={{ display: "inline-flex", alignItems: "center", gap: 6, minWidth: 0 }}>{sectMeta(meta)}<span aria-hidden="true" style={{ fontSize: 15, lineHeight: 1, letterSpacing: 0, color: C.signal, opacity: 1 }}>›</span></span>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 6, minWidth: 0 }}>{sectMeta(meta)}<Arrow size={18} style={{ letterSpacing: 0, textTransform: "none" }} /></span>
       </button>
     );
   };
@@ -1634,7 +1639,7 @@ function AboutBox({ gh: gh0, dl, onNews, apk, busy }) {
     <div data-about style={{ margin: "auto 14px 14px", background: C.panel, border: `1px solid ${C.line}`, borderRadius: 18, padding: "4px 14px", ...(LOOK === "liquid" ? { ...LIQUID_PILL(), borderRadius: 20 } : {}) }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, padding: "10px 0" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}><Logo size={30} /><span style={{ fontSize: 14, fontWeight: 800, color: C.chalk }}>HW App {APP_VERSION}</span></div>
-        {onNews && <button onClick={onNews} data-news-btn style={{ ...btnBase, background: "transparent", color: C.sky, fontSize: 13, padding: "4px 0" }}>{T("newsLink")} ›</button>}
+        {onNews && <button onClick={onNews} data-news-btn style={{ ...btnBase, background: "transparent", color: C.sky, fontSize: 13, padding: "4px 0" }}>{T("newsLink")} <Arrow size="1.25em" style={{ verticalAlign: "-0.08em" }} /></button>}
       </div>
       {apk && <div data-menu-apk style={{ borderTop: `1px solid ${C.line}`, padding: "10px 0 4px" }}><ApkUpdateCard info={apk} busy={busy} inMenu /></div>}
       {!apk && isNative && dl && dl.kind === "ready" && !busy && (
@@ -1647,13 +1652,13 @@ function AboutBox({ gh: gh0, dl, onNews, apk, busy }) {
         <button data-gh={gh} onClick={() => { sfxTap(); openExternal("https://github.com/mikydon/hw-app/releases/latest"); }} style={{ ...row, color: newer ? C.mint : C.dim, fontSize: 13, fontWeight: 700 }}>
           <span style={{ flex: 1, minWidth: 0 }}>{T("ghLatest", { v: gh })}</span>
           {newer && <span style={{ fontSize: 10, fontWeight: 900, padding: "2px 7px", borderRadius: 99, background: C.mint, color: C.ink, letterSpacing: 0.3 }}>{T("ghNew")}</span>}
-          <span aria-hidden="true">›</span>
+          <Arrow />
         </button>
       )}
       {status && <div style={{ padding: "10px 0", borderTop: `1px solid ${C.line}` }}>{status}</div>}
       {!isNative && (
         <button onClick={() => { sfxTap(); openExternal("https://github.com/mikydon/hw-app/releases/latest"); }} data-get-android style={{ ...row, color: C.mint, fontSize: 13, fontWeight: 800 }}>
-          <span style={{ flex: 1 }}>{T("getAndroid")}</span><span aria-hidden="true">›</span>
+          <span style={{ flex: 1 }}>{T("getAndroid")}</span><Arrow />
         </button>
       )}
     </div>
@@ -2140,7 +2145,7 @@ function WhatsNew({ onClose, at }) {
   };
   const p = pages[pg] || pages[0];
   const arrow = (dis, on, label, ch) => (
-    <button onClick={on} disabled={dis} aria-label={label} style={{ ...btnBase, width: 34, height: 34, padding: 0, borderRadius: 10, background: C.panelHi, color: dis ? C.line : C.chalk, fontSize: 18, flexShrink: 0 }}>{ch}</button>
+    <button onClick={on} disabled={dis} aria-label={label} style={{ ...btnBase, width: 34, height: 34, padding: 0, borderRadius: 10, background: C.panelHi, color: dis ? C.line : C.signal, fontSize: 20, fontWeight: 700, flexShrink: 0 }}>{ch}</button>
   );
   return (
     <Sheet title={T("newsTitle", { v: p.v })} onClose={onClose}>
@@ -2163,7 +2168,7 @@ function WhatsNew({ onClose, at }) {
             style={{ flex: "0 0 100%", minWidth: 0, scrollSnapAlign: "start", scrollSnapStop: "always", boxSizing: "border-box", padding: "0 1px" }}>
             {x.big ? (<>
               <div data-whatsnew style={{ fontSize: 14, color: C.dim, lineHeight: 1.5, marginBottom: 12 }}>{T("newsIntro")}</div>
-              {pages.length > 1 && <button onClick={() => goTo(1)} data-news-swipe style={{ ...btnBase, background: "transparent", color: C.sky, fontSize: 13, padding: "0 0 12px", textAlign: "left" }}>{T("newsSwipe")}</button>}
+              {pages.length > 1 && <button onClick={() => goTo(1)} data-news-swipe style={{ ...btnBase, background: "transparent", color: C.sky, fontSize: 13, padding: "0 0 12px", textAlign: "left" }}>{T("newsSwipe")} <Arrow size="1.25em" style={{ verticalAlign: "-0.08em" }} /></button>}
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {x.items.map(([title, before, now], j) => (
                   <div key={j} style={{ ...card, padding: "12px 14px" }}>
@@ -2230,7 +2235,7 @@ function UpdateCard({ onOpen, onClose }) {
       <span style={{ fontSize: 26 }}>🎉</span>
       <div style={{ minWidth: 0 }}>
         <div style={{ fontSize: 15, fontWeight: 800, color: C.chalk }}>{T("updTitle", { v: APP_VERSION })}</div>
-        <button onClick={() => { sfxTap(); onOpen(); }} data-update-open style={{ ...btnBase, background: "transparent", color: C.signal, fontSize: 14, padding: "4px 0 0", textAlign: "left" }}>{T("updBtn")} ›</button>
+        <button onClick={() => { sfxTap(); onOpen(); }} data-update-open style={{ ...btnBase, background: "transparent", color: C.signal, fontSize: 14, padding: "4px 0 0", textAlign: "left" }}>{T("updBtn")} <Arrow size="1.25em" style={{ verticalAlign: "-0.08em" }} /></button>
       </div>
       <CloseX onClick={onClose} />
     </div>
@@ -2267,7 +2272,7 @@ function ApkUpdateCard({ info, busy, onClose, inMenu }) {
           </div>
           {s.kind === "idle" && <>
             <div style={{ fontSize: 12, color: C.dim, lineHeight: 1.45, marginTop: 2 }}>{T(play ? "playUpdBody" : inApp ? "apkUpdBody" : "apkUpdBodyWeb")}</div>
-            {(!play || PLAY_STORE_LINK) && <button onClick={download} data-apk-download style={link}>{T(play ? "playUpdBtn" : "apkUpdBtn")} ›</button>}
+            {(!play || PLAY_STORE_LINK) && <button onClick={download} data-apk-download style={link}>{T(play ? "playUpdBtn" : "apkUpdBtn")} <Arrow size="1.25em" style={{ verticalAlign: "-0.08em" }} /></button>}
           </>}
           {s.kind === "downloading" && <>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 8 }}>
@@ -2289,7 +2294,7 @@ function ApkUpdateCard({ info, busy, onClose, inMenu }) {
           </>)}
           {s.kind === "error" && <>
             <div style={{ fontSize: 12, color: C.dim, lineHeight: 1.45, marginTop: 2 }}>{T("apkErrD")}</div>
-            <button data-apk-retry onClick={download} style={link}>{T("apkRetry")} ›</button>
+            <button data-apk-retry onClick={download} style={link}>{T("apkRetry")} <Arrow size="1.25em" style={{ verticalAlign: "-0.08em" }} /></button>
           </>}
         </div>
       </div>
@@ -2317,7 +2322,7 @@ function HintCard({ ui, setUi, onGo }) {
       <div style={{ minWidth: 0 }}>
         <div style={{ fontSize: 12, fontWeight: 800, color: C.sky }}>{T("hintTitle")}</div>
         <div style={{ fontSize: 14, color: C.chalk, lineHeight: 1.45, marginTop: 2 }}>{T("hint_" + h.k)}</div>
-        {h.go && <button onClick={() => { setUi({ ...ui, hintHidden: today }); onGo(h.go); }} style={{ ...btnBase, background: "transparent", color: C.sky, padding: "6px 0 0", fontSize: 13 }}>{T("hintGo")} ›</button>}
+        {h.go && <button onClick={() => { setUi({ ...ui, hintHidden: today }); onGo(h.go); }} style={{ ...btnBase, background: "transparent", color: C.sky, padding: "6px 0 0", fontSize: 13 }}>{T("hintGo")} <Arrow size="1.25em" style={{ verticalAlign: "-0.08em" }} /></button>}
       </div>
     </div>
   );
@@ -2479,9 +2484,9 @@ function DateField({ value, max, onChange, label, field }) {
       {open && (
         <Sheet title={label} onClose={() => setOpen(false)} short>
           <div data-date-sheet style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-            <button onClick={() => shift(-1)} aria-label={T("prevMonth")} style={{ ...ghostBtn, padding: "6px 14px", fontSize: 18 }}>‹</button>
+            <button onClick={() => shift(-1)} aria-label={T("prevMonth")} style={{ ...ghostBtn, color: C.signal, padding: "6px 14px", fontSize: 18 }}>‹</button>
             <div style={{ fontFamily: DISPLAY, fontSize: 22, fontWeight: 900, color: C.chalk }}>{capFirst(fmtMonthYear(first))}</div>
-            <button onClick={() => canNext && shift(1)} disabled={!canNext} aria-label={T("nextMonth")} style={{ ...ghostBtn, padding: "6px 14px", fontSize: 18, opacity: canNext ? 1 : 0.3 }}>›</button>
+            <button onClick={() => canNext && shift(1)} disabled={!canNext} aria-label={T("nextMonth")} style={{ ...ghostBtn, color: C.signal, padding: "6px 14px", fontSize: 18, opacity: canNext ? 1 : 0.3 }}>›</button>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(7, minmax(0, 1fr))", gap: 5 }}>
             {weekdaysShort().map(w => <div key={w} style={{ textAlign: "center", fontSize: 11, fontWeight: 700, color: C.dim, paddingBottom: 2 }}>{w}</div>)}
@@ -2660,7 +2665,7 @@ function Onboarding({ start = 0, profile, setProfile, kcal, setKcal, onDone, acc
               <span aria-hidden="true" style={{ width: 22, height: 22, borderRadius: 7, flexShrink: 0, border: `2px solid ${age16 ? C.mint : C.line}`, background: age16 ? C.mint : "transparent", color: C.ink, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 900 }}>{age16 ? "✓" : ""}</span>
               <span>{T("frAge", { n: ACCOUNT_AGE })}</span>
             </button>
-            <button onClick={() => { sfxTap(); openExternal(PRIVACY_URL); }} style={{ ...btnBase, background: "transparent", color: C.sky, fontSize: 13, padding: "4px 4px 0 38px" }}>{T("privacyLink")} ›</button>
+            <button onClick={() => { sfxTap(); openExternal(PRIVACY_URL); }} style={{ ...btnBase, background: "transparent", color: C.sky, fontSize: 13, padding: "4px 4px 0 38px" }}>{T("privacyLink")} <Arrow size="1.25em" style={{ verticalAlign: "-0.08em" }} /></button>
             <button data-ob-signin onClick={signIn} disabled={!age16 || busy} className="b3d" style={{ ...bigBtn(C.chalk, C.ink), marginTop: 14, opacity: age16 ? 1 : 0.45, display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}><GLogo />{busy ? T("frSigning") : T("frSignIn")}</button>
           </>}
         </>}
@@ -3066,7 +3071,7 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
           {isNative && onGo && (
             <div data-move style={{ fontSize: 13, color: C.sky, lineHeight: 1.55, marginTop: 10, paddingTop: 10, borderTop: `1px solid ${C.line}` }}>
               {T("welcomeMove")}
-              <button onClick={() => { sfxTap(); onGo("settings"); }} style={{ ...btnBase, display: "block", background: "transparent", color: C.signal, fontSize: 14, padding: "6px 0 0" }}>{T("welcomeMoveBtn")} ›</button>
+              <button onClick={() => { sfxTap(); onGo("settings"); }} style={{ ...btnBase, display: "block", background: "transparent", color: C.signal, fontSize: 14, padding: "6px 0 0" }}>{T("welcomeMoveBtn")} <Arrow size="1.25em" style={{ verticalAlign: "-0.08em" }} /></button>
             </div>
           )}
         </div>
@@ -3075,7 +3080,7 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
         <div aria-hidden="true" style={{ fontSize: 19, lineHeight: 1, flexShrink: 0 }}>💡</div>
         <div style={{ minWidth: 0, fontSize: 14, color: C.chalk, lineHeight: 1.4 }}>
           {T("hint_" + hint.k)}
-          {hint.go && <button onClick={() => { setUi({ ...ui, hintHidden: today }); onGo(hint.go); }} style={{ ...btnBase, display: "inline", background: "transparent", color: C.sky, padding: "0 0 0 6px", fontSize: 13, whiteSpace: "nowrap" }}>{T("hintGo")} ›</button>}
+          {hint.go && <button onClick={() => { setUi({ ...ui, hintHidden: today }); onGo(hint.go); }} style={{ ...btnBase, display: "inline", background: "transparent", color: C.sky, padding: "0 0 0 6px", fontSize: 13, whiteSpace: "nowrap" }}>{T("hintGo")} <Arrow size="1.25em" style={{ verticalAlign: "-0.08em" }} /></button>}
         </div>
       </>, () => setUi({ ...ui, hintHidden: today }), { "data-hint": hint.k })}
       {notice === "daily" && ntBox("daily", C.signal, (
@@ -3135,7 +3140,7 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
                     <span style={{ display: "block", fontWeight: 700 }}>{noEmo(T("exMenu"))}</span>
                     <span style={{ display: "block", fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2, lineHeight: 1.4 }}>{T("exMenuD")}</span>
                   </span>
-                  <span aria-hidden="true" style={{ color: C.dim, fontSize: 20 }}>›</span>
+                  <Arrow />
                 </button>
                 <SettingRow title={T("sndTimer")} desc={T("sndTimerD")} on={settings.sndTimer} onClick={() => { unlockAudio(); const v = !settings.sndTimer; setS("sndTimer", v); if (v) soundExercise(); }} />
                 <SettingRow title={T("vibrate")} desc={T("vibrateD")} on={settings.vibrate} onClick={() => { const v = !settings.vibrate; setS("vibrate", v); if (v) vibratePattern([160]); }} />
@@ -3411,7 +3416,7 @@ function HomeKcal({ history, kcal, setKcal, onOpen }) {
     return (
       <button data-home-kcal="setup" onClick={() => { sfxTap(); onOpen(); }} style={{ ...btnBase, ...card, width: "100%", marginTop: mt, padding: "14px 16px", display: "flex", alignItems: "center", gap: 12, color: C.chalk, textAlign: "left" }}>
         <span style={{ flex: 1, minWidth: 0 }}><span style={{ display: "block", fontSize: 15, fontWeight: 800 }}>{T("kcHomeSetup")}</span><span style={{ display: "block", fontSize: 12, color: C.dim, marginTop: 3 }}>{T("kcHomeSetupD")}</span></span>
-        <span aria-hidden="true" style={{ color: C.dim, fontSize: 20 }}>›</span>
+        <Arrow />
       </button>
     );
   }
@@ -3431,7 +3436,7 @@ function HomeKcal({ history, kcal, setKcal, onOpen }) {
       <span style={{ display: "block", height: 5, borderRadius: 99, background: `${C.chalk}14`, marginTop: 10, overflow: "hidden" }}><span style={{ display: "block", width: `${pct * 100}%`, height: "100%", borderRadius: 99, background: col, transition: `width ${MO.fill} ${MO.ease}` }} /></span>
       <span style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 9 }}>
         <span data-home-kcal-line style={{ flex: 1, fontSize: 13, color: s.hit ? KC_HIT : C.dim, lineHeight: 1.45 }}>{kcalLine(s)}</span>
-        <span aria-hidden="true" data-home-kcal-open style={{ color: C.dim, fontSize: 20, lineHeight: 1 }}>›</span>
+        <Arrow data-home-kcal-open />
       </span>
     </button>
   );
@@ -3868,12 +3873,12 @@ function KcalCalendar({ history, kcal, sel, onSel }) {
   return (
     <Sect data-kc-cal style={{ marginTop: 0 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-        <button onClick={() => shift(-1)} aria-label={T("prevMonth")} style={{ ...ghostBtn, padding: "4px 12px", fontSize: 16 }}>‹</button>
+        <button onClick={() => shift(-1)} aria-label={T("prevMonth")} style={{ ...ghostBtn, color: C.signal, padding: "4px 12px", fontSize: 16 }}>‹</button>
         <div style={{ textAlign: "center", minWidth: 0 }}>
           <div key={`${y}-${m}`} className="titleIn" style={{ fontFamily: DISPLAY, fontSize: 22, fontWeight: 900, color: C.chalk }}>{capFirst(fmtMonthYear(first))}</div>
           <div data-kc-cal-count style={{ fontSize: 12, color: C.dim }}>{T("kcMonthLogged", { n: logged })} · <span style={{ color: hits ? KC_HIT : C.dim }}>{T("kcMonthHit", { n: hits })}</span></div>
         </div>
-        <button onClick={() => canNext && shift(1)} disabled={!canNext} aria-label={T("nextMonth")} style={{ ...ghostBtn, padding: "4px 12px", fontSize: 16, opacity: canNext ? 1 : 0.3 }}>›</button>
+        <button onClick={() => canNext && shift(1)} disabled={!canNext} aria-label={T("nextMonth")} style={{ ...ghostBtn, color: C.signal, padding: "4px 12px", fontSize: 16, opacity: canNext ? 1 : 0.3 }}>›</button>
       </div>
       <div key={`${y}-${m}`} className="titleIn" style={{ display: "grid", gridTemplateColumns: "repeat(7, minmax(0, 1fr))", gap: 5 }}>
         {weekdaysShort().map(w => <div key={w} style={{ fontSize: 11, color: C.dim, textAlign: "center", fontWeight: 600 }}>{w}</div>)}
@@ -3928,12 +3933,12 @@ function MonthCalendar({ history }) {
   return (
     <Sect data-month-cal style={{ padding: "14px 14px 12px", marginTop: 0 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-        <button onClick={() => shift(-1)} aria-label={T("prevMonth")} style={{ ...ghostBtn, padding: "4px 12px", fontSize: 16 }}>‹</button>
+        <button onClick={() => shift(-1)} aria-label={T("prevMonth")} style={{ ...ghostBtn, color: C.signal, padding: "4px 12px", fontSize: 16 }}>‹</button>
         <div style={{ textAlign: "center" }}>
           <div style={{ fontFamily: DISPLAY, fontSize: 22, fontWeight: 900, color: C.chalk }}>{capFirst(fmtMonthYear(first))}</div>
           <div style={{ fontSize: 12, color: C.dim }}>{TP("workouts", count)}</div>
         </div>
-        <button onClick={() => shift(1)} aria-label={T("nextMonth")} style={{ ...ghostBtn, padding: "4px 12px", fontSize: 16 }}>›</button>
+        <button onClick={() => shift(1)} aria-label={T("nextMonth")} style={{ ...ghostBtn, color: C.signal, padding: "4px 12px", fontSize: 16 }}>›</button>
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 5 }}>
         {weekdaysShort().map(d => <div key={d} style={{ fontSize: 11, color: C.dim, textAlign: "center", fontWeight: 600 }}>{d}</div>)}
@@ -4427,7 +4432,7 @@ function ProfileTab({ history, profile, setProfile, onFreeze, kcal, acct, vis, o
             <div data-pv-vis-desc style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.5, marginTop: 9 }}>{vis === undefined ? T("frLoading") : T("pvVisD_" + vis)} {T("pvPrivate")}</div>
             {visErr && <div role="alert" style={{ fontSize: 12.5, color: "#ff8a80", marginTop: 6 }}>{visErr}</div>}
             <button data-pv-preview onClick={() => { sfxTap(); setPreview(true); }} style={{ ...btnBase, width: "100%", marginTop: 10, padding: "11px 13px", borderRadius: 12, background: SOFT(), color: C.chalk, fontSize: 14, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <span>{T("pvPreview")}</span><span aria-hidden="true" style={{ color: C.dim }}>›</span>
+              <span>{T("pvPreview")}</span><Arrow />
             </button>
           </>
         ) : (
@@ -4474,7 +4479,7 @@ function ProfileTab({ history, profile, setProfile, onFreeze, kcal, acct, vis, o
             <button type="button" data-badges-all onClick={() => { sfxTap(); setBadgeSheet({}); }} style={{ ...btnBase, width: "100%", marginTop: won.length ? 8 : 0, padding: "12px 13px", borderRadius: 12, background: SOFT(), color: C.chalk, fontSize: 14, display: "flex", alignItems: "center", gap: 10, textAlign: "left" }}>
               <span style={{ flex: 1, minWidth: 0 }}>{T("achOpenAll")}</span>
               {locked.length > 0 && <span style={{ fontSize: 12.5, fontWeight: 600, color: C.dim, whiteSpace: "nowrap" }}>🔒 {locked.length}</span>}
-              <span aria-hidden="true" style={{ fontSize: 20, lineHeight: 1, color: C.signal }}>›</span>
+              <Arrow />
             </button>
           </>
         );
@@ -4573,7 +4578,7 @@ function OpenInApp() {
         <span style={{ fontSize: 26 }}>📱</span>
         <div style={{ minWidth: 0 }}>
           <div style={{ fontSize: 14, fontWeight: 700, color: C.chalk, lineHeight: 1.45 }}>{T("frOpenApp")}</div>
-          <a href={href} data-open-app-btn onClick={() => sfxTap()} style={{ display: "inline-block", paddingTop: 4, color: C.signal, fontSize: 14, fontWeight: 800, textDecoration: "none" }}>{T("frOpenAppBtn")} ›</a>
+          <a href={href} data-open-app-btn onClick={() => sfxTap()} style={{ display: "inline-block", paddingTop: 4, color: C.signal, fontSize: 14, fontWeight: 800, textDecoration: "none" }}>{T("frOpenAppBtn")} <Arrow size="1.25em" style={{ verticalAlign: "-0.08em" }} /></a>
         </div>
         <CloseX onClick={() => { try { sessionStorage.removeItem("hw-link-add"); } catch (_) {} setHide(true); }} />
       </div>
@@ -4712,7 +4717,7 @@ function PersonSheet({ p, isFriend, onAdd, onChat, onRemove, onBlock, onReport, 
       </div>
       {onProfile && (
         <button data-ps-profile onClick={() => { sfxTap(); onProfile(p); }} style={{ ...btnBase, width: "100%", marginTop: 14, padding: "12px 14px", borderRadius: 12, background: SOFT(), color: C.chalk, fontSize: 14, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <span>{T("pvOpen")}</span><span aria-hidden="true" style={{ color: C.dim }}>›</span>
+          <span>{T("pvOpen")}</span><Arrow />
         </button>
       )}
       <div style={{ display: "flex", gap: 8, marginTop: onProfile ? 8 : 16, flexWrap: "wrap" }}>
@@ -4848,7 +4853,7 @@ function FriendsTab({ acct, history, profile, social, chatWith, setChatWith, onB
               <span aria-hidden="true" style={{ width: 22, height: 22, borderRadius: 7, flexShrink: 0, border: `2px solid ${age16 ? C.mint : C.line}`, background: age16 ? C.mint : "transparent", color: C.ink, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 900 }}>{age16 ? "✓" : ""}</span>
               <span>{T("frAge", { n: ACCOUNT_AGE })}</span>
             </button>
-            <button data-privacy onClick={() => { sfxTap(); openExternal(PRIVACY_URL); }} style={{ ...btnBase, background: "transparent", color: C.sky, fontSize: 13, padding: "4px 4px 0 38px" }}>{T("privacyLink")} ›</button>
+            <button data-privacy onClick={() => { sfxTap(); openExternal(PRIVACY_URL); }} style={{ ...btnBase, background: "transparent", color: C.sky, fontSize: 13, padding: "4px 4px 0 38px" }}>{T("privacyLink")} <Arrow size="1.25em" style={{ verticalAlign: "-0.08em" }} /></button>
             <button data-fr-signin onClick={go} disabled={!age16 || busy} className="b3d"
               style={{ ...bigBtn(C.chalk, C.ink), marginTop: 14, display: "flex", alignItems: "center", justifyContent: "center", gap: 10, opacity: age16 ? 1 : 0.45 }}>
               <GLogo />
@@ -5554,7 +5559,7 @@ function AccountBox({ acct, cloudBk, onOpen, onRestore, onBackupNow, onSignOut, 
     <ListSect title={T("acTitle")}>
       <button data-acct-signin onClick={() => { sfxTap(); onOpen(); }} style={rowBtn(true)}>
         <span style={{ flex: 1 }}>{T("acSignIn")}{sub(T("acSignInD"))}</span>
-        <span aria-hidden="true" style={{ color: C.dim, fontSize: 20 }}>›</span>
+        <Arrow />
       </button>
     </ListSect>
   );
@@ -5563,7 +5568,7 @@ function AccountBox({ acct, cloudBk, onOpen, onRestore, onBackupNow, onSignOut, 
       <ListSect title={T("acTitle")} data-acct>
         <button onClick={() => { sfxTap(); onOpen(); }} style={rowBtn(true)}>
           <span style={{ flex: 1, minWidth: 0 }}>{acct.prof ? T("acSignedIn", { nick: acct.prof.nick }) : T("acSignedInNoNick")}{sub(acct.prof ? fmtCode(acct.prof.code) : T("frNickTitle"))}</span>
-          <span aria-hidden="true" style={{ color: C.dim, fontSize: 20 }}>›</span>
+          <Arrow />
         </button>
         <div style={{ ...rowBtn(false), display: "block", cursor: "default", boxSizing: "border-box" }}>
           {T("acBackup")}
@@ -5709,7 +5714,7 @@ function ExercisesPage({ settings, set, history, onBack }) {
   return (
     <div>
       {howEx && <HowTo id={howEx} history={history} onClose={() => setHowEx(null)} />}
-      <button onClick={() => { sfxTap(); onBack(); }} style={{ ...ghostBtn, marginTop: 10, padding: "8px 12px" }}>‹ {T("tabSettings")}</button>
+      <button onClick={() => { sfxTap(); onBack(); }} style={{ ...ghostBtn, marginTop: 10, padding: "8px 12px" }}><Arrow dir="‹" size="1.25em" style={{ verticalAlign: "-0.08em", marginRight: 6 }} />{T("tabSettings")}</button>
       <div style={{ fontFamily: DISPLAY, fontSize: 28, fontWeight: 900, color: C.chalk, margin: "14px 0 10px" }}>{T("exTitle")}</div>
       <div style={{ fontSize: 13, color: C.dim, lineHeight: 1.55 }}>{T("exIntro")}</div>
       {ALT_GROUPS.map((g, gi) => {
@@ -5829,7 +5834,7 @@ function SettingsTab({ initPage, settings, setSettings, history, profile, setPro
             style={{ ...btnBase, width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "8px 16px 13px", textAlign: "left", fontSize: 16, color: C.chalk, background: "transparent", borderRadius: 0 }}>
             <span aria-hidden="true" style={{ fontSize: 22 }}>{cur.flag}</span>
             <span style={{ flex: 1 }}>{cur.name}</span>
-            <span aria-hidden="true" style={{ color: C.dim, fontSize: 20 }}>›</span>
+            <Arrow />
           </button>
         </ListSect>
       ); })()}
@@ -5848,7 +5853,7 @@ function SettingsTab({ initPage, settings, setSettings, history, profile, setPro
               );
             })}
           </div>
-          <button data-translate-help onClick={() => { sfxTap(); openExternal(TRANSLATE_URL); }} style={{ ...btnBase, background: "transparent", color: C.sky, fontSize: 13, padding: "14px 2px 2px", textAlign: "left", lineHeight: 1.45 }}>{T("translateHelp")}</button>
+          <button data-translate-help onClick={() => { sfxTap(); openExternal(TRANSLATE_URL); }} style={{ ...btnBase, background: "transparent", color: C.sky, fontSize: 13, padding: "14px 2px 2px", textAlign: "left", lineHeight: 1.45 }}>{T("translateHelp")} <Arrow size="1.25em" style={{ verticalAlign: "-0.08em" }} /></button>
         </Sheet>
       )}
 
@@ -5919,7 +5924,7 @@ function SettingsTab({ initPage, settings, setSettings, history, profile, setPro
             {noEmo(T("exMenu"))}
             <span style={{ display: "block", fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2 }}>{T("exMenuD")}</span>
           </span>
-          <span aria-hidden="true" style={{ color: C.dim, fontSize: 20 }}>›</span>
+          <Arrow />
         </button>
         <SettingRow title={T("vibrate")} desc={`${T("vibrateD")} ${T("vibrateHint")}`} on={settings.vibrate} onClick={() => { set("vibrate", !settings.vibrate); if (!settings.vibrate) vibratePattern([160]); }} />
         <SettingRow title={T("keepAwake")} desc={T("keepAwakeD")} on={settings.keepAwake} onClick={() => set("keepAwake", !settings.keepAwake)} />
@@ -5940,7 +5945,7 @@ function SettingsTab({ initPage, settings, setSettings, history, profile, setPro
               on={settings.autoBackup} onClick={() => { const v = !settings.autoBackup; set("autoBackup", v); sfxTap(); if (v) onAutoBackup(true); }} />
             <button data-bk-open onClick={() => { sfxTap(); setBkOpen(true); }} style={{ ...rowBtn(false), display: "flex", alignItems: "center", gap: 10 }}>
               <span style={{ flex: 1 }}>{noEmo(T("bkFolder"))}<span style={{ display: "block", fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2 }}>{T("bkFolderD", { dir: `Documents/${BK_DIR}` })}</span></span>
-              <span aria-hidden="true" style={{ color: C.dim, fontSize: 20 }}>›</span>
+              <Arrow />
             </button>
           </>
         )}
@@ -5974,7 +5979,7 @@ function SettingsTab({ initPage, settings, setSettings, history, profile, setPro
       <div style={{ fontSize: 12, color: C.dim, textAlign: "center", marginTop: 26, lineHeight: 1.6, display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
         <Logo size={44} />
         <div>{T("about", { v: APP_VERSION })}<br />{T("privacy")}</div>
-        <button data-privacy onClick={() => { sfxTap(); openExternal(PRIVACY_URL); }} style={{ ...btnBase, background: "transparent", color: C.sky, fontSize: 12, padding: "2px 0" }}>{T("privacyLink")} ›</button>
+        <button data-privacy onClick={() => { sfxTap(); openExternal(PRIVACY_URL); }} style={{ ...btnBase, background: "transparent", color: C.sky, fontSize: 12, padding: "2px 0" }}>{T("privacyLink")} <Arrow size="1.25em" style={{ verticalAlign: "-0.08em" }} /></button>
       </div>
     </div>
   );

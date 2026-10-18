@@ -63,7 +63,7 @@ export default {
     newsAlso: "小さなアップデート {a}–{b} も含みます",
     newsAlso1: "小さなアップデート {a} も含みます",
     newsAlsoD: "見逃していた分も、今回まとめて入ります。",
-    newsSwipe: "小さなアップデート：左にスワイプかここをタップ ›",
+    newsSwipe: "小さなアップデート：左にスワイプかここをタップ",
     newsPrev: "前へ",
     newsNext: "次へ",
     updTitle: "アプリが {v} に更新されました",
@@ -616,7 +616,7 @@ export default {
 
     appearance: "外観",
     language: "言語",
-    translateHelp: "あなたの言語がない、または誤りを見つけた？GitHub で翻訳を手伝う ›",
+    translateHelp: "あなたの言語がない、または誤りを見つけた？GitHub で翻訳を手伝う",
     sounds: "サウンド",
     sndTap: "ボタンの音",
     sndTapD: "タップしたときの小さなクリック音。",

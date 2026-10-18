@@ -63,7 +63,7 @@ export default {
     newsAlso: "A kis frissítések is: {a}–{b}",
     newsAlso1: "A(z) {a} kis frissítés is",
     newsAlsoD: "Ha kihagytad őket, most azokat is megkapod.",
-    newsSwipe: "Kis frissítések: húzd balra vagy koppints ide ›",
+    newsSwipe: "Kis frissítések: húzd balra vagy koppints ide",
     newsPrev: "Előző",
     newsNext: "Következő",
     updTitle: "Az app frissült: {v}",
@@ -616,7 +616,7 @@ export default {
 
     appearance: "Megjelenés",
     language: "Nyelv",
-    translateHelp: "Hiányzik a nyelved, vagy hibát találtál? Segíts fordítani a GitHubon ›",
+    translateHelp: "Hiányzik a nyelved, vagy hibát találtál? Segíts fordítani a GitHubon",
     sounds: "Hangok",
     sndTap: "Gombhangok",
     sndTapD: "Halk kattanás koppintáskor.",

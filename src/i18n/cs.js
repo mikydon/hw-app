@@ -63,7 +63,7 @@ export default {
     newsAlso: "I menší aktualizace {a}–{b}",
     newsAlso1: "I menší aktualizace {a}",
     newsAlsoD: "Pokud jsi je vynechal, máš je teď taky.",
-    newsSwipe: "Drobné úpravy: přejeď doleva nebo ťukni sem ›",
+    newsSwipe: "Drobné úpravy: přejeď doleva nebo ťukni sem",
     newsPrev: "Předchozí",
     newsNext: "Další",
     updTitle: "Appka byla aktualizována na {v}",
@@ -616,7 +616,7 @@ export default {
 
     appearance: "Vzhled",
     language: "Jazyk",
-    translateHelp: "Chybí tvůj jazyk nebo je v překladu chyba? Pomoz s překladem na GitHubu ›",
+    translateHelp: "Chybí tvůj jazyk nebo je v překladu chyba? Pomoz s překladem na GitHubu",
     sounds: "Zvuky",
     sndTap: "Zvuky tlačítek",
     sndTapD: "Jemné cvaknutí při klepnutí.",

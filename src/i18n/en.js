@@ -63,7 +63,7 @@ export default {
     newsAlso: "Also the small updates {a}–{b}",
     newsAlso1: "Also the small update {a}",
     newsAlsoD: "If you skipped them, you get them now too.",
-    newsSwipe: "Small updates: swipe left or tap here ›",
+    newsSwipe: "Small updates: swipe left or tap here",
     newsPrev: "Previous",
     newsNext: "Next",
     updTitle: "The app has been updated to {v}",
@@ -616,7 +616,7 @@ export default {
 
     appearance: "Appearance",
     language: "Language",
-    translateHelp: "Missing your language, or found a mistake? Help translate on GitHub ›",
+    translateHelp: "Missing your language, or found a mistake? Help translate on GitHub",
     sounds: "Sounds",
     sndTap: "Button sounds",
     sndTapD: "A soft click when you tap.",

@@ -63,7 +63,7 @@ export default {
     newsAlso: "同时包含小更新 {a}–{b}",
     newsAlso1: "同时包含小更新 {a}",
     newsAlsoD: "如果你错过了它们，现在也一并获得。",
-    newsSwipe: "小更新：向左滑或点这里 ›",
+    newsSwipe: "小更新：向左滑或点这里",
     newsPrev: "上一页",
     newsNext: "下一页",
     updTitle: "应用已更新到 {v}",
@@ -616,7 +616,7 @@ export default {
 
     appearance: "外观",
     language: "语言",
-    translateHelp: "没有你的语言，或者发现了错误？在 GitHub 上帮忙翻译 ›",
+    translateHelp: "没有你的语言，或者发现了错误？在 GitHub 上帮忙翻译",
     sounds: "声音",
     sndTap: "按钮声音",
     sndTapD: "点击时轻轻的咔嗒声。",

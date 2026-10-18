@@ -63,7 +63,7 @@ export default {
     newsAlso: "작은 업데이트 {a}–{b}도 포함",
     newsAlso1: "작은 업데이트 {a}도 포함",
     newsAlsoD: "놓쳤던 것들도 이번에 함께 받아요.",
-    newsSwipe: "작은 업데이트: 왼쪽으로 밀거나 여기를 탭 ›",
+    newsSwipe: "작은 업데이트: 왼쪽으로 밀거나 여기를 탭",
     newsPrev: "이전",
     newsNext: "다음",
     updTitle: "앱이 {v}(으)로 업데이트되었어요",
@@ -616,7 +616,7 @@ export default {
 
     appearance: "화면",
     language: "언어",
-    translateHelp: "내 언어가 없거나 오류를 찾았나요? GitHub에서 번역을 도와주세요 ›",
+    translateHelp: "내 언어가 없거나 오류를 찾았나요? GitHub에서 번역을 도와주세요",
     sounds: "소리",
     sndTap: "버튼 소리",
     sndTapD: "탭할 때 부드러운 클릭 소리.",
