@@ -35,8 +35,15 @@ const THEMES = {
 const APP_VERSION = "1.6.5";
 // Big Shoulders has no Cyrillic, so Oswald (also condensed) covers Ukrainian. The browser only
 // downloads the Oswald unicode ranges a page actually uses.
-const DISPLAY = "'Big Shoulders Display', 'Oswald', 'Arial Narrow', Impact, sans-serif";
-const BODY = "'Figtree', -apple-system, 'Segoe UI', sans-serif";
+// 1.7.0: 'HW Emoji' = the app's own emoji (Fluent 3D, fonts/hw-emoji.ttf) for the emoji the app shows; BODY_SYS
+// leaves it out for what people type (chat messages, the emoji picker, reactions), which keeps the phone's emoji.
+// The font is a colour-bitmap font (CBDT, like Android's own emoji): Chrome, the Android app and Edge draw it; Safari
+// (every iPhone/iPad browser) and Firefox don't, and would show nothing, so there the phone's emoji stay.
+const HW_EMO = (() => { try { const u = navigator.userAgent; return !/Firefox\/|FxiOS|iPhone|iPad|iPod/.test(u) && !(/Safari\//.test(u) && !/Chrome\/|Chromium\//.test(u)) && !(/Macintosh/.test(u) && navigator.maxTouchPoints > 1); } catch (_) { return false; } })();
+const EMO_F = HW_EMO ? "'HW Emoji', " : "";
+const DISPLAY = `'Big Shoulders Display', 'Oswald', ${EMO_F}'Arial Narrow', Impact, sans-serif`;
+const BODY = `'Figtree', ${EMO_F}-apple-system, 'Segoe UI', sans-serif`;
+const BODY_SYS = "'Figtree', -apple-system, 'Segoe UI', sans-serif";
 // Chinese, Japanese and Korean glyphs are full width (the display font is condensed Latin), so a few big titles get smaller.
 const CJK = /[\u3040-\u30ff\u3400-\u9fff\uac00-\ud7af]/;
 
@@ -996,7 +1003,7 @@ function sheetGhost(wrap) {
     setTimeout(rm, 600);
   } catch (_) {}
 }
-function Sheet({ title, onClose, children, short }) {
+function Sheet({ title, onClose, children, short, sysEmo }) {
   const wrap = useRef(null), done = useRef(false);
   const close = () => { if (done.current) return; done.current = true; onClose(); };
   useBack(close);
@@ -1010,7 +1017,7 @@ function Sheet({ title, onClose, children, short }) {
           <div style={{ fontFamily: DISPLAY, fontSize: 30, fontWeight: 800, lineHeight: 1, color: C.chalk }}>{title}</div>
           <button onClick={close} aria-label={T("close")} style={{ ...btnBase, background: C.panelHi, color: C.dim, padding: "7px 12px", fontSize: 14 }}>✕</button>
         </div>
-        <div style={{ fontSize: 15, color: `${C.chalk}d9`, lineHeight: 1.65 }}>{children}</div>
+        <div className={sysEmo ? "sysEmo" : undefined} style={{ fontSize: 15, color: `${C.chalk}d9`, lineHeight: 1.65 }}>{children}</div>
       </div>
     </div>,
     document.body
@@ -4875,7 +4882,7 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
                       <span style={{ fontSize: 11, color: u ? C.signal : C.dim, flexShrink: 0 }}>{chTime(c.last.ts)}</span>
                     </span>
                     <span style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 2 }}>
-                      <span style={{ flex: 1, minWidth: 0, fontSize: 13, color: u ? C.chalk : C.dim, fontWeight: u ? 700 : 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.last.from === acct.uid ? `${T("chYou")}: ` : ""}{c.last.text}</span>
+                      <span className="sysEmo" style={{ flex: 1, minWidth: 0, fontSize: 13, color: u ? C.chalk : C.dim, fontWeight: u ? 700 : 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.last.from === acct.uid ? `${T("chYou")}: ` : ""}{c.last.text}</span>
                       {u && <span aria-label={T("chNew")} style={{ width: 9, height: 9, borderRadius: 5, background: C.signal, flexShrink: 0 }} />}
                     </span>
                   </span>
@@ -4948,7 +4955,7 @@ function EmojiSheet({ onPick, onClose }) {
   const jump = i => { setCat(i); const el = secs.current[i]; if (el && box.current) box.current.scrollTo({ top: el.offsetTop - box.current.offsetTop, behavior: "smooth" }); };
   const onScroll = () => { const b = box.current; if (!b) return; let k = 0; secs.current.forEach((el, i) => { if (el && el.offsetTop - b.offsetTop - 8 <= b.scrollTop) k = i; }); setCat(k); };
   return (
-    <Sheet title={T("chReact")} onClose={onClose}>
+    <Sheet title={T("chReact")} onClose={onClose} sysEmo>
       <div data-emoji-tabs style={{ display: "flex", gap: 2, overflowX: "auto", scrollbarWidth: "none", margin: "-4px -4px 8px", paddingBottom: 6, borderBottom: `1px solid ${C.line}` }}>
         {cats.map(([k, ic], i) => (
           <button key={k} onClick={() => { sfxTap(); jump(i); }} aria-label={names[k]} aria-pressed={cat === i}
@@ -4972,7 +4979,7 @@ function EmojiSheet({ onPick, onClose }) {
 function ReactSheet({ m, me, other, onRemove, onClose }) {
   const rows = Object.entries(m.rx || {});
   return (
-    <Sheet title={T("chReacts")} onClose={onClose} short>
+    <Sheet title={T("chReacts")} onClose={onClose} short sysEmo>
       {rows.map(([u, e]) => (
         <div key={u} data-react-row={u === me ? "me" : "them"} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderTop: `1px solid ${C.line}` }}>
           {u === me ? <span style={{ width: 38, height: 38, borderRadius: 99, background: C.panelHi, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, color: C.chalk }}>{T("chYou").slice(0, 1)}</span> : <PersonAvatar p={other} size={38} />}
@@ -5100,7 +5107,7 @@ function MsgMenu({ at, m, mine, me, other, th, onClose, onReply, onCopy, onEdit,
   const side = mine ? { right: Math.max(8, window.innerWidth - at.right) } : { left: Math.max(8, at.left) };
   const myRx = (m.rx || {})[me];
   return createPortal(
-    <div data-msg-menu onClick={onClose} onContextMenu={e => e.preventDefault()} style={{ position: "fixed", inset: 0, zIndex: 80, userSelect: "none", WebkitUserSelect: "none", WebkitTouchCallout: "none", background: on ? "rgba(0,0,0,.55)" : "rgba(0,0,0,0)", transition: "background .22s", fontFamily: BODY }}>
+    <div data-msg-menu className="sysEmo" onClick={onClose} onContextMenu={e => e.preventDefault()} style={{ position: "fixed", inset: 0, zIndex: 80, userSelect: "none", WebkitUserSelect: "none", WebkitTouchCallout: "none", background: on ? "rgba(0,0,0,.55)" : "rgba(0,0,0,0)", transition: "background .22s", fontFamily: BODY }}>
       <div data-rx-bar onClick={e => e.stopPropagation()} style={{ position: "absolute", top: stackTop, ...side, display: "flex", alignItems: "center", gap: 2, padding: "6px 6px", borderRadius: 99, background: C.panelHi, border: `1px solid ${C.line}`, boxShadow: "0 14px 34px rgba(0,0,0,.45)", opacity: on ? 1 : 0, transform: on ? "translateY(0) scale(1)" : "translateY(8px) scale(.9)", transformOrigin: mine ? "100% 100%" : "0 100%", transition: "opacity .2s, transform .3s cubic-bezier(.34,1.56,.64,1)" }}>
         {EMO_QUICK.map((e, i) => (
           <button key={e} data-rx-quick={e} onClick={() => onReact(myRx === e ? null : e)} aria-pressed={myRx === e}
@@ -5245,7 +5252,7 @@ function ChatView({ me, other, canWrite, onBack, onOpen, onReport, onBlock, shee
         onReply={() => startReply(menu.m)} onEdit={() => startEdit(menu.m)}
         onCopy={() => { copyText(menu.m.text); setMenu(null); setMsg(T("copied")); setTimeout(() => setMsg(""), 1800); }}
         onReport={() => { const m = menu.m; setMenu(null); onReport(m.text).then(r => { setMsg(r); setRepOffer(String(r).startsWith("✓")); }); }} />}
-      <div data-chat-msgs style={{ display: "flex", flexDirection: "column", justifyContent: "flex-end", gap: 4, flex: 1 }}>
+      <div data-chat-msgs className="sysEmo" style={{ display: "flex", flexDirection: "column", justifyContent: "flex-end", gap: 4, flex: 1 }}>
         {msgs === null ? <div style={{ color: C.dim, fontSize: 14, textAlign: "center", padding: 20 }}>{T("frLoading")}</div>
           : !msgs.length ? <div style={{ color: C.dim, fontSize: 13, textAlign: "center", padding: "24px 10px", lineHeight: 1.5 }}>{T("chStart", { nick: other.nick })}</div>
           : msgs.map(m => {
@@ -5272,7 +5279,7 @@ function ChatView({ me, other, canWrite, onBack, onOpen, onReport, onBlock, shee
               ↓ {T("chNewMsgs")}
             </button>
           )}
-          <div style={{ padding: 6, borderRadius: 22, ...card }}>
+          <div className="sysEmo" style={{ padding: 6, borderRadius: 22, ...card }}>
             {bar && (
               <div data-chat-bar={editing ? "edit" : "reply"} style={{ display: "flex", alignItems: "center", gap: 10, padding: "6px 6px 8px 10px", margin: "0 0 4px", borderBottom: `1px solid ${C.line}` }}>
                 <MsgIcon d={editing ? ICON_EDIT : ICON_REPLY} c={C.signal} />
@@ -5316,7 +5323,7 @@ function LiveNotice({ n, people, onOpen, onClose }) {
         <PersonAvatar p={p} size={38} />
         <span style={{ flex: 1, minWidth: 0 }}>
           <span style={{ display: "block", fontSize: 14, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{n.kind === "req" ? T("ntReq", { nick: p.nick }) : p.nick}</span>
-          <span style={{ display: "block", fontSize: 13, color: C.dim, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", marginTop: 1 }}>{n.kind === "req" ? T("ntReqD") : n.text}</span>
+          <span className={n.kind === "req" ? undefined : "sysEmo"} style={{ display: "block", fontSize: 13, color: C.dim, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", marginTop: 1 }}>{n.kind === "req" ? T("ntReqD") : n.text}</span>
         </span>
       </button>
     </div>,
@@ -6985,6 +6992,7 @@ export default function App() {
         .tbGoo{position:absolute;z-index:1;pointer-events:none;left:calc(-1 * var(--tbExt, 10px));right:calc(-1 * var(--tbExt, 10px));bottom:0;top:calc(-6px - var(--sat));visibility:hidden}
         @media (max-width: 380px){.tbOut{padding-left:6px;padding-right:6px}.tbBox{padding:11px 9px 11px 13px;gap:6px}}
         @media (prefers-reduced-motion: reduce){.tbOut::before,.tbOut.fl::before,.tbPill,.tbOut.fl .tbPill{transition:none}}
+        .sysEmo,.sysEmo *{font-family:${BODY_SYS}!important}
         @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}.conf{display:none}}
       `}</style>
       {!loaded ? (
