@@ -17,8 +17,8 @@ const C = {
   line: "#2c4679",
   chalk: "#eef2ff",
   dim: "#93a3c9",
-  signal: "#a78bfa", // 1.7.0 (Michael, Oct 18: "žltá je taká meh"): violet instead of yellow (#ffd23f), in every theme
-  signalInk: "#170a38",
+  signal: "#ffd23f", // the main colour; 1.7.0: a choice in Settings → Appearance (yellow by default)
+  signalInk: "#1d1700",
   mint: "#5fe3a1",
   sky: "#7cc4ff",
 };
@@ -894,15 +894,16 @@ function RankLadder({ id, best }) {
 
 // ─── SHARED UI ──────────────────────────────────────────────────────────────
 const btnBase = { border: "none", cursor: "pointer", fontFamily: BODY, fontWeight: 700, borderRadius: 14 };
-const EDGE = { [C.signal]: "#6f4fd6", [C.chalk]: "#8e9cc2", [C.panelHi]: "#0f2147", [C.mint]: "#2b9e66", "#e62117": "#9b120c" };
+const EDGE = { [C.signal]: "#c29300", [C.chalk]: "#8e9cc2", [C.panelHi]: "#0f2147", [C.mint]: "#2b9e66", "#e62117": "#9b120c" };
 // 1.7.0 (Michael, Oct 18: "žltá je taká meh" → "nech si môžu vybrať z viacerých"): the main colour (buttons, Start,
-// highlights) is a choice in Settings → Appearance, violet by default; yellow was the colour until 1.6.x.
+// highlights) is a choice in Settings → Appearance. Michael (Oct 18, later): yellow stays the main colour (the app
+// started with it), violet and the others are choices.
 // [colour, text on it, darker edge of 3D buttons]; every one has ≥ 4.5 contrast with its text and on the dark themes.
 // Michael (Oct 18): the other colours follow the choice so nothing looks alike: done/workouts (mint) and the calorie
 // colours (logged / target hit) move away from the main colour when they would be close to it.
 const ACCENTS = {
-  violet: { c: ["#a78bfa", "#170a38", "#6f4fd6"] },
   yellow: { c: ["#ffd23f", "#1d1700", "#c29300"] },
+  violet: { c: ["#a78bfa", "#170a38", "#6f4fd6"] },
   pink:   { c: ["#ff5fa2", "#2b0716", "#c4336f"] },
   cyan:   { c: ["#2ee6d6", "#00221f", "#14a397"], mint: ["#b6ea4f", "#7aa62a"] },
   orange: { c: ["#ff9f43", "#2a1300", "#c46a12"], kc: ["#ff5fa2", "#ffb8d6"] },
@@ -911,7 +912,7 @@ const ACCENTS = {
 function applyTheme(id, accent) {
   const t = THEMES[id] || THEMES.navy;
   Object.keys(t).forEach(k => { if (k !== "edge") C[k] = t[k]; });
-  const a = ACCENTS[accent] || ACCENTS.violet, m = a.mint || ["#5fe3a1", "#2b9e66"], k = a.kc || ["#ff8c1a", "#ffd98a"];
+  const a = ACCENTS[accent] || ACCENTS.yellow, m = a.mint || ["#5fe3a1", "#2b9e66"], k = a.kc || ["#ff8c1a", "#ffd98a"];
   C.signal = a.c[0]; C.signalInk = a.c[1]; EDGE[a.c[0]] = a.c[2];
   C.mint = m[0]; EDGE[m[0]] = m[1];
   KC_HIT = k[0]; KC_LOG = k[1];
@@ -5873,14 +5874,14 @@ function SettingsTab({ initPage, settings, setSettings, history, profile, setPro
       </div>
       <div style={{ fontSize: 13, color: C.chalk, fontWeight: 800, margin: "14px 0 8px" }}>{T("accentTitle")}</div>
       <div role="radiogroup" aria-label={T("accentTitle")} data-accents style={{ display: "flex", justifyContent: "space-between", gap: 6 }}>
-        {Object.entries(ACCENTS).map(([id, { c: [col, ink] }]) => { const on = (settings.accent || "violet") === id; return (
+        {Object.entries(ACCENTS).map(([id, { c: [col, ink] }]) => { const on = (settings.accent || "yellow") === id; return (
           <button key={id} role="radio" aria-checked={on} aria-label={T("accent_" + id)} title={T("accent_" + id)} data-accent={id} onClick={() => { sfxTap(); set("accent", id); }}
             style={{ ...btnBase, width: 44, height: 44, borderRadius: 99, padding: 0, flexShrink: 0, background: "transparent", border: `2px solid ${on ? C.chalk : "transparent"}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
             <span aria-hidden="true" style={{ width: 32, height: 32, borderRadius: 99, background: col, display: "flex", alignItems: "center", justifyContent: "center", color: ink, fontSize: 16, fontWeight: 900 }}>{on ? "✓" : ""}</span>
           </button>
         ); })}
       </div>
-      <div style={{ fontSize: 12, color: C.dim, marginTop: 6 }}>{T("accent_" + (ACCENTS[settings.accent] ? settings.accent : "violet"))}</div>
+      <div style={{ fontSize: 12, color: C.dim, marginTop: 6 }}>{T("accent_" + (ACCENTS[settings.accent] ? settings.accent : "yellow"))}</div>
       <div style={{ fontSize: 13, color: C.chalk, fontWeight: 800, margin: "14px 0 8px" }}>{T("lookTitle")}</div>
       <div role="radiogroup" aria-label={T("lookTitle")} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
         {["liquid", "cards", "tiles", "glass", "accent", "flat"].map(id => {

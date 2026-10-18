@@ -14,9 +14,9 @@
     <style name="AppTheme.NoActionBar" parent="Theme.AppCompat.DayNight.NoActionBar">
         <item name="colorPrimary">#0E1B36</item>
         <item name="colorPrimaryDark">#0E1B36</item>
-        <item name="colorAccent">#A78BFA</item>
-        <item name="colorControlActivated">#A78BFA</item>
-        <item name="android:textColorHighlight">#66A78BFA</item>
+        <item name="colorAccent">#FFD23F</item>
+        <item name="colorControlActivated">#FFD23F</item>
+        <item name="android:textColorHighlight">#66FFD23F</item>
         <item name="android:windowBackground">@color/ic_launcher_background</item>
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
