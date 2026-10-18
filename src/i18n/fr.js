@@ -511,7 +511,7 @@ export default {
     hzTitle: "Fluidité de l’écran",
     hzMax: "Maximale ({n} Hz)",
     hzMaxNoN: "Maximale",
-    hzD: "La plus haute que permet le téléphone est plus fluide ; 60 Hz économise la batterie.",
+    hzD: "60 Hz (par défaut) économise la batterie. La plus élevée permise par ton téléphone est plus fluide, mais consomme plus.",
     frMenuNew: "Nouveaux : {n}",
     obAcctT: "Tu as un compte ?",
     obAcctD: "Connecte-toi avec Google ou ton e-mail et l'appli récupère ton pseudo et tes données du cloud. Le compte est facultatif, tu peux passer cette étape.",
@@ -1218,6 +1218,10 @@ export default {
   news143: [
     "La disposition Verre ressemble davantage à du vrai verre : un reflet depuis le coin, une réflexion douce, un bord supérieur clair et une douce lueur des couleurs du thème derrière les blocs. La barre de démarrage et le menu ☰ sont assortis, et le téléphone n'est toujours pas sollicité.",
     "Barre du haut : tout en haut de la page, elle remplit maintenant l'écran d'un bord à l'autre, sans ligne en haut ni sur les côtés.",
+  ],
+  news173: [
+    "La fluidité de l'écran est à 60 Hz par défaut (économise la batterie) ; la fréquence la plus élevée se choisit dans Réglages → Apparence.",
+    "Le message « notifications désactivées » disparaît dès que tu les autorises dans les réglages d'Android, et les notifications arrivent tout de suite, sans redémarrer l'appli.",
   ],
   news172: [
     "La connexion ressemble à celle de la plupart des applis : d'abord e-mail et mot de passe, puis « ou » et le bouton Google.",

@@ -511,7 +511,7 @@ export default {
     hzTitle: "Bildschirm-Flüssigkeit",
     hzMax: "Höchste ({n} Hz)",
     hzMaxNoN: "Höchste",
-    hzD: "Die höchste, die das Handy erlaubt, ist flüssiger; 60 Hz spart Akku.",
+    hzD: "60 Hz (Standard) spart Akku. Die höchste, die dein Handy erlaubt, ist flüssiger, braucht aber mehr Akku.",
     frMenuNew: "Neu: {n}",
     obAcctT: "Hast du ein Konto?",
     obAcctD: "Melde dich mit Google oder deiner E-Mail an, und die App holt deinen Spitznamen und deine Daten aus der Cloud. Ein Konto ist freiwillig, du kannst das überspringen.",
@@ -1218,6 +1218,10 @@ export default {
   news143: [
     "Das Layout Glas sieht echtem Glas ähnlicher: ein Glanz aus der Ecke, eine sanfte Spiegelung, eine helle Oberkante und ein sanftes Leuchten der Themenfarben hinter den Boxen. Die Startleiste und das ☰-Menü passen dazu, und das Handy wird weiterhin kaum belastet.",
     "Obere Leiste: ganz oben auf der Seite füllt sie den Bildschirm jetzt von Rand zu Rand, ohne Linie oben oder an den Seiten.",
+  ],
+  news173: [
+    "Die Bildschirmflüssigkeit ist standardmäßig 60 Hz (spart Akku); die höchste Bildrate wählst du unter Einstellungen → Aussehen.",
+    "„Benachrichtigungen sind aus“ verschwindet, sobald du sie in den Android-Einstellungen erlaubst, und Benachrichtigungen kommen sofort, ohne Neustart der App.",
   ],
   news172: [
     "Die Anmeldung sieht aus wie in den meisten Apps: zuerst E-Mail und Passwort, dann „oder“ und der Google-Button.",

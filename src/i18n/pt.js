@@ -511,7 +511,7 @@ export default {
     hzTitle: "Fluidez do ecrã",
     hzMax: "Máxima ({n} Hz)",
     hzMaxNoN: "Máxima",
-    hzD: "A máxima que o telemóvel permite é mais fluida; 60 Hz poupa bateria.",
+    hzD: "60 Hz (predefinido) poupa bateria. A mais alta que o telemóvel permite é mais fluida, mas gasta mais bateria.",
     frMenuNew: "Novas: {n}",
     obAcctT: "Tens conta?",
     obAcctD: "Entra com o Google ou com o teu e-mail e a app recupera o teu nome e os teus dados da nuvem. A conta é opcional, podes saltar este passo.",
@@ -1218,6 +1218,10 @@ export default {
   news143: [
     "O layout Vidro parece mais vidro de verdade: um brilho a partir do canto, um reflexo suave, uma borda superior clara e um brilho suave das cores do tema atrás das caixas. A barra de início e o menu ☰ combinam com ele, e continua leve para o telemóvel.",
     "Barra superior: no topo da página, agora preenche o ecrã de uma ponta à outra, sem linha em cima nem dos lados.",
+  ],
+  news173: [
+    "A fluidez do ecrã é 60 Hz por predefinição (poupa bateria); a frequência mais alta escolhe-se em Definições → Aspeto.",
+    "O aviso «notificações desativadas» desaparece quando as permites nas definições do Android, e as notificações chegam logo, sem reiniciar a app.",
   ],
   news172: [
     "O início de sessão está como na maioria das apps: primeiro e-mail e palavra-passe, depois «ou» e o botão Google.",
