@@ -1,6 +1,6 @@
-import { useState, useEffect, useLayoutEffect, useRef, memo, Fragment } from "react";
+import { useState, useEffect, useLayoutEffect, useRef, useMemo, memo, Fragment } from "react";
 import { createPortal } from "react-dom";
-import { isNative, pushBack, setRootBack, exitApp, vibratePattern, keepScreenOn, openExternal, saveBackupFile, bkSupported, bkWrite, bkWriteAuto, bkList, bkRead, bkDelete, bkShare, BK_DIR, bkAutoFile, checkForUpdate, lastUpdate, lastGh, applyUpdateNow, latestApk, isTestBuild, apkState, onApk, apkSupported, apkRestore, apkDownload, apkCanInstall, apkAllow, apkInstall, onAppResume, healthState, healthConnect, healthSettings, healthSteps, healthFoodItems, healthBody, shareText, copyText, pushSupported, pushPermission, pushChannel, pushToken, pushTokenWhy, pushDeleteToken, onPushTap, onPushToken, onPushReceived, hzSupported, hzInfo, hzSet, isPlay, playCheck, playOpenStore, PLAY_STORE_LINK, updTopic, onAppUrl } from "./native.js";
+import { isNative, pushBack, setRootBack, exitApp, vibratePattern, keepScreenOn, openExternal, saveBackupFile, bkSupported, bkWrite, bkWriteAuto, bkList, bkRead, bkDelete, bkShare, BK_DIR, bkAutoFile, checkForUpdate, lastUpdate, lastGh, applyUpdateNow, latestApk, isTestBuild, apkState, onApk, apkSupported, apkRestore, apkDownload, apkCanInstall, apkAllow, apkInstall, onAppResume, healthState, healthConnect, healthSettings, healthSteps, healthFoodItems, healthBody, shareText, copyText, pushSupported, pushPermission, pushChannel, pushToken, pushTokenWhy, pushDeleteToken, onPushTap, onPushToken, onPushReceived, hzSupported, hzInfo, hzSet, isPlay, playCheck, playOpenStore, PLAY_STORE_LINK, updTopic, onAppUrl, installCheck } from "./native.js";
 import { cloud, NICK_RE, SHARE_BASE, cleanCode, fmtCode } from "./cloud-lazy.js";
 import { QUICK as EMO_QUICK, EMOJI } from "./emoji.js";
 import { mergeAll, syncKey, withIds, entryId, stable, SYNC_SETTINGS, kcalShared } from "./sync.js";
@@ -33,7 +33,7 @@ const THEMES = {
   slate:  { ink: "#15181d", panel: "#1f242b", panelHi: "#2a313a", line: "#3a434f", chalk: "#f1f4f8", dim: "#9aa6b4", edge: "#0e1115" },
   coffee: { ink: "#1c140f", panel: "#2a1f17", panelHi: "#382a20", line: "#4d3a2c", chalk: "#fbf3ec", dim: "#b8a291", edge: "#130d09" },
 };
-const APP_VERSION = "1.7.3";
+const APP_VERSION = "1.7.4";
 // Big Shoulders has no Cyrillic, so Oswald (also condensed) covers Ukrainian. The browser only
 // downloads the Oswald unicode ranges a page actually uses.
 // 1.7.0: 'HW Emoji' = the app's own emoji (Fluent 3D, fonts/hw-emoji.ttf) for the emoji the app shows; BODY_SYS
@@ -1849,7 +1849,7 @@ function TabIcon({ name, active }) {
 }
 
 // Slide-in drawer from the right with everything in the app. Rendered into <body> (like Sheet).
-function MenuDrawer({ open, screen, history, profile, session, onGo, onResume, onClose, onNews, gh, dl, badge, apk, busy }) {
+function MenuDrawer({ open, screen, history, profile, session, onGo, onResume, onClose, onNews, gh, dl, badge, apk, busy, claimN }) {
   const [shown, setShown] = useState(open);
   useEffect(() => { if (open) setShown(true); else { const t = setTimeout(() => setShown(false), 260); return () => clearTimeout(t); } }, [open]);
   const closeRef = useRef(null);
@@ -1873,7 +1873,7 @@ function MenuDrawer({ open, screen, history, profile, session, onGo, onResume, o
           <div style={{ fontFamily: DISPLAY, fontSize: 15, fontWeight: 800, color: C.dim, letterSpacing: 1 }}>HW APP</div>
           <MenuButton open={true} onClick={onClose} btnRef={closeRef} />
         </div>
-        <MenuBody screen={screen} history={history} profile={profile} session={session} onGo={onGo} onResume={onResume} onNews={onNews} gh={gh} dl={dl} badge={badge} apk={apk} busy={busy} />
+        <MenuBody screen={screen} history={history} profile={profile} session={session} onGo={onGo} onResume={onResume} onNews={onNews} gh={gh} dl={dl} badge={badge} apk={apk} busy={busy} claimN={claimN} />
       </nav>
     </div>,
     document.body
@@ -1882,11 +1882,11 @@ function MenuDrawer({ open, screen, history, profile, session, onGo, onResume, o
 
 // What the menu holds (profile, back to the workout, the screens, about): in the ☰ drawer, or on a wide screen in the
 // side panel that stays open (1.7.0).
-function MenuBody({ screen, history, profile, session, onGo, onResume, onNews, gh, dl, badge, apk, busy }) {
+function MenuBody({ screen, history, profile, session, onGo, onResume, onNews, gh, dl, badge, apk, busy, claimN = 0 }) {
   const lv = levelInfo(totalXP(history));
   const st = streakInfo(history, dateKey());
   const kcs = kcalNow(history);
-  const items = SCREENS.map(id => ({ id, label: T(SCREEN_TITLE[id]), desc: id === "calories" && kcs ? T("kcMenu", { e: nf(kcs.eaten), t: nf(kcs.target) }) : id === "friends" && badge ? T("frMenuNew", { n: badge }) : T("menuD_" + id), badge: id === "friends" ? badge : 0 }));
+  const items = SCREENS.map(id => ({ id, label: T(SCREEN_TITLE[id]), desc: id === "calories" && kcs ? T("kcMenu", { e: nf(kcs.eaten), t: nf(kcs.target) }) : id === "friends" && badge ? T("frMenuNew", { n: badge }) : id === "profile" && claimN ? TP("claimN", claimN) : T("menuD_" + id), badge: id === "friends" ? badge : id === "profile" ? claimN : 0 }));
   return (
     <>
           <button onClick={() => onGo("profile")} className="drawerItem" style={{ ...btnBase, "--i": 0, display: "flex", alignItems: "center", gap: 12, margin: "8px 14px 6px", padding: "12px", borderRadius: 18, background: C.panel, border: `1px solid ${C.line}`, color: C.chalk, textAlign: "left", ...(LOOK === "liquid" ? { ...LIQUID_PILL(), borderRadius: 20 } : {}) }}>
@@ -4402,17 +4402,19 @@ function SlotTile({ sl, m, i, onTap, own }) {
 }
 
 // Badges page: all of them with the progress, closest to the next level first, finished last.
-function BadgesList({ m, focus }) {
+function BadgesList({ m, focus, claim }) {
   const ach = m.ach.filter(a => m.own || !CARD_HIDE.includes(a.k));
   const inTier = a => { const prev = a.step ? a.at[a.step - 1] : 0; return a.next === null ? 1 : Math.max(0, Math.min(1, (a.v - prev) / (a.next - prev))); };
   const val = (a, x) => (a.span ? spanText(x) : a.k === "plank" ? `${nf(x)} s` : nf(x));
-  const list = [...ach].sort((a, b) => (a.next === null) - (b.next === null) || inTier(b) - inTier(a));
-  const won = ach.filter(a => a.step).length;
+  const hid = a => !!(claim && claim.hid.has("ach:" + a.k)); // 1.7.4: still face down (first in the list)
+  const list = [...ach].sort((a, b) => hid(b) - hid(a) || (a.next === null) - (b.next === null) || inTier(b) - inTier(a));
+  const won = ach.filter(a => a.step && !hid(a)).length;
   return (
     <div data-pf-badges>
-      <div style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.5, margin: "0 2px 10px" }}>{T("achCount", { n: won, max: ach.length })} · {T("achTiers", { n: ach.reduce((x, a) => x + a.step, 0), max: ach.reduce((x, a) => x + a.at.length, 0) })} · {T("achSheetD")}</div>
+      <div style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.5, margin: "0 2px 10px" }}>{T("achCount", { n: won, max: ach.length })} · {T("achTiers", { n: ach.reduce((x, a) => x + (hid(a) ? 0 : a.step), 0), max: ach.reduce((x, a) => x + a.at.length, 0) })} · {T("achSheetD")}</div>
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {list.map(a => {
+          if (hid(a)) return <ClaimRow key={a.k} it={claim.items.get("ach:" + a.k)} onOpen={claim.open} />;
           const r = a.tier ? RANKS[a.tier - 1] : null, nr = a.next === null ? null : RANKS[a.nextRank];
           return (
             <div key={a.k} data-ach-row={a.k} data-ach={a.k} data-tier={a.tier} data-pct={Math.round(inTier(a) * 100)} className={[focus && focus.k === a.k && "achFlash", a.tier >= 5 && "foil"].filter(Boolean).join(" ") || undefined}
@@ -4445,14 +4447,16 @@ function BadgesList({ m, focus }) {
   );
 }
 // Ranks page: every exercise with its rank, best set and how far to the next rank; the best first.
-function RanksList({ m, onPick, focus }) {
-  const ids = Object.keys(RANK_AT).sort((a, b) => rankIdx(b, m.rk[b]) - rankIdx(a, m.rk[a]) || (m.rk[b] || 0) / RANK_AT[b][0] - (m.rk[a] || 0) / RANK_AT[a][0]);
-  const lv = ids.reduce((x, id) => x + rankIdx(id, m.rk[id]), 0);
+function RanksList({ m, onPick, focus, claim }) {
+  const hid = id => !!(claim && claim.hid.has("rank:" + id)); // 1.7.4: still face down (first in the list)
+  const ids = Object.keys(RANK_AT).sort((a, b) => hid(b) - hid(a) || rankIdx(b, m.rk[b]) - rankIdx(a, m.rk[a]) || (m.rk[b] || 0) / RANK_AT[b][0] - (m.rk[a] || 0) / RANK_AT[a][0]);
+  const lv = ids.reduce((x, id) => x + (hid(id) ? 0 : rankIdx(id, m.rk[id])), 0);
   return (
     <div data-pf-ranks>
       <div style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.5, margin: "0 2px 10px" }}>{T("achTiers", { n: lv, max: ids.length * (RANKS.length - 1) })} · {T("pfRanksD")}</div>
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {ids.map(id => {
+          if (hid(id)) return <ClaimRow key={id} it={claim.items.get("rank:" + id)} onOpen={claim.open} />;
           const b = m.rk[id], has = b !== null && b !== undefined, ri = rankIdx(id, b), r = RANKS[ri], at = RANK_AT[id];
           const prev = ri ? at[ri - 1] : 0, next = ri < at.length ? at[ri] : null, inR = next === null ? 1 : Math.max(0, Math.min(1, ((b || 0) - prev) / (next - prev)));
           const Tag = onPick ? "button" : "div";
@@ -4501,11 +4505,12 @@ const PF_LAY = {
   3: { rows: "auto auto 1fr", at: [{ gridColumn: 1, gridRow: 1 }, { gridColumn: 2, gridRow: "1 / span 3" }, { gridColumn: 3, gridRow: "1 / span 3" }, { gridColumn: 1, gridRow: 2 }] },
   2: { rows: "auto auto auto 1fr", at: [{ gridColumn: 1, gridRow: 1 }, { gridColumn: 2, gridRow: "1 / span 4" }, { gridColumn: 1, gridRow: 3 }, { gridColumn: 1, gridRow: 2 }] },
 };
-function ProfilePage({ m, own, onEditProfile, onEditSlot, onStreak, onPhoto, onPickRank, extra, top }) {
+function ProfilePage({ m, own, onEditProfile, onEditSlot, onStreak, onPhoto, onPickRank, extra, top, claim }) {
   const pg = usePager("pf", 4, PF_LAY);
   const [focus, setFocus] = useState(null);
   const lv = levelInfo(m.xp), lr = RANKS[lvRank(m.lvl)];
-  const slots = showcase(m), n = slots.length, nextLv = SLOT_LV[n];
+  const sm = claim ? hideUnclaimed(m, claim.hid) : m; // the showcase never shows a card that is still face down
+  const slots = showcase(sm), n = slots.length, nextLv = SLOT_LV[n];
   const open = (sl, i) => {
     if (own) return onEditSlot(i);
     const page = sl.kind.startsWith("ach") ? 1 : sl.kind.startsWith("rk") ? 2 : 3;
@@ -4521,6 +4526,18 @@ function ProfilePage({ m, own, onEditProfile, onEditSlot, onStreak, onPhoto, onP
       </div>
       <div {...pg.pagerProps}>
         <div {...pg.pageProps(0)}>
+        {/* 1.7.4: rewards still face down: one tap opens them all as cards */}
+        {claim && claim.items.size > 0 && (
+          <button type="button" data-claim-all={claim.items.size} onClick={claim.openAll} className="b3d claimBan"
+            style={{ ...btnBase, width: "100%", display: "flex", alignItems: "center", gap: 12, textAlign: "left", padding: "13px 14px", marginBottom: 12, borderRadius: 18, color: C.chalk, background: `radial-gradient(120% 140% at 0% 0%, ${claim.top}55, transparent 60%), ${C.panel}`, border: `1.5px solid ${claim.top}`, boxShadow: `0 0 18px ${claim.top}55` }}>
+            <span aria-hidden="true" className="claimGift" style={{ fontSize: 30, lineHeight: 1, flexShrink: 0 }}>🎁</span>
+            <span style={{ flex: 1, minWidth: 0 }}>
+              <span style={{ display: "block", fontFamily: DISPLAY, fontSize: 21, fontWeight: 900, lineHeight: 1.05 }}>{TP("claimN", claim.items.size)}</span>
+              <span style={{ display: "block", fontSize: 12, color: C.dim, marginTop: 3, lineHeight: 1.35 }}>{T("claimD")}</span>
+            </span>
+            <span style={{ flexShrink: 0, fontSize: 14, fontWeight: 900, color: C.signalInk, background: C.signal, borderRadius: 12, padding: "9px 13px" }}>{T("claimOpen")}</span>
+          </button>
+        )}
         {/* the basics: photo, name, level, streak */}
         <Sect data-pf-hero style={{ marginTop: 0, padding: LOOK === "flat" ? 0 : "16px 16px 14px", position: "relative", overflow: "hidden" }}>
           <div aria-hidden="true" style={{ position: "absolute", inset: 0, background: `radial-gradient(80% 70% at 0% 0%, ${lr.color}26, transparent 60%)`, pointerEvents: "none" }} />
@@ -4553,7 +4570,7 @@ function ProfilePage({ m, own, onEditProfile, onEditSlot, onStreak, onPhoto, onP
         {/* the showcase */}
         <Sect data-pf-showcase title={T("pfShowcase")} meta={T("pfSlots", { n, max: SLOT_LV.length })}>
           <div data-pf-slots style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gridAutoFlow: "row dense", gap: 8 }}>
-            {slots.map((sl, i) => <SlotTile key={i + (sl ? slotStr(sl) : "")} sl={sl} m={m} i={i} own={own} onTap={open} />)}
+            {slots.map((sl, i) => <SlotTile key={i + (sl ? slotStr(sl) : "")} sl={sl} m={sm} i={i} own={own} onTap={open} />)}
             {own && nextLv && <div data-slot-next={nextLv} className="cardIn" style={{ animationDelay: `${120 + n * 60}ms`, borderRadius: 16, border: `1.5px dashed ${C.line}`, minHeight: 92, padding: "12px 13px", boxSizing: "border-box", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6, color: C.dim, textAlign: "center" }}>
               <span aria-hidden="true" style={{ fontSize: 20 }}>🔒</span>
               <span style={{ fontSize: 12, fontWeight: 700, lineHeight: 1.35 }}>{T("pfSlotNext", { lv: nextLv })}</span>
@@ -4563,8 +4580,8 @@ function ProfilePage({ m, own, onEditProfile, onEditSlot, onStreak, onPhoto, onP
         </Sect>
         </div>
         {/* on a wide screen there are no tabs: each column gets its title */}
-        <div {...pg.pageProps(1)}>{pg.wide && <div data-pf-col-title style={{ ...sectionTitle, marginTop: 0 }}>{T("badgesTitle")}</div>}<BadgesList m={m} focus={focus} /></div>
-        <div {...pg.pageProps(2)}>{pg.wide && <div data-pf-col-title style={{ ...sectionTitle, marginTop: 0 }}>{T("ranksTitle")}</div>}<RanksList m={m} focus={focus} onPick={onPickRank} /></div>
+        <div {...pg.pageProps(1)}>{pg.wide && <div data-pf-col-title style={{ ...sectionTitle, marginTop: 0 }}>{T("badgesTitle")}</div>}<BadgesList m={m} focus={focus} claim={claim} /></div>
+        <div {...pg.pageProps(2)}>{pg.wide && <div data-pf-col-title style={{ ...sectionTitle, marginTop: 0 }}>{T("ranksTitle")}</div>}<RanksList m={m} focus={focus} onPick={onPickRank} claim={claim} /></div>
         <div {...pg.pageProps(3)}>{pg.wide && <div data-pf-col-title style={{ ...sectionTitle, marginTop: 14 }}>{T("pfStats")}</div>}<StatsGrid m={m} /></div>
       </div>
     </>
@@ -4626,6 +4643,13 @@ function ProfileTab({ history, profile, setProfile, onFreeze, kcal, acct, vis, o
   const today = dateKey();
   const st = streakInfo(history, today);
   const m = ownModel(history, profile, kcal);
+  // 1.7.4: badges and ranks not opened yet (claims): face-down cards on the Badges / Ranks pages, opened with the reveal
+  const pend = unclaimed(m, profile.claim);
+  const [rev, setRev] = useState(null);
+  const [party, setParty] = useState(0);
+  const claim = pend.length ? { items: new Map(pend.map(it => [claimKey(it), it])), hid: new Set(pend.map(claimKey)), top: pend[pend.length - 1].col,
+    open: it => { sfxTap(); setRev([it]); }, openAll: () => { sfxTap(); setRev(pend); } } : null;
+  const sm = claim ? hideUnclaimed(m, claim.hid) : m;
   const pick = async e => {
     const f = e.target.files && e.target.files[0];
     e.target.value = "";
@@ -4634,7 +4658,7 @@ function ProfileTab({ history, profile, setProfile, onFreeze, kcal, acct, vis, o
     catch (_) { setErr(T("photoErr")); }
   };
   const saveSlot = (i, v) => {
-    const n = slotsFor(m.lvl), cur = showcase(m).map(sl => (sl && sl.set ? slotStr(sl) : ""));
+    const n = slotsFor(m.lvl), cur = showcase(sm).map(sl => (sl && sl.set ? slotStr(sl) : ""));
     const arr = Array.from({ length: n }, (_, k) => (k === i ? v : cur[k] || ""));
     while (arr.length && !arr[arr.length - 1]) arr.pop();
     sfxCheck(); setProfile({ ...profile, show: arr }); setSheet(null);
@@ -4643,10 +4667,12 @@ function ProfileTab({ history, profile, setProfile, onFreeze, kcal, acct, vis, o
     <div className="scr" style={{ padding: "16px 0 110px", maxWidth: "var(--colMax)", margin: "0 auto" }}>
       {howEx && <HowTo id={howEx} history={history} onClose={() => setHowEx(null)} />}
       <input ref={fileRef} type="file" accept="image/*" onChange={pick} style={{ display: "none" }} />
-      <ProfilePage m={m} own extra={{ fz }} onPhoto={() => fileRef.current && fileRef.current.click()} onEditProfile={() => { setName(profile.name || ""); setSheet("edit"); }}
+      {rev && <RewardReveal items={rev} onDone={() => { setProfile({ ...profile, claim: withClaims(profile.claim, rev) }); setRev(null); setParty(Date.now()); }} />}
+      {party > 0 && <Confetti key={party} />}
+      <ProfilePage m={m} own claim={claim} extra={{ fz }} onPhoto={() => fileRef.current && fileRef.current.click()} onEditProfile={() => { setName(profile.name || ""); setSheet("edit"); }}
         onStreak={() => setSheet("freeze")} onEditSlot={i => setSheet({ slot: i })} onPickRank={setHowEx}
         top={err ? <div role="alert" style={{ fontSize: 13, color: "#ff8a80", marginBottom: 10 }}>{err}</div> : null} />
-      {sheet && sheet.slot !== undefined && <SlotSheet m={m} i={sheet.slot} cur={(showcase(m)[sheet.slot] || {}).set ? slotStr(showcase(m)[sheet.slot]) : ""} onSave={v => saveSlot(sheet.slot, v)} onClose={() => setSheet(null)} />}
+      {sheet && sheet.slot !== undefined && <SlotSheet m={sm} i={sheet.slot} cur={(showcase(sm)[sheet.slot] || {}).set ? slotStr(showcase(sm)[sheet.slot]) : ""} onSave={v => saveSlot(sheet.slot, v)} onClose={() => setSheet(null)} />}
       {sheet === "freeze" && (
         <Sheet title={T("streak")} onClose={() => setSheet(null)} short>
           <div data-freeze-card style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -5888,6 +5914,7 @@ function AccountBox({ acct, cloudBk, onOpen, onRestore, onBackupNow, onSignOut, 
 // failed, shown by the test button). `alive()` false = a newer run took over, so this one saves nothing.
 let PUSH_BLK = [];
 async function pushRegister({ on, ask, alive = () => true }) {
+  await installCheck(); // 1.7.4: a reinstalled app forgets "already asked" (see native.js)
   await pushChannel(T("pushChannel"));
   let perm = await pushPermission(false);
   if (on && perm === "prompt" && (ask || !cloudMem().pushAsked)) { setCloudMem({ pushAsked: true }); perm = await pushPermission(true); }
@@ -5912,6 +5939,7 @@ function UpdNotifRow({ settings, set }) {
     <div data-upd-notif>
       <SettingRow title={T("updNotif")} desc={T("updNotifD")} on={on} onClick={async () => { const v = !on; set("updNotif", v); if (v) setPerm(await pushPermission(true)); }} />
       {on && perm === "denied" && <div data-upd-denied style={{ fontSize: 12, color: C.signal, lineHeight: 1.45, padding: "0 16px 12px" }}>{T("pushDenied")}</div>}
+      {on && perm === "prompt" && <div style={{ padding: "0 16px 13px" }}><button type="button" data-upd-allow onClick={async () => { sfxTap(); setPerm(await pushPermission(true)); }} style={{ ...ghostBtn, padding: "9px 14px" }}>{T("pushAllow")}</button></div>}
     </div>
   );
 }
@@ -5951,6 +5979,8 @@ function PushRow({ settings, set }) {
     <div data-push-row style={{ borderTop: `1px solid ${C.line}` }}>
       <SettingRow first title={T("pushTitle")} desc={T("pushD")} on={on} onClick={flipPush} />
       {on && perm === "denied" && <div data-push-denied style={{ fontSize: 12, color: C.signal, lineHeight: 1.45, padding: "0 16px 12px" }}>{T("pushDenied")}</div>}
+      {/* 1.7.4: Android hasn't asked yet (e.g. after a reinstall): nothing came before, the phone just stayed silent */}
+      {on && perm === "prompt" && <div style={{ padding: "0 16px 8px" }}><button type="button" data-push-allow onClick={async () => { sfxTap(); const r = await pushRegister({ on: true, ask: true }); setPerm(r.perm); }} style={{ ...bigBtn(C.signal, C.signalInk), padding: "10px 14px", fontSize: 14 }}>{T("pushAllow")}</button></div>}
       {on && <div style={{ padding: "0 16px 13px" }}>
         <button data-push-test onClick={runTest} disabled={!!test && (test.st === "busy" || test.st === "wait")} style={{ ...ghostBtn, padding: "9px 14px", opacity: test && (test.st === "busy" || test.st === "wait") ? 0.6 : 1 }}>{test && test.st === "busy" ? "…" : T("pushTest")}</button>
         {line && <div data-push-test-st={test.st} role="status" style={{ fontSize: 12, color: line[1], lineHeight: 1.45, marginTop: 8 }}>{line[0]}</div>}
@@ -6715,15 +6745,62 @@ function Cool({ onFinish }) {
 // rarity (Diamond also shakes the screen). The cards come from the most common to the rarest, so the best is last.
 const REV_KIND = { pr: 0, ach: 1, rank: 2, lvl: 3 };
 const REV_BUZZ = [[30], [40], [50, 30, 60], [60, 40, 90], [70, 40, 70, 40, 160], [80, 40, 80, 40, 80, 40, 220], [110, 50, 110, 50, 110, 50, 340]];
+const achCard = a => { const rk = RANKS[a.tier - 1]; return { kind: "ach", k: a.k, r: a.tier - 1, icon: a.icon, name: a.name, rank: rk, col: rk.color }; };
+const rankCard = (id, ri) => { const rk = RANKS[ri]; return { kind: "rank", k: id, r: ri, icon: rk.icon, name: EX[id] ? EX[id].name : id, rank: rk, col: rk.color }; };
 function revealList(entry, newAch, xpBefore, gained) {
   if (!entry) return [];
   const out = [];
   if (entry.prs && entry.prs.length) out.push({ kind: "pr", r: Math.min(3, entry.prs.length), icon: "🏆", name: TP("prs", entry.prs.length), sub: entry.items.filter(it => entry.prs.includes(it.id)).map(exName).join(", "), col: C.signal });
-  newAch.forEach(a => { const rk = RANKS[a.tier - 1]; out.push({ kind: "ach", k: a.k, r: a.tier - 1, icon: a.icon, name: a.name, rank: rk, col: rk.color }); });
-  (entry.rankUps || []).forEach(ru => { const rk = RANKS[ru.to]; out.push({ kind: "rank", k: ru.id, r: ru.to, icon: rk.icon, name: EX[ru.id] ? EX[ru.id].name : ru.id, rank: rk, col: rk.color }); });
+  newAch.forEach(a => out.push(achCard(a)));
+  (entry.rankUps || []).forEach(ru => out.push(rankCard(ru.id, ru.to)));
   const l0 = levelInfo(xpBefore).lvl, l1 = levelInfo(xpBefore + gained).lvl;
   if (l1 > l0) { const r = lvRank(l1); out.push({ kind: "lvl", r, icon: "⚡", name: `${T("level")} ${l1}`, col: C.sky }); }
   return out.sort((a, b) => a.r - b.r || REV_KIND[a.kind] - REV_KIND[b.kind]);
+}
+// ─── CLAIMS (1.7.4; Michael, Oct 18: "the badges I already have should hide after the update, and I tap them and
+// claim the cards with those animations") ───
+// profile.claim = {a: {badge: tier}, r: {exercise: rank index}} = the highest level whose card was opened. Anything
+// above it is unclaimed: on your own profile it waits as a face-down card until you open it (RewardReveal). No map yet
+// (everyone before 1.7.4) = nothing opened, so everything earned so far waits. A workout's reveal claims what it shows;
+// levels and records aren't kept back. Others always see your real badges and ranks (the card in the cloud is unchanged).
+const claimKey = it => `${it.kind}:${it.k}`;
+function unclaimed(m, claim) {
+  if (window.__hwNoReveal) return []; // tests without the reveal see everything, as before
+  const a = (claim && claim.a) || {}, r = (claim && claim.r) || {};
+  const out = m.ach.filter(x => x.tier > (a[x.k] || 0)).map(achCard);
+  Object.keys(RANK_AT).forEach(id => { const ri = rankIdx(id, m.rk[id]); if (ri > (r[id] || 0)) out.push(rankCard(id, ri)); });
+  return out.sort((x, y) => x.r - y.r || REV_KIND[x.kind] - REV_KIND[y.kind]);
+}
+const unclaimedFor = (history, profile, kcal) => unclaimed(ownModel(history, profile, kcal), profile && profile.claim);
+// The claim map with these cards opened (only ever goes up).
+function withClaims(claim, items) {
+  const c = { a: { ...((claim && claim.a) || {}) }, r: { ...((claim && claim.r) || {}) } };
+  items.forEach(it => {
+    const map = it.kind === "ach" ? c.a : it.kind === "rank" ? c.r : null, v = it.kind === "ach" ? it.r + 1 : it.r;
+    if (map && !(map[it.k] >= v)) map[it.k] = v;
+  });
+  return c;
+}
+// Your profile without the unopened ones (for the showcase: it never shows what is still face down).
+function hideUnclaimed(m, hid) {
+  if (!hid || !hid.size) return m;
+  const rk = {}; Object.keys(m.rk).forEach(id => { rk[id] = hid.has("rank:" + id) ? null : m.rk[id]; });
+  return { ...m, ach: m.ach.map(a => (hid.has("ach:" + a.k) ? { ...a, tier: 0 } : a)), rk };
+}
+// A face-down card in the Badges / Ranks list: glowing in its rarity colour, tap = open it.
+function ClaimRow({ it, onOpen }) {
+  const col = it.col;
+  return (
+    <button type="button" data-claim-row={claimKey(it)} data-rarity={it.r} onClick={() => onOpen(it)} className={it.r >= 4 ? "foil" : undefined}
+      style={{ ...btnBase, fontWeight: 400, textAlign: "left", width: "100%", color: C.chalk, ...card, ...tileR(), padding: "11px 12px", display: "flex", alignItems: "center", gap: 12, border: `1.5px solid ${col}99`, boxShadow: `0 0 ${10 + it.r * 3}px ${col}44` }}>
+      <span aria-hidden="true" className="claimBack" style={{ "--wob": `${2 + it.r * 0.6}deg`, width: 34, height: 44, flexShrink: 0, borderRadius: 7, border: `1.5px solid ${col}`, background: `radial-gradient(90% 70% at 50% 40%, ${col}66, transparent 75%), repeating-linear-gradient(45deg, ${col}1a 0 5px, transparent 5px 10px), ${C.ink}`, boxShadow: `0 0 ${8 + it.r * 2}px ${col}88`, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: DISPLAY, fontSize: 22, fontWeight: 900, color: col, textShadow: `0 0 8px ${col}` }}>?</span>
+      <span style={{ flex: 1, minWidth: 0 }}>
+        <span style={{ display: "block", fontSize: 14, fontWeight: 800, lineHeight: 1.2 }}>{it.kind === "ach" ? it.name : EX[it.k] ? EX[it.k].name : it.name}</span>
+        <span className="revTap" style={{ display: "block", fontSize: 12, fontWeight: 800, color: col, marginTop: 3 }}>{T("claimTap")}</span>
+      </span>
+      <span aria-hidden="true" style={{ fontSize: 22, flexShrink: 0 }}>🎁</span>
+    </button>
+  );
 }
 // One melody per flip (scheduled on the audio clock): a quick riser, then an arpeggio that climbs higher and longer
 // with the rarity, a chord, and sparkles from Gold up.
@@ -6814,7 +6891,7 @@ function RewardReveal({ items, onDone }) {
 }
 
 // ─── SESSION: SUMMARY ───────────────────────────────────────────────────────
-function Summary({ entry, xpBefore = 0, xpGained, newCh = [], newAch = [], history, onClose }) {
+function Summary({ entry, xpBefore = 0, xpGained, newCh = [], newAch = [], history, onClose, onClaim }) {
   const [copied, setCopied] = useState(false);
   const gained = entry ? (xpGained ?? xpFor(entry)) : 0;
   const [shown, setShown] = useState(0);
@@ -6854,7 +6931,7 @@ function Summary({ entry, xpBefore = 0, xpGained, newCh = [], newAch = [], histo
   }
   return (
     <div>
-      {revOn ? <RewardReveal items={rev} onDone={() => setRevOn(false)} /> : <Confetti />}
+      {revOn ? <RewardReveal items={rev} onDone={() => { setRevOn(false); if (onClaim) onClaim(rev); }} /> : <Confetti />}
       <div className="pop" style={{ fontFamily: DISPLAY, fontSize: 60, fontWeight: 900, lineHeight: 0.95, color: C.mint }}>{T("great")}</div>
       <div style={{ fontSize: 16, color: C.chalk, marginTop: 8, fontWeight: 600, lineHeight: 1.4 }}>{finishLine}</div>
       <div style={{ fontSize: 13, color: C.dim, marginTop: 4 }}>{T("dayDate", { d: entry.day, date: fmtDate(entry.date, true) })}</div>
@@ -6916,7 +6993,7 @@ function Summary({ entry, xpBefore = 0, xpGained, newCh = [], newAch = [], histo
 }
 
 // ─── SESSION SHELL ──────────────────────────────────────────────────────────
-function Session({ session, setSession, history, onSave, onClose, onMinimize, onLive }) {
+function Session({ session, setSession, history, onSave, onClose, onMinimize, onLive, onClaim }) {
   useWakeLock();
   const [confirmQuit, setConfirmQuit] = useState(false);
   const swaps = session.swaps || {};
@@ -7035,7 +7112,7 @@ function Session({ session, setSession, history, onSave, onClose, onMinimize, on
           onAdd={() => setSession(s => (s.rest ? { ...s, rest: { ...s.rest, endAt: s.rest.endAt + 15000, total: s.rest.total + 15 } } : s))} />
       )}
       {session.phase === "cool" && <Cool onFinish={finish} />}
-      {session.phase === "summary" && <Summary entry={session.entry} xpBefore={session.xpBefore || 0} xpGained={session.xpGained} newCh={session.newCh || []} newAch={session.newAch || []} history={history} onClose={onClose} />}
+      {session.phase === "summary" && <Summary entry={session.entry} xpBefore={session.xpBefore || 0} xpGained={session.xpGained} newCh={session.newCh || []} newAch={session.newAch || []} history={history} onClose={onClose} onClaim={onClaim} />}
       </div>
     </div>
   );
@@ -7398,6 +7475,8 @@ export default function App() {
   // Screen refresh rate (1.6.0): the saved choice (MainActivity applies it too, before the first frame)
   // 1.7.3: 60 Hz unless "the highest" was chosen; the APK applies the saved mode itself at the next start
   useEffect(() => { if (hzSupported() && loaded) hzSet(settings.hz === "max" ? "max" : "60"); }, [loaded]);
+  // 1.7.4: badges and ranks still face down (counted on ☰ and the Profile row of the menu)
+  const claimN = useMemo(() => (profLoaded ? unclaimedFor(history, profile, kcal).length : 0), [history, profile, kcal, profLoaded]);
   const socialCount = (social.reqs || []).length + (social.chats || []).filter(k => k.last.from !== acct.uid && !social.blocked.includes(k.other) && k.last.ts > Math.max(social.read[k.cid] || 0, (cloudMem().clr || {})[k.cid] || 0)).length;
   // Stats for the leaderboard: sent when they change (and once a day, for the streak).
   useEffect(() => {
@@ -7671,6 +7750,8 @@ export default function App() {
         .revCard.on{transform:rotateY(180deg);animation:revPop .82s cubic-bezier(.3,.7,.25,1)}
         .revBack,.revFace{position:absolute;inset:0;border-radius:24px;backface-visibility:hidden;-webkit-backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:22px 18px;box-sizing:border-box}
         .revFace{transform:rotateY(180deg)}
+        .claimBack{animation:revWob 1.1s ease-in-out infinite alternate}
+        .claimGift{display:inline-block;animation:revBob 1.2s ease-in-out infinite alternate}
         @keyframes revWob{from{transform:rotate(calc(var(--wob) * -1)) scale(.98)}to{transform:rotate(var(--wob)) scale(1.02)}}
         @keyframes revPop{0%{transform:rotateY(0) rotate(0) scale(1)}8%{transform:rotateY(0) rotate(-5deg) scale(1.03)}16%{transform:rotateY(0) rotate(5deg) scale(1.06)}24%{transform:rotateY(0) rotate(-4deg) scale(1.08)}34%{transform:rotateY(0) rotate(0) scale(1.1)}68%{transform:rotateY(115deg) rotate(0) scale(1.18)}100%{transform:rotateY(180deg) rotate(0) scale(1)}}
         .revRays{position:absolute;left:50%;top:50%;width:200vmax;height:200vmax;margin:-100vmax 0 0 -100vmax;border-radius:50%;-webkit-mask:radial-gradient(closest-side,#000 8%,transparent 42%);mask:radial-gradient(closest-side,#000 8%,transparent 42%);transition:opacity .5s ease;animation:revSpin var(--rs) linear infinite;pointer-events:none}
@@ -7749,12 +7830,12 @@ export default function App() {
                 onSave={entry => setHistory(h => [...h, entry])}
                 onClose={() => { setSession(null); setSessionOpen(true); setLive(null); setScreen("train"); }}
                 onMinimize={() => { setSessionOpen(false); setMenuOpen(true); }}
-                onLive={setLive} />
+                onLive={setLive} onClaim={items => setProfile({ ...profile, claim: withClaims(profile.claim, items) })} />
             </div>
           )}
           {(!session || !sessionOpen) && (
             <>
-              <TopBar side={sideOn} head={screen === "friends" ? topHead : null} badge={socialCount} dlPct={dl && dl.kind === "downloading" ? dl.pct || 0 : null} screen={screen} history={history} menuOpen={menuOpen} onGo={go} onMenu={() => { sfxTap(); setMenuOpen(o => !o); }} />
+              <TopBar side={sideOn} head={screen === "friends" ? topHead : null} badge={socialCount + claimN} dlPct={dl && dl.kind === "downloading" ? dl.pct || 0 : null} screen={screen} history={history} menuOpen={menuOpen} onGo={go} onMenu={() => { sfxTap(); setMenuOpen(o => !o); }} />
               <div key={screen}>
                 {screen === "train" && <TrainTab settings={settings} setSettings={setSettings} onSetup={st => setOnboard(st)} dl={dlHidden ? null : dl} onDlClose={() => setDlHidden(true)} kcal={kcal} setKcal={setKcal} history={history} onStart={start} onFreeze={applyFreeze} ui={ui} setUi={setUi} active={session} onResume={resume} profile={profile} onGo={go} upd={updCard ? { open: () => { setUpdCard(false); setNewsAt(APP_VERSION); setNewsOpen(true); }, close: () => setUpdCard(false) } : null}
                   apk={apkUpd && !apkHidden ? { info: apkUpd, close: () => setApkHidden(true) } : null} />}
@@ -7773,9 +7854,9 @@ export default function App() {
               {exitAsk && <ExitPrompt history={history} session={session} onStay={() => { sfxTap(); setExitAsk(false); }} onLeave={() => { setExitAsk(false); exitApp(); }} />}
             </>
           )}
-          {sideOn && <SideNav apk={apkUpd} busy={!!(session && session.phase !== "summary")} badge={socialCount} gh={gh} dl={dl} screen={screen} history={history} profile={profile} session={session && session.phase !== "summary" ? session : null}
+          {sideOn && <SideNav apk={apkUpd} busy={!!(session && session.phase !== "summary")} badge={socialCount} claimN={claimN} gh={gh} dl={dl} screen={screen} history={history} profile={profile} session={session && session.phase !== "summary" ? session : null}
             onGo={go} onResume={resume} onNews={() => setNewsOpen(true)} />}
-          <MenuDrawer apk={apkUpd} busy={!!(session && session.phase !== "summary")} badge={socialCount} gh={gh} dl={dl} open={menuOpen} screen={screen} history={history} profile={profile} session={session && session.phase !== "summary" ? session : null}
+          <MenuDrawer apk={apkUpd} busy={!!(session && session.phase !== "summary")} badge={socialCount} claimN={claimN} gh={gh} dl={dl} open={menuOpen} screen={screen} history={history} profile={profile} session={session && session.phase !== "summary" ? session : null}
             onGo={go} onResume={resume} onClose={() => setMenuOpen(false)} onNews={() => { setMenuOpen(false); setNewsOpen(true); }} />
           {notice && <LiveNotice n={notice} people={Object.fromEntries([...(social.friends || []), ...(social.reqs || [])].map(x => [x.uid, x]))} onClose={() => setNotice(null)}
             onOpen={n => { setNotice(null); go("friends"); setChatWith(n.kind === "msg" ? n.uid : null); }} />}

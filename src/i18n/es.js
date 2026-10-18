@@ -657,6 +657,10 @@ export default {
     revOf: "{n} de {max}",
     revRare: "Esto parece raro…",
     revEpic: "¡Algo legendario…!",
+    claimOpen: "Abrir",
+    claimTap: "Nuevo nivel · toca para abrir",
+    claimD: "Las insignias y rangos que has ganado te esperan como cartas.",
+    pushAllow: "Permitir notificaciones",
     achUp: "{name}: {rank}",
     maxBest: ", máx. {v}",
     pvOpen: "Ver perfil",
@@ -889,6 +893,7 @@ export default {
     rounds: { one: "{n} ronda", other: "{n} rondas" },
     sets: { one: "{n} serie", other: "{n} series" },
     prs: { one: "{n} récord personal", other: "{n} récords personales" },
+    claimN: { one: "{n} recompensa por abrir", many: "{n} recompensas por abrir", other: "{n} recompensas por abrir" },
     weeks: { one: "{n} semana", other: "{n} semanas" },
     pushups: { one: "{n} flexión", other: "{n} flexiones" },
     reps: { one: "{n} repetición", other: "{n} repeticiones" },
@@ -1218,6 +1223,11 @@ export default {
   news143: [
     "El diseño Cristal se parece más al cristal real: un brillo desde la esquina, un reflejo suave, un borde superior claro y un suave resplandor de los colores del tema detrás de las cajas. La barra de inicio y el menú ☰ combinan con él, y sigue siendo ligero para el móvil.",
     "Barra superior: arriba del todo ahora llena la pantalla de borde a borde, sin línea arriba ni a los lados.",
+  ],
+  news174: [
+    "Las insignias y rangos que has ganado ahora esperan en tu perfil como cartas boca abajo: toca una, o Abrir en la página Perfil, y ábrelas como después de un entrenamiento. El menú ☰ muestra cuántas esperan.",
+    "📱 Tras reinstalar la app, vuelve a pedir permiso para notificaciones y vuelve a suscribirse a los avisos de nueva versión (antes, por los datos que restauraba Android, creía que ya lo tenía).",
+    "📱 Ajustes: un botón «Permitir notificaciones» cuando Android aún no lo ha preguntado.",
   ],
   news173: [
     "La fluidez de pantalla es 60 Hz por defecto (ahorra batería); la frecuencia más alta se elige en Ajustes → Apariencia.",

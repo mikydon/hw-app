@@ -1,5 +1,5 @@
 // Unit tests for src/sync.js (web ↔ phone merge). Run: node tools/sync_test.mjs
-import { mergeAll, syncKey, mergeHistory, withIds, stable } from "../src/sync.js";
+import { mergeAll, syncKey, mergeHistory, withIds, stable, mergeProfile } from "../src/sync.js";
 let pass = 0, fail = 0;
 const ok = (c, name) => { if (c) { pass++; console.log("  ✓", name); } else { fail++; console.log("  ✗ FAIL:", name); } };
 const W = (date, ts, extra = {}) => ({ date, ts, day: "A", rounds: 2, items: [{ id: "k1", res: [10, 10] }], ...extra });
@@ -54,6 +54,15 @@ console.log("convergence");
   ok(syncKey(ab) === syncKey(ba), "both devices end with the same data, whichever merges first");
   ok(syncKey(mergeAll(ab, ab, false)) === syncKey(ab), "merging again changes nothing (no endless uploads)");
   ok(ab.history.length === 3 && ab.profile.name === "B" && ab.settings.theme === "wine", "result: 3 workouts (t9 deleted), newer name, newer theme");
+}
+console.log("1.7.4: opened reward cards (claim) keep the highest level from both sides");
+{
+  const a = { name: "A", claim: { a: { workouts: 3, streak: 1 }, r: { k1: 2 } } }, b = { name: "B", claim: { a: { workouts: 2, reps: 4 }, r: { k1: 4, n1: 1 } } };
+  const m1 = mergeProfile(a, b, 1, 2, false), m2 = mergeProfile(b, a, 2, 1, false);
+  const want = stable({ a: { workouts: 3, streak: 1, reps: 4 }, r: { k1: 4, n1: 1 } });
+  ok(stable(m1.claim) === want && stable(m2.claim) === want, "max per badge / rank, either direction");
+  ok(stable(mergeProfile({ name: "A" }, b, 1, 2, true).claim) === stable(b.claim), "one side without claims takes the other's");
+  ok(mergeProfile({ name: "A" }, { name: "B" }, 1, 2, false).claim === undefined, "no claims on either side: nothing added");
 }
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

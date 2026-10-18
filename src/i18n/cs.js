@@ -657,6 +657,10 @@ export default {
     revOf: "{n} z {max}",
     revRare: "Tohle vypadá vzácně…",
     revEpic: "Něco legendárního…!",
+    claimOpen: "Otevřít",
+    claimTap: "Nová úroveň · ťukni a otevři",
+    claimD: "Odznaky a ranky, které jsi získal, čekají jako kartičky.",
+    pushAllow: "Povolit upozornění",
     achUp: "{name}: {rank}",
     maxBest: ", max {v}",
     pvOpen: "Zobrazit profil",
@@ -889,6 +893,7 @@ export default {
     rounds: { one: "{n} kolo", few: "{n} kola", other: "{n} kol" },
     sets: { one: "{n} série", few: "{n} série", other: "{n} sérií" },
     prs: { one: "{n} osobní rekord", few: "{n} osobní rekordy", other: "{n} osobních rekordů" },
+    claimN: { one: "{n} odměna k otevření", few: "{n} odměny k otevření", many: "{n} odměny k otevření", other: "{n} odměn k otevření" },
     weeks: { one: "{n} týden", few: "{n} týdny", other: "{n} týdnů" },
     pushups: { one: "{n} klik", few: "{n} kliky", other: "{n} kliků" },
     reps: { one: "{n} opakování", few: "{n} opakování", other: "{n} opakování" },
@@ -1218,6 +1223,11 @@ export default {
   news143: [
     "Rozložení Sklo vypadá víc jako skutečné sklo: odlesk z rohu, jemný odraz, světlá horní hrana a jemná záře barev motivu za boxy. Lišta se startem a menu ☰ k němu ladí a telefon to pořád nezatěžuje.",
     "Horní lišta: když jsi úplně nahoře, vyplňuje obrazovku od kraje ke kraji, bez čáry nahoře a po stranách.",
+  ],
+  news174: [
+    "Odznaky a ranky, které jsi získal, teď čekají na profilu jako kartičky otočené dolů: ťukni na jednu nebo na Otevřít na stránce Profil a otevři je jako po tréninku. Menu ☰ ukazuje, kolik jich čeká.",
+    "📱 Po přeinstalování se aplikace znovu zeptá na upozornění a znovu se přihlásí k upozorněním na novou verzi (dřív si kvůli obnoveným datům z Androidu myslela, že to už má).",
+    "📱 Nastavení: tlačítko „Povolit upozornění“, když se Android ještě neptal.",
   ],
   news173: [
     "Plynulost obrazovky je ve výchozím stavu 60 Hz (šetří baterii); nejvyšší frekvence je na výběr v Nastavení → Vzhled.",

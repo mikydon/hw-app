@@ -657,6 +657,10 @@ export default {
     revOf: "{n} of {max}",
     revRare: "This one looks rare…",
     revEpic: "Something legendary…!",
+    claimOpen: "Open",
+    claimTap: "New level · tap to open",
+    claimD: "Badges and ranks you earned are waiting as cards.",
+    pushAllow: "Allow notifications",
     achUp: "{name}: {rank}",
     maxBest: ", max {v}",
     pvOpen: "View profile",
@@ -889,6 +893,7 @@ export default {
     rounds: { one: "{n} round", other: "{n} rounds" },
     sets: { one: "{n} set", other: "{n} sets" },
     prs: { one: "{n} personal record", other: "{n} personal records" },
+    claimN: { one: "{n} reward to open", other: "{n} rewards to open" },
     weeks: { one: "{n} week", other: "{n} weeks" },
     pushups: { one: "{n} push-up", other: "{n} push-ups" },
     reps: { one: "{n} rep", other: "{n} reps" },
@@ -1218,6 +1223,11 @@ export default {
   news143: [
     "Glass layout looks more like real glass: a sheen from the corner, a soft reflection, a bright top edge and a soft glow of the theme colours behind the boxes. The Start bar and the ☰ menu match it, and it stays light on the phone.",
     "Top bar: at the top of the page it now fills the screen edge to edge, without a line at the top or sides.",
+  ],
+  news174: [
+    "Badges and ranks you have earned now wait on your profile as face-down cards: tap one, or Open on the Profile page, and open them like after a workout. The ☰ menu shows how many are waiting.",
+    "📱 After reinstalling the app, it asks for notifications again and signs up for new-version notifications again (before, Android's restored data made it think it already had).",
+    "📱 Settings: an \"Allow notifications\" button when Android hasn't been asked yet.",
   ],
   news173: [
     "Screen smoothness is 60 Hz by default (saves battery); the highest refresh rate is a choice in Settings → Appearance.",

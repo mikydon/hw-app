@@ -657,6 +657,10 @@ export default {
     revOf: "{n} sur {max}",
     revRare: "Ça a l'air rare…",
     revEpic: "Quelque chose de légendaire… !",
+    claimOpen: "Ouvrir",
+    claimTap: "Nouveau niveau · touche pour ouvrir",
+    claimD: "Les badges et rangs que tu as gagnés t’attendent sous forme de cartes.",
+    pushAllow: "Autoriser les notifications",
     achUp: "{name} : {rank}",
     maxBest: ", max {v}",
     pvOpen: "Voir le profil",
@@ -889,6 +893,7 @@ export default {
     rounds: { one: "{n} tour", many: "{n} tours", other: "{n} tours" },
     sets: { one: "{n} série", many: "{n} séries", other: "{n} séries" },
     prs: { one: "{n} record perso", many: "{n} records perso", other: "{n} records perso" },
+    claimN: { one: "{n} récompense à ouvrir", many: "{n} récompenses à ouvrir", other: "{n} récompenses à ouvrir" },
     weeks: { one: "{n} semaine", many: "{n} semaines", other: "{n} semaines" },
     pushups: { one: "{n} pompe", many: "{n} pompes", other: "{n} pompes" },
     reps: { one: "{n} répétition", many: "{n} répétitions", other: "{n} répétitions" },
@@ -1218,6 +1223,11 @@ export default {
   news143: [
     "La disposition Verre ressemble davantage à du vrai verre : un reflet depuis le coin, une réflexion douce, un bord supérieur clair et une douce lueur des couleurs du thème derrière les blocs. La barre de démarrage et le menu ☰ sont assortis, et le téléphone n'est toujours pas sollicité.",
     "Barre du haut : tout en haut de la page, elle remplit maintenant l'écran d'un bord à l'autre, sans ligne en haut ni sur les côtés.",
+  ],
+  news174: [
+    "Les badges et rangs que tu as gagnés attendent maintenant sur ton profil, en cartes face cachée : touche-en une, ou Ouvrir sur la page Profil, et ouvre-les comme après une séance. Le menu ☰ indique combien attendent.",
+    "📱 Après une réinstallation, l’app redemande l’autorisation des notifications et se réabonne aux notifications de nouvelle version (avant, à cause des données restaurées par Android, elle croyait que c’était déjà fait).",
+    "📱 Réglages : un bouton « Autoriser les notifications » quand Android n’a pas encore demandé.",
   ],
   news173: [
     "La fluidité de l'écran est à 60 Hz par défaut (économise la batterie) ; la fréquence la plus élevée se choisit dans Réglages → Apparence.",

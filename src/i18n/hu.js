@@ -657,6 +657,10 @@ export default {
     revOf: "{n}/{max}",
     revRare: "Ez ritkának tűnik…",
     revEpic: "Valami legendás…!",
+    claimOpen: "Megnyitás",
+    claimTap: "Új szint · koppints a megnyitáshoz",
+    claimD: "A megszerzett jelvények és rangok kártyaként várnak.",
+    pushAllow: "Értesítések engedélyezése",
     achUp: "{name}: {rank}",
     maxBest: ", max. {v}",
     pvOpen: "Profil megnyitása",
@@ -889,6 +893,7 @@ export default {
     rounds: { one: "{n} kör", other: "{n} kör" },
     sets: { one: "{n} sorozat", other: "{n} sorozat" },
     prs: { one: "{n} egyéni rekord", other: "{n} egyéni rekord" },
+    claimN: { one: "{n} megnyitandó jutalom", other: "{n} megnyitandó jutalom" },
     weeks: { one: "{n} hét", other: "{n} hét" },
     pushups: { one: "{n} fekvőtámasz", other: "{n} fekvőtámasz" },
     reps: { one: "{n} ismétlés", other: "{n} ismétlés" },
@@ -1218,6 +1223,11 @@ export default {
   news143: [
     "Az Üveg elrendezés jobban hasonlít a valódi üvegre: csillanás a sarokból, lágy tükröződés, világos felső él és a téma színeinek halvány fénye a dobozok mögött. Az indítósáv és a ☰ menü illik hozzá, és a telefont továbbra sem terheli.",
     "Felső sáv: az oldal tetején most szélétől széléig kitölti a képernyőt, vonal nélkül felül és oldalt.",
+  ],
+  news174: [
+    "A megszerzett jelvények és rangok most lefordított kártyaként várnak a profilodon: koppints egyre, vagy a Profil oldalon a Megnyitásra, és nyisd ki őket, mint edzés után. A ☰ menü mutatja, hány vár.",
+    "📱 Újratelepítés után az app újra rákérdez az értesítésekre, és újra feliratkozik az új verzió értesítéseire (korábban az Android által visszaállított adatok miatt azt hitte, ez már megvan).",
+    "📱 Beállítások: „Értesítések engedélyezése” gomb, ha az Android még nem kérdezett rá.",
   ],
   news173: [
     "A kijelző alapból 60 Hz-en fut (kíméli az akkut); a legmagasabb frissítési gyakoriság a Beállítások → Megjelenés alatt választható.",
