@@ -170,11 +170,51 @@ await t("off must be true/false", false, () => setDoc(doc(as("alice"), "push", "
 await t("alice switches notifications off and blocks carol", true, () => setDoc(doc(as("alice"), "push", "alice"), { off: true, blk: ["carol"], lang: "sk", ts: serverTimestamp() }, { merge: true }));
 await t("alice deletes it", true, () => deleteDoc(doc(as("alice"), "push", "alice")));
 
+console.log("profile cards and blocks (1.7.0)");
+const cardDoc = (over = {}) => ({ vis: "friends", lvl: 5, xp: 1800, streak: 4, best: 9, n: 21, reps: 2300, min: 400, since: "2026-09-01", ach: { workouts: 3, streak: 2 }, rk: { k1: 22, b5: 60 }, ts: serverTimestamp(), ...over });
+await env.withSecurityRulesDisabled(async c => {
+  const db = c.firestore();
+  await setDoc(doc(db, "friends", "erin", "list", "frank"), { ts: Timestamp.now() });
+  await setDoc(doc(db, "friends", "frank", "list", "erin"), { ts: Timestamp.now() });
+});
+const card = u => doc(as(u), "cards", "erin");
+await t("erin saves her card", true, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc()));
+await t("erin reads her own card", true, () => getDoc(card("erin")));
+await t("only the stats, no vis (merge) is fine", true, () => setDoc(doc(as("erin"), "cards", "erin"), { lvl: 6, xp: 2100, ts: serverTimestamp() }, { merge: true }));
+await t("only vis (merge) is fine", true, () => setDoc(doc(as("erin"), "cards", "erin"), { vis: "friends", ts: serverTimestamp() }, { merge: true }));
+await t("a card that is only {vis, ts} is fine (vis set before the first stats)", true, () => setDoc(doc(as("gina"), "cards", "gina"), { vis: "none", ts: serverTimestamp() }));
+await t("vis must be friends, all or none", false, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ vis: "public" })));
+await t("unknown fields are refused", false, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ pfp: "data:image/jpeg;base64,AAAA" })));
+await t("level must be a whole number", false, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ lvl: "99" })));
+await t("since must be a date (YYYY-MM-DD)", false, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ since: "yesterday" })));
+await t("since may be empty (no workouts yet)", true, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ since: null })));
+await t("badges must be a small map", false, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ ach: Object.fromEntries(Array.from({ length: 41 }, (_, i) => ["a" + i, 1])) })));
+await t("timestamps come from the server", false, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ ts: new Date(0) })));
+await t("frank can't write erin's card", false, () => setDoc(doc(as("frank"), "cards", "erin"), cardDoc()));
+await t("signed-out visitor can't read a card", false, () => getDoc(card(null)));
+await t("vis friends: her friend frank reads it", true, () => getDoc(card("frank")));
+await t("vis friends: gina (not a friend) can't", false, () => getDoc(card("gina")));
+await t("erin opens it to everyone", true, () => setDoc(doc(as("erin"), "cards", "erin"), { vis: "all", ts: serverTimestamp() }, { merge: true }));
+await t("vis all: gina reads it", true, () => getDoc(card("gina")));
+await t("erin blocks gina", true, () => setDoc(doc(as("erin"), "blocks", "erin"), { b: ["gina"], ts: serverTimestamp() }));
+await t("blocked: gina can't read it any more", false, () => getDoc(card("gina")));
+await t("frank still can", true, () => getDoc(card("frank")));
+await t("gina can't read erin's block list", false, () => getDoc(doc(as("gina"), "blocks", "erin")));
+await t("erin reads her block list", true, () => getDoc(doc(as("erin"), "blocks", "erin")));
+await t("gina can't change erin's block list", false, () => setDoc(doc(as("gina"), "blocks", "erin"), { b: [], ts: serverTimestamp() }));
+await t("a block list over 500 is refused", false, () => setDoc(doc(as("erin"), "blocks", "erin"), { b: Array.from({ length: 501 }, (_, i) => "u" + i), ts: serverTimestamp() }));
+await t("erin hides it (only me)", true, () => setDoc(doc(as("erin"), "cards", "erin"), { vis: "none", ts: serverTimestamp() }, { merge: true }));
+await t("vis none: even her friend frank can't read it", false, () => getDoc(card("frank")));
+await t("vis none: erin still can", true, () => getDoc(card("erin")));
+await t("a card that doesn't exist can't be read by others", false, () => getDoc(doc(as("gina"), "cards", "frank")));
+await t("nobody can list the cards", false, () => getDocs(query(collection(as("erin"), "cards"), limit(10))));
+
 console.log("deleting an account");
 await t("deleting a nickname that doesn't exist is harmless", true, () => deleteDoc(doc(as("carol"), "nicks", "never_was")));
+await t("erin deletes her card and block list", true, () => { const db = as("erin"), b = writeBatch(db); b.delete(doc(db, "cards", "erin")); b.delete(doc(db, "blocks", "erin")); return b.commit(); });
 await t("carol deletes everything of hers", true, () => {
   const db = as("carol"), b = writeBatch(db);
-  ["profiles", "board", "backups", "push"].forEach(c => b.delete(doc(db, c, "carol")));
+  ["profiles", "board", "backups", "push", "cards", "blocks"].forEach(c => b.delete(doc(db, c, "carol")));
   b.delete(doc(db, "nicks", "carol")); b.delete(doc(db, "codes", "CCCCCC"));
   return b.commit();
 });

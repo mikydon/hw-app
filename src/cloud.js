@@ -14,6 +14,9 @@
 //   friends/{me}/list/{uid}  {ts}: written for both people in one batch when a request is accepted
 //   backups/{uid}            {json, ts, n}: the automatic cloud backup (owner only)
 //   reports/{auto id}        {by, about, reason, ts}: a reported profile (create only; read in the console)
+//   cards/{uid}              {vis, lvl, xp, streak, best, n, reps, min, since, ach: {badge: tier}, rk: {exercise: best}, ts}:
+//                            the profile others can open (1.7.0, like Steam); vis = friends | all | none decides who
+//   blocks/{uid}             {b: [uids], ts}: who you blocked (1.7.0, owner only); keeps them off your card
 //   push/{uid}               {t: [FCM tokens of your phones], lang, off, blk: [blocked uids], ts}: phone notifications
 //                            (1.6.0, owner only; the push server reads it with its own key)
 //   chats/{a_b}              {m: [a, b], last: {from, text, ts}, th?: chat colour (1.5.2)} (a_b = the two uids sorted); only between friends
@@ -60,6 +63,7 @@ async function googleCredential() {
 const nativeSignOut = () => (native() ? Promise.race([FirebaseAuthentication.signOut().catch(() => {}), new Promise(r => setTimeout(r, 3000))]) : Promise.resolve());
 const pick = (o, keys) => Object.fromEntries(keys.filter(k => o[k] !== undefined).map(k => [k, o[k]]));
 const PROFILE_KEYS = ["nick", "pfp", "xp", "lvl", "streak", "n", "code", "global"];
+const CARD_KEYS = ["lvl", "xp", "streak", "best", "n", "reps", "min", "since", "ach", "rk"];
 async function profilesOf(uids) {
   const out = await Promise.all(uids.map(u => getDoc(d("profiles", u)).then(s => (s.exists() ? { uid: u, ...s.data() } : { uid: u, missing: true })).catch(() => ({ uid: u, missing: true }))));
   return out;
@@ -220,6 +224,15 @@ export const impl = {
   },
   async dropPush(token) { if (token) await setDoc(d("push", uid()), { t: arrayRemove(String(token)), ts: serverTimestamp() }, { merge: true }); },
   async report(about, reason) { await addDoc(collection(db, "reports"), { by: uid(), about, reason: String(reason || "").slice(0, 300), ts: serverTimestamp() }); },
+  // Profile cards (1.7.0). getCard: the card, or null when there is none; a card you may not open (friends only,
+  // only me, blocked) fails with permission-denied, like one that doesn't exist (older app).
+  async getCard(u) { const s = await getDoc(d("cards", u)); if (!s.exists()) return null; const v = s.data(); return { ...v, ts: v.ts && v.ts.toMillis ? v.ts.toMillis() : 0 }; },
+  // The stats part. mergeFields: these fields are replaced whole (a badge or rank that went away after editing the
+  // history goes away here too; plain merge would keep old keys inside the maps), vis stays as it is (it may have been
+  // set on another phone).
+  async saveCard(c) { const v = { ...pick(c, CARD_KEYS), ts: serverTimestamp() }; await setDoc(d("cards", uid()), v, { mergeFields: Object.keys(v) }); },
+  async setCardVis(vis) { await setDoc(d("cards", uid()), { vis, ts: serverTimestamp() }, { merge: true }); },
+  async saveBlocks(list) { await setDoc(d("blocks", uid()), { b: (list || []).slice(-500), ts: serverTimestamp() }); },
   async saveBackup(json, n) { await setDoc(d("backups", uid()), { json, n, ts: serverTimestamp() }); },
   async loadBackup() { const s = await getDoc(d("backups", uid())); if (!s.exists()) return null; const v = s.data(); return { json: v.json, n: v.n, ts: v.ts && v.ts.toMillis ? v.ts.toMillis() : 0 }; },
   // Everything about this account, then the account itself. Google asks again if the last sign-in is too old.
@@ -245,7 +258,7 @@ export const impl = {
     (p && p.sent || []).forEach(t => b.delete(d("inbox", t, "from", me)));
     if (p && p.nick) b.delete(d("nicks", nickKey(p.nick)));
     if (p && p.code) b.delete(d("codes", p.code));
-    ["profiles", "board", "backups", "push"].forEach(c => b.delete(d(c, me)));
+    ["profiles", "board", "backups", "push", "cards", "blocks"].forEach(c => b.delete(d(c, me)));
     await b.commit();
     try { await auth.currentUser.delete(); }
     finally { await nativeSignOut(); try { await fbSignOut(auth); } catch (_) {} user = null; subs.forEach(f => f(null)); }

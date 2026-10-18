@@ -4129,13 +4129,39 @@ function HistoryTab({ history, onDelete, onSaveEntry, editDate, onEditOpened }) 
 }
 
 // ─── TAB 3: PROFILE ──────────────────────────────────────────────────────────
-function ProfileTab({ history, profile, setProfile, onFreeze, kcal }) {
+// The exercise ranks box (Profile, and someone's profile card in 1.7.0): one quiet tile per program exercise with
+// its rank and best set. bests = {exercise id: best or null}; onPick opens the exercise (own profile only).
+function RanksBox({ bests, onPick }) {
+  const ids = Object.keys(RANK_AT);
+  return (
+    <div data-ranks-box style={{ ...card, padding: 8, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+      {ids.map((id, ri) => {
+        const b = bests[id] ?? null;
+        const r = RANKS[rankIdx(id, b)];
+        const Tag = onPick ? "button" : "div";
+        return (
+          <Tag key={id} data-rank-tile={id} onClick={onPick ? () => onPick(id) : undefined} style={{ ...(onPick ? btnBase : {}), textAlign: "left", background: SOFT(), border: "none", borderRadius: 12, padding: "10px 11px", color: C.chalk, display: "flex", flexDirection: "column", gridColumn: ids.length % 2 && ri === ids.length - 1 ? "1 / -1" : undefined }}>
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 6, width: "100%" }}>
+              <span style={{ flex: 1, minWidth: 0, fontSize: 13, fontWeight: 700, lineHeight: 1.25 }}>{EX[id].name}</span>
+              <span aria-hidden="true" style={{ fontSize: 16, lineHeight: 1, flexShrink: 0 }}>{r.icon}</span>
+            </div>
+            <div style={{ fontSize: 12, marginTop: "auto", paddingTop: 5 }}><span style={{ color: r.color, fontWeight: 800 }}>{r.name}</span><span style={{ color: C.dim }}>{b !== null ? T("maxBest", { v: `${b}${EX[id].type === "time" ? " s" : ""}` }) : ""}</span></div>
+          </Tag>
+        );
+      })}
+    </div>
+  );
+}
+
+function ProfileTab({ history, profile, setProfile, onFreeze, kcal, acct, vis, onVis, onFriends }) {
   const fz = freezesAvailable(history);
   const fileRef = useRef(null);
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(profile.name || "");
   const [howEx, setHowEx] = useState(null);
   const [err, setErr] = useState("");
+  const [preview, setPreview] = useState(false);
+  const [visErr, setVisErr] = useState("");
   const today = dateKey();
   const xp = totalXP(history);
   const lv = levelInfo(xp);
@@ -4156,6 +4182,7 @@ function ProfileTab({ history, profile, setProfile, onFreeze, kcal }) {
   return (
     <div className="scr" style={{ padding: "16px 18px 110px", maxWidth: 460, margin: "0 auto" }}>
       {howEx && <HowTo id={howEx} history={history} onClose={() => setHowEx(null)} />}
+      {preview && acct && acct.prof && <ProfileView self p={{ uid: acct.uid, nick: acct.prof.nick, pfp: profile.pfp }} card={cardData(history, profile)} onClose={() => setPreview(false)} />}
       <input ref={fileRef} type="file" accept="image/*" onChange={pick} style={{ display: "none" }} />
 
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", paddingTop: 6 }}>
@@ -4206,22 +4233,33 @@ function ProfileTab({ history, profile, setProfile, onFreeze, kcal }) {
       </div>
 
 
-      <SectionHead title={T("ranksTitle")} meta={T("achTiers", { n: rankLv, max: Object.keys(RANK_AT).length * (RANKS.length - 1) })} />
-      <div data-ranks-box style={{ ...card, padding: 8, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
-        {Object.keys(RANK_AT).map((id, ri, all) => {
-          const b = bestFor(history, id);
-          const r = RANKS[rankIdx(id, b)];
-          return (
-            <button key={id} data-rank-tile={id} onClick={() => setHowEx(id)} style={{ ...btnBase, textAlign: "left", background: SOFT(), border: "none", borderRadius: 12, padding: "10px 11px", color: C.chalk, display: "flex", flexDirection: "column", gridColumn: all.length % 2 && ri === all.length - 1 ? "1 / -1" : undefined }}>
-              <div style={{ display: "flex", alignItems: "flex-start", gap: 6, width: "100%" }}>
-                <span style={{ flex: 1, minWidth: 0, fontSize: 13, fontWeight: 700, lineHeight: 1.25 }}>{EX[id].name}</span>
-                <span aria-hidden="true" style={{ fontSize: 16, lineHeight: 1, flexShrink: 0 }}>{r.icon}</span>
-              </div>
-              <div style={{ fontSize: 12, marginTop: "auto", paddingTop: 5 }}><span style={{ color: r.color, fontWeight: 800 }}>{r.name}</span><span style={{ color: C.dim }}>{b !== null ? T("maxBest", { v: `${b}${EX[id].type === "time" ? " s" : ""}` }) : ""}</span></div>
+      {/* 1.7.0: who can open your profile (like Steam): friends (default), everyone signed in, or only you */}
+      <SectionHead title={T("pvWho")} />
+      <div data-pv-who style={{ ...card, ...tileR(), padding: "12px 13px" }}>
+        {acct && acct.st === "in" && acct.prof ? (
+          <>
+            <div role="radiogroup" aria-label={T("pvWho")} style={{ display: "flex", gap: 4, padding: 4, borderRadius: 13, ...SUNK() }}>
+              {CARD_VIS.map(v => { const on = (vis || "friends") === v; return (
+                <button key={v} role="radio" aria-checked={on} data-vis={v} data-on={on ? 1 : 0} disabled={vis === undefined} onClick={() => { if (on) return; sfxTap(); setVisErr(""); onVis(v).catch(e => setVisErr(cloudErr(e) || T("frOffline"))); }}
+                  style={{ ...btnBase, flex: 1, minWidth: 0, padding: "9px 4px", fontSize: 13.5, borderRadius: 10, background: on ? C.chalk : "transparent", color: on ? C.ink : C.dim, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", opacity: vis === undefined ? 0.5 : 1 }}>{T("pvVis_" + v)}</button>
+              ); })}
+            </div>
+            <div data-pv-vis-desc style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.5, marginTop: 9 }}>{vis === undefined ? T("frLoading") : T("pvVisD_" + vis)} {T("pvPrivate")}</div>
+            {visErr && <div role="alert" style={{ fontSize: 12.5, color: "#ff8a80", marginTop: 6 }}>{visErr}</div>}
+            <button data-pv-preview onClick={() => { sfxTap(); setPreview(true); }} style={{ ...btnBase, width: "100%", marginTop: 10, padding: "11px 13px", borderRadius: 12, background: SOFT(), color: C.chalk, fontSize: 14, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <span>{T("pvPreview")}</span><span aria-hidden="true" style={{ color: C.dim }}>›</span>
             </button>
-          );
-        })}
+          </>
+        ) : (
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ flex: 1, fontSize: 13, color: C.dim, lineHeight: 1.5 }}>{T("pvSignIn")}</div>
+            <button data-pv-signin onClick={() => { sfxTap(); onFriends && onFriends(); }} style={{ ...btnBase, background: C.signal, color: C.signalInk, padding: "9px 12px", fontSize: 13, borderRadius: 10, flexShrink: 0 }}>{T("pvSignInBtn")}</button>
+          </div>
+        )}
       </div>
+
+      <SectionHead title={T("ranksTitle")} meta={T("achTiers", { n: rankLv, max: Object.keys(RANK_AT).length * (RANKS.length - 1) })} />
+      <RanksBox bests={Object.fromEntries(Object.keys(RANK_AT).map(id => [id, bestFor(history, id)]))} onPick={setHowEx} />
 
       <SectionHead title={T("badgesTitle")} meta={<>{T("achCount", { n: ach.filter(a => a.step).length, max: ach.length })} · {T("achTiers", { n: ach.reduce((x, a) => x + a.step, 0), max: ach.reduce((x, a) => x + a.at.length, 0) })}</>} />
       <div data-badges-box style={{ ...card, padding: 8, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
@@ -4402,6 +4440,33 @@ function smallPfp(src) {
   });
 }
 function cloudStats(history) { const xp = totalXP(history); return { xp, lvl: levelInfo(xp).lvl, streak: streakInfo(history, dateKey()).n, n: history.length }; }
+// Profile cards (1.7.0, Michael: like Steam profiles): what friends (or, if you choose, anyone signed in) see when they
+// open your profile. Only training: calorie, step and Health Connect badges never leave the phone for others, and there
+// is no photo in it (friends see the photo they already have from the friends list).
+const CARD_VIS = ["friends", "all", "none"];
+const CARD_HIDE = ["calories", "kcalHit", "steps", "health"];
+function cardData(history, profile) {
+  const xp = totalXP(history), ach = {}, rk = {};
+  achievements(history, achExtra(profile, null, history)).forEach(a => { if (a.tier && !CARD_HIDE.includes(a.k)) ach[a.k] = a.tier; });
+  Object.keys(RANK_AT).forEach(id => { const b = bestFor(history, id); if (typeof b === "number" && isFinite(b)) rk[id] = Math.max(0, Math.round(b)); });
+  return {
+    lvl: levelInfo(xp).lvl, xp, streak: streakInfo(history, dateKey()).n, best: bestStreak(history), n: history.length,
+    reps: totalReps(history), min: Math.floor(history.reduce((a, e) => a + (e.dur || 0), 0) / 60),
+    since: history.length ? history.map(e => e.date).sort()[0] : null, ach, rk,
+  };
+}
+// A card from the cloud is someone else's data: only numbers we know, in sane ranges, are shown.
+const cardNum = v => (typeof v === "number" && isFinite(v) ? Math.max(0, Math.floor(v)) : 0);
+function cleanCard(c) {
+  const ach = {}, rk = {};
+  ACH.forEach(a => { if (!CARD_HIDE.includes(a.k)) { const t = Math.min(cardNum(c.ach && c.ach[a.k]), RANKS.length); if (t) ach[a.k] = t; } });
+  Object.keys(RANK_AT).forEach(id => { const v = c.rk && c.rk[id]; rk[id] = typeof v === "number" && isFinite(v) && v >= 0 ? Math.min(Math.round(v), 99999) : null; });
+  return {
+    lvl: Math.max(1, cardNum(c.lvl)), xp: cardNum(c.xp), streak: cardNum(c.streak), best: cardNum(c.best), n: cardNum(c.n), reps: cardNum(c.reps), min: cardNum(c.min),
+    since: typeof c.since === "string" && /^\d{4}-\d{2}-\d{2}$/.test(c.since) ? c.since : null, ach, rk, ts: cardNum(c.ts), vis: CARD_VIS.includes(c.vis) ? c.vis : "friends",
+  };
+}
+const fmtMins = m => (m >= 60 ? T("pvH", { n: nf(Math.floor(m / 60)) }) : T("pvMin", { n: m }));
 // Short, human error text. Cancelled sign-ins say nothing.
 function cloudErr(e) {
   const c = String((e && e.code) || (e && e.message) || "");
@@ -4434,7 +4499,7 @@ function PersonRow({ p, rank, me, onClick, right, first }) {
 }
 
 // Someone's card: stats, and add / remove / block / report.
-function PersonSheet({ p, isFriend, onAdd, onChat, onRemove, onBlock, onReport, onClose }) {
+function PersonSheet({ p, isFriend, onAdd, onChat, onRemove, onBlock, onReport, onProfile, onClose }) {
   const [sure, setSure] = useState(null);
   const [msg, setMsg] = useState("");
   const [reported, setReported] = useState(false);
@@ -4449,7 +4514,12 @@ function PersonSheet({ p, isFriend, onAdd, onChat, onRemove, onBlock, onReport, 
           <b style={{ fontFamily: DISPLAY, fontSize: 26, color: C.sky }}>⚡{p.lvl || 1}</b><b style={{ fontFamily: DISPLAY, fontSize: 26, color: "#ffa94d" }}>🔥{p.streak || 0}</b><b style={{ fontFamily: DISPLAY, fontSize: 26, color: C.chalk }}>{p.n || 0}</b>
         </div>
       </div>
-      <div style={{ display: "flex", gap: 8, marginTop: 16, flexWrap: "wrap" }}>
+      {onProfile && (
+        <button data-ps-profile onClick={() => { sfxTap(); onProfile(p); }} style={{ ...btnBase, width: "100%", marginTop: 14, padding: "12px 14px", borderRadius: 12, background: SOFT(), color: C.chalk, fontSize: 14, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <span>{T("pvOpen")}</span><span aria-hidden="true" style={{ color: C.dim }}>›</span>
+        </button>
+      )}
+      <div style={{ display: "flex", gap: 8, marginTop: onProfile ? 8 : 16, flexWrap: "wrap" }}>
         {!isFriend && onAdd && <button data-ps-add onClick={() => { sfxTap(); onAdd(p).then(setMsg); }} style={{ ...small, background: C.signal, color: C.signalInk, flexBasis: "100%" }}>{T("frAddBtn")}</button>}
         {isFriend && onChat && <button data-ps-chat onClick={() => { sfxTap(); onChat(p); }} style={{ ...small, background: C.signal, color: C.signalInk, flexBasis: "100%" }}>{T("chWrite")}</button>}
         {isFriend && <button data-ps-remove onClick={() => twoTap("rm", () => onRemove(p))} style={{ ...small, color: sure === "rm" ? "#ff8a80" : C.chalk }}>{sure === "rm" ? T("frRemoveSure") : T("frRemove")}</button>}
@@ -4459,6 +4529,74 @@ function PersonSheet({ p, isFriend, onAdd, onChat, onRemove, onBlock, onReport, 
       <div style={{ fontSize: 12, color: C.dim, marginTop: 10, lineHeight: 1.45 }}>{T("frReportD")}</div>
       {msg && <div role="status" style={{ fontSize: 13, color: msg.startsWith("✓") ? C.mint : "#ff8a80", marginTop: 10 }}>{msg}</div>}
       {reported && <button data-ps-block-too onClick={() => { sfxTap(); onBlock(p); }} style={{ ...small, flex: "none", width: "100%", marginTop: 10, color: "#ff8a80" }}>{T("frBlockToo", { nick: p.nick })}</button>}
+    </Sheet>
+  );
+}
+
+// Someone's profile (1.7.0, like a Steam profile): level, streaks, workouts, reps, time, exercise ranks and badges.
+// Loaded from cards/{uid}; the rules decide whether we may open it (friends only / everyone / only them, blocked).
+// self + card = the preview of your own profile, made from this phone's data (nothing to load).
+function ProfileView({ p, isFriend, self, card: given, onClose }) {
+  const [st, setSt] = useState(() => (given ? { card: given } : { loading: true }));
+  useEffect(() => {
+    if (given) return;
+    let dead = false;
+    cloud().getCard(p.uid).then(c => { if (!dead) setSt(c ? { card: c } : { hidden: true }); })
+      .catch(e => { if (dead) return; setSt(/permission/i.test(String((e && e.code) || (e && e.message) || "")) ? { hidden: true } : { err: cloudErr(e) || T("frOffline") }); });
+    return () => { dead = true; };
+  }, [p.uid]);
+  const c = st.card ? cleanCard(st.card) : null;
+  const shown = ACH.filter(a => !CARD_HIDE.includes(a.k));
+  const got = c ? shown.filter(a => c.ach[a.k]) : [];
+  const rankSum = c ? Object.keys(RANK_AT).reduce((a, id) => a + rankIdx(id, c.rk[id]), 0) : 0;
+  const lv = c ? levelInfo(c.xp) : null;
+  return (
+    <Sheet title={p.nick || "…"} onClose={onClose}>
+      <div data-pv={p.uid} data-pv-state={st.loading ? "loading" : st.hidden ? "hidden" : st.err ? "err" : "ok"}>
+        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+          <Avatar profile={{ name: p.nick || "?", pfp: isFriend || self ? p.pfp || null : null }} size={64} />
+          <div style={{ minWidth: 0, fontSize: 13.5, color: C.dim, lineHeight: 1.45 }}>{c ? (c.since ? T("since", { date: fmtDate(c.since, true) }) : T("newMember")) : st.loading ? T("frLoading") : ""}</div>
+        </div>
+        {self && <div data-pv-self style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.45, marginTop: 12, padding: "9px 12px", borderRadius: 12, background: SOFT() }}>{T("pvSelfNote")}</div>}
+        {st.hidden && (
+          <div data-pv-hidden style={{ marginTop: 16, padding: "14px 15px", borderRadius: 14, background: SOFT() }}>
+            <div style={{ fontSize: 15, fontWeight: 800, color: C.chalk }}>{T("pvHidden", { nick: p.nick || "?" })}</div>
+            <div style={{ fontSize: 13, color: C.dim, lineHeight: 1.5, marginTop: 4 }}>{T("pvHiddenD")}</div>
+          </div>
+        )}
+        {st.err && <div role="alert" style={{ fontSize: 13, color: "#ff8a80", marginTop: 14 }}>{st.err}</div>}
+        {c && (
+          <>
+            <div data-pv-stats style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 16 }}>
+              <StatTile compact data="pv-level" label={T("level")} icon="⚡" value={c.lvl} color={C.sky} sub={T("pvXp", { n: nf(c.xp) })}>
+                <div style={{ height: 5, background: `${C.chalk}14`, borderRadius: 99, marginTop: 8, overflow: "hidden" }}><div style={{ height: "100%", width: `${(lv.into / lv.need) * 100}%`, background: C.sky, borderRadius: 99 }} /></div>
+              </StatTile>
+              <StatTile compact data="pv-streak" label={T("streak")} icon="🔥" value={c.streak} color="#ffa94d" />
+              <StatTile compact data="pv-best" label={T("statBestStreak")} icon="🏆" value={c.best} />
+              <StatTile compact data="pv-n" label={T("statTrainings")} icon="🏋️" value={c.n} />
+              <StatTile compact data="pv-reps" label={T("statReps")} icon="📊" value={nf(c.reps)} />
+              <StatTile compact data="pv-time" label={T("pvTime")} icon="⏱️" value={fmtMins(c.min)} />
+            </div>
+            <SectionHead title={T("ranksTitle")} meta={T("achTiers", { n: rankSum, max: Object.keys(RANK_AT).length * (RANKS.length - 1) })} />
+            <RanksBox bests={c.rk} />
+            <SectionHead title={T("badgesTitle")} meta={T("achCount", { n: got.length, max: shown.length })} />
+            {!got.length ? <div data-pv-nobadges style={{ fontSize: 13, color: C.dim, padding: "2px 4px" }}>{T("pvNoBadges")}</div> : (
+              <div data-pv-badges style={{ ...card, padding: 8, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+                {got.map((a, i) => { const r = RANKS[c.ach[a.k] - 1]; return (
+                  <div key={a.k} data-pv-ach={a.k} data-tier={c.ach[a.k]} style={{ background: SOFT(), borderRadius: 12, padding: "10px 11px", display: "flex", alignItems: "flex-start", gap: 6, gridColumn: got.length % 2 && i === got.length - 1 ? "1 / -1" : undefined }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 13, fontWeight: 800, color: C.chalk, lineHeight: 1.2 }}>{L.ach[a.k][0]}</div>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: r.color, marginTop: 2 }}>{r.icon} {r.name}</div>
+                    </div>
+                    <div aria-hidden="true" style={{ fontSize: 20, lineHeight: 1, flexShrink: 0 }}>{a.icon}</div>
+                  </div>
+                ); })}
+              </div>
+            )}
+            {!self && c.ts > 0 && <div style={{ fontSize: 12, color: C.dim, marginTop: 14, textAlign: "center" }}>{T("pvUpdated", { when: fmtWhen(c.ts) })}</div>}
+          </>
+        )}
+      </div>
     </Sheet>
   );
 }
@@ -4540,6 +4678,7 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState(social.err || "");
   const [sheet, setSheet] = useState(null);
+  const [view, setView] = useState(null); // 1.7.0: whose profile is open (on top of their sheet)
   const [clr, setClr] = useState(() => cloudMem().clr || {}); // 1.6.2: chats deleted for me: {chatId: time}; only newer messages show again
   const [delChat, setDelChat] = useState(null);
   const holdRef = useRef({ t: 0, fired: false });
@@ -4578,7 +4717,7 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
     onBlocked([...new Set([...blocked, p.uid])]);
     const c = cloud();
     Promise.all([friendIds.includes(p.uid) ? c.removeFriend(p.uid) : null, c.decline(p.uid).catch(() => {})]).catch(() => {});
-    setSheet(null); if (chatWith === p.uid) setChatWith(null);
+    setSheet(null); setView(null); if (chatWith === p.uid) setChatWith(null);
   };
   const report = (p, what = "profile") => cloud().report(p.uid, what).then(() => T("frReported")).catch(cloudErr);
   const link = `${SHARE_BASE}add/?c=${me.code}`; // 1.6.5: opens the app when it is installed (App Links), else the website
@@ -4608,15 +4747,17 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
   if (chatWith) {
     const p = people[chatWith] || { uid: chatWith, nick: "…" };
     return <ChatView setTopHead={setTopHead} me={acct.uid} other={p} th={((social.chats || []).find(c => c.other === chatWith) || {}).th} canWrite={friendIds.includes(chatWith)} onBack={() => setChatWith(null)} onOpen={() => { sfxTap(); setSheet(p); }}
-      sheet={sheet && <PersonSheet p={sheet} isFriend={friendIds.includes(sheet.uid)} onClose={() => setSheet(null)} onAdd={x => sendTo(x.uid, x.nick).catch(cloudErr)}
-        onRemove={x => act(() => cloud().removeFriend(x.uid), () => setSheet(null))} onBlock={block} onReport={x => report(x)} />}
+      sheet={<>{sheet && <PersonSheet p={sheet} isFriend={friendIds.includes(sheet.uid)} onClose={() => setSheet(null)} onAdd={x => sendTo(x.uid, x.nick).catch(cloudErr)}
+        onRemove={x => act(() => cloud().removeFriend(x.uid), () => setSheet(null))} onBlock={block} onReport={x => report(x)} onProfile={setView} />}
+        {view && <ProfileView p={view} isFriend={friendIds.includes(view.uid)} onClose={() => setView(null)} />}</>}
       onReport={text => report(p, "message: " + text.slice(0, 280))} onBlock={block} />;
   }
   return (
     <div className="scr" data-fr-main style={{ padding: "6px 18px 110px", maxWidth: 460, margin: "0 auto" }}>
       {sheet && <PersonSheet p={sheet} isFriend={friendIds.includes(sheet.uid)} onClose={() => setSheet(null)} onChat={friendIds.includes(sheet.uid) ? x => { setSheet(null); setChatWith(x.uid); } : null}
         onAdd={p => sendTo(p.uid, p.nick).catch(cloudErr)} onRemove={p => act(() => cloud().removeFriend(p.uid), () => setSheet(null))}
-        onBlock={block} onReport={p => report(p)} />}
+        onBlock={block} onReport={p => report(p)} onProfile={setView} />}
+      {view && <ProfileView p={view} isFriend={friendIds.includes(view.uid)} onClose={() => setView(null)} />}
       {delChat && (() => { const dp = people[delChat.other] || { nick: "…" }; return (
         <Sheet title={T("chDelTitle", { nick: dp.nick })} onClose={() => setDelChat(null)} short>
           <div style={{ lineHeight: 1.5 }}>{T("chDelBody", { nick: dp.nick })}</div>
@@ -6590,6 +6731,40 @@ export default function App() {
     }, 2500);
     return () => { dead = true; clearTimeout(t); };
   }, [acct.st, acct.prof, history, profile.pfp, loaded, profLoaded, swOffer]);
+  // Profile card (1.7.0): who may open it (vis, read from the cloud once per start: it may have been changed on another
+  // phone or the website), the stats part (when it changes, and once a day for the streak), and the block list the
+  // rules use to keep blocked people off it.
+  const [cardVis, setCardVisMap] = useState(() => cloudMem().cardVis || {});
+  const myVis = acct.st === "in" ? cardVis[acct.uid] : undefined;
+  const putVis = (u, v) => setCardVisMap(m => { const n = { ...m, [u]: v }; setCloudMem({ cardVis: n }); return n; });
+  const visRead = useRef("");
+  useEffect(() => {
+    if (acct.st !== "in" || !acct.prof || visRead.current === acct.uid) return;
+    const u = acct.uid; visRead.current = u;
+    cloud().getCard(u).then(c => putVis(u, c && CARD_VIS.includes(c.vis) ? c.vis : (cloudMem().cardVis || {})[u] || "friends")).catch(() => { visRead.current = ""; });
+  }, [acct.st, acct.prof && acct.prof.code]);
+  const setVis = async v => {
+    const u = acct.uid, old = cardVis[u] || "friends";
+    putVis(u, v);
+    try { await cloud().setCardVis(v); sfxCheck(); } catch (e) { putVis(u, old); throw e; }
+  };
+  useEffect(() => {
+    if (acct.st !== "in" || !acct.prof || !loaded || !profLoaded || swOffer) return;
+    let dead = false;
+    const t = setTimeout(() => {
+      const c = cardData(history, profile), key = acct.uid + dateKey() + JSON.stringify(c);
+      if (dead || cloudMem().cardSynced === key) return;
+      cloud().saveCard(c).then(() => setCloudMem({ cardSynced: key })).catch(() => {});
+    }, 3500);
+    return () => { dead = true; clearTimeout(t); };
+  }, [acct.st, acct.prof, history, profile, loaded, profLoaded, swOffer]);
+  useEffect(() => {
+    if (acct.st !== "in" || !acct.prof || swOffer) return;
+    const bl = social.blocked || [], key = acct.uid + ":" + bl.join(","), prev = cloudMem().blkSynced;
+    if (prev === key || (!bl.length && !prev)) return;
+    const t = setTimeout(() => cloud().saveBlocks(bl).then(() => setCloudMem({ blkSynced: key })).catch(() => {}), 1500);
+    return () => clearTimeout(t);
+  }, [acct.st, acct.prof && acct.prof.code, (social.blocked || []).join(","), swOffer]);
   // Automatic cloud backup, a few seconds after any change. Without workouts here only while the cloud copy has none
   // either (setup details, 1.5.0), so an empty phone never wipes workouts saved in the cloud.
   useEffect(() => {
@@ -6815,7 +6990,7 @@ export default function App() {
                 {screen === "history" && <HistoryTab history={history} editDate={histEdit} onEditOpened={() => setHistEdit(null)}
                   onDelete={idx => editHistory(h => h.filter((_, i) => i !== idx))}
                   onSaveEntry={(idx, entry) => editHistory(h => (idx === null ? [...h, entry] : h.map((e, i) => (i === idx ? entry : e))))} />}
-                {screen === "profile" && <ProfileTab history={history} profile={profile} setProfile={setProfile} onFreeze={applyFreeze} kcal={kcal} />}
+                {screen === "profile" && <ProfileTab history={history} profile={profile} setProfile={setProfile} onFreeze={applyFreeze} kcal={kcal} acct={acct} vis={myVis} onVis={setVis} onFriends={() => go("friends")} />}
                 {screen === "calories" && <Calories history={history} profile={profile} setProfile={setProfile} kcal={kcal} setKcal={setKcal} />}
                 {screen === "settings" && <SettingsTab initPage={setPage0} settings={settings} setSettings={setSettings} history={history} profile={profile} setProfile={setProfile}
                   kcal={kcal} autoBk={autoBk} onAutoBackup={runAutoBackup}
