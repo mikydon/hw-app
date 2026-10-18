@@ -8,12 +8,18 @@
 // your inbox, you are now friends). The text of a message is read from Firestore, never taken from the request.
 // The receiver's phones (FCM tokens), language, notifications on/off and blocked people are in push/{uid}.
 //
+// 1.7.0: kind "rep" (sent by the app after a report): when different people (REPORTS_TO_HIDE) reported the same
+// person within REPORT_DAYS, that person leaves the world top 50 (board/{uid} deleted) and mod/{uid} = {hidden: true}
+// keeps them out (the rules refuse a new board entry and strangers can't open their profile). Only the developer
+// undoes it, by deleting mod/{uid} in the Firebase console. No notification is sent for a report.
+//
 // Secret (Cloudflare): FIREBASE_SERVICE_ACCOUNT = the service account key JSON from the Firebase console.
 import TEXTS from "./texts.js";
 
 const PROJECT = "hw-app-mikydon";
 const FS = `https://firestore.googleapis.com/v1/projects/${PROJECT}/databases/(default)/documents`;
 const FRESH_MS = 2 * 60 * 1000; // what happened must be at most this old
+export const REPORTS_TO_HIDE = 3, REPORT_DAYS = 90;
 const ORIGINS = ["https://mikydon.github.io", "https://localhost", "http://localhost", "capacitor://localhost"];
 
 const b64u = buf => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
@@ -80,6 +86,27 @@ async function getDoc(path, tok, fetchFn) {
 async function setTokens(to, list, tok, fetchFn) {
   await fetchFn(`${FS}/push/${to}?updateMask.fieldPaths=t`, { method: "PATCH", headers: { authorization: "Bearer " + tok, "content-type": "application/json" },
     body: JSON.stringify({ fields: { t: { arrayValue: { values: list.map(s => ({ stringValue: s })) } } } }) });
+}
+// All reports about one person (single-field index on "about", created automatically by Firestore).
+async function reportsAbout(uid, tok, fetchFn) {
+  const r = await fetchFn(`${FS}:runQuery`, { method: "POST", headers: { authorization: "Bearer " + tok, "content-type": "application/json" },
+    body: JSON.stringify({ structuredQuery: { from: [{ collectionId: "reports" }], where: { fieldFilter: { field: { fieldPath: "about" }, op: "EQUAL", value: { stringValue: uid } } }, limit: 500 } }) });
+  if (!r.ok) throw new Error("query " + r.status);
+  return (await r.json()).filter(x => x.document).map(x => ({ ...fields(x.document.fields), _create: Date.parse(x.document.createTime) }));
+}
+// Several different people reported `to` lately → hide them from the world top 50 (see the top of the file).
+export async function checkReports({ to, sa, fetchFn = fetch, now = Date.now() }) {
+  if (typeof to !== "string" || !/^[A-Za-z0-9]{6,128}$/.test(to)) return { hidden: false, why: "bad" };
+  const tok = await accessToken(sa, fetchFn, now);
+  const mod = await getDoc(`mod/${to}`, tok, fetchFn);
+  if (mod && mod.hidden === true) return { hidden: true, why: "already" };
+  const by = new Set((await reportsAbout(to, tok, fetchFn)).filter(x => typeof x.by === "string" && x.by !== to && now - (x.ts || x._create) < REPORT_DAYS * 864e5).map(x => x.by));
+  if (by.size < REPORTS_TO_HIDE) return { hidden: false, why: "few", n: by.size };
+  const h = { authorization: "Bearer " + tok, "content-type": "application/json" };
+  const w = await fetchFn(`${FS}/mod/${to}`, { method: "PATCH", headers: h, body: JSON.stringify({ fields: { hidden: { booleanValue: true }, n: { integerValue: String(by.size) }, ts: { timestampValue: new Date(now).toISOString() } } }) });
+  if (!w.ok) throw new Error("mod " + w.status);
+  await fetchFn(`${FS}/board/${to}`, { method: "DELETE", headers: h });
+  return { hidden: true, why: "hidden", n: by.size };
 }
 const seen = new Map(); // recently sent events (per server instance)
 const chatId = (a, b) => (a < b ? `${a}_${b}` : `${b}_${a}`);
@@ -159,7 +186,7 @@ export default {
     try { b = await req.json(); } catch (_) { return json({ error: "body" }, 400, cors); }
     try {
       const sa = JSON.parse(env.FIREBASE_SERVICE_ACCOUNT);
-      const r = await notify({ kind: b.kind, to: b.to, from, sa });
+      const r = b.kind === "rep" ? await checkReports({ to: b.to, sa }) : await notify({ kind: b.kind, to: b.to, from, sa });
       console.log(JSON.stringify({ kind: b.kind, ...r }));
       return json(r, 200, cors);
     } catch (e) {

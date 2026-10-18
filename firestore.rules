@@ -28,11 +28,19 @@ service cloud.firestore {
         && getAfter(/databases/$(database)/documents/codes/$(data().code)).data.uid == uid;
       allow delete: if isMe(uid);
     }
-    // World leaderboard: only people who switched it on; read in pages of at most 100.
+    // 1.7.0: mod/{uid} {hidden: true} = reported by several different people (written only by the push server, which
+    // counts the reports); the person can read it, nobody can write it from the app; the developer removes it.
+    function modHidden(u) {
+      return exists(/databases/$(database)/documents/mod/$(u)) && get(/databases/$(database)/documents/mod/$(u)).data.get('hidden', false) == true;
+    }
+    match /mod/{uid} {
+      allow get: if isMe(uid);
+    }
+    // World leaderboard: only people who switched it on; read in pages of at most 100. Hidden after reports: can't join.
     match /board/{uid} {
       allow get: if signedIn();
       allow list: if signedIn() && request.query.limit <= 100;
-      allow create, update: if isMe(uid) && only(['nick', 'pfp', 'xp', 'lvl', 'streak', 'n', 'ts']) && statsOk();
+      allow create, update: if isMe(uid) && only(['nick', 'pfp', 'xp', 'lvl', 'streak', 'n', 'ts']) && statsOk() && !modHidden(uid);
       allow delete: if isMe(uid);
     }
     // Profile cards (1.7.0, like a Steam profile): level, streaks, workouts, reps, time, badge tiers and exercise ranks.
@@ -56,8 +64,8 @@ service cloud.firestore {
     }
     function cardOpen(owner) {
       let v = resource.data.get('vis', 'friends');
-      return signedIn() && notBlockedBy(owner) && (v == 'all'
-        || (v == 'friends' && exists(/databases/$(database)/documents/friends/$(owner)/list/$(request.auth.uid))));
+      return signedIn() && notBlockedBy(owner) && ((v == 'all' && !modHidden(owner))
+        || (v != 'none' && exists(/databases/$(database)/documents/friends/$(owner)/list/$(request.auth.uid))));
     }
     match /cards/{uid} {
       allow get: if isMe(uid) || cardOpen(uid);

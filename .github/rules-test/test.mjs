@@ -209,6 +209,19 @@ await t("vis none: erin still can", true, () => getDoc(card("erin")));
 await t("a card that doesn't exist can't be read by others", false, () => getDoc(doc(as("gina"), "cards", "frank")));
 await t("nobody can list the cards", false, () => getDocs(query(collection(as("erin"), "cards"), limit(10))));
 
+console.log("hidden after reports (1.7.0)");
+await env.withSecurityRulesDisabled(async c => { await setDoc(doc(c.firestore(), "mod", "erin"), { hidden: true, n: 3, ts: Timestamp.now() }); });
+await t("erin reads why she is hidden", true, () => getDoc(doc(as("erin"), "mod", "erin")));
+await t("gina can't read erin's mod note", false, () => getDoc(doc(as("gina"), "mod", "erin")));
+await t("nobody can write a mod note from the app (not even herself)", false, () => setDoc(doc(as("erin"), "mod", "erin"), { hidden: false }));
+await t("nobody can remove it from the app", false, () => deleteDoc(doc(as("erin"), "mod", "erin")));
+await t("hidden: erin can't join the world top 50", false, () => setDoc(doc(as("erin"), "board", "erin"), board("Erin")));
+await t("hidden: she can still leave it (delete)", true, () => deleteDoc(doc(as("erin"), "board", "erin")));
+await t("erin opens her card to everyone again", true, () => setDoc(doc(as("erin"), "cards", "erin"), { vis: "all", ts: serverTimestamp() }, { merge: true }));
+await t("hidden: a stranger (bob) can't open her card even with vis all", false, () => getDoc(card("bob")));
+await t("hidden: her friend frank still can", true, () => getDoc(card("frank")));
+await t("not hidden: carol joins the world top 50", true, () => setDoc(doc(as("carol"), "board", "carol"), board("Carol")));
+
 console.log("deleting an account");
 await t("deleting a nickname that doesn't exist is harmless", true, () => deleteDoc(doc(as("carol"), "nicks", "never_was")));
 await t("erin deletes her card and block list", true, () => { const db = as("erin"), b = writeBatch(db); b.delete(doc(db, "cards", "erin")); b.delete(doc(db, "blocks", "erin")); return b.commit(); });

@@ -4691,7 +4691,7 @@ function ProfileView({ p, isFriend, self, card: given, onClose }) {
   );
 }
 
-function FriendsTab({ acct, history, profile, social, chatWith, setChatWith, onBlocked, onSignIn, onCreate, onRename, onSetGlobal, setTopHead }) {
+function FriendsTab({ acct, history, profile, social, chatWith, setChatWith, onBlocked, onSignIn, onCreate, onRename, onSetGlobal, setTopHead, modHidden }) {
   const [age16, setAge16] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
@@ -4729,7 +4729,7 @@ function FriendsTab({ acct, history, profile, social, chatWith, setChatWith, onB
     );
   }
   if (!acct.prof) return <NickSetup initial={nickFrom(profile.name && profile.name !== "User" ? profile.name : "")} onSave={onCreate} />;
-  return <FriendsMain acct={acct} history={history} profile={profile} social={social} chatWith={chatWith} setChatWith={setChatWith} onBlocked={onBlocked} onRename={onRename} onSetGlobal={onSetGlobal} setTopHead={setTopHead} />;
+  return <FriendsMain acct={acct} history={history} profile={profile} social={social} chatWith={chatWith} setChatWith={setChatWith} onBlocked={onBlocked} onRename={onRename} onSetGlobal={onSetGlobal} setTopHead={setTopHead} modHidden={modHidden} />;
 }
 
 function NickSetup({ initial, onSave, onCancel, title }) {
@@ -4755,7 +4755,7 @@ function NickSetup({ initial, onSave, onCancel, title }) {
   return <div className="scr" data-fr-nicksetup style={{ padding: "6px 18px 110px", maxWidth: 460, margin: "0 auto" }}><Sect title={T("frNickTitle")}>{body}</Sect></div>;
 }
 
-function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, chatWith, setChatWith, onBlocked, setTopHead }) {
+function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, chatWith, setChatWith, onBlocked, setTopHead, modHidden }) {
   const me = { uid: acct.uid, ...acct.prof, ...cloudStats(history) };
   const [tab, setTab] = useState(() => (sessionStorage.getItem("hw-add") ? "friends" : chatWith ? "chats" : "board"));
   const [scope, setScope] = useState("friends"); // board: friends | world
@@ -4881,6 +4881,12 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
       {tab === "board" ? (
         <>
           {scope === "world" && (
+            modHidden ? (
+              <div data-fr-hidden style={{ ...card, ...tileR(), marginTop: 10, padding: "13px 16px" }}>
+                <div style={{ fontSize: 15, fontWeight: 700, color: C.chalk }}>{T("frHiddenT")}</div>
+                <div style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.5, marginTop: 3 }}>{T("frHiddenD")}</div>
+              </div>
+            ) :
             <div style={{ ...card, ...tileR(), marginTop: 10, overflow: "hidden" }}>
               <SettingRow first title={T("frWorldJoin")} desc={T("frWorldJoinD")} on={!!acct.prof.global} onClick={() => { sfxTap(); onSetGlobal(!acct.prof.global).then(() => setTimeout(loadWorld, 400)).catch(e => setErr(cloudErr(e))); }} />
             </div>
@@ -4892,7 +4898,7 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
               {scope === "world" && <button data-fr-refresh onClick={() => { sfxTap(); loadWorld(); }} aria-label={T("frRefresh")} style={{ ...btnBase, background: "transparent", color: C.dim, padding: "4px 6px", fontSize: 17, marginLeft: "auto", flexShrink: 0 }}>↻</button>}
             </div>
             {board === null ? <div style={{ padding: "6px 16px 12px", color: C.dim, fontSize: 14 }}>{T("frLoading")}</div>
-              : scope === "world" && !board.length ? <div style={{ padding: "6px 16px 12px", color: C.dim, fontSize: 14 }}>{T("frWorldEmpty")}</div>
+              : scope === "world" && !board.length ? <div style={{ padding: "6px 16px 12px", color: C.dim, fontSize: 14 }}>{T(modHidden ? "frWorldNone" : "frWorldEmpty")}</div>
               : board.map((p, i) => <PersonRow key={p.uid} p={p} rank={i + 1} me={p.uid === acct.uid} onClick={p.uid === acct.uid ? null : () => { sfxTap(); setSheet(p); }} />)}
             {scope === "friends" && friends && !friends.length && <div style={{ padding: "10px 16px 12px", color: C.dim, fontSize: 13, lineHeight: 1.5, borderTop: `1px solid ${C.line}` }}>{T("frNoFriends")}</div>}
           </Sect>
@@ -6842,10 +6848,12 @@ export default function App() {
   const myVis = acct.st === "in" ? cardVis[acct.uid] : undefined;
   const putVis = (u, v) => setCardVisMap(m => { const n = { ...m, [u]: v }; setCloudMem({ cardVis: n }); return n; });
   const visRead = useRef("");
+  const [modHidden, setModHidden] = useState(false); // 1.7.0: hidden from the world top 50 after reports (mod/{uid})
   useEffect(() => {
     if (acct.st !== "in" || !acct.prof || visRead.current === acct.uid) return;
     const u = acct.uid; visRead.current = u;
     cloud().getCard(u).then(c => putVis(u, c && CARD_VIS.includes(c.vis) ? c.vis : (cloudMem().cardVis || {})[u] || "friends")).catch(() => { visRead.current = ""; });
+    cloud().getMod().then(m => setModHidden(!!m.hidden)).catch(() => {});
   }, [acct.st, acct.prof && acct.prof.code]);
   const setVis = async v => {
     const u = acct.uid, old = cardVis[u] || "friends";
@@ -7109,7 +7117,7 @@ export default function App() {
                   kcal={kcal} autoBk={autoBk} onAutoBackup={runAutoBackup}
                   onImport={importAll} acct={acct} cloudBk={cloudBk} onAcctOpen={() => go("friends")} onCloudRestore={restoreFromCloud} onCloudBackupNow={cloudBackupNow} onSignOut={signOut} onDeleteAccount={deleteAccount} />}
                 {screen === "friends" && <OpenInApp />}
-                {screen === "friends" && <FriendsTab key={"fr" + addSeq} setTopHead={setTopHead} acct={acct} history={history} profile={profile} social={social} chatWith={chatWith} setChatWith={setChatWith} onBlocked={setBlocked} onSignIn={signIn} onCreate={createProfile} onRename={renameNick} onSetGlobal={setGlobal} />}
+                {screen === "friends" && <FriendsTab key={"fr" + addSeq} modHidden={modHidden} setTopHead={setTopHead} acct={acct} history={history} profile={profile} social={social} chatWith={chatWith} setChatWith={setChatWith} onBlocked={setBlocked} onSignIn={signIn} onCreate={createProfile} onRename={renameNick} onSetGlobal={setGlobal} />}
               </div>
               {session && session.phase !== "summary" && <MiniPlayer session={session} live={live} onOpen={resume} />}
               {exitAsk && <ExitPrompt history={history} session={session} onStay={() => { sfxTap(); setExitAsk(false); }} onLeave={() => { setExitAsk(false); exitApp(); }} />}

@@ -17,6 +17,8 @@
 //   cards/{uid}              {vis, lvl, xp, streak, best, n, reps, min, since, ach: {badge: tier}, rk: {exercise: best}, ts}:
 //                            the profile others can open (1.7.0, like Steam); vis = friends | all | none decides who
 //   blocks/{uid}             {b: [uids], ts}: who you blocked (1.7.0, owner only); keeps them off your card
+//   mod/{uid}                {hidden, n, ts}: reported by several people → out of the world top 50 (1.7.0; written by
+//                            the push server only, the person can read it)
 //   push/{uid}               {t: [FCM tokens of your phones], lang, off, blk: [blocked uids], ts}: phone notifications
 //                            (1.6.0, owner only; the push server reads it with its own key)
 //   chats/{a_b}              {m: [a, b], last: {from, text, ts}, th?: chat colour (1.5.2)} (a_b = the two uids sorted); only between friends
@@ -121,9 +123,11 @@ export const impl = {
   // Stats and photo; the world leaderboard copy exists only while "global" is on.
   async saveProfile(p) {
     const me = uid(), data = { ...pick(p, PROFILE_KEYS), global: !!p.global, ts: serverTimestamp() };
+    // hidden after reports (1.7.0): the rules refuse a world entry, so the rest is saved without it
+    const hidden = p.global ? await impl.getMod().then(m => m.hidden).catch(() => false) : false;
     const b = writeBatch(db);
     b.set(d("profiles", me), data);
-    if (p.global) b.set(d("board", me), { nick: p.nick, pfp: null, xp: p.xp, lvl: p.lvl, streak: p.streak, n: p.n, ts: serverTimestamp() });
+    if (p.global && !hidden) b.set(d("board", me), { nick: p.nick, pfp: null, xp: p.xp, lvl: p.lvl, streak: p.streak, n: p.n, ts: serverTimestamp() });
     else b.delete(d("board", me));
     await b.commit();
   },
@@ -223,7 +227,10 @@ export const impl = {
     return j;
   },
   async dropPush(token) { if (token) await setDoc(d("push", uid()), { t: arrayRemove(String(token)), ts: serverTimestamp() }, { merge: true }); },
-  async report(about, reason) { await addDoc(collection(db, "reports"), { by: uid(), about, reason: String(reason || "").slice(0, 300), ts: serverTimestamp() }); },
+  // 1.7.0: the push server then counts the reports about that person (several different people → hidden from the
+  // world top 50, mod/{uid})
+  async report(about, reason) { await addDoc(collection(db, "reports"), { by: uid(), about, reason: String(reason || "").slice(0, 300), ts: serverTimestamp() }); notify("rep", about); },
+  async getMod() { const s = await getDoc(d("mod", uid())); return { hidden: s.exists() && s.data().hidden === true }; },
   // Profile cards (1.7.0). getCard: the card, or null when there is none; a card you may not open (friends only,
   // only me, blocked) fails with permission-denied, like one that doesn't exist (older app).
   async getCard(u) { const s = await getDoc(d("cards", u)); if (!s.exists()) return null; const v = s.data(); return { ...v, ts: v.ts && v.ts.toMillis ? v.ts.toMillis() : 0 }; },
