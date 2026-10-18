@@ -588,6 +588,9 @@ export default {
     achLockedList: "Ještě nezískané ({n})",
     achMax: "Nejvyšší úroveň. Klobouk dolů! 🎩",
     achNext: "Další: {rank} –",
+    achSheetD: "Nejdřív ty, kterým jsi nejblíž; hotové na konci.",
+    achLeft: "ještě {n}",
+    achOpenAll: "Všechny odznaky a tvůj postup",
     achUp: "{name}: {rank}",
     maxBest: ", max {v}",
     pvOpen: "Zobrazit profil",
@@ -1156,11 +1159,11 @@ export default {
   ],
   news17: [
     ["Profily", "Přátelé viděli jen tvou přezdívku, fotku, level, sérii a počet tréninků.", "Ťukni na přítele nebo někoho ze světové top 50 → Zobrazit profil: level, série, tréninky, opakování a čas celkem, ranky cviků a odznaky, s krátkou animací. Profil → Kdo vidí tvůj profil: přátelé (výchozí), všichni přihlášení, nebo jen ty; zablokovaní nikdy. Kalorie, kroky ani Health Connect se nikdy neukazují."],
-    ["Mobil a web v souladu", "Záloha v cloudu byla jedna kopie: obnovení nahradilo to, co bylo v mobilu.", "Když jsi přihlášený, mobil, web i další mobil se navzájem doplní během pár sekund: tréninky (i upravené či smazané), profil, kalorie, vzhled a vypnuté cviky se spojí, nic se neztratí. Jazyk, zvuky, vibrace a údaje z Health Connect zůstávají v každém zařízení zvlášť."],
+    ["Mobil a web v souladu", "Záloha v cloudu byla jedna kopie: obnovení nahradilo to, co bylo v mobilu.", "Když jsi přihlášený, mobil, web i další mobil se navzájem doplní během pár sekund: tréninky (i upravené či smazané), profil, kalorie, vzhled a vypnuté cviky se spojí, nic se neztratí. Jazyk, zvuky, vibrace a údaje z Health Connect zůstávají v každém zařízení zvlášť. Přečtené a smazané chaty i zablokovaní lidé jdou s tebou taky."],
     ["Hlavní barva", "Žlutá byla barvou aplikace všude.", "Nová hlavní barva je fialová, i na ikoně. V Nastavení → Vzhled → Hlavní barva si můžeš vybrat i žlutou, růžovou, tyrkysovou, oranžovou nebo korálovou; barvy tréninků a kalorií se posunou, aby se nebily."],
     ["Tablet a počítač", "Na tabletu nebo počítači byla aplikace jeden úzký mobilní sloupec uprostřed.", "Od šířky tabletu obrazovky využijí místo: Trénink a Kalorie ukážou své stránky vedle sebe, ostatní obrazovky mají dva sloupce a na počítači zůstává menu otevřené vlevo. Na mobilu se nic nemění."],
     ["3D emoji", "Emoji v aplikaci (🔥, 🏆, odznaky…) vypadala na každém mobilu jinak.", "Teď jsou to 3D Fluent Emoji od Microsoftu, stejná na každém Androidu a v prohlížečích postavených na Chrome (Safari a Firefox mají svá). Zprávy používají emoji tvého mobilu, takže tam funguje každé."],
-    ["Uklizenější obrazovky", "Historie, Kalorie, Nastavení a Profil vypadaly jinak než Trénink a Profil vypisoval i všechny odznaky, které ještě nemáš.", "Mají stejné boxy jako Trénink v každém rozložení. Profil ukazuje to, co máš; odznaky, které teprve získáš, čekají sbalené pod jedním řádkem."],
+    ["Uklizenější obrazovky", "Historie, Kalorie, Nastavení a Profil vypadaly jinak než Trénink a Profil vypisoval i všechny odznaky, které ještě nemáš.", "Mají stejné boxy jako Trénink v každém rozložení. Profil ukazuje to, co máš; odznaky, které teprve získáš, čekají sbalené pod jedním řádkem. Ťukni na Odznaky (nebo na kterýkoli odznak) a uvidíš všechny i to, kolik ti chybí do další úrovně."],
     ["Bezpečnější světová top 50", "Nahlášený profil zůstal ve světové top 50, dokud se na něj nepodíval vývojář.", "Když profil během 90 dnů nahlásí tři různí lidé, hned zmizí ze světové top 50 a cizí ho neotevřou (přátelé ano). Ten člověk v aplikaci uvidí proč, a pokud je to omyl, může napsat."],
   ],
   news16: [

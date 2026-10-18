@@ -588,6 +588,9 @@ export default {
     achLockedList: "Noch nicht verdient ({n})",
     achMax: "Höchste Stufe. Hut ab! 🎩",
     achNext: "Nächste: {rank} –",
+    achSheetD: "Zuerst die, denen du am nächsten bist; fertige am Ende.",
+    achLeft: "noch {n}",
+    achOpenAll: "Alle Abzeichen und dein Fortschritt",
     achUp: "{name}: {rank}",
     maxBest: ", max. {v}",
     pvOpen: "Profil ansehen",
@@ -1156,11 +1159,11 @@ export default {
   ],
   news17: [
     ["Profile", "Freunde sahen nur deinen Spitznamen, dein Foto, Level, deine Serie und die Zahl der Trainings.", "Tippe auf einen Freund oder jemanden aus den Welt-Top-50 → Profil ansehen: Level, Serien, Trainings, Wiederholungen und Trainingszeit gesamt, Übungsränge und Abzeichen, mit einer kurzen Animation. Profil → Wer dein Profil sieht: deine Freunde (Standard), alle Angemeldeten oder nur du; Blockierte nie. Kalorien, Schritte und Health Connect werden nie gezeigt."],
-    ["Handy und Website im Einklang", "Die Cloud-Sicherung war eine einzige Kopie: Wiederherstellen ersetzte, was auf dem Handy war.", "Angemeldet ergänzen sich dein Handy, die Website und jedes weitere Handy innerhalb von Sekunden: Trainings (auch bearbeitete oder gelöschte), Profil, Kalorien, Darstellung und ausgeschaltete Übungen werden zusammengeführt, nichts geht verloren. Sprache, Töne, Vibration und Health-Connect-Daten bleiben pro Gerät."],
+    ["Handy und Website im Einklang", "Die Cloud-Sicherung war eine einzige Kopie: Wiederherstellen ersetzte, was auf dem Handy war.", "Angemeldet ergänzen sich dein Handy, die Website und jedes weitere Handy innerhalb von Sekunden: Trainings (auch bearbeitete oder gelöschte), Profil, Kalorien, Darstellung und ausgeschaltete Übungen werden zusammengeführt, nichts geht verloren. Sprache, Töne, Vibration und Health-Connect-Daten bleiben pro Gerät. Gelesene und gelöschte Chats und blockierte Personen kommen auch mit."],
     ["Hauptfarbe", "Gelb war überall die Farbe der App.", "Violett ist die neue Hauptfarbe, auch im Symbol. Unter Einstellungen → Darstellung → Hauptfarbe kannst du stattdessen Gelb, Pink, Türkis, Orange oder Koralle wählen; die Farben für Trainings und Kalorien verschieben sich, damit nichts kollidiert."],
     ["Tablet und Computer", "Auf einem Tablet oder Computer war die App eine schmale Handy-Spalte in der Mitte.", "Ab Tablet-Breite nutzen die Bildschirme den Platz: Training und Kalorien zeigen ihre Seiten nebeneinander, die anderen Bildschirme haben zwei Spalten, und am Computer bleibt das Menü links offen. Auf dem Handy ändert sich nichts."],
     ["3D-Emojis", "Die Emojis der App (🔥, 🏆, die Abzeichen…) sahen auf jedem Handy anders aus.", "Jetzt sind es Microsofts 3D Fluent Emoji, gleich auf jedem Android-Handy und in Chrome-basierten Browsern (Safari und Firefox behalten ihre eigenen). Nachrichten nutzen die Emojis deines Handys, dort funktioniert also jedes Emoji."],
-    ["Aufgeräumtere Bildschirme", "Verlauf, Kalorien, Einstellungen und Profil sahen anders aus als Training, und das Profil listete auch alle Abzeichen, die du noch nicht hast.", "Sie nutzen in jeder Darstellung dieselben Kästen wie Training. Das Profil zeigt, was du hast; die noch offenen Abzeichen warten eingeklappt unter einer Zeile."],
+    ["Aufgeräumtere Bildschirme", "Verlauf, Kalorien, Einstellungen und Profil sahen anders aus als Training, und das Profil listete auch alle Abzeichen, die du noch nicht hast.", "Sie nutzen in jeder Darstellung dieselben Kästen wie Training. Das Profil zeigt, was du hast; die noch offenen Abzeichen warten eingeklappt unter einer Zeile. Tippe auf Abzeichen (oder ein beliebiges Abzeichen), um alle zu sehen und wie viel dir bis zur nächsten Stufe fehlt."],
     ["Sicherere Welt-Top-50", "Ein gemeldetes Profil blieb in den Welt-Top-50, bis der Entwickler es sich angesehen hatte.", "Melden drei verschiedene Personen ein Profil innerhalb von 90 Tagen, verschwindet es sofort aus den Welt-Top-50 und Fremde können es nicht öffnen (Freunde schon). Die Person sieht in der App, warum, und kann schreiben, falls es ein Irrtum ist."],
   ],
   news16: [

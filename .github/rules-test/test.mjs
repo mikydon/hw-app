@@ -203,6 +203,13 @@ await t("gina can't read erin's block list", false, () => getDoc(doc(as("gina"),
 await t("erin reads her block list", true, () => getDoc(doc(as("erin"), "blocks", "erin")));
 await t("gina can't change erin's block list", false, () => setDoc(doc(as("gina"), "blocks", "erin"), { b: [], ts: serverTimestamp() }));
 await t("a block list over 500 is refused", false, () => setDoc(doc(as("erin"), "blocks", "erin"), { b: Array.from({ length: 501 }, (_, i) => "u" + i), ts: serverTimestamp() }));
+await t("erin's other phone learns what she read and deleted (chatmem)", true, () => setDoc(doc(as("erin"), "chatmem", "erin"), { read: { a_b: 1 }, clr: { a_c: 2 }, ts: serverTimestamp() }, { merge: true }));
+await t("a merge adds one chat to it", true, () => setDoc(doc(as("erin"), "chatmem", "erin"), { read: { a_d: 3 }, ts: serverTimestamp() }, { merge: true }));
+await t("erin reads her chat memory", true, () => getDoc(doc(as("erin"), "chatmem", "erin")));
+await t("gina can't read erin's chat memory", false, () => getDoc(doc(as("gina"), "chatmem", "erin")));
+await t("gina can't write erin's chat memory", false, () => setDoc(doc(as("gina"), "chatmem", "erin"), { read: {}, ts: serverTimestamp() }, { merge: true }));
+await t("other fields in chat memory are refused", false, () => setDoc(doc(as("erin"), "chatmem", "erin"), { x: 1, ts: serverTimestamp() }, { merge: true }));
+await t("chat memory without the server time is refused", false, () => setDoc(doc(as("erin"), "chatmem", "erin"), { read: { a_e: 4 } }, { merge: true }));
 await t("erin hides it (only me)", true, () => setDoc(doc(as("erin"), "cards", "erin"), { vis: "none", ts: serverTimestamp() }, { merge: true }));
 await t("vis none: even her friend frank can't read it", false, () => getDoc(card("frank")));
 await t("vis none: erin still can", true, () => getDoc(card("erin")));
@@ -224,10 +231,10 @@ await t("not hidden: carol joins the world top 50", true, () => setDoc(doc(as("c
 
 console.log("deleting an account");
 await t("deleting a nickname that doesn't exist is harmless", true, () => deleteDoc(doc(as("carol"), "nicks", "never_was")));
-await t("erin deletes her card and block list", true, () => { const db = as("erin"), b = writeBatch(db); b.delete(doc(db, "cards", "erin")); b.delete(doc(db, "blocks", "erin")); return b.commit(); });
+await t("erin deletes her card, block list and chat memory", true, () => { const db = as("erin"), b = writeBatch(db); b.delete(doc(db, "cards", "erin")); b.delete(doc(db, "blocks", "erin")); b.delete(doc(db, "chatmem", "erin")); return b.commit(); });
 await t("carol deletes everything of hers", true, () => {
   const db = as("carol"), b = writeBatch(db);
-  ["profiles", "board", "backups", "push", "cards", "blocks"].forEach(c => b.delete(doc(db, c, "carol")));
+  ["profiles", "board", "backups", "push", "cards", "blocks", "chatmem"].forEach(c => b.delete(doc(db, c, "carol")));
   b.delete(doc(db, "nicks", "carol")); b.delete(doc(db, "codes", "CCCCCC"));
   return b.commit();
 });

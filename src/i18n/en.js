@@ -588,6 +588,9 @@ export default {
     achLockedList: "Not earned yet ({n})",
     achMax: "Top level. Hats off! 🎩",
     achNext: "Next: {rank} –",
+    achSheetD: "Closest to the next level first; finished badges at the end.",
+    achLeft: "{n} to go",
+    achOpenAll: "All badges and your progress",
     achUp: "{name}: {rank}",
     maxBest: ", max {v}",
     pvOpen: "View profile",
@@ -1156,11 +1159,11 @@ export default {
   ],
   news17: [
     ["Profiles", "Friends only saw your nickname, photo, level, streak and number of workouts.", "Tap a friend or someone in the world top 50 → View profile: level, streaks, workouts, total reps and training time, exercise ranks and badges, with a short animation. Profile → Who sees your profile: your friends (default), everyone signed in, or only you; people you blocked never can. Calories, steps and Health Connect are never shown."],
-    ["Phone and website in sync", "The cloud backup was a single copy: restoring it replaced what was on the phone.", "Signed in, your phone, the website and any other phone keep each other up to date within seconds: workouts (also edited or deleted ones), profile, calories, look and turned-off exercises are merged, nothing gets lost. Language, sounds, vibration and Health Connect data stay per device."],
+    ["Phone and website in sync", "The cloud backup was a single copy: restoring it replaced what was on the phone.", "Signed in, your phone, the website and any other phone keep each other up to date within seconds: workouts (also edited or deleted ones), profile, calories, look and turned-off exercises are merged, nothing gets lost. Language, sounds, vibration and Health Connect data stay per device. Read and deleted chats and the people you blocked follow you too."],
     ["Main colour", "Yellow was the app's colour everywhere.", "Violet is the new main colour, also on the icon. Settings → Appearance → Main colour lets you pick yellow, pink, turquoise, orange or coral instead; the workout and calorie colours shift so nothing clashes."],
     ["Tablet and computer", "On a tablet or a computer the app was one narrow phone column in the middle.", "From tablet width the screens use the space: Workout and Calories show their pages side by side, the other screens have two columns, and on a computer the menu stays open on the left. On a phone nothing changes."],
     ["3D emoji", "The app's emoji (🔥, 🏆, the badges…) looked different on every phone.", "They are Microsoft's 3D Fluent Emoji now, the same on every Android phone and in Chrome-based browsers (Safari and Firefox keep their own). Messages keep your phone's emoji, so every emoji works there."],
-    ["Tidier screens", "History, Calories, Settings and Profile looked different from the Workout screen, and Profile listed every badge you hadn't earned yet.", "They use the same boxes as the Workout screen in every look. Profile shows what you have; the badges still to earn wait folded under one row."],
+    ["Tidier screens", "History, Calories, Settings and Profile looked different from the Workout screen, and Profile listed every badge you hadn't earned yet.", "They use the same boxes as the Workout screen in every look. Profile shows what you have; the badges still to earn wait folded under one row. Tap Badges (or any badge) to see all of them and how far you are from the next level."],
     ["Safer world top 50", "A reported profile stayed in the world top 50 until the developer had looked at it.", "When three different people report a profile within 90 days, it leaves the world top 50 at once and strangers can't open it (friends still can). That person sees why in the app and can write if it's a mistake."],
   ],
   news16: [

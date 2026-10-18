@@ -1342,18 +1342,30 @@ const stepBtn = () => ({ ...btnBase, width: 64, height: 64, borderRadius: 99, ba
 // Section title row: the title on the left, an optional quiet count/chip on the right (same on every screen).
 const SECT_HEAD = { display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 };
 const sectMeta = meta => meta ? <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: 0, textTransform: "none", color: C.dim, opacity: 1, whiteSpace: "nowrap" }}>{meta}</span> : null;
-function Sect({ title, meta, children, style, titlePad, accent, flatTitle, ...rest }) {
+function Sect({ title, meta, children, style, titlePad, accent, flatTitle, onHead, headLabel, ...rest }) {
+  // onHead (1.7.0): the title row is a button (e.g. Profile → Badges opens all badges with the progress), with a ›
+  const head = st => {
+    if (!title) return null;
+    if (!onHead) return <div style={{ ...st, ...SECT_HEAD }}><span>{title}</span>{sectMeta(meta)}</div>;
+    return (
+      <button type="button" onClick={() => { sfxTap(); onHead(); }} data-sect-open aria-haspopup="dialog" aria-label={headLabel}
+        style={{ ...st, ...SECT_HEAD, width: "100%", border: "none", background: "transparent", cursor: "pointer", textAlign: "left", fontFamily: BODY, borderRadius: 8 }}>
+        <span>{title}</span>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 6, minWidth: 0 }}>{sectMeta(meta)}<span aria-hidden="true" style={{ fontSize: 15, lineHeight: 1, letterSpacing: 0, color: C.signal, opacity: 1 }}>›</span></span>
+      </button>
+    );
+  };
   // flat = no boxes; flatTitle (1.7.0: History, Profile, Settings) keeps the title as a quiet label above the content
-  if (LOOK === "flat") return <div {...rest} style={{ marginTop: 18, ...style, ...(flatTitle ? { padding: 0 } : {}) }}>{flatTitle && title && <div style={{ ...sectionTitle, margin: "4px 4px 8px", ...SECT_HEAD }}><span>{title}</span>{sectMeta(meta)}</div>}{children}</div>;
+  if (LOOK === "flat") return <div {...rest} style={{ marginTop: 18, ...style, ...(flatTitle ? { padding: 0 } : {}) }}>{(flatTitle || onHead) && head({ ...sectionTitle, margin: "4px 4px 8px", padding: 0 })}{children}</div>;
   if (LOOK === "liquid") return (
     <section {...rest} data-sect style={{ ...LIQUID(), padding: "15px 16px", marginTop: 12, ...style }}>
-      {title && <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: C.chalk, opacity: 0.7, marginBottom: 10, padding: titlePad || 0, ...SECT_HEAD }}><span>{title}</span>{sectMeta(meta)}</div>}
+      {head({ fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: C.chalk, opacity: 0.7, marginBottom: 10, padding: titlePad || 0 })}
       {children}
     </section>
   );
   if (LOOK === "glass") return (
     <section {...rest} data-sect style={{ ...GLASS(), padding: "15px 16px", marginTop: 12, ...style }}>
-      {title && <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: C.dim, marginBottom: 10, padding: titlePad || 0, ...SECT_HEAD }}><span>{title}</span>{sectMeta(meta)}</div>}
+      {head({ fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: C.dim, marginBottom: 10, padding: titlePad || 0 })}
       {children}
     </section>
   );
@@ -1361,7 +1373,7 @@ function Sect({ title, meta, children, style, titlePad, accent, flatTitle, ...re
     const a = accent || C.signal;
     return (
       <section {...rest} data-sect style={{ background: C.panel, borderRadius: 16, borderLeft: `4px solid ${a}`, padding: "13px 15px", marginTop: 12, ...style }}>
-        {title && <div style={{ fontSize: 12, fontWeight: 900, letterSpacing: 0.6, textTransform: "uppercase", color: a, marginBottom: 10, padding: titlePad || 0, ...SECT_HEAD }}><span>{title}</span>{sectMeta(meta)}</div>}
+        {head({ fontSize: 12, fontWeight: 900, letterSpacing: 0.6, textTransform: "uppercase", color: a, marginBottom: 10, padding: titlePad || 0 })}
         {children}
       </section>
     );
@@ -1369,7 +1381,7 @@ function Sect({ title, meta, children, style, titlePad, accent, flatTitle, ...re
   const tiles = LOOK === "tiles";
   return (
     <section {...rest} data-sect style={{ background: tiles ? C.panelHi : C.panel, border: `1px solid ${tiles ? C.panelHi : C.line}`, borderRadius: tiles ? 16 : 20, padding: tiles ? "12px 13px" : "14px 15px", marginTop: tiles ? 8 : 12, ...style }}>
-      {title && <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: tiles ? C.chalk : C.dim, opacity: tiles ? 0.8 : 1, marginBottom: 10, padding: titlePad || 0, ...SECT_HEAD }}><span>{title}</span>{sectMeta(meta)}</div>}
+      {head({ fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: tiles ? C.chalk : C.dim, opacity: tiles ? 0.8 : 1, marginBottom: 10, padding: titlePad || 0 })}
       {children}
     </section>
   );
@@ -4265,6 +4277,59 @@ function RanksBox({ bests, onPick, bare, only, anim = 0 }) {
   );
 }
 
+// 1.7.0 (Michael: tap the badges title → every badge and how far you are from the next level). Closest first,
+// finished ones last. The bar has one segment per level: earned ones in their rank colour, the next one filled as
+// far as you are, with the numbers under it (12 / 25).
+function BadgesSheet({ ach, focus, onClose }) {
+  const refs = useRef({});
+  const inTier = a => { const prev = a.step ? a.at[a.step - 1] : 0; return a.next === null ? 1 : Math.max(0, Math.min(1, (a.v - prev) / (a.next - prev))); };
+  const val = (a, x) => (a.span ? spanText(x) : a.k === "plank" ? `${nf(x)} s` : nf(x));
+  // closest = the biggest part of the current level's way already done (the same as the bar shows)
+  const list = [...ach].sort((a, b) => (a.next === null) - (b.next === null) || inTier(b) - inTier(a));
+  useEffect(() => {
+    const el = focus && refs.current[focus]; if (!el) return;
+    const t = setTimeout(() => { try { el.scrollIntoView({ block: "center" }); } catch (_) {} el.classList.add("achFlash"); }, 120);
+    return () => clearTimeout(t);
+  }, []);
+  const won = ach.filter(a => a.step).length;
+  return (
+    <Sheet title={T("badgesTitle")} onClose={onClose}>
+      <style>{`@keyframes achFlash{0%,100%{box-shadow:0 0 0 0 transparent}30%{box-shadow:0 0 0 2px ${C.signal}}} .achFlash{animation:achFlash 1.4s ease}`}</style>
+      <div data-badges-sheet style={{ fontSize: 13, color: C.dim, lineHeight: 1.5, marginTop: -4, marginBottom: 12 }}>
+        {T("achCount", { n: won, max: ach.length })} · {T("achTiers", { n: ach.reduce((x, a) => x + a.step, 0), max: ach.reduce((x, a) => x + a.at.length, 0) })}<br />{T("achSheetD")}
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {list.map((a, i) => {
+          const r = a.tier ? RANKS[a.tier - 1] : null, nr = a.next === null ? null : RANKS[a.nextRank];
+          return (
+            <div key={a.k} ref={el => (refs.current[a.k] = el)} data-ach-row={a.k} data-pct={Math.round(inTier(a) * 100)} className="cardIn"
+              style={{ "--d": `${Math.min(i, 10) * 25}ms`, animationDelay: `${Math.min(i, 10) * 25}ms`, background: SOFT(), borderRadius: 14, padding: "11px 12px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <div aria-hidden="true" style={{ fontSize: 24, lineHeight: 1, flexShrink: 0, filter: r ? "none" : "grayscale(1)", opacity: r ? 1 : 0.55 }}>{a.icon}</div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 14, fontWeight: 800, color: C.chalk, lineHeight: 1.2 }}>{a.name}</div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: r ? r.color : C.dim, marginTop: 2 }}>{r ? `${r.icon} ${r.name}` : `🔒 ${T("achLocked")}`}</div>
+                </div>
+                <div data-ach-num style={{ textAlign: "right", flexShrink: 0 }}>
+                  <div style={{ fontFamily: DISPLAY, fontSize: 18, fontWeight: 900, color: C.chalk, lineHeight: 1, whiteSpace: "nowrap" }}>{a.next === null ? "✓" : `${val(a, a.v)} / ${val(a, a.next)}`}</div>
+                  {a.next !== null && <div style={{ fontSize: 11, color: C.dim, marginTop: 3, whiteSpace: "nowrap" }}>{T("achLeft", { n: val(a, a.next - a.v) })}</div>}
+                </div>
+              </div>
+              <div aria-hidden="true" style={{ display: "flex", gap: 3, marginTop: 10 }}>
+                {a.at.map((_, k) => {
+                  const col = RANKS[a.rk ? a.rk[k] : k].color, fill = k < a.step ? 1 : k === a.step ? inTier(a) : 0;
+                  return <span key={k} style={{ flex: 1, height: 6, borderRadius: 99, background: `${C.chalk}14`, overflow: "hidden" }}><span className="pvBar" style={{ display: "block", height: "100%", width: `${fill * 100}%`, background: k < a.step ? col : nr ? nr.color : col, opacity: k < a.step ? 1 : 0.8, borderRadius: 99 }} /></span>;
+                })}
+              </div>
+              <div style={{ fontSize: 11.5, color: C.dim, marginTop: 6, lineHeight: 1.4 }}>{a.next === null ? T("achMax") : `${T("achNext", { rank: nr.name })} ${a.desc}`}</div>
+            </div>
+          );
+        })}
+      </div>
+    </Sheet>
+  );
+}
+
 function ProfileTab({ history, profile, setProfile, onFreeze, kcal, acct, vis, onVis, onFriends }) {
   const fz = freezesAvailable(history);
   const fileRef = useRef(null);
@@ -4274,6 +4339,7 @@ function ProfileTab({ history, profile, setProfile, onFreeze, kcal, acct, vis, o
   const [err, setErr] = useState("");
   const [preview, setPreview] = useState(false);
   const [lockedOpen, setLockedOpen] = useState(false);
+  const [badgeSheet, setBadgeSheet] = useState(null); // null, or {k} = the badge to show first
   const [visErr, setVisErr] = useState("");
   const today = dateKey();
   const xp = totalXP(history);
@@ -4376,7 +4442,8 @@ function ProfileTab({ history, profile, setProfile, onFreeze, kcal, acct, vis, o
         <RanksBox bare bests={Object.fromEntries(Object.keys(RANK_AT).map(id => [id, bestFor(history, id)]))} onPick={setHowEx} />
       </Sect>
 
-      <Sect title={T("badgesTitle")} flatTitle meta={<>{T("achCount", { n: ach.filter(a => a.step).length, max: ach.length })} · {T("achTiers", { n: ach.reduce((x, a) => x + a.step, 0), max: ach.reduce((x, a) => x + a.at.length, 0) })}</>}>
+      {badgeSheet && <BadgesSheet ach={ach} focus={badgeSheet.k} onClose={() => setBadgeSheet(null)} />}
+      <Sect title={T("badgesTitle")} flatTitle onHead={() => setBadgeSheet({})} headLabel={T("achOpenAll")} meta={<>{T("achCount", { n: ach.filter(a => a.step).length, max: ach.length })} · {T("achTiers", { n: ach.reduce((x, a) => x + a.step, 0), max: ach.reduce((x, a) => x + a.at.length, 0) })}</>}>
       {/* 1.7.0 (Michael: nothing that isn't needed): earned badges first; the ones still locked wait under one row */}
       {(() => {
         const tile = (a, ai, list) => {
@@ -4384,7 +4451,7 @@ function ProfileTab({ history, profile, setProfile, onFreeze, kcal, acct, vis, o
           const prev = a.step ? a.at[a.step - 1] : 0;
           const pct = a.next === null ? 100 : Math.max(0, Math.min(100, ((a.v - prev) / (a.next - prev)) * 100));
           return (
-            <div key={a.k} data-ach={a.k} data-tier={a.tier} style={{ background: SOFT(), borderRadius: 12, padding: "10px 11px", gridColumn: list.length % 2 && ai === list.length - 1 ? "1 / -1" : undefined }}>
+            <button type="button" key={a.k} data-ach={a.k} data-tier={a.tier} onClick={() => { sfxTap(); setBadgeSheet({ k: a.k }); }} style={{ ...btnBase, fontWeight: 400, textAlign: "left", color: "inherit", width: "100%", display: "block", background: SOFT(), borderRadius: 12, padding: "10px 11px", gridColumn: list.length % 2 && ai === list.length - 1 ? "1 / -1" : undefined }}>
               <div style={{ display: "flex", alignItems: "flex-start", gap: 6 }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 13, fontWeight: 800, color: C.chalk, lineHeight: 1.2 }}>{a.name}</div>
@@ -4396,7 +4463,7 @@ function ProfileTab({ history, profile, setProfile, onFreeze, kcal, acct, vis, o
                 <div style={{ height: "100%", width: `${pct}%`, background: r ? r.color : C.dim, borderRadius: 99, transition: `width ${MO.fill} ${MO.ease}` }} />
               </div>
               <div style={{ fontSize: 11, color: C.dim, marginTop: 5, lineHeight: 1.35 }}>{a.next === null ? T("achMax") : `${T("achNext", { rank: RANKS[a.nextRank].name })} ${a.desc}`}</div>
-            </div>
+            </button>
           );
         };
         const won = ach.filter(a => a.step), locked = ach.filter(a => !a.step);
@@ -4902,7 +4969,9 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
   const people = Object.fromEntries([...(world || []), ...(reqs || []), ...(friends || [])].map(p => [p.uid, p]));
   const chats = (social.chats || []).filter(c => !blocked.includes(c.other) && c.last.ts > Math.max(0, clr[c.cid] || 0)).sort((a, b) => b.last.ts - a.last.ts);
   const unread = c => c.last.from !== acct.uid && c.last.ts > Math.max((social.read || {})[c.cid] || 0, clr[c.cid] || 0);
-  const deleteChat = c => { const m = { ...clr, [c.cid]: Date.now() }; setClr(m); setCloudMem({ clr: m }); setDelChat(null); sfxTap(); };
+  const deleteChat = c => { const m = { ...(cloudMem().clr || {}), [c.cid]: Date.now() }; setClr(m); setCloudMem({ clr: m }); setDelChat(null); sfxTap(); window.dispatchEvent(new Event("hw-read")); };
+  // a chat deleted on another device of this account disappears here too
+  useEffect(() => { const f = () => setClr(cloudMem().clr || {}); window.addEventListener("hw-read", f); return () => window.removeEventListener("hw-read", f); }, []);
   const holdStart = c => { holdRef.current.fired = false; clearTimeout(holdRef.current.t); holdRef.current.t = setTimeout(() => { holdRef.current.fired = true; vibrate([30]); setDelChat(c); }, 480); };
   const holdEnd = () => clearTimeout(holdRef.current.t);
   if (chatWith) {
@@ -5450,6 +5519,9 @@ function ChatView({ me, other, canWrite, onBack, onOpen, onReport, onBlock, shee
 }
 const chatIdOf = (a, b) => [a, b].sort().join("_");
 // Read up to: per chat, the newest message time seen (only on this phone).
+// per chat the later time wins (read / deleted-for-me times only move forward)
+const maxMerge = (a = {}, b = {}) => { const o = { ...(a || {}) }; for (const k in b || {}) if ((b[k] || 0) > (o[k] || 0)) o[k] = b[k]; return o; };
+const aheadOf = (a = {}, b = {}) => Object.fromEntries(Object.entries(a || {}).filter(([k, v]) => (v || 0) > ((b || {})[k] || 0)));
 const markRead = (cid, ts) => { const r = cloudMem().read || {}; if ((r[cid] || 0) >= ts) return; setCloudMem({ read: { ...r, [cid]: ts } }); window.dispatchEvent(new Event("hw-read")); };
 
 // A short notice at the top when a friend request or a message arrives while the app is open (1.5.0, Michael:
@@ -6847,7 +6919,8 @@ export default function App() {
   const chatWithRef = useRef(null); chatWithRef.current = screen === "friends" ? chatWith : null;
   const busyRef = useRef(false); busyRef.current = !!(session && session.phase !== "summary");
   const onFriendsRef = useRef(false); onFriendsRef.current = screen === "friends" && !(session && sessionOpen);
-  const setBlocked = bl => { setCloudMem({ blocked: bl }); setSocial(x => ({ ...x, blocked: bl })); };
+  // (a block that arrives from another device also hides that person's open friend request at once)
+  const setBlocked = bl => { setCloudMem({ blocked: bl }); setSocial(x => ({ ...x, blocked: bl, reqs: x.reqs ? x.reqs.filter(r => !bl.includes(r.uid)) : x.reqs })); };
   useEffect(() => { const f = () => setSocial(x => ({ ...x, read: cloudMem().read || {} })); window.addEventListener("hw-read", f); return () => window.removeEventListener("hw-read", f); }, []);
   useEffect(() => {
     if (acct.st !== "in" || !acct.prof) { setSocial(x => ({ ...x, reqs: null, friends: null, chats: null })); return; }
@@ -6950,13 +7023,54 @@ export default function App() {
     }, 3500);
     return () => { dead = true; clearTimeout(t); };
   }, [acct.st, acct.prof, history, profile, loaded, profLoaded, swOffer]);
+  // 1.7.0 (Michael: reading or deleting a chat on one device didn't reach the others): who you blocked, which chats you
+  // read and which you deleted for yourself follow the account. Blocking can't be undone in the app, so both lists are
+  // joined; read and deleted times only move forward, so per chat the later time wins. Each device listens and sends only
+  // what the server doesn't have yet.
+  const blkCloud = useRef(null), memCloud = useRef(null);
+  const [blkTick, setBlkTick] = useState(0);
   useEffect(() => {
     if (acct.st !== "in" || !acct.prof || swOffer) return;
-    const bl = social.blocked || [], key = acct.uid + ":" + bl.join(","), prev = cloudMem().blkSynced;
-    if (prev === key || (!bl.length && !prev)) return;
-    const t = setTimeout(() => cloud().saveBlocks(bl).then(() => setCloudMem({ blkSynced: key })).catch(() => {}), 1500);
+    let off = null, offM = null, dead = false, t = 0;
+    blkCloud.current = null; memCloud.current = null;
+    const pushMem = () => {
+      clearTimeout(t);
+      t = setTimeout(() => {
+        const c = memCloud.current; if (!c || dead) return;
+        const m = cloudMem(), r = aheadOf(m.read, c.read), x = aheadOf(m.clr, c.clr);
+        if (!Object.keys(r).length && !Object.keys(x).length) return;
+        memCloud.current = { read: maxMerge(c.read, r), clr: maxMerge(c.clr, x) };
+        cloud().saveChatMem({ ...(Object.keys(r).length ? { read: r } : {}), ...(Object.keys(x).length ? { clr: x } : {}) }).catch(() => { if (memCloud.current) memCloud.current = c; });
+      }, 1200);
+    };
+    try {
+      off = cloud().watchBlocks(v => {
+        if (dead || (v && v.local)) return;
+        const cl = (v && v.b) || [], loc = cloudMem().blocked || [], all = [...new Set([...loc, ...cl])].slice(-500);
+        blkCloud.current = cl;
+        if (all.length > loc.length) setBlocked(all); else setBlkTick(x => x + 1);
+      }, () => {});
+      offM = cloud().watchChatMem(v => {
+        if (dead || (v && v.local)) return;
+        const c = { read: (v && v.read) || {}, clr: (v && v.clr) || {} }, m = cloudMem();
+        memCloud.current = c;
+        const read = maxMerge(m.read, c.read), clr = maxMerge(m.clr, c.clr);
+        if (Object.keys(aheadOf(c.read, m.read)).length || Object.keys(aheadOf(c.clr, m.clr)).length) { setCloudMem({ read, clr }); window.dispatchEvent(new Event("hw-read")); }
+        pushMem();
+      }, () => {});
+    } catch (_) {}
+    window.addEventListener("hw-read", pushMem);
+    return () => { dead = true; clearTimeout(t); window.removeEventListener("hw-read", pushMem); try { off && off(); offM && offM(); } catch (_) {} };
+  }, [acct.st, acct.uid, !!acct.prof, !!swOffer]);
+  useEffect(() => {
+    const cl = blkCloud.current;
+    if (acct.st !== "in" || !acct.prof || swOffer || !cl) return;
+    const bl = social.blocked || [];
+    if (bl.every(u => cl.includes(u))) return;
+    const all = [...new Set([...cl, ...bl])].slice(-500);
+    const t = setTimeout(() => cloud().saveBlocks(all).then(() => { blkCloud.current = all; }).catch(() => {}), 800);
     return () => clearTimeout(t);
-  }, [acct.st, acct.prof && acct.prof.code, (social.blocked || []).join(","), swOffer]);
+  }, [acct.st, acct.prof && acct.prof.code, (social.blocked || []).join(","), swOffer, blkTick]);
   // The account's data changes on another device (or the website): merged in here while the app is open (1.7.0).
   useEffect(() => {
     if (acct.st !== "in" || !acct.prof || swOffer || !loaded || !settingsLoaded || !profLoaded || !kcalLoaded) return;

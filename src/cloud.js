@@ -16,7 +16,10 @@
 //   reports/{auto id}        {by, about, reason, ts}: a reported profile (create only; read in the console)
 //   cards/{uid}              {vis, lvl, xp, streak, best, n, reps, min, since, ach: {badge: tier}, rk: {exercise: best}, ts}:
 //                            the profile others can open (1.7.0, like Steam); vis = friends | all | none decides who
-//   blocks/{uid}             {b: [uids], ts}: who you blocked (1.7.0, owner only); keeps them off your card
+//   blocks/{uid}             {b: [uids], ts}: who you blocked (1.7.0, owner only); keeps them off your card; your other
+//                            devices read it too
+//   chatmem/{uid}            {read: {chatId: time}, clr: {chatId: time}, ts}: chats read / deleted for you (1.7.0, owner
+//                            only), so every device of the account knows them
 //   mod/{uid}                {hidden, n, ts}: reported by several people → out of the world top 50 (1.7.0; written by
 //                            the push server only, the person can read it)
 //   push/{uid}               {t: [FCM tokens of your phones], lang, off, blk: [blocked uids], ts}: phone notifications
@@ -240,6 +243,10 @@ export const impl = {
   async saveCard(c) { const v = { ...pick(c, CARD_KEYS), ts: serverTimestamp() }; await setDoc(d("cards", uid()), v, { mergeFields: Object.keys(v) }); },
   async setCardVis(vis) { await setDoc(d("cards", uid()), { vis, ts: serverTimestamp() }, { merge: true }); },
   async saveBlocks(list) { await setDoc(d("blocks", uid()), { b: (list || []).slice(-500), ts: serverTimestamp() }); },
+  watchBlocks(cb, onErr) { return onSnapshot(d("blocks", uid()), s => cb(s.exists() ? { b: s.data().b || [], local: s.metadata.hasPendingWrites } : null), onErr); },
+  // only the chats that changed are sent; merge keeps the others
+  async saveChatMem(part) { await setDoc(d("chatmem", uid()), { ...part, ts: serverTimestamp() }, { merge: true }); },
+  watchChatMem(cb, onErr) { return onSnapshot(d("chatmem", uid()), s => cb(s.exists() ? { read: s.data().read || {}, clr: s.data().clr || {}, local: s.metadata.hasPendingWrites } : null), onErr); },
   async saveBackup(json, n) { await setDoc(d("backups", uid()), { json, n, ts: serverTimestamp() }); },
   // The backup live (1.7.0 sync): another device's change arrives here; local = this device's own write not yet on the server.
   watchBackup(cb, onErr) {
@@ -273,7 +280,7 @@ export const impl = {
     (p && p.sent || []).forEach(t => b.delete(d("inbox", t, "from", me)));
     if (p && p.nick) b.delete(d("nicks", nickKey(p.nick)));
     if (p && p.code) b.delete(d("codes", p.code));
-    ["profiles", "board", "backups", "push", "cards", "blocks"].forEach(c => b.delete(d(c, me)));
+    ["profiles", "board", "backups", "push", "cards", "blocks", "chatmem"].forEach(c => b.delete(d(c, me)));
     await b.commit();
     try { await auth.currentUser.delete(); }
     finally { await nativeSignOut(); try { await fbSignOut(auth); } catch (_) {} user = null; subs.forEach(f => f(null)); }

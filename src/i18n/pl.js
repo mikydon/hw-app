@@ -588,6 +588,9 @@ export default {
     achLockedList: "Jeszcze nie zdobyte ({n})",
     achMax: "Najwyższy poziom. Czapki z głów! 🎩",
     achNext: "Następny: {rank} –",
+    achSheetD: "Najpierw te, do których masz najbliżej; ukończone na końcu.",
+    achLeft: "jeszcze {n}",
+    achOpenAll: "Wszystkie odznaki i twój postęp",
     achUp: "{name}: {rank}",
     maxBest: ", maks. {v}",
     pvOpen: "Zobacz profil",
@@ -1156,11 +1159,11 @@ export default {
   ],
   news17: [
     ["Profile", "Znajomi widzieli tylko twój pseudonim, zdjęcie, poziom, serię i liczbę treningów.", "Stuknij znajomego albo kogoś ze światowego top 50 → Zobacz profil: poziom, serie, treningi, łączne powtórzenia i czas, rangi ćwiczeń i odznaki, z krótką animacją. Profil → Kto widzi twój profil: znajomi (domyślnie), wszyscy zalogowani albo tylko ty; zablokowani nigdy. Kalorie, kroki i Health Connect nigdy nie są pokazywane."],
-    ["Telefon i strona w zgodzie", "Kopia w chmurze była jedna: przywrócenie zastępowało to, co było w telefonie.", "Gdy jesteś zalogowany, telefon, strona i każdy inny telefon uzupełniają się nawzajem w kilka sekund: treningi (także edytowane i usunięte), profil, kalorie, wygląd i wyłączone ćwiczenia są łączone, nic nie ginie. Język, dźwięki, wibracje i dane z Health Connect zostają osobno na każdym urządzeniu."],
+    ["Telefon i strona w zgodzie", "Kopia w chmurze była jedna: przywrócenie zastępowało to, co było w telefonie.", "Gdy jesteś zalogowany, telefon, strona i każdy inny telefon uzupełniają się nawzajem w kilka sekund: treningi (także edytowane i usunięte), profil, kalorie, wygląd i wyłączone ćwiczenia są łączone, nic nie ginie. Język, dźwięki, wibracje i dane z Health Connect zostają osobno na każdym urządzeniu. Przeczytane i usunięte czaty oraz zablokowane osoby też idą za tobą."],
     ["Główny kolor", "Żółty był kolorem aplikacji wszędzie.", "Nowy główny kolor to fioletowy, także na ikonie. W Ustawienia → Wygląd → Główny kolor możesz wybrać też żółty, różowy, turkusowy, pomarańczowy albo koralowy; kolory treningów i kalorii przesuwają się, żeby się nie gryzły."],
     ["Tablet i komputer", "Na tablecie lub komputerze aplikacja była jedną wąską kolumną telefonu na środku.", "Od szerokości tabletu ekrany wykorzystują miejsce: Trening i Kalorie pokazują swoje strony obok siebie, pozostałe ekrany mają dwie kolumny, a na komputerze menu zostaje otwarte po lewej. Na telefonie nic się nie zmienia."],
     ["Emoji 3D", "Emoji w aplikacji (🔥, 🏆, odznaki…) wyglądały na każdym telefonie inaczej.", "Teraz to 3D Fluent Emoji od Microsoftu, takie same na każdym Androidzie i w przeglądarkach opartych na Chrome (Safari i Firefox mają własne). Wiadomości używają emoji twojego telefonu, więc działa tam każde."],
-    ["Porządniejsze ekrany", "Historia, Kalorie, Ustawienia i Profil wyglądały inaczej niż Trening, a Profil wypisywał też wszystkie odznaki, których jeszcze nie masz.", "Mają takie same pola jak Trening w każdym układzie. Profil pokazuje to, co masz; odznaki do zdobycia czekają zwinięte pod jednym wierszem."],
+    ["Porządniejsze ekrany", "Historia, Kalorie, Ustawienia i Profil wyglądały inaczej niż Trening, a Profil wypisywał też wszystkie odznaki, których jeszcze nie masz.", "Mają takie same pola jak Trening w każdym układzie. Profil pokazuje to, co masz; odznaki do zdobycia czekają zwinięte pod jednym wierszem. Stuknij Odznaki (albo dowolną odznakę), aby zobaczyć wszystkie i ile brakuje ci do następnego poziomu."],
     ["Bezpieczniejsze światowe top 50", "Zgłoszony profil zostawał w światowym top 50, dopóki twórca go nie sprawdził.", "Gdy w ciągu 90 dni trzy różne osoby zgłoszą profil, od razu znika on ze światowego top 50 i obcy go nie otworzą (znajomi tak). Ta osoba zobaczy w aplikacji dlaczego i może napisać, jeśli to pomyłka."],
   ],
   news16: [

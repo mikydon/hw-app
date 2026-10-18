@@ -72,10 +72,19 @@ service cloud.firestore {
       allow create, update: if isMe(uid) && cardOk();
       allow delete: if isMe(uid);
     }
-    // Who you blocked (1.7.0): only you read it; the rules above use it to keep them off your profile card.
+    // Who you blocked (1.7.0): only you read it; the rules above use it to keep them off your profile card. Your other
+    // devices read it too, so a block made on one reaches all of them.
     match /blocks/{uid} {
       allow get, delete: if isMe(uid);
       allow create, update: if isMe(uid) && only(['b', 'ts']) && data().b is list && data().b.size() <= 500 && nowTs();
+    }
+    // Chats you read and chats you deleted for yourself (1.7.0): {read: {chatId: time}, clr: {chatId: time}}, only you,
+    // so your other devices know them too.
+    match /chatmem/{uid} {
+      allow get, delete: if isMe(uid);
+      allow create, update: if isMe(uid) && only(['read', 'clr', 'ts'])
+        && data().get('read', {}) is map && data().get('read', {}).size() <= 1000
+        && data().get('clr', {}) is map && data().get('clr', {}).size() <= 1000 && nowTs();
     }
     // Unique nicknames and friend codes: one owner each, never taken over (deleting one that isn't there is harmless,
     // so deleting an account still works when this phone remembers an old nickname).
