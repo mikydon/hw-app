@@ -10,6 +10,22 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 
 <!-- New version: add a "## x.y.z (date)" section on top (web-only history uses "## Browser beta x.y.z (date)"). On a push to main, .github/workflows/build.yml builds everything and .github/scripts/releases.sh creates/updates the releases (commit = the push, or the one in a commit comment). -->
 
+## 1.7.0 (2026-10-18)
+
+**A big update: a new APK** (download it in the app and tap Install; your data stays). Compared with 1.6.5:
+
+| | Before (1.6.5) | Now (1.7.0) |
+|---|---|---|
+| Profiles | friends only saw your nickname, photo, level, streak and number of workouts | tap a friend or someone in the world top 50 → View profile: level, current and longest streak, workouts, total reps and training time, the date of the first workout, exercise ranks and badges, with a short animation; only what the person actually has is shown. Profile → Who sees your profile: your friends (default), everyone signed in, or only you; people you blocked never can (the database rules enforce it). Calories, steps and Health Connect are never part of it |
+| Phone ↔ website | the cloud backup was a single copy: restoring it replaced what was on the phone, and a new phone was offered a restore | signed in, the phone, the website and any other phone merge each other's changes within seconds: workouts (also edited or deleted ones), profile, calorie details and log, theme, look, main colour and turned-off exercises. Nothing is overwritten: each workout and calorie entry is kept, deletions are remembered, and for the rest the newer change wins. Language, sounds, vibration, screen refresh rate and Health Connect data stay per device |
+| Main colour | yellow everywhere | violet, also on the icon and the splash screen; Settings → Appearance → Main colour offers yellow, pink, turquoise, orange and coral too. Colours that would clash move aside (with turquoise, workouts turn lime; with orange or coral, the calorie colours change) |
+| Tablet and computer | one narrow phone column in the middle of the screen | from 760 px wide (a tablet, a phone on its side, a computer window) the screens use the width: Workout and Calories show their pages side by side instead of swipe pages, History, Profile, Settings and Friends have two columns, sheets open in the middle. From 1100 px the menu is a side panel that stays open. A phone looks exactly as before |
+| Emoji | the app's emoji (🔥, 🏆, badges…) looked different on every phone | Microsoft's 3D Fluent Emoji (MIT licence), the same on every Android phone and in Chrome-based browsers; Safari and Firefox keep their own. Messages keep the phone's emoji, so every emoji works there |
+| Screens | History, Calories, Settings and Profile looked different from the Workout screen; Profile listed every badge not earned yet | the same boxes as the Workout screen in every look; earned badges first, the rest folded under one row; the calorie legend shows colour swatches |
+| World top 50 | a reported profile stayed there until the developer had looked at it | when three different people report a profile within 90 days, the push server hides it from the world top 50 at once and strangers can't open it (friends still can); the person sees a note in Friends and can write to hwapp.support@gmail.com if it's a mistake |
+
+The [privacy policy](https://mikydon.github.io/hw-app/privacy.html) describes the profile page, the block list in your account and the automatic hiding after reports.
+
 ## 1.6.5 (2026-10-17)
 
 - Friend links are now `https://mikydon.github.io/hw-app/add/?c=CODE` and open the app right on Friends with the code filled in *(Android App Link: the app from Google Play or the 1.6.5 APK)*. Without the app the website opens as before; on an Android phone it offers "Open in the app" (useful when a messenger opens links in its own browser). Older `?add=` links still work on the website.

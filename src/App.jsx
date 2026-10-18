@@ -1,4 +1,4 @@
-import { useState, useEffect, useLayoutEffect, useRef, memo } from "react";
+import { useState, useEffect, useLayoutEffect, useRef, memo, Fragment } from "react";
 import { createPortal } from "react-dom";
 import { isNative, pushBack, setRootBack, exitApp, vibratePattern, keepScreenOn, openExternal, saveBackupFile, bkSupported, bkWrite, bkWriteAuto, bkList, bkRead, bkDelete, bkShare, BK_DIR, bkAutoFile, checkForUpdate, lastUpdate, lastGh, applyUpdateNow, latestApk, isTestBuild, apkState, onApk, apkSupported, apkRestore, apkDownload, apkCanInstall, apkAllow, apkInstall, onAppResume, healthState, healthConnect, healthSettings, healthSteps, healthFoodItems, healthBody, shareText, copyText, pushSupported, pushPermission, pushChannel, pushToken, pushTokenWhy, pushDeleteToken, onPushTap, onPushToken, onPushReceived, hzSupported, hzInfo, hzSet, isPlay, playCheck, playOpenStore, PLAY_STORE_LINK, updTopic, onAppUrl } from "./native.js";
 import { cloud, NICK_RE, SHARE_BASE, cleanCode, fmtCode } from "./cloud-lazy.js";
@@ -33,7 +33,7 @@ const THEMES = {
   slate:  { ink: "#15181d", panel: "#1f242b", panelHi: "#2a313a", line: "#3a434f", chalk: "#f1f4f8", dim: "#9aa6b4", edge: "#0e1115" },
   coffee: { ink: "#1c140f", panel: "#2a1f17", panelHi: "#382a20", line: "#4d3a2c", chalk: "#fbf3ec", dim: "#b8a291", edge: "#130d09" },
 };
-const APP_VERSION = "1.6.5";
+const APP_VERSION = "1.7.0";
 // Big Shoulders has no Cyrillic, so Oswald (also condensed) covers Ukrainian. The browser only
 // downloads the Oswald unicode ranges a page actually uses.
 // 1.7.0: 'HW Emoji' = the app's own emoji (Fluent 3D, fonts/hw-emoji.ttf) for the emoji the app shows; BODY_SYS
@@ -1379,6 +1379,32 @@ function Sect({ title, meta, children, style, titlePad, accent, flatTitle, ...re
 function ListSect({ title, meta, children, style, ...rest }) {
   return <Sect title={title} meta={meta} flatTitle titlePad="0 16px" style={{ padding: "14px 0 2px", ...style }} {...rest}>{children}</Sect>;
 }
+// ─── TABLET AND PC (1.7.0; Michael, Oct 12: "not one 460 px column") ─────────────────────────────────────────
+// From 760 px wide (a tablet, a phone on its side, a PC window) the screens use the width: the swipe pages of Home and
+// Calories stand side by side, the other screens get two columns. From 1100 px the menu is a side panel that stays
+// open (no ☰). Below 760 px everything is exactly as on a phone.
+const WIDE_Q = "(min-width: 760px)", SIDE_Q = "(min-width: 1100px)";
+const mqNow = q => { try { return matchMedia(q).matches; } catch (_) { return false; } };
+function useMQ(q) {
+  const [m, setM] = useState(() => mqNow(q));
+  useEffect(() => {
+    let l; try { l = matchMedia(q); } catch (_) { return; }
+    const f = () => setM(l.matches);
+    if (l.addEventListener) l.addEventListener("change", f); else l.addListener(f);
+    f();
+    return () => { if (l.removeEventListener) l.removeEventListener("change", f); else l.removeListener(f); };
+  }, [q]);
+  return m;
+}
+const useWide = () => useMQ(WIDE_Q);
+const useSide = () => useMQ(SIDE_Q);
+// Two columns on a wide screen, one after the other on a phone. Each column stops the expander's slide (a box opening
+// in one column doesn't move the other).
+function Cols({ left, right, ...rest }) {
+  const wide = useWide();
+  if (!wide) return <>{left}{right}</>;
+  return <div data-cols className="colsW" {...rest}><div data-flip-root data-col="0">{left}</div><div data-flip-root data-col="1">{right}</div></div>;
+}
 
 // ─── EXPANDER (1.5.5; 1.5.8 rebuilt for speed, Michael: "šípky sekajú, ako po fotkách", wants 100+ fps) ──────
 // The page takes its new layout at once (one layout, no height animation that redoes layout and repaints every card
@@ -1682,7 +1708,7 @@ function gooPath(p, W, H, S, ins) {
   }
   return parts.join("");
 }
-function TopBar({ screen, history, menuOpen, onMenu, onGo, dlPct, badge, head }) {
+function TopBar({ screen, history, menuOpen, onMenu, onGo, dlPct, badge, head, side }) {
   const now = useClock();
   const ap = useApk();
   const prog = ap.kind === "downloading" ? ap.pct || 0 : dlPct; // a download in progress: a thin line under the bar on every screen
@@ -1701,9 +1727,11 @@ function TopBar({ screen, history, menuOpen, onMenu, onGo, dlPct, badge, head })
   // 1.5.3 (Michael, on a PC: the plate's square top corner showed next to the window edge): the plate (and the drop
   // shape) always reach the window's edges, however wide the window is; the floating box keeps the column's width.
   useLayoutEffect(() => {
-    const fit = () => { const o = outRef.current, w = wrapRef.current; if (!o || !w) return; const vw = document.documentElement.clientWidth; o.style.setProperty("--tbExt", `${Math.max(0, (vw - w.offsetWidth) / 2)}px`); };
+    const fit = () => { const o = outRef.current, w = wrapRef.current; if (!o || !w) return; const vw = o.clientWidth; o.style.setProperty("--tbExt", `${Math.max(0, (vw - w.offsetWidth) / 2)}px`); }; // the bar's own width: a side panel may sit left of it (1.7.0)
     fit(); window.addEventListener("resize", fit);
-    return () => window.removeEventListener("resize", fit);
+    const ro = typeof ResizeObserver !== "undefined" && outRef.current ? new ResizeObserver(fit) : null; // the side panel comes and goes
+    if (ro) ro.observe(outRef.current);
+    return () => { window.removeEventListener("resize", fit); if (ro) ro.disconnect(); };
   }, []);
   useEffect(() => {
     let raf = 0;
@@ -1724,7 +1752,9 @@ function TopBar({ screen, history, menuOpen, onMenu, onGo, dlPct, badge, head })
     drawRest();
     let t = 0; const on = () => { clearTimeout(t); t = setTimeout(drawRest, 60); };
     window.addEventListener("resize", on);
-    return () => { clearTimeout(t); window.removeEventListener("resize", on); };
+    const ro = typeof ResizeObserver !== "undefined" && outRef.current ? new ResizeObserver(on) : null;
+    if (ro) ro.observe(outRef.current);
+    return () => { clearTimeout(t); window.removeEventListener("resize", on); if (ro) ro.disconnect(); };
   }, []);
   useLayoutEffect(() => {
     const out = outRef.current, goo = gooRef.current, wrap = wrapRef.current;
@@ -1777,7 +1807,7 @@ function TopBar({ screen, history, menuOpen, onMenu, onGo, dlPct, badge, head })
         </div>
         <button onClick={() => onGo && onGo("profile")} data-chip="streak" style={{ ...btnBase, ...chip(st.n ? "#ffa94d" : C.dim), ...pill }} aria-label={T("streakAria", { n: st.n })}><span className={st.n ? "wiggle" : ""}>🔥</span>{st.n}</button>
         <button onClick={() => onGo && onGo("profile")} data-chip="level" style={{ ...btnBase, ...chip(C.sky), ...pill }} aria-label={T("levelAria", { n: lv.lvl })}>⚡{lv.lvl}</button>
-        <MenuButton open={menuOpen} onClick={onMenu} badge={badge} />
+        {!side && <MenuButton open={menuOpen} onClick={onMenu} badge={badge} />}
         </>}
         {typeof prog === "number" && <div data-top-prog={Math.round(prog)} role="progressbar" aria-valuenow={Math.round(prog)} aria-valuemin={0} aria-valuemax={100} style={{ position: "absolute", left: 18, bottom: 4, height: 3, width: `calc((100% - 36px) * ${Math.max(2, Math.min(100, prog)) / 100})`, background: C.sky, borderRadius: 3, transition: "width .3s", boxShadow: `0 0 8px ${C.sky}` }} />}
         </div>
@@ -1814,10 +1844,6 @@ function MenuDrawer({ open, screen, history, profile, session, onGo, onResume, o
       try { if (window.matchMedia && matchMedia("(pointer: fine)").matches) requestAnimationFrame(() => { const b = [...document.querySelectorAll("[data-menu-btn]")].find(el => el.offsetParent); (b || back) && (b || back).focus({ preventScroll: true }); }); } catch (_) {} };
   }, [open]);
   if (!shown) return null;
-  const lv = levelInfo(totalXP(history));
-  const st = streakInfo(history, dateKey());
-  const kcs = kcalNow(history);
-  const items = SCREENS.map(id => ({ id, label: T(SCREEN_TITLE[id]), desc: id === "calories" && kcs ? T("kcMenu", { e: nf(kcs.eaten), t: nf(kcs.target) }) : id === "friends" && badge ? T("frMenuNew", { n: badge }) : T("menuD_" + id), badge: id === "friends" ? badge : 0 }));
   return createPortal(
     <div role="dialog" aria-modal="true" aria-label={T("mainMenu")} className={open ? "drawerOn" : "drawerOff"} style={{ position: "fixed", inset: 0, zIndex: 60 }}>
       <div onClick={onClose} className="drawerBg" style={{ position: "absolute", inset: 0, background: "rgba(3,8,20,.6)" }} />
@@ -1826,38 +1852,63 @@ function MenuDrawer({ open, screen, history, profile, session, onGo, onResume, o
           <div style={{ fontFamily: DISPLAY, fontSize: 15, fontWeight: 800, color: C.dim, letterSpacing: 1 }}>HW APP</div>
           <MenuButton open={true} onClick={onClose} btnRef={closeRef} />
         </div>
-        <button onClick={() => onGo("profile")} className="drawerItem" style={{ ...btnBase, "--i": 0, display: "flex", alignItems: "center", gap: 12, margin: "8px 14px 6px", padding: "12px", borderRadius: 18, background: C.panel, border: `1px solid ${C.line}`, color: C.chalk, textAlign: "left", ...(LOOK === "liquid" ? { ...LIQUID_PILL(), borderRadius: 20 } : {}) }}>
-          <BdayHalo size={52}><Avatar profile={profile} size={52} /></BdayHalo>
-          <div style={{ minWidth: 0 }}>
-            <div style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, lineHeight: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{profile.name || T("defaultName")}</div>
-            <div style={{ fontSize: 13, color: C.dim, marginTop: 4 }}><span style={{ color: C.sky, fontWeight: 800 }}>⚡ {lv.lvl}</span> · <span style={{ color: "#ffa94d", fontWeight: 800 }}>🔥 {st.n}</span></div>
-          </div>
-        </button>
-        {session && (
-          <button onClick={onResume} className="drawerItem" data-resume style={{ ...btnBase, "--i": 1, margin: "6px 14px", padding: "13px 14px", borderRadius: 16, background: C.signal, color: C.signalInk, display: "flex", alignItems: "center", gap: 10, fontSize: 15, textAlign: "left" }}>
-            <span style={{ fontSize: 18 }}>▶</span>{T("resumeWorkout", { d: session.day })}
-          </button>
-        )}
-        <div data-nav-box style={{ margin: "6px 14px 12px", padding: "4px", background: C.panel, border: `1px solid ${C.line}`, borderRadius: 18, ...(LOOK === "liquid" ? { ...LIQUID_PILL(), borderRadius: 20 } : {}) }}>
-          {items.map((it, i) => {
-            const on = it.id === screen;
-            return (
-              <button key={it.id} onClick={() => onGo(it.id)} aria-current={on ? "page" : undefined} className="drawerItem" data-screen={it.id}
-                style={{ ...btnBase, "--i": i + 2, width: "100%", display: "flex", alignItems: "center", gap: 14, padding: "10px 10px", margin: "2px 0", borderRadius: 14, background: on ? `${C.signal}1a` : "transparent", color: on ? C.signal : C.chalk, textAlign: "left" }}>
-                <span style={{ width: 40, height: 40, borderRadius: 12, background: on ? `${C.signal}26` : LOOK === "liquid" ? "rgba(255,255,255,.08)" : C.panelHi, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><TabIcon name={it.id} active={on} /></span>
-                <span style={{ minWidth: 0 }}>
-                  <span style={{ display: "block", fontSize: 16, fontWeight: 800 }}>{it.label}</span>
-                  <span style={{ display: "block", fontSize: 12, fontWeight: it.badge ? 700 : 500, color: it.badge ? C.signal : C.dim, marginTop: 1 }}>{it.desc}</span>
-                </span>
-                {it.badge > 0 && <span style={{ marginLeft: "auto", minWidth: 20, height: 20, borderRadius: 10, padding: "0 6px", boxSizing: "border-box", background: "#ff5a5a", color: "#fff", fontSize: 11.5, fontWeight: 800, lineHeight: "20px", textAlign: "center", flexShrink: 0 }}>{it.badge}</span>}
-              </button>
-            );
-          })}
-        </div>
-        <AboutBox gh={gh} dl={dl} onNews={onNews} apk={apk} busy={busy} />
+        <MenuBody screen={screen} history={history} profile={profile} session={session} onGo={onGo} onResume={onResume} onNews={onNews} gh={gh} dl={dl} badge={badge} apk={apk} busy={busy} />
       </nav>
     </div>,
     document.body
+  );
+}
+
+// What the menu holds (profile, back to the workout, the screens, about): in the ☰ drawer, or on a wide screen in the
+// side panel that stays open (1.7.0).
+function MenuBody({ screen, history, profile, session, onGo, onResume, onNews, gh, dl, badge, apk, busy }) {
+  const lv = levelInfo(totalXP(history));
+  const st = streakInfo(history, dateKey());
+  const kcs = kcalNow(history);
+  const items = SCREENS.map(id => ({ id, label: T(SCREEN_TITLE[id]), desc: id === "calories" && kcs ? T("kcMenu", { e: nf(kcs.eaten), t: nf(kcs.target) }) : id === "friends" && badge ? T("frMenuNew", { n: badge }) : T("menuD_" + id), badge: id === "friends" ? badge : 0 }));
+  return (
+    <>
+          <button onClick={() => onGo("profile")} className="drawerItem" style={{ ...btnBase, "--i": 0, display: "flex", alignItems: "center", gap: 12, margin: "8px 14px 6px", padding: "12px", borderRadius: 18, background: C.panel, border: `1px solid ${C.line}`, color: C.chalk, textAlign: "left", ...(LOOK === "liquid" ? { ...LIQUID_PILL(), borderRadius: 20 } : {}) }}>
+            <BdayHalo size={52}><Avatar profile={profile} size={52} /></BdayHalo>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, lineHeight: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{profile.name || T("defaultName")}</div>
+              <div style={{ fontSize: 13, color: C.dim, marginTop: 4 }}><span style={{ color: C.sky, fontWeight: 800 }}>⚡ {lv.lvl}</span> · <span style={{ color: "#ffa94d", fontWeight: 800 }}>🔥 {st.n}</span></div>
+            </div>
+          </button>
+          {session && (
+            <button onClick={onResume} className="drawerItem" data-resume style={{ ...btnBase, "--i": 1, margin: "6px 14px", padding: "13px 14px", borderRadius: 16, background: C.signal, color: C.signalInk, display: "flex", alignItems: "center", gap: 10, fontSize: 15, textAlign: "left" }}>
+              <span style={{ fontSize: 18 }}>▶</span>{T("resumeWorkout", { d: session.day })}
+            </button>
+          )}
+          <div data-nav-box style={{ margin: "6px 14px 12px", padding: "4px", background: C.panel, border: `1px solid ${C.line}`, borderRadius: 18, ...(LOOK === "liquid" ? { ...LIQUID_PILL(), borderRadius: 20 } : {}) }}>
+            {items.map((it, i) => {
+              const on = it.id === screen;
+              return (
+                <button key={it.id} onClick={() => onGo(it.id)} aria-current={on ? "page" : undefined} className="drawerItem" data-screen={it.id}
+                  style={{ ...btnBase, "--i": i + 2, width: "100%", display: "flex", alignItems: "center", gap: 14, padding: "10px 10px", margin: "2px 0", borderRadius: 14, background: on ? `${C.signal}1a` : "transparent", color: on ? C.signal : C.chalk, textAlign: "left" }}>
+                  <span style={{ width: 40, height: 40, borderRadius: 12, background: on ? `${C.signal}26` : LOOK === "liquid" ? "rgba(255,255,255,.08)" : C.panelHi, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><TabIcon name={it.id} active={on} /></span>
+                  <span style={{ minWidth: 0 }}>
+                    <span style={{ display: "block", fontSize: 16, fontWeight: 800 }}>{it.label}</span>
+                    <span style={{ display: "block", fontSize: 12, fontWeight: it.badge ? 700 : 500, color: it.badge ? C.signal : C.dim, marginTop: 1 }}>{it.desc}</span>
+                  </span>
+                  {it.badge > 0 && <span style={{ marginLeft: "auto", minWidth: 20, height: 20, borderRadius: 10, padding: "0 6px", boxSizing: "border-box", background: "#ff5a5a", color: "#fff", fontSize: 11.5, fontWeight: 800, lineHeight: "20px", textAlign: "center", flexShrink: 0 }}>{it.badge}</span>}
+                </button>
+              );
+            })}
+          </div>
+          <AboutBox gh={gh} dl={dl} onNews={onNews} apk={apk} busy={busy} />
+    </>
+  );
+}
+function SideNav(props) {
+  return (
+    <nav data-side-nav aria-label={T("mainMenu")} className="noBar" style={{ fontFamily: BODY, position: "fixed", zIndex: 30, top: 0, left: 0, bottom: 0, width: "var(--side)", boxSizing: "border-box", background: C.ink, borderRight: `1px solid ${C.line}`, ...(LOOK === "liquid" ? { background: liquidGrad(), borderRight: "1px solid rgba(255,255,255,.16)" } : LOOK === "glass" ? { background: glassGrad() } : {}), display: "flex", flexDirection: "column", paddingTop: "var(--sat)", paddingBottom: "var(--sab)", overflowY: "auto" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "18px 18px 4px" }}>
+        <Logo size={30} />
+        <div style={{ fontFamily: DISPLAY, fontSize: 18, fontWeight: 900, color: C.chalk, letterSpacing: 1 }}>HW APP</div>
+      </div>
+      <MenuBody {...props} />
+    </nav>
   );
 }
 
@@ -1885,7 +1936,7 @@ function MiniPlayer({ session, live, onOpen }) {
   const pct = big !== null && total ? big / total : 0;
   return createPortal(
     <button onClick={onOpen} className="miniIn" data-mini aria-label={T("miniOpen")}
-      style={{ ...btnBase, position: "fixed", left: "50%", bottom: "calc(14px + var(--sab))", transform: "translateX(-50%)", zIndex: 40, width: "min(calc(100vw - 24px), 436px)", display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", borderRadius: 20, background: C.panelHi, border: `1.5px solid ${color}88`, boxShadow: "0 12px 34px rgba(0,0,0,.45)", color: C.chalk, textAlign: "left", ...(LOOK === "liquid" ? { ...LIQUID_FLOAT(), border: `1px solid ${color}aa`, borderRadius: 24 } : {}) }}>
+      style={{ ...btnBase, position: "fixed", left: "calc(50% + var(--side, 0px) / 2)", bottom: "calc(14px + var(--sab))", transform: "translateX(-50%)", zIndex: 40, width: "min(calc(100vw - 24px), 436px)", display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", borderRadius: 20, background: C.panelHi, border: `1.5px solid ${color}88`, boxShadow: "0 12px 34px rgba(0,0,0,.45)", color: C.chalk, textAlign: "left", ...(LOOK === "liquid" ? { ...LIQUID_FLOAT(), border: `1px solid ${color}aa`, borderRadius: 24 } : {}) }}>
       <span style={{ position: "relative", width: 48, height: 48, flexShrink: 0 }}>
         <svg width="48" height="48" style={{ transform: "rotate(-90deg)" }}>
           <circle cx="24" cy="24" r="20" fill="none" stroke={C.line} strokeWidth="4" />
@@ -2239,7 +2290,7 @@ function ApkUpdateCard({ info, busy, onClose, inMenu }) {
 const HINTS = [
   { k: "themes", go: "settings" }, { k: "exercises", go: "settings" }, { k: "calories", go: "calories" },
   { k: "minimize", go: null }, { k: "backup", go: "settings" }, { k: "history", go: "history" },
-  { k: "howto", go: null }, { k: "freeze", go: "profile" }, { k: "language", go: "settings" }, { k: "birthday", go: "calories" },
+  { k: "howto", go: null }, { k: "freeze", go: "profile" }, { k: "profile", go: "profile" }, { k: "language", go: "settings" }, { k: "birthday", go: "calories" },
 ];
 function HintCard({ ui, setUi, onGo }) {
   const today = dateKey();
@@ -2345,7 +2396,7 @@ function UpdateBanner({ dl, busy, onClose }) {
 function FloatStart({ show, day, rounds, setRounds, onStart }) {
   return createPortal(
     <div data-fstart={show ? "on" : "off"} aria-hidden={!show} className={"fstart" + (show ? " on" : "")}
-      style={{ position: "fixed", left: 0, right: 0, bottom: "calc(var(--sab, 0px) + 12px)", zIndex: 40, display: "flex", justifyContent: "center", padding: "0 12px", pointerEvents: show ? "auto" : "none" }}>
+      style={{ position: "fixed", left: "var(--side, 0px)", right: 0, bottom: "calc(var(--sab, 0px) + 12px)", zIndex: 40, display: "flex", justifyContent: "center", padding: "0 12px", pointerEvents: show ? "auto" : "none" }}>
       <div data-fstart-box style={{ display: "flex", gap: 10, width: "100%", maxWidth: 436, padding: 10, borderRadius: 26, background: `${C.ink}f5`, border: `1px solid ${C.line}`, boxShadow: "0 12px 34px rgba(0,0,0,.5)", ...(LOOK === "liquid" ? { ...LIQUID_FLOAT(), borderRadius: 26 } : LOOK === "glass" ? { ...GLASS(), borderRadius: 26, boxShadow: "inset 0 1px 0 rgba(255,255,255,.22), 0 12px 34px rgba(0,0,0,.5)" } : {}) }}>
         {[3, 2].map((n, i) => (
           <button key={n} tabIndex={show ? 0 : -1} data-fround={n} aria-pressed={rounds === n} aria-label={T("roundsBtn", { n, m: n === 2 ? 13 : 19 })} onClick={() => { sfxTap(); setRounds(n); }} className="fsq" style={{ ...btnBase, "--d": `${60 + i * 50}ms`, width: 74, flexShrink: 0, borderRadius: 17, padding: "12px 0", ...(rounds === n ? { background: C.chalk, border: `1px solid ${C.chalk}` } : SUNK()), color: rounds === n ? C.ink : C.dim, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", lineHeight: 1 }}>
@@ -2712,6 +2763,16 @@ function usePager(name, n) {
   const pager = useRef(null), pages = useRef([]), knob = useRef(null), ctl = useRef({});
   const [page, setPage] = useState(0);
   const [pagerEl, setPagerEl] = useState(null); // the strip may appear later (Calories shows a form first)
+  const wide = useWide(); // 1.7.0: on a wide screen the pages stand side by side (no tabs, no swiping)
+  const [cols, setCols] = useState(n); // how many pages fit next to each other (at least ~340 px each)
+  useLayoutEffect(() => {
+    const el = pager.current; if (!wide || !el) return;
+    const fit = () => setCols(Math.max(1, Math.min(n, Math.floor((el.clientWidth + 18) / 358))));
+    fit();
+    const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(fit) : null;
+    if (ro) ro.observe(el); else window.addEventListener("resize", fit);
+    return () => { if (ro) ro.disconnect(); else window.removeEventListener("resize", fit); };
+  }, [pagerEl, wide]);
   // 1.5.7 (Michael, video: a tab tap jumped instantly or swung back and forth): a tab tap no longer uses the browser's
   // smooth scroll, which on Android fights with scroll-snap (and with any size change) and can jump or bounce. The app
   // moves the strip itself with the app's ease curve while snapping is off, and the knob follows the strip. A finger
@@ -2738,6 +2799,7 @@ function usePager(name, n) {
   // which looked like the strip bouncing between pages.
   useLayoutEffect(() => {
     const el = pager.current; if (!el) return;
+    if (wide) { el.style.height = ""; return; }
     const c = ctl.current;
     if (page) el.scrollLeft = page * el.clientWidth; // a strip that came back (after a form) stays on the same page
     if (knob.current) knob.current.style.transform = `translateX(${page * 100}%)`;
@@ -2787,8 +2849,8 @@ function usePager(name, n) {
       // (a form takes its place), React may reuse its <div> for the next element, which then kept the strip's height.
       el.style.height = ""; el.classList.remove("anim");
     };
-  }, [pagerEl]);
-  const tabs = labels => (
+  }, [pagerEl, wide]);
+  const tabs = labels => wide ? null : (
     <div {...{ [`data-${name}-tabs`]: 1 }} role="tablist" style={{ position: "relative", display: "flex", padding: 3, borderRadius: 13, ...SUNK(), marginBottom: 12 }}>
       <span ref={knob} aria-hidden="true" style={{ position: "absolute", top: 3, bottom: 3, left: 3, width: `calc((100% - 6px) / ${n})`, borderRadius: 10, background: C.chalk, boxShadow: "0 2px 6px rgba(0,0,0,.3)", transition: "none" }} />
       {labels.map((lb, i) => (
@@ -2801,9 +2863,11 @@ function usePager(name, n) {
   // which restarted everything (and stopped a page move halfway)
   const refFn = useRef(null);
   if (!refFn.current) refFn.current = node => { pager.current = node; setPagerEl(node); };
-  const pagerProps = { ref: refFn.current, className: "swPager", [`data-${name}-pager`]: page };
-  const pageProps = i => ({ ref: el => (pages.current[i] = el), className: "swPage", [`data-${name}-page`]: String(i), "aria-hidden": page !== i });
-  return { page, goPage, tabs, pagerProps, pageProps };
+  const pagerProps = { ref: refFn.current, className: wide ? "swGrid" : "swPager", [`data-${name}-pager`]: page, ...(wide ? { "data-wide": cols, style: { gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` } } : {}) };
+  // three pages in two columns: the second one stands on the right next to the other two (no gap under the first)
+  const span3 = wide && n === 3 && cols === 2 ? [{ gridColumn: 1, gridRow: 1 }, { gridColumn: 2, gridRow: "1 / span 2" }, { gridColumn: 1, gridRow: 2 }] : null;
+  const pageProps = i => ({ ref: el => (pages.current[i] = el), className: "swPage", [`data-${name}-page`]: String(i), "aria-hidden": wide ? undefined : page !== i, ...(span3 ? { style: span3[i] } : {}) });
+  return { page, goPage, tabs, pagerProps, pageProps, wide };
 }
 
 function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, profile, onGo, upd, apk, kcal, setKcal, dl, onDlClose, onSetup, settings, setSettings }) {
@@ -2956,7 +3020,7 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
   );
 
   return (
-    <div className="scr" style={{ padding: "16px 0 132px", maxWidth: 460, margin: "0 auto" }}>
+    <div className="scr" style={{ padding: "16px 0 132px", maxWidth: "var(--colMax)", margin: "0 auto" }}>
       {howEx && <HowTo id={howEx} history={history} onClose={() => setHowEx(null)} />}
 
       <div style={{ padding: "0 18px" }}>
@@ -3017,7 +3081,7 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
         </div>
         <div {...pg.pageProps(1)}>
           <Sect title={`${T("secExercises")} · ${T("dayN", { d: day.id })}`} accent={C.sky} titlePad="0 15px" style={LOOK === "flat" ? { marginTop: 0 } : { padding: "12px 0 4px", marginTop: 0 }}>
-          {dayPicker({ padding: LOOK === "flat" ? "0 0 12px" : "0 15px 12px" }, "ex")}
+          {!pg.wide && dayPicker({ padding: LOOK === "flat" ? "0 0 12px" : "0 15px 12px" }, "ex")}
           <div style={LOOK === "flat" ? { ...card } : { borderTop: `1px solid ${C.line}` }}>
             {day.ids.map((slot, i) => {
               const id = effId(slot);
@@ -3673,7 +3737,7 @@ function Calories({ history, profile, setProfile, kcal, setKcal }) {
   // folded or not is decided when Calories opens (connecting food right here doesn't snap the box shut)
   const fold = k => (KC_FOLD[k] === undefined ? foldDef.current[k] : KC_FOLD[k]);
   return (
-    <div className="scr" style={{ padding: "16px 0 110px", maxWidth: 460, margin: "0 auto" }}>
+    <div className="scr" style={{ padding: "16px 0 110px", maxWidth: "var(--colMax)", margin: "0 auto" }}>
       <div style={{ padding: "0 18px" }}>
         <Sect data-kc-streak-card title={T("secWeek")} meta={<KcalStreakChip history={history} small />} style={{ marginTop: 0, marginBottom: 12 }}>
           <KcalWeekDots history={history} full />
@@ -4105,18 +4169,21 @@ function HistoryTab({ history, onDelete, onSaveEntry, editDate, onEditOpened }) 
   const prs = history.reduce((a, e) => a + ((e.prs && e.prs.length) || 0), 0);
   const tiles = [[T("tileTrainings"), history.length, "🏋️"], [T("tileSets"), sets, "🔁"], [T("tilePRs"), prs, "🏆"]];
   return (
-    <div className="scr" style={{ padding: "16px 18px 110px", maxWidth: 460, margin: "0 auto" }}>
-      <div data-stat-grid style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 8 }}>
-        {tiles.map(([l, v, ic]) => <StatTile key={l} label={l} icon={ic} value={v} compact />)}
-      </div>
+    <div className="scr" style={{ padding: "16px 18px 110px", maxWidth: "var(--colMax)", margin: "0 auto" }}>
       {editing !== null && (
         <EntryEditor key={String(editing)} entry={editing === "new" ? null : history[editing]} nextDay={DAYS[nextDayIdx(history)].id}
           onClose={() => setEditing(null)}
           onSave={e => { onSaveEntry(editing === "new" ? null : editing, e); setEditing(null); setOpen(null); }}
           onDelete={() => { onDelete(editing); setEditing(null); setOpen(null); }} />
       )}
+      {/* 1.7.0: on a wide screen the numbers, calendar and chart on the left, the workouts on the right */}
+      <Cols left={<>
+      <div data-stat-grid style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 8 }}>
+        {tiles.map(([l, v, ic]) => <StatTile key={l} label={l} icon={ic} value={v} compact />)}
+      </div>
       <MonthCalendarM history={history} />
       <ProgressChartM history={history} />
+      </>} right={<>
       {/* 1.7.0: the workouts are rows in one box (like the friends list), the newest open */}
       <ListSect title={T("workoutsTitle")} meta={history.length ? String(history.length) : ""} data-workouts>
         <button data-add-workout onClick={() => { sfxTap(); setEditing("new"); }} style={{ ...btnBase, width: "100%", padding: "11px 16px 13px", fontSize: 15, color: C.chalk, background: "transparent", borderRadius: 0, textAlign: "left", display: "flex", alignItems: "center", gap: 10 }}>
@@ -4167,6 +4234,7 @@ function HistoryTab({ history, onDelete, onSaveEntry, editDate, onEditOpened }) 
           );
         })}
       </ListSect>
+      </>} />
     </div>
   );
 }
@@ -4225,10 +4293,12 @@ function ProfileTab({ history, profile, setProfile, onFreeze, kcal, acct, vis, o
   const stats = [[T("statTrainings"), history.length, "🏋️"], [T("statSets"), history.reduce((a, e) => a + setsIn(e), 0), "🔁"], [T("statReps"), nf(totalReps(history)), "📊"], [T("statBestStreak"), bestStreak(history), "🏆"]];
 
   return (
-    <div className="scr" style={{ padding: "16px 18px 110px", maxWidth: 460, margin: "0 auto" }}>
+    <div className="scr" style={{ padding: "16px 18px 110px", maxWidth: "var(--colMax)", margin: "0 auto" }}>
       {howEx && <HowTo id={howEx} history={history} onClose={() => setHowEx(null)} />}
       {preview && acct && acct.prof && <ProfileView self p={{ uid: acct.uid, nick: acct.prof.nick, pfp: profile.pfp }} card={cardData(history, profile)} onClose={() => setPreview(false)} />}
       <input ref={fileRef} type="file" accept="image/*" onChange={pick} style={{ display: "none" }} />
+      {/* 1.7.0: on a wide screen you, your numbers and who sees them on the left, ranks and badges on the right */}
+      <Cols left={<>
 
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", paddingTop: 6 }}>
         <button onClick={() => fileRef.current && fileRef.current.click()} aria-label={T("changePhoto")} style={{ ...btnBase, position: "relative", background: "transparent", padding: 0, borderRadius: 99 }}>
@@ -4301,7 +4371,7 @@ function ProfileTab({ history, profile, setProfile, onFreeze, kcal, acct, vis, o
           </div>
         )}
       </Sect>
-
+      </>} right={<>
       <Sect title={T("ranksTitle")} flatTitle meta={T("achTiers", { n: rankLv, max: Object.keys(RANK_AT).length * (RANKS.length - 1) })}>
         <RanksBox bare bests={Object.fromEntries(Object.keys(RANK_AT).map(id => [id, bestFor(history, id)]))} onPick={setHowEx} />
       </Sect>
@@ -4347,7 +4417,7 @@ function ProfileTab({ history, profile, setProfile, onFreeze, kcal, acct, vis, o
         );
       })()}
       </Sect>
-
+      </>} />
     </div>
   );
 }
@@ -4756,6 +4826,7 @@ function NickSetup({ initial, onSave, onCancel, title }) {
 }
 
 function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, chatWith, setChatWith, onBlocked, setTopHead, modHidden }) {
+  const wide = useWide();
   const me = { uid: acct.uid, ...acct.prof, ...cloudStats(history) };
   const [tab, setTab] = useState(() => (sessionStorage.getItem("hw-add") ? "friends" : chatWith ? "chats" : "board"));
   const [scope, setScope] = useState("friends"); // board: friends | world
@@ -4843,7 +4914,7 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
       onReport={text => report(p, "message: " + text.slice(0, 280))} onBlock={block} />;
   }
   return (
-    <div className="scr" data-fr-main style={{ padding: "6px 18px 110px", maxWidth: 460, margin: "0 auto" }}>
+    <div className="scr" data-fr-main style={{ padding: "6px 18px 110px", maxWidth: "var(--colMax)", margin: "0 auto" }}>
       {sheet && <PersonSheet p={sheet} isFriend={friendIds.includes(sheet.uid)} onClose={() => setSheet(null)} onChat={friendIds.includes(sheet.uid) ? x => { setSheet(null); setChatWith(x.uid); } : null}
         onAdd={p => sendTo(p.uid, p.nick).catch(cloudErr)} onRemove={p => act(() => cloud().removeFriend(p.uid), () => setSheet(null))}
         onBlock={block} onReport={p => report(p)} onProfile={setView} />}
@@ -4855,6 +4926,9 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
           <button data-chat-del-no onClick={() => setDelChat(null)} style={{ ...ghostBtn, width: "100%", marginTop: 10, padding: 12 }}>{T("cancel")}</button>
         </Sheet>); })()}
       {rename && <NickSetup initial={acct.prof.nick} title={T("frRename")} onCancel={() => setRename(false)} onSave={n => onRename(n).then(() => setRename(false))} />}
+      {(() => {
+        // 1.7.0 (tablet/PC): you and your friends on the left; the leaderboard and messages on the right
+        const idCard = (
       <Sect>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <Avatar profile={{ name: me.nick, pfp: profile.pfp }} size={54} />
@@ -4872,13 +4946,8 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
         </div>
         {shareMsg && <div role="status" style={{ fontSize: 12, color: C.mint, marginTop: 6 }}>{shareMsg}</div>}
       </Sect>
-      <div role="tablist" style={segBox}>
-        {seg(tab === "board", () => setTab("board"), T("frBoard"), "board")}
-        {seg(tab === "friends", () => setTab("friends"), T("frFriends"), "friends", reqs ? reqs.length : 0)}
-        {seg(tab === "chats", () => setTab("chats"), T("chMsgs"), "chats", chats.filter(unread).length)}
-      </div>
-      {err && <div role="alert" style={{ fontSize: 13, color: "#ff8a80", marginTop: 10 }}>{err}</div>}
-      {tab === "board" ? (
+        );
+        const boardView = (
         <>
           {scope === "world" && (
             modHidden ? (
@@ -4903,7 +4972,8 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
             {scope === "friends" && friends && !friends.length && <div style={{ padding: "10px 16px 12px", color: C.dim, fontSize: 13, lineHeight: 1.5, borderTop: `1px solid ${C.line}` }}>{T("frNoFriends")}</div>}
           </Sect>
         </>
-      ) : tab === "friends" ? (
+        );
+        const friendsView = (
         <>
           <Sect title={T("frAdd")}>
             <div style={{ display: "flex", gap: 8 }}>
@@ -4930,7 +5000,8 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
               : friends.map((p, i) => <PersonRow key={p.uid} p={p} first={i === 0} onClick={() => { sfxTap(); setSheet(p); }} />)}
           </Sect>
         </>
-      ) : (
+        );
+        const chatsView = (
         <Sect title={T("chMsgs")} style={{ padding: "15px 0 4px" }} titlePad="0 16px">
           {social.chats === null ? <div style={{ padding: "6px 16px 12px", color: C.dim, fontSize: 14 }}>{T("frLoading")}</div>
             : !chats.length ? <div data-ch-empty style={{ padding: "6px 16px 12px", color: C.dim, fontSize: 13, lineHeight: 1.5 }}>{friends && friends.length ? T("chEmpty") : T("chNoFriends")}</div>
@@ -4955,7 +5026,13 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
               );
             })}
         </Sect>
-      )}
+        );
+        const tabs = list => <div role="tablist" style={segBox}>{list.map(([id, l, n]) => <Fragment key={id}>{seg(tab === id, () => setTab(id), l, id, n)}</Fragment>)}</div>;
+        const nReq = reqs ? reqs.length : 0, nChat = chats.filter(unread).length;
+        if (!wide) return <>{idCard}{tabs([["board", T("frBoard")], ["friends", T("frFriends"), nReq], ["chats", T("chMsgs"), nChat]])}{err && <div role="alert" style={{ fontSize: 13, color: "#ff8a80", marginTop: 10 }}>{err}</div>}{tab === "board" ? boardView : tab === "friends" ? friendsView : chatsView}</>;
+        const rt = tab === "chats" ? "chats" : "board";
+        return <Cols left={<>{idCard}{friendsView}</>} right={<>{tabs([["board", T("frBoard")], ["chats", T("chMsgs"), nChat]])}{err && <div role="alert" style={{ fontSize: 13, color: "#ff8a80", marginTop: 10 }}>{err}</div>}{rt === "board" ? boardView : chatsView}</>} />;
+      })()}
     </div>
   );
 }
@@ -5305,7 +5382,7 @@ function ChatView({ me, other, canWrite, onBack, onOpen, onReport, onBlock, shee
   const bar = editing || reply;
   const liveRx = rxFor && msgs ? msgs.find(x => x.id === rxFor) : null;
   return (
-    <div className="scr" data-chat-view={other.uid} style={{ padding: canWrite ? "6px 14px 0" : "6px 14px 14px", maxWidth: 460, margin: "0 auto", minHeight: "calc(100dvh - 104px - var(--sat))", boxSizing: "border-box", display: "flex", flexDirection: "column" }}>
+    <div className="scr" data-chat-view={other.uid} style={{ padding: canWrite ? "6px 14px 0" : "6px 14px 14px", maxWidth: "min(var(--colMax), 760px)", margin: "0 auto", minHeight: "calc(100dvh - 104px - var(--sat))", boxSizing: "border-box", display: "flex", flexDirection: "column" }}>
       {sheet}
       <style>{`.msgFlash [data-msg-bubble]{animation:msgFlash 1.1s ease}@keyframes msgFlash{0%,100%{filter:none}25%{filter:brightness(1.35)}}`}</style>
       <style>{`.rxBurst{position:absolute;left:50%;top:50%;font-size:44px;line-height:1;transform:translate(-50%,-50%) scale(0);animation:rxBurst .85s cubic-bezier(.34,1.56,.64,1) forwards;pointer-events:none;filter:drop-shadow(0 6px 14px rgba(0,0,0,.4))}@keyframes rxBurst{0%{transform:translate(-50%,-50%) scale(0);opacity:0}35%{transform:translate(-50%,-50%) scale(1.15);opacity:1}70%{transform:translate(-50%,-50%) scale(1);opacity:1}100%{transform:translate(-50%,-90%) scale(.8);opacity:0}}.rxIn{animation:rxIn .35s cubic-bezier(.34,1.56,.64,1)}@keyframes rxIn{from{transform:scale(.3);opacity:0}}`}</style>
@@ -5383,7 +5460,7 @@ function LiveNotice({ n, people, onOpen, onClose }) {
   useEffect(() => { setShown(true); const t = setTimeout(() => setShown(false), 5000), u = setTimeout(onClose, 5400); return () => { clearTimeout(t); clearTimeout(u); }; }, [n.id]);
   const p = n.p || people[n.uid] || { nick: "…" };
   return createPortal(
-    <div data-live-notice={n.kind} className={"liveN" + (shown ? " on" : "")} style={{ position: "fixed", left: 0, right: 0, top: "calc(var(--sat) + 8px)", zIndex: 75, display: "flex", justifyContent: "center", padding: "0 12px", pointerEvents: "none" }}>
+    <div data-live-notice={n.kind} className={"liveN" + (shown ? " on" : "")} style={{ position: "fixed", left: "var(--side, 0px)", right: 0, top: "calc(var(--sat) + 8px)", zIndex: 75, display: "flex", justifyContent: "center", padding: "0 12px", pointerEvents: "none" }}>
       <button onClick={() => { setShown(false); onOpen(n); }} style={{ ...btnBase, pointerEvents: "auto", width: "100%", maxWidth: 440, display: "flex", alignItems: "center", gap: 11, padding: "10px 12px", borderRadius: 20, background: C.panelHi, border: `1px solid ${C.line}`, boxShadow: "0 12px 30px rgba(0,0,0,.45)", color: C.chalk, textAlign: "left", fontFamily: BODY, ...(LOOK === "liquid" ? LIQUID_FLOAT() : LOOK === "glass" ? { ...GLASS(), borderRadius: 20 } : {}) }}>
         <PersonAvatar p={p} size={38} />
         <span style={{ flex: 1, minWidth: 0 }}>
@@ -5671,10 +5748,12 @@ function SettingsTab({ initPage, settings, setSettings, history, profile, setPro
   }
 
   return (
-    <div className="scr" key="main" style={{ padding: "6px 18px 110px", maxWidth: 460, margin: "0 auto" }}>
+    <div className="scr" key="main" style={{ padding: "6px 18px 110px", maxWidth: "var(--colMax)", margin: "0 auto" }}>
       <input ref={fileRef} type="file" accept="application/json,.json" onChange={readBackup} style={{ display: "none" }} />
       {bkOpen && <BackupsSheet onClose={() => setBkOpen(false)} onRestore={txt => { if (loadBackupText(txt)) setBkOpen(false); }} autoOn={!!settings.autoBackup} myId={String(cloudMem().owner || (acct.st === "in" ? acct.uid : "")).replace(/[^A-Za-z0-9]/g, "").slice(0, 8)} />}
 
+      {/* 1.7.0: on a wide screen language + appearance on the left, the rest on the right */}
+      <Cols left={<>
       {/* One row with the current language; the full list opens in a scrollable sheet, so more languages fit later. */}
       {(() => { const cur = LANGS.find(l => l.code === curLang) || LANGS[0]; return (
         <ListSect title={T("language")} data-set-lang style={{ padding: "14px 0 0" }}>
@@ -5749,7 +5828,7 @@ function SettingsTab({ initPage, settings, setSettings, history, profile, setPro
       <div style={{ fontSize: 12, color: C.dim, marginTop: 6, lineHeight: 1.45 }}>{T("lookHint")}</div>
       {hzSupported() && <div style={{ marginTop: 12, borderRadius: 14, background: SOFT(), overflow: "hidden" }}><HzRow settings={settings} set={set} first /></div>}
       </Sect>
-
+      </>} right={<>
       <ListSect title={T("sounds")}>
         <SettingRow first title={T("sndTap")} desc={T("sndTapD")} on={settings.sndTap} onClick={() => flip("sndTap")} />
         <SettingRow title={T("sndFx")} desc={T("sndFxD")} on={settings.sndFx} onClick={() => flip("sndFx")} />
@@ -5823,6 +5902,7 @@ function SettingsTab({ initPage, settings, setSettings, history, profile, setPro
         </span>
         <span aria-hidden="true" style={{ fontSize: 20, lineHeight: 1, flexShrink: 0 }}>💛</span>
       </button>
+      </>} />
       <div style={{ fontSize: 12, color: C.dim, textAlign: "center", marginTop: 26, lineHeight: 1.6, display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
         <Logo size={44} />
         <div>{T("about", { v: APP_VERSION })}<br />{T("privacy")}</div>
@@ -6999,6 +7079,11 @@ export default function App() {
     }).catch(() => {});
   }, [loaded]);
   const resume = () => { sfxTap(); setMenuOpen(false); setSessionOpen(true); };
+  // 1.7.0: on a wide screen the menu is a side panel that stays open (not during the setup or an open workout)
+  const side = useSide();
+  const sideOn = side && loaded && onboard === null && !(session && sessionOpen);
+  useLayoutEffect(() => { document.documentElement.style.setProperty("--side", sideOn ? "288px" : "0px"); }, [sideOn]);
+  useEffect(() => { if (sideOn && menuOpen) setMenuOpen(false); }, [sideOn, menuOpen]);
   // 1.6.5 (Michael, Oct 17: a friend's link opened the website): the app owns …/hw-app/add/ links (App Links,
   // assetlinks.json on mikydon.github.io), so a tapped link opens the app on Friends with the code filled in.
   const [addSeq, setAddSeq] = useState(0);
@@ -7016,7 +7101,7 @@ export default function App() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: LOOK === "liquid" ? "transparent" : C.ink, color: C.chalk, fontFamily: BODY }}>
+    <div style={{ minHeight: "100vh", background: LOOK === "liquid" ? "transparent" : C.ink, color: C.chalk, fontFamily: BODY, paddingLeft: "var(--side, 0px)" }}>
       {(LOOK === "liquid" || LOOK === "glass") && <LiquidBg />}
       <style>{`
         button:focus-visible{outline:3px solid ${C.signal};outline-offset:2px}
@@ -7036,7 +7121,10 @@ export default function App() {
         .b3d:active{transform:translateY(4px); box-shadow:0 1px 0 var(--e, transparent)}
         @keyframes scrIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
         .scr{animation:scrIn ${MO.t2} ${MO.ease} both}
-        :root{--sat:var(--safe-area-inset-top,env(safe-area-inset-top,0px));--sab:var(--safe-area-inset-bottom,env(safe-area-inset-bottom,0px))}
+        :root{--sat:var(--safe-area-inset-top,env(safe-area-inset-top,0px));--sab:var(--safe-area-inset-bottom,env(safe-area-inset-bottom,0px));--colMax:460px}
+        @media (min-width: 760px){:root{--colMax:1180px}.sheetWrap{align-items:center!important}}
+        .swGrid{display:grid;align-items:start;padding:0 9px}.swGrid>.swPage{min-width:0;box-sizing:border-box;padding:0 9px 12px}
+        .colsW{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 18px;align-items:start}.colsW>div{min-width:0}.colsW>div>:first-child,.swGrid>.swPage>:first-child{margin-top:0!important}
         @keyframes shIn{from{opacity:0;transform:translateY(48px)}to{opacity:1;transform:none}} @keyframes shOut{from{opacity:1;transform:none}to{opacity:0;transform:translateY(48px)}}
         .sheetDim{animation:dFadeIn ${MO.t2} ease both} .sheetWrap>.sheetBox{animation:shIn ${MO.t3} ${MO.pop} both}
         .sheetGhost>.sheetDim{animation:dFadeOut ${MO.out} ease-in both} .sheetGhost>.sheetGhostBox{box-sizing:border-box;animation:shOut ${MO.out} ${MO.exit} both}
@@ -7074,7 +7162,7 @@ export default function App() {
         .tbOut{position:sticky;top:0;z-index:20;display:flow-root;pointer-events:none;padding:calc(var(--sat) + 6px) 10px 2px}
         .tbOut::before{content:"";position:absolute;left:0;right:0;top:0;height:calc(var(--sat) + 22px);background:linear-gradient(180deg,var(--tbFade) var(--sat),transparent);opacity:0;visibility:hidden;transition:opacity .35s ease,visibility 0s .35s}
         .tbOut.fl::before{opacity:1;visibility:visible;transition:opacity .35s ease}
-        .tbWrap{position:relative;max-width:440px;margin:0 auto}
+        .tbWrap{position:relative;max-width:calc(var(--colMax) - 20px);margin:0 auto}
         .tbBox{pointer-events:auto;position:relative;z-index:3;display:flex;align-items:center;gap:8px;padding:11px 13px 11px 19px}
         .tbPill{position:absolute;z-index:2;inset:0;border-radius:24px;opacity:0;visibility:hidden;transition:opacity .22s ease,visibility 0s .22s}
         .tbOut.fl:not([data-goo]) .tbPill{opacity:1;visibility:visible;transition:opacity .22s ease}
@@ -7104,7 +7192,7 @@ export default function App() {
           )}
           {(!session || !sessionOpen) && (
             <>
-              <TopBar head={screen === "friends" ? topHead : null} badge={socialCount} dlPct={dl && dl.kind === "downloading" ? dl.pct || 0 : null} screen={screen} history={history} menuOpen={menuOpen} onGo={go} onMenu={() => { sfxTap(); setMenuOpen(o => !o); }} />
+              <TopBar side={sideOn} head={screen === "friends" ? topHead : null} badge={socialCount} dlPct={dl && dl.kind === "downloading" ? dl.pct || 0 : null} screen={screen} history={history} menuOpen={menuOpen} onGo={go} onMenu={() => { sfxTap(); setMenuOpen(o => !o); }} />
               <div key={screen}>
                 {screen === "train" && <TrainTab settings={settings} setSettings={setSettings} onSetup={st => setOnboard(st)} dl={dlHidden ? null : dl} onDlClose={() => setDlHidden(true)} kcal={kcal} setKcal={setKcal} history={history} onStart={start} onFreeze={applyFreeze} ui={ui} setUi={setUi} active={session} onResume={resume} profile={profile} onGo={go} upd={updCard ? { open: () => { setUpdCard(false); setNewsAt(APP_VERSION); setNewsOpen(true); }, close: () => setUpdCard(false) } : null}
                   apk={apkUpd && !apkHidden ? { info: apkUpd, close: () => setApkHidden(true) } : null} />}
@@ -7123,6 +7211,8 @@ export default function App() {
               {exitAsk && <ExitPrompt history={history} session={session} onStay={() => { sfxTap(); setExitAsk(false); }} onLeave={() => { setExitAsk(false); exitApp(); }} />}
             </>
           )}
+          {sideOn && <SideNav apk={apkUpd} busy={!!(session && session.phase !== "summary")} badge={socialCount} gh={gh} dl={dl} screen={screen} history={history} profile={profile} session={session && session.phase !== "summary" ? session : null}
+            onGo={go} onResume={resume} onNews={() => setNewsOpen(true)} />}
           <MenuDrawer apk={apkUpd} busy={!!(session && session.phase !== "summary")} badge={socialCount} gh={gh} dl={dl} open={menuOpen} screen={screen} history={history} profile={profile} session={session && session.phase !== "summary" ? session : null}
             onGo={go} onResume={resume} onClose={() => setMenuOpen(false)} onNews={() => { setMenuOpen(false); setNewsOpen(true); }} />
           {notice && <LiveNotice n={notice} people={Object.fromEntries([...(social.friends || []), ...(social.reqs || [])].map(x => [x.uid, x]))} onClose={() => setNotice(null)}
