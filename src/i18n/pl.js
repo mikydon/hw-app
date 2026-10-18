@@ -511,7 +511,7 @@ export default {
     hzTitle: "Płynność ekranu",
     hzMax: "Najwyższa ({n} Hz)",
     hzMaxNoN: "Najwyższa",
-    hzD: "Najwyższa, na jaką pozwala telefon, jest płynniejsza; 60 Hz oszczędza baterię.",
+    hzD: "60 Hz (domyślnie) oszczędza baterię. Najwyższa, na jaką pozwala telefon, jest płynniejsza, ale zużywa więcej baterii.",
     frMenuNew: "Nowe: {n}",
     obAcctT: "Masz konto?",
     obAcctD: "Zaloguj się przez Google albo e-mailem, a aplikacja pobierze twój pseudonim i dane z chmury. Konto jest dobrowolne, możesz to pominąć.",
@@ -1218,6 +1218,10 @@ export default {
   news143: [
     "Układ Szkło wygląda bardziej jak prawdziwe szkło: połysk od rogu, delikatne odbicie, jasna górna krawędź i delikatna poświata kolorów motywu za polami. Pasek startu i menu ☰ do niego pasują, a telefon nadal się nie męczy.",
     "Górny pasek: na samej górze strony wypełnia ekran od krawędzi do krawędzi, bez linii u góry i po bokach.",
+  ],
+  news173: [
+    "Płynność ekranu to domyślnie 60 Hz (oszczędza baterię); najwyższą częstotliwość wybierzesz w Ustawienia → Wygląd.",
+    "Komunikat „powiadomienia są wyłączone” znika, gdy włączysz je w ustawieniach Androida, a powiadomienia zaczynają przychodzić od razu, bez restartu aplikacji.",
   ],
   news172: [
     "Logowanie wygląda jak w większości aplikacji: najpierw e-mail i hasło, potem „albo” i przycisk Google.",

@@ -511,7 +511,7 @@ export default {
     hzTitle: "Screen smoothness",
     hzMax: "Highest ({n} Hz)",
     hzMaxNoN: "Highest",
-    hzD: "The highest the phone allows is smoother; 60 Hz saves battery.",
+    hzD: "60 Hz (default) saves battery. The highest your phone allows is smoother but uses more battery.",
     frMenuNew: "{n} new",
     obAcctT: "Got an account?",
     obAcctD: "Sign in with Google or your e-mail and the app brings back your nickname and your data from the cloud. An account is optional, you can skip this.",
@@ -1218,6 +1218,10 @@ export default {
   news143: [
     "Glass layout looks more like real glass: a sheen from the corner, a soft reflection, a bright top edge and a soft glow of the theme colours behind the boxes. The Start bar and the ☰ menu match it, and it stays light on the phone.",
     "Top bar: at the top of the page it now fills the screen edge to edge, without a line at the top or sides.",
+  ],
+  news173: [
+    "Screen smoothness is 60 Hz by default (saves battery); the highest refresh rate is a choice in Settings → Appearance.",
+    "\"Notifications are turned off\" no longer stays on screen after you allow them in Android's settings, and the phone starts getting notifications right away, without restarting the app.",
   ],
   news172: [
     "The sign-in page looks like in most apps: e-mail and password first, then \"or\" and the Google button.",

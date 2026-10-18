@@ -511,7 +511,7 @@ export default {
     hzTitle: "Képernyő simasága",
     hzMax: "Legmagasabb ({n} Hz)",
     hzMaxNoN: "Legmagasabb",
-    hzD: "A telefon által engedett legmagasabb simább; a 60 Hz kíméli az akkut.",
+    hzD: "A 60 Hz (alapértelmezett) kíméli az akkumulátort. A telefon legmagasabb értéke simább, de többet fogyaszt.",
     frMenuNew: "Új: {n}",
     obAcctT: "Van fiókod?",
     obAcctD: "Lépj be Google-lel vagy e-maillel, és az alkalmazás visszahozza a becenevedet és az adataidat a felhőből. A fiók nem kötelező, ezt kihagyhatod.",
@@ -1218,6 +1218,10 @@ export default {
   news143: [
     "Az Üveg elrendezés jobban hasonlít a valódi üvegre: csillanás a sarokból, lágy tükröződés, világos felső él és a téma színeinek halvány fénye a dobozok mögött. Az indítósáv és a ☰ menü illik hozzá, és a telefont továbbra sem terheli.",
     "Felső sáv: az oldal tetején most szélétől széléig kitölti a képernyőt, vonal nélkül felül és oldalt.",
+  ],
+  news173: [
+    "A kijelző alapból 60 Hz-en fut (kíméli az akkut); a legmagasabb frissítési gyakoriság a Beállítások → Megjelenés alatt választható.",
+    "Az „értesítések ki vannak kapcsolva” üzenet eltűnik, ha engedélyezed őket az Android beállításaiban, és az értesítések azonnal jönnek, újraindítás nélkül.",
   ],
   news172: [
     "A bejelentkezés úgy néz ki, mint a legtöbb alkalmazásban: előbb e-mail és jelszó, utána „vagy” és a Google-gomb.",

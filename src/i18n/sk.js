@@ -511,7 +511,7 @@ export default {
     hzTitle: "Plynulosť obrazovky",
     hzMax: "Najvyššia ({n} Hz)",
     hzMaxNoN: "Najvyššia",
-    hzD: "Najvyššia, akú mobil dovolí, je plynulejšia; 60 Hz šetrí batériu.",
+    hzD: "60 Hz (predvolené) šetrí batériu. Najvyššia, akú mobil dovolí, je plynulejšia, ale míňa viac batérie.",
     frMenuNew: "Nové: {n}",
     obAcctT: "Máš účet?",
     obAcctD: "Prihlás sa cez Google alebo e-mailom a appka ti dotiahne prezývku a údaje z cloudu. Účet je dobrovoľný, môžeš to preskočiť.",
@@ -1218,6 +1218,10 @@ export default {
   news143: [
     "Rozloženie Sklo vyzerá viac ako skutočné sklo: odlesk z rohu, jemný odraz, svetlá horná hrana a jemná žiara farieb témy za boxmi. Lišta so štartom a menu ☰ k nemu ladia a mobil to stále nezaťažuje.",
     "Horná lišta: keď si úplne hore, vypĺňa obrazovku od kraja po kraj, bez čiary hore a po bokoch.",
+  ],
+  news173: [
+    "Plynulosť obrazovky je predvolene 60 Hz (šetrí batériu); najvyššia frekvencia je na výber v Nastavenia → Vzhľad.",
+    "Hláška „upozornenia sú vypnuté“ už nezostane, keď ich povolíš v nastaveniach Androidu, a upozornenia začnú chodiť hneď, bez reštartu appky.",
   ],
   news172: [
     "Prihlásenie vyzerá ako vo väčšine appiek: najprv e-mail a heslo, potom „alebo“ a tlačidlo Google.",

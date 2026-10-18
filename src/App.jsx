@@ -33,7 +33,7 @@ const THEMES = {
   slate:  { ink: "#15181d", panel: "#1f242b", panelHi: "#2a313a", line: "#3a434f", chalk: "#f1f4f8", dim: "#9aa6b4", edge: "#0e1115" },
   coffee: { ink: "#1c140f", panel: "#2a1f17", panelHi: "#382a20", line: "#4d3a2c", chalk: "#fbf3ec", dim: "#b8a291", edge: "#130d09" },
 };
-const APP_VERSION = "1.7.2";
+const APP_VERSION = "1.7.3";
 // Big Shoulders has no Cyrillic, so Oswald (also condensed) covers Ukrainian. The browser only
 // downloads the Oswald unicode ranges a page actually uses.
 // 1.7.0: 'HW Emoji' = the app's own emoji (Fluent 3D, fonts/hw-emoji.ttf) for the emoji the app shows; BODY_SYS
@@ -5903,12 +5903,27 @@ async function pushRegister({ on, ask, alive = () => true }) {
 // the phone has them blocked, a line says where to allow them.
 // The test button sends a notification to this account's own phones through the push server and follows it to the
 // end: registered? sent by Google? arrived here? (an open app gets it as an event, Android shows nothing then).
+// "New version" notifications (1.6.5) + the same "turned off in Android" line as PushRow when Android blocks them (1.7.3)
+function UpdNotifRow({ settings, set }) {
+  const on = settings.updNotif !== false;
+  const [perm, setPerm] = useState(null);
+  useEffect(() => { const chk = () => { if (!document.hidden) pushPermission(false).then(setPerm); }; chk(); document.addEventListener("visibilitychange", chk); return () => document.removeEventListener("visibilitychange", chk); }, []);
+  return (
+    <div data-upd-notif>
+      <SettingRow title={T("updNotif")} desc={T("updNotifD")} on={on} onClick={async () => { const v = !on; set("updNotif", v); if (v) setPerm(await pushPermission(true)); }} />
+      {on && perm === "denied" && <div data-upd-denied style={{ fontSize: 12, color: C.signal, lineHeight: 1.45, padding: "0 16px 12px" }}>{T("pushDenied")}</div>}
+    </div>
+  );
+}
 function PushRow({ settings, set }) {
   const on = settings.push !== false;
   const [perm, setPerm] = useState(null);
   const [test, setTest] = useState(null); // {st: busy|wait|got|late|err, e}
   const got = useRef(0), timer = useRef(0);
-  useEffect(() => { pushPermission(false).then(setPerm); }, []);
+  // 1.7.3 (Michael, Oct 18: "it says notifications aren't allowed, but they are"): the answer was read only when the
+  // screen opened, so after allowing them in Android's settings and coming back the old "off" line stayed. Read it
+  // again whenever the app comes back to the front.
+  useEffect(() => { const chk = () => { if (!document.hidden) pushPermission(false).then(setPerm); }; chk(); document.addEventListener("visibilitychange", chk); return () => document.removeEventListener("visibilitychange", chk); }, []);
   useEffect(() => {
     const off = onPushReceived(d => { if (d.kind !== "test") return; got.current = Date.now(); setTest(t => (t && (t.st === "wait" || t.st === "late") ? { st: "got" } : t)); });
     return () => { off(); clearTimeout(timer.current); };
@@ -5947,15 +5962,15 @@ function PushRow({ settings, set }) {
 function HzRow({ settings, set, first }) {
   const [info, setInfo] = useState(null);
   useEffect(() => { hzInfo().then(setInfo); }, []);
-  const mode = settings.hz === "60" ? "60" : "max";
+  const mode = settings.hz === "max" ? "max" : "60"; // 1.7.3 (Michael): 60 Hz by default, the highest is a choice
   const pick = m => { sfxTap(); set("hz", m); hzSet(m); };
   const btn = on => ({ ...btnBase, flex: 1, minWidth: 0, padding: "10px 6px", fontSize: 13, ...(on ? { background: C.chalk, border: `1px solid ${C.chalk}`, color: C.ink } : { ...SUNK(), color: C.dim }) });
   return (
     <div data-hz style={{ padding: "13px 16px", borderTop: first ? "none" : `1px solid ${C.line}` }}>
       <div style={{ fontSize: 15, fontWeight: 700, color: C.chalk }}>{T("hzTitle")}</div>
       <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
-        <button data-hz-opt="max" aria-pressed={mode === "max"} onClick={() => pick("max")} style={btn(mode === "max")}>{info && info.max > 60 ? T("hzMax", { n: info.max }) : T("hzMaxNoN")}</button>
         <button data-hz-opt="60" aria-pressed={mode === "60"} onClick={() => pick("60")} style={btn(mode === "60")}>60 Hz</button>
+        <button data-hz-opt="max" aria-pressed={mode === "max"} onClick={() => pick("max")} style={btn(mode === "max")}>{info && info.max > 60 ? T("hzMax", { n: info.max }) : T("hzMaxNoN")}</button>
       </div>
       <div style={{ fontSize: 12, color: C.dim, marginTop: 6, lineHeight: 1.45 }}>{T("hzD")}</div>
     </div>
@@ -6211,7 +6226,7 @@ function SettingsTab({ initPage, settings, setSettings, history, profile, setPro
         <SettingRow title={T("vibrate")} desc={`${T("vibrateD")} ${T("vibrateHint")}`} on={settings.vibrate} onClick={() => { set("vibrate", !settings.vibrate); if (!settings.vibrate) vibratePattern([160]); }} />
         <SettingRow title={T("keepAwake")} desc={T("keepAwakeD")} on={settings.keepAwake} onClick={() => set("keepAwake", !settings.keepAwake)} />
         <SettingRow title={T("aiCopy")} desc={T("aiCopyD")} on={settings.aiCopy} onClick={() => set("aiCopy", !settings.aiCopy)} />
-        {pushSupported() && <div data-upd-notif><SettingRow title={T("updNotif")} desc={T("updNotifD")} on={settings.updNotif !== false} onClick={() => set("updNotif", settings.updNotif === false)} /></div>}
+        {pushSupported() && <UpdNotifRow settings={settings} set={set} />}
       </ListSect>
 
       <AccountBox acct={acct || { st: "out" }} cloudBk={cloudBk} onOpen={onAcctOpen} onRestore={onCloudRestore} onBackupNow={onCloudBackupNow} onSignOut={onSignOut} onDelete={onDeleteAccount} settings={settings} set={set} />
@@ -7353,6 +7368,16 @@ export default function App() {
     } catch (e) { fail(e); }
     return () => offs.forEach(f => { try { f && f(); } catch (_) {} });
   }, [acct.st, acct.prof && acct.prof.code]);
+  // 1.7.3: notifications allowed (or blocked) in Android's settings while the app was in the background: when the app
+  // comes back with a different answer, register again (before, a phone stayed "off" on the server until a restart).
+  const [permSeq, setPermSeq] = useState(0);
+  const lastPerm = useRef(null);
+  useEffect(() => {
+    if (!pushSupported()) return;
+    const chk = () => { if (document.hidden) return; pushPermission(false).then(p => { if (lastPerm.current !== null && p !== lastPerm.current) setPermSeq(n => n + 1); lastPerm.current = p; }); };
+    chk(); document.addEventListener("visibilitychange", chk);
+    return () => document.removeEventListener("visibilitychange", chk);
+  }, []);
   // Phone notifications (1.6.0, app only): this phone's FCM token, language, on/off and blocked people go to
   // push/{uid}; the push server reads them. Android 13+ asks for permission once (first time signed in).
   useEffect(() => {
@@ -7363,7 +7388,7 @@ export default function App() {
     pushRegister({ on, ask: false, alive: () => !dead }).catch(() => {});
     const offTok = onPushToken(t => { if (settings.push === false) return; setCloudMem({ pushTok: t }); cloud().savePush({ token: t, lang: LANG, off: false, blk: PUSH_BLK }).catch(() => {}); });
     return () => { dead = true; offTok(); };
-  }, [acct.st, acct.prof && acct.prof.code, settings.push, settings.lang, (social.blocked || []).join(",")]);
+  }, [acct.st, acct.prof && acct.prof.code, settings.push, settings.lang, (social.blocked || []).join(","), permSeq]);
   // A tap on a notification: straight to that chat, or to Friends for a request (also when it started the app).
   useEffect(() => onPushTap(d => {
     if (d.kind === "test" || d.kind === "upd") return; // the test and "new version" notifications only open the app
@@ -7371,7 +7396,8 @@ export default function App() {
     if (session) setSessionOpen(false);
   }), [session]);
   // Screen refresh rate (1.6.0): the saved choice (MainActivity applies it too, before the first frame)
-  useEffect(() => { if (hzSupported() && loaded) hzSet(settings.hz === "60" ? "60" : "max"); }, [loaded]);
+  // 1.7.3: 60 Hz unless "the highest" was chosen; the APK applies the saved mode itself at the next start
+  useEffect(() => { if (hzSupported() && loaded) hzSet(settings.hz === "max" ? "max" : "60"); }, [loaded]);
   const socialCount = (social.reqs || []).length + (social.chats || []).filter(k => k.last.from !== acct.uid && !social.blocked.includes(k.other) && k.last.ts > Math.max(social.read[k.cid] || 0, (cloudMem().clr || {})[k.cid] || 0)).length;
   // Stats for the leaderboard: sent when they change (and once a day, for the streak).
   useEffect(() => {

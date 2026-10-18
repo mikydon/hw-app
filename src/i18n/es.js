@@ -511,7 +511,7 @@ export default {
     hzTitle: "Fluidez de la pantalla",
     hzMax: "Máxima ({n} Hz)",
     hzMaxNoN: "Máxima",
-    hzD: "La máxima que permite el móvil es más fluida; 60 Hz ahorra batería.",
+    hzD: "60 Hz (predeterminado) ahorra batería. La más alta que permite el móvil es más fluida, pero gasta más batería.",
     frMenuNew: "Nuevos: {n}",
     obAcctT: "¿Tienes cuenta?",
     obAcctD: "Inicia sesión con Google o con tu e-mail y la app recupera tu apodo y tus datos de la nube. La cuenta es opcional, puedes saltar esto.",
@@ -1218,6 +1218,10 @@ export default {
   news143: [
     "El diseño Cristal se parece más al cristal real: un brillo desde la esquina, un reflejo suave, un borde superior claro y un suave resplandor de los colores del tema detrás de las cajas. La barra de inicio y el menú ☰ combinan con él, y sigue siendo ligero para el móvil.",
     "Barra superior: arriba del todo ahora llena la pantalla de borde a borde, sin línea arriba ni a los lados.",
+  ],
+  news173: [
+    "La fluidez de pantalla es 60 Hz por defecto (ahorra batería); la frecuencia más alta se elige en Ajustes → Apariencia.",
+    "El aviso «las notificaciones están desactivadas» desaparece al permitirlas en los ajustes de Android, y las notificaciones llegan enseguida, sin reiniciar la app.",
   ],
   news172: [
     "El inicio de sesión se ve como en la mayoría de apps: primero e-mail y contraseña, luego «o» y el botón de Google.",

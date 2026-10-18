@@ -511,7 +511,7 @@ export default {
     hzTitle: "Fluidità dello schermo",
     hzMax: "Massima ({n} Hz)",
     hzMaxNoN: "Massima",
-    hzD: "La massima consentita dal telefono è più fluida; 60 Hz risparmia batteria.",
+    hzD: "60 Hz (predefinito) fa risparmiare batteria. La più alta consentita dal telefono è più fluida, ma consuma di più.",
     frMenuNew: "Nuovi: {n}",
     obAcctT: "Hai un account?",
     obAcctD: "Accedi con Google o con la tua e-mail e l'app recupera il tuo nickname e i tuoi dati dal cloud. L'account è facoltativo, puoi saltare questo passaggio.",
@@ -1218,6 +1218,10 @@ export default {
   news143: [
     "Il layout Vetro sembra più vetro vero: un riflesso dall'angolo, un leggero bagliore, un bordo superiore chiaro e una tenue luce dei colori del tema dietro i riquadri. La barra di avvio e il menu ☰ si abbinano, e il telefono resta leggero.",
     "Barra in alto: in cima alla pagina ora riempie lo schermo da bordo a bordo, senza linea in alto o ai lati.",
+  ],
+  news173: [
+    "La fluidità dello schermo è 60 Hz di default (fa risparmiare batteria); la frequenza più alta si sceglie in Impostazioni → Aspetto.",
+    "Il messaggio «notifiche disattivate» sparisce quando le consenti nelle impostazioni di Android, e le notifiche arrivano subito, senza riavviare l'app.",
   ],
   news172: [
     "L'accesso è come nella maggior parte delle app: prima e-mail e password, poi «oppure» e il pulsante Google.",
