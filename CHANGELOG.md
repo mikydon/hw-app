@@ -10,7 +10,7 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 
 <!-- New version: add a "## x.y.z (date)" section on top (web-only history uses "## Browser beta x.y.z (date)"). On a push to main, .github/workflows/build.yml builds everything and .github/scripts/releases.sh creates/updates the releases (commit = the push, or the one in a commit comment). -->
 
-## 1.7.5 (2026-10-23)
+## 1.7.5 (2026-10-24)
 
 - Every password field (sign in, create account, change or add a password, delete an account) has an eye button that shows or hides what you typed, so typos are easy to catch (tester feedback).
 - Text in the app is the same size on every phone: a bigger font size set in Android no longer makes the app's text bigger (it cut off words on a tester's phone, because Android enlarges the text but not the boxes around it). *(Android app: needs this version's APK or the Google Play version.)* With an older APK, and on the website, the screens make room instead: the date in the top bar gets shorter, the Home tiles and the showcase fields go one under the other, and the big titles stay on one line (tester feedback).
