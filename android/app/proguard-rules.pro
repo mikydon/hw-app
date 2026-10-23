@@ -59,5 +59,6 @@
 -keep class com.google.firebase.messaging.** { *; }
 -keep class com.google.firebase.iid.** { *; }
 -keep class com.google.android.gms.cloudmessaging.** { *; }
--keep class com.google.firebase.installations.** { *; }
 -keep class io.capawesome.capacitorjs.plugins.firebase.messaging.** { *; }
+# the Kotlin extensions inside these packages point at com.google.firebase.ktx, which the app doesn't include
+-dontwarn com.google.firebase.ktx.**
