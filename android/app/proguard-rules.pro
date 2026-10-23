@@ -51,3 +51,13 @@
 # @capacitor-firebase/authentication has handlers for every sign-in provider; we only include Google
 # (rgcfaIncludeGoogle), so the Facebook SDK classes it mentions are absent on purpose.
 -dontwarn com.facebook.**
+
+# 1.7.5 (Michael, Oct 23: notifications stopped arriving; the last version that delivered them, 1.6.0, had no R8):
+# R8 renamed and merged the whole FCM receive path (FirebaseMessagingService.onMessageReceived → c, RemoteMessage →
+# g7.w, EnhancedIntentService merged away) and the Capacitor messaging plugin's service with it. Keep that path exactly
+# as it is in the libraries, so a push travels the same code as in 1.6.0.
+-keep class com.google.firebase.messaging.** { *; }
+-keep class com.google.firebase.iid.** { *; }
+-keep class com.google.android.gms.cloudmessaging.** { *; }
+-keep class com.google.firebase.installations.** { *; }
+-keep class io.capawesome.capacitorjs.plugins.firebase.messaging.** { *; }
