@@ -518,6 +518,7 @@ export default {
     pushTest: "Poslať skúšobné upozornenie",
     pushTestOk: "Odoslané, čakám, či príde…",
     pushTestGot: "✓ Prišlo do mobilu. Keď je appka zatvorená, ukáže sa hore na obrazovke.",
+    pushTestShown: "✓ Prišlo. Pozri lištu upozornení hore na obrazovke: takto ti budú chodiť správy a žiadosti.",
     pushTestLate: "Server ho poslal, ale do mobilu neprišlo. Pozri v nastaveniach Androidu pre HW App Batériu (bez obmedzení) a Upozornenia.",
     pushTestErr: "Nepodarilo sa ({e}).",
     hzTitle: "Plynulosť obrazovky",
@@ -1243,6 +1244,7 @@ export default {
     "📱 Preinštalovaná appka začne načisto prihlásením (Android už sám nevracia staré dáta; po prihlásení sa tvoje dáta vrátia z cloudu).",
     "Web: prihlásenie cez Google sa vždy opýta, ktorý účet (po odhlásení sa potichu prihlásil starý).",
     "📱 Nastavenia: jeden riadok „Upozornenia“; ťukni naň a zapneš alebo vypneš všetky naraz, alebo každé zvlášť (správy a priatelia, nové verzie).",
+    "📱 Skúšobné upozornenie sa naozaj ukáže v lište upozornení, aj keď máš appku otvorenú.",
   ],
   news174: [
     "Odznaky a ranky, ktoré si získal, teraz čakajú na profile ako kartičky otočené dole: ťukni na jednu alebo na Otvoriť na stránke Profil a otvor ich ako po tréningu. Menu ☰ ukazuje, koľko ich čaká.",

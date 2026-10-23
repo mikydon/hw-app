@@ -518,6 +518,7 @@ export default {
     pushTest: "Testbenachrichtigung senden",
     pushTestOk: "Gesendet, warte, ob sie ankommt…",
     pushTestGot: "✓ Auf diesem Handy angekommen. Wenn die App geschlossen ist, erscheint sie oben auf dem Bildschirm.",
+    pushTestShown: "✓ Angekommen. Schau in die Benachrichtigungsleiste oben auf dem Bildschirm: So kommen Nachrichten und Anfragen an.",
     pushTestLate: "Der Server hat sie gesendet, aber sie kam nicht auf dem Handy an. Prüfe in den Android-Einstellungen für HW App Akku (nicht eingeschränkt) und Benachrichtigungen.",
     pushTestErr: "Hat nicht geklappt ({e}).",
     hzTitle: "Bildschirm-Flüssigkeit",
@@ -1243,6 +1244,7 @@ export default {
     "📱 Eine neu installierte App startet sauber mit der Anmeldung (Android bringt alte Daten nicht mehr von selbst zurück; nach der Anmeldung kommen deine Daten aus der Cloud zurück).",
     "Website: Die Anmeldung mit Google lässt immer das Konto wählen (nach dem Abmelden nahm sie still das alte).",
     "📱 Einstellungen: eine Zeile „Benachrichtigungen“; tippe darauf, um alle auf einmal oder jede Art einzeln ein- oder auszuschalten (Nachrichten und Freunde, neue Versionen).",
+    "📱 Die Testbenachrichtigung erscheint jetzt wirklich in der Benachrichtigungsleiste, auch wenn die App offen ist.",
   ],
   news174: [
     "Verdiente Abzeichen und Ränge warten jetzt im Profil als verdeckte Karten: Tippe auf eine oder auf der Profilseite auf Öffnen und öffne sie wie nach einem Training. Das ☰-Menü zeigt, wie viele warten.",

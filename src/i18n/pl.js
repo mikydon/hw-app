@@ -518,6 +518,7 @@ export default {
     pushTest: "Wyślij powiadomienie testowe",
     pushTestOk: "Wysłano, czekam, czy dotrze…",
     pushTestGot: "✓ Dotarło do telefonu. Gdy aplikacja jest zamknięta, pojawi się u góry ekranu.",
+    pushTestShown: "✓ Dotarło. Zajrzyj na pasek powiadomień u góry ekranu: tak będą przychodzić wiadomości i zaproszenia.",
     pushTestLate: "Serwer je wysłał, ale nie dotarło do telefonu. Sprawdź w ustawieniach Androida dla HW App Baterię (bez ograniczeń) i Powiadomienia.",
     pushTestErr: "Nie udało się ({e}).",
     hzTitle: "Płynność ekranu",
@@ -1243,6 +1244,7 @@ export default {
     "📱 Zainstalowana ponownie aplikacja zaczyna od zera ekranem logowania (Android sam nie przywraca już starych danych; po zalogowaniu dane wracają z chmury).",
     "Strona: logowanie przez Google zawsze pozwala wybrać konto (po wylogowaniu po cichu brało stare).",
     "📱 Ustawienia: jeden wiersz „Powiadomienia”; dotknij go, aby włączyć lub wyłączyć wszystkie naraz albo każdy rodzaj osobno (wiadomości i znajomi, nowe wersje).",
+    "📱 Powiadomienie testowe naprawdę pojawia się na pasku powiadomień, nawet gdy aplikacja jest otwarta.",
   ],
   news174: [
     "Zdobyte odznaki i rangi czekają teraz na profilu jako karty odwrócone rewersem: dotknij jednej albo Otwórz na stronie Profil i otwórz je jak po treningu. Menu ☰ pokazuje, ile ich czeka.",

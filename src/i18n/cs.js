@@ -518,6 +518,7 @@ export default {
     pushTest: "Poslat zkušební upozornění",
     pushTestOk: "Odesláno, čekám, jestli dorazí…",
     pushTestGot: "✓ Dorazilo do mobilu. Když je aplikace zavřená, ukáže se nahoře na obrazovce.",
+    pushTestShown: "✓ Dorazilo. Podívej se do lišty oznámení nahoře na obrazovce: takhle ti budou chodit zprávy a žádosti.",
     pushTestLate: "Server ho poslal, ale do mobilu nedorazilo. Zkontroluj v nastavení Androidu pro HW App Baterii (bez omezení) a Upozornění.",
     pushTestErr: "Nepovedlo se ({e}).",
     hzTitle: "Plynulost obrazovky",
@@ -1243,6 +1244,7 @@ export default {
     "📱 Přeinstalovaná aplikace začne načisto přihlášením (Android už sám nevrací stará data; po přihlášení se tvoje data vrátí z cloudu).",
     "Web: přihlášení přes Google se vždy zeptá, který účet (po odhlášení se potichu přihlásil starý).",
     "📱 Nastavení: jeden řádek „Upozornění“; ťukni na něj a zapneš nebo vypneš všechna najednou, nebo každé zvlášť (zprávy a přátelé, nové verze).",
+    "📱 Zkušební upozornění se opravdu ukáže v liště oznámení, i když máš aplikaci otevřenou.",
   ],
   news174: [
     "Odznaky a ranky, které jsi získal, teď čekají na profilu jako kartičky otočené dolů: ťukni na jednu nebo na Otevřít na stránce Profil a otevři je jako po tréninku. Menu ☰ ukazuje, kolik jich čeká.",

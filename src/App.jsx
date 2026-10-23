@@ -1,6 +1,6 @@
 import { useState, useEffect, useLayoutEffect, useRef, useMemo, memo, Fragment } from "react";
 import { createPortal } from "react-dom";
-import { isNative, pushBack, setRootBack, exitApp, vibratePattern, keepScreenOn, openExternal, saveBackupFile, bkSupported, bkWrite, bkWriteAuto, bkList, bkRead, bkDelete, bkShare, BK_DIR, bkAutoFile, checkForUpdate, lastUpdate, lastGh, applyUpdateNow, latestApk, isTestBuild, apkState, onApk, apkSupported, apkRestore, apkDownload, apkCanInstall, apkAllow, apkInstall, onAppResume, healthState, healthConnect, healthSettings, healthSteps, healthFoodItems, healthBody, shareText, copyText, pushSupported, pushPermission, pushChannel, pushToken, pushTokenWhy, pushDeleteToken, onPushTap, onPushToken, onPushReceived, hzSupported, hzInfo, hzSet, isPlay, playCheck, playOpenStore, PLAY_STORE_LINK, updTopic, onAppUrl, installCheck, openNotifSettings } from "./native.js";
+import { isNative, pushBack, setRootBack, exitApp, vibratePattern, keepScreenOn, openExternal, saveBackupFile, bkSupported, bkWrite, bkWriteAuto, bkList, bkRead, bkDelete, bkShare, BK_DIR, bkAutoFile, checkForUpdate, lastUpdate, lastGh, applyUpdateNow, latestApk, isTestBuild, apkState, onApk, apkSupported, apkRestore, apkDownload, apkCanInstall, apkAllow, apkInstall, onAppResume, healthState, healthConnect, healthSettings, healthSteps, healthFoodItems, healthBody, shareText, copyText, pushSupported, pushPermission, pushChannel, pushToken, pushTokenWhy, pushDeleteToken, onPushTap, onPushToken, onPushReceived, hzSupported, hzInfo, hzSet, isPlay, playCheck, playOpenStore, PLAY_STORE_LINK, updTopic, onAppUrl, installCheck, openNotifSettings, showNotif } from "./native.js";
 import { cloud, NICK_RE, SHARE_BASE, cleanCode, fmtCode } from "./cloud-lazy.js";
 import { QUICK as EMO_QUICK, EMOJI } from "./emoji.js";
 import { mergeAll, syncKey, withIds, entryId, stable, SYNC_SETTINGS, kcalShared } from "./sync.js";
@@ -6111,10 +6111,20 @@ function PushRow({ settings, set, perm, setPerm }) {
   // off while Android doesn't allow notifications (1.7.4); turning it on asks Android and registers this phone;
   // refused → off again (1.7.5)
   const want = settings.push !== false, on = want && (perm === null || perm === "granted");
-  const [test, setTest] = useState(null); // {st: busy|wait|got|late|err, e}
-  const got = useRef(0), timer = useRef(0);
+  const [test, setTest] = useState(null); // {st: busy|wait|got|shown|late|err, e}
+  const got = useRef(0), shown = useRef(false), timer = useRef(0);
   useEffect(() => {
-    const off = onPushReceived(d => { if (d.kind !== "test") return; got.current = Date.now(); setTest(t => (t && (t.st === "wait" || t.st === "late") ? { st: "got" } : t)); });
+    // 1.7.5 (Michael): the test also shows up in the notification bar while the app is open (Android only hands it to
+    // the app then), so it looks exactly like a real one; an older APK can't, then the line just says it arrived
+    const off = onPushReceived((d, n) => {
+      if (d.kind !== "test") return;
+      got.current = Date.now(); shown.current = false;
+      showNotif({ title: n.title || T("ntTest"), body: n.body || T("ntTestD"), channel: "social", channelName: T("pushChannel") }).then(ok => {
+        shown.current = ok;
+        setTest(t => (t && (t.st === "wait" || t.st === "late" || t.st === "got") ? { st: ok ? "shown" : "got" } : t));
+      });
+      setTest(t => (t && (t.st === "wait" || t.st === "late") ? { st: "got" } : t));
+    });
     return () => { off(); clearTimeout(timer.current); };
   }, []);
   const flipPush = async () => {
@@ -6134,11 +6144,11 @@ function PushRow({ settings, set, perm, setPerm }) {
     if (!reg.token || reg.err) { setTest({ st: "err", e: reg.err || "no-token" }); return; }
     const r = await cloud().pushTest().catch(e => ({ why: "net", err: String((e && (e.code || e.message)) || e).slice(0, 50) }));
     if (r.why !== "ok") { setTest({ st: "err", e: [r.why, r.err].filter(Boolean).join(" ") }); return; }
-    if (got.current) { setTest({ st: "got" }); return; } // it was faster than the server's answer
+    if (got.current) { setTest({ st: shown.current ? "shown" : "got" }); return; } // it was faster than the server's answer
     setTest({ st: "wait" });
     timer.current = setTimeout(() => setTest(t => (t && t.st === "wait" ? { st: "late" } : t)), 15000);
   };
-  const line = !test || test.st === "busy" ? null : test.st === "wait" ? [T("pushTestOk"), C.dim] : test.st === "got" ? [T("pushTestGot"), C.mint] : test.st === "late" ? [T("pushTestLate"), C.signal] : [T("pushTestErr", { e: test.e }), "#ff8a80"];
+  const line = !test || test.st === "busy" ? null : test.st === "wait" ? [T("pushTestOk"), C.dim] : test.st === "shown" ? [T("pushTestShown"), C.mint] : test.st === "got" ? [T("pushTestGot"), C.mint] : test.st === "late" ? [T("pushTestLate"), C.signal] : [T("pushTestErr", { e: test.e }), "#ff8a80"];
   return (
     <div data-push-row style={{ borderTop: `1px solid ${C.line}` }}>
       <SettingRow first title={T("pushTitle")} desc={T("pushD")} on={on} onClick={flipPush} />

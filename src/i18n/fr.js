@@ -518,6 +518,7 @@ export default {
     pushTest: "Envoyer une notification de test",
     pushTestOk: "Envoyée, en attente de réception…",
     pushTestGot: "✓ Elle est arrivée sur ce téléphone. Quand l'appli est fermée, elle s'affiche en haut de l'écran.",
+    pushTestShown: "✓ Elle est arrivée. Regarde la barre de notifications en haut de l'écran : les messages et les demandes arriveront comme ça.",
     pushTestLate: "Le serveur l'a envoyée, mais elle n'est pas arrivée sur le téléphone. Vérifie dans les paramètres Android de HW App la Batterie (non restreinte) et les Notifications.",
     pushTestErr: "Ça n'a pas marché ({e}).",
     hzTitle: "Fluidité de l’écran",
@@ -1243,6 +1244,7 @@ export default {
     "📱 Une app réinstallée repart de zéro avec l’écran de connexion (Android ne remet plus d’anciennes données tout seul ; après connexion, tes données reviennent du cloud).",
     "Site : la connexion avec Google laisse toujours choisir le compte (après déconnexion, elle reprenait l’ancien sans demander).",
     "📱 Réglages : une seule ligne « Notifications » ; touche-la pour toutes les activer ou désactiver d’un coup, ou chaque type séparément (messages et amis, nouvelles versions).",
+    "📱 La notification de test s'affiche vraiment dans la barre de notifications, même quand l'appli est ouverte.",
   ],
   news174: [
     "Les badges et rangs que tu as gagnés attendent maintenant sur ton profil, en cartes face cachée : touche-en une, ou Ouvrir sur la page Profil, et ouvre-les comme après une séance. Le menu ☰ indique combien attendent.",

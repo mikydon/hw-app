@@ -518,6 +518,7 @@ export default {
     pushTest: "Próbaértesítés küldése",
     pushTestOk: "Elküldve, várom, hogy megérkezzen…",
     pushTestGot: "✓ Megérkezett a telefonra. Ha az app be van zárva, a képernyő tetején jelenik meg.",
+    pushTestShown: "✓ Megérkezett. Nézd meg az értesítési sávot a képernyő tetején: így érkeznek majd az üzenetek és a kérések.",
     pushTestLate: "A szerver elküldte, de nem érkezett meg a telefonra. Nézd meg az Android beállításaiban a HW App Akkumulátor (korlátlan) és Értesítések részét.",
     pushTestErr: "Nem sikerült ({e}).",
     hzTitle: "Képernyő simasága",
@@ -1243,6 +1244,7 @@ export default {
     "📱 Az újratelepített app tisztán, a bejelentkezéssel indul (az Android magától már nem hozza vissza a régi adatokat; bejelentkezés után az adataid visszajönnek a felhőből).",
     "Weboldal: a Google-bejelentkezés mindig megkérdezi, melyik fiók (kijelentkezés után csendben a régit használta).",
     "📱 Beállítások: egyetlen „Értesítések” sor; koppints rá, és egyszerre kapcsolhatod be vagy ki mindet, vagy mindegyiket külön (üzenetek és barátok, új verziók).",
+    "📱 A tesztértesítés tényleg megjelenik az értesítési sávban, akkor is, ha az app nyitva van.",
   ],
   news174: [
     "A megszerzett jelvények és rangok most lefordított kártyaként várnak a profilodon: koppints egyre, vagy a Profil oldalon a Megnyitásra, és nyisd ki őket, mint edzés után. A ☰ menü mutatja, hány vár.",

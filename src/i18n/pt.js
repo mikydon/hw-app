@@ -518,6 +518,7 @@ export default {
     pushTest: "Enviar uma notificação de teste",
     pushTestOk: "Enviada, à espera de que chegue…",
     pushTestGot: "✓ Chegou ao telemóvel. Com a app fechada, aparece no topo do ecrã.",
+    pushTestShown: "✓ Chegou. Vê a barra de notificações no topo do ecrã: é assim que vão chegar as mensagens e os pedidos.",
     pushTestLate: "O servidor enviou-a, mas não chegou ao telemóvel. Verifica nas definições do Android para a HW App a Bateria (sem restrições) e as Notificações.",
     pushTestErr: "Não funcionou ({e}).",
     hzTitle: "Fluidez do ecrã",
@@ -1243,6 +1244,7 @@ export default {
     "📱 Uma app reinstalada começa do zero com o início de sessão (o Android já não repõe dados antigos sozinho; ao iniciar sessão os teus dados voltam da nuvem).",
     "Site: iniciar sessão com o Google deixa sempre escolher a conta (depois de terminar sessão usava a antiga sem perguntar).",
     "📱 Definições: uma só linha «Notificações»; toca nela para ligar ou desligar todas de uma vez ou cada tipo à parte (mensagens e amigos, novas versões).",
+    "📱 A notificação de teste aparece mesmo na barra de notificações, também com a app aberta.",
   ],
   news174: [
     "Os emblemas e ranks que ganhaste agora esperam no teu perfil como cartas viradas para baixo: toca numa, ou em Abrir na página Perfil, e abre-as como depois de um treino. O menu ☰ mostra quantas esperam.",

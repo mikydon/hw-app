@@ -518,6 +518,7 @@ export default {
     pushTest: "Enviar una notificación de prueba",
     pushTestOk: "Enviada, esperando a que llegue…",
     pushTestGot: "✓ Ha llegado al móvil. Con la app cerrada, aparece en la parte superior de la pantalla.",
+    pushTestShown: "✓ Ha llegado. Mira la barra de notificaciones arriba en la pantalla: así te llegarán los mensajes y las solicitudes.",
     pushTestLate: "El servidor la envió, pero no llegó al móvil. Revisa en los ajustes de Android de HW App la Batería (sin restricciones) y las Notificaciones.",
     pushTestErr: "No ha funcionado ({e}).",
     hzTitle: "Fluidez de la pantalla",
@@ -1243,6 +1244,7 @@ export default {
     "📱 Una app reinstalada empieza de cero con el inicio de sesión (Android ya no devuelve datos antiguos por su cuenta; al iniciar sesión tus datos vuelven de la nube).",
     "Web: iniciar sesión con Google siempre deja elegir la cuenta (tras cerrar sesión usaba la antigua sin preguntar).",
     "📱 Ajustes: una sola fila «Notificaciones»; tócala para activar o desactivar todas a la vez o cada tipo por separado (mensajes y amigos, nuevas versiones).",
+    "📱 La notificación de prueba aparece de verdad en la barra de notificaciones, aunque tengas la app abierta.",
   ],
   news174: [
     "Las insignias y rangos que has ganado ahora esperan en tu perfil como cartas boca abajo: toca una, o Abrir en la página Perfil, y ábrelas como después de un entrenamiento. El menú ☰ muestra cuántas esperan.",

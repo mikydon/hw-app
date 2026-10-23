@@ -518,6 +518,7 @@ export default {
     pushTest: "Send a test notification",
     pushTestOk: "Sent, waiting for it to arrive…",
     pushTestGot: "✓ It reached this phone. When the app is closed, it shows up at the top of the screen.",
+    pushTestShown: "✓ It arrived. Look at the notification bar at the top of the screen: messages and requests will arrive like this.",
     pushTestLate: "The server sent it, but it didn't reach this phone. Check Battery (unrestricted) and Notifications for HW App in Android settings.",
     pushTestErr: "It didn't work ({e}).",
     hzTitle: "Screen smoothness",
@@ -1243,6 +1244,7 @@ export default {
     "📱 A reinstalled app starts clean with the sign-in screen (Android no longer brings back old data on its own; sign in to get your data back from the cloud).",
     "Website: signing in with Google always lets you choose the account (after signing out, it quietly took the old one).",
     "📱 Settings: one \"Notifications\" row; tap it to turn all of them on or off at once, or each kind on its own (messages and friends, new versions).",
+    "📱 The test notification really shows up in the notification bar, even while the app is open.",
   ],
   news174: [
     "Badges and ranks you have earned now wait on your profile as face-down cards: tap one, or Open on the Profile page, and open them like after a workout. The ☰ menu shows how many are waiting.",

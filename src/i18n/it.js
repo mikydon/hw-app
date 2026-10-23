@@ -518,6 +518,7 @@ export default {
     pushTest: "Invia una notifica di prova",
     pushTestOk: "Inviata, aspetto che arrivi…",
     pushTestGot: "✓ È arrivata sul telefono. Con l'app chiusa, compare in alto sullo schermo.",
+    pushTestShown: "✓ È arrivata. Guarda la barra delle notifiche in alto sullo schermo: messaggi e richieste arriveranno così.",
     pushTestLate: "Il server l'ha inviata, ma non è arrivata sul telefono. Controlla nelle impostazioni Android di HW App Batteria (senza limitazioni) e Notifiche.",
     pushTestErr: "Non ha funzionato ({e}).",
     hzTitle: "Fluidità dello schermo",
@@ -1243,6 +1244,7 @@ export default {
     "📱 Un’app reinstallata riparte da zero con l’accesso (Android non riporta più da solo i vecchi dati; dopo l’accesso i tuoi dati tornano dal cloud).",
     "Sito: l’accesso con Google fa sempre scegliere l’account (dopo l’uscita riprendeva quello vecchio senza chiedere).",
     "📱 Impostazioni: una sola riga «Notifiche»; toccala per accenderle o spegnerle tutte insieme o un tipo alla volta (messaggi e amici, nuove versioni).",
+    "📱 La notifica di prova compare davvero nella barra delle notifiche, anche con l'app aperta.",
   ],
   news174: [
     "I badge e i ranghi che hai ottenuto ora ti aspettano sul profilo come carte coperte: toccane una, o Apri nella pagina Profilo, e aprile come dopo un allenamento. Il menu ☰ mostra quante ne aspettano.",
