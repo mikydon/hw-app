@@ -433,6 +433,8 @@ export default {
     acDelCancelled: "Abgebrochen. Nichts wurde gelöscht.",
     acEmailPh: "E-Mail",
     acPwPh: "Passwort",
+    acPwShow: "Passwort anzeigen",
+    acPwHide: "Passwort verbergen",
     acEmailGo: "Anmelden",
     acEmailBad: "Falsche E-Mail oder falsches Passwort.",
     acEmailMany: "Zu viele Versuche. Versuch es in ein paar Minuten noch einmal.",
@@ -1222,6 +1224,9 @@ export default {
   news143: [
     "Das Layout Glas sieht echtem Glas ähnlicher: ein Glanz aus der Ecke, eine sanfte Spiegelung, eine helle Oberkante und ein sanftes Leuchten der Themenfarben hinter den Boxen. Die Startleiste und das ☰-Menü passen dazu, und das Handy wird weiterhin kaum belastet.",
     "Obere Leiste: ganz oben auf der Seite füllt sie den Bildschirm jetzt von Rand zu Rand, ohne Linie oben oder an den Seiten.",
+  ],
+  news175: [
+    "Jedes Passwortfeld hat einen Augen-Button: Tippe darauf, um zu sehen, was du eingegeben hast (und Tippfehler zu finden), tippe erneut, um es zu verbergen.",
   ],
   news174: [
     "Verdiente Abzeichen und Ränge warten jetzt im Profil als verdeckte Karten: Tippe auf eine oder auf der Profilseite auf Öffnen und öffne sie wie nach einem Training. Das ☰-Menü zeigt, wie viele warten.",

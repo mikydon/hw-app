@@ -10,6 +10,10 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 
 <!-- New version: add a "## x.y.z (date)" section on top (web-only history uses "## Browser beta x.y.z (date)"). On a push to main, .github/workflows/build.yml builds everything and .github/scripts/releases.sh creates/updates the releases (commit = the push, or the one in a commit comment). -->
 
+## 1.7.5 (2026-10-23)
+
+- Every password field (sign in, create account, change or add a password, delete an account) has an eye button that shows or hides what you typed, so typos are easy to catch (tester feedback).
+
 ## 1.7.4 (2026-10-18)
 
 - Badges and exercise ranks you have earned now wait on your profile as face-down cards until you open them: tap one on the Badges or Ranks page, or Open on the Profile page, and they flip like the reward cards after a workout (rarest last). The ☰ menu counts how many are waiting. Everything earned before this update starts face down. Others always see your real badges and ranks.

@@ -433,6 +433,8 @@ export default {
     acDelCancelled: "Cancelado. Nada foi eliminado.",
     acEmailPh: "E-mail",
     acPwPh: "Palavra-passe",
+    acPwShow: "Mostrar palavra-passe",
+    acPwHide: "Ocultar palavra-passe",
     acEmailGo: "Entrar",
     acEmailBad: "E-mail ou palavra-passe incorretos.",
     acEmailMany: "Demasiadas tentativas. Tenta de novo daqui a uns minutos.",
@@ -1222,6 +1224,9 @@ export default {
   news143: [
     "O layout Vidro parece mais vidro de verdade: um brilho a partir do canto, um reflexo suave, uma borda superior clara e um brilho suave das cores do tema atrás das caixas. A barra de início e o menu ☰ combinam com ele, e continua leve para o telemóvel.",
     "Barra superior: no topo da página, agora preenche o ecrã de uma ponta à outra, sem linha em cima nem dos lados.",
+  ],
+  news175: [
+    "Cada campo de palavra-passe tem um botão com um olho: toca para ver o que escreveste (e apanhar erros de escrita), toca de novo para ocultar.",
   ],
   news174: [
     "Os emblemas e ranks que ganhaste agora esperam no teu perfil como cartas viradas para baixo: toca numa, ou em Abrir na página Perfil, e abre-as como depois de um treino. O menu ☰ mostra quantas esperam.",

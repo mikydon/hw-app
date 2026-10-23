@@ -433,6 +433,8 @@ export default {
     acDelCancelled: "Anulowano. Nic nie zostało usunięte.",
     acEmailPh: "E-mail",
     acPwPh: "Hasło",
+    acPwShow: "Pokaż hasło",
+    acPwHide: "Ukryj hasło",
     acEmailGo: "Zaloguj się",
     acEmailBad: "Nieprawidłowy e-mail lub hasło.",
     acEmailMany: "Zbyt wiele prób. Spróbuj za kilka minut.",
@@ -1222,6 +1224,9 @@ export default {
   news143: [
     "Układ Szkło wygląda bardziej jak prawdziwe szkło: połysk od rogu, delikatne odbicie, jasna górna krawędź i delikatna poświata kolorów motywu za polami. Pasek startu i menu ☰ do niego pasują, a telefon nadal się nie męczy.",
     "Górny pasek: na samej górze strony wypełnia ekran od krawędzi do krawędzi, bez linii u góry i po bokach.",
+  ],
+  news175: [
+    "Każde pole hasła ma przycisk z okiem: dotknij, aby zobaczyć, co wpisano (i wyłapać literówkę), dotknij ponownie, aby ukryć.",
   ],
   news174: [
     "Zdobyte odznaki i rangi czekają teraz na profilu jako karty odwrócone rewersem: dotknij jednej albo Otwórz na stronie Profil i otwórz je jak po treningu. Menu ☰ pokazuje, ile ich czeka.",

@@ -433,6 +433,8 @@ export default {
     acDelCancelled: "Cancelado. No se ha borrado nada.",
     acEmailPh: "E-mail",
     acPwPh: "Contraseña",
+    acPwShow: "Mostrar contraseña",
+    acPwHide: "Ocultar contraseña",
     acEmailGo: "Iniciar sesión",
     acEmailBad: "E-mail o contraseña incorrectos.",
     acEmailMany: "Demasiados intentos. Prueba de nuevo en unos minutos.",
@@ -1222,6 +1224,9 @@ export default {
   news143: [
     "El diseño Cristal se parece más al cristal real: un brillo desde la esquina, un reflejo suave, un borde superior claro y un suave resplandor de los colores del tema detrás de las cajas. La barra de inicio y el menú ☰ combinan con él, y sigue siendo ligero para el móvil.",
     "Barra superior: arriba del todo ahora llena la pantalla de borde a borde, sin línea arriba ni a los lados.",
+  ],
+  news175: [
+    "Cada campo de contraseña tiene un botón con un ojo: tócalo para ver lo que escribiste (y detectar errores) y vuelve a tocarlo para ocultarlo.",
   ],
   news174: [
     "Las insignias y rangos que has ganado ahora esperan en tu perfil como cartas boca abajo: toca una, o Abrir en la página Perfil, y ábrelas como después de un entrenamiento. El menú ☰ muestra cuántas esperan.",

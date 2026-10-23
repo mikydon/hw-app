@@ -433,6 +433,8 @@ export default {
     acDelCancelled: "Cancelled. Nothing was deleted.",
     acEmailPh: "E-mail",
     acPwPh: "Password",
+    acPwShow: "Show password",
+    acPwHide: "Hide password",
     acEmailGo: "Sign in",
     acEmailBad: "Wrong e-mail or password.",
     acEmailMany: "Too many attempts. Try again in a few minutes.",
@@ -1222,6 +1224,9 @@ export default {
   news143: [
     "Glass layout looks more like real glass: a sheen from the corner, a soft reflection, a bright top edge and a soft glow of the theme colours behind the boxes. The Start bar and the ☰ menu match it, and it stays light on the phone.",
     "Top bar: at the top of the page it now fills the screen edge to edge, without a line at the top or sides.",
+  ],
+  news175: [
+    "Every password field has an eye button: tap it to see what you typed and catch typos, tap again to hide it.",
   ],
   news174: [
     "Badges and ranks you have earned now wait on your profile as face-down cards: tap one, or Open on the Profile page, and open them like after a workout. The ☰ menu shows how many are waiting.",

@@ -433,6 +433,8 @@ export default {
     acDelCancelled: "Annulé. Rien n'a été supprimé.",
     acEmailPh: "E-mail",
     acPwPh: "Mot de passe",
+    acPwShow: "Afficher le mot de passe",
+    acPwHide: "Masquer le mot de passe",
     acEmailGo: "Se connecter",
     acEmailBad: "E-mail ou mot de passe incorrect.",
     acEmailMany: "Trop de tentatives. Réessaie dans quelques minutes.",
@@ -1222,6 +1224,9 @@ export default {
   news143: [
     "La disposition Verre ressemble davantage à du vrai verre : un reflet depuis le coin, une réflexion douce, un bord supérieur clair et une douce lueur des couleurs du thème derrière les blocs. La barre de démarrage et le menu ☰ sont assortis, et le téléphone n'est toujours pas sollicité.",
     "Barre du haut : tout en haut de la page, elle remplit maintenant l'écran d'un bord à l'autre, sans ligne en haut ni sur les côtés.",
+  ],
+  news175: [
+    "Chaque champ de mot de passe a un bouton en forme d’œil : touche-le pour voir ce que tu as saisi (et repérer une faute de frappe), touche-le encore pour le masquer.",
   ],
   news174: [
     "Les badges et rangs que tu as gagnés attendent maintenant sur ton profil, en cartes face cachée : touche-en une, ou Ouvrir sur la page Profil, et ouvre-les comme après une séance. Le menu ☰ indique combien attendent.",

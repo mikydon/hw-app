@@ -433,6 +433,8 @@ export default {
     acDelCancelled: "Annullato. Non è stato eliminato nulla.",
     acEmailPh: "E-mail",
     acPwPh: "Password",
+    acPwShow: "Mostra password",
+    acPwHide: "Nascondi password",
     acEmailGo: "Accedi",
     acEmailBad: "E-mail o password errata.",
     acEmailMany: "Troppi tentativi. Riprova tra qualche minuto.",
@@ -1222,6 +1224,9 @@ export default {
   news143: [
     "Il layout Vetro sembra più vetro vero: un riflesso dall'angolo, un leggero bagliore, un bordo superiore chiaro e una tenue luce dei colori del tema dietro i riquadri. La barra di avvio e il menu ☰ si abbinano, e il telefono resta leggero.",
     "Barra in alto: in cima alla pagina ora riempie lo schermo da bordo a bordo, senza linea in alto o ai lati.",
+  ],
+  news175: [
+    "Ogni campo password ha un pulsante a forma di occhio: toccalo per vedere cosa hai scritto (e trovare un errore di battitura), toccalo di nuovo per nasconderlo.",
   ],
   news174: [
     "I badge e i ranghi che hai ottenuto ora ti aspettano sul profilo come carte coperte: toccane una, o Apri nella pagina Profilo, e aprile come dopo un allenamento. Il menu ☰ mostra quante ne aspettano.",

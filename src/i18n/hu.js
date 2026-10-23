@@ -433,6 +433,8 @@ export default {
     acDelCancelled: "Megszakítva. Semmi sem törlődött.",
     acEmailPh: "E-mail",
     acPwPh: "Jelszó",
+    acPwShow: "Jelszó megjelenítése",
+    acPwHide: "Jelszó elrejtése",
     acEmailGo: "Bejelentkezés",
     acEmailBad: "Hibás e-mail vagy jelszó.",
     acEmailMany: "Túl sok próbálkozás. Próbáld újra pár perc múlva.",
@@ -1222,6 +1224,9 @@ export default {
   news143: [
     "Az Üveg elrendezés jobban hasonlít a valódi üvegre: csillanás a sarokból, lágy tükröződés, világos felső él és a téma színeinek halvány fénye a dobozok mögött. Az indítósáv és a ☰ menü illik hozzá, és a telefont továbbra sem terheli.",
     "Felső sáv: az oldal tetején most szélétől széléig kitölti a képernyőt, vonal nélkül felül és oldalt.",
+  ],
+  news175: [
+    "Minden jelszómező mellett van egy szem gomb: koppints rá, és látod, mit írtál be (így észreveszed az elgépelést), újabb koppintással elrejted.",
   ],
   news174: [
     "A megszerzett jelvények és rangok most lefordított kártyaként várnak a profilodon: koppints egyre, vagy a Profil oldalon a Megnyitásra, és nyisd ki őket, mint edzés után. A ☰ menü mutatja, hány vár.",

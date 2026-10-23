@@ -433,6 +433,8 @@ export default {
     acDelCancelled: "Zrušeno. Nic se nesmazalo.",
     acEmailPh: "E-mail",
     acPwPh: "Heslo",
+    acPwShow: "Zobrazit heslo",
+    acPwHide: "Skrýt heslo",
     acEmailGo: "Přihlásit se",
     acEmailBad: "Nesprávný e-mail nebo heslo.",
     acEmailMany: "Příliš mnoho pokusů. Zkus to za pár minut.",
@@ -1222,6 +1224,9 @@ export default {
   news143: [
     "Rozložení Sklo vypadá víc jako skutečné sklo: odlesk z rohu, jemný odraz, světlá horní hrana a jemná záře barev motivu za boxy. Lišta se startem a menu ☰ k němu ladí a telefon to pořád nezatěžuje.",
     "Horní lišta: když jsi úplně nahoře, vyplňuje obrazovku od kraje ke kraji, bez čáry nahoře a po stranách.",
+  ],
+  news175: [
+    "Každé pole s heslem má tlačítko s okem: ťukni a uvidíš, co jsi napsal (abys odhalil překlep), dalším ťuknutím ho zase skryješ.",
   ],
   news174: [
     "Odznaky a ranky, které jsi získal, teď čekají na profilu jako kartičky otočené dolů: ťukni na jednu nebo na Otevřít na stránce Profil a otevři je jako po tréninku. Menu ☰ ukazuje, kolik jich čeká.",

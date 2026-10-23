@@ -33,7 +33,7 @@ const THEMES = {
   slate:  { ink: "#15181d", panel: "#1f242b", panelHi: "#2a313a", line: "#3a434f", chalk: "#f1f4f8", dim: "#9aa6b4", edge: "#0e1115" },
   coffee: { ink: "#1c140f", panel: "#2a1f17", panelHi: "#382a20", line: "#4d3a2c", chalk: "#fbf3ec", dim: "#b8a291", edge: "#130d09" },
 };
-const APP_VERSION = "1.7.4";
+const APP_VERSION = "1.7.5";
 // Big Shoulders has no Cyrillic, so Oswald (also condensed) covers Ukrainian. The browser only
 // downloads the Oswald unicode ranges a page actually uses.
 // 1.7.0: 'HW Emoji' = the app's own emoji (Fluent 3D, fonts/hw-emoji.ttf) for the emoji the app shows; BODY_SYS
@@ -4983,6 +4983,27 @@ function GLogo() { return <svg width="20" height="20" viewBox="0 0 48 48" aria-h
 const PW_MIN = 8;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const pwField = { display: "block", width: "100%", boxSizing: "border-box", fontFamily: BODY, fontSize: 16, padding: "12px 14px", borderRadius: 14, border: `1.5px solid ${C.line}`, background: C.panel, color: C.chalk, outline: "none", marginTop: 8 };
+// 1.7.5 (tester feedback, Oct 21: "add a way to show the password, in case of typos"): every password field has an eye
+// button on the right that shows / hides what was typed (each field on its own). The button never takes the focus, so
+// the phone's keyboard stays open.
+function PwInput({ style, ...p }) {
+  const [show, setShow] = useState(false);
+  const { marginTop, ...st } = style || {};
+  return (
+    <div data-pw-wrap style={{ position: "relative", marginTop }}>
+      <input {...p} type={show ? "text" : "password"} autoCapitalize="off" autoCorrect="off" spellCheck={false} style={{ ...st, paddingRight: 50 }} />
+      <button type="button" data-pw-eye aria-pressed={show} aria-label={T(show ? "acPwHide" : "acPwShow")} title={T(show ? "acPwHide" : "acPwShow")}
+        onMouseDown={e => e.preventDefault()} onClick={() => { sfxTap(); setShow(v => !v); }}
+        style={{ ...btnBase, position: "absolute", right: 3, top: "50%", transform: "translateY(-50%)", width: 44, height: 44, padding: 0, borderRadius: 12, background: "transparent", color: show ? C.signal : C.dim, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" />
+          <circle cx="12" cy="12" r="3" />
+          {!show && <path d="M4 20 20 4" />}
+        </svg>
+      </button>
+    </div>
+  );
+}
 // 1.7.2 (Michael: "like most apps"): the e-mail form comes first, then "or" and the Google button (`google`).
 function EmailSignIn({ ok, busy, onGo, google }) {
   const [mode, setMode] = useState("in"); // in | new
@@ -5004,8 +5025,8 @@ function EmailSignIn({ ok, busy, onGo, google }) {
     <div data-email-box={mode} style={{ marginTop: 6 }}>
       {isNew && <div style={{ fontSize: 12, color: C.dim, fontWeight: 800, textTransform: "uppercase", letterSpacing: ".04em", marginTop: 8 }}>{T("acNewTitle")}</div>}
       <input data-email-input type="email" inputMode="email" autoComplete={isNew ? "email" : "username"} autoCapitalize="off" spellCheck={false} value={email} onChange={e => setEmail(e.target.value)} placeholder={T("acEmailPh")} aria-label={T("acEmailPh")} style={pwField} />
-      <input data-pw-input type="password" autoComplete={isNew ? "new-password" : "current-password"} value={pw} onChange={e => setPw(e.target.value)} onKeyDown={e => { if (e.key === "Enter" && !isNew) go(); }} placeholder={isNew ? T("acPwNewPh", { n: PW_MIN }) : T("acPwPh")} aria-label={T("acPwPh")} style={pwField} />
-      {isNew && <input data-pw2-input type="password" autoComplete="new-password" value={pw2} onChange={e => setPw2(e.target.value)} onKeyDown={e => { if (e.key === "Enter") go(); }} placeholder={T("acPwAgainPh")} aria-label={T("acPwAgainPh")} style={pwField} />}
+      <PwInput data-pw-input autoComplete={isNew ? "new-password" : "current-password"} value={pw} onChange={e => setPw(e.target.value)} onKeyDown={e => { if (e.key === "Enter" && !isNew) go(); }} placeholder={isNew ? T("acPwNewPh", { n: PW_MIN }) : T("acPwPh")} aria-label={T("acPwPh")} style={pwField} />
+      {isNew && <PwInput data-pw2-input autoComplete="new-password" value={pw2} onChange={e => setPw2(e.target.value)} onKeyDown={e => { if (e.key === "Enter") go(); }} placeholder={T("acPwAgainPh")} aria-label={T("acPwAgainPh")} style={pwField} />}
       {isNew && pw2 && pw !== pw2 && <div data-pw-mismatch style={{ fontSize: 12.5, color: "#ff8a80", marginTop: 6 }}>{T("acPwMismatch")}</div>}
       {!isNew && <div style={{ textAlign: "right" }}><button type="button" data-pw-forgot onClick={forgot} disabled={sending} style={{ ...link, padding: "8px 2px 0" }}>{sending ? "…" : T("acForgot")}</button></div>}
       <button type="button" data-email-signin onClick={go} disabled={!can} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 12, opacity: can ? 1 : 0.45 }}>{busy ? T("frSigning") : isNew ? T("acNewGo") : T("acEmailGo")}</button>
@@ -5045,9 +5066,9 @@ function PwSheet({ onClose }) {
     <Sheet title={has ? T("acPwChange") : T("acPwAdd")} onClose={onClose}>
       <div data-pw-sheet={has ? "change" : "add"}>
         <div style={{ fontSize: 13.5, color: C.dim, lineHeight: 1.5 }}>{has ? T("acPwChangeD", { email: info.email }) : T("acPwAddD", { email: info.email })}</div>
-        {has && <input data-pw-old type="password" autoComplete="current-password" value={old} onChange={e => setOld(e.target.value)} placeholder={T("acPwOldPh")} aria-label={T("acPwOldPh")} style={pwField} />}
-        <input data-pw-new type="password" autoComplete="new-password" value={pw} onChange={e => setPw(e.target.value)} placeholder={T("acPwNewPh", { n: PW_MIN })} aria-label={T("acPwNewPh", { n: PW_MIN })} style={pwField} />
-        <input data-pw-new2 type="password" autoComplete="new-password" value={pw2} onChange={e => setPw2(e.target.value)} onKeyDown={e => { if (e.key === "Enter") save(); }} placeholder={T("acPwAgainPh")} aria-label={T("acPwAgainPh")} style={pwField} />
+        {has && <PwInput data-pw-old autoComplete="current-password" value={old} onChange={e => setOld(e.target.value)} placeholder={T("acPwOldPh")} aria-label={T("acPwOldPh")} style={pwField} />}
+        <PwInput data-pw-new autoComplete="new-password" value={pw} onChange={e => setPw(e.target.value)} placeholder={T("acPwNewPh", { n: PW_MIN })} aria-label={T("acPwNewPh", { n: PW_MIN })} style={pwField} />
+        <PwInput data-pw-new2 autoComplete="new-password" value={pw2} onChange={e => setPw2(e.target.value)} onKeyDown={e => { if (e.key === "Enter") save(); }} placeholder={T("acPwAgainPh")} aria-label={T("acPwAgainPh")} style={pwField} />
         {pw2 && pw !== pw2 && <div data-pw-mismatch style={{ fontSize: 12.5, color: "#ff8a80", marginTop: 6 }}>{T("acPwMismatch")}</div>}
         <button type="button" data-pw-save onClick={save} disabled={!can} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 12, opacity: can ? 1 : 0.45 }}>{busy === "save" ? "…" : T("acPwSave")}</button>
         {has && <button type="button" data-pw-forgot onClick={() => mail("reset", () => cloud().resetPw(info.email, LANG), T("acResetSent", { email: info.email }))} disabled={!!busy} style={link}>{busy === "reset" ? "…" : T("acForgot")}</button>}
@@ -5899,7 +5920,7 @@ function AccountBox({ acct, cloudBk, onOpen, onRestore, onBackupNow, onSignOut, 
           {sub(`${T("acDeleteD")} ${T("acDelGoogle")}`)}
         </button>
         {askPw && <div style={{ padding: "0 16px 14px" }}>
-          <input data-del-pw type="password" autoComplete="current-password" value={delPw} onChange={e => setDelPw(e.target.value)} placeholder={T("acPwPh")} aria-label={T("acPwPh")}
+          <PwInput data-del-pw autoComplete="current-password" value={delPw} onChange={e => setDelPw(e.target.value)} placeholder={T("acPwPh")} aria-label={T("acPwPh")}
             style={{ display: "block", width: "100%", boxSizing: "border-box", fontFamily: BODY, fontSize: 16, padding: "11px 14px", borderRadius: 12, border: `1.5px solid ${C.line}`, background: C.panel, color: C.chalk, outline: "none" }} />
         </div>}
       </ListSect>
