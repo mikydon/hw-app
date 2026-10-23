@@ -5972,7 +5972,6 @@ function AccountBox({ acct, cloudBk, onOpen, onRestore, onBackupNow, onSignOut, 
           <span style={{ flex: 1, minWidth: 0 }}>{T("acPwRow")}{sub(T("acPwRowD"))}</span>
           <Arrow />
         </button>
-        {pushSupported() && settings && set && <PushRow settings={settings} set={set} />}
         <button data-acct-restore onClick={() => run("rs", onRestore)} style={rowBtn(false)}>
           <span style={{ flex: 1 }}>{busy === "rs" ? "…" : T("acRestore")}{sub(T("acRestoreD"))}</span>
         </button>
@@ -6025,10 +6024,65 @@ async function pushRegister({ on, ask, alive = () => true }) {
 // "New version" notifications (1.6.5) + the same "turned off in Android" line as PushRow when Android blocks them (1.7.3)
 // 1.7.4 (Michael, Oct 18): the switch shows what really happens: off while Android doesn't allow notifications, and
 // turning it on asks Android (when Android won't ask any more, the line under it says where to allow them).
-function UpdNotifRow({ settings, set }) {
+// 1.7.5 (Michael, Oct 23, 22:08: "one switch for everything; tapping it lets me pick which ones"): Settings shows one
+// row "Notifications" with what is on; it opens NotifSheet: a switch for all of them, then each kind on its own
+// (new versions for everyone; messages and friends after signing in, else a line that leads to signing in), the test
+// button, and one "blocked in Android" line with the button to Android's notification settings.
+function useNotifPerm() {
   const [perm, setPerm] = useState(null);
-  const want = settings.updNotif !== false, on = want && (perm === null || perm === "granted");
   useEffect(() => { const chk = () => { if (!document.hidden) pushPermission(false).then(setPerm); }; chk(); document.addEventListener("visibilitychange", chk); return () => document.removeEventListener("visibilitychange", chk); }, []);
+  return [perm, setPerm];
+}
+function NotifRow({ settings, set, acct, onAcctOpen }) {
+  const [perm, setPerm] = useNotifPerm(); // shared with the sheet, so the summary follows what happens there
+  const [open, setOpen] = useState(false);
+  const signed = !!(acct && acct.st === "in"), upd = settings.updNotif !== false, msg = signed && settings.push !== false;
+  const ok = perm === null || perm === "granted";
+  const sum = perm === "denied" && settings.notifOff === "android" ? T("notifAndroidOff") : !ok || (!upd && !msg) ? T("notifNone") : upd && msg ? T("notifAll") : upd ? T("notifOnlyUpd") : T("notifOnlyMsg");
+  const on = ok && (upd || msg);
+  return (
+    <>
+      <button type="button" data-notif-open data-notif-on={on ? 1 : 0} onClick={() => { sfxTap(); setOpen(true); }} style={{ ...btnBase, width: "100%", background: "transparent", color: C.chalk, padding: "13px 16px", display: "flex", alignItems: "center", gap: 12, textAlign: "left", borderRadius: 0, borderTop: `1px solid ${C.line}`, fontWeight: 400 }}>
+        <span style={{ flex: 1, minWidth: 0 }}>
+          <span style={{ display: "block", fontSize: 15, fontWeight: 700 }}>{T("notifTitle")}</span>
+          <span data-notif-sum style={{ display: "block", fontSize: 12, color: on ? C.dim : perm === "denied" ? C.signal : C.dim, fontWeight: 500, marginTop: 2, lineHeight: 1.4 }}>{sum}</span>
+        </span>
+        <Arrow />
+      </button>
+      {open && <NotifSheet settings={settings} set={set} perm={perm} setPerm={setPerm} signed={signed} onSignIn={() => { setOpen(false); onAcctOpen && onAcctOpen(); }} onClose={() => setOpen(false)} />}
+    </>
+  );
+}
+function NotifSheet({ settings, set, perm, setPerm, signed, onSignIn, onClose }) {
+  const ok = perm === null || perm === "granted";
+  const upd = settings.updNotif !== false, msg = signed && settings.push !== false, all = ok && (upd || msg);
+  const flipAll = async () => {
+    if (all) { set({ updNotif: false, push: false, notifOff: null }); return; }
+    set({ updNotif: true, push: true, notifOff: null });
+    const p = signed ? (await pushRegister({ on: true, ask: true })).perm : await pushPermission(true);
+    setPerm(p);
+    if (p !== "granted") set({ updNotif: false, push: false, notifOff: "android" }); // refused: off again
+  };
+  return (
+    <Sheet title={T("notifTitle")} onClose={onClose}>
+      <div data-notif-sheet style={{ borderRadius: 18, border: `1px solid ${C.line}`, overflow: "hidden", background: SOFT() }}>
+        <div data-notif-all><SettingRow first title={T("notifMaster")} desc={T("notifMasterD")} on={all} onClick={flipAll} /></div>
+        <UpdNotifRow settings={settings} set={set} perm={perm} setPerm={setPerm} />
+        {signed ? <PushRow settings={settings} set={set} perm={perm} setPerm={setPerm} />
+          : <button type="button" data-notif-signin onClick={() => { sfxTap(); onSignIn(); }} style={{ ...btnBase, width: "100%", background: "transparent", color: C.chalk, padding: "13px 16px", display: "flex", alignItems: "center", gap: 12, textAlign: "left", borderRadius: 0, borderTop: `1px solid ${C.line}`, fontWeight: 400 }}>
+              <span style={{ flex: 1, minWidth: 0 }}>
+                <span style={{ display: "block", fontSize: 15, fontWeight: 700 }}>{T("pushTitle")}</span>
+                <span style={{ display: "block", fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2, lineHeight: 1.4 }}>{T("notifSignIn")}</span>
+              </span>
+              <Arrow />
+            </button>}
+      </div>
+      {perm === "denied" && (upd || msg || settings.notifOff === "android") && <div style={{ marginTop: 12 }}><NotifBlocked data="push" /></div>}
+    </Sheet>
+  );
+}
+function UpdNotifRow({ settings, set, perm, setPerm }) {
+  const want = settings.updNotif !== false, on = want && (perm === null || perm === "granted");
   const flip = async () => {
     if (on) { set({ updNotif: false, notifOff: null }); return; }
     set({ updNotif: true, notifOff: null });
@@ -6038,7 +6092,6 @@ function UpdNotifRow({ settings, set }) {
   return (
     <div data-upd-notif>
       <SettingRow title={T("updNotif")} desc={T("updNotifD")} on={on} onClick={flip} />
-      {perm === "denied" && (want || settings.notifOff === "android") && <NotifBlocked data="upd" />}
     </div>
   );
 }
@@ -6047,23 +6100,19 @@ function UpdNotifRow({ settings, set }) {
 function NotifBlocked({ data }) {
   const [failed, setFailed] = useState(false);
   return (
-    <div {...{ [`data-${data}-denied`]: "" }} style={{ fontSize: 12, color: C.signal, lineHeight: 1.45, padding: "0 16px 12px" }}>
+    <div {...{ [`data-${data}-denied`]: "" }} style={{ fontSize: 12.5, color: C.signal, lineHeight: 1.45, padding: "0 4px" }}>
       {T("pushDenied")}
-      {isNative && !failed && <div style={{ marginTop: 8 }}><button type="button" data-notif-settings onClick={async () => { sfxTap(); if (!(await openNotifSettings())) setFailed(true); }}
-        style={{ ...ghostBtn, padding: "9px 14px", color: C.chalk }}>{T("pushOpenSettings")} <Arrow /></button></div>}
+      {isNative && !failed && <div style={{ marginTop: 10 }}><button type="button" data-notif-settings onClick={async () => { sfxTap(); if (!(await openNotifSettings())) setFailed(true); }}
+        style={{ ...ghostBtn, padding: "10px 14px", color: C.chalk }}>{T("pushOpenSettings")} <Arrow /></button></div>}
     </div>
   );
 }
-function PushRow({ settings, set }) {
-  const [perm, setPerm] = useState(null);
+function PushRow({ settings, set, perm, setPerm }) {
   // off while Android doesn't allow notifications (1.7.4); turning it on asks Android and registers this phone;
   // refused → off again (1.7.5)
   const want = settings.push !== false, on = want && (perm === null || perm === "granted");
   const [test, setTest] = useState(null); // {st: busy|wait|got|late|err, e}
   const got = useRef(0), timer = useRef(0);
-  // 1.7.3 (Michael, Oct 18: "it says notifications aren't allowed, but they are"): read again whenever the app comes
-  // back to the front.
-  useEffect(() => { const chk = () => { if (!document.hidden) pushPermission(false).then(setPerm); }; chk(); document.addEventListener("visibilitychange", chk); return () => document.removeEventListener("visibilitychange", chk); }, []);
   useEffect(() => {
     const off = onPushReceived(d => { if (d.kind !== "test") return; got.current = Date.now(); setTest(t => (t && (t.st === "wait" || t.st === "late") ? { st: "got" } : t)); });
     return () => { off(); clearTimeout(timer.current); };
@@ -6093,7 +6142,6 @@ function PushRow({ settings, set }) {
   return (
     <div data-push-row style={{ borderTop: `1px solid ${C.line}` }}>
       <SettingRow first title={T("pushTitle")} desc={T("pushD")} on={on} onClick={flipPush} />
-      {perm === "denied" && (want || settings.notifOff === "android") && <NotifBlocked data="push" />}
       {on && <div style={{ padding: "0 16px 13px" }}>
         <button data-push-test onClick={runTest} disabled={!!test && (test.st === "busy" || test.st === "wait")} style={{ ...ghostBtn, padding: "9px 14px", opacity: test && (test.st === "busy" || test.st === "wait") ? 0.6 : 1 }}>{test && test.st === "busy" ? "…" : T("pushTest")}</button>
         {line && <div data-push-test-st={test.st} role="status" style={{ fontSize: 12, color: line[1], lineHeight: 1.45, marginTop: 8 }}>{line[0]}</div>}
@@ -6369,7 +6417,7 @@ function SettingsTab({ initPage, settings, setSettings, history, profile, setPro
         <SettingRow title={T("vibrate")} desc={`${T("vibrateD")} ${T("vibrateHint")}`} on={settings.vibrate} onClick={() => { set("vibrate", !settings.vibrate); if (!settings.vibrate) vibratePattern([160]); }} />
         <SettingRow title={T("keepAwake")} desc={T("keepAwakeD")} on={settings.keepAwake} onClick={() => set("keepAwake", !settings.keepAwake)} />
         <SettingRow title={T("aiCopy")} desc={T("aiCopyD")} on={settings.aiCopy} onClick={() => set("aiCopy", !settings.aiCopy)} />
-        {pushSupported() && <UpdNotifRow settings={settings} set={set} />}
+        {pushSupported() && <NotifRow settings={settings} set={set} acct={acct} onAcctOpen={onAcctOpen} />}
       </ListSect>
 
       <AccountBox acct={acct || { st: "out" }} cloudBk={cloudBk} onOpen={onAcctOpen} onRestore={onCloudRestore} onBackupNow={onCloudBackupNow} onSignOut={onSignOut} onDelete={onDeleteAccount} settings={settings} set={set} />
@@ -7739,14 +7787,15 @@ export default function App() {
   // 1.7.5 (Michael, Oct 23): at every start and every return to the app (after the first-start setup), the app checks
   // Android's notification permission. Not allowed while notifications are on → it asks; refused → both switches
   // (messages, new versions) go off (`notifOff: "android"`). Allowed later in Android's settings → both on again.
-  // Switched off by the person → nothing is asked.
+  // Switched off by the person → nothing is asked. Messages only count while an account is on this phone.
   const setRef = useRef(settings); setRef.current = settings;
+  const acctOn = acct.st !== "out";
   useEffect(() => {
     if (!pushSupported() || !loaded || !settingsLoaded || !obChecked || onboard !== null) return;
     const apply = o => { const n = { ...setRef.current, ...o }; window._wset = n; setSettings(n); };
     (async () => {
       await installCheck();
-      const s = setRef.current, want = s.push !== false || s.updNotif !== false;
+      const s = setRef.current, want = (acctOn && s.push !== false) || s.updNotif !== false;
       let p = await pushPermission(false);
       if (p === "granted") { if (s.notifOff === "android") apply({ push: true, updNotif: true, notifOff: null }); return; }
       if (!want) return;
@@ -7754,7 +7803,7 @@ export default function App() {
       if (p !== "granted") apply({ push: false, updNotif: false, notifOff: "android" });
       else setPermSeq(n => n + 1); // allowed now: register this phone
     })().catch(() => {});
-  }, [loaded, settingsLoaded, obChecked, onboard, permSeq]);
+  }, [loaded, settingsLoaded, obChecked, onboard, permSeq, acctOn]);
   useEffect(() => {
     if (!loaded || !settingsLoaded || newsChecked) return;
     setNewsChecked(true);
