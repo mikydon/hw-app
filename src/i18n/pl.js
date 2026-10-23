@@ -502,6 +502,7 @@ export default {
     pushTitle: "Powiadomienia w telefonie",
     pushD: "Wiadomości i zaproszenia do znajomych, także gdy aplikacja jest zamknięta.",
     pushDenied: "Powiadomienia HW App są wyłączone w telefonie. Włącz je w ustawieniach Androida → Aplikacje → HW App → Powiadomienia.",
+    pushOpenSettings: "Otwórz ustawienia powiadomień",
     pushChannel: "Znajomi i wiadomości",
     ntTest: "Powiadomienie testowe",
     ntTestD: "Działa! Tak będą przychodzić wiadomości i zaproszenia do znajomych.",
@@ -1228,6 +1229,10 @@ export default {
   news175: [
     "Każde pole hasła ma przycisk z okiem: dotknij, aby zobaczyć, co wpisano (i wyłapać literówkę), dotknij ponownie, aby ukryć.",
     "Tekst w aplikacji ma ten sam rozmiar na każdym telefonie: większa czcionka ustawiona w telefonie już go nie powiększa i nie ucina słów. (Ze starszą pobraną wersją ekrany robią miejsce, więc też nic nie jest ucinane.)",
+    "📱 Aplikacja przy każdym otwarciu sprawdza, czy powiadomienia są dozwolone: jeśli nie, pyta; gdy odmówisz, przełączniki powiadomień się wyłączą (włączą się same, gdy zezwolisz na nie w Androidzie). Gdy Android nie pozwala już pytać, przycisk pod przełącznikiem otwiera ustawienia powiadomień aplikacji.",
+    "📱 Poprawka: w aplikacji z GitHuba i Google Play nigdy nie pytano o powiadomienia, zawsze były „wyłączone” i nie przychodziły. Aplikacja jest teraz budowana dokładnie jak ta przetestowana.",
+    "📱 Zainstalowana ponownie aplikacja zaczyna od zera ekranem logowania (Android sam nie przywraca już starych danych; po zalogowaniu dane wracają z chmury).",
+    "Strona: logowanie przez Google zawsze pozwala wybrać konto (po wylogowaniu po cichu brało stare).",
   ],
   news174: [
     "Zdobyte odznaki i rangi czekają teraz na profilu jako karty odwrócone rewersem: dotknij jednej albo Otwórz na stronie Profil i otwórz je jak po treningu. Menu ☰ pokazuje, ile ich czeka.",

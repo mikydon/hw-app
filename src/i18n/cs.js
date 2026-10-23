@@ -502,6 +502,7 @@ export default {
     pushTitle: "Oznámení v mobilu",
     pushD: "Zprávy a žádosti o přátelství, i když je aplikace zavřená.",
     pushDenied: "Oznámení pro HW App jsou v mobilu vypnutá. Zapni je v nastavení Androidu → Aplikace → HW App → Oznámení.",
+    pushOpenSettings: "Otevřít nastavení upozornění",
     pushChannel: "Přátelé a zprávy",
     ntTest: "Zkušební upozornění",
     ntTestD: "Funguje to! Takhle ti budou chodit zprávy a žádosti o přátelství.",
@@ -1228,6 +1229,10 @@ export default {
   news175: [
     "Každé pole s heslem má tlačítko s okem: ťukni a uvidíš, co jsi napsal (abys odhalil překlep), dalším ťuknutím ho zase skryješ.",
     "Písmo v aplikaci je stejně velké na každém mobilu: větší písmo nastavené v mobilu ho už nezvětší a neusekne slova. (Se starší staženou aplikací si obrazovky místo toho udělají místo, takže se také nic neusekne.)",
+    "📱 Aplikace při každém otevření zkontroluje, jestli jsou upozornění povolená: pokud ne, zeptá se; když odmítneš, přepínače upozornění se vypnou (když je povolíš v Androidu, samy se zase zapnou). Když už Android ptát nedovolí, tlačítko pod přepínačem otevře nastavení upozornění aplikace.",
+    "📱 Oprava: v aplikaci z GitHubu a z Google Play se upozornění nikdy neptala, pořád ukazovala „vypnuto“ a nechodila. Aplikace se teď sestavuje přesně jako ta otestovaná.",
+    "📱 Přeinstalovaná aplikace začne načisto přihlášením (Android už sám nevrací stará data; po přihlášení se tvoje data vrátí z cloudu).",
+    "Web: přihlášení přes Google se vždy zeptá, který účet (po odhlášení se potichu přihlásil starý).",
   ],
   news174: [
     "Odznaky a ranky, které jsi získal, teď čekají na profilu jako kartičky otočené dolů: ťukni na jednu nebo na Otevřít na stránce Profil a otevři je jako po tréninku. Menu ☰ ukazuje, kolik jich čeká.",

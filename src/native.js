@@ -463,10 +463,18 @@ let permAsk = null;
 export async function pushPermission(ask) {
   if (!pushSupported()) return "denied";
   if (ask) {
-    if (!permAsk) permAsk = FcmPlugin.requestPermissions().then(r => r.receive || "denied", () => "denied").finally(() => { permAsk = null; });
+    if (!permAsk) permAsk = FcmPlugin.requestPermissions().then(r => permOf(r.receive), () => "denied").finally(() => { permAsk = null; });
     return permAsk;
   }
-  try { const r = await FcmPlugin.checkPermissions(); return r.receive || "denied"; } catch (_) { return "denied"; }
+  try { const r = await FcmPlugin.checkPermissions(); return permOf(r.receive); } catch (_) { return "denied"; }
+}
+// "prompt-with-rationale" (refused once, Android may still ask) counts as "prompt" (1.7.5)
+const permOf = x => (x === "granted" ? "granted" : x === "prompt" || x === "prompt-with-rationale" ? "prompt" : "denied");
+// 1.7.5: this app's notification settings in Android (when Android won't ask any more). false = couldn't open them
+// (an older APK without the method): the line under the switch still says where to go.
+export async function openNotifSettings() {
+  if (!isNative || !Capacitor.isPluginAvailable("HwBuild")) return false;
+  try { await HwBuild.openNotifSettings(); return true; } catch (_) { return false; }
 }
 // 1.7.4 (Michael, Oct 18: no notifications after reinstalling): Android's automatic backup brings this app's data back
 // on a reinstall (localStorage too), so the memory of this install came back with it: "already asked for

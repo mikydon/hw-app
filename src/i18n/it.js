@@ -502,6 +502,7 @@ export default {
     pushTitle: "Notifiche sul telefono",
     pushD: "Messaggi e richieste di amicizia, anche con l’app chiusa.",
     pushDenied: "Le notifiche di HW App sono disattivate sul telefono. Attivale in Impostazioni Android → App → HW App → Notifiche.",
+    pushOpenSettings: "Apri impostazioni notifiche",
     pushChannel: "Amici e messaggi",
     ntTest: "Notifica di prova",
     ntTestD: "Funziona! Messaggi e richieste di amicizia arriveranno così.",
@@ -1228,6 +1229,10 @@ export default {
   news175: [
     "Ogni campo password ha un pulsante a forma di occhio: toccalo per vedere cosa hai scritto (e trovare un errore di battitura), toccalo di nuovo per nasconderlo.",
     "Il testo dell’app ha la stessa dimensione su ogni telefono: un carattere più grande impostato sul telefono non lo ingrandisce più e non taglia le parole. (Con un’app scaricata più vecchia le schermate fanno spazio, quindi non viene tagliato nulla neanche lì.)",
+    "📱 L’app controlla a ogni apertura se le notifiche sono consentite: se no, chiede; se rifiuti, gli interruttori delle notifiche si spengono (si riaccendono da soli quando le consenti in Android). Quando Android non permette più di chiedere, un pulsante sotto l’interruttore apre le impostazioni delle notifiche dell’app.",
+    "📱 Corretto: nell’app da GitHub e da Google Play le notifiche non venivano mai chieste, risultavano sempre spente e non arrivavano. Ora l’app è costruita esattamente come quella testata.",
+    "📱 Un’app reinstallata riparte da zero con l’accesso (Android non riporta più da solo i vecchi dati; dopo l’accesso i tuoi dati tornano dal cloud).",
+    "Sito: l’accesso con Google fa sempre scegliere l’account (dopo l’uscita riprendeva quello vecchio senza chiedere).",
   ],
   news174: [
     "I badge e i ranghi che hai ottenuto ora ti aspettano sul profilo come carte coperte: toccane una, o Apri nella pagina Profilo, e aprile come dopo un allenamento. Il menu ☰ mostra quante ne aspettano.",

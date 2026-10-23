@@ -121,8 +121,11 @@ jobs:
             dexdump=$(ls -d "$ANDROID_HOME"/build-tools/*/ | sort -V | tail -1)dexdump
             dx="$RUNNER_TEMP/dex"; rm -rf "$dx"; mkdir -p "$dx"; unzip -q -o "dist/HW-App-$V.apk" 'classes*.dex' -d "$dx"
             svc=$(for f in "$dx"/classes*.dex; do "$dexdump" "$f"; done | awk "/Class descriptor  : 'Lio\/capawesome\/capacitorjs\/plugins\/firebase\/messaging\/MessagingService;'/{on=1} on&&/Class descriptor/&&!/MessagingService;/{on=0} on" | grep -c "name          : 'onMessageReceived'\|name          : 'onNewToken'")
-            rm_=$(for f in "$dx"/classes*.dex; do "$dexdump" "$f"; done | grep -c "Class descriptor  : 'Lcom/google/firebase/messaging/RemoteMessage;'")
-            if [ "$svc" -ge 2 ] && [ "$rm_" -ge 1 ]; then echo "::notice::Push receive path intact in the real APK (MessagingService.onMessageReceived/onNewToken, RemoteMessage)"; else echo "::error::Push receive path renamed by R8 in the real APK (methods $svc/2, RemoteMessage $rm_)"; fi
+            all=$(for f in "$dx"/classes*.dex; do "$dexdump" "$f"; done | grep "Class descriptor")
+            rm_=$(echo "$all" | grep -c "'Lcom/google/firebase/messaging/RemoteMessage;'")
+            # 1.7.5: the real app must be built like the tested one (no renaming): Capacitor keeps its own names
+            cap=$(echo "$all" | grep -c "'Lcom/getcapacitor/annotation/CapacitorPlugin;'\|'Lcom/getcapacitor/Plugin;'\|'Lcom/getcapacitor/annotation/Permission;'")
+            if [ "$svc" -ge 2 ] && [ "$rm_" -ge 1 ] && [ "$cap" -ge 3 ]; then echo "::notice::Real APK keeps its real names like the test build (push receive path, Capacitor plugins and permissions)"; else echo "::error::R8 renamed code in the real APK (push methods $svc/2, RemoteMessage $rm_, Capacitor classes $cap/3)"; exit 1; fi
           fi
           # Google Play bundle (1.6.1): signed with the same key (Play's upload key = the app signing key Michael gives Play)
           aab=android/app/build/outputs/bundle/playRelease/app-play-release.aab

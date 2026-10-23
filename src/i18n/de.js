@@ -502,6 +502,7 @@ export default {
     pushTitle: "Benachrichtigungen am Handy",
     pushD: "Nachrichten und Freundschaftsanfragen, auch wenn die App geschlossen ist.",
     pushDenied: "Benachrichtigungen für HW App sind am Handy aus. Schalte sie in den Android-Einstellungen ein → Apps → HW App → Benachrichtigungen.",
+    pushOpenSettings: "Benachrichtigungseinstellungen öffnen",
     pushChannel: "Freunde und Nachrichten",
     ntTest: "Testbenachrichtigung",
     ntTestD: "Es funktioniert! So kommen Nachrichten und Freundschaftsanfragen an.",
@@ -1228,6 +1229,10 @@ export default {
   news175: [
     "Jedes Passwortfeld hat einen Augen-Button: Tippe darauf, um zu sehen, was du eingegeben hast (und Tippfehler zu finden), tippe erneut, um es zu verbergen.",
     "Der Text in der App ist auf jedem Handy gleich groß: Eine größere Schrift im Handy macht ihn nicht mehr größer und schneidet keine Wörter mehr ab. (Mit einer älteren heruntergeladenen App machen die Bildschirme stattdessen Platz, sodass auch dort nichts abgeschnitten wird.)",
+    "📱 Die App prüft bei jedem Öffnen, ob Benachrichtigungen erlaubt sind: Wenn nicht, fragt sie; lehnst du ab, gehen die Benachrichtigungs-Schalter aus (sobald du sie in Android erlaubst, gehen sie von selbst wieder an). Wenn Android nicht mehr fragen lässt, öffnet ein Button unter dem Schalter die Benachrichtigungseinstellungen der App.",
+    "📱 Behoben: In der App von GitHub und Google Play wurde nie nach Benachrichtigungen gefragt, sie wurden immer als aus angezeigt und kamen nie an. Die App wird jetzt genauso gebaut wie die getestete.",
+    "📱 Eine neu installierte App startet sauber mit der Anmeldung (Android bringt alte Daten nicht mehr von selbst zurück; nach der Anmeldung kommen deine Daten aus der Cloud zurück).",
+    "Website: Die Anmeldung mit Google lässt immer das Konto wählen (nach dem Abmelden nahm sie still das alte).",
   ],
   news174: [
     "Verdiente Abzeichen und Ränge warten jetzt im Profil als verdeckte Karten: Tippe auf eine oder auf der Profilseite auf Öffnen und öffne sie wie nach einem Training. Das ☰-Menü zeigt, wie viele warten.",

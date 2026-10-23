@@ -62,3 +62,11 @@
 -keep class io.capawesome.capacitorjs.plugins.firebase.messaging.** { *; }
 # the Kotlin extensions inside these packages point at com.google.firebase.ktx, which the app doesn't include
 -dontwarn com.google.firebase.ktx.**
+
+# 1.7.5 (Michael's test, Oct 23: notifications work in "HW App Test", not in the GitHub/Play app): the test build
+# (debug) runs R8 without renaming or optimizing; the real one renamed Capacitor itself (CapacitorPlugin → b4.b,
+# Plugin → g0) and merged classes, and the notification permission never worked there (no question, always "off").
+# The real app now runs the same way as the tested one: unused code is still removed (that's most of the size),
+# nothing is renamed or merged, so every plugin's lookups by name work as in the test build.
+-dontobfuscate
+-dontoptimize

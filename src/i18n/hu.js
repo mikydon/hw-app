@@ -502,6 +502,7 @@ export default {
     pushTitle: "Értesítések a telefonon",
     pushD: "Üzenetek és barátkérések, akkor is, ha az app be van zárva.",
     pushDenied: "A HW App értesítései ki vannak kapcsolva a telefonon. Kapcsold be az Android beállításaiban → Alkalmazások → HW App → Értesítések.",
+    pushOpenSettings: "Értesítési beállítások megnyitása",
     pushChannel: "Barátok és üzenetek",
     ntTest: "Próbaértesítés",
     ntTestD: "Működik! Így érkeznek majd az üzenetek és a barátkérések.",
@@ -1228,6 +1229,10 @@ export default {
   news175: [
     "Minden jelszómező mellett van egy szem gomb: koppints rá, és látod, mit írtál be (így észreveszed az elgépelést), újabb koppintással elrejted.",
     "Az app szövege minden telefonon ugyanakkora: a telefonon beállított nagyobb betűméret már nem nagyítja fel, és nem vágja le a szavakat. (Régebbi letöltött appnál a képernyők helyet csinálnak, így ott sem vágódik le semmi.)",
+    "📱 Az app minden megnyitáskor ellenőrzi, engedélyezve vannak-e az értesítések: ha nem, rákérdez; ha nemet mondasz, az értesítési kapcsolók kikapcsolnak (ha az Androidban engedélyezed őket, maguktól visszakapcsolnak). Ha az Android már nem engedi a kérdést, a kapcsoló alatti gomb megnyitja az app értesítési beállításait.",
+    "📱 Javítva: a GitHubos és a Google Play-es appban soha nem kérdezett rá az értesítésekre, mindig „kikapcsolva” mutatta és nem jöttek. Az app most pontosan úgy készül, mint a tesztelt.",
+    "📱 Az újratelepített app tisztán, a bejelentkezéssel indul (az Android magától már nem hozza vissza a régi adatokat; bejelentkezés után az adataid visszajönnek a felhőből).",
+    "Weboldal: a Google-bejelentkezés mindig megkérdezi, melyik fiók (kijelentkezés után csendben a régit használta).",
   ],
   news174: [
     "A megszerzett jelvények és rangok most lefordított kártyaként várnak a profilodon: koppints egyre, vagy a Profil oldalon a Megnyitásra, és nyisd ki őket, mint edzés után. A ☰ menü mutatja, hány vár.",

@@ -502,6 +502,7 @@ export default {
     pushTitle: "Phone notifications",
     pushD: "Messages and friend requests, also when the app is closed.",
     pushDenied: "Notifications are turned off for HW App in your phone. Turn them on in Android settings → Apps → HW App → Notifications.",
+    pushOpenSettings: "Open notification settings",
     pushChannel: "Friends and messages",
     ntTest: "Test notification",
     ntTestD: "It works! Messages and friend requests will arrive like this.",
@@ -1228,6 +1229,10 @@ export default {
   news175: [
     "Every password field has an eye button: tap it to see what you typed and catch typos, tap again to hide it.",
     "Text in the app is the same size on every phone: a bigger font size set on the phone no longer makes it bigger and cuts off words. (With an older app download the screens make room instead, so nothing is cut off either.)",
+    "📱 The app checks whether notifications are allowed every time you open it: when they aren't, it asks; if you say no, the notification switches go off (they come back on by themselves once you allow notifications in Android). When Android won't ask any more, a button under the switch opens the app's notification settings.",
+    "📱 Fixed: in the app from GitHub and Google Play, notifications were never asked for, always showed as off and never arrived. The app is now built exactly like the tested one.",
+    "📱 A reinstalled app starts clean with the sign-in screen (Android no longer brings back old data on its own; sign in to get your data back from the cloud).",
+    "Website: signing in with Google always lets you choose the account (after signing out, it quietly took the old one).",
   ],
   news174: [
     "Badges and ranks you have earned now wait on your profile as face-down cards: tap one, or Open on the Profile page, and open them like after a workout. The ☰ menu shows how many are waiting.",

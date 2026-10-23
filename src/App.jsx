@@ -1,6 +1,6 @@
 import { useState, useEffect, useLayoutEffect, useRef, useMemo, memo, Fragment } from "react";
 import { createPortal } from "react-dom";
-import { isNative, pushBack, setRootBack, exitApp, vibratePattern, keepScreenOn, openExternal, saveBackupFile, bkSupported, bkWrite, bkWriteAuto, bkList, bkRead, bkDelete, bkShare, BK_DIR, bkAutoFile, checkForUpdate, lastUpdate, lastGh, applyUpdateNow, latestApk, isTestBuild, apkState, onApk, apkSupported, apkRestore, apkDownload, apkCanInstall, apkAllow, apkInstall, onAppResume, healthState, healthConnect, healthSettings, healthSteps, healthFoodItems, healthBody, shareText, copyText, pushSupported, pushPermission, pushChannel, pushToken, pushTokenWhy, pushDeleteToken, onPushTap, onPushToken, onPushReceived, hzSupported, hzInfo, hzSet, isPlay, playCheck, playOpenStore, PLAY_STORE_LINK, updTopic, onAppUrl, installCheck } from "./native.js";
+import { isNative, pushBack, setRootBack, exitApp, vibratePattern, keepScreenOn, openExternal, saveBackupFile, bkSupported, bkWrite, bkWriteAuto, bkList, bkRead, bkDelete, bkShare, BK_DIR, bkAutoFile, checkForUpdate, lastUpdate, lastGh, applyUpdateNow, latestApk, isTestBuild, apkState, onApk, apkSupported, apkRestore, apkDownload, apkCanInstall, apkAllow, apkInstall, onAppResume, healthState, healthConnect, healthSettings, healthSteps, healthFoodItems, healthBody, shareText, copyText, pushSupported, pushPermission, pushChannel, pushToken, pushTokenWhy, pushDeleteToken, onPushTap, onPushToken, onPushReceived, hzSupported, hzInfo, hzSet, isPlay, playCheck, playOpenStore, PLAY_STORE_LINK, updTopic, onAppUrl, installCheck, openNotifSettings } from "./native.js";
 import { cloud, NICK_RE, SHARE_BASE, cleanCode, fmtCode } from "./cloud-lazy.js";
 import { QUICK as EMO_QUICK, EMOJI } from "./emoji.js";
 import { mergeAll, syncKey, withIds, entryId, stable, SYNC_SETTINGS, kcalShared } from "./sync.js";
@@ -6009,7 +6009,7 @@ async function pushRegister({ on, ask, alive = () => true }) {
   await installCheck(); // 1.7.4: a reinstalled app forgets "already asked" (see native.js)
   await pushChannel(T("pushChannel"));
   let perm = await pushPermission(false);
-  if (on && perm === "prompt" && (ask || !cloudMem().pushAsked)) { setCloudMem({ pushAsked: true }); perm = await pushPermission(true); }
+  if (on && perm === "prompt" && ask) perm = await pushPermission(true); // 1.7.5: the App's notification check asks at start
   let token = null, err = "";
   if (on && perm === "granted") { const r = await pushTokenWhy(); token = r.token || null; err = r.err || ""; }
   if (!alive()) return { perm, token, err };
@@ -6027,24 +6027,42 @@ async function pushRegister({ on, ask, alive = () => true }) {
 // turning it on asks Android (when Android won't ask any more, the line under it says where to allow them).
 function UpdNotifRow({ settings, set }) {
   const [perm, setPerm] = useState(null);
-  const want = settings.updNotif !== false, on = want && perm !== "denied" && perm !== "prompt";
+  const want = settings.updNotif !== false, on = want && (perm === null || perm === "granted");
   useEffect(() => { const chk = () => { if (!document.hidden) pushPermission(false).then(setPerm); }; chk(); document.addEventListener("visibilitychange", chk); return () => document.removeEventListener("visibilitychange", chk); }, []);
+  const flip = async () => {
+    if (on) { set({ updNotif: false, notifOff: null }); return; }
+    set({ updNotif: true, notifOff: null });
+    const p = await pushPermission(true); setPerm(p);
+    if (p !== "granted") set({ updNotif: false, notifOff: "android" }); // refused: off again (1.7.5, Michael)
+  };
   return (
     <div data-upd-notif>
-      <SettingRow title={T("updNotif")} desc={T("updNotifD")} on={on} onClick={async () => { if (on) { set("updNotif", false); return; } set("updNotif", true); setPerm(await pushPermission(true)); }} />
-      {want && perm === "denied" && <div data-upd-denied style={{ fontSize: 12, color: C.signal, lineHeight: 1.45, padding: "0 16px 12px" }}>{T("pushDenied")}</div>}
+      <SettingRow title={T("updNotif")} desc={T("updNotifD")} on={on} onClick={flip} />
+      {perm === "denied" && (want || settings.notifOff === "android") && <NotifBlocked data="upd" />}
+    </div>
+  );
+}
+// 1.7.5 (Michael, Oct 23): Android won't ask any more: the line says so and a button opens this app's notification
+// settings in Android; coming back with notifications allowed switches them on again (the App's notification check).
+function NotifBlocked({ data }) {
+  const [failed, setFailed] = useState(false);
+  return (
+    <div {...{ [`data-${data}-denied`]: "" }} style={{ fontSize: 12, color: C.signal, lineHeight: 1.45, padding: "0 16px 12px" }}>
+      {T("pushDenied")}
+      {isNative && !failed && <div style={{ marginTop: 8 }}><button type="button" data-notif-settings onClick={async () => { sfxTap(); if (!(await openNotifSettings())) setFailed(true); }}
+        style={{ ...ghostBtn, padding: "9px 14px", color: C.chalk }}>{T("pushOpenSettings")} <Arrow /></button></div>}
     </div>
   );
 }
 function PushRow({ settings, set }) {
   const [perm, setPerm] = useState(null);
-  // 1.7.4: off while Android doesn't allow notifications; turning it on asks Android and registers this phone
-  const want = settings.push !== false, on = want && perm !== "denied" && perm !== "prompt";
+  // off while Android doesn't allow notifications (1.7.4); turning it on asks Android and registers this phone;
+  // refused → off again (1.7.5)
+  const want = settings.push !== false, on = want && (perm === null || perm === "granted");
   const [test, setTest] = useState(null); // {st: busy|wait|got|late|err, e}
   const got = useRef(0), timer = useRef(0);
-  // 1.7.3 (Michael, Oct 18: "it says notifications aren't allowed, but they are"): the answer was read only when the
-  // screen opened, so after allowing them in Android's settings and coming back the old "off" line stayed. Read it
-  // again whenever the app comes back to the front.
+  // 1.7.3 (Michael, Oct 18: "it says notifications aren't allowed, but they are"): read again whenever the app comes
+  // back to the front.
   useEffect(() => { const chk = () => { if (!document.hidden) pushPermission(false).then(setPerm); }; chk(); document.addEventListener("visibilitychange", chk); return () => document.removeEventListener("visibilitychange", chk); }, []);
   useEffect(() => {
     const off = onPushReceived(d => { if (d.kind !== "test") return; got.current = Date.now(); setTest(t => (t && (t.st === "wait" || t.st === "late") ? { st: "got" } : t)); });
@@ -6052,9 +6070,10 @@ function PushRow({ settings, set }) {
   }, []);
   const flipPush = async () => {
     setTest(null);
-    if (on) { set("push", false); return; }
-    set("push", true);
+    if (on) { set({ push: false, notifOff: null }); return; }
+    set({ push: true, notifOff: null });
     const r = await pushRegister({ on: true, ask: true }); setPerm(r.perm);
+    if (r.perm !== "granted") set({ push: false, notifOff: "android" });
   };
   const runTest = async () => {
     if (test && (test.st === "busy" || test.st === "wait")) return;
@@ -6074,7 +6093,7 @@ function PushRow({ settings, set }) {
   return (
     <div data-push-row style={{ borderTop: `1px solid ${C.line}` }}>
       <SettingRow first title={T("pushTitle")} desc={T("pushD")} on={on} onClick={flipPush} />
-      {want && perm === "denied" && <div data-push-denied style={{ fontSize: 12, color: C.signal, lineHeight: 1.45, padding: "0 16px 12px" }}>{T("pushDenied")}</div>}
+      {perm === "denied" && (want || settings.notifOff === "android") && <NotifBlocked data="push" />}
       {on && <div style={{ padding: "0 16px 13px" }}>
         <button data-push-test onClick={runTest} disabled={!!test && (test.st === "busy" || test.st === "wait")} style={{ ...ghostBtn, padding: "9px 14px", opacity: test && (test.st === "busy" || test.st === "wait") ? 0.6 : 1 }}>{test && test.st === "busy" ? "…" : T("pushTest")}</button>
         {line && <div data-push-test-st={test.st} role="status" style={{ fontSize: 12, color: line[1], lineHeight: 1.45, marginTop: 8 }}>{line[0]}</div>}
@@ -6191,7 +6210,7 @@ function SettingsTab({ initPage, settings, setSettings, history, profile, setPro
   const [msg, setMsg] = useState("");
   const [pending, setPending] = useState(null);
   const fileRef = useRef(null);
-  const set = (k, v) => { const n = { ...settings, [k]: v }; window._wset = n; setSettings(n); };
+  const set = (k, v) => { const n = typeof k === "object" ? { ...settings, ...k } : { ...settings, [k]: v }; window._wset = n; setSettings(n); };
   const curLang = settings.lang || detectLang();
   const flip = k => { unlockAudio(); const v = !settings[k]; set(k, v); if (v) { if (k === "sndTap") sfxTap(); else if (k === "sndTimer") soundExercise(); else sfxCheck(); } };
 
@@ -7715,8 +7734,27 @@ export default function App() {
   // language; Android 13+ asks for notifications at the first start (after the first-start setup, if it shows).
   useEffect(() => {
     if (!isNative || !loaded || !settingsLoaded || !obChecked || onboard !== null) return;
-    updTopic({ on: settings.updNotif !== false, lang: LANG, channelName: T("updChannel"), ask: true }).catch(() => {});
+    updTopic({ on: settings.updNotif !== false, lang: LANG, channelName: T("updChannel"), ask: false }).catch(() => {});
   }, [loaded, settingsLoaded, obChecked, onboard, settings.updNotif, settings.lang]);
+  // 1.7.5 (Michael, Oct 23): at every start and every return to the app (after the first-start setup), the app checks
+  // Android's notification permission. Not allowed while notifications are on → it asks; refused → both switches
+  // (messages, new versions) go off (`notifOff: "android"`). Allowed later in Android's settings → both on again.
+  // Switched off by the person → nothing is asked.
+  const setRef = useRef(settings); setRef.current = settings;
+  useEffect(() => {
+    if (!pushSupported() || !loaded || !settingsLoaded || !obChecked || onboard !== null) return;
+    const apply = o => { const n = { ...setRef.current, ...o }; window._wset = n; setSettings(n); };
+    (async () => {
+      await installCheck();
+      const s = setRef.current, want = s.push !== false || s.updNotif !== false;
+      let p = await pushPermission(false);
+      if (p === "granted") { if (s.notifOff === "android") apply({ push: true, updNotif: true, notifOff: null }); return; }
+      if (!want) return;
+      if (p === "prompt") p = await pushPermission(true);
+      if (p !== "granted") apply({ push: false, updNotif: false, notifOff: "android" });
+      else setPermSeq(n => n + 1); // allowed now: register this phone
+    })().catch(() => {});
+  }, [loaded, settingsLoaded, obChecked, onboard, permSeq]);
   useEffect(() => {
     if (!loaded || !settingsLoaded || newsChecked) return;
     setNewsChecked(true);

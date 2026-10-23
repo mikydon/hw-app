@@ -502,6 +502,7 @@ export default {
     pushTitle: "Notificaciones en el móvil",
     pushD: "Mensajes y solicitudes de amistad, también con la app cerrada.",
     pushDenied: "Las notificaciones de HW App están desactivadas en el móvil. Actívalas en Ajustes de Android → Aplicaciones → HW App → Notificaciones.",
+    pushOpenSettings: "Abrir ajustes de notificaciones",
     pushChannel: "Amigos y mensajes",
     ntTest: "Notificación de prueba",
     ntTestD: "¡Funciona! Así llegarán los mensajes y las solicitudes de amistad.",
@@ -1228,6 +1229,10 @@ export default {
   news175: [
     "Cada campo de contraseña tiene un botón con un ojo: tócalo para ver lo que escribiste (y detectar errores) y vuelve a tocarlo para ocultarlo.",
     "El texto de la app tiene el mismo tamaño en todos los móviles: una letra más grande configurada en el móvil ya no lo agranda ni corta palabras. (Con una app descargada más antigua, las pantallas hacen sitio, así que tampoco se corta nada.)",
+    "📱 La app comprueba cada vez que la abres si las notificaciones están permitidas: si no, pregunta; si dices que no, los interruptores de notificaciones se apagan (vuelven a encenderse solos cuando las permites en Android). Cuando Android ya no deja preguntar, un botón bajo el interruptor abre los ajustes de notificaciones de la app.",
+    "📱 Corregido: en la app de GitHub y de Google Play nunca se pedían las notificaciones, siempre aparecían apagadas y no llegaban. Ahora la app se construye exactamente como la probada.",
+    "📱 Una app reinstalada empieza de cero con el inicio de sesión (Android ya no devuelve datos antiguos por su cuenta; al iniciar sesión tus datos vuelven de la nube).",
+    "Web: iniciar sesión con Google siempre deja elegir la cuenta (tras cerrar sesión usaba la antigua sin preguntar).",
   ],
   news174: [
     "Las insignias y rangos que has ganado ahora esperan en tu perfil como cartas boca abajo: toca una, o Abrir en la página Perfil, y ábrelas como después de un entrenamiento. El menú ☰ muestra cuántas esperan.",

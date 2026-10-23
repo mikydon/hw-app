@@ -502,6 +502,7 @@ export default {
     pushTitle: "Notificações no telemóvel",
     pushD: "Mensagens e pedidos de amizade, mesmo com a app fechada.",
     pushDenied: "As notificações da HW App estão desligadas no telemóvel. Liga-as em Definições do Android → Aplicações → HW App → Notificações.",
+    pushOpenSettings: "Abrir definições de notificações",
     pushChannel: "Amigos e mensagens",
     ntTest: "Notificação de teste",
     ntTestD: "Funciona! É assim que vão chegar as mensagens e os pedidos de amizade.",
@@ -1228,6 +1229,10 @@ export default {
   news175: [
     "Cada campo de palavra-passe tem um botão com um olho: toca para ver o que escreveste (e apanhar erros de escrita), toca de novo para ocultar.",
     "O texto da app tem o mesmo tamanho em todos os telemóveis: uma letra maior definida no telemóvel já não o aumenta nem corta palavras. (Com uma app descarregada mais antiga, os ecrãs abrem espaço, por isso também nada fica cortado.)",
+    "📱 A app verifica sempre que a abres se as notificações estão permitidas: se não, pergunta; se recusares, os interruptores das notificações desligam-se (voltam a ligar-se sozinhos quando as permitires no Android). Quando o Android já não deixa perguntar, um botão sob o interruptor abre as definições de notificações da app.",
+    "📱 Corrigido: na app do GitHub e do Google Play as notificações nunca eram pedidas, apareciam sempre desligadas e não chegavam. A app é agora construída exatamente como a testada.",
+    "📱 Uma app reinstalada começa do zero com o início de sessão (o Android já não repõe dados antigos sozinho; ao iniciar sessão os teus dados voltam da nuvem).",
+    "Site: iniciar sessão com o Google deixa sempre escolher a conta (depois de terminar sessão usava a antiga sem perguntar).",
   ],
   news174: [
     "Os emblemas e ranks que ganhaste agora esperam no teu perfil como cartas viradas para baixo: toca numa, ou em Abrir na página Perfil, e abre-as como depois de um treino. O menu ☰ mostra quantas esperam.",

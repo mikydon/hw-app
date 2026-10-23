@@ -502,6 +502,7 @@ export default {
     pushTitle: "Notifications sur le téléphone",
     pushD: "Messages et demandes d’ami, même quand l’app est fermée.",
     pushDenied: "Les notifications de HW App sont désactivées sur le téléphone. Active-les dans Paramètres Android → Applications → HW App → Notifications.",
+    pushOpenSettings: "Ouvrir les réglages des notifications",
     pushChannel: "Amis et messages",
     ntTest: "Notification de test",
     ntTestD: "Ça marche ! Les messages et demandes d'ami arriveront comme ça.",
@@ -1228,6 +1229,10 @@ export default {
   news175: [
     "Chaque champ de mot de passe a un bouton en forme d’œil : touche-le pour voir ce que tu as saisi (et repérer une faute de frappe), touche-le encore pour le masquer.",
     "Le texte de l’app a la même taille sur tous les téléphones : une police plus grande réglée sur le téléphone ne l’agrandit plus et ne coupe plus les mots. (Avec une app téléchargée plus ancienne, les écrans font de la place à la place, donc rien n’est coupé non plus.)",
+    "📱 L’app vérifie à chaque ouverture si les notifications sont autorisées : sinon, elle demande ; si tu refuses, les interrupteurs de notifications se désactivent (ils se réactivent seuls quand tu les autorises dans Android). Quand Android ne permet plus de demander, un bouton sous l’interrupteur ouvre les réglages de notifications de l’app.",
+    "📱 Corrigé : dans l’app de GitHub et de Google Play, les notifications n’étaient jamais demandées, toujours affichées comme désactivées et n’arrivaient pas. L’app est maintenant construite exactement comme celle testée.",
+    "📱 Une app réinstallée repart de zéro avec l’écran de connexion (Android ne remet plus d’anciennes données tout seul ; après connexion, tes données reviennent du cloud).",
+    "Site : la connexion avec Google laisse toujours choisir le compte (après déconnexion, elle reprenait l’ancien sans demander).",
   ],
   news174: [
     "Les badges et rangs que tu as gagnés attendent maintenant sur ton profil, en cartes face cachée : touche-en une, ou Ouvrir sur la page Profil, et ouvre-les comme après une séance. Le menu ☰ indique combien attendent.",
