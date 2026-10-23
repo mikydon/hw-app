@@ -104,7 +104,9 @@ export const impl = {
       emailPw = cred.pw || "";
     }
     else if (native()) await signInWithCredential(auth, await googleCredential());
-    else await signInWithPopup(auth, new GoogleAuthProvider());
+    // 1.7.5 (Michael, Oct 23: after signing out on the website, signing in again quietly took the old Google
+    // account): always show Google's account chooser
+    else { const gp = new GoogleAuthProvider(); gp.setCustomParameters({ prompt: "select_account" }); await signInWithPopup(auth, gp); }
     user = { uid: auth.currentUser.uid };
     // the Google name only fills in the nickname field at the first start (it isn't stored in the cloud)
     return { ...user, name: auth.currentUser.displayName || "" };

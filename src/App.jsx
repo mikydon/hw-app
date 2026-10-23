@@ -1,6 +1,6 @@
 import { useState, useEffect, useLayoutEffect, useRef, useMemo, memo, Fragment } from "react";
 import { createPortal } from "react-dom";
-import { isNative, pushBack, setRootBack, exitApp, vibratePattern, keepScreenOn, openExternal, saveBackupFile, bkSupported, bkWrite, bkWriteAuto, bkList, bkRead, bkDelete, bkShare, BK_DIR, bkAutoFile, checkForUpdate, lastUpdate, lastGh, applyUpdateNow, latestApk, isTestBuild, apkState, onApk, apkSupported, apkRestore, apkDownload, apkCanInstall, apkAllow, apkInstall, onAppResume, healthState, healthConnect, healthSettings, healthSteps, healthFoodItems, healthBody, shareText, copyText, pushSupported, pushPermission, pushChannel, pushToken, pushTokenWhy, pushDeleteToken, onPushTap, onPushToken, onPushReceived, hzSupported, hzInfo, hzSet, isPlay, playCheck, playOpenStore, PLAY_STORE_LINK, updTopic, onAppUrl, installCheck } from "./native.js";
+import { isNative, pushBack, setRootBack, exitApp, vibratePattern, keepScreenOn, openExternal, saveBackupFile, bkSupported, bkWrite, bkWriteAuto, bkList, bkRead, bkDelete, bkShare, BK_DIR, bkAutoFile, checkForUpdate, lastUpdate, lastGh, applyUpdateNow, latestApk, isTestBuild, apkState, onApk, apkSupported, apkRestore, apkDownload, apkCanInstall, apkAllow, apkInstall, onAppResume, healthState, healthConnect, healthSettings, healthSteps, healthFoodItems, healthBody, shareText, copyText, pushSupported, pushPermission, pushChannel, pushToken, pushTokenWhy, pushDeleteToken, onPushTap, onPushToken, onPushReceived, hzSupported, hzInfo, hzSet, isPlay, playCheck, playOpenStore, PLAY_STORE_LINK, updTopic, onAppUrl, installCheck, openNotifSettings, showNotif } from "./native.js";
 import { cloud, NICK_RE, SHARE_BASE, cleanCode, fmtCode } from "./cloud-lazy.js";
 import { QUICK as EMO_QUICK, EMOJI } from "./emoji.js";
 import { mergeAll, syncKey, withIds, entryId, stable, SYNC_SETTINGS, kcalShared } from "./sync.js";
@@ -33,7 +33,7 @@ const THEMES = {
   slate:  { ink: "#15181d", panel: "#1f242b", panelHi: "#2a313a", line: "#3a434f", chalk: "#f1f4f8", dim: "#9aa6b4", edge: "#0e1115" },
   coffee: { ink: "#1c140f", panel: "#2a1f17", panelHi: "#382a20", line: "#4d3a2c", chalk: "#fbf3ec", dim: "#b8a291", edge: "#130d09" },
 };
-const APP_VERSION = "1.7.4";
+const APP_VERSION = "1.7.5";
 // Big Shoulders has no Cyrillic, so Oswald (also condensed) covers Ukrainian. The browser only
 // downloads the Oswald unicode ranges a page actually uses.
 // 1.7.0: 'HW Emoji' = the app's own emoji (Fluent 3D, fonts/hw-emoji.ttf) for the emoji the app shows; BODY_SYS
@@ -942,6 +942,10 @@ const bigBtn = (bg, fg) => ({ ...btnBase, width: "100%", padding: "17px 16px", f
 let ghostBtn = { ...btnBase, background: "transparent", color: C.dim, border: `1.5px solid ${C.line}`, padding: "10px 14px", fontSize: 13 };
 
 // Big display text: shrink when the language's words are long, so nothing gets cut off.
+// 1.7.5: the size for a title that fits its width by design (the day on Home, the exercise in a workout): Android's
+// bigger phone font would make it wrap or overflow, so it is divided by TEXT_SCALE (`--ts`) and stays the size it was
+// made for; normal text keeps the bigger size.
+const fitFont = (text, base, maxChars) => `calc(${fitSize(text, base, maxChars)}px / var(--ts, 1))`;
 function fitSize(text, base, maxChars = 10) {
   // Cyrillic falls back to Oswald, which runs about 20 % wider than Big Shoulders.
   const k = /[\u0400-\u04FF]/.test(text) ? 1.2 : 1;
@@ -1419,6 +1423,52 @@ function useMQ(q) {
 }
 const useWide = () => useMQ(WIDE_Q);
 const useSide = () => useMQ(SIDE_Q);
+// 1.7.5 (tester's phone, Oct 23: words cut off, "Utorok 2…"): Android makes every font size in the app bigger when the
+// phone's font size setting is bigger (the WebView's text zoom), but boxes keep their width. TEXT_SCALE = how much
+// bigger (1 = normal, 1.3 = 30 % bigger), measured from a hidden 100 px letter with line-height 1 (its height is the real
+// font size whatever the font). Layouts that would cut text use it (`--ts` in CSS, `useTextScale` in React). The bigger
+// text stays: it's the person's own setting for readability.
+let TEXT_SCALE = 1;
+const tsSubs = new Set();
+let tsProbe = null;
+function readTextScale() {
+  if (!tsProbe) return;
+  const h = tsProbe.getBoundingClientRect().height, v = h > 0 ? Math.round(h) / 100 : 1;
+  if (Math.abs(v - TEXT_SCALE) < 0.01) return;
+  TEXT_SCALE = v;
+  try { document.documentElement.style.setProperty("--ts", String(Math.max(1, v))); } catch (_) {}
+  tsSubs.forEach(f => f(v));
+}
+function startTextScale() {
+  if (tsProbe || typeof document === "undefined") return;
+  tsProbe = document.createElement("span");
+  tsProbe.setAttribute("aria-hidden", "true");
+  tsProbe.style.cssText = "position:fixed;left:-9999px;top:0;visibility:hidden;pointer-events:none;display:inline-block;line-height:1;font-family:sans-serif";
+  tsProbe.style.fontSize = "100px";
+  tsProbe.textContent = "M";
+  document.body.appendChild(tsProbe);
+  requestAnimationFrame(readTextScale); setTimeout(readTextScale, 400);
+  window.addEventListener("resize", readTextScale);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) setTimeout(readTextScale, 60); });
+}
+function useTextScale() {
+  const [v, setV] = useState(TEXT_SCALE);
+  useEffect(() => { startTextScale(); tsSubs.add(setV); setV(TEXT_SCALE); return () => { tsSubs.delete(setV); }; }, []);
+  return Math.max(1, v);
+}
+// The width of an element in CSS px (0 until measured), kept up to date.
+function useWidth(ref) {
+  const [w, setW] = useState(0);
+  useLayoutEffect(() => {
+    const el = ref.current; if (!el) return;
+    const f = () => setW(Math.round(el.getBoundingClientRect().width));
+    f();
+    if (typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(f); ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  return w;
+}
 // Two columns on a wide screen, one after the other on a phone. Each column stops the expander's slide (a box opening
 // in one column doesn't move the other).
 function Cols({ left, right, ...rest }) {
@@ -1736,6 +1786,23 @@ function TopBar({ screen, history, menuOpen, onMenu, onGo, dlPct, badge, head, s
   const today = dateKey();
   const st = streakInfo(history, today);
   const lv = levelInfo(totalXP(history));
+  // 1.7.5 (tester: "Utorok 2…"): the date gets shorter when it doesn't fit (bigger phone font, narrow phone):
+  // "Utorok 20. 10." → "Ut 20. 10." → "20. 10."
+  const dateRef = useRef(null);
+  const [fit, setFit] = useState({ k: "", dl: 0 });
+  const fitK = today + "|" + screen + "|" + (head ? 1 : 0), dl = fit.k === fitK ? fit.dl : 0;
+  // measure again from the long form when the width, the text scale or the loaded fonts change
+  useEffect(() => {
+    const f = () => setFit(o => ({ k: "", dl: 0, n: (o.n || 0) + 1 }));
+    window.addEventListener("resize", f); tsSubs.add(f); startTextScale();
+    // a web font that finishes loading later makes the text wider (fonts.ready may have resolved before it started)
+    try { document.fonts.ready.then(f); document.fonts.addEventListener("loadingdone", f); } catch (_) {}
+    return () => { window.removeEventListener("resize", f); tsSubs.delete(f); try { document.fonts.removeEventListener("loadingdone", f); } catch (_) {} };
+  }, []);
+  // measured after the frame is drawn: reading the layout earlier (in a layout effect) forced a style pass in the middle
+  // of the top bar's liquid move and showed the floating box for a moment (tgoo_test)
+  useEffect(() => { const el = dateRef.current; if (el && dl < 2 && el.scrollWidth > el.clientWidth + 1) setFit({ k: fitK, dl: dl + 1 }); }, [fitK, dl, fit.k, fit.n]);
+  const td = parseKey(today), dateText = dl === 0 ? capFirst(fmtDate(today)) : dl === 1 ? `${weekdaysShort()[(td.getDay() + 6) % 7]} ${fmtShortDM(td)}` : fmtShortDM(td);
   const liquid = LOOK === "liquid";
   const pill = liquid ? LIQUID_PILL() : { background: "transparent" };
   // 1.4.2 (Michael): one top bar for every look. At the top of the page it hangs from the top edge (square top
@@ -1822,7 +1889,7 @@ function TopBar({ screen, history, menuOpen, onMenu, onGo, dlPct, badge, head, s
         <div style={{ flex: 1, minWidth: 0 }}>
           <div key={screen} className="titleIn" style={{ fontFamily: DISPLAY, fontSize: CJK.test(T(SCREEN_TITLE[screen])) ? 21 : 24, fontWeight: 900, lineHeight: 1.05, color: C.chalk, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{T(SCREEN_TITLE[screen])}</div>
           <div style={{ display: "flex", gap: 5, fontSize: 12, color: bdayToday() ? C.signal : C.dim, fontWeight: bdayToday() ? 800 : 400, marginTop: 2, whiteSpace: "nowrap" }}>
-            <span style={{ overflow: "hidden", textOverflow: "ellipsis", minWidth: 0 }}>{bdayToday() ? T("bdayTop") : capFirst(fmtDate(today))}</span>
+            <span ref={dateRef} data-top-date={dl} style={{ overflow: "hidden", textOverflow: "ellipsis", minWidth: 0 }}>{bdayToday() ? T("bdayTop") : dateText}</span>
             <span data-clock style={{ flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>· {now.toLocaleTimeString(LANG, { hour: "2-digit", minute: "2-digit" })}</span>
           </div>
         </div>
@@ -1980,6 +2047,8 @@ function MiniPlayer({ session, live, onOpen }) {
 // descriptions must be visible); tap opens the full list with XP.
 function HomeTiles({ history, onCalories }) {
   const [sheet, setSheet] = useState(false);
+  // 1.7.5: side by side only while each tile still has room for its text (with the phone's font size); else one under the other
+  const boxRef = useRef(null), bw = useWidth(boxRef), ts = useTextScale(), stack = bw > 0 && bw / ts < 300;
   const s = kcalNow(history);
   const wk = weekKey(dateKey()), list = challengeStatus(history, wk), doneN = list.filter(c => c.done).length;
   const left = daysBetween(dateKey(), addDays(wk, 6)) + 1;
@@ -1990,7 +2059,7 @@ function HomeTiles({ history, onCalories }) {
   const key = fn => e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); fn(); } };
   const openCal = () => { sfxTap(); onCalories(); }, openCh = () => { sfxTap(); setSheet(true); };
   return (
-    <div data-home-tiles style={{ display: "flex", gap: 10, alignItems: "stretch" }}>
+    <div ref={boxRef} data-home-tiles data-stack={stack ? 1 : 0} style={{ display: "flex", flexDirection: stack ? "column" : "row", gap: stack ? 0 : 10, alignItems: "stretch" }}>
       <Sect role="button" tabIndex={0} data-home-kcal={s ? "on" : "setup"} onClick={openCal} onKeyDown={key(openCal)} aria-label={s ? `${T("kcHomeTitle")}: ${nf(s.eaten)} ${T("kcOf", { n: nf(s.target) })}` : T("kcHomeSetup")} style={tile}>
         {label(T("kcTile"))}
         {s ? <>
@@ -2986,7 +3055,7 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
   const hero = (
     <Sect data-home-hero style={{ padding: LOOK === "flat" ? 0 : "18px 18px 16px" }}>
       <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: C.dim }}>{doneToday ? T("nextWorkout") : T("homeToday")}</div>
-      <div data-day-title style={{ fontFamily: DISPLAY, fontWeight: 900, fontSize: fitSize(T("dayN", { d: day.id }).replace(/\s/g, "_"), doneToday ? 84 : 112, 6), lineHeight: 0.85, paddingBottom: "0.16em", letterSpacing: -1, color: C.chalk, marginTop: 8 }}>
+      <div data-day-title style={{ fontFamily: DISPLAY, fontWeight: 900, fontSize: fitFont(T("dayN", { d: day.id }).replace(/\s/g, "_"), doneToday ? 84 : 112, 6), lineHeight: 0.85, paddingBottom: "0.16em", letterSpacing: -1, color: C.chalk, marginTop: 8 }}>
         {T("dayN", { d: day.id })}
       </div>
       <div data-day-status style={{ fontSize: 14, color: !doneToday && gap !== null && gap >= 2 ? C.signal : C.dim, marginTop: 8, lineHeight: 1.5 }}>{status}</div>
@@ -4339,9 +4408,9 @@ const STAT_UI = { n: ["statTrainings", "🏋️"], reps: ["statReps", "📊"], m
 const rankUnit = id => (EX[id].type === "time" ? " s" : "");
 
 // One showcase field. Others (and you, outside edit) tap it to see the whole list on the page below.
-function SlotTile({ sl, m, i, onTap, own }) {
+function SlotTile({ sl, m, i, onTap, own, cols = 2 }) {
   const wide = sl && sl.kind.endsWith("3");
-  const base = { ...btnBase, fontWeight: 400, textAlign: "left", color: C.chalk, borderRadius: 16, padding: "12px 13px", minHeight: 92, position: "relative", overflow: "hidden", gridColumn: wide ? "span 2" : undefined, animationDelay: `${120 + i * 60}ms`, display: "flex", flexDirection: "column" };
+  const base = { ...btnBase, fontWeight: 400, textAlign: "left", color: C.chalk, borderRadius: 16, padding: "12px 13px", minHeight: 92, position: "relative", overflow: "hidden", gridColumn: wide && cols > 1 ? "span 2" : undefined, overflowWrap: "break-word", animationDelay: `${120 + i * 60}ms`, display: "flex", flexDirection: "column" };
   if (!sl) return <div className="cardIn" style={{ ...base, background: SOFT(), border: `1px dashed ${C.line}`, justifyContent: "center", alignItems: "center", color: C.dim, fontSize: 12.5 }}>{T("pfSlotEmpty")}</div>;
   const glow = col => ({ background: `radial-gradient(120% 90% at 100% 0%, ${col}33, transparent 60%), ${SOFT()}`, border: `1px solid ${col}40` });
   const pen = own && <span aria-hidden="true" style={{ position: "absolute", right: 9, top: 8, fontSize: 11, opacity: 0.55 }}>✏️</span>;
@@ -4511,6 +4580,8 @@ function ProfilePage({ m, own, onEditProfile, onEditSlot, onStreak, onPhoto, onP
   const lv = levelInfo(m.xp), lr = RANKS[lvRank(m.lvl)];
   const sm = claim ? hideUnclaimed(m, claim.hid) : m; // the showcase never shows a card that is still face down
   const slots = showcase(sm), n = slots.length, nextLv = SLOT_LV[n];
+  // 1.7.5: columns of at least 150 px of text room (more with a bigger phone font), so names are never cut
+  const slotsRef = useRef(null), sw = useWidth(slotsRef), sts = useTextScale(), slotCols = sw ? Math.max(1, Math.floor((sw + 8) / (150 * sts + 8))) : 2;
   const open = (sl, i) => {
     if (own) return onEditSlot(i);
     const page = sl.kind.startsWith("ach") ? 1 : sl.kind.startsWith("rk") ? 2 : 3;
@@ -4569,8 +4640,8 @@ function ProfilePage({ m, own, onEditProfile, onEditSlot, onStreak, onPhoto, onP
         </Sect>
         {/* the showcase */}
         <Sect data-pf-showcase title={T("pfShowcase")} meta={T("pfSlots", { n, max: SLOT_LV.length })}>
-          <div data-pf-slots style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gridAutoFlow: "row dense", gap: 8 }}>
-            {slots.map((sl, i) => <SlotTile key={i + (sl ? slotStr(sl) : "")} sl={sl} m={sm} i={i} own={own} onTap={open} />)}
+          <div ref={slotsRef} data-pf-slots data-cols={slotCols} style={{ display: "grid", gridTemplateColumns: `repeat(${slotCols}, minmax(0, 1fr))`, gridAutoFlow: "row dense", gap: 8 }}>
+            {slots.map((sl, i) => <SlotTile key={i + (sl ? slotStr(sl) : "")} sl={sl} m={sm} i={i} own={own} onTap={open} cols={slotCols} />)}
             {own && nextLv && <div data-slot-next={nextLv} className="cardIn" style={{ animationDelay: `${120 + n * 60}ms`, borderRadius: 16, border: `1.5px dashed ${C.line}`, minHeight: 92, padding: "12px 13px", boxSizing: "border-box", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6, color: C.dim, textAlign: "center" }}>
               <span aria-hidden="true" style={{ fontSize: 20 }}>🔒</span>
               <span style={{ fontSize: 12, fontWeight: 700, lineHeight: 1.35 }}>{T("pfSlotNext", { lv: nextLv })}</span>
@@ -4983,6 +5054,27 @@ function GLogo() { return <svg width="20" height="20" viewBox="0 0 48 48" aria-h
 const PW_MIN = 8;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const pwField = { display: "block", width: "100%", boxSizing: "border-box", fontFamily: BODY, fontSize: 16, padding: "12px 14px", borderRadius: 14, border: `1.5px solid ${C.line}`, background: C.panel, color: C.chalk, outline: "none", marginTop: 8 };
+// 1.7.5 (tester feedback, Oct 21: "add a way to show the password, in case of typos"): every password field has an eye
+// button on the right that shows / hides what was typed (each field on its own). The button never takes the focus, so
+// the phone's keyboard stays open.
+function PwInput({ style, ...p }) {
+  const [show, setShow] = useState(false);
+  const { marginTop, ...st } = style || {};
+  return (
+    <div data-pw-wrap style={{ position: "relative", marginTop }}>
+      <input {...p} type={show ? "text" : "password"} autoCapitalize="off" autoCorrect="off" spellCheck={false} style={{ ...st, paddingRight: 50 }} />
+      <button type="button" data-pw-eye aria-pressed={show} aria-label={T(show ? "acPwHide" : "acPwShow")} title={T(show ? "acPwHide" : "acPwShow")}
+        onMouseDown={e => e.preventDefault()} onClick={() => { sfxTap(); setShow(v => !v); }}
+        style={{ ...btnBase, position: "absolute", right: 3, top: "50%", transform: "translateY(-50%)", width: 44, height: 44, padding: 0, borderRadius: 12, background: "transparent", color: show ? C.signal : C.dim, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" />
+          <circle cx="12" cy="12" r="3" />
+          {!show && <path d="M4 20 20 4" />}
+        </svg>
+      </button>
+    </div>
+  );
+}
 // 1.7.2 (Michael: "like most apps"): the e-mail form comes first, then "or" and the Google button (`google`).
 function EmailSignIn({ ok, busy, onGo, google }) {
   const [mode, setMode] = useState("in"); // in | new
@@ -5004,8 +5096,8 @@ function EmailSignIn({ ok, busy, onGo, google }) {
     <div data-email-box={mode} style={{ marginTop: 6 }}>
       {isNew && <div style={{ fontSize: 12, color: C.dim, fontWeight: 800, textTransform: "uppercase", letterSpacing: ".04em", marginTop: 8 }}>{T("acNewTitle")}</div>}
       <input data-email-input type="email" inputMode="email" autoComplete={isNew ? "email" : "username"} autoCapitalize="off" spellCheck={false} value={email} onChange={e => setEmail(e.target.value)} placeholder={T("acEmailPh")} aria-label={T("acEmailPh")} style={pwField} />
-      <input data-pw-input type="password" autoComplete={isNew ? "new-password" : "current-password"} value={pw} onChange={e => setPw(e.target.value)} onKeyDown={e => { if (e.key === "Enter" && !isNew) go(); }} placeholder={isNew ? T("acPwNewPh", { n: PW_MIN }) : T("acPwPh")} aria-label={T("acPwPh")} style={pwField} />
-      {isNew && <input data-pw2-input type="password" autoComplete="new-password" value={pw2} onChange={e => setPw2(e.target.value)} onKeyDown={e => { if (e.key === "Enter") go(); }} placeholder={T("acPwAgainPh")} aria-label={T("acPwAgainPh")} style={pwField} />}
+      <PwInput data-pw-input autoComplete={isNew ? "new-password" : "current-password"} value={pw} onChange={e => setPw(e.target.value)} onKeyDown={e => { if (e.key === "Enter" && !isNew) go(); }} placeholder={isNew ? T("acPwNewPh", { n: PW_MIN }) : T("acPwPh")} aria-label={T("acPwPh")} style={pwField} />
+      {isNew && <PwInput data-pw2-input autoComplete="new-password" value={pw2} onChange={e => setPw2(e.target.value)} onKeyDown={e => { if (e.key === "Enter") go(); }} placeholder={T("acPwAgainPh")} aria-label={T("acPwAgainPh")} style={pwField} />}
       {isNew && pw2 && pw !== pw2 && <div data-pw-mismatch style={{ fontSize: 12.5, color: "#ff8a80", marginTop: 6 }}>{T("acPwMismatch")}</div>}
       {!isNew && <div style={{ textAlign: "right" }}><button type="button" data-pw-forgot onClick={forgot} disabled={sending} style={{ ...link, padding: "8px 2px 0" }}>{sending ? "…" : T("acForgot")}</button></div>}
       <button type="button" data-email-signin onClick={go} disabled={!can} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 12, opacity: can ? 1 : 0.45 }}>{busy ? T("frSigning") : isNew ? T("acNewGo") : T("acEmailGo")}</button>
@@ -5045,9 +5137,9 @@ function PwSheet({ onClose }) {
     <Sheet title={has ? T("acPwChange") : T("acPwAdd")} onClose={onClose}>
       <div data-pw-sheet={has ? "change" : "add"}>
         <div style={{ fontSize: 13.5, color: C.dim, lineHeight: 1.5 }}>{has ? T("acPwChangeD", { email: info.email }) : T("acPwAddD", { email: info.email })}</div>
-        {has && <input data-pw-old type="password" autoComplete="current-password" value={old} onChange={e => setOld(e.target.value)} placeholder={T("acPwOldPh")} aria-label={T("acPwOldPh")} style={pwField} />}
-        <input data-pw-new type="password" autoComplete="new-password" value={pw} onChange={e => setPw(e.target.value)} placeholder={T("acPwNewPh", { n: PW_MIN })} aria-label={T("acPwNewPh", { n: PW_MIN })} style={pwField} />
-        <input data-pw-new2 type="password" autoComplete="new-password" value={pw2} onChange={e => setPw2(e.target.value)} onKeyDown={e => { if (e.key === "Enter") save(); }} placeholder={T("acPwAgainPh")} aria-label={T("acPwAgainPh")} style={pwField} />
+        {has && <PwInput data-pw-old autoComplete="current-password" value={old} onChange={e => setOld(e.target.value)} placeholder={T("acPwOldPh")} aria-label={T("acPwOldPh")} style={pwField} />}
+        <PwInput data-pw-new autoComplete="new-password" value={pw} onChange={e => setPw(e.target.value)} placeholder={T("acPwNewPh", { n: PW_MIN })} aria-label={T("acPwNewPh", { n: PW_MIN })} style={pwField} />
+        <PwInput data-pw-new2 autoComplete="new-password" value={pw2} onChange={e => setPw2(e.target.value)} onKeyDown={e => { if (e.key === "Enter") save(); }} placeholder={T("acPwAgainPh")} aria-label={T("acPwAgainPh")} style={pwField} />
         {pw2 && pw !== pw2 && <div data-pw-mismatch style={{ fontSize: 12.5, color: "#ff8a80", marginTop: 6 }}>{T("acPwMismatch")}</div>}
         <button type="button" data-pw-save onClick={save} disabled={!can} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 12, opacity: can ? 1 : 0.45 }}>{busy === "save" ? "…" : T("acPwSave")}</button>
         {has && <button type="button" data-pw-forgot onClick={() => mail("reset", () => cloud().resetPw(info.email, LANG), T("acResetSent", { email: info.email }))} disabled={!!busy} style={link}>{busy === "reset" ? "…" : T("acForgot")}</button>}
@@ -5880,7 +5972,6 @@ function AccountBox({ acct, cloudBk, onOpen, onRestore, onBackupNow, onSignOut, 
           <span style={{ flex: 1, minWidth: 0 }}>{T("acPwRow")}{sub(T("acPwRowD"))}</span>
           <Arrow />
         </button>
-        {pushSupported() && settings && set && <PushRow settings={settings} set={set} />}
         <button data-acct-restore onClick={() => run("rs", onRestore)} style={rowBtn(false)}>
           <span style={{ flex: 1 }}>{busy === "rs" ? "…" : T("acRestore")}{sub(T("acRestoreD"))}</span>
         </button>
@@ -5899,7 +5990,7 @@ function AccountBox({ acct, cloudBk, onOpen, onRestore, onBackupNow, onSignOut, 
           {sub(`${T("acDeleteD")} ${T("acDelGoogle")}`)}
         </button>
         {askPw && <div style={{ padding: "0 16px 14px" }}>
-          <input data-del-pw type="password" autoComplete="current-password" value={delPw} onChange={e => setDelPw(e.target.value)} placeholder={T("acPwPh")} aria-label={T("acPwPh")}
+          <PwInput data-del-pw autoComplete="current-password" value={delPw} onChange={e => setDelPw(e.target.value)} placeholder={T("acPwPh")} aria-label={T("acPwPh")}
             style={{ display: "block", width: "100%", boxSizing: "border-box", fontFamily: BODY, fontSize: 16, padding: "11px 14px", borderRadius: 12, border: `1.5px solid ${C.line}`, background: C.panel, color: C.chalk, outline: "none" }} />
         </div>}
       </ListSect>
@@ -5917,7 +6008,7 @@ async function pushRegister({ on, ask, alive = () => true }) {
   await installCheck(); // 1.7.4: a reinstalled app forgets "already asked" (see native.js)
   await pushChannel(T("pushChannel"));
   let perm = await pushPermission(false);
-  if (on && perm === "prompt" && (ask || !cloudMem().pushAsked)) { setCloudMem({ pushAsked: true }); perm = await pushPermission(true); }
+  if (on && perm === "prompt" && ask) perm = await pushPermission(true); // 1.7.5: the App's notification check asks at start
   let token = null, err = "";
   if (on && perm === "granted") { const r = await pushTokenWhy(); token = r.token || null; err = r.err || ""; }
   if (!alive()) return { perm, token, err };
@@ -5933,36 +6024,115 @@ async function pushRegister({ on, ask, alive = () => true }) {
 // "New version" notifications (1.6.5) + the same "turned off in Android" line as PushRow when Android blocks them (1.7.3)
 // 1.7.4 (Michael, Oct 18): the switch shows what really happens: off while Android doesn't allow notifications, and
 // turning it on asks Android (when Android won't ask any more, the line under it says where to allow them).
-function UpdNotifRow({ settings, set }) {
+// 1.7.5 (Michael, Oct 23, 22:08: "one switch for everything; tapping it lets me pick which ones"): Settings shows one
+// row "Notifications" with what is on; it opens NotifSheet: a switch for all of them, then each kind on its own
+// (new versions for everyone; messages and friends after signing in, else a line that leads to signing in), the test
+// button, and one "blocked in Android" line with the button to Android's notification settings.
+function useNotifPerm() {
   const [perm, setPerm] = useState(null);
-  const want = settings.updNotif !== false, on = want && perm !== "denied" && perm !== "prompt";
   useEffect(() => { const chk = () => { if (!document.hidden) pushPermission(false).then(setPerm); }; chk(); document.addEventListener("visibilitychange", chk); return () => document.removeEventListener("visibilitychange", chk); }, []);
+  return [perm, setPerm];
+}
+function NotifRow({ settings, set, acct, onAcctOpen }) {
+  const [perm, setPerm] = useNotifPerm(); // shared with the sheet, so the summary follows what happens there
+  const [open, setOpen] = useState(false);
+  const signed = !!(acct && acct.st === "in"), upd = settings.updNotif !== false, msg = signed && settings.push !== false;
+  const ok = perm === null || perm === "granted";
+  const sum = perm === "denied" && settings.notifOff === "android" ? T("notifAndroidOff") : !ok || (!upd && !msg) ? T("notifNone") : upd && msg ? T("notifAll") : upd ? T("notifOnlyUpd") : T("notifOnlyMsg");
+  const on = ok && (upd || msg);
+  return (
+    <>
+      <button type="button" data-notif-open data-notif-on={on ? 1 : 0} onClick={() => { sfxTap(); setOpen(true); }} style={{ ...btnBase, width: "100%", background: "transparent", color: C.chalk, padding: "13px 16px", display: "flex", alignItems: "center", gap: 12, textAlign: "left", borderRadius: 0, borderTop: `1px solid ${C.line}`, fontWeight: 400 }}>
+        <span style={{ flex: 1, minWidth: 0 }}>
+          <span style={{ display: "block", fontSize: 15, fontWeight: 700 }}>{T("notifTitle")}</span>
+          <span data-notif-sum style={{ display: "block", fontSize: 12, color: on ? C.dim : perm === "denied" ? C.signal : C.dim, fontWeight: 500, marginTop: 2, lineHeight: 1.4 }}>{sum}</span>
+        </span>
+        <Arrow />
+      </button>
+      {open && <NotifSheet settings={settings} set={set} perm={perm} setPerm={setPerm} signed={signed} onSignIn={() => { setOpen(false); onAcctOpen && onAcctOpen(); }} onClose={() => setOpen(false)} />}
+    </>
+  );
+}
+function NotifSheet({ settings, set, perm, setPerm, signed, onSignIn, onClose }) {
+  const ok = perm === null || perm === "granted";
+  const upd = settings.updNotif !== false, msg = signed && settings.push !== false, all = ok && (upd || msg);
+  const flipAll = async () => {
+    if (all) { set({ updNotif: false, push: false, notifOff: null }); return; }
+    set({ updNotif: true, push: true, notifOff: null });
+    const p = signed ? (await pushRegister({ on: true, ask: true })).perm : await pushPermission(true);
+    setPerm(p);
+    if (p !== "granted") set({ updNotif: false, push: false, notifOff: "android" }); // refused: off again
+  };
+  return (
+    <Sheet title={T("notifTitle")} onClose={onClose}>
+      <div data-notif-sheet style={{ borderRadius: 18, border: `1px solid ${C.line}`, overflow: "hidden", background: SOFT() }}>
+        <div data-notif-all><SettingRow first title={T("notifMaster")} desc={T("notifMasterD")} on={all} onClick={flipAll} /></div>
+        <UpdNotifRow settings={settings} set={set} perm={perm} setPerm={setPerm} />
+        {signed ? <PushRow settings={settings} set={set} perm={perm} setPerm={setPerm} />
+          : <button type="button" data-notif-signin onClick={() => { sfxTap(); onSignIn(); }} style={{ ...btnBase, width: "100%", background: "transparent", color: C.chalk, padding: "13px 16px", display: "flex", alignItems: "center", gap: 12, textAlign: "left", borderRadius: 0, borderTop: `1px solid ${C.line}`, fontWeight: 400 }}>
+              <span style={{ flex: 1, minWidth: 0 }}>
+                <span style={{ display: "block", fontSize: 15, fontWeight: 700 }}>{T("pushTitle")}</span>
+                <span style={{ display: "block", fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2, lineHeight: 1.4 }}>{T("notifSignIn")}</span>
+              </span>
+              <Arrow />
+            </button>}
+      </div>
+      {perm === "denied" && (upd || msg || settings.notifOff === "android") && <div style={{ marginTop: 12 }}><NotifBlocked data="push" /></div>}
+    </Sheet>
+  );
+}
+function UpdNotifRow({ settings, set, perm, setPerm }) {
+  const want = settings.updNotif !== false, on = want && (perm === null || perm === "granted");
+  const flip = async () => {
+    if (on) { set({ updNotif: false, notifOff: null }); return; }
+    set({ updNotif: true, notifOff: null });
+    const p = await pushPermission(true); setPerm(p);
+    if (p !== "granted") set({ updNotif: false, notifOff: "android" }); // refused: off again (1.7.5, Michael)
+  };
   return (
     <div data-upd-notif>
-      <SettingRow title={T("updNotif")} desc={T("updNotifD")} on={on} onClick={async () => { if (on) { set("updNotif", false); return; } set("updNotif", true); setPerm(await pushPermission(true)); }} />
-      {want && perm === "denied" && <div data-upd-denied style={{ fontSize: 12, color: C.signal, lineHeight: 1.45, padding: "0 16px 12px" }}>{T("pushDenied")}</div>}
+      <SettingRow title={T("updNotif")} desc={T("updNotifD")} on={on} onClick={flip} />
     </div>
   );
 }
-function PushRow({ settings, set }) {
-  const [perm, setPerm] = useState(null);
-  // 1.7.4: off while Android doesn't allow notifications; turning it on asks Android and registers this phone
-  const want = settings.push !== false, on = want && perm !== "denied" && perm !== "prompt";
-  const [test, setTest] = useState(null); // {st: busy|wait|got|late|err, e}
-  const got = useRef(0), timer = useRef(0);
-  // 1.7.3 (Michael, Oct 18: "it says notifications aren't allowed, but they are"): the answer was read only when the
-  // screen opened, so after allowing them in Android's settings and coming back the old "off" line stayed. Read it
-  // again whenever the app comes back to the front.
-  useEffect(() => { const chk = () => { if (!document.hidden) pushPermission(false).then(setPerm); }; chk(); document.addEventListener("visibilitychange", chk); return () => document.removeEventListener("visibilitychange", chk); }, []);
+// 1.7.5 (Michael, Oct 23): Android won't ask any more: the line says so and a button opens this app's notification
+// settings in Android; coming back with notifications allowed switches them on again (the App's notification check).
+function NotifBlocked({ data }) {
+  const [failed, setFailed] = useState(false);
+  return (
+    <div {...{ [`data-${data}-denied`]: "" }} style={{ fontSize: 12.5, color: C.signal, lineHeight: 1.45, padding: "0 4px" }}>
+      {T("pushDenied")}
+      {isNative && !failed && <div style={{ marginTop: 10 }}><button type="button" data-notif-settings onClick={async () => { sfxTap(); if (!(await openNotifSettings())) setFailed(true); }}
+        style={{ ...ghostBtn, padding: "10px 14px", color: C.chalk }}>{T("pushOpenSettings")} <Arrow /></button></div>}
+    </div>
+  );
+}
+function PushRow({ settings, set, perm, setPerm }) {
+  // off while Android doesn't allow notifications (1.7.4); turning it on asks Android and registers this phone;
+  // refused → off again (1.7.5)
+  const want = settings.push !== false, on = want && (perm === null || perm === "granted");
+  const [test, setTest] = useState(null); // {st: busy|wait|got|shown|late|err, e}
+  const got = useRef(0), shown = useRef(false), timer = useRef(0);
   useEffect(() => {
-    const off = onPushReceived(d => { if (d.kind !== "test") return; got.current = Date.now(); setTest(t => (t && (t.st === "wait" || t.st === "late") ? { st: "got" } : t)); });
+    // 1.7.5 (Michael): the test also shows up in the notification bar while the app is open (Android only hands it to
+    // the app then), so it looks exactly like a real one; an older APK can't, then the line just says it arrived
+    const off = onPushReceived((d, n) => {
+      if (d.kind !== "test") return;
+      got.current = Date.now(); shown.current = false;
+      showNotif({ title: n.title || T("ntTest"), body: n.body || T("ntTestD"), channel: "social", channelName: T("pushChannel") }).then(ok => {
+        shown.current = ok;
+        setTest(t => (t && (t.st === "wait" || t.st === "late" || t.st === "got") ? { st: ok ? "shown" : "got" } : t));
+      });
+      setTest(t => (t && (t.st === "wait" || t.st === "late") ? { st: "got" } : t));
+    });
     return () => { off(); clearTimeout(timer.current); };
   }, []);
   const flipPush = async () => {
     setTest(null);
-    if (on) { set("push", false); return; }
-    set("push", true);
+    if (on) { set({ push: false, notifOff: null }); return; }
+    set({ push: true, notifOff: null });
     const r = await pushRegister({ on: true, ask: true }); setPerm(r.perm);
+    if (r.perm !== "granted") set({ push: false, notifOff: "android" });
   };
   const runTest = async () => {
     if (test && (test.st === "busy" || test.st === "wait")) return;
@@ -5974,15 +6144,14 @@ function PushRow({ settings, set }) {
     if (!reg.token || reg.err) { setTest({ st: "err", e: reg.err || "no-token" }); return; }
     const r = await cloud().pushTest().catch(e => ({ why: "net", err: String((e && (e.code || e.message)) || e).slice(0, 50) }));
     if (r.why !== "ok") { setTest({ st: "err", e: [r.why, r.err].filter(Boolean).join(" ") }); return; }
-    if (got.current) { setTest({ st: "got" }); return; } // it was faster than the server's answer
+    if (got.current) { setTest({ st: shown.current ? "shown" : "got" }); return; } // it was faster than the server's answer
     setTest({ st: "wait" });
     timer.current = setTimeout(() => setTest(t => (t && t.st === "wait" ? { st: "late" } : t)), 15000);
   };
-  const line = !test || test.st === "busy" ? null : test.st === "wait" ? [T("pushTestOk"), C.dim] : test.st === "got" ? [T("pushTestGot"), C.mint] : test.st === "late" ? [T("pushTestLate"), C.signal] : [T("pushTestErr", { e: test.e }), "#ff8a80"];
+  const line = !test || test.st === "busy" ? null : test.st === "wait" ? [T("pushTestOk"), C.dim] : test.st === "shown" ? [T("pushTestShown"), C.mint] : test.st === "got" ? [T("pushTestGot"), C.mint] : test.st === "late" ? [T("pushTestLate"), C.signal] : [T("pushTestErr", { e: test.e }), "#ff8a80"];
   return (
     <div data-push-row style={{ borderTop: `1px solid ${C.line}` }}>
       <SettingRow first title={T("pushTitle")} desc={T("pushD")} on={on} onClick={flipPush} />
-      {want && perm === "denied" && <div data-push-denied style={{ fontSize: 12, color: C.signal, lineHeight: 1.45, padding: "0 16px 12px" }}>{T("pushDenied")}</div>}
       {on && <div style={{ padding: "0 16px 13px" }}>
         <button data-push-test onClick={runTest} disabled={!!test && (test.st === "busy" || test.st === "wait")} style={{ ...ghostBtn, padding: "9px 14px", opacity: test && (test.st === "busy" || test.st === "wait") ? 0.6 : 1 }}>{test && test.st === "busy" ? "…" : T("pushTest")}</button>
         {line && <div data-push-test-st={test.st} role="status" style={{ fontSize: 12, color: line[1], lineHeight: 1.45, marginTop: 8 }}>{line[0]}</div>}
@@ -6099,7 +6268,7 @@ function SettingsTab({ initPage, settings, setSettings, history, profile, setPro
   const [msg, setMsg] = useState("");
   const [pending, setPending] = useState(null);
   const fileRef = useRef(null);
-  const set = (k, v) => { const n = { ...settings, [k]: v }; window._wset = n; setSettings(n); };
+  const set = (k, v) => { const n = typeof k === "object" ? { ...settings, ...k } : { ...settings, [k]: v }; window._wset = n; setSettings(n); };
   const curLang = settings.lang || detectLang();
   const flip = k => { unlockAudio(); const v = !settings[k]; set(k, v); if (v) { if (k === "sndTap") sfxTap(); else if (k === "sndTimer") soundExercise(); else sfxCheck(); } };
 
@@ -6258,7 +6427,7 @@ function SettingsTab({ initPage, settings, setSettings, history, profile, setPro
         <SettingRow title={T("vibrate")} desc={`${T("vibrateD")} ${T("vibrateHint")}`} on={settings.vibrate} onClick={() => { set("vibrate", !settings.vibrate); if (!settings.vibrate) vibratePattern([160]); }} />
         <SettingRow title={T("keepAwake")} desc={T("keepAwakeD")} on={settings.keepAwake} onClick={() => set("keepAwake", !settings.keepAwake)} />
         <SettingRow title={T("aiCopy")} desc={T("aiCopyD")} on={settings.aiCopy} onClick={() => set("aiCopy", !settings.aiCopy)} />
-        {pushSupported() && <UpdNotifRow settings={settings} set={set} />}
+        {pushSupported() && <NotifRow settings={settings} set={set} acct={acct} onAcctOpen={onAcctOpen} />}
       </ListSect>
 
       <AccountBox acct={acct || { st: "out" }} cloudBk={cloudBk} onOpen={onAcctOpen} onRestore={onCloudRestore} onBackupNow={onCloudBackupNow} onSignOut={onSignOut} onDelete={onDeleteAccount} settings={settings} set={set} />
@@ -6445,7 +6614,7 @@ function Work({ item, rounds, history, sessionResults, onRecord, onSwap, exclude
       {how && <HowTo id={item.id} history={history} onClose={() => setHow(false)} onSwap={onSwap && ph === "ready" ? () => { sfxTap(); setHow(false); setSwap(true); } : null} />}
       {swap && <SwapSheet item={item} exclude={exclude || []} history={history} onClose={() => setSwap(false)} onPick={id => { setSwap(false); sfxCheck(); onSwap(item.slot, id); }} />}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10 }}>
-        <div style={{ fontFamily: DISPLAY, fontSize: fitSize(ex.name, 46), fontWeight: 900, lineHeight: 0.95, color: C.chalk, flex: 1, minWidth: 0, hyphens: "auto", overflowWrap: "break-word" }}>{ex.name}<ExQ id={item.id} onOpen={() => setHow(true)} style={{ width: 19, height: 19, fontSize: 11, marginLeft: 8, verticalAlign: "0.2em" }} /></div>
+        <div style={{ fontFamily: DISPLAY, fontSize: fitFont(ex.name, 46), fontWeight: 900, lineHeight: 0.95, color: C.chalk, flex: 1, minWidth: 0, hyphens: "auto", overflowWrap: "break-word" }}>{ex.name}<ExQ id={item.id} onOpen={() => setHow(true)} style={{ width: 19, height: 19, fontSize: 11, marginLeft: 8, verticalAlign: "0.2em" }} /></div>
         <div style={{ display: "flex", flexDirection: "column", gap: 6, flexShrink: 0 }}>
           <button onClick={() => setHow(true)} style={{ ...ghostBtn, padding: "8px 12px", whiteSpace: "nowrap" }}>{T("howTo")}</button>
           {onSwap && ph === "ready" && <button onClick={() => { sfxTap(); setSwap(true); }} style={{ ...ghostBtn, padding: "8px 12px", color: C.sky, borderColor: `${C.sky}88`, whiteSpace: "nowrap" }}>{T("swap")}</button>}
@@ -7623,8 +7792,28 @@ export default function App() {
   // language; Android 13+ asks for notifications at the first start (after the first-start setup, if it shows).
   useEffect(() => {
     if (!isNative || !loaded || !settingsLoaded || !obChecked || onboard !== null) return;
-    updTopic({ on: settings.updNotif !== false, lang: LANG, channelName: T("updChannel"), ask: true }).catch(() => {});
+    updTopic({ on: settings.updNotif !== false, lang: LANG, channelName: T("updChannel"), ask: false }).catch(() => {});
   }, [loaded, settingsLoaded, obChecked, onboard, settings.updNotif, settings.lang]);
+  // 1.7.5 (Michael, Oct 23): at every start and every return to the app (after the first-start setup), the app checks
+  // Android's notification permission. Not allowed while notifications are on → it asks; refused → both switches
+  // (messages, new versions) go off (`notifOff: "android"`). Allowed later in Android's settings → both on again.
+  // Switched off by the person → nothing is asked. Messages only count while an account is on this phone.
+  const setRef = useRef(settings); setRef.current = settings;
+  const acctOn = acct.st !== "out";
+  useEffect(() => {
+    if (!pushSupported() || !loaded || !settingsLoaded || !obChecked || onboard !== null) return;
+    const apply = o => { const n = { ...setRef.current, ...o }; window._wset = n; setSettings(n); };
+    (async () => {
+      await installCheck();
+      const s = setRef.current, want = (acctOn && s.push !== false) || s.updNotif !== false;
+      let p = await pushPermission(false);
+      if (p === "granted") { if (s.notifOff === "android") apply({ push: true, updNotif: true, notifOff: null }); return; }
+      if (!want) return;
+      if (p === "prompt") p = await pushPermission(true);
+      if (p !== "granted") apply({ push: false, updNotif: false, notifOff: "android" });
+      else setPermSeq(n => n + 1); // allowed now: register this phone
+    })().catch(() => {});
+  }, [loaded, settingsLoaded, obChecked, onboard, permSeq, acctOn]);
   useEffect(() => {
     if (!loaded || !settingsLoaded || newsChecked) return;
     setNewsChecked(true);
@@ -7752,6 +7941,7 @@ export default function App() {
         .revCard.on{transform:rotateY(180deg);animation:revPop .82s cubic-bezier(.3,.7,.25,1)}
         .revBack,.revFace{position:absolute;inset:0;border-radius:24px;backface-visibility:hidden;-webkit-backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:22px 18px;box-sizing:border-box}
         .revFace{transform:rotateY(180deg)}
+        body{overflow-wrap:break-word}button{text-wrap:balance}
         .claimBack{animation:revWob 1.1s ease-in-out infinite alternate}
         .claimGift{display:inline-block;animation:revBob 1.2s ease-in-out infinite alternate}
         @keyframes revWob{from{transform:rotate(calc(var(--wob) * -1)) scale(.98)}to{transform:rotate(var(--wob)) scale(1.02)}}
