@@ -1227,6 +1227,7 @@ export default {
   ],
   news175: [
     "Cada campo de contraseña tiene un botón con un ojo: tócalo para ver lo que escribiste (y detectar errores) y vuelve a tocarlo para ocultarlo.",
+    "El texto de la app tiene el mismo tamaño en todos los móviles: una letra más grande configurada en el móvil ya no lo agranda ni corta palabras. (Con una app descargada más antigua, las pantallas hacen sitio, así que tampoco se corta nada.)",
   ],
   news174: [
     "Las insignias y rangos que has ganado ahora esperan en tu perfil como cartas boca abajo: toca una, o Abrir en la página Perfil, y ábrelas como después de un entrenamiento. El menú ☰ muestra cuántas esperan.",

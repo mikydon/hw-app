@@ -13,6 +13,8 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 ## 1.7.5 (2026-10-23)
 
 - Every password field (sign in, create account, change or add a password, delete an account) has an eye button that shows or hides what you typed, so typos are easy to catch (tester feedback).
+- Text in the app is the same size on every phone: a bigger font size set in Android no longer makes the app's text bigger (it cut off words on a tester's phone, because Android enlarges the text but not the boxes around it). *(Android app: needs this version's APK or the Google Play version.)* With an older APK, and on the website, the screens make room instead: the date in the top bar gets shorter, the Home tiles and the showcase fields go one under the other, and the big titles stay on one line (tester feedback).
+- *(Android app only)* With this version's APK, a fresh install also starts at 60 Hz before the app has loaded (it started at the highest refresh rate for a moment).
 
 ## 1.7.4 (2026-10-18)
 

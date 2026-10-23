@@ -1227,6 +1227,7 @@ export default {
   ],
   news175: [
     "Minden jelszómező mellett van egy szem gomb: koppints rá, és látod, mit írtál be (így észreveszed az elgépelést), újabb koppintással elrejted.",
+    "Az app szövege minden telefonon ugyanakkora: a telefonon beállított nagyobb betűméret már nem nagyítja fel, és nem vágja le a szavakat. (Régebbi letöltött appnál a képernyők helyet csinálnak, így ott sem vágódik le semmi.)",
   ],
   news174: [
     "A megszerzett jelvények és rangok most lefordított kártyaként várnak a profilodon: koppints egyre, vagy a Profil oldalon a Megnyitásra, és nyisd ki őket, mint edzés után. A ☰ menü mutatja, hány vár.",

@@ -1227,6 +1227,7 @@ export default {
   ],
   news175: [
     "Cada campo de palavra-passe tem um botão com um olho: toca para ver o que escreveste (e apanhar erros de escrita), toca de novo para ocultar.",
+    "O texto da app tem o mesmo tamanho em todos os telemóveis: uma letra maior definida no telemóvel já não o aumenta nem corta palavras. (Com uma app descarregada mais antiga, os ecrãs abrem espaço, por isso também nada fica cortado.)",
   ],
   news174: [
     "Os emblemas e ranks que ganhaste agora esperam no teu perfil como cartas viradas para baixo: toca numa, ou em Abrir na página Perfil, e abre-as como depois de um treino. O menu ☰ mostra quantas esperam.",

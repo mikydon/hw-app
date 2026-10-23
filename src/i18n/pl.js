@@ -1227,6 +1227,7 @@ export default {
   ],
   news175: [
     "Każde pole hasła ma przycisk z okiem: dotknij, aby zobaczyć, co wpisano (i wyłapać literówkę), dotknij ponownie, aby ukryć.",
+    "Tekst w aplikacji ma ten sam rozmiar na każdym telefonie: większa czcionka ustawiona w telefonie już go nie powiększa i nie ucina słów. (Ze starszą pobraną wersją ekrany robią miejsce, więc też nic nie jest ucinane.)",
   ],
   news174: [
     "Zdobyte odznaki i rangi czekają teraz na profilu jako karty odwrócone rewersem: dotknij jednej albo Otwórz na stronie Profil i otwórz je jak po treningu. Menu ☰ pokazuje, ile ich czeka.",

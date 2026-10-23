@@ -1227,6 +1227,7 @@ export default {
   ],
   news175: [
     "Ogni campo password ha un pulsante a forma di occhio: toccalo per vedere cosa hai scritto (e trovare un errore di battitura), toccalo di nuovo per nasconderlo.",
+    "Il testo dell’app ha la stessa dimensione su ogni telefono: un carattere più grande impostato sul telefono non lo ingrandisce più e non taglia le parole. (Con un’app scaricata più vecchia le schermate fanno spazio, quindi non viene tagliato nulla neanche lì.)",
   ],
   news174: [
     "I badge e i ranghi che hai ottenuto ora ti aspettano sul profilo come carte coperte: toccane una, o Apri nella pagina Profilo, e aprile come dopo un allenamento. Il menu ☰ mostra quante ne aspettano.",

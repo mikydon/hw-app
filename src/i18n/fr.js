@@ -1227,6 +1227,7 @@ export default {
   ],
   news175: [
     "Chaque champ de mot de passe a un bouton en forme d’œil : touche-le pour voir ce que tu as saisi (et repérer une faute de frappe), touche-le encore pour le masquer.",
+    "Le texte de l’app a la même taille sur tous les téléphones : une police plus grande réglée sur le téléphone ne l’agrandit plus et ne coupe plus les mots. (Avec une app téléchargée plus ancienne, les écrans font de la place à la place, donc rien n’est coupé non plus.)",
   ],
   news174: [
     "Les badges et rangs que tu as gagnés attendent maintenant sur ton profil, en cartes face cachée : touche-en une, ou Ouvrir sur la page Profil, et ouvre-les comme après une séance. Le menu ☰ indique combien attendent.",

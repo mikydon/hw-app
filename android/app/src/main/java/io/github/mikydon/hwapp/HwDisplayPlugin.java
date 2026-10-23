@@ -54,7 +54,7 @@ public class HwDisplayPlugin extends Plugin {
     }
 
     static String saved(Context c) {
-        return c.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(KEY, "max");
+        return c.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(KEY, "60"); // 1.7.5: 60 Hz until the person picks "highest" (the JS default since 1.7.3)
     }
 
     /** {max: highest Hz, now: current Hz, mode: "max" | "60"} */

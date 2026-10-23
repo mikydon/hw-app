@@ -1227,6 +1227,7 @@ export default {
   ],
   news175: [
     "Every password field has an eye button: tap it to see what you typed and catch typos, tap again to hide it.",
+    "Text in the app is the same size on every phone: a bigger font size set on the phone no longer makes it bigger and cuts off words. (With an older app download the screens make room instead, so nothing is cut off either.)",
   ],
   news174: [
     "Badges and ranks you have earned now wait on your profile as face-down cards: tap one, or Open on the Profile page, and open them like after a workout. The ☰ menu shows how many are waiting.",

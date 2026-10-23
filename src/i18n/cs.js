@@ -1227,6 +1227,7 @@ export default {
   ],
   news175: [
     "Každé pole s heslem má tlačítko s okem: ťukni a uvidíš, co jsi napsal (abys odhalil překlep), dalším ťuknutím ho zase skryješ.",
+    "Písmo v aplikaci je stejně velké na každém mobilu: větší písmo nastavené v mobilu ho už nezvětší a neusekne slova. (Se starší staženou aplikací si obrazovky místo toho udělají místo, takže se také nic neusekne.)",
   ],
   news174: [
     "Odznaky a ranky, které jsi získal, teď čekají na profilu jako kartičky otočené dolů: ťukni na jednu nebo na Otevřít na stránce Profil a otevři je jako po tréninku. Menu ☰ ukazuje, kolik jich čeká.",

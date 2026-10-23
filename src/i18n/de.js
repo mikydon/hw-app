@@ -1227,6 +1227,7 @@ export default {
   ],
   news175: [
     "Jedes Passwortfeld hat einen Augen-Button: Tippe darauf, um zu sehen, was du eingegeben hast (und Tippfehler zu finden), tippe erneut, um es zu verbergen.",
+    "Der Text in der App ist auf jedem Handy gleich groß: Eine größere Schrift im Handy macht ihn nicht mehr größer und schneidet keine Wörter mehr ab. (Mit einer älteren heruntergeladenen App machen die Bildschirme stattdessen Platz, sodass auch dort nichts abgeschnitten wird.)",
   ],
   news174: [
     "Verdiente Abzeichen und Ränge warten jetzt im Profil als verdeckte Karten: Tippe auf eine oder auf der Profilseite auf Öffnen und öffne sie wie nach einem Training. Das ☰-Menü zeigt, wie viele warten.",

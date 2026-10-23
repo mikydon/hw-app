@@ -942,6 +942,10 @@ const bigBtn = (bg, fg) => ({ ...btnBase, width: "100%", padding: "17px 16px", f
 let ghostBtn = { ...btnBase, background: "transparent", color: C.dim, border: `1.5px solid ${C.line}`, padding: "10px 14px", fontSize: 13 };
 
 // Big display text: shrink when the language's words are long, so nothing gets cut off.
+// 1.7.5: the size for a title that fits its width by design (the day on Home, the exercise in a workout): Android's
+// bigger phone font would make it wrap or overflow, so it is divided by TEXT_SCALE (`--ts`) and stays the size it was
+// made for; normal text keeps the bigger size.
+const fitFont = (text, base, maxChars) => `calc(${fitSize(text, base, maxChars)}px / var(--ts, 1))`;
 function fitSize(text, base, maxChars = 10) {
   // Cyrillic falls back to Oswald, which runs about 20 % wider than Big Shoulders.
   const k = /[\u0400-\u04FF]/.test(text) ? 1.2 : 1;
@@ -1419,6 +1423,52 @@ function useMQ(q) {
 }
 const useWide = () => useMQ(WIDE_Q);
 const useSide = () => useMQ(SIDE_Q);
+// 1.7.5 (tester's phone, Oct 23: words cut off, "Utorok 2…"): Android makes every font size in the app bigger when the
+// phone's font size setting is bigger (the WebView's text zoom), but boxes keep their width. TEXT_SCALE = how much
+// bigger (1 = normal, 1.3 = 30 % bigger), measured from a hidden 100 px letter with line-height 1 (its height is the real
+// font size whatever the font). Layouts that would cut text use it (`--ts` in CSS, `useTextScale` in React). The bigger
+// text stays: it's the person's own setting for readability.
+let TEXT_SCALE = 1;
+const tsSubs = new Set();
+let tsProbe = null;
+function readTextScale() {
+  if (!tsProbe) return;
+  const h = tsProbe.getBoundingClientRect().height, v = h > 0 ? Math.round(h) / 100 : 1;
+  if (Math.abs(v - TEXT_SCALE) < 0.01) return;
+  TEXT_SCALE = v;
+  try { document.documentElement.style.setProperty("--ts", String(Math.max(1, v))); } catch (_) {}
+  tsSubs.forEach(f => f(v));
+}
+function startTextScale() {
+  if (tsProbe || typeof document === "undefined") return;
+  tsProbe = document.createElement("span");
+  tsProbe.setAttribute("aria-hidden", "true");
+  tsProbe.style.cssText = "position:fixed;left:-9999px;top:0;visibility:hidden;pointer-events:none;display:inline-block;line-height:1;font-family:sans-serif";
+  tsProbe.style.fontSize = "100px";
+  tsProbe.textContent = "M";
+  document.body.appendChild(tsProbe);
+  requestAnimationFrame(readTextScale); setTimeout(readTextScale, 400);
+  window.addEventListener("resize", readTextScale);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) setTimeout(readTextScale, 60); });
+}
+function useTextScale() {
+  const [v, setV] = useState(TEXT_SCALE);
+  useEffect(() => { startTextScale(); tsSubs.add(setV); setV(TEXT_SCALE); return () => { tsSubs.delete(setV); }; }, []);
+  return Math.max(1, v);
+}
+// The width of an element in CSS px (0 until measured), kept up to date.
+function useWidth(ref) {
+  const [w, setW] = useState(0);
+  useLayoutEffect(() => {
+    const el = ref.current; if (!el) return;
+    const f = () => setW(Math.round(el.getBoundingClientRect().width));
+    f();
+    if (typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(f); ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  return w;
+}
 // Two columns on a wide screen, one after the other on a phone. Each column stops the expander's slide (a box opening
 // in one column doesn't move the other).
 function Cols({ left, right, ...rest }) {
@@ -1736,6 +1786,23 @@ function TopBar({ screen, history, menuOpen, onMenu, onGo, dlPct, badge, head, s
   const today = dateKey();
   const st = streakInfo(history, today);
   const lv = levelInfo(totalXP(history));
+  // 1.7.5 (tester: "Utorok 2…"): the date gets shorter when it doesn't fit (bigger phone font, narrow phone):
+  // "Utorok 20. 10." → "Ut 20. 10." → "20. 10."
+  const dateRef = useRef(null);
+  const [fit, setFit] = useState({ k: "", dl: 0 });
+  const fitK = today + "|" + screen + "|" + (head ? 1 : 0), dl = fit.k === fitK ? fit.dl : 0;
+  // measure again from the long form when the width, the text scale or the loaded fonts change
+  useEffect(() => {
+    const f = () => setFit(o => ({ k: "", dl: 0, n: (o.n || 0) + 1 }));
+    window.addEventListener("resize", f); tsSubs.add(f); startTextScale();
+    // a web font that finishes loading later makes the text wider (fonts.ready may have resolved before it started)
+    try { document.fonts.ready.then(f); document.fonts.addEventListener("loadingdone", f); } catch (_) {}
+    return () => { window.removeEventListener("resize", f); tsSubs.delete(f); try { document.fonts.removeEventListener("loadingdone", f); } catch (_) {} };
+  }, []);
+  // measured after the frame is drawn: reading the layout earlier (in a layout effect) forced a style pass in the middle
+  // of the top bar's liquid move and showed the floating box for a moment (tgoo_test)
+  useEffect(() => { const el = dateRef.current; if (el && dl < 2 && el.scrollWidth > el.clientWidth + 1) setFit({ k: fitK, dl: dl + 1 }); }, [fitK, dl, fit.k, fit.n]);
+  const td = parseKey(today), dateText = dl === 0 ? capFirst(fmtDate(today)) : dl === 1 ? `${weekdaysShort()[(td.getDay() + 6) % 7]} ${fmtShortDM(td)}` : fmtShortDM(td);
   const liquid = LOOK === "liquid";
   const pill = liquid ? LIQUID_PILL() : { background: "transparent" };
   // 1.4.2 (Michael): one top bar for every look. At the top of the page it hangs from the top edge (square top
@@ -1822,7 +1889,7 @@ function TopBar({ screen, history, menuOpen, onMenu, onGo, dlPct, badge, head, s
         <div style={{ flex: 1, minWidth: 0 }}>
           <div key={screen} className="titleIn" style={{ fontFamily: DISPLAY, fontSize: CJK.test(T(SCREEN_TITLE[screen])) ? 21 : 24, fontWeight: 900, lineHeight: 1.05, color: C.chalk, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{T(SCREEN_TITLE[screen])}</div>
           <div style={{ display: "flex", gap: 5, fontSize: 12, color: bdayToday() ? C.signal : C.dim, fontWeight: bdayToday() ? 800 : 400, marginTop: 2, whiteSpace: "nowrap" }}>
-            <span style={{ overflow: "hidden", textOverflow: "ellipsis", minWidth: 0 }}>{bdayToday() ? T("bdayTop") : capFirst(fmtDate(today))}</span>
+            <span ref={dateRef} data-top-date={dl} style={{ overflow: "hidden", textOverflow: "ellipsis", minWidth: 0 }}>{bdayToday() ? T("bdayTop") : dateText}</span>
             <span data-clock style={{ flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>· {now.toLocaleTimeString(LANG, { hour: "2-digit", minute: "2-digit" })}</span>
           </div>
         </div>
@@ -1980,6 +2047,8 @@ function MiniPlayer({ session, live, onOpen }) {
 // descriptions must be visible); tap opens the full list with XP.
 function HomeTiles({ history, onCalories }) {
   const [sheet, setSheet] = useState(false);
+  // 1.7.5: side by side only while each tile still has room for its text (with the phone's font size); else one under the other
+  const boxRef = useRef(null), bw = useWidth(boxRef), ts = useTextScale(), stack = bw > 0 && bw / ts < 300;
   const s = kcalNow(history);
   const wk = weekKey(dateKey()), list = challengeStatus(history, wk), doneN = list.filter(c => c.done).length;
   const left = daysBetween(dateKey(), addDays(wk, 6)) + 1;
@@ -1990,7 +2059,7 @@ function HomeTiles({ history, onCalories }) {
   const key = fn => e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); fn(); } };
   const openCal = () => { sfxTap(); onCalories(); }, openCh = () => { sfxTap(); setSheet(true); };
   return (
-    <div data-home-tiles style={{ display: "flex", gap: 10, alignItems: "stretch" }}>
+    <div ref={boxRef} data-home-tiles data-stack={stack ? 1 : 0} style={{ display: "flex", flexDirection: stack ? "column" : "row", gap: stack ? 0 : 10, alignItems: "stretch" }}>
       <Sect role="button" tabIndex={0} data-home-kcal={s ? "on" : "setup"} onClick={openCal} onKeyDown={key(openCal)} aria-label={s ? `${T("kcHomeTitle")}: ${nf(s.eaten)} ${T("kcOf", { n: nf(s.target) })}` : T("kcHomeSetup")} style={tile}>
         {label(T("kcTile"))}
         {s ? <>
@@ -2986,7 +3055,7 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
   const hero = (
     <Sect data-home-hero style={{ padding: LOOK === "flat" ? 0 : "18px 18px 16px" }}>
       <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: C.dim }}>{doneToday ? T("nextWorkout") : T("homeToday")}</div>
-      <div data-day-title style={{ fontFamily: DISPLAY, fontWeight: 900, fontSize: fitSize(T("dayN", { d: day.id }).replace(/\s/g, "_"), doneToday ? 84 : 112, 6), lineHeight: 0.85, paddingBottom: "0.16em", letterSpacing: -1, color: C.chalk, marginTop: 8 }}>
+      <div data-day-title style={{ fontFamily: DISPLAY, fontWeight: 900, fontSize: fitFont(T("dayN", { d: day.id }).replace(/\s/g, "_"), doneToday ? 84 : 112, 6), lineHeight: 0.85, paddingBottom: "0.16em", letterSpacing: -1, color: C.chalk, marginTop: 8 }}>
         {T("dayN", { d: day.id })}
       </div>
       <div data-day-status style={{ fontSize: 14, color: !doneToday && gap !== null && gap >= 2 ? C.signal : C.dim, marginTop: 8, lineHeight: 1.5 }}>{status}</div>
@@ -4339,9 +4408,9 @@ const STAT_UI = { n: ["statTrainings", "🏋️"], reps: ["statReps", "📊"], m
 const rankUnit = id => (EX[id].type === "time" ? " s" : "");
 
 // One showcase field. Others (and you, outside edit) tap it to see the whole list on the page below.
-function SlotTile({ sl, m, i, onTap, own }) {
+function SlotTile({ sl, m, i, onTap, own, cols = 2 }) {
   const wide = sl && sl.kind.endsWith("3");
-  const base = { ...btnBase, fontWeight: 400, textAlign: "left", color: C.chalk, borderRadius: 16, padding: "12px 13px", minHeight: 92, position: "relative", overflow: "hidden", gridColumn: wide ? "span 2" : undefined, animationDelay: `${120 + i * 60}ms`, display: "flex", flexDirection: "column" };
+  const base = { ...btnBase, fontWeight: 400, textAlign: "left", color: C.chalk, borderRadius: 16, padding: "12px 13px", minHeight: 92, position: "relative", overflow: "hidden", gridColumn: wide && cols > 1 ? "span 2" : undefined, overflowWrap: "break-word", animationDelay: `${120 + i * 60}ms`, display: "flex", flexDirection: "column" };
   if (!sl) return <div className="cardIn" style={{ ...base, background: SOFT(), border: `1px dashed ${C.line}`, justifyContent: "center", alignItems: "center", color: C.dim, fontSize: 12.5 }}>{T("pfSlotEmpty")}</div>;
   const glow = col => ({ background: `radial-gradient(120% 90% at 100% 0%, ${col}33, transparent 60%), ${SOFT()}`, border: `1px solid ${col}40` });
   const pen = own && <span aria-hidden="true" style={{ position: "absolute", right: 9, top: 8, fontSize: 11, opacity: 0.55 }}>✏️</span>;
@@ -4511,6 +4580,8 @@ function ProfilePage({ m, own, onEditProfile, onEditSlot, onStreak, onPhoto, onP
   const lv = levelInfo(m.xp), lr = RANKS[lvRank(m.lvl)];
   const sm = claim ? hideUnclaimed(m, claim.hid) : m; // the showcase never shows a card that is still face down
   const slots = showcase(sm), n = slots.length, nextLv = SLOT_LV[n];
+  // 1.7.5: columns of at least 150 px of text room (more with a bigger phone font), so names are never cut
+  const slotsRef = useRef(null), sw = useWidth(slotsRef), sts = useTextScale(), slotCols = sw ? Math.max(1, Math.floor((sw + 8) / (150 * sts + 8))) : 2;
   const open = (sl, i) => {
     if (own) return onEditSlot(i);
     const page = sl.kind.startsWith("ach") ? 1 : sl.kind.startsWith("rk") ? 2 : 3;
@@ -4569,8 +4640,8 @@ function ProfilePage({ m, own, onEditProfile, onEditSlot, onStreak, onPhoto, onP
         </Sect>
         {/* the showcase */}
         <Sect data-pf-showcase title={T("pfShowcase")} meta={T("pfSlots", { n, max: SLOT_LV.length })}>
-          <div data-pf-slots style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gridAutoFlow: "row dense", gap: 8 }}>
-            {slots.map((sl, i) => <SlotTile key={i + (sl ? slotStr(sl) : "")} sl={sl} m={sm} i={i} own={own} onTap={open} />)}
+          <div ref={slotsRef} data-pf-slots data-cols={slotCols} style={{ display: "grid", gridTemplateColumns: `repeat(${slotCols}, minmax(0, 1fr))`, gridAutoFlow: "row dense", gap: 8 }}>
+            {slots.map((sl, i) => <SlotTile key={i + (sl ? slotStr(sl) : "")} sl={sl} m={sm} i={i} own={own} onTap={open} cols={slotCols} />)}
             {own && nextLv && <div data-slot-next={nextLv} className="cardIn" style={{ animationDelay: `${120 + n * 60}ms`, borderRadius: 16, border: `1.5px dashed ${C.line}`, minHeight: 92, padding: "12px 13px", boxSizing: "border-box", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6, color: C.dim, textAlign: "center" }}>
               <span aria-hidden="true" style={{ fontSize: 20 }}>🔒</span>
               <span style={{ fontSize: 12, fontWeight: 700, lineHeight: 1.35 }}>{T("pfSlotNext", { lv: nextLv })}</span>
@@ -6466,7 +6537,7 @@ function Work({ item, rounds, history, sessionResults, onRecord, onSwap, exclude
       {how && <HowTo id={item.id} history={history} onClose={() => setHow(false)} onSwap={onSwap && ph === "ready" ? () => { sfxTap(); setHow(false); setSwap(true); } : null} />}
       {swap && <SwapSheet item={item} exclude={exclude || []} history={history} onClose={() => setSwap(false)} onPick={id => { setSwap(false); sfxCheck(); onSwap(item.slot, id); }} />}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10 }}>
-        <div style={{ fontFamily: DISPLAY, fontSize: fitSize(ex.name, 46), fontWeight: 900, lineHeight: 0.95, color: C.chalk, flex: 1, minWidth: 0, hyphens: "auto", overflowWrap: "break-word" }}>{ex.name}<ExQ id={item.id} onOpen={() => setHow(true)} style={{ width: 19, height: 19, fontSize: 11, marginLeft: 8, verticalAlign: "0.2em" }} /></div>
+        <div style={{ fontFamily: DISPLAY, fontSize: fitFont(ex.name, 46), fontWeight: 900, lineHeight: 0.95, color: C.chalk, flex: 1, minWidth: 0, hyphens: "auto", overflowWrap: "break-word" }}>{ex.name}<ExQ id={item.id} onOpen={() => setHow(true)} style={{ width: 19, height: 19, fontSize: 11, marginLeft: 8, verticalAlign: "0.2em" }} /></div>
         <div style={{ display: "flex", flexDirection: "column", gap: 6, flexShrink: 0 }}>
           <button onClick={() => setHow(true)} style={{ ...ghostBtn, padding: "8px 12px", whiteSpace: "nowrap" }}>{T("howTo")}</button>
           {onSwap && ph === "ready" && <button onClick={() => { sfxTap(); setSwap(true); }} style={{ ...ghostBtn, padding: "8px 12px", color: C.sky, borderColor: `${C.sky}88`, whiteSpace: "nowrap" }}>{T("swap")}</button>}
@@ -7773,6 +7844,7 @@ export default function App() {
         .revCard.on{transform:rotateY(180deg);animation:revPop .82s cubic-bezier(.3,.7,.25,1)}
         .revBack,.revFace{position:absolute;inset:0;border-radius:24px;backface-visibility:hidden;-webkit-backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:22px 18px;box-sizing:border-box}
         .revFace{transform:rotateY(180deg)}
+        body{overflow-wrap:break-word}button{text-wrap:balance}
         .claimBack{animation:revWob 1.1s ease-in-out infinite alternate}
         .claimGift{display:inline-block;animation:revBob 1.2s ease-in-out infinite alternate}
         @keyframes revWob{from{transform:rotate(calc(var(--wob) * -1)) scale(.98)}to{transform:rotate(var(--wob)) scale(1.02)}}
