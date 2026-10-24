@@ -17,9 +17,10 @@ export const SUITS = ["push", "pull", "legs", "core"];
 export const HANDS = ["high", "pair", "two", "circuit", "three", "straight", "flush", "full", "four", "sflush"];
 export const HAND_BASE = { high: [5, 1], pair: [10, 2], two: [20, 2], circuit: [25, 3], three: [30, 3], straight: [30, 4], flush: [35, 4], full: [40, 4], four: [60, 7], sflush: [100, 8] };
 export const HAND_UP = { high: [10, 1], pair: [15, 1], two: [20, 1], circuit: [20, 2], three: [20, 2], straight: [30, 3], flush: [15, 2], full: [25, 2], four: [30, 3], sflush: [40, 4] };
-// Calibrated with the bot (Oct 25, 80 runs each): Obsidian in all four types ~35 % wins, Emerald ~13 %, below that the
-// bot rarely gets past ante 5; a person who plans the shop does better. (50 000 at ante 8 was never won.)
-export const ANTE_BASE = [300, 700, 1600, 3500, 6500, 11000, 17000, 25000];
+// Calibrated with the bot (Oct 25, 80 runs each). Michael (01:45): "at the start it's far too easy", so the first antes
+// ask for more and the curve is smoother: without ranks the bot now loses around ante 3–4 (a quarter of runs by blind 8),
+// Emerald in all four types wins ~18 %, Obsidian ~35 %; a person who plans the shop does better.
+export const ANTE_BASE = [600, 1400, 2700, 4800, 7800, 11500, 16500, 23000];
 export const BLIND_MUL = [1, 1.5, 2];
 export const BLIND_PAY = [3, 4, 5];
 export const RULES = { hands: 4, discards: 3, handSize: 8, maxPlay: 5, jokers: 5, money: 4, reroll: 5, drill: 3, interestMax: 5 };

@@ -728,6 +728,9 @@ export default {
     gmCleared: "Blind beaten!",
     gmShop: "Shop",
     gmBuy: "Buy",
+    gmSwap: "Swap",
+    gmSwapT: "Swap a joker",
+    gmSwapD: "All 5 joker slots are taken. Pick one to sell; {name} takes its place.",
     gmDrill: "Drill: {h}",
     gmDrillD: "+{c} chips, +{m} multiplier",
     gmReroll: "Reroll ${n}",
@@ -1508,7 +1511,7 @@ export default {
     ],
   },
   news18: [
-    ["Muscle Deck","There was no game in the app.","A poker-style card game powered by your training: the four suits are push, pull, legs and core, and every card scores more the higher your rank in that type. Poker hands plus the Circuit (all four types), blinds with bosses, a shop with 21 jokers and drills, perks you unlock by training, and 5 intensity levels for more risk and more game XP. The Run (8 antes) works offline, pays in Kapoke (the game's own money) and has game levels that add jokers to the shop; every Run you win raises the new Muscle Deck badge; a Duel against the bot and Ranked games against other players are coming."],
+    ["Muscle Deck","There was no game in the app.","A poker-style card game powered by your training: the four suits are push, pull, legs and core, and every card scores more the higher your rank in that type. Poker hands plus the Circuit (all four types), blinds with bosses, a shop with 21 jokers and drills, perks you unlock by training, and 5 intensity levels for more risk and more game XP. The Run (8 antes) works offline, pays in Kapoke (the game's own money), lets you swap a joker when all 5 slots are full, and has game levels that add jokers to the shop; every Run you win raises the new Muscle Deck badge; a Duel against the bot and Ranked games against other players are coming."],
     ["Ranks","7 ranks, from Wood to Diamond.","9 ranks like in Duolingo: Iron, Bronze, Silver, Gold, Platinum, Emerald, Amethyst, Diamond and Obsidian. Wood is gone and nobody loses anything: Wood became Iron and your Diamond stays Diamond. Obsidian is a real challenge for the strongest, like a 10-minute plank."],
     ["A rank for every exercise","Only some exercises had ranks; the easier and harder versions didn't.","All 27 exercises have ranks. The ones you haven't done yet stay hidden until you try them."],
     ["A card for a new exercise","A newly done exercise simply showed up in your ranks.","Your first rank in a new exercise comes as a card, like any other reward, along with what the next rank needs."],

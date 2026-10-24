@@ -30,7 +30,7 @@ ok(sc.chips === 10 + 5, "boss: push cards score nothing");
 console.log("a game");
 const opts = { seed: "abc", mode: "duel", suit: { push: 2, pull: 2, legs: 2, core: 2 } };
 const a = G.newGame(opts), b = G.newGame(opts);
-ok(JSON.stringify(a.hand) === JSON.stringify(b.hand) && a.hand.length === 8 && a.target === 300, "same seed = same cards; 8 in hand; target 300");
+ok(JSON.stringify(a.hand) === JSON.stringify(b.hand) && a.hand.length === 8 && a.target === G.ANTE_BASE[0], `same seed = same cards; 8 in hand; target ${G.ANTE_BASE[0]}`);
 let t0 = Date.now();
 const bot = G.botGame(opts, 10);
 const ms = Date.now() - t0;
@@ -52,14 +52,14 @@ ok(g2.jokers.length === 1 && g2.money === 50 - g.shop.items[0].cost, "buy a joke
 const g3 = G.act(g2, { t: "reroll" });
 ok(g3.shop.rerolls === 1 && g3.money === g2.money - 5, "reroll costs $5");
 const g4 = G.act(g3, { t: "next" });
-ok(g4.phase === "blind" && g4.blind === 1 && g4.target === 450, "next: the big blind, 450");
+ok(g4.phase === "blind" && g4.blind === 1 && g4.target === G.ANTE_BASE[0] * 1.5, "next: the big blind, × 1.5");
 // stakes
 const sk = G.newGame({ ...opts, mode: "run", seed: "stk", stake: 4 });
-ok(sk.target === 450 && sk.discardsLeft === 2 && sk.hand.length === 7, `gold stake: 300 × 1.5, one discard fewer, 7 cards (${sk.target}, ${sk.discardsLeft}, ${sk.hand.length})`);
+ok(sk.target === G.ANTE_BASE[0] * 1.5 && sk.discardsLeft === 2 && sk.hand.length === 7, `gold stake: × 1.5, one discard fewer, 7 cards (${sk.target}, ${sk.discardsLeft}, ${sk.hand.length})`);
 let rs = G.newGame({ ...opts, seed: "stk2", stake: 1 }); guard = 0;
 while (rs.phase === "blind" && guard++ < 20) rs = G.act(rs, G.botMove(rs, 10));
 ok(rs.phase === "shop" && rs.last.pay === rs.handsLeft && rs.money === 4 + rs.handsLeft, `red stake: the small blind pays only $1 per spare hand (+$${rs.last.pay})`);
-ok(G.newGame({ ...opts, stake: 2 }).target === 375, "green stake: × 1.25");
+ok(G.newGame({ ...opts, stake: 2 }).target === G.ANTE_BASE[0] * 1.25, "green stake: × 1.25");
 // loadout
 const lo = G.loadout({ bests: { k1: 50, b5: 620, row1: 5 }, streak: 14, n: 30 });
 ok(lo.suit.push === 7 && lo.suit.core === 8 && lo.suit.pull === 0 && lo.suit.legs === -1, `suit levels from ranks (${JSON.stringify(lo.suit)})`);

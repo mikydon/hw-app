@@ -3,6 +3,9 @@
   "keys": [
     "ach.deck",
     "ach.deckBeast",
-    "pl.runs"
+    "pl.runs",
+    "ui.gmSwap",
+    "ui.gmSwapT",
+    "ui.gmSwapD"
   ]
 }

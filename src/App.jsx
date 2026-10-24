@@ -7432,6 +7432,8 @@ function GameTable({ saved, history, onEnd, onQuit }) {
     }, end + 1100));
   };
   const discard = () => { if (!sel.length || anim || g.discardsLeft <= 0) return; sfxTap(); const next = doMove({ t: "discard", c: sel.slice() }); setSel([]); setG(next); setDealKey(k => k + 1); };
+  // several shop moves at once (swap = sell one of your jokers, then buy the new one)
+  const shopMoves = ms => { try { let st = g; for (const m of ms) st = GM.act(st, m); setMoves(x => [...x, ...ms]); setG(st); collectSfx(); } catch (_) {} };
   const shopMove = m => { try { const next = doMove(m); setG(next); if (m.t === "buy") collectSfx(); else sfxTap(); if (m.t === "next") { setShown(0); setDealKey(k => k + 1); } } catch (_) {} };
   const toggle = i => { if (anim) return; sfxTap(); setSel(s => (s.includes(i) ? s.filter(x => x !== i) : s.length >= GM.RULES.maxPlay ? s : [...s, i])); };
   const W = Math.min(innerWidth, 560), cw = Math.max(46, Math.min(70, Math.floor((W - 40) / 6.4)));
@@ -7456,7 +7458,7 @@ function GameTable({ saved, history, onEnd, onQuit }) {
       <div data-gm-jokers style={{ display: "flex", gap: 6, marginTop: 10, overflowX: "auto", minHeight: 82, paddingBottom: 2 }}>
         {g.jokers.length ? g.jokers.map((j, k) => <JokerChip key={j.id + k} id={j.id} small glow={anim && anim.hit && anim.hit.j === j.id} onClick={() => { sfxTap(); setInfo(j.id); }} />)
           : <div style={{ fontSize: 12.5, color: C.dim, alignSelf: "center" }}>{T("gmNoJokers")}</div>}
-        {g.perk && <div data-gm-perk-chip={g.perk} title={L.gm.perk[g.perk][1].replace(/\$(\d+)/g, "$1 " + COIN)} style={{ alignSelf: "center", marginLeft: "auto", fontSize: 12, color: C.dim, whiteSpace: "nowrap" }}>{PERK_ICON[g.perk]} {L.gm.perk[g.perk][0]}</div>}
+        {g.perk && <div data-gm-perk-chip={g.perk} title={L.gm.perk[g.perk][1].replace(/\$(\d+)/g, "$1 " + COIN)} style={{ alignSelf: "center", marginLeft: "auto", fontSize: 12, color: C.dim, whiteSpace: "nowrap" }}>{PERK_ICON[g.perk]}{g.jokers.length < 4 && <> {L.gm.perk[g.perk][0]}</>}</div>}
       </div>
       {g.phase === "blind" || anim ? (
         <>
@@ -7494,7 +7496,7 @@ function GameTable({ saved, history, onEnd, onQuit }) {
           </div>
         </>
       ) : g.phase === "shop" ? (
-        <GameShop g={g} onMove={shopMove} onInfo={setInfo} />
+        <GameShop g={g} onMove={shopMove} onMoves={shopMoves} onInfo={setInfo} />
       ) : <div style={{ flex: 1 }} />}
       {info && <Sheet short title={jName(info)} onClose={() => setInfo(null)}><div data-gm-joker-info style={{ fontSize: 15, lineHeight: 1.5, color: C.chalk }}>{withK(jDesc(info))}</div></Sheet>}
       {quit && (
@@ -7518,8 +7520,12 @@ function ScoreBox({ chips, mult, total }) {
     </div>
   );
 }
-function GameShop({ g, onMove, onInfo }) { // onInfo: your own jokers' text
+function GameShop({ g, onMove, onMoves, onInfo }) { // onInfo: your own jokers' text
   const sh = g.shop, pay = (g.last && g.last.pay) || 0;
+  // 1.8.0 (Michael, Oct 25: "let me swap them if I like another one more"): with all joker slots taken, Buy becomes
+  // Swap: pick one of yours, it is sold and the new one bought in one go
+  const full = g.jokers.length >= GM.RULES.jokers, sellOf = j => Math.max(1, Math.floor(j.cost / 2));
+  const [swap, setSwap] = useState(null); // index of the shop item being swapped in
   return (
     <div data-gm-shop style={{ flex: 1, display: "flex", flexDirection: "column", gap: 12, marginTop: 6 }}>
       <div className="cardIn" style={{ ...card, ...tileR(), padding: "12px 14px", display: "flex", alignItems: "center", gap: 10 }}>
@@ -7535,7 +7541,8 @@ function GameShop({ g, onMove, onInfo }) { // onInfo: your own jokers' text
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {sh.items.map((it, i) => {
           const jk = it.k === "joker", r = jk && GM.JOKERS[it.id] ? GM.JOKERS[it.id].r : 0, col = jk ? [C.sky, C.mint, "#ff7ad9"][r] : C.signal;
-          const off = it.sold || g.money < it.cost || (jk && g.jokers.length >= GM.RULES.jokers);
+          const sw = jk && full && !it.sold; // Swap instead of Buy
+          const off = it.sold || (sw ? !g.jokers.some(j => g.money + sellOf(j) >= it.cost) : g.money < it.cost);
           return (
             <div key={i} data-gm-item={it.k} data-gm-drill={jk ? undefined : it.id} data-joker-row={jk ? it.id : undefined} className="cardIn" style={{ ...card, ...tileR(), padding: "10px 12px", display: "flex", alignItems: "center", gap: 12, opacity: it.sold ? 0.4 : 1, borderColor: `${col}80` }}>
               <span aria-hidden="true" style={{ width: 46, height: 46, flexShrink: 0, borderRadius: 12, background: `linear-gradient(160deg, ${col}40, ${C.panelHi})`, border: `1.5px solid ${col}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 25 }}>
@@ -7545,8 +7552,8 @@ function GameShop({ g, onMove, onInfo }) { // onInfo: your own jokers' text
                 <span style={{ display: "block", fontWeight: 800, fontSize: 15, lineHeight: 1.2 }}>{jk ? jName(it.id) : T("gmDrill", { h: handName(it.id) })}</span>
                 <span style={{ display: "block", fontSize: 12.5, color: C.dim, lineHeight: 1.35, marginTop: 2 }}>{jk ? withK(jDesc(it.id)) : T("gmDrillD", { c: GM.HAND_UP[it.id][0], m: GM.HAND_UP[it.id][1] })}</span>
               </span>
-              <button type="button" data-gm-buy={i} disabled={off} onClick={() => onMove({ t: "buy", i })} style={{ ...btnBase, flexShrink: 0, minWidth: 64, padding: "8px 10px", borderRadius: 12, background: it.sold ? "transparent" : C.signal, color: it.sold ? C.dim : C.signalInk, fontSize: 13, lineHeight: 1.15, opacity: off && !it.sold ? 0.4 : 1 }}>
-                {it.sold ? "✓" : <><span style={{ display: "block", fontFamily: DISPLAY, fontSize: 17, fontWeight: 900 }}><KSign />{it.cost}</span>{T("gmBuy")}</>}
+              <button type="button" data-gm-buy={i} data-gm-swap={sw ? 1 : undefined} disabled={off} onClick={() => (sw ? (sfxTap(), setSwap(i)) : onMove({ t: "buy", i }))} style={{ ...btnBase, flexShrink: 0, minWidth: 64, padding: "8px 10px", borderRadius: 12, background: it.sold ? "transparent" : C.signal, color: it.sold ? C.dim : C.signalInk, fontSize: 13, lineHeight: 1.15, opacity: off && !it.sold ? 0.4 : 1 }}>
+                {it.sold ? "✓" : <><span style={{ display: "block", fontFamily: DISPLAY, fontSize: 17, fontWeight: 900 }}><KSign />{it.cost}</span>{T(sw ? "gmSwap" : "gmBuy")}</>}
               </button>
             </div>
           );
@@ -7560,6 +7567,24 @@ function GameShop({ g, onMove, onInfo }) { // onInfo: your own jokers' text
             {g.jokers.map((j, i) => <div key={j.id} style={{ display: "flex", flexDirection: "column", gap: 4, alignItems: "center" }}><JokerChip id={j.id} small onClick={() => { sfxTap(); onInfo(j.id); }} /><button type="button" data-gm-sell={i} onClick={() => onMove({ t: "sell", i })} style={{ ...btnBase, background: "transparent", color: C.dim, fontSize: 11.5, padding: "3px 6px" }}>{withK(T("gmSell", { n: Math.max(1, Math.floor(j.cost / 2)) }))}</button></div>)}
           </div>
         </div>
+      )}
+      {swap !== null && (
+        <Sheet short title={T("gmSwapT")} onClose={() => setSwap(null)}>
+          <div data-gm-swap-sheet style={{ fontSize: 14, color: C.dim, lineHeight: 1.5, marginBottom: 10 }}>{T("gmSwapD", { name: jName(sh.items[swap].id) })}</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {g.jokers.map((j, ji) => {
+              const ok = g.money + sellOf(j) >= sh.items[swap].cost;
+              return (
+                <button key={j.id} type="button" data-gm-swap-out={ji} disabled={!ok} onClick={() => { const i = swap; setSwap(null); onMoves([{ t: "sell", i: ji }, { t: "buy", i }]); }}
+                  style={{ ...btnBase, ...card, ...tileR(), display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", textAlign: "left", color: C.chalk, fontWeight: 400, opacity: ok ? 1 : 0.45 }}>
+                  <span aria-hidden="true" style={{ width: 40, height: 40, flexShrink: 0, borderRadius: 11, background: C.panelHi, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>{j.id.startsWith("fan_") ? <SuitIcon s={j.id.slice(4)} size={20} /> : JOKER_ICON[j.id] || "🃏"}</span>
+                  <span style={{ flex: 1, minWidth: 0 }}><span style={{ display: "block", fontWeight: 800, fontSize: 15 }}>{jName(j.id)}</span><span style={{ display: "block", fontSize: 12.5, color: C.dim, lineHeight: 1.35 }}>{withK(jDesc(j.id))}</span></span>
+                  <span style={{ fontWeight: 800, color: C.signal, whiteSpace: "nowrap" }}>+<KSign />{sellOf(j)}</span>
+                </button>
+              );
+            })}
+          </div>
+        </Sheet>
       )}
       <button type="button" data-gm-next onClick={() => onMove({ t: "next" })} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: "auto" }}>{T("gmNext")}</button>
     </div>
