@@ -1246,6 +1246,9 @@ export default {
     "📱 Definições: uma só linha «Notificações»; toca nela para ligar ou desligar todas de uma vez ou cada tipo à parte (mensagens e amigos, novas versões).",
     "📱 A notificação de teste aparece mesmo na barra de notificações, também com a app aberta.",
   ],
+  news176: [
+    "Os títulos e os nomes já não ficam cortados: a parte de baixo de letras como g, y ou j (por exemplo, no título no topo do ecrã ou no teu nome no menu e no perfil) vê-se toda.",
+  ],
   news174: [
     "Os emblemas e ranks que ganhaste agora esperam no teu perfil como cartas viradas para baixo: toca numa, ou em Abrir na página Perfil, e abre-as como depois de um treino. O menu ☰ mostra quantas esperam.",
     "📱 Depois de reinstalar, a app volta a pedir as notificações e volta a subscrever os avisos de nova versão (antes, por causa dos dados restaurados pelo Android, achava que já o tinha).",

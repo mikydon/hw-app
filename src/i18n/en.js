@@ -1246,6 +1246,9 @@ export default {
     "📱 Settings: one \"Notifications\" row; tap it to turn all of them on or off at once, or each kind on its own (messages and friends, new versions).",
     "📱 The test notification really shows up in the notification bar, even while the app is open.",
   ],
+  news176: [
+    "Titles and names are no longer cut off: the bottoms of letters like g, y and j (for example in the screen title at the top, or your name in the menu and on your profile) show in full.",
+  ],
   news174: [
     "Badges and ranks you have earned now wait on your profile as face-down cards: tap one, or Open on the Profile page, and open them like after a workout. The ☰ menu shows how many are waiting.",
     "📱 After reinstalling the app, it asks for notifications again and signs up for new-version notifications again (before, Android's restored data made it think it already had).",

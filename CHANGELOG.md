@@ -10,6 +10,10 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 
 <!-- New version: add a "## x.y.z (date)" section on top (web-only history uses "## Browser beta x.y.z (date)"). On a push to main, .github/workflows/build.yml builds everything and .github/scripts/releases.sh creates/updates the releases (commit = the push, or the one in a commit comment). -->
 
+## 1.7.6 (2026-10-24)
+
+- Titles and names are no longer cut off at the bottom: letters that reach below the line (g, y, j, _) and some Cyrillic letters showed with their lower part missing in the screen title at the top, in your name in the menu and on your profile, and in nicknames in Friends and on other people's profiles.
+
 ## 1.7.5 (2026-10-24)
 
 - Every password field (sign in, create account, change or add a password, delete an account) has an eye button that shows or hides what you typed, so typos are easy to catch (tester feedback).

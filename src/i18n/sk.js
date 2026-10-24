@@ -1246,6 +1246,9 @@ export default {
     "📱 Nastavenia: jeden riadok „Upozornenia“; ťukni naň a zapneš alebo vypneš všetky naraz, alebo každé zvlášť (správy a priatelia, nové verzie).",
     "📱 Skúšobné upozornenie sa naozaj ukáže v lište upozornení, aj keď máš appku otvorenú.",
   ],
+  news176: [
+    "Nadpisy a mená sa už neodrežú: spodok písmen ako g, y alebo j (napríklad „Tréning“ hore na obrazovke alebo tvoje meno v menu a na profile) je vidieť celý.",
+  ],
   news174: [
     "Odznaky a ranky, ktoré si získal, teraz čakajú na profile ako kartičky otočené dole: ťukni na jednu alebo na Otvoriť na stránke Profil a otvor ich ako po tréningu. Menu ☰ ukazuje, koľko ich čaká.",
     "📱 Po preinštalovaní sa appka znova opýta na upozornenia a znova sa prihlási na upozornenia o novej verzii (predtým si kvôli obnoveným dátam z Androidu myslela, že to už má).",

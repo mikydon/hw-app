@@ -1246,6 +1246,9 @@ export default {
     "📱 Ajustes: una sola fila «Notificaciones»; tócala para activar o desactivar todas a la vez o cada tipo por separado (mensajes y amigos, nuevas versiones).",
     "📱 La notificación de prueba aparece de verdad en la barra de notificaciones, aunque tengas la app abierta.",
   ],
+  news176: [
+    "Los títulos y nombres ya no se cortan: la parte de abajo de letras como g, y o j (por ejemplo, en el título de arriba o en tu nombre en el menú y en el perfil) se ve entera.",
+  ],
   news174: [
     "Las insignias y rangos que has ganado ahora esperan en tu perfil como cartas boca abajo: toca una, o Abrir en la página Perfil, y ábrelas como después de un entrenamiento. El menú ☰ muestra cuántas esperan.",
     "📱 Tras reinstalar la app, vuelve a pedir permiso para notificaciones y vuelve a suscribirse a los avisos de nueva versión (antes, por los datos que restauraba Android, creía que ya lo tenía).",

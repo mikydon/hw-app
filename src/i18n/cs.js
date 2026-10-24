@@ -1246,6 +1246,9 @@ export default {
     "📱 Nastavení: jeden řádek „Upozornění“; ťukni na něj a zapneš nebo vypneš všechna najednou, nebo každé zvlášť (zprávy a přátelé, nové verze).",
     "📱 Zkušební upozornění se opravdu ukáže v liště oznámení, i když máš aplikaci otevřenou.",
   ],
+  news176: [
+    "Nadpisy a jména se už neořezávají: spodek písmen jako g, y nebo j (třeba „Trénink“ nahoře na obrazovce nebo tvoje jméno v menu a na profilu) je vidět celý.",
+  ],
   news174: [
     "Odznaky a ranky, které jsi získal, teď čekají na profilu jako kartičky otočené dolů: ťukni na jednu nebo na Otevřít na stránce Profil a otevři je jako po tréninku. Menu ☰ ukazuje, kolik jich čeká.",
     "📱 Po přeinstalování se aplikace znovu zeptá na upozornění a znovu se přihlásí k upozorněním na novou verzi (dřív si kvůli obnoveným datům z Androidu myslela, že to už má).",

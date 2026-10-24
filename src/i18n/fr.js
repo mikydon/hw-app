@@ -1246,6 +1246,9 @@ export default {
     "📱 Réglages : une seule ligne « Notifications » ; touche-la pour toutes les activer ou désactiver d’un coup, ou chaque type séparément (messages et amis, nouvelles versions).",
     "📱 La notification de test s'affiche vraiment dans la barre de notifications, même quand l'appli est ouverte.",
   ],
+  news176: [
+    "Les titres et les noms ne sont plus coupés : le bas des lettres comme g, y ou j (par exemple dans le titre en haut de l'écran, ou ton nom dans le menu et sur ton profil) s'affiche en entier.",
+  ],
   news174: [
     "Les badges et rangs que tu as gagnés attendent maintenant sur ton profil, en cartes face cachée : touche-en une, ou Ouvrir sur la page Profil, et ouvre-les comme après une séance. Le menu ☰ indique combien attendent.",
     "📱 Après une réinstallation, l’app redemande l’autorisation des notifications et se réabonne aux notifications de nouvelle version (avant, à cause des données restaurées par Android, elle croyait que c’était déjà fait).",

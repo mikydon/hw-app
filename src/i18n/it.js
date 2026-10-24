@@ -1246,6 +1246,9 @@ export default {
     "📱 Impostazioni: una sola riga «Notifiche»; toccala per accenderle o spegnerle tutte insieme o un tipo alla volta (messaggi e amici, nuove versioni).",
     "📱 La notifica di prova compare davvero nella barra delle notifiche, anche con l'app aperta.",
   ],
+  news176: [
+    "Titoli e nomi non vengono più tagliati: la parte bassa di lettere come g, y o j (per esempio nel titolo in alto o nel tuo nome nel menu e nel profilo) si vede per intero.",
+  ],
   news174: [
     "I badge e i ranghi che hai ottenuto ora ti aspettano sul profilo come carte coperte: toccane una, o Apri nella pagina Profilo, e aprile come dopo un allenamento. Il menu ☰ mostra quante ne aspettano.",
     "📱 Dopo una reinstallazione l’app chiede di nuovo il permesso per le notifiche e si iscrive di nuovo agli avvisi di nuova versione (prima, per i dati ripristinati da Android, credeva di averlo già).",

@@ -1246,6 +1246,9 @@ export default {
     "📱 Beállítások: egyetlen „Értesítések” sor; koppints rá, és egyszerre kapcsolhatod be vagy ki mindet, vagy mindegyiket külön (üzenetek és barátok, új verziók).",
     "📱 A tesztértesítés tényleg megjelenik az értesítési sávban, akkor is, ha az app nyitva van.",
   ],
+  news176: [
+    "A címek és nevek már nem vágódnak le: a g, y vagy j betűk alja (például a képernyő tetején lévő címben, vagy a nevedben a menüben és a profilon) teljesen látszik.",
+  ],
   news174: [
     "A megszerzett jelvények és rangok most lefordított kártyaként várnak a profilodon: koppints egyre, vagy a Profil oldalon a Megnyitásra, és nyisd ki őket, mint edzés után. A ☰ menü mutatja, hány vár.",
     "📱 Újratelepítés után az app újra rákérdez az értesítésekre, és újra feliratkozik az új verzió értesítéseire (korábban az Android által visszaállított adatok miatt azt hitte, ez már megvan).",

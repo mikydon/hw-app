@@ -1246,6 +1246,9 @@ export default {
     "📱 Einstellungen: eine Zeile „Benachrichtigungen“; tippe darauf, um alle auf einmal oder jede Art einzeln ein- oder auszuschalten (Nachrichten und Freunde, neue Versionen).",
     "📱 Die Testbenachrichtigung erscheint jetzt wirklich in der Benachrichtigungsleiste, auch wenn die App offen ist.",
   ],
+  news176: [
+    "Überschriften und Namen werden nicht mehr abgeschnitten: Buchstaben wie g, y und j (zum Beispiel im Bildschirmtitel oben oder in deinem Namen im Menü und im Profil) sind ganz zu sehen.",
+  ],
   news174: [
     "Verdiente Abzeichen und Ränge warten jetzt im Profil als verdeckte Karten: Tippe auf eine oder auf der Profilseite auf Öffnen und öffne sie wie nach einem Training. Das ☰-Menü zeigt, wie viele warten.",
     "📱 Nach einer Neuinstallation fragt die App wieder nach Benachrichtigungen und meldet sich wieder für Benachrichtigungen zu neuen Versionen an (vorher glaubte sie wegen der von Android wiederhergestellten Daten, das sei schon erledigt).",

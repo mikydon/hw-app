@@ -1246,6 +1246,9 @@ export default {
     "📱 Ustawienia: jeden wiersz „Powiadomienia”; dotknij go, aby włączyć lub wyłączyć wszystkie naraz albo każdy rodzaj osobno (wiadomości i znajomi, nowe wersje).",
     "📱 Powiadomienie testowe naprawdę pojawia się na pasku powiadomień, nawet gdy aplikacja jest otwarta.",
   ],
+  news176: [
+    "Tytuły i imiona nie są już ucinane: dół liter takich jak g, y czy j (na przykład w tytule u góry ekranu albo w twoim imieniu w menu i na profilu) widać w całości.",
+  ],
   news174: [
     "Zdobyte odznaki i rangi czekają teraz na profilu jako karty odwrócone rewersem: dotknij jednej albo Otwórz na stronie Profil i otwórz je jak po treningu. Menu ☰ pokazuje, ile ich czeka.",
     "📱 Po ponownej instalacji aplikacja znów pyta o powiadomienia i znów zapisuje się na powiadomienia o nowej wersji (wcześniej przez dane przywrócone przez Androida myślała, że już to ma).",

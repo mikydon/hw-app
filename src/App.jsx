@@ -33,7 +33,7 @@ const THEMES = {
   slate:  { ink: "#15181d", panel: "#1f242b", panelHi: "#2a313a", line: "#3a434f", chalk: "#f1f4f8", dim: "#9aa6b4", edge: "#0e1115" },
   coffee: { ink: "#1c140f", panel: "#2a1f17", panelHi: "#382a20", line: "#4d3a2c", chalk: "#fbf3ec", dim: "#b8a291", edge: "#130d09" },
 };
-const APP_VERSION = "1.7.5";
+const APP_VERSION = "1.7.6";
 // Big Shoulders has no Cyrillic, so Oswald (also condensed) covers Ukrainian. The browser only
 // downloads the Oswald unicode ranges a page actually uses.
 // 1.7.0: 'HW Emoji' = the app's own emoji (Fluent 3D, fonts/hw-emoji.ttf) for the emoji the app shows; BODY_SYS
@@ -43,6 +43,10 @@ const APP_VERSION = "1.7.5";
 const HW_EMO = (() => { try { const u = navigator.userAgent; return !/Firefox\/|FxiOS|iPhone|iPad|iPod/.test(u) && !(/Safari\//.test(u) && !/Chrome\/|Chromium\//.test(u)) && !(/Macintosh/.test(u) && navigator.maxTouchPoints > 1); } catch (_) { return false; } })();
 const EMO_F = HW_EMO ? "'HW Emoji', " : "";
 const DISPLAY = `'Big Shoulders Display', 'Oswald', ${EMO_F}'Arial Narrow', Impact, sans-serif`;
+// 1.7.6 (Michael, Oct 24: the "g" of "Tréning" was cut off in the top bar): one-line DISPLAY texts that end in "…"
+// hide their overflow, and their tight line height leaves descenders (g, y, j, _), accents and Cyrillic glyphs
+// outside the box. INK makes the clipping box taller without moving anything (padding + the same negative margin).
+const INK = { paddingTop: ".14em", paddingBottom: ".3em", marginTop: "-.14em", marginBottom: "-.3em" };
 const BODY = `'Figtree', ${EMO_F}-apple-system, 'Segoe UI', sans-serif`;
 const BODY_SYS = "'Figtree', -apple-system, 'Segoe UI', sans-serif";
 // Chinese, Japanese and Korean glyphs are full width (the display font is condensed Latin), so a few big titles get smaller.
@@ -1887,7 +1891,7 @@ function TopBar({ screen, history, menuOpen, onMenu, onGo, dlPct, badge, head, s
         <div data-topbar-box className="tbBox">
         {head ? head : <>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div key={screen} className="titleIn" style={{ fontFamily: DISPLAY, fontSize: CJK.test(T(SCREEN_TITLE[screen])) ? 21 : 24, fontWeight: 900, lineHeight: 1.05, color: C.chalk, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{T(SCREEN_TITLE[screen])}</div>
+          <div key={screen} className="titleIn" style={{ fontFamily: DISPLAY, fontSize: CJK.test(T(SCREEN_TITLE[screen])) ? 21 : 24, fontWeight: 900, lineHeight: 1.05, color: C.chalk, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" , ...INK }}>{T(SCREEN_TITLE[screen])}</div>
           <div style={{ display: "flex", gap: 5, fontSize: 12, color: bdayToday() ? C.signal : C.dim, fontWeight: bdayToday() ? 800 : 400, marginTop: 2, whiteSpace: "nowrap" }}>
             <span ref={dateRef} data-top-date={dl} style={{ overflow: "hidden", textOverflow: "ellipsis", minWidth: 0 }}>{bdayToday() ? T("bdayTop") : dateText}</span>
             <span data-clock style={{ flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>· {now.toLocaleTimeString(LANG, { hour: "2-digit", minute: "2-digit" })}</span>
@@ -1959,7 +1963,7 @@ function MenuBody({ screen, history, profile, session, onGo, onResume, onNews, g
           <button onClick={() => onGo("profile")} className="drawerItem" style={{ ...btnBase, "--i": 0, display: "flex", alignItems: "center", gap: 12, margin: "8px 14px 6px", padding: "12px", borderRadius: 18, background: C.panel, border: `1px solid ${C.line}`, color: C.chalk, textAlign: "left", ...(LOOK === "liquid" ? { ...LIQUID_PILL(), borderRadius: 20 } : {}) }}>
             <BdayHalo size={52}><Avatar profile={profile} size={52} /></BdayHalo>
             <div style={{ minWidth: 0 }}>
-              <div style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, lineHeight: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{profile.name || T("defaultName")}</div>
+              <div style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, lineHeight: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" , ...INK }}>{profile.name || T("defaultName")}</div>
               <div style={{ fontSize: 13, color: C.dim, marginTop: 4 }}><span style={{ color: C.sky, fontWeight: 800 }}>⚡ {lv.lvl}</span> · <span style={{ color: "#ffa94d", fontWeight: 800 }}>🔥 {st.n}</span></div>
             </div>
           </button>
@@ -4619,7 +4623,7 @@ function ProfilePage({ m, own, onEditProfile, onEditSlot, onStreak, onPhoto, onP
               <span data-pf-level={m.lvl} style={{ position: "absolute", right: -6, bottom: -4, minWidth: 34, height: 34, padding: "0 6px", boxSizing: "border-box", borderRadius: 99, background: C.ink, border: `2.5px solid ${lr.color}`, color: lr.color, fontFamily: DISPLAY, fontSize: 17, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: `0 0 14px ${lr.color}55` }}>{m.lvl}</span>
             </button>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div data-pf-name style={{ fontFamily: DISPLAY, fontSize: 30, fontWeight: 900, lineHeight: 1, color: C.chalk, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{m.nick}</div>
+              <div data-pf-name style={{ fontFamily: DISPLAY, fontSize: 30, fontWeight: 900, lineHeight: 1, color: C.chalk, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" , ...INK }}>{m.nick}</div>
               <div style={{ fontSize: 12.5, color: own && bdayToday() ? C.signal : C.dim, fontWeight: own && bdayToday() ? 800 : 400, marginTop: 4 }}>{own && bdayToday() ? T("bdayHero") : m.since ? T("since", { date: fmtDate(m.since, true) }) : T("newMember")}</div>
             </div>
             {own && <button type="button" data-pf-edit onClick={() => { sfxTap(); onEditProfile(); }} aria-label={T("pfEdit")} style={{ ...btnBase, alignSelf: "flex-start", background: SOFT(), color: C.chalk, width: 38, height: 38, borderRadius: 12, flexShrink: 0, fontSize: 15 }}>✏️</button>}
@@ -4813,7 +4817,7 @@ function OtherProfile({ p, isFriend, onBack, setTopHead }) {
         <button data-pv-back onClick={() => { sfxTap(); onBack(); }} aria-label={T("back")} style={{ ...btnBase, background: SOFT(), color: C.chalk, width: 38, height: 38, borderRadius: 12, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
           <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
         </button>
-        <span style={{ fontFamily: DISPLAY, fontSize: 22, fontWeight: 900, color: C.chalk, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.nick}</span>
+        <span style={{ fontFamily: DISPLAY, fontSize: 22, fontWeight: 900, color: C.chalk, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" , ...INK }}>{p.nick}</span>
       </div>
     );
   }, [p.uid, p.nick]);
@@ -5392,7 +5396,7 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
           <Avatar profile={{ name: me.nick, pfp: profile.pfp }} size={54} />
           <div style={{ flex: 1, minWidth: 0 }}>
             <button data-fr-rename onClick={() => { sfxTap(); setRename(true); }} style={{ ...btnBase, background: "transparent", color: C.chalk, padding: 0, display: "flex", alignItems: "center", gap: 6, maxWidth: "100%" }}>
-              <span style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{me.nick}</span>
+              <span style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" , ...INK }}>{me.nick}</span>
               <span aria-hidden="true" style={{ fontSize: 13, opacity: 0.6 }}>✏️</span>
             </button>
             <div style={{ fontSize: 12, color: C.dim, marginTop: 2 }}>{T("frMyCode")}</div>
