@@ -1,4 +1,8 @@
 {
   "about": "Keys that are English only for now: other languages show the English text until they are translated. Remove a key once every language has it. Checked by check.mjs.",
-  "keys": []
+  "keys": [
+    "ach.deck",
+    "ach.deckBeast",
+    "pl.runs"
+  ]
 }

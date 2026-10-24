@@ -1244,6 +1244,9 @@ const ACH = [
   { k: "guide", icon: "🧭", at: [1, 2, 3, 4, 5, 6, 7], rk: [0, 1, 2, 3, 4, 5, 7], v: c => c.guide },
   // 1.8.0 single badges (Michael: "Health Connect doesn't need levels"; some rare, some epic, some secret)
   { k: "health", icon: "❤️", at: [1], rk: [4], single: true, v: c => (c.hc ? 1 : 0) },
+  // 1.8.0 Muscle Deck: Runs won (any intensity), and one legendary badge for a win on the top intensity
+  { k: "deck", icon: "🃏", at: [1, 2, 3, 5, 8, 12, 20, 30, 50], pl: "runs", v: c => c.deckWins },
+  { k: "deckBeast", icon: "👑", at: [1], rk: [8], single: true, v: c => c.deckBeast },
   { k: "allex", icon: "🧩", at: [1], rk: [6], single: true, v: c => c.allex },
   { k: "allDiamond", icon: "💎", at: [1], rk: [8], single: true, v: c => c.allDiamond },
   { k: "comeback", icon: "🔁", at: [1], rk: [4], single: true, secret: true, v: c => c.comeback },
@@ -1286,6 +1289,8 @@ function achCounts(history, extra = {}) {
     steps10k: extra.steps10k || 0,
     hc: extra.hc || 0,
     guide: extra.guide || 0,
+    deckWins: extra.deckWins || 0,
+    deckBeast: extra.deckBeast || 0,
     ...singleCounts(history, extra),
   };
 }
@@ -1345,6 +1350,9 @@ function achExtra(profile, kcal, history) {
     steps10k: Object.keys(steps).filter(d => steps[d] >= 10000).length,
     hc: Math.max(hcLevel(k), k.hcBest || 0),
     guide: tourDoneSet(profile).size,
+    // 1.8.0 Muscle Deck (Michael, Oct 25: "unranked just gives you a badge"): Runs won, and a win on Beast mode
+    deckWins: (profile && profile.game && profile.game.rw) || 0,
+    deckBeast: profile && profile.game && profile.game.topWin >= 4 ? 1 : 0,
     bmd: profile && profile.birth && profile.birth.m && profile.birth.d ? `${String(profile.birth.m).padStart(2, "0")}-${String(profile.birth.d).padStart(2, "0")}` : null,
     frozen: ((profile && profile.freezeDays) || []).length > 0,
   };
@@ -1995,6 +2003,8 @@ function TabIcon({ name, active }) {
   if (name === "history") return <svg width="26" height="26" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="3" {...s} /><path d="M3.5 10h17M8 3v4M16 3v4" {...s} /><circle cx="12" cy="15" r="1.6" fill={c} stroke="none" /></svg>;
   if (name === "calories") return <svg width="26" height="26" viewBox="0 0 24 24"><path d="M12 21c-4 0-6.5-2.7-6.5-6.3 0-3.2 2.2-5.4 3.6-7.6.6 1.6 1.4 2.6 2.5 3.1C12 7 13 4.7 14.6 3c.6 2.9 3.9 5.6 3.9 10.2 0 4.4-2.6 7.8-6.5 7.8z" {...s} /></svg>;
   if (name === "friends") return <svg width="26" height="26" viewBox="0 0 24 24"><circle cx="9" cy="8.5" r="3.4" {...s} /><path d="M2.8 19.5c.9-3.1 3.2-4.8 6.2-4.8s5.3 1.7 6.2 4.8" {...s} /><circle cx="16.6" cy="9.3" r="2.7" {...s} /><path d="M16.4 14.6c2.4.1 4.1 1.6 4.8 4.2" {...s} /></svg>;
+  // 1.8.0 Muscle Deck: two fanned cards with a suit (Michael: not the same icon as Settings)
+  if (name === "game") return <svg width="26" height="26" viewBox="0 0 24 24"><rect x="8.5" y="3" width="11.5" height="16" rx="2.2" {...s} /><path d="M8.5 6.6 5.4 7.4a1.9 1.9 0 0 0-1.3 2.3l2.7 10a1.9 1.9 0 0 0 2.3 1.3l4.6-1.3" {...s} /><path d="M14.25 7.4l2.6 3.6-2.6 3.6-2.6-3.6z" fill={c} stroke="none" /></svg>;
   if (name === "profile") return <svg width="26" height="26" viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="4" {...s} /><path d="M4.5 20.5c1.2-3.6 4-5.5 7.5-5.5s6.3 1.9 7.5 5.5" {...s} /></svg>;
   return <svg width="26" height="26" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2" {...s} /><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7" {...s} /><circle cx="12" cy="12" r="6.6" {...s} /></svg>;
 }
@@ -5471,6 +5481,8 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
   const loadWorld = () => { setErr(""); cloud().world(50).then(w => setWorld(w.map(x => ({ ...x, pfp: null })))).catch(e => { setWorld(w => w || []); setErr(cloudErr(e)); }); };
   useEffect(() => { try { sessionStorage.removeItem("hw-add"); } catch (_) {} }, []);
   useEffect(() => { if (scope === "world" && world === null) loadWorld(); }, [scope]);
+  // 1.8.0: the server writes the world entry after its check, so a new result reloads the list (joining shows you at once)
+  useEffect(() => { if (world !== null && fx.fair) loadWorld(); }, [fx.fair]);
   const friendIds = (friends || []).map(f => f.uid);
   // 1.8.0 friend streaks
   const fs = fx.fs || { list: [], days: {}, mine: [] };
@@ -7174,6 +7186,18 @@ const STAKE_COL = ["#8fd3ff", "#3ddc84", "#ffd23f", "#ff8a3d", "#ff4d5e"];
 const stakeXp = k => 1 + 0.5 * k; // +50 % game XP per stake
 const SUIT_COL = { push: "#ff6b5b", pull: "#3d9bff", legs: "#21b36b", core: "#9a5cff" };
 const JOKER_ICON = { joker: "🃏", chips: "🪙", pairs: "🤝", threes: "🎲", straights: "📏", flushes: "🌊", circuit: "🔄", warmup: "🔥", faces: "👑", aces: "⭐", lastround: "⏱️", even: "⚖️", odd: "🌀", momentum: "🚀", bank: "🏦", five: "✋", fullbody: "🧍", ironcore: "🧱" };
+// Kapoke = Muscle Deck's money (Michael, Oct 25: "a special sign made only of K"; the name stays the same in every
+// language, like Muscle Deck). In the game texts "$" stands for it; withK() draws the sign in its place.
+const COIN = "Kapoke";
+function KSign({ size = "0.86em" }) {
+  return (
+    <svg viewBox="0 0 20 24" aria-label={COIN} role="img" style={{ display: "inline-block", width: size, height: size, verticalAlign: "-0.1em", marginRight: "0.04em", overflow: "visible" }}>
+      <path d="M7 2.5v19M17 2.5 7.5 13l9.5 8.5" fill="none" stroke="currentColor" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M2 9.5h9M2 14.5h9" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" />
+    </svg>
+  );
+}
+const withK = str => { const parts = String(str).split("$"); return parts.length === 1 ? str : parts.flatMap((x, i) => (i ? [<KSign key={i} />, x] : [x])); };
 const PERK_ICON = { streak: "🔥", volume: "💰", warmup: "🤸", endurance: "⏳", allround: "🧩", obsidian: "🌋" };
 const gameLoad = () => { try { return JSON.parse(localStorage.getItem(GAME_KEY) || "null"); } catch (_) { return null; } };
 const gameSave = g => { try { if (g) localStorage.setItem(GAME_KEY, JSON.stringify(g)); else localStorage.removeItem(GAME_KEY); } catch (_) {} };
@@ -7216,7 +7240,7 @@ function JokerChip({ id, onClick, sell, buy, price, small, glow }) {
       style={{ ...btnBase, width: small ? 66 : 92, minHeight: small ? 80 : 118, flexShrink: 0, padding: small ? "6px 4px" : "8px 6px", borderRadius: 12, background: `linear-gradient(160deg, ${col}33, ${C.panelHi})`, border: `1.5px solid ${col}`, color: C.chalk, display: "flex", flexDirection: "column", alignItems: "center", gap: 4, fontWeight: 700, "--gc": col }}>
       <span aria-hidden="true" style={{ fontSize: small ? 22 : 28, lineHeight: 1, height: small ? 24 : 30, display: "flex", alignItems: "center" }}>{id.startsWith("fan_") ? <SuitIcon s={id.slice(4)} size={small ? 20 : 26} /> : JOKER_ICON[id] || "🃏"}</span>
       <span style={{ fontSize: small ? 10.5 : 12, lineHeight: 1.15, textAlign: "center", overflowWrap: "anywhere" }}>{jName(id)}</span>
-      {(buy || sell) && <span style={{ marginTop: "auto", fontSize: 12, fontWeight: 900, color: buy ? C.signal : C.dim }}>{buy ? `$${price}` : `+$${price}`}</span>}
+      {(buy || sell) && <span style={{ marginTop: "auto", fontSize: 12, fontWeight: 900, color: buy ? C.signal : C.dim }}>{buy ? <><KSign />{price}</> : <>+<KSign />{price}</>}</span>}
     </button>
   );
 }
@@ -7325,7 +7349,7 @@ function PerkSheet({ lo, mode, stakeMax = 0, onClose, onGo }) {
               <span aria-hidden="true" style={{ fontSize: 22, width: 26, textAlign: "center" }}>{id ? PERK_ICON[id] : "–"}</span>
               <span style={{ flex: 1, minWidth: 0 }}>
                 <span style={{ display: "block", fontWeight: 800, fontSize: 14.5 }}>{t[0]}</span>
-                <span style={{ display: "block", fontSize: 12.5, color: C.dim, marginTop: 2, lineHeight: 1.4 }}>{have ? t[1] : `🔒 ${t[2]}`}</span>
+                <span style={{ display: "block", fontSize: 12.5, color: C.dim, marginTop: 2, lineHeight: 1.4 }}>{have ? withK(t[1]) : `🔒 ${t[2]}`}</span>
               </span>
             </button>
           );
@@ -7353,7 +7377,7 @@ function GameRules({ onClose }) {
   return (
     <Sheet title={T("gmRulesT")} onClose={onClose}>
       <div data-gm-rules-text style={{ display: "flex", flexDirection: "column", gap: 10, fontSize: 14, lineHeight: 1.55, color: C.chalk }}>
-        {L.gm.rules.map((x, i) => <p key={i} style={{ margin: 0 }}>{x}</p>)}
+        {L.gm.rules.map((x, i) => <p key={i} style={{ margin: 0 }}>{withK(x)}</p>)}
       </div>
       <div style={{ marginTop: 14, borderRadius: 14, overflow: "hidden", border: `1px solid ${C.line}` }}>
         {[...GM.HANDS].reverse().map((h, i) => (
@@ -7424,7 +7448,7 @@ function GameTable({ saved, history, onEnd, onQuit }) {
           <div style={{ fontSize: 11.5, fontWeight: 800, letterSpacing: 0.8, textTransform: "uppercase", color: g.blind === 2 ? "#ff7a7a" : C.dim, display: "flex", alignItems: "center", gap: 6 }}>{g.stake > 0 && <span data-gm-stake-chip={g.stake} title={L.gm.stake[g.stake][0]} style={{ width: 10, height: 10, borderRadius: 3, background: STAKE_COL[g.stake], border: "1px solid rgba(255,255,255,.4)", flexShrink: 0 }} />}{T("gmAnte", { n: g.ante + 1, m: g.antes })} · {blindName}</div>
           <div data-gm-target style={{ fontFamily: DISPLAY, fontSize: 22, fontWeight: 900, lineHeight: 1.05 }}>{nf(shown)} <span style={{ color: C.dim, fontSize: 16 }}>/ {nf(g.target)}</span></div>
         </div>
-        <div data-gm-money style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, color: C.signal }}>${g.money}</div>
+        <div data-gm-money style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, color: C.signal }}><KSign />{g.money}</div>
       </div>
       <div style={{ height: 6, borderRadius: 99, background: C.panel, marginTop: 8, overflow: "hidden" }}><div style={{ width: `${pct}%`, height: "100%", background: pct >= 100 ? C.mint : C.signal, transition: `width ${MO.t3} ${MO.ease}` }} /></div>
       {bossTxt && g.phase === "blind" && <div data-gm-boss={g.boss} style={{ marginTop: 8, fontSize: 12.5, color: "#ff9a9a", fontWeight: 700 }}>⚠ {bossTxt[1]}</div>}
@@ -7432,7 +7456,7 @@ function GameTable({ saved, history, onEnd, onQuit }) {
       <div data-gm-jokers style={{ display: "flex", gap: 6, marginTop: 10, overflowX: "auto", minHeight: 82, paddingBottom: 2 }}>
         {g.jokers.length ? g.jokers.map((j, k) => <JokerChip key={j.id + k} id={j.id} small glow={anim && anim.hit && anim.hit.j === j.id} onClick={() => { sfxTap(); setInfo(j.id); }} />)
           : <div style={{ fontSize: 12.5, color: C.dim, alignSelf: "center" }}>{T("gmNoJokers")}</div>}
-        {g.perk && <div data-gm-perk-chip={g.perk} title={L.gm.perk[g.perk][1]} style={{ alignSelf: "center", marginLeft: "auto", fontSize: 12, color: C.dim, whiteSpace: "nowrap" }}>{PERK_ICON[g.perk]} {L.gm.perk[g.perk][0]}</div>}
+        {g.perk && <div data-gm-perk-chip={g.perk} title={L.gm.perk[g.perk][1].replace(/\$(\d+)/g, "$1 " + COIN)} style={{ alignSelf: "center", marginLeft: "auto", fontSize: 12, color: C.dim, whiteSpace: "nowrap" }}>{PERK_ICON[g.perk]} {L.gm.perk[g.perk][0]}</div>}
       </div>
       {g.phase === "blind" || anim ? (
         <>
@@ -7472,7 +7496,7 @@ function GameTable({ saved, history, onEnd, onQuit }) {
       ) : g.phase === "shop" ? (
         <GameShop g={g} onMove={shopMove} onInfo={setInfo} />
       ) : <div style={{ flex: 1 }} />}
-      {info && <Sheet short title={jName(info)} onClose={() => setInfo(null)}><div data-gm-joker-info style={{ fontSize: 15, lineHeight: 1.5, color: C.chalk }}>{jDesc(info)}</div></Sheet>}
+      {info && <Sheet short title={jName(info)} onClose={() => setInfo(null)}><div data-gm-joker-info style={{ fontSize: 15, lineHeight: 1.5, color: C.chalk }}>{withK(jDesc(info))}</div></Sheet>}
       {quit && (
         <Sheet short title={T("gmQuitT")} onClose={() => setQuit(false)}>
           <div style={{ fontSize: 14.5, color: C.dim, lineHeight: 1.5 }}>{T(saved.mode === "ranked" ? "gmQuitRankedD" : "gmQuitD")}</div>
@@ -7501,9 +7525,12 @@ function GameShop({ g, onMove, onInfo }) { // onInfo: your own jokers' text
       <div className="cardIn" style={{ ...card, ...tileR(), padding: "12px 14px", display: "flex", alignItems: "center", gap: 10 }}>
         <span aria-hidden="true" style={{ fontSize: 26 }}>✅</span>
         <span style={{ flex: 1, fontWeight: 800 }}>{T("gmCleared")}</span>
-        <span data-gm-pay style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, color: C.signal }}>+${pay}</span>
+        <span data-gm-pay style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, color: C.signal }}>+<KSign />{pay}</span>
       </div>
-      <div style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900 }}>{T("gmShop")}</div>
+      <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
+        <div style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, flex: 1 }}>{T("gmShop")}</div>
+        <div data-gm-coin style={{ fontSize: 13, color: C.dim, fontWeight: 700 }}><span style={{ color: C.signal }}><KSign />{g.money}</span> {COIN}</div>
+      </div>
       {/* one row per item: what it is, what it does, the price (Michael wants it readable, not a tap per joker) */}
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {sh.items.map((it, i) => {
@@ -7516,21 +7543,21 @@ function GameShop({ g, onMove, onInfo }) { // onInfo: your own jokers' text
               </span>
               <span style={{ flex: 1, minWidth: 0 }}>
                 <span style={{ display: "block", fontWeight: 800, fontSize: 15, lineHeight: 1.2 }}>{jk ? jName(it.id) : T("gmDrill", { h: handName(it.id) })}</span>
-                <span style={{ display: "block", fontSize: 12.5, color: C.dim, lineHeight: 1.35, marginTop: 2 }}>{jk ? jDesc(it.id) : T("gmDrillD", { c: GM.HAND_UP[it.id][0], m: GM.HAND_UP[it.id][1] })}</span>
+                <span style={{ display: "block", fontSize: 12.5, color: C.dim, lineHeight: 1.35, marginTop: 2 }}>{jk ? withK(jDesc(it.id)) : T("gmDrillD", { c: GM.HAND_UP[it.id][0], m: GM.HAND_UP[it.id][1] })}</span>
               </span>
               <button type="button" data-gm-buy={i} disabled={off} onClick={() => onMove({ t: "buy", i })} style={{ ...btnBase, flexShrink: 0, minWidth: 64, padding: "8px 10px", borderRadius: 12, background: it.sold ? "transparent" : C.signal, color: it.sold ? C.dim : C.signalInk, fontSize: 13, lineHeight: 1.15, opacity: off && !it.sold ? 0.4 : 1 }}>
-                {it.sold ? "✓" : <><span style={{ display: "block", fontFamily: DISPLAY, fontSize: 17, fontWeight: 900 }}>${it.cost}</span>{T("gmBuy")}</>}
+                {it.sold ? "✓" : <><span style={{ display: "block", fontFamily: DISPLAY, fontSize: 17, fontWeight: 900 }}><KSign />{it.cost}</span>{T("gmBuy")}</>}
               </button>
             </div>
           );
         })}
       </div>
-      <button type="button" data-gm-reroll disabled={g.money < sh.rerollCost} onClick={() => onMove({ t: "reroll" })} style={{ ...ghostBtn, alignSelf: "flex-start", color: C.chalk, opacity: g.money < sh.rerollCost ? 0.5 : 1 }}>{T("gmReroll", { n: sh.rerollCost })}</button>
+      <button type="button" data-gm-reroll disabled={g.money < sh.rerollCost} onClick={() => onMove({ t: "reroll" })} style={{ ...ghostBtn, alignSelf: "flex-start", color: C.chalk, opacity: g.money < sh.rerollCost ? 0.5 : 1 }}>{withK(T("gmReroll", { n: sh.rerollCost }))}</button>
       {g.jokers.length > 0 && (
         <div>
           <div style={{ fontSize: 12.5, color: C.dim, marginBottom: 6 }}>{T("gmYourJokers", { n: g.jokers.length, max: GM.RULES.jokers })}</div>
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-            {g.jokers.map((j, i) => <div key={j.id} style={{ display: "flex", flexDirection: "column", gap: 4, alignItems: "center" }}><JokerChip id={j.id} small onClick={() => { sfxTap(); onInfo(j.id); }} /><button type="button" data-gm-sell={i} onClick={() => onMove({ t: "sell", i })} style={{ ...btnBase, background: "transparent", color: C.dim, fontSize: 11.5, padding: "3px 6px" }}>{T("gmSell", { n: Math.max(1, Math.floor(j.cost / 2)) })}</button></div>)}
+            {g.jokers.map((j, i) => <div key={j.id} style={{ display: "flex", flexDirection: "column", gap: 4, alignItems: "center" }}><JokerChip id={j.id} small onClick={() => { sfxTap(); onInfo(j.id); }} /><button type="button" data-gm-sell={i} onClick={() => onMove({ t: "sell", i })} style={{ ...btnBase, background: "transparent", color: C.dim, fontSize: 11.5, padding: "3px 6px" }}>{withK(T("gmSell", { n: Math.max(1, Math.floor(j.cost / 2)) }))}</button></div>)}
           </div>
         </div>
       )}
@@ -8307,7 +8334,7 @@ export default function App() {
   const [dayNow, setDayNow] = useState(dateKey());
   useEffect(() => { const f = () => { if (document.visibilityState === "visible") setDayNow(dateKey()); }; document.addEventListener("visibilitychange", f); return () => document.removeEventListener("visibilitychange", f); }, []);
   useEffect(() => {
-    if (!loaded || !profLoaded) return;
+    if (!loaded || !profLoaded || window.__hwNoAutoFz) return; // tests switch it off unless they test it
     const add = autoFreezeDays(history, dayNow);
     if (add) {
       META = { ...META, freezeDays: [...(profile.freezeDays || []), ...add] };
@@ -8500,7 +8527,7 @@ export default function App() {
     const xp = Math.round((100 * res.cleared + (saved.mode === "run" && res.won ? 500 : 0) + (saved.mode === "duel" && won ? 200 : 0)) * stakeXp(sk));
     const gp = profile.game || {}, before = GM.gameLevel(gp.xp || 0).lvl, after = GM.gameLevel((gp.xp || 0) + xp).lvl;
     const stakeUp = won && sk >= (gp.stake || 0) && sk < GM.STAKES.length - 1 ? sk + 1 : 0; // winning on your highest stake opens the next
-    setProfile({ ...profile, game: { ...gp, xp: (gp.xp || 0) + xp, games: (gp.games || 0) + 1, wins: (gp.wins || 0) + (won ? 1 : 0), best: Math.max(gp.best || 0, res.cleared), top: Math.max(gp.top || 0, res.best || 0), stake: Math.max(gp.stake || 0, stakeUp) } });
+    setProfile({ ...profile, game: { ...gp, xp: (gp.xp || 0) + xp, games: (gp.games || 0) + 1, wins: (gp.wins || 0) + (won ? 1 : 0), best: Math.max(gp.best || 0, res.cleared), top: Math.max(gp.top || 0, res.best || 0), stake: Math.max(gp.stake || 0, stakeUp), rw: (gp.rw || 0) + (saved.mode === "run" && won ? 1 : 0), topWin: Math.max(gp.topWin ?? -1, saved.mode === "run" && won ? sk : -1) } });
     gameSave(null);
     setGameEnd({ saved, g, xp, lvlUp: after > before ? after : 0, stakeUp });
   };
