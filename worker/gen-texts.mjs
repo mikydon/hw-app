@@ -1,5 +1,5 @@
 // Writes worker/texts.js: the notification lines from the app's own translations (src/i18n), so the push server
-// speaks the same 14 languages. Run after changing them: node worker/gen-texts.mjs
+// speaks the same languages as the app. Run after changing them: node worker/gen-texts.mjs
 import fs from "fs";
 const dir = new URL("../src/i18n/", import.meta.url);
 const KEYS = ["ntReq", "ntReqD", "ntAcc", "ntAccD", "ntTest", "ntTestD"];

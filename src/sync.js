@@ -12,7 +12,7 @@
 
 // Settings that follow the account (the rest is per device).
 export const SYNC_SETTINGS = ["theme", "look", "accent", "exOff", "aiCopy"];
-const PROFILE_LISTS = ["freezeDays", "bdays", "bdayGifts"];
+const PROFILE_LISTS = ["freezeDays", "bdays", "bdayGifts", "tourDone"]; // tourDone: chapters of the guide (1.7.6)
 const PROFILE_MAPS = ["skips"];
 // Calorie data that never leaves the phone (Health Connect) or is a per-device choice.
 const KCAL_DEVICE = ["steps", "food", "foodItems", "healthOn", "healthFood", "foodMode", "hcBest"];

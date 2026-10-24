@@ -15,6 +15,7 @@ import pt from "./pt.js";
 import zh from "./zh.js";
 import ja from "./ja.js";
 import ko from "./ko.js";
+import id from "./id.js";
 
 // Native names, so people find their language even if the UI is in another one.
 export const LANGS = [
@@ -32,8 +33,9 @@ export const LANGS = [
   { code: "zh", name: "中文（简体）", flag: "🇨🇳" },
   { code: "ja", name: "日本語", flag: "🇯🇵" },
   { code: "ko", name: "한국어", flag: "🇰🇷" },
+  { code: "id", name: "Bahasa Indonesia", flag: "🇮🇩" },
 ];
-const SOURCES = { en, sk, cs, pl, hu, uk, de, es, fr, it, pt, zh, ja, ko };
+const SOURCES = { en, sk, cs, pl, hu, uk, de, es, fr, it, pt, zh, ja, ko, id };
 
 // Objects merge key by key; strings and arrays are taken whole from the locale.
 function merge(base, over) {
@@ -55,7 +57,8 @@ export function locale(code) {
 export function detectLang() {
   try {
     const list = (navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language]) || [];
-    for (const l of list) { const c = String(l || "").slice(0, 2).toLowerCase(); if (SOURCES[c]) return c; }
+    // "in" is Java's old code for Indonesian (some Android versions still report in-ID)
+    for (const l of list) { let c = String(l || "").slice(0, 2).toLowerCase(); if (c === "in") c = "id"; if (SOURCES[c]) return c; }
   } catch (_) {}
   return "en";
 }

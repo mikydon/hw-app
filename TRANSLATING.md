@@ -1,6 +1,6 @@
 # Translating HW App
 
-HW App is available in 14 languages. English is the base language; Slovak is the original.
+HW App is available in 15 languages. English is the base language; Slovak is the original.
 
 You can help in two ways: fix a translation, or add a new language. You don't need to be a programmer for either.
 
@@ -27,7 +27,7 @@ Every language is one file in [`src/i18n/`](src/i18n/):
 | [`ja.js`](src/i18n/ja.js) | 日本語 |
 | [`ko.js`](src/i18n/ko.js) | 한국어 |
 
-Chinese, Japanese and Korean were translated with the help of AI in October 2026. Native speakers are especially welcome to improve them.
+Chinese, Japanese and Korean (October 2026) and Indonesian (1.7.6) were translated with the help of AI. Native speakers are especially welcome to improve them.
 
 ## Fix a translation
 
@@ -56,7 +56,7 @@ A check runs automatically on your pull request and tells you if something is of
 - **Only change the text inside the quotes.** Keys (the word before `:`) stay in English.
 - **Keep every `{placeholder}`** exactly as it is, e.g. `{n}`, `{name}`, `{date}`. The app fills them in. You may move a placeholder within the sentence.
 - **Lists keep the same number of items.** The daily quotes, figure labels and "What's new" lists are picked by position.
-- **Plural forms (`pl:`)** use the categories your language needs: `one`, `few`, `many`, `other` ([which ones?](https://www.unicode.org/cldr/charts/latest/supplemental/language_plural_rules.html)). Every form must contain `{n}`. Languages without plural forms (e.g. Chinese, Japanese, Korean) only need `other`.
+- **Plural forms (`pl:`)** use the categories your language needs: `one`, `few`, `many`, `other` ([which ones?](https://www.unicode.org/cldr/charts/latest/supplemental/language_plural_rules.html)). Every form must contain `{n}`. Languages without plural forms (e.g. Chinese, Japanese, Korean, Indonesian) only need `other`.
 - **Tone:** friendly and short, the way a coach talks to a friend. Use the informal "you" where your language has one.
 - **Keep the names** "HW App", "Health Connect", "Samsung Health", "Patreon", "GitHub", "APK".
 - Lines starting with 📱 are about the Android app only; keep the 📱.

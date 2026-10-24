@@ -13,6 +13,8 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 ## 1.7.6 (2026-10-24)
 
 - Titles and names are no longer cut off at the bottom: letters that reach below the line (g, y, j, _) and some Cyrillic letters showed with their lower part missing in the screen title at the top, in your name in the menu and on your profile, and in nicknames in Friends and on other people's profiles.
+- New: an interactive guide to the app in 7 chapters (Home, Badges, Workout, Profile, History, Calories, Friends). The screen dims, the real button or box lights up and a bubble explains it; steps that move somewhere wait for your tap (or Next taps it for you). Every finished chapter raises the new Explorer badge by one level (Wood → Diamond), so chapter 2 teaches opening badge cards with your own first badge. The Workout chapter runs during your next workout. New users get it right after the first-start setup, everyone else gets it offered once on Home, and the ☰ menu → Guide lists the chapters to start (again) any time. Skipping it stops the offers.
+- Indonesian (Bahasa Indonesia): the app now speaks 15 languages (AI-assisted translation; fixes welcome, see TRANSLATING.md). Phones that report Indonesian with the old code "in" get it too.
 
 ## 1.7.5 (2026-10-24)
 

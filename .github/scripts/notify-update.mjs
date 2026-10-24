@@ -17,7 +17,7 @@ const jwt = unsigned + "." + crypto.createSign("RSA-SHA256").update(unsigned).si
 const tr = await fetch(aud, { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" }, body: new URLSearchParams({ grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer", assertion: jwt }) });
 const tj = await tr.json().catch(() => ({}));
 if (!tj.access_token) { console.log(`::error title=No update notification::OAuth failed (${tr.status} ${tj.error || ""})`); process.exit(1); }
-const LANGS = ["en", "sk", "cs", "pl", "hu", "uk", "de", "es", "fr", "it", "pt", "zh", "ja", "ko"];
+const LANGS = ["en", "sk", "cs", "pl", "hu", "uk", "de", "es", "fr", "it", "pt", "zh", "ja", "ko", "id"];
 const en = (await import(new URL("../../src/i18n/en.js", import.meta.url))).default.ui;
 const fill = (s, v) => String(s).replace(/\{v\}/g, v);
 let sent = 0; const bad = [];

@@ -1203,6 +1203,8 @@ const ACH = [
   { k: "kcalHit", icon: "🥗", at: [1, 7, 14, 30, 60, 100, 200], pl: "days", v: c => c.kcalHits },
   { k: "steps", icon: "👟", at: [1, 7, 14, 30, 60, 100, 200], pl: "days", v: c => c.steps10k },
   { k: "health", icon: "❤️", at: [1, 2, 3], rk: [1, 4, 6], v: c => c.hc },
+  // 1.7.6: one level per finished chapter of the guide (profile.tourDone)
+  { k: "guide", icon: "🧭", at: [1, 2, 3, 4, 5, 6, 7], v: c => c.guide },
 ];
 // Start of a workout (ts is when it was saved; dur = its length, if known).
 const startHour = e => new Date((e.ts || 0) - (e.dur || 0) * 1000).getHours();
@@ -1232,6 +1234,7 @@ function achCounts(history, extra = {}) {
     kcalHits: extra.kcalHits || 0,
     steps10k: extra.steps10k || 0,
     hc: extra.hc || 0,
+    guide: extra.guide || 0,
   };
 }
 function achievements(history, extra) {
@@ -1267,6 +1270,7 @@ function achExtra(profile, kcal, history) {
     kcalHits,
     steps10k: Object.keys(steps).filter(d => steps[d] >= 10000).length,
     hc: Math.max(hcLevel(k), k.hcBest || 0),
+    guide: tourDoneSet(profile).size,
   };
 }
 // Tiers that went up between two histories, for the end-of-workout summary.
@@ -1920,7 +1924,7 @@ function TabIcon({ name, active }) {
 }
 
 // Slide-in drawer from the right with everything in the app. Rendered into <body> (like Sheet).
-function MenuDrawer({ open, screen, history, profile, session, onGo, onResume, onClose, onNews, gh, dl, badge, apk, busy, claimN }) {
+function MenuDrawer({ open, screen, history, profile, session, onGo, onResume, onClose, onNews, gh, dl, badge, apk, busy, claimN, onTour, tourN }) {
   const [shown, setShown] = useState(open);
   useEffect(() => { if (open) setShown(true); else { const t = setTimeout(() => setShown(false), 260); return () => clearTimeout(t); } }, [open]);
   const closeRef = useRef(null);
@@ -1944,7 +1948,7 @@ function MenuDrawer({ open, screen, history, profile, session, onGo, onResume, o
           <div style={{ fontFamily: DISPLAY, fontSize: 15, fontWeight: 800, color: C.dim, letterSpacing: 1 }}>HW APP</div>
           <MenuButton open={true} onClick={onClose} btnRef={closeRef} />
         </div>
-        <MenuBody screen={screen} history={history} profile={profile} session={session} onGo={onGo} onResume={onResume} onNews={onNews} gh={gh} dl={dl} badge={badge} apk={apk} busy={busy} claimN={claimN} />
+        <MenuBody screen={screen} history={history} profile={profile} session={session} onGo={onGo} onResume={onResume} onNews={onNews} gh={gh} dl={dl} badge={badge} apk={apk} busy={busy} claimN={claimN} onTour={onTour} tourN={tourN} />
       </nav>
     </div>,
     document.body
@@ -1953,7 +1957,7 @@ function MenuDrawer({ open, screen, history, profile, session, onGo, onResume, o
 
 // What the menu holds (profile, back to the workout, the screens, about): in the ☰ drawer, or on a wide screen in the
 // side panel that stays open (1.7.0).
-function MenuBody({ screen, history, profile, session, onGo, onResume, onNews, gh, dl, badge, apk, busy, claimN = 0 }) {
+function MenuBody({ screen, history, profile, session, onGo, onResume, onNews, gh, dl, badge, apk, busy, claimN = 0, onTour, tourN = 0 }) {
   const lv = levelInfo(totalXP(history));
   const st = streakInfo(history, dateKey());
   const kcs = kcalNow(history);
@@ -1988,6 +1992,17 @@ function MenuBody({ screen, history, profile, session, onGo, onResume, onNews, g
               );
             })}
           </div>
+          {onTour && (
+            <button type="button" data-tour-open onClick={() => { sfxTap(); onTour(); }} className="drawerItem"
+              style={{ ...btnBase, "--i": items.length + 2, display: "flex", alignItems: "center", gap: 14, margin: "0 14px 12px", padding: "10px 14px", borderRadius: 18, background: C.panel, border: `1px solid ${C.line}`, color: C.chalk, textAlign: "left", ...(LOOK === "liquid" ? { ...LIQUID_PILL(), borderRadius: 20 } : {}) }}>
+              <span aria-hidden="true" style={{ width: 40, height: 40, borderRadius: 12, background: LOOK === "liquid" ? "rgba(255,255,255,.08)" : C.panelHi, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 20 }}>🧭</span>
+              <span style={{ flex: 1, minWidth: 0 }}>
+                <span style={{ display: "block", fontSize: 16, fontWeight: 800 }}>{T("tourTitle")}</span>
+                <span style={{ display: "block", fontSize: 12, fontWeight: 500, color: C.dim, marginTop: 1 }}>{T("tourMenuD", { n: tourN, t: TOUR_N })}</span>
+              </span>
+              <Arrow />
+            </button>
+          )}
           <AboutBox gh={gh} dl={dl} onNews={onNews} apk={apk} busy={busy} />
     </>
   );
@@ -2967,7 +2982,7 @@ function usePager(name, n, lay) {
   return { page, goPage, tabs, pagerProps, pageProps, wide };
 }
 
-function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, profile, onGo, upd, apk, kcal, setKcal, dl, onDlClose, onSetup, settings, setSettings }) {
+function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, profile, onGo, upd, apk, kcal, setKcal, dl, onDlClose, onSetup, settings, setSettings, tourOffer }) {
   const today = dateKey();
   // Make sure today's daily line and the "done" card texts are picked (and saved) before painting.
   useLayoutEffect(() => { const n = uiForToday(ui, history, today, profile); if (n !== ui) setUi(n); });
@@ -3028,6 +3043,7 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
     profile && bdayToday() && ui.bdayHidden !== today && "bday",
     showDone && "done",
     upd && "upd",
+    tourOffer && "tour",
     history.length === 0 && !ui.welcomeHidden && "welcome", // a new user first sees what the app is, then what is missing
     profile && !(ui && ui.setupHidden) && (() => { const m = missingSetup(profile, kcal); return m.name || m.kcal.length || m.goal; })() && "setup",
     hint && onGo && "hint",
@@ -3096,7 +3112,7 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
   );
 
   const weekCard = (
-    <Sect title={T("secWeek")} style={{ marginTop: 0 }} meta={<span data-week-count style={{ color: weekCount ? C.mint : C.dim, fontWeight: 800 }}>{weekCount} / 3–4</span>} accent={C.mint}>
+    <Sect data-home-week title={T("secWeek")} style={{ marginTop: 0 }} meta={<span data-week-count style={{ color: weekCount ? C.mint : C.dim, fontWeight: 800 }}>{weekCount} / 3–4</span>} accent={C.mint}>
       <div style={{ display: "flex", gap: 6 }} aria-label={T("weekLine", { count: TP("workouts", weekCount) })}>
         {week.map(w => (
           <button key={w.k} data-week-day={w.k} data-week-kc={w.kc || "none"} onClick={() => onGo && onGo("history", w.on ? { edit: w.k } : null)} aria-label={`${w.lb} ${fmtDate(w.k)}${w.on ? " ✓" : ""}`}
@@ -3135,6 +3151,14 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
           <div style={{ fontSize: 12, color: C.dim, marginTop: 3, lineHeight: 1.45, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{last.items.map(it => `${exName(it)} ${it.res.map(r => fmtRes(r, "")).join("/")}`).join(", ")}</div>
         </div>
       </>, () => setUi({ ...ui, doneHiddenTs: lastTs }), { "data-done-card": 1 })}
+      {notice === "tour" && ntBox("tour", C.signal, <>
+        <div aria-hidden="true" style={{ fontSize: 26, lineHeight: 1, flexShrink: 0 }}>🧭</div>
+        <div style={{ minWidth: 0 }}>
+          <div style={{ fontSize: 15, fontWeight: 800, color: C.chalk }}>{T("tourOfferT")}</div>
+          <div style={{ fontSize: 13, color: C.dim, lineHeight: 1.45, marginTop: 2 }}>{T("tourOfferD")}</div>
+          <button type="button" data-tour-offer-go onClick={() => { sfxTap(); tourOffer.start(); }} style={{ ...btnBase, marginTop: 9, background: C.signal, color: C.signalInk, padding: "9px 15px", fontSize: 14 }}>{T("tourStart")}</button>
+        </div>
+      </>, () => tourOffer.close(), { "data-tour-offer": 1 })}
       {notice === "welcome" && (
         <div style={{ ...card, position: "relative", padding: "15px 16px", marginBottom: 12, borderColor: C.signal }}>
           <CloseX onClick={() => setUi({ ...ui, welcomeHidden: true })} />
@@ -3187,7 +3211,7 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
               const b = bestFor(history, id);
               const n = rankNext(id, b);
               return (
-                <button key={id} onClick={() => setHowEx(id)}
+                <button key={id} onClick={() => setHowEx(id)} data-home-ex={i}
                   style={{ ...btnBase, display: "flex", width: "100%", alignItems: "center", gap: 12, textAlign: "left", background: "transparent", color: C.chalk, padding: "14px 16px", borderRadius: 0, borderTop: i ? `1px solid ${C.line}` : "none" }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 16, fontWeight: 700 }}>{ex.name}<ExQ id={id} onOpen={() => setHowEx(id)} /></div>
@@ -6494,7 +6518,7 @@ function Warmup({ done, setDone, onNext }) {
     <div>
       <div style={{ fontFamily: DISPLAY, fontSize: 48, fontWeight: 900, lineHeight: 0.95, color: C.chalk }}>{T("warmup")}</div>
       <div style={{ fontSize: 14, color: C.dim, marginTop: 8, lineHeight: 1.5 }}>{T("warmupHint")}</div>
-      <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 10 }}>
+      <div data-warmup-list style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 10 }}>
         {WARMUP.map((w, i) => (
           <div key={w.id} style={{ display: "flex", alignItems: "stretch", gap: 8 }}>
             <button onClick={() => { const n = [...done]; n[i] = !n[i]; if (n[i]) sfxCheck(); setDone(n); }} aria-pressed={!!done[i]}
@@ -6512,7 +6536,7 @@ function Warmup({ done, setDone, onNext }) {
           </div>
         ))}
       </div>
-      <button onClick={onNext} className="b3d" style={{ ...bigBtn(count === WARMUP.length ? C.signal : C.panelHi, count === WARMUP.length ? C.signalInk : C.chalk), marginTop: 18 }}>
+      <button data-warmup-go onClick={onNext} className="b3d" style={{ ...bigBtn(count === WARMUP.length ? C.signal : C.panelHi, count === WARMUP.length ? C.signalInk : C.chalk), marginTop: 18 }}>
         {count === WARMUP.length ? T("letsGo") : T("skipWarmup")}
       </button>
     </div>
@@ -6702,7 +6726,7 @@ function Work({ item, rounds, history, sessionResults, onRecord, onSwap, exclude
               {T("sideNext", { side: sideName("L") })}
             </button>
           ) : (
-            <button onClick={() => { unlockAudio(); onRecord(split && rightReps !== null ? Math.min(rightReps, reps) : reps); }} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 22, fontSize: 18, padding: 19 }}>
+            <button data-done-btn onClick={() => { unlockAudio(); onRecord(split && rightReps !== null ? Math.min(rightReps, reps) : reps); }} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 22, fontSize: 18, padding: 19 }}>
               {T("doneBtn", { v: `${split && rightReps !== null ? Math.min(rightReps, reps) : reps}${unitStr(ex.unit)}` })}
             </button>
           )}
@@ -6832,7 +6856,7 @@ function Rest({ rest, nextItem, rounds, onEnd, onAdd }) {
       {rest.pr && <Confetti count={55} />}
       <div className="pop" style={{ fontFamily: DISPLAY, fontSize: 34, fontWeight: 900, lineHeight: 1, color: rest.pr ? C.signal : C.chalk }}>{rest.cheer || T("cheerDefault")}</div>
       <div style={{ fontSize: 14, color: C.sky, fontWeight: 700, marginTop: 6 }}>{newRound ? T("roundDone", { r: nextItem.r + 1, n: rounds }) : T("rest")}</div>
-      <div style={{ marginTop: 18 }}>
+      <div data-rest-timer style={{ marginTop: 18 }}>
         <Ring value={left} total={rest.total} size={250} color={C.sky}>
           <div className={left <= 3 && left > 0 ? "pulse" : ""} style={{ fontFamily: DISPLAY, fontSize: 124, fontWeight: 900, lineHeight: 0.85, color: left <= 3 ? C.signal : C.chalk }}>{left}</div>
         </Ring>
@@ -6847,7 +6871,7 @@ function Rest({ rest, nextItem, rounds, onEnd, onAdd }) {
         </div>
       )}
       <div style={{ display: "flex", gap: 10, marginTop: 22 }}>
-        <button onClick={onAdd} style={{ ...ghostBtn, flex: 1, padding: 14, fontSize: 14 }}>+15 s</button>
+        <button data-rest-add onClick={onAdd} style={{ ...ghostBtn, flex: 1, padding: 14, fontSize: 14 }}>+15 s</button>
         <button onClick={() => { unlockAudio(); onEnd(); }} style={{ ...btnBase, flex: 2, padding: 14, fontSize: 15, background: C.panelHi, color: C.chalk }}>{T("ready")}</button>
       </div>
     </div>
@@ -6932,6 +6956,240 @@ function revealList(entry, newAch, xpBefore, gained) {
   if (l1 > l0) { const r = lvRank(l1); out.push({ kind: "lvl", r, icon: "⚡", name: `${T("level")} ${l1}`, col: C.sky }); }
   return out.sort((a, b) => a.r - b.r || REV_KIND[a.kind] - REV_KIND[b.kind]);
 }
+// ─── GUIDE / TOUR (1.7.6; Michael, Oct 24: a friend from Indonesia "had no idea what to do") ───
+// An interactive guide in 7 chapters: the screen is dimmed, the real button or box is lit, and a bubble says what it
+// does. Steps that move somewhere ("tap here") need the real tap (Next taps it for you, so nobody gets stuck). Every
+// finished chapter adds a level to the Explorer badge (profile.tourDone, synced like the freeze days), so chapter 2 can
+// teach opening badge cards with your own first badge. Chapter 3 is the workout: it runs when a workout starts.
+// New users get chapter 1 right after the first-start setup; everyone else gets an offer on Home once; the ☰ menu has
+// the chapter list (TourSheet). window.__hwTourOff (tests) keeps it out of the way unless a test wants it.
+const TOUR_N = 7;
+const TOUR_ORDER = [1, 2, 4, 5, 6, 7]; // 3 = the workout, started by a workout
+const tourOff = () => !!window.__hwTourOff;
+function tourDoneSet(profile) { return new Set(((profile && profile.tourDone) || []).map(Number).filter(n => n >= 1 && n <= TOUR_N)); }
+const tourWait = ms => new Promise(r => setTimeout(r, ms));
+// the first match that is on screen (the ☰ button exists twice: the top bar and the workout header)
+function tourFind(sel) {
+  for (const e of document.querySelectorAll(sel)) {
+    const r = e.getBoundingClientRect();
+    if (r.width > 0 && r.height > 0 && getComputedStyle(e).visibility !== "hidden") return e;
+  }
+  return null;
+}
+async function tourWaitGone(sel, ms = 120000) { const t = Date.now(); while (document.querySelector(sel) && Date.now() - t < ms) await tourWait(120); }
+async function tourTab(name, i) { const b = tourFind(`[data-${name}-tab="${i}"]`); if (b && b.getAttribute("aria-selected") !== "true") { b.click(); await tourWait(420); } }
+// The steps of a chapter. A step: sel (what to light up), t (text), tap (moves on with the real tap), opt (left out when
+// it isn't there), prep (runs first: go to a screen, open the menu…), done (the chapter's last bubble).
+function tourSteps(ch, x) {
+  const X = (L.tour && L.tour["c" + ch]) || [];
+  const s = (sel, i, more = {}) => ({ sel, t: X[i], ...more });
+  const screen = (id, page) => async () => { await x.go(id); if (page !== undefined) await tourTab(page[0], page[1]); };
+  if (ch === 1) return [
+    { t: X[0], prep: screen("train", ["home", 0]) },
+    s("[data-home-hero]", 1),
+    s('[data-day-picker="hero"]', 2),
+    s("[data-rounds-row]", 3),
+    s("[data-home-week]", 4),
+    s('[data-home-tab="1"]', 5, { tap: true, opt: true }),
+    s('[data-home-ex="0"]', 6, { opt: true }),
+    s("[data-menu-btn]", 7, { tap: true, opt: true, prep: async () => { await tourTab("home", 0); await tourWait(150); window.scrollTo(0, 0); } }),
+    s("[data-nav-box]", 8, { prep: async () => { x.menu(true); await tourWait(380); } }),
+    { done: true, t: X[9], prep: async () => { x.menu(false); await tourWait(300); } },
+  ];
+  if (ch === 2) return [
+    s('[data-claim-row="ach:guide"]', 0, { tap: true, opt: true, prep: screen("profile", ["pf", 1]) }),
+    s('[data-ach-row="guide"]', 1, { opt: true, prep: async () => { await tourWaitGone("[data-reveal]"); await tourWait(500); } }),
+    s("[data-claim-row]", 2, { opt: true }),
+    { done: true, t: X[3] },
+  ];
+  if (ch === 3) return [
+    s("[data-warmup-list]", 0, { opt: true }),
+    s("[data-warmup-go]", 1, { tap: true, opt: true }),
+    s("[data-reps]", 2, { opt: true, wait: 4000 }),
+    s("[data-goal]", 3, { opt: true, wait: 400 }),
+    s("[data-tempo-btn]", 4, { opt: true, wait: 400 }),
+    s("[data-done-btn], [data-side-next]", 5, { tap: true, opt: true }),
+    s("[data-rest-timer]", 6, { opt: true, wait: 3000 }),
+    s("[data-minimize]", 7, { opt: true }),
+    { done: true, t: X[8] },
+  ];
+  if (ch === 4) return [
+    s("[data-pf-hero]", 0, { prep: screen("profile", ["pf", 0]) }),
+    s("[data-pf-edit]", 1, { opt: true }),
+    s("[data-pf-showcase]", 2, { opt: true }),
+    s('[data-pf-tab="2"]', 3, { tap: true, opt: true }),
+    s("[data-pf-ranks]", 4, { opt: true }),
+    s('[data-pf-tab="3"]', 5, { tap: true, opt: true }),
+    s("[data-pf-stats]", 6, { opt: true }),
+    { done: true, t: X[7], prep: async () => { await tourTab("pf", 0); } },
+  ];
+  if (ch === 5) return [
+    s("[data-month-cal]", 0, { prep: screen("history") }),
+    s("[data-add-workout]", 1, { opt: true }),
+    s("[data-workout-row]", 2, { opt: true }),
+    { done: true, t: X[3] },
+  ];
+  if (ch === 6) return [
+    s("[data-kcsetup]", 0, { opt: true, wait: 1200, prep: screen("calories") }),
+    s("[data-kc-streak-card]", 1, { opt: true, wait: 600 }),
+    s("[data-kctoday]", 2, { opt: true, wait: 600 }),
+    s("[data-health-card]", 3, { opt: true, wait: 400 }),
+    s("[data-kc-log]", 4, { opt: true, wait: 400 }),
+    s("[data-kc-tabs]", 5, { opt: true, wait: 400 }),
+    { done: true, t: X[6] },
+  ];
+  return [ // 7: friends
+    s("[data-fr-signin]", 0, { opt: true, wait: 1500, prep: screen("friends") }),
+    s("[data-fr-code]", 1, { opt: true, wait: 1500 }),
+    s('[data-seg="friends"]', 2, { opt: true, wait: 400 }),
+    s('[data-seg="board"]', 3, { opt: true, wait: 400 }),
+    s('[data-seg="chats"]', 4, { opt: true, wait: 400 }),
+    { done: true, t: X[5] },
+  ];
+}
+// What comes after a chapter: the next one in the order that isn't done yet (the workout chapter waits for a workout).
+function tourNext(ch, done) { return ch === 3 ? null : TOUR_ORDER.find(n => n > ch && !done.has(n)) || TOUR_ORDER.find(n => !done.has(n)) || null; }
+
+function Tour({ run, x, done, onStep, onEnd, onChapterDone, onStart }) {
+  const steps = useMemo(() => tourSteps(run.ch, x), [run.ch]);
+  const step = steps[run.i];
+  const [el, setEl] = useState(null);
+  const [ready, setReady] = useState(false);
+  const [rect, setRect] = useState(null);
+  const [hold, setHold] = useState(false);
+  const [doneNow, setDoneNow] = useState(null); // the badge level this chapter brought
+  const live = useRef({ run, steps }); live.current = { run, steps };
+  const next = () => onStep(run.i + 1 < steps.length ? run.i + 1 : null);
+  useBack(() => onEnd(true), true);
+  useEffect(() => { const k = e => { if (e.key === "Escape") onEnd(true); }; window.addEventListener("keydown", k); return () => window.removeEventListener("keydown", k); }, []);
+  // prepare the step: run its prep, find what to light up (it may still be appearing), scroll it into view
+  useEffect(() => {
+    if (!step) return;
+    let dead = false;
+    setReady(false); setEl(null); setRect(null);
+    (async () => {
+      if (step.prep) { try { await step.prep(); } catch (_) {} }
+      if (dead) return;
+      if (step.done) { const n = onChapterDone(run.ch); setDoneNow(n); }
+      if (!step.sel) { setReady(true); return; }
+      const t0 = Date.now(); let e = null;
+      while (!dead && Date.now() - t0 < (step.wait || 2500)) { e = tourFind(step.sel); if (e) break; await tourWait(80); }
+      if (dead) return;
+      if (!e) { if (step.opt) next(); else setReady(true); return; }
+      const r = e.getBoundingClientRect();
+      // a box taller than half the screen: its top goes just under the top bar and only that part is lit
+      if (r.height > innerHeight * 0.5) { if (Math.abs(r.top - 90) > 4) { window.scrollBy(0, r.top - 90); await tourWait(60); } }
+      else if (r.top < 80 || r.bottom > innerHeight - 40) { e.scrollIntoView({ block: "center", behavior: "instant" }); await tourWait(60); }
+      if (dead) return;
+      setEl(e); setReady(true);
+    })();
+    return () => { dead = true; };
+  }, [run.ch, run.i]);
+  // follow it (scrolling, layout changes); if it goes away (the screen moved on by itself), go on with the guide
+  useEffect(() => {
+    if (!ready) return;
+    let raf = 0, last = "", gone = 0;
+    const loop = () => {
+      setHold(!!document.querySelector("[data-reveal]"));
+      if (el) {
+        if (!el.isConnected) { if (++gone > 3) { next(); return; } }
+        else {
+          const r = el.getBoundingClientRect(), k = [r.left, r.top, r.width, r.height].map(Math.round).join(",");
+          if (k !== last) { last = k; setRect({ l: r.left, t: r.top, w: r.width, h: r.height }); }
+        }
+      }
+      raf = requestAnimationFrame(loop);
+    };
+    raf = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(raf);
+  }, [ready, el]);
+  // a "tap here" step goes on after the real tap
+  useEffect(() => {
+    if (!ready || !el || !step || !step.tap) return;
+    let moved = false;
+    const h = e => { if (!moved && el.contains(e.target)) { moved = true; setTimeout(() => { if (live.current.run.i === run.i && live.current.run.ch === run.ch) next(); }, 320); } };
+    document.addEventListener("click", h, true);
+    return () => document.removeEventListener("click", h, true);
+  }, [ready, el, run.i]);
+  if (!step || !ready || hold) return null;
+  const tap = step.tap && el;
+  const go = () => { sfxTap(); if (tap) el.click(); else next(); };
+  const vw = innerWidth, vh = innerHeight, pad = 6;
+  const hole = rect && { l: Math.max(4, rect.l - pad), t: Math.max(4, rect.t - pad), r: Math.min(vw - 4, rect.l + rect.w + pad), b: Math.min(vh - 4, rect.t + rect.h + pad, rect.h > vh * 0.5 ? Math.max(4, rect.t - pad) + vh * 0.42 : Infinity) };
+  const below = hole && (hole.t + hole.b) / 2 < vh * 0.55;
+  const dim = "rgba(3,8,20,.72)";
+  const block = e => { e.stopPropagation(); e.preventDefault(); };
+  const nSteps = steps.filter(z => !z.done).length, pos = steps.slice(0, run.i + 1).filter(z => !z.done).length;
+  const title = `${T("tourChN", { n: run.ch })} · ${(L.tour && L.tour.ch[run.ch - 1]) || ""}`;
+  const nxt = step.done ? tourNext(run.ch, new Set([...done, run.ch])) : null;
+  const bw = Math.min(vw - 24, 400), bl = hole ? Math.max(12, Math.min(vw - bw - 12, (hole.l + hole.r) / 2 - bw / 2)) : (vw - bw) / 2;
+  const arrowX = hole ? Math.max(18, Math.min(bw - 18, (hole.l + hole.r) / 2 - bl)) : null;
+  const bubblePos = !hole ? { top: "50%", transform: "translateY(-50%)" } : below ? { top: hole.b + 14 } : { bottom: vh - hole.t + 14 };
+  return createPortal(
+    <div data-tour={run.ch} data-tour-step={run.i} data-tour-done={step.done ? 1 : 0} style={{ position: "fixed", inset: 0, zIndex: 110, fontFamily: BODY, pointerEvents: "none" }}>
+      {hole ? <>
+        <div onClick={block} style={{ position: "absolute", left: 0, top: 0, right: 0, height: hole.t, background: dim, pointerEvents: "auto" }} />
+        <div onClick={block} style={{ position: "absolute", left: 0, top: hole.b, right: 0, bottom: 0, background: dim, pointerEvents: "auto" }} />
+        <div onClick={block} style={{ position: "absolute", left: 0, top: hole.t, width: hole.l, height: hole.b - hole.t, background: dim, pointerEvents: "auto" }} />
+        <div onClick={block} style={{ position: "absolute", left: hole.r, top: hole.t, right: 0, height: hole.b - hole.t, background: dim, pointerEvents: "auto" }} />
+        {!tap && <div onClick={block} data-tour-shield style={{ position: "absolute", left: hole.l, top: hole.t, width: hole.r - hole.l, height: hole.b - hole.t, pointerEvents: "auto" }} />}
+        <div aria-hidden="true" className="tourRing" style={{ position: "absolute", left: hole.l, top: hole.t, width: hole.r - hole.l, height: hole.b - hole.t, borderRadius: 16, boxShadow: `0 0 0 2px ${C.signal}, 0 0 22px ${C.signal}88`, pointerEvents: "none" }} />
+      </> : <div onClick={block} style={{ position: "absolute", inset: 0, background: dim, pointerEvents: "auto" }} />}
+      <div role="dialog" aria-live="polite" aria-label={title} data-tour-bubble className="tourIn" style={{ pointerEvents: "auto", position: "absolute", left: bl, width: bw, boxSizing: "border-box", ...bubblePos, background: C.panelHi, border: `1.5px solid ${C.signal}`, borderRadius: 18, padding: "14px 16px 12px", color: C.chalk, boxShadow: "0 18px 50px rgba(0,0,0,.55)" }}>
+        {hole && <span aria-hidden="true" style={{ position: "absolute", left: arrowX - 8, [below ? "top" : "bottom"]: -9, width: 16, height: 16, background: C.panelHi, borderLeft: `1.5px solid ${C.signal}`, borderTop: `1.5px solid ${C.signal}`, transform: `rotate(${below ? 45 : 225}deg)` }} />}
+        <div style={{ display: "flex", alignItems: "baseline", gap: 8, fontSize: 11, fontWeight: 800, letterSpacing: 0.8, textTransform: "uppercase", color: C.signal }}>
+          <span style={{ flex: 1, minWidth: 0 }}>{title}</span>
+          {!step.done && <span data-tour-pos style={{ color: C.dim, flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>{pos} / {nSteps}</span>}
+        </div>
+        {step.done && doneNow && (
+          <div data-tour-badge={doneNow} style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 10 }}>
+            <span aria-hidden="true" style={{ fontSize: 30, lineHeight: 1 }}>🧭</span>
+            <span style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, lineHeight: 1.1, color: C.chalk }}>{doneNow >= TOUR_N ? T("tourAllDone") : T("tourChDone", { rank: RANKS[doneNow - 1].name })}</span>
+          </div>
+        )}
+        <div data-tour-text style={{ fontSize: 15, lineHeight: 1.5, marginTop: 8 }}>{step.t || ""}</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 14 }}>
+          <button type="button" data-tour-skip onClick={() => { sfxTap(); onEnd(!step.done); }} style={{ ...btnBase, background: "transparent", color: C.dim, padding: "8px 2px", fontSize: 13, fontWeight: 700 }}>{step.done ? T("tourLater") : T("tourSkip")}</button>
+          <span style={{ flex: 1 }} />
+          {step.done ? (
+            nxt ? <button type="button" data-tour-next onClick={() => { sfxTap(); onStart(nxt); }} style={{ ...btnBase, background: C.signal, color: C.signalInk, padding: "10px 16px", fontSize: 14 }}>{T("tourNextCh", { t: L.tour.ch[nxt - 1] })} <Arrow size={16} style={{ color: C.signalInk, verticalAlign: "-0.05em" }} /></button>
+              : <button type="button" data-tour-next onClick={() => { sfxTap(); onEnd(false); }} style={{ ...btnBase, background: C.signal, color: C.signalInk, padding: "10px 18px", fontSize: 14 }}>{T("tourFinish")}</button>
+          ) : (
+            <button type="button" data-tour-next onClick={go} style={{ ...btnBase, background: C.signal, color: C.signalInk, padding: "10px 18px", fontSize: 14 }}>{run.i === 0 && run.ch === 1 ? T("tourGo") : T("tourNext")}</button>
+          )}
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
+}
+
+// ☰ → Guide: the chapters with ✓, each can be (re)started; the workout chapter is switched on for the next workout.
+function TourSheet({ done, ui, onStart, on3, onClose }) {
+  const n = done.size;
+  return (
+    <Sheet title={T("tourTitle")} onClose={onClose}>
+      <div data-tour-sheet style={{ fontSize: 14, color: C.dim, lineHeight: 1.5, marginBottom: 12 }}>{T("tourSheetD", { n, t: TOUR_N })}</div>
+      <div style={{ borderRadius: 18, border: `1px solid ${C.line}`, overflow: "hidden", background: SOFT() }}>
+        {L.tour.ch.map((name, i) => {
+          const ch = i + 1, ok = done.has(ch), w3 = ch === 3;
+          return (
+            <button key={ch} type="button" data-tour-ch={ch} data-tour-ch-done={ok ? 1 : 0} onClick={() => { sfxTap(); if (w3) on3(); else onStart(ch); }}
+              style={{ ...btnBase, width: "100%", background: "transparent", color: C.chalk, padding: "12px 14px", display: "flex", alignItems: "center", gap: 12, textAlign: "left", borderRadius: 0, borderTop: i ? `1px solid ${C.line}` : "none", fontWeight: 400 }}>
+              <span aria-hidden="true" style={{ width: 30, height: 30, borderRadius: 99, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 14, background: ok ? C.mint : "transparent", color: ok ? C.ink : C.dim, border: `2px solid ${ok ? C.mint : C.line}` }}>{ok ? "✓" : ch}</span>
+              <span style={{ flex: 1, minWidth: 0 }}>
+                <span style={{ display: "block", fontSize: 15, fontWeight: 800 }}>{name}</span>
+                <span style={{ display: "block", fontSize: 12, color: w3 && !ok && ui.tour3 ? C.signal : C.dim, marginTop: 2, lineHeight: 1.4 }}>{w3 ? (ok ? T("tourCh3Done") : ui.tour3 ? T("tourCh3On") : T("tourCh3")) : ok ? T("tourAgain") : T("tourStartCh")}</span>
+              </span>
+              <Arrow />
+            </button>
+          );
+        })}
+      </div>
+    </Sheet>
+  );
+}
+
 // ─── CLAIMS (1.7.4; Michael, Oct 18: "the badges I already have should hide after the update, and I tap them and
 // claim the cards with those animations") ───
 // profile.claim = {a: {badge: tier}, r: {exercise: rank index}} = the highest level whose card was opened. Anything
@@ -7263,7 +7521,7 @@ function Session({ session, setSession, history, onSave, onClose, onMinimize, on
                 style={{ ...ghostBtn, padding: "7px 11px", fontSize: 12, color: confirmQuit ? "#ff8a80" : C.dim, borderColor: confirmQuit ? "#ff8a80" : C.line }}>
                 {confirmQuit ? (hasResults ? T("quitSave") : T("quitConfirm")) : T("quit")}
               </button>
-              {onMinimize && <MenuButton open={false} label={T("menuMinimize")} onClick={() => { sfxTap(); onMinimize(); }} />}
+              {onMinimize && <span data-minimize style={{ display: "inline-flex" }}><MenuButton open={false} label={T("menuMinimize")} onClick={() => { sfxTap(); onMinimize(); }} /></span>}
             </div>
           </div>
           <div style={{ display: "flex", gap: 4, marginTop: 12, marginBottom: 22 }} aria-label={T("progressAria", { done: doneCount, total: seq.length })}>
@@ -7889,6 +8147,33 @@ export default function App() {
   const sideOn = side && loaded && onboard === null && !(session && sessionOpen);
   useLayoutEffect(() => { document.documentElement.style.setProperty("--side", sideOn ? "288px" : "0px"); }, [sideOn]);
   useEffect(() => { if (sideOn && menuOpen) setMenuOpen(false); }, [sideOn, menuOpen]);
+  // ─── 1.7.6: the guide (Tour) ───
+  const [tourRun, setTourRun] = useState(null); // {ch, i}
+  const [tourSheet, setTourSheet] = useState(false);
+  const profRef = useRef(profile); profRef.current = profile;
+  const uiRef = useRef(ui); uiRef.current = ui;
+  const tourDone = tourDoneSet(profile);
+  const startTour = ch => { setTourSheet(false); setMenuOpen(false); if (uiRef.current.tourOff) setUi({ ...uiRef.current, tourOff: false }); setTourRun({ ch, i: 0 }); };
+  const tourX = {
+    go: async id => { if (session && sessionOpen) setSessionOpen(false); go(id); await tourWait(450); },
+    menu: open => { if (!sideOn) setMenuOpen(open); },
+  };
+  const tourChapterDone = ch => {
+    const d = tourDoneSet(profRef.current);
+    if (!d.has(ch)) { d.add(ch); setProfile({ ...profRef.current, tourDone: [...d].sort((a, b) => a - b) }); }
+    if (ch === 3 && uiRef.current.tour3) setUi({ ...uiRef.current, tour3: false });
+    return d.size;
+  };
+  const endTour = skipped => { setTourRun(null); setMenuOpen(false); if (skipped) setUi({ ...uiRef.current, tourOff: true }); };
+  // the workout chapter starts with a workout (after the guide was started, or when switched on in the chapter list)
+  useEffect(() => {
+    if (tourOff() || tourRun || !session || !sessionOpen || session.phase !== "warmup") return;
+    if (!(ui.tour3 || (tourDone.size > 0 && !ui.tourOff && !tourDone.has(3)))) return;
+    const t = setTimeout(() => setTourRun({ ch: 3, i: 0 }), 600);
+    return () => clearTimeout(t);
+  }, [session && session.phase, sessionOpen, tourRun, tourDone.size, ui.tour3, ui.tourOff]);
+  // everyone who hasn't seen the guide gets it offered once on Home (new users get chapter 1 after the setup)
+  const tourOffer = !tourOff() && profLoaded && tourDone.size === 0 && !ui.tourOff && !tourRun && history.length > 0;
   // 1.6.5 (Michael, Oct 17: a friend's link opened the website): the app owns …/hw-app/add/ links (App Links,
   // assetlinks.json on mikydon.github.io), so a tapped link opens the app on Friends with the code filled in.
   const [addSeq, setAddSeq] = useState(0);
@@ -8009,6 +8294,9 @@ export default function App() {
         @media (max-width: 380px){.tbOut{padding-left:6px;padding-right:6px}.tbBox{padding:11px 9px 11px 13px;gap:6px}}
         @media (prefers-reduced-motion: reduce){.tbOut::before,.tbOut.fl::before,.tbPill,.tbOut.fl .tbPill{transition:none}}
         .sysEmo,.sysEmo *{font-family:${BODY_SYS}!important}
+        .tourIn{animation:dFadeIn ${MO.t2} ease both}
+        .tourRing{animation:tourPulse 1.6s ease-in-out infinite}
+        @keyframes tourPulse{50%{opacity:.55}}
         @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}.conf,.revBit,.revFlash,.revTw{display:none}}
       `}</style>
       {!loaded ? (
@@ -8018,7 +8306,8 @@ export default function App() {
           {swOffer && <SwitchAccountSheet onFresh={swFresh} onKeep={swKeep} onCancel={swCancel} />}
           {onboard !== null && !session ? (
             <Onboarding start={onboard} profile={profile} setProfile={setProfile} kcal={kcal} setKcal={setKcal} acct={acct} onSignIn={signIn} onCreate={createProfile}
-              onDone={() => { setOnboard(null); setUi({ ...ui, setupHidden: false }); if (!settings.onboarded) setSettings({ ...settings, onboarded: true }); window.scrollTo(0, 0); }} />
+              onDone={() => { setOnboard(null); setUi({ ...ui, setupHidden: false }); if (!settings.onboarded) setSettings({ ...settings, onboarded: true }); window.scrollTo(0, 0);
+                if (!tourOff() && tourDoneSet(profRef.current).size === 0 && !ui.tourOff) setTimeout(() => setTourRun(r => r || { ch: 1, i: 0 }), 700); }} />
           ) : <>
           {session && (
             <div style={{ display: sessionOpen ? "block" : "none" }} aria-hidden={!sessionOpen}>
@@ -8033,7 +8322,7 @@ export default function App() {
             <>
               <TopBar side={sideOn} head={screen === "friends" ? topHead : null} badge={socialCount + claimN} dlPct={dl && dl.kind === "downloading" ? dl.pct || 0 : null} screen={screen} history={history} menuOpen={menuOpen} onGo={go} onMenu={() => { sfxTap(); setMenuOpen(o => !o); }} />
               <div key={screen}>
-                {screen === "train" && <TrainTab settings={settings} setSettings={setSettings} onSetup={st => setOnboard(st)} dl={dlHidden ? null : dl} onDlClose={() => setDlHidden(true)} kcal={kcal} setKcal={setKcal} history={history} onStart={start} onFreeze={applyFreeze} ui={ui} setUi={setUi} active={session} onResume={resume} profile={profile} onGo={go} upd={updCard ? { open: () => { setUpdCard(false); setNewsAt(APP_VERSION); setNewsOpen(true); }, close: () => setUpdCard(false) } : null}
+                {screen === "train" && <TrainTab tourOffer={tourOffer ? { start: () => startTour(1), close: () => setUi({ ...ui, tourOff: true }) } : null} settings={settings} setSettings={setSettings} onSetup={st => setOnboard(st)} dl={dlHidden ? null : dl} onDlClose={() => setDlHidden(true)} kcal={kcal} setKcal={setKcal} history={history} onStart={start} onFreeze={applyFreeze} ui={ui} setUi={setUi} active={session} onResume={resume} profile={profile} onGo={go} upd={updCard ? { open: () => { setUpdCard(false); setNewsAt(APP_VERSION); setNewsOpen(true); }, close: () => setUpdCard(false) } : null}
                   apk={apkUpd && !apkHidden ? { info: apkUpd, close: () => setApkHidden(true) } : null} />}
                 {screen === "history" && <HistoryTab history={history} editDate={histEdit} onEditOpened={() => setHistEdit(null)}
                   onDelete={idx => { const e = history[idx]; if (e) syncTomb("del", entryId(e)); editHistory(h => h.filter((_, i) => i !== idx)); }}
@@ -8050,14 +8339,16 @@ export default function App() {
               {exitAsk && <ExitPrompt history={history} session={session} onStay={() => { sfxTap(); setExitAsk(false); }} onLeave={() => { setExitAsk(false); exitApp(); }} />}
             </>
           )}
-          {sideOn && <SideNav apk={apkUpd} busy={!!(session && session.phase !== "summary")} badge={socialCount} claimN={claimN} gh={gh} dl={dl} screen={screen} history={history} profile={profile} session={session && session.phase !== "summary" ? session : null}
+          {sideOn && <SideNav onTour={() => setTourSheet(true)} tourN={tourDone.size} apk={apkUpd} busy={!!(session && session.phase !== "summary")} badge={socialCount} claimN={claimN} gh={gh} dl={dl} screen={screen} history={history} profile={profile} session={session && session.phase !== "summary" ? session : null}
             onGo={go} onResume={resume} onNews={() => setNewsOpen(true)} />}
-          <MenuDrawer apk={apkUpd} busy={!!(session && session.phase !== "summary")} badge={socialCount} claimN={claimN} gh={gh} dl={dl} open={menuOpen} screen={screen} history={history} profile={profile} session={session && session.phase !== "summary" ? session : null}
+          <MenuDrawer onTour={() => { setMenuOpen(false); setTourSheet(true); }} tourN={tourDone.size} apk={apkUpd} busy={!!(session && session.phase !== "summary")} badge={socialCount} claimN={claimN} gh={gh} dl={dl} open={menuOpen} screen={screen} history={history} profile={profile} session={session && session.phase !== "summary" ? session : null}
             onGo={go} onResume={resume} onClose={() => setMenuOpen(false)} onNews={() => { setMenuOpen(false); setNewsOpen(true); }} />
           {notice && <LiveNotice n={notice} people={Object.fromEntries([...(social.friends || []), ...(social.reqs || [])].map(x => [x.uid, x]))} onClose={() => setNotice(null)}
             onOpen={n => { setNotice(null); go("friends"); setChatWith(n.kind === "msg" ? n.uid : null); }} />}
           {skipOpen && <SkipSheet freezes={freezesAvailable(history)} onSave={saveSkip} onClose={() => setSkipOpen(false)} />}
       {howId && <HowTo id={howId} history={history} onClose={() => setHowId(null)} />}
+          {tourRun && onboard === null && <Tour key={tourRun.ch} run={tourRun} x={tourX} done={tourDone} onStep={i => setTourRun(r => (r && i !== null ? { ...r, i } : null))} onEnd={endTour} onChapterDone={tourChapterDone} onStart={startTour} />}
+          {tourSheet && <TourSheet done={tourDone} ui={ui} onStart={startTour} on3={() => { setUi({ ...uiRef.current, tour3: !ui.tour3, tourOff: false }); }} onClose={() => setTourSheet(false)} />}
           {newsOpen && <WhatsNew at={newsAt} onClose={() => { setNewsOpen(false); setNewsAt(null); if (settings.seenVersion !== APP_VERSION || !settings.seenApp) setSettings({ ...settings, seenVersion: APP_VERSION, seenApp: true }); }} />}
           </>}
         </>
