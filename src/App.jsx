@@ -33,7 +33,7 @@ const THEMES = {
   slate:  { ink: "#15181d", panel: "#1f242b", panelHi: "#2a313a", line: "#3a434f", chalk: "#f1f4f8", dim: "#9aa6b4", edge: "#0e1115" },
   coffee: { ink: "#1c140f", panel: "#2a1f17", panelHi: "#382a20", line: "#4d3a2c", chalk: "#fbf3ec", dim: "#b8a291", edge: "#130d09" },
 };
-const APP_VERSION = "1.7.6";
+const APP_VERSION = "1.8.0";
 // Big Shoulders has no Cyrillic, so Oswald (also condensed) covers Ukrainian. The browser only
 // downloads the Oswald unicode ranges a page actually uses.
 // 1.7.0: 'HW Emoji' = the app's own emoji (Fluent 3D, fonts/hw-emoji.ttf) for the emoji the app shows; BODY_SYS
@@ -839,23 +839,38 @@ function ExFigure({ id }) {
 
 // ─── RANKS ──────────────────────────────────────────────────────────────────
 // Per-exercise rank from your best single set ever (strict form + tempo).
-// Thresholds = Iron, Bronze, Silver, Gold, Platinum, Diamond (names come from the locale).
-// First ranks come fast; Diamond is elite (e.g. 50 slow push-ups in one set).
+// 1.8.0 (Michael, Oct 24: "like Duolingo", no Wood, Obsidian on top): 9 ranks Iron, Bronze, Silver, Gold, Platinum,
+// Emerald, Amethyst, Diamond, Obsidian (names from the locale). Any result = Iron; the thresholds below are Bronze …
+// Obsidian. Bronze–Platinum and Diamond kept their 1.7 numbers (nobody drops), Emerald and Amethyst split the old
+// Platinum → Diamond gap, and Obsidian is a challenge feat (e.g. a 10-minute plank, 80 slow push-ups) that only very
+// well trained people reach. Every exercise has ranks (before 1.8.0 only the 12 of the program).
 const RANKS = [
-  { name: "", icon: "🪵", color: "#c08a55" },
   { name: "", icon: "⚙️", color: "#9aa5b8" },
   { name: "", icon: "🥉", color: "#e0955a" },
   { name: "", icon: "🥈", color: "#cfd8ea" },
   { name: "", icon: "🥇", color: "#ffd23f" },
   { name: "", icon: "💠", color: "#6fe3d8" },
+  { name: "", icon: "🟢", color: "#3ddc84" },
+  { name: "", icon: "🟣", color: "#b77bff" },
   { name: "", icon: "💎", color: "#9fd8ff" },
+  { name: "", icon: "⚫", color: "#ff5c8a" },
 ];
+const R_DIAMOND = 7, R_OBSIDIAN = 8;
+// Single badges have a rarity instead of levels (1.8.0): rare, epic, legendary = these rank colours
+const RARITY = { 4: "rare", 6: "epic", 8: "legend" };
 const RANK_AT = {
-  k1: [5, 10, 18, 25, 35, 50], k3: [4, 8, 12, 18, 25, 35], r1: [4, 8, 12, 16, 22, 30],
-  row1: [6, 10, 14, 18, 24, 30], row2: [5, 8, 12, 16, 20, 28], row3: [6, 10, 14, 18, 24, 30],
-  n1: [8, 12, 18, 25, 35, 50], n2: [5, 8, 12, 16, 20, 30], n7: [4, 6, 10, 14, 18, 25],
-  b5: [20, 30, 45, 60, 90, 180], b2: [5, 8, 12, 15, 20, 30], b4: [8, 12, 16, 20, 30, 40],
+  k1: [10, 18, 25, 35, 40, 45, 50, 80], k3: [8, 12, 18, 25, 28, 32, 35, 55], r1: [8, 12, 16, 22, 25, 27, 30, 45],
+  row1: [10, 14, 18, 24, 26, 28, 30, 45], row2: [8, 12, 16, 20, 23, 25, 28, 40], row3: [10, 14, 18, 24, 26, 28, 30, 45],
+  n1: [12, 18, 25, 35, 40, 45, 50, 100], n2: [8, 12, 16, 20, 23, 27, 30, 45], n7: [6, 10, 14, 18, 20, 23, 25, 40],
+  b5: [30, 45, 60, 90, 120, 150, 180, 600], b2: [8, 12, 15, 20, 23, 27, 30, 50], b4: [12, 16, 20, 30, 33, 37, 40, 70],
+  kKnee: [15, 20, 30, 40, 50, 60, 70, 100], kIncl: [15, 20, 30, 40, 50, 60, 70, 100], superman: [15, 20, 25, 30, 40, 50, 60, 100],
+  ytw: [8, 10, 12, 15, 18, 21, 25, 40], lunge: [12, 15, 20, 25, 30, 35, 40, 60], bridge: [20, 25, 30, 40, 50, 60, 70, 100],
+  r1e: [6, 8, 10, 12, 15, 18, 20, 30], k3e: [6, 10, 14, 18, 22, 26, 30, 45], n1q: [8, 12, 15, 20, 25, 30, 35, 50],
+  b5l: [30, 45, 60, 75, 90, 105, 120, 300], sbridge: [8, 12, 15, 20, 25, 30, 35, 50], wallsit: [45, 60, 90, 120, 150, 180, 240, 600],
+  birddog: [12, 15, 20, 25, 30, 35, 40, 60], hollow: [30, 45, 60, 75, 90, 105, 120, 300], legraise: [12, 15, 20, 25, 30, 35, 40, 60],
 };
+// The 12 exercises of the program (days A, B, C), for the "all Diamond" badge
+const PROGRAM_IDS = ["k1", "row1", "n1", "b5", "r1", "row2", "n2", "b2", "k3", "row3", "n7", "b4"];
 function rankIdx(id, best) {
   const at = RANK_AT[id];
   if (!at || best === null || best === undefined || isNaN(best)) return 0;
@@ -883,12 +898,12 @@ function RankLadder({ id, best }) {
   return (
     <div style={{ marginTop: 14, paddingTop: 12, borderTop: `1px solid ${C.line}` }}>
       <div style={{ fontWeight: 700, color: C.chalk, marginBottom: 8 }}>{best !== null ? T("ladderTitle", { v: `${best}${unit}` }) : T("ladderNone")}</div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 }}>
+      <div data-ladder style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6 }}>
         {RANKS.map((r, i) => (
           <div key={i} style={{ border: `1.5px solid ${i === cur ? r.color : C.line}`, background: i === cur ? `${r.color}22` : "transparent", borderRadius: 10, padding: "6px 4px", textAlign: "center", opacity: i > cur ? 0.6 : 1 }}>
             <div style={{ fontSize: 18 }}>{r.icon}</div>
             <div style={{ fontSize: 12, fontWeight: 700, color: r.color }}>{r.name}</div>
-            <div style={{ fontSize: 11, color: C.dim }}>{i === 0 ? T("rankStart") : `${at[i - 1]}${unit}+`}</div>
+            <div style={{ fontSize: 11, color: C.dim }}>{i === 0 ? T("rankStart") : `${rankVal(id, at[i - 1])}+`}</div>
           </div>
         ))}
       </div>
@@ -1181,30 +1196,46 @@ function totalReps(history) {
 // 1.4.0 (Michael, Oct 11): more of them: how long you train, Health Connect, early/late workouts, hours, A+B+C,
 // stretching, plank, calorie target hits, 10 000-step days. `rk` = a family with fewer steps, each step lands on a
 // chosen rank (Health Connect: Iron → Gold → Diamond). `span` = the goal is a time span (days/months/years).
+// 1.8.0: 9 levels per badge (Iron … Obsidian): the first six numbers are the 1.7 ones (so a badge keeps its number of
+// levels; the names moved up with Wood gone), Amethyst sits between the old Platinum and Diamond numbers, Diamond is
+// the old top and Obsidian a long-term feat. Single badges (`at: [1]`, `rk` = rarity) are done or not; `secret` ones
+// stay out of sight until earned.
 const ACH = [
-  { k: "workouts", icon: "🎯", at: [1, 5, 10, 25, 50, 100, 200], pl: "workouts", v: c => c.n },
-  { k: "tenure", icon: "📅", at: [7, 30, 90, 180, 365, 730, 1095], span: true, v: c => c.tenure },
-  { k: "streak", icon: "🔥", at: [3, 7, 15, 30, 60, 100, 180], pl: "days", v: c => c.bs },
-  { k: "records", icon: "📈", at: [1, 5, 10, 25, 50, 100, 200], pl: "prs", v: c => c.prs },
-  { k: "ranks", icon: "🥇", at: [1, 4, 8, 15, 25, 40, 60], v: c => c.rankSum },
-  { k: "weeks", icon: "✅", at: [1, 2, 4, 8, 12, 26, 52], pl: "weeks", v: c => c.weeks },
-  { k: "level", icon: "⭐", at: [2, 5, 10, 15, 20, 30, 50], v: c => c.lvl },
-  { k: "rounds3", icon: "💪", at: [1, 5, 10, 25, 50, 100, 200], pl: "workouts", v: c => c.r3 },
-  { k: "pushups", icon: "🦾", at: [10, 20, 30, 40, 50, 60, 75], pl: "pushups", v: c => c.push },
-  { k: "reps", icon: "📊", at: [100, 500, 1000, 2500, 5000, 10000, 25000], pl: "reps", v: c => c.reps },
-  { k: "birthday", icon: "🎂", at: [1, 2, 3, 4, 5, 7, 10], pl: "birthdays", v: c => c.bdays },
-  { k: "early", icon: "🌅", at: [1, 5, 10, 25, 50, 100, 200], pl: "workouts", v: c => c.early },
-  { k: "night", icon: "🌙", at: [1, 5, 10, 25, 50, 100, 200], pl: "workouts", v: c => c.night },
-  { k: "hours", icon: "⏱️", at: [1, 3, 6, 12, 25, 50, 100], pl: "hours", v: c => c.hours },
-  { k: "abc", icon: "🔤", at: [1, 3, 5, 10, 20, 35, 60], v: c => c.abc },
-  { k: "cool", icon: "🧘", at: [1, 5, 10, 25, 50, 100, 200], pl: "workouts", v: c => c.cool },
-  { k: "plank", icon: "🧱", at: [30, 45, 60, 90, 120, 180, 300], v: c => c.plank },
-  { k: "calories", icon: "🍽️", at: [1, 7, 14, 30, 60, 100, 200], pl: "days", v: c => c.kcalDays },
-  { k: "kcalHit", icon: "🥗", at: [1, 7, 14, 30, 60, 100, 200], pl: "days", v: c => c.kcalHits },
-  { k: "steps", icon: "👟", at: [1, 7, 14, 30, 60, 100, 200], pl: "days", v: c => c.steps10k },
-  { k: "health", icon: "❤️", at: [1, 2, 3], rk: [1, 4, 6], v: c => c.hc },
-  // 1.7.6: one level per finished chapter of the guide (profile.tourDone)
-  { k: "guide", icon: "🧭", at: [1, 2, 3, 4, 5, 6, 7], v: c => c.guide },
+  { k: "workouts", icon: "🎯", at: [1, 5, 10, 25, 50, 100, 150, 200, 365], pl: "workouts", v: c => c.n },
+  { k: "tenure", icon: "📅", at: [7, 30, 90, 180, 365, 730, 900, 1095, 1825], span: true, v: c => c.tenure },
+  { k: "streak", icon: "🔥", at: [3, 7, 15, 30, 60, 100, 140, 180, 365], pl: "days", v: c => c.bs },
+  { k: "records", icon: "📈", at: [1, 5, 10, 25, 50, 100, 150, 200, 365], pl: "prs", v: c => c.prs },
+  { k: "ranks", icon: "🥇", at: [1, 4, 8, 15, 25, 40, 60, 90, 140], v: c => c.rankSum },
+  { k: "weeks", icon: "✅", at: [1, 2, 4, 8, 12, 26, 39, 52, 104], pl: "weeks", v: c => c.weeks },
+  { k: "level", icon: "⭐", at: [2, 5, 10, 15, 20, 30, 40, 50, 75], v: c => c.lvl },
+  { k: "rounds3", icon: "💪", at: [1, 5, 10, 25, 50, 100, 150, 200, 365], pl: "workouts", v: c => c.r3 },
+  { k: "pushups", icon: "🦾", at: [10, 20, 30, 40, 50, 60, 68, 75, 100], pl: "pushups", v: c => c.push },
+  { k: "reps", icon: "📊", at: [100, 500, 1000, 2500, 5000, 10000, 17500, 25000, 50000], pl: "reps", v: c => c.reps },
+  { k: "birthday", icon: "🎂", at: [1, 2, 3, 4, 5, 7, 8, 10, 15], pl: "birthdays", v: c => c.bdays },
+  { k: "early", icon: "🌅", at: [1, 5, 10, 25, 50, 100, 150, 200, 365], pl: "workouts", v: c => c.early },
+  { k: "night", icon: "🌙", at: [1, 5, 10, 25, 50, 100, 150, 200, 365], pl: "workouts", v: c => c.night },
+  { k: "hours", icon: "⏱️", at: [1, 3, 6, 12, 25, 50, 75, 100, 200], pl: "hours", v: c => c.hours },
+  { k: "abc", icon: "🔤", at: [1, 3, 5, 10, 20, 35, 48, 60, 120], v: c => c.abc },
+  { k: "cool", icon: "🧘", at: [1, 5, 10, 25, 50, 100, 150, 200, 365], pl: "workouts", v: c => c.cool },
+  { k: "plank", icon: "🧱", at: [30, 45, 60, 90, 120, 180, 240, 300, 600], v: c => c.plank },
+  { k: "calories", icon: "🍽️", at: [1, 7, 14, 30, 60, 100, 150, 200, 365], pl: "days", v: c => c.kcalDays },
+  { k: "kcalHit", icon: "🥗", at: [1, 7, 14, 30, 60, 100, 150, 200, 365], pl: "days", v: c => c.kcalHits },
+  { k: "steps", icon: "👟", at: [1, 7, 14, 30, 60, 100, 150, 200, 365], pl: "days", v: c => c.steps10k },
+  // 1.7.6: one level per finished chapter of the guide (profile.tourDone): Iron … Emerald, the last one Diamond
+  { k: "guide", icon: "🧭", at: [1, 2, 3, 4, 5, 6, 7], rk: [0, 1, 2, 3, 4, 5, 7], v: c => c.guide },
+  // 1.8.0 single badges (Michael: "Health Connect doesn't need levels"; some rare, some epic, some secret)
+  { k: "health", icon: "❤️", at: [1], rk: [4], single: true, v: c => (c.hc ? 1 : 0) },
+  { k: "allex", icon: "🧩", at: [1], rk: [6], single: true, v: c => c.allex },
+  { k: "allDiamond", icon: "💎", at: [1], rk: [8], single: true, v: c => c.allDiamond },
+  { k: "comeback", icon: "🔁", at: [1], rk: [4], single: true, secret: true, v: c => c.comeback },
+  { k: "weekend", icon: "🗓️", at: [1], rk: [4], single: true, secret: true, v: c => c.weekend },
+  { k: "marathon", icon: "🏃", at: [1], rk: [4], single: true, secret: true, v: c => c.marathon },
+  { k: "frozen", icon: "🧊", at: [1], rk: [4], single: true, secret: true, v: c => c.frozen },
+  { k: "triple", icon: "🏆", at: [1], rk: [6], single: true, secret: true, v: c => c.triple },
+  { k: "newyear", icon: "🎆", at: [1], rk: [6], single: true, secret: true, v: c => c.newyear },
+  { k: "midnight", icon: "🕛", at: [1], rk: [6], single: true, secret: true, v: c => c.midnight },
+  { k: "bdayWorkout", icon: "🎉", at: [1], rk: [6], single: true, secret: true, v: c => c.bdayW },
+  { k: "obsidian", icon: "🌋", at: [1], rk: [8], single: true, secret: true, v: c => c.obsidian },
 ];
 // Start of a workout (ts is when it was saved; dur = its length, if known).
 const startHour = e => new Date((e.ts || 0) - (e.dur || 0) * 1000).getHours();
@@ -1216,7 +1247,8 @@ function achCounts(history, extra = {}) {
     n: history.length,
     bs: bestStreak(history),
     prs: history.reduce((a, e) => a + ((e.prs && e.prs.length) || 0), 0),
-    rankSum: Object.keys(RANK_AT).reduce((a, id) => a + rankIdx(id, bestFor(history, id)), 0),
+    // 1.8.0: every exercise you've done counts its rank + 1 (Iron = 1), so nobody lost levels when Wood went away
+    rankSum: Object.keys(RANK_AT).reduce((a, id) => { const b = bestFor(history, id); return a + (b === null || b === undefined ? 0 : rankIdx(id, b) + 1); }, 0),
     weeks: [...new Set(history.map(e => weekKey(e.date)))].filter(wk => challengeStatus(history, wk).every(c => c.done)).length,
     lvl: levelInfo(totalXP(history)).lvl,
     r3: history.filter(e => e.rounds === 3).length,
@@ -1235,6 +1267,29 @@ function achCounts(history, extra = {}) {
     steps10k: extra.steps10k || 0,
     hc: extra.hc || 0,
     guide: extra.guide || 0,
+    ...singleCounts(history, extra),
+  };
+}
+// 1.8.0: what the single badges need (1 = earned)
+function singleCounts(history, extra = {}) {
+  const dates = [...new Set(history.map(e => e.date))].sort();
+  const done = new Set(); history.forEach(e => (e.items || []).forEach(it => { if ((it.res || []).some(v => v !== null && v !== undefined && v !== "")) done.add(it.id); }));
+  const dset = new Set(dates);
+  const best = id => bestFor(history, id), has = id => { const b = best(id); return b !== null && b !== undefined; };
+  const bmd = extra.bmd || null; // "MM-DD" of the birthday (Feb 29 also counts on Feb 28)
+  const b1 = x => (x ? 1 : 0);
+  return {
+    allex: b1(Object.keys(EX).every(id => done.has(id))),
+    allDiamond: b1(PROGRAM_IDS.every(id => has(id) && rankIdx(id, best(id)) >= R_DIAMOND)),
+    comeback: b1(dates.some((d, i) => i > 0 && daysBetween(dates[i - 1], d) >= 14)),
+    weekend: b1(dates.some(d => parseKey(d).getDay() === 6 && dset.has(addDays(d, 1)))),
+    marathon: b1(history.some(e => (e.dur || 0) >= 1800)),
+    frozen: b1(extra.frozen),
+    triple: b1(history.some(e => (e.prs || []).length >= 3)),
+    newyear: b1(dates.some(d => d.slice(5) === "01-01")),
+    midnight: b1(history.some(e => e.ts && !e.manual && startHour(e) < 4)),
+    bdayW: b1(bmd && dates.some(d => d.slice(5) === bmd || (bmd === "02-29" && d.slice(5) === "02-28"))),
+    obsidian: b1(Object.keys(RANK_AT).some(id => has(id) && rankIdx(id, best(id)) >= R_OBSIDIAN)),
   };
 }
 function achievements(history, extra) {
@@ -1271,6 +1326,8 @@ function achExtra(profile, kcal, history) {
     steps10k: Object.keys(steps).filter(d => steps[d] >= 10000).length,
     hc: Math.max(hcLevel(k), k.hcBest || 0),
     guide: tourDoneSet(profile).size,
+    bmd: profile && profile.birth && profile.birth.m && profile.birth.d ? `${String(profile.birth.m).padStart(2, "0")}-${String(profile.birth.d).padStart(2, "0")}` : null,
+    frozen: ((profile && profile.freezeDays) || []).length > 0,
   };
 }
 // Tiers that went up between two histories, for the end-of-workout summary.
@@ -2033,6 +2090,9 @@ function MiniPlayer({ session, live, onOpen }) {
     const nxt = seq[session.rest.nextPos];
     big = secsLeft(session.rest.endAt); total = session.rest.total; color = C.sky;
     label = T("miniRest", { name: EX[nxt.id].name });
+  } else if (session.phase === "work" && live && live.kind === "up" && live.from) {
+    big = Math.max(0, Math.floor((Date.now() - live.from) / 1000)); total = null; color = C.chalk;
+    label = T("miniHold", { name: EX[cur.id].name });
   } else if (session.phase === "work" && live && (live.kind === "hold" || live.kind === "prep") && live.endAt) {
     big = secsLeft(live.endAt); total = live.total; color = live.kind === "hold" ? C.chalk : C.signal;
     label = live.kind === "hold" ? T("miniHold", { name: EX[cur.id].name }) : T("miniPrep", { name: EX[cur.id].name });
@@ -4371,7 +4431,7 @@ const PF_STATS = ["n", "reps", "min", "best", "prs", "xp", "since"];
 const SLOT_KINDS = ["rk", "rk3", "ach", "ach3", "st"];
 // the level badge's colour follows the rank colours: Wood under 5, Iron 5+, Bronze 10+, Silver 20+, Gold 30+,
 // Platinum 50+, Diamond 80+
-const lvRank = lvl => (lvl >= 80 ? 6 : lvl >= 50 ? 5 : lvl >= 30 ? 4 : lvl >= 20 ? 3 : lvl >= 10 ? 2 : lvl >= 5 ? 1 : 0);
+const lvRank = lvl => (lvl >= 150 ? 8 : lvl >= 100 ? 7 : lvl >= 80 ? 6 : lvl >= 50 ? 5 : lvl >= 30 ? 4 : lvl >= 20 ? 3 : lvl >= 10 ? 2 : lvl >= 5 ? 1 : 0);
 // A profile as one model, from this phone (yours) or from a card (someone else's). Badges about calories, steps and
 // Health Connect are only ever in your own model (marked "only you").
 function ownModel(history, profile, kcal) {
@@ -4495,12 +4555,45 @@ function SlotTile({ sl, m, i, onTap, own, cols = 2 }) {
       <div style={{ fontFamily: DISPLAY, fontSize: k === "since" ? 22 : 34, fontWeight: 900, lineHeight: 1, marginTop: "auto", paddingTop: 10, fontVariantNumeric: "tabular-nums" }}>{fmtStat(m, k)}</div>
     </>);
   }
-  return <button type="button" data-slot={i} data-slot-kind={sl.kind} data-slot-set={sl.set ? 1 : 0} className={"cardIn" + (rar >= 4 ? " foil" : "")} onClick={() => { sfxTap(); onTap(sl, i); }} style={{ ...base, ...style }}>{pen}{body}</button>;
+  return <button type="button" data-slot={i} data-slot-kind={sl.kind} data-slot-set={sl.set ? 1 : 0} className={"cardIn" + (rar >= 3 ? " foil" : "")} onClick={() => { sfxTap(); onTap(sl, i); }} style={{ ...base, ...style }}>{pen}{body}</button>;
 }
 
-// Badges page: all of them with the progress, closest to the next level first, finished last.
+// ─── 1.8.0 rank rows (Michael, Oct 24: "the whole box in the colour of the rank, and as you get closer to the next
+// rank it fills in gradually, a gradient"; the light that passes shows every rank from Iron up to yours) ───
+// cur = rank index (-1 = nothing yet), next = the rank index you're working towards (null = the top), p = 0…1 of the
+// way there. The tint grows from the left with --fill (animated once on mount, @property), the edge is the current
+// rank's colour; rows from Bronze up get a slow sweep of the rank colours Iron → current, each row at its own moment.
+function rankRow(cur, next, p, k = 0) {
+  const c = cur >= 0 ? RANKS[cur].color : C.dim, n = next !== null ? RANKS[next].color : c;
+  const bg = card.background || C.panel;
+  const tint = next === null
+    ? `linear-gradient(90deg, ${c}40, ${c}22)`
+    : `linear-gradient(90deg, ${n}4a 0%, ${n}38 calc(var(--fill) - 6%), ${cur >= 0 ? c + "1c" : "transparent"} calc(var(--fill) + 6%), ${cur >= 0 ? c + "14" : "transparent"} 100%)`;
+  const sweep = cur >= 1 ? `linear-gradient(105deg, transparent 32%, ${RANKS.slice(0, cur + 1).map((r, i) => `${r.color}${i === cur ? "aa" : "77"} ${Math.round(38 + (24 * i) / Math.max(1, cur))}%`).join(", ")}, transparent 68%)` : null;
+  return {
+    cls: "rkRow" + (sweep ? " rkSweep" : ""),
+    style: { ...card, ...tileR(), background: `${tint}, ${bg}`, border: `1.5px solid ${cur >= 0 ? c + (next === null ? "dd" : "99") : C.line}`, "--fill": `${Math.round(p * 100)}%`, ...(sweep ? { "--sweep": sweep, "--sd": `${(k * 0.9) % 7}s` } : {}), ...(next === null && cur >= 0 ? { boxShadow: `0 0 16px ${c}33` } : {}) },
+  };
+}
+// The levels of a badge or an exercise as small dots in their rank colours (filled = reached, ring = the next one).
+function RankPips({ ranks, reached }) {
+  return (
+    <div aria-hidden="true" data-pips={reached} style={{ display: "flex", gap: 5, marginTop: 9, flexWrap: "wrap" }}>
+      {ranks.map((ri, k) => {
+        const col = RANKS[ri].color, on = k < reached, nx = k === reached;
+        return <span key={k} style={{ width: 9, height: 9, borderRadius: 99, boxSizing: "border-box", background: on ? col : "transparent", border: `1.5px solid ${on ? col : nx ? col + "aa" : C.chalk + "26"}`, boxShadow: on && k === reached - 1 ? `0 0 7px ${col}` : "none" }} />;
+      })}
+    </div>
+  );
+}
+const rankVal = (id, v) => (EX[id] && EX[id].type === "time" && v >= 120 ? `${Math.floor(v / 60)}:${String(v % 60).padStart(2, "0")} min` : `${v}${rankUnit(id)}`);
+
+// Badges page: all of them with the progress, closest to the next level first, finished last. 1.8.0: single badges
+// show their rarity; secret ones only once earned (the rest is one line at the end).
 function BadgesList({ m, focus, claim }) {
-  const ach = m.ach.filter(a => m.own || !CARD_HIDE.includes(a.k));
+  const all = m.ach.filter(a => m.own || !CARD_HIDE.includes(a.k));
+  const ach = all.filter(a => !a.secret || a.step);
+  const secretLeft = m.own ? all.filter(a => a.secret && !a.step).length : 0;
   const inTier = a => { const prev = a.step ? a.at[a.step - 1] : 0; return a.next === null ? 1 : Math.max(0, Math.min(1, (a.v - prev) / (a.next - prev))); };
   const val = (a, x) => (a.span ? spanText(x) : a.k === "plank" ? `${nf(x)} s` : nf(x));
   const hid = a => !!(claim && claim.hid.has("ach:" + a.k)); // 1.7.4: still face down (first in the list)
@@ -4508,78 +4601,93 @@ function BadgesList({ m, focus, claim }) {
   const won = ach.filter(a => a.step && !hid(a)).length;
   return (
     <div data-pf-badges>
-      <div style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.5, margin: "0 2px 10px" }}>{T("achCount", { n: won, max: ach.length })} · {T("achTiers", { n: ach.reduce((x, a) => x + (hid(a) ? 0 : a.step), 0), max: ach.reduce((x, a) => x + a.at.length, 0) })} · {T("achSheetD")}</div>
+      <div style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.5, margin: "0 2px 10px" }}>{T("achCount", { n: won, max: all.length })} · {T("achTiers", { n: ach.reduce((x, a) => x + (hid(a) ? 0 : a.step), 0), max: all.reduce((x, a) => x + a.at.length, 0) })} · {T("achSheetD")}</div>
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        {list.map(a => {
+        {list.map((a, k) => {
           if (hid(a)) return <ClaimRow key={a.k} it={claim.items.get("ach:" + a.k)} onOpen={claim.open} />;
           const r = a.tier ? RANKS[a.tier - 1] : null, nr = a.next === null ? null : RANKS[a.nextRank];
+          const rr = rankRow(a.tier - 1, a.next === null ? null : a.nextRank, inTier(a), k);
+          const label = a.single ? (a.step ? `${r.icon} ${rarityName(a)}${a.secret ? ` · ${T("achSecret")}` : ""}` : `🔒 ${rarityName(a)}`) : r ? `${r.icon} ${r.name}` : `🔒 ${T("achLocked")}`;
           return (
-            <div key={a.k} data-ach-row={a.k} data-ach={a.k} data-tier={a.tier} data-pct={Math.round(inTier(a) * 100)} className={[focus && focus.k === a.k && "achFlash", a.tier >= 5 && "foil"].filter(Boolean).join(" ") || undefined}
-              style={{ ...card, ...tileR(), padding: "11px 12px" }}>
+            <div key={a.k} data-ach-row={a.k} data-ach={a.k} data-tier={a.tier} data-single={a.single ? 1 : undefined} data-pct={Math.round(inTier(a) * 100)} className={[rr.cls, focus && focus.k === a.k && "achFlash"].filter(Boolean).join(" ")}
+              style={{ ...rr.style, padding: "11px 12px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <div aria-hidden="true" style={{ fontSize: 24, lineHeight: 1, flexShrink: 0, filter: r ? "none" : "grayscale(1)", opacity: r ? 1 : 0.55 }}>{a.icon}</div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 14, fontWeight: 800, color: C.chalk, lineHeight: 1.2 }}>{a.name}{m.own && CARD_HIDE.includes(a.k) && <span data-only-you style={{ fontSize: 10.5, fontWeight: 700, color: C.dim, marginLeft: 6, whiteSpace: "nowrap" }}>· {T("pfOnlyYou")}</span>}</div>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: r ? r.color : C.dim, marginTop: 2 }}>{r ? `${r.icon} ${r.name}` : `🔒 ${T("achLocked")}`}</div>
+                  <div style={{ fontSize: 12, fontWeight: 800, color: r ? r.color : a.single ? RANKS[a.rk[0]].color + "bb" : C.dim, marginTop: 2 }}>{label}</div>
                 </div>
-                <div data-ach-num style={{ textAlign: "right", flexShrink: 0 }}>
-                  <div style={{ fontFamily: DISPLAY, fontSize: 18, fontWeight: 900, color: C.chalk, lineHeight: 1, whiteSpace: "nowrap" }}>{a.next === null ? "✓" : `${val(a, a.v)} / ${val(a, a.next)}`}</div>
-                  {a.next !== null && (inTier(a) >= 0.8
-                    ? <div data-near className="nearPulse" style={{ fontSize: 11.5, fontWeight: 900, color: nr.color, marginTop: 3, whiteSpace: "nowrap" }}>{T("achLeft", { n: val(a, a.next - a.v) })}!</div>
-                    : <div style={{ fontSize: 11, color: C.dim, marginTop: 3, whiteSpace: "nowrap" }}>{T("achLeft", { n: val(a, a.next - a.v) })}</div>)}
-                </div>
+                {!a.single && (
+                  <div data-ach-num style={{ textAlign: "right", flexShrink: 0 }}>
+                    <div style={{ fontFamily: DISPLAY, fontSize: 18, fontWeight: 900, color: C.chalk, lineHeight: 1, whiteSpace: "nowrap" }}>{a.next === null ? "✓" : `${val(a, a.v)} / ${val(a, a.next)}`}</div>
+                    {a.next !== null && (inTier(a) >= 0.8
+                      ? <div data-near className="nearPulse" style={{ fontSize: 11.5, fontWeight: 900, color: nr.color, marginTop: 3, whiteSpace: "nowrap" }}>{T("achLeft", { n: val(a, a.next - a.v) })}!</div>
+                      : <div style={{ fontSize: 11, color: C.dim, marginTop: 3, whiteSpace: "nowrap" }}>{T("achLeft", { n: val(a, a.next - a.v) })}</div>)}
+                  </div>
+                )}
+                {a.single && a.step > 0 && <div style={{ fontFamily: DISPLAY, fontSize: 20, fontWeight: 900, color: r.color, flexShrink: 0 }}>✓</div>}
               </div>
-              <div aria-hidden="true" style={{ display: "flex", gap: 3, marginTop: 10 }}>
-                {a.at.map((_, k) => {
-                  const col = RANKS[a.rk ? a.rk[k] : k].color, fill = k < a.step ? 1 : k === a.step ? inTier(a) : 0;
-                  return <span key={k} style={{ flex: 1, height: 6, borderRadius: 99, background: `${C.chalk}14`, overflow: "hidden" }}><span className="pvBar" style={{ display: "block", height: "100%", width: `${fill * 100}%`, background: k < a.step ? col : nr ? nr.color : col, opacity: k < a.step ? 1 : 0.8, borderRadius: 99 }} /></span>;
-                })}
-              </div>
-              <div style={{ fontSize: 11.5, color: C.dim, marginTop: 6, lineHeight: 1.4 }}>{a.next === null ? T("achMax") : `${T("achNext", { rank: nr.name })} ${a.desc}`}</div>
+              {!a.single && <RankPips ranks={a.at.map((_, i) => (a.rk ? a.rk[i] : i))} reached={a.step} />}
+              <div style={{ fontSize: 11.5, color: C.dim, marginTop: 6, lineHeight: 1.4 }}>{a.single ? a.desc : a.next === null ? T("achMax") : `${T("achNext", { rank: nr.name })} ${a.desc}`}</div>
             </div>
           );
         })}
+        {secretLeft > 0 && (
+          <div data-secret-left={secretLeft} style={{ ...card, ...tileR(), padding: "12px", display: "flex", alignItems: "center", gap: 10, borderStyle: "dashed", background: "transparent" }}>
+            <div aria-hidden="true" style={{ fontSize: 22, lineHeight: 1, flexShrink: 0 }}>❔</div>
+            <div style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.45 }}>{TP("secretLeft", secretLeft)}</div>
+          </div>
+        )}
       </div>
     </div>
   );
 }
-// Ranks page: every exercise with its rank, best set and how far to the next rank; the best first.
+// Ranks page: every exercise you have done, with its rank, best set and how far to the next rank; the best first.
+// 1.8.0: all exercises have ranks; the ones you haven't done yet stay hidden (one line says how many).
 function RanksList({ m, onPick, focus, claim }) {
   const hid = id => !!(claim && claim.hid.has("rank:" + id)); // 1.7.4: still face down (first in the list)
-  const ids = Object.keys(RANK_AT).sort((a, b) => hid(b) - hid(a) || rankIdx(b, m.rk[b]) - rankIdx(a, m.rk[a]) || (m.rk[b] || 0) / RANK_AT[b][0] - (m.rk[a] || 0) / RANK_AT[a][0]);
-  const lv = ids.reduce((x, id) => x + (hid(id) ? 0 : rankIdx(id, m.rk[id])), 0);
+  const has = id => m.rk[id] !== null && m.rk[id] !== undefined;
+  const ids = Object.keys(RANK_AT).filter(has).sort((a, b) => hid(b) - hid(a) || rankIdx(b, m.rk[b]) - rankIdx(a, m.rk[a]) || (m.rk[b] || 0) / RANK_AT[b][0] - (m.rk[a] || 0) / RANK_AT[a][0]);
+  const left = Object.keys(RANK_AT).length - ids.length;
+  const lv = ids.reduce((x, id) => x + (hid(id) ? 0 : rankIdx(id, m.rk[id]) + 1), 0);
   return (
     <div data-pf-ranks>
-      <div style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.5, margin: "0 2px 10px" }}>{T("achTiers", { n: lv, max: ids.length * (RANKS.length - 1) })} · {T("pfRanksD")}</div>
+      <div style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.5, margin: "0 2px 10px" }}>{T("achTiers", { n: lv, max: Object.keys(RANK_AT).length * RANKS.length })} · {T("pfRanksD")}</div>
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        {ids.map(id => {
+        {ids.map((id, k) => {
           if (hid(id)) return <ClaimRow key={id} it={claim.items.get("rank:" + id)} onOpen={claim.open} />;
-          const b = m.rk[id], has = b !== null && b !== undefined, ri = rankIdx(id, b), r = RANKS[ri], at = RANK_AT[id];
+          const b = m.rk[id], ri = rankIdx(id, b), r = RANKS[ri], at = RANK_AT[id];
           const prev = ri ? at[ri - 1] : 0, next = ri < at.length ? at[ri] : null, inR = next === null ? 1 : Math.max(0, Math.min(1, ((b || 0) - prev) / (next - prev)));
+          const rr = rankRow(ri, next === null ? null : ri + 1, inR, k);
           const Tag = onPick ? "button" : "div";
           return (
-            <Tag key={id} data-rank-row={id} data-rank={ri} onClick={onPick ? () => { sfxTap(); onPick(id); } : undefined} className={[focus && focus.k === id && "achFlash", ri >= 4 && "foil"].filter(Boolean).join(" ") || undefined}
-              style={{ ...(onPick ? btnBase : {}), fontWeight: 400, textAlign: "left", width: "100%", color: C.chalk, ...card, ...tileR(), padding: "11px 12px", display: "block" }}>
+            <Tag key={id} data-rank-row={id} data-rank={ri} onClick={onPick ? () => { sfxTap(); onPick(id); } : undefined} className={[rr.cls, focus && focus.k === id && "achFlash"].filter(Boolean).join(" ")}
+              style={{ ...(onPick ? btnBase : {}), fontWeight: 400, textAlign: "left", width: "100%", color: C.chalk, ...rr.style, padding: "11px 12px", display: "block" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <div aria-hidden="true" style={{ fontSize: 24, lineHeight: 1, flexShrink: 0, opacity: has ? 1 : 0.45 }}>{r.icon}</div>
+                <div aria-hidden="true" style={{ fontSize: 24, lineHeight: 1, flexShrink: 0 }}>{r.icon}</div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 14, fontWeight: 800, lineHeight: 1.2 }}>{EX[id].name}</div>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: has ? r.color : C.dim, marginTop: 2 }}>{has ? r.name : T("pfNoResult")}</div>
+                  <div style={{ fontSize: 12, fontWeight: 800, color: r.color, marginTop: 2 }}>{r.name}</div>
                 </div>
                 <div style={{ textAlign: "right", flexShrink: 0 }}>
-                  <div style={{ fontFamily: DISPLAY, fontSize: 18, fontWeight: 900, lineHeight: 1, whiteSpace: "nowrap" }}>{next === null ? `${b}${rankUnit(id)} ✓` : `${b || 0} / ${next}${rankUnit(id)}`}</div>
-                  {next !== null && (has && inR >= 0.8
+                  <div style={{ fontFamily: DISPLAY, fontSize: 18, fontWeight: 900, lineHeight: 1, whiteSpace: "nowrap" }}>{next === null ? `${rankVal(id, b)} ✓` : `${b || 0} / ${rankVal(id, next)}`}</div>
+                  {next !== null && (inR >= 0.8
                     ? <div data-near className="nearPulse" style={{ fontSize: 11.5, fontWeight: 900, color: RANKS[ri + 1].color, marginTop: 3, whiteSpace: "nowrap" }}>{T("achLeft", { n: `${next - (b || 0)}${rankUnit(id)}` })}!</div>
                     : <div style={{ fontSize: 11, color: C.dim, marginTop: 3, whiteSpace: "nowrap" }}>{T("achLeft", { n: `${next - (b || 0)}${rankUnit(id)}` })}</div>)}
                 </div>
               </div>
-              <div aria-hidden="true" style={{ display: "flex", gap: 3, marginTop: 10 }}>
-                {at.map((_, k) => <span key={k} style={{ flex: 1, height: 6, borderRadius: 99, background: `${C.chalk}14`, overflow: "hidden" }}><span className="pvBar" style={{ display: "block", height: "100%", width: `${(k < ri ? 1 : k === ri ? inR : 0) * 100}%`, background: RANKS[k + 1].color, opacity: k < ri ? 1 : 0.8, borderRadius: 99 }} /></span>)}
-              </div>
-              {next !== null && <div style={{ fontSize: 11.5, color: C.dim, marginTop: 6 }}>{T("achNext", { rank: RANKS[ri + 1].name })} {next}{rankUnit(id)}</div>}
+              <RankPips ranks={RANKS.map((_, i) => i)} reached={ri + 1} />
+              {next !== null && <div style={{ fontSize: 11.5, color: C.dim, marginTop: 6 }}>{ri + 1 === R_OBSIDIAN ? `${T("rankChallenge")} ` : ""}{T("achNext", { rank: RANKS[ri + 1].name })} {rankVal(id, next)}</div>}
             </Tag>
           );
         })}
+        {m.own && left > 0 && (
+          <div data-ranks-left={left} style={{ ...card, ...tileR(), padding: "12px", display: "flex", alignItems: "center", gap: 10, borderStyle: "dashed", background: "transparent" }}>
+            <div aria-hidden="true" style={{ fontSize: 22, lineHeight: 1, flexShrink: 0 }}>❔</div>
+            <div style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.45 }}>{TP("ranksLeft", left)}</div>
+          </div>
+        )}
+        {!ids.length && !m.own && <div style={{ fontSize: 13, color: C.dim }}>{T("pfNoResult")}</div>}
       </div>
     </div>
   );
@@ -4743,7 +4851,7 @@ function ProfileTab({ history, profile, setProfile, onFreeze, kcal, acct, vis, o
   const st = streakInfo(history, today);
   const m = ownModel(history, profile, kcal);
   // 1.7.4: badges and ranks not opened yet (claims): face-down cards on the Badges / Ranks pages, opened with the reveal
-  const pend = unclaimed(m, profile.claim);
+  const pend = unclaimed(m, claimOf(profile));
   const [rev, setRev] = useState(null);
   const [party, setParty] = useState(0);
   const claim = pend.length ? { items: new Map(pend.map(it => [claimKey(it), it])), hid: new Set(pend.map(claimKey)), top: pend[pend.length - 1].col,
@@ -4766,7 +4874,7 @@ function ProfileTab({ history, profile, setProfile, onFreeze, kcal, acct, vis, o
     <div className="scr" style={{ padding: "16px 0 110px", maxWidth: "var(--colMax)", margin: "0 auto" }}>
       {howEx && <HowTo id={howEx} history={history} onClose={() => setHowEx(null)} />}
       <input ref={fileRef} type="file" accept="image/*" onChange={pick} style={{ display: "none" }} />
-      {rev && <RewardReveal items={rev} onDone={() => { setProfile({ ...profile, claim: withClaims(profile.claim, rev) }); setRev(null); setParty(Date.now()); }} />}
+      {rev && <RewardReveal items={rev} onDone={() => { setProfile({ ...profile, claim2: withClaims(claimOf(profile), rev) }); setRev(null); setParty(Date.now()); }} />}
       {party > 0 && <Confetti key={party} />}
       <ProfilePage m={m} own claim={claim} extra={{ fz }} onPhoto={() => fileRef.current && fileRef.current.click()} onEditProfile={() => { setName(profile.name || ""); setSheet("edit"); }}
         onStreak={() => setSheet("freeze")} onEditSlot={i => setSheet({ slot: i })} onPickRank={setHowEx}
@@ -5312,6 +5420,8 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
   const wide = useWide();
   const me = { uid: acct.uid, ...acct.prof, ...cloudStats(history) };
   const [tab, setTab] = useState(() => (sessionStorage.getItem("hw-add") ? "friends" : chatWith ? "chats" : "board"));
+  const frDir = useRef(0), frPrev = useRef(tab);
+  if (frPrev.current !== tab) { const o = { board: 0, friends: 1, chats: 2 }; frDir.current = Math.sign(o[tab] - o[frPrev.current]); frPrev.current = tab; }
   const [scope, setScope] = useState("friends"); // board: friends | world
   const [world, setWorld] = useState(null);
   const blocked = social.blocked || [];
@@ -5515,9 +5625,11 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
         );
         const tabs = list => <div role="tablist" style={segBox}>{list.map(([id, l, n]) => <Fragment key={id}>{seg(tab === id, () => setTab(id), l, id, n)}</Fragment>)}</div>;
         const nReq = reqs ? reqs.length : 0, nChat = chats.filter(unread).length;
-        if (!wide) return <>{idCard}{tabs([["board", T("frBoard")], ["friends", T("frFriends"), nReq], ["chats", T("chMsgs"), nChat]])}{err && <div role="alert" style={{ fontSize: 13, color: "#ff8a80", marginTop: 10 }}>{err}</div>}{tab === "board" ? boardView : tab === "friends" ? friendsView : chatsView}</>;
+        // 1.8.0: the page slides in from the side of the tab you came from
+        const view = (id, v) => <div key={id} data-fr-view={id} className={frDir.current ? (frDir.current > 0 ? "frInR" : "frInL") : undefined}>{v}</div>;
+        if (!wide) return <>{idCard}{tabs([["board", T("frBoard")], ["friends", T("frFriends"), nReq], ["chats", T("chMsgs"), nChat]])}{err && <div role="alert" style={{ fontSize: 13, color: "#ff8a80", marginTop: 10 }}>{err}</div>}{view(tab, tab === "board" ? boardView : tab === "friends" ? friendsView : chatsView)}</>;
         const rt = tab === "chats" ? "chats" : "board";
-        return <Cols left={<>{idCard}{friendsView}</>} right={<>{tabs([["board", T("frBoard")], ["chats", T("chMsgs"), nChat]])}{err && <div role="alert" style={{ fontSize: 13, color: "#ff8a80", marginTop: 10 }}>{err}</div>}{rt === "board" ? boardView : chatsView}</>} />;
+        return <Cols left={<>{idCard}<div data-fr-view="friends">{friendsView}</div></>} right={<>{tabs([["board", T("frBoard")], ["chats", T("chMsgs"), nChat]])}{err && <div role="alert" style={{ fontSize: 13, color: "#ff8a80", marginTop: 10 }}>{err}</div>}{view(rt, rt === "board" ? boardView : chatsView)}</>} />;
       })()}
     </div>
   );
@@ -6603,31 +6715,39 @@ function Work({ item, rounds, history, sessionResults, onRecord, onSwap, exclude
   const [rightReps, setRightReps] = useState(null);
   const sideName = sd => T(`side${sd}_${ex.unit}`);
 
+  // 1.8.0: durations hold 0 = Max: the time counts up until you stop (for records past the longest preset, e.g. the
+  // 10-minute Obsidian plank). After a hold longer than every preset, Max is preselected.
   const initDur = () => {
     if (ex.type !== "time") return 0;
     if (goal !== null) return goal;
+    if (prevVal !== null && prevVal >= Math.max(...ex.durs)) return 0;
     if (prevVal !== null && ex.durs.includes(prevVal)) return prevVal;
     return ex.dur;
   };
   const [dur, setDur] = useState(initDur);
   const [ph, setPh] = useState("ready"); // ready | prep | hold
   const [endAt, setEndAt] = useState(null);
+  const [upFrom, setUpFrom] = useState(null); // Max: when the hold started
+  const [, upTick] = useState(0);
+  useEffect(() => { if (!upFrom) return; const iv = setInterval(() => upTick(x => x + 1), 250); return () => clearInterval(iv); }, [upFrom]);
+  const upSecs = upFrom ? Math.max(0, Math.floor((Date.now() - upFrom) / 1000)) : 0;
 
   const left = useCountdown(endAt,
     () => {
-      if (ph === "prep") { soundExercise(); setPh("hold"); setEndAt(Date.now() + dur * 1000); }
+      if (ph === "prep") { soundExercise(); setPh("hold"); if (dur === 0) { setEndAt(null); setUpFrom(Date.now()); } else setEndAt(Date.now() + dur * 1000); }
       else if (ph === "hold") { soundExercise(); vibrate([250]); setEndAt(null); onRecord(`${dur}s`); }
     },
     () => { if (ph === "prep") soundPrepEnd(); }
   );
 
   // Tell the app about a running hold/prep timer (for the mini player when the workout is minimized).
-  useEffect(() => { if (onLive) onLive(ph === "ready" || !endAt ? null : { kind: ph, endAt, total: ph === "prep" ? 5 : dur }); }, [ph, endAt]);
+  useEffect(() => { if (onLive) onLive(upFrom ? { kind: "up", from: upFrom } : ph === "ready" || !endAt ? null : { kind: ph, endAt, total: ph === "prep" ? 5 : dur }); }, [ph, endAt, upFrom]);
   useEffect(() => () => { if (onLive) onLive(null); }, []);
   const startHold = () => { unlockAudio(); setPh("prep"); setEndAt(Date.now() + 5000); };
   const stopHold = () => {
     unlockAudio();
     if (ph === "prep") { setPh("ready"); setEndAt(null); return; }
+    if (upFrom) { const held = Math.max(1, upSecs); setUpFrom(null); soundExercise(); vibrate([250]); onRecord(`${held}s`); return; }
     const held = Math.max(1, dur - left);
     setEndAt(null);
     onRecord(`${held}s`);
@@ -6658,7 +6778,7 @@ function Work({ item, rounds, history, sessionResults, onRecord, onSwap, exclude
           <div data-goal style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 10, background: hit ? `${C.mint}1f` : LOOK === "liquid" ? "rgba(255,255,255,.07)" : C.panel, border: `1.5px solid ${hit ? C.mint : C.signal}66`, borderRadius: 14, padding: "9px 12px" }}>
             <span className={hit ? "pop" : ""} key={hit ? "hit" : "aim"} style={{ fontFamily: DISPLAY, fontWeight: 900, fontSize: 20, lineHeight: 1, color: hit ? C.mint : C.signal, border: `2px solid ${hit ? C.mint : C.signal}`, borderRadius: 10, padding: "3px 7px", flexShrink: 0 }}>{hit ? "✓" : ex.type === "time" ? "↑" : "+1"}</span>
             <div style={{ fontSize: 13, color: C.chalk, lineHeight: 1.4 }}>
-              {goal === null ? T("goalTop", { v: `${prevVal}${unit}` }) : hit ? T("goalHit", { v: `${goal}${unit}` }) : T("goalLine", { v: `${prevVal}${unit}`, g: `${goal}${unit}` })}
+              {goal === null ? T(ex.type === "time" ? "goalMax" : "goalTop", { v: `${prevVal}${unit}` }) : hit ? T("goalHit", { v: `${goal}${unit}` }) : T("goalLine", { v: `${prevVal}${unit}`, g: `${goal}${unit}` })}
               <div style={{ fontSize: 12, color: C.dim }}>{T("goalOk")}</div>
             </div>
           </div>
@@ -6666,7 +6786,7 @@ function Work({ item, rounds, history, sessionResults, onRecord, onSwap, exclude
       })()}
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
         <RankBadge id={item.id} best={best} />
-        {RANK_AT[item.id] && (() => { const n = rankNext(item.id, best); return n ? <span style={{ fontSize: 12, color: C.dim }}>{n.rank.icon} {T("rankFrom", { rank: n.rank.name, v: `${n.at}${ex.type === "time" ? " s" : ""}` })}</span> : <span style={{ fontSize: 12, color: C.dim }}>{T("topRank")}</span>; })()}
+        {RANK_AT[item.id] && (() => { const n = rankNext(item.id, best); return n ? <span style={{ fontSize: 12, color: C.dim }}>{n.rank.icon} {T("rankFrom", { rank: n.rank.name, v: rankVal(item.id, n.at) })}</span> : <span style={{ fontSize: 12, color: C.dim }}>{T("topRank")}</span>; })()}
         {item.slot !== item.id && <span style={{ fontSize: 12, color: C.sky }}>{T("replacing", { name: EX[item.slot].name })}</span>}
       </div>
       {lvl && item.r === 0 && (
@@ -6741,12 +6861,12 @@ function Work({ item, rounds, history, sessionResults, onRecord, onSwap, exclude
           {ph === "ready" && (
             <>
               <div style={{ display: "flex", gap: 8, justifyContent: "center", marginTop: 24 }}>
-                {ex.durs.map(d => (
-                  <button key={d} onClick={() => setDur(d)} style={{ ...btnBase, padding: "10px 14px", fontSize: 15, background: dur === d ? C.chalk : "transparent", color: dur === d ? C.ink : C.dim, border: `1.5px solid ${dur === d ? C.chalk : C.line}` }}>{d} s</button>
+                {[...ex.durs, 0].map(d => (
+                  <button key={d} data-dur={d} onClick={() => setDur(d)} aria-pressed={dur === d} style={{ ...btnBase, padding: "10px 12px", fontSize: 15, background: dur === d ? C.chalk : "transparent", color: dur === d ? C.ink : C.dim, border: `1.5px solid ${dur === d ? C.chalk : C.line}` }}>{d ? `${d} s` : T("holdMax")}</button>
                 ))}
               </div>
-              <div style={{ fontFamily: DISPLAY, fontSize: 132, fontWeight: 900, lineHeight: 0.85, color: C.chalk, textAlign: "center", marginTop: 20 }}>{dur}</div>
-              <div style={{ fontSize: 13, color: C.dim, textAlign: "center", marginTop: 4 }}>{T("secondsHint")}</div>
+              <div style={{ fontFamily: DISPLAY, fontSize: 132, fontWeight: 900, lineHeight: 0.85, color: C.chalk, textAlign: "center", marginTop: 20 }}>{dur || "∞"}</div>
+              <div style={{ fontSize: 13, color: C.dim, textAlign: "center", marginTop: 4, lineHeight: 1.45 }}>{dur ? T("secondsHint") : T("holdMaxHint")}</div>
               <button onClick={startHold} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 22, fontSize: 18, padding: 19 }}>{T("start")}</button>
             </>
           )}
@@ -6761,8 +6881,8 @@ function Work({ item, rounds, history, sessionResults, onRecord, onSwap, exclude
           )}
           {ph === "hold" && (
             <div style={{ marginTop: 22, textAlign: "center" }}>
-              <Ring value={left} total={dur} size={230} color={C.chalk}>
-                <div style={{ fontFamily: DISPLAY, fontSize: 110, fontWeight: 900, lineHeight: 0.85, color: C.chalk }}>{left}</div>
+              <Ring value={upFrom ? (upSecs % 60 || (upSecs ? 60 : 0)) : left} total={upFrom ? 60 : dur} size={230} color={upFrom ? C.signal : C.chalk}>
+                <div data-hold-up={upFrom ? upSecs : undefined} style={{ fontFamily: DISPLAY, fontSize: upFrom && upSecs >= 60 ? 84 : 110, fontWeight: 900, lineHeight: 0.85, color: C.chalk, fontVariantNumeric: "tabular-nums" }}>{upFrom ? (upSecs >= 60 ? `${Math.floor(upSecs / 60)}:${String(upSecs % 60).padStart(2, "0")}` : upSecs) : left}</div>
                 <div style={{ fontSize: 14, color: C.dim, marginTop: 4 }}>{T("hold")}</div>
               </Ring>
               <button onClick={stopHold} style={{ ...ghostBtn, marginTop: 18 }}>{T("giveUp")}</button>
@@ -6943,8 +7063,10 @@ function Cool({ onFinish }) {
 // the rarer it is. A tap flips it: light rays, a burst, a flash, a rising sound and a vibration, all bigger with the
 // rarity (Diamond also shakes the screen). The cards come from the most common to the rarest, so the best is last.
 const REV_KIND = { pr: 0, ach: 1, rank: 2, lvl: 3 };
-const REV_BUZZ = [[30], [40], [50, 30, 60], [60, 40, 90], [70, 40, 70, 40, 160], [80, 40, 80, 40, 80, 40, 220], [110, 50, 110, 50, 110, 50, 340]];
-const achCard = a => { const rk = RANKS[a.tier - 1]; return { kind: "ach", k: a.k, r: a.tier - 1, icon: a.icon, name: a.name, rank: rk, col: rk.color }; };
+const REV_BUZZ = [[40], [50, 30, 60], [60, 40, 90], [70, 40, 70, 40, 160], [80, 40, 80, 40, 80, 40, 220], [90, 40, 90, 40, 90, 40, 260], [100, 45, 100, 45, 100, 45, 300], [110, 50, 110, 50, 110, 50, 340], [130, 50, 130, 50, 130, 50, 130, 50, 420]];
+const achCard = a => { const rk = RANKS[a.tier - 1]; return { kind: "ach", k: a.k, r: a.tier - 1, icon: a.icon, name: a.name, rank: a.single ? { icon: "✦", name: rarityName(a), color: rk.color } : rk, col: rk.color }; };
+// 1.8.0: "Rare", "Epic" or "Legendary" for a single badge
+const rarityName = a => T("rar_" + (RARITY[a.rk[0]] || "rare"));
 const rankCard = (id, ri) => { const rk = RANKS[ri]; return { kind: "rank", k: id, r: ri, icon: rk.icon, name: EX[id] ? EX[id].name : id, rank: rk, col: rk.color }; };
 function revealList(entry, newAch, xpBefore, gained) {
   if (!entry) return [];
@@ -6983,6 +7105,7 @@ async function tourTab(name, i) { const b = tourFind(`[data-${name}-tab="${i}"]`
 function tourSteps(ch, x) {
   const X = (L.tour && L.tour["c" + ch]) || [];
   const s = (sel, i, more = {}) => ({ sel, t: X[i], ...more });
+  const tt = (i, key) => fmt(X[i] || "", { t: T(key) }); // "Tap {t}." with the tab's real name
   const screen = (id, page) => async () => { await x.go(id); if (page !== undefined) await tourTab(page[0], page[1]); };
   if (ch === 1) return [
     { t: X[0], prep: screen("train", ["home", 0]) },
@@ -7029,22 +7152,29 @@ function tourSteps(ch, x) {
     s("[data-workout-row]", 2, { opt: true }),
     { done: true, t: X[3] },
   ];
+  // 1.8.0 (Michael: "let them tap so the screen slides, then explain what they see, not the buttons on top")
   if (ch === 6) return [
-    s("[data-kcsetup]", 0, { opt: true, wait: 1200, prep: screen("calories") }),
+    s("[data-kcsetup]", 0, { opt: true, wait: 1200, prep: screen("calories", ["kc", 0]) }),
     s("[data-kc-streak-card]", 1, { opt: true, wait: 600 }),
     s("[data-kctoday]", 2, { opt: true, wait: 600 }),
     s("[data-health-card]", 3, { opt: true, wait: 400 }),
-    s("[data-kc-log]", 4, { opt: true, wait: 400 }),
-    s("[data-kc-tabs]", 5, { opt: true, wait: 400 }),
-    { done: true, t: X[6] },
+    s("[data-kc-log]", isNative ? 4 : 5, { opt: true, wait: 400 }),
+    s('[data-kc-tab="1"]', 6, { tap: true, opt: true, wait: 400, t: tt(6, "kcTabCal") }),
+    s("[data-kc-cal]", 7, { opt: true, wait: 800 }),
+    s('[data-kc-tab="2"]', 8, { tap: true, opt: true, wait: 400, t: tt(8, "kcTabMe") }),
+    s("[data-kcsettings]", 9, { opt: true, wait: 800 }),
+    { done: true, t: X[10], prep: async () => { await tourTab("kc", 0); } },
   ];
   return [ // 7: friends
     s("[data-fr-signin]", 0, { opt: true, wait: 1500, prep: screen("friends") }),
     s("[data-fr-code]", 1, { opt: true, wait: 1500 }),
-    s('[data-seg="friends"]', 2, { opt: true, wait: 400 }),
-    s('[data-seg="board"]', 3, { opt: true, wait: 400 }),
-    s('[data-seg="chats"]', 4, { opt: true, wait: 400 }),
-    { done: true, t: X[5] },
+    s('[data-seg="friends"]', 2, { tap: true, opt: true, wait: 400, t: tt(2, "frFriends") }),
+    s('[data-fr-view="friends"]', 3, { opt: true, wait: 600 }),
+    s('[data-seg="board"]', 4, { tap: true, opt: true, wait: 400, t: tt(4, "frBoard") }),
+    s('[data-fr-view="board"]', 5, { opt: true, wait: 600 }),
+    s('[data-seg="chats"]', 6, { tap: true, opt: true, wait: 400, t: tt(6, "chMsgs") }),
+    s('[data-fr-view="chats"]', 7, { opt: true, wait: 600 }),
+    { done: true, t: X[8] },
   ];
 }
 // What comes after a chapter: the next one in the order that isn't done yet (the workout chapter waits for a workout).
@@ -7197,6 +7327,22 @@ function TourSheet({ done, ui, onStart, on3, onClose }) {
 // (everyone before 1.7.4) = nothing opened, so everything earned so far waits. A workout's reveal claims what it shows;
 // levels and records aren't kept back. Others always see your real badges and ranks (the card in the cloud is unchanged).
 const claimKey = it => `${it.kind}:${it.k}`;
+// 1.8.0: 9 ranks. The opened levels are kept in profile.claim2 on the new scale; profile.claim (the 1.7 scale) stays
+// untouched for older app versions on other devices. The first time, claim2 is worked out from claim: badge levels
+// keep their number except the old Diamond (7 → 8), single badges count as opened if any level was, exercise ranks
+// map Wood/Iron → Iron, Bronze … Platinum → the same, Diamond → Diamond.
+const OLD_RANK_TO_NEW = [0, 0, 1, 2, 3, 4, 7];
+function claimOf(profile) {
+  if (!profile) return null;
+  const c = profile.claim, c2 = profile.claim2;
+  if (!c) return c2 || null;
+  const a = {}, r = {};
+  Object.entries(c.a || {}).forEach(([k, t]) => { const f = ACH.find(x => x.k === k); if (!f || !(t > 0)) return; a[k] = f.single ? f.rk[0] + 1 : t >= 7 ? 8 : t; });
+  Object.entries(c.r || {}).forEach(([id, i]) => { if (typeof i === "number") r[id] = OLD_RANK_TO_NEW[Math.max(0, Math.min(6, i))]; });
+  // an older app version on another device may still open cards into the old map: the higher of the two counts
+  if (c2) { for (const [k, v] of Object.entries(c2.a || {})) a[k] = Math.max(a[k] || 0, v); for (const [k, v] of Object.entries(c2.r || {})) r[k] = Math.max(r[k] ?? -1, v); }
+  return { a, r };
+}
 function unclaimed(m, claim) {
   if (window.__hwNoReveal) return []; // tests without the reveal see everything, as before
   const a = (claim && claim.a) || {}, r = (claim && claim.r) || {};
@@ -7204,7 +7350,7 @@ function unclaimed(m, claim) {
   Object.keys(RANK_AT).forEach(id => { const ri = rankIdx(id, m.rk[id]); if (ri > (r[id] || 0)) out.push(rankCard(id, ri)); });
   return out.sort((x, y) => x.r - y.r || REV_KIND[x.kind] - REV_KIND[y.kind]);
 }
-const unclaimedFor = (history, profile, kcal) => unclaimed(ownModel(history, profile, kcal), profile && profile.claim);
+const unclaimedFor = (history, profile, kcal) => unclaimed(ownModel(history, profile, kcal), claimOf(profile));
 // The claim map with these cards opened (only ever goes up).
 function withClaims(claim, items) {
   const c = { a: { ...((claim && claim.a) || {}) }, r: { ...((claim && claim.r) || {}) } };
@@ -7224,7 +7370,7 @@ function hideUnclaimed(m, hid) {
 function ClaimRow({ it, onOpen }) {
   const col = it.col;
   return (
-    <button type="button" data-claim-row={claimKey(it)} data-rarity={it.r} onClick={() => onOpen(it)} className={it.r >= 4 ? "foil" : undefined}
+    <button type="button" data-claim-row={claimKey(it)} data-rarity={it.r} onClick={() => onOpen(it)} className={it.r >= 3 ? "foil" : undefined}
       style={{ ...btnBase, fontWeight: 400, textAlign: "left", width: "100%", color: C.chalk, ...card, ...tileR(), padding: "11px 12px", display: "flex", alignItems: "center", gap: 12, border: `1.5px solid ${col}99`, boxShadow: `0 0 ${10 + it.r * 3}px ${col}44` }}>
       <span aria-hidden="true" className="claimBack" style={{ "--wob": `${2 + it.r * 0.6}deg`, width: 34, height: 44, flexShrink: 0, borderRadius: 7, border: `1.5px solid ${col}`, background: `radial-gradient(90% 70% at 50% 40%, ${col}66, transparent 75%), repeating-linear-gradient(45deg, ${col}1a 0 5px, transparent 5px 10px), ${C.ink}`, boxShadow: `0 0 ${8 + it.r * 2}px ${col}88`, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: DISPLAY, fontSize: 22, fontWeight: 900, color: col, textShadow: `0 0 8px ${col}` }}>?</span>
       <span style={{ flex: 1, minWidth: 0 }}>
@@ -7246,7 +7392,7 @@ function revealSfx(r) {
   for (let k = 0; k < len; k++) { n.push([S[Math.min(S.length - 1, k + off)], t, 0.11]); t += 0.07; }
   const top = S[Math.min(S.length - 1, len + off)], d = 0.55 + r * 0.09;
   n.push([top, t, d], [top * 0.75, t, d], [top * 0.5, t, d]);
-  if (r >= 4) [2093, 2637, 3136, 2637, 3136, 4186].slice(0, r - 1).forEach((f, k) => n.push([f, t + 0.14 + k * 0.07, 0.09]));
+  if (r >= 3) [2093, 2637, 3136, 2637, 3136, 4186, 3136, 4186].slice(0, r).forEach((f, k) => n.push([f, t + 0.14 + k * 0.07, 0.09]));
   if (r >= 2) n.push([98, t + 0.22, 0.22], [131, t + 0.22, 0.18]); // a low thud when the rank lands
   melody(n, "triangle", 0.26);
 }
@@ -7282,7 +7428,7 @@ function RewardReveal({ items, onDone }) {
   const it = items[i];
   if (!it) return null;
   const col = it.col, r = it.r, last = i + 1 >= items.length;
-  const flip = () => { if (open) return; setOpen(true); revealSfx(r); vibrate(REV_BUZZ[Math.max(0, Math.min(6, r))]); };
+  const flip = () => { if (open) return; setOpen(true); revealSfx(r); vibrate(REV_BUZZ[Math.max(0, Math.min(R_OBSIDIAN, r))]); };
   const next = e => { e.stopPropagation(); collectSfx(); if (last) onDone(); else { setI(i + 1); setOpen(false); } };
   const kindLabel = T({ pr: "revRecord", ach: "revBadge", rank: "revRank", lvl: "revLevel" }[it.kind]);
   return createPortal(
@@ -7297,11 +7443,11 @@ function RewardReveal({ items, onDone }) {
         {open && <RevBurst col={col} n={16 + r * 8} />}
         {open && <div aria-hidden="true" className="revFlash" style={{ "--fo": Math.min(0.75, 0.2 + r * 0.09) }} />}
         <div data-reveal-card data-kind={it.kind} data-rarity={r} data-state={open ? "face" : "back"} className={"revCard" + (open ? " on" : "")} style={{ "--wob": `${1.2 + r * 0.7}deg`, "--wt": `${Math.max(0.35, 1.1 - r * 0.12)}s` }}>
-          {r >= 4 && !open && <RevTwinkle col={col} n={6 + (r - 3) * 4} />}
-          <div className={"revBack" + (r >= 6 ? " revPrism" : "")} style={{ background: `radial-gradient(90% 70% at 50% 40%, ${col}66, transparent 75%), repeating-linear-gradient(45deg, ${col}12 0 10px, transparent 10px 20px), ${C.ink}`, border: `2px solid ${col}`, boxShadow: `0 0 ${18 + r * 9}px ${col}${r >= 4 ? "cc" : "88"}, inset 0 0 ${24 + r * 6}px ${col}55` }}>
+          {r >= 3 && !open && <RevTwinkle col={col} n={6 + (r - 2) * 4} />}
+          <div className={"revBack" + (r >= 7 ? " revPrism" : "")} style={{ background: `radial-gradient(90% 70% at 50% 40%, ${col}66, transparent 75%), repeating-linear-gradient(45deg, ${col}12 0 10px, transparent 10px 20px), ${C.ink}`, border: `2px solid ${col}`, boxShadow: `0 0 ${18 + r * 9}px ${col}${r >= 4 ? "cc" : "88"}, inset 0 0 ${24 + r * 6}px ${col}55` }}>
             <span style={{ fontFamily: DISPLAY, fontSize: 96, fontWeight: 900, color: col, textShadow: `0 0 ${12 + r * 5}px ${col}`, lineHeight: 1 }}>?</span>
           </div>
-          <div className={"revFace" + (r >= 4 ? " foil" : "")} style={{ background: `radial-gradient(100% 70% at 50% 30%, ${col}55, transparent 80%), ${C.ink}`, border: `2px solid ${col}`, boxShadow: `0 0 ${24 + r * 12}px ${col}aa` }}>
+          <div className={"revFace" + (r >= 3 ? " foil" : "")} style={{ background: `radial-gradient(100% 70% at 50% 30%, ${col}55, transparent 80%), ${C.ink}`, border: `2px solid ${col}`, boxShadow: `0 0 ${24 + r * 12}px ${col}aa` }}>
             <div style={{ fontSize: 11.5, fontWeight: 900, letterSpacing: 1.6, textTransform: "uppercase", color: col }}>{kindLabel}</div>
             <div aria-hidden="true" className={open ? "revIcon" : undefined} style={{ fontSize: 84, lineHeight: 1, margin: "18px 0 14px", filter: `drop-shadow(0 0 ${10 + r * 4}px ${col})` }}>{it.icon}</div>
             <div style={{ fontFamily: DISPLAY, fontSize: it.name.length > 18 ? 24 : 30, fontWeight: 900, lineHeight: 1.05, textAlign: "center" }}>{it.name}</div>
@@ -7314,8 +7460,8 @@ function RewardReveal({ items, onDone }) {
         {open
           ? <button type="button" data-reveal-next onClick={next} className="b3d cardIn" style={{ ...bigBtn(col, "#0b0f1c"), animationDelay: ".35s" }}>{last ? T("revDone") : T("revNext")}</button>
           : <div style={{ textAlign: "center" }}>
-              {r >= 4 && <div data-reveal-rare className="revTap" style={{ fontFamily: DISPLAY, fontSize: 22, fontWeight: 900, color: col, textShadow: `0 0 12px ${col}`, marginBottom: 6 }}>{T(r >= 6 ? "revEpic" : "revRare")}</div>}
-              <div className="revTap" style={{ fontSize: 15, fontWeight: 800, color: r >= 4 ? C.chalk : col, letterSpacing: 0.4 }}>{T("revTap")}</div>
+              {r >= 3 && <div data-reveal-rare className="revTap" style={{ fontFamily: DISPLAY, fontSize: 22, fontWeight: 900, color: col, textShadow: `0 0 12px ${col}`, marginBottom: 6 }}>{T(r >= 7 ? "revEpic" : "revRare")}</div>}
+              <div className="revTap" style={{ fontSize: 15, fontWeight: 800, color: r >= 3 ? C.chalk : col, letterSpacing: 0.4 }}>{T("revTap")}</div>
             </div>}
       </div>
     </div>,
@@ -8256,6 +8402,15 @@ export default function App() {
         .revPrism{animation:revHue 2.6s linear infinite}
         @keyframes revHue{to{filter:hue-rotate(360deg)}}
         @keyframes revShake{0%,100%{transform:translate(0,0)}15%{transform:translate(-7px,3px)}30%{transform:translate(6px,-4px)}45%{transform:translate(-5px,-2px)}60%{transform:translate(4px,3px)}80%{transform:translate(-2px,1px)}}
+        .frInR{animation:frInR ${MO.t2} ${MO.ease} backwards}.frInL{animation:frInL ${MO.t2} ${MO.ease} backwards}
+        @keyframes frInR{from{opacity:0;transform:translateX(28px)}}@keyframes frInL{from{opacity:0;transform:translateX(-28px)}}
+        @media (prefers-reduced-motion: reduce){.frInR,.frInL{animation:none}}
+        @property --fill{syntax:"<percentage>";inherits:false;initial-value:0%}
+        .rkRow{position:relative;overflow:hidden;animation:rkFill .9s ${MO.ease} both}
+        @keyframes rkFill{from{--fill:0%}}
+        .rkSweep::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:var(--sweep);mix-blend-mode:screen;opacity:.9;transform:translateX(-130%);animation:rkSweep 7s ease-in-out infinite;animation-delay:var(--sd,0s)}
+        @keyframes rkSweep{0%,72%{transform:translateX(-130%)}100%{transform:translateX(130%)}}
+        @media (prefers-reduced-motion: reduce){.rkRow,.rkSweep::after{animation:none}}
         .foil{position:relative;overflow:hidden}.foil::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(105deg,transparent 38%,rgba(255,255,255,.16) 46%,rgba(255,255,255,.32) 50%,rgba(255,255,255,.16) 54%,transparent 62%);transform:translateX(-120%);animation:foil 3.4s ease-in-out infinite}
         @keyframes foil{0%,55%{transform:translateX(-120%)}100%{transform:translateX(120%)}}.revFace.foil{position:absolute}
         .nearPulse{animation:nearPulse 1.2s ease-in-out infinite alternate}
@@ -8315,7 +8470,7 @@ export default function App() {
                 onSave={entry => setHistory(h => [...h, entry])}
                 onClose={() => { setSession(null); setSessionOpen(true); setLive(null); setScreen("train"); }}
                 onMinimize={() => { setSessionOpen(false); setMenuOpen(true); }}
-                onLive={setLive} onClaim={items => setProfile({ ...profile, claim: withClaims(profile.claim, items) })} />
+                onLive={setLive} onClaim={items => setProfile({ ...profile, claim2: withClaims(claimOf(profile), items) })} />
             </div>
           )}
           {(!session || !sessionOpen) && (

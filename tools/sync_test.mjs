@@ -64,5 +64,13 @@ console.log("1.7.4: opened reward cards (claim) keep the highest level from both
   ok(stable(mergeProfile({ name: "A" }, b, 1, 2, true).claim) === stable(b.claim), "one side without claims takes the other's");
   ok(mergeProfile({ name: "A" }, { name: "B" }, 1, 2, false).claim === undefined, "no claims on either side: nothing added");
 }
+console.log("1.8.0: claim2 (9-rank scale) merges the same way, next to the old claim");
+{
+  const a = { name: "A", claim: { a: { workouts: 3 }, r: { k1: 4 } }, claim2: { a: { workouts: 3, obsidian: 9 }, r: { k1: 3, b5: 8 } } }, b = { name: "B", claim: { a: { workouts: 4 }, r: { k1: 5 } } };
+  const m = mergeProfile(a, b, 1, 2, false);
+  ok(stable(m.claim2) === stable(a.claim2) && stable(m.claim) === stable({ a: { workouts: 4 }, r: { k1: 5 } }), "claim2 kept from the new device, the old map still merged for older app versions");
+  const m2 = mergeProfile({ name: "A", claim2: { a: {}, r: { k1: 2 } } }, { name: "B", claim2: { a: { level: 5 }, r: { k1: 7 } } }, 1, 2, false);
+  ok(stable(m2.claim2) === stable({ a: { level: 5 }, r: { k1: 7 } }), "max per key on both sides");
+}
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

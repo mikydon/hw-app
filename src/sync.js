@@ -69,6 +69,8 @@ export function mergeProfile(lp, rp, ml, mr, first) {
   PROFILE_MAPS.forEach(k => { if (lp[k] || rp[k]) { const [n, o] = first ? [rp, lp] : order(lp, rp, ml, mr); out[k] = { ...(o[k] || {}), ...(n[k] || {}) }; } });
   // 1.7.4: opened reward cards (claim) only ever go up, so both sides' highest level counts
   if (lp.claim || rp.claim) out.claim = { a: maxMap((lp.claim || {}).a, (rp.claim || {}).a), r: maxMap((lp.claim || {}).r, (rp.claim || {}).r) };
+  // 1.8.0: the same on the 9-rank scale (claim stays for older app versions)
+  if (lp.claim2 || rp.claim2) out.claim2 = { a: maxMap((lp.claim2 || {}).a, (rp.claim2 || {}).a), r: maxMap((lp.claim2 || {}).r, (rp.claim2 || {}).r) };
   if (!out.name) out.name = lp.name || rp.name || "User";
   return out;
 }
