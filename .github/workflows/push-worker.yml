@@ -7,7 +7,7 @@ name: Push server
 # Without them the job only says what is missing. The worker's address is shown as a notice after a deploy.
 on:
   push:
-    paths: ["worker/**", ".github/workflows/push-worker.yml"]
+    paths: ["worker/**", "src/fair.js", "src/ranks.js", "src/game/**", ".github/workflows/push-worker.yml"]
   workflow_dispatch:
 permissions:
   contents: read

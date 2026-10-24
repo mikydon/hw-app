@@ -66,6 +66,7 @@ If you work on your computer:
 ```bash
 npm install
 node src/i18n/check.mjs nl   # checks one language (here: nl.js); without a code it checks all
+# keys listed in src/i18n/en-only.json are English only for now: a language may leave them out
 npm run build                # builds index.html; open it in a browser to see your language
 ```
 

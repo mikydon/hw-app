@@ -13,8 +13,22 @@
 // keeps them out (the rules refuse a new board entry and strangers can't open their profile). Only the developer
 // undoes it, by deleting mod/{uid} in the Firebase console. No notification is sent for a report.
 //
+// 1.8.0: kind "board" (sent by the app after it saves its stats): the world leaderboard entry is written only here,
+// from the person's cloud backup checked by src/fair.js (only real workouts count, one a day, within limits; the list
+// is ordered by checked workouts and streak). fair/{uid} keeps when each workout was first seen (so backdated ones
+// don't count), the flags and the last result (the person can read it). Someone with flags who would land in the
+// world top 50 waits for the developer: fair/{uid}.ok = true (set by hand in the Firebase console) lets them in.
+//
+// 1.8.0: ranked card games (src/game/engine.js). "rk-start" picks the opponent (a recent ranked game of another player
+// with a rating close to yours, on the same cards; or the bot when there is none), fixes your training strength from
+// your checked cloud backup (src/fair.js) and remembers the game in ranked/{uid}.cur. "rk-end" replays your moves
+// (a move that isn't possible = a loss), compares with the opponent, changes your rating (Elo, K = 32) and keeps your
+// game in runs/ for others to play against. Starting a new game while one is open counts the open one as a loss.
+//
 // Secret (Cloudflare): FIREBASE_SERVICE_ACCOUNT = the service account key JSON from the Firebase console.
 import TEXTS from "./texts.js";
+import { fairStats, fairEntryId } from "../src/fair.js";
+import { loadout, replay, botGame, botLoadout, resultOf, JOKER_IDS } from "../src/game/engine.js";
 
 const PROJECT = "hw-app-mikydon";
 const FS = `https://firestore.googleapis.com/v1/projects/${PROJECT}/databases/(default)/documents`;
@@ -108,6 +122,116 @@ export async function checkReports({ to, sa, fetchFn = fetch, now = Date.now() }
   await fetchFn(`${FS}/board/${to}`, { method: "DELETE", headers: h });
   return { hidden: true, why: "hidden", n: by.size };
 }
+// ── World leaderboard check (1.8.0) ──
+const enc = v => (v === null || v === undefined ? { nullValue: null } : typeof v === "boolean" ? { booleanValue: v } : typeof v === "number" ? (Number.isInteger(v) ? { integerValue: String(v) } : { doubleValue: v })
+  : typeof v === "string" ? { stringValue: v } : Array.isArray(v) ? { arrayValue: { values: v.map(enc) } } : { mapValue: { fields: Object.fromEntries(Object.entries(v).map(([k, x]) => [k, enc(x)])) } });
+const encFields = o => Object.fromEntries(Object.entries(o).map(([k, v]) => [k, enc(v)]));
+async function patchDoc(path, obj, tok, fetchFn, mask) {
+  const q = mask ? "?" + mask.map(f => "updateMask.fieldPaths=" + encodeURIComponent(f)).join("&") : "";
+  const r = await fetchFn(`${FS}/${path}${q}`, { method: "PATCH", headers: { authorization: "Bearer " + tok, "content-type": "application/json" }, body: JSON.stringify({ fields: encFields(obj) }) });
+  if (!r.ok) throw new Error(path.split("/")[0] + " " + r.status);
+}
+const delDoc = (path, tok, fetchFn) => fetchFn(`${FS}/${path}`, { method: "DELETE", headers: { authorization: "Bearer " + tok } }).catch(() => {});
+// the lowest score in the world top 50 (null while fewer than 50 people are in it)
+async function top50Floor(tok, fetchFn) {
+  const r = await fetchFn(`${FS}:runQuery`, { method: "POST", headers: { authorization: "Bearer " + tok, "content-type": "application/json" },
+    body: JSON.stringify({ structuredQuery: { from: [{ collectionId: "board" }], orderBy: [{ field: { fieldPath: "pts" }, direction: "DESCENDING" }], limit: 50 } }) });
+  if (!r.ok) throw new Error("query " + r.status);
+  const rows = (await r.json()).filter(x => x.document).map(x => fields(x.document.fields));
+  return rows.length < 50 ? null : Math.min(...rows.map(x => x.pts || 0));
+}
+const dayKeyOk = (k, now) => /^\d{4}-\d{2}-\d{2}$/.test(String(k)) && Math.abs(Date.parse(k + "T12:00:00Z") - now) < 2 * 864e5;
+export const BOARD_EVERY_MS = 60 * 1000;
+export async function checkBoard({ uid, today, sa, fetchFn = fetch, now = Date.now() }) {
+  const tok = await accessToken(sa, fetchFn, now);
+  const prof = await getDoc(`profiles/${uid}`, tok, fetchFn);
+  if (!prof || prof.global !== true) { await delDoc(`board/${uid}`, tok, fetchFn); return { why: "off" }; }
+  const mod = await getDoc(`mod/${uid}`, tok, fetchFn);
+  if (mod && mod.hidden === true) { await delDoc(`board/${uid}`, tok, fetchFn); return { why: "hidden" }; }
+  const fair = await getDoc(`fair/${uid}`, tok, fetchFn);
+  if (fair && fair.last && now - (fair.ts || 0) < BOARD_EVERY_MS) return { ...fair.last, why: "recent" };
+  const bk = await getDoc(`backups/${uid}`, tok, fetchFn);
+  let data = null;
+  try { data = bk && JSON.parse(bk.json); } catch (_) { data = null; }
+  if (!data || !Array.isArray(data.history)) return { why: "no-backup" };
+  const since = (fair && fair.since) || now, old = (fair && fair.seen) || {}, seenMap = {};
+  data.history.slice(-3000).forEach(e => { if (e && typeof e === "object") { const id = fairEntryId(e); seenMap[id] = typeof old[id] === "number" ? old[id] : now; } });
+  const st = fairStats(data.history, { seen: seenMap, since, freezeDays: data.profile && data.profile.freezeDays, today: dayKeyOk(today, now) ? today : new Date(now).toISOString().slice(0, 10) });
+  const approved = !!(fair && fair.ok === true);
+  let wait = false;
+  if (st.flags.length && !approved) { const floor = await top50Floor(tok, fetchFn); wait = floor === null || st.pts >= floor; }
+  if (wait) await delDoc(`board/${uid}`, tok, fetchFn);
+  else await patchDoc(`board/${uid}`, { nick: String(prof.nick || "?").slice(0, 20), pfp: null, n: st.n, streak: st.streak, lvl: st.lvl, xp: st.xp, pts: st.pts, ts: new Date(now).toISOString() }, tok, fetchFn);
+  const last = { n: st.n, streak: st.streak, lvl: st.lvl, pts: st.pts, flags: st.flags, wait, drop: st.drop };
+  // (ok is set only by the developer, so it is left out of the mask)
+  await patchDoc(`fair/${uid}`, { since, seen: seenMap, ts: now, last }, tok, fetchFn, ["since", "seen", "ts", "last"]);
+  return { ...last, why: wait ? "wait" : "ok" };
+}
+
+// ── Ranked card games (1.8.0) ──
+export const RK = { start: 1000, k: 32, botMin: 2, botMax: 10, maxMoves: 600, pick: 40 };
+const elo = (r, ro, score) => Math.round(RK.k * (score - 1 / (1 + Math.pow(10, (ro - r) / 400))));
+const botLevelFor = r => Math.max(RK.botMin, Math.min(RK.botMax, Math.round((r - 800) / 40)));
+const randomSeed = () => { const a = new Uint8Array(6); crypto.getRandomValues(a); return Array.from(a, b => b.toString(36).padStart(2, "0")).join("").slice(0, 10); };
+async function recentRuns(tok, fetchFn) {
+  const r = await fetchFn(`${FS}:runQuery`, { method: "POST", headers: { authorization: "Bearer " + tok, "content-type": "application/json" },
+    body: JSON.stringify({ structuredQuery: { from: [{ collectionId: "runs" }], orderBy: [{ field: { fieldPath: "ts" }, direction: "DESCENDING" }], limit: RK.pick } }) });
+  if (!r.ok) throw new Error("runs " + r.status);
+  return (await r.json()).filter(x => x.document).map(x => fields(x.document.fields));
+}
+async function trainingOf(uid, tok, fetchFn) {
+  const bk = await getDoc(`backups/${uid}`, tok, fetchFn);
+  let data = null; try { data = bk && JSON.parse(bk.json); } catch (_) { data = null; }
+  if (!data || !Array.isArray(data.history)) return loadout({});
+  const fair = await getDoc(`fair/${uid}`, tok, fetchFn);
+  const st = fairStats(data.history, { seen: (fair && fair.seen) || {}, since: (fair && fair.since) || 0, freezeDays: data.profile && data.profile.freezeDays, today: new Date().toISOString().slice(0, 10) });
+  return loadout({ bests: st.bests, streak: st.streak, n: st.n });
+}
+const gameOpts = cur => ({ seed: cur.seed, mode: "duel", suit: cur.lo.suit, perk: cur.lo.perk, streak: cur.lo.streak, pool: JOKER_IDS });
+const outcome = (a, b) => (a.cleared !== b.cleared ? (a.cleared > b.cleared ? 1 : 0) : a.total !== b.total ? (a.total > b.total ? 1 : 0) : 0.5);
+export async function rankedStart({ uid, perk, sa, fetchFn = fetch, now = Date.now() }) {
+  const tok = await accessToken(sa, fetchFn, now);
+  const prof = await getDoc(`profiles/${uid}`, tok, fetchFn);
+  if (!prof || !prof.nick) return { why: "no-profile" };
+  const rk = (await getDoc(`ranked/${uid}`, tok, fetchFn)) || { r: RK.start, w: 0, l: 0, d: 0 };
+  let r = typeof rk.r === "number" ? rk.r : RK.start, abandoned = null;
+  if (rk.cur && rk.cur.seed) { const dr = elo(r, rk.cur.opp.r, 0); r += dr; rk.l = (rk.l || 0) + 1; abandoned = { dr }; } // an open game = lost
+  const lo = await trainingOf(uid, tok, fetchFn);
+  const pk = lo.perks.includes(perk) ? perk : null;
+  const runs = (await recentRuns(tok, fetchFn)).filter(x => x.uid !== uid && typeof x.seed === "string" && typeof x.cleared === "number");
+  runs.sort((a, b) => Math.abs((a.r || RK.start) - r) - Math.abs((b.r || RK.start) - r));
+  const o = runs.find(x => Math.abs((x.r || RK.start) - r) <= 300);
+  const opp = o ? { uid: o.uid, nick: String(o.nick || "?").slice(0, 20), r: o.r || RK.start, res: { cleared: o.cleared, total: o.total } } : { bot: botLevelFor(r), nick: "", r };
+  const cur = { seed: o ? o.seed : randomSeed(), opp, lo: { suit: lo.suit, perk: pk, streak: lo.streak }, at: now };
+  await patchDoc(`ranked/${uid}`, { r, w: rk.w || 0, l: rk.l || 0, d: rk.d || 0, nick: String(prof.nick).slice(0, 20), ts: new Date(now).toISOString(), cur }, tok, fetchFn);
+  return { why: "ok", seed: cur.seed, lo: cur.lo, opp: { nick: opp.nick, r: opp.r, bot: opp.bot || 0 }, r, abandoned };
+}
+export async function rankedEnd({ uid, moves, give, sa, fetchFn = fetch, now = Date.now() }) {
+  const tok = await accessToken(sa, fetchFn, now);
+  const rk = await getDoc(`ranked/${uid}`, tok, fetchFn);
+  if (!rk || !rk.cur || !rk.cur.seed) return { why: "no-game" };
+  const cur = rk.cur;
+  let me, bad = false;
+  try {
+    if (give === true) throw new Error("gave up"); // left the game: a loss
+    if (!Array.isArray(moves) || moves.length > RK.maxMoves) throw new Error("moves");
+    const st = replay(gameOpts(cur), moves.map(m => ({ t: String(m && m.t), c: Array.isArray(m && m.c) ? m.c.slice(0, 5).map(Number) : undefined, i: Number(m && m.i) })), RK.maxMoves);
+    if (st.phase !== "over" && st.phase !== "won") return { why: "unfinished" };
+    me = resultOf(st);
+  } catch (_) { bad = true; me = { cleared: 0, total: 0 }; }
+  const opp = cur.opp.res || resultOf(botGame({ ...gameOpts(cur), suit: botLoadout(cur.opp.bot).suit, perk: botLoadout(cur.opp.bot).perk, streak: 0 }, cur.opp.bot).st);
+  const sc = bad ? 0 : outcome(me, opp), r0 = typeof rk.r === "number" ? rk.r : RK.start, dr = elo(r0, cur.opp.r, sc), r = Math.max(0, r0 + dr);
+  const w = (rk.w || 0) + (sc === 1 ? 1 : 0), l = (rk.l || 0) + (sc === 0 ? 1 : 0), d = (rk.d || 0) + (sc === 0.5 ? 1 : 0);
+  const last = { sc, dr, me: { cleared: me.cleared, total: me.total }, opp: { cleared: opp.cleared, total: opp.total, nick: cur.opp.nick, bot: cur.opp.bot || 0 }, bad: bad ? 1 : 0, at: now };
+  await patchDoc(`ranked/${uid}`, { r, w, l, d, ts: new Date(now).toISOString(), last }, tok, fetchFn, ["r", "w", "l", "d", "ts", "last", "cur"]);
+  if (!bad) {
+    const prof = await getDoc(`profiles/${uid}`, tok, fetchFn);
+    await fetchFn(`${FS}/runs`, { method: "POST", headers: { authorization: "Bearer " + tok, "content-type": "application/json" },
+      body: JSON.stringify({ fields: encFields({ uid, nick: String((prof && prof.nick) || "?").slice(0, 20), seed: cur.seed, r: r0, cleared: me.cleared, total: me.total, ts: new Date(now).toISOString() }) }) });
+  }
+  return { why: "ok", ...last, r };
+}
+
 const seen = new Map(); // recently sent events (per server instance)
 const chatId = (a, b) => (a < b ? `${a}_${b}` : `${b}_${a}`);
 const lineOf = (lang, k, nick) => {
@@ -186,8 +310,10 @@ export default {
     try { b = await req.json(); } catch (_) { return json({ error: "body" }, 400, cors); }
     try {
       const sa = JSON.parse(env.FIREBASE_SERVICE_ACCOUNT);
-      const r = b.kind === "rep" ? await checkReports({ to: b.to, sa }) : await notify({ kind: b.kind, to: b.to, from, sa });
-      console.log(JSON.stringify({ kind: b.kind, ...r }));
+      const r = b.kind === "rep" ? await checkReports({ to: b.to, sa }) : b.kind === "board" ? await checkBoard({ uid: from, today: b.today, sa })
+        : b.kind === "rk-start" ? await rankedStart({ uid: from, perk: b.perk, sa }) : b.kind === "rk-end" ? await rankedEnd({ uid: from, moves: b.moves, give: b.give === true, sa })
+        : await notify({ kind: b.kind, to: b.to, from, sa });
+      console.log(JSON.stringify(String(b.kind).startsWith("rk") ? { kind: b.kind, why: r.why, sc: r.sc } : { kind: b.kind, ...r }));
       return json(r, 200, cors);
     } catch (e) {
       const detail = String(e.message || e).slice(0, 80);

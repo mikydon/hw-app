@@ -4,6 +4,9 @@ import { isNative, pushBack, setRootBack, exitApp, vibratePattern, keepScreenOn,
 import { cloud, NICK_RE, SHARE_BASE, cleanCode, fmtCode } from "./cloud-lazy.js";
 import { QUICK as EMO_QUICK, EMOJI } from "./emoji.js";
 import { mergeAll, syncKey, withIds, entryId, stable, SYNC_SETTINGS, kcalShared } from "./sync.js";
+import { RANK_AT, EX_GROUPS } from "./ranks.js";
+import * as GM from "./game/engine.js";
+import { fairStats } from "./fair.js";
 import { L, LANG, t as T, tp as TP, fmt, setLang, detectLang, LANGS, fmtLong, fmtShortDM, fmtMonthYear, weekdaysShort, capFirst } from "./i18n/index.js";
 
 // ─── DESIGN TOKENS ──────────────────────────────────────────────────────────
@@ -255,12 +258,7 @@ Object.assign(EX, {
     diff: "mid", tag: "similar", type: "reps", start: 10, unit: "",
   },
 });
-const ALT_GROUPS = [
-  ["k1", "k3", "r1", "kIncl", "kKnee", "r1e", "k3e"],
-  ["row1", "row2", "row3", "superman", "ytw"],
-  ["n1", "n2", "n7", "lunge", "bridge", "wallsit", "sbridge", "n1q"],
-  ["b5", "b2", "b4", "birddog", "hollow", "legraise", "b5l"],
-];
+const ALT_GROUPS = EX_GROUPS; // push, pull, legs, core (ranks.js since 1.8.0: the card game uses them too)
 // Same order as ALT_GROUPS; names come from the locale (grp_push…).
 const GROUP_KEYS = ["push", "pull", "legs", "core"];
 const groupOf = id => ALT_GROUPS.findIndex(g => g.includes(id));
@@ -357,7 +355,8 @@ function recomputeFlags(h) {
   h.forEach(e => {
     const top = it => Math.max(...it.res.map(numVal).filter(n => !isNaN(n)));
     const prs = e.items.filter(it => { const b = bestFor(out, it.id); return b !== null && top(it) > b; }).map(it => it.id);
-    const rankUps = e.items.map(it => { const to = rankIdx(it.id, top(it)); return to > rankIdx(it.id, bestFor(out, it.id)) ? { id: it.id, to } : null; }).filter(Boolean);
+    // 1.8.0: the first time an exercise is done counts too (from -1 to Iron, `u` = unlocked), so Iron comes as a card
+    const rankUps = e.items.map(it => { const t0 = top(it); if (!isFinite(t0)) return null; const b = bestFor(out, it.id), to = rankIdx(it.id, t0); return b === null || b === undefined ? (RANK_AT[it.id] ? { id: it.id, to, u: 1 } : null) : to > rankIdx(it.id, b) ? { id: it.id, to } : null; }).filter(Boolean);
     out.push({ ...e, prs, rankUps });
   });
   return out;
@@ -431,7 +430,7 @@ const CH_POOL = [
   { id: "warm", icon: "🔥", goal: 2, xp: 30, val: w => w.filter(e => e.warm).length },
   { id: "cool", icon: "🧘", goal: 2, xp: 30, val: w => w.filter(e => e.cool).length },
   { id: "push100", icon: "🦾", goal: 100, xp: 50, val: w => sumReps(w, ["k1", "k3", "r1", "kKnee", "kIncl", "r1e", "k3e"]) },
-  { id: "rank", icon: "🎖️", goal: 1, xp: 60, val: w => w.reduce((a, e) => a + ((e.rankUps && e.rankUps.length) || 0), 0) },
+  { id: "rank", icon: "🎖️", goal: 1, xp: 60, val: w => w.reduce((a, e) => a + ((e.rankUps && e.rankUps.filter(ru => !ru.u || ru.to > 0).length) || 0), 0) },
   { id: "reps300", icon: "📈", goal: 300, xp: 40, val: w => sumReps(w, null) },
   { id: "legs100", icon: "🦵", goal: 100, xp: 40, val: w => sumReps(w, ["n1", "n2", "n7", "lunge", "bridge", "sbridge", "n1q"]) },
 ];
@@ -458,6 +457,35 @@ function freezesAvailable(history) {
   const cap = 2 + (META.giftThisYear ? 1 : 0);
   return Math.max(0, Math.min(cap, earned - (META.freezeDays || []).length));
 }
+// 1.8.0 (Michael: "the freeze should apply by itself, then tell me I have none left, like Duolingo"): when the streak
+// would break (the last training or freeze day is 3+ days back), freezes are put on the missed days by themselves:
+// every second day after the last one, until the streak holds again (today can still be trained). Only when there are
+// enough freezes for the whole gap; otherwise none is spent and the streak ends. Returns the days to add, or null.
+function autoFreezeDays(history, today) {
+  const train = history.map(e => e.date), frozen = META.freezeDays || [];
+  const dates = [...new Set([...train, ...frozen])].filter(d => d < today).sort();
+  if (!dates.length || !train.length) return null;
+  const last = dates[dates.length - 1];
+  if (daysBetween(last, today) <= 2) return null; // nothing missed yet
+  if (!(streakInfo(history, last).n > 0)) return null; // there was a streak to save
+  const add = [];
+  let d = last;
+  while (daysBetween(d, today) > 2) { d = addDays(d, 2); add.push(d); }
+  if (!add.length || add.length > freezesAvailable(history)) return null;
+  return add;
+}
+// 1.8.0 friend streaks (Michael: "like Duolingo"): the shared streak counts the days on which both of you are on a
+// streak (each trained or used a freeze within the last 2 days, the every-other-day plan), back from today to the day
+// it was accepted; a day where one of you isn't breaks it (it starts again when both train). dates = "YYYY-MM-DD".
+const FS_MAX = 5;
+function friendStreak(mine, theirs, start, today) {
+  const on = (list, d) => list.some(x => x <= d && daysBetween(x, d) <= 2);
+  let n = 0, d = today;
+  while (d >= start && on(mine, d) && on(theirs, d) && n < 3660) { n++; d = addDays(d, -1); }
+  const me = mine.filter(x => x <= today).sort().pop(), they = theirs.filter(x => x <= today).sort().pop();
+  return { n, meToday: me === today, theyToday: they === today, meLast: me ? daysBetween(me, today) : 99, theyLast: they ? daysBetween(they, today) : 99 };
+}
+const myDays = (history, profile) => [...new Set([...history.map(e => e.date), ...((profile && profile.freezeDays) || [])])].sort().slice(-60);
 // Motivation (texts in the locale).
 const pick = arr => arr[Math.floor(Math.random() * arr.length)];
 // Random index 0..n-1 that differs from `not` (when there is a choice).
@@ -858,17 +886,8 @@ const RANKS = [
 const R_DIAMOND = 7, R_OBSIDIAN = 8;
 // Single badges have a rarity instead of levels (1.8.0): rare, epic, legendary = these rank colours
 const RARITY = { 4: "rare", 6: "epic", 8: "legend" };
-const RANK_AT = {
-  k1: [10, 18, 25, 35, 40, 45, 50, 80], k3: [8, 12, 18, 25, 28, 32, 35, 55], r1: [8, 12, 16, 22, 25, 27, 30, 45],
-  row1: [10, 14, 18, 24, 26, 28, 30, 45], row2: [8, 12, 16, 20, 23, 25, 28, 40], row3: [10, 14, 18, 24, 26, 28, 30, 45],
-  n1: [12, 18, 25, 35, 40, 45, 50, 100], n2: [8, 12, 16, 20, 23, 27, 30, 45], n7: [6, 10, 14, 18, 20, 23, 25, 40],
-  b5: [30, 45, 60, 90, 120, 150, 180, 600], b2: [8, 12, 15, 20, 23, 27, 30, 50], b4: [12, 16, 20, 30, 33, 37, 40, 70],
-  kKnee: [15, 20, 30, 40, 50, 60, 70, 100], kIncl: [15, 20, 30, 40, 50, 60, 70, 100], superman: [15, 20, 25, 30, 40, 50, 60, 100],
-  ytw: [8, 10, 12, 15, 18, 21, 25, 40], lunge: [12, 15, 20, 25, 30, 35, 40, 60], bridge: [20, 25, 30, 40, 50, 60, 70, 100],
-  r1e: [6, 8, 10, 12, 15, 18, 20, 30], k3e: [6, 10, 14, 18, 22, 26, 30, 45], n1q: [8, 12, 15, 20, 25, 30, 35, 50],
-  b5l: [30, 45, 60, 75, 90, 105, 120, 300], sbridge: [8, 12, 15, 20, 25, 30, 35, 50], wallsit: [45, 60, 90, 120, 150, 180, 240, 600],
-  birddog: [12, 15, 20, 25, 30, 35, 40, 60], hollow: [30, 45, 60, 75, 90, 105, 120, 300], legraise: [12, 15, 20, 25, 30, 35, 40, 60],
-};
+// RANK_AT (best set needed for Bronze … Obsidian) lives in ranks.js since 1.8.0: the push server checks the world list with it
+
 // The 12 exercises of the program (days A, B, C), for the "all Diamond" badge
 const PROGRAM_IDS = ["k1", "row1", "n1", "b5", "r1", "row2", "n2", "b2", "k3", "row3", "n7", "b4"];
 function rankIdx(id, best) {
@@ -1712,8 +1731,8 @@ function StatTile({ label, value, icon, color, sub, children, data, compact }) {
 // ─── TOP BAR + MENU ─────────────────────────────────────────────────────────
 // Screens: train (home), calories, history, profile, friends (1.5.0), settings. One menu button (☰) top right
 // opens a drawer with all of them; there is no bottom tab bar any more (v1.4.0).
-const SCREENS = ["train", "calories", "history", "profile", "friends", "settings"];
-const SCREEN_TITLE = { train: "tabTrain", calories: "tabCalories", history: "tabHistory", profile: "tabProfile", friends: "tabFriends", settings: "tabSettings" };
+const SCREENS = ["train", "calories", "history", "profile", "friends", "game", "settings"];
+const SCREEN_TITLE = { train: "tabTrain", calories: "tabCalories", history: "tabHistory", profile: "tabProfile", friends: "tabFriends", game: "tabGame", settings: "tabSettings" };
 
 function MenuButton({ open, onClick, btnRef, label, badge }) {
   const bar = (y, rot) => ({ position: "absolute", left: 11, width: 20, height: 2.6, borderRadius: 2, background: C.chalk, top: open ? 20 : y, transform: open ? `rotate(${rot}deg)` : "none", transition: `top ${MO.t1} ${MO.ease}, transform ${MO.t1} ${MO.ease}, opacity ${MO.t1}` });
@@ -3103,6 +3122,7 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
     profile && bdayToday() && ui.bdayHidden !== today && "bday",
     showDone && "done",
     upd && "upd",
+    ui.autoFz && ui.autoFz.day === today && ui.autoFzHidden !== ui.autoFz.day && "autofz",
     tourOffer && "tour",
     history.length === 0 && !ui.welcomeHidden && "welcome", // a new user first sees what the app is, then what is missing
     profile && !(ui && ui.setupHidden) && (() => { const m = missingSetup(profile, kcal); return m.name || m.kcal.length || m.goal; })() && "setup",
@@ -3211,6 +3231,13 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
           <div style={{ fontSize: 12, color: C.dim, marginTop: 3, lineHeight: 1.45, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{last.items.map(it => `${exName(it)} ${it.res.map(r => fmtRes(r, "")).join("/")}`).join(", ")}</div>
         </div>
       </>, () => setUi({ ...ui, doneHiddenTs: lastTs }), { "data-done-card": 1 })}
+      {notice === "autofz" && ntBox("autofz", C.sky, <>
+        <div aria-hidden="true" style={{ fontSize: 26, lineHeight: 1, flexShrink: 0 }}>🧊</div>
+        <div style={{ minWidth: 0 }}>
+          <div style={{ fontSize: 15, fontWeight: 800, color: C.chalk }}>{TP("autoFzT", ui.autoFz.used)}</div>
+          <div data-autofz-left={ui.autoFz.left} style={{ fontSize: 13, color: ui.autoFz.left ? C.dim : C.signal, fontWeight: ui.autoFz.left ? 400 : 700, lineHeight: 1.45, marginTop: 2 }}>{ui.autoFz.left ? TP("autoFzLeft", ui.autoFz.left) : T("autoFzNone")}</div>
+        </div>
+      </>, () => setUi({ ...ui, autoFzHidden: ui.autoFz.day }), { "data-autofz": ui.autoFz.used })}
       {notice === "tour" && ntBox("tour", C.signal, <>
         <div aria-hidden="true" style={{ fontSize: 26, lineHeight: 1, flexShrink: 0 }}>🧭</div>
         <div style={{ minWidth: 0 }}>
@@ -5138,6 +5165,7 @@ function cloudStats(history) { const xp = totalXP(history); return { xp, lvl: le
 // open your profile. Only training: calorie, step and Health Connect badges never leave the phone for others, and there
 // is no photo in it (friends see the photo they already have from the friends list).
 const CARD_VIS = ["friends", "all", "none"];
+const FAIR_FLAGS = ["cap", "day", "jump", "fast", "late"]; // 1.8.0: reasons from the server's world-list check (src/fair.js)
 const CARD_HIDE = ["calories", "kcalHit", "steps", "health"];
 function cardData(history, profile) {
   const xp = totalXP(history), ach = {}, av = {}, rk = {};
@@ -5304,7 +5332,7 @@ function PersonRow({ p, rank, me, onClick, right, first }) {
 }
 
 // Someone's card: stats, and add / remove / block / report.
-function PersonSheet({ p, isFriend, onAdd, onChat, onRemove, onBlock, onReport, onProfile, onClose }) {
+function PersonSheet({ p, isFriend, onAdd, onChat, onRemove, onBlock, onReport, onProfile, onClose, fsState, onFs }) {
   const [sure, setSure] = useState(null);
   const [msg, setMsg] = useState("");
   const [reported, setReported] = useState(false);
@@ -5327,6 +5355,7 @@ function PersonSheet({ p, isFriend, onAdd, onChat, onRemove, onBlock, onReport, 
       <div style={{ display: "flex", gap: 8, marginTop: onProfile ? 8 : 16, flexWrap: "wrap" }}>
         {!isFriend && onAdd && <button data-ps-add onClick={() => { sfxTap(); onAdd(p).then(setMsg); }} style={{ ...small, background: C.signal, color: C.signalInk, flexBasis: "100%" }}>{T("frAddBtn")}</button>}
         {isFriend && onChat && <button data-ps-chat onClick={() => { sfxTap(); onChat(p); }} style={{ ...small, background: C.signal, color: C.signalInk, flexBasis: "100%" }}>{T("chWrite")}</button>}
+        {isFriend && onFs && <button data-ps-fs={fsState || "none"} disabled={!!fsState} onClick={() => { sfxTap(); onFs(p).then(setMsg); }} style={{ ...small, flexBasis: "100%", background: fsState ? C.panelHi : `${"#ffa94d"}2e`, color: fsState ? C.dim : "#ffb871", border: `1.5px solid ${fsState ? C.line : "#ffa94d88"}` }}>🔥 {T(fsState === "on" ? "fsHave" : fsState === "sent" ? "fsSent" : fsState === "full" ? "fsFull" : "fsInvite")}</button>}
         {isFriend && <button data-ps-remove onClick={() => twoTap("rm", () => onRemove(p))} style={{ ...small, color: sure === "rm" ? "#ff8a80" : C.chalk }}>{sure === "rm" ? T("frRemoveSure") : T("frRemove")}</button>}
         <button data-ps-block onClick={() => twoTap("bl", () => onBlock(p))} style={{ ...small, color: sure === "bl" ? "#ff8a80" : C.chalk }}>{sure === "bl" ? T("frBlockSure") : T("frBlock")}</button>
         <button data-ps-report onClick={() => { sfxTap(); onReport(p).then(m => { setMsg(m); setReported(String(m).startsWith("✓")); }); }} style={small}>{T("frReport")}</button>
@@ -5351,7 +5380,7 @@ function CountUp({ n, ms = 650 }) {
   return nf(v);
 }
 
-function FriendsTab({ acct, history, profile, social, chatWith, setChatWith, onBlocked, onSignIn, onCreate, onRename, onSetGlobal, setTopHead, modHidden }) {
+function FriendsTab({ acct, history, profile, social, chatWith, setChatWith, onBlocked, onSignIn, onCreate, onRename, onSetGlobal, setTopHead, modHidden, fx }) {
   const [age16, setAge16] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
@@ -5390,7 +5419,7 @@ function FriendsTab({ acct, history, profile, social, chatWith, setChatWith, onB
     );
   }
   if (!acct.prof) return <NickSetup initial={nickFrom(profile.name && profile.name !== "User" ? profile.name : "")} onSave={onCreate} />;
-  return <FriendsMain acct={acct} history={history} profile={profile} social={social} chatWith={chatWith} setChatWith={setChatWith} onBlocked={onBlocked} onRename={onRename} onSetGlobal={onSetGlobal} setTopHead={setTopHead} modHidden={modHidden} />;
+  return <FriendsMain acct={acct} history={history} profile={profile} social={social} chatWith={chatWith} setChatWith={setChatWith} onBlocked={onBlocked} onRename={onRename} onSetGlobal={onSetGlobal} setTopHead={setTopHead} modHidden={modHidden} fx={fx || {}} />;
 }
 
 function NickSetup({ initial, onSave, onCancel, title }) {
@@ -5416,7 +5445,7 @@ function NickSetup({ initial, onSave, onCancel, title }) {
   return <div className="scr" data-fr-nicksetup style={{ padding: "6px 18px 110px", maxWidth: 460, margin: "0 auto" }}><Sect title={T("frNickTitle")}>{body}</Sect></div>;
 }
 
-function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, chatWith, setChatWith, onBlocked, setTopHead, modHidden }) {
+function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, chatWith, setChatWith, onBlocked, setTopHead, modHidden, fx = {} }) {
   const wide = useWide();
   const me = { uid: acct.uid, ...acct.prof, ...cloudStats(history) };
   const [tab, setTab] = useState(() => (sessionStorage.getItem("hw-add") ? "friends" : chatWith ? "chats" : "board"));
@@ -5443,6 +5472,12 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
   useEffect(() => { try { sessionStorage.removeItem("hw-add"); } catch (_) {} }, []);
   useEffect(() => { if (scope === "world" && world === null) loadWorld(); }, [scope]);
   const friendIds = (friends || []).map(f => f.uid);
+  // 1.8.0 friend streaks
+  const fs = fx.fs || { list: [], days: {}, mine: [] };
+  const fsList = (fs.list || []).filter(f => friendIds.includes(f.other));
+  const fsStateOf = u => { const f = fsList.find(x => x.other === u); return f ? (f.ok ? "on" : f.by === acct.uid ? "sent" : "asked") : fsList.filter(x => x.ok || x.by === acct.uid).length >= FS_MAX ? "full" : null; };
+  const fsInvite = p => fs.invite(p.uid).then(() => { sfxCheck(); return "✓ " + T("fsSentMsg", { nick: p.nick }); }).catch(e => cloudErr(e) || T("frErr"));
+  const [fsEnd, setFsEnd] = useState(null);
   const sendTo = async (uid, nick) => {
     if (uid === acct.uid) return T("frSelf");
     if (friendIds.includes(uid)) return T("frAlready");
@@ -5505,14 +5540,14 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
   if (chatWith) {
     const p = people[chatWith] || { uid: chatWith, nick: "…" };
     return <ChatView setTopHead={setTopHead} me={acct.uid} other={p} th={((social.chats || []).find(c => c.other === chatWith) || {}).th} canWrite={friendIds.includes(chatWith)} onBack={() => setChatWith(null)} onOpen={() => { sfxTap(); setSheet(p); }}
-      sheet={<>{sheet && <PersonSheet p={sheet} isFriend={friendIds.includes(sheet.uid)} onClose={() => setSheet(null)} onAdd={x => sendTo(x.uid, x.nick).catch(cloudErr)}
+      sheet={<>{sheet && <PersonSheet p={sheet} isFriend={friendIds.includes(sheet.uid)} fsState={fsStateOf(sheet.uid)} onFs={fsInvite} onClose={() => setSheet(null)} onAdd={x => sendTo(x.uid, x.nick).catch(cloudErr)}
         onRemove={x => act(() => cloud().removeFriend(x.uid), () => setSheet(null))} onBlock={block} onReport={x => report(x)} onProfile={setView} />}
 </>}
       onReport={text => report(p, "message: " + text.slice(0, 280))} onBlock={block} />;
   }
   return (
     <div className="scr" data-fr-main style={{ padding: "6px 18px 110px", maxWidth: "var(--colMax)", margin: "0 auto" }}>
-      {sheet && <PersonSheet p={sheet} isFriend={friendIds.includes(sheet.uid)} onClose={() => setSheet(null)} onChat={friendIds.includes(sheet.uid) ? x => { setSheet(null); setChatWith(x.uid); } : null}
+      {sheet && <PersonSheet p={sheet} isFriend={friendIds.includes(sheet.uid)} fsState={fsStateOf(sheet.uid)} onFs={fsInvite} onClose={() => setSheet(null)} onChat={friendIds.includes(sheet.uid) ? x => { setSheet(null); setChatWith(x.uid); } : null}
         onAdd={p => sendTo(p.uid, p.nick).catch(cloudErr)} onRemove={p => act(() => cloud().removeFriend(p.uid), () => setSheet(null))}
         onBlock={block} onReport={p => report(p)} onProfile={setView} />}
       {delChat && (() => { const dp = people[delChat.other] || { nick: "…" }; return (
@@ -5553,7 +5588,15 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
               </div>
             ) :
             <div style={{ ...card, ...tileR(), marginTop: 10, overflow: "hidden" }}>
-              <SettingRow first title={T("frWorldJoin")} desc={T("frWorldJoinD")} on={!!acct.prof.global} onClick={() => { sfxTap(); onSetGlobal(!acct.prof.global).then(() => setTimeout(loadWorld, 400)).catch(e => setErr(cloudErr(e))); }} />
+              <SettingRow first title={T("frWorldJoin")} desc={`${T("frWorldJoinD")} ${T("frFairD")}`} on={!!acct.prof.global} onClick={() => { sfxTap(); onSetGlobal(!acct.prof.global).then(() => setTimeout(loadWorld, 1200)).catch(e => setErr(cloudErr(e))); }} />
+              {/* 1.8.0: what the server counted for the world list, and why a place may wait for a check */}
+              {acct.prof.global && fx.fair && typeof fx.fair.n === "number" && (
+                <div data-fr-fair={fx.fair.wait ? "wait" : "ok"} style={{ padding: "0 16px 13px", fontSize: 12.5, color: C.dim, lineHeight: 1.5 }}>
+                  <div>{T("frFairLine", { n: fx.fair.n, s: fx.fair.streak || 0 })}</div>
+                  {fx.fair.wait && <div data-fr-fair-wait style={{ color: C.signal, fontWeight: 700, marginTop: 4 }}>{T("frFairWait")}</div>}
+                  {(fx.fair.flags || []).length > 0 && <div data-fr-fair-flags style={{ marginTop: 4 }}>{T("frFairWhy")} {fx.fair.flags.filter(f => FAIR_FLAGS.includes(f)).map(f => T("frFlag_" + f)).join(" · ")}</div>}
+                </div>
+              )}
             </div>
           )}
           <Sect style={{ padding: "12px 0 4px" }}>
@@ -5579,6 +5622,40 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
             </div>
             {addMsg && <div role="status" data-fr-add-msg style={{ fontSize: 13, color: addMsg.startsWith("✓") ? C.mint : C.dim, marginTop: 8 }}>{addMsg}</div>}
           </Sect>
+          {fsList.length > 0 && (
+            <Sect data-fs-box title={T("fsTitle")} meta={`${fsList.filter(f => f.ok).length}/${FS_MAX}`} style={{ padding: "15px 0 4px" }} titlePad="0 16px">
+              {fsList.map((f, i) => {
+                const p = people[f.other] || { uid: f.other, nick: "…" };
+                const st = f.ok ? friendStreak(fs.mine, fs.days[f.other] || [], f.start, dateKey()) : null;
+                return (
+                  <div key={f.id} data-fs-row={f.other} data-fs-n={st ? st.n : -1} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 16px", borderTop: i ? `1px solid ${C.line}` : "none" }}>
+                    <span style={{ position: "relative", width: 54, height: 40, flexShrink: 0 }}>
+                      <span style={{ position: "absolute", left: 0, top: 0 }}><PersonAvatar p={{ nick: acct.prof.nick, pfp: profile.pfp }} size={36} /></span>
+                      <span style={{ position: "absolute", left: 18, top: 4, borderRadius: 99, boxShadow: `0 0 0 2px ${C.panel}` }}><PersonAvatar p={p} size={36} /></span>
+                    </span>
+                    <span style={{ flex: 1, minWidth: 0 }}>
+                      <span style={{ display: "block", fontWeight: 800, color: C.chalk, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", ...INK }}>{p.nick}</span>
+                      <span style={{ display: "block", fontSize: 12, color: C.dim, lineHeight: 1.4 }}>
+                        {!f.ok ? (f.by === acct.uid ? T("fsWaiting") : T("fsAsks"))
+                          : st.n === 0 ? T("fsBroken")
+                          : [[st.meToday, st.meLast, T("fsYou")], [st.theyToday, st.theyLast, p.nick]].map(([td, last, who]) => (td ? "✓ " : last >= 2 ? "⚠ " : "") + who).join(" · ")}
+                      </span>
+                    </span>
+                    {f.ok ? <span data-fs-count style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, color: st.n ? "#ffa94d" : C.dim, whiteSpace: "nowrap" }}>🔥{st.n}</span>
+                      : f.by !== acct.uid ? <span role="button" tabIndex={0} data-fs-accept={f.other} onClick={() => act(() => fs.accept(f.other))} style={{ ...btnBase, background: "#ffa94d", color: C.ink, padding: "8px 11px", fontSize: 13, borderRadius: 10 }}>{T("frAccept")}</span> : null}
+                    <button type="button" data-fs-end={f.other} aria-label={T("fsEnd")} onClick={() => { sfxTap(); setFsEnd(f.other); }} style={{ ...btnBase, background: "transparent", color: C.dim, padding: "6px 4px", fontSize: 16 }}>✕</button>
+                  </div>
+                );
+              })}
+              <div style={{ fontSize: 12, color: C.dim, lineHeight: 1.45, padding: "6px 16px 10px" }}>{T("fsHow")}</div>
+            </Sect>
+          )}
+          {fsEnd && (
+            <Sheet short title={T("fsEnd")} onClose={() => setFsEnd(null)}>
+              <div style={{ fontSize: 14.5, color: C.dim, lineHeight: 1.5 }}>{T("fsEndD", { nick: (people[fsEnd] || {}).nick || "…" })}</div>
+              <button type="button" data-fs-end-yes onClick={() => { const u = fsEnd; setFsEnd(null); act(() => fs.end(u)); }} style={{ ...bigBtn("#e5484d", "#fff"), marginTop: 14 }}>{T("fsEnd")}</button>
+            </Sheet>
+          )}
           {reqs && reqs.length > 0 && (
             <Sect title={T("frRequests")} meta={String(reqs.length)} style={{ padding: "15px 0 4px" }} titlePad="0 16px">
               {reqs.map((p, i) => (
@@ -7067,17 +7144,427 @@ const REV_BUZZ = [[40], [50, 30, 60], [60, 40, 90], [70, 40, 70, 40, 160], [80, 
 const achCard = a => { const rk = RANKS[a.tier - 1]; return { kind: "ach", k: a.k, r: a.tier - 1, icon: a.icon, name: a.name, rank: a.single ? { icon: "✦", name: rarityName(a), color: rk.color } : rk, col: rk.color }; };
 // 1.8.0: "Rare", "Epic" or "Legendary" for a single badge
 const rarityName = a => T("rar_" + (RARITY[a.rk[0]] || "rare"));
-const rankCard = (id, ri) => { const rk = RANKS[ri]; return { kind: "rank", k: id, r: ri, icon: rk.icon, name: EX[id] ? EX[id].name : id, rank: rk, col: rk.color }; };
+// 1.8.0 (Michael: "Iron must feel like a reward, not just appear"): the first rank of a new exercise is its own card:
+// "New exercise" on top, the line under it says what Bronze needs.
+const rankCard = (id, ri, unlock) => {
+  const rk = RANKS[ri], at = RANK_AT[id];
+  const nx = at && ri < at.length ? `${T("achNext", { rank: RANKS[ri + 1].name })} ${rankVal(id, at[ri])}` : "";
+  return { kind: "rank", k: id, r: ri, icon: rk.icon, name: EX[id] ? EX[id].name : id, rank: rk, col: rk.color, ...(unlock || ri === 0 ? { unlock: 1, sub: `${T("revUnlockD")}${nx ? " " + nx : ""}` } : {}) };
+};
 function revealList(entry, newAch, xpBefore, gained) {
   if (!entry) return [];
   const out = [];
   if (entry.prs && entry.prs.length) out.push({ kind: "pr", r: Math.min(3, entry.prs.length), icon: "🏆", name: TP("prs", entry.prs.length), sub: entry.items.filter(it => entry.prs.includes(it.id)).map(exName).join(", "), col: C.signal });
   newAch.forEach(a => out.push(achCard(a)));
-  (entry.rankUps || []).forEach(ru => out.push(rankCard(ru.id, ru.to)));
+  (entry.rankUps || []).forEach(ru => out.push(rankCard(ru.id, ru.to, ru.u)));
   const l0 = levelInfo(xpBefore).lvl, l1 = levelInfo(xpBefore + gained).lvl;
   if (l1 > l0) { const r = lvRank(l1); out.push({ kind: "lvl", r, icon: "⚡", name: `${T("level")} ${l1}`, col: C.sky }); }
   return out.sort((a, b) => a.r - b.r || REV_KIND[a.kind] - REV_KIND[b.kind]);
 }
+// ─── CARD GAME (1.8.0, Michael, Oct 24; offline against the bot with its own levels, ranked against
+// players). The rules live in src/game/engine.js (shared with the push server, which replays ranked games). Your
+// training gives the deck its strength (the best rank in each exercise type), perks come from training too.
+// A game in progress is kept as its moves (domaci-trening-v1-game) and replayed when the app opens again.
+const GAME_KEY = "domaci-trening-v1-game";
+// 1.8.0 (Michael): the offline Run first; Duel and Ranked are shown locked ("coming soon") and switched on later
+// (the engine, the bot and the server's ranked check are already in place: worker/index.js rk-start / rk-end).
+const DUEL_ON = false, RANKED_ON = false;
+// intensity levels (shown as "intensity", internally still "stake"): cool to hot
+const STAKE_COL = ["#8fd3ff", "#3ddc84", "#ffd23f", "#ff8a3d", "#ff4d5e"];
+const stakeXp = k => 1 + 0.5 * k; // +50 % game XP per stake
+const SUIT_COL = { push: "#ff6b5b", pull: "#3d9bff", legs: "#21b36b", core: "#9a5cff" };
+const JOKER_ICON = { joker: "🃏", chips: "🪙", pairs: "🤝", threes: "🎲", straights: "📏", flushes: "🌊", circuit: "🔄", warmup: "🔥", faces: "👑", aces: "⭐", lastround: "⏱️", even: "⚖️", odd: "🌀", momentum: "🚀", bank: "🏦", five: "✋", fullbody: "🧍", ironcore: "🧱" };
+const PERK_ICON = { streak: "🔥", volume: "💰", warmup: "🤸", endurance: "⏳", allround: "🧩", obsidian: "🌋" };
+const gameLoad = () => { try { return JSON.parse(localStorage.getItem(GAME_KEY) || "null"); } catch (_) { return null; } };
+const gameSave = g => { try { if (g) localStorage.setItem(GAME_KEY, JSON.stringify(g)); else localStorage.removeItem(GAME_KEY); } catch (_) {} };
+const cardVal = c => { const v = GM.valueOf(c); return v <= 10 ? String(v) : ["J", "Q", "K", "A"][v - 11]; };
+const jName = id => (L.gm && L.gm.j && L.gm.j[id] ? L.gm.j[id][0] : id);
+const jDesc = id => (L.gm && L.gm.j && L.gm.j[id] ? L.gm.j[id][1] : "");
+const handName = h => (L.gm && L.gm.h ? L.gm.h[GM.HANDS.indexOf(h)] : h);
+// your training for the game, from your own history with the same check the server uses for ranked
+function localLoadout(history, profile) {
+  const st = fairStats(history, { today: dateKey(), freezeDays: (profile && profile.freezeDays) || [] });
+  return GM.loadout({ bests: st.bests, streak: streakInfo(history, dateKey()).n, n: st.n });
+}
+function SuitIcon({ s, size = 14, col }) {
+  const c = col || SUIT_COL[s];
+  const d = { push: "M12 3 L22 20 H2 Z", pull: "M2 4 H22 L12 21 Z", core: "M12 1.5 L22.5 12 L12 22.5 L1.5 12 Z" }[s];
+  return <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true" style={{ flexShrink: 0, display: "block" }}>{s === "legs" ? <circle cx="12" cy="12" r="9.5" fill={c} /> : <path d={d} fill={c} strokeLinejoin="round" stroke={c} strokeWidth="1.5" />}</svg>;
+}
+function PlayCard({ c, sel, onClick, w = 64, bests, dead, pop, i = 0, deal }) {
+  const s = GM.suitOf(c), v = GM.valueOf(c), col = SUIT_COL[s], face = v >= 11 && v <= 13;
+  const ex = face ? GM.faceExercise(c, bests) : null;
+  return (
+    <button type="button" data-card={c} data-sel={sel ? 1 : 0} onClick={onClick} className={(deal ? "gmDeal " : "") + (pop ? "gmPop" : "")} aria-pressed={!!sel}
+      aria-label={`${cardVal(c)} ${T("grp_" + s)}${ex ? " · " + EX[ex].name : ""}`}
+      style={{ ...btnBase, position: "relative", width: w, height: Math.round(w * 1.4), flexShrink: 0, padding: 0, borderRadius: Math.round(w * 0.14), background: dead ? "#c9c3b5" : "#f7f3ea", color: col, border: `2px solid ${sel ? C.signal : "rgba(0,0,0,.18)"}`, boxShadow: sel ? `0 0 0 2px ${C.signal}, 0 10px 22px rgba(0,0,0,.45)` : "0 4px 12px rgba(0,0,0,.35)", transform: sel ? "translateY(-14px)" : "none", transition: `transform ${MO.t1} ${MO.ease}, box-shadow ${MO.t1}`, overflow: "hidden", "--dl": `${i * 45}ms`, opacity: dead ? 0.7 : 1 }}>
+      <span style={{ position: "absolute", left: 5, top: 3, fontFamily: DISPLAY, fontSize: Math.round(w * 0.3), fontWeight: 900, lineHeight: 1 }}>{cardVal(c)}</span>
+      <span style={{ position: "absolute", left: 6, top: Math.round(w * 0.36) }}><SuitIcon s={s} size={Math.round(w * 0.17)} /></span>
+      <span style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", padding: `${Math.round(w * 0.32)}px 4px 4px` }}>
+        {face
+          ? <span style={{ fontSize: Math.max(8, Math.round(w * 0.135)), fontWeight: 800, color: "#2a2a35", lineHeight: 1.1, textAlign: "center", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden", overflowWrap: "anywhere" }}>{EX[ex].name}</span>
+          : <SuitIcon s={s} size={Math.round(w * 0.42)} />}
+      </span>
+      {dead && <span aria-hidden="true" style={{ position: "absolute", inset: 0, background: "repeating-linear-gradient(45deg, rgba(0,0,0,.18) 0 4px, transparent 4px 9px)" }} />}
+    </button>
+  );
+}
+function JokerChip({ id, onClick, sell, buy, price, small, glow }) {
+  const r = GM.JOKERS[id] ? GM.JOKERS[id].r : 0, col = [C.sky, C.mint, "#ff7ad9"][r];
+  return (
+    <button type="button" data-joker={id} onClick={onClick} className={glow ? "gmGlow" : undefined}
+      style={{ ...btnBase, width: small ? 66 : 92, minHeight: small ? 80 : 118, flexShrink: 0, padding: small ? "6px 4px" : "8px 6px", borderRadius: 12, background: `linear-gradient(160deg, ${col}33, ${C.panelHi})`, border: `1.5px solid ${col}`, color: C.chalk, display: "flex", flexDirection: "column", alignItems: "center", gap: 4, fontWeight: 700, "--gc": col }}>
+      <span aria-hidden="true" style={{ fontSize: small ? 22 : 28, lineHeight: 1, height: small ? 24 : 30, display: "flex", alignItems: "center" }}>{id.startsWith("fan_") ? <SuitIcon s={id.slice(4)} size={small ? 20 : 26} /> : JOKER_ICON[id] || "🃏"}</span>
+      <span style={{ fontSize: small ? 10.5 : 12, lineHeight: 1.15, textAlign: "center", overflowWrap: "anywhere" }}>{jName(id)}</span>
+      {(buy || sell) && <span style={{ marginTop: "auto", fontSize: 12, fontWeight: 900, color: buy ? C.signal : C.dim }}>{buy ? `$${price}` : `+$${price}`}</span>}
+    </button>
+  );
+}
+// The game screen in the ☰ menu: modes, your deck, the ranked list.
+function GameTab({ history, profile, setProfile, acct, onPlay }) {
+  const saved = gameLoad();
+  const lo = useMemo(() => localLoadout(history, profile), [history, profile.freezeDays]);
+  const gp = profile.game || {}, gl = GM.gameLevel(gp.xp || 0);
+  const [pick, setPick] = useState(null); // the mode whose perk is being chosen
+  const [rules, setRules] = useState(false);
+  const [rk, setRk] = useState(null), [top, setTop] = useState(null), [err, setErr] = useState("");
+  const signed = acct.st === "in" && acct.prof;
+  useEffect(() => {
+    if (!signed || !RANKED_ON) return;
+    cloud().myRanked().then(setRk).catch(() => {});
+    cloud().rankedList(50).then(setTop).catch(() => setTop([]));
+  }, [signed]);
+  const modes = [
+    { id: "run", icon: "🃏", name: T("gmRun"), desc: T("gmRunD") },
+    { id: "duel", icon: "🤖", name: T("gmDuel"), desc: DUEL_ON ? T("gmDuelD", { n: Math.min(10, gl.lvl) }) : T("gmSoon"), off: !DUEL_ON, soon: !DUEL_ON },
+    { id: "ranked", icon: "🏆", name: T("gmRanked"), desc: !RANKED_ON ? T("gmSoon") : signed ? T("gmRankedD", { r: rk && typeof rk.r === "number" ? rk.r : 1000 }) : T("gmRankedSign"), off: !RANKED_ON || !signed, soon: !RANKED_ON },
+  ];
+  return (
+    <div data-game-tab>
+      <Sect data-gm-level title={T("gmLevelT")} meta={<span style={{ fontFamily: DISPLAY, fontSize: 20, fontWeight: 900, color: C.signal }}>{T("gmLevel", { n: gl.lvl })}</span>}>
+        <div style={{ height: 8, borderRadius: 99, background: C.panelHi, overflow: "hidden" }}><div style={{ width: `${Math.round((gl.into / gl.need) * 100)}%`, height: "100%", background: C.signal, borderRadius: 99 }} /></div>
+        <div style={{ fontSize: 12.5, color: C.dim, marginTop: 7, lineHeight: 1.45 }}>{T("gmLevelD", { a: nf(gl.into), b: nf(gl.need) })}</div>
+      </Sect>
+      {saved && (
+        <button type="button" data-gm-continue onClick={() => { sfxTap(); onPlay(saved); }} style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 12 }} className="b3d">{T("gmContinue")}</button>
+      )}
+      <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 12 }}>
+        {modes.map(m => (
+          <button key={m.id} type="button" data-gm-mode={m.id} data-soon={m.soon ? 1 : undefined} disabled={m.off || !!saved} onClick={() => { sfxTap(); setPick(m.id); }}
+            style={{ ...btnBase, ...card, ...tileR(), textAlign: "left", color: C.chalk, padding: "14px 14px", display: "flex", alignItems: "center", gap: 12, opacity: m.off || saved ? 0.55 : 1, fontWeight: 400 }}>
+            <span aria-hidden="true" style={{ fontSize: 30, lineHeight: 1, filter: m.soon ? "grayscale(1)" : "none" }}>{m.soon ? "🔒" : m.icon}</span>
+            <span style={{ flex: 1, minWidth: 0 }}>
+              <span style={{ display: "block", fontFamily: DISPLAY, fontSize: 22, fontWeight: 900, lineHeight: 1.1 }}>{m.name}</span>
+              <span style={{ display: "block", fontSize: 12.5, color: C.dim, marginTop: 3, lineHeight: 1.4 }}>{m.desc}</span>
+            </span>
+            {!m.off && !saved && <Arrow />}
+          </button>
+        ))}
+      </div>
+      <Sect data-gm-deck title={T("gmDeck")} style={{ marginTop: 12 }}>
+        <div style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.45, marginBottom: 10 }}>{T("gmDeckD")}</div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+          {GM.SUITS.map(s => { const v = lo.suit[s], rk = v >= 0 ? RANKS[v] : null; return (
+            <div key={s} data-gm-suit={s} data-lv={v} style={{ background: SOFT(), borderRadius: 14, padding: "10px 10px", display: "flex", alignItems: "center", gap: 9, minWidth: 0 }}>
+              <SuitIcon s={s} size={22} />
+              <span style={{ minWidth: 0 }}>
+                <span style={{ display: "block", fontSize: 13.5, fontWeight: 800, color: C.chalk }}>{T("grp_" + s)}</span>
+                <span style={{ display: "block", fontSize: 12, fontWeight: 700, color: rk ? rk.color : C.dim }}>{rk ? `${rk.icon} ${rk.name} · +${2 * v}` : T("gmSuitNone")}</span>
+              </span>
+            </div>); })}
+        </div>
+        <div style={{ fontSize: 12.5, color: C.dim, marginTop: 10, lineHeight: 1.45 }}>{T("gmPerksHave", { n: lo.perks.length, max: GM.PERK_IDS.length })}</div>
+      </Sect>
+      <button type="button" data-gm-rules onClick={() => { sfxTap(); setRules(true); }} style={{ ...ghostBtn, width: "100%", marginTop: 12, padding: "12px 14px", fontSize: 14, color: C.chalk }}>{T("gmRulesBtn")}</button>
+      {signed && RANKED_ON && (
+        <Sect data-gm-top title={T("gmTop")} style={{ marginTop: 12, padding: "15px 0 6px" }} titlePad="0 16px">
+          {top === null ? <div style={{ padding: "4px 16px 10px", color: C.dim, fontSize: 14 }}>{T("frLoading")}</div>
+            : !top.length ? <div style={{ padding: "4px 16px 10px", color: C.dim, fontSize: 14 }}>{T("gmTopEmpty")}</div>
+            : top.map((p, i) => (
+              <div key={p.uid} data-gm-top-row={p.uid} style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 16px", borderTop: i ? `1px solid ${C.line}` : "none", background: p.uid === acct.uid ? `${C.signal}14` : "transparent" }}>
+                <span style={{ width: 24, fontFamily: DISPLAY, fontWeight: 900, color: i < 3 ? C.signal : C.dim, fontSize: 18 }}>{i + 1}</span>
+                <span style={{ flex: 1, minWidth: 0, fontWeight: 800, color: C.chalk, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", ...INK }}>{p.nick || "?"}</span>
+                <span style={{ fontSize: 12, color: C.dim, whiteSpace: "nowrap" }}>{p.w}–{p.l}</span>
+                <span style={{ fontFamily: DISPLAY, fontWeight: 900, fontSize: 18, color: C.chalk, minWidth: 48, textAlign: "right" }}>{p.r}</span>
+              </div>
+            ))}
+        </Sect>
+      )}
+      {err && <div role="alert" style={{ fontSize: 13, color: "#ff8a80", marginTop: 10 }}>{err}</div>}
+      {pick && <PerkSheet lo={lo} mode={pick} stakeMax={Math.min(GM.STAKES.length - 1, gp.stake || 0)} onClose={() => setPick(null)} onGo={async (perk, stake) => {
+        setPick(null); setErr("");
+        if (pick === "ranked") {
+          try {
+            const r = await cloud().rkStart(perk);
+            if (r.why !== "ok") { setErr(T("gmErrServer")); return; }
+            onPlay({ mode: "ranked", opts: { seed: r.seed, mode: "duel", suit: r.lo.suit, perk: r.lo.perk, streak: r.lo.streak, pool: GM.JOKER_IDS }, moves: [], opp: r.opp, r: r.r, abandoned: r.abandoned || null, at: Date.now() });
+          } catch (e) { setErr(T("gmErrServer")); }
+          return;
+        }
+        const opts = { seed: GM.newSeed(), mode: pick === "duel" ? "duel" : "run", suit: lo.suit, perk, streak: lo.streak, pool: GM.poolFor(gl.lvl), stake: stake || 0 };
+        let bot = null;
+        if (pick === "duel") { const bl = Math.min(10, gl.lvl), b = GM.botLoadout(gl.lvl); bot = { lvl: bl, ...GM.resultOf(GM.botGame({ ...opts, suit: b.suit, perk: b.perk, streak: 0 }, bl).st) }; }
+        onPlay({ mode: pick, opts, moves: [], bot, at: Date.now() });
+      }} />}
+      {rules && <GameRules onClose={() => setRules(false)} />}
+    </div>
+  );
+}
+function PerkSheet({ lo, mode, stakeMax = 0, onClose, onGo }) {
+  const [p, setP] = useState(lo.perks[0] || null);
+  const [k, setK] = useState(stakeMax);
+  return (
+    <Sheet title={T("gmPerkT")} onClose={onClose}>
+      <div style={{ fontSize: 13.5, color: C.dim, lineHeight: 1.5, marginBottom: 12 }}>{T("gmPerkD")}</div>
+      <div data-gm-perks style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {[null, ...GM.PERK_IDS].map(id => {
+          const have = id === null || lo.perks.includes(id), on = p === id, t = id ? L.gm.perk[id] : [T("gmPerkNone"), T("gmPerkNoneD"), ""];
+          return (
+            <button key={id || "none"} type="button" data-gm-perk={id || "none"} disabled={!have} aria-pressed={on} onClick={() => { sfxTap(); setP(id); }}
+              style={{ ...btnBase, textAlign: "left", fontWeight: 400, color: C.chalk, padding: "11px 12px", borderRadius: 14, display: "flex", gap: 10, alignItems: "center", background: on ? `${C.signal}22` : SOFT(), border: `1.5px solid ${on ? C.signal : C.line}`, opacity: have ? 1 : 0.5 }}>
+              <span aria-hidden="true" style={{ fontSize: 22, width: 26, textAlign: "center" }}>{id ? PERK_ICON[id] : "–"}</span>
+              <span style={{ flex: 1, minWidth: 0 }}>
+                <span style={{ display: "block", fontWeight: 800, fontSize: 14.5 }}>{t[0]}</span>
+                <span style={{ display: "block", fontSize: 12.5, color: C.dim, marginTop: 2, lineHeight: 1.4 }}>{have ? t[1] : `🔒 ${t[2]}`}</span>
+              </span>
+            </button>
+          );
+        })}
+      </div>
+      {mode !== "ranked" && (
+        <div data-gm-stakes style={{ marginTop: 16 }}>
+          <div style={{ fontSize: 13, fontWeight: 800, color: C.chalk, marginBottom: 8 }}>{T("gmStakeT")}</div>
+          <div style={{ display: "flex", gap: 6 }}>
+            {GM.STAKES.map((id, i) => (
+              <button key={id} type="button" data-gm-stake={i} disabled={i > stakeMax} aria-pressed={k === i} aria-label={L.gm.stake[i][0]} onClick={() => { sfxTap(); setK(i); }}
+                style={{ ...btnBase, flex: 1, height: 42, borderRadius: 12, background: STAKE_COL[i], border: `2.5px solid ${k === i ? C.signal : "rgba(255,255,255,.18)"}`, boxShadow: k === i ? `0 0 0 2px ${C.signal}55` : "none", opacity: i > stakeMax ? 0.35 : 1, color: i === 0 || i === 4 ? "#222" : "#fff", fontSize: 15 }}>{i > stakeMax ? "🔒" : ""}</button>
+            ))}
+          </div>
+          <div data-gm-stake-d style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.45, marginTop: 8 }}><b style={{ color: C.chalk }}>{L.gm.stake[k][0]}</b> · {L.gm.stake[k][1]}{k ? ` · ${T("gmStakeXp", { n: Math.round((stakeXp(k) - 1) * 100) })}` : ""}</div>
+          {stakeMax < GM.STAKES.length - 1 && <div style={{ fontSize: 12, color: C.dim, marginTop: 4 }}>🔒 {T("gmStakeNext", { s: L.gm.stake[stakeMax][0] })}</div>}
+        </div>
+      )}
+      {mode === "ranked" && <div style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.5, marginTop: 12 }}>{T("gmRankedNote")}</div>}
+      <button type="button" data-gm-go onClick={() => { sfxTap(); onGo(p, mode === "ranked" ? 0 : k); }} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 14 }}>{T("gmGo")}</button>
+    </Sheet>
+  );
+}
+function GameRules({ onClose }) {
+  return (
+    <Sheet title={T("gmRulesT")} onClose={onClose}>
+      <div data-gm-rules-text style={{ display: "flex", flexDirection: "column", gap: 10, fontSize: 14, lineHeight: 1.55, color: C.chalk }}>
+        {L.gm.rules.map((x, i) => <p key={i} style={{ margin: 0 }}>{x}</p>)}
+      </div>
+      <div style={{ marginTop: 14, borderRadius: 14, overflow: "hidden", border: `1px solid ${C.line}` }}>
+        {[...GM.HANDS].reverse().map((h, i) => (
+          <div key={h} style={{ display: "flex", justifyContent: "space-between", gap: 10, padding: "8px 12px", borderTop: i ? `1px solid ${C.line}` : "none", fontSize: 13.5 }}>
+            <span style={{ fontWeight: 700, color: C.chalk }}>{handName(h)}</span>
+            <span style={{ color: C.dim, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{GM.HAND_BASE[h][0]} × {GM.HAND_BASE[h][1]}</span>
+          </div>
+        ))}
+      </div>
+    </Sheet>
+  );
+}
+// A game being played (full screen). saved = {mode: run|duel|ranked, opts, moves, bot?, opp?, r?}.
+function GameTable({ saved, history, onEnd, onQuit }) {
+  const bests = useMemo(() => fairStats(history, { today: dateKey() }).bests, [history]);
+  const [moves, setMoves] = useState(saved.moves || []);
+  const [g, setG] = useState(() => { try { return GM.replay(saved.opts, saved.moves || []); } catch (_) { return GM.newGame(saved.opts); } });
+  const [sel, setSel] = useState([]);
+  const [sortBy, setSortBy] = useState("v");
+  const [anim, setAnim] = useState(null); // the hand being scored
+  const [shown, setShown] = useState(g.score); // the blind score as the counter shows it
+  const [quit, setQuit] = useState(false);
+  const [info, setInfo] = useState(null); // a joker whose text is open
+  const [dealKey, setDealKey] = useState(0);
+  const timers = useRef([]);
+  useEffect(() => () => timers.current.forEach(clearTimeout), []);
+  useBack(() => { if (info) setInfo(null); else setQuit(true); }, true);
+  useEffect(() => { gameSave({ ...saved, moves }); }, [moves]);
+  const ended = g.phase === "over" || g.phase === "won";
+  useEffect(() => { if (ended && !anim) { const t = setTimeout(() => onEnd({ ...saved, moves }, g), 500); return () => clearTimeout(t); } }, [ended, anim]);
+  const order = useMemo(() => g.hand.map((c, i) => i).sort((a, b) => sortBy === "v" ? GM.valueOf(g.hand[b]) - GM.valueOf(g.hand[a]) || g.hand[a] - g.hand[b] : g.hand[a] - g.hand[b]), [g.hand, sortBy]);
+  const preview = sel.length ? GM.scoreOf(g, sel.map(i => g.hand[i])) : null;
+  const doMove = m => { const next = GM.act(g, m); setMoves(ms => [...ms, m]); return next; };
+  const play = () => {
+    if (!sel.length || anim) return;
+    const cards = sel.map(i => g.hand[i]), sc = GM.scoreOf(g, cards), next = doMove({ t: "play", c: sel.slice() });
+    const steps = sc.steps.filter(s => s.c !== undefined || s.j || s.p);
+    setAnim({ cards, sc, i: -1, chips: GM.HAND_BASE[sc.hand][0] + GM.HAND_UP[sc.hand][0] * ((g.levels || {})[sc.hand] || 0), mult: GM.HAND_BASE[sc.hand][1] + GM.HAND_UP[sc.hand][1] * ((g.levels || {})[sc.hand] || 0) });
+    setSel([]);
+    // one sound for the whole count (notes on the audio clock), the numbers follow on screen
+    const STEP = 0.16;
+    melody([...steps.map((s, k) => [520 + k * 55, 0.25 + k * STEP, 0.07]), [988, 0.35 + steps.length * STEP, 0.12], [1319, 0.45 + steps.length * STEP, 0.25]], "triangle", 0.2);
+    let chips = 0, mult = 0;
+    steps.forEach((s, k) => timers.current.push(setTimeout(() => setAnim(a => a && { ...a, i: k, chips: a.chips + (s.chips || 0), mult: Math.round(((a.mult + (s.mult || 0)) * (s.x || 1)) * 100) / 100, hit: s }), 250 + k * STEP * 1000)));
+    const end = 450 + steps.length * STEP * 1000;
+    timers.current.push(setTimeout(() => setAnim(a => a && { ...a, total: true }), end));
+    timers.current.push(setTimeout(() => { setShown(g.score + sc.score); vibrate([30]); }, end + 250));
+    timers.current.push(setTimeout(() => {
+      setAnim(null); setG(next); setShown(next.phase === "blind" && next.blind === g.blind && next.ante === g.ante ? next.score : next.score || g.score + sc.score);
+      if (next.phase === "shop") sfxCheck(); else if (next.phase === "won") sfxFinish(); else if (next.phase === "over") melody([[392, 0, 0.18], [330, 0.18, 0.18], [262, 0.36, 0.4]], "triangle", 0.25);
+      setDealKey(k => k + 1);
+    }, end + 1100));
+  };
+  const discard = () => { if (!sel.length || anim || g.discardsLeft <= 0) return; sfxTap(); const next = doMove({ t: "discard", c: sel.slice() }); setSel([]); setG(next); setDealKey(k => k + 1); };
+  const shopMove = m => { try { const next = doMove(m); setG(next); if (m.t === "buy") collectSfx(); else sfxTap(); if (m.t === "next") { setShown(0); setDealKey(k => k + 1); } } catch (_) {} };
+  const toggle = i => { if (anim) return; sfxTap(); setSel(s => (s.includes(i) ? s.filter(x => x !== i) : s.length >= GM.RULES.maxPlay ? s : [...s, i])); };
+  const W = Math.min(innerWidth, 560), cw = Math.max(46, Math.min(70, Math.floor((W - 40) / 6.4)));
+  const step = Math.min(cw + 6, Math.floor((W - 32 - cw) / Math.max(1, g.hand.length - 1)));
+  const bossTxt = g.boss && g.blind === 2 && L.gm.boss[g.boss];
+  const blindName = [T("gmSmall"), T("gmBig"), bossTxt ? bossTxt[0] : T("gmBoss")][g.blind];
+  const pct = Math.min(100, (shown / g.target) * 100);
+  return createPortal(
+    <div data-game={g.phase} data-gm-mode={saved.mode} className="gmTable" style={{ position: "fixed", inset: 0, zIndex: 90, background: `radial-gradient(120% 70% at 50% 0%, ${C.panelHi}, ${C.ink} 70%)`, color: C.chalk, fontFamily: BODY, display: "flex", flexDirection: "column", padding: "calc(var(--sat, 0px) + 10px) 14px calc(var(--sab, 0px) + 12px)", boxSizing: "border-box", overflowY: "auto", overscrollBehavior: "contain" }}>
+      {/* top: blind, target, score, money, hands, discards */}
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <button type="button" data-gm-quit onClick={() => { sfxTap(); setQuit(true); }} aria-label={T("gmQuit")} style={{ ...btnBase, width: 40, height: 40, borderRadius: 12, background: C.panel, color: C.dim, border: `1px solid ${C.line}`, fontSize: 18, flexShrink: 0 }}>✕</button>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 11.5, fontWeight: 800, letterSpacing: 0.8, textTransform: "uppercase", color: g.blind === 2 ? "#ff7a7a" : C.dim, display: "flex", alignItems: "center", gap: 6 }}>{g.stake > 0 && <span data-gm-stake-chip={g.stake} title={L.gm.stake[g.stake][0]} style={{ width: 10, height: 10, borderRadius: 3, background: STAKE_COL[g.stake], border: "1px solid rgba(255,255,255,.4)", flexShrink: 0 }} />}{T("gmAnte", { n: g.ante + 1, m: g.antes })} · {blindName}</div>
+          <div data-gm-target style={{ fontFamily: DISPLAY, fontSize: 22, fontWeight: 900, lineHeight: 1.05 }}>{nf(shown)} <span style={{ color: C.dim, fontSize: 16 }}>/ {nf(g.target)}</span></div>
+        </div>
+        <div data-gm-money style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, color: C.signal }}>${g.money}</div>
+      </div>
+      <div style={{ height: 6, borderRadius: 99, background: C.panel, marginTop: 8, overflow: "hidden" }}><div style={{ width: `${pct}%`, height: "100%", background: pct >= 100 ? C.mint : C.signal, transition: `width ${MO.t3} ${MO.ease}` }} /></div>
+      {bossTxt && g.phase === "blind" && <div data-gm-boss={g.boss} style={{ marginTop: 8, fontSize: 12.5, color: "#ff9a9a", fontWeight: 700 }}>⚠ {bossTxt[1]}</div>}
+      {/* jokers */}
+      <div data-gm-jokers style={{ display: "flex", gap: 6, marginTop: 10, overflowX: "auto", minHeight: 82, paddingBottom: 2 }}>
+        {g.jokers.length ? g.jokers.map((j, k) => <JokerChip key={j.id + k} id={j.id} small glow={anim && anim.hit && anim.hit.j === j.id} onClick={() => { sfxTap(); setInfo(j.id); }} />)
+          : <div style={{ fontSize: 12.5, color: C.dim, alignSelf: "center" }}>{T("gmNoJokers")}</div>}
+        {g.perk && <div data-gm-perk-chip={g.perk} title={L.gm.perk[g.perk][1]} style={{ alignSelf: "center", marginLeft: "auto", fontSize: 12, color: C.dim, whiteSpace: "nowrap" }}>{PERK_ICON[g.perk]} {L.gm.perk[g.perk][0]}</div>}
+      </div>
+      {g.phase === "blind" || anim ? (
+        <>
+          {/* the hand being scored, or what the selection would give */}
+          <div style={{ flex: 1, minHeight: 170, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 10 }}>
+            {anim ? (
+              <>
+                <div style={{ display: "flex", gap: 6, justifyContent: "center", flexWrap: "wrap" }}>{anim.cards.map((c, k) => <PlayCard key={c} c={c} w={Math.min(56, cw)} bests={bests} pop={anim.hit && anim.hit.c === c} dead={anim.sc.steps.some(s => s.c === c && s.dead)} />)}</div>
+                <div data-gm-hand-name style={{ fontFamily: DISPLAY, fontSize: 26, fontWeight: 900 }}>{handName(anim.sc.hand)}</div>
+                <ScoreBox chips={anim.chips} mult={anim.mult} total={anim.total ? anim.sc.score : null} />
+              </>
+            ) : preview ? (
+              <>
+                <div data-gm-hand-name style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900 }}>{handName(preview.hand)}{(g.levels || {})[preview.hand] ? <span style={{ fontSize: 14, color: C.dim }}> · {T("gmLv", { n: (g.levels[preview.hand] || 0) + 1 })}</span> : null}</div>
+                <ScoreBox chips={preview.chips} mult={preview.mult} />
+              </>
+            ) : <div style={{ fontSize: 14, color: C.dim, textAlign: "center" }}>{T("gmPick")}</div>}
+          </div>
+          {/* hand */}
+          <div key={dealKey} data-gm-hand style={{ position: "relative", height: Math.round(cw * 1.4) + 20, margin: "0 auto", width: cw + step * Math.max(0, g.hand.length - 1) }}>
+            {!anim && order.map((hi, k) => (
+              <div key={g.hand[hi]} style={{ position: "absolute", left: k * step, bottom: 0 }}>
+                <PlayCard c={g.hand[hi]} w={cw} bests={bests} sel={sel.includes(hi)} onClick={() => toggle(hi)} i={k} deal dead={g.blind === 2 && g.boss === "skip_" + GM.suitOf(g.hand[hi])} />
+              </div>
+            ))}
+          </div>
+          <div style={{ display: "flex", gap: 8, marginTop: 10, alignItems: "stretch" }}>
+            <button type="button" data-gm-discard disabled={!sel.length || g.discardsLeft <= 0 || !!anim} onClick={discard} style={{ ...btnBase, flex: 1, padding: "14px 8px", borderRadius: 14, background: C.panel, color: C.chalk, border: `1.5px solid ${C.line}`, opacity: !sel.length || g.discardsLeft <= 0 || anim ? 0.5 : 1, fontSize: 15 }}>
+              {T("gmDiscard")}<span style={{ display: "block", fontSize: 11.5, color: C.dim, fontWeight: 700 }}>{T("gmLeft", { n: g.discardsLeft })}</span>
+            </button>
+            <button type="button" data-gm-sort onClick={() => { sfxTap(); setSortBy(s => (s === "v" ? "s" : "v")); }} aria-label={T("gmSort")} style={{ ...btnBase, width: 52, borderRadius: 14, background: C.panel, color: C.dim, border: `1.5px solid ${C.line}`, fontSize: 12, padding: 4 }}>{sortBy === "v" ? "A-2" : <span style={{ display: "flex", gap: 1, justifyContent: "center" }}>{GM.SUITS.map(s => <SuitIcon key={s} s={s} size={9} />)}</span>}</button>
+            <button type="button" data-gm-play disabled={!sel.length || !!anim} onClick={play} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), flex: 1.4, width: "auto", padding: "14px 8px", opacity: !sel.length || anim ? 0.55 : 1 }}>
+              {T("gmPlay")}<span style={{ display: "block", fontSize: 11.5, fontWeight: 700, opacity: 0.8 }}>{T("gmLeft", { n: g.handsLeft })}</span>
+            </button>
+          </div>
+        </>
+      ) : g.phase === "shop" ? (
+        <GameShop g={g} onMove={shopMove} onInfo={setInfo} />
+      ) : <div style={{ flex: 1 }} />}
+      {info && <Sheet short title={jName(info)} onClose={() => setInfo(null)}><div data-gm-joker-info style={{ fontSize: 15, lineHeight: 1.5, color: C.chalk }}>{jDesc(info)}</div></Sheet>}
+      {quit && (
+        <Sheet short title={T("gmQuitT")} onClose={() => setQuit(false)}>
+          <div style={{ fontSize: 14.5, color: C.dim, lineHeight: 1.5 }}>{T(saved.mode === "ranked" ? "gmQuitRankedD" : "gmQuitD")}</div>
+          <button type="button" data-gm-quit-yes onClick={() => { sfxTap(); setQuit(false); onQuit({ ...saved, moves }); }} style={{ ...bigBtn("#e5484d", "#fff"), marginTop: 14 }}>{T("gmQuit")}</button>
+          <button type="button" data-gm-quit-no onClick={() => { sfxTap(); setQuit(false); }} style={{ ...ghostBtn, width: "100%", marginTop: 8, padding: "13px 14px", fontSize: 15, color: C.chalk }}>{T("gmStay")}</button>
+        </Sheet>
+      )}
+    </div>,
+    document.body
+  );
+}
+function ScoreBox({ chips, mult, total }) {
+  return (
+    <div data-gm-score style={{ display: "flex", alignItems: "center", gap: 8 }}>
+      <span key={"c" + chips} className="gmBump" style={{ minWidth: 70, textAlign: "center", padding: "8px 12px", borderRadius: 12, background: `${C.sky}22`, border: `1.5px solid ${C.sky}`, color: C.sky, fontFamily: DISPLAY, fontSize: 26, fontWeight: 900 }}>{nf(chips)}</span>
+      <span style={{ fontFamily: DISPLAY, fontSize: 22, fontWeight: 900, color: C.dim }}>×</span>
+      <span key={"m" + mult} className="gmBump" style={{ minWidth: 56, textAlign: "center", padding: "8px 12px", borderRadius: 12, background: C.signal, color: C.signalInk, fontFamily: DISPLAY, fontSize: 26, fontWeight: 900 }}>{Number.isInteger(mult) ? mult : mult.toFixed(1)}</span>
+      {total !== null && total !== undefined && <span data-gm-total className="gmPop" style={{ fontFamily: DISPLAY, fontSize: 30, fontWeight: 900, color: C.signal, marginLeft: 4 }}>= {nf(total)}</span>}
+    </div>
+  );
+}
+function GameShop({ g, onMove, onInfo }) { // onInfo: your own jokers' text
+  const sh = g.shop, pay = (g.last && g.last.pay) || 0;
+  return (
+    <div data-gm-shop style={{ flex: 1, display: "flex", flexDirection: "column", gap: 12, marginTop: 6 }}>
+      <div className="cardIn" style={{ ...card, ...tileR(), padding: "12px 14px", display: "flex", alignItems: "center", gap: 10 }}>
+        <span aria-hidden="true" style={{ fontSize: 26 }}>✅</span>
+        <span style={{ flex: 1, fontWeight: 800 }}>{T("gmCleared")}</span>
+        <span data-gm-pay style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, color: C.signal }}>+${pay}</span>
+      </div>
+      <div style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900 }}>{T("gmShop")}</div>
+      {/* one row per item: what it is, what it does, the price (Michael wants it readable, not a tap per joker) */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {sh.items.map((it, i) => {
+          const jk = it.k === "joker", r = jk && GM.JOKERS[it.id] ? GM.JOKERS[it.id].r : 0, col = jk ? [C.sky, C.mint, "#ff7ad9"][r] : C.signal;
+          const off = it.sold || g.money < it.cost || (jk && g.jokers.length >= GM.RULES.jokers);
+          return (
+            <div key={i} data-gm-item={it.k} data-gm-drill={jk ? undefined : it.id} data-joker-row={jk ? it.id : undefined} className="cardIn" style={{ ...card, ...tileR(), padding: "10px 12px", display: "flex", alignItems: "center", gap: 12, opacity: it.sold ? 0.4 : 1, borderColor: `${col}80` }}>
+              <span aria-hidden="true" style={{ width: 46, height: 46, flexShrink: 0, borderRadius: 12, background: `linear-gradient(160deg, ${col}40, ${C.panelHi})`, border: `1.5px solid ${col}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 25 }}>
+                {!jk ? "🏋️" : it.id.startsWith("fan_") ? <SuitIcon s={it.id.slice(4)} size={24} /> : JOKER_ICON[it.id] || "🃏"}
+              </span>
+              <span style={{ flex: 1, minWidth: 0 }}>
+                <span style={{ display: "block", fontWeight: 800, fontSize: 15, lineHeight: 1.2 }}>{jk ? jName(it.id) : T("gmDrill", { h: handName(it.id) })}</span>
+                <span style={{ display: "block", fontSize: 12.5, color: C.dim, lineHeight: 1.35, marginTop: 2 }}>{jk ? jDesc(it.id) : T("gmDrillD", { c: GM.HAND_UP[it.id][0], m: GM.HAND_UP[it.id][1] })}</span>
+              </span>
+              <button type="button" data-gm-buy={i} disabled={off} onClick={() => onMove({ t: "buy", i })} style={{ ...btnBase, flexShrink: 0, minWidth: 64, padding: "8px 10px", borderRadius: 12, background: it.sold ? "transparent" : C.signal, color: it.sold ? C.dim : C.signalInk, fontSize: 13, lineHeight: 1.15, opacity: off && !it.sold ? 0.4 : 1 }}>
+                {it.sold ? "✓" : <><span style={{ display: "block", fontFamily: DISPLAY, fontSize: 17, fontWeight: 900 }}>${it.cost}</span>{T("gmBuy")}</>}
+              </button>
+            </div>
+          );
+        })}
+      </div>
+      <button type="button" data-gm-reroll disabled={g.money < sh.rerollCost} onClick={() => onMove({ t: "reroll" })} style={{ ...ghostBtn, alignSelf: "flex-start", color: C.chalk, opacity: g.money < sh.rerollCost ? 0.5 : 1 }}>{T("gmReroll", { n: sh.rerollCost })}</button>
+      {g.jokers.length > 0 && (
+        <div>
+          <div style={{ fontSize: 12.5, color: C.dim, marginBottom: 6 }}>{T("gmYourJokers", { n: g.jokers.length, max: GM.RULES.jokers })}</div>
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            {g.jokers.map((j, i) => <div key={j.id} style={{ display: "flex", flexDirection: "column", gap: 4, alignItems: "center" }}><JokerChip id={j.id} small onClick={() => { sfxTap(); onInfo(j.id); }} /><button type="button" data-gm-sell={i} onClick={() => onMove({ t: "sell", i })} style={{ ...btnBase, background: "transparent", color: C.dim, fontSize: 11.5, padding: "3px 6px" }}>{T("gmSell", { n: Math.max(1, Math.floor(j.cost / 2)) })}</button></div>)}
+          </div>
+        </div>
+      )}
+      <button type="button" data-gm-next onClick={() => onMove({ t: "next" })} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: "auto" }}>{T("gmNext")}</button>
+    </div>
+  );
+}
+// The end of a game: result, XP (unranked) or rating (ranked, after the server's check).
+function GameEnd({ res, onClose, onAgain }) {
+  const { saved, g, xp, lvlUp, rk, rkErr, stakeUp } = res;
+  const me = GM.resultOf(g), opp = saved.mode === "duel" ? saved.bot : rk ? rk.opp : null;
+  const won = saved.mode === "run" ? g.phase === "won" : saved.mode === "duel" ? GM.beats(me, opp) : rk ? rk.sc === 1 : null;
+  const draw = saved.mode === "duel" ? !GM.beats(me, opp) && !GM.beats(opp, me) : rk ? rk.sc === 0.5 : false;
+  return createPortal(
+    <div data-gm-end={won ? "win" : draw ? "draw" : won === null ? "wait" : "lose"} style={{ position: "fixed", inset: 0, zIndex: 91, background: "rgba(4,7,16,.96)", color: C.chalk, fontFamily: BODY, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px 20px", textAlign: "center", gap: 10 }}>
+      {won && <Confetti />}
+      <div aria-hidden="true" style={{ fontSize: 76, lineHeight: 1 }} className="gmPop">{won ? "🏆" : draw ? "🤝" : won === null ? "⏳" : "💪"}</div>
+      <div style={{ fontFamily: DISPLAY, fontSize: 38, fontWeight: 900, lineHeight: 1 }}>{won === null ? T("gmWaitServer") : won ? (saved.mode === "run" ? T("gmWon") : T("gmWin")) : draw ? T("gmDraw") : saved.mode === "run" ? T("gmOver") : T("gmLose")}</div>
+      <div style={{ fontSize: 15, color: C.dim }}>{T("gmResult", { n: me.cleared, t: nf(me.total) })}</div>
+      {opp && <div data-gm-opp style={{ fontSize: 14.5, color: C.dim }}>{saved.mode === "duel" ? T("gmBotRes", { n: opp.lvl }) : opp.bot ? T("gmBotRes", { n: opp.bot }) : opp.nick}: {T("gmResult", { n: opp.cleared, t: nf(opp.total) })}</div>}
+      {rk && <div data-gm-rating style={{ fontFamily: DISPLAY, fontSize: 26, fontWeight: 900, color: rk.dr >= 0 ? C.mint : "#ff8a80" }}>{T("gmRating", { r: rk.r })} ({rk.dr >= 0 ? "+" : ""}{rk.dr})</div>}
+      {rkErr && <div role="alert" style={{ fontSize: 13.5, color: "#ff8a80", maxWidth: 340 }}>{T("gmErrEnd")}</div>}
+      {xp > 0 && <div data-gm-xp style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, color: C.signal }}>+{nf(xp)} {T("gmXp")}</div>}
+      {stakeUp > 0 && <div data-gm-stakeup={stakeUp} className="gmPop" style={{ fontSize: 15, fontWeight: 800, color: C.chalk, display: "flex", alignItems: "center", gap: 8 }}><span style={{ width: 14, height: 14, borderRadius: 4, background: STAKE_COL[stakeUp] }} />{T("gmStakeOpen", { s: L.gm.stake[stakeUp][0] })}</div>}
+      {lvlUp && <div data-gm-levelup className="gmPop" style={{ fontSize: 16, fontWeight: 800, color: C.chalk }}>{T("gmLevelUp", { n: lvlUp })}</div>}
+      <div style={{ display: "flex", gap: 8, width: "100%", maxWidth: 360, marginTop: 14 }}>
+        <button type="button" data-gm-close onClick={() => { sfxTap(); onClose(); }} style={{ ...ghostBtn, flex: 1, padding: "14px", fontSize: 15, color: C.chalk }}>{T("gmBack")}</button>
+        {won !== null && <button type="button" data-gm-again onClick={() => { sfxTap(); onAgain(); }} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), flex: 1.3, width: "auto" }}>{T("gmAgain")}</button>}
+      </div>
+    </div>,
+    document.body
+  );
+}
+
 // ─── GUIDE / TOUR (1.7.6; Michael, Oct 24: a friend from Indonesia "had no idea what to do") ───
 // An interactive guide in 7 chapters: the screen is dimmed, the real button or box is lit, and a bubble says what it
 // does. Steps that move somewhere ("tap here") need the real tap (Next taps it for you, so nobody gets stuck). Every
@@ -7347,7 +7834,8 @@ function unclaimed(m, claim) {
   if (window.__hwNoReveal) return []; // tests without the reveal see everything, as before
   const a = (claim && claim.a) || {}, r = (claim && claim.r) || {};
   const out = m.ach.filter(x => x.tier > (a[x.k] || 0)).map(achCard);
-  Object.keys(RANK_AT).forEach(id => { const ri = rankIdx(id, m.rk[id]); if (ri > (r[id] || 0)) out.push(rankCard(id, ri)); });
+  // 1.8.0: an exercise never opened (no entry at all) waits as a card too, Iron included
+  Object.keys(RANK_AT).forEach(id => { if (m.rk[id] === null || m.rk[id] === undefined) return; const ri = rankIdx(id, m.rk[id]); if (ri > (typeof r[id] === "number" ? r[id] : -1)) out.push(rankCard(id, ri)); });
   return out.sort((x, y) => x.r - y.r || REV_KIND[x.kind] - REV_KIND[y.kind]);
 }
 const unclaimedFor = (history, profile, kcal) => unclaimed(ownModel(history, profile, kcal), claimOf(profile));
@@ -7430,7 +7918,7 @@ function RewardReveal({ items, onDone }) {
   const col = it.col, r = it.r, last = i + 1 >= items.length;
   const flip = () => { if (open) return; setOpen(true); revealSfx(r); vibrate(REV_BUZZ[Math.max(0, Math.min(R_OBSIDIAN, r))]); };
   const next = e => { e.stopPropagation(); collectSfx(); if (last) onDone(); else { setI(i + 1); setOpen(false); } };
-  const kindLabel = T({ pr: "revRecord", ach: "revBadge", rank: "revRank", lvl: "revLevel" }[it.kind]);
+  const kindLabel = it.unlock ? T("revUnlock") : T({ pr: "revRecord", ach: "revBadge", rank: "revRank", lvl: "revLevel" }[it.kind]);
   return createPortal(
     <div data-reveal={items.length} className={open && r >= 5 ? "revShake" : undefined} onClick={flip}
       style={{ position: "fixed", inset: 0, zIndex: 95, background: `radial-gradient(70% 50% at 50% 45%, ${col}${open ? "40" : "22"}, transparent 70%), rgba(4,7,16,.97)`, transition: `background ${MO.t3}`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "calc(var(--sat, 0px) + 18px) 20px calc(var(--sab, 0px) + 26px)", boxSizing: "border-box", fontFamily: BODY, color: C.chalk, cursor: open ? "default" : "pointer", userSelect: "none", overflow: "hidden" }}>
@@ -7442,7 +7930,7 @@ function RewardReveal({ items, onDone }) {
         <div aria-hidden="true" className="revRays" style={{ background: `repeating-conic-gradient(from 0deg, ${col}55 0deg 7deg, transparent 7deg 22deg)`, opacity: open ? 1 : 0, "--rs": `${Math.max(7, 16 - r * 1.4)}s` }} />
         {open && <RevBurst col={col} n={16 + r * 8} />}
         {open && <div aria-hidden="true" className="revFlash" style={{ "--fo": Math.min(0.75, 0.2 + r * 0.09) }} />}
-        <div data-reveal-card data-kind={it.kind} data-rarity={r} data-state={open ? "face" : "back"} className={"revCard" + (open ? " on" : "")} style={{ "--wob": `${1.2 + r * 0.7}deg`, "--wt": `${Math.max(0.35, 1.1 - r * 0.12)}s` }}>
+        <div data-reveal-card data-kind={it.kind} data-unlock={it.unlock ? 1 : undefined} data-rarity={r} data-state={open ? "face" : "back"} className={"revCard" + (open ? " on" : "")} style={{ "--wob": `${1.2 + r * 0.7}deg`, "--wt": `${Math.max(0.35, 1.1 - r * 0.12)}s` }}>
           {r >= 3 && !open && <RevTwinkle col={col} n={6 + (r - 2) * 4} />}
           <div className={"revBack" + (r >= 7 ? " revPrism" : "")} style={{ background: `radial-gradient(90% 70% at 50% 40%, ${col}66, transparent 75%), repeating-linear-gradient(45deg, ${col}12 0 10px, transparent 10px 20px), ${C.ink}`, border: `2px solid ${col}`, boxShadow: `0 0 ${18 + r * 9}px ${col}${r >= 4 ? "cc" : "88"}, inset 0 0 ${24 + r * 6}px ${col}55` }}>
             <span style={{ fontFamily: DISPLAY, fontSize: 96, fontWeight: 900, color: col, textShadow: `0 0 ${12 + r * 5}px ${col}`, lineHeight: 1 }}>?</span>
@@ -7470,6 +7958,64 @@ function RewardReveal({ items, onDone }) {
 }
 
 // ─── SESSION: SUMMARY ───────────────────────────────────────────────────────
+// 1.8.0 (Michael, Oct 24: "animations at the end of a workout, like Duolingo"): after the first workout of a day, the
+// streak gets its own moment: the flame pops up, the number rolls over to the new one, and this week's bar runs on to
+// today with a glow at its head. Our own flame and colours. Tests turn it off (window.__hwNoCeleb) unless they want it.
+function StreakCelebration({ n, history, entry, onDone }) {
+  const [step, setStep] = useState(0); // 0 flame, 1 number rolled, 2 bar filled
+  useBack(() => onDone(), true);
+  useEffect(() => {
+    melody([[392, 0.05, 0.12], [523, 0.17, 0.12], [659, 0.29, 0.12], [784, 0.62, 0.1], [1047, 0.72, 0.4], [1319, 1.25, 0.12], [1568, 1.37, 0.35]], "triangle", 0.24);
+    vibrate([25, 60, 40]);
+    const t1 = setTimeout(() => setStep(1), 650), t2 = setTimeout(() => setStep(2), 1150);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, []);
+  const today = entry.date, wd = (parseKey(today).getDay() + 6) % 7, mon = addDays(today, -wd);
+  const days = Array.from({ length: 7 }, (_, i) => addDays(mon, i));
+  const trained = new Set(history.map(e => e.date).concat(today)), frozen = new Set(META.freezeDays || []);
+  // the bar runs over the days of this week that belong to the current streak, up to today
+  const chainStart = (() => { let d = today, k = 0; const all = [...trained, ...frozen].filter(x => x <= today).sort().reverse(); let prev = today; for (const x of all) { if (daysBetween(x, prev) > 2) break; d = x; prev = x; if (++k > 4000) break; } return d; })();
+  const from = Math.max(0, days.findIndex(d => d >= chainStart)), toIdx = wd;
+  const seg = i => ((i + 0.5) / 7) * 100;
+  const prevEnd = toIdx > from ? seg(toIdx - 1) : seg(from) - 2, end = seg(toIdx);
+  const [line] = useState(() => pick(L.celebLines));
+  const names = weekdaysShort();
+  return createPortal(
+    <div data-celeb={n} onClick={() => step >= 2 && onDone()} style={{ position: "fixed", inset: 0, zIndex: 96, overflow: "hidden", background: `radial-gradient(80% 55% at 50% 32%, #ff8a1a2e, transparent 70%), ${C.ink}`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6, padding: "calc(var(--sat, 0px) + 20px) 22px calc(var(--sab, 0px) + 26px)", fontFamily: BODY, color: C.chalk, textAlign: "center" }}>
+      <div className="celFlame" aria-hidden="true" style={{ position: "relative", width: 132, height: 150 }}>
+        <svg viewBox="0 0 120 140" width="132" height="150" style={{ overflow: "visible", filter: "drop-shadow(0 0 22px #ff9a1f99)" }}>
+          <ellipse cx="60" cy="128" rx="34" ry="8" fill="#000" opacity=".25" />
+          <path className="celOuter" d="M60 6 C74 30 102 44 102 82 C102 110 84 128 60 128 C36 128 18 110 18 82 C18 58 32 46 40 30 C44 48 52 54 56 56 C54 36 54 20 60 6 Z" fill="url(#celG1)" />
+          <path className="celInner" d="M60 58 C68 72 82 80 82 98 C82 113 72 122 60 122 C48 122 38 113 38 98 C38 86 46 80 50 70 C52 80 56 84 58 84 C57 74 57 66 60 58 Z" fill="url(#celG2)" />
+          <defs>
+            <linearGradient id="celG1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#ffd23f" /><stop offset=".55" stopColor="#ff9a1f" /><stop offset="1" stopColor="#ff5a1f" /></linearGradient>
+            <linearGradient id="celG2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#fffbe6" /><stop offset="1" stopColor="#ffd23f" /></linearGradient>
+          </defs>
+        </svg>
+        {[0, 1, 2, 3, 4].map(k => <span key={k} className="celSpark" style={{ "--sx": `${(k - 2) * 22}px`, "--sd": `${0.3 + k * 0.22}s` }} />)}
+      </div>
+      <div data-celeb-n style={{ position: "relative", height: 104, overflow: "hidden", fontFamily: DISPLAY, fontSize: 96, fontWeight: 900, lineHeight: "104px", color: "#ff9a1f", textShadow: "0 4px 0 #b4530d", minWidth: 120 }}>
+        <span className={step >= 1 ? "celOut" : undefined} style={{ display: "block" }}>{Math.max(0, n - 1)}</span>
+        <span className={step >= 1 ? "celIn" : undefined} style={{ display: "block", position: "absolute", left: 0, right: 0, top: "100%" }}>{n}</span>
+      </div>
+      <div style={{ fontSize: 22, fontWeight: 800, color: "#ffb04d" }}>{TP("celebUnit", n)}</div>
+      <div data-celeb-week style={{ marginTop: 20, width: "min(100%, 360px)", border: `1.5px solid ${C.line}`, borderRadius: 18, overflow: "hidden", background: `${C.panel}cc` }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", padding: "12px 10px 4px", fontSize: 13, fontWeight: 800 }}>
+          {names.map((x, i) => <span key={i} style={{ color: i === toIdx ? "#ffb04d" : i < toIdx && trained.has(days[i]) ? C.chalk : C.dim }}>{x.slice(0, 2)}</span>)}
+        </div>
+        <div style={{ position: "relative", height: 34, margin: "4px 10px 12px" }}>
+          <div style={{ position: "absolute", left: 0, right: 0, top: 12, height: 10, borderRadius: 99, background: C.panelHi }} />
+          <div className="celBar" style={{ position: "absolute", left: `calc(${seg(from)}% - 8px)`, top: 12, height: 10, borderRadius: 99, background: "linear-gradient(90deg, #ffd23f, #ff9a1f)", width: `calc(${(step >= 2 ? end : prevEnd) - seg(from)}% + 16px)`, transition: `width .8s ${MO.ease}` }} />
+          {days.map((d, i) => trained.has(d) && i <= toIdx ? <span key={d} aria-hidden="true" style={{ position: "absolute", left: `calc(${seg(i)}% - 5px)`, top: 12, width: 10, height: 10, borderRadius: 99, background: "#fff7d6", opacity: 0.9 }} /> : null)}
+          <span className={step >= 2 ? "celHead" : undefined} aria-hidden="true" style={{ position: "absolute", left: `calc(${step >= 2 ? end : prevEnd}% - 15px)`, top: 2, width: 30, height: 30, borderRadius: 99, background: "radial-gradient(circle, #fffbe6 0 22%, #ffd23f88 40%, transparent 70%)", transition: `left .8s ${MO.ease}` }} />
+        </div>
+        <div style={{ borderTop: `1px solid ${C.line}`, padding: "10px 12px", fontSize: 14.5, fontWeight: 700 }}>{line}</div>
+      </div>
+      <button type="button" data-celeb-next onClick={e => { e.stopPropagation(); sfxTap(); onDone(); }} className="b3d cardIn" style={{ ...bigBtn(C.signal, C.signalInk), maxWidth: 360, marginTop: 22, animationDelay: "1.4s" }}>{T("revNext")}</button>
+    </div>,
+    document.body
+  );
+}
 function Summary({ entry, xpBefore = 0, xpGained, newCh = [], newAch = [], history, onClose, onClaim }) {
   const [copied, setCopied] = useState(false);
   const gained = entry ? (xpGained ?? xpFor(entry)) : 0;
@@ -7494,6 +8040,8 @@ function Summary({ entry, xpBefore = 0, xpGained, newCh = [], newAch = [], histo
   // tests turn the card reveal off (window.__hwNoReveal) unless they test it
   const [rev] = useState(() => (window.__hwNoReveal ? [] : revealList(entry, newAch, xpBefore, gained)));
   const [revOn, setRevOn] = useState(rev.length > 0);
+  // the first workout of the day moves the streak: its own moment first (StreakCelebration), then the reward cards
+  const [celeb, setCeleb] = useState(() => !window.__hwNoCeleb && !!entry && !history.some(e => e.date === entry.date && e.ts !== entry.ts) && streakInfo(history.some(e => e.ts === entry.ts) ? history : [...history, entry], entry.date).n > 0);
   const copy = async () => {
     try { await navigator.clipboard.writeText(text); }
     catch (_) { const t = document.createElement("textarea"); t.value = text; document.body.appendChild(t); t.select(); try { document.execCommand("copy"); } catch (__) {} document.body.removeChild(t); }
@@ -7510,8 +8058,9 @@ function Summary({ entry, xpBefore = 0, xpGained, newCh = [], newAch = [], histo
   }
   return (
     <div>
-      {revOn ? <RewardReveal items={rev} onDone={() => { setRevOn(false); if (onClaim) onClaim(rev); }} /> : <Confetti />}
-      <div className="pop" style={{ fontFamily: DISPLAY, fontSize: 60, fontWeight: 900, lineHeight: 0.95, color: C.mint }}>{T("great")}</div>
+      {celeb ? <StreakCelebration n={streakInfo(history.some(e => e.ts === entry.ts) ? history : [...history, entry], entry.date).n} history={history} entry={entry} onDone={() => setCeleb(false)} />
+        : revOn ? <RewardReveal items={rev} onDone={() => { setRevOn(false); if (onClaim) onClaim(rev); }} /> : <Confetti />}
+      <div className="pop" style={{ display: "inline-block", transformOrigin: "left center", fontFamily: DISPLAY, fontSize: 60, fontWeight: 900, lineHeight: 0.95, color: C.mint }}>{T("great")}</div>
       <div style={{ fontSize: 16, color: C.chalk, marginTop: 8, fontWeight: 600, lineHeight: 1.4 }}>{finishLine}</div>
       <div style={{ fontSize: 13, color: C.dim, marginTop: 4 }}>{T("dayDate", { d: entry.day, date: fmtDate(entry.date, true) })}</div>
       {(() => { const s = kcalNow(history.concat(history.some(e => e.ts === entry.ts) ? [] : [entry])); return s ? <div data-sum-kcal style={{ fontSize: 13, color: s.hit ? KC_HIT : C.sky, marginTop: 6, fontWeight: 700 }}>🥗 {s.left > 0 ? T("kcAfterWorkout", { n: nf(s.left) }) : T("kcAfterWorkoutDone")}</div> : null; })()}
@@ -7526,7 +8075,7 @@ function Summary({ entry, xpBefore = 0, xpGained, newCh = [], newAch = [], histo
         </div>
         <div style={{ fontSize: 13, color: C.dim, marginTop: 8 }}>{T("levelLine", { lvl: lvNow.lvl, into: lvNow.into, need: lvNow.need, streak: TP("workouts", st.n) })}</div>
         {leveledUp && shown === gained && (
-          <div className="pop" style={{ marginTop: 10, fontFamily: DISPLAY, fontSize: 28, fontWeight: 900, color: C.signal, transformOrigin: "left center" }}>{T("levelUp", { lvl: lvNow.lvl })}</div>
+          <div className="pop" style={{ display: "table", marginTop: 10, fontFamily: DISPLAY, fontSize: 28, fontWeight: 900, color: C.signal, transformOrigin: "left center" }}>{T("levelUp", { lvl: lvNow.lvl })}</div>
         )}
       </div>
       {newCh.length > 0 && (
@@ -7595,9 +8144,11 @@ function Session({ session, setSession, history, onSave, onClose, onMinimize, on
       return b !== null && top > b;
     }).map(it => it.id);
     const rankUps = items.map(it => {
-      const from = rankIdx(it.id, bestFor(history, it.id));
-      const to = rankIdx(it.id, Math.max(...it.res.map(numVal).filter(n => !isNaN(n))));
-      return to > from ? { id: it.id, to } : null;
+      const b = bestFor(history, it.id), t0 = Math.max(...it.res.map(numVal).filter(n => !isNaN(n)));
+      if (!isFinite(t0) || !RANK_AT[it.id]) return null;
+      const to = rankIdx(it.id, t0);
+      if (b === null || b === undefined) return { id: it.id, to, u: 1 }; // 1.8.0: a new exercise = Iron (or more) unlocked
+      return to > rankIdx(it.id, b) ? { id: it.id, to } : null;
     }).filter(Boolean);
     const secs = session.startTs ? Math.round((Date.now() - session.startTs) / 1000) : 0;
     const entry = items.length ? { date: dateKey(), ts: Date.now(), day: session.day, rounds: session.rounds, items, prs, rankUps, warm: session.warm.every(Boolean), cool: !!coolDone, ...(secs > 0 && secs < 4 * 3600 ? { dur: secs } : {}) } : null;
@@ -7752,6 +8303,19 @@ export default function App() {
   const setProfile = p => { setProfileState(p); saveProfile(p); };
   const [skipOpen, setSkipOpen] = useState(false);
   const applyFreeze = () => { unlockAudio(); sfxTap(); setSkipOpen(true); };
+  // 1.8.0: automatic freezes (autoFreezeDays), checked when the app opens and when it comes back on another day
+  const [dayNow, setDayNow] = useState(dateKey());
+  useEffect(() => { const f = () => { if (document.visibilityState === "visible") setDayNow(dateKey()); }; document.addEventListener("visibilitychange", f); return () => document.removeEventListener("visibilitychange", f); }, []);
+  useEffect(() => {
+    if (!loaded || !profLoaded) return;
+    const add = autoFreezeDays(history, dayNow);
+    if (add) {
+      META = { ...META, freezeDays: [...(profile.freezeDays || []), ...add] };
+      setProfile({ ...profile, freezeDays: [...new Set([...(profile.freezeDays || []), ...add])].sort() });
+      const left = freezesAvailable(history);
+      setTimeout(() => setUi({ ...uiRef.current, autoFz: { day: dayNow, used: add.length, left } }), 60); // after Home has saved its daily line
+    }
+  }, [loaded, profLoaded, dayNow]);
   const saveSkip = (reason, freeze) => {
     const t = dateKey();
     const canFreeze = freeze && !(profile.freezeDays || []).includes(t) && freezesAvailable(history) > 0;
@@ -7886,7 +8450,66 @@ export default function App() {
   };
   const createProfile = async nick => { const p = await cloud().createProfile({ nick, global: false, pfp: await smallPfp(profile.pfp), ...cloudStats(history) }); setProf(p); sfxCheck(); };
   const renameNick = async nick => { await cloud().renameNick(acct.prof.nick, nick); const p = { ...acct.prof, nick }; await cloud().saveProfile({ ...p, pfp: await smallPfp(profile.pfp), ...cloudStats(history) }); setProf(p); sfxCheck(); };
-  const setGlobal = async on => { const p = { ...acct.prof, global: on }; await cloud().saveProfile({ ...p, pfp: await smallPfp(profile.pfp), ...cloudStats(history) }); setProf(p); };
+  const setGlobal = async on => { const p = { ...acct.prof, global: on }; await cloud().saveProfile({ ...p, pfp: await smallPfp(profile.pfp), ...cloudStats(history) }); setProf(p); if (on) setTimeout(() => runBoard(true), 300); };
+  // 1.8.0: the world entry is written by the push server from the checked cloud backup (src/fair.js). The app asks for
+  // a check after each backup upload and when joining; the server answers at most once a minute (then "recent", and
+  // the app asks again a minute later). The answer (what counted, flags, waiting for a check) is shown in Friends.
+  const [fairRes, setFairRes] = useState(() => cloudMem().fair || null);
+  const boardRetry = useRef(0), boardFn = useRef(null);
+  boardFn.current = force => {
+    if (acct.st !== "in" || !acct.prof || (!acct.prof.global && !force)) return;
+    cloud().checkBoard(dateKey()).then(r => {
+      if (!r || r.why === "net") return;
+      if (r.why !== "recent" || !fairRes) { setFairRes(r); setCloudMem({ fair: r }); }
+      clearTimeout(boardRetry.current);
+      if (r.why === "recent") boardRetry.current = setTimeout(() => boardFn.current && boardFn.current(), 65000);
+    }).catch(() => {});
+  };
+  const runBoard = force => boardFn.current && boardFn.current(force);
+  useEffect(() => () => clearTimeout(boardRetry.current), []);
+  // 1.8.0 friend streaks: my last training days go to days/{uid} (friends read them), the streaks are watched live
+  const [fstreaks, setFstreaks] = useState([]), [fsDays, setFsDays] = useState({});
+  const daysKey = acct.st === "in" ? myDays(history, profile).join(",") : "";
+  useEffect(() => {
+    if (acct.st !== "in" || !acct.prof || !loaded || !profLoaded || cloudMem().daysKey === daysKey) return;
+    const t = setTimeout(() => cloud().saveDays(daysKey ? daysKey.split(",") : []).then(() => setCloudMem({ daysKey })).catch(() => {}), 3000);
+    return () => clearTimeout(t);
+  }, [acct.st, acct.prof, daysKey, loaded, profLoaded]);
+  useEffect(() => {
+    if (acct.st !== "in" || !acct.prof) { setFstreaks([]); return; }
+    return cloud().watchFStreaks(setFstreaks, () => {});
+  }, [acct.st, acct.uid, !!acct.prof]);
+  const fsIds = fstreaks.map(f => f.other).sort().join(",");
+  const loadFsDays = () => { fstreaks.forEach(f => cloud().getDays(f.other).then(d => setFsDays(m => ({ ...m, [f.other]: d || [] }))).catch(() => {})); };
+  useEffect(() => { if (fsIds) loadFsDays(); }, [fsIds]);
+  useEffect(() => { if (screen === "friends" && fsIds) loadFsDays(); }, [screen]);
+  const friendsFx = { fair: fairRes, fs: { list: fstreaks, days: fsDays, mine: daysKey ? daysKey.split(",") : [],
+    invite: uid => cloud().fsInvite(uid), accept: uid => cloud().fsAccept(uid, dateKey()), end: uid => cloud().fsEnd(uid) } };
+  // 1.8.0 card game: the game being played (full screen) and its end screen
+  const [gamePlay, setGamePlay] = useState(null), [gameEnd, setGameEnd] = useState(null);
+  const endGame = async (saved, g) => {
+    setGamePlay(null);
+    if (saved.mode === "ranked") {
+      setGameEnd({ saved, g });
+      try { const r = await cloud().rkEnd(saved.moves); if (r.why !== "ok" && r.why !== "no-game") throw new Error(r.why); gameSave(null); setGameEnd({ saved, g, rk: r.why === "ok" ? r : null }); }
+      catch (_) { setGameEnd({ saved, g, rkErr: true }); } // kept: "Continue" sends it again
+      return;
+    }
+    const res = GM.resultOf(g), won = saved.mode === "run" ? res.won : GM.beats(res, saved.bot);
+    const sk = (saved.opts && saved.opts.stake) || 0;
+    const xp = Math.round((100 * res.cleared + (saved.mode === "run" && res.won ? 500 : 0) + (saved.mode === "duel" && won ? 200 : 0)) * stakeXp(sk));
+    const gp = profile.game || {}, before = GM.gameLevel(gp.xp || 0).lvl, after = GM.gameLevel((gp.xp || 0) + xp).lvl;
+    const stakeUp = won && sk >= (gp.stake || 0) && sk < GM.STAKES.length - 1 ? sk + 1 : 0; // winning on your highest stake opens the next
+    setProfile({ ...profile, game: { ...gp, xp: (gp.xp || 0) + xp, games: (gp.games || 0) + 1, wins: (gp.wins || 0) + (won ? 1 : 0), best: Math.max(gp.best || 0, res.cleared), top: Math.max(gp.top || 0, res.best || 0), stake: Math.max(gp.stake || 0, stakeUp) } });
+    gameSave(null);
+    setGameEnd({ saved, g, xp, lvlUp: after > before ? after : 0, stakeUp });
+  };
+  const quitGame = saved => {
+    setGamePlay(null); gameSave(null);
+    if (saved.mode === "ranked") cloud().rkEnd(null, true).catch(() => {});
+  };
+  // once a few seconds after each start (also the first check for people who joined the world list before 1.8.0)
+  useEffect(() => { if (acct.st !== "in" || !acct.prof || !acct.prof.global) return; const t = setTimeout(() => runBoard(), 8000); return () => clearTimeout(t); }, [acct.st, acct.uid]);
   // 1.6.2 (Michael): signing out returns the app to its very first start. Everything on this phone (workouts, profile,
   // settings, theme, calories, hints, the other account's chat/blocked lists) is cleared, so nothing from one account
   // can mix with the next. It stays in the account's cloud backup; the latest state is uploaded first, and if that
@@ -8171,7 +8794,7 @@ export default function App() {
       if (dk === lastRemoteKey.current || dk === lastUpKey.current) return;
       const json = cloudBackupJson(history, profile, settings, kcal), key = json.replace(/"exportedAt":"[^"]*",/, "");
       const save = bk => { setCloudMem({ bk }); setCloudBk(bk); };
-      cloud().saveBackup(json, history.length).then(() => { lastUpKey.current = dk; lastCloud.current = key; setCloudMem({ bkHash: strHash(key) }); cloudN.current = history.length; save({ ts: Date.now(), ok: true }); })
+      cloud().saveBackup(json, history.length).then(() => { lastUpKey.current = dk; lastCloud.current = key; setCloudMem({ bkHash: strHash(key) }); cloudN.current = history.length; save({ ts: Date.now(), ok: true }); runBoard(); })
         .catch(e => save({ ts: Date.now(), ok: false, err: String((e && (e.code || e.message)) || e).slice(0, 120) }));
     }, 4000);
     return () => clearTimeout(t);
@@ -8186,6 +8809,7 @@ export default function App() {
     try { await cloud().saveBackup(json, history.length); }
     catch (e) { save({ ts: Date.now(), ok: false, err: String((e && (e.code || e.message)) || e).slice(0, 120) }); throw e; }
     lastUpKey.current = dk; lastCloud.current = key; setCloudMem({ bkHash: strHash(key) }); cloudN.current = history.length; save({ ts: Date.now(), ok: true });
+    runBoard();
     return "✓ " + T("acBkNowDone");
   };
   const [newsAt, setNewsAt] = useState(null);
@@ -8396,6 +9020,28 @@ export default function App() {
         @keyframes revTap{from{opacity:.55}to{opacity:1}}
         .revShake{animation:revShake .5s ease .46s}
         .revDeal{animation:revDeal .55s ${MO.pop} both}
+        .celFlame{animation:celPop .7s ${MO.spring} backwards}
+        @keyframes celPop{0%{transform:scale(.2) translateY(40px);opacity:0}70%{transform:scale(1.12)}100%{transform:scale(1)}}
+        .celOuter{transform-origin:60px 128px;animation:celFlick 1.6s ease-in-out infinite alternate}
+        .celInner{transform-origin:60px 122px;animation:celFlick 1.1s ease-in-out infinite alternate-reverse}
+        @keyframes celFlick{0%{transform:scale(1,1) skewX(0)}50%{transform:scale(.97,1.04) skewX(-2deg)}100%{transform:scale(1.02,.97) skewX(2deg)}}
+        .celSpark{position:absolute;left:calc(50% - 3px + var(--sx));bottom:70px;width:6px;height:6px;border-radius:99px;background:#ffb04d;opacity:0;animation:celSpark 1.6s ease-out infinite;animation-delay:var(--sd)}
+        @keyframes celSpark{0%{transform:translateY(0);opacity:0}15%{opacity:1}100%{transform:translateY(-110px);opacity:0}}
+        .celOut{animation:celOut .45s ${MO.ease} forwards}.celIn{animation:celIn .5s ${MO.spring} forwards}
+        @keyframes celOut{to{transform:translateY(-100%);opacity:0}}
+        @keyframes celIn{to{transform:translateY(-100%)}}
+        .celHead{animation:celHead 1.2s ease-in-out .8s infinite alternate}
+        @keyframes celHead{to{transform:scale(1.35);opacity:.75}}
+        @media (prefers-reduced-motion: reduce){.celFlame,.celOuter,.celInner,.celSpark,.celHead{animation:none}.celOut{animation:none;opacity:0}.celIn{animation:none;transform:translateY(-100%)}}
+        .gmDeal{animation:gmDeal ${MO.t3} ${MO.pop} backwards;animation-delay:var(--dl,0ms)}
+        @keyframes gmDeal{from{transform:translateY(60px) rotate(-8deg);opacity:0}}
+        .gmPop{animation:gmPop .42s ${MO.spring}}
+        @keyframes gmPop{0%{transform:scale(.6)}60%{transform:scale(1.18)}100%{transform:scale(1)}}
+        .gmBump{animation:gmBump .26s ${MO.spring}}
+        @keyframes gmBump{0%{transform:scale(1)}45%{transform:scale(1.18)}100%{transform:scale(1)}}
+        .gmGlow{animation:gmGlow .5s ease-out;box-shadow:0 0 18px var(--gc)}
+        @keyframes gmGlow{0%{transform:translateY(0)}40%{transform:translateY(-6px) scale(1.08)}100%{transform:none}}
+        @media (prefers-reduced-motion: reduce){.gmDeal,.gmPop,.gmBump,.gmGlow{animation:none}}
         @keyframes revDeal{from{transform:translateY(55vh) rotate(-18deg) scale(.6);opacity:0}to{transform:none;opacity:1}}
         .revTw{position:absolute;border-radius:2px;transform:translate(-50%,-50%) rotate(45deg) scale(0);animation:revTw var(--du) ease-in-out var(--dl) infinite}
         @keyframes revTw{0%,100%{transform:translate(-50%,-50%) rotate(45deg) scale(0);opacity:0}50%{transform:translate(-50%,-50%) rotate(45deg) scale(1);opacity:1}}
@@ -8487,8 +9133,9 @@ export default function App() {
                 {screen === "settings" && <SettingsTab initPage={setPage0} settings={settings} setSettings={setSettings} history={history} profile={profile} setProfile={setProfile}
                   kcal={kcal} autoBk={autoBk} onAutoBackup={runAutoBackup}
                   onImport={importAll} acct={acct} cloudBk={cloudBk} onAcctOpen={() => go("friends")} onCloudRestore={restoreFromCloud} onCloudBackupNow={cloudBackupNow} onSignOut={signOut} onDeleteAccount={deleteAccount} />}
+                {screen === "game" && <GameTab history={history} profile={profile} setProfile={setProfile} acct={acct} onPlay={sv => { gameSave(sv); setGamePlay(sv); }} />}
                 {screen === "friends" && <OpenInApp />}
-                {screen === "friends" && <FriendsTab key={"fr" + addSeq} modHidden={modHidden} setTopHead={setTopHead} acct={acct} history={history} profile={profile} social={social} chatWith={chatWith} setChatWith={setChatWith} onBlocked={setBlocked} onSignIn={signIn} onCreate={createProfile} onRename={renameNick} onSetGlobal={setGlobal} />}
+                {screen === "friends" && <FriendsTab key={"fr" + addSeq} modHidden={modHidden} setTopHead={setTopHead} acct={acct} history={history} profile={profile} social={social} chatWith={chatWith} setChatWith={setChatWith} onBlocked={setBlocked} onSignIn={signIn} onCreate={createProfile} onRename={renameNick} onSetGlobal={setGlobal} fx={friendsFx} />}
               </div>
               {session && session.phase !== "summary" && <MiniPlayer session={session} live={live} onOpen={resume} />}
               {exitAsk && <ExitPrompt history={history} session={session} onStay={() => { sfxTap(); setExitAsk(false); }} onLeave={() => { setExitAsk(false); exitApp(); }} />}
@@ -8500,6 +9147,8 @@ export default function App() {
             onGo={go} onResume={resume} onClose={() => setMenuOpen(false)} onNews={() => { setMenuOpen(false); setNewsOpen(true); }} />
           {notice && <LiveNotice n={notice} people={Object.fromEntries([...(social.friends || []), ...(social.reqs || [])].map(x => [x.uid, x]))} onClose={() => setNotice(null)}
             onOpen={n => { setNotice(null); go("friends"); setChatWith(n.kind === "msg" ? n.uid : null); }} />}
+          {gamePlay && <GameTable key={gamePlay.at || 0} saved={gamePlay} history={history} onEnd={endGame} onQuit={quitGame} />}
+          {gameEnd && <GameEnd res={gameEnd} onClose={() => setGameEnd(null)} onAgain={() => setGameEnd(null)} />}
           {skipOpen && <SkipSheet freezes={freezesAvailable(history)} onSave={saveSkip} onClose={() => setSkipOpen(false)} />}
       {howId && <HowTo id={howId} history={history} onClose={() => setHowId(null)} />}
           {tourRun && onboard === null && <Tour key={tourRun.ch} run={tourRun} x={tourX} done={tourDone} onStep={i => setTourRun(r => (r && i !== null ? { ...r, i } : null))} onEnd={endTour} onChapterDone={tourChapterDone} onStart={startTour} />}

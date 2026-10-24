@@ -1,5 +1,5 @@
 rules_version = '2';
-// HW App (1.7.0): who may read and write what. Paste into Firebase console → Firestore → Rules → Publish.
+// HW App (1.8.0): who may read and write what. Paste into Firebase console → Firestore → Rules → Publish.
 // Tested in CI against the Firestore emulator (.github/rules-test). Anything not allowed here is denied.
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -37,11 +37,19 @@ service cloud.firestore {
       allow get: if isMe(uid);
     }
     // World leaderboard: only people who switched it on; read in pages of at most 100. Hidden after reports: can't join.
+    // 1.8.0: the real entries (with pts, the checked score the list is ordered by) are written only by the push server
+    // from the checked cloud backup (src/fair.js). An older app may still write its own copy without pts: allowed, so
+    // its profile saves don't fail, but such a copy never shows in the list (ordered by pts) and can't carry pts.
     match /board/{uid} {
       allow get: if signedIn();
       allow list: if signedIn() && request.query.limit <= 100;
       allow create, update: if isMe(uid) && only(['nick', 'pfp', 'xp', 'lvl', 'streak', 'n', 'ts']) && statsOk() && !modHidden(uid);
       allow delete: if isMe(uid);
+    }
+    // 1.8.0: the server's check of your world entry (when it first saw each workout, flags, the last result); written
+    // only by the server; you can read it. ok = true is set by hand by the developer after a check.
+    match /fair/{uid} {
+      allow get: if isMe(uid);
     }
     // Profile cards (1.7.0, like a Steam profile): level, streaks, workouts, reps, time, badge tiers and exercise ranks.
     // vis = who may open it: 'friends' (default), 'all' (anyone signed in) or 'none' (only you). People you blocked
@@ -177,6 +185,31 @@ service cloud.firestore {
         && data().get('t', []) is list && data().get('t', []).size() <= 5
         && data().lang is string && data().lang.size() <= 5 && data().off is bool
         && data().blk is list && data().blk.size() <= 500 && nowTs();
+    }
+    // 1.8.0 ranked card games: ratings (r, wins, losses, draws, the open game and the last result) are written only by
+    // the push server, which replays every game; anyone signed in reads them (the ranked list, at most 100 at a time).
+    // runs/ (finished ranked games others play against) is the server's alone.
+    match /ranked/{uid} {
+      allow get: if signedIn();
+      allow list: if signedIn() && request.query.limit <= 100;
+    }
+    // 1.8.0 friend streaks: days/{uid} = your last training days (dates only), readable by your friends, so a shared
+    // streak can be counted on both phones; fstreak/{a_b} = a friend streak between two friends (sorted uids): one
+    // invites (by, ok false), the other accepts (ok true, start = that day); either can end it.
+    match /days/{uid} {
+      allow get: if isMe(uid) || (signedIn() && exists(/databases/$(database)/documents/friends/$(uid)/list/$(request.auth.uid)));
+      allow create, update: if isMe(uid) && only(['d', 'ts']) && data().d is list && data().d.size() <= 60 && nowTs();
+      allow delete: if isMe(uid);
+    }
+    match /fstreak/{pid} {
+      allow get, delete: if inChat(pid);
+      allow list: if signedIn() && request.auth.uid in resource.data.m;
+      allow create: if inChat(pid) && friendsWith(otherIn(pid)) && only(['m', 'by', 'ok', 'start', 'ts'])
+        && data().m == members(pid) && members(pid)[0] < members(pid)[1]
+        && data().by == request.auth.uid && data().ok == false && data().start == null && nowTs();
+      allow update: if inChat(pid) && friendsWith(otherIn(pid)) && resource.data.ok == false && resource.data.by != request.auth.uid
+        && data().diff(resource.data).affectedKeys().hasOnly(['ok', 'start', 'ts'])
+        && data().ok == true && data().start is string && data().start.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$') && nowTs();
     }
     // Reports about a profile: anyone signed in can send one; only the developer reads them (console).
     match /reports/{id} {

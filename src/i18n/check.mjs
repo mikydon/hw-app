@@ -7,6 +7,11 @@ import { fileURLToPath, pathToFileURL } from "url";
 const dir = path.dirname(fileURLToPath(import.meta.url));
 const en = (await import(pathToFileURL(path.join(dir, "en.js")))).default;
 const ph = s => (s.match(/\{\w+\}/g) || []).sort().join(",");
+// English only for now (Michael, Oct 25, 2026: new features ship in English first, other languages later):
+// keys listed in en-only.json ("ui.someKey", "pl.someKey", "news181", "gm") may be missing in a locale; the app shows
+// the English text there (index.js merges every locale over en.js). Present keys are still checked in full.
+const EN_ONLY = new Set(JSON.parse(fs.readFileSync(path.join(dir, "en-only.json"), "utf8")).keys);
+const enOnly = p => [...EN_ONLY].some(k => p === k || p.startsWith(k + ".") || p.startsWith(k + "["));
 const codes = process.argv[2] ? [process.argv[2]] : fs.readdirSync(dir).filter(f => /^[a-z]{2}\.js$/.test(f) && f !== "en.js").map(f => f.slice(0, 2));
 let bad = 0;
 for (const code of codes) {
@@ -14,12 +19,13 @@ for (const code of codes) {
   let loc;
   try { loc = (await import(pathToFileURL(path.join(dir, code + ".js")))).default; } catch (e) { console.log(code, "LOAD ERROR", e.message); bad++; continue; }
   const walk = (a, b, p) => {
-    if (b === undefined) { errs.push(`missing ${p}`); return; }
+    if (b === undefined) { if (!enOnly(p)) errs.push(`missing ${p}`); return; }
     if (p === "pl") return; // plural objects checked separately
     if (Array.isArray(a)) {
       if (!Array.isArray(b)) { errs.push(`not array ${p}`); return; }
       // Daily lines are picked by index, so every language needs the same number of them.
-      const fixedLen = /^(fig|ach|ranks|quotes|restDay|doneTitles|doneSubs|news|betaNews)/.test(p);
+      // The card game (gm) reads hands, stakes and rules by index too.
+      const fixedLen = /^(fig|ach|ranks|quotes|restDay|doneTitles|doneSubs|news|betaNews|gm)/.test(p);
       if (fixedLen && a.length !== b.length) errs.push(`length ${p}: ${b.length} vs ${a.length}`);
       if (!b.length) errs.push(`empty ${p}`);
       if (fixedLen) a.forEach((x, i) => walk(x, b[i], `${p}[${i}]`));
@@ -51,9 +57,10 @@ for (const code of codes) {
   const need = new Set(); for (let n = 0; n <= 200; n++) need.add(pr.select(n));
   for (const k of Object.keys(en.pl)) {
     const o = loc.pl && loc.pl[k];
-    if (!o) { errs.push(`missing pl.${k}`); continue; }
+    if (!o) { if (!enOnly(`pl.${k}`)) errs.push(`missing pl.${k}`); continue; }
     for (const c of need) if (!o[c] && !o.other) errs.push(`pl.${k} missing category ${c}`);
-    for (const c of need) { const s = o[c] || o.other; if (s && !s.includes("{n}")) errs.push(`pl.${k}.${c} has no {n}`); }
+    // A unit label shown under a big number (en "other" has no {n}, e.g. celebUnit) needs no {n}.
+    if (en.pl[k].other.includes("{n}")) for (const c of need) { const s = o[c] || o.other; if (s && !s.includes("{n}")) errs.push(`pl.${k}.${c} has no {n}`); }
   }
   console.log(code, errs.length ? `${errs.length} problem(s)` : "OK", `(needs plural forms: ${[...need].join(", ")})`);
   errs.forEach(e => console.log("   ", e));
