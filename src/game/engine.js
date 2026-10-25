@@ -17,10 +17,13 @@ export const SUITS = ["push", "pull", "legs", "core"];
 export const HANDS = ["high", "pair", "two", "circuit", "three", "straight", "flush", "full", "four", "sflush"];
 export const HAND_BASE = { high: [5, 1], pair: [10, 2], two: [20, 2], circuit: [25, 3], three: [30, 3], straight: [30, 4], flush: [35, 4], full: [40, 4], four: [60, 7], sflush: [100, 8] };
 export const HAND_UP = { high: [10, 1], pair: [15, 1], two: [20, 1], circuit: [20, 2], three: [20, 2], straight: [30, 3], flush: [15, 2], full: [25, 2], four: [30, 3], sflush: [40, 4] };
-// Calibrated with the bot (Oct 25, 80 runs each). Michael (01:45): "at the start it's far too easy", so the first antes
-// ask for more and the curve is smoother: without ranks the bot now loses around ante 3–4 (a quarter of runs by blind 8),
-// Emerald in all four types wins ~18 %, Obsidian ~35 %; a person who plans the shop does better.
-export const ANTE_BASE = [600, 1400, 2700, 4800, 7800, 11500, 16500, 23000];
+// Calibrated with the bot (Oct 25, 60–100 runs each, the bot that weighs jokers on sample hands). Michael (01:45): "at the
+// start it's far too easy". Without ranks or with Silver the bot gets through ante 3 and loses around ante 4–5; Emerald
+// in all four types wins ~37 %, Obsidian ~67 %. (A first blind of 800 already stopped a quarter of untrained runs.)
+export const TUT_TARGET = 400;
+// The tutorial's deck (App.jsx TUT): a Pair of Kings, a Circuit, 4 Core cards + a discard for the 5th, a Flush.
+export const TUT_DECK = [11, 24, 10, 18, 29, 39, 41, 46, 43, 27, 48, 1, 15, 35, 50, 12, 21, 26];
+export const ANTE_BASE = [600, 1700, 3500, 6000, 9500, 14000, 20000, 28000];
 export const BLIND_MUL = [1, 1.5, 2];
 export const BLIND_PAY = [3, 4, 5];
 export const RULES = { hands: 4, discards: 3, handSize: 8, maxPlay: 5, jokers: 5, money: 4, reroll: 5, drill: 3, interestMax: 5 };
@@ -48,6 +51,21 @@ export const JOKERS = {
   five: { r: 2, cost: 8, lv: 9 }, // × 2 mult when five cards score
   fullbody: { r: 2, cost: 8, lv: 10 }, // × 1.5 mult when the played cards have all four types
   ironcore: { r: 2, cost: 8, lv: 12 }, // each scored core card: × 1.2 mult
+  // 1.8.0 (Michael, Oct 25, 02:00: "more jokers, so there are more strategies"): small hands, single types, discards,
+  // the first hand, a joker that grows, economy and passive ones (a hand, a discard, a card more)
+  rest: { r: 0, cost: 5, lv: 2 }, // +20 chips for every discard you still have
+  short: { r: 0, cost: 5, lv: 3 }, // +15 mult when you play 3 cards or fewer
+  spotter: { r: 0, cost: 5, lv: 3 }, // +12 mult with two pair or a full house
+  coupon: { r: 0, cost: 4, lv: 5 }, // New (reroll) costs $2 less
+  fresh: { r: 1, cost: 6, lv: 4 }, // × 1.5 mult on the first hand of each blind
+  slate: { r: 1, cost: 6, lv: 5 }, // +1 discard in every blind
+  bighand: { r: 1, cost: 7, lv: 6 }, // +1 card in hand
+  compound: { r: 1, cost: 6, lv: 7 }, // interest up to $10 instead of $5
+  solo: { r: 1, cost: 6, lv: 7 }, // × 3 mult when you play a single card
+  wind: { r: 2, cost: 8, lv: 8 }, // +1 hand in every blind
+  specialist: { r: 2, cost: 8, lv: 9 }, // × 2 mult when 3+ cards are played and all are one type
+  overload: { r: 2, cost: 8, lv: 10 }, // +1 mult for good every time you play a hand with a pair in it (starts at 0)
+  double: { r: 2, cost: 8, lv: 11 }, // the first scored card counts twice
 };
 export const JOKER_IDS = Object.keys(JOKERS);
 // Perks: one chosen at the start, unlocked by training (checked numbers in ranked).
@@ -130,6 +148,8 @@ const contains = (cards, h) => {
 
 // The score of playing these cards now. Returns {hand, scored, chips, mult, score, steps} (steps = what added what,
 // for the animation: [{c?, j?, chips?, mult?, x?}]).
+export const hasPair = cards => contains(cards, "pair");
+const owns = (st, id) => st.jokers.some(j => j.id === id);
 export function scoreOf(st, cards) {
   const { hand, scored } = handOf(cards);
   const lv = (st.levels && st.levels[hand]) || 0;
@@ -138,7 +158,9 @@ export function scoreOf(st, cards) {
   const boss = st.boss && st.blind === 2 ? st.boss : null;
   const dead = s => boss === "skip_" + s;
   const J = st.jokers.map(j => j.id);
-  for (const c of scored) {
+  // "double": the first scored card counts twice (its chips and every per-card joker again)
+  const seq = J.includes("double") && scored.length ? [scored[0], ...scored] : scored;
+  for (const c of seq) {
     const s = suitOf(c), v = valueOf(c);
     if (dead(s)) { steps.push({ c, dead: 1 }); continue; }
     const add = chipsOf(c) + 2 * Math.max(0, st.suit[s]);
@@ -166,6 +188,13 @@ export function scoreOf(st, cards) {
     else if (j === "lastround" && st.handsLeft === 1) { mult *= 3; steps.push({ j, x: 3 }); }
     else if (j === "five" && scored.length === 5) { mult *= 2; steps.push({ j, x: 2 }); }
     else if (j === "fullbody" && new Set(cards.map(suitOf)).size === 4) { mult *= 1.5; steps.push({ j, x: 1.5 }); }
+    else if (j === "rest" && st.discardsLeft > 0) { chips += 20 * st.discardsLeft; steps.push({ j, chips: 20 * st.discardsLeft }); }
+    else if (j === "short" && cards.length <= 3) { mult += 15; steps.push({ j, mult: 15 }); }
+    else if (j === "spotter" && (hand === "two" || hand === "full")) { mult += 12; steps.push({ j, mult: 12 }); }
+    else if (j === "overload") { const v = (st.jokers.find(x => x.id === "overload").v || 0) + (hasPair(cards) ? 1 : 0); if (v) { mult += v; steps.push({ j, mult: v }); } }
+    else if (j === "fresh" && !(st.bp > 0)) { mult *= 1.5; steps.push({ j, x: 1.5 }); }
+    else if (j === "solo" && cards.length === 1) { mult *= 3; steps.push({ j, x: 3 }); }
+    else if (j === "specialist" && cards.length >= 3 && new Set(cards.map(suitOf)).size === 1) { mult *= 2; steps.push({ j, x: 2 }); }
   }
   if (st.perk === "streak") { const m = Math.min(10, Math.floor((st.streak || 0) / 7)); if (m) { mult += m; steps.push({ p: "streak", mult: m }); } }
   if (st.perk === "obsidian") { mult *= 1.5; steps.push({ p: "obsidian", x: 1.5 }); }
@@ -178,17 +207,20 @@ export function targetOf(ante, blind, boss, stake = 0) { return Math.round(ANTE_
 function startBlind(st) {
   const r = rng(st.seed, "deck", st.ante, st.blind);
   st.deck = shuffle([...Array(52).keys()], r);
+  // the tutorial's first blind: a fixed order on top (the rest of the deck stays shuffled)
+  if (st.tdeck && st.ante === 0 && st.blind === 0) st.deck = [...st.tdeck, ...st.deck.filter(c => !st.tdeck.includes(c))];
+  st.bp = 0;
   st.hand = [];
   st.boss = st.blind === 2 ? BOSSES[Math.floor(rng(st.seed, "boss", st.ante)() * BOSSES.length)] : null;
   const boss = st.boss;
-  st.handsLeft = RULES.hands + (st.perk === "endurance" ? 1 : 0) - (boss === "few" ? 1 : 0);
-  st.discardsLeft = boss === "norest" ? 0 : Math.max(0, RULES.discards + (st.perk === "warmup" ? 1 : 0) - (st.stake >= 3 ? 1 : 0));
-  st.target = targetOf(st.ante, st.blind, boss, st.stake);
+  st.handsLeft = RULES.hands + (st.perk === "endurance" ? 1 : 0) + (owns(st, "wind") ? 1 : 0) - (boss === "few" ? 1 : 0);
+  st.discardsLeft = boss === "norest" ? 0 : Math.max(0, RULES.discards + (st.perk === "warmup" ? 1 : 0) + (owns(st, "slate") ? 1 : 0) - (st.stake >= 3 ? 1 : 0));
+  st.target = st.tut ? TUT_TARGET : targetOf(st.ante, st.blind, boss, st.stake);
   st.score = 0;
   st.phase = "blind";
   draw(st);
 }
-function draw(st) { const size = RULES.handSize + (st.perk === "allround" ? 1 : 0) - (st.stake >= 4 ? 1 : 0); while (st.hand.length < size && st.deck.length) st.hand.push(st.deck.shift()); }
+function draw(st) { const size = RULES.handSize + (st.perk === "allround" ? 1 : 0) + (owns(st, "bighand") ? 1 : 0) - (st.stake >= 4 ? 1 : 0); while (st.hand.length < size && st.deck.length) st.hand.push(st.deck.shift()); }
 // opts: {seed, mode: "run"|"duel", suit: {push..core: level}, perk, streak, pool: [joker ids] (what the shop may offer)}
 export function newGame(opts) {
   const st = {
@@ -199,11 +231,15 @@ export function newGame(opts) {
     ante: 0, blind: 0, money: RULES.money + (opts.perk === "volume" ? 4 : 0), jokers: [], levels: {}, played: 0,
     total: 0, cleared: 0, best: 0, shop: null, last: null, n: 0,
   };
+  // tutorial: up to 52 different cards on top of the first blind's deck
+  if (opts.tut) st.tut = 1; // the tutorial: a fixed deck, a small target, a fixed shop
+  if (Array.isArray(opts.deck)) { const d = [...new Set(opts.deck.filter(c => Number.isInteger(c) && c >= 0 && c < 52))]; if (d.length) st.tdeck = d; }
   startBlind(st);
   return st;
 }
 const clone = st => JSON.parse(JSON.stringify(st));
 function makeShop(st, rerolls) {
+  if (st.tut) return { items: [{ k: "joker", id: "joker", cost: 4 }, { k: "joker", id: "pairs", cost: 4 }, { k: "drill", id: "pair", cost: 3 }], rerolls, rerollCost: RULES.reroll + rerolls };
   const r = rng(st.seed, "shop", st.ante, st.blind, rerolls);
   const own = new Set(st.jokers.map(j => j.id));
   const pick = () => {
@@ -216,16 +252,16 @@ function makeShop(st, rerolls) {
   const items = [];
   for (let i = 0; i < 2; i++) { const j = pick(); if (j) items.push({ k: "joker", id: j, cost: JOKERS[j].cost }); }
   items.push({ k: "drill", id: HANDS[Math.floor(r() * HANDS.length)], cost: RULES.drill });
-  return { items, rerolls, rerollCost: RULES.reroll + rerolls };
+  return { items, rerolls, rerollCost: Math.max(1, RULES.reroll + rerolls - (st.jokers.some(j => j.id === "coupon") ? 2 : 0)) };
 }
 // After a blind is beaten: pay, interest, the shop (or the end).
 function blindWon(st) {
   st.cleared++;
-  const pay = (st.blind === 0 && st.stake >= 1 ? 0 : BLIND_PAY[st.blind]) + st.handsLeft + Math.min(RULES.interestMax, Math.floor(st.money / 5)) + (st.jokers.some(j => j.id === "bank") ? 3 : 0);
+  const pay = (st.blind === 0 && st.stake >= 1 ? 0 : BLIND_PAY[st.blind]) + st.handsLeft + Math.min(owns(st, "compound") ? 10 : RULES.interestMax, Math.floor(st.money / 5)) + (st.jokers.some(j => j.id === "bank") ? 3 : 0);
   st.money += pay; st.last = { ...(st.last || {}), pay };
   const lastBlind = st.blind === 2 && st.ante + 1 >= st.antes;
   if (lastBlind) { st.phase = "won"; return; }
-  st.phase = "shop"; st.shop = makeShop(st, 0);
+  st.phase = "shop"; st.shop = { ...makeShop(st, 0), pay }; // pay stays with the shop (st.last changes with every buy)
 }
 // One move. Returns the new state; an impossible move throws (the server rejects such a replay).
 export function act(state, a) {
@@ -246,7 +282,8 @@ export function act(state, a) {
     }
     if (st.handsLeft <= 0) bad("no hands");
     const sc = scoreOf(st, cards);
-    st.handsLeft--; st.played++; st.score += sc.score; st.total += sc.score; st.best = Math.max(st.best, sc.score);
+    st.handsLeft--; st.played++; st.bp = (st.bp || 0) + 1; st.score += sc.score;
+    if (hasPair(cards)) st.jokers.forEach(j => { if (j.id === "overload") j.v = (j.v || 0) + 1; }); st.total += sc.score; st.best = Math.max(st.best, sc.score);
     st.hand = st.hand.filter((_, i) => !idx.includes(i));
     st.last = { t: "play", cards, hand: sc.hand, chips: sc.chips, mult: sc.mult, score: sc.score };
     if (st.score >= st.target) blindWon(st);
@@ -259,7 +296,7 @@ export function act(state, a) {
     if (a.t === "buy") {
       const it = sh.items[a.i];
       if (!it || it.sold || st.money < it.cost) bad("buy");
-      if (it.k === "joker") { if (st.jokers.length >= RULES.jokers) bad("full"); st.jokers.push({ id: it.id, cost: it.cost }); }
+      if (it.k === "joker") { if (st.jokers.length >= RULES.jokers) bad("full"); st.jokers.push({ id: it.id, cost: it.cost }); if (it.id === "coupon") sh.rerollCost = Math.max(1, sh.rerollCost - 2); }
       else st.levels[it.id] = (st.levels[it.id] || 0) + 1;
       st.money -= it.cost; it.sold = 1; st.last = { t: "buy", it };
       return st;
@@ -271,7 +308,7 @@ export function act(state, a) {
     }
     if (a.t === "reroll") {
       if (st.money < sh.rerollCost) bad("reroll");
-      st.money -= sh.rerollCost; st.shop = makeShop(st, sh.rerolls + 1); st.last = { t: "reroll" };
+      st.money -= sh.rerollCost; st.shop = { ...makeShop(st, sh.rerolls + 1), pay: sh.pay }; st.last = { t: "reroll" };
       return st;
     }
     if (a.t === "next") {
@@ -332,6 +369,16 @@ export function bestPlay(st) {
   }
   return best;
 }
+// How good a set of jokers is for the bot: the best play's score on a few fixed sample hands of the next blind, with
+// rough weights for the ones that don't score by themselves (an extra hand, discard or card, cheaper rerolls, interest).
+const PASSIVE = { wind: 1.25, bighand: 1.12, slate: 1.06, rest: 1.04, compound: 1.04, coupon: 1.02, bank: 1.04 };
+function jokerValue(st, jokers) {
+  const r = rng(st.seed, "botshop", st.ante, st.blind), deck = shuffle([...Array(52).keys()], r);
+  const t = { ...st, jokers, boss: null, handsLeft: 2, discardsLeft: 1, bp: 1, played: st.played };
+  let sum = 0;
+  for (let k = 0; k < 5; k++) { t.hand = deck.slice(k * 8, k * 8 + 8); sum += bestPlay(t).s; }
+  return jokers.reduce((v, j) => v * (PASSIVE[j.id] || 1), sum);
+}
 // level 0 … 10: how well it plays (a weaker bot sometimes plays a worse hand and never rerolls)
 export function botMove(st, level = 5) {
   const r = rng(st.seed, "bot", st.n, level);
@@ -347,10 +394,18 @@ export function botMove(st, level = 5) {
     return out.length ? { t: "discard", c: out } : { t: "play", c: b.idx };
   }
   if (st.phase === "shop") {
-    const items = st.shop.items.map((it, i) => ({ ...it, i })).filter(it => !it.sold && it.cost <= st.money && (it.k !== "joker" || st.jokers.length < RULES.jokers));
-    const j = items.filter(it => it.k === "joker").sort((a, b) => b.cost - a.cost)[0];
-    if (j) return { t: "buy", i: j.i };
-    const d = items.find(it => it.k === "drill");
+    // 1.8.0: it weighs jokers on a few sample hands (what a person would see) instead of taking the dearest one,
+    // and swaps out its weakest joker when the slots are full and a much better one is offered
+    const value = jokers => jokerValue(st, jokers);
+    const now = value(st.jokers);
+    const offers = st.shop.items.map((it, i) => ({ ...it, i })).filter(it => !it.sold && it.k === "joker");
+    let best = null;
+    for (const it of offers) {
+      if (st.jokers.length < RULES.jokers) { if (it.cost <= st.money) { const v = value([...st.jokers, { id: it.id, cost: it.cost }]); if (!best || v > best.v) best = { v, m: { t: "buy", i: it.i } }; } }
+      else st.jokers.forEach((jk, ji) => { if (st.money + Math.max(1, Math.floor(jk.cost / 2)) < it.cost) return; const v = value(st.jokers.map((x, k) => (k === ji ? { id: it.id, cost: it.cost } : x))); if (v > now * 1.15 && (!best || v > best.v)) best = { v, m: { t: "sell", i: ji } }; });
+    }
+    if (best && best.v > now * 1.02) return best.m;
+    const d = st.shop.items.map((it, i) => ({ ...it, i })).find(it => !it.sold && it.k === "drill" && it.cost <= st.money);
     if (d && st.money - d.cost >= 5) return { t: "buy", i: d.i };
     return { t: "next" };
   }

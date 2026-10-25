@@ -112,6 +112,70 @@ function melody(notes, type = "triangle", vol = 0.3, cat = "fx") {
     if (ctx.state === "suspended") ctx.resume().then(play); else play();
   } catch (_) {}
 }
+// 1.8.0 Muscle Deck sounds (Michael, Oct 25: "more addictive"): a small synth on the audio clock (one schedule per
+// sound, never chained with setTimeout): ev = {f, at, d, type, v, to (slide to this pitch), noise (a filtered noise
+// burst at f), q}. Scoring climbs: every chip step a semitone higher, multiplier steps a "zap", × steps a big sweep,
+// then a cash register; picks are pitched by the card's value. Off with the sound-effects switch like the rest.
+function synth(evs, vol = 0.22) {
+  if (setting("sndFx") === false) return;
+  vol = Math.min(1, vol * volMul());
+  try {
+    const ctx = window._wac;
+    if (!ctx) return;
+    const play = () => {
+      const t0 = ctx.currentTime + 0.02;
+      if (!window._wacNoise) { const b = ctx.createBuffer(1, ctx.sampleRate * 0.5, ctx.sampleRate), d = b.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; window._wacNoise = b; }
+      evs.forEach(e => {
+        const g = ctx.createGain(), at = t0 + (e.at || 0), d = e.d || 0.08, v = vol * (e.v ?? 1);
+        g.connect(ctx.destination);
+        g.gain.setValueAtTime(0.0001, at);
+        g.gain.exponentialRampToValueAtTime(Math.max(0.0002, v), at + Math.min(0.012, d / 3));
+        g.gain.exponentialRampToValueAtTime(0.0001, at + d);
+        if (e.noise) {
+          const n = ctx.createBufferSource(), f = ctx.createBiquadFilter();
+          n.buffer = window._wacNoise; f.type = "bandpass"; f.frequency.setValueAtTime(e.f || 2000, at); if (e.to) f.frequency.exponentialRampToValueAtTime(e.to, at + d); f.Q.value = e.q || 1.2;
+          n.connect(f); f.connect(g); n.start(at); n.stop(at + d + 0.02);
+        } else {
+          const o = ctx.createOscillator();
+          o.type = e.type || "triangle"; o.frequency.setValueAtTime(e.f, at); if (e.to) o.frequency.exponentialRampToValueAtTime(e.to, at + d * 0.8);
+          o.connect(g); o.start(at); o.stop(at + d + 0.03);
+        }
+      });
+    };
+    if (ctx.state === "suspended") ctx.resume().then(play); else play();
+  } catch (_) {}
+}
+const semi = (base, n) => base * Math.pow(2, n / 12);
+const gmSfx = {
+  // picking a card: a short pluck, higher for higher cards; putting it back: lower and softer
+  pick: (v, on) => synth(on ? [{ f: semi(392, v - 2), to: semi(392, v), d: 0.07, type: "triangle", v: 0.9 }, { f: 2600, d: 0.02, noise: 1, v: 0.25, q: 4 }] : [{ f: semi(330, v - 4), to: semi(330, v - 6), d: 0.06, type: "triangle", v: 0.6 }], 0.18),
+  // new cards: a quick riffle
+  deal: n => synth(Array.from({ length: Math.min(8, Math.max(2, n)) }, (_, k) => ({ at: k * 0.045, f: 2600 - k * 120, d: 0.05, noise: 1, v: 1, q: 0.8 })), 0.45),
+  discard: () => synth([{ f: 900, to: 3800, d: 0.22, noise: 1, v: 0.6, q: 0.9 }, { f: 520, to: 260, d: 0.16, type: "sine", v: 0.35 }], 0.22),
+  // the count: steps = the scoring steps in order; STEP = seconds between them (the animation uses the same)
+  score: (steps, STEP, big) => {
+    const ev = []; let k = 0;
+    steps.forEach((s, i) => {
+      const at = 0.25 + i * STEP;
+      if (s.x) { ev.push({ at, f: 220, to: 880, d: 0.28, type: "sawtooth", v: 0.35 }, { at, f: 330, to: 1320, d: 0.28, type: "square", v: 0.18 }, { at: at + 0.02, f: 1800, to: 6000, d: 0.25, noise: 1, v: 0.35 }); }
+      else if (s.mult) ev.push({ at, f: semi(196, k), to: semi(392, k), d: 0.12, type: "square", v: 0.32 }, { at, f: semi(587, k), d: 0.09, type: "triangle", v: 0.5 });
+      else ev.push({ at, f: semi(523, k), d: 0.07, type: "triangle", v: 0.75 }, { at, f: semi(1046, k), d: 0.04, type: "sine", v: 0.3 });
+      k++;
+    });
+    const end = 0.35 + steps.length * STEP;
+    // cash register: a bright two-note ding with a shimmer, bigger when the hand clears the blind
+    ev.push({ at: end, f: 1568, d: 0.12, type: "triangle", v: 0.8 }, { at: end + 0.09, f: 2093, d: 0.35, type: "triangle", v: 0.8 }, { at: end + 0.09, f: 5000, d: 0.3, noise: 1, v: 0.25, q: 3 });
+    if (big) ev.push({ at: end + 0.2, f: 2637, d: 0.4, type: "sine", v: 0.5 }, { at: end + 0.3, f: 3136, d: 0.5, type: "sine", v: 0.4 });
+    synth(ev, 0.2);
+  },
+  // blind beaten: a short fanfare over a bass note
+  blind: () => synth([[523, 0], [659, 0.09], [784, 0.18], [1046, 0.27], [1318, 0.36]].map(([f, at]) => ({ f, at, d: 0.16, type: "square", v: 0.32 })).concat([{ at: 0.36, f: 1046, d: 0.6, type: "triangle", v: 0.7 }, { at: 0, f: 131, d: 0.7, type: "sine", v: 0.8 }, { at: 0.36, f: 6000, d: 0.5, noise: 1, v: 0.2, q: 2 }]), 0.22),
+  lose: () => synth([{ f: 392, to: 370, d: 0.22, type: "triangle", v: 0.8 }, { at: 0.2, f: 330, to: 311, d: 0.22, type: "triangle", v: 0.8 }, { at: 0.4, f: 262, to: 196, d: 0.6, type: "triangle", v: 0.8 }, { at: 0.4, f: 98, d: 0.6, type: "sine", v: 0.6 }], 0.22),
+  // money: coins (buy = two up, sell = two down), reroll = a shuffle
+  buy: () => synth([{ f: 988, d: 0.07, type: "square", v: 0.35 }, { at: 0.07, f: 1319, d: 0.25, type: "square", v: 0.35 }, { at: 0.07, f: 7000, d: 0.2, noise: 1, v: 0.2, q: 3 }], 0.32),
+  sell: () => synth([{ f: 1319, d: 0.07, type: "square", v: 0.3 }, { at: 0.07, f: 880, d: 0.2, type: "square", v: 0.3 }], 0.32),
+  reroll: () => synth(Array.from({ length: 6 }, (_, k) => ({ at: k * 0.035, f: 2400 + (k % 2) * 900, d: 0.03, noise: 1, v: 0.5, q: 3 })).concat([{ at: 0.22, f: 784, to: 1175, d: 0.12, type: "triangle", v: 0.6 }]), 0.2),
+};
 // Reward sounds come in several variants; the same one never plays twice in a row.
 // (Timer beeps above stay fixed on purpose, so you recognise them without looking.)
 const SFX = {
@@ -7185,7 +7249,7 @@ const DUEL_ON = false, RANKED_ON = false;
 const STAKE_COL = ["#8fd3ff", "#3ddc84", "#ffd23f", "#ff8a3d", "#ff4d5e"];
 const stakeXp = k => 1 + 0.5 * k; // +50 % game XP per stake
 const SUIT_COL = { push: "#ff6b5b", pull: "#3d9bff", legs: "#21b36b", core: "#9a5cff" };
-const JOKER_ICON = { joker: "🃏", chips: "🪙", pairs: "🤝", threes: "🎲", straights: "📏", flushes: "🌊", circuit: "🔄", warmup: "🔥", faces: "👑", aces: "⭐", lastround: "⏱️", even: "⚖️", odd: "🌀", momentum: "🚀", bank: "🏦", five: "✋", fullbody: "🧍", ironcore: "🧱" };
+const JOKER_ICON = { joker: "🃏", chips: "🪙", pairs: "🤝", threes: "🎲", straights: "📏", flushes: "🌊", circuit: "🔄", warmup: "🔥", faces: "👑", aces: "⭐", lastround: "⏱️", even: "⚖️", odd: "🌀", momentum: "🚀", bank: "🏦", five: "✋", fullbody: "🧍", ironcore: "🧱", rest: "🛌", short: "✂️", spotter: "👀", coupon: "🎟️", fresh: "🌱", slate: "🧽", bighand: "🖐️", compound: "📈", solo: "☝️", wind: "🌬️", specialist: "🎯", overload: "🏋️", double: "✌️" };
 // Kapoke = Muscle Deck's money (Michael, Oct 25: "a special sign made only of K"; the name stays the same in every
 // language, like Muscle Deck). In the game texts "$" stands for it; withK() draws the sign in its place.
 const COIN = "Kapoke";
@@ -7215,13 +7279,15 @@ function SuitIcon({ s, size = 14, col }) {
   const d = { push: "M12 3 L22 20 H2 Z", pull: "M2 4 H22 L12 21 Z", core: "M12 1.5 L22.5 12 L12 22.5 L1.5 12 Z" }[s];
   return <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true" style={{ flexShrink: 0, display: "block" }}>{s === "legs" ? <circle cx="12" cy="12" r="9.5" fill={c} /> : <path d={d} fill={c} strokeLinejoin="round" stroke={c} strokeWidth="1.5" />}</svg>;
 }
-function PlayCard({ c, sel, onClick, w = 64, bests, dead, pop, i = 0, deal }) {
+// out = selected but not part of the hand (it adds nothing); still = a small picture in a guide or a breakdown
+function PlayCard({ c, sel, onClick, w = 64, bests, dead, pop, i = 0, deal, out, still, glow }) {
   const s = GM.suitOf(c), v = GM.valueOf(c), col = SUIT_COL[s], face = v >= 11 && v <= 13;
   const ex = face ? GM.faceExercise(c, bests) : null;
+  const Tag = still ? "span" : "button";
   return (
-    <button type="button" data-card={c} data-sel={sel ? 1 : 0} onClick={onClick} className={(deal ? "gmDeal " : "") + (pop ? "gmPop" : "")} aria-pressed={!!sel}
-      aria-label={`${cardVal(c)} ${T("grp_" + s)}${ex ? " · " + EX[ex].name : ""}`}
-      style={{ ...btnBase, position: "relative", width: w, height: Math.round(w * 1.4), flexShrink: 0, padding: 0, borderRadius: Math.round(w * 0.14), background: dead ? "#c9c3b5" : "#f7f3ea", color: col, border: `2px solid ${sel ? C.signal : "rgba(0,0,0,.18)"}`, boxShadow: sel ? `0 0 0 2px ${C.signal}, 0 10px 22px rgba(0,0,0,.45)` : "0 4px 12px rgba(0,0,0,.35)", transform: sel ? "translateY(-14px)" : "none", transition: `transform ${MO.t1} ${MO.ease}, box-shadow ${MO.t1}`, overflow: "hidden", "--dl": `${i * 45}ms`, opacity: dead ? 0.7 : 1 }}>
+    <Tag type={still ? undefined : "button"} data-card={still ? undefined : c} data-mini={still ? c : undefined} data-out={out ? 1 : undefined} data-glow={glow ? 1 : undefined} data-sel={still ? undefined : sel ? 1 : 0} onClick={onClick} className={(deal ? "gmDeal " : "") + (pop ? "gmPop" : "") + (glow ? " gmGlowCard" : "")} aria-pressed={still ? undefined : !!sel}
+      aria-label={`${cardVal(c)} ${T("grp_" + s)}${ex ? " · " + EX[ex].name : ""}`} role={still ? "img" : undefined}
+      style={{ ...btnBase, display: still ? "inline-block" : undefined, verticalAlign: "middle", position: "relative", width: w, height: Math.round(w * 1.4), flexShrink: 0, padding: 0, borderRadius: Math.round(w * 0.14), background: dead ? "#c9c3b5" : "#f7f3ea", color: col, border: `2px solid ${sel ? C.signal : "rgba(0,0,0,.18)"}`, boxShadow: sel ? `0 0 0 2px ${C.signal}, 0 10px 22px rgba(0,0,0,.45)` : "0 4px 12px rgba(0,0,0,.35)", transform: sel ? "translateY(-14px)" : "none", transition: `transform ${MO.t1} ${MO.ease}, box-shadow ${MO.t1}`, overflow: "hidden", "--dl": `${i * 45}ms`, opacity: dead ? 0.7 : out ? 0.45 : 1, filter: out ? "saturate(.35)" : undefined }}>
       <span style={{ position: "absolute", left: 5, top: 3, fontFamily: DISPLAY, fontSize: Math.round(w * 0.3), fontWeight: 900, lineHeight: 1 }}>{cardVal(c)}</span>
       <span style={{ position: "absolute", left: 6, top: Math.round(w * 0.36) }}><SuitIcon s={s} size={Math.round(w * 0.17)} /></span>
       <span style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", padding: `${Math.round(w * 0.32)}px 4px 4px` }}>
@@ -7230,9 +7296,65 @@ function PlayCard({ c, sel, onClick, w = 64, bests, dead, pop, i = 0, deal }) {
           : <SuitIcon s={s} size={Math.round(w * 0.42)} />}
       </span>
       {dead && <span aria-hidden="true" style={{ position: "absolute", inset: 0, background: "repeating-linear-gradient(45deg, rgba(0,0,0,.18) 0 4px, transparent 4px 9px)" }} />}
-    </button>
+    </Tag>
   );
 }
+// 1.8.0 (Michael, Oct 25: "why do I get 42 here and 35 there, why is the multiplier 3 here and 11 there?"): every step
+// of a score, in the order the game adds it: the hand's base, each scored card (its value + your rank bonus), jokers
+// (+ adds, × multiplies what is there so far), perks; the cards that don't count, and the total.
+function ScoreWhy({ g, cards, bests, onClose }) {
+  const sc = GM.scoreOf(g, cards), lv = (g.levels || {})[sc.hand] || 0;
+  const out = cards.filter(c => !sc.scored.includes(c));
+  let chips = GM.HAND_BASE[sc.hand][0] + GM.HAND_UP[sc.hand][0] * lv, mult = GM.HAND_BASE[sc.hand][1] + GM.HAND_UP[sc.hand][1] * lv;
+  const rows = [{ k: "hand", icon: null, name: `${handName(sc.hand)}${lv ? " · " + T("gmLv", { n: lv + 1 }) : ""}`, d: T("gmWhyBase"), chips, mult, plus: `${chips} × ${mult}` }];
+  for (const st of sc.steps) {
+    const before = mult;
+    if (st.chips) chips += st.chips;
+    if (st.mult) mult += st.mult;
+    if (st.x) mult = Math.round(mult * st.x * 100) / 100;
+    const plus = [st.chips ? `+${st.chips}` : "", st.mult ? `+${st.mult} ${T("gmMultShort")}` : "", st.x ? `× ${st.x} ${T("gmMultShort")} (${fmtM(before)} → ${fmtM(mult)})` : ""].filter(Boolean).join(" ");
+    if (st.dead) rows.push({ k: "dead", c: st.c, name: `${cardVal(st.c)} ${T("grp_" + GM.suitOf(st.c))}`, d: T("gmWhyDead"), plus: "+0" });
+    else if (st.j) rows.push({ k: "j", c: st.c, j: st.j, name: jName(st.j), d: withK(jDesc(st.j)), plus });
+    else if (st.p) rows.push({ k: "p", p: st.p, name: L.gm.perk[st.p][0], d: L.gm.perk[st.p][1], plus });
+    else {
+      const s = GM.suitOf(st.c), base = GM.chipsOf(st.c), bonus = st.chips - base, rk = g.suit[s] >= 0 ? RANKS[g.suit[s]] : null;
+      rows.push({ k: "card", c: st.c, name: `${cardVal(st.c)} ${T("grp_" + s)}`, d: bonus > 0 && rk ? T("gmWhyCardRk", { v: base, rank: `${rk.icon} ${rk.name}`, n: bonus }) : T("gmWhyCard", { v: base }), plus: `+${st.chips}` });
+    }
+  }
+  return (
+    <Sheet title={T("gmWhyT")} onClose={onClose}>
+      <div data-gm-why-sheet style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+        {rows.map((r, i) => (
+          <div key={i} data-why-row={r.k} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", borderRadius: 12, background: SOFT() }}>
+            <span style={{ width: 34, flexShrink: 0, display: "flex", justifyContent: "center" }}>
+              {r.c !== undefined && r.k !== "j" ? <PlayCard c={r.c} w={30} still bests={bests} dead={r.k === "dead"} />
+                : r.k === "j" ? <span aria-hidden="true" style={{ fontSize: 22 }}>{r.j.startsWith("fan_") ? <SuitIcon s={r.j.slice(4)} size={20} /> : JOKER_ICON[r.j] || "🃏"}</span>
+                : r.k === "p" ? <span aria-hidden="true" style={{ fontSize: 22 }}>{PERK_ICON[r.p]}</span>
+                : <span aria-hidden="true" style={{ fontSize: 22 }}>🂠</span>}
+            </span>
+            <span style={{ flex: 1, minWidth: 0 }}>
+              <span style={{ display: "block", fontWeight: 800, fontSize: 14.5 }}>{r.name}</span>
+              <span style={{ display: "block", fontSize: 12, color: C.dim, lineHeight: 1.35 }}>{r.d}</span>
+            </span>
+            <span style={{ fontFamily: DISPLAY, fontWeight: 900, fontSize: 16, color: r.k === "dead" ? C.dim : C.chalk, textAlign: "right", maxWidth: "42%" }}>{r.plus}</span>
+          </div>
+        ))}
+        {out.length > 0 && (
+          <div data-why-out style={{ padding: "8px 10px", borderRadius: 12, border: `1px dashed ${C.line}` }}>
+            <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginBottom: 6 }}>{out.map(c => <PlayCard key={c} c={c} w={30} still out bests={bests} />)}</div>
+            <div style={{ fontWeight: 800, fontSize: 14 }}>{T("gmWhyOut")}</div>
+            <div style={{ fontSize: 12, color: C.dim, lineHeight: 1.4 }}>{T("gmWhyOutD", { hand: handName(sc.hand) })}</div>
+          </div>
+        )}
+        <div data-why-total style={{ marginTop: 6, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, flexWrap: "wrap" }}>
+          <ScoreBox chips={sc.chips} mult={sc.mult} total={sc.score} />
+        </div>
+        <div style={{ fontSize: 12.5, color: C.dim, textAlign: "center", lineHeight: 1.4 }}>{T("gmWhyTotal")}</div>
+      </div>
+    </Sheet>
+  );
+}
+const fmtM = m => (Number.isInteger(m) ? String(m) : m.toFixed(2).replace(/0$/, ""));
 function JokerChip({ id, onClick, sell, buy, price, small, glow }) {
   const r = GM.JOKERS[id] ? GM.JOKERS[id].r : 0, col = [C.sky, C.mint, "#ff7ad9"][r];
   return (
@@ -7253,6 +7375,7 @@ function GameTab({ history, profile, setProfile, acct, onPlay }) {
   const [rules, setRules] = useState(false);
   const [rk, setRk] = useState(null), [top, setTop] = useState(null), [err, setErr] = useState("");
   const signed = acct.st === "in" && acct.prof;
+  const startTut = () => onPlay({ mode: "tut", opts: tutOpts(), moves: [], at: Date.now() });
   useEffect(() => {
     if (!signed || !RANKED_ON) return;
     cloud().myRanked().then(setRk).catch(() => {});
@@ -7265,6 +7388,13 @@ function GameTab({ history, profile, setProfile, acct, onPlay }) {
   ];
   return (
     <div data-game-tab>
+      {!gp.tut && !saved && (
+        <div data-gm-tut className="cardIn" style={{ ...card, ...tileR(), padding: "14px 16px", marginBottom: 12, border: `1.5px solid ${C.signal}`, display: "flex", alignItems: "center", gap: 12 }}>
+          <span aria-hidden="true" style={{ fontSize: 30 }}>🎓</span>
+          <span style={{ flex: 1, minWidth: 0 }}><span style={{ display: "block", fontWeight: 800, fontSize: 15.5 }}>{T("gmTutT")}</span><span style={{ display: "block", fontSize: 12.5, color: C.dim, lineHeight: 1.4 }}>{T("gmTutD")}</span></span>
+          <button type="button" data-gm-tut-go onClick={() => { sfxTap(); startTut(); }} style={{ ...btnBase, padding: "10px 14px", borderRadius: 12, background: C.signal, color: C.signalInk, fontSize: 14, flexShrink: 0 }}>{T("gmTutGo")}</button>
+        </div>
+      )}
       <Sect data-gm-level title={T("gmLevelT")} meta={<span style={{ fontFamily: DISPLAY, fontSize: 20, fontWeight: 900, color: C.signal }}>{T("gmLevel", { n: gl.lvl })}</span>}>
         <div style={{ height: 8, borderRadius: 99, background: C.panelHi, overflow: "hidden" }}><div style={{ width: `${Math.round((gl.into / gl.need) * 100)}%`, height: "100%", background: C.signal, borderRadius: 99 }} /></div>
         <div style={{ fontSize: 12.5, color: C.dim, marginTop: 7, lineHeight: 1.45 }}>{T("gmLevelD", { a: nf(gl.into), b: nf(gl.need) })}</div>
@@ -7330,7 +7460,7 @@ function GameTab({ history, profile, setProfile, acct, onPlay }) {
         if (pick === "duel") { const bl = Math.min(10, gl.lvl), b = GM.botLoadout(gl.lvl); bot = { lvl: bl, ...GM.resultOf(GM.botGame({ ...opts, suit: b.suit, perk: b.perk, streak: 0 }, bl).st) }; }
         onPlay({ mode: pick, opts, moves: [], bot, at: Date.now() });
       }} />}
-      {rules && <GameRules onClose={() => setRules(false)} />}
+      {rules && <GameRules lo={lo} onClose={() => setRules(false)} onTutorial={() => { setRules(false); startTut(); }} />}
     </div>
   );
 }
@@ -7373,25 +7503,106 @@ function PerkSheet({ lo, mode, stakeMax = 0, onClose, onGo }) {
     </Sheet>
   );
 }
-function GameRules({ onClose }) {
+// 1.8.0 (Michael, Oct 25: "from the text I understood absolutely nothing"): How to play with pictures: the cards and
+// what training adds, every hand with an example (the cards that score are lit), a worked score, and a Run.
+const GM_EX = { high: [11, 20, 30, 28, 0], pair: [11, 24, 7, 30, 27], two: [6, 32, 15, 2, 38], circuit: [10, 18, 29, 39], three: [5, 18, 31, 11, 13], straight: [29, 4, 18, 45, 7], flush: [39, 43, 46, 48, 50], full: [7, 20, 33, 2, 15], four: [10, 23, 36, 49, 1], sflush: [30, 31, 32, 33, 34] };
+function GuideSect({ n, title, children }) {
+  return (
+    <section data-gm-guide-sect={n} style={{ ...card, ...tileR(), padding: "14px 14px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <span style={{ width: 26, height: 26, borderRadius: 99, background: C.signal, color: C.signalInk, fontWeight: 900, fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{n}</span>
+        <span style={{ fontFamily: DISPLAY, fontSize: 21, fontWeight: 900 }}>{title}</span>
+      </div>
+      {children}
+    </section>
+  );
+}
+const gP = { margin: 0, fontSize: 14, lineHeight: 1.55, color: C.chalk };
+function GameRules({ onClose, lo, onTutorial }) {
+  const suit = (lo && lo.suit) || {};
+  const exPair = [GM.SUITS.indexOf("push") * 13 + 11, GM.SUITS.indexOf("pull") * 13 + 11, 7, 30]; // K K 9 6
   return (
     <Sheet title={T("gmRulesT")} onClose={onClose}>
-      <div data-gm-rules-text style={{ display: "flex", flexDirection: "column", gap: 10, fontSize: 14, lineHeight: 1.55, color: C.chalk }}>
-        {L.gm.rules.map((x, i) => <p key={i} style={{ margin: 0 }}>{withK(x)}</p>)}
-      </div>
-      <div style={{ marginTop: 14, borderRadius: 14, overflow: "hidden", border: `1px solid ${C.line}` }}>
-        {[...GM.HANDS].reverse().map((h, i) => (
-          <div key={h} style={{ display: "flex", justifyContent: "space-between", gap: 10, padding: "8px 12px", borderTop: i ? `1px solid ${C.line}` : "none", fontSize: 13.5 }}>
-            <span style={{ fontWeight: 700, color: C.chalk }}>{handName(h)}</span>
-            <span style={{ color: C.dim, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{GM.HAND_BASE[h][0]} × {GM.HAND_BASE[h][1]}</span>
+      <div data-gm-rules-text style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        {onTutorial && <button type="button" data-gm-tut-open onClick={() => { sfxTap(); onTutorial(); }} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>🎓 {T("gmTutPlay")}</button>}
+        <GuideSect n={1} title={T("gmG1T")}>
+          <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>{GM.SUITS.map((s, i) => <PlayCard key={s} c={i * 13 + 12} w={52} still />)}</div>
+          <p style={gP}>{T("gmG1D")}</p>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+            {GM.SUITS.map(s => { const v = suit[s] ?? -1, rk = v >= 0 ? RANKS[v] : null; return (
+              <div key={s} style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 9px", borderRadius: 10, background: SOFT(), fontSize: 13 }}>
+                <SuitIcon s={s} size={16} /><span style={{ flex: 1, minWidth: 0 }}><b>{T("grp_" + s)}</b><span style={{ display: "block", color: rk ? rk.color : C.dim, fontSize: 12 }}>{rk ? `${rk.icon} ${rk.name} → +${2 * v}` : T("gmSuitNone")}</span></span>
+              </div>); })}
           </div>
-        ))}
+          <p style={{ ...gP, color: C.dim, fontSize: 13 }}>{T("gmG1Rank")}</p>
+        </GuideSect>
+        <GuideSect n={2} title={T("gmG2T")}>
+          <p style={gP}>{T("gmG2D")}</p>
+          {GM.HANDS.map((h, i) => { const ex = GM_EX[h], sc = GM.handOf(ex).scored; return (
+            <div key={h} data-gm-guide-hand={h} style={{ padding: "10px 10px 11px", borderRadius: 12, background: SOFT() }}>
+              <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+                <span style={{ fontWeight: 900, fontSize: 15.5, flex: 1 }}>{handName(h)}</span>
+                <span style={{ fontFamily: DISPLAY, fontWeight: 900, fontSize: 16 }}><span style={{ color: C.sky }}>{GM.HAND_BASE[h][0]}</span> <span style={{ color: C.dim }}>×</span> <span style={{ color: C.signal }}>{GM.HAND_BASE[h][1]}</span></span>
+              </div>
+              <div style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.4, margin: "2px 0 8px" }}>{(L.gm.hd || [])[i]}</div>
+              <div style={{ display: "flex", gap: 5 }}>{ex.map(c => <PlayCard key={c} c={c} w={40} still out={!sc.includes(c)} />)}</div>
+            </div>); })}
+          <p style={{ ...gP, color: C.dim, fontSize: 13 }}>{T("gmG2Note")}</p>
+        </GuideSect>
+        <GuideSect n={3} title={T("gmG3T")}>
+          <p style={gP}>{T("gmG3D")}</p>
+          <div style={{ display: "flex", gap: 6, justifyContent: "center" }}>{exPair.map(c => <PlayCard key={c} c={c} w={46} still out={!GM.handOf(exPair).scored.includes(c)} />)}</div>
+          <div style={{ fontSize: 13.5, lineHeight: 1.7, padding: "8px 10px", borderRadius: 12, background: SOFT() }}>
+            <div>{handName("pair")}: <b style={{ color: C.sky }}>10</b> × <b style={{ color: C.signal }}>2</b></div>
+            <div>K + K: <b style={{ color: C.sky }}>+10 +10</b> {T("gmG3Kick")}</div>
+            <div>= <b style={{ color: C.sky }}>30</b> × <b style={{ color: C.signal }}>2</b> = <b>60</b></div>
+            <div style={{ marginTop: 6 }}>{jName("joker")} (+4): <b style={{ color: C.sky }}>30</b> × <b style={{ color: C.signal }}>6</b> = <b>180</b></div>
+            <div>{jName("five")} (× 2): <b style={{ color: C.sky }}>30</b> × <b style={{ color: C.signal }}>12</b> = <b>360</b></div>
+          </div>
+          <p style={{ ...gP, color: C.dim, fontSize: 13 }}>{T("gmG3Note")}</p>
+        </GuideSect>
+        <GuideSect n={4} title={T("gmG4T")}>
+          <div style={{ display: "flex", gap: 6, alignItems: "stretch" }}>
+            {[T("gmSmall"), T("gmBig"), T("gmBoss")].map((b, i) => <div key={i} style={{ flex: 1, textAlign: "center", padding: "8px 4px", borderRadius: 10, background: SOFT(), fontSize: 12.5, fontWeight: 800, color: i === 2 ? "#ff7a7a" : C.chalk }}>{b}<span style={{ display: "block", fontWeight: 400, color: C.dim, fontSize: 11.5 }}>× {[1, 1.5, 2][i]}</span></div>)}
+          </div>
+          <p style={gP}>{withK(T("gmG4D"))}</p>
+          <p style={gP}>{withK(T("gmG4Shop"))}</p>
+          <p style={{ ...gP, color: C.dim, fontSize: 13 }}>{T("gmG4Run")}</p>
+        </GuideSect>
       </div>
     </Sheet>
   );
 }
-// A game being played (full screen). saved = {mode: run|duel|ranked, opts, moves, bot?, opp?, r?}.
-function GameTable({ saved, history, onEnd, onQuit }) {
+// 1.8.0 (Michael, Oct 25: "make a tutorial game, so people understand all of it"): a practice blind on a fixed deck
+// (GM.TUT_DECK): a Pair of Kings, a Circuit, a discard for the 5th Core card, a Flush, the shop and a joker. Steps with t
+// wait for exactly those cards / that move; the others wait for Next. Not saved, no XP; finishing sets profile.game.tut.
+const TUT = [
+  { k: "intro" },
+  { k: "pair", t: "play", cards: [11, 24] },
+  { k: "pairDone" },
+  { k: "circuit", t: "play", cards: [10, 18, 29, 39] },
+  { k: "circuitDone" },
+  { k: "discard", t: "discard", cards: [27, 1, 15, 35] },
+  { k: "flush", t: "play", cards: [41, 46, 43, 48, 50] },
+  { k: "shop" },
+  { k: "buy", t: "buy", i: 0 },
+  { k: "end", last: true },
+];
+const tutOpts = () => ({ seed: "tutorial", mode: "run", suit: {}, perk: null, streak: 0, pool: [], stake: 0, tut: 1, deck: GM.TUT_DECK });
+function TutCoach({ step, ready, onNext }) {
+  const key = "gmTut_" + step.k + (ready && T("gmTut_" + step.k + "Sel") !== "gmTut_" + step.k + "Sel" ? "Sel" : "");
+  return (
+    <div data-gm-tut-step={step.k} className="cardIn" style={{ marginTop: 10, padding: "11px 13px", borderRadius: 16, background: `${C.signal}1f`, border: `1.5px solid ${C.signal}`, display: "flex", gap: 10, alignItems: "flex-start" }}>
+      <span aria-hidden="true" style={{ fontSize: 22, lineHeight: 1.2 }}>🎓</span>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div data-gm-tut-text style={{ fontSize: 14, lineHeight: 1.5, color: C.chalk }}>{withK(T(key))}</div>
+        {!step.t && <button type="button" data-gm-tut-next onClick={() => { sfxTap(); onNext(); }} style={{ ...btnBase, marginTop: 8, padding: "8px 16px", borderRadius: 11, background: C.signal, color: C.signalInk, fontSize: 14 }}>{T(step.last ? "gmTutFinish" : "gmTutNext")}</button>}
+      </div>
+    </div>
+  );
+}
+// A game being played (full screen). saved = {mode: run|duel|ranked|tut, opts, moves, bot?, opp?, r?}.
+function GameTable({ saved, history, onEnd, onQuit, onTutDone }) {
   const bests = useMemo(() => fairStats(history, { today: dateKey() }).bests, [history]);
   const [moves, setMoves] = useState(saved.moves || []);
   const [g, setG] = useState(() => { try { return GM.replay(saved.opts, saved.moves || []); } catch (_) { return GM.newGame(saved.opts); } });
@@ -7401,25 +7612,29 @@ function GameTable({ saved, history, onEnd, onQuit }) {
   const [shown, setShown] = useState(g.score); // the blind score as the counter shows it
   const [quit, setQuit] = useState(false);
   const [info, setInfo] = useState(null); // a joker whose text is open
+  const [why, setWhy] = useState(false); // the breakdown of the selected cards' score
   const [dealKey, setDealKey] = useState(0);
+  const tut = saved.mode === "tut", [ts, setTs] = useState(0), tstep = tut ? TUT[ts] : null;
+  const nextTut = () => { if (tstep && tstep.last) onTutDone(); else setTs(t => Math.min(TUT.length - 1, t + 1)); };
+  const tutSel = () => !tstep || !tstep.cards || (sel.length === tstep.cards.length && sel.every(i => tstep.cards.includes(g.hand[i])));
   const timers = useRef([]);
   useEffect(() => () => timers.current.forEach(clearTimeout), []);
   useBack(() => { if (info) setInfo(null); else setQuit(true); }, true);
-  useEffect(() => { gameSave({ ...saved, moves }); }, [moves]);
+  useEffect(() => { if (!tut) gameSave({ ...saved, moves }); }, [moves]);
   const ended = g.phase === "over" || g.phase === "won";
   useEffect(() => { if (ended && !anim) { const t = setTimeout(() => onEnd({ ...saved, moves }, g), 500); return () => clearTimeout(t); } }, [ended, anim]);
   const order = useMemo(() => g.hand.map((c, i) => i).sort((a, b) => sortBy === "v" ? GM.valueOf(g.hand[b]) - GM.valueOf(g.hand[a]) || g.hand[a] - g.hand[b] : g.hand[a] - g.hand[b]), [g.hand, sortBy]);
   const preview = sel.length ? GM.scoreOf(g, sel.map(i => g.hand[i])) : null;
   const doMove = m => { const next = GM.act(g, m); setMoves(ms => [...ms, m]); return next; };
   const play = () => {
-    if (!sel.length || anim) return;
+    if (!sel.length || anim || (tut && !(tstep.t === "play" && tutSel()))) return;
     const cards = sel.map(i => g.hand[i]), sc = GM.scoreOf(g, cards), next = doMove({ t: "play", c: sel.slice() });
     const steps = sc.steps.filter(s => s.c !== undefined || s.j || s.p);
     setAnim({ cards, sc, i: -1, chips: GM.HAND_BASE[sc.hand][0] + GM.HAND_UP[sc.hand][0] * ((g.levels || {})[sc.hand] || 0), mult: GM.HAND_BASE[sc.hand][1] + GM.HAND_UP[sc.hand][1] * ((g.levels || {})[sc.hand] || 0) });
     setSel([]);
     // one sound for the whole count (notes on the audio clock), the numbers follow on screen
     const STEP = 0.16;
-    melody([...steps.map((s, k) => [520 + k * 55, 0.25 + k * STEP, 0.07]), [988, 0.35 + steps.length * STEP, 0.12], [1319, 0.45 + steps.length * STEP, 0.25]], "triangle", 0.2);
+    gmSfx.score(steps, STEP, g.score + sc.score >= g.target);
     let chips = 0, mult = 0;
     steps.forEach((s, k) => timers.current.push(setTimeout(() => setAnim(a => a && { ...a, i: k, chips: a.chips + (s.chips || 0), mult: Math.round(((a.mult + (s.mult || 0)) * (s.x || 1)) * 100) / 100, hit: s }), 250 + k * STEP * 1000)));
     const end = 450 + steps.length * STEP * 1000;
@@ -7427,15 +7642,16 @@ function GameTable({ saved, history, onEnd, onQuit }) {
     timers.current.push(setTimeout(() => { setShown(g.score + sc.score); vibrate([30]); }, end + 250));
     timers.current.push(setTimeout(() => {
       setAnim(null); setG(next); setShown(next.phase === "blind" && next.blind === g.blind && next.ante === g.ante ? next.score : next.score || g.score + sc.score);
-      if (next.phase === "shop") sfxCheck(); else if (next.phase === "won") sfxFinish(); else if (next.phase === "over") melody([[392, 0, 0.18], [330, 0.18, 0.18], [262, 0.36, 0.4]], "triangle", 0.25);
+      if (next.phase === "shop") gmSfx.blind(); else if (next.phase === "won") { gmSfx.blind(); sfxFinish(); } else if (next.phase === "over") gmSfx.lose(); else gmSfx.deal(cards.length);
       setDealKey(k => k + 1);
+      if (tut) setTs(t => t + 1);
     }, end + 1100));
   };
-  const discard = () => { if (!sel.length || anim || g.discardsLeft <= 0) return; sfxTap(); const next = doMove({ t: "discard", c: sel.slice() }); setSel([]); setG(next); setDealKey(k => k + 1); };
+  const discard = () => { if (!sel.length || anim || g.discardsLeft <= 0 || (tut && !(tstep.t === "discard" && tutSel()))) return; gmSfx.discard(); const next = doMove({ t: "discard", c: sel.slice() }); setSel([]); setG(next); setDealKey(k => k + 1); if (tut) setTs(t => t + 1); };
   // several shop moves at once (swap = sell one of your jokers, then buy the new one)
-  const shopMoves = ms => { try { let st = g; for (const m of ms) st = GM.act(st, m); setMoves(x => [...x, ...ms]); setG(st); collectSfx(); } catch (_) {} };
-  const shopMove = m => { try { const next = doMove(m); setG(next); if (m.t === "buy") collectSfx(); else sfxTap(); if (m.t === "next") { setShown(0); setDealKey(k => k + 1); } } catch (_) {} };
-  const toggle = i => { if (anim) return; sfxTap(); setSel(s => (s.includes(i) ? s.filter(x => x !== i) : s.length >= GM.RULES.maxPlay ? s : [...s, i])); };
+  const shopMoves = ms => { try { let st = g; for (const m of ms) st = GM.act(st, m); setMoves(x => [...x, ...ms]); setG(st); gmSfx.buy(); } catch (_) {} };
+  const shopMove = m => { if (tut && !(tstep.t === "buy" && m.t === "buy" && m.i === tstep.i)) return; if (tut) setTs(t => t + 1); try { const next = doMove(m); setG(next); if (m.t === "buy") gmSfx.buy(); else if (m.t === "sell") gmSfx.sell(); else if (m.t === "reroll") gmSfx.reroll(); else gmSfx.deal(8); if (m.t === "next") { setShown(0); setDealKey(k => k + 1); } } catch (_) {} };
+  const toggle = i => { if (anim || (tut && !(tstep.cards && tstep.cards.includes(g.hand[i])))) return; gmSfx.pick(GM.valueOf(g.hand[i]), !sel.includes(i)); setSel(s => (s.includes(i) ? s.filter(x => x !== i) : s.length >= GM.RULES.maxPlay ? s : [...s, i])); };
   const W = Math.min(innerWidth, 560), cw = Math.max(46, Math.min(70, Math.floor((W - 40) / 6.4)));
   const step = Math.min(cw + 6, Math.floor((W - 32 - cw) / Math.max(1, g.hand.length - 1)));
   const bossTxt = g.boss && g.blind === 2 && L.gm.boss[g.boss];
@@ -7460,13 +7676,14 @@ function GameTable({ saved, history, onEnd, onQuit }) {
           : <div style={{ fontSize: 12.5, color: C.dim, alignSelf: "center" }}>{T("gmNoJokers")}</div>}
         {g.perk && <div data-gm-perk-chip={g.perk} title={L.gm.perk[g.perk][1].replace(/\$(\d+)/g, "$1 " + COIN)} style={{ alignSelf: "center", marginLeft: "auto", fontSize: 12, color: C.dim, whiteSpace: "nowrap" }}>{PERK_ICON[g.perk]}{g.jokers.length < 4 && <> {L.gm.perk[g.perk][0]}</>}</div>}
       </div>
+      {tstep && !anim && <TutCoach key={ts} step={tstep} ready={tutSel() && sel.length > 0} onNext={nextTut} />}
       {g.phase === "blind" || anim ? (
         <>
           {/* the hand being scored, or what the selection would give */}
           <div style={{ flex: 1, minHeight: 170, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 10 }}>
             {anim ? (
               <>
-                <div style={{ display: "flex", gap: 6, justifyContent: "center", flexWrap: "wrap" }}>{anim.cards.map((c, k) => <PlayCard key={c} c={c} w={Math.min(56, cw)} bests={bests} pop={anim.hit && anim.hit.c === c} dead={anim.sc.steps.some(s => s.c === c && s.dead)} />)}</div>
+                <div style={{ display: "flex", gap: 6, justifyContent: "center", flexWrap: "wrap" }}>{anim.cards.map((c, k) => <PlayCard key={c} c={c} w={Math.min(56, cw)} bests={bests} pop={anim.hit && anim.hit.c === c} out={!anim.sc.scored.includes(c)} dead={anim.sc.steps.some(s => s.c === c && s.dead)} />)}</div>
                 <div data-gm-hand-name style={{ fontFamily: DISPLAY, fontSize: 26, fontWeight: 900 }}>{handName(anim.sc.hand)}</div>
                 <ScoreBox chips={anim.chips} mult={anim.mult} total={anim.total ? anim.sc.score : null} />
               </>
@@ -7474,6 +7691,9 @@ function GameTable({ saved, history, onEnd, onQuit }) {
               <>
                 <div data-gm-hand-name style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900 }}>{handName(preview.hand)}{(g.levels || {})[preview.hand] ? <span style={{ fontSize: 14, color: C.dim }}> · {T("gmLv", { n: (g.levels[preview.hand] || 0) + 1 })}</span> : null}</div>
                 <ScoreBox chips={preview.chips} mult={preview.mult} />
+                <button type="button" data-gm-why onClick={() => { sfxTap(); setWhy(true); }} style={{ ...btnBase, background: "transparent", color: C.signal, fontSize: 13.5, padding: "4px 10px", display: "flex", alignItems: "center", gap: 4 }}>
+                  {preview.scored.length < sel.length ? T("gmCounts", { n: preview.scored.length, m: sel.length }) + " · " : ""}{T("gmWhy")}<Arrow />
+                </button>
               </>
             ) : <div style={{ fontSize: 14, color: C.dim, textAlign: "center" }}>{T("gmPick")}</div>}
           </div>
@@ -7481,7 +7701,7 @@ function GameTable({ saved, history, onEnd, onQuit }) {
           <div key={dealKey} data-gm-hand style={{ position: "relative", height: Math.round(cw * 1.4) + 20, margin: "0 auto", width: cw + step * Math.max(0, g.hand.length - 1) }}>
             {!anim && order.map((hi, k) => (
               <div key={g.hand[hi]} style={{ position: "absolute", left: k * step, bottom: 0 }}>
-                <PlayCard c={g.hand[hi]} w={cw} bests={bests} sel={sel.includes(hi)} onClick={() => toggle(hi)} i={k} deal dead={g.blind === 2 && g.boss === "skip_" + GM.suitOf(g.hand[hi])} />
+                <PlayCard c={g.hand[hi]} w={cw} bests={bests} glow={!!(tstep && tstep.cards && tstep.cards.includes(g.hand[hi]) && !sel.includes(hi))} sel={sel.includes(hi)} out={!!preview && sel.includes(hi) && !preview.scored.includes(g.hand[hi])} onClick={() => toggle(hi)} i={k} deal dead={g.blind === 2 && g.boss === "skip_" + GM.suitOf(g.hand[hi])} />
               </div>
             ))}
           </div>
@@ -7496,9 +7716,10 @@ function GameTable({ saved, history, onEnd, onQuit }) {
           </div>
         </>
       ) : g.phase === "shop" ? (
-        <GameShop g={g} onMove={shopMove} onMoves={shopMoves} onInfo={setInfo} />
+        <GameShop g={g} tut={tut} onMove={shopMove} onMoves={shopMoves} onInfo={setInfo} />
       ) : <div style={{ flex: 1 }} />}
-      {info && <Sheet short title={jName(info)} onClose={() => setInfo(null)}><div data-gm-joker-info style={{ fontSize: 15, lineHeight: 1.5, color: C.chalk }}>{withK(jDesc(info))}</div></Sheet>}
+      {why && sel.length > 0 && <ScoreWhy g={g} cards={sel.map(i => g.hand[i])} bests={bests} onClose={() => setWhy(false)} />}
+      {info && <Sheet short title={jName(info)} onClose={() => setInfo(null)}><div data-gm-joker-info style={{ fontSize: 15, lineHeight: 1.5, color: C.chalk }}>{withK(jDesc(info))}{(g.jokers.find(x => x.id === info) || {}).v ? <div style={{ marginTop: 6, fontWeight: 800, color: C.signal }}>{T("gmNowMult", { n: g.jokers.find(x => x.id === info).v })}</div> : null}</div></Sheet>}
       {quit && (
         <Sheet short title={T("gmQuitT")} onClose={() => setQuit(false)}>
           <div style={{ fontSize: 14.5, color: C.dim, lineHeight: 1.5 }}>{T(saved.mode === "ranked" ? "gmQuitRankedD" : "gmQuitD")}</div>
@@ -7520,8 +7741,8 @@ function ScoreBox({ chips, mult, total }) {
     </div>
   );
 }
-function GameShop({ g, onMove, onMoves, onInfo }) { // onInfo: your own jokers' text
-  const sh = g.shop, pay = (g.last && g.last.pay) || 0;
+function GameShop({ g, tut, onMove, onMoves, onInfo }) { // onInfo: your own jokers' text
+  const sh = g.shop, pay = sh.pay ?? ((g.last && g.last.pay) || 0);
   // 1.8.0 (Michael, Oct 25: "let me swap them if I like another one more"): with all joker slots taken, Buy becomes
   // Swap: pick one of yours, it is sold and the new one bought in one go
   const full = g.jokers.length >= GM.RULES.jokers, sellOf = j => Math.max(1, Math.floor(j.cost / 2));
@@ -7559,7 +7780,7 @@ function GameShop({ g, onMove, onMoves, onInfo }) { // onInfo: your own jokers' 
           );
         })}
       </div>
-      <button type="button" data-gm-reroll disabled={g.money < sh.rerollCost} onClick={() => onMove({ t: "reroll" })} style={{ ...ghostBtn, alignSelf: "flex-start", color: C.chalk, opacity: g.money < sh.rerollCost ? 0.5 : 1 }}>{withK(T("gmReroll", { n: sh.rerollCost }))}</button>
+      {!tut && <button type="button" data-gm-reroll disabled={g.money < sh.rerollCost} onClick={() => onMove({ t: "reroll" })} style={{ ...ghostBtn, alignSelf: "flex-start", color: C.chalk, opacity: g.money < sh.rerollCost ? 0.5 : 1 }}>{withK(T("gmReroll", { n: sh.rerollCost }))}</button>}
       {g.jokers.length > 0 && (
         <div>
           <div style={{ fontSize: 12.5, color: C.dim, marginBottom: 6 }}>{T("gmYourJokers", { n: g.jokers.length, max: GM.RULES.jokers })}</div>
@@ -7586,7 +7807,7 @@ function GameShop({ g, onMove, onMoves, onInfo }) { // onInfo: your own jokers' 
           </div>
         </Sheet>
       )}
-      <button type="button" data-gm-next onClick={() => onMove({ t: "next" })} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: "auto" }}>{T("gmNext")}</button>
+      {!tut && <button type="button" data-gm-next onClick={() => onMove({ t: "next" })} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: "auto" }}>{T("gmNext")}</button>}
     </div>
   );
 }
@@ -9092,6 +9313,8 @@ export default function App() {
         .gmBump{animation:gmBump .26s ${MO.spring}}
         @keyframes gmBump{0%{transform:scale(1)}45%{transform:scale(1.18)}100%{transform:scale(1)}}
         .gmGlow{animation:gmGlow .5s ease-out;box-shadow:0 0 18px var(--gc)}
+        .gmGlowCard{animation:gmGlowCard 1.1s ease-in-out infinite alternate}
+        @keyframes gmGlowCard{from{box-shadow:0 0 0 2px ${C.signal}66, 0 0 10px ${C.signal}55}to{box-shadow:0 0 0 3px ${C.signal}, 0 0 22px ${C.signal}aa}}
         @keyframes gmGlow{0%{transform:translateY(0)}40%{transform:translateY(-6px) scale(1.08)}100%{transform:none}}
         @media (prefers-reduced-motion: reduce){.gmDeal,.gmPop,.gmBump,.gmGlow{animation:none}}
         @keyframes revDeal{from{transform:translateY(55vh) rotate(-18deg) scale(.6);opacity:0}to{transform:none;opacity:1}}
@@ -9185,7 +9408,7 @@ export default function App() {
                 {screen === "settings" && <SettingsTab initPage={setPage0} settings={settings} setSettings={setSettings} history={history} profile={profile} setProfile={setProfile}
                   kcal={kcal} autoBk={autoBk} onAutoBackup={runAutoBackup}
                   onImport={importAll} acct={acct} cloudBk={cloudBk} onAcctOpen={() => go("friends")} onCloudRestore={restoreFromCloud} onCloudBackupNow={cloudBackupNow} onSignOut={signOut} onDeleteAccount={deleteAccount} />}
-                {screen === "game" && <GameTab history={history} profile={profile} setProfile={setProfile} acct={acct} onPlay={sv => { gameSave(sv); setGamePlay(sv); }} />}
+                {screen === "game" && <GameTab history={history} profile={profile} setProfile={setProfile} acct={acct} onPlay={sv => { if (sv.mode !== "tut") gameSave(sv); setGamePlay(sv); }} />}
                 {screen === "friends" && <OpenInApp />}
                 {screen === "friends" && <FriendsTab key={"fr" + addSeq} modHidden={modHidden} setTopHead={setTopHead} acct={acct} history={history} profile={profile} social={social} chatWith={chatWith} setChatWith={setChatWith} onBlocked={setBlocked} onSignIn={signIn} onCreate={createProfile} onRename={renameNick} onSetGlobal={setGlobal} fx={friendsFx} />}
               </div>
@@ -9199,7 +9422,7 @@ export default function App() {
             onGo={go} onResume={resume} onClose={() => setMenuOpen(false)} onNews={() => { setMenuOpen(false); setNewsOpen(true); }} />
           {notice && <LiveNotice n={notice} people={Object.fromEntries([...(social.friends || []), ...(social.reqs || [])].map(x => [x.uid, x]))} onClose={() => setNotice(null)}
             onOpen={n => { setNotice(null); go("friends"); setChatWith(n.kind === "msg" ? n.uid : null); }} />}
-          {gamePlay && <GameTable key={gamePlay.at || 0} saved={gamePlay} history={history} onEnd={endGame} onQuit={quitGame} />}
+          {gamePlay && <GameTable key={gamePlay.at || 0} saved={gamePlay} history={history} onEnd={endGame} onQuit={quitGame} onTutDone={() => { setGamePlay(null); sfxFinish(); setProfile({ ...profile, game: { ...(profile.game || {}), tut: 1 } }); }} />}
           {gameEnd && <GameEnd res={gameEnd} onClose={() => setGameEnd(null)} onAgain={() => setGameEnd(null)} />}
           {skipOpen && <SkipSheet freezes={freezesAvailable(history)} onSave={saveSkip} onClose={() => setSkipOpen(false)} />}
       {howId && <HowTo id={howId} history={history} onClose={() => setHowId(null)} />}

@@ -66,6 +66,35 @@ ok(lo.suit.push === 7 && lo.suit.core === 8 && lo.suit.pull === 0 && lo.suit.leg
 ok(["streak", "volume", "warmup", "endurance", "obsidian"].every(p => lo.perks.includes(p)) && !lo.perks.includes("allround"), `perks (${lo.perks})`);
 // win rates of the bot at different strengths over 30 seeds (sanity, not too easy)
 const wr = (lv, suit) => { let c = 0; for (let i = 0; i < 30; i++) c += G.botGame({ seed: "w" + i, mode: "run", suit }, lv).st.cleared; return c / 30; };
+console.log("new jokers (1.8.0, Oct 25)");
+{
+  const base = G.newGame({ seed: "j1", mode: "run", suit: { push: -1, pull: -1, legs: -1, core: -1 } });
+  const S = (jokers, extra = {}) => ({ ...base, jokers: jokers.map(id => (typeof id === "string" ? { id, cost: 5 } : id)), ...extra });
+  const pairC = [C("push", 5), C("pull", 5)];
+  ok(G.scoreOf(S(["rest"], { discardsLeft: 3 }), pairC).chips === 10 + 10 + 60, "rest: +20 chips per discard left");
+  ok(G.scoreOf(S(["short"]), pairC).mult === 2 + 15 && G.scoreOf(S(["short"]), [C("push", 2), C("push", 4), C("push", 6), C("push", 8)]).mult === 1, "short: +15 mult only with 3 cards or fewer");
+  ok(G.scoreOf(S(["spotter"]), [C("push", 5), C("pull", 5), C("legs", 9), C("legs", 9)]).mult === 2 + 12, "spotter: +12 mult with two pair");
+  ok(G.scoreOf(S(["fresh"], { bp: 0 }), pairC).mult === 3 && G.scoreOf(S(["fresh"], { bp: 1 }), pairC).mult === 2, "fresh: × 1.5 only on the first hand of a blind");
+  ok(G.scoreOf(S(["solo"]), [C("core", 14)]).mult === 3, "solo: × 3 with one card");
+  ok(G.scoreOf(S(["specialist"]), [C("legs", 2), C("legs", 2), C("legs", 9)]).mult === 2 * 2 && G.scoreOf(S(["specialist"]), pairC).mult === 2, "specialist: × 2 when 3+ cards are one type");
+  const d = G.scoreOf(S(["double"]), pairC);
+  ok(d.chips === 10 + 5 + 5 + 5, `double: the first scored card counts twice (${d.chips})`);
+  ok(G.scoreOf(S([{ id: "overload", cost: 8, v: 4 }]), pairC).mult === 2 + 5 && G.scoreOf(S([{ id: "overload", cost: 8, v: 4 }]), [C("push", 9)]).mult === 1 + 4, "overload: its count, +1 when this hand has a pair");
+  // passive ones through a real game
+  let g = G.newGame({ seed: "j2", mode: "run", suit: { push: 8, pull: 8, legs: 8, core: 8 }, perk: "obsidian" });
+  while (g.phase === "blind") g = G.act(g, G.botMove(g, 10));
+  g = { ...g, money: 99, jokers: [], shop: { items: [{ k: "joker", id: "wind", cost: 8 }, { k: "joker", id: "slate", cost: 6 }, { k: "joker", id: "coupon", cost: 4 }], rerolls: 0, rerollCost: 5 } };
+  for (const i of [0, 1, 2]) g = G.act(g, { t: "buy", i });
+  ok(g.shop.rerollCost === 3, "coupon: New costs $2 less at once");
+  g = G.act(g, { t: "next" });
+  ok(g.handsLeft === 5 + (g.boss === "few" ? -1 : 0) && g.discardsLeft === 4, `wind +1 hand, slate +1 discard (${g.handsLeft}, ${g.discardsLeft})`);
+  let o = G.newGame({ seed: "j3", mode: "run", suit: {} }); o.jokers = [{ id: "overload", cost: 8 }];
+  const pi = o.hand.findIndex((c, i) => o.hand.some((x, k) => k !== i && G.valueOf(x) === G.valueOf(c)));
+  if (pi >= 0) { const pj = o.hand.findIndex((x, k) => k !== pi && G.valueOf(x) === G.valueOf(o.hand[pi])); o = G.act(o, { t: "play", c: [pi, pj] }); ok(o.jokers[0].v === 1, "overload grows by 1 after a hand with a pair"); }
+  const t = G.newGame({ seed: "j4", mode: "run", suit: {}, deck: [C("push", 13), C("pull", 13), C("legs", 4)] });
+  ok(t.hand[0] === C("push", 13) && t.hand[1] === C("pull", 13) && t.hand[2] === C("legs", 4) && new Set(t.hand).size === 8, "tutorial deck: the given cards come first");
+  ok(G.JOKER_IDS.length === 35, "35 jokers (22 + 13 new)");
+}
 const weak = wr(3, { push: -1, pull: -1, legs: -1, core: -1 }), strong = wr(10, { push: 6, pull: 6, legs: 6, core: 6 });
 console.log(`   run: blinds cleared on average: weak bot, no training ${weak.toFixed(1)}; strong bot, Emerald ${strong.toFixed(1)} (of 24)`);
 ok(strong > weak, "training makes the deck stronger");
