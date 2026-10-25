@@ -1164,7 +1164,7 @@ function HowTo({ id, history, onClose, onSwap }) {
       <ExFigure id={id} />
       {ex.tempo && <div style={{ background: C.panelHi, borderRadius: 12, padding: "10px 13px", marginBottom: 14, fontSize: 14 }}><b style={{ color: C.signal }}>{T("tempo")}:</b> {ex.tempo}</div>}
       <div>{ex.how}</div>
-      <div style={{ marginTop: 14, paddingTop: 12, borderTop: `1px solid ${C.line}`, color: C.chalk }}>💡 {ex.tip}</div>
+      <div style={{ marginTop: 14, paddingTop: 12, borderTop: `1px solid ${C.line}`, color: C.chalk, display: "flex", gap: 8, alignItems: "flex-start" }}><Ico n="bulb" size={19} color={C.signal} style={{ marginTop: 2 }} /><span>{ex.tip}</span></div>
       {onSwap && ex.swapTip && <button onClick={onSwap} style={{ ...ghostBtn, marginTop: 10, padding: "10px 14px", color: C.sky, borderColor: `${C.sky}88` }}>{T("swap")}</button>}
       <button data-search-howto onClick={() => { sfxTap(); searchHowTo(ex.name); }} className="b3d" style={{ ...bigBtn(C.panelHi, C.chalk), marginTop: 16, fontSize: 14, padding: 14 }}>{T("searchWeb")}</button>
       <RankLadder id={id} best={best} />
@@ -1870,7 +1870,7 @@ function AboutBox({ gh: gh0, dl, onNews, apk, busy }) {
       {status && <div style={{ padding: "10px 0", borderTop: `1px solid ${C.line}` }}>{status}</div>}
       {!isNative && (
         <button onClick={() => { sfxTap(); openExternal("https://github.com/mikydon/hw-app/releases/latest"); }} data-get-android style={{ ...row, color: C.mint, fontSize: 13, fontWeight: 800 }}>
-          <span style={{ flex: 1 }}>{T("getAndroid")}</span><Arrow />
+          <Ico n="phone" size={18} /><span style={{ flex: 1 }}>{T("getAndroid").replace(/^📱\s*/, "")}</span><Arrow />
         </button>
       )}
     </div>
@@ -2063,6 +2063,38 @@ function TopBar({ screen, history, menuOpen, onMenu, onGo, dlPct, badge, head, s
   );
 }
 
+// 1.9.0 (Michael, Oct 25: "own icons that react to the theme, on almost everything where it makes sense"): one line set on
+// the menu icons' 24-point grid, 2-point round strokes, colour = currentColor (the theme's quiet colour, the main colour
+// when active). Rewards (badges, ranks, cards, the flame/bolt chips) keep their 3D emoji.
+const ICONS = {
+  gear: '<circle cx="12" cy="12" r="3.2"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7"/><circle cx="12" cy="12" r="6.6"/>',
+  bulb: '<path d="M9 17.5h6M10 21h4M12 3a6 6 0 0 0-3.6 10.8c.6.5 1 1.2 1 2V16h5.2v-.2c0-.8.4-1.5 1-2A6 6 0 0 0 12 3z"/>',
+  compass: '<circle cx="12" cy="12" r="8.5"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/>',
+  lock: '<rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/>',
+  pencil: '<path d="M4 20l1-4.2L15.6 5.2a2 2 0 0 1 2.8 0l.4.4a2 2 0 0 1 0 2.8L8.2 19z"/><path d="M13.5 7.3l3.2 3.2"/>',
+  help: '<circle cx="12" cy="12" r="8.5"/><path d="M9.6 9.6a2.5 2.5 0 1 1 3.4 2.3c-.6.3-1 .8-1 1.5v.6M12 16.8v.2"/>',
+  phone: '<rect x="6.5" y="3" width="11" height="18" rx="2.5"/><path d="M10.5 18h3"/>',
+  download: '<path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19.5h14"/>',
+  alert: '<path d="M12 4 2.8 19.5h18.4z"/><path d="M12 10v4.2M12 16.8v.2"/>',
+  check: '<circle cx="12" cy="12" r="8.5"/><path d="M8.2 12.3l2.6 2.6 5-5.2"/>',
+  snow: '<path d="M12 3v18M4.2 7.5l15.6 9M4.2 16.5l15.6-9"/><path d="M9.5 4.5 12 6.5l2.5-2M9.5 19.5 12 17.5l2.5 2"/>',
+  cap: '<path d="M2.5 9 12 5l9.5 4L12 13z"/><path d="M6.5 10.9V15c1.6 1.5 3.4 2.2 5.5 2.2s3.9-.7 5.5-2.2v-4.1M21.5 9v5"/>',
+  diamond: '<path d="M7 4h10l4 5-9 11L3 9z"/><path d="M3 9h18M9.5 4 12 9l2.5-5M12 9v11"/>',
+  bag: '<path d="M5 8h14l-1.2 12H6.2z"/><path d="M9 10V7a3 3 0 0 1 6 0v3"/>',
+  chest: '<path d="M4 11h16v8H4z"/><path d="M4 11V9.5A3.5 3.5 0 0 1 7.5 6h9A3.5 3.5 0 0 1 20 9.5V11"/><path d="M10.5 11v3h3v-3"/>',
+  boost: '<path d="M13 3 5 13.5h6L10 21l8-10.5h-6z"/>',
+  frame: '<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="10.5" r="3"/><path d="M6.8 18.2c1.2-2.2 3-3.2 5.2-3.2s4 1 5.2 3.2"/>',
+  sparkle: '<path d="M11 3.5l1.7 4.8 4.8 1.7-4.8 1.7L11 16.5l-1.7-4.8L4.5 10l4.8-1.7z"/><path d="M18 14.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z"/>',
+  timer: '<circle cx="12" cy="13.5" r="7.5"/><path d="M12 9.5v4l2.6 2.6M10 2.5h4"/>',
+  ticket: '<path d="M4 7h16v3a2 2 0 0 0 0 4v3H4v-3a2 2 0 0 0 0-4z"/><path d="M14.5 7.5v1.5M14.5 11v2M14.5 15v1.5"/>',
+};
+// size in px; tone = colour (default: inherit). An Ico inside a tinted square: IcoBox.
+function Ico({ n, size = 22, color, sw = 2, style }) {
+  return <svg data-ico={n} viewBox="0 0 24 24" width={size} height={size} aria-hidden="true" style={{ flexShrink: 0, display: "block", fill: "none", stroke: color || "currentColor", strokeWidth: sw, strokeLinecap: "round", strokeLinejoin: "round", ...style }} dangerouslySetInnerHTML={{ __html: ICONS[n] || "" }} />;
+}
+function IcoBox({ n, color = C.signal, size = 40 }) {
+  return <span aria-hidden="true" style={{ width: size, height: size, borderRadius: Math.round(size * 0.3), background: `${color}1f`, color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Ico n={n} size={Math.round(size * 0.58)} /></span>;
+}
 function TabIcon({ name, active }) {
   const c = active ? C.signal : C.dim;
   const s = { fill: "none", stroke: c, strokeWidth: 2.2, strokeLinecap: "round", strokeLinejoin: "round" };
@@ -2148,7 +2180,7 @@ function MenuBody({ screen, history, profile, session, onGo, onResume, onNews, g
           {onTour && (
             <button type="button" data-tour-open onClick={() => { sfxTap(); onTour(); }} className="drawerItem"
               style={{ ...btnBase, "--i": items.length + 2, display: "flex", alignItems: "center", gap: 14, margin: "0 14px 12px", padding: "10px 14px", borderRadius: 18, background: C.panel, border: `1px solid ${C.line}`, color: C.chalk, textAlign: "left", ...(LOOK === "liquid" ? { ...LIQUID_PILL(), borderRadius: 20 } : {}) }}>
-              <span aria-hidden="true" style={{ width: 40, height: 40, borderRadius: 12, background: LOOK === "liquid" ? "rgba(255,255,255,.08)" : C.panelHi, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 20 }}>🧭</span>
+              <span aria-hidden="true" style={{ width: 40, height: 40, borderRadius: 12, background: LOOK === "liquid" ? "rgba(255,255,255,.08)" : C.panelHi, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: C.signal }}><Ico n="compass" size={23} /></span>
               <span style={{ flex: 1, minWidth: 0 }}>
                 <span style={{ display: "block", fontSize: 16, fontWeight: 800 }}>{T("tourTitle")}</span>
                 <span style={{ display: "block", fontSize: 12, fontWeight: 500, color: C.dim, marginTop: 1 }}>{T("tourMenuD", { n: tourN, t: TOUR_N })}</span>
@@ -2511,7 +2543,7 @@ function ApkUpdateCard({ info, busy, onClose, inMenu }) {
   return (
     <div data-apk-update={s.kind} className="titleIn" style={inMenu ? { position: "relative" } : { ...card, position: "relative", padding: "14px 40px 14px 16px", marginBottom: 14, borderColor: `${col}99` }}>
       <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
-        <span style={{ fontSize: 26, lineHeight: 1.1 }}>{s.kind === "ready" ? "✅" : s.kind === "downloading" ? "⬇️" : s.kind === "error" ? "⚠️" : "📲"}</span>
+        <IcoBox n={s.kind === "ready" ? "check" : s.kind === "downloading" ? "download" : s.kind === "error" ? "alert" : "phone"} color={s.kind === "error" ? "#ff7a7a" : s.kind === "ready" ? C.mint : C.signal} />
         <div style={{ minWidth: 0, flex: 1 }}>
           <div style={{ fontSize: 15, fontWeight: 800, color: C.chalk }}>
             {s.kind === "downloading" ? T("apkDl", { v: info.version }) : s.kind === "ready" ? T("apkReady", { v: info.version }) : s.kind === "error" ? T("apkErr") : T("apkUpdTitle", { v: info.version })}
@@ -2565,7 +2597,7 @@ function HintCard({ ui, setUi, onGo }) {
   return (
     <div data-hint={h.k} style={{ ...card, position: "relative", padding: "12px 40px 12px 14px", marginTop: 14, display: "flex", gap: 10, alignItems: "flex-start", borderColor: `${C.sky}66` }}>
       <CloseX onClick={() => setUi({ ...ui, hintHidden: today })} />
-      <div style={{ fontSize: 20, lineHeight: 1.2 }}>💡</div>
+      <Ico n="bulb" size={22} color={C.signal} />
       <div style={{ minWidth: 0 }}>
         <div style={{ fontSize: 12, fontWeight: 800, color: C.sky }}>{T("hintTitle")}</div>
         <div style={{ fontSize: 14, color: C.chalk, lineHeight: 1.45, marginTop: 2 }}>{T("hint_" + h.k)}</div>
@@ -2639,7 +2671,7 @@ function UpdateBanner({ dl, busy, onClose }) {
     const pct = Math.max(0, Math.min(100, Math.round(dl.pct || 0)));
     return (
       <div data-dl="downloading" role="status" style={{ ...card, padding: "11px 14px", marginBottom: 12, borderColor: `${C.sky}88` }}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: C.chalk }}>⬇️ {T("updDownloading", { v: dl.v })}</div>
+        <div style={{ fontSize: 13, fontWeight: 700, color: C.chalk, display: "flex", gap: 6, alignItems: "center" }}><Ico n="download" size={16} color={C.signal} />{T("updDownloading", { v: dl.v })}</div>
         <div style={{ height: 6, borderRadius: 99, background: C.panelHi, marginTop: 8, overflow: "hidden" }}><div data-dl-pct={pct} style={{ width: `${Math.max(4, pct)}%`, height: "100%", background: C.sky, borderRadius: 99, transition: "width .3s" }} /></div>
       </div>
     );
@@ -3010,7 +3042,7 @@ function SetupCard({ profile, kcal, onFix, onClose }) {
   return (
     <div data-setup-card style={{ ...card, padding: "12px 14px", marginBottom: 12, borderColor: `${C.signal}88`, display: "flex", alignItems: "center", gap: 10 }}>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 14, fontWeight: 800, color: C.signal }}>⚙️ {T("setupTitle")}</div>
+        <div style={{ fontSize: 14, fontWeight: 800, color: C.signal, display: "flex", gap: 6, alignItems: "center" }}><Ico n="gear" size={17} />{T("setupTitle")}</div>
         {lines.map((l, i) => <div key={i} style={{ fontSize: 12, color: C.chalk, lineHeight: 1.45, marginTop: 3 }}>{l}</div>)}
       </div>
       <button data-setup-fix onClick={() => { sfxTap(); onFix(step); }} style={{ ...btnBase, background: C.signal, color: C.signalInk, padding: "8px 12px", fontSize: 13, flexShrink: 0 }}>{T("setupFix")}</button>
@@ -3309,14 +3341,14 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
         </div>
       </>, () => setUi({ ...ui, doneHiddenTs: lastTs }), { "data-done-card": 1 })}
       {notice === "autofz" && ntBox("autofz", C.sky, <>
-        <div aria-hidden="true" style={{ fontSize: 26, lineHeight: 1, flexShrink: 0 }}>🧊</div>
+        <IcoBox n="snow" color={C.sky} />
         <div style={{ minWidth: 0 }}>
           <div style={{ fontSize: 15, fontWeight: 800, color: C.chalk }}>{TP("autoFzT", ui.autoFz.used)}</div>
           <div data-autofz-left={ui.autoFz.left} style={{ fontSize: 13, color: ui.autoFz.left ? C.dim : C.signal, fontWeight: ui.autoFz.left ? 400 : 700, lineHeight: 1.45, marginTop: 2 }}>{ui.autoFz.left ? TP("autoFzLeft", ui.autoFz.left) : T("autoFzNone")}</div>
         </div>
       </>, () => setUi({ ...ui, autoFzHidden: ui.autoFz.day }), { "data-autofz": ui.autoFz.used })}
       {notice === "tour" && ntBox("tour", C.signal, <>
-        <div aria-hidden="true" style={{ fontSize: 26, lineHeight: 1, flexShrink: 0 }}>🧭</div>
+        <IcoBox n="compass" />
         <div style={{ minWidth: 0 }}>
           <div style={{ fontSize: 15, fontWeight: 800, color: C.chalk }}>{T("tourOfferT")}</div>
           <div style={{ fontSize: 13, color: C.dim, lineHeight: 1.45, marginTop: 2 }}>{T("tourOfferD")}</div>
@@ -3344,7 +3376,7 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
         </div>
       )}
       {notice === "hint" && ntBox("hint", C.sky, <>
-        <div aria-hidden="true" style={{ fontSize: 19, lineHeight: 1, flexShrink: 0 }}>💡</div>
+        <IcoBox n="bulb" size={34} />
         <div style={{ minWidth: 0, fontSize: 14, color: C.chalk, lineHeight: 1.4 }}>
           {T("hint_" + hint.k)}
           {hint.go && <button onClick={() => { setUi({ ...ui, hintHidden: today }); onGo(hint.go); }} style={{ ...btnBase, display: "inline", background: "transparent", color: C.sky, padding: "0 0 0 6px", fontSize: 13, whiteSpace: "nowrap" }}>{T("hintGo")} <Arrow size="1.25em" style={{ verticalAlign: "-0.08em" }} /></button>}
@@ -4605,7 +4637,7 @@ function SlotTile({ sl, m, i, onTap, own, cols = 2 }) {
   const base = { ...btnBase, fontWeight: 400, textAlign: "left", color: C.chalk, borderRadius: 16, padding: "12px 13px", minHeight: 92, position: "relative", overflow: "hidden", gridColumn: wide && cols > 1 ? "span 2" : undefined, overflowWrap: "break-word", animationDelay: `${120 + i * 60}ms`, display: "flex", flexDirection: "column" };
   if (!sl) return <div className="cardIn" style={{ ...base, background: SOFT(), border: `1px dashed ${C.line}`, justifyContent: "center", alignItems: "center", color: C.dim, fontSize: 12.5 }}>{T("pfSlotEmpty")}</div>;
   const glow = col => ({ background: `radial-gradient(120% 90% at 100% 0%, ${col}33, transparent 60%), ${SOFT()}`, border: `1px solid ${col}40` });
-  const pen = own && <span aria-hidden="true" style={{ position: "absolute", right: 9, top: 8, fontSize: 11, opacity: 0.55 }}>✏️</span>;
+  const pen = own && <span aria-hidden="true" style={{ position: "absolute", right: 9, top: 8, opacity: 0.55, color: C.dim }}><Ico n="pencil" size={13} /></span>;
   const mini = (icon, name, sub, col, k) => (
     <div key={k} style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: 4 }}>
       <span aria-hidden="true" style={{ fontSize: 26, lineHeight: 1 }}>{icon}</span>
@@ -4738,7 +4770,7 @@ function BadgesList({ m, focus, claim }) {
         })}
         {secretLeft > 0 && (
           <div data-secret-left={secretLeft} style={{ ...card, ...tileR(), padding: "12px", display: "flex", alignItems: "center", gap: 10, borderStyle: "dashed", background: "transparent" }}>
-            <div aria-hidden="true" style={{ fontSize: 22, lineHeight: 1, flexShrink: 0 }}>❔</div>
+            <IcoBox n="help" color={C.dim} size={34} />
             <div style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.45 }}>{TP("secretLeft", secretLeft)}</div>
           </div>
         )}
@@ -4787,7 +4819,7 @@ function RanksList({ m, onPick, focus, claim }) {
         })}
         {m.own && left > 0 && (
           <div data-ranks-left={left} style={{ ...card, ...tileR(), padding: "12px", display: "flex", alignItems: "center", gap: 10, borderStyle: "dashed", background: "transparent" }}>
-            <div aria-hidden="true" style={{ fontSize: 22, lineHeight: 1, flexShrink: 0 }}>❔</div>
+            <IcoBox n="help" color={C.dim} size={34} />
             <div style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.45 }}>{TP("ranksLeft", left)}</div>
           </div>
         )}
@@ -4883,7 +4915,7 @@ function ProfilePage({ m, own, onEditProfile, onEditSlot, onStreak, onPhoto, onP
           <div ref={slotsRef} data-pf-slots data-cols={slotCols} style={{ display: "grid", gridTemplateColumns: `repeat(${slotCols}, minmax(0, 1fr))`, gridAutoFlow: "row dense", gap: 8 }}>
             {slots.map((sl, i) => <SlotTile key={i + (sl ? slotStr(sl) : "")} sl={sl} m={sm} i={i} own={own} onTap={open} cols={slotCols} />)}
             {own && nextLv && <div data-slot-next={nextLv} className="cardIn" style={{ animationDelay: `${120 + n * 60}ms`, borderRadius: 16, border: `1.5px dashed ${C.line}`, minHeight: 92, padding: "12px 13px", boxSizing: "border-box", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6, color: C.dim, textAlign: "center" }}>
-              <span aria-hidden="true" style={{ fontSize: 20 }}>🔒</span>
+              <Ico n="lock" size={20} color={C.dim} />
               <span style={{ fontSize: 12, fontWeight: 700, lineHeight: 1.35 }}>{T("pfSlotNext", { lv: nextLv })}</span>
             </div>}
           </div>
@@ -5172,7 +5204,7 @@ function OpenInApp() {
   return (
     <div data-open-app style={{ maxWidth: 460, margin: "0 auto", padding: "6px 18px 0", boxSizing: "border-box" }}>
       <div style={{ ...card, position: "relative", padding: "14px 40px 14px 16px", display: "flex", gap: 12, alignItems: "center" }}>
-        <span style={{ fontSize: 26 }}>📱</span>
+        <IcoBox n="phone" color={C.mint} />
         <div style={{ minWidth: 0 }}>
           <div style={{ fontSize: 14, fontWeight: 700, color: C.chalk, lineHeight: 1.45 }}>{T("frOpenApp")}</div>
           <a href={href} data-open-app-btn onClick={() => sfxTap()} style={{ display: "inline-block", paddingTop: 4, color: C.signal, fontSize: 14, fontWeight: 800, textDecoration: "none" }}>{T("frOpenAppBtn")} <Arrow size="1.25em" style={{ verticalAlign: "-0.08em" }} /></a>
@@ -5645,7 +5677,7 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
           <div style={{ flex: 1, minWidth: 0 }}>
             <button data-fr-rename onClick={() => { sfxTap(); setRename(true); }} style={{ ...btnBase, background: "transparent", color: C.chalk, padding: 0, display: "flex", alignItems: "center", gap: 6, maxWidth: "100%" }}>
               <span style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" , ...INK }}>{me.nick}</span>
-              <span aria-hidden="true" style={{ fontSize: 13, opacity: 0.6 }}>✏️</span>
+              <span aria-hidden="true" style={{ opacity: 0.6, color: C.dim }}><Ico n="pencil" size={14} /></span>
             </button>
             <div style={{ fontSize: 12, color: C.dim, marginTop: 2 }}>{T("frMyCode")}</div>
           </div>
@@ -7159,7 +7191,7 @@ function Rest({ rest, nextItem, rounds, onEnd, onAdd }) {
       <div style={{ fontSize: 13, color: C.dim, marginTop: 4 }}>{T("prepare")}</div>
       {(rest.tip || rest.moti) && (
         <div style={{ marginTop: 18, background: C.panel, border: `1px solid ${C.line}`, borderRadius: 16, padding: "12px 14px", textAlign: "left" }}>
-          {rest.tip && <div style={{ fontSize: 14, color: C.sky, fontWeight: 600, lineHeight: 1.45 }}>💡 {rest.tip}</div>}
+          {rest.tip && <div style={{ fontSize: 14, color: C.sky, fontWeight: 600, lineHeight: 1.45, display: "flex", gap: 7, alignItems: "flex-start" }}><Ico n="bulb" size={18} style={{ marginTop: 2 }} /><span>{rest.tip}</span></div>}
           {rest.moti && <div style={{ fontSize: 16, color: C.chalk, fontWeight: 800, marginTop: 6 }}>{rest.moti}</div>}
         </div>
       )}
@@ -7414,7 +7446,7 @@ function GameTab({ history, profile, setProfile, acct, onPlay }) {
     <div data-game-tab>
       {!gp.tut && !saved && (
         <div data-gm-tut className="cardIn" style={{ ...card, ...tileR(), padding: "14px 16px", marginBottom: 12, border: `1.5px solid ${C.signal}`, display: "flex", alignItems: "center", gap: 12 }}>
-          <span aria-hidden="true" style={{ fontSize: 30 }}>🎓</span>
+          <IcoBox n="cap" size={46} />
           <span style={{ flex: 1, minWidth: 0 }}><span style={{ display: "block", fontWeight: 800, fontSize: 15.5 }}>{T("gmTutT")}</span><span style={{ display: "block", fontSize: 12.5, color: C.dim, lineHeight: 1.4 }}>{T("gmTutD")}</span></span>
           <button type="button" data-gm-tut-go onClick={() => { sfxTap(); startTut(); }} style={{ ...btnBase, padding: "10px 14px", borderRadius: 12, background: C.signal, color: C.signalInk, fontSize: 14, flexShrink: 0 }}>{T("gmTutGo")}</button>
         </div>
@@ -7430,7 +7462,7 @@ function GameTab({ history, profile, setProfile, acct, onPlay }) {
         {modes.map(m => (
           <button key={m.id} type="button" data-gm-mode={m.id} data-soon={m.soon ? 1 : undefined} disabled={m.off || !!saved} onClick={() => { sfxTap(); setPick(m.id); }}
             style={{ ...btnBase, ...card, ...tileR(), textAlign: "left", color: C.chalk, padding: "14px 14px", display: "flex", alignItems: "center", gap: 12, opacity: m.off || saved ? 0.55 : 1, fontWeight: 400 }}>
-            <span aria-hidden="true" style={{ fontSize: 30, lineHeight: 1, filter: m.soon ? "grayscale(1)" : "none" }}>{m.soon ? "🔒" : m.icon}</span>
+            {m.soon ? <IcoBox n="lock" color={C.dim} size={44} /> : <span aria-hidden="true" style={{ fontSize: 30, lineHeight: 1 }}>{m.icon}</span>}
             <span style={{ flex: 1, minWidth: 0 }}>
               <span style={{ display: "block", fontFamily: DISPLAY, fontSize: 22, fontWeight: 900, lineHeight: 1.1 }}>{m.name}</span>
               <span style={{ display: "block", fontSize: 12.5, color: C.dim, marginTop: 3, lineHeight: 1.4 }}>{m.desc}</span>
@@ -7458,7 +7490,7 @@ function GameTab({ history, profile, setProfile, acct, onPlay }) {
       {!RANKED_ON && (
         <Sect data-gm-top-locked title={T("gmTop")} style={{ marginTop: 12 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12, opacity: 0.75 }}>
-            <span aria-hidden="true" style={{ fontSize: 26 }}>🔒</span>
+            <IcoBox n="lock" color={C.dim} />
             <span style={{ flex: 1, fontSize: 13, color: C.dim, lineHeight: 1.45 }}>{T("gmTopLocked")}</span>
           </div>
         </Sect>
@@ -7512,7 +7544,7 @@ function PerkSheet({ lo, mode, stakeMax = 0, onClose, onGo }) {
               <span aria-hidden="true" style={{ fontSize: 22, width: 26, textAlign: "center" }}>{id ? PERK_ICON[id] : "–"}</span>
               <span style={{ flex: 1, minWidth: 0 }}>
                 <span style={{ display: "block", fontWeight: 800, fontSize: 14.5 }}>{t[0]}</span>
-                <span style={{ display: "block", fontSize: 12.5, color: C.dim, marginTop: 2, lineHeight: 1.4 }}>{have ? withK(t[1]) : `🔒 ${t[2]}`}</span>
+                <span style={{ display: "block", fontSize: 12.5, color: C.dim, marginTop: 2, lineHeight: 1.4 }}>{have ? withK(t[1]) : <span style={{ display: "inline-flex", gap: 5, alignItems: "center" }}><Ico n="lock" size={13} />{t[2]}</span>}</span>
               </span>
             </button>
           );
@@ -7557,7 +7589,7 @@ function GameRules({ onClose, lo, onTutorial }) {
   return (
     <Sheet title={T("gmRulesT")} onClose={onClose}>
       <div data-gm-rules-text style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        {onTutorial && <button type="button" data-gm-tut-open onClick={() => { sfxTap(); onTutorial(); }} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>🎓 {T("gmTutPlay")}</button>}
+        {onTutorial && <button type="button" data-gm-tut-open onClick={() => { sfxTap(); onTutorial(); }} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}><Ico n="cap" size={22} />{T("gmTutPlay")}</button>}
         <GuideSect n={1} title={T("gmG1T")}>
           <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>{GM.SUITS.map((s, i) => <PlayCard key={s} c={i * 13 + 12} w={52} still />)}</div>
           <p style={gP}>{T("gmG1D")}</p>
@@ -7626,7 +7658,7 @@ function TutCoach({ step, ready, onNext }) {
   const key = "gmTut_" + step.k + (ready && T("gmTut_" + step.k + "Sel") !== "gmTut_" + step.k + "Sel" ? "Sel" : "");
   return (
     <div data-gm-tut-step={step.k} className="cardIn" style={{ marginTop: 10, padding: "11px 13px", borderRadius: 16, background: `${C.signal}1f`, border: `1.5px solid ${C.signal}`, display: "flex", gap: 10, alignItems: "flex-start" }}>
-      <span aria-hidden="true" style={{ fontSize: 22, lineHeight: 1.2 }}>🎓</span>
+      <Ico n="cap" size={24} color={C.signal} style={{ marginTop: 1 }} />
       <div style={{ flex: 1, minWidth: 0 }}>
         <div data-gm-tut-text style={{ fontSize: 14, lineHeight: 1.5, color: C.chalk }}>{withK(T(key))}</div>
         {!step.t && <button type="button" data-gm-tut-next onClick={() => { sfxTap(); onNext(); }} style={{ ...btnBase, marginTop: 8, padding: "8px 16px", borderRadius: 11, background: C.signal, color: C.signalInk, fontSize: 14 }}>{T(step.last ? "gmTutFinish" : "gmTutNext")}</button>}
@@ -8124,7 +8156,7 @@ function Tour({ run, x, done, onStep, onEnd, onChapterDone, onStart }) {
         </div>
         {step.done && doneNow && (
           <div data-tour-badge={doneNow} style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 10 }}>
-            <span aria-hidden="true" style={{ fontSize: 30, lineHeight: 1 }}>🧭</span>
+            <IcoBox n="compass" size={46} />
             <span style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, lineHeight: 1.1, color: C.chalk }}>{doneNow >= TOUR_N ? T("tourAllDone") : T("tourChDone", { rank: RANKS[doneNow - 1].name })}</span>
           </div>
         )}
