@@ -71,11 +71,11 @@ service cloud.firestore {
         && lookOk(data().get('look', {}))
         && nowTs();
     }
-    // 1.9.0 profile looks on the card: {frame, bg, title, name}, each a short id (the app draws them; unknown ids are ignored)
+    // 1.8.0 profile looks on the card: {frame, bg, title, name, fx}, each a short id (the app draws them; unknown ids are ignored)
     function lookId(l, k) { return l.get(k, '') is string && l.get(k, '').size() <= 24; }
     function lookOk(l) {
-      return l is map && l.keys().hasOnly(['frame', 'bg', 'title', 'name'])
-        && lookId(l, 'frame') && lookId(l, 'bg') && lookId(l, 'title') && lookId(l, 'name');
+      return l is map && l.keys().hasOnly(['frame', 'bg', 'title', 'name', 'fx'])
+        && lookId(l, 'frame') && lookId(l, 'bg') && lookId(l, 'title') && lookId(l, 'name') && lookId(l, 'fx');
     }
     function notBlockedBy(owner) {
       return !exists(/databases/$(database)/documents/blocks/$(owner))

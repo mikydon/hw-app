@@ -4858,7 +4858,7 @@ const PF_LAY = {
   3: { rows: "auto auto 1fr", at: [{ gridColumn: 1, gridRow: 1 }, { gridColumn: 2, gridRow: "1 / span 3" }, { gridColumn: 3, gridRow: "1 / span 3" }, { gridColumn: 1, gridRow: 2 }] },
   2: { rows: "auto auto auto 1fr", at: [{ gridColumn: 1, gridRow: 1 }, { gridColumn: 2, gridRow: "1 / span 4" }, { gridColumn: 1, gridRow: 3 }, { gridColumn: 1, gridRow: 2 }] },
 };
-function ProfilePage({ m, own, onEditProfile, onEditSlot, onStreak, onPhoto, onPickRank, extra, top, claim }) {
+function ProfilePage({ m, own, onEditProfile, onEditSlot, onStreak, onPhoto, onPickRank, onLooks, extra, top, claim }) {
   const pg = usePager("pf", 4, PF_LAY);
   const [focus, setFocus] = useState(null);
   const lv = levelInfo(m.xp), lr = RANKS[lvRank(m.lvl)], lk = m.look || {};
@@ -4895,6 +4895,7 @@ function ProfilePage({ m, own, onEditProfile, onEditSlot, onStreak, onPhoto, onP
         )}
         {/* the basics: photo, name, level, streak */}
         <Sect data-pf-hero style={{ marginTop: 0, padding: LOOK === "flat" ? 0 : "16px 16px 14px", position: "relative", overflow: "hidden" }}>
+          <LookFx id={lk.fx} />
           {lk.bg ? <div data-pf-banner={lk.bg} aria-hidden="true" style={{ position: "absolute", left: 0, right: 0, top: 0, height: 190, pointerEvents: "none", WebkitMaskImage: "linear-gradient(180deg, #000 45%, transparent 100%)", maskImage: "linear-gradient(180deg, #000 45%, transparent 100%)" }}><LookBanner id={lk.bg} /></div>
             : <div aria-hidden="true" style={{ position: "absolute", inset: 0, background: `radial-gradient(80% 70% at 0% 0%, ${lr.color}26, transparent 60%)`, pointerEvents: "none" }} />}
           <div style={{ position: "relative", display: "flex", alignItems: "center", gap: lk.frame ? 18 : 14 }}>
@@ -4909,7 +4910,10 @@ function ProfilePage({ m, own, onEditProfile, onEditSlot, onStreak, onPhoto, onP
               {lk.title && <div style={{ marginTop: 6 }}><LookTitle id={lk.title} /></div>}
               <div style={{ fontSize: 12.5, color: own && bdayToday() ? C.signal : C.dim, fontWeight: own && bdayToday() ? 800 : 400, marginTop: 4 }}>{own && bdayToday() ? T("bdayHero") : m.since ? T("since", { date: fmtDate(m.since, true) }) : T("newMember")}</div>
             </div>
-            {own && <button type="button" data-pf-edit onClick={() => { sfxTap(); onEditProfile(); }} aria-label={T("pfEdit")} style={{ ...btnBase, alignSelf: "flex-start", background: SOFT(), color: C.chalk, width: 38, height: 38, borderRadius: 12, flexShrink: 0, fontSize: 15 }}>✏️</button>}
+            {own && <span style={{ alignSelf: "flex-start", display: "flex", flexDirection: "column", gap: 6, flexShrink: 0 }}>
+              <button type="button" data-pf-edit onClick={() => { sfxTap(); onEditProfile(); }} aria-label={T("pfEdit")} style={{ ...btnBase, background: SOFT(), color: C.chalk, width: 38, height: 38, borderRadius: 12, fontSize: 15 }}>✏️</button>
+              {onLooks && <button type="button" data-pf-looks onClick={() => { sfxTap(); onLooks(); }} aria-label={T("pfLooks")} title={T("pfLooks")} style={{ ...btnBase, background: SOFT(), color: C.signal, width: 38, height: 38, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center" }}><Ico n="sparkle" size={19} /></button>}
+            </span>}
           </div>
           <div style={{ position: "relative", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 14 }}>
             <div data-pf-lv style={{ background: SOFT(), borderRadius: 14, padding: "10px 12px" }}>
@@ -4990,7 +4994,7 @@ function SlotSheet({ m, i, cur, onSave, onClose }) {
   );
 }
 
-function ProfileTab({ history, profile, setProfile, onFreeze, kcal, acct, vis, onVis, onFriends }) {
+function ProfileTab({ history, profile, setProfile, onFreeze, kcal, acct, vis, onVis, onFriends, onShop }) {
   const fz = freezesAvailable(history);
   const fileRef = useRef(null);
   const [howEx, setHowEx] = useState(null);
@@ -5028,9 +5032,10 @@ function ProfileTab({ history, profile, setProfile, onFreeze, kcal, acct, vis, o
       {rev && <RewardReveal items={rev} onDone={() => { setProfile({ ...profile, claim2: withClaims(claimOf(profile), rev) }); setRev(null); setParty(Date.now()); }} />}
       {party > 0 && <Confetti key={party} />}
       <ProfilePage m={m} own claim={claim} extra={{ fz }} onPhoto={() => fileRef.current && fileRef.current.click()} onEditProfile={() => { setName(profile.name || ""); setSheet("edit"); }}
-        onStreak={() => setSheet("freeze")} onEditSlot={i => setSheet({ slot: i })} onPickRank={setHowEx}
+        onStreak={() => setSheet("freeze")} onEditSlot={i => setSheet({ slot: i })} onPickRank={setHowEx} onLooks={() => setSheet("looks")}
         top={err ? <div role="alert" style={{ fontSize: 13, color: "#ff8a80", marginBottom: 10 }}>{err}</div> : null} />
       {sheet && sheet.slot !== undefined && <SlotSheet m={sm} i={sheet.slot} cur={(showcase(sm)[sheet.slot] || {}).set ? slotStr(showcase(sm)[sheet.slot]) : ""} onSave={v => saveSlot(sheet.slot, v)} onClose={() => setSheet(null)} />}
+      {sheet === "looks" && <LooksSheet profile={profile} setProfile={setProfile} history={history} own={econState(history, profile).own} onShop={onShop || (() => {})} onClose={() => setSheet(null)} />}
       {sheet === "freeze" && (
         <Sheet title={T("streak")} onClose={() => setSheet(null)} short>
           <div data-freeze-card style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -7459,7 +7464,9 @@ function econInput(history, profile) {
 // Looks you own: bought or from a chest, plus the ones won by playing.
 function lookGot(inp) {
   const a = k => inp.ach.find(x => x.k === k) || {};
-  return { obsidian: !!a("obsidian").step, early: !!a("early").step, night: !!a("night").step, comeback: !!a("comeback").step, deck: !!a("deck").step, streak30: (a("streak").v || 0) >= 30, season: false };
+  const g = k => !!a(k).step;
+  return { obsidian: g("obsidian"), early: g("early"), night: g("night"), comeback: g("comeback"), deck: g("deck"), streak30: (a("streak").v || 0) >= 30, season: false,
+    allDiamond: g("allDiamond"), marathon: g("marathon"), midnight: g("midnight"), triple: g("triple"), frozen: g("frozen"), bdayW: g("bdayWorkout"), newyear: g("newyear") };
 }
 function econState(history, profile) {
   const inp = econInput(history, profile), sh = EC.shopOf(profile), earned = EC.earned(inp);
@@ -7489,6 +7496,16 @@ const LK_FRAME = {
   f_laurel: () => { let s = ""; for (const side of [-1, 1]) for (let i = 0; i < 9; i++) { const a = ((100 + i * 17) * Math.PI) / 180, x = 58 + side * Math.cos(a) * 50, y = 58 + Math.sin(a) * 50 - 6, rot = side * (i * 17 + 10); s += `<ellipse cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" rx="7.5" ry="3.6" fill="#e8c15a" stroke="#a57e1c" stroke-width=".8" transform="rotate(${rot} ${x.toFixed(1)} ${y.toFixed(1)})"/>`; } return s + `<path d="M50 108 L58 102 L66 108" fill="none" stroke="#e8c15a" stroke-width="3" stroke-linecap="round"/>`; },
   f_obsidian: u => { let s = `<defs><linearGradient id="gO${u}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4b3a78"/><stop offset=".45" stop-color="#120c22"/><stop offset=".55" stop-color="#2a1f4a"/><stop offset="1" stop-color="#0b0814"/></linearGradient></defs>`; const n = 10; for (let i = 0; i < n; i++) { const a1 = (i / n) * Math.PI * 2, a2 = ((i + 1) / n) * Math.PI * 2, am = (a1 + a2) / 2; const p = [[58 + Math.cos(a1) * 44, 58 + Math.sin(a1) * 44], [58 + Math.cos(am) * 56, 58 + Math.sin(am) * 56], [58 + Math.cos(a2) * 44, 58 + Math.sin(a2) * 44]]; s += `<polygon points="${p.map(q => q.map(v => v.toFixed(1)).join(",")).join(" ")}" fill="url(#gO${u})" stroke="${LK_VIOLET}" stroke-width=".8" stroke-opacity=".6"/>`; } return s + `<circle cx="58" cy="58" r="44" fill="none" stroke="${LK_VIOLET}" stroke-width="1.5" class="lkPulse"/>`; },
 };
+const LK_GOLD = u => `<defs><linearGradient id="gG${u}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8a6a12"/><stop offset=".35" stop-color="#ffd76a"/><stop offset=".5" stop-color="#fff3b8"/><stop offset=".65" stop-color="#ffd76a"/><stop offset="1" stop-color="#8a6a12"/></linearGradient></defs>`;
+Object.assign(LK_FRAME, {
+  f_dots: () => { let s = '<g class="lkSpinSlow">'; for (let i = 0; i < 24; i++) { const a = (i / 24) * Math.PI * 2; s += `<circle cx="${(58 + Math.cos(a) * 50).toFixed(1)}" cy="${(58 + Math.sin(a) * 50).toFixed(1)}" r="${i % 2 ? 1.8 : 3}" fill="${i % 2 ? C.chalk : C.signal}"/>`; } return s + "</g>"; },
+  f_hex: () => { const hx = r => Array.from({ length: 6 }, (_, i) => { const a = ((i * 60 - 90) * Math.PI) / 180; return `${(58 + Math.cos(a) * r).toFixed(1)},${(58 + Math.sin(a) * r).toFixed(1)}`; }).join(" "); return `<polygon points="${hx(56)}" fill="none" stroke="${C.signal}" stroke-width="3.5" stroke-linejoin="round"/><polygon points="${hx(50)}" fill="none" stroke="${C.chalk}" stroke-opacity=".45" stroke-width="1.2" stroke-linejoin="round"/>`; },
+  f_wave: () => { const w = (amp, ph) => { let d = ""; for (let i = 0; i <= 120; i++) { const a = (i / 120) * Math.PI * 2, r = 50 + amp * Math.sin(12 * a + ph); d += (i ? "L" : "M") + (58 + Math.cos(a) * r).toFixed(1) + " " + (58 + Math.sin(a) * r).toFixed(1); } return d + "Z"; }; return `<path d="${w(3.2, 0)}" fill="none" stroke="${C.sky}" stroke-width="3"/><path d="${w(3.2, Math.PI)}" fill="none" stroke="${C.signal}" stroke-width="2" stroke-opacity=".85"/>`; },
+  f_neon: () => `<circle class="lkPulse" cx="58" cy="58" r="50" fill="none" stroke="${LK_PINK}" stroke-width="8" opacity=".45" style="filter:blur(4px)"/><circle cx="58" cy="58" r="50" fill="none" stroke="${LK_PINK}" stroke-width="2.6"/><circle class="lkPulse" cx="58" cy="58" r="45.5" fill="none" stroke="${C.sky}" stroke-width="6" opacity=".4" style="filter:blur(3px);animation-delay:-.9s"/><circle cx="58" cy="58" r="45.5" fill="none" stroke="${C.sky}" stroke-width="2"/>`,
+  f_bolt: () => { let s = `<circle cx="58" cy="58" r="48" fill="none" stroke="${C.signal}" stroke-width="2.5"/>`; [45, 135, 225, 315].forEach(deg => { const a = (deg * Math.PI) / 180; s += `<path d="M1 -11 L6 -1 L1.5 -1 L4 11 L-6 -2 L-1.5 -2 Z" fill="${C.signal}" stroke="${C.ink}" stroke-width=".8" stroke-linejoin="round" transform="translate(${(58 + Math.cos(a) * 52).toFixed(1)} ${(58 + Math.sin(a) * 52).toFixed(1)}) rotate(${deg + 90})"/>`; }); return s; },
+  f_crown: u => `${LK_GOLD(u)}<circle cx="58" cy="58" r="49" fill="none" stroke="url(#gG${u})" stroke-width="4.5"/><circle cx="58" cy="58" r="44.5" fill="none" stroke="#a57e1c" stroke-width="1"/><path d="M40 16 L43 1 L51 9 L58 -3 L65 9 L73 1 L76 16 Z" fill="url(#gG${u})" stroke="#7a5a0c" stroke-width="1.2" stroke-linejoin="round"/><circle cx="58" cy="-3" r="2.4" fill="${LK_PINK}"/><circle cx="43" cy="1" r="2" fill="${C.sky}"/><circle cx="73" cy="1" r="2" fill="${C.sky}"/><circle cx="58" cy="11" r="2.2" fill="${C.mint}"/><circle cx="58" cy="108" r="3" fill="url(#gG${u})" stroke="#7a5a0c" stroke-width=".8"/>`,
+  f_diamond: () => { let s = ""; for (let i = 0; i < 12; i++) { const a = (i / 12) * Math.PI * 2, x = 58 + Math.cos(a) * 50, y = 58 + Math.sin(a) * 50, deg = (i / 12) * 360 + 90; s += `<path d="M0 -7 L5 0 L0 7 L-5 0 Z" fill="#bfe8ff" stroke="#5aa9ff" stroke-width="1" transform="translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${deg.toFixed(0)})"/>`; } [[22, 18], [96, 24], [100, 92], [16, 90]].forEach(([x, y], i) => { s += `<path class="lkTw" style="animation-delay:${i * 0.5}s" d="M${x} ${y - 5} L${x + 1.3} ${y - 1.3} L${x + 5} ${y} L${x + 1.3} ${y + 1.3} L${x} ${y + 5} L${x - 1.3} ${y + 1.3} L${x - 5} ${y} L${x - 1.3} ${y - 1.3} Z" fill="#fff"/>`; }); return s; },
+});
 function LookFrame({ id, size, style }) {
   const u = useId().replace(/[^a-zA-Z0-9]/g, "");
   if (!LK_FRAME[id]) return null;
@@ -7510,6 +7527,21 @@ function LookBanner({ id }) {
     return <><div style={{ ...fill, background: `linear-gradient(180deg, #050816, ${C.panelHi})` }} /><svg viewBox="0 0 400 148" preserveAspectRatio="xMidYMid slice" style={{ ...fill, width: "100%", height: "100%" }} dangerouslySetInnerHTML={{ __html: s }} /></>;
   }
   if (id === "b_ridge") return <><div style={{ ...fill, background: `linear-gradient(180deg, ${C.signal}8c, ${C.panelHi} 70%)` }} /><svg viewBox="0 0 400 148" preserveAspectRatio="xMaxYMax slice" style={{ ...fill, width: "100%", height: "100%" }}><circle cx="345" cy="70" r="22" fill={C.signal} opacity=".9" /><path d="M0 100 L60 62 L110 92 L170 48 L240 96 L300 70 L400 104 V148 H0z" fill={C.line} /><path d="M0 122 L80 92 L150 118 L230 86 L320 120 L400 98 V148 H0z" fill={C.panel} /></svg></>;
+  if (id === "b_sunset") return <><div style={{ ...fill, background: `linear-gradient(180deg, #ffad66 0%, #ff6b81 45%, ${C.panelHi} 100%)` }} /><svg viewBox="0 0 400 148" preserveAspectRatio="xMaxYMax slice" style={{ ...fill, width: "100%", height: "100%" }}><circle cx="345" cy="78" r="20" fill="#ffe08a" opacity=".95" /><path d="M0 92 H400" stroke="#fff" strokeOpacity=".35" /><path d="M200 102 H400 M260 110 H400" stroke="#fff" strokeOpacity=".2" /></svg></>;
+  if (id === "b_waves") {
+    const wv = (y, a, ph) => { let d = `M0 ${y}`; for (let x = 0; x <= 400; x += 10) d += ` L${x} ${(y + Math.sin(x / 45 + ph) * a).toFixed(1)}`; return d + " V148 H0z"; };
+    return <><div style={{ ...fill, background: `linear-gradient(180deg, ${C.panelHi}, ${C.panel})` }} /><svg viewBox="0 0 400 148" preserveAspectRatio="none" style={{ ...fill, width: "100%", height: "100%" }}><path d={wv(52, 9, 0)} fill={C.sky} opacity=".22" /><path d={wv(76, 8, 2)} fill={C.sky} opacity=".3" /><path d={wv(100, 7, 4)} fill={C.signal} opacity=".28" /><path d={wv(52, 9, 0).split(" V")[0]} fill="none" stroke={C.sky} strokeOpacity=".7" strokeWidth="1.5" /></svg></>;
+  }
+  if (id === "b_bubbles") return <><div style={{ ...fill, background: `linear-gradient(180deg, ${C.panelHi}, ${C.panel})` }} /><div style={{ ...fill, overflow: "hidden" }}>{Array.from({ length: 14 }, (_, i) => { const r = lkRnd(i + 3), sz = 6 + Math.round(lkRnd(i + 40) * 14); return <span key={i} className="lkCol lkUp" style={{ left: `${(r * 100).toFixed(1)}%`, animationDuration: `${(7 + lkRnd(i + 9) * 7).toFixed(1)}s`, animationDelay: `${(-lkRnd(i + 17) * 12).toFixed(1)}s` }}><span style={{ display: "block", width: sz, height: sz, borderRadius: 99, border: `1.5px solid ${C.sky}99`, background: `radial-gradient(circle at 30% 30%, #fff6, transparent 60%)` }} /></span>; })}</div></>;
+  if (id === "b_city") {
+    let w = "", x = 0, k = 0;
+    while (x < 400) { const bw = 22 + Math.round(lkRnd(k) * 26), bh = 40 + Math.round(lkRnd(k + 50) * 70); w += `<rect x="${x}" y="${148 - bh}" width="${bw - 3}" height="${bh}" fill="#0a0e1f"/>`; for (let yy = 148 - bh + 6; yy < 144; yy += 9) for (let xx = x + 4; xx < x + bw - 7; xx += 7) if (lkRnd(xx * 3 + yy) > 0.55) w += `<rect x="${xx}" y="${yy}" width="3" height="4" fill="${C.signal}" opacity="${(0.5 + lkRnd(xx + yy * 7) * 0.5).toFixed(2)}"${lkRnd(xx + yy) > 0.9 ? ' class="lkTw"' : ""}/>`; x += bw; k++; }
+    return <><div style={{ ...fill, background: `linear-gradient(180deg, #0b1030, ${C.panelHi})` }} /><svg viewBox="0 0 400 148" preserveAspectRatio="xMidYMax slice" style={{ ...fill, width: "100%", height: "100%" }} dangerouslySetInnerHTML={{ __html: `<circle cx="262" cy="26" r="10" fill="#fff4c8" opacity=".9"/>` + w }} /></>;
+  }
+  if (id === "b_galaxy") {
+    let st = ""; for (let i = 0; i < 60; i++) st += `<circle cx="${((i * 83.7) % 400).toFixed(1)}" cy="${((i * 41.3) % 148).toFixed(1)}" r="${i % 6 === 0 ? 1.4 : 0.7}" fill="#fff" class="lkTw" style="animation-duration:${(1.8 + (i % 5) * 0.6).toFixed(1)}s;animation-delay:${((i % 7) * 0.4).toFixed(1)}s"/>`;
+    return <><div style={{ ...fill, background: "#070312" }} /><div className="lkNeb" style={{ position: "absolute", inset: "-40%", background: `radial-gradient(30% 25% at 40% 45%, ${LK_VIOLET}aa, transparent 70%), radial-gradient(25% 20% at 62% 55%, ${LK_PINK}88, transparent 70%), radial-gradient(18% 14% at 52% 48%, ${C.signal}88, transparent 70%)` }} /><svg viewBox="0 0 400 148" preserveAspectRatio="xMidYMid slice" style={{ ...fill, width: "100%", height: "100%" }} dangerouslySetInnerHTML={{ __html: st }} /></>;
+  }
   if (id === "b_aurora") return <><div style={{ ...fill, background: C.ink }} /><div style={{ ...fill, filter: "blur(18px)", opacity: 0.85, overflow: "hidden" }}><div className="lkAur" style={{ position: "absolute", inset: "-20% -10%", background: `linear-gradient(100deg, transparent 15%, ${C.mint}b3 30%, transparent 45%, ${C.signal}99 60%, transparent 75%)` }} /><div className="lkAur lkAur2" style={{ position: "absolute", inset: "-20% -10%", background: `linear-gradient(80deg, transparent 20%, ${LK_VIOLET}99 40%, transparent 55%)` }} /></div></>;
   return null;
 }
@@ -7517,27 +7549,80 @@ function LookBanner({ id }) {
 function nameFx(id) {
   if (id === "n_grad") return { background: `linear-gradient(90deg, ${C.signal}, ${LK_PINK}, ${C.sky})`, WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent" };
   if (id === "n_glow") return { color: C.chalk, textShadow: `0 0 10px ${C.signal}cc, 0 0 24px ${C.signal}80` };
+  if (id === "n_outline") return { color: "transparent", WebkitTextStroke: `1.4px ${C.signal}` };
+  if (id === "n_shadow") return { color: C.chalk, textShadow: `2px 2px 0 ${C.signal}, 4px 4px 0 ${C.signal}66` };
+  if (id === "n_ice") return { background: "linear-gradient(100deg, #ffffff 20%, #bfe9ff 40%, #6ec3ff 55%, #ffffff 75%)", backgroundSize: "220% 100%", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent", animation: "lkFoil 5s linear infinite" };
+  if (id === "n_fire") return { background: "linear-gradient(0deg, #ff3d3d, #ff7a2f 40%, #ffd76a 80%)", backgroundSize: "100% 200%", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent", animation: "lkFireT 1.4s ease-in-out infinite alternate", filter: "drop-shadow(0 0 6px #ff7a2f88)" };
+  if (id === "n_rainbow") return { background: "linear-gradient(90deg, #ff6b6b, #ffd76a, #5fe3a1, #7cc4ff, #b388ff, #ff7ab6, #ff6b6b)", backgroundSize: "300% 100%", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent", animation: "lkFoil 5s linear infinite" };
+  if (id === "n_gold") return { background: "linear-gradient(100deg, #b8891a 20%, #ffd76a 40%, #fff3b8 50%, #ffd76a 60%, #b8891a 80%)", backgroundSize: "250% 100%", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent", animation: "lkFoil 3.5s linear infinite", filter: "drop-shadow(0 1px 0 #6b4f0a)" };
   if (id === "n_foil") return { background: `linear-gradient(100deg, ${C.chalk} 30%, #fff 45%, ${C.signal} 50%, ${C.chalk} 60%)`, backgroundSize: "260% 100%", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent", animation: "lkFoil 3.2s linear infinite" };
   return {};
 }
+// Every title has its own plate: colours, shape, letters and a small icon (Michael: "they don't look different").
+const TITLE_ST = () => ({
+  t_iron: { bg: "linear-gradient(180deg, #eef2f8, #9aa3b4 55%, #d5dbe6)", fg: "#1b2230", bd: "#5d6678", rad: 5, ic: '<path d="M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11"/>', ex: { boxShadow: "inset 0 1px 0 #fff8" } },
+  t_rookie: { bg: `${C.sky}24`, fg: C.sky, bd: `${C.sky}99`, ic: '<path d="M12 3.5l2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L3.6 9.6l5.8-.8z"/>' },
+  t_grind: { bg: "repeating-linear-gradient(135deg, #3a3f47 0 6px, #2f343b 6px 12px)", fg: "#e9edf2", bd: "#8a929e", rad: 3, dash: true, ic: '<circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/>' },
+  t_zen: { bg: "linear-gradient(90deg, #b8a9ff2e, #8fe3d02e)", fg: "#ddd6ff", bd: "#b8a9ff77", low: true, ic: '<path d="M19 9a8 8 0 1 1-3.4-4.7"/>' },
+  t_beast: { bg: "linear-gradient(90deg, #ff4d4d, #ff9a3d)", fg: "#2a0a00", bd: "#ffc09a", rad: 6, it: true, ic: '<path d="M8 3l-3 18M13 3l-3 18M18 3l-3 18"/>' },
+  t_legend: { bg: "linear-gradient(100deg, #8a6a12, #ffd76a 35%, #fff3b8 50%, #ffd76a 65%, #8a6a12)", fg: "#2b1d00", bd: "#ffe28a", foil: true, ic: '<path d="M3 8l4.5 4 4.5-7 4.5 7L21 8l-2 11H5z"/>' },
+  t_bird: { bg: "linear-gradient(90deg, #ffb36b, #ff6f91)", fg: "#3a0f12", bd: "#ffd2b0", ic: '<path d="M3 18h18M7 18a5 5 0 0 1 10 0M12 7v3M5.5 10.5l2 2M18.5 10.5l-2 2"/>' },
+  t_owl: { bg: "linear-gradient(180deg, #1b1745, #2c2470)", fg: "#d8ceff", bd: "#8a7dff", glow: "#8a7dff", ic: '<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>' },
+  t_comeback: { bg: `${C.mint}1f`, fg: C.mint, bd: C.mint, ic: '<path d="M20 12a8 8 0 1 1-2.3-5.6"/><path d="M20 4v4h-4"/>' },
+  t_marathon: { bg: "linear-gradient(90deg, #1e3a2a, #2f5d43)", fg: "#c6f7d8", bd: "#5fe3a1", rad: 8, ic: '<path d="M6.5 9C4 9 2.5 10.3 2.5 12s1.5 3 4 3c4 0 7-6 11-6 2.5 0 4 1.3 4 3s-1.5 3-4 3c-4 0-7-6-11-6z"/>' },
+  t_shark: { bg: "linear-gradient(90deg, #0f3b46, #145a6a)", fg: "#7ff0e0", bd: "#2fb8a8", rad: 8, it: true, ic: '<path d="M3 17c4 0 7-2 9-11 1 5 4 9 9 11z"/>' },
+  t_streak: { bg: "linear-gradient(90deg, #2a1206, #4a1d06)", fg: "#ffc266", bd: "#ff7a1a", glow: "#ff7a1a", flick: true, ic: '<path d="M12 21c-4 0-6.5-2.7-6.5-6.3 0-3.2 2.2-5.4 3.6-7.6.6 1.6 1.4 2.6 2.5 3.1C12 7 13 4.7 14.6 3c.6 2.9 3.9 5.6 3.9 10.2 0 4.4-2.6 7.8-6.5 7.8z"/>' },
+  t_midnight: { bg: "linear-gradient(90deg, #05070f, #1a2140)", fg: "#9fd3ff", bd: "#3d5a9a", glow: "#5aa9ff", ic: '<circle cx="11" cy="13" r="8"/><path d="M11 13V8.5M11 13l1.6-4.2"/><path d="M19.5 2.5l.6 1.4 1.4.6-1.4.6-.6 1.4-.6-1.4-1.4-.6 1.4-.6z"/>' },
+  t_obsidian: { bg: "linear-gradient(135deg, #0b0814, #2a1f4a 50%, #0b0814)", fg: "#cbb8ff", bd: LK_VIOLET, foil: true, glow: LK_VIOLET, ic: '<path d="M12 2.5l6 7-6 12-6-12z"/><path d="M6 9.5h12"/>' },
+});
 function LookTitle({ id, small }) {
-  if (!id) return null;
-  const col = id === "t_obsidian" ? LK_VIOLET : RAR_COL()[lookRar(id)] === C.sky ? C.signal : RAR_COL()[lookRar(id)];
-  return <span data-look-title={id} className={lookRar(id) === 3 ? "foil" : ""} style={{ display: "inline-block", fontSize: small ? 10 : 11, fontWeight: 800, letterSpacing: 0.8, textTransform: "uppercase", padding: small ? "2px 7px" : "3px 10px", borderRadius: 99, border: `1px solid ${col}80`, color: col, background: `${col}14`, whiteSpace: "nowrap", lineHeight: 1.3 }}>{lookName(id)}</span>;
+  const st = id && TITLE_ST()[id];
+  if (!st) return null;
+  const fs = small ? 10 : 11;
+  return (
+    <span data-look-title={id} className={st.foil ? "foil" : ""} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: fs, fontWeight: 900, letterSpacing: st.low ? 2 : 0.9, textTransform: st.low ? "lowercase" : "uppercase", fontStyle: st.it ? "italic" : "normal",
+      padding: small ? "2px 8px 2px 6px" : "3px 11px 3px 8px", borderRadius: st.rad ?? 99, border: `1.5px ${st.dash ? "dashed" : "solid"} ${st.bd}`, color: st.fg, background: st.bg, whiteSpace: "nowrap", lineHeight: 1.3, textShadow: st.glow ? `0 0 8px ${st.glow}` : "none", boxShadow: st.glow ? `0 0 10px ${st.glow}44` : "none", ...(st.ex || {}) }}>
+      <svg viewBox="0 0 24 24" width={fs + 2} height={fs + 2} aria-hidden="true" className={st.flick ? "lkFlickI" : ""} style={{ flexShrink: 0, fill: "none", stroke: "currentColor", strokeWidth: 2.4, strokeLinecap: "round", strokeLinejoin: "round" }} dangerouslySetInnerHTML={{ __html: st.ic }} />
+      {lookName(id)}
+    </span>
+  );
+}
+// Profile effects (Discord-like): drawn over the whole profile card, never catching taps. A fixed pseudo-random spread,
+// so the same effect looks the same everywhere; only transform/opacity animate.
+const lkRnd = k => { const x = Math.sin(k * 12.9898 + 78.233) * 43758.5453; return x - Math.floor(x); };
+function LookFx({ id, thumb }) {
+  if (!id || !EC.LOOKS[id]) return null;
+  const n = (c, f) => Array.from({ length: c }, (_, i) => f(i, lkRnd(i + 1), lkRnd(i + 31), lkRnd(i + 61)));
+  const col = (x, dur, delay, kids, cls = "lkDown") => <span className={"lkCol " + cls} style={{ left: `${(x * 100).toFixed(1)}%`, animationDuration: `${dur.toFixed(1)}s`, animationDelay: `${(-delay).toFixed(1)}s` }}>{kids}</span>;
+  let body = null;
+  if (id === "fx_snow") body = n(22, (i, a, b, c) => <Fragment key={i}>{col(a, 6 + b * 6, c * 12, <span style={{ display: "block", width: 2 + Math.round(b * 3), height: 2 + Math.round(b * 3), borderRadius: 99, background: "#fff", opacity: 0.85 }} />)}</Fragment>);
+  if (id === "fx_sparkle") body = n(14, (i, a, b, c) => <svg key={i} viewBox="-6 -6 12 12" width={8 + b * 10} height={8 + b * 10} className="lkTwk" style={{ position: "absolute", left: `${(a * 96).toFixed(1)}%`, top: `${(c * 92).toFixed(1)}%`, animationDelay: `${(b * 2.4).toFixed(2)}s`, animationDuration: `${(1.8 + c * 1.6).toFixed(1)}s` }}><path d="M0 -6 L1.4 -1.4 L6 0 L1.4 1.4 L0 6 L-1.4 1.4 L-6 0 L-1.4 -1.4 Z" fill={i % 3 ? "#fff" : C.signal} /></svg>);
+  if (id === "fx_petals") body = n(14, (i, a, b, c) => <Fragment key={i}>{col(a, 8 + b * 6, c * 14, <span className="lkSway" style={{ display: "block", width: 9, height: 6, borderRadius: "60% 40% 60% 40%", background: i % 2 ? "#ffb3c7" : "#ffd1dc", opacity: 0.9, animationDelay: `${(-b * 3).toFixed(1)}s` }} />)}</Fragment>);
+  if (id === "fx_embers") body = n(18, (i, a, b, c) => <Fragment key={i}>{col(a, 4 + b * 4, c * 8, <span style={{ display: "block", width: 3 + Math.round(b * 2), height: 3 + Math.round(b * 2), borderRadius: 99, background: i % 3 ? "#ffb347" : "#ff6a2f", boxShadow: "0 0 6px #ff7a1a" }} />, "lkUp lkFade")}</Fragment>);
+  if (id === "fx_confetti") { const cs = [C.signal, LK_PINK, C.sky, C.mint, LK_VIOLET]; body = n(20, (i, a, b, c) => <Fragment key={i}>{col(a, 5 + b * 5, c * 10, <span className="lkSpinC" style={{ display: "block", width: 6, height: 9, borderRadius: 1.5, background: cs[i % cs.length], animationDuration: `${(0.8 + b).toFixed(2)}s` }} />)}</Fragment>); }
+  if (id === "fx_lightning") body = <><div className="lkFlash" style={{ position: "absolute", inset: 0, background: "#fff" }} /><svg className={thumb ? "" : "lkBolt"} viewBox="0 0 60 120" style={{ position: "absolute", right: "12%", top: 0, height: "75%", filter: `drop-shadow(0 0 6px ${C.signal})` }}><path d="M34 0 L14 58 L30 58 L18 120 L48 46 L31 46 L44 0 Z" fill={C.signal} /></svg><svg className={thumb ? "" : "lkBolt lkBolt2"} viewBox="0 0 60 120" style={{ position: "absolute", left: "8%", top: "10%", height: "45%", filter: "drop-shadow(0 0 5px #fff)" }}><path d="M34 0 L14 58 L30 58 L18 120 L48 46 L31 46 L44 0 Z" fill="#fff" /></svg></>;
+  if (id === "fx_frost") {
+    const br = (x, y, flip) => { let d = ""; for (let k = 0; k < 5; k++) { const a = (flip ? 180 - (10 + k * 18) : 10 + k * 18) * Math.PI / 180, L = 26 + (k % 2) * 14, ex = x + Math.cos(a) * L, ey = y + Math.sin(a) * L; d += `M${x} ${y} L${ex.toFixed(1)} ${ey.toFixed(1)} `; const mx = x + Math.cos(a) * L * 0.55, my = y + Math.sin(a) * L * 0.55; d += `M${mx.toFixed(1)} ${my.toFixed(1)} l${(Math.cos(a + 0.6) * 8).toFixed(1)} ${(Math.sin(a + 0.6) * 8).toFixed(1)} M${mx.toFixed(1)} ${my.toFixed(1)} l${(Math.cos(a - 0.6) * 8).toFixed(1)} ${(Math.sin(a - 0.6) * 8).toFixed(1)} `; } return d; };
+    body = <><svg viewBox="0 0 400 160" preserveAspectRatio="none" style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}><path className="lkPulse" d={br(0, 0, false) + br(400, 0, true)} fill="none" stroke="#d8f3ff" strokeWidth="1.6" strokeLinecap="round" /></svg>{n(8, (i, a, b, c) => <Fragment key={i}>{col(a, 9 + b * 5, c * 12, <svg viewBox="-6 -6 12 12" width={9 + Math.round(b * 6)} height={9 + Math.round(b * 6)} style={{ display: "block", overflow: "visible" }}><path d="M0 -5.5V5.5M-4.8 -2.75L4.8 2.75M-4.8 2.75L4.8 -2.75" stroke="#e6f7ff" strokeWidth="1.2" strokeLinecap="round" /></svg>)}</Fragment>)}</>;
+  }
+  if (id === "fx_fireworks") { const cs = [C.signal, LK_PINK, C.sky]; body = [[22, 30], [70, 22], [50, 55]].map(([x, y], k) => <span key={k} style={{ position: "absolute", left: `${x}%`, top: `${y}%`, width: 0, height: 0 }}>{Array.from({ length: 12 }, (_, i) => <span key={i} className="lkBurst" style={{ "--a": `${i * 30}deg`, position: "absolute", width: 4, height: 4, marginLeft: -2, marginTop: -2, borderRadius: 99, background: cs[k], boxShadow: `0 0 6px ${cs[k]}`, animationDelay: `${(k * 0.9).toFixed(1)}s` }} />)}</span>); }
+  return <div data-look-fx={id} aria-hidden="true" style={{ position: "absolute", inset: 0, pointerEvents: "none", overflow: "hidden", zIndex: 3, borderRadius: "inherit" }}>{body}</div>;
 }
 // A look as a small picture for the shop and the list.
 function LookThumb({ id, size = 56 }) {
   const k = EC.LOOKS[id] && EC.LOOKS[id].kind, box = { width: size, height: size, borderRadius: Math.round(size * 0.28), flexShrink: 0, position: "relative", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", background: SOFT() };
-  if (k === "frame") return <span aria-hidden="true" style={{ ...box, overflow: "visible", background: "transparent" }}><span style={{ width: size * 0.62, height: size * 0.62, borderRadius: 99, background: `${C.signal}40` }} /><LookFrame id={id} size={size} style={{ left: 0, top: 0 }} /></span>;
+  if (k === "frame") return <span aria-hidden="true" style={{ ...box, overflow: "visible", background: "transparent" }}><span style={{ width: size * 0.7, height: size * 0.7, borderRadius: 99, background: `radial-gradient(circle at 35% 30%, ${C.signal}, ${C.signal}99)` }} /><LookFrame id={id} size={size} style={{ left: 0, top: 0 }} /></span>;
   if (k === "bg") return <span aria-hidden="true" style={box}><LookBanner id={id} /></span>;
-  if (k === "title") return <span aria-hidden="true" style={{ ...box, padding: 4, boxSizing: "border-box" }}><span style={{ fontFamily: DISPLAY, fontSize: Math.min(size * 0.22, (size - 8) / (Math.max(...lookName(id).split(/\s+/).map(w => w.length)) * 0.56)), fontWeight: 900, lineHeight: 1, textAlign: "center", textTransform: "uppercase", color: RAR_COL()[lookRar(id)] === C.sky ? C.signal : RAR_COL()[lookRar(id)] }}>{lookName(id)}</span></span>;
+  if (k === "title") { const st = TITLE_ST()[id] || {}; return <span aria-hidden="true" style={{ ...box, background: st.bg, border: `1.5px ${st.dash ? "dashed" : "solid"} ${st.bd}`, boxSizing: "border-box", color: st.fg }}><svg viewBox="0 0 24 24" width={size * 0.5} height={size * 0.5} style={{ fill: "none", stroke: "currentColor", strokeWidth: 2.2, strokeLinecap: "round", strokeLinejoin: "round", filter: st.glow ? `drop-shadow(0 0 4px ${st.glow})` : "none" }} dangerouslySetInnerHTML={{ __html: st.ic }} /></span>; }
+  if (k === "fx") return <span aria-hidden="true" style={{ ...box, background: `linear-gradient(160deg, ${C.panelHi}, ${C.ink})` }}><span style={{ width: size * 0.42, height: size * 0.42, borderRadius: 99, background: `${C.signal}33` }} /><LookFx id={id} thumb /></span>;
   return <span aria-hidden="true" style={box}><span style={{ fontFamily: DISPLAY, fontSize: size * 0.46, fontWeight: 900, lineHeight: 1, ...nameFx(id) }}>Aa</span></span>;
 }
 // The top of a profile with its looks (the Shop's preview; ProfilePage draws the same pieces into its own hero).
 function LookPreview({ profile, look, history }) {
   const lv = levelInfo(totalXP(history)), lr = RANKS[lvRank(lv.lvl)];
   return (
-    <div data-look-preview style={{ ...card, ...tileR(), position: "relative", overflow: "hidden", padding: "16px 16px 14px" }}>
+    <div data-look-preview style={{ ...card, ...tileR(), position: "relative", overflow: "hidden", padding: "18px 16px 16px" }}>
+      <LookFx id={look.fx} />
       <div aria-hidden="true" style={{ position: "absolute", inset: 0, pointerEvents: "none", WebkitMaskImage: "linear-gradient(180deg, #000 35%, transparent 100%)", maskImage: "linear-gradient(180deg, #000 35%, transparent 100%)" }}>{look.bg ? <LookBanner id={look.bg} /> : <div style={{ position: "absolute", inset: 0, background: `radial-gradient(80% 70% at 0% 0%, ${lr.color}26, transparent 60%)` }} />}</div>
       <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 16 }}>
         <span style={{ position: "relative", flexShrink: 0, width: 64, height: 64, margin: look.frame ? 10 : 0 }}>
@@ -7573,8 +7658,9 @@ function ChestArt({ open, size = 150 }) {
   );
 }
 // Opening a weekly chest: shake, tap, the lid flies open, the reward comes up.
-function ChestOpen({ res, onClose }) {
+function ChestOpen({ res, onClose, onEquip }) {
   const [st, setSt] = useState("shut"); // shut → shake → open
+  const [worn, setWorn] = useState(false);
   useBack(onClose, true);
   const tap = () => {
     if (st !== "shut") return;
@@ -7596,7 +7682,8 @@ function ChestOpen({ res, onClose }) {
           </span>
         </div>
       ) : <div style={{ fontSize: 14, color: C.dim }}>{T("shChestTap")}</div>}
-      {st === "open" && <button type="button" data-chest-ok onClick={e => { e.stopPropagation(); sfxTap(); onClose(); }} style={{ ...bigBtn(C.signal, C.signalInk), maxWidth: 300, position: "relative" }}>{T("shOk")}</button>}
+      {st === "open" && onEquip && <button type="button" data-chest-equip disabled={worn} onClick={e => { e.stopPropagation(); onEquip(); setWorn(true); }} style={{ ...bigBtn(worn ? C.mint : C.signal, worn ? C.ink : C.signalInk), maxWidth: 300, position: "relative" }}>{worn ? T("shEquipped") : T("shEquipNow")}</button>}
+      {st === "open" && <button type="button" data-chest-ok onClick={e => { e.stopPropagation(); sfxTap(); onClose(); }} style={onEquip ? { ...ghostBtn, color: C.chalk, padding: "11px 26px", fontSize: 15, position: "relative" } : { ...bigBtn(C.signal, C.signalInk), maxWidth: 300, position: "relative" }}>{onEquip && !worn ? T("shLater") : T("shOk")}</button>}
     </div>,
     document.body
   );
@@ -7611,35 +7698,119 @@ function BuyBtn({ k, price, bal, sure, setSure, onBuy, label }) {
     </button>
   );
 }
-function ShopTab({ history, profile, setProfile }) {
+// Shop preview (like Discord): your own profile with this look on, then Buy → a receipt with "Equip now".
+function LookShopSheet({ id, profile, history, own, bal, onBuy, onEquip, onGo, onClose }) {
+  const L0 = EC.LOOKS[id], kind = L0.kind, has = own.includes(id), price = EC.lookPrice(id), col = RAR_COL()[L0.r];
+  const [st, setSt] = useState("view"); // view → bought → equipped
+  const cur = lookOn(profile, own), worn = cur[kind] === id;
+  const look = { ...cur, [kind]: id };
+  return (
+    <Sheet title={lookName(id)} onClose={onClose}>
+      <div data-look-sheet={id} data-state={st}>
+        {st !== "view" && <div className="shRcpt" style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
+          <span style={{ width: 44, height: 44, borderRadius: 99, background: C.mint, color: C.ink, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Ico n="check" size={24} sw={3} /></span>
+          <span style={{ minWidth: 0 }}>
+            <span style={{ display: "block", fontFamily: DISPLAY, fontSize: 26, fontWeight: 900, lineHeight: 1 }}>{st === "equipped" ? T("shEquipped") : T("shGotIt")}</span>
+            <span style={{ display: "block", fontSize: 12.5, color: C.dim, marginTop: 4, lineHeight: 1.4 }}>{st === "equipped" ? T("shEquippedD") : T("shGotItD")}</span>
+          </span>
+        </div>}
+        <LookPreview profile={profile} look={look} history={history} />
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginTop: 12 }}>
+          <span data-rar-chip={L0.r} style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: 0.4, textTransform: "uppercase", color: col, border: `1px solid ${col}88`, borderRadius: 99, padding: "2px 8px" }}>{T("gmRar" + L0.r)}</span>
+          <span style={{ fontSize: 12.5, color: C.dim }}>{T("lookKind_" + kind)}</span>
+        </div>
+        {L0.won && !has && <div data-look-hint style={{ display: "flex", gap: 10, alignItems: "flex-start", marginTop: 12, fontSize: 13.5, color: C.chalk, lineHeight: 1.45 }}><Ico n="lock" size={18} color={C.dim} style={{ marginTop: 1 }} /><span>{T("shHint_" + L0.won)}</span></div>}
+        <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 16 }}>
+          {st === "view" && !has && price !== null && (bal >= price
+            ? <button type="button" data-look-buy onClick={() => { if (onBuy(id)) setSt("bought"); }} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>{T("shBuy")}<Ico n="diamond" size={18} sw={2.4} />{nf(price)}</button>
+            : <button type="button" data-look-buy disabled style={{ ...bigBtn(C.panelHi, C.dim), display: "flex", alignItems: "center", justifyContent: "center", gap: 8, opacity: 0.8 }}>{T("shNotEnough")}<Ico n="diamond" size={16} sw={2.4} />{nf(price)}</button>)}
+          {st === "bought" && <>
+            <button type="button" data-look-equip onClick={() => { onEquip(kind, id); setSt("equipped"); }} className="b3d" style={bigBtn(C.signal, C.signalInk)}>{T("shEquipNow")}</button>
+            <button type="button" data-look-later onClick={() => { sfxTap(); onClose(); }} style={{ ...ghostBtn, padding: "13px 14px", fontSize: 14.5 }}>{T("shLater")}</button>
+          </>}
+          {(st === "equipped" || (st === "view" && has)) && <>
+            {st === "view" && <div data-look-owned style={{ fontSize: 13.5, color: C.mint, fontWeight: 700 }}>{worn ? T("shEquippedD") : T("shUnlockedD")}</div>}
+            <button type="button" data-look-profile onClick={() => { sfxTap(); onClose(); onGo("profile"); }} style={{ ...ghostBtn, padding: "13px 14px", fontSize: 14.5, color: C.chalk }}>{st === "equipped" ? T("shSeeProfile") : T("shOpenProfile")}</button>
+          </>}
+        </div>
+      </div>
+    </Sheet>
+  );
+}
+// Your looks: changed only on your own Profile (Michael: "changing them only in the shop wouldn't make sense").
+function LooksSheet({ profile, setProfile, history, own, onShop, onClose }) {
+  const [kind, setKind] = useState("frame");
+  const look = lookOn(profile, own);
+  const mine = EC.LOOK_IDS.filter(id => EC.LOOKS[id].kind === kind && own.includes(id));
+  const equip = id => { sfxTap(); setProfile({ ...profile, look: { ...(profile.look || {}), [kind]: id || null } }); };
+  const row = on => ({ ...btnBase, display: "flex", alignItems: "center", gap: 12, padding: "9px 12px", borderRadius: 14, background: SOFT(), color: C.chalk, textAlign: "left", fontWeight: 400, border: `1.5px solid ${on ? C.signal : "transparent"}` });
+  return (
+    <Sheet title={T("pfLooks")} onClose={onClose}>
+      <div data-looks-sheet>
+        <LookPreview profile={profile} look={look} history={history} />
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", margin: "12px 0 10px" }}>
+          {EC.LOOK_KINDS.map(k => <button key={k} type="button" data-look-kind={k} aria-pressed={kind === k} onClick={() => { sfxTap(); setKind(k); }} style={{ ...btnBase, padding: "7px 11px", fontSize: 12.5, borderRadius: 99, background: kind === k ? C.signal : SOFT(), color: kind === k ? C.signalInk : C.chalk }}>{T("lookKind_" + k)}</button>)}
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          <button type="button" data-look-none={kind} onClick={() => equip(null)} aria-pressed={!look[kind]} style={{ ...row(!look[kind]), fontWeight: 700, fontSize: 14 }}>
+            <span style={{ width: 44, height: 44, borderRadius: 12, border: `1.5px dashed ${C.line}`, flexShrink: 0 }} /><span style={{ flex: 1 }}>{T("shNone")}</span>{!look[kind] && <Ico n="check" size={18} color={C.signal} />}
+          </button>
+          {mine.map(id => { const on = look[kind] === id, r = EC.LOOKS[id].r; return (
+            <button key={id} type="button" data-look-own={id} onClick={() => equip(on ? null : id)} aria-pressed={on} style={row(on)}>
+              <LookThumb id={id} size={44} />
+              <span style={{ flex: 1, minWidth: 0 }}>
+                <span style={{ display: "block", fontWeight: 800, fontSize: 14 }}>{lookName(id)}</span>
+                <span style={{ display: "block", fontSize: 10.5, marginTop: 3, color: RAR_COL()[r], fontWeight: 800, textTransform: "uppercase", letterSpacing: 0.4 }}>{T("gmRar" + r)}</span>
+              </span>
+              {on && <Ico n="check" size={18} color={C.signal} />}
+            </button>); })}
+          {!mine.length && <div data-looks-empty style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 2px" }}>
+            <span style={{ flex: 1, fontSize: 13, color: C.dim, lineHeight: 1.4 }}>{T("pfLooksNone")}</span>
+            <button type="button" data-looks-shop onClick={() => { sfxTap(); onClose(); onShop(); }} style={{ ...btnBase, background: C.signal, color: C.signalInk, padding: "9px 14px", fontSize: 13.5, display: "inline-flex", alignItems: "center", gap: 6 }}><Ico n="bag" size={16} sw={2.4} />{T("tabShop")}</button>
+          </div>}
+        </div>
+      </div>
+    </Sheet>
+  );
+}
+function ShopTab({ history, profile, setProfile, onGo }) {
   const es = useMemo(() => econState(history, profile), [history, profile]);
   const { bal, sh, earned, own, chests } = es;
-  const [sure, setSure] = useState(null), [opening, setOpening] = useState(null), [howOpen, setHowOpen] = useState(false), [kind, setKind] = useState("frame"), [flash, setFlash] = useState(null);
+  const [sure, setSure] = useState(null), [opening, setOpening] = useState(null), [howOpen, setHowOpen] = useState(false), [peek, setPeek] = useState(null);
   const [now, setNow] = useState(Date.now());
   useEffect(() => { if (!sure) return; const t = setTimeout(() => setSure(null), 3000); return () => clearTimeout(t); }, [sure]);
   useEffect(() => { const t = setInterval(() => setNow(Date.now()), 30000); return () => clearInterval(t); }, []);
   const balT = useTween(bal);
-  const look = lookOn(profile, own);
+  // the latest profile for actions taken inside a sheet that stays open (buy, then equip)
+  const profRef = useRef(profile); profRef.current = profile;
   const buy = what => {
     try {
-      const shop = EC.buy(profile, bal, what);
-      const next = { ...profile, shop };
-      if (EC.LOOKS[what]) next.look = { ...(profile.look || {}), [EC.LOOKS[what].kind]: what }; // a new look goes on at once
-      setProfile(next); gmSfx.buy(); vibrate([20, 30, 40]); setFlash(what); setTimeout(() => setFlash(f => (f === what ? null : f)), 1400);
-    } catch (_) { sfxTap(); }
+      const p = profRef.current, shop = EC.buy(p, econState(history, p).bal, what), next = { ...p, shop };
+      profRef.current = next; setProfile(next); gmSfx.buy(); vibrate([20, 30, 40]); return true;
+    } catch (_) { sfxTap(); return false; }
   };
+  const equip = (kind, id) => { const p = profRef.current, next = { ...p, look: { ...(p.look || {}), [kind]: id } }; profRef.current = next; setProfile(next); revealSfx(2); vibrate([20, 40, 60]); };
   const openChest = () => {
     const wk = chests[0]; if (!wk) return;
     try { const o = EC.openChest(profile, wk); setProfile({ ...profile, shop: o.shop }); setOpening(o.res); } catch (_) {}
   };
-  const equip = (k, id) => { sfxTap(); setProfile({ ...profile, look: { ...(profile.look || {}), [k]: id || null } }); };
   const today = dateKey(), daily = EC.dailyLooks(today, own);
+  const wonList = EC.LOOK_IDS.filter(id => EC.LOOKS[id].won).sort((a, b) => (own.includes(b) ? 1 : 0) - (own.includes(a) ? 1 : 0) || EC.LOOKS[a].r - EC.LOOKS[b].r);
   const fzHave = freezesAvailable(history), fzMax = 2 + (META.giftThisYear ? 1 : 0), boostTo = EC.boostUntil(sh.boosts, now);
   const wkNow = weekKey(today), chNow = challengeStatus(history, wkNow), chDone = chNow.filter(c => c.done).length, gotNow = !!sh.chest[wkNow];
   const timeStr = ts => { const d = new Date(ts); return (dateKey(d) === today ? "" : fmtDate(dateKey(d), false) + " ") + d.toLocaleTimeString(LANG, { hour: "2-digit", minute: "2-digit" }); };
   const parts = [["workouts", { n: EC.EARN.day }], ["streak", { n: EC.EARN.streak7 }], ["badges", {}], ["ranks", {}], ["deck", { n: EC.EARN.run }], ["chests", {}]];
   const row = { display: "flex", alignItems: "center", gap: 12, padding: "12px 16px" };
-  const kindList = EC.LOOK_IDS.filter(id => EC.LOOKS[id].kind === kind);
+  const lookRow = (id, right, extra = {}) => { const r = lookRar(id), col = RAR_COL()[r]; return (
+    <button key={id} type="button" onClick={() => { sfxTap(); setPeek(id); }} className={r === 3 ? "foil" : ""} {...extra}
+      style={{ ...btnBase, display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", borderRadius: 16, background: SOFT(), border: `1.5px solid ${col}55`, color: C.chalk, textAlign: "left", fontWeight: 400, width: "100%" }}>
+      <LookThumb id={id} size={52} />
+      <span style={{ flex: 1, minWidth: 0 }}>
+        <span style={{ display: "block", fontWeight: 800, fontSize: 14.5 }}>{lookName(id)}</span>
+        <span style={{ display: "block", fontSize: 11.5, marginTop: 2 }}><span data-rar-chip={r} style={{ color: col, fontWeight: 800, textTransform: "uppercase", letterSpacing: 0.4, fontSize: 10.5 }}>{T("gmRar" + r)}</span><span style={{ color: C.dim }}> · {T("lookKind_" + EC.LOOKS[id].kind)}</span></span>
+      </span>
+      {right}
+    </button>); };
   return (
     <div data-shop style={{ padding: "0 18px 30px" }}>
       {/* balance */}
@@ -7657,7 +7828,6 @@ function ShopTab({ history, profile, setProfile }) {
           <div data-shop-parts style={{ position: "relative", marginTop: 12, display: "flex", flexDirection: "column", gap: 2 }}>
             {parts.map(([k, v]) => <div key={k} style={{ display: "flex", justifyContent: "space-between", gap: 10, fontSize: 13, padding: "5px 0", borderTop: `1px solid ${C.line}` }}><span style={{ color: C.dim }}>{T("shE_" + k, v)}</span><DiaNum n={earned.parts[k]} size={13} /></div>)}
             <div style={{ display: "flex", justifyContent: "space-between", gap: 10, fontSize: 13, padding: "5px 0", borderTop: `1px solid ${C.line}` }}><span style={{ color: C.dim }}>{T("shSpent")}</span><DiaNum n={-sh.spent} size={13} /></div>
-            <div style={{ fontSize: 11.5, color: C.dim, lineHeight: 1.45, marginTop: 6 }}>{T("shHowD")}</div>
           </div>
         </Expand>
       </Sect>
@@ -7671,7 +7841,6 @@ function ShopTab({ history, profile, setProfile }) {
           </div>
           {chests.length > 0 && <button type="button" data-chest-btn onClick={() => { sfxTap(); openChest(); }} className="b3d" style={{ ...btnBase, flexShrink: 0, background: C.signal, color: C.signalInk, padding: "10px 14px", fontSize: 14, borderRadius: 12 }}>{T("shChestOpen")}</button>}
         </div>
-        <div style={{ fontSize: 11.5, color: C.dim, lineHeight: 1.45, marginTop: 10 }}>{T("shChestOdds")}</div>
       </Sect>
       {/* streak freeze, XP boost */}
       <ListSect title={T("shItems")}>
@@ -7692,40 +7861,16 @@ function ShopTab({ history, profile, setProfile }) {
           <BuyBtn k="boost" price={EC.PRICE.boost} bal={bal} sure={sure} setSure={setSure} onBuy={() => buy("boost")} />
         </div>
       </ListSect>
-      {/* today's looks */}
+      {/* today's looks: tap = see it on your profile */}
       <Sect data-shop-today title={T("shToday")} meta={T("shTodayMeta")}>
         {daily.length ? <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          {daily.map(id => { const r = lookRar(id), col = RAR_COL()[r]; return (
-            <div key={id} data-shop-look={id} className={(r === 3 ? "foil " : "") + (flash === id ? "shFlash" : "")} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", borderRadius: 16, background: SOFT(), border: `1.5px solid ${col}55` }}>
-              <LookThumb id={id} size={52} />
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontWeight: 800, fontSize: 14.5 }}>{lookName(id)}</div>
-                <div style={{ fontSize: 11.5, marginTop: 2 }}><span data-rar-chip={r} style={{ color: col, fontWeight: 800, textTransform: "uppercase", letterSpacing: 0.4, fontSize: 10.5 }}>{T("gmRar" + r)}</span><span style={{ color: C.dim }}> · {T("lookKind_" + EC.LOOKS[id].kind)}</span></div>
-              </div>
-              <BuyBtn k={id} price={EC.lookPrice(id)} bal={bal} sure={sure} setSure={setSure} onBuy={() => buy(id)} />
-            </div>); })}
+          {daily.map(id => lookRow(id, <span style={{ flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 4, fontWeight: 900, fontSize: 14, color: bal >= EC.lookPrice(id) ? C.chalk : C.dim, background: SOFT(), borderRadius: 10, padding: "6px 9px" }}><Ico n="diamond" size={14} color={C.sky} sw={2.4} />{nf(EC.lookPrice(id))}</span>, { "data-shop-look": id }))}
         </div> : <div style={{ fontSize: 13, color: C.dim }}>{T("shAllOwned")}</div>}
       </Sect>
-      {/* your looks: preview + pick per kind */}
-      <Sect data-shop-mine title={T("shMine")}>
-        <LookPreview profile={profile} look={look} history={history} />
-        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", margin: "12px 0 10px" }}>
-          {EC.LOOK_KINDS.map(k => <button key={k} type="button" data-look-kind={k} aria-pressed={kind === k} onClick={() => { sfxTap(); setKind(k); }} style={{ ...btnBase, padding: "7px 11px", fontSize: 12.5, borderRadius: 99, background: kind === k ? C.signal : SOFT(), color: kind === k ? C.signalInk : C.chalk }}>{T("lookKind_" + k)}</button>)}
-        </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-          <button type="button" data-look-none={kind} onClick={() => equip(kind, null)} aria-pressed={!look[kind]} style={{ ...btnBase, display: "flex", alignItems: "center", gap: 12, padding: "9px 12px", borderRadius: 14, background: SOFT(), color: C.chalk, textAlign: "left", fontWeight: 700, fontSize: 14, border: `1.5px solid ${!look[kind] ? C.signal : "transparent"}` }}>
-            <span style={{ width: 44, height: 44, borderRadius: 12, border: `1.5px dashed ${C.line}`, flexShrink: 0 }} /><span style={{ flex: 1 }}>{T("shNone")}</span>{!look[kind] && <Ico n="check" size={18} color={C.signal} />}
-          </button>
-          {kindList.map(id => { const has = own.includes(id), on = look[kind] === id, L0 = EC.LOOKS[id], r = L0.r; return (
-            <button key={id} type="button" data-look-own={id} data-has={has ? 1 : 0} disabled={!has} onClick={() => equip(kind, on ? null : id)} aria-pressed={on}
-              style={{ ...btnBase, display: "flex", alignItems: "center", gap: 12, padding: "9px 12px", borderRadius: 14, background: SOFT(), color: C.chalk, textAlign: "left", fontWeight: 400, border: `1.5px solid ${on ? C.signal : "transparent"}`, opacity: has ? 1 : 0.55, cursor: has ? "pointer" : "default" }}>
-              <LookThumb id={id} size={44} />
-              <span style={{ flex: 1, minWidth: 0 }}>
-                <span style={{ display: "block", fontWeight: 800, fontSize: 14 }}>{lookName(id)}</span>
-                <span style={{ display: "block", fontSize: 11.5, marginTop: 2, color: C.dim, lineHeight: 1.35 }}><span style={{ color: RAR_COL()[r], fontWeight: 800, textTransform: "uppercase", letterSpacing: 0.4, fontSize: 10.5 }}>{T("gmRar" + r)}</span> · {has ? (on ? T("shInUse") : T("shTapUse")) : L0.won ? T("shWon_" + L0.won) : T("shInShop")}</span>
-              </span>
-              {on ? <Ico n="check" size={18} color={C.signal} /> : !has ? <Ico n="lock" size={17} color={C.dim} /> : null}
-            </button>); })}
+      {/* looks you can only win */}
+      <Sect data-shop-won title={T("shWonT")} meta={T("shWonMeta")}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {wonList.map(id => lookRow(id, own.includes(id) ? <Ico n="check" size={18} color={C.mint} /> : <Ico n="lock" size={17} color={C.dim} />, { "data-shop-wonlook": id, "data-has": own.includes(id) ? 1 : 0 }))}
         </div>
       </Sect>
       {/* money and ads: later */}
@@ -7735,7 +7880,8 @@ function ShopTab({ history, profile, setProfile }) {
           <div style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.45 }}>{T("shGetD")}</div>
         </div>
       </Sect>
-      {opening && <ChestOpen res={opening} onClose={() => setOpening(null)} />}
+      {peek && <LookShopSheet key={peek} id={peek} profile={profile} history={history} own={own} bal={bal} onBuy={buy} onEquip={equip} onGo={onGo} onClose={() => setPeek(null)} />}
+      {opening && <ChestOpen res={opening} onEquip={opening.kind === "look" ? () => equip(EC.LOOKS[opening.id].kind, opening.id) : null} onClose={() => setOpening(null)} />}
     </div>
   );
 }
@@ -9789,7 +9935,21 @@ export default function App() {
         .lkTw{animation:lkTw 2s ease-in-out infinite}@keyframes lkTw{0%,100%{opacity:.2}50%{opacity:1}}
         .lkAur{animation:lkAur 9s ease-in-out infinite}.lkAur2{animation-duration:13s;animation-direction:reverse}@keyframes lkAur{0%,100%{transform:translateX(-10%) skewX(-8deg)}50%{transform:translateX(10%) skewX(8deg)}}
         @keyframes lkFoil{from{background-position:120% 0}to{background-position:-120% 0}}
-        @media (prefers-reduced-motion: reduce){.lkPulse,.lkSpin,.lkFlick,.lkTw,.lkAur{animation:none}}
+        .lkSpinSlow{transform-box:view-box;transform-origin:58px 58px;animation:lkSpin 40s linear infinite}.lkNeb{animation:lkSpin 90s linear infinite}
+        .lkCol{position:absolute;top:0;height:100%;width:0;display:block}
+        .lkDown{animation:lkDown 8s linear infinite}@keyframes lkDown{from{transform:translateY(-12%)}to{transform:translateY(108%)}}
+        .lkUp{animation:lkUp 8s linear infinite}@keyframes lkUp{from{transform:translateY(108%)}to{transform:translateY(-12%)}}
+        .lkUp.lkFade{animation-name:lkUp,lkFadeK}@keyframes lkFadeK{0%,30%{opacity:1}100%{opacity:0}}
+        .lkSway{animation:lkSway 2.6s ease-in-out infinite alternate}@keyframes lkSway{from{transform:translateX(-8px) rotate(-30deg)}to{transform:translateX(8px) rotate(40deg)}}
+        .lkTwk{animation:lkTwk 2.4s ease-in-out infinite}@keyframes lkTwk{0%,100%{transform:scale(0);opacity:0}50%{transform:scale(1) rotate(45deg);opacity:1}}
+        .lkSpinC{animation:lkSpinC 1s linear infinite}@keyframes lkSpinC{to{transform:rotate(360deg) rotateX(180deg)}}
+        .lkFlash{opacity:0;animation:lkFlash 5s linear infinite}@keyframes lkFlash{0%,88%,100%{opacity:0}89%{opacity:.32}90%{opacity:0}91.5%{opacity:.22}93%{opacity:0}}
+        .lkBolt{opacity:0;animation:lkBoltK 5s linear infinite}.lkBolt2{animation-delay:.12s}@keyframes lkBoltK{0%,88%,96%,100%{opacity:0}89%,94%{opacity:1}}
+        .lkBurst{opacity:0;animation:lkBurst 2.7s ease-out infinite}@keyframes lkBurst{0%{transform:rotate(var(--a)) translateX(0) scale(1);opacity:0}5%{opacity:1}55%{transform:rotate(var(--a)) translateX(30px) scale(.8);opacity:1}75%,100%{transform:rotate(var(--a)) translateX(36px) scale(.3);opacity:0}}
+        .lkFlickI{animation:lkFlickI 1s ease-in-out infinite alternate}@keyframes lkFlickI{from{transform:scale(1)}to{transform:scale(1.15,.9)}}
+        @keyframes lkFireT{from{background-position:0 0}to{background-position:0 100%}}
+        .shRcpt{animation:shRcpt .5s ${MO.spring} both}@keyframes shRcpt{from{transform:scale(.4);opacity:0}}
+        @media (prefers-reduced-motion: reduce){.lkPulse,.lkSpin,.lkSpinSlow,.lkNeb,.lkFlick,.lkTw,.lkAur,.lkDown,.lkUp,.lkSway,.lkTwk,.lkSpinC,.lkFlash,.lkBolt,.lkBurst,.lkFlickI{animation:none}}
         .nearPulse{animation:nearPulse 1.2s ease-in-out infinite alternate}
         @keyframes nearPulse{from{opacity:.65}to{opacity:1}}
         .pop{animation:pop ${MO.t3} ${MO.spring} both}
@@ -9859,12 +10019,12 @@ export default function App() {
                 {screen === "history" && <HistoryTab history={history} editDate={histEdit} onEditOpened={() => setHistEdit(null)}
                   onDelete={idx => { const e = history[idx]; if (e) syncTomb("del", entryId(e)); editHistory(h => h.filter((_, i) => i !== idx)); }}
                   onSaveEntry={(idx, entry) => editHistory(h => (idx === null ? [...h, entry] : h.map((e, i) => (i === idx ? entry : e))))} />}
-                {screen === "profile" && <ProfileTab history={history} profile={profile} setProfile={setProfile} onFreeze={applyFreeze} kcal={kcal} acct={acct} vis={myVis} onVis={setVis} onFriends={() => go("friends")} />}
+                {screen === "profile" && <ProfileTab history={history} profile={profile} setProfile={setProfile} onFreeze={applyFreeze} kcal={kcal} acct={acct} vis={myVis} onVis={setVis} onFriends={() => go("friends")} onShop={() => go("shop")} />}
                 {screen === "calories" && <Calories history={history} profile={profile} setProfile={setProfile} kcal={kcal} setKcal={setKcal} />}
                 {screen === "settings" && <SettingsTab initPage={setPage0} settings={settings} setSettings={setSettings} history={history} profile={profile} setProfile={setProfile}
                   kcal={kcal} autoBk={autoBk} onAutoBackup={runAutoBackup}
                   onImport={importAll} acct={acct} cloudBk={cloudBk} onAcctOpen={() => go("friends")} onCloudRestore={restoreFromCloud} onCloudBackupNow={cloudBackupNow} onSignOut={signOut} onDeleteAccount={deleteAccount} />}
-                {screen === "shop" && <ShopTab history={history} profile={profile} setProfile={setProfile} />}
+                {screen === "shop" && <ShopTab history={history} profile={profile} setProfile={setProfile} onGo={go} />}
                 {screen === "game" && <GameTab history={history} profile={profile} setProfile={setProfile} acct={acct} onPlay={sv => { if (sv.mode !== "tut") gameSave(sv); setGamePlay(sv); }} />}
                 {screen === "friends" && <OpenInApp />}
                 {screen === "friends" && <FriendsTab key={"fr" + addSeq} modHidden={modHidden} setTopHead={setTopHead} acct={acct} history={history} profile={profile} social={social} chatWith={chatWith} setChatWith={setChatWith} onBlocked={setBlocked} onSignIn={signIn} onCreate={createProfile} onRename={renameNick} onSetGlobal={setGlobal} fx={friendsFx} />}

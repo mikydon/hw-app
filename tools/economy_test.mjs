@@ -45,7 +45,7 @@ ok(JSON.stringify(mg.buys) === JSON.stringify(mg2.buys), "merging is the same in
 ok(E.mergeShop(null, devA) === devA && E.mergeShop(devA, undefined) === devA, "one side empty: the other");
 console.log("daily shop, chests");
 const a = E.dailyLooks("2026-10-25"), b = E.dailyLooks("2026-10-25"), c = E.dailyLooks("2026-10-26");
-ok(a.length === 4 && a.join() === b.join() && a.join() !== c.join() && a.every(id => !E.LOOKS[id].won), "4 looks a day, the same on every device, others tomorrow, never won-only ones");
+ok(a.length === E.DAILY_N && a.join() === b.join() && a.join() !== c.join() && a.every(id => !E.LOOKS[id].won), `${E.DAILY_N} looks a day, the same on every device, others tomorrow, never won-only ones`);
 ok(!E.dailyLooks("2026-10-25", a).some(id => a.includes(id)), "owned looks are not offered");
 const kinds = { dia: 0, boost: 0, look: 0 };
 for (let w = 0; w < 2000; w++) kinds[E.weeklyChest("2026-W" + w).kind]++;
@@ -64,5 +64,7 @@ ok(E.chestDiamonds({ shop: lk })[0] === E.weeklyChest("w" + wk).n, "chest diamon
 threw = null; try { E.openChest({ shop: o.shop }, "2026-W43"); } catch (x) { threw = x.message; }
 ok(threw === "opened", "a chest opens once");
 ok(JSON.stringify(E.wonLooks({ obsidian: true })) === JSON.stringify(["f_obsidian", "t_obsidian"]), "Obsidian badge → the Obsidian frame and title");
+ok(E.LOOK_IDS.every(id => E.LOOK_KINDS.includes(E.LOOKS[id].kind) && [0, 1, 2, 3].includes(E.LOOKS[id].r)), `all ${E.LOOK_IDS.length} looks have a kind and a rarity`);
+ok(E.LOOK_KINDS.every(k => E.LOOK_IDS.some(id => E.LOOKS[id].kind === k && !E.LOOKS[id].won)), "every kind has looks for sale");
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

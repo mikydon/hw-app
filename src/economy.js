@@ -11,19 +11,30 @@ export const BOOST_MS = 24 * 3600 * 1000; // an XP boost: 2× XP for the workout
 // What earns diamonds (the numbers on the plan page).
 export const EARN = { day: 5, streak7: 15, achLevel: 3, single: { 4: 15, 6: 30, 8: 60 }, run: 20 };
 
-// Profile looks. kind: frame | bg | title | name. r = rarity 0–3. won = only won (badge / season / chest), never sold.
+// Profile looks. kind: frame | bg | title | name | fx (a profile effect drawn over the whole profile card, like Discord's).
+// r = rarity 0–3. won = only won (a badge / the season pass), never sold; the key names what wins it (lookGot in App.jsx).
 export const LOOKS = {
-  f_iron: { kind: "frame", r: 0 }, f_pixel: { kind: "frame", r: 1 }, f_pulse: { kind: "frame", r: 2 }, f_flame: { kind: "frame", r: 2 },
-  f_laurel: { kind: "frame", r: 2 }, f_obsidian: { kind: "frame", r: 3, won: "obsidian" },
-  b_glow: { kind: "bg", r: 0 }, b_grid: { kind: "bg", r: 0 }, b_topo: { kind: "bg", r: 1 }, b_stars: { kind: "bg", r: 1 },
-  b_ridge: { kind: "bg", r: 2 }, b_aurora: { kind: "bg", r: 3, won: "season" },
-  t_iron: { kind: "title", r: 0 }, t_bird: { kind: "title", r: 0, won: "early" }, t_owl: { kind: "title", r: 0, won: "night" },
-  t_comeback: { kind: "title", r: 1, won: "comeback" }, t_shark: { kind: "title", r: 2, won: "deck" }, t_streak: { kind: "title", r: 2, won: "streak30" },
-  t_obsidian: { kind: "title", r: 3, won: "obsidian" },
-  n_grad: { kind: "name", r: 1 }, n_glow: { kind: "name", r: 2 }, n_foil: { kind: "name", r: 3 },
+  f_iron: { kind: "frame", r: 0 }, f_dots: { kind: "frame", r: 0 }, f_pixel: { kind: "frame", r: 1 }, f_hex: { kind: "frame", r: 1 },
+  f_wave: { kind: "frame", r: 1 }, f_pulse: { kind: "frame", r: 2 }, f_flame: { kind: "frame", r: 2 }, f_laurel: { kind: "frame", r: 2 },
+  f_neon: { kind: "frame", r: 2 }, f_bolt: { kind: "frame", r: 2 }, f_crown: { kind: "frame", r: 3 },
+  f_obsidian: { kind: "frame", r: 3, won: "obsidian" }, f_diamond: { kind: "frame", r: 3, won: "allDiamond" },
+  b_glow: { kind: "bg", r: 0 }, b_grid: { kind: "bg", r: 0 }, b_sunset: { kind: "bg", r: 0 }, b_topo: { kind: "bg", r: 1 }, b_stars: { kind: "bg", r: 1 },
+  b_waves: { kind: "bg", r: 1 }, b_bubbles: { kind: "bg", r: 1 }, b_ridge: { kind: "bg", r: 2 }, b_city: { kind: "bg", r: 2 }, b_galaxy: { kind: "bg", r: 3 },
+  b_aurora: { kind: "bg", r: 3, won: "season" },
+  t_iron: { kind: "title", r: 0 }, t_rookie: { kind: "title", r: 0 }, t_grind: { kind: "title", r: 0 }, t_zen: { kind: "title", r: 1 },
+  t_beast: { kind: "title", r: 2 }, t_legend: { kind: "title", r: 3 },
+  t_bird: { kind: "title", r: 0, won: "early" }, t_owl: { kind: "title", r: 0, won: "night" }, t_comeback: { kind: "title", r: 1, won: "comeback" },
+  t_marathon: { kind: "title", r: 1, won: "marathon" }, t_shark: { kind: "title", r: 2, won: "deck" }, t_streak: { kind: "title", r: 2, won: "streak30" },
+  t_midnight: { kind: "title", r: 2, won: "midnight" }, t_obsidian: { kind: "title", r: 3, won: "obsidian" },
+  n_outline: { kind: "name", r: 0 }, n_grad: { kind: "name", r: 1 }, n_shadow: { kind: "name", r: 1 }, n_ice: { kind: "name", r: 1 },
+  n_glow: { kind: "name", r: 2 }, n_fire: { kind: "name", r: 2 }, n_foil: { kind: "name", r: 3 }, n_rainbow: { kind: "name", r: 3 },
+  n_gold: { kind: "name", r: 2, won: "triple" },
+  fx_snow: { kind: "fx", r: 1 }, fx_sparkle: { kind: "fx", r: 1 }, fx_petals: { kind: "fx", r: 1 }, fx_embers: { kind: "fx", r: 2 },
+  fx_lightning: { kind: "fx", r: 3 },
+  fx_frost: { kind: "fx", r: 2, won: "frozen" }, fx_confetti: { kind: "fx", r: 2, won: "bdayW" }, fx_fireworks: { kind: "fx", r: 3, won: "newyear" },
 };
 export const LOOK_IDS = Object.keys(LOOKS);
-export const LOOK_KINDS = ["frame", "bg", "title", "name"];
+export const LOOK_KINDS = ["frame", "bg", "title", "name", "fx"];
 export const lookPrice = id => (LOOKS[id] && !LOOKS[id].won ? LOOK_PRICE[LOOKS[id].r] : null);
 
 // a small seeded random (same idea as the card game): the same day always shows the same shop and the same chest
@@ -104,11 +115,12 @@ export function buy(profile, bal, what, now = Date.now()) {
   return add({ p });
 }
 
-// The shop's looks today: 4 of the ones for sale you don't have yet, different every day (the same on every device).
+// The shop's looks today: 6 of the ones for sale you don't have yet, different every day (the same on every device).
+export const DAILY_N = 6;
 export function dailyLooks(day, own = []) {
   const r = rng("shop", day), list = LOOK_IDS.filter(id => !LOOKS[id].won && !own.includes(id));
   const out = [];
-  while (out.length < 4 && list.length) out.push(list.splice(Math.floor(r() * list.length), 1)[0]);
+  while (out.length < DAILY_N && list.length) out.push(list.splice(Math.floor(r() * list.length), 1)[0]);
   return out;
 }
 
