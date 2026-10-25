@@ -1,4 +1,4 @@
-import { useState, useEffect, useLayoutEffect, useRef, useMemo, memo, Fragment } from "react";
+import { useState, useEffect, useLayoutEffect, useRef, useMemo, useId, memo, Fragment } from "react";
 import { createPortal } from "react-dom";
 import { isNative, pushBack, setRootBack, exitApp, vibratePattern, keepScreenOn, openExternal, saveBackupFile, bkSupported, bkWrite, bkWriteAuto, bkList, bkRead, bkDelete, bkShare, BK_DIR, bkAutoFile, checkForUpdate, lastUpdate, lastGh, applyUpdateNow, latestApk, isTestBuild, apkState, onApk, apkSupported, apkRestore, apkDownload, apkCanInstall, apkAllow, apkInstall, onAppResume, healthState, healthConnect, healthSettings, healthSteps, healthFoodItems, healthBody, shareText, copyText, pushSupported, pushPermission, pushChannel, pushToken, pushTokenWhy, pushDeleteToken, onPushTap, onPushToken, onPushReceived, hzSupported, hzInfo, hzSet, isPlay, playCheck, playOpenStore, PLAY_STORE_LINK, updTopic, onAppUrl, installCheck, openNotifSettings, showNotif } from "./native.js";
 import { cloud, NICK_RE, SHARE_BASE, cleanCode, fmtCode } from "./cloud-lazy.js";
@@ -7,6 +7,7 @@ import { mergeAll, syncKey, withIds, entryId, stable, SYNC_SETTINGS, kcalShared 
 import { RANK_AT, EX_GROUPS } from "./ranks.js";
 import * as GM from "./game/engine.js";
 import { fairStats } from "./fair.js";
+import * as EC from "./economy.js";
 import { L, LANG, t as T, tp as TP, fmt, setLang, detectLang, LANGS, fmtLong, fmtShortDM, fmtMonthYear, weekdaysShort, capFirst } from "./i18n/index.js";
 
 // ─── DESIGN TOKENS ──────────────────────────────────────────────────────────
@@ -455,7 +456,7 @@ function addDays(k, n) { const d = parseKey(k); d.setDate(d.getDate() + n); retu
 
 // XP: 10 per set, 25 per personal record, 10 for full warm-up, 10 for cool-down.
 function setsIn(e) { return e.items.reduce((a, it) => a + it.res.filter(v => v !== null && v !== undefined).length, 0); }
-function xpFor(e) { return 10 * setsIn(e) + 25 * ((e.prs && e.prs.length) || 0) + (e.warm ? 10 : 0) + (e.cool ? 10 : 0); }
+function xpFor(e) { return (10 * setsIn(e) + 25 * ((e.prs && e.prs.length) || 0) + (e.warm ? 10 : 0) + (e.cool ? 10 : 0)) * (EC.boosted(e.ts, META.boosts) ? 2 : 1); } // 1.9.0: 2× while an XP boost runs
 function totalXP(h) { return h.reduce((a, e) => a + xpFor(e), 0) + challengeXP(h); }
 function levelInfo(xp) { let lvl = 1, need = 100, rest = xp; while (rest >= need) { rest -= need; lvl++; need += 50; } return { lvl, into: rest, need }; }
 // Streak for an every-other-day plan: it holds while no gap is longer than 2 days.
@@ -1806,8 +1807,8 @@ function StatTile({ label, value, icon, color, sub, children, data, compact }) {
 // ─── TOP BAR + MENU ─────────────────────────────────────────────────────────
 // Screens: train (home), calories, history, profile, friends (1.5.0), settings. One menu button (☰) top right
 // opens a drawer with all of them; there is no bottom tab bar any more (v1.4.0).
-const SCREENS = ["train", "calories", "history", "profile", "friends", "game", "settings"];
-const SCREEN_TITLE = { train: "tabTrain", calories: "tabCalories", history: "tabHistory", profile: "tabProfile", friends: "tabFriends", game: "tabGame", settings: "tabSettings" };
+const SCREENS = ["train", "calories", "history", "profile", "friends", "game", "shop", "settings"];
+const SCREEN_TITLE = { train: "tabTrain", calories: "tabCalories", history: "tabHistory", profile: "tabProfile", friends: "tabFriends", game: "tabGame", shop: "tabShop", settings: "tabSettings" };
 
 function MenuButton({ open, onClick, btnRef, label, badge }) {
   const bar = (y, rot) => ({ position: "absolute", left: 11, width: 20, height: 2.6, borderRadius: 2, background: C.chalk, top: open ? 20 : y, transform: open ? `rotate(${rot}deg)` : "none", transition: `top ${MO.t1} ${MO.ease}, transform ${MO.t1} ${MO.ease}, opacity ${MO.t1}` });
@@ -2053,7 +2054,7 @@ function TopBar({ screen, history, menuOpen, onMenu, onGo, dlPct, badge, head, s
           </div>
         </div>
         <button onClick={() => onGo && onGo("profile")} data-chip="streak" style={{ ...btnBase, ...chip(st.n ? "#ffa94d" : C.dim), ...pill }} aria-label={T("streakAria", { n: st.n })}><span className={st.n ? "wiggle" : ""}>🔥</span>{st.n}</button>
-        <button onClick={() => onGo && onGo("profile")} data-chip="level" style={{ ...btnBase, ...chip(C.sky), ...pill }} aria-label={T("levelAria", { n: lv.lvl })}>⚡{lv.lvl}</button>
+        <button onClick={() => onGo && onGo("profile")} data-chip="level" style={{ ...btnBase, ...chip(C.sky), ...pill, position: "relative" }} aria-label={T("levelAria", { n: lv.lvl })}>⚡{lv.lvl}{EC.boostUntil(META.boosts) > Date.now() && <span data-chip-boost aria-hidden="true" style={{ position: "absolute", top: -6, right: -6, fontFamily: BODY, fontSize: 9.5, fontWeight: 900, lineHeight: 1, color: C.signalInk, background: C.signal, borderRadius: 99, padding: "2px 4px" }}>2×</span>}</button>
         {!side && <MenuButton open={menuOpen} onClick={onMenu} badge={badge} />}
         </>}
         {typeof prog === "number" && <div data-top-prog={Math.round(prog)} role="progressbar" aria-valuenow={Math.round(prog)} aria-valuemin={0} aria-valuemax={100} style={{ position: "absolute", left: 18, bottom: 4, height: 3, width: `calc((100% - 36px) * ${Math.max(2, Math.min(100, prog)) / 100})`, background: C.sky, borderRadius: 3, transition: "width .3s", boxShadow: `0 0 8px ${C.sky}` }} />}
@@ -2102,6 +2103,7 @@ function TabIcon({ name, active }) {
   if (name === "history") return <svg width="26" height="26" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="3" {...s} /><path d="M3.5 10h17M8 3v4M16 3v4" {...s} /><circle cx="12" cy="15" r="1.6" fill={c} stroke="none" /></svg>;
   if (name === "calories") return <svg width="26" height="26" viewBox="0 0 24 24"><path d="M12 21c-4 0-6.5-2.7-6.5-6.3 0-3.2 2.2-5.4 3.6-7.6.6 1.6 1.4 2.6 2.5 3.1C12 7 13 4.7 14.6 3c.6 2.9 3.9 5.6 3.9 10.2 0 4.4-2.6 7.8-6.5 7.8z" {...s} /></svg>;
   if (name === "friends") return <svg width="26" height="26" viewBox="0 0 24 24"><circle cx="9" cy="8.5" r="3.4" {...s} /><path d="M2.8 19.5c.9-3.1 3.2-4.8 6.2-4.8s5.3 1.7 6.2 4.8" {...s} /><circle cx="16.6" cy="9.3" r="2.7" {...s} /><path d="M16.4 14.6c2.4.1 4.1 1.6 4.8 4.2" {...s} /></svg>;
+  if (name === "shop") return <svg width="26" height="26" viewBox="0 0 24 24" dangerouslySetInnerHTML={{ __html: ICONS.bag.replace(/<path /g, `<path fill="none" stroke="${c}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" `) }} />;
   // 1.8.0 Muscle Deck: two fanned cards with a suit (Michael: not the same icon as Settings)
   if (name === "game") return <svg width="26" height="26" viewBox="0 0 24 24"><rect x="8.5" y="3" width="11.5" height="16" rx="2.2" {...s} /><path d="M8.5 6.6 5.4 7.4a1.9 1.9 0 0 0-1.3 2.3l2.7 10a1.9 1.9 0 0 0 2.3 1.3l4.6-1.3" {...s} /><path d="M14.25 7.4l2.6 3.6-2.6 3.6-2.6-3.6z" fill={c} stroke="none" /></svg>;
   if (name === "profile") return <svg width="26" height="26" viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="4" {...s} /><path d="M4.5 20.5c1.2-3.6 4-5.5 7.5-5.5s6.3 1.9 7.5 5.5" {...s} /></svg>;
@@ -2109,7 +2111,7 @@ function TabIcon({ name, active }) {
 }
 
 // Slide-in drawer from the right with everything in the app. Rendered into <body> (like Sheet).
-function MenuDrawer({ open, screen, history, profile, session, onGo, onResume, onClose, onNews, gh, dl, badge, apk, busy, claimN, onTour, tourN }) {
+function MenuDrawer({ open, screen, history, profile, session, onGo, onResume, onClose, onNews, gh, dl, badge, apk, busy, claimN, chestN, onTour, tourN }) {
   const [shown, setShown] = useState(open);
   useEffect(() => { if (open) setShown(true); else { const t = setTimeout(() => setShown(false), 260); return () => clearTimeout(t); } }, [open]);
   const closeRef = useRef(null);
@@ -2133,7 +2135,7 @@ function MenuDrawer({ open, screen, history, profile, session, onGo, onResume, o
           <div style={{ fontFamily: DISPLAY, fontSize: 15, fontWeight: 800, color: C.dim, letterSpacing: 1 }}>HW APP</div>
           <MenuButton open={true} onClick={onClose} btnRef={closeRef} />
         </div>
-        <MenuBody screen={screen} history={history} profile={profile} session={session} onGo={onGo} onResume={onResume} onNews={onNews} gh={gh} dl={dl} badge={badge} apk={apk} busy={busy} claimN={claimN} onTour={onTour} tourN={tourN} />
+        <MenuBody screen={screen} history={history} profile={profile} session={session} onGo={onGo} onResume={onResume} onNews={onNews} gh={gh} dl={dl} badge={badge} apk={apk} busy={busy} claimN={claimN} chestN={chestN} onTour={onTour} tourN={tourN} />
       </nav>
     </div>,
     document.body
@@ -2142,11 +2144,11 @@ function MenuDrawer({ open, screen, history, profile, session, onGo, onResume, o
 
 // What the menu holds (profile, back to the workout, the screens, about): in the ☰ drawer, or on a wide screen in the
 // side panel that stays open (1.7.0).
-function MenuBody({ screen, history, profile, session, onGo, onResume, onNews, gh, dl, badge, apk, busy, claimN = 0, onTour, tourN = 0 }) {
+function MenuBody({ screen, history, profile, session, onGo, onResume, onNews, gh, dl, badge, apk, busy, claimN = 0, chestN = 0, onTour, tourN = 0 }) {
   const lv = levelInfo(totalXP(history));
   const st = streakInfo(history, dateKey());
   const kcs = kcalNow(history);
-  const items = SCREENS.map(id => ({ id, label: T(SCREEN_TITLE[id]), desc: id === "calories" && kcs ? T("kcMenu", { e: nf(kcs.eaten), t: nf(kcs.target) }) : id === "friends" && badge ? T("frMenuNew", { n: badge }) : id === "profile" && claimN ? TP("claimN", claimN) : T("menuD_" + id), badge: id === "friends" ? badge : id === "profile" ? claimN : 0 }));
+  const items = SCREENS.map(id => ({ id, label: T(SCREEN_TITLE[id]), desc: id === "calories" && kcs ? T("kcMenu", { e: nf(kcs.eaten), t: nf(kcs.target) }) : id === "friends" && badge ? T("frMenuNew", { n: badge }) : id === "profile" && claimN ? TP("claimN", claimN) : id === "shop" && chestN ? TP("shChestN", chestN) : T("menuD_" + id), badge: id === "friends" ? badge : id === "profile" ? claimN : id === "shop" ? chestN : 0 }));
   return (
     <>
           <button onClick={() => onGo("profile")} className="drawerItem" style={{ ...btnBase, "--i": 0, display: "flex", alignItems: "center", gap: 12, margin: "8px 14px 6px", padding: "12px", borderRadius: 18, background: C.panel, border: `1px solid ${C.line}`, color: C.chalk, textAlign: "left", ...(LOOK === "liquid" ? { ...LIQUID_PILL(), borderRadius: 20 } : {}) }}>
@@ -3232,6 +3234,7 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
     showDone && "done",
     upd && "upd",
     ui.autoFz && ui.autoFz.day === today && ui.autoFzHidden !== ui.autoFz.day && "autofz",
+    onGo && profile && ui.chestHidden !== weekKey(today) && readyChests(history, profile).length > 0 && "chest", // 1.9.0
     tourOffer && "tour",
     history.length === 0 && !ui.welcomeHidden && "welcome", // a new user first sees what the app is, then what is missing
     profile && !(ui && ui.setupHidden) && (() => { const m = missingSetup(profile, kcal); return m.name || m.kcal.length || m.goal; })() && "setup",
@@ -3347,6 +3350,14 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
           <div data-autofz-left={ui.autoFz.left} style={{ fontSize: 13, color: ui.autoFz.left ? C.dim : C.signal, fontWeight: ui.autoFz.left ? 400 : 700, lineHeight: 1.45, marginTop: 2 }}>{ui.autoFz.left ? TP("autoFzLeft", ui.autoFz.left) : T("autoFzNone")}</div>
         </div>
       </>, () => setUi({ ...ui, autoFzHidden: ui.autoFz.day }), { "data-autofz": ui.autoFz.used })}
+      {notice === "chest" && ntBox("chest", C.signal, <>
+        <span className="chBob" style={{ flexShrink: 0 }}><ChestArt size={44} /></span>
+        <div style={{ minWidth: 0 }}>
+          <div style={{ fontSize: 15, fontWeight: 800, color: C.chalk }}>{T("shChestReady")}</div>
+          <div style={{ fontSize: 13, color: C.dim, lineHeight: 1.45, marginTop: 2 }}>{T("shChestD")}</div>
+          <button type="button" data-chest-go onClick={() => { sfxTap(); onGo("shop"); }} style={{ ...btnBase, marginTop: 9, background: C.signal, color: C.signalInk, padding: "9px 15px", fontSize: 14 }}>{T("shChestGo")}</button>
+        </div>
+      </>, () => setUi({ ...ui, chestHidden: weekKey(today) }), { "data-chest-notice": 1 })}
       {notice === "tour" && ntBox("tour", C.signal, <>
         <IcoBox n="compass" />
         <div style={{ minWidth: 0 }}>
@@ -4579,13 +4590,14 @@ function ownModel(history, profile, kcal) {
     min: Math.floor(history.reduce((a, e) => a + (e.dur || 0), 0) / 60), prs: history.reduce((a, e) => a + ((e.prs && e.prs.length) || 0), 0),
     since: history.length ? history.map(e => e.date).sort()[0] : null,
     ach: achievements(history, achExtra(profile, kcal, history)), rk, show: Array.isArray(profile.show) ? profile.show : [],
+    look: lookOn(profile), // 1.9.0: frame, banner, title, name effect
   };
 }
 function cardModel(c, p) {
   const k = cleanCard(c);
   return {
     own: false, nick: p.nick || "?", pfp: p.pfp || null, lvl: k.lvl, xp: k.xp, streak: k.streak, best: k.best, n: k.n, reps: k.reps,
-    min: k.min, prs: k.prs, since: k.since, rk: k.rk, show: k.show,
+    min: k.min, prs: k.prs, since: k.since, rk: k.rk, show: k.show, look: k.look,
     // values when the card has them (1.7.0+), else the lowest value of the level they reached
     ach: ACH.filter(a => !CARD_HIDE.includes(a.k)).map(a => achFrom(a, k.av[a.k] !== undefined ? k.av[a.k] : (k.ach[a.k] ? a.at[Math.max(0, (a.rk ? a.rk.indexOf(k.ach[a.k] - 1) : k.ach[a.k] - 1))] ?? 0 : 0))),
   };
@@ -4849,7 +4861,7 @@ const PF_LAY = {
 function ProfilePage({ m, own, onEditProfile, onEditSlot, onStreak, onPhoto, onPickRank, extra, top, claim }) {
   const pg = usePager("pf", 4, PF_LAY);
   const [focus, setFocus] = useState(null);
-  const lv = levelInfo(m.xp), lr = RANKS[lvRank(m.lvl)];
+  const lv = levelInfo(m.xp), lr = RANKS[lvRank(m.lvl)], lk = m.look || {};
   const sm = claim ? hideUnclaimed(m, claim.hid) : m; // the showcase never shows a card that is still face down
   const slots = showcase(sm), n = slots.length, nextLv = SLOT_LV[n];
   // 1.7.5: columns of at least 150 px of text room (more with a bigger phone font), so names are never cut
@@ -4883,15 +4895,18 @@ function ProfilePage({ m, own, onEditProfile, onEditSlot, onStreak, onPhoto, onP
         )}
         {/* the basics: photo, name, level, streak */}
         <Sect data-pf-hero style={{ marginTop: 0, padding: LOOK === "flat" ? 0 : "16px 16px 14px", position: "relative", overflow: "hidden" }}>
-          <div aria-hidden="true" style={{ position: "absolute", inset: 0, background: `radial-gradient(80% 70% at 0% 0%, ${lr.color}26, transparent 60%)`, pointerEvents: "none" }} />
-          <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 14 }}>
-            <button type="button" onClick={own ? onPhoto : undefined} disabled={!own} aria-label={own ? T("changePhoto") : undefined} className="cardIn" style={{ ...btnBase, background: "transparent", padding: 0, borderRadius: 99, position: "relative", flexShrink: 0, cursor: own ? "pointer" : "default" }}>
+          {lk.bg ? <div data-pf-banner={lk.bg} aria-hidden="true" style={{ position: "absolute", left: 0, right: 0, top: 0, height: 190, pointerEvents: "none", WebkitMaskImage: "linear-gradient(180deg, #000 45%, transparent 100%)", maskImage: "linear-gradient(180deg, #000 45%, transparent 100%)" }}><LookBanner id={lk.bg} /></div>
+            : <div aria-hidden="true" style={{ position: "absolute", inset: 0, background: `radial-gradient(80% 70% at 0% 0%, ${lr.color}26, transparent 60%)`, pointerEvents: "none" }} />}
+          <div style={{ position: "relative", display: "flex", alignItems: "center", gap: lk.frame ? 18 : 14 }}>
+            <button type="button" onClick={own ? onPhoto : undefined} disabled={!own} aria-label={own ? T("changePhoto") : undefined} className="cardIn" style={{ ...btnBase, background: "transparent", padding: 0, borderRadius: 99, position: "relative", flexShrink: 0, cursor: own ? "pointer" : "default", margin: lk.frame ? "12px 0 12px 12px" : 0 }}>
               {own ? <BdayHalo size={80}><Avatar profile={{ name: m.nick, pfp: m.pfp }} size={80} /></BdayHalo> : <Avatar profile={{ name: m.nick, pfp: m.pfp }} size={80} />}
+              {lk.frame && <LookFrame id={lk.frame} size={110} style={{ left: -15, top: -15 }} />}
               {/* Steam-like level badge on the photo */}
               <span data-pf-level={m.lvl} style={{ position: "absolute", right: -6, bottom: -4, minWidth: 34, height: 34, padding: "0 6px", boxSizing: "border-box", borderRadius: 99, background: C.ink, border: `2.5px solid ${lr.color}`, color: lr.color, fontFamily: DISPLAY, fontSize: 17, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: `0 0 14px ${lr.color}55` }}>{m.lvl}</span>
             </button>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div data-pf-name style={{ fontFamily: DISPLAY, fontSize: 30, fontWeight: 900, lineHeight: 1, color: C.chalk, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" , ...INK }}>{m.nick}</div>
+              <div data-pf-name data-name-fx={lk.name || ""} style={{ fontFamily: DISPLAY, fontSize: 30, fontWeight: 900, lineHeight: 1, color: C.chalk, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" , ...INK, ...nameFx(lk.name) }}>{m.nick}</div>
+              {lk.title && <div style={{ marginTop: 6 }}><LookTitle id={lk.title} /></div>}
               <div style={{ fontSize: 12.5, color: own && bdayToday() ? C.signal : C.dim, fontWeight: own && bdayToday() ? 800 : 400, marginTop: 4 }}>{own && bdayToday() ? T("bdayHero") : m.since ? T("since", { date: fmtDate(m.since, true) }) : T("newMember")}</div>
             </div>
             {own && <button type="button" data-pf-edit onClick={() => { sfxTap(); onEditProfile(); }} aria-label={T("pfEdit")} style={{ ...btnBase, alignSelf: "flex-start", background: SOFT(), color: C.chalk, width: 38, height: 38, borderRadius: 12, flexShrink: 0, fontSize: 15 }}>✏️</button>}
@@ -5287,6 +5302,8 @@ function cardData(history, profile) {
     lvl: levelInfo(xp).lvl, xp, streak: streakInfo(history, dateKey()).n, best: bestStreak(history), n: history.length,
     reps: totalReps(history), min: Math.floor(history.reduce((a, e) => a + (e.dur || 0), 0) / 60), prs: history.reduce((a, e) => a + ((e.prs && e.prs.length) || 0), 0),
     since: history.length ? history.map(e => e.date).sort()[0] : null, ach, av, rk, show,
+    // 1.9.0: the profile looks you wear (sent once you have put one on, also {} to take them all off; needs the 1.9.0 rules)
+    ...(profile.look ? { look: lookOn(profile) } : {}),
   };
 }
 // A card from the cloud is someone else's data: only numbers we know, in sane ranges, are shown.
@@ -5298,6 +5315,7 @@ function cleanCard(c) {
   return {
     lvl: Math.max(1, cardNum(c.lvl)), xp: cardNum(c.xp), streak: cardNum(c.streak), best: cardNum(c.best), n: cardNum(c.n), reps: cardNum(c.reps), min: cardNum(c.min),
     since: typeof c.since === "string" && /^\d{4}-\d{2}-\d{2}$/.test(c.since) ? c.since : null, ach, av, rk, prs: cardNum(c.prs), ts: cardNum(c.ts), vis: CARD_VIS.includes(c.vis) ? c.vis : "friends",
+    look: lookOn({ look: c.look && typeof c.look === "object" ? c.look : {} }),
     show: Array.isArray(c.show) ? c.show.slice(0, SLOT_LV.length).map(x => (typeof x === "string" ? x.slice(0, 80) : "")) : [],
   };
 }
@@ -7422,6 +7440,305 @@ function JokerChip({ id, onClick, sell, buy, price, small, glow }) {
     </button>
   );
 }
+// ─── DIAMONDS, SHOP, PROFILE LOOKS (1.9.0) ─────────────────────────────────────────────────────────────────────
+// Michael (Oct 25, 2026): "start the shop and the diamonds, so things make sense together"; plan artifact
+// KCqpwBSTCXDimUwVj7rEA8. The numbers and rules live in src/economy.js (EC). Diamonds are derived from training
+// (workouts that weren't added by hand, streaks, badge levels, exercise ranks, Muscle Deck runs, weekly chests) minus
+// what was bought; nothing here helps in the game's Ranked or the world list. Money and ads come later (Google Play).
+const CHEST_FROM = "2026-10-19"; // weekly chests start with the week 1.9.0 was built (no pile of old chests)
+const LK_PINK = "#ff7ab6", LK_VIOLET = "#a78bfa";
+// What the economy counts: only workouts you did in the app (not added by hand) and no badges that live on one phone
+// (calories, steps, Health Connect), so every device shows the same number.
+function econInput(history, profile) {
+  const h = history.filter(e => !e.manual);
+  const ach = achievements(h, achExtra(profile, null, h)).filter(a => !CARD_HIDE.includes(a.k));
+  const ranks = {};
+  Object.keys(RANK_AT).forEach(id => { const b = bestFor(h, id); if (typeof b === "number" && isFinite(b)) ranks[id] = rankIdx(id, b); });
+  return { dates: h.map(e => e.date), freezeDays: profile.freezeDays || [], ach, ranks, runsWon: (profile.game && profile.game.rw) || 0, chests: EC.chestDiamonds(profile) };
+}
+// Looks you own: bought or from a chest, plus the ones won by playing.
+function lookGot(inp) {
+  const a = k => inp.ach.find(x => x.k === k) || {};
+  return { obsidian: !!a("obsidian").step, early: !!a("early").step, night: !!a("night").step, comeback: !!a("comeback").step, deck: !!a("deck").step, streak30: (a("streak").v || 0) >= 30, season: false };
+}
+function econState(history, profile) {
+  const inp = econInput(history, profile), sh = EC.shopOf(profile), earned = EC.earned(inp);
+  const own = [...new Set([...sh.own, ...EC.wonLooks(lookGot(inp))])];
+  return { inp, sh, earned, bal: earned.total - sh.spent, own, chests: readyChests(history, profile) };
+}
+// Weeks whose 3 challenges are done and whose chest is still shut (oldest first).
+function readyChests(history, profile) {
+  const opened = EC.shopOf(profile).chest;
+  return [...new Set(history.map(e => weekKey(e.date)))].filter(wk => wk >= CHEST_FROM && !opened[wk] && challengeStatus(history, wk).every(c => c.done)).sort();
+}
+// The equipped looks, only ones you own (a look that was taken off another device simply isn't drawn).
+function lookOn(profile, own) {
+  const l = (profile && profile.look) || {}, out = {};
+  EC.LOOK_KINDS.forEach(k => { const id = l[k]; if (id && EC.LOOKS[id] && EC.LOOKS[id].kind === k && (!own || own.includes(id))) out[k] = id; });
+  return out;
+}
+const lookName = id => (L.looks && L.looks[id]) || id;
+const lookRar = id => (EC.LOOKS[id] ? EC.LOOKS[id].r : 0);
+
+// Frames: SVG in a 116 × 116 box around an 84 px photo (scaled with the photo). u = a unique id part for gradients.
+const LK_FRAME = {
+  f_iron: u => `<defs><linearGradient id="gI${u}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e3e8f2"/><stop offset=".5" stop-color="#7d8698"/><stop offset="1" stop-color="#c9d0dc"/></linearGradient></defs><circle cx="58" cy="58" r="50" fill="none" stroke="url(#gI${u})" stroke-width="5"/><circle cx="58" cy="58" r="44.5" fill="none" stroke="#4a5263" stroke-width="1.5"/>`,
+  f_pixel: () => { let s = ""; for (let i = 0; i < 36; i++) { const a = (i / 36) * Math.PI * 2, x = 58 + Math.cos(a) * 50, y = 58 + Math.sin(a) * 50; s += `<rect x="${(x - 3.5).toFixed(1)}" y="${(y - 3.5).toFixed(1)}" width="7" height="7" fill="${i % 3 === 0 ? C.chalk : C.signal}" opacity="${i % 2 ? 0.65 : 1}"/>`; } return s; },
+  f_pulse: () => `<circle cx="58" cy="58" r="49" fill="none" stroke="${C.signal}" stroke-width="3.5"/><circle class="lkPulse" cx="58" cy="58" r="49" fill="none" stroke="${C.signal}" stroke-width="10" opacity=".35" style="filter:blur(4px)"/><g class="lkSpin"><circle cx="58" cy="8" r="4" fill="${C.signal}"/><circle cx="58" cy="108" r="2.5" fill="${C.signal}" opacity=".7"/></g>`,
+  f_flame: u => { let s = `<defs><linearGradient id="gF${u}" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#ff5a1f"/><stop offset=".6" stop-color="#ff9a1f"/><stop offset="1" stop-color="${C.signal}"/></linearGradient></defs><g class="lkFlick">`; for (let i = 0; i < 14; i++) s += `<path d="M58 4 C64 14 66 18 62 24 C60 20 58 19 55 22 C52 17 54 11 58 4Z" fill="url(#gF${u})" transform="rotate(${(i * 360) / 14} 58 58) translate(0 ${i % 2 ? 3 : 0})"/>`; return s + `</g><circle cx="58" cy="58" r="44" fill="none" stroke="#ff9a1f" stroke-width="2"/>`; },
+  f_laurel: () => { let s = ""; for (const side of [-1, 1]) for (let i = 0; i < 9; i++) { const a = ((100 + i * 17) * Math.PI) / 180, x = 58 + side * Math.cos(a) * 50, y = 58 + Math.sin(a) * 50 - 6, rot = side * (i * 17 + 10); s += `<ellipse cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" rx="7.5" ry="3.6" fill="#e8c15a" stroke="#a57e1c" stroke-width=".8" transform="rotate(${rot} ${x.toFixed(1)} ${y.toFixed(1)})"/>`; } return s + `<path d="M50 108 L58 102 L66 108" fill="none" stroke="#e8c15a" stroke-width="3" stroke-linecap="round"/>`; },
+  f_obsidian: u => { let s = `<defs><linearGradient id="gO${u}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4b3a78"/><stop offset=".45" stop-color="#120c22"/><stop offset=".55" stop-color="#2a1f4a"/><stop offset="1" stop-color="#0b0814"/></linearGradient></defs>`; const n = 10; for (let i = 0; i < n; i++) { const a1 = (i / n) * Math.PI * 2, a2 = ((i + 1) / n) * Math.PI * 2, am = (a1 + a2) / 2; const p = [[58 + Math.cos(a1) * 44, 58 + Math.sin(a1) * 44], [58 + Math.cos(am) * 56, 58 + Math.sin(am) * 56], [58 + Math.cos(a2) * 44, 58 + Math.sin(a2) * 44]]; s += `<polygon points="${p.map(q => q.map(v => v.toFixed(1)).join(",")).join(" ")}" fill="url(#gO${u})" stroke="${LK_VIOLET}" stroke-width=".8" stroke-opacity=".6"/>`; } return s + `<circle cx="58" cy="58" r="44" fill="none" stroke="${LK_VIOLET}" stroke-width="1.5" class="lkPulse"/>`; },
+};
+function LookFrame({ id, size, style }) {
+  const u = useId().replace(/[^a-zA-Z0-9]/g, "");
+  if (!LK_FRAME[id]) return null;
+  return <svg data-look-frame={id} viewBox="0 0 116 116" width={size} height={size} aria-hidden="true" style={{ position: "absolute", overflow: "visible", pointerEvents: "none", ...style }} dangerouslySetInnerHTML={{ __html: LK_FRAME[id](u) }} />;
+}
+// Banners: drawn behind the profile's top part, in the theme's own colours.
+function LookBanner({ id }) {
+  const fill = { position: "absolute", inset: 0 };
+  if (id === "b_glow") return <div style={{ ...fill, background: `radial-gradient(60% 90% at 20% 20%, ${C.signal}73, transparent 70%), radial-gradient(60% 90% at 85% 30%, ${C.sky}66, transparent 70%), ${C.panelHi}` }} />;
+  if (id === "b_grid") return <div style={{ ...fill, background: `repeating-linear-gradient(0deg, transparent 0 27px, ${C.chalk}1f 27px 28px), repeating-linear-gradient(90deg, transparent 0 27px, ${C.chalk}1f 27px 28px), linear-gradient(160deg, ${C.panelHi}, ${C.panel})` }} />;
+  if (id === "b_topo") {
+    let p = "";
+    for (let k = 0; k < 9; k++) { let d = ""; for (let x = 0; x <= 400; x += 10) { const y = 20 + k * 15 + Math.sin(x / 38 + k * 0.7) * 8 + Math.sin(x / 17 + k) * 3; d += (x ? "L" : "M") + x + " " + y.toFixed(1); } p += `<path d="${d}" fill="none" stroke="${C.signal}" stroke-opacity="${0.18 + (k % 3) * 0.1}" stroke-width="1.4"/>`; }
+    return <><div style={{ ...fill, background: C.panel }} /><svg viewBox="0 0 400 148" preserveAspectRatio="none" style={{ ...fill, width: "100%", height: "100%" }} dangerouslySetInnerHTML={{ __html: p }} /></>;
+  }
+  if (id === "b_stars") {
+    let s = "";
+    for (let i = 0; i < 70; i++) { const x = (i * 97.3) % 400, y = (i * 53.7) % 148, r = i % 5 === 0 ? 1.6 : 0.9; s += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r}" fill="${i % 7 === 0 ? C.signal : "#fff"}" class="lkTw" style="animation-duration:${(1.5 + (i % 4) * 0.7).toFixed(1)}s;animation-delay:${((i % 9) * 0.3).toFixed(1)}s"/>`; }
+    return <><div style={{ ...fill, background: `linear-gradient(180deg, #050816, ${C.panelHi})` }} /><svg viewBox="0 0 400 148" preserveAspectRatio="xMidYMid slice" style={{ ...fill, width: "100%", height: "100%" }} dangerouslySetInnerHTML={{ __html: s }} /></>;
+  }
+  if (id === "b_ridge") return <><div style={{ ...fill, background: `linear-gradient(180deg, ${C.signal}8c, ${C.panelHi} 70%)` }} /><svg viewBox="0 0 400 148" preserveAspectRatio="xMaxYMax slice" style={{ ...fill, width: "100%", height: "100%" }}><circle cx="345" cy="70" r="22" fill={C.signal} opacity=".9" /><path d="M0 100 L60 62 L110 92 L170 48 L240 96 L300 70 L400 104 V148 H0z" fill={C.line} /><path d="M0 122 L80 92 L150 118 L230 86 L320 120 L400 98 V148 H0z" fill={C.panel} /></svg></>;
+  if (id === "b_aurora") return <><div style={{ ...fill, background: C.ink }} /><div style={{ ...fill, filter: "blur(18px)", opacity: 0.85, overflow: "hidden" }}><div className="lkAur" style={{ position: "absolute", inset: "-20% -10%", background: `linear-gradient(100deg, transparent 15%, ${C.mint}b3 30%, transparent 45%, ${C.signal}99 60%, transparent 75%)` }} /><div className="lkAur lkAur2" style={{ position: "absolute", inset: "-20% -10%", background: `linear-gradient(80deg, transparent 20%, ${LK_VIOLET}99 40%, transparent 55%)` }} /></div></>;
+  return null;
+}
+// The name effect as inline style (the name's own colour is inline too, so a class could not override it).
+function nameFx(id) {
+  if (id === "n_grad") return { background: `linear-gradient(90deg, ${C.signal}, ${LK_PINK}, ${C.sky})`, WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent" };
+  if (id === "n_glow") return { color: C.chalk, textShadow: `0 0 10px ${C.signal}cc, 0 0 24px ${C.signal}80` };
+  if (id === "n_foil") return { background: `linear-gradient(100deg, ${C.chalk} 30%, #fff 45%, ${C.signal} 50%, ${C.chalk} 60%)`, backgroundSize: "260% 100%", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent", animation: "lkFoil 3.2s linear infinite" };
+  return {};
+}
+function LookTitle({ id, small }) {
+  if (!id) return null;
+  const col = id === "t_obsidian" ? LK_VIOLET : RAR_COL()[lookRar(id)] === C.sky ? C.signal : RAR_COL()[lookRar(id)];
+  return <span data-look-title={id} className={lookRar(id) === 3 ? "foil" : ""} style={{ display: "inline-block", fontSize: small ? 10 : 11, fontWeight: 800, letterSpacing: 0.8, textTransform: "uppercase", padding: small ? "2px 7px" : "3px 10px", borderRadius: 99, border: `1px solid ${col}80`, color: col, background: `${col}14`, whiteSpace: "nowrap", lineHeight: 1.3 }}>{lookName(id)}</span>;
+}
+// A look as a small picture for the shop and the list.
+function LookThumb({ id, size = 56 }) {
+  const k = EC.LOOKS[id] && EC.LOOKS[id].kind, box = { width: size, height: size, borderRadius: Math.round(size * 0.28), flexShrink: 0, position: "relative", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", background: SOFT() };
+  if (k === "frame") return <span aria-hidden="true" style={{ ...box, overflow: "visible", background: "transparent" }}><span style={{ width: size * 0.62, height: size * 0.62, borderRadius: 99, background: `${C.signal}40` }} /><LookFrame id={id} size={size} style={{ left: 0, top: 0 }} /></span>;
+  if (k === "bg") return <span aria-hidden="true" style={box}><LookBanner id={id} /></span>;
+  if (k === "title") return <span aria-hidden="true" style={{ ...box, padding: 4, boxSizing: "border-box" }}><span style={{ fontFamily: DISPLAY, fontSize: Math.min(size * 0.22, (size - 8) / (Math.max(...lookName(id).split(/\s+/).map(w => w.length)) * 0.56)), fontWeight: 900, lineHeight: 1, textAlign: "center", textTransform: "uppercase", color: RAR_COL()[lookRar(id)] === C.sky ? C.signal : RAR_COL()[lookRar(id)] }}>{lookName(id)}</span></span>;
+  return <span aria-hidden="true" style={box}><span style={{ fontFamily: DISPLAY, fontSize: size * 0.46, fontWeight: 900, lineHeight: 1, ...nameFx(id) }}>Aa</span></span>;
+}
+// The top of a profile with its looks (the Shop's preview; ProfilePage draws the same pieces into its own hero).
+function LookPreview({ profile, look, history }) {
+  const lv = levelInfo(totalXP(history)), lr = RANKS[lvRank(lv.lvl)];
+  return (
+    <div data-look-preview style={{ ...card, ...tileR(), position: "relative", overflow: "hidden", padding: "16px 16px 14px" }}>
+      <div aria-hidden="true" style={{ position: "absolute", inset: 0, pointerEvents: "none", WebkitMaskImage: "linear-gradient(180deg, #000 35%, transparent 100%)", maskImage: "linear-gradient(180deg, #000 35%, transparent 100%)" }}>{look.bg ? <LookBanner id={look.bg} /> : <div style={{ position: "absolute", inset: 0, background: `radial-gradient(80% 70% at 0% 0%, ${lr.color}26, transparent 60%)` }} />}</div>
+      <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 16 }}>
+        <span style={{ position: "relative", flexShrink: 0, width: 64, height: 64, margin: look.frame ? 10 : 0 }}>
+          <Avatar profile={profile} size={64} />
+          {look.frame && <LookFrame id={look.frame} size={88} style={{ left: -12, top: -12 }} />}
+        </span>
+        <span style={{ flex: 1, minWidth: 0 }}>
+          <span style={{ display: "block", fontFamily: DISPLAY, fontSize: 26, fontWeight: 900, lineHeight: 1, color: C.chalk, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", ...INK, ...nameFx(look.name) }}>{profile.name || T("defaultName")}</span>
+          {look.title && <span style={{ display: "block", marginTop: 6 }}><LookTitle id={look.title} /></span>}
+        </span>
+      </div>
+    </div>
+  );
+}
+function DiaNum({ n, size = 15, color = C.chalk }) {
+  return <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontWeight: 900, color, fontVariantNumeric: "tabular-nums" }}><Ico n="diamond" size={size} color={C.sky} sw={2.4} />{nf(n)}</span>;
+}
+// A chest drawn by the app (main colour bands), the lid opens with `open`.
+function ChestArt({ open, size = 150 }) {
+  const col = C.signal;
+  return (
+    <svg viewBox="0 0 120 110" width={size} height={(size * 110) / 120} aria-hidden="true" style={{ overflow: "visible", display: "block" }}>
+      {open && <ellipse cx="60" cy="50" rx="44" ry="20" fill={col} opacity=".55" style={{ filter: "blur(10px)" }} />}
+      <rect x="10" y="52" width="100" height="50" rx="8" fill={C.panelHi} stroke={col} strokeWidth="3" />
+      <rect x="27" y="52" width="9" height="50" fill={col} opacity=".9" /><rect x="84" y="52" width="9" height="50" fill={col} opacity=".9" />
+      <path d="M14 70 H106 M14 86 H106" stroke={C.line} strokeWidth="2" />
+      <g className="chLid" style={{ transformOrigin: "10px 52px", transform: open ? "translate(-4px,-18px) rotate(-24deg)" : "none" }}>
+        <path d="M10 52 V40 Q10 22 28 22 H92 Q110 22 110 40 V52 Z" fill={C.line} stroke={col} strokeWidth="3" strokeLinejoin="round" />
+        <rect x="27" y="23" width="9" height="29" fill={col} opacity=".9" /><rect x="84" y="23" width="9" height="29" fill={col} opacity=".9" />
+      </g>
+      {!open && <><rect x="51" y="44" width="18" height="20" rx="4" fill={col} /><circle cx="60" cy="53" r="2.6" fill={C.ink} /><path d="M60 54.5 V59" stroke={C.ink} strokeWidth="2" strokeLinecap="round" /></>}
+    </svg>
+  );
+}
+// Opening a weekly chest: shake, tap, the lid flies open, the reward comes up.
+function ChestOpen({ res, onClose }) {
+  const [st, setSt] = useState("shut"); // shut → shake → open
+  useBack(onClose, true);
+  const tap = () => {
+    if (st !== "shut") return;
+    setSt("shake"); gmSfx.pack(); vibrate([30, 40, 30, 40, 60]);
+    setTimeout(() => { setSt("open"); revealSfx(res.kind === "look" ? 6 : res.kind === "boost" ? 4 : 2); vibrate(REV_BUZZ[res.kind === "look" ? 6 : 3]); }, 750);
+  };
+  const r = res.kind === "look" ? lookRar(res.id) : res.kind === "boost" ? 2 : 1, col = RAR_COL()[r];
+  return createPortal(
+    <div data-chest-open={st} onClick={tap} style={{ position: "fixed", inset: 0, zIndex: 96, background: "rgba(4,7,16,.9)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 18, padding: "calc(var(--sat, 0px) + 20px) 16px calc(var(--sab, 0px) + 20px)", fontFamily: BODY, color: C.chalk, cursor: st === "shut" ? "pointer" : "default" }}>
+      {st === "open" && <><div className="revRays" aria-hidden="true" style={{ position: "absolute", left: "50%", top: "40%", width: 520, height: 520, marginLeft: -260, marginTop: -260, background: `repeating-conic-gradient(${col}33 0 8deg, transparent 8deg 22deg)`, borderRadius: 999, pointerEvents: "none", WebkitMaskImage: "radial-gradient(closest-side, #000, transparent)", maskImage: "radial-gradient(closest-side, #000, transparent)" }} /><RevBurst col={col} n={18} /><Confetti count={res.kind === "look" ? 80 : 40} /></>}
+      <div style={{ fontFamily: DISPLAY, fontSize: 28, fontWeight: 900, textAlign: "center", position: "relative" }}>{st === "open" ? (res.kind === "dia" ? T("shGotDia", { n: res.n }) : res.kind === "boost" ? T("shGotBoost") : T("shGotLook")) : T("shChestReady")}</div>
+      <div className={st === "shake" ? "chShake" : st === "shut" ? "chBob" : ""} style={{ position: "relative" }}><ChestArt open={st === "open"} size={170} /></div>
+      {st === "open" ? (
+        <div data-chest-res={res.kind} className="gmFlipIn" style={{ ...card, ...tileR(), position: "relative", display: "flex", alignItems: "center", gap: 14, padding: "14px 16px", border: `2px solid ${col}`, minWidth: 240, maxWidth: 380 }}>
+          {res.kind === "look" ? <LookThumb id={res.id} size={58} /> : <IcoBox n={res.kind === "dia" ? "diamond" : "boost"} color={res.kind === "dia" ? C.sky : C.signal} size={58} />}
+          <span style={{ flex: 1, minWidth: 0 }}>
+            <span style={{ display: "block", fontWeight: 900, fontSize: 17 }}>{res.kind === "dia" ? <DiaNum n={res.n} size={17} /> : res.kind === "boost" ? T("shBoost") : lookName(res.id)}</span>
+            <span style={{ display: "block", fontSize: 12.5, color: C.dim, marginTop: 3, lineHeight: 1.35 }}>{res.kind === "dia" ? T("shGotDiaD") : res.kind === "boost" ? T("shBoostD") : <span style={{ color: col, fontWeight: 800 }}>{T("gmRar" + lookRar(res.id))}</span>}</span>
+          </span>
+        </div>
+      ) : <div style={{ fontSize: 14, color: C.dim }}>{T("shChestTap")}</div>}
+      {st === "open" && <button type="button" data-chest-ok onClick={e => { e.stopPropagation(); sfxTap(); onClose(); }} style={{ ...bigBtn(C.signal, C.signalInk), maxWidth: 300, position: "relative" }}>{T("shOk")}</button>}
+    </div>,
+    document.body
+  );
+}
+// Two taps to buy (the first shows the price as "Sure?").
+function BuyBtn({ k, price, bal, sure, setSure, onBuy, label }) {
+  const poor = bal < price, on = sure === k;
+  return (
+    <button type="button" data-shop-buy={k} data-sure={on ? 1 : 0} disabled={poor} onClick={() => { if (on) { setSure(null); onBuy(); } else { sfxTap(); setSure(k); } }}
+      style={{ ...btnBase, flexShrink: 0, padding: "9px 12px", fontSize: 13.5, borderRadius: 12, background: poor ? SOFT() : on ? C.mint : C.signal, color: poor ? C.dim : on ? C.ink : C.signalInk, display: "inline-flex", alignItems: "center", gap: 5, opacity: poor ? 0.7 : 1, minWidth: 76, justifyContent: "center" }}>
+      {on ? T("shSure") : <>{label || null}<Ico n="diamond" size={14} sw={2.4} />{nf(price)}</>}
+    </button>
+  );
+}
+function ShopTab({ history, profile, setProfile }) {
+  const es = useMemo(() => econState(history, profile), [history, profile]);
+  const { bal, sh, earned, own, chests } = es;
+  const [sure, setSure] = useState(null), [opening, setOpening] = useState(null), [howOpen, setHowOpen] = useState(false), [kind, setKind] = useState("frame"), [flash, setFlash] = useState(null);
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => { if (!sure) return; const t = setTimeout(() => setSure(null), 3000); return () => clearTimeout(t); }, [sure]);
+  useEffect(() => { const t = setInterval(() => setNow(Date.now()), 30000); return () => clearInterval(t); }, []);
+  const balT = useTween(bal);
+  const look = lookOn(profile, own);
+  const buy = what => {
+    try {
+      const shop = EC.buy(profile, bal, what);
+      const next = { ...profile, shop };
+      if (EC.LOOKS[what]) next.look = { ...(profile.look || {}), [EC.LOOKS[what].kind]: what }; // a new look goes on at once
+      setProfile(next); gmSfx.buy(); vibrate([20, 30, 40]); setFlash(what); setTimeout(() => setFlash(f => (f === what ? null : f)), 1400);
+    } catch (_) { sfxTap(); }
+  };
+  const openChest = () => {
+    const wk = chests[0]; if (!wk) return;
+    try { const o = EC.openChest(profile, wk); setProfile({ ...profile, shop: o.shop }); setOpening(o.res); } catch (_) {}
+  };
+  const equip = (k, id) => { sfxTap(); setProfile({ ...profile, look: { ...(profile.look || {}), [k]: id || null } }); };
+  const today = dateKey(), daily = EC.dailyLooks(today, own);
+  const fzHave = freezesAvailable(history), fzMax = 2 + (META.giftThisYear ? 1 : 0), boostTo = EC.boostUntil(sh.boosts, now);
+  const wkNow = weekKey(today), chNow = challengeStatus(history, wkNow), chDone = chNow.filter(c => c.done).length, gotNow = !!sh.chest[wkNow];
+  const timeStr = ts => { const d = new Date(ts); return (dateKey(d) === today ? "" : fmtDate(dateKey(d), false) + " ") + d.toLocaleTimeString(LANG, { hour: "2-digit", minute: "2-digit" }); };
+  const parts = [["workouts", { n: EC.EARN.day }], ["streak", { n: EC.EARN.streak7 }], ["badges", {}], ["ranks", {}], ["deck", { n: EC.EARN.run }], ["chests", {}]];
+  const row = { display: "flex", alignItems: "center", gap: 12, padding: "12px 16px" };
+  const kindList = EC.LOOK_IDS.filter(id => EC.LOOKS[id].kind === kind);
+  return (
+    <div data-shop style={{ padding: "0 18px 30px" }}>
+      {/* balance */}
+      <Sect data-shop-bal={bal} style={{ marginTop: 0, position: "relative", overflow: "hidden" }}>
+        <div aria-hidden="true" style={{ position: "absolute", inset: 0, background: `radial-gradient(90% 120% at 100% 0%, ${C.sky}2e, transparent 60%)`, pointerEvents: "none" }} />
+        <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 14 }}>
+          <IcoBox n="diamond" color={C.sky} size={54} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 12, color: C.dim, fontWeight: 700 }}>{T("shDia")}</div>
+            <div data-shop-num style={{ fontFamily: DISPLAY, fontSize: 40, fontWeight: 900, lineHeight: 1, color: C.chalk, fontVariantNumeric: "tabular-nums" }}>{nf(Math.round(balT))}</div>
+          </div>
+          <button type="button" data-shop-how onClick={() => { sfxTap(); setHowOpen(o => !o); }} aria-expanded={howOpen} style={{ ...btnBase, background: SOFT(), color: C.chalk, padding: "8px 11px", fontSize: 12.5, borderRadius: 12, display: "inline-flex", alignItems: "center", gap: 6 }}>{T("shHow")}<Chevron open={howOpen} /></button>
+        </div>
+        <Expand open={howOpen}>
+          <div data-shop-parts style={{ position: "relative", marginTop: 12, display: "flex", flexDirection: "column", gap: 2 }}>
+            {parts.map(([k, v]) => <div key={k} style={{ display: "flex", justifyContent: "space-between", gap: 10, fontSize: 13, padding: "5px 0", borderTop: `1px solid ${C.line}` }}><span style={{ color: C.dim }}>{T("shE_" + k, v)}</span><DiaNum n={earned.parts[k]} size={13} /></div>)}
+            <div style={{ display: "flex", justifyContent: "space-between", gap: 10, fontSize: 13, padding: "5px 0", borderTop: `1px solid ${C.line}` }}><span style={{ color: C.dim }}>{T("shSpent")}</span><DiaNum n={-sh.spent} size={13} /></div>
+            <div style={{ fontSize: 11.5, color: C.dim, lineHeight: 1.45, marginTop: 6 }}>{T("shHowD")}</div>
+          </div>
+        </Expand>
+      </Sect>
+      {/* the weekly chest */}
+      <Sect data-shop-chest={chests.length} title={T("shChest")} meta={chests.length > 1 ? TP("shChestN", chests.length) : null}>
+        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+          <span className={chests.length ? "chBob" : ""} style={{ flexShrink: 0, opacity: chests.length ? 1 : 0.55 }}><ChestArt size={64} /></span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontWeight: 800, fontSize: 15 }}>{chests.length ? T("shChestReady") : gotNow ? T("shChestGot") : T("shChestWait", { v: chDone })}</div>
+            <div style={{ fontSize: 12, color: C.dim, marginTop: 3, lineHeight: 1.4 }}>{chests.length ? T("shChestD") : gotNow ? T("shChestGotD") : T("shChestWaitD")}</div>
+          </div>
+          {chests.length > 0 && <button type="button" data-chest-btn onClick={() => { sfxTap(); openChest(); }} className="b3d" style={{ ...btnBase, flexShrink: 0, background: C.signal, color: C.signalInk, padding: "10px 14px", fontSize: 14, borderRadius: 12 }}>{T("shChestOpen")}</button>}
+        </div>
+        <div style={{ fontSize: 11.5, color: C.dim, lineHeight: 1.45, marginTop: 10 }}>{T("shChestOdds")}</div>
+      </Sect>
+      {/* streak freeze, XP boost */}
+      <ListSect title={T("shItems")}>
+        <div data-shop-item="freeze" style={row}>
+          <IcoBox n="snow" color={C.sky} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontWeight: 800, fontSize: 15 }}>{T("shFreeze")}</div>
+            <div style={{ fontSize: 12, color: C.dim, marginTop: 2, lineHeight: 1.35 }}>{fzHave >= fzMax ? T("shFreezeFull", { max: fzMax }) : T("shFreezeD", { n: fzHave, max: fzMax })}</div>
+          </div>
+          {fzHave >= fzMax ? <span data-shop-full style={{ fontSize: 12, color: C.dim, fontWeight: 700 }}>{fzHave}/{fzMax}</span> : <BuyBtn k="freeze" price={EC.PRICE.freeze} bal={bal} sure={sure} setSure={setSure} onBuy={() => buy("freeze")} />}
+        </div>
+        <div data-shop-item="boost" style={{ ...row, borderTop: `1px solid ${C.line}` }}>
+          <IcoBox n="boost" color={C.signal} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontWeight: 800, fontSize: 15 }}>{T("shBoost")}</div>
+            <div style={{ fontSize: 12, color: boostTo ? C.mint : C.dim, marginTop: 2, lineHeight: 1.35, fontWeight: boostTo ? 700 : 400 }} data-boost-on={boostTo ? 1 : 0}>{boostTo ? T("shBoostOn", { t: timeStr(boostTo) }) : T("shBoostD")}</div>
+          </div>
+          <BuyBtn k="boost" price={EC.PRICE.boost} bal={bal} sure={sure} setSure={setSure} onBuy={() => buy("boost")} />
+        </div>
+      </ListSect>
+      {/* today's looks */}
+      <Sect data-shop-today title={T("shToday")} meta={T("shTodayMeta")}>
+        {daily.length ? <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {daily.map(id => { const r = lookRar(id), col = RAR_COL()[r]; return (
+            <div key={id} data-shop-look={id} className={(r === 3 ? "foil " : "") + (flash === id ? "shFlash" : "")} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", borderRadius: 16, background: SOFT(), border: `1.5px solid ${col}55` }}>
+              <LookThumb id={id} size={52} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontWeight: 800, fontSize: 14.5 }}>{lookName(id)}</div>
+                <div style={{ fontSize: 11.5, marginTop: 2 }}><span data-rar-chip={r} style={{ color: col, fontWeight: 800, textTransform: "uppercase", letterSpacing: 0.4, fontSize: 10.5 }}>{T("gmRar" + r)}</span><span style={{ color: C.dim }}> · {T("lookKind_" + EC.LOOKS[id].kind)}</span></div>
+              </div>
+              <BuyBtn k={id} price={EC.lookPrice(id)} bal={bal} sure={sure} setSure={setSure} onBuy={() => buy(id)} />
+            </div>); })}
+        </div> : <div style={{ fontSize: 13, color: C.dim }}>{T("shAllOwned")}</div>}
+      </Sect>
+      {/* your looks: preview + pick per kind */}
+      <Sect data-shop-mine title={T("shMine")}>
+        <LookPreview profile={profile} look={look} history={history} />
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", margin: "12px 0 10px" }}>
+          {EC.LOOK_KINDS.map(k => <button key={k} type="button" data-look-kind={k} aria-pressed={kind === k} onClick={() => { sfxTap(); setKind(k); }} style={{ ...btnBase, padding: "7px 11px", fontSize: 12.5, borderRadius: 99, background: kind === k ? C.signal : SOFT(), color: kind === k ? C.signalInk : C.chalk }}>{T("lookKind_" + k)}</button>)}
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          <button type="button" data-look-none={kind} onClick={() => equip(kind, null)} aria-pressed={!look[kind]} style={{ ...btnBase, display: "flex", alignItems: "center", gap: 12, padding: "9px 12px", borderRadius: 14, background: SOFT(), color: C.chalk, textAlign: "left", fontWeight: 700, fontSize: 14, border: `1.5px solid ${!look[kind] ? C.signal : "transparent"}` }}>
+            <span style={{ width: 44, height: 44, borderRadius: 12, border: `1.5px dashed ${C.line}`, flexShrink: 0 }} /><span style={{ flex: 1 }}>{T("shNone")}</span>{!look[kind] && <Ico n="check" size={18} color={C.signal} />}
+          </button>
+          {kindList.map(id => { const has = own.includes(id), on = look[kind] === id, L0 = EC.LOOKS[id], r = L0.r; return (
+            <button key={id} type="button" data-look-own={id} data-has={has ? 1 : 0} disabled={!has} onClick={() => equip(kind, on ? null : id)} aria-pressed={on}
+              style={{ ...btnBase, display: "flex", alignItems: "center", gap: 12, padding: "9px 12px", borderRadius: 14, background: SOFT(), color: C.chalk, textAlign: "left", fontWeight: 400, border: `1.5px solid ${on ? C.signal : "transparent"}`, opacity: has ? 1 : 0.55, cursor: has ? "pointer" : "default" }}>
+              <LookThumb id={id} size={44} />
+              <span style={{ flex: 1, minWidth: 0 }}>
+                <span style={{ display: "block", fontWeight: 800, fontSize: 14 }}>{lookName(id)}</span>
+                <span style={{ display: "block", fontSize: 11.5, marginTop: 2, color: C.dim, lineHeight: 1.35 }}><span style={{ color: RAR_COL()[r], fontWeight: 800, textTransform: "uppercase", letterSpacing: 0.4, fontSize: 10.5 }}>{T("gmRar" + r)}</span> · {has ? (on ? T("shInUse") : T("shTapUse")) : L0.won ? T("shWon_" + L0.won) : T("shInShop")}</span>
+              </span>
+              {on ? <Ico n="check" size={18} color={C.signal} /> : !has ? <Ico n="lock" size={17} color={C.dim} /> : null}
+            </button>); })}
+        </div>
+      </Sect>
+      {/* money and ads: later */}
+      <Sect data-shop-get title={T("shGet")}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <IcoBox n="lock" color={C.dim} />
+          <div style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.45 }}>{T("shGetD")}</div>
+        </div>
+      </Sect>
+      {opening && <ChestOpen res={opening} onClose={() => setOpening(null)} />}
+    </div>
+  );
+}
 // The game screen in the ☰ menu: modes, your deck, the ranked list.
 function GameTab({ history, profile, setProfile, acct, onPlay }) {
   const saved = gameLoad();
@@ -8463,7 +8780,7 @@ function Summary({ entry, xpBefore = 0, xpGained, newCh = [], newAch = [], histo
       {entry.dur > 0 && <div data-total-time style={{ fontSize: 14, color: C.chalk, fontWeight: 700, marginTop: 6 }}>⏱ {T("totalTime", { t: fmtDur(entry.dur) })}</div>}
       <div style={{ marginTop: 16, background: C.panel, border: `1px solid ${C.line}`, borderRadius: 18, padding: "14px 16px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 10 }}>
-          <div style={{ fontFamily: DISPLAY, fontSize: 44, fontWeight: 900, lineHeight: 1, color: C.sky }}>+{shown} XP</div>
+          <div style={{ fontFamily: DISPLAY, fontSize: 44, fontWeight: 900, lineHeight: 1, color: C.sky }}>+{shown} XP{EC.boosted(entry.ts, META.boosts) && <span data-sum-boost className="pop" style={{ display: "inline-flex", alignItems: "center", gap: 3, verticalAlign: "middle", marginLeft: 8, fontFamily: BODY, fontSize: 13, fontWeight: 900, color: C.signalInk, background: C.signal, borderRadius: 99, padding: "3px 9px 3px 6px" }}><Ico n="boost" size={14} sw={2.4} />2×</span>}</div>
           <div style={{ fontFamily: DISPLAY, fontSize: 26, fontWeight: 800, color: "#ffa94d" }}>🔥 {st.n}</div>
         </div>
         <div style={{ height: 14, background: C.panelHi, borderRadius: 99, marginTop: 10, overflow: "hidden" }}>
@@ -8672,7 +8989,7 @@ export default function App() {
   const setUi = u => { setUiState(u); saveUi(u); };
   // Every change to past workouts keeps the history sorted and records/rank-ups correct.
   const editHistory = fn => setHistory(h => recomputeFlags(sortHistory(fn(h))));
-  META = { kcal, skips: profile.skips || {}, freezeDays: profile.freezeDays || [], streakResetTs: profile.streakResetTs || 0, bonusFreezes: (profile.bdayGifts || []).length, giftThisYear: (profile.bdayGifts || []).includes(parseKey(dateKey()).getFullYear()), birth: profile.birth || null };
+  META = { kcal, skips: profile.skips || {}, freezeDays: profile.freezeDays || [], streakResetTs: profile.streakResetTs || 0, boosts: EC.shopOf(profile).boosts, bonusFreezes: (profile.bdayGifts || []).length + EC.shopOf(profile).fz, giftThisYear: (profile.bdayGifts || []).includes(parseKey(dateKey()).getFullYear()), birth: profile.birth || null };
   window._wset = settings;
   applyTheme(settings.theme, settings.accent);
   LOOK = settings.look || "cards";
@@ -9075,6 +9392,7 @@ export default function App() {
   useEffect(() => { if (hzSupported() && loaded) hzSet(settings.hz === "max" ? "max" : "60"); }, [loaded]);
   // 1.7.4: badges and ranks still face down (counted on ☰ and the Profile row of the menu)
   const claimN = useMemo(() => (profLoaded ? unclaimedFor(history, profile, kcal).length : 0), [history, profile, kcal, profLoaded]);
+  const chestN = useMemo(() => (profLoaded ? readyChests(history, profile).length : 0), [history, profile, profLoaded]); // 1.9.0
   const socialCount = (social.reqs || []).length + (social.chats || []).filter(k => k.last.from !== acct.uid && !social.blocked.includes(k.other) && k.last.ts > Math.max(social.read[k.cid] || 0, (cloudMem().clr || {})[k.cid] || 0)).length;
   // Stats for the leaderboard: sent when they change (and once a day, for the streak).
   useEffect(() => {
@@ -9461,6 +9779,17 @@ export default function App() {
         @media (prefers-reduced-motion: reduce){.rkRow,.rkSweep::after{animation:none}}
         .foil{position:relative;overflow:hidden}.foil::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(105deg,transparent 38%,rgba(255,255,255,.16) 46%,rgba(255,255,255,.32) 50%,rgba(255,255,255,.16) 54%,transparent 62%);transform:translateX(-120%);animation:foil 3.4s ease-in-out infinite}
         @keyframes foil{0%,55%{transform:translateX(-120%)}100%{transform:translateX(120%)}}.revFace.foil{position:absolute}
+        .chShake{animation:chShake .75s cubic-bezier(.36,.07,.19,.97) both}@keyframes chShake{10%,90%{transform:translateX(-2px) rotate(-2deg)}20%,80%{transform:translateX(4px) rotate(3deg)}30%,50%,70%{transform:translateX(-7px) rotate(-5deg) scale(1.04)}40%,60%{transform:translateX(7px) rotate(5deg) scale(1.06)}}
+        .chBob{animation:chBob 1.6s ease-in-out infinite}@keyframes chBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+        .chLid{transition:transform .45s ${MO.spring}}.shFlash{animation:shFlash 1.2s ease}@keyframes shFlash{0%,100%{box-shadow:0 0 0 0 transparent}30%{box-shadow:0 0 0 2px ${C.mint},0 0 22px ${C.mint}66}}
+        @media (prefers-reduced-motion: reduce){.chShake,.chBob{animation:none}.chLid{transition:none}}
+        .lkPulse{animation:lkPulse 1.8s ease-in-out infinite}@keyframes lkPulse{0%,100%{opacity:.55}50%{opacity:1}}
+        .lkSpin{transform-box:view-box;transform-origin:58px 58px;animation:lkSpin 6s linear infinite}@keyframes lkSpin{to{transform:rotate(360deg)}}
+        .lkFlick{transform-box:view-box;transform-origin:58px 58px;animation:lkFlick 1.1s ease-in-out infinite}@keyframes lkFlick{0%,100%{transform:scale(1)}50%{transform:scale(1.035,.975)}}
+        .lkTw{animation:lkTw 2s ease-in-out infinite}@keyframes lkTw{0%,100%{opacity:.2}50%{opacity:1}}
+        .lkAur{animation:lkAur 9s ease-in-out infinite}.lkAur2{animation-duration:13s;animation-direction:reverse}@keyframes lkAur{0%,100%{transform:translateX(-10%) skewX(-8deg)}50%{transform:translateX(10%) skewX(8deg)}}
+        @keyframes lkFoil{from{background-position:120% 0}to{background-position:-120% 0}}
+        @media (prefers-reduced-motion: reduce){.lkPulse,.lkSpin,.lkFlick,.lkTw,.lkAur{animation:none}}
         .nearPulse{animation:nearPulse 1.2s ease-in-out infinite alternate}
         @keyframes nearPulse{from{opacity:.65}to{opacity:1}}
         .pop{animation:pop ${MO.t3} ${MO.spring} both}
@@ -9523,7 +9852,7 @@ export default function App() {
           )}
           {(!session || !sessionOpen) && (
             <>
-              <TopBar side={sideOn} head={screen === "friends" ? topHead : null} badge={socialCount + claimN} dlPct={dl && dl.kind === "downloading" ? dl.pct || 0 : null} screen={screen} history={history} menuOpen={menuOpen} onGo={go} onMenu={() => { sfxTap(); setMenuOpen(o => !o); }} />
+              <TopBar side={sideOn} head={screen === "friends" ? topHead : null} badge={socialCount + claimN + chestN} dlPct={dl && dl.kind === "downloading" ? dl.pct || 0 : null} screen={screen} history={history} menuOpen={menuOpen} onGo={go} onMenu={() => { sfxTap(); setMenuOpen(o => !o); }} />
               <div key={screen}>
                 {screen === "train" && <TrainTab tourOffer={tourOffer ? { start: () => startTour(1), close: () => setUi({ ...ui, tourOff: true }) } : null} settings={settings} setSettings={setSettings} onSetup={st => setOnboard(st)} dl={dlHidden ? null : dl} onDlClose={() => setDlHidden(true)} kcal={kcal} setKcal={setKcal} history={history} onStart={start} onFreeze={applyFreeze} ui={ui} setUi={setUi} active={session} onResume={resume} profile={profile} onGo={go} upd={updCard ? { open: () => { setUpdCard(false); setNewsAt(APP_VERSION); setNewsOpen(true); }, close: () => setUpdCard(false) } : null}
                   apk={apkUpd && !apkHidden ? { info: apkUpd, close: () => setApkHidden(true) } : null} />}
@@ -9535,6 +9864,7 @@ export default function App() {
                 {screen === "settings" && <SettingsTab initPage={setPage0} settings={settings} setSettings={setSettings} history={history} profile={profile} setProfile={setProfile}
                   kcal={kcal} autoBk={autoBk} onAutoBackup={runAutoBackup}
                   onImport={importAll} acct={acct} cloudBk={cloudBk} onAcctOpen={() => go("friends")} onCloudRestore={restoreFromCloud} onCloudBackupNow={cloudBackupNow} onSignOut={signOut} onDeleteAccount={deleteAccount} />}
+                {screen === "shop" && <ShopTab history={history} profile={profile} setProfile={setProfile} />}
                 {screen === "game" && <GameTab history={history} profile={profile} setProfile={setProfile} acct={acct} onPlay={sv => { if (sv.mode !== "tut") gameSave(sv); setGamePlay(sv); }} />}
                 {screen === "friends" && <OpenInApp />}
                 {screen === "friends" && <FriendsTab key={"fr" + addSeq} modHidden={modHidden} setTopHead={setTopHead} acct={acct} history={history} profile={profile} social={social} chatWith={chatWith} setChatWith={setChatWith} onBlocked={setBlocked} onSignIn={signIn} onCreate={createProfile} onRename={renameNick} onSetGlobal={setGlobal} fx={friendsFx} />}
@@ -9543,9 +9873,9 @@ export default function App() {
               {exitAsk && <ExitPrompt history={history} session={session} onStay={() => { sfxTap(); setExitAsk(false); }} onLeave={() => { setExitAsk(false); exitApp(); }} />}
             </>
           )}
-          {sideOn && <SideNav onTour={() => setTourSheet(true)} tourN={tourDone.size} apk={apkUpd} busy={!!(session && session.phase !== "summary")} badge={socialCount} claimN={claimN} gh={gh} dl={dl} screen={screen} history={history} profile={profile} session={session && session.phase !== "summary" ? session : null}
+          {sideOn && <SideNav onTour={() => setTourSheet(true)} tourN={tourDone.size} apk={apkUpd} busy={!!(session && session.phase !== "summary")} badge={socialCount} claimN={claimN} chestN={chestN} gh={gh} dl={dl} screen={screen} history={history} profile={profile} session={session && session.phase !== "summary" ? session : null}
             onGo={go} onResume={resume} onNews={() => setNewsOpen(true)} />}
-          <MenuDrawer onTour={() => { setMenuOpen(false); setTourSheet(true); }} tourN={tourDone.size} apk={apkUpd} busy={!!(session && session.phase !== "summary")} badge={socialCount} claimN={claimN} gh={gh} dl={dl} open={menuOpen} screen={screen} history={history} profile={profile} session={session && session.phase !== "summary" ? session : null}
+          <MenuDrawer onTour={() => { setMenuOpen(false); setTourSheet(true); }} tourN={tourDone.size} apk={apkUpd} busy={!!(session && session.phase !== "summary")} badge={socialCount} claimN={claimN} chestN={chestN} gh={gh} dl={dl} open={menuOpen} screen={screen} history={history} profile={profile} session={session && session.phase !== "summary" ? session : null}
             onGo={go} onResume={resume} onClose={() => setMenuOpen(false)} onNews={() => { setMenuOpen(false); setNewsOpen(true); }} />
           {notice && <LiveNotice n={notice} people={Object.fromEntries([...(social.friends || []), ...(social.reqs || [])].map(x => [x.uid, x]))} onClose={() => setNotice(null)}
             onOpen={n => { setNotice(null); go("friends"); setChatWith(n.kind === "msg" ? n.uid : null); }} />}

@@ -1,0 +1,68 @@
+// 1.9.0: unit tests for diamonds, the shop and chests (src/economy.js). Run: node tools/economy_test.mjs
+import * as E from "../src/economy.js";
+let pass = 0, fail = 0;
+const ok = (c, m) => { if (c) { pass++; console.log("  ✓", m); } else { fail++; console.log("  ✗ FAIL:", m); } };
+const days = (start, n, step = 2) => Array.from({ length: n }, (_, i) => { const d = new Date(Date.UTC(2026, 9, start) + i * step * 86400000); return d.toISOString().slice(0, 10); });
+console.log("streak chains");
+ok(JSON.stringify(E.chains(days(1, 10))) === "[10]", "every other day: one chain of 10");
+ok(JSON.stringify(E.chains([...days(1, 5), ...days(20, 3)])) === "[5,3]", "a gap of more than 2 days starts a new chain");
+ok(JSON.stringify(E.chains(["2026-10-01", "2026-10-05"], ["2026-10-03"])) === "[2]", "a freeze day bridges the gap but doesn't count");
+console.log("earned");
+const e = E.earned({ dates: days(1, 15), ach: [{ tier: 2 }, { tier: 0 }, { single: true, step: 1, rk: [6] }, { single: true, step: 0, rk: [8] }], ranks: { k1: 1, n1: 0, b5: -1 }, runsWon: 2, chests: [30] });
+ok(e.parts.workouts === 75, "15 workout days × 5");
+ok(e.parts.streak === 30, "a chain of 15 = two times 7 → 2 × 15");
+ok(e.parts.badges === 9 + 30, "a badge at level 2 = 3 + 6, an epic one-off = 30, locked = 0");
+ok(e.parts.ranks === 6 + 2, "Bronze = Iron 2 + Bronze 4, Iron = 2, not done = 0");
+ok(e.parts.deck === 40 && e.parts.chests === 30 && e.total === 75 + 30 + 39 + 8 + 40 + 30, `total ${e.total}`);
+ok(E.earned({ dates: ["2026-10-01", "2026-10-01"] }).parts.workouts === 5, "two workouts on one day: one day");
+console.log("buying");
+const S = shop => E.shopOf({ shop });
+let p = { shop: {} };
+let sh = E.buy(p, 100, "freeze");
+ok(S(sh).spent === 60 && S(sh).fz === 1 && sh.buys.length === 1 && sh.buys[0].i, "a freeze: 60, fz + 1, stored as one entry with an id");
+let threw = null; try { E.buy(p, 50, "freeze"); } catch (x) { threw = x.message; }
+ok(threw === "money", "not enough diamonds: refused");
+sh = E.buy({ shop: sh }, 200, "boost", 1000);
+let bs = S(sh).boosts;
+ok(bs.length === 1 && bs[0].from === 1000 && bs[0].to === 1000 + E.BOOST_MS, "a boost: 24 h from now");
+sh = E.buy({ shop: sh }, 200, "boost", 2000);
+bs = S(sh).boosts;
+ok(bs[1].from === 1000 + E.BOOST_MS && E.boostUntil(bs, 2000) === 1000 + 2 * E.BOOST_MS, "a second boost starts when the first ends");
+ok(E.boosted(5000, bs) && !E.boosted(500, bs), "boosted(): inside the window only");
+ok(S(sh).spent === 60 + 80, "spent = the sum of the entries");
+sh = E.buy({ shop: {} }, 400, "f_pulse");
+ok(S(sh).own.includes("f_pulse") && S(sh).spent === 300, "a rare frame: 300");
+threw = null; try { E.buy({ shop: sh }, 400, "f_pulse"); } catch (x) { threw = x.message; }
+ok(threw === "owned", "can't buy twice");
+threw = null; try { E.buy({ shop: {} }, 9999, "f_obsidian"); } catch (x) { threw = x.message; }
+ok(threw === "not for sale", "won-only looks can't be bought");
+console.log("sync");
+const base0 = E.buy({ shop: {} }, 999, "freeze", 10);
+const devA = E.buy({ shop: base0 }, 999, "f_pixel", 20), devB = E.buy({ shop: base0 }, 999, "boost", 30);
+const mg = E.mergeShop(devA, devB), mg2 = E.mergeShop(devB, devA);
+ok(S(mg).spent === 60 + 150 + 40 && S(mg).own.includes("f_pixel") && S(mg).boosts.length === 1 && S(mg).fz === 1, "two devices bought offline: both purchases kept, the shared one once");
+ok(JSON.stringify(mg.buys) === JSON.stringify(mg2.buys), "merging is the same in both directions");
+ok(E.mergeShop(null, devA) === devA && E.mergeShop(devA, undefined) === devA, "one side empty: the other");
+console.log("daily shop, chests");
+const a = E.dailyLooks("2026-10-25"), b = E.dailyLooks("2026-10-25"), c = E.dailyLooks("2026-10-26");
+ok(a.length === 4 && a.join() === b.join() && a.join() !== c.join() && a.every(id => !E.LOOKS[id].won), "4 looks a day, the same on every device, others tomorrow, never won-only ones");
+ok(!E.dailyLooks("2026-10-25", a).some(id => a.includes(id)), "owned looks are not offered");
+const kinds = { dia: 0, boost: 0, look: 0 };
+for (let w = 0; w < 2000; w++) kinds[E.weeklyChest("2026-W" + w).kind]++;
+ok(Math.abs(kinds.dia / 20 - 70) < 4 && Math.abs(kinds.boost / 20 - 20) < 4 && Math.abs(kinds.look / 20 - 10) < 3, `chest odds 70/20/10 (${kinds.dia / 20}/${kinds.boost / 20}/${kinds.look / 20})`);
+const o = E.openChest({ shop: {} }, "2026-W43", 0);
+ok(o.shop.chest["2026-W43"] && o.res.kind === E.weeklyChest("2026-W43").kind && o.res.n === E.weeklyChest("2026-W43").n, "opening stores the week's fixed result");
+let wk = 0, lk; for (; wk < 500; wk++) if (E.weeklyChest("w" + wk).kind === "look") break;
+lk = E.openChest({ shop: {} }, "w" + wk, 5).shop;
+ok(S(lk).own.includes(E.weeklyChest("w" + wk).id) && S(lk).spent === 0, "a look from a chest is owned, nothing spent");
+for (wk = 0; wk < 500; wk++) if (E.weeklyChest("w" + wk).kind === "boost") break;
+lk = E.openChest({ shop: {} }, "w" + wk, 5).shop;
+ok(S(lk).boosts.length === 1 && S(lk).boosts[0].from === 5, "a boost from a chest starts when it is opened");
+for (wk = 0; wk < 500; wk++) if (E.weeklyChest("w" + wk).kind === "dia") break;
+lk = E.openChest({ shop: {} }, "w" + wk, 5).shop;
+ok(E.chestDiamonds({ shop: lk })[0] === E.weeklyChest("w" + wk).n, "chest diamonds are counted");
+threw = null; try { E.openChest({ shop: o.shop }, "2026-W43"); } catch (x) { threw = x.message; }
+ok(threw === "opened", "a chest opens once");
+ok(JSON.stringify(E.wonLooks({ obsidian: true })) === JSON.stringify(["f_obsidian", "t_obsidian"]), "Obsidian badge → the Obsidian frame and title");
+console.log(`\n${pass} passed, ${fail} failed`);
+process.exit(fail ? 1 : 0);

@@ -1,3 +1,4 @@
+import { mergeShop } from "./economy.js";
 // Web ↔ phone sync (1.7.0, Michael: "merge, not only backup"). Every device signed in to the same account keeps its
 // data in the account's cloud backup (backups/{uid}); when another device changes it, this one merges it in, and the
 // result goes back up. Merging never loses a workout:
@@ -71,6 +72,8 @@ export function mergeProfile(lp, rp, ml, mr, first) {
   if (lp.claim || rp.claim) out.claim = { a: maxMap((lp.claim || {}).a, (rp.claim || {}).a), r: maxMap((lp.claim || {}).r, (rp.claim || {}).r) };
   // 1.8.0: the same on the 9-rank scale (claim stays for older app versions)
   if (lp.claim2 || rp.claim2) out.claim2 = { a: maxMap((lp.claim2 || {}).a, (rp.claim2 || {}).a), r: maxMap((lp.claim2 || {}).r, (rp.claim2 || {}).r) };
+  // 1.9.0: purchases and opened chests from both sides (each purchase has an id, so none is lost or counted twice)
+  if (lp.shop || rp.shop) out.shop = mergeShop(lp.shop, rp.shop);
   if (!out.name) out.name = lp.name || rp.name || "User";
   return out;
 }

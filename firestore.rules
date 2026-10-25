@@ -56,7 +56,7 @@ service cloud.firestore {
     // (blocks/{uid}) never can. A card is written in parts (stats, or only vis), so every field is optional. av = badge
     // values (progress), show = the showcase fields (1.7.0).
     function cardOk() {
-      return only(['vis', 'lvl', 'xp', 'streak', 'best', 'n', 'reps', 'min', 'prs', 'since', 'ach', 'av', 'rk', 'show', 'ts'])
+      return only(['vis', 'lvl', 'xp', 'streak', 'best', 'n', 'reps', 'min', 'prs', 'since', 'ach', 'av', 'rk', 'show', 'look', 'ts'])
         && data().get('vis', 'friends') in ['friends', 'all', 'none']
         && intIn(data().get('lvl', 1), 1, 100000) && intIn(data().get('xp', 0), 0, 100000000)
         && intIn(data().get('streak', 0), 0, 100000) && intIn(data().get('best', 0), 0, 100000)
@@ -68,7 +68,14 @@ service cloud.firestore {
         && data().get('av', {}) is map && data().get('av', {}).size() <= 40
         && data().get('show', []) is list && data().get('show', []).size() <= 10
         && intIn(data().get('prs', 0), 0, 1000000)
+        && lookOk(data().get('look', {}))
         && nowTs();
+    }
+    // 1.9.0 profile looks on the card: {frame, bg, title, name}, each a short id (the app draws them; unknown ids are ignored)
+    function lookId(l, k) { return l.get(k, '') is string && l.get(k, '').size() <= 24; }
+    function lookOk(l) {
+      return l is map && l.keys().hasOnly(['frame', 'bg', 'title', 'name'])
+        && lookId(l, 'frame') && lookId(l, 'bg') && lookId(l, 'title') && lookId(l, 'name');
     }
     function notBlockedBy(owner) {
       return !exists(/databases/$(database)/documents/blocks/$(owner))

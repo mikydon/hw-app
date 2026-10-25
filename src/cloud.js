@@ -72,7 +72,7 @@ async function googleCredential() {
 const nativeSignOut = () => (native() ? Promise.race([FirebaseAuthentication.signOut().catch(() => {}), new Promise(r => setTimeout(r, 3000))]) : Promise.resolve());
 const pick = (o, keys) => Object.fromEntries(keys.filter(k => o[k] !== undefined).map(k => [k, o[k]]));
 const PROFILE_KEYS = ["nick", "pfp", "xp", "lvl", "streak", "n", "code", "global"];
-const CARD_KEYS = ["lvl", "xp", "streak", "best", "n", "reps", "min", "since", "ach", "rk", "av", "show", "prs"];
+const CARD_KEYS = ["lvl", "xp", "streak", "best", "n", "reps", "min", "since", "ach", "rk", "av", "show", "prs", "look"]; // look: 1.9.0
 async function profilesOf(uids) {
   const out = await Promise.all(uids.map(u => getDoc(d("profiles", u)).then(s => (s.exists() ? { uid: u, ...s.data() } : { uid: u, missing: true })).catch(() => ({ uid: u, missing: true }))));
   return out;
