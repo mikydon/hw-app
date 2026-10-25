@@ -19,7 +19,7 @@ Needs Android 8.0 or newer.
 **Coming from the website?** In the browser: Settings → *Save backup*. In the app: Settings → *Restore from backup*.
 
 ## Website (any phone, also iPhone)
-Open https://mikydon.github.io/hw-app/ and add it to your home screen (Android Chrome: menu ⋮ → *Install app*; iPhone Safari: Share → *Add to Home Screen*). It works offline too. Data in the website and in the Android app are separate.
+Open https://mikydon.github.io/hw-app/ and add it to your home screen (Android Chrome: menu ⋮ → *Install app*; iPhone Safari: Share → *Add to Home Screen*). It works offline too. Data in the website and in the Android app are separate, unless you sign in to the same account on both: then they stay in sync.
 
 ## What it does
 - 3 workout days (A, B, C), trained every other day: push, pull, legs and core in a circuit of 2 or 3 rounds
@@ -28,10 +28,15 @@ Open https://mikydon.github.io/hw-app/ and add it to your home screen (Android C
 - calorie calculator (Mifflin-St Jeor, like calculator.net) with lose / maintain / gain targets, workouts from the app added automatically, and a daily food log
 - birthday surprises (greeting, confetti, a free streak freeze) when you enter your birth date
 - warm-up, timers, sounds and rest breaks between exercises, with tips during the rest; optional stretching at the end (hip flexor, cobra, child's pose)
-- a drawing (yellow line = belly side), instructions and a video link for every exercise
+- a drawing (yellow line = belly side), instructions and a "how to" web search for every exercise
 - 27 exercises, each marked easier, medium or harder; when one gets easy, its tip points to the harder version and lets you swap to it
 - swap an exercise when one doesn't work for you, or turn off exercises you can't do in Settings → Exercises (the app replaces them with another of the same type)
 - XP, levels, a 🔥 streak with freezes, a rank for every exercise (Iron to Obsidian), weekly challenges and 33 badges: badges with levels, rare, epic and legendary one-off badges, and secret ones
+- an optional account (16+): friends by code or link, messages, friend streaks, a leaderboard (friends or the world top 50), a profile page others can open, and a cloud backup that keeps your phone and the website in sync
+- Muscle Deck: a poker-style card game powered by your training (higher exercise ranks make stronger cards), with a tutorial game and a picture guide
+- diamonds you earn by training, a Shop with streak freezes, XP boosts and profile looks (frames, banners, titles, name effects and profile effects), and a weekly chest for finishing all 3 weekly challenges; nothing is sold for money
+- an interactive guide that shows how the app works, and notifications for messages and new versions (Android app)
+- 8 dark themes, 6 main colours and several looks for the boxes
 - history with a calendar and a progress chart; edit or delete past workouts, or add one you did without the app
 - a new motivational line every day (a rest-day one after a workout), and cards you can close
 - backup and restore of all your data as a file
