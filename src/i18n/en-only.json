@@ -66,6 +66,22 @@
     "ui.gmTut_flushSel",
     "ui.gmTut_shop",
     "ui.gmTut_buy",
-    "ui.gmTut_end"
+    "ui.gmTut_end",
+    "ui.gmRar0",
+    "ui.gmRar1",
+    "ui.gmRar2",
+    "ui.gmRar3",
+    "ui.gmOpen",
+    "ui.gmVoucher",
+    "ui.gmVoucherD",
+    "ui.gmPackT",
+    "ui.gmPackSkip",
+    "ui.gmPackFull",
+    "ui.gmPackLv",
+    "gm.pk",
+    "gm.v",
+    "gm.j.pr",
+    "gm.j.hof",
+    "gm.j.coach"
   ]
 }

@@ -46,7 +46,7 @@ ok(s2.hand.length === 8 && s2.discardsLeft === 2 && s2.deck.length === 41, "disc
 // a shop
 let g = G.newGame({ ...opts, seed: "shop1" }); let guard = 0;
 while (g.phase === "blind" && guard++ < 20) g = G.act(g, G.botMove(g, 10));
-ok(g.phase === "shop" && g.shop.items.length === 3 && g.money > 4, `after the first blind: shop with 2 jokers + 1 drill, $${g.money}`);
+ok(g.phase === "shop" && g.shop.items.filter(x => x.k === "joker").length === 2 && g.shop.items.some(x => x.k === "drill") && g.shop.items.some(x => x.k === "pack") && g.shop.items.some(x => x.k === "voucher") && g.money > 4, `after the first blind: shop with 2 jokers, a drill, a pack and the ante's voucher, $${g.money}`);
 const g2 = G.act({ ...g, money: 50 }, { t: "buy", i: 0 });
 ok(g2.jokers.length === 1 && g2.money === 50 - g.shop.items[0].cost, "buy a joker");
 const g3 = G.act(g2, { t: "reroll" });
@@ -93,7 +93,43 @@ console.log("new jokers (1.8.0, Oct 25)");
   if (pi >= 0) { const pj = o.hand.findIndex((x, k) => k !== pi && G.valueOf(x) === G.valueOf(o.hand[pi])); o = G.act(o, { t: "play", c: [pi, pj] }); ok(o.jokers[0].v === 1, "overload grows by 1 after a hand with a pair"); }
   const t = G.newGame({ seed: "j4", mode: "run", suit: {}, deck: [C("push", 13), C("pull", 13), C("legs", 4)] });
   ok(t.hand[0] === C("push", 13) && t.hand[1] === C("pull", 13) && t.hand[2] === C("legs", 4) && new Set(t.hand).size === 8, "tutorial deck: the given cards come first");
-  ok(G.JOKER_IDS.length === 35, "35 jokers (22 + 13 new)");
+  ok(G.JOKER_IDS.length === 38, "38 jokers (22 + 13 new + 3 legendary)");
+}
+console.log("vouchers, packs, legendary jokers (1.8.0, Oct 25, 02:17)");
+{
+  let g = G.newGame({ seed: "v1", mode: "run", suit: { push: 8, pull: 8, legs: 8, core: 8 }, perk: "obsidian" });
+  while (g.phase === "blind") g = G.act(g, G.botMove(g, 10));
+  g = { ...g, money: 200 };
+  const vi = g.shop.items.findIndex(x => x.k === "voucher"), vid = g.shop.items[vi].id;
+  const rr = G.act(g, { t: "reroll" });
+  ok(rr.shop.items.find(x => x.k === "voucher").id === vid, "New doesn't change the ante's voucher");
+  let b = G.act(g, { t: "buy", i: vi });
+  ok(b.vouchers.includes(vid) && !G.act(b, { t: "reroll" }).shop.items.some(x => x.k === "voucher"), "a bought voucher is gone for the rest of the ante");
+  const m = { ...g, vouchers: ["membership", "extraset", "resttimer", "discount", "bigbag"] };
+  ok(G.jokerSlots(m) === 6, "membership: 6 joker slots");
+  const nx = G.act(m, { t: "next" });
+  ok(nx.handsLeft >= 4 + (nx.boss === "few" ? 0 : 1) && nx.discardsLeft === 4 && nx.hand.length === 9, `extraset/resttimer/bigbag: +1 hand, +1 discard, 9 cards (${nx.handsLeft}, ${nx.discardsLeft}, ${nx.hand.length})`);
+  const pi = g.shop.items.findIndex(x => x.k === "pack");
+  let pk = G.act({ ...g, shop: { ...g.shop, items: g.shop.items.map((x, i) => (i === pi ? { ...x, id: "jpack" } : x)) } }, { t: "buy", i: pi });
+  ok(pk.pack && pk.pack.id === "jpack" && pk.pack.opts.length === 3, "a Joker pack opens with 3 jokers");
+  let threw = false; try { G.act(pk, { t: "next" }); } catch (_) { threw = true; }
+  ok(threw, "nothing else until you pick or skip");
+  const got = G.act(pk, { t: "pick", i: 1 });
+  ok(got.jokers.some(j => j.id === pk.pack.opts[1]) && !got.pack, "pick: the joker is yours");
+  const dp = G.act({ ...g, shop: { ...g.shop, items: g.shop.items.map((x, i) => (i === pi ? { ...x, id: "dpack" } : x)) } }, { t: "buy", i: pi });
+  const lv = G.act(dp, { t: "pick", i: 0 });
+  ok(lv.levels[dp.pack.opts[0]] === (g.levels[dp.pack.opts[0]] || 0) + 1, "Drill pack: the picked hand goes up a level");
+  ok(!G.act(dp, { t: "skip" }).pack, "skip closes the pack");
+  const base = G.newGame({ seed: "j1", mode: "run", suit: { push: -1, pull: -1, legs: -1, core: -1 } });
+  const S = (jokers, extra = {}) => ({ ...base, jokers, ...extra });
+  ok(G.scoreOf(S([{ id: "hof", cost: 14 }]), [G.SUITS.indexOf("push") * 13 + 11, G.SUITS.indexOf("pull") * 13 + 11]).mult === 4.5, "hof: × 1.5 for each scored face card (2 × 1.5 × 1.5)");
+  ok(G.scoreOf(S([{ id: "pr", cost: 14, v: 4 }]), [C("push", 5), C("pull", 5)]).mult === 4, "pr: × 2 after 4 blinds");
+  let c = G.newGame({ seed: "j3", mode: "run", suit: {} }); c.jokers = [{ id: "coach", cost: 15 }];
+  const h0 = G.handOf([c.hand[0]]).hand; c = G.act(c, { t: "play", c: [0] });
+  ok(c.levels[h0] === 1, "coach: the played hand went up a level");
+  ok(G.JOKER_IDS.filter(j => G.JOKERS[j].r === 3).length === 3, "3 legendary jokers");
+  let tt = G.newGame({ seed: "tutorial", mode: "run", suit: {}, tut: 1, deck: G.TUT_DECK });
+  ok(tt.target === 400 && tt.hand.join() === G.TUT_DECK.slice(0, 8).join(), "tutorial: target 400, the fixed first hand");
 }
 const weak = wr(3, { push: -1, pull: -1, legs: -1, core: -1 }), strong = wr(10, { push: 6, pull: 6, legs: 6, core: 6 });
 console.log(`   run: blinds cleared on average: weak bot, no training ${weak.toFixed(1)}; strong bot, Emerald ${strong.toFixed(1)} (of 24)`);
