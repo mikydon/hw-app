@@ -28,6 +28,10 @@ console.log("profile, settings");
   ok(m.profile.name === "Michael", "the newer name wins");
   ok(m.profile.freezeDays.join() === "2026-10-02,2026-10-09" && m.profile.bdays.join() === "2026", "freeze days and birthdays are joined");
   ok(Object.keys(m.profile.skips).length === 2, "skipped days from both are kept");
+  const sa = { buys: [{ i: "x1", w: "freeze", p: 60, ts: 1 }, { i: "a2", w: "f_pixel", p: 150, ts: 5 }], chest: { "2026-10-19": { kind: "dia", n: 30, ts: 9 } } };
+  const sb = { buys: [{ i: "x1", w: "freeze", p: 60, ts: 1 }, { i: "b2", w: "boost", p: 40, ts: 6, from: 6, to: 99 }] };
+  const ms = mergeAll(base({ profile: { name: "A", shop: sa }, sync: { mod: { profile: 300 } } }), base({ profile: { name: "B", shop: sb }, sync: { mod: { profile: 100 } } }), false).profile.shop;
+  ok(ms.buys.map(b => b.i).join() === "x1,a2,b2" && ms.chest["2026-10-19"].n === 30, "1.9.0: purchases from both devices kept (the shared one once), opened chests too");
   const s = mergeAll(base({ settings: { theme: "wine", vibrate: false, hz: "60" }, sync: { mod: { settings: 1 } } }), base({ settings: { theme: "ocean", vibrate: true, hz: "max", accent: "pink" }, sync: { mod: { settings: 2 } } }), false);
   ok(s.settings.theme === "ocean" && s.settings.accent === "pink", "theme and main colour follow the account");
   ok(s.settings.vibrate === false && s.settings.hz === "60", "vibration and screen Hz stay per device");
@@ -63,6 +67,14 @@ console.log("1.7.4: opened reward cards (claim) keep the highest level from both
   ok(stable(m1.claim) === want && stable(m2.claim) === want, "max per badge / rank, either direction");
   ok(stable(mergeProfile({ name: "A" }, b, 1, 2, true).claim) === stable(b.claim), "one side without claims takes the other's");
   ok(mergeProfile({ name: "A" }, { name: "B" }, 1, 2, false).claim === undefined, "no claims on either side: nothing added");
+}
+console.log("1.8.0: claim2 (9-rank scale) merges the same way, next to the old claim");
+{
+  const a = { name: "A", claim: { a: { workouts: 3 }, r: { k1: 4 } }, claim2: { a: { workouts: 3, obsidian: 9 }, r: { k1: 3, b5: 8 } } }, b = { name: "B", claim: { a: { workouts: 4 }, r: { k1: 5 } } };
+  const m = mergeProfile(a, b, 1, 2, false);
+  ok(stable(m.claim2) === stable(a.claim2) && stable(m.claim) === stable({ a: { workouts: 4 }, r: { k1: 5 } }), "claim2 kept from the new device, the old map still merged for older app versions");
+  const m2 = mergeProfile({ name: "A", claim2: { a: {}, r: { k1: 2 } } }, { name: "B", claim2: { a: { level: 5 }, r: { k1: 7 } } }, 1, 2, false);
+  ok(stable(m2.claim2) === stable({ a: { level: 5 }, r: { k1: 7 } }), "max per key on both sides");
 }
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

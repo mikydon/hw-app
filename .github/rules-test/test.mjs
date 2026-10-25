@@ -51,7 +51,19 @@ await t("bob can't put alice there", false, () => setDoc(doc(as("bob"), "board",
 await t("bob reads the top 50", true, () => getDocs(query(collection(as("bob"), "board"), orderBy("xp", "desc"), limit(50))));
 await t("reading without a limit is refused", false, () => getDocs(collection(as("bob"), "board")));
 await t("signed-out visitor can't read it", false, () => getDocs(query(collection(as(null), "board"), limit(10))));
+await t("1.8.0: alice can't give herself a checked score (pts)", false, () => setDoc(doc(as("alice"), "board", "alice"), { ...board("Alice"), pts: 99000 }));
+await t("1.8.0: the list is ordered by the checked score", true, () => getDocs(query(collection(as("bob"), "board"), orderBy("pts", "desc"), limit(50))));
+await t("1.8.0: alice reads her own check (fair)", true, () => getDoc(doc(as("alice"), "fair", "alice")));
+await t("1.8.0: bob can't read alice's check", false, () => getDoc(doc(as("bob"), "fair", "alice")));
+await t("1.8.0: alice can't write her check (ok = approved)", false, () => setDoc(doc(as("alice"), "fair", "alice"), { ok: true }));
 await t("alice leaves it", true, () => deleteDoc(doc(as("alice"), "board", "alice")));
+console.log("1.8.0 ranked and friend streaks");
+await t("bob reads the ranked list", true, () => getDocs(query(collection(as("bob"), "ranked"), orderBy("r", "desc"), limit(50))));
+await t("alice can't set her own rating", false, () => setDoc(doc(as("alice"), "ranked", "alice"), { r: 3000 }));
+await t("nobody reads runs from the app", false, () => getDocs(query(collection(as("alice"), "runs"), limit(5))));
+await t("nobody writes runs from the app", false, () => addDoc(collection(as("alice"), "runs"), { uid: "alice", seed: "x", cleared: 9, total: 1e9 }));
+await t("alice saves her training days", true, () => setDoc(doc(as("alice"), "days", "alice"), { d: ["2026-10-20", "2026-10-22"], ts: serverTimestamp() }));
+await t("bob can't write alice's days", false, () => setDoc(doc(as("bob"), "days", "alice"), { d: [], ts: serverTimestamp() }));
 
 console.log("friend requests and friends");
 await t("bob sends alice a request", true, () => setDoc(doc(as("bob"), "inbox", "alice", "from", "bob"), { ts: serverTimestamp() }));
@@ -185,6 +197,11 @@ await t("only vis (merge) is fine", true, () => setDoc(doc(as("erin"), "cards", 
 await t("a card that is only {vis, ts} is fine (vis set before the first stats)", true, () => setDoc(doc(as("gina"), "cards", "gina"), { vis: "none", ts: serverTimestamp() }));
 await t("vis must be friends, all or none", false, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ vis: "public" })));
 await t("unknown fields are refused", false, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ pfp: "data:image/jpeg;base64,AAAA" })));
+await t("1.9.0: profile looks on the card", true, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ look: { frame: "f_pulse", bg: "b_topo", title: "t_iron", name: "n_glow", fx: "fx_snow" } })));
+await t("1.9.0: no looks ({}) is fine", true, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ look: {} })));
+await t("1.9.0: looks only frame/bg/title/name/fx", false, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ look: { hat: "x" } })));
+await t("1.9.0: a look id is a short string", false, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ look: { frame: "x".repeat(40) } })));
+await t("1.9.0: looks must be a map", false, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ look: "f_pulse" })));
 await t("level must be a whole number", false, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ lvl: "99" })));
 await t("since must be a date (YYYY-MM-DD)", false, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ since: "yesterday" })));
 await t("since may be empty (no workouts yet)", true, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ since: null })));
@@ -242,6 +259,21 @@ await t("carol deletes everything of hers", true, () => {
   b.delete(doc(db, "nicks", "carol")); b.delete(doc(db, "codes", "CCCCCC"));
   return b.commit();
 });
+
+console.log("1.8.0 friend streaks");
+await env.withSecurityRulesDisabled(async c => { const db = c.firestore(), b = writeBatch(db);
+  b.set(doc(db, "friends", "gina", "list", "hank"), { ts: serverTimestamp() }); b.set(doc(db, "friends", "hank", "list", "gina"), { ts: serverTimestamp() });
+  b.set(doc(db, "days", "hank"), { d: ["2026-10-20"], ts: serverTimestamp() }); b.set(doc(db, "days", "ivan"), { d: ["2026-10-20"], ts: serverTimestamp() }); await b.commit(); });
+await t("gina (hank's friend) reads hank's training days", true, () => getDoc(doc(as("gina"), "days", "hank")));
+await t("gina can't read ivan's days (not friends)", false, () => getDoc(doc(as("gina"), "days", "ivan")));
+await t("gina invites hank to a friend streak", true, () => setDoc(doc(as("gina"), "fstreak", "gina_hank"), { m: ["gina", "hank"], by: "gina", ok: false, start: null, ts: serverTimestamp() }));
+await t("gina can't accept her own invite", false, () => updateDoc(doc(as("gina"), "fstreak", "gina_hank"), { ok: true, start: "2026-10-25", ts: serverTimestamp() }));
+await t("ivan (not in it) can't read it", false, () => getDoc(doc(as("ivan"), "fstreak", "gina_hank")));
+await t("hank sees his friend streaks", true, () => getDocs(query(collection(as("hank"), "fstreak"), where("m", "array-contains", "hank"))));
+await t("hank accepts", true, () => updateDoc(doc(as("hank"), "fstreak", "gina_hank"), { ok: true, start: "2026-10-25", ts: serverTimestamp() }));
+await t("an accepted one can't be changed (start date)", false, () => updateDoc(doc(as("gina"), "fstreak", "gina_hank"), { start: "2020-01-01", ts: serverTimestamp() }));
+await t("ivan can't invite gina (not friends)", false, () => setDoc(doc(as("ivan"), "fstreak", "gina_ivan"), { m: ["gina", "ivan"], by: "ivan", ok: false, start: null, ts: serverTimestamp() }));
+await t("hank ends it", true, () => deleteDoc(doc(as("hank"), "fstreak", "gina_hank")));
 
 await env.cleanup();
 console.log(`\n${pass} passed, ${fail} failed`);

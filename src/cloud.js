@@ -72,7 +72,7 @@ async function googleCredential() {
 const nativeSignOut = () => (native() ? Promise.race([FirebaseAuthentication.signOut().catch(() => {}), new Promise(r => setTimeout(r, 3000))]) : Promise.resolve());
 const pick = (o, keys) => Object.fromEntries(keys.filter(k => o[k] !== undefined).map(k => [k, o[k]]));
 const PROFILE_KEYS = ["nick", "pfp", "xp", "lvl", "streak", "n", "code", "global"];
-const CARD_KEYS = ["lvl", "xp", "streak", "best", "n", "reps", "min", "since", "ach", "rk", "av", "show", "prs"];
+const CARD_KEYS = ["lvl", "xp", "streak", "best", "n", "reps", "min", "since", "ach", "rk", "av", "show", "prs", "look"]; // look: 1.9.0
 async function profilesOf(uids) {
   const out = await Promise.all(uids.map(u => getDoc(d("profiles", u)).then(s => (s.exists() ? { uid: u, ...s.data() } : { uid: u, missing: true })).catch(() => ({ uid: u, missing: true }))));
   return out;
@@ -167,17 +167,26 @@ export const impl = {
     if (key !== oldKey) { b.set(d("nicks", key), { uid: me }); b.delete(d("nicks", oldKey)); }
     await b.commit();
   },
-  // Stats and photo; the world leaderboard copy exists only while "global" is on.
+  // Stats and photo. 1.8.0: the world leaderboard entry is written by the push server from the checked cloud backup
+  // (checkBoard); the app only removes it when "global" is off.
   async saveProfile(p) {
     const me = uid(), data = { ...pick(p, PROFILE_KEYS), global: !!p.global, ts: serverTimestamp() };
-    // hidden after reports (1.7.0): the rules refuse a world entry, so the rest is saved without it
-    const hidden = p.global ? await impl.getMod().then(m => m.hidden).catch(() => false) : false;
     const b = writeBatch(db);
     b.set(d("profiles", me), data);
-    if (p.global && !hidden) b.set(d("board", me), { nick: p.nick, pfp: null, xp: p.xp, lvl: p.lvl, streak: p.streak, n: p.n, ts: serverTimestamp() });
-    else b.delete(d("board", me));
+    if (!p.global) b.delete(d("board", me));
     await b.commit();
   },
+  // 1.8.0: ask the push server to check the cloud backup and write (or hold back) the world entry. Resolves with its
+  // answer {why: ok|wait|recent|off|hidden|no-backup, n, streak, lvl, pts, flags, wait, drop}.
+  async checkBoard(today) {
+    if (!PUSH_URL || !auth || !auth.currentUser) return { why: "net" };
+    const t = await auth.currentUser.getIdToken();
+    const r = await fetch(PUSH_URL + "/notify", { method: "POST", headers: { authorization: "Bearer " + t, "content-type": "application/json" }, body: JSON.stringify({ kind: "board", today }) });
+    if (!r.ok) throw Object.assign(new Error("board " + r.status), { code: "board-" + r.status });
+    return r.json();
+  },
+  // The server's last check of my world entry (fair/{uid}), or null.
+  async getFair() { const s = await getDoc(d("fair", uid())); if (!s.exists()) return null; const v = s.data(); return { ...(v.last || {}), ok: v.ok === true }; },
   async findNick(nick) { const s = await getDoc(d("nicks", nickKey(nick))); return s.exists() ? s.data().uid : null; },
   async findCode(code) { const s = await getDoc(d("codes", cleanCode(code))); return s.exists() ? s.data().uid : null; },
   // If they already asked me, sending a request accepts theirs instead (both wanted it). Resolves "sent" | "accepted".
@@ -204,7 +213,8 @@ export const impl = {
   async decline(from) { await deleteDoc(d("inbox", uid(), "from", from)); },
   async friends() { const s = await getDocs(collection(db, "friends", uid(), "list")); return profilesOf(s.docs.map(x => x.id)); },
   async removeFriend(other) { const me = uid(), b = writeBatch(db); b.delete(d("friends", me, "list", other)); b.delete(d("friends", other, "list", me)); await b.commit(); },
-  async world(n = 50) { const s = await getDocs(query(collection(db, "board"), orderBy("xp", "desc"), limit(n))); return s.docs.map(x => ({ uid: x.id, ...x.data(), pfp: null })); },
+  // 1.8.0: ordered by the server's checked score (checked workouts, then streak); entries without one aren't listed
+  async world(n = 50) { const s = await getDocs(query(collection(db, "board"), orderBy("pts", "desc"), limit(n))); return s.docs.map(x => ({ uid: x.id, ...x.data(), pfp: null })); },
   // Live lists. Each returns a function that stops listening. Errors go to onErr (offline, rules…).
   watchRequests(cb, onErr) { return onSnapshot(collection(db, "inbox", uid(), "from"), s => profilesOf(s.docs.map(x => x.id)).then(cb), onErr); },
   watchFriends(cb, onErr) { return onSnapshot(collection(db, "friends", uid(), "list"), s => profilesOf(s.docs.map(x => x.id)).then(cb), onErr); },
@@ -287,6 +297,25 @@ export const impl = {
   async saveCard(c) { const v = { ...pick(c, CARD_KEYS), ts: serverTimestamp() }; await setDoc(d("cards", uid()), v, { mergeFields: Object.keys(v) }); },
   async setCardVis(vis) { await setDoc(d("cards", uid()), { vis, ts: serverTimestamp() }, { merge: true }); },
   async saveBlocks(list) { await setDoc(d("blocks", uid()), { b: (list || []).slice(-500), ts: serverTimestamp() }); },
+  // 1.8.0 ranked card games: the push server picks the opponent and replays the game (src/game/engine.js).
+  async rk(kind, body) {
+    if (!PUSH_URL || !auth || !auth.currentUser) throw Object.assign(new Error("no server"), { code: "unavailable" });
+    const t = await auth.currentUser.getIdToken();
+    const r = await fetch(PUSH_URL + "/notify", { method: "POST", headers: { authorization: "Bearer " + t, "content-type": "application/json" }, body: JSON.stringify({ kind, ...body }) });
+    if (!r.ok) throw Object.assign(new Error(kind + " " + r.status), { code: "unavailable" });
+    return r.json();
+  },
+  rkStart(perk) { return impl.rk("rk-start", { perk }); },
+  rkEnd(moves, give) { return impl.rk("rk-end", give ? { give: true } : { moves }); },
+  async myRanked() { const s = await getDoc(d("ranked", uid())); return s.exists() ? s.data() : null; },
+  async rankedList(n = 50) { const s = await getDocs(query(collection(db, "ranked"), orderBy("r", "desc"), limit(n))); return s.docs.map(x => { const v = x.data(); return { uid: x.id, nick: v.nick, r: v.r, w: v.w || 0, l: v.l || 0, d: v.d || 0 }; }); },
+  // 1.8.0 friend streaks: my last training days (friends read them) and the streaks (fstreak/{a_b}).
+  async saveDays(list) { await setDoc(d("days", uid()), { d: list.slice(-60), ts: serverTimestamp() }); },
+  async getDays(u) { const s = await getDoc(d("days", u)); return s.exists() ? s.data().d || [] : null; },
+  watchFStreaks(cb, onErr) { const me = uid(); return onSnapshot(query(collection(db, "fstreak"), where("m", "array-contains", me)), s => cb(s.docs.map(x => { const v = x.data(); return { id: x.id, other: v.m.find(u => u !== me), by: v.by, ok: v.ok === true, start: v.start || null }; })), onErr); },
+  async fsInvite(other) { const me = uid(), m = [me, other].sort(); await setDoc(d("fstreak", m.join("_")), { m, by: me, ok: false, start: null, ts: serverTimestamp() }); },
+  async fsAccept(other, start) { await updateDoc(d("fstreak", chatId(uid(), other)), { ok: true, start, ts: serverTimestamp() }); },
+  async fsEnd(other) { await deleteDoc(d("fstreak", chatId(uid(), other))); },
   watchBlocks(cb, onErr) { return onSnapshot(d("blocks", uid()), s => cb(s.exists() ? { b: s.data().b || [], local: s.metadata.hasPendingWrites } : null), onErr); },
   // only the chats that changed are sent; merge keeps the others
   async saveChatMem(part) { await setDoc(d("chatmem", uid()), { ...part, ts: serverTimestamp() }, { merge: true }); },
@@ -321,14 +350,18 @@ export const impl = {
       const msgs = await getDocs(collection(db, "chats", c.id, "msgs")).catch(() => ({ docs: [] }));
       for (let i = 0; i < msgs.docs.length; i += 450) { const mb = writeBatch(db); msgs.docs.slice(i, i + 450).forEach(m => mb.delete(m.ref)); await mb.commit(); }
     }
+    const fs = await getDocs(query(collection(db, "fstreak"), where("m", "array-contains", me))).catch(() => ({ docs: [] }));
     const b = writeBatch(db);
     chats.docs.forEach(c => b.delete(c.ref));
+    fs.docs.forEach(c => b.delete(c.ref)); // 1.8.0 friend streaks
+    b.delete(d("days", me));
     fr.docs.forEach(x => { b.delete(d("friends", me, "list", x.id)); b.delete(d("friends", x.id, "list", me)); });
     inbox.docs.forEach(x => b.delete(d("inbox", me, "from", x.id)));
     (p && p.sent || []).forEach(t => b.delete(d("inbox", t, "from", me)));
     if (p && p.nick) b.delete(d("nicks", nickKey(p.nick)));
     if (p && p.code) b.delete(d("codes", p.code));
     ["profiles", "board", "backups", "push", "cards", "blocks", "chatmem"].forEach(c => b.delete(d(c, me)));
+    // (fair/{uid} is the server's; it can't be deleted from the app, the developer removes leftovers)
     await b.commit();
     try { await auth.currentUser.delete(); }
     finally { await nativeSignOut(); try { await fbSignOut(auth); } catch (_) {} user = null; subs.forEach(f => f(null)); }

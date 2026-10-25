@@ -1,9 +1,13 @@
-import { useState, useEffect, useLayoutEffect, useRef, useMemo, memo, Fragment } from "react";
+import { useState, useEffect, useLayoutEffect, useRef, useMemo, useId, memo, Fragment } from "react";
 import { createPortal } from "react-dom";
 import { isNative, pushBack, setRootBack, exitApp, vibratePattern, keepScreenOn, openExternal, saveBackupFile, bkSupported, bkWrite, bkWriteAuto, bkList, bkRead, bkDelete, bkShare, BK_DIR, bkAutoFile, checkForUpdate, lastUpdate, lastGh, applyUpdateNow, latestApk, isTestBuild, apkState, onApk, apkSupported, apkRestore, apkDownload, apkCanInstall, apkAllow, apkInstall, onAppResume, healthState, healthConnect, healthSettings, healthSteps, healthFoodItems, healthBody, shareText, copyText, pushSupported, pushPermission, pushChannel, pushToken, pushTokenWhy, pushDeleteToken, onPushTap, onPushToken, onPushReceived, hzSupported, hzInfo, hzSet, isPlay, playCheck, playOpenStore, PLAY_STORE_LINK, updTopic, onAppUrl, installCheck, openNotifSettings, showNotif } from "./native.js";
 import { cloud, NICK_RE, SHARE_BASE, cleanCode, fmtCode } from "./cloud-lazy.js";
 import { QUICK as EMO_QUICK, EMOJI } from "./emoji.js";
 import { mergeAll, syncKey, withIds, entryId, stable, SYNC_SETTINGS, kcalShared } from "./sync.js";
+import { RANK_AT, EX_GROUPS } from "./ranks.js";
+import * as GM from "./game/engine.js";
+import { fairStats } from "./fair.js";
+import * as EC from "./economy.js";
 import { L, LANG, t as T, tp as TP, fmt, setLang, detectLang, LANGS, fmtLong, fmtShortDM, fmtMonthYear, weekdaysShort, capFirst } from "./i18n/index.js";
 
 // ─── DESIGN TOKENS ──────────────────────────────────────────────────────────
@@ -33,7 +37,7 @@ const THEMES = {
   slate:  { ink: "#15181d", panel: "#1f242b", panelHi: "#2a313a", line: "#3a434f", chalk: "#f1f4f8", dim: "#9aa6b4", edge: "#0e1115" },
   coffee: { ink: "#1c140f", panel: "#2a1f17", panelHi: "#382a20", line: "#4d3a2c", chalk: "#fbf3ec", dim: "#b8a291", edge: "#130d09" },
 };
-const APP_VERSION = "1.7.5";
+const APP_VERSION = "1.8.0";
 // Big Shoulders has no Cyrillic, so Oswald (also condensed) covers Ukrainian. The browser only
 // downloads the Oswald unicode ranges a page actually uses.
 // 1.7.0: 'HW Emoji' = the app's own emoji (Fluent 3D, fonts/hw-emoji.ttf) for the emoji the app shows; BODY_SYS
@@ -43,6 +47,10 @@ const APP_VERSION = "1.7.5";
 const HW_EMO = (() => { try { const u = navigator.userAgent; return !/Firefox\/|FxiOS|iPhone|iPad|iPod/.test(u) && !(/Safari\//.test(u) && !/Chrome\/|Chromium\//.test(u)) && !(/Macintosh/.test(u) && navigator.maxTouchPoints > 1); } catch (_) { return false; } })();
 const EMO_F = HW_EMO ? "'HW Emoji', " : "";
 const DISPLAY = `'Big Shoulders Display', 'Oswald', ${EMO_F}'Arial Narrow', Impact, sans-serif`;
+// 1.7.6 (Michael, Oct 24: the "g" of "Tréning" was cut off in the top bar): one-line DISPLAY texts that end in "…"
+// hide their overflow, and their tight line height leaves descenders (g, y, j, _), accents and Cyrillic glyphs
+// outside the box. INK makes the clipping box taller without moving anything (padding + the same negative margin).
+const INK = { paddingTop: ".14em", paddingBottom: ".3em", marginTop: "-.14em", marginBottom: "-.3em" };
 const BODY = `'Figtree', ${EMO_F}-apple-system, 'Segoe UI', sans-serif`;
 const BODY_SYS = "'Figtree', -apple-system, 'Segoe UI', sans-serif";
 // Chinese, Japanese and Korean glyphs are full width (the display font is condensed Latin), so a few big titles get smaller.
@@ -105,6 +113,73 @@ function melody(notes, type = "triangle", vol = 0.3, cat = "fx") {
     if (ctx.state === "suspended") ctx.resume().then(play); else play();
   } catch (_) {}
 }
+// 1.8.0 Muscle Deck sounds (Michael, Oct 25: "more addictive"): a small synth on the audio clock (one schedule per
+// sound, never chained with setTimeout): ev = {f, at, d, type, v, to (slide to this pitch), noise (a filtered noise
+// burst at f), q}. Scoring climbs: every chip step a semitone higher, multiplier steps a "zap", × steps a big sweep,
+// then a cash register; picks are pitched by the card's value. Off with the sound-effects switch like the rest.
+function synth(evs, vol = 0.22) {
+  if (setting("sndFx") === false) return;
+  vol = Math.min(1, vol * volMul());
+  try {
+    const ctx = window._wac;
+    if (!ctx) return;
+    const play = () => {
+      const t0 = ctx.currentTime + 0.02;
+      if (!window._wacNoise) { const b = ctx.createBuffer(1, ctx.sampleRate * 0.5, ctx.sampleRate), d = b.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; window._wacNoise = b; }
+      evs.forEach(e => {
+        const g = ctx.createGain(), at = t0 + (e.at || 0), d = e.d || 0.08, v = vol * (e.v ?? 1);
+        g.connect(ctx.destination);
+        g.gain.setValueAtTime(0.0001, at);
+        g.gain.exponentialRampToValueAtTime(Math.max(0.0002, v), at + Math.min(0.012, d / 3));
+        g.gain.exponentialRampToValueAtTime(0.0001, at + d);
+        if (e.noise) {
+          const n = ctx.createBufferSource(), f = ctx.createBiquadFilter();
+          n.buffer = window._wacNoise; f.type = "bandpass"; f.frequency.setValueAtTime(e.f || 2000, at); if (e.to) f.frequency.exponentialRampToValueAtTime(e.to, at + d); f.Q.value = e.q || 1.2;
+          n.connect(f); f.connect(g); n.start(at); n.stop(at + d + 0.02);
+        } else {
+          const o = ctx.createOscillator();
+          o.type = e.type || "triangle"; o.frequency.setValueAtTime(e.f, at); if (e.to) o.frequency.exponentialRampToValueAtTime(e.to, at + d * 0.8);
+          o.connect(g); o.start(at); o.stop(at + d + 0.03);
+        }
+      });
+    };
+    if (ctx.state === "suspended") ctx.resume().then(play); else play();
+  } catch (_) {}
+}
+const semi = (base, n) => base * Math.pow(2, n / 12);
+const gmSfx = {
+  // picking a card: a short pluck, higher for higher cards; putting it back: lower and softer
+  pick: (v, on) => synth(on ? [{ f: semi(392, v - 2), to: semi(392, v), d: 0.07, type: "triangle", v: 0.9 }, { f: 2600, d: 0.02, noise: 1, v: 0.25, q: 4 }] : [{ f: semi(330, v - 4), to: semi(330, v - 6), d: 0.06, type: "triangle", v: 0.6 }], 0.18),
+  // new cards: a quick riffle
+  deal: n => synth(Array.from({ length: Math.min(8, Math.max(2, n)) }, (_, k) => ({ at: k * 0.045, f: 2600 - k * 120, d: 0.05, noise: 1, v: 1, q: 0.8 })), 0.45),
+  discard: () => synth([{ f: 900, to: 3800, d: 0.22, noise: 1, v: 0.6, q: 0.9 }, { f: 520, to: 260, d: 0.16, type: "sine", v: 0.35 }], 0.22),
+  // the count: steps = the scoring steps in order; STEP = seconds between them (the animation uses the same)
+  score: (steps, STEP, big) => {
+    const ev = []; let k = 0;
+    steps.forEach((s, i) => {
+      const at = 0.25 + i * STEP;
+      if (s.x) { ev.push({ at, f: 220, to: 880, d: 0.28, type: "sawtooth", v: 0.35 }, { at, f: 330, to: 1320, d: 0.28, type: "square", v: 0.18 }, { at: at + 0.02, f: 1800, to: 6000, d: 0.25, noise: 1, v: 0.35 }); }
+      else if (s.mult) ev.push({ at, f: semi(196, k), to: semi(392, k), d: 0.12, type: "square", v: 0.32 }, { at, f: semi(587, k), d: 0.09, type: "triangle", v: 0.5 });
+      else ev.push({ at, f: semi(523, k), d: 0.07, type: "triangle", v: 0.75 }, { at, f: semi(1046, k), d: 0.04, type: "sine", v: 0.3 });
+      k++;
+    });
+    const end = 0.35 + steps.length * STEP;
+    // cash register: a bright two-note ding with a shimmer, bigger when the hand clears the blind
+    ev.push({ at: end, f: 1568, d: 0.12, type: "triangle", v: 0.8 }, { at: end + 0.09, f: 2093, d: 0.35, type: "triangle", v: 0.8 }, { at: end + 0.09, f: 5000, d: 0.3, noise: 1, v: 0.25, q: 3 });
+    if (big) ev.push({ at: end + 0.2, f: 2637, d: 0.4, type: "sine", v: 0.5 }, { at: end + 0.3, f: 3136, d: 0.5, type: "sine", v: 0.4 });
+    synth(ev, 0.2);
+  },
+  // blind beaten: a short fanfare over a bass note
+  blind: () => synth([[523, 0], [659, 0.09], [784, 0.18], [1046, 0.27], [1318, 0.36]].map(([f, at]) => ({ f, at, d: 0.16, type: "square", v: 0.32 })).concat([{ at: 0.36, f: 1046, d: 0.6, type: "triangle", v: 0.7 }, { at: 0, f: 131, d: 0.7, type: "sine", v: 0.8 }, { at: 0.36, f: 6000, d: 0.5, noise: 1, v: 0.2, q: 2 }]), 0.22),
+  lose: () => synth([{ f: 392, to: 370, d: 0.22, type: "triangle", v: 0.8 }, { at: 0.2, f: 330, to: 311, d: 0.22, type: "triangle", v: 0.8 }, { at: 0.4, f: 262, to: 196, d: 0.6, type: "triangle", v: 0.8 }, { at: 0.4, f: 98, d: 0.6, type: "sine", v: 0.6 }], 0.22),
+  // money: coins (buy = two up, sell = two down), reroll = a shuffle
+  buy: () => synth([{ f: 988, d: 0.07, type: "square", v: 0.35 }, { at: 0.07, f: 1319, d: 0.25, type: "square", v: 0.35 }, { at: 0.07, f: 7000, d: 0.2, noise: 1, v: 0.2, q: 3 }], 0.32),
+  sell: () => synth([{ f: 1319, d: 0.07, type: "square", v: 0.3 }, { at: 0.07, f: 880, d: 0.2, type: "square", v: 0.3 }], 0.32),
+  // a pack tears open: a rising swoosh and sparkles; a pick: a bright reveal (bigger for rare and legendary)
+  pack: () => synth([{ f: 400, to: 4000, d: 0.35, noise: 1, v: 0.8, q: 0.7 }, ...[0, 1, 2, 3].map(k => ({ at: 0.25 + k * 0.07, f: semi(1568, k * 4), d: 0.18, type: "triangle", v: 0.5 }))], 0.25),
+  reveal: big => synth([{ f: 784, d: 0.1, type: "triangle", v: 0.7 }, { at: 0.08, f: 1175, d: 0.14, type: "triangle", v: 0.7 }, { at: 0.16, f: 1568, d: big ? 0.6 : 0.3, type: "triangle", v: 0.8 }].concat(big ? [{ at: 0.16, f: 2349, d: 0.6, type: "sine", v: 0.5 }, { at: 0.2, f: 6000, d: 0.5, noise: 1, v: 0.3, q: 2 }] : []), 0.24),
+  reroll: () => synth(Array.from({ length: 6 }, (_, k) => ({ at: k * 0.035, f: 2400 + (k % 2) * 900, d: 0.03, noise: 1, v: 0.5, q: 3 })).concat([{ at: 0.22, f: 784, to: 1175, d: 0.12, type: "triangle", v: 0.6 }]), 0.2),
+};
 // Reward sounds come in several variants; the same one never plays twice in a row.
 // (Timer beeps above stay fixed on purpose, so you recognise them without looking.)
 const SFX = {
@@ -251,12 +326,7 @@ Object.assign(EX, {
     diff: "mid", tag: "similar", type: "reps", start: 10, unit: "",
   },
 });
-const ALT_GROUPS = [
-  ["k1", "k3", "r1", "kIncl", "kKnee", "r1e", "k3e"],
-  ["row1", "row2", "row3", "superman", "ytw"],
-  ["n1", "n2", "n7", "lunge", "bridge", "wallsit", "sbridge", "n1q"],
-  ["b5", "b2", "b4", "birddog", "hollow", "legraise", "b5l"],
-];
+const ALT_GROUPS = EX_GROUPS; // push, pull, legs, core (ranks.js since 1.8.0: the card game uses them too)
 // Same order as ALT_GROUPS; names come from the locale (grp_push…).
 const GROUP_KEYS = ["push", "pull", "legs", "core"];
 const groupOf = id => ALT_GROUPS.findIndex(g => g.includes(id));
@@ -353,7 +423,8 @@ function recomputeFlags(h) {
   h.forEach(e => {
     const top = it => Math.max(...it.res.map(numVal).filter(n => !isNaN(n)));
     const prs = e.items.filter(it => { const b = bestFor(out, it.id); return b !== null && top(it) > b; }).map(it => it.id);
-    const rankUps = e.items.map(it => { const to = rankIdx(it.id, top(it)); return to > rankIdx(it.id, bestFor(out, it.id)) ? { id: it.id, to } : null; }).filter(Boolean);
+    // 1.8.0: the first time an exercise is done counts too (from -1 to Iron, `u` = unlocked), so Iron comes as a card
+    const rankUps = e.items.map(it => { const t0 = top(it); if (!isFinite(t0)) return null; const b = bestFor(out, it.id), to = rankIdx(it.id, t0); return b === null || b === undefined ? (RANK_AT[it.id] ? { id: it.id, to, u: 1 } : null) : to > rankIdx(it.id, b) ? { id: it.id, to } : null; }).filter(Boolean);
     out.push({ ...e, prs, rankUps });
   });
   return out;
@@ -385,7 +456,7 @@ function addDays(k, n) { const d = parseKey(k); d.setDate(d.getDate() + n); retu
 
 // XP: 10 per set, 25 per personal record, 10 for full warm-up, 10 for cool-down.
 function setsIn(e) { return e.items.reduce((a, it) => a + it.res.filter(v => v !== null && v !== undefined).length, 0); }
-function xpFor(e) { return 10 * setsIn(e) + 25 * ((e.prs && e.prs.length) || 0) + (e.warm ? 10 : 0) + (e.cool ? 10 : 0); }
+function xpFor(e) { return (10 * setsIn(e) + 25 * ((e.prs && e.prs.length) || 0) + (e.warm ? 10 : 0) + (e.cool ? 10 : 0)) * (EC.boosted(e.ts, META.boosts) ? 2 : 1); } // 1.9.0: 2× while an XP boost runs
 function totalXP(h) { return h.reduce((a, e) => a + xpFor(e), 0) + challengeXP(h); }
 function levelInfo(xp) { let lvl = 1, need = 100, rest = xp; while (rest >= need) { rest -= need; lvl++; need += 50; } return { lvl, into: rest, need }; }
 // Streak for an every-other-day plan: it holds while no gap is longer than 2 days.
@@ -427,7 +498,7 @@ const CH_POOL = [
   { id: "warm", icon: "🔥", goal: 2, xp: 30, val: w => w.filter(e => e.warm).length },
   { id: "cool", icon: "🧘", goal: 2, xp: 30, val: w => w.filter(e => e.cool).length },
   { id: "push100", icon: "🦾", goal: 100, xp: 50, val: w => sumReps(w, ["k1", "k3", "r1", "kKnee", "kIncl", "r1e", "k3e"]) },
-  { id: "rank", icon: "🎖️", goal: 1, xp: 60, val: w => w.reduce((a, e) => a + ((e.rankUps && e.rankUps.length) || 0), 0) },
+  { id: "rank", icon: "🎖️", goal: 1, xp: 60, val: w => w.reduce((a, e) => a + ((e.rankUps && e.rankUps.filter(ru => !ru.u || ru.to > 0).length) || 0), 0) },
   { id: "reps300", icon: "📈", goal: 300, xp: 40, val: w => sumReps(w, null) },
   { id: "legs100", icon: "🦵", goal: 100, xp: 40, val: w => sumReps(w, ["n1", "n2", "n7", "lunge", "bridge", "sbridge", "n1q"]) },
 ];
@@ -454,6 +525,35 @@ function freezesAvailable(history) {
   const cap = 2 + (META.giftThisYear ? 1 : 0);
   return Math.max(0, Math.min(cap, earned - (META.freezeDays || []).length));
 }
+// 1.8.0 (Michael: "the freeze should apply by itself, then tell me I have none left, like Duolingo"): when the streak
+// would break (the last training or freeze day is 3+ days back), freezes are put on the missed days by themselves:
+// every second day after the last one, until the streak holds again (today can still be trained). Only when there are
+// enough freezes for the whole gap; otherwise none is spent and the streak ends. Returns the days to add, or null.
+function autoFreezeDays(history, today) {
+  const train = history.map(e => e.date), frozen = META.freezeDays || [];
+  const dates = [...new Set([...train, ...frozen])].filter(d => d < today).sort();
+  if (!dates.length || !train.length) return null;
+  const last = dates[dates.length - 1];
+  if (daysBetween(last, today) <= 2) return null; // nothing missed yet
+  if (!(streakInfo(history, last).n > 0)) return null; // there was a streak to save
+  const add = [];
+  let d = last;
+  while (daysBetween(d, today) > 2) { d = addDays(d, 2); add.push(d); }
+  if (!add.length || add.length > freezesAvailable(history)) return null;
+  return add;
+}
+// 1.8.0 friend streaks (Michael: "like Duolingo"): the shared streak counts the days on which both of you are on a
+// streak (each trained or used a freeze within the last 2 days, the every-other-day plan), back from today to the day
+// it was accepted; a day where one of you isn't breaks it (it starts again when both train). dates = "YYYY-MM-DD".
+const FS_MAX = 5;
+function friendStreak(mine, theirs, start, today) {
+  const on = (list, d) => list.some(x => x <= d && daysBetween(x, d) <= 2);
+  let n = 0, d = today;
+  while (d >= start && on(mine, d) && on(theirs, d) && n < 3660) { n++; d = addDays(d, -1); }
+  const me = mine.filter(x => x <= today).sort().pop(), they = theirs.filter(x => x <= today).sort().pop();
+  return { n, meToday: me === today, theyToday: they === today, meLast: me ? daysBetween(me, today) : 99, theyLast: they ? daysBetween(they, today) : 99 };
+}
+const myDays = (history, profile) => [...new Set([...history.map(e => e.date), ...((profile && profile.freezeDays) || [])])].sort().slice(-60);
 // Motivation (texts in the locale).
 const pick = arr => arr[Math.floor(Math.random() * arr.length)];
 // Random index 0..n-1 that differs from `not` (when there is a choice).
@@ -835,23 +935,29 @@ function ExFigure({ id }) {
 
 // ─── RANKS ──────────────────────────────────────────────────────────────────
 // Per-exercise rank from your best single set ever (strict form + tempo).
-// Thresholds = Iron, Bronze, Silver, Gold, Platinum, Diamond (names come from the locale).
-// First ranks come fast; Diamond is elite (e.g. 50 slow push-ups in one set).
+// 1.8.0 (Michael, Oct 24: "like Duolingo", no Wood, Obsidian on top): 9 ranks Iron, Bronze, Silver, Gold, Platinum,
+// Emerald, Amethyst, Diamond, Obsidian (names from the locale). Any result = Iron; the thresholds below are Bronze …
+// Obsidian. Bronze–Platinum and Diamond kept their 1.7 numbers (nobody drops), Emerald and Amethyst split the old
+// Platinum → Diamond gap, and Obsidian is a challenge feat (e.g. a 10-minute plank, 80 slow push-ups) that only very
+// well trained people reach. Every exercise has ranks (before 1.8.0 only the 12 of the program).
 const RANKS = [
-  { name: "", icon: "🪵", color: "#c08a55" },
   { name: "", icon: "⚙️", color: "#9aa5b8" },
   { name: "", icon: "🥉", color: "#e0955a" },
   { name: "", icon: "🥈", color: "#cfd8ea" },
   { name: "", icon: "🥇", color: "#ffd23f" },
   { name: "", icon: "💠", color: "#6fe3d8" },
+  { name: "", icon: "🟢", color: "#3ddc84" },
+  { name: "", icon: "🟣", color: "#b77bff" },
   { name: "", icon: "💎", color: "#9fd8ff" },
+  { name: "", icon: "⚫", color: "#ff5c8a" },
 ];
-const RANK_AT = {
-  k1: [5, 10, 18, 25, 35, 50], k3: [4, 8, 12, 18, 25, 35], r1: [4, 8, 12, 16, 22, 30],
-  row1: [6, 10, 14, 18, 24, 30], row2: [5, 8, 12, 16, 20, 28], row3: [6, 10, 14, 18, 24, 30],
-  n1: [8, 12, 18, 25, 35, 50], n2: [5, 8, 12, 16, 20, 30], n7: [4, 6, 10, 14, 18, 25],
-  b5: [20, 30, 45, 60, 90, 180], b2: [5, 8, 12, 15, 20, 30], b4: [8, 12, 16, 20, 30, 40],
-};
+const R_DIAMOND = 7, R_OBSIDIAN = 8;
+// Single badges have a rarity instead of levels (1.8.0): rare, epic, legendary = these rank colours
+const RARITY = { 4: "rare", 6: "epic", 8: "legend" };
+// RANK_AT (best set needed for Bronze … Obsidian) lives in ranks.js since 1.8.0: the push server checks the world list with it
+
+// The 12 exercises of the program (days A, B, C), for the "all Diamond" badge
+const PROGRAM_IDS = ["k1", "row1", "n1", "b5", "r1", "row2", "n2", "b2", "k3", "row3", "n7", "b4"];
 function rankIdx(id, best) {
   const at = RANK_AT[id];
   if (!at || best === null || best === undefined || isNaN(best)) return 0;
@@ -879,12 +985,12 @@ function RankLadder({ id, best }) {
   return (
     <div style={{ marginTop: 14, paddingTop: 12, borderTop: `1px solid ${C.line}` }}>
       <div style={{ fontWeight: 700, color: C.chalk, marginBottom: 8 }}>{best !== null ? T("ladderTitle", { v: `${best}${unit}` }) : T("ladderNone")}</div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 }}>
+      <div data-ladder style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6 }}>
         {RANKS.map((r, i) => (
           <div key={i} style={{ border: `1.5px solid ${i === cur ? r.color : C.line}`, background: i === cur ? `${r.color}22` : "transparent", borderRadius: 10, padding: "6px 4px", textAlign: "center", opacity: i > cur ? 0.6 : 1 }}>
             <div style={{ fontSize: 18 }}>{r.icon}</div>
             <div style={{ fontSize: 12, fontWeight: 700, color: r.color }}>{r.name}</div>
-            <div style={{ fontSize: 11, color: C.dim }}>{i === 0 ? T("rankStart") : `${at[i - 1]}${unit}+`}</div>
+            <div style={{ fontSize: 11, color: C.dim }}>{i === 0 ? T("rankStart") : `${rankVal(id, at[i - 1])}+`}</div>
           </div>
         ))}
       </div>
@@ -1059,7 +1165,7 @@ function HowTo({ id, history, onClose, onSwap }) {
       <ExFigure id={id} />
       {ex.tempo && <div style={{ background: C.panelHi, borderRadius: 12, padding: "10px 13px", marginBottom: 14, fontSize: 14 }}><b style={{ color: C.signal }}>{T("tempo")}:</b> {ex.tempo}</div>}
       <div>{ex.how}</div>
-      <div style={{ marginTop: 14, paddingTop: 12, borderTop: `1px solid ${C.line}`, color: C.chalk }}>💡 {ex.tip}</div>
+      <div style={{ marginTop: 14, paddingTop: 12, borderTop: `1px solid ${C.line}`, color: C.chalk, display: "flex", gap: 8, alignItems: "flex-start" }}><Ico n="bulb" size={19} color={C.signal} style={{ marginTop: 2 }} /><span>{ex.tip}</span></div>
       {onSwap && ex.swapTip && <button onClick={onSwap} style={{ ...ghostBtn, marginTop: 10, padding: "10px 14px", color: C.sky, borderColor: `${C.sky}88` }}>{T("swap")}</button>}
       <button data-search-howto onClick={() => { sfxTap(); searchHowTo(ex.name); }} className="b3d" style={{ ...bigBtn(C.panelHi, C.chalk), marginTop: 16, fontSize: 14, padding: 14 }}>{T("searchWeb")}</button>
       <RankLadder id={id} best={best} />
@@ -1177,28 +1283,49 @@ function totalReps(history) {
 // 1.4.0 (Michael, Oct 11): more of them: how long you train, Health Connect, early/late workouts, hours, A+B+C,
 // stretching, plank, calorie target hits, 10 000-step days. `rk` = a family with fewer steps, each step lands on a
 // chosen rank (Health Connect: Iron → Gold → Diamond). `span` = the goal is a time span (days/months/years).
+// 1.8.0: 9 levels per badge (Iron … Obsidian): the first six numbers are the 1.7 ones (so a badge keeps its number of
+// levels; the names moved up with Wood gone), Amethyst sits between the old Platinum and Diamond numbers, Diamond is
+// the old top and Obsidian a long-term feat. Single badges (`at: [1]`, `rk` = rarity) are done or not; `secret` ones
+// stay out of sight until earned.
 const ACH = [
-  { k: "workouts", icon: "🎯", at: [1, 5, 10, 25, 50, 100, 200], pl: "workouts", v: c => c.n },
-  { k: "tenure", icon: "📅", at: [7, 30, 90, 180, 365, 730, 1095], span: true, v: c => c.tenure },
-  { k: "streak", icon: "🔥", at: [3, 7, 15, 30, 60, 100, 180], pl: "days", v: c => c.bs },
-  { k: "records", icon: "📈", at: [1, 5, 10, 25, 50, 100, 200], pl: "prs", v: c => c.prs },
-  { k: "ranks", icon: "🥇", at: [1, 4, 8, 15, 25, 40, 60], v: c => c.rankSum },
-  { k: "weeks", icon: "✅", at: [1, 2, 4, 8, 12, 26, 52], pl: "weeks", v: c => c.weeks },
-  { k: "level", icon: "⭐", at: [2, 5, 10, 15, 20, 30, 50], v: c => c.lvl },
-  { k: "rounds3", icon: "💪", at: [1, 5, 10, 25, 50, 100, 200], pl: "workouts", v: c => c.r3 },
-  { k: "pushups", icon: "🦾", at: [10, 20, 30, 40, 50, 60, 75], pl: "pushups", v: c => c.push },
-  { k: "reps", icon: "📊", at: [100, 500, 1000, 2500, 5000, 10000, 25000], pl: "reps", v: c => c.reps },
-  { k: "birthday", icon: "🎂", at: [1, 2, 3, 4, 5, 7, 10], pl: "birthdays", v: c => c.bdays },
-  { k: "early", icon: "🌅", at: [1, 5, 10, 25, 50, 100, 200], pl: "workouts", v: c => c.early },
-  { k: "night", icon: "🌙", at: [1, 5, 10, 25, 50, 100, 200], pl: "workouts", v: c => c.night },
-  { k: "hours", icon: "⏱️", at: [1, 3, 6, 12, 25, 50, 100], pl: "hours", v: c => c.hours },
-  { k: "abc", icon: "🔤", at: [1, 3, 5, 10, 20, 35, 60], v: c => c.abc },
-  { k: "cool", icon: "🧘", at: [1, 5, 10, 25, 50, 100, 200], pl: "workouts", v: c => c.cool },
-  { k: "plank", icon: "🧱", at: [30, 45, 60, 90, 120, 180, 300], v: c => c.plank },
-  { k: "calories", icon: "🍽️", at: [1, 7, 14, 30, 60, 100, 200], pl: "days", v: c => c.kcalDays },
-  { k: "kcalHit", icon: "🥗", at: [1, 7, 14, 30, 60, 100, 200], pl: "days", v: c => c.kcalHits },
-  { k: "steps", icon: "👟", at: [1, 7, 14, 30, 60, 100, 200], pl: "days", v: c => c.steps10k },
-  { k: "health", icon: "❤️", at: [1, 2, 3], rk: [1, 4, 6], v: c => c.hc },
+  { k: "workouts", icon: "🎯", at: [1, 5, 10, 25, 50, 100, 150, 200, 365], pl: "workouts", v: c => c.n },
+  { k: "tenure", icon: "📅", at: [7, 30, 90, 180, 365, 730, 900, 1095, 1825], span: true, v: c => c.tenure },
+  { k: "streak", icon: "🔥", at: [3, 7, 15, 30, 60, 100, 140, 180, 365], pl: "days", v: c => c.bs },
+  { k: "records", icon: "📈", at: [1, 5, 10, 25, 50, 100, 150, 200, 365], pl: "prs", v: c => c.prs },
+  { k: "ranks", icon: "🥇", at: [1, 4, 8, 15, 25, 40, 60, 90, 140], v: c => c.rankSum },
+  { k: "weeks", icon: "✅", at: [1, 2, 4, 8, 12, 26, 39, 52, 104], pl: "weeks", v: c => c.weeks },
+  { k: "level", icon: "⭐", at: [2, 5, 10, 15, 20, 30, 40, 50, 75], v: c => c.lvl },
+  { k: "rounds3", icon: "💪", at: [1, 5, 10, 25, 50, 100, 150, 200, 365], pl: "workouts", v: c => c.r3 },
+  { k: "pushups", icon: "🦾", at: [10, 20, 30, 40, 50, 60, 68, 75, 100], pl: "pushups", v: c => c.push },
+  { k: "reps", icon: "📊", at: [100, 500, 1000, 2500, 5000, 10000, 17500, 25000, 50000], pl: "reps", v: c => c.reps },
+  { k: "birthday", icon: "🎂", at: [1, 2, 3, 4, 5, 7, 8, 10, 15], pl: "birthdays", v: c => c.bdays },
+  { k: "early", icon: "🌅", at: [1, 5, 10, 25, 50, 100, 150, 200, 365], pl: "workouts", v: c => c.early },
+  { k: "night", icon: "🌙", at: [1, 5, 10, 25, 50, 100, 150, 200, 365], pl: "workouts", v: c => c.night },
+  { k: "hours", icon: "⏱️", at: [1, 3, 6, 12, 25, 50, 75, 100, 200], pl: "hours", v: c => c.hours },
+  { k: "abc", icon: "🔤", at: [1, 3, 5, 10, 20, 35, 48, 60, 120], v: c => c.abc },
+  { k: "cool", icon: "🧘", at: [1, 5, 10, 25, 50, 100, 150, 200, 365], pl: "workouts", v: c => c.cool },
+  { k: "plank", icon: "🧱", at: [30, 45, 60, 90, 120, 180, 240, 300, 600], v: c => c.plank },
+  { k: "calories", icon: "🍽️", at: [1, 7, 14, 30, 60, 100, 150, 200, 365], pl: "days", v: c => c.kcalDays },
+  { k: "kcalHit", icon: "🥗", at: [1, 7, 14, 30, 60, 100, 150, 200, 365], pl: "days", v: c => c.kcalHits },
+  { k: "steps", icon: "👟", at: [1, 7, 14, 30, 60, 100, 150, 200, 365], pl: "days", v: c => c.steps10k },
+  // 1.7.6: one level per finished chapter of the guide (profile.tourDone): Iron … Emerald, the last one Diamond
+  { k: "guide", icon: "🧭", at: [1, 2, 3, 4, 5, 6, 7], rk: [0, 1, 2, 3, 4, 5, 7], v: c => c.guide },
+  // 1.8.0 single badges (Michael: "Health Connect doesn't need levels"; some rare, some epic, some secret)
+  { k: "health", icon: "❤️", at: [1], rk: [4], single: true, v: c => (c.hc ? 1 : 0) },
+  // 1.8.0 Muscle Deck: Runs won (any intensity), and one legendary badge for a win on the top intensity
+  { k: "deck", icon: "🃏", at: [1, 2, 3, 5, 8, 12, 20, 30, 50], pl: "runs", v: c => c.deckWins },
+  { k: "deckBeast", icon: "👑", at: [1], rk: [8], single: true, v: c => c.deckBeast },
+  { k: "allex", icon: "🧩", at: [1], rk: [6], single: true, v: c => c.allex },
+  { k: "allDiamond", icon: "💎", at: [1], rk: [8], single: true, v: c => c.allDiamond },
+  { k: "comeback", icon: "🔁", at: [1], rk: [4], single: true, secret: true, v: c => c.comeback },
+  { k: "weekend", icon: "🗓️", at: [1], rk: [4], single: true, secret: true, v: c => c.weekend },
+  { k: "marathon", icon: "🏃", at: [1], rk: [4], single: true, secret: true, v: c => c.marathon },
+  { k: "frozen", icon: "🧊", at: [1], rk: [4], single: true, secret: true, v: c => c.frozen },
+  { k: "triple", icon: "🏆", at: [1], rk: [6], single: true, secret: true, v: c => c.triple },
+  { k: "newyear", icon: "🎆", at: [1], rk: [6], single: true, secret: true, v: c => c.newyear },
+  { k: "midnight", icon: "🕛", at: [1], rk: [6], single: true, secret: true, v: c => c.midnight },
+  { k: "bdayWorkout", icon: "🎉", at: [1], rk: [6], single: true, secret: true, v: c => c.bdayW },
+  { k: "obsidian", icon: "🌋", at: [1], rk: [8], single: true, secret: true, v: c => c.obsidian },
 ];
 // Start of a workout (ts is when it was saved; dur = its length, if known).
 const startHour = e => new Date((e.ts || 0) - (e.dur || 0) * 1000).getHours();
@@ -1210,7 +1337,8 @@ function achCounts(history, extra = {}) {
     n: history.length,
     bs: bestStreak(history),
     prs: history.reduce((a, e) => a + ((e.prs && e.prs.length) || 0), 0),
-    rankSum: Object.keys(RANK_AT).reduce((a, id) => a + rankIdx(id, bestFor(history, id)), 0),
+    // 1.8.0: every exercise you've done counts its rank + 1 (Iron = 1), so nobody lost levels when Wood went away
+    rankSum: Object.keys(RANK_AT).reduce((a, id) => { const b = bestFor(history, id); return a + (b === null || b === undefined ? 0 : rankIdx(id, b) + 1); }, 0),
     weeks: [...new Set(history.map(e => weekKey(e.date)))].filter(wk => challengeStatus(history, wk).every(c => c.done)).length,
     lvl: levelInfo(totalXP(history)).lvl,
     r3: history.filter(e => e.rounds === 3).length,
@@ -1228,6 +1356,32 @@ function achCounts(history, extra = {}) {
     kcalHits: extra.kcalHits || 0,
     steps10k: extra.steps10k || 0,
     hc: extra.hc || 0,
+    guide: extra.guide || 0,
+    deckWins: extra.deckWins || 0,
+    deckBeast: extra.deckBeast || 0,
+    ...singleCounts(history, extra),
+  };
+}
+// 1.8.0: what the single badges need (1 = earned)
+function singleCounts(history, extra = {}) {
+  const dates = [...new Set(history.map(e => e.date))].sort();
+  const done = new Set(); history.forEach(e => (e.items || []).forEach(it => { if ((it.res || []).some(v => v !== null && v !== undefined && v !== "")) done.add(it.id); }));
+  const dset = new Set(dates);
+  const best = id => bestFor(history, id), has = id => { const b = best(id); return b !== null && b !== undefined; };
+  const bmd = extra.bmd || null; // "MM-DD" of the birthday (Feb 29 also counts on Feb 28)
+  const b1 = x => (x ? 1 : 0);
+  return {
+    allex: b1(Object.keys(EX).every(id => done.has(id))),
+    allDiamond: b1(PROGRAM_IDS.every(id => has(id) && rankIdx(id, best(id)) >= R_DIAMOND)),
+    comeback: b1(dates.some((d, i) => i > 0 && daysBetween(dates[i - 1], d) >= 14)),
+    weekend: b1(dates.some(d => parseKey(d).getDay() === 6 && dset.has(addDays(d, 1)))),
+    marathon: b1(history.some(e => (e.dur || 0) >= 1800)),
+    frozen: b1(extra.frozen),
+    triple: b1(history.some(e => (e.prs || []).length >= 3)),
+    newyear: b1(dates.some(d => d.slice(5) === "01-01")),
+    midnight: b1(history.some(e => e.ts && !e.manual && startHour(e) < 4)),
+    bdayW: b1(bmd && dates.some(d => d.slice(5) === bmd || (bmd === "02-29" && d.slice(5) === "02-28"))),
+    obsidian: b1(Object.keys(RANK_AT).some(id => has(id) && rankIdx(id, best(id)) >= R_OBSIDIAN)),
   };
 }
 function achievements(history, extra) {
@@ -1263,6 +1417,12 @@ function achExtra(profile, kcal, history) {
     kcalHits,
     steps10k: Object.keys(steps).filter(d => steps[d] >= 10000).length,
     hc: Math.max(hcLevel(k), k.hcBest || 0),
+    guide: tourDoneSet(profile).size,
+    // 1.8.0 Muscle Deck (Michael, Oct 25: "unranked just gives you a badge"): Runs won, and a win on Beast mode
+    deckWins: (profile && profile.game && profile.game.rw) || 0,
+    deckBeast: profile && profile.game && profile.game.topWin >= 4 ? 1 : 0,
+    bmd: profile && profile.birth && profile.birth.m && profile.birth.d ? `${String(profile.birth.m).padStart(2, "0")}-${String(profile.birth.d).padStart(2, "0")}` : null,
+    frozen: ((profile && profile.freezeDays) || []).length > 0,
   };
 }
 // Tiers that went up between two histories, for the end-of-workout summary.
@@ -1294,7 +1454,7 @@ function BdayHalo({ size, children }) {
 function Avatar({ profile, size = 38 }) {
   const initial = (profile.name || "?").trim().charAt(0).toUpperCase() || "?";
   return profile.pfp ? (
-    <img src={profile.pfp} alt={T("photoAlt")} style={{ width: size, height: size, borderRadius: 99, objectFit: "cover", display: "block", border: `2px solid ${C.signal}` }} />
+    <img src={profile.pfp} alt={T("photoAlt")} style={{ width: size, height: size, boxSizing: "border-box", borderRadius: 99, objectFit: "cover", display: "block", border: `2px solid ${C.signal}` }} />
   ) : (
     <div aria-hidden="true" style={{ width: size, height: size, borderRadius: 99, background: C.signal, color: C.signalInk, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: DISPLAY, fontWeight: 900, fontSize: size * 0.55 }}>{initial}</div>
   );
@@ -1647,8 +1807,8 @@ function StatTile({ label, value, icon, color, sub, children, data, compact }) {
 // ─── TOP BAR + MENU ─────────────────────────────────────────────────────────
 // Screens: train (home), calories, history, profile, friends (1.5.0), settings. One menu button (☰) top right
 // opens a drawer with all of them; there is no bottom tab bar any more (v1.4.0).
-const SCREENS = ["train", "calories", "history", "profile", "friends", "settings"];
-const SCREEN_TITLE = { train: "tabTrain", calories: "tabCalories", history: "tabHistory", profile: "tabProfile", friends: "tabFriends", settings: "tabSettings" };
+const SCREENS = ["train", "calories", "history", "profile", "friends", "game", "shop", "settings"];
+const SCREEN_TITLE = { train: "tabTrain", calories: "tabCalories", history: "tabHistory", profile: "tabProfile", friends: "tabFriends", game: "tabGame", shop: "tabShop", settings: "tabSettings" };
 
 function MenuButton({ open, onClick, btnRef, label, badge }) {
   const bar = (y, rot) => ({ position: "absolute", left: 11, width: 20, height: 2.6, borderRadius: 2, background: C.chalk, top: open ? 20 : y, transform: open ? `rotate(${rot}deg)` : "none", transition: `top ${MO.t1} ${MO.ease}, transform ${MO.t1} ${MO.ease}, opacity ${MO.t1}` });
@@ -1711,7 +1871,7 @@ function AboutBox({ gh: gh0, dl, onNews, apk, busy }) {
       {status && <div style={{ padding: "10px 0", borderTop: `1px solid ${C.line}` }}>{status}</div>}
       {!isNative && (
         <button onClick={() => { sfxTap(); openExternal("https://github.com/mikydon/hw-app/releases/latest"); }} data-get-android style={{ ...row, color: C.mint, fontSize: 13, fontWeight: 800 }}>
-          <span style={{ flex: 1 }}>{T("getAndroid")}</span><Arrow />
+          <Ico n="phone" size={18} /><span style={{ flex: 1 }}>{T("getAndroid").replace(/^📱\s*/, "")}</span><Arrow />
         </button>
       )}
     </div>
@@ -1887,14 +2047,14 @@ function TopBar({ screen, history, menuOpen, onMenu, onGo, dlPct, badge, head, s
         <div data-topbar-box className="tbBox">
         {head ? head : <>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div key={screen} className="titleIn" style={{ fontFamily: DISPLAY, fontSize: CJK.test(T(SCREEN_TITLE[screen])) ? 21 : 24, fontWeight: 900, lineHeight: 1.05, color: C.chalk, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{T(SCREEN_TITLE[screen])}</div>
+          <div key={screen} className="titleIn" style={{ fontFamily: DISPLAY, fontSize: CJK.test(T(SCREEN_TITLE[screen])) ? 21 : 24, fontWeight: 900, lineHeight: 1.05, color: C.chalk, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" , ...INK }}>{T(SCREEN_TITLE[screen])}</div>
           <div style={{ display: "flex", gap: 5, fontSize: 12, color: bdayToday() ? C.signal : C.dim, fontWeight: bdayToday() ? 800 : 400, marginTop: 2, whiteSpace: "nowrap" }}>
             <span ref={dateRef} data-top-date={dl} style={{ overflow: "hidden", textOverflow: "ellipsis", minWidth: 0 }}>{bdayToday() ? T("bdayTop") : dateText}</span>
             <span data-clock style={{ flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>· {now.toLocaleTimeString(LANG, { hour: "2-digit", minute: "2-digit" })}</span>
           </div>
         </div>
         <button onClick={() => onGo && onGo("profile")} data-chip="streak" style={{ ...btnBase, ...chip(st.n ? "#ffa94d" : C.dim), ...pill }} aria-label={T("streakAria", { n: st.n })}><span className={st.n ? "wiggle" : ""}>🔥</span>{st.n}</button>
-        <button onClick={() => onGo && onGo("profile")} data-chip="level" style={{ ...btnBase, ...chip(C.sky), ...pill }} aria-label={T("levelAria", { n: lv.lvl })}>⚡{lv.lvl}</button>
+        <button onClick={() => onGo && onGo("profile")} data-chip="level" style={{ ...btnBase, ...chip(C.sky), ...pill, position: "relative" }} aria-label={T("levelAria", { n: lv.lvl })}>⚡{lv.lvl}{EC.boostUntil(META.boosts) > Date.now() && <span data-chip-boost aria-hidden="true" style={{ position: "absolute", top: -6, right: -6, fontFamily: BODY, fontSize: 9.5, fontWeight: 900, lineHeight: 1, color: C.signalInk, background: C.signal, borderRadius: 99, padding: "2px 4px" }}>2×</span>}</button>
         {!side && <MenuButton open={menuOpen} onClick={onMenu} badge={badge} />}
         </>}
         {typeof prog === "number" && <div data-top-prog={Math.round(prog)} role="progressbar" aria-valuenow={Math.round(prog)} aria-valuemin={0} aria-valuemax={100} style={{ position: "absolute", left: 18, bottom: 4, height: 3, width: `calc((100% - 36px) * ${Math.max(2, Math.min(100, prog)) / 100})`, background: C.sky, borderRadius: 3, transition: "width .3s", boxShadow: `0 0 8px ${C.sky}` }} />}
@@ -1904,6 +2064,38 @@ function TopBar({ screen, history, menuOpen, onMenu, onGo, dlPct, badge, head, s
   );
 }
 
+// 1.9.0 (Michael, Oct 25: "own icons that react to the theme, on almost everything where it makes sense"): one line set on
+// the menu icons' 24-point grid, 2-point round strokes, colour = currentColor (the theme's quiet colour, the main colour
+// when active). Rewards (badges, ranks, cards, the flame/bolt chips) keep their 3D emoji.
+const ICONS = {
+  gear: '<circle cx="12" cy="12" r="3.2"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7"/><circle cx="12" cy="12" r="6.6"/>',
+  bulb: '<path d="M9 17.5h6M10 21h4M12 3a6 6 0 0 0-3.6 10.8c.6.5 1 1.2 1 2V16h5.2v-.2c0-.8.4-1.5 1-2A6 6 0 0 0 12 3z"/>',
+  compass: '<circle cx="12" cy="12" r="8.5"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/>',
+  lock: '<rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/>',
+  pencil: '<path d="M4 20l1-4.2L15.6 5.2a2 2 0 0 1 2.8 0l.4.4a2 2 0 0 1 0 2.8L8.2 19z"/><path d="M13.5 7.3l3.2 3.2"/>',
+  help: '<circle cx="12" cy="12" r="8.5"/><path d="M9.6 9.6a2.5 2.5 0 1 1 3.4 2.3c-.6.3-1 .8-1 1.5v.6M12 16.8v.2"/>',
+  phone: '<rect x="6.5" y="3" width="11" height="18" rx="2.5"/><path d="M10.5 18h3"/>',
+  download: '<path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19.5h14"/>',
+  alert: '<path d="M12 4 2.8 19.5h18.4z"/><path d="M12 10v4.2M12 16.8v.2"/>',
+  check: '<circle cx="12" cy="12" r="8.5"/><path d="M8.2 12.3l2.6 2.6 5-5.2"/>',
+  snow: '<path d="M12 3v18M4.2 7.5l15.6 9M4.2 16.5l15.6-9"/><path d="M9.5 4.5 12 6.5l2.5-2M9.5 19.5 12 17.5l2.5 2"/>',
+  cap: '<path d="M2.5 9 12 5l9.5 4L12 13z"/><path d="M6.5 10.9V15c1.6 1.5 3.4 2.2 5.5 2.2s3.9-.7 5.5-2.2v-4.1M21.5 9v5"/>',
+  diamond: '<path d="M7 4h10l4 5-9 11L3 9z"/><path d="M3 9h18M9.5 4 12 9l2.5-5M12 9v11"/>',
+  bag: '<path d="M5 8h14l-1.2 12H6.2z"/><path d="M9 10V7a3 3 0 0 1 6 0v3"/>',
+  chest: '<path d="M4 11h16v8H4z"/><path d="M4 11V9.5A3.5 3.5 0 0 1 7.5 6h9A3.5 3.5 0 0 1 20 9.5V11"/><path d="M10.5 11v3h3v-3"/>',
+  boost: '<path d="M13 3 5 13.5h6L10 21l8-10.5h-6z"/>',
+  frame: '<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="10.5" r="3"/><path d="M6.8 18.2c1.2-2.2 3-3.2 5.2-3.2s4 1 5.2 3.2"/>',
+  sparkle: '<path d="M11 3.5l1.7 4.8 4.8 1.7-4.8 1.7L11 16.5l-1.7-4.8L4.5 10l4.8-1.7z"/><path d="M18 14.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z"/>',
+  timer: '<circle cx="12" cy="13.5" r="7.5"/><path d="M12 9.5v4l2.6 2.6M10 2.5h4"/>',
+  ticket: '<path d="M4 7h16v3a2 2 0 0 0 0 4v3H4v-3a2 2 0 0 0 0-4z"/><path d="M14.5 7.5v1.5M14.5 11v2M14.5 15v1.5"/>',
+};
+// size in px; tone = colour (default: inherit). An Ico inside a tinted square: IcoBox.
+function Ico({ n, size = 22, color, sw = 2, style }) {
+  return <svg data-ico={n} viewBox="0 0 24 24" width={size} height={size} aria-hidden="true" style={{ flexShrink: 0, display: "block", fill: "none", stroke: color || "currentColor", strokeWidth: sw, strokeLinecap: "round", strokeLinejoin: "round", ...style }} dangerouslySetInnerHTML={{ __html: ICONS[n] || "" }} />;
+}
+function IcoBox({ n, color = C.signal, size = 40 }) {
+  return <span aria-hidden="true" style={{ width: size, height: size, borderRadius: Math.round(size * 0.3), background: `${color}1f`, color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Ico n={n} size={Math.round(size * 0.58)} /></span>;
+}
 function TabIcon({ name, active }) {
   const c = active ? C.signal : C.dim;
   const s = { fill: "none", stroke: c, strokeWidth: 2.2, strokeLinecap: "round", strokeLinejoin: "round" };
@@ -1911,12 +2103,15 @@ function TabIcon({ name, active }) {
   if (name === "history") return <svg width="26" height="26" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="3" {...s} /><path d="M3.5 10h17M8 3v4M16 3v4" {...s} /><circle cx="12" cy="15" r="1.6" fill={c} stroke="none" /></svg>;
   if (name === "calories") return <svg width="26" height="26" viewBox="0 0 24 24"><path d="M12 21c-4 0-6.5-2.7-6.5-6.3 0-3.2 2.2-5.4 3.6-7.6.6 1.6 1.4 2.6 2.5 3.1C12 7 13 4.7 14.6 3c.6 2.9 3.9 5.6 3.9 10.2 0 4.4-2.6 7.8-6.5 7.8z" {...s} /></svg>;
   if (name === "friends") return <svg width="26" height="26" viewBox="0 0 24 24"><circle cx="9" cy="8.5" r="3.4" {...s} /><path d="M2.8 19.5c.9-3.1 3.2-4.8 6.2-4.8s5.3 1.7 6.2 4.8" {...s} /><circle cx="16.6" cy="9.3" r="2.7" {...s} /><path d="M16.4 14.6c2.4.1 4.1 1.6 4.8 4.2" {...s} /></svg>;
+  if (name === "shop") return <svg width="26" height="26" viewBox="0 0 24 24" dangerouslySetInnerHTML={{ __html: ICONS.bag.replace(/<path /g, `<path fill="none" stroke="${c}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" `) }} />;
+  // 1.8.0 Muscle Deck: two fanned cards with a suit (Michael: not the same icon as Settings)
+  if (name === "game") return <svg width="26" height="26" viewBox="0 0 24 24"><rect x="8.5" y="3" width="11.5" height="16" rx="2.2" {...s} /><path d="M8.5 6.6 5.4 7.4a1.9 1.9 0 0 0-1.3 2.3l2.7 10a1.9 1.9 0 0 0 2.3 1.3l4.6-1.3" {...s} /><path d="M14.25 7.4l2.6 3.6-2.6 3.6-2.6-3.6z" fill={c} stroke="none" /></svg>;
   if (name === "profile") return <svg width="26" height="26" viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="4" {...s} /><path d="M4.5 20.5c1.2-3.6 4-5.5 7.5-5.5s6.3 1.9 7.5 5.5" {...s} /></svg>;
   return <svg width="26" height="26" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2" {...s} /><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7" {...s} /><circle cx="12" cy="12" r="6.6" {...s} /></svg>;
 }
 
 // Slide-in drawer from the right with everything in the app. Rendered into <body> (like Sheet).
-function MenuDrawer({ open, screen, history, profile, session, onGo, onResume, onClose, onNews, gh, dl, badge, apk, busy, claimN }) {
+function MenuDrawer({ open, screen, history, profile, session, onGo, onResume, onClose, onNews, gh, dl, badge, apk, busy, claimN, chestN, onTour, tourN }) {
   const [shown, setShown] = useState(open);
   useEffect(() => { if (open) setShown(true); else { const t = setTimeout(() => setShown(false), 260); return () => clearTimeout(t); } }, [open]);
   const closeRef = useRef(null);
@@ -1940,7 +2135,7 @@ function MenuDrawer({ open, screen, history, profile, session, onGo, onResume, o
           <div style={{ fontFamily: DISPLAY, fontSize: 15, fontWeight: 800, color: C.dim, letterSpacing: 1 }}>HW APP</div>
           <MenuButton open={true} onClick={onClose} btnRef={closeRef} />
         </div>
-        <MenuBody screen={screen} history={history} profile={profile} session={session} onGo={onGo} onResume={onResume} onNews={onNews} gh={gh} dl={dl} badge={badge} apk={apk} busy={busy} claimN={claimN} />
+        <MenuBody screen={screen} history={history} profile={profile} session={session} onGo={onGo} onResume={onResume} onNews={onNews} gh={gh} dl={dl} badge={badge} apk={apk} busy={busy} claimN={claimN} chestN={chestN} onTour={onTour} tourN={tourN} />
       </nav>
     </div>,
     document.body
@@ -1949,17 +2144,17 @@ function MenuDrawer({ open, screen, history, profile, session, onGo, onResume, o
 
 // What the menu holds (profile, back to the workout, the screens, about): in the ☰ drawer, or on a wide screen in the
 // side panel that stays open (1.7.0).
-function MenuBody({ screen, history, profile, session, onGo, onResume, onNews, gh, dl, badge, apk, busy, claimN = 0 }) {
+function MenuBody({ screen, history, profile, session, onGo, onResume, onNews, gh, dl, badge, apk, busy, claimN = 0, chestN = 0, onTour, tourN = 0 }) {
   const lv = levelInfo(totalXP(history));
   const st = streakInfo(history, dateKey());
   const kcs = kcalNow(history);
-  const items = SCREENS.map(id => ({ id, label: T(SCREEN_TITLE[id]), desc: id === "calories" && kcs ? T("kcMenu", { e: nf(kcs.eaten), t: nf(kcs.target) }) : id === "friends" && badge ? T("frMenuNew", { n: badge }) : id === "profile" && claimN ? TP("claimN", claimN) : T("menuD_" + id), badge: id === "friends" ? badge : id === "profile" ? claimN : 0 }));
+  const items = SCREENS.map(id => ({ id, label: T(SCREEN_TITLE[id]), desc: id === "calories" && kcs ? T("kcMenu", { e: nf(kcs.eaten), t: nf(kcs.target) }) : id === "friends" && badge ? T("frMenuNew", { n: badge }) : id === "profile" && claimN ? TP("claimN", claimN) : id === "shop" && chestN ? TP("shChestN", chestN) : T("menuD_" + id), badge: id === "friends" ? badge : id === "profile" ? claimN : id === "shop" ? chestN : 0 }));
   return (
     <>
           <button onClick={() => onGo("profile")} className="drawerItem" style={{ ...btnBase, "--i": 0, display: "flex", alignItems: "center", gap: 12, margin: "8px 14px 6px", padding: "12px", borderRadius: 18, background: C.panel, border: `1px solid ${C.line}`, color: C.chalk, textAlign: "left", ...(LOOK === "liquid" ? { ...LIQUID_PILL(), borderRadius: 20 } : {}) }}>
             <BdayHalo size={52}><Avatar profile={profile} size={52} /></BdayHalo>
             <div style={{ minWidth: 0 }}>
-              <div style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, lineHeight: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{profile.name || T("defaultName")}</div>
+              <div style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, lineHeight: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" , ...INK }}>{profile.name || T("defaultName")}</div>
               <div style={{ fontSize: 13, color: C.dim, marginTop: 4 }}><span style={{ color: C.sky, fontWeight: 800 }}>⚡ {lv.lvl}</span> · <span style={{ color: "#ffa94d", fontWeight: 800 }}>🔥 {st.n}</span></div>
             </div>
           </button>
@@ -1984,6 +2179,17 @@ function MenuBody({ screen, history, profile, session, onGo, onResume, onNews, g
               );
             })}
           </div>
+          {onTour && (
+            <button type="button" data-tour-open onClick={() => { sfxTap(); onTour(); }} className="drawerItem"
+              style={{ ...btnBase, "--i": items.length + 2, display: "flex", alignItems: "center", gap: 14, margin: "0 14px 12px", padding: "10px 14px", borderRadius: 18, background: C.panel, border: `1px solid ${C.line}`, color: C.chalk, textAlign: "left", ...(LOOK === "liquid" ? { ...LIQUID_PILL(), borderRadius: 20 } : {}) }}>
+              <span aria-hidden="true" style={{ width: 40, height: 40, borderRadius: 12, background: LOOK === "liquid" ? "rgba(255,255,255,.08)" : C.panelHi, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: C.signal }}><Ico n="compass" size={23} /></span>
+              <span style={{ flex: 1, minWidth: 0 }}>
+                <span style={{ display: "block", fontSize: 16, fontWeight: 800 }}>{T("tourTitle")}</span>
+                <span style={{ display: "block", fontSize: 12, fontWeight: 500, color: C.dim, marginTop: 1 }}>{T("tourMenuD", { n: tourN, t: TOUR_N })}</span>
+              </span>
+              <Arrow />
+            </button>
+          )}
           <AboutBox gh={gh} dl={dl} onNews={onNews} apk={apk} busy={busy} />
     </>
   );
@@ -2014,6 +2220,9 @@ function MiniPlayer({ session, live, onOpen }) {
     const nxt = seq[session.rest.nextPos];
     big = secsLeft(session.rest.endAt); total = session.rest.total; color = C.sky;
     label = T("miniRest", { name: EX[nxt.id].name });
+  } else if (session.phase === "work" && live && live.kind === "up" && live.from) {
+    big = Math.max(0, Math.floor((Date.now() - live.from) / 1000)); total = null; color = C.chalk;
+    label = T("miniHold", { name: EX[cur.id].name });
   } else if (session.phase === "work" && live && (live.kind === "hold" || live.kind === "prep") && live.endAt) {
     big = secsLeft(live.endAt); total = live.total; color = live.kind === "hold" ? C.chalk : C.signal;
     label = live.kind === "hold" ? T("miniHold", { name: EX[cur.id].name }) : T("miniPrep", { name: EX[cur.id].name });
@@ -2336,7 +2545,7 @@ function ApkUpdateCard({ info, busy, onClose, inMenu }) {
   return (
     <div data-apk-update={s.kind} className="titleIn" style={inMenu ? { position: "relative" } : { ...card, position: "relative", padding: "14px 40px 14px 16px", marginBottom: 14, borderColor: `${col}99` }}>
       <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
-        <span style={{ fontSize: 26, lineHeight: 1.1 }}>{s.kind === "ready" ? "✅" : s.kind === "downloading" ? "⬇️" : s.kind === "error" ? "⚠️" : "📲"}</span>
+        <IcoBox n={s.kind === "ready" ? "check" : s.kind === "downloading" ? "download" : s.kind === "error" ? "alert" : "phone"} color={s.kind === "error" ? "#ff7a7a" : s.kind === "ready" ? C.mint : C.signal} />
         <div style={{ minWidth: 0, flex: 1 }}>
           <div style={{ fontSize: 15, fontWeight: 800, color: C.chalk }}>
             {s.kind === "downloading" ? T("apkDl", { v: info.version }) : s.kind === "ready" ? T("apkReady", { v: info.version }) : s.kind === "error" ? T("apkErr") : T("apkUpdTitle", { v: info.version })}
@@ -2390,7 +2599,7 @@ function HintCard({ ui, setUi, onGo }) {
   return (
     <div data-hint={h.k} style={{ ...card, position: "relative", padding: "12px 40px 12px 14px", marginTop: 14, display: "flex", gap: 10, alignItems: "flex-start", borderColor: `${C.sky}66` }}>
       <CloseX onClick={() => setUi({ ...ui, hintHidden: today })} />
-      <div style={{ fontSize: 20, lineHeight: 1.2 }}>💡</div>
+      <Ico n="bulb" size={22} color={C.signal} />
       <div style={{ minWidth: 0 }}>
         <div style={{ fontSize: 12, fontWeight: 800, color: C.sky }}>{T("hintTitle")}</div>
         <div style={{ fontSize: 14, color: C.chalk, lineHeight: 1.45, marginTop: 2 }}>{T("hint_" + h.k)}</div>
@@ -2464,7 +2673,7 @@ function UpdateBanner({ dl, busy, onClose }) {
     const pct = Math.max(0, Math.min(100, Math.round(dl.pct || 0)));
     return (
       <div data-dl="downloading" role="status" style={{ ...card, padding: "11px 14px", marginBottom: 12, borderColor: `${C.sky}88` }}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: C.chalk }}>⬇️ {T("updDownloading", { v: dl.v })}</div>
+        <div style={{ fontSize: 13, fontWeight: 700, color: C.chalk, display: "flex", gap: 6, alignItems: "center" }}><Ico n="download" size={16} color={C.signal} />{T("updDownloading", { v: dl.v })}</div>
         <div style={{ height: 6, borderRadius: 99, background: C.panelHi, marginTop: 8, overflow: "hidden" }}><div data-dl-pct={pct} style={{ width: `${Math.max(4, pct)}%`, height: "100%", background: C.sky, borderRadius: 99, transition: "width .3s" }} /></div>
       </div>
     );
@@ -2835,7 +3044,7 @@ function SetupCard({ profile, kcal, onFix, onClose }) {
   return (
     <div data-setup-card style={{ ...card, padding: "12px 14px", marginBottom: 12, borderColor: `${C.signal}88`, display: "flex", alignItems: "center", gap: 10 }}>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 14, fontWeight: 800, color: C.signal }}>⚙️ {T("setupTitle")}</div>
+        <div style={{ fontSize: 14, fontWeight: 800, color: C.signal, display: "flex", gap: 6, alignItems: "center" }}><Ico n="gear" size={17} />{T("setupTitle")}</div>
         {lines.map((l, i) => <div key={i} style={{ fontSize: 12, color: C.chalk, lineHeight: 1.45, marginTop: 3 }}>{l}</div>)}
       </div>
       <button data-setup-fix onClick={() => { sfxTap(); onFix(step); }} style={{ ...btnBase, background: C.signal, color: C.signalInk, padding: "8px 12px", fontSize: 13, flexShrink: 0 }}>{T("setupFix")}</button>
@@ -2963,7 +3172,7 @@ function usePager(name, n, lay) {
   return { page, goPage, tabs, pagerProps, pageProps, wide };
 }
 
-function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, profile, onGo, upd, apk, kcal, setKcal, dl, onDlClose, onSetup, settings, setSettings }) {
+function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, profile, onGo, upd, apk, kcal, setKcal, dl, onDlClose, onSetup, settings, setSettings, tourOffer }) {
   const today = dateKey();
   // Make sure today's daily line and the "done" card texts are picked (and saved) before painting.
   useLayoutEffect(() => { const n = uiForToday(ui, history, today, profile); if (n !== ui) setUi(n); });
@@ -3024,6 +3233,9 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
     profile && bdayToday() && ui.bdayHidden !== today && "bday",
     showDone && "done",
     upd && "upd",
+    ui.autoFz && ui.autoFz.day === today && ui.autoFzHidden !== ui.autoFz.day && "autofz",
+    onGo && profile && ui.chestHidden !== weekKey(today) && readyChests(history, profile).length > 0 && "chest", // 1.9.0
+    tourOffer && "tour",
     history.length === 0 && !ui.welcomeHidden && "welcome", // a new user first sees what the app is, then what is missing
     profile && !(ui && ui.setupHidden) && (() => { const m = missingSetup(profile, kcal); return m.name || m.kcal.length || m.goal; })() && "setup",
     hint && onGo && "hint",
@@ -3092,7 +3304,7 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
   );
 
   const weekCard = (
-    <Sect title={T("secWeek")} style={{ marginTop: 0 }} meta={<span data-week-count style={{ color: weekCount ? C.mint : C.dim, fontWeight: 800 }}>{weekCount} / 3–4</span>} accent={C.mint}>
+    <Sect data-home-week title={T("secWeek")} style={{ marginTop: 0 }} meta={<span data-week-count style={{ color: weekCount ? C.mint : C.dim, fontWeight: 800 }}>{weekCount} / 3–4</span>} accent={C.mint}>
       <div style={{ display: "flex", gap: 6 }} aria-label={T("weekLine", { count: TP("workouts", weekCount) })}>
         {week.map(w => (
           <button key={w.k} data-week-day={w.k} data-week-kc={w.kc || "none"} onClick={() => onGo && onGo("history", w.on ? { edit: w.k } : null)} aria-label={`${w.lb} ${fmtDate(w.k)}${w.on ? " ✓" : ""}`}
@@ -3131,6 +3343,29 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
           <div style={{ fontSize: 12, color: C.dim, marginTop: 3, lineHeight: 1.45, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{last.items.map(it => `${exName(it)} ${it.res.map(r => fmtRes(r, "")).join("/")}`).join(", ")}</div>
         </div>
       </>, () => setUi({ ...ui, doneHiddenTs: lastTs }), { "data-done-card": 1 })}
+      {notice === "autofz" && ntBox("autofz", C.sky, <>
+        <IcoBox n="snow" color={C.sky} />
+        <div style={{ minWidth: 0 }}>
+          <div style={{ fontSize: 15, fontWeight: 800, color: C.chalk }}>{TP("autoFzT", ui.autoFz.used)}</div>
+          <div data-autofz-left={ui.autoFz.left} style={{ fontSize: 13, color: ui.autoFz.left ? C.dim : C.signal, fontWeight: ui.autoFz.left ? 400 : 700, lineHeight: 1.45, marginTop: 2 }}>{ui.autoFz.left ? TP("autoFzLeft", ui.autoFz.left) : T("autoFzNone")}</div>
+        </div>
+      </>, () => setUi({ ...ui, autoFzHidden: ui.autoFz.day }), { "data-autofz": ui.autoFz.used })}
+      {notice === "chest" && ntBox("chest", C.signal, <>
+        <span className="chBob" style={{ flexShrink: 0 }}><ChestArt size={44} /></span>
+        <div style={{ minWidth: 0 }}>
+          <div style={{ fontSize: 15, fontWeight: 800, color: C.chalk }}>{T("shChestReady")}</div>
+          <div style={{ fontSize: 13, color: C.dim, lineHeight: 1.45, marginTop: 2 }}>{T("shChestD")}</div>
+          <button type="button" data-chest-go onClick={() => { sfxTap(); onGo("shop"); }} style={{ ...btnBase, marginTop: 9, background: C.signal, color: C.signalInk, padding: "9px 15px", fontSize: 14 }}>{T("shChestGo")}</button>
+        </div>
+      </>, () => setUi({ ...ui, chestHidden: weekKey(today) }), { "data-chest-notice": 1 })}
+      {notice === "tour" && ntBox("tour", C.signal, <>
+        <IcoBox n="compass" />
+        <div style={{ minWidth: 0 }}>
+          <div style={{ fontSize: 15, fontWeight: 800, color: C.chalk }}>{T("tourOfferT")}</div>
+          <div style={{ fontSize: 13, color: C.dim, lineHeight: 1.45, marginTop: 2 }}>{T("tourOfferD")}</div>
+          <button type="button" data-tour-offer-go onClick={() => { sfxTap(); tourOffer.start(); }} style={{ ...btnBase, marginTop: 9, background: C.signal, color: C.signalInk, padding: "9px 15px", fontSize: 14 }}>{T("tourStart")}</button>
+        </div>
+      </>, () => tourOffer.close(), { "data-tour-offer": 1 })}
       {notice === "welcome" && (
         <div style={{ ...card, position: "relative", padding: "15px 16px", marginBottom: 12, borderColor: C.signal }}>
           <CloseX onClick={() => setUi({ ...ui, welcomeHidden: true })} />
@@ -3152,7 +3387,7 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
         </div>
       )}
       {notice === "hint" && ntBox("hint", C.sky, <>
-        <div aria-hidden="true" style={{ fontSize: 19, lineHeight: 1, flexShrink: 0 }}>💡</div>
+        <IcoBox n="bulb" size={34} />
         <div style={{ minWidth: 0, fontSize: 14, color: C.chalk, lineHeight: 1.4 }}>
           {T("hint_" + hint.k)}
           {hint.go && <button onClick={() => { setUi({ ...ui, hintHidden: today }); onGo(hint.go); }} style={{ ...btnBase, display: "inline", background: "transparent", color: C.sky, padding: "0 0 0 6px", fontSize: 13, whiteSpace: "nowrap" }}>{T("hintGo")} <Arrow size="1.25em" style={{ verticalAlign: "-0.08em" }} /></button>}
@@ -3183,7 +3418,7 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
               const b = bestFor(history, id);
               const n = rankNext(id, b);
               return (
-                <button key={id} onClick={() => setHowEx(id)}
+                <button key={id} onClick={() => setHowEx(id)} data-home-ex={i}
                   style={{ ...btnBase, display: "flex", width: "100%", alignItems: "center", gap: 12, textAlign: "left", background: "transparent", color: C.chalk, padding: "14px 16px", borderRadius: 0, borderTop: i ? `1px solid ${C.line}` : "none" }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 16, fontWeight: 700 }}>{ex.name}<ExQ id={id} onOpen={() => setHowEx(id)} /></div>
@@ -4343,7 +4578,7 @@ const PF_STATS = ["n", "reps", "min", "best", "prs", "xp", "since"];
 const SLOT_KINDS = ["rk", "rk3", "ach", "ach3", "st"];
 // the level badge's colour follows the rank colours: Wood under 5, Iron 5+, Bronze 10+, Silver 20+, Gold 30+,
 // Platinum 50+, Diamond 80+
-const lvRank = lvl => (lvl >= 80 ? 6 : lvl >= 50 ? 5 : lvl >= 30 ? 4 : lvl >= 20 ? 3 : lvl >= 10 ? 2 : lvl >= 5 ? 1 : 0);
+const lvRank = lvl => (lvl >= 150 ? 8 : lvl >= 100 ? 7 : lvl >= 80 ? 6 : lvl >= 50 ? 5 : lvl >= 30 ? 4 : lvl >= 20 ? 3 : lvl >= 10 ? 2 : lvl >= 5 ? 1 : 0);
 // A profile as one model, from this phone (yours) or from a card (someone else's). Badges about calories, steps and
 // Health Connect are only ever in your own model (marked "only you").
 function ownModel(history, profile, kcal) {
@@ -4355,13 +4590,14 @@ function ownModel(history, profile, kcal) {
     min: Math.floor(history.reduce((a, e) => a + (e.dur || 0), 0) / 60), prs: history.reduce((a, e) => a + ((e.prs && e.prs.length) || 0), 0),
     since: history.length ? history.map(e => e.date).sort()[0] : null,
     ach: achievements(history, achExtra(profile, kcal, history)), rk, show: Array.isArray(profile.show) ? profile.show : [],
+    look: lookOn(profile), // 1.9.0: frame, banner, title, name effect
   };
 }
 function cardModel(c, p) {
   const k = cleanCard(c);
   return {
     own: false, nick: p.nick || "?", pfp: p.pfp || null, lvl: k.lvl, xp: k.xp, streak: k.streak, best: k.best, n: k.n, reps: k.reps,
-    min: k.min, prs: k.prs, since: k.since, rk: k.rk, show: k.show,
+    min: k.min, prs: k.prs, since: k.since, rk: k.rk, show: k.show, look: k.look,
     // values when the card has them (1.7.0+), else the lowest value of the level they reached
     ach: ACH.filter(a => !CARD_HIDE.includes(a.k)).map(a => achFrom(a, k.av[a.k] !== undefined ? k.av[a.k] : (k.ach[a.k] ? a.at[Math.max(0, (a.rk ? a.rk.indexOf(k.ach[a.k] - 1) : k.ach[a.k] - 1))] ?? 0 : 0))),
   };
@@ -4413,7 +4649,7 @@ function SlotTile({ sl, m, i, onTap, own, cols = 2 }) {
   const base = { ...btnBase, fontWeight: 400, textAlign: "left", color: C.chalk, borderRadius: 16, padding: "12px 13px", minHeight: 92, position: "relative", overflow: "hidden", gridColumn: wide && cols > 1 ? "span 2" : undefined, overflowWrap: "break-word", animationDelay: `${120 + i * 60}ms`, display: "flex", flexDirection: "column" };
   if (!sl) return <div className="cardIn" style={{ ...base, background: SOFT(), border: `1px dashed ${C.line}`, justifyContent: "center", alignItems: "center", color: C.dim, fontSize: 12.5 }}>{T("pfSlotEmpty")}</div>;
   const glow = col => ({ background: `radial-gradient(120% 90% at 100% 0%, ${col}33, transparent 60%), ${SOFT()}`, border: `1px solid ${col}40` });
-  const pen = own && <span aria-hidden="true" style={{ position: "absolute", right: 9, top: 8, fontSize: 11, opacity: 0.55 }}>✏️</span>;
+  const pen = own && <span aria-hidden="true" style={{ position: "absolute", right: 9, top: 8, opacity: 0.55, color: C.dim }}><Ico n="pencil" size={13} /></span>;
   const mini = (icon, name, sub, col, k) => (
     <div key={k} style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: 4 }}>
       <span aria-hidden="true" style={{ fontSize: 26, lineHeight: 1 }}>{icon}</span>
@@ -4467,12 +4703,45 @@ function SlotTile({ sl, m, i, onTap, own, cols = 2 }) {
       <div style={{ fontFamily: DISPLAY, fontSize: k === "since" ? 22 : 34, fontWeight: 900, lineHeight: 1, marginTop: "auto", paddingTop: 10, fontVariantNumeric: "tabular-nums" }}>{fmtStat(m, k)}</div>
     </>);
   }
-  return <button type="button" data-slot={i} data-slot-kind={sl.kind} data-slot-set={sl.set ? 1 : 0} className={"cardIn" + (rar >= 4 ? " foil" : "")} onClick={() => { sfxTap(); onTap(sl, i); }} style={{ ...base, ...style }}>{pen}{body}</button>;
+  return <button type="button" data-slot={i} data-slot-kind={sl.kind} data-slot-set={sl.set ? 1 : 0} className={"cardIn" + (rar >= 3 ? " foil" : "")} onClick={() => { sfxTap(); onTap(sl, i); }} style={{ ...base, ...style }}>{pen}{body}</button>;
 }
 
-// Badges page: all of them with the progress, closest to the next level first, finished last.
+// ─── 1.8.0 rank rows (Michael, Oct 24: "the whole box in the colour of the rank, and as you get closer to the next
+// rank it fills in gradually, a gradient"; the light that passes shows every rank from Iron up to yours) ───
+// cur = rank index (-1 = nothing yet), next = the rank index you're working towards (null = the top), p = 0…1 of the
+// way there. The tint grows from the left with --fill (animated once on mount, @property), the edge is the current
+// rank's colour; rows from Bronze up get a slow sweep of the rank colours Iron → current, each row at its own moment.
+function rankRow(cur, next, p, k = 0) {
+  const c = cur >= 0 ? RANKS[cur].color : C.dim, n = next !== null ? RANKS[next].color : c;
+  const bg = card.background || C.panel;
+  const tint = next === null
+    ? `linear-gradient(90deg, ${c}40, ${c}22)`
+    : `linear-gradient(90deg, ${n}4a 0%, ${n}38 calc(var(--fill) - 6%), ${cur >= 0 ? c + "1c" : "transparent"} calc(var(--fill) + 6%), ${cur >= 0 ? c + "14" : "transparent"} 100%)`;
+  const sweep = cur >= 1 ? `linear-gradient(105deg, transparent 32%, ${RANKS.slice(0, cur + 1).map((r, i) => `${r.color}${i === cur ? "aa" : "77"} ${Math.round(38 + (24 * i) / Math.max(1, cur))}%`).join(", ")}, transparent 68%)` : null;
+  return {
+    cls: "rkRow" + (sweep ? " rkSweep" : ""),
+    style: { ...card, ...tileR(), background: `${tint}, ${bg}`, border: `1.5px solid ${cur >= 0 ? c + (next === null ? "dd" : "99") : C.line}`, "--fill": `${Math.round(p * 100)}%`, ...(sweep ? { "--sweep": sweep, "--sd": `${(k * 0.9) % 7}s` } : {}), ...(next === null && cur >= 0 ? { boxShadow: `0 0 16px ${c}33` } : {}) },
+  };
+}
+// The levels of a badge or an exercise as small dots in their rank colours (filled = reached, ring = the next one).
+function RankPips({ ranks, reached }) {
+  return (
+    <div aria-hidden="true" data-pips={reached} style={{ display: "flex", gap: 5, marginTop: 9, flexWrap: "wrap" }}>
+      {ranks.map((ri, k) => {
+        const col = RANKS[ri].color, on = k < reached, nx = k === reached;
+        return <span key={k} style={{ width: 9, height: 9, borderRadius: 99, boxSizing: "border-box", background: on ? col : "transparent", border: `1.5px solid ${on ? col : nx ? col + "aa" : C.chalk + "26"}`, boxShadow: on && k === reached - 1 ? `0 0 7px ${col}` : "none" }} />;
+      })}
+    </div>
+  );
+}
+const rankVal = (id, v) => (EX[id] && EX[id].type === "time" && v >= 120 ? `${Math.floor(v / 60)}:${String(v % 60).padStart(2, "0")} min` : `${v}${rankUnit(id)}`);
+
+// Badges page: all of them with the progress, closest to the next level first, finished last. 1.8.0: single badges
+// show their rarity; secret ones only once earned (the rest is one line at the end).
 function BadgesList({ m, focus, claim }) {
-  const ach = m.ach.filter(a => m.own || !CARD_HIDE.includes(a.k));
+  const all = m.ach.filter(a => m.own || !CARD_HIDE.includes(a.k));
+  const ach = all.filter(a => !a.secret || a.step);
+  const secretLeft = m.own ? all.filter(a => a.secret && !a.step).length : 0;
   const inTier = a => { const prev = a.step ? a.at[a.step - 1] : 0; return a.next === null ? 1 : Math.max(0, Math.min(1, (a.v - prev) / (a.next - prev))); };
   const val = (a, x) => (a.span ? spanText(x) : a.k === "plank" ? `${nf(x)} s` : nf(x));
   const hid = a => !!(claim && claim.hid.has("ach:" + a.k)); // 1.7.4: still face down (first in the list)
@@ -4480,78 +4749,93 @@ function BadgesList({ m, focus, claim }) {
   const won = ach.filter(a => a.step && !hid(a)).length;
   return (
     <div data-pf-badges>
-      <div style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.5, margin: "0 2px 10px" }}>{T("achCount", { n: won, max: ach.length })} · {T("achTiers", { n: ach.reduce((x, a) => x + (hid(a) ? 0 : a.step), 0), max: ach.reduce((x, a) => x + a.at.length, 0) })} · {T("achSheetD")}</div>
+      <div style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.5, margin: "0 2px 10px" }}>{T("achCount", { n: won, max: all.length })} · {T("achTiers", { n: ach.reduce((x, a) => x + (hid(a) ? 0 : a.step), 0), max: all.reduce((x, a) => x + a.at.length, 0) })} · {T("achSheetD")}</div>
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        {list.map(a => {
+        {list.map((a, k) => {
           if (hid(a)) return <ClaimRow key={a.k} it={claim.items.get("ach:" + a.k)} onOpen={claim.open} />;
           const r = a.tier ? RANKS[a.tier - 1] : null, nr = a.next === null ? null : RANKS[a.nextRank];
+          const rr = rankRow(a.tier - 1, a.next === null ? null : a.nextRank, inTier(a), k);
+          const label = a.single ? (a.step ? `${r.icon} ${rarityName(a)}${a.secret ? ` · ${T("achSecret")}` : ""}` : `🔒 ${rarityName(a)}`) : r ? `${r.icon} ${r.name}` : `🔒 ${T("achLocked")}`;
           return (
-            <div key={a.k} data-ach-row={a.k} data-ach={a.k} data-tier={a.tier} data-pct={Math.round(inTier(a) * 100)} className={[focus && focus.k === a.k && "achFlash", a.tier >= 5 && "foil"].filter(Boolean).join(" ") || undefined}
-              style={{ ...card, ...tileR(), padding: "11px 12px" }}>
+            <div key={a.k} data-ach-row={a.k} data-ach={a.k} data-tier={a.tier} data-single={a.single ? 1 : undefined} data-pct={Math.round(inTier(a) * 100)} className={[rr.cls, focus && focus.k === a.k && "achFlash"].filter(Boolean).join(" ")}
+              style={{ ...rr.style, padding: "11px 12px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <div aria-hidden="true" style={{ fontSize: 24, lineHeight: 1, flexShrink: 0, filter: r ? "none" : "grayscale(1)", opacity: r ? 1 : 0.55 }}>{a.icon}</div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 14, fontWeight: 800, color: C.chalk, lineHeight: 1.2 }}>{a.name}{m.own && CARD_HIDE.includes(a.k) && <span data-only-you style={{ fontSize: 10.5, fontWeight: 700, color: C.dim, marginLeft: 6, whiteSpace: "nowrap" }}>· {T("pfOnlyYou")}</span>}</div>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: r ? r.color : C.dim, marginTop: 2 }}>{r ? `${r.icon} ${r.name}` : `🔒 ${T("achLocked")}`}</div>
+                  <div style={{ fontSize: 12, fontWeight: 800, color: r ? r.color : a.single ? RANKS[a.rk[0]].color + "bb" : C.dim, marginTop: 2 }}>{label}</div>
                 </div>
-                <div data-ach-num style={{ textAlign: "right", flexShrink: 0 }}>
-                  <div style={{ fontFamily: DISPLAY, fontSize: 18, fontWeight: 900, color: C.chalk, lineHeight: 1, whiteSpace: "nowrap" }}>{a.next === null ? "✓" : `${val(a, a.v)} / ${val(a, a.next)}`}</div>
-                  {a.next !== null && (inTier(a) >= 0.8
-                    ? <div data-near className="nearPulse" style={{ fontSize: 11.5, fontWeight: 900, color: nr.color, marginTop: 3, whiteSpace: "nowrap" }}>{T("achLeft", { n: val(a, a.next - a.v) })}!</div>
-                    : <div style={{ fontSize: 11, color: C.dim, marginTop: 3, whiteSpace: "nowrap" }}>{T("achLeft", { n: val(a, a.next - a.v) })}</div>)}
-                </div>
+                {!a.single && (
+                  <div data-ach-num style={{ textAlign: "right", flexShrink: 0 }}>
+                    <div style={{ fontFamily: DISPLAY, fontSize: 18, fontWeight: 900, color: C.chalk, lineHeight: 1, whiteSpace: "nowrap" }}>{a.next === null ? "✓" : `${val(a, a.v)} / ${val(a, a.next)}`}</div>
+                    {a.next !== null && (inTier(a) >= 0.8
+                      ? <div data-near className="nearPulse" style={{ fontSize: 11.5, fontWeight: 900, color: nr.color, marginTop: 3, whiteSpace: "nowrap" }}>{T("achLeft", { n: val(a, a.next - a.v) })}!</div>
+                      : <div style={{ fontSize: 11, color: C.dim, marginTop: 3, whiteSpace: "nowrap" }}>{T("achLeft", { n: val(a, a.next - a.v) })}</div>)}
+                  </div>
+                )}
+                {a.single && a.step > 0 && <div style={{ fontFamily: DISPLAY, fontSize: 20, fontWeight: 900, color: r.color, flexShrink: 0 }}>✓</div>}
               </div>
-              <div aria-hidden="true" style={{ display: "flex", gap: 3, marginTop: 10 }}>
-                {a.at.map((_, k) => {
-                  const col = RANKS[a.rk ? a.rk[k] : k].color, fill = k < a.step ? 1 : k === a.step ? inTier(a) : 0;
-                  return <span key={k} style={{ flex: 1, height: 6, borderRadius: 99, background: `${C.chalk}14`, overflow: "hidden" }}><span className="pvBar" style={{ display: "block", height: "100%", width: `${fill * 100}%`, background: k < a.step ? col : nr ? nr.color : col, opacity: k < a.step ? 1 : 0.8, borderRadius: 99 }} /></span>;
-                })}
-              </div>
-              <div style={{ fontSize: 11.5, color: C.dim, marginTop: 6, lineHeight: 1.4 }}>{a.next === null ? T("achMax") : `${T("achNext", { rank: nr.name })} ${a.desc}`}</div>
+              {!a.single && <RankPips ranks={a.at.map((_, i) => (a.rk ? a.rk[i] : i))} reached={a.step} />}
+              <div style={{ fontSize: 11.5, color: C.dim, marginTop: 6, lineHeight: 1.4 }}>{a.single ? a.desc : a.next === null ? T("achMax") : `${T("achNext", { rank: nr.name })} ${a.desc}`}</div>
             </div>
           );
         })}
+        {secretLeft > 0 && (
+          <div data-secret-left={secretLeft} style={{ ...card, ...tileR(), padding: "12px", display: "flex", alignItems: "center", gap: 10, borderStyle: "dashed", background: "transparent" }}>
+            <IcoBox n="help" color={C.dim} size={34} />
+            <div style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.45 }}>{TP("secretLeft", secretLeft)}</div>
+          </div>
+        )}
       </div>
     </div>
   );
 }
-// Ranks page: every exercise with its rank, best set and how far to the next rank; the best first.
+// Ranks page: every exercise you have done, with its rank, best set and how far to the next rank; the best first.
+// 1.8.0: all exercises have ranks; the ones you haven't done yet stay hidden (one line says how many).
 function RanksList({ m, onPick, focus, claim }) {
   const hid = id => !!(claim && claim.hid.has("rank:" + id)); // 1.7.4: still face down (first in the list)
-  const ids = Object.keys(RANK_AT).sort((a, b) => hid(b) - hid(a) || rankIdx(b, m.rk[b]) - rankIdx(a, m.rk[a]) || (m.rk[b] || 0) / RANK_AT[b][0] - (m.rk[a] || 0) / RANK_AT[a][0]);
-  const lv = ids.reduce((x, id) => x + (hid(id) ? 0 : rankIdx(id, m.rk[id])), 0);
+  const has = id => m.rk[id] !== null && m.rk[id] !== undefined;
+  const ids = Object.keys(RANK_AT).filter(has).sort((a, b) => hid(b) - hid(a) || rankIdx(b, m.rk[b]) - rankIdx(a, m.rk[a]) || (m.rk[b] || 0) / RANK_AT[b][0] - (m.rk[a] || 0) / RANK_AT[a][0]);
+  const left = Object.keys(RANK_AT).length - ids.length;
+  const lv = ids.reduce((x, id) => x + (hid(id) ? 0 : rankIdx(id, m.rk[id]) + 1), 0);
   return (
     <div data-pf-ranks>
-      <div style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.5, margin: "0 2px 10px" }}>{T("achTiers", { n: lv, max: ids.length * (RANKS.length - 1) })} · {T("pfRanksD")}</div>
+      <div style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.5, margin: "0 2px 10px" }}>{T("achTiers", { n: lv, max: Object.keys(RANK_AT).length * RANKS.length })} · {T("pfRanksD")}</div>
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        {ids.map(id => {
+        {ids.map((id, k) => {
           if (hid(id)) return <ClaimRow key={id} it={claim.items.get("rank:" + id)} onOpen={claim.open} />;
-          const b = m.rk[id], has = b !== null && b !== undefined, ri = rankIdx(id, b), r = RANKS[ri], at = RANK_AT[id];
+          const b = m.rk[id], ri = rankIdx(id, b), r = RANKS[ri], at = RANK_AT[id];
           const prev = ri ? at[ri - 1] : 0, next = ri < at.length ? at[ri] : null, inR = next === null ? 1 : Math.max(0, Math.min(1, ((b || 0) - prev) / (next - prev)));
+          const rr = rankRow(ri, next === null ? null : ri + 1, inR, k);
           const Tag = onPick ? "button" : "div";
           return (
-            <Tag key={id} data-rank-row={id} data-rank={ri} onClick={onPick ? () => { sfxTap(); onPick(id); } : undefined} className={[focus && focus.k === id && "achFlash", ri >= 4 && "foil"].filter(Boolean).join(" ") || undefined}
-              style={{ ...(onPick ? btnBase : {}), fontWeight: 400, textAlign: "left", width: "100%", color: C.chalk, ...card, ...tileR(), padding: "11px 12px", display: "block" }}>
+            <Tag key={id} data-rank-row={id} data-rank={ri} onClick={onPick ? () => { sfxTap(); onPick(id); } : undefined} className={[rr.cls, focus && focus.k === id && "achFlash"].filter(Boolean).join(" ")}
+              style={{ ...(onPick ? btnBase : {}), fontWeight: 400, textAlign: "left", width: "100%", color: C.chalk, ...rr.style, padding: "11px 12px", display: "block" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <div aria-hidden="true" style={{ fontSize: 24, lineHeight: 1, flexShrink: 0, opacity: has ? 1 : 0.45 }}>{r.icon}</div>
+                <div aria-hidden="true" style={{ fontSize: 24, lineHeight: 1, flexShrink: 0 }}>{r.icon}</div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 14, fontWeight: 800, lineHeight: 1.2 }}>{EX[id].name}</div>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: has ? r.color : C.dim, marginTop: 2 }}>{has ? r.name : T("pfNoResult")}</div>
+                  <div style={{ fontSize: 12, fontWeight: 800, color: r.color, marginTop: 2 }}>{r.name}</div>
                 </div>
                 <div style={{ textAlign: "right", flexShrink: 0 }}>
-                  <div style={{ fontFamily: DISPLAY, fontSize: 18, fontWeight: 900, lineHeight: 1, whiteSpace: "nowrap" }}>{next === null ? `${b}${rankUnit(id)} ✓` : `${b || 0} / ${next}${rankUnit(id)}`}</div>
-                  {next !== null && (has && inR >= 0.8
+                  <div style={{ fontFamily: DISPLAY, fontSize: 18, fontWeight: 900, lineHeight: 1, whiteSpace: "nowrap" }}>{next === null ? `${rankVal(id, b)} ✓` : `${b || 0} / ${rankVal(id, next)}`}</div>
+                  {next !== null && (inR >= 0.8
                     ? <div data-near className="nearPulse" style={{ fontSize: 11.5, fontWeight: 900, color: RANKS[ri + 1].color, marginTop: 3, whiteSpace: "nowrap" }}>{T("achLeft", { n: `${next - (b || 0)}${rankUnit(id)}` })}!</div>
                     : <div style={{ fontSize: 11, color: C.dim, marginTop: 3, whiteSpace: "nowrap" }}>{T("achLeft", { n: `${next - (b || 0)}${rankUnit(id)}` })}</div>)}
                 </div>
               </div>
-              <div aria-hidden="true" style={{ display: "flex", gap: 3, marginTop: 10 }}>
-                {at.map((_, k) => <span key={k} style={{ flex: 1, height: 6, borderRadius: 99, background: `${C.chalk}14`, overflow: "hidden" }}><span className="pvBar" style={{ display: "block", height: "100%", width: `${(k < ri ? 1 : k === ri ? inR : 0) * 100}%`, background: RANKS[k + 1].color, opacity: k < ri ? 1 : 0.8, borderRadius: 99 }} /></span>)}
-              </div>
-              {next !== null && <div style={{ fontSize: 11.5, color: C.dim, marginTop: 6 }}>{T("achNext", { rank: RANKS[ri + 1].name })} {next}{rankUnit(id)}</div>}
+              <RankPips ranks={RANKS.map((_, i) => i)} reached={ri + 1} />
+              {next !== null && <div style={{ fontSize: 11.5, color: C.dim, marginTop: 6 }}>{ri + 1 === R_OBSIDIAN ? `${T("rankChallenge")} ` : ""}{T("achNext", { rank: RANKS[ri + 1].name })} {rankVal(id, next)}</div>}
             </Tag>
           );
         })}
+        {m.own && left > 0 && (
+          <div data-ranks-left={left} style={{ ...card, ...tileR(), padding: "12px", display: "flex", alignItems: "center", gap: 10, borderStyle: "dashed", background: "transparent" }}>
+            <IcoBox n="help" color={C.dim} size={34} />
+            <div style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.45 }}>{TP("ranksLeft", left)}</div>
+          </div>
+        )}
+        {!ids.length && !m.own && <div style={{ fontSize: 13, color: C.dim }}>{T("pfNoResult")}</div>}
       </div>
     </div>
   );
@@ -4574,10 +4858,52 @@ const PF_LAY = {
   3: { rows: "auto auto 1fr", at: [{ gridColumn: 1, gridRow: 1 }, { gridColumn: 2, gridRow: "1 / span 3" }, { gridColumn: 3, gridRow: "1 / span 3" }, { gridColumn: 1, gridRow: 2 }] },
   2: { rows: "auto auto auto 1fr", at: [{ gridColumn: 1, gridRow: 1 }, { gridColumn: 2, gridRow: "1 / span 4" }, { gridColumn: 1, gridRow: 3 }, { gridColumn: 1, gridRow: 2 }] },
 };
-function ProfilePage({ m, own, onEditProfile, onEditSlot, onStreak, onPhoto, onPickRank, extra, top, claim }) {
+// The top of a profile: photo, frame, banner, effect, name, title, level and streak. The Profile page and the Shop's
+// preview (Michael: "show it on my profile") draw the very same box; preview = nothing to tap, no edit buttons.
+function ProfileHero({ m, own, onPhoto, onEditProfile, onLooks, onStreak, extra, preview }) {
+  const lv = levelInfo(m.xp), lr = RANKS[lvRank(m.lvl)], lk = m.look || {};
+  return (
+        <Sect {...(preview ? { "data-look-preview": true } : { "data-pf-hero": true })} style={{ marginTop: 0, padding: LOOK === "flat" ? 0 : "16px 16px 14px", position: "relative", overflow: "hidden" }}>
+          <LookFx id={lk.fx} />
+          {lk.bg ? <div data-pf-banner={lk.bg} aria-hidden="true" style={{ position: "absolute", left: 0, right: 0, top: 0, height: 190, pointerEvents: "none", WebkitMaskImage: "linear-gradient(180deg, #000 45%, transparent 100%)", maskImage: "linear-gradient(180deg, #000 45%, transparent 100%)" }}><LookBanner id={lk.bg} /></div>
+            : <div aria-hidden="true" style={{ position: "absolute", inset: 0, background: `radial-gradient(80% 70% at 0% 0%, ${lr.color}26, transparent 60%)`, pointerEvents: "none" }} />}
+          <div style={{ position: "relative", display: "flex", alignItems: "center", gap: lk.frame ? 18 : 14 }}>
+            <button type="button" onClick={own && !preview ? onPhoto : undefined} disabled={!own || preview} aria-label={own ? T("changePhoto") : undefined} className="cardIn" style={{ ...btnBase, background: "transparent", padding: 0, borderRadius: 99, position: "relative", flexShrink: 0, cursor: own && !preview ? "pointer" : "default", margin: lk.frame ? "12px 0 12px 12px" : 0 }}>
+              {own ? <BdayHalo size={80}><Avatar profile={{ name: m.nick, pfp: m.pfp }} size={80} /></BdayHalo> : <Avatar profile={{ name: m.nick, pfp: m.pfp }} size={80} />}
+              {lk.frame && <LookFrame id={lk.frame} size={110} style={{ left: -15, top: -15 }} />}
+              {/* Steam-like level badge on the photo */}
+              <span data-pf-level={m.lvl} style={{ position: "absolute", right: -6, bottom: -4, minWidth: 34, height: 34, padding: "0 6px", boxSizing: "border-box", borderRadius: 99, background: C.ink, border: `2.5px solid ${lr.color}`, color: lr.color, fontFamily: DISPLAY, fontSize: 17, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: `0 0 14px ${lr.color}55` }}>{m.lvl}</span>
+            </button>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div data-pf-name data-name-fx={lk.name || ""} style={{ fontFamily: DISPLAY, fontSize: 30, fontWeight: 900, lineHeight: 1, color: C.chalk, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" , ...INK, ...nameFx(lk.name) }}>{m.nick}</div>
+              {lk.title && <div style={{ marginTop: 6 }}><LookTitle id={lk.title} /></div>}
+              <div style={{ fontSize: 12.5, color: own && bdayToday() ? C.signal : C.dim, fontWeight: own && bdayToday() ? 800 : 400, marginTop: 4 }}>{own && bdayToday() ? T("bdayHero") : m.since ? T("since", { date: fmtDate(m.since, true) }) : T("newMember")}</div>
+            </div>
+            {own && !preview && <span style={{ alignSelf: "flex-start", display: "flex", flexDirection: "column", gap: 6, flexShrink: 0 }}>
+              <button type="button" data-pf-edit onClick={() => { sfxTap(); onEditProfile(); }} aria-label={T("pfEdit")} style={{ ...btnBase, background: SOFT(), color: C.chalk, width: 38, height: 38, borderRadius: 12, fontSize: 15 }}>✏️</button>
+              {onLooks && <button type="button" data-pf-looks onClick={() => { sfxTap(); onLooks(); }} aria-label={T("pfLooks")} title={T("pfLooks")} style={{ ...btnBase, background: SOFT(), color: C.signal, width: 38, height: 38, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center" }}><Ico n="sparkle" size={19} /></button>}
+            </span>}
+          </div>
+          <div style={{ position: "relative", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 14 }}>
+            <div data-pf-lv style={{ background: SOFT(), borderRadius: 14, padding: "10px 12px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: C.dim, fontWeight: 600 }}><span>{T("level")}</span><span aria-hidden="true">⚡</span></div>
+              <div style={{ fontFamily: DISPLAY, fontSize: 28, fontWeight: 900, color: C.sky, lineHeight: 1, marginTop: 4 }}><CountUp n={m.lvl} /></div>
+              <div style={{ height: 5, background: `${C.chalk}14`, borderRadius: 99, marginTop: 7, overflow: "hidden" }}><div className="pvBar" style={{ height: "100%", width: `${(lv.into / lv.need) * 100}%`, background: C.sky, borderRadius: 99 }} /></div>
+              <div style={{ fontSize: 11, color: C.dim, marginTop: 5 }}>{nf(lv.into)} / {nf(lv.need)} XP</div>
+            </div>
+            <button type="button" data-pf-streak onClick={own && !preview ? () => { sfxTap(); onStreak(); } : undefined} disabled={!own || preview} style={{ ...btnBase, fontWeight: 400, textAlign: "left", color: C.chalk, background: SOFT(), borderRadius: 14, padding: "10px 12px", cursor: own && !preview ? "pointer" : "default" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: C.dim, fontWeight: 600 }}><span>{T("streak")}</span><span aria-hidden="true" className={m.streak ? "wiggle" : ""}>🔥</span></div>
+              <div style={{ fontFamily: DISPLAY, fontSize: 28, fontWeight: 900, color: "#ffa94d", lineHeight: 1, marginTop: 4 }}><CountUp n={m.streak} /></div>
+              <div style={{ fontSize: 11, color: C.dim, marginTop: 17 }}>{T("pfBestStreak", { n: m.best })}{own && extra && extra.fz !== undefined ? <span data-pf-freezes> · ❄️ {extra.fz}</span> : null}</div>
+            </button>
+          </div>
+        </Sect>
+  );
+}
+function ProfilePage({ m, own, onEditProfile, onEditSlot, onStreak, onPhoto, onPickRank, onLooks, extra, top, claim }) {
   const pg = usePager("pf", 4, PF_LAY);
   const [focus, setFocus] = useState(null);
-  const lv = levelInfo(m.xp), lr = RANKS[lvRank(m.lvl)];
+  const lv = levelInfo(m.xp), lr = RANKS[lvRank(m.lvl)], lk = m.look || {};
   const sm = claim ? hideUnclaimed(m, claim.hid) : m; // the showcase never shows a card that is still face down
   const slots = showcase(sm), n = slots.length, nextLv = SLOT_LV[n];
   // 1.7.5: columns of at least 150 px of text room (more with a bigger phone font), so names are never cut
@@ -4610,40 +4936,13 @@ function ProfilePage({ m, own, onEditProfile, onEditSlot, onStreak, onPhoto, onP
           </button>
         )}
         {/* the basics: photo, name, level, streak */}
-        <Sect data-pf-hero style={{ marginTop: 0, padding: LOOK === "flat" ? 0 : "16px 16px 14px", position: "relative", overflow: "hidden" }}>
-          <div aria-hidden="true" style={{ position: "absolute", inset: 0, background: `radial-gradient(80% 70% at 0% 0%, ${lr.color}26, transparent 60%)`, pointerEvents: "none" }} />
-          <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 14 }}>
-            <button type="button" onClick={own ? onPhoto : undefined} disabled={!own} aria-label={own ? T("changePhoto") : undefined} className="cardIn" style={{ ...btnBase, background: "transparent", padding: 0, borderRadius: 99, position: "relative", flexShrink: 0, cursor: own ? "pointer" : "default" }}>
-              {own ? <BdayHalo size={80}><Avatar profile={{ name: m.nick, pfp: m.pfp }} size={80} /></BdayHalo> : <Avatar profile={{ name: m.nick, pfp: m.pfp }} size={80} />}
-              {/* Steam-like level badge on the photo */}
-              <span data-pf-level={m.lvl} style={{ position: "absolute", right: -6, bottom: -4, minWidth: 34, height: 34, padding: "0 6px", boxSizing: "border-box", borderRadius: 99, background: C.ink, border: `2.5px solid ${lr.color}`, color: lr.color, fontFamily: DISPLAY, fontSize: 17, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: `0 0 14px ${lr.color}55` }}>{m.lvl}</span>
-            </button>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div data-pf-name style={{ fontFamily: DISPLAY, fontSize: 30, fontWeight: 900, lineHeight: 1, color: C.chalk, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{m.nick}</div>
-              <div style={{ fontSize: 12.5, color: own && bdayToday() ? C.signal : C.dim, fontWeight: own && bdayToday() ? 800 : 400, marginTop: 4 }}>{own && bdayToday() ? T("bdayHero") : m.since ? T("since", { date: fmtDate(m.since, true) }) : T("newMember")}</div>
-            </div>
-            {own && <button type="button" data-pf-edit onClick={() => { sfxTap(); onEditProfile(); }} aria-label={T("pfEdit")} style={{ ...btnBase, alignSelf: "flex-start", background: SOFT(), color: C.chalk, width: 38, height: 38, borderRadius: 12, flexShrink: 0, fontSize: 15 }}>✏️</button>}
-          </div>
-          <div style={{ position: "relative", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 14 }}>
-            <div data-pf-lv style={{ background: SOFT(), borderRadius: 14, padding: "10px 12px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: C.dim, fontWeight: 600 }}><span>{T("level")}</span><span aria-hidden="true">⚡</span></div>
-              <div style={{ fontFamily: DISPLAY, fontSize: 28, fontWeight: 900, color: C.sky, lineHeight: 1, marginTop: 4 }}><CountUp n={m.lvl} /></div>
-              <div style={{ height: 5, background: `${C.chalk}14`, borderRadius: 99, marginTop: 7, overflow: "hidden" }}><div className="pvBar" style={{ height: "100%", width: `${(lv.into / lv.need) * 100}%`, background: C.sky, borderRadius: 99 }} /></div>
-              <div style={{ fontSize: 11, color: C.dim, marginTop: 5 }}>{nf(lv.into)} / {nf(lv.need)} XP</div>
-            </div>
-            <button type="button" data-pf-streak onClick={own ? () => { sfxTap(); onStreak(); } : undefined} disabled={!own} style={{ ...btnBase, fontWeight: 400, textAlign: "left", color: C.chalk, background: SOFT(), borderRadius: 14, padding: "10px 12px", cursor: own ? "pointer" : "default" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: C.dim, fontWeight: 600 }}><span>{T("streak")}</span><span aria-hidden="true" className={m.streak ? "wiggle" : ""}>🔥</span></div>
-              <div style={{ fontFamily: DISPLAY, fontSize: 28, fontWeight: 900, color: "#ffa94d", lineHeight: 1, marginTop: 4 }}><CountUp n={m.streak} /></div>
-              <div style={{ fontSize: 11, color: C.dim, marginTop: 17 }}>{T("pfBestStreak", { n: m.best })}{own && extra && extra.fz !== undefined ? <span data-pf-freezes> · ❄️ {extra.fz}</span> : null}</div>
-            </button>
-          </div>
-        </Sect>
+        <ProfileHero m={m} own={own} onPhoto={onPhoto} onEditProfile={onEditProfile} onLooks={onLooks} onStreak={onStreak} extra={extra} />
         {/* the showcase */}
         <Sect data-pf-showcase title={T("pfShowcase")} meta={T("pfSlots", { n, max: SLOT_LV.length })}>
           <div ref={slotsRef} data-pf-slots data-cols={slotCols} style={{ display: "grid", gridTemplateColumns: `repeat(${slotCols}, minmax(0, 1fr))`, gridAutoFlow: "row dense", gap: 8 }}>
             {slots.map((sl, i) => <SlotTile key={i + (sl ? slotStr(sl) : "")} sl={sl} m={sm} i={i} own={own} onTap={open} cols={slotCols} />)}
             {own && nextLv && <div data-slot-next={nextLv} className="cardIn" style={{ animationDelay: `${120 + n * 60}ms`, borderRadius: 16, border: `1.5px dashed ${C.line}`, minHeight: 92, padding: "12px 13px", boxSizing: "border-box", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6, color: C.dim, textAlign: "center" }}>
-              <span aria-hidden="true" style={{ fontSize: 20 }}>🔒</span>
+              <Ico n="lock" size={20} color={C.dim} />
               <span style={{ fontSize: 12, fontWeight: 700, lineHeight: 1.35 }}>{T("pfSlotNext", { lv: nextLv })}</span>
             </div>}
           </div>
@@ -4703,7 +5002,7 @@ function SlotSheet({ m, i, cur, onSave, onClose }) {
   );
 }
 
-function ProfileTab({ history, profile, setProfile, onFreeze, kcal, acct, vis, onVis, onFriends }) {
+function ProfileTab({ history, profile, setProfile, onFreeze, kcal, acct, vis, onVis, onFriends, onShop }) {
   const fz = freezesAvailable(history);
   const fileRef = useRef(null);
   const [howEx, setHowEx] = useState(null);
@@ -4715,7 +5014,7 @@ function ProfileTab({ history, profile, setProfile, onFreeze, kcal, acct, vis, o
   const st = streakInfo(history, today);
   const m = ownModel(history, profile, kcal);
   // 1.7.4: badges and ranks not opened yet (claims): face-down cards on the Badges / Ranks pages, opened with the reveal
-  const pend = unclaimed(m, profile.claim);
+  const pend = unclaimed(m, claimOf(profile));
   const [rev, setRev] = useState(null);
   const [party, setParty] = useState(0);
   const claim = pend.length ? { items: new Map(pend.map(it => [claimKey(it), it])), hid: new Set(pend.map(claimKey)), top: pend[pend.length - 1].col,
@@ -4738,12 +5037,13 @@ function ProfileTab({ history, profile, setProfile, onFreeze, kcal, acct, vis, o
     <div className="scr" style={{ padding: "16px 0 110px", maxWidth: "var(--colMax)", margin: "0 auto" }}>
       {howEx && <HowTo id={howEx} history={history} onClose={() => setHowEx(null)} />}
       <input ref={fileRef} type="file" accept="image/*" onChange={pick} style={{ display: "none" }} />
-      {rev && <RewardReveal items={rev} onDone={() => { setProfile({ ...profile, claim: withClaims(profile.claim, rev) }); setRev(null); setParty(Date.now()); }} />}
+      {rev && <RewardReveal items={rev} onDone={() => { setProfile({ ...profile, claim2: withClaims(claimOf(profile), rev) }); setRev(null); setParty(Date.now()); }} />}
       {party > 0 && <Confetti key={party} />}
       <ProfilePage m={m} own claim={claim} extra={{ fz }} onPhoto={() => fileRef.current && fileRef.current.click()} onEditProfile={() => { setName(profile.name || ""); setSheet("edit"); }}
-        onStreak={() => setSheet("freeze")} onEditSlot={i => setSheet({ slot: i })} onPickRank={setHowEx}
+        onStreak={() => setSheet("freeze")} onEditSlot={i => setSheet({ slot: i })} onPickRank={setHowEx} onLooks={() => setSheet("looks")}
         top={err ? <div role="alert" style={{ fontSize: 13, color: "#ff8a80", marginBottom: 10 }}>{err}</div> : null} />
       {sheet && sheet.slot !== undefined && <SlotSheet m={sm} i={sheet.slot} cur={(showcase(sm)[sheet.slot] || {}).set ? slotStr(showcase(sm)[sheet.slot]) : ""} onSave={v => saveSlot(sheet.slot, v)} onClose={() => setSheet(null)} />}
+      {sheet === "looks" && <LooksSheet profile={profile} setProfile={setProfile} history={history} own={econState(history, profile).own} onShop={onShop || (() => {})} onClose={() => setSheet(null)} />}
       {sheet === "freeze" && (
         <Sheet title={T("streak")} onClose={() => setSheet(null)} short>
           <div data-freeze-card style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -4813,7 +5113,7 @@ function OtherProfile({ p, isFriend, onBack, setTopHead }) {
         <button data-pv-back onClick={() => { sfxTap(); onBack(); }} aria-label={T("back")} style={{ ...btnBase, background: SOFT(), color: C.chalk, width: 38, height: 38, borderRadius: 12, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
           <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
         </button>
-        <span style={{ fontFamily: DISPLAY, fontSize: 22, fontWeight: 900, color: C.chalk, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.nick}</span>
+        <span style={{ fontFamily: DISPLAY, fontSize: 22, fontWeight: 900, color: C.chalk, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" , ...INK }}>{p.nick}</span>
       </div>
     );
   }, [p.uid, p.nick]);
@@ -4932,7 +5232,7 @@ function OpenInApp() {
   return (
     <div data-open-app style={{ maxWidth: 460, margin: "0 auto", padding: "6px 18px 0", boxSizing: "border-box" }}>
       <div style={{ ...card, position: "relative", padding: "14px 40px 14px 16px", display: "flex", gap: 12, alignItems: "center" }}>
-        <span style={{ fontSize: 26 }}>📱</span>
+        <IcoBox n="phone" color={C.mint} />
         <div style={{ minWidth: 0 }}>
           <div style={{ fontSize: 14, fontWeight: 700, color: C.chalk, lineHeight: 1.45 }}>{T("frOpenApp")}</div>
           <a href={href} data-open-app-btn onClick={() => sfxTap()} style={{ display: "inline-block", paddingTop: 4, color: C.signal, fontSize: 14, fontWeight: 800, textDecoration: "none" }}>{T("frOpenAppBtn")} <Arrow size="1.25em" style={{ verticalAlign: "-0.08em" }} /></a>
@@ -5002,6 +5302,7 @@ function cloudStats(history) { const xp = totalXP(history); return { xp, lvl: le
 // open your profile. Only training: calorie, step and Health Connect badges never leave the phone for others, and there
 // is no photo in it (friends see the photo they already have from the friends list).
 const CARD_VIS = ["friends", "all", "none"];
+const FAIR_FLAGS = ["cap", "day", "jump", "fast", "late"]; // 1.8.0: reasons from the server's world-list check (src/fair.js)
 const CARD_HIDE = ["calories", "kcalHit", "steps", "health"];
 function cardData(history, profile) {
   const xp = totalXP(history), ach = {}, av = {}, rk = {};
@@ -5014,6 +5315,8 @@ function cardData(history, profile) {
     lvl: levelInfo(xp).lvl, xp, streak: streakInfo(history, dateKey()).n, best: bestStreak(history), n: history.length,
     reps: totalReps(history), min: Math.floor(history.reduce((a, e) => a + (e.dur || 0), 0) / 60), prs: history.reduce((a, e) => a + ((e.prs && e.prs.length) || 0), 0),
     since: history.length ? history.map(e => e.date).sort()[0] : null, ach, av, rk, show,
+    // 1.9.0: the profile looks you wear (sent once you have put one on, also {} to take them all off; needs the 1.9.0 rules)
+    ...(profile.look ? { look: lookOn(profile) } : {}),
   };
 }
 // A card from the cloud is someone else's data: only numbers we know, in sane ranges, are shown.
@@ -5025,6 +5328,7 @@ function cleanCard(c) {
   return {
     lvl: Math.max(1, cardNum(c.lvl)), xp: cardNum(c.xp), streak: cardNum(c.streak), best: cardNum(c.best), n: cardNum(c.n), reps: cardNum(c.reps), min: cardNum(c.min),
     since: typeof c.since === "string" && /^\d{4}-\d{2}-\d{2}$/.test(c.since) ? c.since : null, ach, av, rk, prs: cardNum(c.prs), ts: cardNum(c.ts), vis: CARD_VIS.includes(c.vis) ? c.vis : "friends",
+    look: lookOn({ look: c.look && typeof c.look === "object" ? c.look : {} }),
     show: Array.isArray(c.show) ? c.show.slice(0, SLOT_LV.length).map(x => (typeof x === "string" ? x.slice(0, 80) : "")) : [],
   };
 }
@@ -5168,7 +5472,7 @@ function PersonRow({ p, rank, me, onClick, right, first }) {
 }
 
 // Someone's card: stats, and add / remove / block / report.
-function PersonSheet({ p, isFriend, onAdd, onChat, onRemove, onBlock, onReport, onProfile, onClose }) {
+function PersonSheet({ p, isFriend, onAdd, onChat, onRemove, onBlock, onReport, onProfile, onClose, fsState, onFs }) {
   const [sure, setSure] = useState(null);
   const [msg, setMsg] = useState("");
   const [reported, setReported] = useState(false);
@@ -5191,6 +5495,7 @@ function PersonSheet({ p, isFriend, onAdd, onChat, onRemove, onBlock, onReport, 
       <div style={{ display: "flex", gap: 8, marginTop: onProfile ? 8 : 16, flexWrap: "wrap" }}>
         {!isFriend && onAdd && <button data-ps-add onClick={() => { sfxTap(); onAdd(p).then(setMsg); }} style={{ ...small, background: C.signal, color: C.signalInk, flexBasis: "100%" }}>{T("frAddBtn")}</button>}
         {isFriend && onChat && <button data-ps-chat onClick={() => { sfxTap(); onChat(p); }} style={{ ...small, background: C.signal, color: C.signalInk, flexBasis: "100%" }}>{T("chWrite")}</button>}
+        {isFriend && onFs && <button data-ps-fs={fsState || "none"} disabled={!!fsState} onClick={() => { sfxTap(); onFs(p).then(setMsg); }} style={{ ...small, flexBasis: "100%", background: fsState ? C.panelHi : `${"#ffa94d"}2e`, color: fsState ? C.dim : "#ffb871", border: `1.5px solid ${fsState ? C.line : "#ffa94d88"}` }}>🔥 {T(fsState === "on" ? "fsHave" : fsState === "sent" ? "fsSent" : fsState === "full" ? "fsFull" : "fsInvite")}</button>}
         {isFriend && <button data-ps-remove onClick={() => twoTap("rm", () => onRemove(p))} style={{ ...small, color: sure === "rm" ? "#ff8a80" : C.chalk }}>{sure === "rm" ? T("frRemoveSure") : T("frRemove")}</button>}
         <button data-ps-block onClick={() => twoTap("bl", () => onBlock(p))} style={{ ...small, color: sure === "bl" ? "#ff8a80" : C.chalk }}>{sure === "bl" ? T("frBlockSure") : T("frBlock")}</button>
         <button data-ps-report onClick={() => { sfxTap(); onReport(p).then(m => { setMsg(m); setReported(String(m).startsWith("✓")); }); }} style={small}>{T("frReport")}</button>
@@ -5215,7 +5520,7 @@ function CountUp({ n, ms = 650 }) {
   return nf(v);
 }
 
-function FriendsTab({ acct, history, profile, social, chatWith, setChatWith, onBlocked, onSignIn, onCreate, onRename, onSetGlobal, setTopHead, modHidden }) {
+function FriendsTab({ acct, history, profile, social, chatWith, setChatWith, onBlocked, onSignIn, onCreate, onRename, onSetGlobal, setTopHead, modHidden, fx }) {
   const [age16, setAge16] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
@@ -5254,7 +5559,7 @@ function FriendsTab({ acct, history, profile, social, chatWith, setChatWith, onB
     );
   }
   if (!acct.prof) return <NickSetup initial={nickFrom(profile.name && profile.name !== "User" ? profile.name : "")} onSave={onCreate} />;
-  return <FriendsMain acct={acct} history={history} profile={profile} social={social} chatWith={chatWith} setChatWith={setChatWith} onBlocked={onBlocked} onRename={onRename} onSetGlobal={onSetGlobal} setTopHead={setTopHead} modHidden={modHidden} />;
+  return <FriendsMain acct={acct} history={history} profile={profile} social={social} chatWith={chatWith} setChatWith={setChatWith} onBlocked={onBlocked} onRename={onRename} onSetGlobal={onSetGlobal} setTopHead={setTopHead} modHidden={modHidden} fx={fx || {}} />;
 }
 
 function NickSetup({ initial, onSave, onCancel, title }) {
@@ -5280,10 +5585,12 @@ function NickSetup({ initial, onSave, onCancel, title }) {
   return <div className="scr" data-fr-nicksetup style={{ padding: "6px 18px 110px", maxWidth: 460, margin: "0 auto" }}><Sect title={T("frNickTitle")}>{body}</Sect></div>;
 }
 
-function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, chatWith, setChatWith, onBlocked, setTopHead, modHidden }) {
+function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, chatWith, setChatWith, onBlocked, setTopHead, modHidden, fx = {} }) {
   const wide = useWide();
   const me = { uid: acct.uid, ...acct.prof, ...cloudStats(history) };
   const [tab, setTab] = useState(() => (sessionStorage.getItem("hw-add") ? "friends" : chatWith ? "chats" : "board"));
+  const frDir = useRef(0), frPrev = useRef(tab);
+  if (frPrev.current !== tab) { const o = { board: 0, friends: 1, chats: 2 }; frDir.current = Math.sign(o[tab] - o[frPrev.current]); frPrev.current = tab; }
   const [scope, setScope] = useState("friends"); // board: friends | world
   const [world, setWorld] = useState(null);
   const blocked = social.blocked || [];
@@ -5304,7 +5611,15 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
   const loadWorld = () => { setErr(""); cloud().world(50).then(w => setWorld(w.map(x => ({ ...x, pfp: null })))).catch(e => { setWorld(w => w || []); setErr(cloudErr(e)); }); };
   useEffect(() => { try { sessionStorage.removeItem("hw-add"); } catch (_) {} }, []);
   useEffect(() => { if (scope === "world" && world === null) loadWorld(); }, [scope]);
+  // 1.8.0: the server writes the world entry after its check, so a new result reloads the list (joining shows you at once)
+  useEffect(() => { if (world !== null && fx.fair) loadWorld(); }, [fx.fair]);
   const friendIds = (friends || []).map(f => f.uid);
+  // 1.8.0 friend streaks
+  const fs = fx.fs || { list: [], days: {}, mine: [] };
+  const fsList = (fs.list || []).filter(f => friendIds.includes(f.other));
+  const fsStateOf = u => { const f = fsList.find(x => x.other === u); return f ? (f.ok ? "on" : f.by === acct.uid ? "sent" : "asked") : fsList.filter(x => x.ok || x.by === acct.uid).length >= FS_MAX ? "full" : null; };
+  const fsInvite = p => fs.invite(p.uid).then(() => { sfxCheck(); return "✓ " + T("fsSentMsg", { nick: p.nick }); }).catch(e => cloudErr(e) || T("frErr"));
+  const [fsEnd, setFsEnd] = useState(null);
   const sendTo = async (uid, nick) => {
     if (uid === acct.uid) return T("frSelf");
     if (friendIds.includes(uid)) return T("frAlready");
@@ -5367,14 +5682,14 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
   if (chatWith) {
     const p = people[chatWith] || { uid: chatWith, nick: "…" };
     return <ChatView setTopHead={setTopHead} me={acct.uid} other={p} th={((social.chats || []).find(c => c.other === chatWith) || {}).th} canWrite={friendIds.includes(chatWith)} onBack={() => setChatWith(null)} onOpen={() => { sfxTap(); setSheet(p); }}
-      sheet={<>{sheet && <PersonSheet p={sheet} isFriend={friendIds.includes(sheet.uid)} onClose={() => setSheet(null)} onAdd={x => sendTo(x.uid, x.nick).catch(cloudErr)}
+      sheet={<>{sheet && <PersonSheet p={sheet} isFriend={friendIds.includes(sheet.uid)} fsState={fsStateOf(sheet.uid)} onFs={fsInvite} onClose={() => setSheet(null)} onAdd={x => sendTo(x.uid, x.nick).catch(cloudErr)}
         onRemove={x => act(() => cloud().removeFriend(x.uid), () => setSheet(null))} onBlock={block} onReport={x => report(x)} onProfile={setView} />}
 </>}
       onReport={text => report(p, "message: " + text.slice(0, 280))} onBlock={block} />;
   }
   return (
     <div className="scr" data-fr-main style={{ padding: "6px 18px 110px", maxWidth: "var(--colMax)", margin: "0 auto" }}>
-      {sheet && <PersonSheet p={sheet} isFriend={friendIds.includes(sheet.uid)} onClose={() => setSheet(null)} onChat={friendIds.includes(sheet.uid) ? x => { setSheet(null); setChatWith(x.uid); } : null}
+      {sheet && <PersonSheet p={sheet} isFriend={friendIds.includes(sheet.uid)} fsState={fsStateOf(sheet.uid)} onFs={fsInvite} onClose={() => setSheet(null)} onChat={friendIds.includes(sheet.uid) ? x => { setSheet(null); setChatWith(x.uid); } : null}
         onAdd={p => sendTo(p.uid, p.nick).catch(cloudErr)} onRemove={p => act(() => cloud().removeFriend(p.uid), () => setSheet(null))}
         onBlock={block} onReport={p => report(p)} onProfile={setView} />}
       {delChat && (() => { const dp = people[delChat.other] || { nick: "…" }; return (
@@ -5392,8 +5707,8 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
           <Avatar profile={{ name: me.nick, pfp: profile.pfp }} size={54} />
           <div style={{ flex: 1, minWidth: 0 }}>
             <button data-fr-rename onClick={() => { sfxTap(); setRename(true); }} style={{ ...btnBase, background: "transparent", color: C.chalk, padding: 0, display: "flex", alignItems: "center", gap: 6, maxWidth: "100%" }}>
-              <span style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{me.nick}</span>
-              <span aria-hidden="true" style={{ fontSize: 13, opacity: 0.6 }}>✏️</span>
+              <span style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" , ...INK }}>{me.nick}</span>
+              <span aria-hidden="true" style={{ opacity: 0.6, color: C.dim }}><Ico n="pencil" size={14} /></span>
             </button>
             <div style={{ fontSize: 12, color: C.dim, marginTop: 2 }}>{T("frMyCode")}</div>
           </div>
@@ -5415,7 +5730,15 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
               </div>
             ) :
             <div style={{ ...card, ...tileR(), marginTop: 10, overflow: "hidden" }}>
-              <SettingRow first title={T("frWorldJoin")} desc={T("frWorldJoinD")} on={!!acct.prof.global} onClick={() => { sfxTap(); onSetGlobal(!acct.prof.global).then(() => setTimeout(loadWorld, 400)).catch(e => setErr(cloudErr(e))); }} />
+              <SettingRow first title={T("frWorldJoin")} desc={`${T("frWorldJoinD")} ${T("frFairD")}`} on={!!acct.prof.global} onClick={() => { sfxTap(); onSetGlobal(!acct.prof.global).then(() => setTimeout(loadWorld, 1200)).catch(e => setErr(cloudErr(e))); }} />
+              {/* 1.8.0: what the server counted for the world list, and why a place may wait for a check */}
+              {acct.prof.global && fx.fair && typeof fx.fair.n === "number" && (
+                <div data-fr-fair={fx.fair.wait ? "wait" : "ok"} style={{ padding: "0 16px 13px", fontSize: 12.5, color: C.dim, lineHeight: 1.5 }}>
+                  <div>{T("frFairLine", { n: fx.fair.n, s: fx.fair.streak || 0 })}</div>
+                  {fx.fair.wait && <div data-fr-fair-wait style={{ color: C.signal, fontWeight: 700, marginTop: 4 }}>{T("frFairWait")}</div>}
+                  {(fx.fair.flags || []).length > 0 && <div data-fr-fair-flags style={{ marginTop: 4 }}>{T("frFairWhy")} {fx.fair.flags.filter(f => FAIR_FLAGS.includes(f)).map(f => T("frFlag_" + f)).join(" · ")}</div>}
+                </div>
+              )}
             </div>
           )}
           <Sect style={{ padding: "12px 0 4px" }}>
@@ -5441,6 +5764,40 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
             </div>
             {addMsg && <div role="status" data-fr-add-msg style={{ fontSize: 13, color: addMsg.startsWith("✓") ? C.mint : C.dim, marginTop: 8 }}>{addMsg}</div>}
           </Sect>
+          {fsList.length > 0 && (
+            <Sect data-fs-box title={T("fsTitle")} meta={`${fsList.filter(f => f.ok).length}/${FS_MAX}`} style={{ padding: "15px 0 4px" }} titlePad="0 16px">
+              {fsList.map((f, i) => {
+                const p = people[f.other] || { uid: f.other, nick: "…" };
+                const st = f.ok ? friendStreak(fs.mine, fs.days[f.other] || [], f.start, dateKey()) : null;
+                return (
+                  <div key={f.id} data-fs-row={f.other} data-fs-n={st ? st.n : -1} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 16px", borderTop: i ? `1px solid ${C.line}` : "none" }}>
+                    <span style={{ position: "relative", width: 54, height: 40, flexShrink: 0 }}>
+                      <span style={{ position: "absolute", left: 0, top: 0 }}><PersonAvatar p={{ nick: acct.prof.nick, pfp: profile.pfp }} size={36} /></span>
+                      <span style={{ position: "absolute", left: 18, top: 4, borderRadius: 99, boxShadow: `0 0 0 2px ${C.panel}` }}><PersonAvatar p={p} size={36} /></span>
+                    </span>
+                    <span style={{ flex: 1, minWidth: 0 }}>
+                      <span style={{ display: "block", fontWeight: 800, color: C.chalk, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", ...INK }}>{p.nick}</span>
+                      <span style={{ display: "block", fontSize: 12, color: C.dim, lineHeight: 1.4 }}>
+                        {!f.ok ? (f.by === acct.uid ? T("fsWaiting") : T("fsAsks"))
+                          : st.n === 0 ? T("fsBroken")
+                          : [[st.meToday, st.meLast, T("fsYou")], [st.theyToday, st.theyLast, p.nick]].map(([td, last, who]) => (td ? "✓ " : last >= 2 ? "⚠ " : "") + who).join(" · ")}
+                      </span>
+                    </span>
+                    {f.ok ? <span data-fs-count style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, color: st.n ? "#ffa94d" : C.dim, whiteSpace: "nowrap" }}>🔥{st.n}</span>
+                      : f.by !== acct.uid ? <span role="button" tabIndex={0} data-fs-accept={f.other} onClick={() => act(() => fs.accept(f.other))} style={{ ...btnBase, background: "#ffa94d", color: C.ink, padding: "8px 11px", fontSize: 13, borderRadius: 10 }}>{T("frAccept")}</span> : null}
+                    <button type="button" data-fs-end={f.other} aria-label={T("fsEnd")} onClick={() => { sfxTap(); setFsEnd(f.other); }} style={{ ...btnBase, background: "transparent", color: C.dim, padding: "6px 4px", fontSize: 16 }}>✕</button>
+                  </div>
+                );
+              })}
+              <div style={{ fontSize: 12, color: C.dim, lineHeight: 1.45, padding: "6px 16px 10px" }}>{T("fsHow")}</div>
+            </Sect>
+          )}
+          {fsEnd && (
+            <Sheet short title={T("fsEnd")} onClose={() => setFsEnd(null)}>
+              <div style={{ fontSize: 14.5, color: C.dim, lineHeight: 1.5 }}>{T("fsEndD", { nick: (people[fsEnd] || {}).nick || "…" })}</div>
+              <button type="button" data-fs-end-yes onClick={() => { const u = fsEnd; setFsEnd(null); act(() => fs.end(u)); }} style={{ ...bigBtn("#e5484d", "#fff"), marginTop: 14 }}>{T("fsEnd")}</button>
+            </Sheet>
+          )}
           {reqs && reqs.length > 0 && (
             <Sect title={T("frRequests")} meta={String(reqs.length)} style={{ padding: "15px 0 4px" }} titlePad="0 16px">
               {reqs.map((p, i) => (
@@ -5487,9 +5844,11 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
         );
         const tabs = list => <div role="tablist" style={segBox}>{list.map(([id, l, n]) => <Fragment key={id}>{seg(tab === id, () => setTab(id), l, id, n)}</Fragment>)}</div>;
         const nReq = reqs ? reqs.length : 0, nChat = chats.filter(unread).length;
-        if (!wide) return <>{idCard}{tabs([["board", T("frBoard")], ["friends", T("frFriends"), nReq], ["chats", T("chMsgs"), nChat]])}{err && <div role="alert" style={{ fontSize: 13, color: "#ff8a80", marginTop: 10 }}>{err}</div>}{tab === "board" ? boardView : tab === "friends" ? friendsView : chatsView}</>;
+        // 1.8.0: the page slides in from the side of the tab you came from
+        const view = (id, v) => <div key={id} data-fr-view={id} className={frDir.current ? (frDir.current > 0 ? "frInR" : "frInL") : undefined}>{v}</div>;
+        if (!wide) return <>{idCard}{tabs([["board", T("frBoard")], ["friends", T("frFriends"), nReq], ["chats", T("chMsgs"), nChat]])}{err && <div role="alert" style={{ fontSize: 13, color: "#ff8a80", marginTop: 10 }}>{err}</div>}{view(tab, tab === "board" ? boardView : tab === "friends" ? friendsView : chatsView)}</>;
         const rt = tab === "chats" ? "chats" : "board";
-        return <Cols left={<>{idCard}{friendsView}</>} right={<>{tabs([["board", T("frBoard")], ["chats", T("chMsgs"), nChat]])}{err && <div role="alert" style={{ fontSize: 13, color: "#ff8a80", marginTop: 10 }}>{err}</div>}{rt === "board" ? boardView : chatsView}</>} />;
+        return <Cols left={<>{idCard}<div data-fr-view="friends">{friendsView}</div></>} right={<>{tabs([["board", T("frBoard")], ["chats", T("chMsgs"), nChat]])}{err && <div role="alert" style={{ fontSize: 13, color: "#ff8a80", marginTop: 10 }}>{err}</div>}{view(rt, rt === "board" ? boardView : chatsView)}</>} />;
       })()}
     </div>
   );
@@ -6490,7 +6849,7 @@ function Warmup({ done, setDone, onNext }) {
     <div>
       <div style={{ fontFamily: DISPLAY, fontSize: 48, fontWeight: 900, lineHeight: 0.95, color: C.chalk }}>{T("warmup")}</div>
       <div style={{ fontSize: 14, color: C.dim, marginTop: 8, lineHeight: 1.5 }}>{T("warmupHint")}</div>
-      <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 10 }}>
+      <div data-warmup-list style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 10 }}>
         {WARMUP.map((w, i) => (
           <div key={w.id} style={{ display: "flex", alignItems: "stretch", gap: 8 }}>
             <button onClick={() => { const n = [...done]; n[i] = !n[i]; if (n[i]) sfxCheck(); setDone(n); }} aria-pressed={!!done[i]}
@@ -6508,7 +6867,7 @@ function Warmup({ done, setDone, onNext }) {
           </div>
         ))}
       </div>
-      <button onClick={onNext} className="b3d" style={{ ...bigBtn(count === WARMUP.length ? C.signal : C.panelHi, count === WARMUP.length ? C.signalInk : C.chalk), marginTop: 18 }}>
+      <button data-warmup-go onClick={onNext} className="b3d" style={{ ...bigBtn(count === WARMUP.length ? C.signal : C.panelHi, count === WARMUP.length ? C.signalInk : C.chalk), marginTop: 18 }}>
         {count === WARMUP.length ? T("letsGo") : T("skipWarmup")}
       </button>
     </div>
@@ -6545,6 +6904,7 @@ function SwapSheet({ item, exclude, history, onPick, onClose }) {
   );
 }
 
+const MIN_REP_S = 0.6; // nobody does a clean rep faster (fast push-ups ~0.8–1 s)
 function Work({ item, rounds, history, sessionResults, onRecord, onSwap, exclude, onLive }) {
   const [swap, setSwap] = useState(false);
   const ex = EX[item.id];
@@ -6572,34 +6932,51 @@ function Work({ item, rounds, history, sessionResults, onRecord, onSwap, exclude
   // One arm / one leg at a time: right side first, then left (Michael, Oct 9). The weaker side is logged.
   const split = ex.type === "reps" && (ex.unit === "arm" || ex.unit === "leg");
   const [side, setSide] = useState("R");
+  // 1.8.0 basic fair play (Michael, Oct 25, 02:51: "only the basic anti-cheat things"): a set logged faster than clean
+  // reps can be done (MIN_REP_S a rep, both sides for one-arm/one-leg moves) asks first and offers what fits the time.
+  const shownAt = useRef(performance.now());
+  const [fast, setFast] = useState(null);
+  const recordFair = n => {
+    const secs = (performance.now() - shownAt.current) / 1000, per = MIN_REP_S * (split ? 2 : 1);
+    if (!window.__hwNoRepCheck && ex.type === "reps" && n > 3 && n * per > secs) { setFast({ n, secs: Math.round(secs), cap: Math.max(0, Math.floor(secs / per)) }); return; }
+    onRecord(n);
+  };
   const [rightReps, setRightReps] = useState(null);
   const sideName = sd => T(`side${sd}_${ex.unit}`);
 
+  // 1.8.0: durations hold 0 = Max: the time counts up until you stop (for records past the longest preset, e.g. the
+  // 10-minute Obsidian plank). After a hold longer than every preset, Max is preselected.
   const initDur = () => {
     if (ex.type !== "time") return 0;
     if (goal !== null) return goal;
+    if (prevVal !== null && prevVal >= Math.max(...ex.durs)) return 0;
     if (prevVal !== null && ex.durs.includes(prevVal)) return prevVal;
     return ex.dur;
   };
   const [dur, setDur] = useState(initDur);
   const [ph, setPh] = useState("ready"); // ready | prep | hold
   const [endAt, setEndAt] = useState(null);
+  const [upFrom, setUpFrom] = useState(null); // Max: when the hold started
+  const [, upTick] = useState(0);
+  useEffect(() => { if (!upFrom) return; const iv = setInterval(() => upTick(x => x + 1), 250); return () => clearInterval(iv); }, [upFrom]);
+  const upSecs = upFrom ? Math.max(0, Math.floor((Date.now() - upFrom) / 1000)) : 0;
 
   const left = useCountdown(endAt,
     () => {
-      if (ph === "prep") { soundExercise(); setPh("hold"); setEndAt(Date.now() + dur * 1000); }
+      if (ph === "prep") { soundExercise(); setPh("hold"); if (dur === 0) { setEndAt(null); setUpFrom(Date.now()); } else setEndAt(Date.now() + dur * 1000); }
       else if (ph === "hold") { soundExercise(); vibrate([250]); setEndAt(null); onRecord(`${dur}s`); }
     },
     () => { if (ph === "prep") soundPrepEnd(); }
   );
 
   // Tell the app about a running hold/prep timer (for the mini player when the workout is minimized).
-  useEffect(() => { if (onLive) onLive(ph === "ready" || !endAt ? null : { kind: ph, endAt, total: ph === "prep" ? 5 : dur }); }, [ph, endAt]);
+  useEffect(() => { if (onLive) onLive(upFrom ? { kind: "up", from: upFrom } : ph === "ready" || !endAt ? null : { kind: ph, endAt, total: ph === "prep" ? 5 : dur }); }, [ph, endAt, upFrom]);
   useEffect(() => () => { if (onLive) onLive(null); }, []);
   const startHold = () => { unlockAudio(); setPh("prep"); setEndAt(Date.now() + 5000); };
   const stopHold = () => {
     unlockAudio();
     if (ph === "prep") { setPh("ready"); setEndAt(null); return; }
+    if (upFrom) { const held = Math.max(1, upSecs); setUpFrom(null); soundExercise(); vibrate([250]); onRecord(`${held}s`); return; }
     const held = Math.max(1, dur - left);
     setEndAt(null);
     onRecord(`${held}s`);
@@ -6612,6 +6989,13 @@ function Work({ item, rounds, history, sessionResults, onRecord, onSwap, exclude
   return (
     <div>
       {how && <HowTo id={item.id} history={history} onClose={() => setHow(false)} onSwap={onSwap && ph === "ready" ? () => { sfxTap(); setHow(false); setSwap(true); } : null} />}
+      {fast && (
+        <Sheet short title={T("fastT")} onClose={() => setFast(null)}>
+          <div data-fast style={{ fontSize: 14.5, color: C.chalk, lineHeight: 1.5 }}>{T("fastD", { n: fast.n, s: fast.secs })}</div>
+          <button type="button" data-fast-fix onClick={() => { sfxTap(); const n = fast.cap; setFast(null); setReps(n); onRecord(n); }} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 14 }}>{T("fastFix", { n: fast.cap })}</button>
+          <button type="button" data-fast-back onClick={() => { sfxTap(); setFast(null); }} style={{ ...ghostBtn, width: "100%", marginTop: 8, padding: "13px 14px", fontSize: 15, color: C.chalk }}>{T("fastBack")}</button>
+        </Sheet>
+      )}
       {swap && <SwapSheet item={item} exclude={exclude || []} history={history} onClose={() => setSwap(false)} onPick={id => { setSwap(false); sfxCheck(); onSwap(item.slot, id); }} />}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10 }}>
         <div style={{ fontFamily: DISPLAY, fontSize: fitFont(ex.name, 46), fontWeight: 900, lineHeight: 0.95, color: C.chalk, flex: 1, minWidth: 0, hyphens: "auto", overflowWrap: "break-word" }}>{ex.name}<ExQ id={item.id} onOpen={() => setHow(true)} style={{ width: 19, height: 19, fontSize: 11, marginLeft: 8, verticalAlign: "0.2em" }} /></div>
@@ -6630,7 +7014,7 @@ function Work({ item, rounds, history, sessionResults, onRecord, onSwap, exclude
           <div data-goal style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 10, background: hit ? `${C.mint}1f` : LOOK === "liquid" ? "rgba(255,255,255,.07)" : C.panel, border: `1.5px solid ${hit ? C.mint : C.signal}66`, borderRadius: 14, padding: "9px 12px" }}>
             <span className={hit ? "pop" : ""} key={hit ? "hit" : "aim"} style={{ fontFamily: DISPLAY, fontWeight: 900, fontSize: 20, lineHeight: 1, color: hit ? C.mint : C.signal, border: `2px solid ${hit ? C.mint : C.signal}`, borderRadius: 10, padding: "3px 7px", flexShrink: 0 }}>{hit ? "✓" : ex.type === "time" ? "↑" : "+1"}</span>
             <div style={{ fontSize: 13, color: C.chalk, lineHeight: 1.4 }}>
-              {goal === null ? T("goalTop", { v: `${prevVal}${unit}` }) : hit ? T("goalHit", { v: `${goal}${unit}` }) : T("goalLine", { v: `${prevVal}${unit}`, g: `${goal}${unit}` })}
+              {goal === null ? T(ex.type === "time" ? "goalMax" : "goalTop", { v: `${prevVal}${unit}` }) : hit ? T("goalHit", { v: `${goal}${unit}` }) : T("goalLine", { v: `${prevVal}${unit}`, g: `${goal}${unit}` })}
               <div style={{ fontSize: 12, color: C.dim }}>{T("goalOk")}</div>
             </div>
           </div>
@@ -6638,7 +7022,7 @@ function Work({ item, rounds, history, sessionResults, onRecord, onSwap, exclude
       })()}
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
         <RankBadge id={item.id} best={best} />
-        {RANK_AT[item.id] && (() => { const n = rankNext(item.id, best); return n ? <span style={{ fontSize: 12, color: C.dim }}>{n.rank.icon} {T("rankFrom", { rank: n.rank.name, v: `${n.at}${ex.type === "time" ? " s" : ""}` })}</span> : <span style={{ fontSize: 12, color: C.dim }}>{T("topRank")}</span>; })()}
+        {RANK_AT[item.id] && (() => { const n = rankNext(item.id, best); return n ? <span style={{ fontSize: 12, color: C.dim }}>{n.rank.icon} {T("rankFrom", { rank: n.rank.name, v: rankVal(item.id, n.at) })}</span> : <span style={{ fontSize: 12, color: C.dim }}>{T("topRank")}</span>; })()}
         {item.slot !== item.id && <span style={{ fontSize: 12, color: C.sky }}>{T("replacing", { name: EX[item.slot].name })}</span>}
       </div>
       {lvl && item.r === 0 && (
@@ -6698,7 +7082,7 @@ function Work({ item, rounds, history, sessionResults, onRecord, onSwap, exclude
               {T("sideNext", { side: sideName("L") })}
             </button>
           ) : (
-            <button onClick={() => { unlockAudio(); onRecord(split && rightReps !== null ? Math.min(rightReps, reps) : reps); }} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 22, fontSize: 18, padding: 19 }}>
+            <button data-done-btn onClick={() => { unlockAudio(); recordFair(split && rightReps !== null ? Math.min(rightReps, reps) : reps); }} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 22, fontSize: 18, padding: 19 }}>
               {T("doneBtn", { v: `${split && rightReps !== null ? Math.min(rightReps, reps) : reps}${unitStr(ex.unit)}` })}
             </button>
           )}
@@ -6713,12 +7097,12 @@ function Work({ item, rounds, history, sessionResults, onRecord, onSwap, exclude
           {ph === "ready" && (
             <>
               <div style={{ display: "flex", gap: 8, justifyContent: "center", marginTop: 24 }}>
-                {ex.durs.map(d => (
-                  <button key={d} onClick={() => setDur(d)} style={{ ...btnBase, padding: "10px 14px", fontSize: 15, background: dur === d ? C.chalk : "transparent", color: dur === d ? C.ink : C.dim, border: `1.5px solid ${dur === d ? C.chalk : C.line}` }}>{d} s</button>
+                {[...ex.durs, 0].map(d => (
+                  <button key={d} data-dur={d} onClick={() => setDur(d)} aria-pressed={dur === d} style={{ ...btnBase, padding: "10px 12px", fontSize: 15, background: dur === d ? C.chalk : "transparent", color: dur === d ? C.ink : C.dim, border: `1.5px solid ${dur === d ? C.chalk : C.line}` }}>{d ? `${d} s` : T("holdMax")}</button>
                 ))}
               </div>
-              <div style={{ fontFamily: DISPLAY, fontSize: 132, fontWeight: 900, lineHeight: 0.85, color: C.chalk, textAlign: "center", marginTop: 20 }}>{dur}</div>
-              <div style={{ fontSize: 13, color: C.dim, textAlign: "center", marginTop: 4 }}>{T("secondsHint")}</div>
+              <div style={{ fontFamily: DISPLAY, fontSize: 132, fontWeight: 900, lineHeight: 0.85, color: C.chalk, textAlign: "center", marginTop: 20 }}>{dur || "∞"}</div>
+              <div style={{ fontSize: 13, color: C.dim, textAlign: "center", marginTop: 4, lineHeight: 1.45 }}>{dur ? T("secondsHint") : T("holdMaxHint")}</div>
               <button onClick={startHold} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 22, fontSize: 18, padding: 19 }}>{T("start")}</button>
             </>
           )}
@@ -6733,8 +7117,8 @@ function Work({ item, rounds, history, sessionResults, onRecord, onSwap, exclude
           )}
           {ph === "hold" && (
             <div style={{ marginTop: 22, textAlign: "center" }}>
-              <Ring value={left} total={dur} size={230} color={C.chalk}>
-                <div style={{ fontFamily: DISPLAY, fontSize: 110, fontWeight: 900, lineHeight: 0.85, color: C.chalk }}>{left}</div>
+              <Ring value={upFrom ? (upSecs % 60 || (upSecs ? 60 : 0)) : left} total={upFrom ? 60 : dur} size={230} color={upFrom ? C.signal : C.chalk}>
+                <div data-hold-up={upFrom ? upSecs : undefined} style={{ fontFamily: DISPLAY, fontSize: upFrom && upSecs >= 60 ? 84 : 110, fontWeight: 900, lineHeight: 0.85, color: C.chalk, fontVariantNumeric: "tabular-nums" }}>{upFrom ? (upSecs >= 60 ? `${Math.floor(upSecs / 60)}:${String(upSecs % 60).padStart(2, "0")}` : upSecs) : left}</div>
                 <div style={{ fontSize: 14, color: C.dim, marginTop: 4 }}>{T("hold")}</div>
               </Ring>
               <button onClick={stopHold} style={{ ...ghostBtn, marginTop: 18 }}>{T("giveUp")}</button>
@@ -6828,7 +7212,7 @@ function Rest({ rest, nextItem, rounds, onEnd, onAdd }) {
       {rest.pr && <Confetti count={55} />}
       <div className="pop" style={{ fontFamily: DISPLAY, fontSize: 34, fontWeight: 900, lineHeight: 1, color: rest.pr ? C.signal : C.chalk }}>{rest.cheer || T("cheerDefault")}</div>
       <div style={{ fontSize: 14, color: C.sky, fontWeight: 700, marginTop: 6 }}>{newRound ? T("roundDone", { r: nextItem.r + 1, n: rounds }) : T("rest")}</div>
-      <div style={{ marginTop: 18 }}>
+      <div data-rest-timer style={{ marginTop: 18 }}>
         <Ring value={left} total={rest.total} size={250} color={C.sky}>
           <div className={left <= 3 && left > 0 ? "pulse" : ""} style={{ fontFamily: DISPLAY, fontSize: 124, fontWeight: 900, lineHeight: 0.85, color: left <= 3 ? C.signal : C.chalk }}>{left}</div>
         </Ring>
@@ -6838,12 +7222,12 @@ function Rest({ rest, nextItem, rounds, onEnd, onAdd }) {
       <div style={{ fontSize: 13, color: C.dim, marginTop: 4 }}>{T("prepare")}</div>
       {(rest.tip || rest.moti) && (
         <div style={{ marginTop: 18, background: C.panel, border: `1px solid ${C.line}`, borderRadius: 16, padding: "12px 14px", textAlign: "left" }}>
-          {rest.tip && <div style={{ fontSize: 14, color: C.sky, fontWeight: 600, lineHeight: 1.45 }}>💡 {rest.tip}</div>}
+          {rest.tip && <div style={{ fontSize: 14, color: C.sky, fontWeight: 600, lineHeight: 1.45, display: "flex", gap: 7, alignItems: "flex-start" }}><Ico n="bulb" size={18} style={{ marginTop: 2 }} /><span>{rest.tip}</span></div>}
           {rest.moti && <div style={{ fontSize: 16, color: C.chalk, fontWeight: 800, marginTop: 6 }}>{rest.moti}</div>}
         </div>
       )}
       <div style={{ display: "flex", gap: 10, marginTop: 22 }}>
-        <button onClick={onAdd} style={{ ...ghostBtn, flex: 1, padding: 14, fontSize: 14 }}>+15 s</button>
+        <button data-rest-add onClick={onAdd} style={{ ...ghostBtn, flex: 1, padding: 14, fontSize: 14 }}>+15 s</button>
         <button onClick={() => { unlockAudio(); onEnd(); }} style={{ ...btnBase, flex: 2, padding: 14, fontSize: 15, background: C.panelHi, color: C.chalk }}>{T("ready")}</button>
       </div>
     </div>
@@ -6915,19 +7299,1382 @@ function Cool({ onFinish }) {
 // the rarer it is. A tap flips it: light rays, a burst, a flash, a rising sound and a vibration, all bigger with the
 // rarity (Diamond also shakes the screen). The cards come from the most common to the rarest, so the best is last.
 const REV_KIND = { pr: 0, ach: 1, rank: 2, lvl: 3 };
-const REV_BUZZ = [[30], [40], [50, 30, 60], [60, 40, 90], [70, 40, 70, 40, 160], [80, 40, 80, 40, 80, 40, 220], [110, 50, 110, 50, 110, 50, 340]];
-const achCard = a => { const rk = RANKS[a.tier - 1]; return { kind: "ach", k: a.k, r: a.tier - 1, icon: a.icon, name: a.name, rank: rk, col: rk.color }; };
-const rankCard = (id, ri) => { const rk = RANKS[ri]; return { kind: "rank", k: id, r: ri, icon: rk.icon, name: EX[id] ? EX[id].name : id, rank: rk, col: rk.color }; };
+const REV_BUZZ = [[40], [50, 30, 60], [60, 40, 90], [70, 40, 70, 40, 160], [80, 40, 80, 40, 80, 40, 220], [90, 40, 90, 40, 90, 40, 260], [100, 45, 100, 45, 100, 45, 300], [110, 50, 110, 50, 110, 50, 340], [130, 50, 130, 50, 130, 50, 130, 50, 420]];
+const achCard = a => { const rk = RANKS[a.tier - 1]; return { kind: "ach", k: a.k, r: a.tier - 1, icon: a.icon, name: a.name, rank: a.single ? { icon: "✦", name: rarityName(a), color: rk.color } : rk, col: rk.color }; };
+// 1.8.0: "Rare", "Epic" or "Legendary" for a single badge
+const rarityName = a => T("rar_" + (RARITY[a.rk[0]] || "rare"));
+// 1.8.0 (Michael: "Iron must feel like a reward, not just appear"): the first rank of a new exercise is its own card:
+// "New exercise" on top, the line under it says what Bronze needs.
+const rankCard = (id, ri, unlock) => {
+  const rk = RANKS[ri], at = RANK_AT[id];
+  const nx = at && ri < at.length ? `${T("achNext", { rank: RANKS[ri + 1].name })} ${rankVal(id, at[ri])}` : "";
+  return { kind: "rank", k: id, r: ri, icon: rk.icon, name: EX[id] ? EX[id].name : id, rank: rk, col: rk.color, ...(unlock || ri === 0 ? { unlock: 1, sub: `${T("revUnlockD")}${nx ? " " + nx : ""}` } : {}) };
+};
 function revealList(entry, newAch, xpBefore, gained) {
   if (!entry) return [];
   const out = [];
   if (entry.prs && entry.prs.length) out.push({ kind: "pr", r: Math.min(3, entry.prs.length), icon: "🏆", name: TP("prs", entry.prs.length), sub: entry.items.filter(it => entry.prs.includes(it.id)).map(exName).join(", "), col: C.signal });
   newAch.forEach(a => out.push(achCard(a)));
-  (entry.rankUps || []).forEach(ru => out.push(rankCard(ru.id, ru.to)));
+  (entry.rankUps || []).forEach(ru => out.push(rankCard(ru.id, ru.to, ru.u)));
   const l0 = levelInfo(xpBefore).lvl, l1 = levelInfo(xpBefore + gained).lvl;
   if (l1 > l0) { const r = lvRank(l1); out.push({ kind: "lvl", r, icon: "⚡", name: `${T("level")} ${l1}`, col: C.sky }); }
   return out.sort((a, b) => a.r - b.r || REV_KIND[a.kind] - REV_KIND[b.kind]);
 }
+// ─── CARD GAME (1.8.0, Michael, Oct 24; offline against the bot with its own levels, ranked against
+// players). The rules live in src/game/engine.js (shared with the push server, which replays ranked games). Your
+// training gives the deck its strength (the best rank in each exercise type), perks come from training too.
+// A game in progress is kept as its moves (domaci-trening-v1-game) and replayed when the app opens again.
+const GAME_KEY = "domaci-trening-v1-game";
+// 1.8.0 (Michael): the offline Run first; Duel and Ranked are shown locked ("coming soon") and switched on later
+// (the engine, the bot and the server's ranked check are already in place: worker/index.js rk-start / rk-end).
+const DUEL_ON = false, RANKED_ON = false;
+// intensity levels (shown as "intensity", internally still "stake"): cool to hot
+const STAKE_COL = ["#8fd3ff", "#3ddc84", "#ffd23f", "#ff8a3d", "#ff4d5e"];
+const stakeXp = k => 1 + 0.5 * k; // +50 % game XP per stake
+const SUIT_COL = { push: "#ff6b5b", pull: "#3d9bff", legs: "#21b36b", core: "#9a5cff" };
+const JOKER_ICON = { joker: "🃏", chips: "🪙", pairs: "🤝", threes: "🎲", straights: "📏", flushes: "🌊", circuit: "🔄", warmup: "🔥", faces: "👑", aces: "⭐", lastround: "⏱️", even: "⚖️", odd: "🌀", momentum: "🚀", bank: "🏦", five: "✋", fullbody: "🧍", pr: "🏅", hof: "🏛️", coach: "📣", ironcore: "🧱", rest: "🛌", short: "✂️", spotter: "👀", coupon: "🎟️", fresh: "🌱", slate: "🧽", bighand: "🖐️", compound: "📈", solo: "☝️", wind: "🌬️", specialist: "🎯", overload: "🏋️", double: "✌️" };
+// Kapoke = Muscle Deck's money (Michael, Oct 25: "a special sign made only of K"; the name stays the same in every
+// language, like Muscle Deck). In the game texts "$" stands for it; withK() draws the sign in its place.
+const COIN = "Kapoke";
+function KSign({ size = "0.86em" }) {
+  return (
+    <svg viewBox="0 0 20 24" aria-label={COIN} role="img" style={{ display: "inline-block", width: size, height: size, verticalAlign: "-0.1em", marginRight: "0.04em", overflow: "visible" }}>
+      <path d="M7 2.5v19M17 2.5 7.5 13l9.5 8.5" fill="none" stroke="currentColor" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M2 9.5h9M2 14.5h9" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" />
+    </svg>
+  );
+}
+const withK = str => { const parts = String(str).split("$"); return parts.length === 1 ? str : parts.flatMap((x, i) => (i ? [<KSign key={i} />, x] : [x])); };
+// joker rarity colours: common, uncommon, rare, legendary (gold, with the foil shine)
+const RAR_COL = () => [C.sky, C.mint, "#ff7ad9", "#ffb02e"];
+const VOUCHER_ICON = { membership: "🎫", extraset: "➕", resttimer: "⏱️", discount: "🏷️", bigbag: "🎒", savings: "🐷", restock: "🛒", scout: "🔭" };
+const PACK_ICON = { jpack: "🎁", dpack: "📦" };
+const PERK_ICON = { streak: "🔥", volume: "💰", warmup: "🤸", endurance: "⏳", allround: "🧩", obsidian: "🌋" };
+const gameLoad = () => { try { return JSON.parse(localStorage.getItem(GAME_KEY) || "null"); } catch (_) { return null; } };
+const gameSave = g => { try { if (g) localStorage.setItem(GAME_KEY, JSON.stringify(g)); else localStorage.removeItem(GAME_KEY); } catch (_) {} };
+const cardVal = c => { const v = GM.valueOf(c); return v <= 10 ? String(v) : ["J", "Q", "K", "A"][v - 11]; };
+const jName = id => (L.gm && L.gm.j && L.gm.j[id] ? L.gm.j[id][0] : id);
+const jDesc = id => (L.gm && L.gm.j && L.gm.j[id] ? L.gm.j[id][1] : "");
+const handName = h => (L.gm && L.gm.h ? L.gm.h[GM.HANDS.indexOf(h)] : h);
+// your training for the game, from your own history with the same check the server uses for ranked
+function localLoadout(history, profile) {
+  const st = fairStats(history, { today: dateKey(), freezeDays: (profile && profile.freezeDays) || [] });
+  return GM.loadout({ bests: st.bests, streak: streakInfo(history, dateKey()).n, n: st.n });
+}
+function SuitIcon({ s, size = 14, col }) {
+  const c = col || SUIT_COL[s];
+  const d = { push: "M12 3 L22 20 H2 Z", pull: "M2 4 H22 L12 21 Z", core: "M12 1.5 L22.5 12 L12 22.5 L1.5 12 Z" }[s];
+  return <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true" style={{ flexShrink: 0, display: "block" }}>{s === "legs" ? <circle cx="12" cy="12" r="9.5" fill={c} /> : <path d={d} fill={c} strokeLinejoin="round" stroke={c} strokeWidth="1.5" />}</svg>;
+}
+// out = selected but not part of the hand (it adds nothing); still = a small picture in a guide or a breakdown
+function PlayCard({ c, sel, onClick, w = 64, bests, dead, pop, i = 0, deal, out, still, glow }) {
+  const s = GM.suitOf(c), v = GM.valueOf(c), col = SUIT_COL[s], face = v >= 11 && v <= 13;
+  const ex = face ? GM.faceExercise(c, bests) : null;
+  const Tag = still ? "span" : "button";
+  return (
+    <Tag type={still ? undefined : "button"} data-card={still ? undefined : c} data-mini={still ? c : undefined} data-out={out ? 1 : undefined} data-glow={glow ? 1 : undefined} data-sel={still ? undefined : sel ? 1 : 0} onClick={onClick} className={(deal ? "gmDeal " : "") + (pop ? "gmPop" : "") + (glow ? " gmGlowCard" : "")} aria-pressed={still ? undefined : !!sel}
+      aria-label={`${cardVal(c)} ${T("grp_" + s)}${ex ? " · " + EX[ex].name : ""}`} role={still ? "img" : undefined}
+      style={{ ...btnBase, display: still ? "inline-block" : undefined, verticalAlign: "middle", position: "relative", width: w, height: Math.round(w * 1.4), flexShrink: 0, padding: 0, borderRadius: Math.round(w * 0.14), background: dead ? "#c9c3b5" : "#f7f3ea", color: col, border: `2px solid ${sel ? C.signal : "rgba(0,0,0,.18)"}`, boxShadow: sel ? `0 0 0 2px ${C.signal}, 0 10px 22px rgba(0,0,0,.45)` : "0 4px 12px rgba(0,0,0,.35)", transform: sel ? "translateY(-14px)" : "none", transition: `transform ${MO.t1} ${MO.ease}, box-shadow ${MO.t1}`, overflow: "hidden", "--dl": `${i * 45}ms`, opacity: dead ? 0.7 : out ? 0.45 : 1, filter: out ? "saturate(.35)" : undefined }}>
+      <span style={{ position: "absolute", left: 5, top: 3, fontFamily: DISPLAY, fontSize: Math.round(w * 0.3), fontWeight: 900, lineHeight: 1 }}>{cardVal(c)}</span>
+      <span style={{ position: "absolute", left: 6, top: Math.round(w * 0.36) }}><SuitIcon s={s} size={Math.round(w * 0.17)} /></span>
+      <span style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", padding: `${Math.round(w * 0.32)}px 4px 4px` }}>
+        {face
+          ? <span style={{ fontSize: Math.max(8, Math.round(w * 0.135)), fontWeight: 800, color: "#2a2a35", lineHeight: 1.1, textAlign: "center", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden", overflowWrap: "anywhere" }}>{EX[ex].name}</span>
+          : <SuitIcon s={s} size={Math.round(w * 0.42)} />}
+      </span>
+      {dead && <span aria-hidden="true" style={{ position: "absolute", inset: 0, background: "repeating-linear-gradient(45deg, rgba(0,0,0,.18) 0 4px, transparent 4px 9px)" }} />}
+    </Tag>
+  );
+}
+// 1.8.0 (Michael, Oct 25: "why do I get 42 here and 35 there, why is the multiplier 3 here and 11 there?"): every step
+// of a score, in the order the game adds it: the hand's base, each scored card (its value + your rank bonus), jokers
+// (+ adds, × multiplies what is there so far), perks; the cards that don't count, and the total.
+function ScoreWhy({ g, cards, bests, onClose }) {
+  const sc = GM.scoreOf(g, cards), lv = (g.levels || {})[sc.hand] || 0;
+  const out = cards.filter(c => !sc.scored.includes(c));
+  let chips = GM.HAND_BASE[sc.hand][0] + GM.HAND_UP[sc.hand][0] * lv, mult = GM.HAND_BASE[sc.hand][1] + GM.HAND_UP[sc.hand][1] * lv;
+  const rows = [{ k: "hand", icon: null, name: `${handName(sc.hand)}${lv ? " · " + T("gmLv", { n: lv + 1 }) : ""}`, d: T("gmWhyBase"), chips, mult, plus: `${chips} × ${mult}` }];
+  for (const st of sc.steps) {
+    const before = mult;
+    if (st.chips) chips += st.chips;
+    if (st.mult) mult += st.mult;
+    if (st.x) mult = Math.round(mult * st.x * 100) / 100;
+    const plus = [st.chips ? `+${st.chips}` : "", st.mult ? `+${st.mult} ${T("gmMultShort")}` : "", st.x ? `× ${st.x} ${T("gmMultShort")} (${fmtM(before)} → ${fmtM(mult)})` : ""].filter(Boolean).join(" ");
+    if (st.dead) rows.push({ k: "dead", c: st.c, name: `${cardVal(st.c)} ${T("grp_" + GM.suitOf(st.c))}`, d: T("gmWhyDead"), plus: "+0" });
+    else if (st.j) rows.push({ k: "j", c: st.c, j: st.j, name: jName(st.j), d: withK(jDesc(st.j)), plus });
+    else if (st.p) rows.push({ k: "p", p: st.p, name: L.gm.perk[st.p][0], d: L.gm.perk[st.p][1], plus });
+    else {
+      const s = GM.suitOf(st.c), base = GM.chipsOf(st.c), bonus = st.chips - base, rk = g.suit[s] >= 0 ? RANKS[g.suit[s]] : null;
+      rows.push({ k: "card", c: st.c, name: `${cardVal(st.c)} ${T("grp_" + s)}`, d: bonus > 0 && rk ? T("gmWhyCardRk", { v: base, rank: `${rk.icon} ${rk.name}`, n: bonus }) : T("gmWhyCard", { v: base }), plus: `+${st.chips}` });
+    }
+  }
+  return (
+    <Sheet title={T("gmWhyT")} onClose={onClose}>
+      <div data-gm-why-sheet style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+        {rows.map((r, i) => (
+          <div key={i} data-why-row={r.k} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", borderRadius: 12, background: SOFT() }}>
+            <span style={{ width: 34, flexShrink: 0, display: "flex", justifyContent: "center" }}>
+              {r.c !== undefined && r.k !== "j" ? <PlayCard c={r.c} w={30} still bests={bests} dead={r.k === "dead"} />
+                : r.k === "j" ? <span aria-hidden="true" style={{ fontSize: 22 }}>{r.j.startsWith("fan_") ? <SuitIcon s={r.j.slice(4)} size={20} /> : JOKER_ICON[r.j] || "🃏"}</span>
+                : r.k === "p" ? <span aria-hidden="true" style={{ fontSize: 22 }}>{PERK_ICON[r.p]}</span>
+                : <span aria-hidden="true" style={{ fontSize: 22 }}>🂠</span>}
+            </span>
+            <span style={{ flex: 1, minWidth: 0 }}>
+              <span style={{ display: "block", fontWeight: 800, fontSize: 14.5 }}>{r.name}</span>
+              <span style={{ display: "block", fontSize: 12, color: C.dim, lineHeight: 1.35 }}>{r.d}</span>
+            </span>
+            <span style={{ fontFamily: DISPLAY, fontWeight: 900, fontSize: 16, color: r.k === "dead" ? C.dim : C.chalk, textAlign: "right", maxWidth: "42%" }}>{r.plus}</span>
+          </div>
+        ))}
+        {out.length > 0 && (
+          <div data-why-out style={{ padding: "8px 10px", borderRadius: 12, border: `1px dashed ${C.line}` }}>
+            <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginBottom: 6 }}>{out.map(c => <PlayCard key={c} c={c} w={30} still out bests={bests} />)}</div>
+            <div style={{ fontWeight: 800, fontSize: 14 }}>{T("gmWhyOut")}</div>
+            <div style={{ fontSize: 12, color: C.dim, lineHeight: 1.4 }}>{T("gmWhyOutD", { hand: handName(sc.hand) })}</div>
+          </div>
+        )}
+        <div data-why-total style={{ marginTop: 6, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, flexWrap: "wrap" }}>
+          <ScoreBox chips={sc.chips} mult={sc.mult} total={sc.score} />
+        </div>
+        <div style={{ fontSize: 12.5, color: C.dim, textAlign: "center", lineHeight: 1.4 }}>{T("gmWhyTotal")}</div>
+      </div>
+    </Sheet>
+  );
+}
+const fmtM = m => (Number.isInteger(m) ? String(m) : m.toFixed(2).replace(/0$/, ""));
+function JokerChip({ id, onClick, sell, buy, price, small, glow }) {
+  const r = GM.JOKERS[id] ? GM.JOKERS[id].r : 0, col = RAR_COL()[r];
+  return (
+    <button type="button" data-joker={id} onClick={onClick} className={glow ? "gmGlow" : undefined}
+      style={{ ...btnBase, width: small ? 66 : 92, minHeight: small ? 80 : 118, flexShrink: 0, padding: small ? "6px 4px" : "8px 6px", borderRadius: 12, background: `linear-gradient(160deg, ${col}33, ${C.panelHi})`, border: `1.5px solid ${col}`, color: C.chalk, display: "flex", flexDirection: "column", alignItems: "center", gap: 4, fontWeight: 700, "--gc": col }}>
+      <span aria-hidden="true" style={{ fontSize: small ? 22 : 28, lineHeight: 1, height: small ? 24 : 30, display: "flex", alignItems: "center" }}>{id.startsWith("fan_") ? <SuitIcon s={id.slice(4)} size={small ? 20 : 26} /> : JOKER_ICON[id] || "🃏"}</span>
+      <span style={{ fontSize: small ? 10.5 : 12, lineHeight: 1.15, textAlign: "center", overflowWrap: "anywhere" }}>{jName(id)}</span>
+      {(buy || sell) && <span style={{ marginTop: "auto", fontSize: 12, fontWeight: 900, color: buy ? C.signal : C.dim }}>{buy ? <><KSign />{price}</> : <>+<KSign />{price}</>}</span>}
+    </button>
+  );
+}
+// ─── DIAMONDS, SHOP, PROFILE LOOKS (1.9.0) ─────────────────────────────────────────────────────────────────────
+// Michael (Oct 25, 2026): "start the shop and the diamonds, so things make sense together"; plan artifact
+// KCqpwBSTCXDimUwVj7rEA8. The numbers and rules live in src/economy.js (EC). Diamonds are derived from training
+// (workouts that weren't added by hand, streaks, badge levels, exercise ranks, Muscle Deck runs, weekly chests) minus
+// what was bought; nothing here helps in the game's Ranked or the world list. Money and ads come later (Google Play).
+const CHEST_FROM = "2026-10-19"; // weekly chests start with the week 1.9.0 was built (no pile of old chests)
+const LK_PINK = "#ff7ab6", LK_VIOLET = "#a78bfa";
+// What the economy counts: only workouts you did in the app (not added by hand) and no badges that live on one phone
+// (calories, steps, Health Connect), so every device shows the same number.
+function econInput(history, profile) {
+  const h = history.filter(e => !e.manual);
+  const ach = achievements(h, achExtra(profile, null, h)).filter(a => !CARD_HIDE.includes(a.k));
+  const ranks = {};
+  Object.keys(RANK_AT).forEach(id => { const b = bestFor(h, id); if (typeof b === "number" && isFinite(b)) ranks[id] = rankIdx(id, b); });
+  return { dates: h.map(e => e.date), freezeDays: profile.freezeDays || [], ach, ranks, runsWon: (profile.game && profile.game.rw) || 0, chests: EC.chestDiamonds(profile) };
+}
+// Looks you own: bought or from a chest, plus the ones won by playing.
+function lookGot(inp) {
+  const a = k => inp.ach.find(x => x.k === k) || {};
+  const g = k => !!a(k).step;
+  return { obsidian: g("obsidian"), early: g("early"), night: g("night"), comeback: g("comeback"), deck: g("deck"), streak30: (a("streak").v || 0) >= 30, season: false,
+    allDiamond: g("allDiamond"), marathon: g("marathon"), midnight: g("midnight"), triple: g("triple"), frozen: g("frozen"), bdayW: g("bdayWorkout"), newyear: g("newyear") };
+}
+function econState(history, profile) {
+  const inp = econInput(history, profile), sh = EC.shopOf(profile), earned = EC.earned(inp);
+  const own = [...new Set([...sh.own, ...EC.wonLooks(lookGot(inp))])];
+  return { inp, sh, earned, bal: earned.total - sh.spent, own, chests: readyChests(history, profile) };
+}
+// The Shop's looks change every Friday (Michael, Oct 25, 15:13): the key is the latest Friday up to that day.
+function shopDay(k) { const d = parseKey(k); d.setDate(d.getDate() - ((d.getDay() + 2) % 7)); return dateKey(d); }
+// Weeks whose 3 challenges are done and whose chest is still shut (oldest first).
+function readyChests(history, profile) {
+  const opened = EC.shopOf(profile).chest;
+  return [...new Set(history.map(e => weekKey(e.date)))].filter(wk => wk >= CHEST_FROM && !opened[wk] && challengeStatus(history, wk).every(c => c.done)).sort();
+}
+// The equipped looks, only ones you own (a look that was taken off another device simply isn't drawn).
+function lookOn(profile, own) {
+  const l = (profile && profile.look) || {}, out = {};
+  EC.LOOK_KINDS.forEach(k => { const id = l[k]; if (id && EC.LOOKS[id] && EC.LOOKS[id].kind === k && (!own || own.includes(id))) out[k] = id; });
+  return out;
+}
+const lookName = id => (L.looks && L.looks[id]) || id;
+const lookRar = id => (EC.LOOKS[id] ? EC.LOOKS[id].r : 0);
+
+// Frames: SVG in a 116 × 116 box around an 84 px photo (scaled with the photo). u = a unique id part for gradients.
+const LK_FRAME = {
+  f_iron: u => `<defs><linearGradient id="gI${u}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e3e8f2"/><stop offset=".5" stop-color="#7d8698"/><stop offset="1" stop-color="#c9d0dc"/></linearGradient></defs><circle cx="58" cy="58" r="50" fill="none" stroke="url(#gI${u})" stroke-width="5"/><circle cx="58" cy="58" r="44.5" fill="none" stroke="#4a5263" stroke-width="1.5"/>`,
+  f_pixel: () => { let s = ""; for (let i = 0; i < 36; i++) { const a = (i / 36) * Math.PI * 2, x = 58 + Math.cos(a) * 50, y = 58 + Math.sin(a) * 50; s += `<rect x="${(x - 3.5).toFixed(1)}" y="${(y - 3.5).toFixed(1)}" width="7" height="7" fill="${i % 3 === 0 ? C.chalk : C.signal}" opacity="${i % 2 ? 0.65 : 1}"/>`; } return s; },
+  f_pulse: () => `<circle cx="58" cy="58" r="49" fill="none" stroke="${C.signal}" stroke-width="3.5"/><circle class="lkPulse" cx="58" cy="58" r="49" fill="none" stroke="${C.signal}" stroke-width="10" opacity=".35" style="filter:blur(4px)"/><g class="lkSpin"><circle cx="58" cy="8" r="4" fill="${C.signal}"/><circle cx="58" cy="108" r="2.5" fill="${C.signal}" opacity=".7"/></g>`,
+  f_flame: u => { let s = `<defs><linearGradient id="gF${u}" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#ff5a1f"/><stop offset=".6" stop-color="#ff9a1f"/><stop offset="1" stop-color="${C.signal}"/></linearGradient></defs><g class="lkFlick">`; for (let i = 0; i < 14; i++) s += `<path d="M58 4 C64 14 66 18 62 24 C60 20 58 19 55 22 C52 17 54 11 58 4Z" fill="url(#gF${u})" transform="rotate(${(i * 360) / 14} 58 58) translate(0 ${i % 2 ? 3 : 0})"/>`; return s + `</g><circle cx="58" cy="58" r="44" fill="none" stroke="#ff9a1f" stroke-width="2"/>`; },
+  f_laurel: () => { let s = ""; for (const side of [-1, 1]) for (let i = 0; i < 9; i++) { const a = ((100 + i * 17) * Math.PI) / 180, x = 58 + side * Math.cos(a) * 50, y = 58 + Math.sin(a) * 50 - 6, rot = side * (i * 17 + 10); s += `<ellipse cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" rx="7.5" ry="3.6" fill="#e8c15a" stroke="#a57e1c" stroke-width=".8" transform="rotate(${rot} ${x.toFixed(1)} ${y.toFixed(1)})"/>`; } return s + `<path d="M50 108 L58 102 L66 108" fill="none" stroke="#e8c15a" stroke-width="3" stroke-linecap="round"/>`; },
+  f_obsidian: u => { let s = `<defs><linearGradient id="gO${u}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4b3a78"/><stop offset=".45" stop-color="#120c22"/><stop offset=".55" stop-color="#2a1f4a"/><stop offset="1" stop-color="#0b0814"/></linearGradient></defs>`; const n = 10; for (let i = 0; i < n; i++) { const a1 = (i / n) * Math.PI * 2, a2 = ((i + 1) / n) * Math.PI * 2, am = (a1 + a2) / 2; const p = [[58 + Math.cos(a1) * 44, 58 + Math.sin(a1) * 44], [58 + Math.cos(am) * 56, 58 + Math.sin(am) * 56], [58 + Math.cos(a2) * 44, 58 + Math.sin(a2) * 44]]; s += `<polygon points="${p.map(q => q.map(v => v.toFixed(1)).join(",")).join(" ")}" fill="url(#gO${u})" stroke="${LK_VIOLET}" stroke-width=".8" stroke-opacity=".6"/>`; } return s + `<circle cx="58" cy="58" r="44" fill="none" stroke="${LK_VIOLET}" stroke-width="1.5" class="lkPulse"/>`; },
+};
+const LK_GOLD = u => `<defs><linearGradient id="gG${u}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8a6a12"/><stop offset=".35" stop-color="#ffd76a"/><stop offset=".5" stop-color="#fff3b8"/><stop offset=".65" stop-color="#ffd76a"/><stop offset="1" stop-color="#8a6a12"/></linearGradient></defs>`;
+Object.assign(LK_FRAME, {
+  f_dots: () => { let s = '<g class="lkSpinSlow">'; for (let i = 0; i < 24; i++) { const a = (i / 24) * Math.PI * 2; s += `<circle cx="${(58 + Math.cos(a) * 50).toFixed(1)}" cy="${(58 + Math.sin(a) * 50).toFixed(1)}" r="${i % 2 ? 1.8 : 3}" fill="${i % 2 ? C.chalk : C.signal}"/>`; } return s + "</g>"; },
+  f_hex: () => { const hx = r => Array.from({ length: 6 }, (_, i) => { const a = ((i * 60 - 90) * Math.PI) / 180; return `${(58 + Math.cos(a) * r).toFixed(1)},${(58 + Math.sin(a) * r).toFixed(1)}`; }).join(" "); return `<polygon points="${hx(56)}" fill="none" stroke="${C.signal}" stroke-width="3.5" stroke-linejoin="round"/><polygon points="${hx(50)}" fill="none" stroke="${C.chalk}" stroke-opacity=".45" stroke-width="1.2" stroke-linejoin="round"/>`; },
+  f_wave: () => { const w = (amp, ph) => { let d = ""; for (let i = 0; i <= 120; i++) { const a = (i / 120) * Math.PI * 2, r = 50 + amp * Math.sin(12 * a + ph); d += (i ? "L" : "M") + (58 + Math.cos(a) * r).toFixed(1) + " " + (58 + Math.sin(a) * r).toFixed(1); } return d + "Z"; }; return `<path d="${w(3.2, 0)}" fill="none" stroke="${C.sky}" stroke-width="3"/><path d="${w(3.2, Math.PI)}" fill="none" stroke="${C.signal}" stroke-width="2" stroke-opacity=".85"/>`; },
+  f_neon: () => `<circle class="lkPulse" cx="58" cy="58" r="50" fill="none" stroke="${LK_PINK}" stroke-width="8" opacity=".45" style="filter:blur(4px)"/><circle cx="58" cy="58" r="50" fill="none" stroke="${LK_PINK}" stroke-width="2.6"/><circle class="lkPulse" cx="58" cy="58" r="45.5" fill="none" stroke="${C.sky}" stroke-width="6" opacity=".4" style="filter:blur(3px);animation-delay:-.9s"/><circle cx="58" cy="58" r="45.5" fill="none" stroke="${C.sky}" stroke-width="2"/>`,
+  f_bolt: () => { let s = `<circle cx="58" cy="58" r="48" fill="none" stroke="${C.signal}" stroke-width="2.5"/>`; [45, 135, 225, 315].forEach(deg => { const a = (deg * Math.PI) / 180; s += `<path d="M1 -11 L6 -1 L1.5 -1 L4 11 L-6 -2 L-1.5 -2 Z" fill="${C.signal}" stroke="${C.ink}" stroke-width=".8" stroke-linejoin="round" transform="translate(${(58 + Math.cos(a) * 52).toFixed(1)} ${(58 + Math.sin(a) * 52).toFixed(1)}) rotate(${deg + 90})"/>`; }); return s; },
+  f_crown: u => `${LK_GOLD(u)}<circle cx="58" cy="58" r="49" fill="none" stroke="url(#gG${u})" stroke-width="4.5"/><circle cx="58" cy="58" r="44.5" fill="none" stroke="#a57e1c" stroke-width="1"/><path d="M40 16 L43 1 L51 9 L58 -3 L65 9 L73 1 L76 16 Z" fill="url(#gG${u})" stroke="#7a5a0c" stroke-width="1.2" stroke-linejoin="round"/><circle cx="58" cy="-3" r="2.4" fill="${LK_PINK}"/><circle cx="43" cy="1" r="2" fill="${C.sky}"/><circle cx="73" cy="1" r="2" fill="${C.sky}"/><circle cx="58" cy="11" r="2.2" fill="${C.mint}"/><circle cx="58" cy="108" r="3" fill="url(#gG${u})" stroke="#7a5a0c" stroke-width=".8"/>`,
+  f_diamond: () => { let s = ""; for (let i = 0; i < 12; i++) { const a = (i / 12) * Math.PI * 2, x = 58 + Math.cos(a) * 50, y = 58 + Math.sin(a) * 50, deg = (i / 12) * 360 + 90; s += `<path d="M0 -7 L5 0 L0 7 L-5 0 Z" fill="#bfe8ff" stroke="#5aa9ff" stroke-width="1" transform="translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${deg.toFixed(0)})"/>`; } [[22, 18], [96, 24], [100, 92], [16, 90]].forEach(([x, y], i) => { s += `<path class="lkTw" style="animation-delay:${i * 0.5}s" d="M${x} ${y - 5} L${x + 1.3} ${y - 1.3} L${x + 5} ${y} L${x + 1.3} ${y + 1.3} L${x} ${y + 5} L${x - 1.3} ${y + 1.3} L${x - 5} ${y} L${x - 1.3} ${y - 1.3} Z" fill="#fff"/>`; }); return s; },
+});
+function LookFrame({ id, size, style }) {
+  const u = useId().replace(/[^a-zA-Z0-9]/g, "");
+  if (!LK_FRAME[id]) return null;
+  return <svg data-look-frame={id} viewBox="0 0 116 116" width={size} height={size} aria-hidden="true" style={{ position: "absolute", overflow: "visible", pointerEvents: "none", ...style }} dangerouslySetInnerHTML={{ __html: LK_FRAME[id](u) }} />;
+}
+// Banners: drawn behind the profile's top part, in the theme's own colours.
+function LookBanner({ id }) {
+  const fill = { position: "absolute", inset: 0 };
+  if (id === "b_glow") return <div style={{ ...fill, background: `radial-gradient(60% 90% at 20% 20%, ${C.signal}73, transparent 70%), radial-gradient(60% 90% at 85% 30%, ${C.sky}66, transparent 70%), ${C.panelHi}` }} />;
+  if (id === "b_grid") return <div style={{ ...fill, background: `repeating-linear-gradient(0deg, transparent 0 27px, ${C.chalk}1f 27px 28px), repeating-linear-gradient(90deg, transparent 0 27px, ${C.chalk}1f 27px 28px), linear-gradient(160deg, ${C.panelHi}, ${C.panel})` }} />;
+  if (id === "b_topo") {
+    let p = "";
+    for (let k = 0; k < 9; k++) { let d = ""; for (let x = 0; x <= 400; x += 10) { const y = 20 + k * 15 + Math.sin(x / 38 + k * 0.7) * 8 + Math.sin(x / 17 + k) * 3; d += (x ? "L" : "M") + x + " " + y.toFixed(1); } p += `<path d="${d}" fill="none" stroke="${C.signal}" stroke-opacity="${0.18 + (k % 3) * 0.1}" stroke-width="1.4"/>`; }
+    return <><div style={{ ...fill, background: C.panel }} /><svg viewBox="0 0 400 148" preserveAspectRatio="none" style={{ ...fill, width: "100%", height: "100%" }} dangerouslySetInnerHTML={{ __html: p }} /></>;
+  }
+  if (id === "b_stars") {
+    let s = "";
+    for (let i = 0; i < 70; i++) { const x = (i * 97.3) % 400, y = (i * 53.7) % 148, r = i % 5 === 0 ? 1.6 : 0.9; s += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r}" fill="${i % 7 === 0 ? C.signal : "#fff"}" class="lkTw" style="animation-duration:${(1.5 + (i % 4) * 0.7).toFixed(1)}s;animation-delay:${((i % 9) * 0.3).toFixed(1)}s"/>`; }
+    return <><div style={{ ...fill, background: `linear-gradient(180deg, #050816, ${C.panelHi})` }} /><svg viewBox="0 0 400 148" preserveAspectRatio="xMidYMid slice" style={{ ...fill, width: "100%", height: "100%" }} dangerouslySetInnerHTML={{ __html: s }} /></>;
+  }
+  if (id === "b_ridge") return <><div style={{ ...fill, background: `linear-gradient(180deg, ${C.signal}8c, ${C.panelHi} 70%)` }} /><svg viewBox="0 0 400 148" preserveAspectRatio="xMaxYMax slice" style={{ ...fill, width: "100%", height: "100%" }}><circle cx="345" cy="70" r="22" fill={C.signal} opacity=".9" /><path d="M0 100 L60 62 L110 92 L170 48 L240 96 L300 70 L400 104 V148 H0z" fill={C.line} /><path d="M0 122 L80 92 L150 118 L230 86 L320 120 L400 98 V148 H0z" fill={C.panel} /></svg></>;
+  if (id === "b_sunset") return <><div style={{ ...fill, background: `linear-gradient(180deg, #ffad66 0%, #ff6b81 45%, ${C.panelHi} 100%)` }} /><svg viewBox="0 0 400 148" preserveAspectRatio="xMaxYMax slice" style={{ ...fill, width: "100%", height: "100%" }}><circle cx="345" cy="78" r="20" fill="#ffe08a" opacity=".95" /><path d="M0 92 H400" stroke="#fff" strokeOpacity=".35" /><path d="M200 102 H400 M260 110 H400" stroke="#fff" strokeOpacity=".2" /></svg></>;
+  if (id === "b_waves") {
+    const wv = (y, a, ph) => { let d = `M0 ${y}`; for (let x = 0; x <= 400; x += 10) d += ` L${x} ${(y + Math.sin(x / 45 + ph) * a).toFixed(1)}`; return d + " V148 H0z"; };
+    return <><div style={{ ...fill, background: `linear-gradient(180deg, ${C.panelHi}, ${C.panel})` }} /><svg viewBox="0 0 400 148" preserveAspectRatio="none" style={{ ...fill, width: "100%", height: "100%" }}><path d={wv(52, 9, 0)} fill={C.sky} opacity=".22" /><path d={wv(76, 8, 2)} fill={C.sky} opacity=".3" /><path d={wv(100, 7, 4)} fill={C.signal} opacity=".28" /><path d={wv(52, 9, 0).split(" V")[0]} fill="none" stroke={C.sky} strokeOpacity=".7" strokeWidth="1.5" /></svg></>;
+  }
+  if (id === "b_bubbles") return <><div style={{ ...fill, background: `linear-gradient(180deg, ${C.panelHi}, ${C.panel})` }} /><div style={{ ...fill, overflow: "hidden" }}>{Array.from({ length: 14 }, (_, i) => { const r = lkRnd(i + 3), sz = 6 + Math.round(lkRnd(i + 40) * 14); return <span key={i} className="lkCol lkUp" onAnimationIteration={lkReX} style={{ left: `${(r * 100).toFixed(1)}%`, animationDuration: `${(7 + lkRnd(i + 9) * 7).toFixed(1)}s`, animationDelay: `${(-lkRnd(i + 17) * 12).toFixed(1)}s` }}><span style={{ display: "block", width: sz, height: sz, borderRadius: 99, border: `1.5px solid ${C.sky}99`, background: `radial-gradient(circle at 30% 30%, #fff6, transparent 60%)` }} /></span>; })}</div></>;
+  if (id === "b_city") {
+    let w = "", x = 0, k = 0;
+    while (x < 400) { const bw = 22 + Math.round(lkRnd(k) * 26), bh = 40 + Math.round(lkRnd(k + 50) * 70); w += `<rect x="${x}" y="${148 - bh}" width="${bw - 3}" height="${bh}" fill="#0a0e1f"/>`; for (let yy = 148 - bh + 6; yy < 144; yy += 9) for (let xx = x + 4; xx < x + bw - 7; xx += 7) if (lkRnd(xx * 3 + yy) > 0.55) w += `<rect x="${xx}" y="${yy}" width="3" height="4" fill="${C.signal}" opacity="${(0.5 + lkRnd(xx + yy * 7) * 0.5).toFixed(2)}"${lkRnd(xx + yy) > 0.9 ? ' class="lkTw"' : ""}/>`; x += bw; k++; }
+    return <><div style={{ ...fill, background: `linear-gradient(180deg, #0b1030, ${C.panelHi})` }} /><svg viewBox="0 0 400 148" preserveAspectRatio="xMidYMax slice" style={{ ...fill, width: "100%", height: "100%" }} dangerouslySetInnerHTML={{ __html: `<circle cx="262" cy="26" r="10" fill="#fff4c8" opacity=".9"/>` + w }} /></>;
+  }
+  if (id === "b_galaxy") {
+    let st = ""; for (let i = 0; i < 60; i++) st += `<circle cx="${((i * 83.7) % 400).toFixed(1)}" cy="${((i * 41.3) % 148).toFixed(1)}" r="${i % 6 === 0 ? 1.4 : 0.7}" fill="#fff" class="lkTw" style="animation-duration:${(1.8 + (i % 5) * 0.6).toFixed(1)}s;animation-delay:${((i % 7) * 0.4).toFixed(1)}s"/>`;
+    return <><div style={{ ...fill, background: "#070312" }} /><div className="lkNeb" style={{ position: "absolute", inset: "-40%", background: `radial-gradient(30% 25% at 40% 45%, ${LK_VIOLET}aa, transparent 70%), radial-gradient(25% 20% at 62% 55%, ${LK_PINK}88, transparent 70%), radial-gradient(18% 14% at 52% 48%, ${C.signal}88, transparent 70%)` }} /><svg viewBox="0 0 400 148" preserveAspectRatio="xMidYMid slice" style={{ ...fill, width: "100%", height: "100%" }} dangerouslySetInnerHTML={{ __html: st }} /></>;
+  }
+  if (id === "b_aurora") return <><div style={{ ...fill, background: C.ink }} /><div style={{ ...fill, filter: "blur(18px)", opacity: 0.85, overflow: "hidden" }}><div className="lkAur" style={{ position: "absolute", inset: "-20% -10%", background: `linear-gradient(100deg, transparent 15%, ${C.mint}b3 30%, transparent 45%, ${C.signal}99 60%, transparent 75%)` }} /><div className="lkAur lkAur2" style={{ position: "absolute", inset: "-20% -10%", background: `linear-gradient(80deg, transparent 20%, ${LK_VIOLET}99 40%, transparent 55%)` }} /></div></>;
+  return null;
+}
+// The name effect as inline style (the name's own colour is inline too, so a class could not override it).
+function nameFx(id) {
+  if (id === "n_grad") return { background: `linear-gradient(90deg, ${C.signal}, ${LK_PINK}, ${C.sky})`, WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent" };
+  if (id === "n_glow") return { color: C.chalk, textShadow: `0 0 10px ${C.signal}cc, 0 0 24px ${C.signal}80` };
+  if (id === "n_outline") return { color: "transparent", WebkitTextStroke: `1.4px ${C.signal}` };
+  if (id === "n_shadow") return { color: C.chalk, textShadow: `2px 2px 0 ${C.signal}, 4px 4px 0 ${C.signal}66` };
+  if (id === "n_ice") return { background: "linear-gradient(100deg, #ffffff 20%, #bfe9ff 40%, #6ec3ff 55%, #ffffff 75%)", backgroundSize: "220% 100%", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent", animation: "lkFoil 5s linear infinite" };
+  if (id === "n_fire") return { background: "linear-gradient(0deg, #ff3d3d, #ff7a2f 40%, #ffd76a 80%)", backgroundSize: "100% 200%", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent", animation: "lkFireT 1.4s ease-in-out infinite alternate", filter: "drop-shadow(0 0 6px #ff7a2f88)" };
+  if (id === "n_rainbow") return { background: "linear-gradient(90deg, #ff6b6b, #ffd76a, #5fe3a1, #7cc4ff, #b388ff, #ff7ab6, #ff6b6b)", backgroundSize: "300% 100%", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent", animation: "lkFoil 5s linear infinite" };
+  if (id === "n_gold") return { background: "linear-gradient(100deg, #b8891a 20%, #ffd76a 40%, #fff3b8 50%, #ffd76a 60%, #b8891a 80%)", backgroundSize: "250% 100%", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent", animation: "lkFoil 3.5s linear infinite", filter: "drop-shadow(0 1px 0 #6b4f0a)" };
+  if (id === "n_foil") return { background: `linear-gradient(100deg, ${C.chalk} 30%, #fff 45%, ${C.signal} 50%, ${C.chalk} 60%)`, backgroundSize: "260% 100%", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent", animation: "lkFoil 3.2s linear infinite" };
+  return {};
+}
+// Every title has its own plate: colours, shape, letters and a small icon (Michael: "they don't look different").
+const TITLE_ST = () => ({
+  t_iron: { bg: "linear-gradient(180deg, #eef2f8, #9aa3b4 55%, #d5dbe6)", fg: "#1b2230", bd: "#5d6678", rad: 5, ic: '<path d="M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11"/>', ex: { boxShadow: "inset 0 1px 0 #fff8" } },
+  t_rookie: { bg: `${C.sky}24`, fg: C.sky, bd: `${C.sky}99`, ic: '<path d="M12 3.5l2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L3.6 9.6l5.8-.8z"/>' },
+  t_grind: { bg: "repeating-linear-gradient(135deg, #3a3f47 0 6px, #2f343b 6px 12px)", fg: "#e9edf2", bd: "#8a929e", rad: 3, dash: true, ic: '<circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/>' },
+  t_zen: { bg: "linear-gradient(90deg, #b8a9ff2e, #8fe3d02e)", fg: "#ddd6ff", bd: "#b8a9ff77", low: true, ic: '<path d="M19 9a8 8 0 1 1-3.4-4.7"/>' },
+  t_beast: { bg: "linear-gradient(90deg, #ff4d4d, #ff9a3d)", fg: "#2a0a00", bd: "#ffc09a", rad: 6, it: true, ic: '<path d="M8 3l-3 18M13 3l-3 18M18 3l-3 18"/>' },
+  t_legend: { bg: "linear-gradient(100deg, #8a6a12, #ffd76a 35%, #fff3b8 50%, #ffd76a 65%, #8a6a12)", fg: "#2b1d00", bd: "#ffe28a", foil: true, ic: '<path d="M3 8l4.5 4 4.5-7 4.5 7L21 8l-2 11H5z"/>' },
+  t_bird: { bg: "linear-gradient(90deg, #ffb36b, #ff6f91)", fg: "#3a0f12", bd: "#ffd2b0", ic: '<path d="M3 18h18M7 18a5 5 0 0 1 10 0M12 7v3M5.5 10.5l2 2M18.5 10.5l-2 2"/>' },
+  t_owl: { bg: "linear-gradient(180deg, #1b1745, #2c2470)", fg: "#d8ceff", bd: "#8a7dff", glow: "#8a7dff", ic: '<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>' },
+  t_comeback: { bg: `${C.mint}1f`, fg: C.mint, bd: C.mint, ic: '<path d="M20 12a8 8 0 1 1-2.3-5.6"/><path d="M20 4v4h-4"/>' },
+  t_marathon: { bg: "linear-gradient(90deg, #1e3a2a, #2f5d43)", fg: "#c6f7d8", bd: "#5fe3a1", rad: 8, ic: '<path d="M6.5 9C4 9 2.5 10.3 2.5 12s1.5 3 4 3c4 0 7-6 11-6 2.5 0 4 1.3 4 3s-1.5 3-4 3c-4 0-7-6-11-6z"/>' },
+  t_shark: { bg: "linear-gradient(90deg, #0f3b46, #145a6a)", fg: "#7ff0e0", bd: "#2fb8a8", rad: 8, it: true, ic: '<path d="M3 17c4 0 7-2 9-11 1 5 4 9 9 11z"/>' },
+  t_streak: { bg: "linear-gradient(90deg, #2a1206, #4a1d06)", fg: "#ffc266", bd: "#ff7a1a", glow: "#ff7a1a", flick: true, ic: '<path d="M12 21c-4 0-6.5-2.7-6.5-6.3 0-3.2 2.2-5.4 3.6-7.6.6 1.6 1.4 2.6 2.5 3.1C12 7 13 4.7 14.6 3c.6 2.9 3.9 5.6 3.9 10.2 0 4.4-2.6 7.8-6.5 7.8z"/>' },
+  t_midnight: { bg: "linear-gradient(90deg, #05070f, #1a2140)", fg: "#9fd3ff", bd: "#3d5a9a", glow: "#5aa9ff", ic: '<circle cx="11" cy="13" r="8"/><path d="M11 13V8.5M11 13l1.6-4.2"/><path d="M19.5 2.5l.6 1.4 1.4.6-1.4.6-.6 1.4-.6-1.4-1.4-.6 1.4-.6z"/>' },
+  t_obsidian: { bg: "linear-gradient(135deg, #0b0814, #2a1f4a 50%, #0b0814)", fg: "#cbb8ff", bd: LK_VIOLET, foil: true, glow: LK_VIOLET, ic: '<path d="M12 2.5l6 7-6 12-6-12z"/><path d="M6 9.5h12"/>' },
+});
+function LookTitle({ id, small }) {
+  const st = id && TITLE_ST()[id];
+  if (!st) return null;
+  const fs = small ? 10 : 11;
+  return (
+    <span data-look-title={id} className={st.foil ? "foil" : ""} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: fs, fontWeight: 900, letterSpacing: st.low ? 2 : 0.9, textTransform: st.low ? "lowercase" : "uppercase", fontStyle: st.it ? "italic" : "normal",
+      padding: small ? "2px 8px 2px 6px" : "3px 11px 3px 8px", borderRadius: st.rad ?? 99, border: `1.5px ${st.dash ? "dashed" : "solid"} ${st.bd}`, color: st.fg, background: st.bg, whiteSpace: "nowrap", lineHeight: 1.3, textShadow: st.glow ? `0 0 8px ${st.glow}` : "none", boxShadow: st.glow ? `0 0 10px ${st.glow}44` : "none", ...(st.ex || {}) }}>
+      <svg viewBox="0 0 24 24" width={fs + 2} height={fs + 2} aria-hidden="true" className={st.flick ? "lkFlickI" : ""} style={{ flexShrink: 0, fill: "none", stroke: "currentColor", strokeWidth: 2.4, strokeLinecap: "round", strokeLinejoin: "round" }} dangerouslySetInnerHTML={{ __html: st.ic }} />
+      {lookName(id)}
+    </span>
+  );
+}
+// Profile effects (Discord-like): drawn over the whole profile card, never catching taps. A fixed pseudo-random spread,
+// so the same effect looks the same everywhere; only transform/opacity animate.
+const lkRnd = k => { const x = Math.sin(k * 12.9898 + 78.233) * 43758.5453; return x - Math.floor(x); };
+// Michael (Oct 25): "they're not random, fireworks just repeat": every particle starts at a random place and, each
+// time its loop ends (animationiteration, when it is out of sight), jumps to a new random place, set on the element
+// itself (no re-render). Fireworks also change colour and spot every burst; lightning strikes somewhere else each time.
+const lkPct = (lo, hi) => `${(lo + Math.random() * (hi - lo)).toFixed(1)}%`;
+const lkReX = e => { if (e.target === e.currentTarget) e.currentTarget.style.left = lkPct(0, 100); };
+const lkReXY = e => { if (e.target === e.currentTarget) { e.currentTarget.style.left = lkPct(2, 94); e.currentTarget.style.top = lkPct(2, 90); } };
+function LookFx({ id, thumb }) {
+  const rs = useMemo(() => Array.from({ length: 120 }, () => Math.random()), [id]);
+  if (!id || !EC.LOOKS[id]) return null;
+  const n = (c, f) => Array.from({ length: c }, (_, i) => f(i, rs[i % 40], rs[(i % 40) + 40], rs[(i % 40) + 80]));
+  const col = (x, dur, delay, kids, cls = "lkDown") => <span className={"lkCol " + cls} onAnimationIteration={lkReX} style={{ left: `${(x * 100).toFixed(1)}%`, animationDuration: `${dur.toFixed(1)}s`, animationDelay: `${(-delay).toFixed(1)}s` }}>{kids}</span>;
+  let body = null;
+  if (id === "fx_snow") body = n(22, (i, a, b, c) => <Fragment key={i}>{col(a, 6 + b * 6, c * 12, <span style={{ display: "block", width: 2 + Math.round(b * 3), height: 2 + Math.round(b * 3), borderRadius: 99, background: "#fff", opacity: 0.85 }} />)}</Fragment>);
+  if (id === "fx_sparkle") body = n(14, (i, a, b, c) => <svg key={i} viewBox="-6 -6 12 12" width={8 + b * 10} height={8 + b * 10} className="lkTwk" onAnimationIteration={lkReXY} style={{ position: "absolute", left: `${(a * 96).toFixed(1)}%`, top: `${(c * 92).toFixed(1)}%`, animationDelay: `${(b * 2.4).toFixed(2)}s`, animationDuration: `${(1.8 + c * 1.6).toFixed(1)}s` }}><path d="M0 -6 L1.4 -1.4 L6 0 L1.4 1.4 L0 6 L-1.4 1.4 L-6 0 L-1.4 -1.4 Z" fill={i % 3 ? "#fff" : C.signal} /></svg>);
+  if (id === "fx_petals") body = n(14, (i, a, b, c) => <Fragment key={i}>{col(a, 8 + b * 6, c * 14, <span className="lkSway" style={{ display: "block", width: 9, height: 6, borderRadius: "60% 40% 60% 40%", background: i % 2 ? "#ffb3c7" : "#ffd1dc", opacity: 0.9, animationDelay: `${(-b * 3).toFixed(1)}s` }} />)}</Fragment>);
+  if (id === "fx_embers") body = n(18, (i, a, b, c) => <Fragment key={i}>{col(a, 4 + b * 4, c * 8, <span style={{ display: "block", width: 3 + Math.round(b * 2), height: 3 + Math.round(b * 2), borderRadius: 99, background: i % 3 ? "#ffb347" : "#ff6a2f", boxShadow: "0 0 6px #ff7a1a" }} />, "lkUp lkFade")}</Fragment>);
+  if (id === "fx_confetti") { const cs = [C.signal, LK_PINK, C.sky, C.mint, LK_VIOLET]; body = n(20, (i, a, b, c) => <Fragment key={i}>{col(a, 5 + b * 5, c * 10, <span className="lkSpinC" style={{ display: "block", width: 6, height: 9, borderRadius: 1.5, background: cs[i % cs.length], animationDuration: `${(0.8 + b).toFixed(2)}s` }} />)}</Fragment>); }
+  if (id === "fx_lightning") body = <><div className="lkFlash" style={{ position: "absolute", inset: 0, background: "#fff" }} /><svg className={thumb ? "" : "lkBolt"} onAnimationIteration={e => { e.currentTarget.style.left = lkPct(45, 85); e.currentTarget.style.transform = Math.random() < 0.5 ? "scaleX(-1)" : "none"; }} viewBox="0 0 60 120" style={{ position: "absolute", left: "70%", top: 0, height: "75%", filter: `drop-shadow(0 0 6px ${C.signal})` }}><path d="M34 0 L14 58 L30 58 L18 120 L48 46 L31 46 L44 0 Z" fill={C.signal} /></svg><svg className={thumb ? "" : "lkBolt lkBolt2"} onAnimationIteration={e => { e.currentTarget.style.left = lkPct(2, 40); e.currentTarget.style.top = lkPct(0, 30); }} viewBox="0 0 60 120" style={{ position: "absolute", left: "8%", top: "10%", height: "45%", filter: "drop-shadow(0 0 5px #fff)" }}><path d="M34 0 L14 58 L30 58 L18 120 L48 46 L31 46 L44 0 Z" fill="#fff" /></svg></>;
+  if (id === "fx_frost") {
+    const br = (x, y, flip) => { let d = ""; for (let k = 0; k < 5; k++) { const a = (flip ? 180 - (10 + k * 18) : 10 + k * 18) * Math.PI / 180, L = 26 + (k % 2) * 14, ex = x + Math.cos(a) * L, ey = y + Math.sin(a) * L; d += `M${x} ${y} L${ex.toFixed(1)} ${ey.toFixed(1)} `; const mx = x + Math.cos(a) * L * 0.55, my = y + Math.sin(a) * L * 0.55; d += `M${mx.toFixed(1)} ${my.toFixed(1)} l${(Math.cos(a + 0.6) * 8).toFixed(1)} ${(Math.sin(a + 0.6) * 8).toFixed(1)} M${mx.toFixed(1)} ${my.toFixed(1)} l${(Math.cos(a - 0.6) * 8).toFixed(1)} ${(Math.sin(a - 0.6) * 8).toFixed(1)} `; } return d; };
+    body = <><svg viewBox="0 0 400 160" preserveAspectRatio="none" style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}><path className="lkPulse" d={br(0, 0, false) + br(400, 0, true)} fill="none" stroke="#d8f3ff" strokeWidth="1.6" strokeLinecap="round" /></svg>{n(8, (i, a, b, c) => <Fragment key={i}>{col(a, 9 + b * 5, c * 12, <svg viewBox="-6 -6 12 12" width={9 + Math.round(b * 6)} height={9 + Math.round(b * 6)} style={{ display: "block", overflow: "visible" }}><path d="M0 -5.5V5.5M-4.8 -2.75L4.8 2.75M-4.8 2.75L4.8 -2.75" stroke="#e6f7ff" strokeWidth="1.2" strokeLinecap="round" /></svg>)}</Fragment>)}</>;
+  }
+  if (id === "fx_fireworks") {
+    const cs = [C.signal, LK_PINK, C.sky, C.mint, LK_VIOLET, "#ff8a5c"];
+    const moveBurst = e => { if (e.target.dataset.i !== "0") return; const b = e.currentTarget; b.style.left = lkPct(10, 88); b.style.top = lkPct(12, 72); b.style.setProperty("--c", cs[Math.floor(Math.random() * cs.length)]); b.style.setProperty("--r", `${24 + Math.round(Math.random() * 18)}px`); };
+    body = [0, 1, 2].map(k => <span key={k} onAnimationIteration={moveBurst} style={{ position: "absolute", left: `${(10 + rs[k] * 78).toFixed(1)}%`, top: `${(12 + rs[k + 3] * 60).toFixed(1)}%`, width: 0, height: 0, "--c": cs[Math.floor(rs[k + 6] * cs.length)], "--r": "30px" }}>{Array.from({ length: 12 }, (_, i) => <span key={i} data-i={i} className="lkBurst" style={{ "--a": `${i * 30 + k * 10}deg`, position: "absolute", width: 4, height: 4, marginLeft: -2, marginTop: -2, borderRadius: 99, background: "var(--c)", boxShadow: "0 0 6px var(--c)", animationDelay: `${(k * 0.9 + rs[k + 9] * 0.5).toFixed(2)}s`, animationDuration: `${(2.4 + k * 0.35).toFixed(2)}s` }} />)}</span>);
+  }
+  return <div data-look-fx={id} aria-hidden="true" style={{ position: "absolute", inset: 0, pointerEvents: "none", overflow: "hidden", zIndex: 3, borderRadius: "inherit" }}>{body}</div>;
+}
+// A look as a small picture for the shop and the list.
+function LookThumb({ id, size = 56 }) {
+  const k = EC.LOOKS[id] && EC.LOOKS[id].kind, box = { width: size, height: size, borderRadius: Math.round(size * 0.28), flexShrink: 0, position: "relative", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", background: SOFT() };
+  if (k === "frame") return <span aria-hidden="true" style={{ ...box, overflow: "visible", background: "transparent" }}><span style={{ width: size * 0.7, height: size * 0.7, borderRadius: 99, background: `radial-gradient(circle at 35% 30%, ${C.signal}, ${C.signal}99)` }} /><LookFrame id={id} size={size} style={{ left: 0, top: 0 }} /></span>;
+  if (k === "bg") return <span aria-hidden="true" style={box}><LookBanner id={id} /></span>;
+  if (k === "title") { const st = TITLE_ST()[id] || {}; return <span aria-hidden="true" style={{ ...box, background: st.bg, border: `1.5px ${st.dash ? "dashed" : "solid"} ${st.bd}`, boxSizing: "border-box", color: st.fg }}><svg viewBox="0 0 24 24" width={size * 0.5} height={size * 0.5} style={{ fill: "none", stroke: "currentColor", strokeWidth: 2.2, strokeLinecap: "round", strokeLinejoin: "round", filter: st.glow ? `drop-shadow(0 0 4px ${st.glow})` : "none" }} dangerouslySetInnerHTML={{ __html: st.ic }} /></span>; }
+  if (k === "fx") return <span aria-hidden="true" style={{ ...box, background: `linear-gradient(160deg, ${C.panelHi}, ${C.ink})` }}><span style={{ width: size * 0.42, height: size * 0.42, borderRadius: 99, background: `${C.signal}33` }} /><LookFx id={id} thumb /></span>;
+  return <span aria-hidden="true" style={box}><span style={{ fontFamily: DISPLAY, fontSize: size * 0.46, fontWeight: 900, lineHeight: 1, ...nameFx(id) }}>Aa</span></span>;
+}
+// The top of a profile with its looks (the Shop's preview; ProfilePage draws the same pieces into its own hero).
+function LookPreview({ profile, look, history }) {
+  const base = useMemo(() => ownModel(history, profile, null), [history, profile]);
+  const fz = useMemo(() => freezesAvailable(history), [history]);
+  return <ProfileHero m={{ ...base, look }} own preview extra={{ fz }} />;
+}
+function DiaNum({ n, size = 15, color = C.chalk }) {
+  return <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontWeight: 900, color, fontVariantNumeric: "tabular-nums" }}><Ico n="diamond" size={size} color={C.sky} sw={2.4} />{nf(n)}</span>;
+}
+// A chest drawn by the app (main colour bands), the lid opens with `open`.
+function ChestArt({ open, size = 150 }) {
+  const col = C.signal;
+  return (
+    <svg viewBox="0 0 120 110" width={size} height={(size * 110) / 120} aria-hidden="true" style={{ overflow: "visible", display: "block" }}>
+      {open && <ellipse cx="60" cy="50" rx="44" ry="20" fill={col} opacity=".55" style={{ filter: "blur(10px)" }} />}
+      <rect x="10" y="52" width="100" height="50" rx="8" fill={C.panelHi} stroke={col} strokeWidth="3" />
+      <rect x="27" y="52" width="9" height="50" fill={col} opacity=".9" /><rect x="84" y="52" width="9" height="50" fill={col} opacity=".9" />
+      <path d="M14 70 H106 M14 86 H106" stroke={C.line} strokeWidth="2" />
+      <g className="chLid" style={{ transformOrigin: "10px 52px", transform: open ? "translate(-4px,-18px) rotate(-24deg)" : "none" }}>
+        <path d="M10 52 V40 Q10 22 28 22 H92 Q110 22 110 40 V52 Z" fill={C.line} stroke={col} strokeWidth="3" strokeLinejoin="round" />
+        <rect x="27" y="23" width="9" height="29" fill={col} opacity=".9" /><rect x="84" y="23" width="9" height="29" fill={col} opacity=".9" />
+      </g>
+      {!open && <><rect x="51" y="44" width="18" height="20" rx="4" fill={col} /><circle cx="60" cy="53" r="2.6" fill={C.ink} /><path d="M60 54.5 V59" stroke={C.ink} strokeWidth="2" strokeLinecap="round" /></>}
+    </svg>
+  );
+}
+// Opening a weekly chest: shake, tap, the lid flies open, the reward comes up.
+function ChestOpen({ res, onClose, onEquip }) {
+  const [st, setSt] = useState("shut"); // shut → shake → open
+  const [worn, setWorn] = useState(false);
+  useBack(onClose, true);
+  const tap = () => {
+    if (st !== "shut") return;
+    setSt("shake"); gmSfx.pack(); vibrate([30, 40, 30, 40, 60]);
+    setTimeout(() => { setSt("open"); revealSfx(res.kind === "look" ? 6 : res.kind === "boost" ? 4 : 2); vibrate(REV_BUZZ[res.kind === "look" ? 6 : 3]); }, 750);
+  };
+  const r = res.kind === "look" ? lookRar(res.id) : res.kind === "boost" ? 2 : 1, col = RAR_COL()[r];
+  return createPortal(
+    <div data-chest-open={st} onClick={tap} style={{ position: "fixed", inset: 0, zIndex: 96, background: "rgba(4,7,16,.9)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 18, padding: "calc(var(--sat, 0px) + 20px) 16px calc(var(--sab, 0px) + 20px)", fontFamily: BODY, color: C.chalk, cursor: st === "shut" ? "pointer" : "default" }}>
+      {st === "open" && <><div className="revRays" aria-hidden="true" style={{ position: "absolute", left: "50%", top: "40%", width: 520, height: 520, marginLeft: -260, marginTop: -260, background: `repeating-conic-gradient(${col}33 0 8deg, transparent 8deg 22deg)`, borderRadius: 999, pointerEvents: "none", WebkitMaskImage: "radial-gradient(closest-side, #000, transparent)", maskImage: "radial-gradient(closest-side, #000, transparent)" }} /><RevBurst col={col} n={18} /><Confetti count={res.kind === "look" ? 80 : 40} /></>}
+      <div style={{ fontFamily: DISPLAY, fontSize: 28, fontWeight: 900, textAlign: "center", position: "relative" }}>{st === "open" ? (res.kind === "dia" ? T("shGotDia", { n: res.n }) : res.kind === "boost" ? T("shGotBoost") : T("shGotLook")) : T("shChestReady")}</div>
+      <div className={st === "shake" ? "chShake" : st === "shut" ? "chBob" : ""} style={{ position: "relative" }}><ChestArt open={st === "open"} size={170} /></div>
+      {st === "open" ? (
+        <div data-chest-res={res.kind} className="gmFlipIn" style={{ ...card, ...tileR(), position: "relative", display: "flex", alignItems: "center", gap: 14, padding: "14px 16px", border: `2px solid ${col}`, minWidth: 240, maxWidth: 380 }}>
+          {res.kind === "look" ? <LookThumb id={res.id} size={58} /> : <IcoBox n={res.kind === "dia" ? "diamond" : "boost"} color={res.kind === "dia" ? C.sky : C.signal} size={58} />}
+          <span style={{ flex: 1, minWidth: 0 }}>
+            <span style={{ display: "block", fontWeight: 900, fontSize: 17 }}>{res.kind === "dia" ? <DiaNum n={res.n} size={17} /> : res.kind === "boost" ? T("shBoost") : lookName(res.id)}</span>
+            <span style={{ display: "block", fontSize: 12.5, color: C.dim, marginTop: 3, lineHeight: 1.35 }}>{res.kind === "dia" ? T("shGotDiaD") : res.kind === "boost" ? T("shBoostD") : <span style={{ color: col, fontWeight: 800 }}>{T("gmRar" + lookRar(res.id))}</span>}</span>
+          </span>
+        </div>
+      ) : <div style={{ fontSize: 14, color: C.dim }}>{T("shChestTap")}</div>}
+      {st === "open" && onEquip && <button type="button" data-chest-equip disabled={worn} onClick={e => { e.stopPropagation(); onEquip(); setWorn(true); }} style={{ ...bigBtn(worn ? C.mint : C.signal, worn ? C.ink : C.signalInk), maxWidth: 300, position: "relative" }}>{worn ? T("shEquipped") : T("shEquipNow")}</button>}
+      {st === "open" && <button type="button" data-chest-ok onClick={e => { e.stopPropagation(); sfxTap(); onClose(); }} style={onEquip ? { ...ghostBtn, color: C.chalk, padding: "11px 26px", fontSize: 15, position: "relative" } : { ...bigBtn(C.signal, C.signalInk), maxWidth: 300, position: "relative" }}>{onEquip && !worn ? T("shLater") : T("shOk")}</button>}
+    </div>,
+    document.body
+  );
+}
+// Two taps to buy (the first shows the price as "Sure?").
+function BuyBtn({ k, price, bal, sure, setSure, onBuy, label }) {
+  const poor = bal < price, on = sure === k;
+  return (
+    <button type="button" data-shop-buy={k} data-sure={on ? 1 : 0} disabled={poor} onClick={() => { if (on) { setSure(null); onBuy(); } else { sfxTap(); setSure(k); } }}
+      style={{ ...btnBase, flexShrink: 0, padding: "9px 12px", fontSize: 13.5, borderRadius: 12, background: poor ? SOFT() : on ? C.mint : C.signal, color: poor ? C.dim : on ? C.ink : C.signalInk, display: "inline-flex", alignItems: "center", gap: 5, opacity: poor ? 0.7 : 1, minWidth: 76, justifyContent: "center" }}>
+      {on ? T("shSure") : <>{label || null}<Ico n="diamond" size={14} sw={2.4} />{nf(price)}</>}
+    </button>
+  );
+}
+// Shop preview (like Discord): your own profile with this look on, then Buy → a receipt with "Equip now".
+function LookShopSheet({ id, profile, history, own, bal, onBuy, onEquip, onGo, onClose }) {
+  const L0 = EC.LOOKS[id], kind = L0.kind, has = own.includes(id), price = EC.lookPrice(id), col = RAR_COL()[L0.r];
+  const [st, setSt] = useState("view"); // view → bought → equipped
+  const cur = lookOn(profile, own), worn = cur[kind] === id;
+  const look = { ...cur, [kind]: id };
+  return (
+    <Sheet title={lookName(id)} onClose={onClose}>
+      <div data-look-sheet={id} data-state={st}>
+        {st !== "view" && <div className="shRcpt" style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
+          <span style={{ width: 44, height: 44, borderRadius: 99, background: C.mint, color: C.ink, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Ico n="check" size={24} sw={3} /></span>
+          <span style={{ minWidth: 0 }}>
+            <span style={{ display: "block", fontFamily: DISPLAY, fontSize: 26, fontWeight: 900, lineHeight: 1 }}>{st === "equipped" ? T("shEquipped") : T("shGotIt")}</span>
+            <span style={{ display: "block", fontSize: 12.5, color: C.dim, marginTop: 4, lineHeight: 1.4 }}>{st === "equipped" ? T("shEquippedD") : T("shGotItD")}</span>
+          </span>
+        </div>}
+        <LookPreview profile={profile} look={look} history={history} />
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginTop: 12 }}>
+          <span data-rar-chip={L0.r} style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: 0.4, textTransform: "uppercase", color: col, border: `1px solid ${col}88`, borderRadius: 99, padding: "2px 8px" }}>{T("gmRar" + L0.r)}</span>
+          <span style={{ fontSize: 12.5, color: C.dim }}>{T("lookKind_" + kind)}</span>
+        </div>
+        {L0.won && !has && <div data-look-hint style={{ display: "flex", gap: 10, alignItems: "flex-start", marginTop: 12, fontSize: 13.5, color: C.chalk, lineHeight: 1.45 }}><Ico n="lock" size={18} color={C.dim} style={{ marginTop: 1 }} /><span>{T("shHint_" + L0.won)}</span></div>}
+        <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 16 }}>
+          {st === "view" && !has && price !== null && (bal >= price
+            ? <button type="button" data-look-buy onClick={() => { if (onBuy(id)) setSt("bought"); }} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>{T("shBuy")}<Ico n="diamond" size={18} sw={2.4} />{nf(price)}</button>
+            : <button type="button" data-look-buy disabled style={{ ...bigBtn(C.panelHi, C.dim), display: "flex", alignItems: "center", justifyContent: "center", gap: 8, opacity: 0.8 }}>{T("shNotEnough")}<Ico n="diamond" size={16} sw={2.4} />{nf(price)}</button>)}
+          {st === "bought" && <>
+            <button type="button" data-look-equip onClick={() => { onEquip(kind, id); setSt("equipped"); }} className="b3d" style={bigBtn(C.signal, C.signalInk)}>{T("shEquipNow")}</button>
+            <button type="button" data-look-later onClick={() => { sfxTap(); onClose(); }} style={{ ...ghostBtn, padding: "13px 14px", fontSize: 14.5 }}>{T("shLater")}</button>
+          </>}
+          {(st === "equipped" || (st === "view" && has)) && <>
+            {st === "view" && <div data-look-owned style={{ fontSize: 13.5, color: C.mint, fontWeight: 700 }}>{worn ? T("shEquippedD") : T("shUnlockedD")}</div>}
+            <button type="button" data-look-profile onClick={() => { sfxTap(); onClose(); onGo("profile"); }} style={{ ...ghostBtn, padding: "13px 14px", fontSize: 14.5, color: C.chalk }}>{st === "equipped" ? T("shSeeProfile") : T("shOpenProfile")}</button>
+          </>}
+        </div>
+      </div>
+    </Sheet>
+  );
+}
+// Your looks: changed only on your own Profile (Michael: "changing them only in the shop wouldn't make sense").
+function LooksSheet({ profile, setProfile, history, own, onShop, onClose }) {
+  const [kind, setKind] = useState("frame");
+  const look = lookOn(profile, own);
+  const mine = EC.LOOK_IDS.filter(id => EC.LOOKS[id].kind === kind && own.includes(id));
+  const equip = id => { sfxTap(); setProfile({ ...profile, look: { ...(profile.look || {}), [kind]: id || null } }); };
+  const row = on => ({ ...btnBase, display: "flex", alignItems: "center", gap: 12, padding: "9px 12px", borderRadius: 14, background: SOFT(), color: C.chalk, textAlign: "left", fontWeight: 400, border: `1.5px solid ${on ? C.signal : "transparent"}` });
+  return (
+    <Sheet title={T("pfLooks")} onClose={onClose}>
+      <div data-looks-sheet>
+        <LookPreview profile={profile} look={look} history={history} />
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", margin: "12px 0 10px" }}>
+          {EC.LOOK_KINDS.map(k => <button key={k} type="button" data-look-kind={k} aria-pressed={kind === k} onClick={() => { sfxTap(); setKind(k); }} style={{ ...btnBase, padding: "7px 11px", fontSize: 12.5, borderRadius: 99, background: kind === k ? C.signal : SOFT(), color: kind === k ? C.signalInk : C.chalk }}>{T("lookKind_" + k)}</button>)}
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          <button type="button" data-look-none={kind} onClick={() => equip(null)} aria-pressed={!look[kind]} style={{ ...row(!look[kind]), fontWeight: 700, fontSize: 14 }}>
+            <span style={{ width: 44, height: 44, borderRadius: 12, border: `1.5px dashed ${C.line}`, flexShrink: 0 }} /><span style={{ flex: 1 }}>{T("shNone")}</span>{!look[kind] && <Ico n="check" size={18} color={C.signal} />}
+          </button>
+          {mine.map(id => { const on = look[kind] === id, r = EC.LOOKS[id].r; return (
+            <button key={id} type="button" data-look-own={id} onClick={() => equip(on ? null : id)} aria-pressed={on} style={row(on)}>
+              <LookThumb id={id} size={44} />
+              <span style={{ flex: 1, minWidth: 0 }}>
+                <span style={{ display: "block", fontWeight: 800, fontSize: 14 }}>{lookName(id)}</span>
+                <span style={{ display: "block", fontSize: 10.5, marginTop: 3, color: RAR_COL()[r], fontWeight: 800, textTransform: "uppercase", letterSpacing: 0.4 }}>{T("gmRar" + r)}</span>
+              </span>
+              {on && <Ico n="check" size={18} color={C.signal} />}
+            </button>); })}
+          {!mine.length && <div data-looks-empty style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 2px" }}>
+            <span style={{ flex: 1, fontSize: 13, color: C.dim, lineHeight: 1.4 }}>{T("pfLooksNone")}</span>
+            <button type="button" data-looks-shop onClick={() => { sfxTap(); onClose(); onShop(); }} style={{ ...btnBase, background: C.signal, color: C.signalInk, padding: "9px 14px", fontSize: 13.5, display: "inline-flex", alignItems: "center", gap: 6 }}><Ico n="bag" size={16} sw={2.4} />{T("tabShop")}</button>
+          </div>}
+        </div>
+      </div>
+    </Sheet>
+  );
+}
+function ShopTab({ history, profile, setProfile, onGo }) {
+  const es = useMemo(() => econState(history, profile), [history, profile]);
+  const { bal, sh, earned, own, chests } = es;
+  const [sure, setSure] = useState(null), [opening, setOpening] = useState(null), [howOpen, setHowOpen] = useState(false), [peek, setPeek] = useState(null);
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => { if (!sure) return; const t = setTimeout(() => setSure(null), 3000); return () => clearTimeout(t); }, [sure]);
+  useEffect(() => { const t = setInterval(() => setNow(Date.now()), 30000); return () => clearInterval(t); }, []);
+  const balT = useTween(bal);
+  // the latest profile for actions taken inside a sheet that stays open (buy, then equip)
+  const profRef = useRef(profile); profRef.current = profile;
+  const buy = what => {
+    try {
+      const p = profRef.current, shop = EC.buy(p, econState(history, p).bal, what), next = { ...p, shop };
+      profRef.current = next; setProfile(next); gmSfx.buy(); vibrate([20, 30, 40]); return true;
+    } catch (_) { sfxTap(); return false; }
+  };
+  const equip = (kind, id) => { const p = profRef.current, next = { ...p, look: { ...(p.look || {}), [kind]: id } }; profRef.current = next; setProfile(next); revealSfx(2); vibrate([20, 40, 60]); };
+  const openChest = () => {
+    const wk = chests[0]; if (!wk) return;
+    try { const o = EC.openChest(profile, wk); setProfile({ ...profile, shop: o.shop }); setOpening(o.res); } catch (_) {}
+  };
+  const today = dateKey(), daily = EC.shopLooks(shopDay(today));
+  const wonList = EC.LOOK_IDS.filter(id => EC.LOOKS[id].won).sort((a, b) => (own.includes(b) ? 1 : 0) - (own.includes(a) ? 1 : 0) || EC.LOOKS[a].r - EC.LOOKS[b].r);
+  const fzHave = freezesAvailable(history), fzMax = 2 + (META.giftThisYear ? 1 : 0), boostTo = EC.boostUntil(sh.boosts, now);
+  const wkNow = weekKey(today), chNow = challengeStatus(history, wkNow), chDone = chNow.filter(c => c.done).length, gotNow = !!sh.chest[wkNow];
+  const timeStr = ts => { const d = new Date(ts); return (dateKey(d) === today ? "" : fmtDate(dateKey(d), false) + " ") + d.toLocaleTimeString(LANG, { hour: "2-digit", minute: "2-digit" }); };
+  const parts = [["workouts", { n: EC.EARN.day }], ["streak", { n: EC.EARN.streak7 }], ["badges", {}], ["ranks", {}], ["deck", { n: EC.EARN.run }], ["chests", {}]];
+  const row = { display: "flex", alignItems: "center", gap: 12, padding: "12px 16px" };
+  const lookRow = (id, right, extra = {}) => { const r = lookRar(id), col = RAR_COL()[r]; return (
+    <button key={id} type="button" onClick={() => { sfxTap(); setPeek(id); }} className={r === 3 ? "foil" : ""} {...extra}
+      style={{ ...btnBase, display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", borderRadius: 16, background: SOFT(), border: `1.5px solid ${col}55`, color: C.chalk, textAlign: "left", fontWeight: 400, width: "100%" }}>
+      <LookThumb id={id} size={52} />
+      <span style={{ flex: 1, minWidth: 0 }}>
+        <span style={{ display: "block", fontWeight: 800, fontSize: 14.5 }}>{lookName(id)}</span>
+        <span style={{ display: "block", fontSize: 11.5, marginTop: 2 }}><span data-rar-chip={r} style={{ color: col, fontWeight: 800, textTransform: "uppercase", letterSpacing: 0.4, fontSize: 10.5 }}>{T("gmRar" + r)}</span><span style={{ color: C.dim }}> · {T("lookKind_" + EC.LOOKS[id].kind)}</span></span>
+      </span>
+      {right}
+    </button>); };
+  return (
+    <div data-shop style={{ padding: "0 18px 30px" }}>
+      {/* balance */}
+      <Sect data-shop-bal={bal} style={{ marginTop: 0, position: "relative", overflow: "hidden" }}>
+        <div aria-hidden="true" style={{ position: "absolute", inset: 0, background: `radial-gradient(90% 120% at 100% 0%, ${C.sky}2e, transparent 60%)`, pointerEvents: "none" }} />
+        <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 14 }}>
+          <IcoBox n="diamond" color={C.sky} size={54} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 12, color: C.dim, fontWeight: 700 }}>{T("shDia")}</div>
+            <div data-shop-num style={{ fontFamily: DISPLAY, fontSize: 40, fontWeight: 900, lineHeight: 1, color: C.chalk, fontVariantNumeric: "tabular-nums" }}>{nf(Math.round(balT))}</div>
+          </div>
+          <button type="button" data-shop-how onClick={() => { sfxTap(); setHowOpen(o => !o); }} aria-expanded={howOpen} style={{ ...btnBase, background: SOFT(), color: C.chalk, padding: "8px 11px", fontSize: 12.5, borderRadius: 12, display: "inline-flex", alignItems: "center", gap: 6 }}>{T("shHow")}<Chevron open={howOpen} /></button>
+        </div>
+        <Expand open={howOpen}>
+          <div data-shop-parts style={{ position: "relative", marginTop: 12, display: "flex", flexDirection: "column", gap: 2 }}>
+            {parts.map(([k, v]) => <div key={k} style={{ display: "flex", justifyContent: "space-between", gap: 10, fontSize: 13, padding: "5px 0", borderTop: `1px solid ${C.line}` }}><span style={{ color: C.dim }}>{T("shE_" + k, v)}</span><DiaNum n={earned.parts[k]} size={13} /></div>)}
+            <div style={{ display: "flex", justifyContent: "space-between", gap: 10, fontSize: 13, padding: "5px 0", borderTop: `1px solid ${C.line}` }}><span style={{ color: C.dim }}>{T("shSpent")}</span><DiaNum n={-sh.spent} size={13} /></div>
+          </div>
+        </Expand>
+      </Sect>
+      {/* the weekly chest */}
+      <Sect data-shop-chest={chests.length} title={T("shChest")} meta={chests.length > 1 ? TP("shChestN", chests.length) : null}>
+        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+          <span className={chests.length ? "chBob" : ""} style={{ flexShrink: 0, opacity: chests.length ? 1 : 0.55 }}><ChestArt size={64} /></span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontWeight: 800, fontSize: 15 }}>{chests.length ? T("shChestReady") : gotNow ? T("shChestGot") : T("shChestWait", { v: chDone })}</div>
+            <div style={{ fontSize: 12, color: C.dim, marginTop: 3, lineHeight: 1.4 }}>{chests.length ? T("shChestD") : gotNow ? T("shChestGotD") : T("shChestWaitD")}</div>
+          </div>
+          {chests.length > 0 && <button type="button" data-chest-btn onClick={() => { sfxTap(); openChest(); }} className="b3d" style={{ ...btnBase, flexShrink: 0, background: C.signal, color: C.signalInk, padding: "10px 14px", fontSize: 14, borderRadius: 12 }}>{T("shChestOpen")}</button>}
+        </div>
+      </Sect>
+      {/* streak freeze, XP boost */}
+      <ListSect title={T("shItems")}>
+        <div data-shop-item="freeze" style={row}>
+          <IcoBox n="snow" color={C.sky} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontWeight: 800, fontSize: 15 }}>{T("shFreeze")}</div>
+            <div style={{ fontSize: 12, color: C.dim, marginTop: 2, lineHeight: 1.35 }}>{fzHave >= fzMax ? T("shFreezeFull", { max: fzMax }) : T("shFreezeD", { n: fzHave, max: fzMax })}</div>
+          </div>
+          {fzHave >= fzMax ? <span data-shop-full style={{ fontSize: 12, color: C.dim, fontWeight: 700 }}>{fzHave}/{fzMax}</span> : <BuyBtn k="freeze" price={EC.PRICE.freeze} bal={bal} sure={sure} setSure={setSure} onBuy={() => buy("freeze")} />}
+        </div>
+        <div data-shop-item="boost" style={{ ...row, borderTop: `1px solid ${C.line}` }}>
+          <IcoBox n="boost" color={C.signal} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontWeight: 800, fontSize: 15 }}>{T("shBoost")}</div>
+            <div style={{ fontSize: 12, color: boostTo ? C.mint : C.dim, marginTop: 2, lineHeight: 1.35, fontWeight: boostTo ? 700 : 400 }} data-boost-on={boostTo ? 1 : 0}>{boostTo ? T("shBoostOn", { t: timeStr(boostTo) }) : T("shBoostD")}</div>
+          </div>
+          <BuyBtn k="boost" price={EC.PRICE.boost} bal={bal} sure={sure} setSure={setSure} onBuy={() => buy("boost")} />
+        </div>
+      </ListSect>
+      {/* today's looks: tap = see it on your profile */}
+      <Sect data-shop-today title={T("shToday")} meta={T("shTodayMeta")}>
+        {daily.length ? <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {daily.map(id => lookRow(id, own.includes(id)
+            ? <span data-owned style={{ flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 4, fontWeight: 800, fontSize: 12.5, color: C.mint, padding: "6px 4px" }}><Ico n="check" size={15} sw={2.6} />{T("shOwned")}</span>
+            : <span style={{ flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 4, fontWeight: 900, fontSize: 14, color: bal >= EC.lookPrice(id) ? C.chalk : C.dim, background: SOFT(), borderRadius: 10, padding: "6px 9px" }}><Ico n="diamond" size={14} color={C.sky} sw={2.4} />{nf(EC.lookPrice(id))}</span>, { "data-shop-look": id, "data-has": own.includes(id) ? 1 : 0 }))}
+        </div> : <div style={{ fontSize: 13, color: C.dim }}>{T("shAllOwned")}</div>}
+      </Sect>
+      {/* looks you can only win */}
+      <Sect data-shop-won title={T("shWonT")} meta={T("shWonMeta")}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {wonList.map(id => lookRow(id, own.includes(id) ? <Ico n="check" size={18} color={C.mint} /> : <Ico n="lock" size={17} color={C.dim} />, { "data-shop-wonlook": id, "data-has": own.includes(id) ? 1 : 0 }))}
+        </div>
+      </Sect>
+      {/* money and ads: later */}
+      <Sect data-shop-get title={T("shGet")}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <IcoBox n="lock" color={C.dim} />
+          <div style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.45 }}>{T("shGetD")}</div>
+        </div>
+      </Sect>
+      {peek && <LookShopSheet key={peek} id={peek} profile={profile} history={history} own={own} bal={bal} onBuy={buy} onEquip={equip} onGo={onGo} onClose={() => setPeek(null)} />}
+      {opening && <ChestOpen res={opening} onEquip={opening.kind === "look" ? () => equip(EC.LOOKS[opening.id].kind, opening.id) : null} onClose={() => setOpening(null)} />}
+    </div>
+  );
+}
+// The game screen in the ☰ menu: modes, your deck, the ranked list.
+function GameTab({ history, profile, setProfile, acct, onPlay }) {
+  const saved = gameLoad();
+  const lo = useMemo(() => localLoadout(history, profile), [history, profile.freezeDays]);
+  const gp = profile.game || {}, gl = GM.gameLevel(gp.xp || 0);
+  const [pick, setPick] = useState(null); // the mode whose perk is being chosen
+  const [rules, setRules] = useState(false);
+  const [rk, setRk] = useState(null), [top, setTop] = useState(null), [err, setErr] = useState("");
+  const signed = acct.st === "in" && acct.prof;
+  const startTut = () => onPlay({ mode: "tut", opts: tutOpts(), moves: [], at: Date.now() });
+  useEffect(() => {
+    if (!signed || !RANKED_ON) return;
+    cloud().myRanked().then(setRk).catch(() => {});
+    cloud().rankedList(50).then(setTop).catch(() => setTop([]));
+  }, [signed]);
+  const modes = [
+    { id: "run", icon: "🃏", name: T("gmRun"), desc: T("gmRunD") },
+    { id: "duel", icon: "🤖", name: T("gmDuel"), desc: DUEL_ON ? T("gmDuelD", { n: Math.min(10, gl.lvl) }) : T("gmSoon"), off: !DUEL_ON, soon: !DUEL_ON },
+    { id: "ranked", icon: "🏆", name: T("gmRanked"), desc: !RANKED_ON ? T("gmSoon") : signed ? T("gmRankedD", { r: rk && typeof rk.r === "number" ? rk.r : 1000 }) : T("gmRankedSign"), off: !RANKED_ON || !signed, soon: !RANKED_ON },
+  ];
+  return (
+    <div data-game-tab>
+      {!gp.tut && !saved && (
+        <div data-gm-tut className="cardIn" style={{ ...card, ...tileR(), padding: "14px 16px", marginBottom: 12, border: `1.5px solid ${C.signal}`, display: "flex", alignItems: "center", gap: 12 }}>
+          <IcoBox n="cap" size={46} />
+          <span style={{ flex: 1, minWidth: 0 }}><span style={{ display: "block", fontWeight: 800, fontSize: 15.5 }}>{T("gmTutT")}</span><span style={{ display: "block", fontSize: 12.5, color: C.dim, lineHeight: 1.4 }}>{T("gmTutD")}</span></span>
+          <button type="button" data-gm-tut-go onClick={() => { sfxTap(); startTut(); }} style={{ ...btnBase, padding: "10px 14px", borderRadius: 12, background: C.signal, color: C.signalInk, fontSize: 14, flexShrink: 0 }}>{T("gmTutGo")}</button>
+        </div>
+      )}
+      <Sect data-gm-level title={T("gmLevelT")} meta={<span style={{ fontFamily: DISPLAY, fontSize: 20, fontWeight: 900, color: C.signal }}>{T("gmLevel", { n: gl.lvl })}</span>}>
+        <div style={{ height: 8, borderRadius: 99, background: C.panelHi, overflow: "hidden" }}><div style={{ width: `${Math.round((gl.into / gl.need) * 100)}%`, height: "100%", background: C.signal, borderRadius: 99 }} /></div>
+        <div style={{ fontSize: 12.5, color: C.dim, marginTop: 7, lineHeight: 1.45 }}>{T("gmLevelD", { a: nf(gl.into), b: nf(gl.need) })}</div>
+      </Sect>
+      {saved && (
+        <button type="button" data-gm-continue onClick={() => { sfxTap(); onPlay(saved); }} style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 12 }} className="b3d">{T("gmContinue")}</button>
+      )}
+      <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 12 }}>
+        {modes.map(m => (
+          <button key={m.id} type="button" data-gm-mode={m.id} data-soon={m.soon ? 1 : undefined} disabled={m.off || !!saved} onClick={() => { sfxTap(); setPick(m.id); }}
+            style={{ ...btnBase, ...card, ...tileR(), textAlign: "left", color: C.chalk, padding: "14px 14px", display: "flex", alignItems: "center", gap: 12, opacity: m.off || saved ? 0.55 : 1, fontWeight: 400 }}>
+            {m.soon ? <IcoBox n="lock" color={C.dim} size={44} /> : <span aria-hidden="true" style={{ fontSize: 30, lineHeight: 1 }}>{m.icon}</span>}
+            <span style={{ flex: 1, minWidth: 0 }}>
+              <span style={{ display: "block", fontFamily: DISPLAY, fontSize: 22, fontWeight: 900, lineHeight: 1.1 }}>{m.name}</span>
+              <span style={{ display: "block", fontSize: 12.5, color: C.dim, marginTop: 3, lineHeight: 1.4 }}>{m.desc}</span>
+            </span>
+            {!m.off && !saved && <Arrow />}
+          </button>
+        ))}
+      </div>
+      <Sect data-gm-deck title={T("gmDeck")} style={{ marginTop: 12 }}>
+        <div style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.45, marginBottom: 10 }}>{T("gmDeckD")}</div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+          {GM.SUITS.map(s => { const v = lo.suit[s], rk = v >= 0 ? RANKS[v] : null; return (
+            <div key={s} data-gm-suit={s} data-lv={v} style={{ background: SOFT(), borderRadius: 14, padding: "10px 10px", display: "flex", alignItems: "center", gap: 9, minWidth: 0 }}>
+              <SuitIcon s={s} size={22} />
+              <span style={{ minWidth: 0 }}>
+                <span style={{ display: "block", fontSize: 13.5, fontWeight: 800, color: C.chalk }}>{T("grp_" + s)}</span>
+                <span style={{ display: "block", fontSize: 12, fontWeight: 700, color: rk ? rk.color : C.dim }}>{rk ? `${rk.icon} ${rk.name} · +${2 * v}` : T("gmSuitNone")}</span>
+              </span>
+            </div>); })}
+        </div>
+        <div style={{ fontSize: 12.5, color: C.dim, marginTop: 10, lineHeight: 1.45 }}>{T("gmPerksHave", { n: lo.perks.length, max: GM.PERK_IDS.length })}</div>
+      </Sect>
+      <button type="button" data-gm-rules onClick={() => { sfxTap(); setRules(true); }} style={{ ...ghostBtn, width: "100%", marginTop: 12, padding: "12px 14px", fontSize: 14, color: C.chalk }}>{T("gmRulesBtn")}</button>
+      {/* 1.8.0 (Michael, Oct 25, 02:31): the Ranked leaderboard shows, locked like Ranked, until Ranked opens */}
+      {!RANKED_ON && (
+        <Sect data-gm-top-locked title={T("gmTop")} style={{ marginTop: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, opacity: 0.75 }}>
+            <IcoBox n="lock" color={C.dim} />
+            <span style={{ flex: 1, fontSize: 13, color: C.dim, lineHeight: 1.45 }}>{T("gmTopLocked")}</span>
+          </div>
+        </Sect>
+      )}
+      {signed && RANKED_ON && (
+        <Sect data-gm-top title={T("gmTop")} style={{ marginTop: 12, padding: "15px 0 6px" }} titlePad="0 16px">
+          {top === null ? <div style={{ padding: "4px 16px 10px", color: C.dim, fontSize: 14 }}>{T("frLoading")}</div>
+            : !top.length ? <div style={{ padding: "4px 16px 10px", color: C.dim, fontSize: 14 }}>{T("gmTopEmpty")}</div>
+            : top.map((p, i) => (
+              <div key={p.uid} data-gm-top-row={p.uid} style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 16px", borderTop: i ? `1px solid ${C.line}` : "none", background: p.uid === acct.uid ? `${C.signal}14` : "transparent" }}>
+                <span style={{ width: 24, fontFamily: DISPLAY, fontWeight: 900, color: i < 3 ? C.signal : C.dim, fontSize: 18 }}>{i + 1}</span>
+                <span style={{ flex: 1, minWidth: 0, fontWeight: 800, color: C.chalk, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", ...INK }}>{p.nick || "?"}</span>
+                <span style={{ fontSize: 12, color: C.dim, whiteSpace: "nowrap" }}>{p.w}–{p.l}</span>
+                <span style={{ fontFamily: DISPLAY, fontWeight: 900, fontSize: 18, color: C.chalk, minWidth: 48, textAlign: "right" }}>{p.r}</span>
+              </div>
+            ))}
+        </Sect>
+      )}
+      {err && <div role="alert" style={{ fontSize: 13, color: "#ff8a80", marginTop: 10 }}>{err}</div>}
+      {pick && <PerkSheet lo={lo} mode={pick} stakeMax={Math.min(GM.STAKES.length - 1, gp.stake || 0)} onClose={() => setPick(null)} onGo={async (perk, stake) => {
+        setPick(null); setErr("");
+        if (pick === "ranked") {
+          try {
+            const r = await cloud().rkStart(perk);
+            if (r.why !== "ok") { setErr(T("gmErrServer")); return; }
+            onPlay({ mode: "ranked", opts: { seed: r.seed, mode: "duel", suit: r.lo.suit, perk: r.lo.perk, streak: r.lo.streak, pool: GM.JOKER_IDS }, moves: [], opp: r.opp, r: r.r, abandoned: r.abandoned || null, at: Date.now() });
+          } catch (e) { setErr(T("gmErrServer")); }
+          return;
+        }
+        const opts = { seed: GM.newSeed(), mode: pick === "duel" ? "duel" : "run", suit: lo.suit, perk, streak: lo.streak, pool: GM.poolFor(gl.lvl), stake: stake || 0 };
+        let bot = null;
+        if (pick === "duel") { const bl = Math.min(10, gl.lvl), b = GM.botLoadout(gl.lvl); bot = { lvl: bl, ...GM.resultOf(GM.botGame({ ...opts, suit: b.suit, perk: b.perk, streak: 0 }, bl).st) }; }
+        onPlay({ mode: pick, opts, moves: [], bot, at: Date.now() });
+      }} />}
+      {rules && <GameRules lo={lo} onClose={() => setRules(false)} onTutorial={() => { setRules(false); startTut(); }} />}
+    </div>
+  );
+}
+function PerkSheet({ lo, mode, stakeMax = 0, onClose, onGo }) {
+  const [p, setP] = useState(lo.perks[0] || null);
+  const [k, setK] = useState(stakeMax);
+  return (
+    <Sheet title={T("gmPerkT")} onClose={onClose}>
+      <div style={{ fontSize: 13.5, color: C.dim, lineHeight: 1.5, marginBottom: 12 }}>{T("gmPerkD")}</div>
+      <div data-gm-perks style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {[null, ...GM.PERK_IDS].map(id => {
+          const have = id === null || lo.perks.includes(id), on = p === id, t = id ? L.gm.perk[id] : [T("gmPerkNone"), T("gmPerkNoneD"), ""];
+          return (
+            <button key={id || "none"} type="button" data-gm-perk={id || "none"} disabled={!have} aria-pressed={on} onClick={() => { sfxTap(); setP(id); }}
+              style={{ ...btnBase, textAlign: "left", fontWeight: 400, color: C.chalk, padding: "11px 12px", borderRadius: 14, display: "flex", gap: 10, alignItems: "center", background: on ? `${C.signal}22` : SOFT(), border: `1.5px solid ${on ? C.signal : C.line}`, opacity: have ? 1 : 0.5 }}>
+              <span aria-hidden="true" style={{ fontSize: 22, width: 26, textAlign: "center" }}>{id ? PERK_ICON[id] : "–"}</span>
+              <span style={{ flex: 1, minWidth: 0 }}>
+                <span style={{ display: "block", fontWeight: 800, fontSize: 14.5 }}>{t[0]}</span>
+                <span style={{ display: "block", fontSize: 12.5, color: C.dim, marginTop: 2, lineHeight: 1.4 }}>{have ? withK(t[1]) : <span style={{ display: "inline-flex", gap: 5, alignItems: "center" }}><Ico n="lock" size={13} />{t[2]}</span>}</span>
+              </span>
+            </button>
+          );
+        })}
+      </div>
+      {mode !== "ranked" && (
+        <div data-gm-stakes style={{ marginTop: 16 }}>
+          <div style={{ fontSize: 13, fontWeight: 800, color: C.chalk, marginBottom: 8 }}>{T("gmStakeT")}</div>
+          <div style={{ display: "flex", gap: 6 }}>
+            {GM.STAKES.map((id, i) => (
+              <button key={id} type="button" data-gm-stake={i} disabled={i > stakeMax} aria-pressed={k === i} aria-label={L.gm.stake[i][0]} onClick={() => { sfxTap(); setK(i); }}
+                style={{ ...btnBase, flex: 1, height: 42, borderRadius: 12, background: STAKE_COL[i], border: `2.5px solid ${k === i ? C.signal : "rgba(255,255,255,.18)"}`, boxShadow: k === i ? `0 0 0 2px ${C.signal}55` : "none", opacity: i > stakeMax ? 0.35 : 1, color: i === 0 || i === 4 ? "#222" : "#fff", fontSize: 15 }}>{i > stakeMax ? "🔒" : ""}</button>
+            ))}
+          </div>
+          <div data-gm-stake-d style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.45, marginTop: 8 }}><b style={{ color: C.chalk }}>{L.gm.stake[k][0]}</b> · {L.gm.stake[k][1]}{k ? ` · ${T("gmStakeXp", { n: Math.round((stakeXp(k) - 1) * 100) })}` : ""}</div>
+          {stakeMax < GM.STAKES.length - 1 && <div style={{ fontSize: 12, color: C.dim, marginTop: 4 }}>🔒 {T("gmStakeNext", { s: L.gm.stake[stakeMax][0] })}</div>}
+        </div>
+      )}
+      {mode === "ranked" && <div style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.5, marginTop: 12 }}>{T("gmRankedNote")}</div>}
+      <button type="button" data-gm-go onClick={() => { sfxTap(); onGo(p, mode === "ranked" ? 0 : k); }} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 14 }}>{T("gmGo")}</button>
+    </Sheet>
+  );
+}
+// 1.8.0 (Michael, Oct 25: "from the text I understood absolutely nothing"): How to play with pictures: the cards and
+// what training adds, every hand with an example (the cards that score are lit), a worked score, and a Run.
+const GM_EX = { high: [11, 20, 30, 28, 0], pair: [11, 24, 7, 30, 27], two: [6, 32, 15, 2, 38], circuit: [10, 18, 29, 39], three: [5, 18, 31, 11, 13], straight: [29, 4, 18, 45, 7], flush: [39, 43, 46, 48, 50], full: [7, 20, 33, 2, 15], four: [10, 23, 36, 49, 1], sflush: [30, 31, 32, 33, 34] };
+function GuideSect({ n, title, children }) {
+  return (
+    <section data-gm-guide-sect={n} style={{ ...card, ...tileR(), padding: "14px 14px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <span style={{ width: 26, height: 26, borderRadius: 99, background: C.signal, color: C.signalInk, fontWeight: 900, fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{n}</span>
+        <span style={{ fontFamily: DISPLAY, fontSize: 21, fontWeight: 900 }}>{title}</span>
+      </div>
+      {children}
+    </section>
+  );
+}
+const gP = { margin: 0, fontSize: 14, lineHeight: 1.55, color: C.chalk };
+function GameRules({ onClose, lo, onTutorial }) {
+  const suit = (lo && lo.suit) || {};
+  const exPair = [GM.SUITS.indexOf("push") * 13 + 11, GM.SUITS.indexOf("pull") * 13 + 11, 7, 30]; // K K 9 6
+  return (
+    <Sheet title={T("gmRulesT")} onClose={onClose}>
+      <div data-gm-rules-text style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        {onTutorial && <button type="button" data-gm-tut-open onClick={() => { sfxTap(); onTutorial(); }} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}><Ico n="cap" size={22} />{T("gmTutPlay")}</button>}
+        <GuideSect n={1} title={T("gmG1T")}>
+          <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>{GM.SUITS.map((s, i) => <PlayCard key={s} c={i * 13 + 12} w={52} still />)}</div>
+          <p style={gP}>{T("gmG1D")}</p>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+            {GM.SUITS.map(s => { const v = suit[s] ?? -1, rk = v >= 0 ? RANKS[v] : null; return (
+              <div key={s} style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 9px", borderRadius: 10, background: SOFT(), fontSize: 13 }}>
+                <SuitIcon s={s} size={16} /><span style={{ flex: 1, minWidth: 0 }}><b>{T("grp_" + s)}</b><span style={{ display: "block", color: rk ? rk.color : C.dim, fontSize: 12 }}>{rk ? `${rk.icon} ${rk.name} → +${2 * v}` : T("gmSuitNone")}</span></span>
+              </div>); })}
+          </div>
+          <p style={{ ...gP, color: C.dim, fontSize: 13 }}>{T("gmG1Rank")}</p>
+        </GuideSect>
+        <GuideSect n={2} title={T("gmG2T")}>
+          <p style={gP}>{T("gmG2D")}</p>
+          {GM.HANDS.map((h, i) => { const ex = GM_EX[h], sc = GM.handOf(ex).scored; return (
+            <div key={h} data-gm-guide-hand={h} style={{ padding: "10px 10px 11px", borderRadius: 12, background: SOFT() }}>
+              <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+                <span style={{ fontWeight: 900, fontSize: 15.5, flex: 1 }}>{handName(h)}</span>
+                <span style={{ fontFamily: DISPLAY, fontWeight: 900, fontSize: 16 }}><span style={{ color: C.sky }}>{GM.HAND_BASE[h][0]}</span> <span style={{ color: C.dim }}>×</span> <span style={{ color: C.signal }}>{GM.HAND_BASE[h][1]}</span></span>
+              </div>
+              <div style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.4, margin: "2px 0 8px" }}>{(L.gm.hd || [])[i]}</div>
+              <div style={{ display: "flex", gap: 5 }}>{ex.map(c => <PlayCard key={c} c={c} w={40} still out={!sc.includes(c)} />)}</div>
+            </div>); })}
+          <p style={{ ...gP, color: C.dim, fontSize: 13 }}>{T("gmG2Note")}</p>
+        </GuideSect>
+        <GuideSect n={3} title={T("gmG3T")}>
+          <p style={gP}>{T("gmG3D")}</p>
+          <div style={{ display: "flex", gap: 6, justifyContent: "center" }}>{exPair.map(c => <PlayCard key={c} c={c} w={46} still out={!GM.handOf(exPair).scored.includes(c)} />)}</div>
+          <div style={{ fontSize: 13.5, lineHeight: 1.7, padding: "8px 10px", borderRadius: 12, background: SOFT() }}>
+            <div>{handName("pair")}: <b style={{ color: C.sky }}>10</b> × <b style={{ color: C.signal }}>2</b></div>
+            <div>K + K: <b style={{ color: C.sky }}>+10 +10</b> {T("gmG3Kick")}</div>
+            <div>= <b style={{ color: C.sky }}>30</b> × <b style={{ color: C.signal }}>2</b> = <b>60</b></div>
+            <div style={{ marginTop: 6 }}>{jName("joker")} (+4): <b style={{ color: C.sky }}>30</b> × <b style={{ color: C.signal }}>6</b> = <b>180</b></div>
+            <div>{jName("five")} (× 2): <b style={{ color: C.sky }}>30</b> × <b style={{ color: C.signal }}>12</b> = <b>360</b></div>
+          </div>
+          <p style={{ ...gP, color: C.dim, fontSize: 13 }}>{T("gmG3Note")}</p>
+        </GuideSect>
+        <GuideSect n={4} title={T("gmG4T")}>
+          <div style={{ display: "flex", gap: 6, alignItems: "stretch" }}>
+            {[T("gmSmall"), T("gmBig"), T("gmBoss")].map((b, i) => <div key={i} style={{ flex: 1, textAlign: "center", padding: "8px 4px", borderRadius: 10, background: SOFT(), fontSize: 12.5, fontWeight: 800, color: i === 2 ? "#ff7a7a" : C.chalk }}>{b}<span style={{ display: "block", fontWeight: 400, color: C.dim, fontSize: 11.5 }}>× {[1, 1.5, 2][i]}</span></div>)}
+          </div>
+          <p style={gP}>{withK(T("gmG4D"))}</p>
+          <p style={gP}>{withK(T("gmG4Shop"))}</p>
+          <p style={{ ...gP, color: C.dim, fontSize: 13 }}>{T("gmG4Run")}</p>
+        </GuideSect>
+      </div>
+    </Sheet>
+  );
+}
+// 1.8.0 (Michael, Oct 25: "make a tutorial game, so people understand all of it"): a practice blind on a fixed deck
+// (GM.TUT_DECK): a Pair of Kings, a Circuit, a discard for the 5th Core card, a Flush, the shop and a joker. Steps with t
+// wait for exactly those cards / that move; the others wait for Next. Not saved, no XP; finishing sets profile.game.tut.
+const TUT = [
+  { k: "intro" },
+  { k: "pair", t: "play", cards: [11, 24] },
+  { k: "pairDone" },
+  { k: "circuit", t: "play", cards: [10, 18, 29, 39] },
+  { k: "circuitDone" },
+  { k: "discard", t: "discard", cards: [27, 1, 15, 35] },
+  { k: "flush", t: "play", cards: [41, 46, 43, 48, 50] },
+  { k: "shop" },
+  { k: "buy", t: "buy", i: 0 },
+  { k: "end", last: true },
+];
+const tutOpts = () => ({ seed: "tutorial", mode: "run", suit: {}, perk: null, streak: 0, pool: [], stake: 0, tut: 1, deck: GM.TUT_DECK });
+function TutCoach({ step, ready, onNext }) {
+  const key = "gmTut_" + step.k + (ready && T("gmTut_" + step.k + "Sel") !== "gmTut_" + step.k + "Sel" ? "Sel" : "");
+  return (
+    <div data-gm-tut-step={step.k} className="cardIn" style={{ marginTop: 10, padding: "11px 13px", borderRadius: 16, background: `${C.signal}1f`, border: `1.5px solid ${C.signal}`, display: "flex", gap: 10, alignItems: "flex-start" }}>
+      <Ico n="cap" size={24} color={C.signal} style={{ marginTop: 1 }} />
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div data-gm-tut-text style={{ fontSize: 14, lineHeight: 1.5, color: C.chalk }}>{withK(T(key))}</div>
+        {!step.t && <button type="button" data-gm-tut-next onClick={() => { sfxTap(); onNext(); }} style={{ ...btnBase, marginTop: 8, padding: "8px 16px", borderRadius: 11, background: C.signal, color: C.signalInk, fontSize: 14 }}>{T(step.last ? "gmTutFinish" : "gmTutNext")}</button>}
+      </div>
+    </div>
+  );
+}
+// A number that rolls to its new value (score, money) instead of jumping (1.8.0: "more fun to watch").
+function useTween(target, ms = 480) {
+  const [v, setV] = useState(target); const cur = useRef(target), raf = useRef(0);
+  useEffect(() => {
+    const a = cur.current, t0 = performance.now();
+    cancelAnimationFrame(raf.current);
+    if (reducedMotion() || a === target) { cur.current = target; setV(target); return; }
+    const step = now => { const k = Math.min(1, (now - t0) / ms), x = Math.round(a + (target - a) * (1 - Math.pow(1 - k, 3))); cur.current = x; setV(x); if (k < 1) raf.current = requestAnimationFrame(step); };
+    raf.current = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf.current);
+  }, [target]);
+  return v;
+}
+// An open pack: 3 choices that flip in one by one; pick one or skip (1.8.0, Michael: "more like Balatro").
+function PackOpen({ g, onMove }) {
+  const pk = g.pack, jp = pk.id === "jpack", full = jp && g.jokers.length >= GM.jokerSlots(g);
+  return createPortal(
+    <div data-gm-pack-open={pk.id} style={{ position: "fixed", inset: 0, zIndex: 92, background: "rgba(4,7,16,.9)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 14, padding: "calc(var(--sat, 0px) + 20px) 16px calc(var(--sab, 0px) + 20px)", fontFamily: BODY, color: C.chalk }}>
+      <div className="gmPop" style={{ fontSize: 46 }} aria-hidden="true">{PACK_ICON[pk.id]}</div>
+      <div style={{ fontFamily: DISPLAY, fontSize: 28, fontWeight: 900 }}>{T("gmPackT")}</div>
+      {full && <div style={{ fontSize: 13, color: C.signal, textAlign: "center", maxWidth: 360 }}>{T("gmPackFull")}</div>}
+      <div style={{ display: "flex", flexDirection: "column", gap: 10, width: "min(100%, 420px)" }}>
+        {pk.opts.map((o, i) => { const r = jp ? GM.JOKERS[o].r : 0, col = jp ? RAR_COL()[r] : C.signal; return (
+          <button key={o} type="button" data-gm-pick={i} disabled={full} onClick={() => onMove({ t: "pick", i })} className={"gmFlipIn" + (jp && r === 3 ? " foil" : "")}
+            style={{ ...btnBase, ...card, ...tileR(), position: "relative", overflow: "hidden", display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", textAlign: "left", color: C.chalk, fontWeight: 400, border: `2px solid ${col}`, animationDelay: `${0.15 + i * 0.16}s`, opacity: full ? 0.5 : 1 }}>
+            <span aria-hidden="true" style={{ width: 48, height: 48, flexShrink: 0, borderRadius: 12, background: `linear-gradient(160deg, ${col}44, ${C.panelHi})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26 }}>{jp ? (o.startsWith("fan_") ? <SuitIcon s={o.slice(4)} size={24} /> : JOKER_ICON[o] || "🃏") : "🏋️"}</span>
+            <span style={{ flex: 1, minWidth: 0 }}>
+              <span style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", fontWeight: 800, fontSize: 15.5 }}>{jp ? jName(o) : T("gmDrill", { h: handName(o) })}{jp && <span style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: 0.4, textTransform: "uppercase", color: col, border: `1px solid ${col}88`, borderRadius: 99, padding: "1px 7px" }}>{T("gmRar" + r)}</span>}</span>
+              <span style={{ display: "block", fontSize: 12.5, color: C.dim, lineHeight: 1.35, marginTop: 2 }}>{jp ? withK(jDesc(o)) : T("gmPackLv", { hand: handName(o), c: GM.HAND_UP[o][0], m: GM.HAND_UP[o][1] })}</span>
+            </span>
+          </button>); })}
+      </div>
+      <button type="button" data-gm-pack-skip onClick={() => onMove({ t: "skip" })} style={{ ...ghostBtn, color: C.chalk, padding: "11px 26px", fontSize: 15 }}>{T("gmPackSkip")}</button>
+    </div>,
+    document.body
+  );
+}
+// A game being played (full screen). saved = {mode: run|duel|ranked|tut, opts, moves, bot?, opp?, r?}.
+function GameTable({ saved, history, onEnd, onQuit, onTutDone }) {
+  const bests = useMemo(() => fairStats(history, { today: dateKey() }).bests, [history]);
+  const [moves, setMoves] = useState(saved.moves || []);
+  const [g, setG] = useState(() => { try { return GM.replay(saved.opts, saved.moves || []); } catch (_) { return GM.newGame(saved.opts); } });
+  const [sel, setSel] = useState([]);
+  const [sortBy, setSortBy] = useState("v");
+  const [anim, setAnim] = useState(null); // the hand being scored
+  const [shown, setShown] = useState(g.score); // the blind score as the counter shows it
+  const shownT = useTween(shown), moneyT = useTween(g.money);
+  const [fx, setFx] = useState(null); // "shake" (a big hand) | "win" (blind beaten: confetti + shake)
+  const [quit, setQuit] = useState(false);
+  const [info, setInfo] = useState(null); // a joker whose text is open
+  const [why, setWhy] = useState(false); // the breakdown of the selected cards' score
+  const [dealKey, setDealKey] = useState(0);
+  const tut = saved.mode === "tut", [ts, setTs] = useState(0), tstep = tut ? TUT[ts] : null;
+  const nextTut = () => { if (tstep && tstep.last) onTutDone(); else setTs(t => Math.min(TUT.length - 1, t + 1)); };
+  const tutSel = () => !tstep || !tstep.cards || (sel.length === tstep.cards.length && sel.every(i => tstep.cards.includes(g.hand[i])));
+  const timers = useRef([]);
+  useEffect(() => () => timers.current.forEach(clearTimeout), []);
+  useBack(() => { if (info) setInfo(null); else setQuit(true); }, true);
+  useEffect(() => { if (!tut) gameSave({ ...saved, moves }); }, [moves]);
+  const ended = g.phase === "over" || g.phase === "won";
+  useEffect(() => { if (ended && !anim) { const t = setTimeout(() => onEnd({ ...saved, moves }, g), 500); return () => clearTimeout(t); } }, [ended, anim]);
+  const order = useMemo(() => g.hand.map((c, i) => i).sort((a, b) => sortBy === "v" ? GM.valueOf(g.hand[b]) - GM.valueOf(g.hand[a]) || g.hand[a] - g.hand[b] : g.hand[a] - g.hand[b]), [g.hand, sortBy]);
+  const preview = sel.length ? GM.scoreOf(g, sel.map(i => g.hand[i])) : null;
+  const doMove = m => { const next = GM.act(g, m); setMoves(ms => [...ms, m]); return next; };
+  const play = () => {
+    if (!sel.length || anim || (tut && !(tstep.t === "play" && tutSel()))) return;
+    const cards = sel.map(i => g.hand[i]), sc = GM.scoreOf(g, cards), next = doMove({ t: "play", c: sel.slice() });
+    const steps = sc.steps.filter(s => s.c !== undefined || s.j || s.p);
+    setAnim({ cards, sc, i: -1, chips: GM.HAND_BASE[sc.hand][0] + GM.HAND_UP[sc.hand][0] * ((g.levels || {})[sc.hand] || 0), mult: GM.HAND_BASE[sc.hand][1] + GM.HAND_UP[sc.hand][1] * ((g.levels || {})[sc.hand] || 0) });
+    setSel([]);
+    // one sound for the whole count (notes on the audio clock), the numbers follow on screen
+    const STEP = 0.16;
+    gmSfx.score(steps, STEP, g.score + sc.score >= g.target);
+    let chips = 0, mult = 0;
+    steps.forEach((s, k) => timers.current.push(setTimeout(() => setAnim(a => a && { ...a, i: k, chips: a.chips + (s.chips || 0), mult: Math.round(((a.mult + (s.mult || 0)) * (s.x || 1)) * 100) / 100, hit: s }), 250 + k * STEP * 1000)));
+    const end = 450 + steps.length * STEP * 1000;
+    timers.current.push(setTimeout(() => setAnim(a => a && { ...a, total: true }), end));
+    timers.current.push(setTimeout(() => { setShown(g.score + sc.score); vibrate(g.score + sc.score >= g.target ? [40, 50, 60] : [30]); if (sc.score >= g.target * 0.5 || g.score + sc.score >= g.target) setFx(g.score + sc.score >= g.target ? "win" : "shake"); }, end + 250));
+    timers.current.push(setTimeout(() => setFx(f => (f === "shake" ? null : f)), end + 750));
+    timers.current.push(setTimeout(() => setFx(f => (f === "win" ? null : f)), end + 2900));
+    timers.current.push(setTimeout(() => {
+      setAnim(null); setG(next); setShown(next.phase === "blind" && next.blind === g.blind && next.ante === g.ante ? next.score : next.score || g.score + sc.score);
+      if (next.phase === "shop") gmSfx.blind(); else if (next.phase === "won") { gmSfx.blind(); sfxFinish(); } else if (next.phase === "over") gmSfx.lose(); else gmSfx.deal(cards.length);
+      setDealKey(k => k + 1);
+      if (tut) setTs(t => t + 1);
+    }, end + 1100));
+  };
+  const discard = () => { if (!sel.length || anim || g.discardsLeft <= 0 || (tut && !(tstep.t === "discard" && tutSel()))) return; gmSfx.discard(); const next = doMove({ t: "discard", c: sel.slice() }); setSel([]); setG(next); setDealKey(k => k + 1); if (tut) setTs(t => t + 1); };
+  // several shop moves at once (swap = sell one of your jokers, then buy the new one)
+  const shopMoves = ms => { try { let st = g; for (const m of ms) st = GM.act(st, m); setMoves(x => [...x, ...ms]); setG(st); gmSfx.buy(); } catch (_) {} };
+  const shopMove = m => { if (tut && !(tstep.t === "buy" && m.t === "buy" && m.i === tstep.i)) return; if (tut) setTs(t => t + 1); try { const next = doMove(m); setG(next); if (m.t === "buy" && next.pack) gmSfx.pack(); else if (m.t === "buy") gmSfx.buy(); else if (m.t === "pick") gmSfx.reveal(next.jokers.length > g.jokers.length && GM.JOKERS[next.jokers[next.jokers.length - 1].id].r >= 2); else if (m.t === "skip") sfxTap(); else if (m.t === "sell") gmSfx.sell(); else if (m.t === "reroll") gmSfx.reroll(); else gmSfx.deal(8); if (m.t === "next") { setShown(0); setDealKey(k => k + 1); } } catch (_) {} };
+  const toggle = i => { if (anim || (tut && !(tstep.cards && tstep.cards.includes(g.hand[i])))) return; gmSfx.pick(GM.valueOf(g.hand[i]), !sel.includes(i)); setSel(s => (s.includes(i) ? s.filter(x => x !== i) : s.length >= GM.RULES.maxPlay ? s : [...s, i])); };
+  const W = Math.min(innerWidth, 560), cw = Math.max(46, Math.min(70, Math.floor((W - 40) / 6.4)));
+  const step = Math.min(cw + 6, Math.floor((W - 32 - cw) / Math.max(1, g.hand.length - 1)));
+  const bossTxt = g.boss && g.blind === 2 && L.gm.boss[g.boss];
+  const blindName = [T("gmSmall"), T("gmBig"), bossTxt ? bossTxt[0] : T("gmBoss")][g.blind];
+  const pct = Math.min(100, (shown / g.target) * 100);
+  return createPortal(
+    <div data-game={g.phase} data-gm-mode={saved.mode} className={"gmTable" + (fx ? " gmShake" : "")} style={{ position: "fixed", inset: 0, zIndex: 90, background: `radial-gradient(120% 70% at 50% 0%, ${C.panelHi}, ${C.ink} 70%)`, color: C.chalk, fontFamily: BODY, display: "flex", flexDirection: "column", padding: "calc(var(--sat, 0px) + 10px) 14px calc(var(--sab, 0px) + 12px)", boxSizing: "border-box", overflowY: "auto", overscrollBehavior: "contain" }}>
+      {/* top: blind, target, score, money, hands, discards */}
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <button type="button" data-gm-quit onClick={() => { sfxTap(); setQuit(true); }} aria-label={T("gmQuit")} style={{ ...btnBase, width: 40, height: 40, borderRadius: 12, background: C.panel, color: C.dim, border: `1px solid ${C.line}`, fontSize: 18, flexShrink: 0 }}>✕</button>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 11.5, fontWeight: 800, letterSpacing: 0.8, textTransform: "uppercase", color: g.blind === 2 ? "#ff7a7a" : C.dim, display: "flex", alignItems: "center", gap: 6 }}>{g.stake > 0 && <span data-gm-stake-chip={g.stake} title={L.gm.stake[g.stake][0]} style={{ width: 10, height: 10, borderRadius: 3, background: STAKE_COL[g.stake], border: "1px solid rgba(255,255,255,.4)", flexShrink: 0 }} />}{T("gmAnte", { n: g.ante + 1, m: g.antes })} · {blindName}</div>
+          <div data-gm-target style={{ fontFamily: DISPLAY, fontSize: 22, fontWeight: 900, lineHeight: 1.05 }}>{nf(shownT)} <span style={{ color: C.dim, fontSize: 16 }}>/ {nf(g.target)}</span></div>
+        </div>
+        <div data-gm-money style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, color: C.signal }} className={moneyT !== g.money ? "gmMoneyUp" : undefined}><KSign />{moneyT}</div>
+      </div>
+      <div style={{ height: 6, borderRadius: 99, background: C.panel, marginTop: 8, overflow: "hidden" }}><div style={{ width: `${pct}%`, height: "100%", background: pct >= 100 ? C.mint : C.signal, transition: `width ${MO.t3} ${MO.ease}` }} /></div>
+      {bossTxt && g.phase === "blind" && <div data-gm-boss={g.boss} style={{ marginTop: 8, fontSize: 12.5, color: "#ff9a9a", fontWeight: 700 }}>⚠ {bossTxt[1]}</div>}
+      {/* jokers */}
+      <div data-gm-jokers style={{ display: "flex", gap: 6, marginTop: 10, overflowX: "auto", minHeight: 82, paddingBottom: 2 }}>
+        {g.jokers.length ? g.jokers.map((j, k) => <JokerChip key={j.id + k} id={j.id} small glow={anim && anim.hit && anim.hit.j === j.id} onClick={() => { sfxTap(); setInfo(j.id); }} />)
+          : <div style={{ fontSize: 12.5, color: C.dim, alignSelf: "center" }}>{T("gmNoJokers")}</div>}
+        {g.perk && <div data-gm-perk-chip={g.perk} title={L.gm.perk[g.perk][1].replace(/\$(\d+)/g, "$1 " + COIN)} style={{ alignSelf: "center", marginLeft: "auto", fontSize: 12, color: C.dim, whiteSpace: "nowrap" }}>{PERK_ICON[g.perk]}{g.jokers.length < 4 && <> {L.gm.perk[g.perk][0]}</>}</div>}
+      </div>
+      {tstep && !anim && <TutCoach key={ts} step={tstep} ready={tutSel() && sel.length > 0} onNext={nextTut} />}
+      {g.phase === "blind" || anim ? (
+        <>
+          {/* the hand being scored, or what the selection would give */}
+          <div style={{ flex: 1, minHeight: 170, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 10 }}>
+            {anim ? (
+              <>
+                <div style={{ display: "flex", gap: 6, justifyContent: "center", flexWrap: "wrap" }}>{anim.cards.map((c, k) => <PlayCard key={c} c={c} w={Math.min(56, cw)} bests={bests} pop={anim.hit && anim.hit.c === c} out={!anim.sc.scored.includes(c)} dead={anim.sc.steps.some(s => s.c === c && s.dead)} />)}</div>
+                <div data-gm-hand-name style={{ fontFamily: DISPLAY, fontSize: 26, fontWeight: 900 }}>{handName(anim.sc.hand)}</div>
+                <ScoreBox chips={anim.chips} mult={anim.mult} total={anim.total ? anim.sc.score : null} />
+              </>
+            ) : preview ? (
+              <>
+                <div data-gm-hand-name style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900 }}>{handName(preview.hand)}{(g.levels || {})[preview.hand] ? <span style={{ fontSize: 14, color: C.dim }}> · {T("gmLv", { n: (g.levels[preview.hand] || 0) + 1 })}</span> : null}</div>
+                <ScoreBox chips={preview.chips} mult={preview.mult} />
+                <button type="button" data-gm-why onClick={() => { sfxTap(); setWhy(true); }} style={{ ...btnBase, background: "transparent", color: C.signal, fontSize: 13.5, padding: "4px 10px", display: "flex", alignItems: "center", gap: 4 }}>
+                  {preview.scored.length < sel.length ? T("gmCounts", { n: preview.scored.length, m: sel.length }) + " · " : ""}{T("gmWhy")}<Arrow />
+                </button>
+              </>
+            ) : <div style={{ fontSize: 14, color: C.dim, textAlign: "center" }}>{T("gmPick")}</div>}
+          </div>
+          {/* hand */}
+          <div key={dealKey} data-gm-hand style={{ position: "relative", height: Math.round(cw * 1.4) + 20, margin: "0 auto", width: cw + step * Math.max(0, g.hand.length - 1) }}>
+            {!anim && order.map((hi, k) => (
+              <div key={g.hand[hi]} style={{ position: "absolute", left: k * step, bottom: 0 }}>
+                <PlayCard c={g.hand[hi]} w={cw} bests={bests} glow={!!(tstep && tstep.cards && tstep.cards.includes(g.hand[hi]) && !sel.includes(hi))} sel={sel.includes(hi)} out={!!preview && sel.includes(hi) && !preview.scored.includes(g.hand[hi])} onClick={() => toggle(hi)} i={k} deal dead={g.blind === 2 && g.boss === "skip_" + GM.suitOf(g.hand[hi])} />
+              </div>
+            ))}
+          </div>
+          <div style={{ display: "flex", gap: 8, marginTop: 10, alignItems: "stretch" }}>
+            <button type="button" data-gm-discard disabled={!sel.length || g.discardsLeft <= 0 || !!anim} onClick={discard} style={{ ...btnBase, flex: 1, padding: "14px 8px", borderRadius: 14, background: C.panel, color: C.chalk, border: `1.5px solid ${C.line}`, opacity: !sel.length || g.discardsLeft <= 0 || anim ? 0.5 : 1, fontSize: 15 }}>
+              {T("gmDiscard")}<span style={{ display: "block", fontSize: 11.5, color: C.dim, fontWeight: 700 }}>{T("gmLeft", { n: g.discardsLeft })}</span>
+            </button>
+            <button type="button" data-gm-sort onClick={() => { sfxTap(); setSortBy(s => (s === "v" ? "s" : "v")); }} aria-label={T("gmSort")} style={{ ...btnBase, width: 52, borderRadius: 14, background: C.panel, color: C.dim, border: `1.5px solid ${C.line}`, fontSize: 12, padding: 4 }}>{sortBy === "v" ? "A-2" : <span style={{ display: "flex", gap: 1, justifyContent: "center" }}>{GM.SUITS.map(s => <SuitIcon key={s} s={s} size={9} />)}</span>}</button>
+            <button type="button" data-gm-play disabled={!sel.length || !!anim} onClick={play} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), flex: 1.4, width: "auto", padding: "14px 8px", opacity: !sel.length || anim ? 0.55 : 1 }}>
+              {T("gmPlay")}<span style={{ display: "block", fontSize: 11.5, fontWeight: 700, opacity: 0.8 }}>{T("gmLeft", { n: g.handsLeft })}</span>
+            </button>
+          </div>
+        </>
+      ) : g.phase === "shop" ? (
+        <GameShop g={g} tut={tut} onMove={shopMove} onMoves={shopMoves} onInfo={setInfo} />
+      ) : <div style={{ flex: 1 }} />}
+      {fx === "win" && <Confetti count={45} />}
+      {why && sel.length > 0 && <ScoreWhy g={g} cards={sel.map(i => g.hand[i])} bests={bests} onClose={() => setWhy(false)} />}
+      {info && <Sheet short title={jName(info)} onClose={() => setInfo(null)}><div data-gm-joker-info style={{ fontSize: 15, lineHeight: 1.5, color: C.chalk }}>{withK(jDesc(info))}{(g.jokers.find(x => x.id === info) || {}).v ? <div style={{ marginTop: 6, fontWeight: 800, color: C.signal }}>{T("gmNowMult", { n: g.jokers.find(x => x.id === info).v })}</div> : null}</div></Sheet>}
+      {quit && (
+        <Sheet short title={T("gmQuitT")} onClose={() => setQuit(false)}>
+          <div style={{ fontSize: 14.5, color: C.dim, lineHeight: 1.5 }}>{T(saved.mode === "ranked" ? "gmQuitRankedD" : "gmQuitD")}</div>
+          <button type="button" data-gm-quit-yes onClick={() => { sfxTap(); setQuit(false); onQuit({ ...saved, moves }); }} style={{ ...bigBtn("#e5484d", "#fff"), marginTop: 14 }}>{T("gmQuit")}</button>
+          <button type="button" data-gm-quit-no onClick={() => { sfxTap(); setQuit(false); }} style={{ ...ghostBtn, width: "100%", marginTop: 8, padding: "13px 14px", fontSize: 15, color: C.chalk }}>{T("gmStay")}</button>
+        </Sheet>
+      )}
+    </div>,
+    document.body
+  );
+}
+function ScoreBox({ chips, mult, total }) {
+  return (
+    <div data-gm-score style={{ display: "flex", alignItems: "center", gap: 8 }}>
+      <span key={"c" + chips} className="gmBump" style={{ minWidth: 70, textAlign: "center", padding: "8px 12px", borderRadius: 12, background: `${C.sky}22`, border: `1.5px solid ${C.sky}`, color: C.sky, fontFamily: DISPLAY, fontSize: 26, fontWeight: 900 }}>{nf(chips)}</span>
+      <span style={{ fontFamily: DISPLAY, fontSize: 22, fontWeight: 900, color: C.dim }}>×</span>
+      <span key={"m" + mult} className="gmBump" style={{ minWidth: 56, textAlign: "center", padding: "8px 12px", borderRadius: 12, background: C.signal, color: C.signalInk, fontFamily: DISPLAY, fontSize: 26, fontWeight: 900 }}>{Number.isInteger(mult) ? mult : mult.toFixed(1)}</span>
+      {total !== null && total !== undefined && <span data-gm-total className="gmPop" style={{ fontFamily: DISPLAY, fontSize: 30, fontWeight: 900, color: C.signal, marginLeft: 4 }}>= {nf(total)}</span>}
+    </div>
+  );
+}
+function GameShop({ g, tut, onMove, onMoves, onInfo }) { // onInfo: your own jokers' text
+  const sh = g.shop, pay = sh.pay ?? ((g.last && g.last.pay) || 0);
+  // 1.8.0 (Michael, Oct 25: "let me swap them if I like another one more"): with all joker slots taken, Buy becomes
+  // Swap: pick one of yours, it is sold and the new one bought in one go
+  const full = g.jokers.length >= GM.jokerSlots(g), sellOf = j => Math.max(1, Math.floor(j.cost / 2));
+  const [swap, setSwap] = useState(null); // index of the shop item being swapped in
+  return (
+    <div data-gm-shop style={{ flex: 1, display: "flex", flexDirection: "column", gap: 12, marginTop: 6 }}>
+      <div className="cardIn" style={{ ...card, ...tileR(), padding: "12px 14px", display: "flex", alignItems: "center", gap: 10 }}>
+        <span aria-hidden="true" style={{ fontSize: 26 }}>✅</span>
+        <span style={{ flex: 1, fontWeight: 800 }}>{T("gmCleared")}</span>
+        <span data-gm-pay style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, color: C.signal }}>+<KSign />{pay}</span>
+      </div>
+      <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
+        <div style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, flex: 1 }}>{T("gmShop")}</div>
+        <div data-gm-coin style={{ fontSize: 13, color: C.dim, fontWeight: 700 }}><span style={{ color: C.signal }}><KSign />{g.money}</span> {COIN}</div>
+      </div>
+      {/* one row per item: what it is, what it does, the price (Michael wants it readable, not a tap per joker) */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {sh.items.filter(it => it.k !== "voucher").map(it => {
+          const i = sh.items.indexOf(it), jk = it.k === "joker", pk = it.k === "pack", r = jk && GM.JOKERS[it.id] ? GM.JOKERS[it.id].r : 0, col = jk ? RAR_COL()[r] : pk ? "#b78cff" : C.signal;
+          const sw = jk && full && !it.sold; // Swap instead of Buy
+          const off = it.sold || (sw ? !g.jokers.some(j => g.money + sellOf(j) >= it.cost) : g.money < it.cost);
+          return (
+            <div key={i} data-gm-item={it.k} data-gm-drill={it.k === "drill" ? it.id : undefined} data-gm-pack={pk ? it.id : undefined} data-joker-row={jk ? it.id : undefined} data-rarity={jk ? r : undefined} className={"cardIn" + (jk && r === 3 ? " foil" : "")} style={{ ...card, ...tileR(), position: "relative", overflow: "hidden", padding: "10px 12px", display: "flex", alignItems: "center", gap: 12, opacity: it.sold ? 0.4 : 1, borderColor: `${col}80`, animationDelay: `${i * 0.06}s` }}>
+              <span aria-hidden="true" className={jk && r >= 2 && !it.sold ? "gmWobble" : undefined} style={{ width: 46, height: 46, flexShrink: 0, borderRadius: 12, background: `linear-gradient(160deg, ${col}40, ${C.panelHi})`, border: `1.5px solid ${col}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 25 }}>
+                {pk ? PACK_ICON[it.id] : !jk ? "🏋️" : it.id.startsWith("fan_") ? <SuitIcon s={it.id.slice(4)} size={24} /> : JOKER_ICON[it.id] || "🃏"}
+              </span>
+              <span style={{ flex: 1, minWidth: 0 }}>
+                <span style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", fontWeight: 800, fontSize: 15, lineHeight: 1.2 }}>{jk ? jName(it.id) : pk ? (L.gm.pk || {})[it.id][0] : T("gmDrill", { h: handName(it.id) })}
+                  {jk && <span data-rar-chip={r} style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: 0.4, textTransform: "uppercase", color: col, border: `1px solid ${col}88`, borderRadius: 99, padding: "1px 7px" }}>{T("gmRar" + r)}</span>}</span>
+                <span style={{ display: "block", fontSize: 12.5, color: C.dim, lineHeight: 1.35, marginTop: 2 }}>{jk ? withK(jDesc(it.id)) : pk ? (L.gm.pk || {})[it.id][1] : T("gmDrillD", { c: GM.HAND_UP[it.id][0], m: GM.HAND_UP[it.id][1] })}</span>
+              </span>
+              <button type="button" data-gm-buy={i} data-gm-swap={sw ? 1 : undefined} disabled={off} onClick={() => (sw ? (sfxTap(), setSwap(i)) : onMove({ t: "buy", i }))} style={{ ...btnBase, flexShrink: 0, minWidth: 64, padding: "8px 10px", borderRadius: 12, background: it.sold ? "transparent" : C.signal, color: it.sold ? C.dim : C.signalInk, fontSize: 13, lineHeight: 1.15, opacity: off && !it.sold ? 0.4 : 1 }}>
+                {it.sold ? "✓" : <><span style={{ display: "block", fontFamily: DISPLAY, fontSize: 17, fontWeight: 900 }}><KSign />{it.cost}</span>{T(sw ? "gmSwap" : pk ? "gmOpen" : "gmBuy")}</>}
+              </button>
+            </div>
+          );
+        })}
+      </div>
+      {/* this ante's voucher: a ticket that lasts the whole Run */}
+      {sh.items.filter(it => it.k === "voucher").map(it => { const i = sh.items.indexOf(it), v = (L.gm.v || {})[it.id] || [it.id, ""]; return (
+        <div key={"v" + i} data-gm-voucher={it.id} className="cardIn" style={{ position: "relative", padding: "12px 14px", borderRadius: 16, border: "2px dashed #ffb02e", background: "linear-gradient(135deg, #ffb02e22, transparent 60%)", display: "flex", alignItems: "center", gap: 12, opacity: it.sold ? 0.45 : 1 }}>
+          <span aria-hidden="true" style={{ fontSize: 28 }}>{VOUCHER_ICON[it.id] || "🎫"}</span>
+          <span style={{ flex: 1, minWidth: 0 }}>
+            <span style={{ display: "block", fontSize: 10.5, fontWeight: 800, letterSpacing: 0.8, textTransform: "uppercase", color: "#ffb02e" }}>{T("gmVoucher")}</span>
+            <span style={{ display: "block", fontWeight: 800, fontSize: 15 }}>{v[0]}</span>
+            <span style={{ display: "block", fontSize: 12.5, color: C.dim, lineHeight: 1.35 }}>{withK(v[1])} <span style={{ opacity: 0.8 }}>· {T("gmVoucherD")}</span></span>
+          </span>
+          <button type="button" data-gm-buy={i} disabled={it.sold || g.money < it.cost} onClick={() => onMove({ t: "buy", i })} style={{ ...btnBase, flexShrink: 0, minWidth: 64, padding: "8px 10px", borderRadius: 12, background: it.sold ? "transparent" : "#ffb02e", color: it.sold ? C.dim : "#1b1405", fontSize: 13, lineHeight: 1.15, opacity: !it.sold && g.money < it.cost ? 0.4 : 1 }}>
+            {it.sold ? "✓" : <><span style={{ display: "block", fontFamily: DISPLAY, fontSize: 17, fontWeight: 900 }}><KSign />{it.cost}</span>{T("gmBuy")}</>}
+          </button>
+        </div>); })}
+      {g.vouchers && g.vouchers.length > 0 && <div data-gm-vouchers style={{ display: "flex", gap: 6, flexWrap: "wrap", fontSize: 12, color: C.dim }}>{g.vouchers.map(v => <span key={v} title={((L.gm.v || {})[v] || [v])[1]} style={{ padding: "3px 9px", borderRadius: 99, border: "1px dashed #ffb02e88" }}>{VOUCHER_ICON[v]} {((L.gm.v || {})[v] || [v])[0]}</span>)}</div>}
+      {g.pack && <PackOpen g={g} onMove={onMove} />}
+      {!tut && <button type="button" data-gm-reroll disabled={g.money < sh.rerollCost} onClick={() => onMove({ t: "reroll" })} style={{ ...ghostBtn, alignSelf: "flex-start", color: C.chalk, opacity: g.money < sh.rerollCost ? 0.5 : 1 }}>{withK(T("gmReroll", { n: sh.rerollCost }))}</button>}
+      {g.jokers.length > 0 && (
+        <div>
+          <div style={{ fontSize: 12.5, color: C.dim, marginBottom: 6 }}>{T("gmYourJokers", { n: g.jokers.length, max: GM.jokerSlots(g) })}</div>
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            {g.jokers.map((j, i) => <div key={j.id} style={{ display: "flex", flexDirection: "column", gap: 4, alignItems: "center" }}><JokerChip id={j.id} small onClick={() => { sfxTap(); onInfo(j.id); }} /><button type="button" data-gm-sell={i} onClick={() => onMove({ t: "sell", i })} style={{ ...btnBase, background: "transparent", color: C.dim, fontSize: 11.5, padding: "3px 6px" }}>{withK(T("gmSell", { n: Math.max(1, Math.floor(j.cost / 2)) }))}</button></div>)}
+          </div>
+        </div>
+      )}
+      {swap !== null && (
+        <Sheet short title={T("gmSwapT")} onClose={() => setSwap(null)}>
+          <div data-gm-swap-sheet style={{ fontSize: 14, color: C.dim, lineHeight: 1.5, marginBottom: 10 }}>{T("gmSwapD", { name: jName(sh.items[swap].id) })}</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {g.jokers.map((j, ji) => {
+              const ok = g.money + sellOf(j) >= sh.items[swap].cost;
+              return (
+                <button key={j.id} type="button" data-gm-swap-out={ji} disabled={!ok} onClick={() => { const i = swap; setSwap(null); onMoves([{ t: "sell", i: ji }, { t: "buy", i }]); }}
+                  style={{ ...btnBase, ...card, ...tileR(), display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", textAlign: "left", color: C.chalk, fontWeight: 400, opacity: ok ? 1 : 0.45 }}>
+                  <span aria-hidden="true" style={{ width: 40, height: 40, flexShrink: 0, borderRadius: 11, background: C.panelHi, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>{j.id.startsWith("fan_") ? <SuitIcon s={j.id.slice(4)} size={20} /> : JOKER_ICON[j.id] || "🃏"}</span>
+                  <span style={{ flex: 1, minWidth: 0 }}><span style={{ display: "block", fontWeight: 800, fontSize: 15 }}>{jName(j.id)}</span><span style={{ display: "block", fontSize: 12.5, color: C.dim, lineHeight: 1.35 }}>{withK(jDesc(j.id))}</span></span>
+                  <span style={{ fontWeight: 800, color: C.signal, whiteSpace: "nowrap" }}>+<KSign />{sellOf(j)}</span>
+                </button>
+              );
+            })}
+          </div>
+        </Sheet>
+      )}
+      {!tut && <button type="button" data-gm-next onClick={() => onMove({ t: "next" })} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: "auto" }}>{T("gmNext")}</button>}
+    </div>
+  );
+}
+// The end of a game: result, XP (unranked) or rating (ranked, after the server's check).
+function GameEnd({ res, onClose, onAgain }) {
+  const { saved, g, xp, lvlUp, rk, rkErr, stakeUp } = res;
+  const me = GM.resultOf(g), opp = saved.mode === "duel" ? saved.bot : rk ? rk.opp : null;
+  const won = saved.mode === "run" ? g.phase === "won" : saved.mode === "duel" ? GM.beats(me, opp) : rk ? rk.sc === 1 : null;
+  const draw = saved.mode === "duel" ? !GM.beats(me, opp) && !GM.beats(opp, me) : rk ? rk.sc === 0.5 : false;
+  return createPortal(
+    <div data-gm-end={won ? "win" : draw ? "draw" : won === null ? "wait" : "lose"} style={{ position: "fixed", inset: 0, zIndex: 91, background: "rgba(4,7,16,.96)", color: C.chalk, fontFamily: BODY, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px 20px", textAlign: "center", gap: 10 }}>
+      {won && <Confetti />}
+      <div aria-hidden="true" style={{ fontSize: 76, lineHeight: 1 }} className="gmPop">{won ? "🏆" : draw ? "🤝" : won === null ? "⏳" : "💪"}</div>
+      <div style={{ fontFamily: DISPLAY, fontSize: 38, fontWeight: 900, lineHeight: 1 }}>{won === null ? T("gmWaitServer") : won ? (saved.mode === "run" ? T("gmWon") : T("gmWin")) : draw ? T("gmDraw") : saved.mode === "run" ? T("gmOver") : T("gmLose")}</div>
+      <div style={{ fontSize: 15, color: C.dim }}>{T("gmResult", { n: me.cleared, t: nf(me.total) })}</div>
+      {opp && <div data-gm-opp style={{ fontSize: 14.5, color: C.dim }}>{saved.mode === "duel" ? T("gmBotRes", { n: opp.lvl }) : opp.bot ? T("gmBotRes", { n: opp.bot }) : opp.nick}: {T("gmResult", { n: opp.cleared, t: nf(opp.total) })}</div>}
+      {rk && <div data-gm-rating style={{ fontFamily: DISPLAY, fontSize: 26, fontWeight: 900, color: rk.dr >= 0 ? C.mint : "#ff8a80" }}>{T("gmRating", { r: rk.r })} ({rk.dr >= 0 ? "+" : ""}{rk.dr})</div>}
+      {rkErr && <div role="alert" style={{ fontSize: 13.5, color: "#ff8a80", maxWidth: 340 }}>{T("gmErrEnd")}</div>}
+      {xp > 0 && <div data-gm-xp style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, color: C.signal }}>+{nf(xp)} {T("gmXp")}</div>}
+      {stakeUp > 0 && <div data-gm-stakeup={stakeUp} className="gmPop" style={{ fontSize: 15, fontWeight: 800, color: C.chalk, display: "flex", alignItems: "center", gap: 8 }}><span style={{ width: 14, height: 14, borderRadius: 4, background: STAKE_COL[stakeUp] }} />{T("gmStakeOpen", { s: L.gm.stake[stakeUp][0] })}</div>}
+      {lvlUp && <div data-gm-levelup className="gmPop" style={{ fontSize: 16, fontWeight: 800, color: C.chalk }}>{T("gmLevelUp", { n: lvlUp })}</div>}
+      <div style={{ display: "flex", gap: 8, width: "100%", maxWidth: 360, marginTop: 14 }}>
+        <button type="button" data-gm-close onClick={() => { sfxTap(); onClose(); }} style={{ ...ghostBtn, flex: 1, padding: "14px", fontSize: 15, color: C.chalk }}>{T("gmBack")}</button>
+        {won !== null && <button type="button" data-gm-again onClick={() => { sfxTap(); onAgain(); }} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), flex: 1.3, width: "auto" }}>{T("gmAgain")}</button>}
+      </div>
+    </div>,
+    document.body
+  );
+}
+
+// ─── GUIDE / TOUR (1.7.6; Michael, Oct 24: a friend from Indonesia "had no idea what to do") ───
+// An interactive guide in 7 chapters: the screen is dimmed, the real button or box is lit, and a bubble says what it
+// does. Steps that move somewhere ("tap here") need the real tap (Next taps it for you, so nobody gets stuck). Every
+// finished chapter adds a level to the Explorer badge (profile.tourDone, synced like the freeze days), so chapter 2 can
+// teach opening badge cards with your own first badge. Chapter 3 is the workout: it runs when a workout starts.
+// New users get chapter 1 right after the first-start setup; everyone else gets an offer on Home once; the ☰ menu has
+// the chapter list (TourSheet). window.__hwTourOff (tests) keeps it out of the way unless a test wants it.
+const TOUR_N = 7;
+const TOUR_ORDER = [1, 2, 4, 5, 6, 7]; // 3 = the workout, started by a workout
+const tourOff = () => !!window.__hwTourOff;
+function tourDoneSet(profile) { return new Set(((profile && profile.tourDone) || []).map(Number).filter(n => n >= 1 && n <= TOUR_N)); }
+const tourWait = ms => new Promise(r => setTimeout(r, ms));
+// the first match that is on screen (the ☰ button exists twice: the top bar and the workout header)
+function tourFind(sel) {
+  for (const e of document.querySelectorAll(sel)) {
+    const r = e.getBoundingClientRect();
+    if (r.width > 0 && r.height > 0 && getComputedStyle(e).visibility !== "hidden") return e;
+  }
+  return null;
+}
+async function tourWaitGone(sel, ms = 120000) { const t = Date.now(); while (document.querySelector(sel) && Date.now() - t < ms) await tourWait(120); }
+async function tourTab(name, i) { const b = tourFind(`[data-${name}-tab="${i}"]`); if (b && b.getAttribute("aria-selected") !== "true") { b.click(); await tourWait(420); } }
+// The steps of a chapter. A step: sel (what to light up), t (text), tap (moves on with the real tap), opt (left out when
+// it isn't there), prep (runs first: go to a screen, open the menu…), done (the chapter's last bubble).
+function tourSteps(ch, x) {
+  const X = (L.tour && L.tour["c" + ch]) || [];
+  const s = (sel, i, more = {}) => ({ sel, t: X[i], ...more });
+  const tt = (i, key) => fmt(X[i] || "", { t: T(key) }); // "Tap {t}." with the tab's real name
+  const screen = (id, page) => async () => { await x.go(id); if (page !== undefined) await tourTab(page[0], page[1]); };
+  if (ch === 1) return [
+    { t: X[0], prep: screen("train", ["home", 0]) },
+    s("[data-home-hero]", 1),
+    s('[data-day-picker="hero"]', 2),
+    s("[data-rounds-row]", 3),
+    s("[data-home-week]", 4),
+    s('[data-home-tab="1"]', 5, { tap: true, opt: true }),
+    s('[data-home-ex="0"]', 6, { opt: true }),
+    s("[data-menu-btn]", 7, { tap: true, opt: true, prep: async () => { await tourTab("home", 0); await tourWait(150); window.scrollTo(0, 0); } }),
+    s("[data-nav-box]", 8, { prep: async () => { x.menu(true); await tourWait(380); } }),
+    { done: true, t: X[9], prep: async () => { x.menu(false); await tourWait(300); } },
+  ];
+  if (ch === 2) return [
+    s('[data-claim-row="ach:guide"]', 0, { tap: true, opt: true, prep: screen("profile", ["pf", 1]) }),
+    s('[data-ach-row="guide"]', 1, { opt: true, prep: async () => { await tourWaitGone("[data-reveal]"); await tourWait(500); } }),
+    s("[data-claim-row]", 2, { opt: true }),
+    { done: true, t: X[3] },
+  ];
+  if (ch === 3) return [
+    s("[data-warmup-list]", 0, { opt: true }),
+    s("[data-warmup-go]", 1, { tap: true, opt: true }),
+    s("[data-reps]", 2, { opt: true, wait: 4000 }),
+    s("[data-goal]", 3, { opt: true, wait: 400 }),
+    s("[data-tempo-btn]", 4, { opt: true, wait: 400 }),
+    s("[data-done-btn], [data-side-next]", 5, { tap: true, opt: true }),
+    s("[data-rest-timer]", 6, { opt: true, wait: 3000 }),
+    s("[data-minimize]", 7, { opt: true }),
+    { done: true, t: X[8] },
+  ];
+  if (ch === 4) return [
+    s("[data-pf-hero]", 0, { prep: screen("profile", ["pf", 0]) }),
+    s("[data-pf-edit]", 1, { opt: true }),
+    s("[data-pf-showcase]", 2, { opt: true }),
+    s('[data-pf-tab="2"]', 3, { tap: true, opt: true }),
+    s("[data-pf-ranks]", 4, { opt: true }),
+    s('[data-pf-tab="3"]', 5, { tap: true, opt: true }),
+    s("[data-pf-stats]", 6, { opt: true }),
+    { done: true, t: X[7], prep: async () => { await tourTab("pf", 0); } },
+  ];
+  if (ch === 5) return [
+    s("[data-month-cal]", 0, { prep: screen("history") }),
+    s("[data-add-workout]", 1, { opt: true }),
+    s("[data-workout-row]", 2, { opt: true }),
+    { done: true, t: X[3] },
+  ];
+  // 1.8.0 (Michael: "let them tap so the screen slides, then explain what they see, not the buttons on top")
+  if (ch === 6) return [
+    s("[data-kcsetup]", 0, { opt: true, wait: 1200, prep: screen("calories", ["kc", 0]) }),
+    s("[data-kc-streak-card]", 1, { opt: true, wait: 600 }),
+    s("[data-kctoday]", 2, { opt: true, wait: 600 }),
+    s("[data-health-card]", 3, { opt: true, wait: 400 }),
+    s("[data-kc-log]", isNative ? 4 : 5, { opt: true, wait: 400 }),
+    s('[data-kc-tab="1"]', 6, { tap: true, opt: true, wait: 400, t: tt(6, "kcTabCal") }),
+    s("[data-kc-cal]", 7, { opt: true, wait: 800 }),
+    s('[data-kc-tab="2"]', 8, { tap: true, opt: true, wait: 400, t: tt(8, "kcTabMe") }),
+    s("[data-kcsettings]", 9, { opt: true, wait: 800 }),
+    { done: true, t: X[10], prep: async () => { await tourTab("kc", 0); } },
+  ];
+  return [ // 7: friends
+    s("[data-fr-signin]", 0, { opt: true, wait: 1500, prep: screen("friends") }),
+    s("[data-fr-code]", 1, { opt: true, wait: 1500 }),
+    s('[data-seg="friends"]', 2, { tap: true, opt: true, wait: 400, t: tt(2, "frFriends") }),
+    s('[data-fr-view="friends"]', 3, { opt: true, wait: 600 }),
+    s('[data-seg="board"]', 4, { tap: true, opt: true, wait: 400, t: tt(4, "frBoard") }),
+    s('[data-fr-view="board"]', 5, { opt: true, wait: 600 }),
+    s('[data-seg="chats"]', 6, { tap: true, opt: true, wait: 400, t: tt(6, "chMsgs") }),
+    s('[data-fr-view="chats"]', 7, { opt: true, wait: 600 }),
+    { done: true, t: X[8] },
+  ];
+}
+// What comes after a chapter: the next one in the order that isn't done yet (the workout chapter waits for a workout).
+function tourNext(ch, done) { return ch === 3 ? null : TOUR_ORDER.find(n => n > ch && !done.has(n)) || TOUR_ORDER.find(n => !done.has(n)) || null; }
+
+function Tour({ run, x, done, onStep, onEnd, onChapterDone, onStart }) {
+  const steps = useMemo(() => tourSteps(run.ch, x), [run.ch]);
+  const step = steps[run.i];
+  const [el, setEl] = useState(null);
+  const [ready, setReady] = useState(false);
+  const [rect, setRect] = useState(null);
+  const [hold, setHold] = useState(false);
+  const [doneNow, setDoneNow] = useState(null); // the badge level this chapter brought
+  const live = useRef({ run, steps }); live.current = { run, steps };
+  const next = () => onStep(run.i + 1 < steps.length ? run.i + 1 : null);
+  useBack(() => onEnd(true), true);
+  useEffect(() => { const k = e => { if (e.key === "Escape") onEnd(true); }; window.addEventListener("keydown", k); return () => window.removeEventListener("keydown", k); }, []);
+  // prepare the step: run its prep, find what to light up (it may still be appearing), scroll it into view
+  useEffect(() => {
+    if (!step) return;
+    let dead = false;
+    setReady(false); setEl(null); setRect(null);
+    (async () => {
+      if (step.prep) { try { await step.prep(); } catch (_) {} }
+      if (dead) return;
+      if (step.done) { const n = onChapterDone(run.ch); setDoneNow(n); }
+      if (!step.sel) { setReady(true); return; }
+      const t0 = Date.now(); let e = null;
+      while (!dead && Date.now() - t0 < (step.wait || 2500)) { e = tourFind(step.sel); if (e) break; await tourWait(80); }
+      if (dead) return;
+      if (!e) { if (step.opt) next(); else setReady(true); return; }
+      const r = e.getBoundingClientRect();
+      // a box taller than half the screen: its top goes just under the top bar and only that part is lit
+      if (r.height > innerHeight * 0.5) { if (Math.abs(r.top - 90) > 4) { window.scrollBy(0, r.top - 90); await tourWait(60); } }
+      else if (r.top < 80 || r.bottom > innerHeight - 40) { e.scrollIntoView({ block: "center", behavior: "instant" }); await tourWait(60); }
+      if (dead) return;
+      setEl(e); setReady(true);
+    })();
+    return () => { dead = true; };
+  }, [run.ch, run.i]);
+  // follow it (scrolling, layout changes); if it goes away (the screen moved on by itself), go on with the guide
+  useEffect(() => {
+    if (!ready) return;
+    let raf = 0, last = "", gone = 0;
+    const loop = () => {
+      setHold(!!document.querySelector("[data-reveal]"));
+      if (el) {
+        if (!el.isConnected) { if (++gone > 3) { next(); return; } }
+        else {
+          const r = el.getBoundingClientRect(), k = [r.left, r.top, r.width, r.height].map(Math.round).join(",");
+          if (k !== last) { last = k; setRect({ l: r.left, t: r.top, w: r.width, h: r.height }); }
+        }
+      }
+      raf = requestAnimationFrame(loop);
+    };
+    raf = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(raf);
+  }, [ready, el]);
+  // a "tap here" step goes on after the real tap
+  useEffect(() => {
+    if (!ready || !el || !step || !step.tap) return;
+    let moved = false;
+    const h = e => { if (!moved && el.contains(e.target)) { moved = true; setTimeout(() => { if (live.current.run.i === run.i && live.current.run.ch === run.ch) next(); }, 320); } };
+    document.addEventListener("click", h, true);
+    return () => document.removeEventListener("click", h, true);
+  }, [ready, el, run.i]);
+  if (!step || !ready || hold) return null;
+  const tap = step.tap && el;
+  const go = () => { sfxTap(); if (tap) el.click(); else next(); };
+  const vw = innerWidth, vh = innerHeight, pad = 6;
+  const hole = rect && { l: Math.max(4, rect.l - pad), t: Math.max(4, rect.t - pad), r: Math.min(vw - 4, rect.l + rect.w + pad), b: Math.min(vh - 4, rect.t + rect.h + pad, rect.h > vh * 0.5 ? Math.max(4, rect.t - pad) + vh * 0.42 : Infinity) };
+  const below = hole && (hole.t + hole.b) / 2 < vh * 0.55;
+  const dim = "rgba(3,8,20,.72)";
+  const block = e => { e.stopPropagation(); e.preventDefault(); };
+  const nSteps = steps.filter(z => !z.done).length, pos = steps.slice(0, run.i + 1).filter(z => !z.done).length;
+  const title = `${T("tourChN", { n: run.ch })} · ${(L.tour && L.tour.ch[run.ch - 1]) || ""}`;
+  const nxt = step.done ? tourNext(run.ch, new Set([...done, run.ch])) : null;
+  const bw = Math.min(vw - 24, 400), bl = hole ? Math.max(12, Math.min(vw - bw - 12, (hole.l + hole.r) / 2 - bw / 2)) : (vw - bw) / 2;
+  const arrowX = hole ? Math.max(18, Math.min(bw - 18, (hole.l + hole.r) / 2 - bl)) : null;
+  const bubblePos = !hole ? { top: "50%", transform: "translateY(-50%)" } : below ? { top: hole.b + 14 } : { bottom: vh - hole.t + 14 };
+  return createPortal(
+    <div data-tour={run.ch} data-tour-step={run.i} data-tour-done={step.done ? 1 : 0} style={{ position: "fixed", inset: 0, zIndex: 110, fontFamily: BODY, pointerEvents: "none" }}>
+      {hole ? <>
+        <div onClick={block} style={{ position: "absolute", left: 0, top: 0, right: 0, height: hole.t, background: dim, pointerEvents: "auto" }} />
+        <div onClick={block} style={{ position: "absolute", left: 0, top: hole.b, right: 0, bottom: 0, background: dim, pointerEvents: "auto" }} />
+        <div onClick={block} style={{ position: "absolute", left: 0, top: hole.t, width: hole.l, height: hole.b - hole.t, background: dim, pointerEvents: "auto" }} />
+        <div onClick={block} style={{ position: "absolute", left: hole.r, top: hole.t, right: 0, height: hole.b - hole.t, background: dim, pointerEvents: "auto" }} />
+        {!tap && <div onClick={block} data-tour-shield style={{ position: "absolute", left: hole.l, top: hole.t, width: hole.r - hole.l, height: hole.b - hole.t, pointerEvents: "auto" }} />}
+        <div aria-hidden="true" className="tourRing" style={{ position: "absolute", left: hole.l, top: hole.t, width: hole.r - hole.l, height: hole.b - hole.t, borderRadius: 16, boxShadow: `0 0 0 2px ${C.signal}, 0 0 22px ${C.signal}88`, pointerEvents: "none" }} />
+      </> : <div onClick={block} style={{ position: "absolute", inset: 0, background: dim, pointerEvents: "auto" }} />}
+      <div role="dialog" aria-live="polite" aria-label={title} data-tour-bubble className="tourIn" style={{ pointerEvents: "auto", position: "absolute", left: bl, width: bw, boxSizing: "border-box", ...bubblePos, background: C.panelHi, border: `1.5px solid ${C.signal}`, borderRadius: 18, padding: "14px 16px 12px", color: C.chalk, boxShadow: "0 18px 50px rgba(0,0,0,.55)" }}>
+        {hole && <span aria-hidden="true" style={{ position: "absolute", left: arrowX - 8, [below ? "top" : "bottom"]: -9, width: 16, height: 16, background: C.panelHi, borderLeft: `1.5px solid ${C.signal}`, borderTop: `1.5px solid ${C.signal}`, transform: `rotate(${below ? 45 : 225}deg)` }} />}
+        <div style={{ display: "flex", alignItems: "baseline", gap: 8, fontSize: 11, fontWeight: 800, letterSpacing: 0.8, textTransform: "uppercase", color: C.signal }}>
+          <span style={{ flex: 1, minWidth: 0 }}>{title}</span>
+          {!step.done && <span data-tour-pos style={{ color: C.dim, flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>{pos} / {nSteps}</span>}
+        </div>
+        {step.done && doneNow && (
+          <div data-tour-badge={doneNow} style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 10 }}>
+            <IcoBox n="compass" size={46} />
+            <span style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, lineHeight: 1.1, color: C.chalk }}>{doneNow >= TOUR_N ? T("tourAllDone") : T("tourChDone", { rank: RANKS[doneNow - 1].name })}</span>
+          </div>
+        )}
+        <div data-tour-text style={{ fontSize: 15, lineHeight: 1.5, marginTop: 8 }}>{step.t || ""}</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 14 }}>
+          <button type="button" data-tour-skip onClick={() => { sfxTap(); onEnd(!step.done); }} style={{ ...btnBase, background: "transparent", color: C.dim, padding: "8px 2px", fontSize: 13, fontWeight: 700 }}>{step.done ? T("tourLater") : T("tourSkip")}</button>
+          <span style={{ flex: 1 }} />
+          {step.done ? (
+            nxt ? <button type="button" data-tour-next onClick={() => { sfxTap(); onStart(nxt); }} style={{ ...btnBase, background: C.signal, color: C.signalInk, padding: "10px 16px", fontSize: 14 }}>{T("tourNextCh", { t: L.tour.ch[nxt - 1] })} <Arrow size={16} style={{ color: C.signalInk, verticalAlign: "-0.05em" }} /></button>
+              : <button type="button" data-tour-next onClick={() => { sfxTap(); onEnd(false); }} style={{ ...btnBase, background: C.signal, color: C.signalInk, padding: "10px 18px", fontSize: 14 }}>{T("tourFinish")}</button>
+          ) : (
+            <button type="button" data-tour-next onClick={go} style={{ ...btnBase, background: C.signal, color: C.signalInk, padding: "10px 18px", fontSize: 14 }}>{run.i === 0 && run.ch === 1 ? T("tourGo") : T("tourNext")}</button>
+          )}
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
+}
+
+// ☰ → Guide: the chapters with ✓, each can be (re)started; the workout chapter is switched on for the next workout.
+function TourSheet({ done, ui, onStart, on3, onClose }) {
+  const n = done.size;
+  return (
+    <Sheet title={T("tourTitle")} onClose={onClose}>
+      <div data-tour-sheet style={{ fontSize: 14, color: C.dim, lineHeight: 1.5, marginBottom: 12 }}>{T("tourSheetD", { n, t: TOUR_N })}</div>
+      <div style={{ borderRadius: 18, border: `1px solid ${C.line}`, overflow: "hidden", background: SOFT() }}>
+        {L.tour.ch.map((name, i) => {
+          const ch = i + 1, ok = done.has(ch), w3 = ch === 3;
+          return (
+            <button key={ch} type="button" data-tour-ch={ch} data-tour-ch-done={ok ? 1 : 0} onClick={() => { sfxTap(); if (w3) on3(); else onStart(ch); }}
+              style={{ ...btnBase, width: "100%", background: "transparent", color: C.chalk, padding: "12px 14px", display: "flex", alignItems: "center", gap: 12, textAlign: "left", borderRadius: 0, borderTop: i ? `1px solid ${C.line}` : "none", fontWeight: 400 }}>
+              <span aria-hidden="true" style={{ width: 30, height: 30, borderRadius: 99, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 14, background: ok ? C.mint : "transparent", color: ok ? C.ink : C.dim, border: `2px solid ${ok ? C.mint : C.line}` }}>{ok ? "✓" : ch}</span>
+              <span style={{ flex: 1, minWidth: 0 }}>
+                <span style={{ display: "block", fontSize: 15, fontWeight: 800 }}>{name}</span>
+                <span style={{ display: "block", fontSize: 12, color: w3 && !ok && ui.tour3 ? C.signal : C.dim, marginTop: 2, lineHeight: 1.4 }}>{w3 ? (ok ? T("tourCh3Done") : ui.tour3 ? T("tourCh3On") : T("tourCh3")) : ok ? T("tourAgain") : T("tourStartCh")}</span>
+              </span>
+              <Arrow />
+            </button>
+          );
+        })}
+      </div>
+    </Sheet>
+  );
+}
+
 // ─── CLAIMS (1.7.4; Michael, Oct 18: "the badges I already have should hide after the update, and I tap them and
 // claim the cards with those animations") ───
 // profile.claim = {a: {badge: tier}, r: {exercise: rank index}} = the highest level whose card was opened. Anything
@@ -6935,14 +8682,31 @@ function revealList(entry, newAch, xpBefore, gained) {
 // (everyone before 1.7.4) = nothing opened, so everything earned so far waits. A workout's reveal claims what it shows;
 // levels and records aren't kept back. Others always see your real badges and ranks (the card in the cloud is unchanged).
 const claimKey = it => `${it.kind}:${it.k}`;
+// 1.8.0: 9 ranks. The opened levels are kept in profile.claim2 on the new scale; profile.claim (the 1.7 scale) stays
+// untouched for older app versions on other devices. The first time, claim2 is worked out from claim: badge levels
+// keep their number except the old Diamond (7 → 8), single badges count as opened if any level was, exercise ranks
+// map Wood/Iron → Iron, Bronze … Platinum → the same, Diamond → Diamond.
+const OLD_RANK_TO_NEW = [0, 0, 1, 2, 3, 4, 7];
+function claimOf(profile) {
+  if (!profile) return null;
+  const c = profile.claim, c2 = profile.claim2;
+  if (!c) return c2 || null;
+  const a = {}, r = {};
+  Object.entries(c.a || {}).forEach(([k, t]) => { const f = ACH.find(x => x.k === k); if (!f || !(t > 0)) return; a[k] = f.single ? f.rk[0] + 1 : t >= 7 ? 8 : t; });
+  Object.entries(c.r || {}).forEach(([id, i]) => { if (typeof i === "number") r[id] = OLD_RANK_TO_NEW[Math.max(0, Math.min(6, i))]; });
+  // an older app version on another device may still open cards into the old map: the higher of the two counts
+  if (c2) { for (const [k, v] of Object.entries(c2.a || {})) a[k] = Math.max(a[k] || 0, v); for (const [k, v] of Object.entries(c2.r || {})) r[k] = Math.max(r[k] ?? -1, v); }
+  return { a, r };
+}
 function unclaimed(m, claim) {
   if (window.__hwNoReveal) return []; // tests without the reveal see everything, as before
   const a = (claim && claim.a) || {}, r = (claim && claim.r) || {};
   const out = m.ach.filter(x => x.tier > (a[x.k] || 0)).map(achCard);
-  Object.keys(RANK_AT).forEach(id => { const ri = rankIdx(id, m.rk[id]); if (ri > (r[id] || 0)) out.push(rankCard(id, ri)); });
+  // 1.8.0: an exercise never opened (no entry at all) waits as a card too, Iron included
+  Object.keys(RANK_AT).forEach(id => { if (m.rk[id] === null || m.rk[id] === undefined) return; const ri = rankIdx(id, m.rk[id]); if (ri > (typeof r[id] === "number" ? r[id] : -1)) out.push(rankCard(id, ri)); });
   return out.sort((x, y) => x.r - y.r || REV_KIND[x.kind] - REV_KIND[y.kind]);
 }
-const unclaimedFor = (history, profile, kcal) => unclaimed(ownModel(history, profile, kcal), profile && profile.claim);
+const unclaimedFor = (history, profile, kcal) => unclaimed(ownModel(history, profile, kcal), claimOf(profile));
 // The claim map with these cards opened (only ever goes up).
 function withClaims(claim, items) {
   const c = { a: { ...((claim && claim.a) || {}) }, r: { ...((claim && claim.r) || {}) } };
@@ -6962,7 +8726,7 @@ function hideUnclaimed(m, hid) {
 function ClaimRow({ it, onOpen }) {
   const col = it.col;
   return (
-    <button type="button" data-claim-row={claimKey(it)} data-rarity={it.r} onClick={() => onOpen(it)} className={it.r >= 4 ? "foil" : undefined}
+    <button type="button" data-claim-row={claimKey(it)} data-rarity={it.r} onClick={() => onOpen(it)} className={it.r >= 3 ? "foil" : undefined}
       style={{ ...btnBase, fontWeight: 400, textAlign: "left", width: "100%", color: C.chalk, ...card, ...tileR(), padding: "11px 12px", display: "flex", alignItems: "center", gap: 12, border: `1.5px solid ${col}99`, boxShadow: `0 0 ${10 + it.r * 3}px ${col}44` }}>
       <span aria-hidden="true" className="claimBack" style={{ "--wob": `${2 + it.r * 0.6}deg`, width: 34, height: 44, flexShrink: 0, borderRadius: 7, border: `1.5px solid ${col}`, background: `radial-gradient(90% 70% at 50% 40%, ${col}66, transparent 75%), repeating-linear-gradient(45deg, ${col}1a 0 5px, transparent 5px 10px), ${C.ink}`, boxShadow: `0 0 ${8 + it.r * 2}px ${col}88`, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: DISPLAY, fontSize: 22, fontWeight: 900, color: col, textShadow: `0 0 8px ${col}` }}>?</span>
       <span style={{ flex: 1, minWidth: 0 }}>
@@ -6984,7 +8748,7 @@ function revealSfx(r) {
   for (let k = 0; k < len; k++) { n.push([S[Math.min(S.length - 1, k + off)], t, 0.11]); t += 0.07; }
   const top = S[Math.min(S.length - 1, len + off)], d = 0.55 + r * 0.09;
   n.push([top, t, d], [top * 0.75, t, d], [top * 0.5, t, d]);
-  if (r >= 4) [2093, 2637, 3136, 2637, 3136, 4186].slice(0, r - 1).forEach((f, k) => n.push([f, t + 0.14 + k * 0.07, 0.09]));
+  if (r >= 3) [2093, 2637, 3136, 2637, 3136, 4186, 3136, 4186].slice(0, r).forEach((f, k) => n.push([f, t + 0.14 + k * 0.07, 0.09]));
   if (r >= 2) n.push([98, t + 0.22, 0.22], [131, t + 0.22, 0.18]); // a low thud when the rank lands
   melody(n, "triangle", 0.26);
 }
@@ -7020,9 +8784,9 @@ function RewardReveal({ items, onDone }) {
   const it = items[i];
   if (!it) return null;
   const col = it.col, r = it.r, last = i + 1 >= items.length;
-  const flip = () => { if (open) return; setOpen(true); revealSfx(r); vibrate(REV_BUZZ[Math.max(0, Math.min(6, r))]); };
+  const flip = () => { if (open) return; setOpen(true); revealSfx(r); vibrate(REV_BUZZ[Math.max(0, Math.min(R_OBSIDIAN, r))]); };
   const next = e => { e.stopPropagation(); collectSfx(); if (last) onDone(); else { setI(i + 1); setOpen(false); } };
-  const kindLabel = T({ pr: "revRecord", ach: "revBadge", rank: "revRank", lvl: "revLevel" }[it.kind]);
+  const kindLabel = it.unlock ? T("revUnlock") : T({ pr: "revRecord", ach: "revBadge", rank: "revRank", lvl: "revLevel" }[it.kind]);
   return createPortal(
     <div data-reveal={items.length} className={open && r >= 5 ? "revShake" : undefined} onClick={flip}
       style={{ position: "fixed", inset: 0, zIndex: 95, background: `radial-gradient(70% 50% at 50% 45%, ${col}${open ? "40" : "22"}, transparent 70%), rgba(4,7,16,.97)`, transition: `background ${MO.t3}`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "calc(var(--sat, 0px) + 18px) 20px calc(var(--sab, 0px) + 26px)", boxSizing: "border-box", fontFamily: BODY, color: C.chalk, cursor: open ? "default" : "pointer", userSelect: "none", overflow: "hidden" }}>
@@ -7034,12 +8798,12 @@ function RewardReveal({ items, onDone }) {
         <div aria-hidden="true" className="revRays" style={{ background: `repeating-conic-gradient(from 0deg, ${col}55 0deg 7deg, transparent 7deg 22deg)`, opacity: open ? 1 : 0, "--rs": `${Math.max(7, 16 - r * 1.4)}s` }} />
         {open && <RevBurst col={col} n={16 + r * 8} />}
         {open && <div aria-hidden="true" className="revFlash" style={{ "--fo": Math.min(0.75, 0.2 + r * 0.09) }} />}
-        <div data-reveal-card data-kind={it.kind} data-rarity={r} data-state={open ? "face" : "back"} className={"revCard" + (open ? " on" : "")} style={{ "--wob": `${1.2 + r * 0.7}deg`, "--wt": `${Math.max(0.35, 1.1 - r * 0.12)}s` }}>
-          {r >= 4 && !open && <RevTwinkle col={col} n={6 + (r - 3) * 4} />}
-          <div className={"revBack" + (r >= 6 ? " revPrism" : "")} style={{ background: `radial-gradient(90% 70% at 50% 40%, ${col}66, transparent 75%), repeating-linear-gradient(45deg, ${col}12 0 10px, transparent 10px 20px), ${C.ink}`, border: `2px solid ${col}`, boxShadow: `0 0 ${18 + r * 9}px ${col}${r >= 4 ? "cc" : "88"}, inset 0 0 ${24 + r * 6}px ${col}55` }}>
+        <div data-reveal-card data-kind={it.kind} data-unlock={it.unlock ? 1 : undefined} data-rarity={r} data-state={open ? "face" : "back"} className={"revCard" + (open ? " on" : "")} style={{ "--wob": `${1.2 + r * 0.7}deg`, "--wt": `${Math.max(0.35, 1.1 - r * 0.12)}s` }}>
+          {r >= 3 && !open && <RevTwinkle col={col} n={6 + (r - 2) * 4} />}
+          <div className={"revBack" + (r >= 7 ? " revPrism" : "")} style={{ background: `radial-gradient(90% 70% at 50% 40%, ${col}66, transparent 75%), repeating-linear-gradient(45deg, ${col}12 0 10px, transparent 10px 20px), ${C.ink}`, border: `2px solid ${col}`, boxShadow: `0 0 ${18 + r * 9}px ${col}${r >= 4 ? "cc" : "88"}, inset 0 0 ${24 + r * 6}px ${col}55` }}>
             <span style={{ fontFamily: DISPLAY, fontSize: 96, fontWeight: 900, color: col, textShadow: `0 0 ${12 + r * 5}px ${col}`, lineHeight: 1 }}>?</span>
           </div>
-          <div className={"revFace" + (r >= 4 ? " foil" : "")} style={{ background: `radial-gradient(100% 70% at 50% 30%, ${col}55, transparent 80%), ${C.ink}`, border: `2px solid ${col}`, boxShadow: `0 0 ${24 + r * 12}px ${col}aa` }}>
+          <div className={"revFace" + (r >= 3 ? " foil" : "")} style={{ background: `radial-gradient(100% 70% at 50% 30%, ${col}55, transparent 80%), ${C.ink}`, border: `2px solid ${col}`, boxShadow: `0 0 ${24 + r * 12}px ${col}aa` }}>
             <div style={{ fontSize: 11.5, fontWeight: 900, letterSpacing: 1.6, textTransform: "uppercase", color: col }}>{kindLabel}</div>
             <div aria-hidden="true" className={open ? "revIcon" : undefined} style={{ fontSize: 84, lineHeight: 1, margin: "18px 0 14px", filter: `drop-shadow(0 0 ${10 + r * 4}px ${col})` }}>{it.icon}</div>
             <div style={{ fontFamily: DISPLAY, fontSize: it.name.length > 18 ? 24 : 30, fontWeight: 900, lineHeight: 1.05, textAlign: "center" }}>{it.name}</div>
@@ -7052,8 +8816,8 @@ function RewardReveal({ items, onDone }) {
         {open
           ? <button type="button" data-reveal-next onClick={next} className="b3d cardIn" style={{ ...bigBtn(col, "#0b0f1c"), animationDelay: ".35s" }}>{last ? T("revDone") : T("revNext")}</button>
           : <div style={{ textAlign: "center" }}>
-              {r >= 4 && <div data-reveal-rare className="revTap" style={{ fontFamily: DISPLAY, fontSize: 22, fontWeight: 900, color: col, textShadow: `0 0 12px ${col}`, marginBottom: 6 }}>{T(r >= 6 ? "revEpic" : "revRare")}</div>}
-              <div className="revTap" style={{ fontSize: 15, fontWeight: 800, color: r >= 4 ? C.chalk : col, letterSpacing: 0.4 }}>{T("revTap")}</div>
+              {r >= 3 && <div data-reveal-rare className="revTap" style={{ fontFamily: DISPLAY, fontSize: 22, fontWeight: 900, color: col, textShadow: `0 0 12px ${col}`, marginBottom: 6 }}>{T(r >= 7 ? "revEpic" : "revRare")}</div>}
+              <div className="revTap" style={{ fontSize: 15, fontWeight: 800, color: r >= 3 ? C.chalk : col, letterSpacing: 0.4 }}>{T("revTap")}</div>
             </div>}
       </div>
     </div>,
@@ -7062,6 +8826,64 @@ function RewardReveal({ items, onDone }) {
 }
 
 // ─── SESSION: SUMMARY ───────────────────────────────────────────────────────
+// 1.8.0 (Michael, Oct 24: "animations at the end of a workout, like Duolingo"): after the first workout of a day, the
+// streak gets its own moment: the flame pops up, the number rolls over to the new one, and this week's bar runs on to
+// today with a glow at its head. Our own flame and colours. Tests turn it off (window.__hwNoCeleb) unless they want it.
+function StreakCelebration({ n, history, entry, onDone }) {
+  const [step, setStep] = useState(0); // 0 flame, 1 number rolled, 2 bar filled
+  useBack(() => onDone(), true);
+  useEffect(() => {
+    melody([[392, 0.05, 0.12], [523, 0.17, 0.12], [659, 0.29, 0.12], [784, 0.62, 0.1], [1047, 0.72, 0.4], [1319, 1.25, 0.12], [1568, 1.37, 0.35]], "triangle", 0.24);
+    vibrate([25, 60, 40]);
+    const t1 = setTimeout(() => setStep(1), 650), t2 = setTimeout(() => setStep(2), 1150);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, []);
+  const today = entry.date, wd = (parseKey(today).getDay() + 6) % 7, mon = addDays(today, -wd);
+  const days = Array.from({ length: 7 }, (_, i) => addDays(mon, i));
+  const trained = new Set(history.map(e => e.date).concat(today)), frozen = new Set(META.freezeDays || []);
+  // the bar runs over the days of this week that belong to the current streak, up to today
+  const chainStart = (() => { let d = today, k = 0; const all = [...trained, ...frozen].filter(x => x <= today).sort().reverse(); let prev = today; for (const x of all) { if (daysBetween(x, prev) > 2) break; d = x; prev = x; if (++k > 4000) break; } return d; })();
+  const from = Math.max(0, days.findIndex(d => d >= chainStart)), toIdx = wd;
+  const seg = i => ((i + 0.5) / 7) * 100;
+  const prevEnd = toIdx > from ? seg(toIdx - 1) : seg(from) - 2, end = seg(toIdx);
+  const [line] = useState(() => pick(L.celebLines));
+  const names = weekdaysShort();
+  return createPortal(
+    <div data-celeb={n} onClick={() => step >= 2 && onDone()} style={{ position: "fixed", inset: 0, zIndex: 96, overflow: "hidden", background: `radial-gradient(80% 55% at 50% 32%, #ff8a1a2e, transparent 70%), ${C.ink}`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6, padding: "calc(var(--sat, 0px) + 20px) 22px calc(var(--sab, 0px) + 26px)", fontFamily: BODY, color: C.chalk, textAlign: "center" }}>
+      <div className="celFlame" aria-hidden="true" style={{ position: "relative", width: 132, height: 150 }}>
+        <svg viewBox="0 0 120 140" width="132" height="150" style={{ overflow: "visible", filter: "drop-shadow(0 0 22px #ff9a1f99)" }}>
+          <ellipse cx="60" cy="128" rx="34" ry="8" fill="#000" opacity=".25" />
+          <path className="celOuter" d="M60 6 C74 30 102 44 102 82 C102 110 84 128 60 128 C36 128 18 110 18 82 C18 58 32 46 40 30 C44 48 52 54 56 56 C54 36 54 20 60 6 Z" fill="url(#celG1)" />
+          <path className="celInner" d="M60 58 C68 72 82 80 82 98 C82 113 72 122 60 122 C48 122 38 113 38 98 C38 86 46 80 50 70 C52 80 56 84 58 84 C57 74 57 66 60 58 Z" fill="url(#celG2)" />
+          <defs>
+            <linearGradient id="celG1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#ffd23f" /><stop offset=".55" stopColor="#ff9a1f" /><stop offset="1" stopColor="#ff5a1f" /></linearGradient>
+            <linearGradient id="celG2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#fffbe6" /><stop offset="1" stopColor="#ffd23f" /></linearGradient>
+          </defs>
+        </svg>
+        {[0, 1, 2, 3, 4].map(k => <span key={k} className="celSpark" style={{ "--sx": `${(k - 2) * 22}px`, "--sd": `${0.3 + k * 0.22}s` }} />)}
+      </div>
+      <div data-celeb-n style={{ position: "relative", height: 104, overflow: "hidden", fontFamily: DISPLAY, fontSize: 96, fontWeight: 900, lineHeight: "104px", color: "#ff9a1f", textShadow: "0 4px 0 #b4530d", minWidth: 120 }}>
+        <span className={step >= 1 ? "celOut" : undefined} style={{ display: "block" }}>{Math.max(0, n - 1)}</span>
+        <span className={step >= 1 ? "celIn" : undefined} style={{ display: "block", position: "absolute", left: 0, right: 0, top: "100%" }}>{n}</span>
+      </div>
+      <div style={{ fontSize: 22, fontWeight: 800, color: "#ffb04d" }}>{TP("celebUnit", n)}</div>
+      <div data-celeb-week style={{ marginTop: 20, width: "min(100%, 360px)", border: `1.5px solid ${C.line}`, borderRadius: 18, overflow: "hidden", background: `${C.panel}cc` }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", padding: "12px 10px 4px", fontSize: 13, fontWeight: 800 }}>
+          {names.map((x, i) => <span key={i} style={{ color: i === toIdx ? "#ffb04d" : i < toIdx && trained.has(days[i]) ? C.chalk : C.dim }}>{x.slice(0, 2)}</span>)}
+        </div>
+        <div style={{ position: "relative", height: 34, margin: "4px 10px 12px" }}>
+          <div style={{ position: "absolute", left: 0, right: 0, top: 12, height: 10, borderRadius: 99, background: C.panelHi }} />
+          <div className="celBar" style={{ position: "absolute", left: `calc(${seg(from)}% - 8px)`, top: 12, height: 10, borderRadius: 99, background: "linear-gradient(90deg, #ffd23f, #ff9a1f)", width: `calc(${(step >= 2 ? end : prevEnd) - seg(from)}% + 16px)`, transition: `width .8s ${MO.ease}` }} />
+          {days.map((d, i) => trained.has(d) && i <= toIdx ? <span key={d} aria-hidden="true" style={{ position: "absolute", left: `calc(${seg(i)}% - 5px)`, top: 12, width: 10, height: 10, borderRadius: 99, background: "#fff7d6", opacity: 0.9 }} /> : null)}
+          <span className={step >= 2 ? "celHead" : undefined} aria-hidden="true" style={{ position: "absolute", left: `calc(${step >= 2 ? end : prevEnd}% - 15px)`, top: 2, width: 30, height: 30, borderRadius: 99, background: "radial-gradient(circle, #fffbe6 0 22%, #ffd23f88 40%, transparent 70%)", transition: `left .8s ${MO.ease}` }} />
+        </div>
+        <div style={{ borderTop: `1px solid ${C.line}`, padding: "10px 12px", fontSize: 14.5, fontWeight: 700 }}>{line}</div>
+      </div>
+      <button type="button" data-celeb-next onClick={e => { e.stopPropagation(); sfxTap(); onDone(); }} className="b3d cardIn" style={{ ...bigBtn(C.signal, C.signalInk), maxWidth: 360, marginTop: 22, animationDelay: "1.4s" }}>{T("revNext")}</button>
+    </div>,
+    document.body
+  );
+}
 function Summary({ entry, xpBefore = 0, xpGained, newCh = [], newAch = [], history, onClose, onClaim }) {
   const [copied, setCopied] = useState(false);
   const gained = entry ? (xpGained ?? xpFor(entry)) : 0;
@@ -7086,6 +8908,8 @@ function Summary({ entry, xpBefore = 0, xpGained, newCh = [], newAch = [], histo
   // tests turn the card reveal off (window.__hwNoReveal) unless they test it
   const [rev] = useState(() => (window.__hwNoReveal ? [] : revealList(entry, newAch, xpBefore, gained)));
   const [revOn, setRevOn] = useState(rev.length > 0);
+  // the first workout of the day moves the streak: its own moment first (StreakCelebration), then the reward cards
+  const [celeb, setCeleb] = useState(() => !window.__hwNoCeleb && !!entry && !history.some(e => e.date === entry.date && e.ts !== entry.ts) && streakInfo(history.some(e => e.ts === entry.ts) ? history : [...history, entry], entry.date).n > 0);
   const copy = async () => {
     try { await navigator.clipboard.writeText(text); }
     catch (_) { const t = document.createElement("textarea"); t.value = text; document.body.appendChild(t); t.select(); try { document.execCommand("copy"); } catch (__) {} document.body.removeChild(t); }
@@ -7102,15 +8926,16 @@ function Summary({ entry, xpBefore = 0, xpGained, newCh = [], newAch = [], histo
   }
   return (
     <div>
-      {revOn ? <RewardReveal items={rev} onDone={() => { setRevOn(false); if (onClaim) onClaim(rev); }} /> : <Confetti />}
-      <div className="pop" style={{ fontFamily: DISPLAY, fontSize: 60, fontWeight: 900, lineHeight: 0.95, color: C.mint }}>{T("great")}</div>
+      {celeb ? <StreakCelebration n={streakInfo(history.some(e => e.ts === entry.ts) ? history : [...history, entry], entry.date).n} history={history} entry={entry} onDone={() => setCeleb(false)} />
+        : revOn ? <RewardReveal items={rev} onDone={() => { setRevOn(false); if (onClaim) onClaim(rev); }} /> : <Confetti />}
+      <div className="pop" style={{ display: "inline-block", transformOrigin: "left center", fontFamily: DISPLAY, fontSize: 60, fontWeight: 900, lineHeight: 0.95, color: C.mint }}>{T("great")}</div>
       <div style={{ fontSize: 16, color: C.chalk, marginTop: 8, fontWeight: 600, lineHeight: 1.4 }}>{finishLine}</div>
       <div style={{ fontSize: 13, color: C.dim, marginTop: 4 }}>{T("dayDate", { d: entry.day, date: fmtDate(entry.date, true) })}</div>
       {(() => { const s = kcalNow(history.concat(history.some(e => e.ts === entry.ts) ? [] : [entry])); return s ? <div data-sum-kcal style={{ fontSize: 13, color: s.hit ? KC_HIT : C.sky, marginTop: 6, fontWeight: 700 }}>🥗 {s.left > 0 ? T("kcAfterWorkout", { n: nf(s.left) }) : T("kcAfterWorkoutDone")}</div> : null; })()}
       {entry.dur > 0 && <div data-total-time style={{ fontSize: 14, color: C.chalk, fontWeight: 700, marginTop: 6 }}>⏱ {T("totalTime", { t: fmtDur(entry.dur) })}</div>}
       <div style={{ marginTop: 16, background: C.panel, border: `1px solid ${C.line}`, borderRadius: 18, padding: "14px 16px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 10 }}>
-          <div style={{ fontFamily: DISPLAY, fontSize: 44, fontWeight: 900, lineHeight: 1, color: C.sky }}>+{shown} XP</div>
+          <div style={{ fontFamily: DISPLAY, fontSize: 44, fontWeight: 900, lineHeight: 1, color: C.sky }}>+{shown} XP{EC.boosted(entry.ts, META.boosts) && <span data-sum-boost className="pop" style={{ display: "inline-flex", alignItems: "center", gap: 3, verticalAlign: "middle", marginLeft: 8, fontFamily: BODY, fontSize: 13, fontWeight: 900, color: C.signalInk, background: C.signal, borderRadius: 99, padding: "3px 9px 3px 6px" }}><Ico n="boost" size={14} sw={2.4} />2×</span>}</div>
           <div style={{ fontFamily: DISPLAY, fontSize: 26, fontWeight: 800, color: "#ffa94d" }}>🔥 {st.n}</div>
         </div>
         <div style={{ height: 14, background: C.panelHi, borderRadius: 99, marginTop: 10, overflow: "hidden" }}>
@@ -7118,7 +8943,7 @@ function Summary({ entry, xpBefore = 0, xpGained, newCh = [], newAch = [], histo
         </div>
         <div style={{ fontSize: 13, color: C.dim, marginTop: 8 }}>{T("levelLine", { lvl: lvNow.lvl, into: lvNow.into, need: lvNow.need, streak: TP("workouts", st.n) })}</div>
         {leveledUp && shown === gained && (
-          <div className="pop" style={{ marginTop: 10, fontFamily: DISPLAY, fontSize: 28, fontWeight: 900, color: C.signal, transformOrigin: "left center" }}>{T("levelUp", { lvl: lvNow.lvl })}</div>
+          <div className="pop" style={{ display: "table", marginTop: 10, fontFamily: DISPLAY, fontSize: 28, fontWeight: 900, color: C.signal, transformOrigin: "left center" }}>{T("levelUp", { lvl: lvNow.lvl })}</div>
         )}
       </div>
       {newCh.length > 0 && (
@@ -7187,9 +9012,11 @@ function Session({ session, setSession, history, onSave, onClose, onMinimize, on
       return b !== null && top > b;
     }).map(it => it.id);
     const rankUps = items.map(it => {
-      const from = rankIdx(it.id, bestFor(history, it.id));
-      const to = rankIdx(it.id, Math.max(...it.res.map(numVal).filter(n => !isNaN(n))));
-      return to > from ? { id: it.id, to } : null;
+      const b = bestFor(history, it.id), t0 = Math.max(...it.res.map(numVal).filter(n => !isNaN(n)));
+      if (!isFinite(t0) || !RANK_AT[it.id]) return null;
+      const to = rankIdx(it.id, t0);
+      if (b === null || b === undefined) return { id: it.id, to, u: 1 }; // 1.8.0: a new exercise = Iron (or more) unlocked
+      return to > rankIdx(it.id, b) ? { id: it.id, to } : null;
     }).filter(Boolean);
     const secs = session.startTs ? Math.round((Date.now() - session.startTs) / 1000) : 0;
     const entry = items.length ? { date: dateKey(), ts: Date.now(), day: session.day, rounds: session.rounds, items, prs, rankUps, warm: session.warm.every(Boolean), cool: !!coolDone, ...(secs > 0 && secs < 4 * 3600 ? { dur: secs } : {}) } : null;
@@ -7259,7 +9086,7 @@ function Session({ session, setSession, history, onSave, onClose, onMinimize, on
                 style={{ ...ghostBtn, padding: "7px 11px", fontSize: 12, color: confirmQuit ? "#ff8a80" : C.dim, borderColor: confirmQuit ? "#ff8a80" : C.line }}>
                 {confirmQuit ? (hasResults ? T("quitSave") : T("quitConfirm")) : T("quit")}
               </button>
-              {onMinimize && <MenuButton open={false} label={T("menuMinimize")} onClick={() => { sfxTap(); onMinimize(); }} />}
+              {onMinimize && <span data-minimize style={{ display: "inline-flex" }}><MenuButton open={false} label={T("menuMinimize")} onClick={() => { sfxTap(); onMinimize(); }} /></span>}
             </div>
           </div>
           <div style={{ display: "flex", gap: 4, marginTop: 12, marginBottom: 22 }} aria-label={T("progressAria", { done: doneCount, total: seq.length })}>
@@ -7317,7 +9144,7 @@ export default function App() {
   const setUi = u => { setUiState(u); saveUi(u); };
   // Every change to past workouts keeps the history sorted and records/rank-ups correct.
   const editHistory = fn => setHistory(h => recomputeFlags(sortHistory(fn(h))));
-  META = { kcal, skips: profile.skips || {}, freezeDays: profile.freezeDays || [], streakResetTs: profile.streakResetTs || 0, bonusFreezes: (profile.bdayGifts || []).length, giftThisYear: (profile.bdayGifts || []).includes(parseKey(dateKey()).getFullYear()), birth: profile.birth || null };
+  META = { kcal, skips: profile.skips || {}, freezeDays: profile.freezeDays || [], streakResetTs: profile.streakResetTs || 0, boosts: EC.shopOf(profile).boosts, bonusFreezes: (profile.bdayGifts || []).length + EC.shopOf(profile).fz, giftThisYear: (profile.bdayGifts || []).includes(parseKey(dateKey()).getFullYear()), birth: profile.birth || null };
   window._wset = settings;
   applyTheme(settings.theme, settings.accent);
   LOOK = settings.look || "cards";
@@ -7344,6 +9171,19 @@ export default function App() {
   const setProfile = p => { setProfileState(p); saveProfile(p); };
   const [skipOpen, setSkipOpen] = useState(false);
   const applyFreeze = () => { unlockAudio(); sfxTap(); setSkipOpen(true); };
+  // 1.8.0: automatic freezes (autoFreezeDays), checked when the app opens and when it comes back on another day
+  const [dayNow, setDayNow] = useState(dateKey());
+  useEffect(() => { const f = () => { if (document.visibilityState === "visible") setDayNow(dateKey()); }; document.addEventListener("visibilitychange", f); return () => document.removeEventListener("visibilitychange", f); }, []);
+  useEffect(() => {
+    if (!loaded || !profLoaded || window.__hwNoAutoFz) return; // tests switch it off unless they test it
+    const add = autoFreezeDays(history, dayNow);
+    if (add) {
+      META = { ...META, freezeDays: [...(profile.freezeDays || []), ...add] };
+      setProfile({ ...profile, freezeDays: [...new Set([...(profile.freezeDays || []), ...add])].sort() });
+      const left = freezesAvailable(history);
+      setTimeout(() => setUi({ ...uiRef.current, autoFz: { day: dayNow, used: add.length, left } }), 60); // after Home has saved its daily line
+    }
+  }, [loaded, profLoaded, dayNow]);
   const saveSkip = (reason, freeze) => {
     const t = dateKey();
     const canFreeze = freeze && !(profile.freezeDays || []).includes(t) && freezesAvailable(history) > 0;
@@ -7478,7 +9318,66 @@ export default function App() {
   };
   const createProfile = async nick => { const p = await cloud().createProfile({ nick, global: false, pfp: await smallPfp(profile.pfp), ...cloudStats(history) }); setProf(p); sfxCheck(); };
   const renameNick = async nick => { await cloud().renameNick(acct.prof.nick, nick); const p = { ...acct.prof, nick }; await cloud().saveProfile({ ...p, pfp: await smallPfp(profile.pfp), ...cloudStats(history) }); setProf(p); sfxCheck(); };
-  const setGlobal = async on => { const p = { ...acct.prof, global: on }; await cloud().saveProfile({ ...p, pfp: await smallPfp(profile.pfp), ...cloudStats(history) }); setProf(p); };
+  const setGlobal = async on => { const p = { ...acct.prof, global: on }; await cloud().saveProfile({ ...p, pfp: await smallPfp(profile.pfp), ...cloudStats(history) }); setProf(p); if (on) setTimeout(() => runBoard(true), 300); };
+  // 1.8.0: the world entry is written by the push server from the checked cloud backup (src/fair.js). The app asks for
+  // a check after each backup upload and when joining; the server answers at most once a minute (then "recent", and
+  // the app asks again a minute later). The answer (what counted, flags, waiting for a check) is shown in Friends.
+  const [fairRes, setFairRes] = useState(() => cloudMem().fair || null);
+  const boardRetry = useRef(0), boardFn = useRef(null);
+  boardFn.current = force => {
+    if (acct.st !== "in" || !acct.prof || (!acct.prof.global && !force)) return;
+    cloud().checkBoard(dateKey()).then(r => {
+      if (!r || r.why === "net") return;
+      if (r.why !== "recent" || !fairRes) { setFairRes(r); setCloudMem({ fair: r }); }
+      clearTimeout(boardRetry.current);
+      if (r.why === "recent") boardRetry.current = setTimeout(() => boardFn.current && boardFn.current(), 65000);
+    }).catch(() => {});
+  };
+  const runBoard = force => boardFn.current && boardFn.current(force);
+  useEffect(() => () => clearTimeout(boardRetry.current), []);
+  // 1.8.0 friend streaks: my last training days go to days/{uid} (friends read them), the streaks are watched live
+  const [fstreaks, setFstreaks] = useState([]), [fsDays, setFsDays] = useState({});
+  const daysKey = acct.st === "in" ? myDays(history, profile).join(",") : "";
+  useEffect(() => {
+    if (acct.st !== "in" || !acct.prof || !loaded || !profLoaded || cloudMem().daysKey === daysKey) return;
+    const t = setTimeout(() => cloud().saveDays(daysKey ? daysKey.split(",") : []).then(() => setCloudMem({ daysKey })).catch(() => {}), 3000);
+    return () => clearTimeout(t);
+  }, [acct.st, acct.prof, daysKey, loaded, profLoaded]);
+  useEffect(() => {
+    if (acct.st !== "in" || !acct.prof) { setFstreaks([]); return; }
+    return cloud().watchFStreaks(setFstreaks, () => {});
+  }, [acct.st, acct.uid, !!acct.prof]);
+  const fsIds = fstreaks.map(f => f.other).sort().join(",");
+  const loadFsDays = () => { fstreaks.forEach(f => cloud().getDays(f.other).then(d => setFsDays(m => ({ ...m, [f.other]: d || [] }))).catch(() => {})); };
+  useEffect(() => { if (fsIds) loadFsDays(); }, [fsIds]);
+  useEffect(() => { if (screen === "friends" && fsIds) loadFsDays(); }, [screen]);
+  const friendsFx = { fair: fairRes, fs: { list: fstreaks, days: fsDays, mine: daysKey ? daysKey.split(",") : [],
+    invite: uid => cloud().fsInvite(uid), accept: uid => cloud().fsAccept(uid, dateKey()), end: uid => cloud().fsEnd(uid) } };
+  // 1.8.0 card game: the game being played (full screen) and its end screen
+  const [gamePlay, setGamePlay] = useState(null), [gameEnd, setGameEnd] = useState(null);
+  const endGame = async (saved, g) => {
+    setGamePlay(null);
+    if (saved.mode === "ranked") {
+      setGameEnd({ saved, g });
+      try { const r = await cloud().rkEnd(saved.moves); if (r.why !== "ok" && r.why !== "no-game") throw new Error(r.why); gameSave(null); setGameEnd({ saved, g, rk: r.why === "ok" ? r : null }); }
+      catch (_) { setGameEnd({ saved, g, rkErr: true }); } // kept: "Continue" sends it again
+      return;
+    }
+    const res = GM.resultOf(g), won = saved.mode === "run" ? res.won : GM.beats(res, saved.bot);
+    const sk = (saved.opts && saved.opts.stake) || 0;
+    const xp = Math.round((100 * res.cleared + (saved.mode === "run" && res.won ? 500 : 0) + (saved.mode === "duel" && won ? 200 : 0)) * stakeXp(sk));
+    const gp = profile.game || {}, before = GM.gameLevel(gp.xp || 0).lvl, after = GM.gameLevel((gp.xp || 0) + xp).lvl;
+    const stakeUp = won && sk >= (gp.stake || 0) && sk < GM.STAKES.length - 1 ? sk + 1 : 0; // winning on your highest stake opens the next
+    setProfile({ ...profile, game: { ...gp, xp: (gp.xp || 0) + xp, games: (gp.games || 0) + 1, wins: (gp.wins || 0) + (won ? 1 : 0), best: Math.max(gp.best || 0, res.cleared), top: Math.max(gp.top || 0, res.best || 0), stake: Math.max(gp.stake || 0, stakeUp), rw: (gp.rw || 0) + (saved.mode === "run" && won ? 1 : 0), topWin: Math.max(gp.topWin ?? -1, saved.mode === "run" && won ? sk : -1) } });
+    gameSave(null);
+    setGameEnd({ saved, g, xp, lvlUp: after > before ? after : 0, stakeUp });
+  };
+  const quitGame = saved => {
+    setGamePlay(null); gameSave(null);
+    if (saved.mode === "ranked") cloud().rkEnd(null, true).catch(() => {});
+  };
+  // once a few seconds after each start (also the first check for people who joined the world list before 1.8.0)
+  useEffect(() => { if (acct.st !== "in" || !acct.prof || !acct.prof.global) return; const t = setTimeout(() => runBoard(), 8000); return () => clearTimeout(t); }, [acct.st, acct.uid]);
   // 1.6.2 (Michael): signing out returns the app to its very first start. Everything on this phone (workouts, profile,
   // settings, theme, calories, hints, the other account's chat/blocked lists) is cleared, so nothing from one account
   // can mix with the next. It stays in the account's cloud backup; the latest state is uploaded first, and if that
@@ -7648,6 +9547,7 @@ export default function App() {
   useEffect(() => { if (hzSupported() && loaded) hzSet(settings.hz === "max" ? "max" : "60"); }, [loaded]);
   // 1.7.4: badges and ranks still face down (counted on ☰ and the Profile row of the menu)
   const claimN = useMemo(() => (profLoaded ? unclaimedFor(history, profile, kcal).length : 0), [history, profile, kcal, profLoaded]);
+  const chestN = useMemo(() => (profLoaded ? readyChests(history, profile).length : 0), [history, profile, profLoaded]); // 1.9.0
   const socialCount = (social.reqs || []).length + (social.chats || []).filter(k => k.last.from !== acct.uid && !social.blocked.includes(k.other) && k.last.ts > Math.max(social.read[k.cid] || 0, (cloudMem().clr || {})[k.cid] || 0)).length;
   // Stats for the leaderboard: sent when they change (and once a day, for the streak).
   useEffect(() => {
@@ -7763,7 +9663,7 @@ export default function App() {
       if (dk === lastRemoteKey.current || dk === lastUpKey.current) return;
       const json = cloudBackupJson(history, profile, settings, kcal), key = json.replace(/"exportedAt":"[^"]*",/, "");
       const save = bk => { setCloudMem({ bk }); setCloudBk(bk); };
-      cloud().saveBackup(json, history.length).then(() => { lastUpKey.current = dk; lastCloud.current = key; setCloudMem({ bkHash: strHash(key) }); cloudN.current = history.length; save({ ts: Date.now(), ok: true }); })
+      cloud().saveBackup(json, history.length).then(() => { lastUpKey.current = dk; lastCloud.current = key; setCloudMem({ bkHash: strHash(key) }); cloudN.current = history.length; save({ ts: Date.now(), ok: true }); runBoard(); })
         .catch(e => save({ ts: Date.now(), ok: false, err: String((e && (e.code || e.message)) || e).slice(0, 120) }));
     }, 4000);
     return () => clearTimeout(t);
@@ -7778,6 +9678,7 @@ export default function App() {
     try { await cloud().saveBackup(json, history.length); }
     catch (e) { save({ ts: Date.now(), ok: false, err: String((e && (e.code || e.message)) || e).slice(0, 120) }); throw e; }
     lastUpKey.current = dk; lastCloud.current = key; setCloudMem({ bkHash: strHash(key) }); cloudN.current = history.length; save({ ts: Date.now(), ok: true });
+    runBoard();
     return "✓ " + T("acBkNowDone");
   };
   const [newsAt, setNewsAt] = useState(null);
@@ -7885,6 +9786,33 @@ export default function App() {
   const sideOn = side && loaded && onboard === null && !(session && sessionOpen);
   useLayoutEffect(() => { document.documentElement.style.setProperty("--side", sideOn ? "288px" : "0px"); }, [sideOn]);
   useEffect(() => { if (sideOn && menuOpen) setMenuOpen(false); }, [sideOn, menuOpen]);
+  // ─── 1.7.6: the guide (Tour) ───
+  const [tourRun, setTourRun] = useState(null); // {ch, i}
+  const [tourSheet, setTourSheet] = useState(false);
+  const profRef = useRef(profile); profRef.current = profile;
+  const uiRef = useRef(ui); uiRef.current = ui;
+  const tourDone = tourDoneSet(profile);
+  const startTour = ch => { setTourSheet(false); setMenuOpen(false); if (uiRef.current.tourOff) setUi({ ...uiRef.current, tourOff: false }); setTourRun({ ch, i: 0 }); };
+  const tourX = {
+    go: async id => { if (session && sessionOpen) setSessionOpen(false); go(id); await tourWait(450); },
+    menu: open => { if (!sideOn) setMenuOpen(open); },
+  };
+  const tourChapterDone = ch => {
+    const d = tourDoneSet(profRef.current);
+    if (!d.has(ch)) { d.add(ch); setProfile({ ...profRef.current, tourDone: [...d].sort((a, b) => a - b) }); }
+    if (ch === 3 && uiRef.current.tour3) setUi({ ...uiRef.current, tour3: false });
+    return d.size;
+  };
+  const endTour = skipped => { setTourRun(null); setMenuOpen(false); if (skipped) setUi({ ...uiRef.current, tourOff: true }); };
+  // the workout chapter starts with a workout (after the guide was started, or when switched on in the chapter list)
+  useEffect(() => {
+    if (tourOff() || tourRun || !session || !sessionOpen || session.phase !== "warmup") return;
+    if (!(ui.tour3 || (tourDone.size > 0 && !ui.tourOff && !tourDone.has(3)))) return;
+    const t = setTimeout(() => setTourRun({ ch: 3, i: 0 }), 600);
+    return () => clearTimeout(t);
+  }, [session && session.phase, sessionOpen, tourRun, tourDone.size, ui.tour3, ui.tourOff]);
+  // everyone who hasn't seen the guide gets it offered once on Home (new users get chapter 1 after the setup)
+  const tourOffer = !tourOff() && profLoaded && tourDone.size === 0 && !ui.tourOff && !tourRun && history.length > 0;
   // 1.6.5 (Michael, Oct 17: a friend's link opened the website): the app owns …/hw-app/add/ links (App Links,
   // assetlinks.json on mikydon.github.io), so a tapped link opens the app on Friends with the code filled in.
   const [addSeq, setAddSeq] = useState(0);
@@ -7961,14 +9889,76 @@ export default function App() {
         @keyframes revTap{from{opacity:.55}to{opacity:1}}
         .revShake{animation:revShake .5s ease .46s}
         .revDeal{animation:revDeal .55s ${MO.pop} both}
+        .celFlame{animation:celPop .7s ${MO.spring} backwards}
+        @keyframes celPop{0%{transform:scale(.2) translateY(40px);opacity:0}70%{transform:scale(1.12)}100%{transform:scale(1)}}
+        .celOuter{transform-origin:60px 128px;animation:celFlick 1.6s ease-in-out infinite alternate}
+        .celInner{transform-origin:60px 122px;animation:celFlick 1.1s ease-in-out infinite alternate-reverse}
+        @keyframes celFlick{0%{transform:scale(1,1) skewX(0)}50%{transform:scale(.97,1.04) skewX(-2deg)}100%{transform:scale(1.02,.97) skewX(2deg)}}
+        .celSpark{position:absolute;left:calc(50% - 3px + var(--sx));bottom:70px;width:6px;height:6px;border-radius:99px;background:#ffb04d;opacity:0;animation:celSpark 1.6s ease-out infinite;animation-delay:var(--sd)}
+        @keyframes celSpark{0%{transform:translateY(0);opacity:0}15%{opacity:1}100%{transform:translateY(-110px);opacity:0}}
+        .celOut{animation:celOut .45s ${MO.ease} forwards}.celIn{animation:celIn .5s ${MO.spring} forwards}
+        @keyframes celOut{to{transform:translateY(-100%);opacity:0}}
+        @keyframes celIn{to{transform:translateY(-100%)}}
+        .celHead{animation:celHead 1.2s ease-in-out .8s infinite alternate}
+        @keyframes celHead{to{transform:scale(1.35);opacity:.75}}
+        @media (prefers-reduced-motion: reduce){.celFlame,.celOuter,.celInner,.celSpark,.celHead{animation:none}.celOut{animation:none;opacity:0}.celIn{animation:none;transform:translateY(-100%)}}
+        .gmDeal{animation:gmDeal ${MO.t3} ${MO.pop} backwards;animation-delay:var(--dl,0ms)}
+        @keyframes gmDeal{from{transform:translateY(60px) rotate(-8deg);opacity:0}}
+        .gmPop{animation:gmPop .42s ${MO.spring}}
+        @keyframes gmPop{0%{transform:scale(.6)}60%{transform:scale(1.18)}100%{transform:scale(1)}}
+        .gmBump{animation:gmBump .26s ${MO.spring}}
+        @keyframes gmBump{0%{transform:scale(1)}45%{transform:scale(1.18)}100%{transform:scale(1)}}
+        .gmGlow{animation:gmGlow .5s ease-out;box-shadow:0 0 18px var(--gc)}
+        .gmShake{animation:gmShake .45s ease-out}@keyframes gmShake{0%,100%{transform:none}20%{transform:translate(-5px,2px) rotate(-.4deg)}40%{transform:translate(5px,-2px) rotate(.4deg)}60%{transform:translate(-3px,1px)}80%{transform:translate(2px,0)}}
+        .gmMoneyUp{animation:gmMoneyUp .5s ease-out}@keyframes gmMoneyUp{40%{transform:scale(1.25)}}
+        .gmFlipIn{animation:gmFlipIn .5s ${MO.spring} both}@keyframes gmFlipIn{from{transform:perspective(600px) rotateY(90deg) scale(.8);opacity:0}to{transform:none;opacity:1}}
+        .gmWobble{animation:gmWobble 2.4s ease-in-out infinite}@keyframes gmWobble{0%,80%,100%{transform:none}86%{transform:rotate(-8deg) scale(1.08)}92%{transform:rotate(7deg) scale(1.08)}}
+        .gmGlowCard{animation:gmGlowCard 1.1s ease-in-out infinite alternate}
+        @keyframes gmGlowCard{from{box-shadow:0 0 0 2px ${C.signal}66, 0 0 10px ${C.signal}55}to{box-shadow:0 0 0 3px ${C.signal}, 0 0 22px ${C.signal}aa}}
+        @keyframes gmGlow{0%{transform:translateY(0)}40%{transform:translateY(-6px) scale(1.08)}100%{transform:none}}
+        @media (prefers-reduced-motion: reduce){.gmDeal,.gmPop,.gmBump,.gmGlow{animation:none}}
         @keyframes revDeal{from{transform:translateY(55vh) rotate(-18deg) scale(.6);opacity:0}to{transform:none;opacity:1}}
         .revTw{position:absolute;border-radius:2px;transform:translate(-50%,-50%) rotate(45deg) scale(0);animation:revTw var(--du) ease-in-out var(--dl) infinite}
         @keyframes revTw{0%,100%{transform:translate(-50%,-50%) rotate(45deg) scale(0);opacity:0}50%{transform:translate(-50%,-50%) rotate(45deg) scale(1);opacity:1}}
         .revPrism{animation:revHue 2.6s linear infinite}
         @keyframes revHue{to{filter:hue-rotate(360deg)}}
         @keyframes revShake{0%,100%{transform:translate(0,0)}15%{transform:translate(-7px,3px)}30%{transform:translate(6px,-4px)}45%{transform:translate(-5px,-2px)}60%{transform:translate(4px,3px)}80%{transform:translate(-2px,1px)}}
+        .frInR{animation:frInR ${MO.t2} ${MO.ease} backwards}.frInL{animation:frInL ${MO.t2} ${MO.ease} backwards}
+        @keyframes frInR{from{opacity:0;transform:translateX(28px)}}@keyframes frInL{from{opacity:0;transform:translateX(-28px)}}
+        @media (prefers-reduced-motion: reduce){.frInR,.frInL{animation:none}}
+        @property --fill{syntax:"<percentage>";inherits:false;initial-value:0%}
+        .rkRow{position:relative;overflow:hidden;animation:rkFill .9s ${MO.ease} both}
+        @keyframes rkFill{from{--fill:0%}}
+        .rkSweep::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:var(--sweep);mix-blend-mode:screen;opacity:.9;transform:translateX(-130%);animation:rkSweep 7s ease-in-out infinite;animation-delay:var(--sd,0s)}
+        @keyframes rkSweep{0%,72%{transform:translateX(-130%)}100%{transform:translateX(130%)}}
+        @media (prefers-reduced-motion: reduce){.rkRow,.rkSweep::after{animation:none}}
         .foil{position:relative;overflow:hidden}.foil::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(105deg,transparent 38%,rgba(255,255,255,.16) 46%,rgba(255,255,255,.32) 50%,rgba(255,255,255,.16) 54%,transparent 62%);transform:translateX(-120%);animation:foil 3.4s ease-in-out infinite}
         @keyframes foil{0%,55%{transform:translateX(-120%)}100%{transform:translateX(120%)}}.revFace.foil{position:absolute}
+        .chShake{animation:chShake .75s cubic-bezier(.36,.07,.19,.97) both}@keyframes chShake{10%,90%{transform:translateX(-2px) rotate(-2deg)}20%,80%{transform:translateX(4px) rotate(3deg)}30%,50%,70%{transform:translateX(-7px) rotate(-5deg) scale(1.04)}40%,60%{transform:translateX(7px) rotate(5deg) scale(1.06)}}
+        .chBob{animation:chBob 1.6s ease-in-out infinite}@keyframes chBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+        .chLid{transition:transform .45s ${MO.spring}}.shFlash{animation:shFlash 1.2s ease}@keyframes shFlash{0%,100%{box-shadow:0 0 0 0 transparent}30%{box-shadow:0 0 0 2px ${C.mint},0 0 22px ${C.mint}66}}
+        @media (prefers-reduced-motion: reduce){.chShake,.chBob{animation:none}.chLid{transition:none}}
+        .lkPulse{animation:lkPulse 1.8s ease-in-out infinite}@keyframes lkPulse{0%,100%{opacity:.55}50%{opacity:1}}
+        .lkSpin{transform-box:view-box;transform-origin:58px 58px;animation:lkSpin 6s linear infinite}@keyframes lkSpin{to{transform:rotate(360deg)}}
+        .lkFlick{transform-box:view-box;transform-origin:58px 58px;animation:lkFlick 1.1s ease-in-out infinite}@keyframes lkFlick{0%,100%{transform:scale(1)}50%{transform:scale(1.035,.975)}}
+        .lkTw{animation:lkTw 2s ease-in-out infinite}@keyframes lkTw{0%,100%{opacity:.2}50%{opacity:1}}
+        .lkAur{animation:lkAur 9s ease-in-out infinite}.lkAur2{animation-duration:13s;animation-direction:reverse}@keyframes lkAur{0%,100%{transform:translateX(-10%) skewX(-8deg)}50%{transform:translateX(10%) skewX(8deg)}}
+        @keyframes lkFoil{from{background-position:120% 0}to{background-position:-120% 0}}
+        .lkSpinSlow{transform-box:view-box;transform-origin:58px 58px;animation:lkSpin 40s linear infinite}.lkNeb{animation:lkSpin 90s linear infinite}
+        .lkCol{position:absolute;top:0;height:100%;width:0;display:block}
+        .lkDown{animation:lkDown 8s linear infinite}@keyframes lkDown{from{transform:translateY(-12%)}to{transform:translateY(108%)}}
+        .lkUp{animation:lkUp 8s linear infinite}@keyframes lkUp{from{transform:translateY(108%)}to{transform:translateY(-12%)}}
+        .lkUp.lkFade{animation-name:lkUp,lkFadeK}@keyframes lkFadeK{0%,30%{opacity:1}100%{opacity:0}}
+        .lkSway{animation:lkSway 2.6s ease-in-out infinite alternate}@keyframes lkSway{from{transform:translateX(-8px) rotate(-30deg)}to{transform:translateX(8px) rotate(40deg)}}
+        .lkTwk{animation:lkTwk 2.4s ease-in-out infinite}@keyframes lkTwk{0%,100%{transform:scale(0);opacity:0}50%{transform:scale(1) rotate(45deg);opacity:1}}
+        .lkSpinC{animation:lkSpinC 1s linear infinite}@keyframes lkSpinC{to{transform:rotate(360deg) rotateX(180deg)}}
+        .lkFlash{opacity:0;animation:lkFlash 5s linear infinite}@keyframes lkFlash{0%,88%,100%{opacity:0}89%{opacity:.32}90%{opacity:0}91.5%{opacity:.22}93%{opacity:0}}
+        .lkBolt{opacity:0;animation:lkBoltK 5s linear infinite}.lkBolt2{animation-delay:.12s}@keyframes lkBoltK{0%,88%,96%,100%{opacity:0}89%,94%{opacity:1}}
+        .lkBurst{opacity:0;animation:lkBurst 2.7s ease-out infinite}@keyframes lkBurst{0%{transform:rotate(var(--a)) translateX(0) scale(1);opacity:0}5%{opacity:1}55%{transform:rotate(var(--a)) translateX(var(--r,30px)) scale(.8);opacity:1}75%,100%{transform:rotate(var(--a)) translateX(calc(var(--r,30px) + 6px)) scale(.3);opacity:0}}
+        .lkFlickI{animation:lkFlickI 1s ease-in-out infinite alternate}@keyframes lkFlickI{from{transform:scale(1)}to{transform:scale(1.15,.9)}}
+        @keyframes lkFireT{from{background-position:0 0}to{background-position:0 100%}}
+        .shRcpt{animation:shRcpt .5s ${MO.spring} both}@keyframes shRcpt{from{transform:scale(.4);opacity:0}}
+        @media (prefers-reduced-motion: reduce){.lkPulse,.lkSpin,.lkSpinSlow,.lkNeb,.lkFlick,.lkTw,.lkAur,.lkDown,.lkUp,.lkSway,.lkTwk,.lkSpinC,.lkFlash,.lkBolt,.lkBurst,.lkFlickI{animation:none}}
         .nearPulse{animation:nearPulse 1.2s ease-in-out infinite alternate}
         @keyframes nearPulse{from{opacity:.65}to{opacity:1}}
         .pop{animation:pop ${MO.t3} ${MO.spring} both}
@@ -8005,6 +9995,9 @@ export default function App() {
         @media (max-width: 380px){.tbOut{padding-left:6px;padding-right:6px}.tbBox{padding:11px 9px 11px 13px;gap:6px}}
         @media (prefers-reduced-motion: reduce){.tbOut::before,.tbOut.fl::before,.tbPill,.tbOut.fl .tbPill{transition:none}}
         .sysEmo,.sysEmo *{font-family:${BODY_SYS}!important}
+        .tourIn{animation:dFadeIn ${MO.t2} ease both}
+        .tourRing{animation:tourPulse 1.6s ease-in-out infinite}
+        @keyframes tourPulse{50%{opacity:.55}}
         @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}.conf,.revBit,.revFlash,.revTw{display:none}}
       `}</style>
       {!loaded ? (
@@ -8014,7 +10007,8 @@ export default function App() {
           {swOffer && <SwitchAccountSheet onFresh={swFresh} onKeep={swKeep} onCancel={swCancel} />}
           {onboard !== null && !session ? (
             <Onboarding start={onboard} profile={profile} setProfile={setProfile} kcal={kcal} setKcal={setKcal} acct={acct} onSignIn={signIn} onCreate={createProfile}
-              onDone={() => { setOnboard(null); setUi({ ...ui, setupHidden: false }); if (!settings.onboarded) setSettings({ ...settings, onboarded: true }); window.scrollTo(0, 0); }} />
+              onDone={() => { setOnboard(null); setUi({ ...ui, setupHidden: false }); if (!settings.onboarded) setSettings({ ...settings, onboarded: true }); window.scrollTo(0, 0);
+                if (!tourOff() && tourDoneSet(profRef.current).size === 0 && !ui.tourOff) setTimeout(() => setTourRun(r => r || { ch: 1, i: 0 }), 700); }} />
           ) : <>
           {session && (
             <div style={{ display: sessionOpen ? "block" : "none" }} aria-hidden={!sessionOpen}>
@@ -8022,38 +10016,44 @@ export default function App() {
                 onSave={entry => setHistory(h => [...h, entry])}
                 onClose={() => { setSession(null); setSessionOpen(true); setLive(null); setScreen("train"); }}
                 onMinimize={() => { setSessionOpen(false); setMenuOpen(true); }}
-                onLive={setLive} onClaim={items => setProfile({ ...profile, claim: withClaims(profile.claim, items) })} />
+                onLive={setLive} onClaim={items => setProfile({ ...profile, claim2: withClaims(claimOf(profile), items) })} />
             </div>
           )}
           {(!session || !sessionOpen) && (
             <>
-              <TopBar side={sideOn} head={screen === "friends" ? topHead : null} badge={socialCount + claimN} dlPct={dl && dl.kind === "downloading" ? dl.pct || 0 : null} screen={screen} history={history} menuOpen={menuOpen} onGo={go} onMenu={() => { sfxTap(); setMenuOpen(o => !o); }} />
+              <TopBar side={sideOn} head={screen === "friends" ? topHead : null} badge={socialCount + claimN + chestN} dlPct={dl && dl.kind === "downloading" ? dl.pct || 0 : null} screen={screen} history={history} menuOpen={menuOpen} onGo={go} onMenu={() => { sfxTap(); setMenuOpen(o => !o); }} />
               <div key={screen}>
-                {screen === "train" && <TrainTab settings={settings} setSettings={setSettings} onSetup={st => setOnboard(st)} dl={dlHidden ? null : dl} onDlClose={() => setDlHidden(true)} kcal={kcal} setKcal={setKcal} history={history} onStart={start} onFreeze={applyFreeze} ui={ui} setUi={setUi} active={session} onResume={resume} profile={profile} onGo={go} upd={updCard ? { open: () => { setUpdCard(false); setNewsAt(APP_VERSION); setNewsOpen(true); }, close: () => setUpdCard(false) } : null}
+                {screen === "train" && <TrainTab tourOffer={tourOffer ? { start: () => startTour(1), close: () => setUi({ ...ui, tourOff: true }) } : null} settings={settings} setSettings={setSettings} onSetup={st => setOnboard(st)} dl={dlHidden ? null : dl} onDlClose={() => setDlHidden(true)} kcal={kcal} setKcal={setKcal} history={history} onStart={start} onFreeze={applyFreeze} ui={ui} setUi={setUi} active={session} onResume={resume} profile={profile} onGo={go} upd={updCard ? { open: () => { setUpdCard(false); setNewsAt(APP_VERSION); setNewsOpen(true); }, close: () => setUpdCard(false) } : null}
                   apk={apkUpd && !apkHidden ? { info: apkUpd, close: () => setApkHidden(true) } : null} />}
                 {screen === "history" && <HistoryTab history={history} editDate={histEdit} onEditOpened={() => setHistEdit(null)}
                   onDelete={idx => { const e = history[idx]; if (e) syncTomb("del", entryId(e)); editHistory(h => h.filter((_, i) => i !== idx)); }}
                   onSaveEntry={(idx, entry) => editHistory(h => (idx === null ? [...h, entry] : h.map((e, i) => (i === idx ? entry : e))))} />}
-                {screen === "profile" && <ProfileTab history={history} profile={profile} setProfile={setProfile} onFreeze={applyFreeze} kcal={kcal} acct={acct} vis={myVis} onVis={setVis} onFriends={() => go("friends")} />}
+                {screen === "profile" && <ProfileTab history={history} profile={profile} setProfile={setProfile} onFreeze={applyFreeze} kcal={kcal} acct={acct} vis={myVis} onVis={setVis} onFriends={() => go("friends")} onShop={() => go("shop")} />}
                 {screen === "calories" && <Calories history={history} profile={profile} setProfile={setProfile} kcal={kcal} setKcal={setKcal} />}
                 {screen === "settings" && <SettingsTab initPage={setPage0} settings={settings} setSettings={setSettings} history={history} profile={profile} setProfile={setProfile}
                   kcal={kcal} autoBk={autoBk} onAutoBackup={runAutoBackup}
                   onImport={importAll} acct={acct} cloudBk={cloudBk} onAcctOpen={() => go("friends")} onCloudRestore={restoreFromCloud} onCloudBackupNow={cloudBackupNow} onSignOut={signOut} onDeleteAccount={deleteAccount} />}
+                {screen === "shop" && <ShopTab history={history} profile={profile} setProfile={setProfile} onGo={go} />}
+                {screen === "game" && <GameTab history={history} profile={profile} setProfile={setProfile} acct={acct} onPlay={sv => { if (sv.mode !== "tut") gameSave(sv); setGamePlay(sv); }} />}
                 {screen === "friends" && <OpenInApp />}
-                {screen === "friends" && <FriendsTab key={"fr" + addSeq} modHidden={modHidden} setTopHead={setTopHead} acct={acct} history={history} profile={profile} social={social} chatWith={chatWith} setChatWith={setChatWith} onBlocked={setBlocked} onSignIn={signIn} onCreate={createProfile} onRename={renameNick} onSetGlobal={setGlobal} />}
+                {screen === "friends" && <FriendsTab key={"fr" + addSeq} modHidden={modHidden} setTopHead={setTopHead} acct={acct} history={history} profile={profile} social={social} chatWith={chatWith} setChatWith={setChatWith} onBlocked={setBlocked} onSignIn={signIn} onCreate={createProfile} onRename={renameNick} onSetGlobal={setGlobal} fx={friendsFx} />}
               </div>
               {session && session.phase !== "summary" && <MiniPlayer session={session} live={live} onOpen={resume} />}
               {exitAsk && <ExitPrompt history={history} session={session} onStay={() => { sfxTap(); setExitAsk(false); }} onLeave={() => { setExitAsk(false); exitApp(); }} />}
             </>
           )}
-          {sideOn && <SideNav apk={apkUpd} busy={!!(session && session.phase !== "summary")} badge={socialCount} claimN={claimN} gh={gh} dl={dl} screen={screen} history={history} profile={profile} session={session && session.phase !== "summary" ? session : null}
+          {sideOn && <SideNav onTour={() => setTourSheet(true)} tourN={tourDone.size} apk={apkUpd} busy={!!(session && session.phase !== "summary")} badge={socialCount} claimN={claimN} chestN={chestN} gh={gh} dl={dl} screen={screen} history={history} profile={profile} session={session && session.phase !== "summary" ? session : null}
             onGo={go} onResume={resume} onNews={() => setNewsOpen(true)} />}
-          <MenuDrawer apk={apkUpd} busy={!!(session && session.phase !== "summary")} badge={socialCount} claimN={claimN} gh={gh} dl={dl} open={menuOpen} screen={screen} history={history} profile={profile} session={session && session.phase !== "summary" ? session : null}
+          <MenuDrawer onTour={() => { setMenuOpen(false); setTourSheet(true); }} tourN={tourDone.size} apk={apkUpd} busy={!!(session && session.phase !== "summary")} badge={socialCount} claimN={claimN} chestN={chestN} gh={gh} dl={dl} open={menuOpen} screen={screen} history={history} profile={profile} session={session && session.phase !== "summary" ? session : null}
             onGo={go} onResume={resume} onClose={() => setMenuOpen(false)} onNews={() => { setMenuOpen(false); setNewsOpen(true); }} />
           {notice && <LiveNotice n={notice} people={Object.fromEntries([...(social.friends || []), ...(social.reqs || [])].map(x => [x.uid, x]))} onClose={() => setNotice(null)}
             onOpen={n => { setNotice(null); go("friends"); setChatWith(n.kind === "msg" ? n.uid : null); }} />}
+          {gamePlay && <GameTable key={gamePlay.at || 0} saved={gamePlay} history={history} onEnd={endGame} onQuit={quitGame} onTutDone={() => { setGamePlay(null); sfxFinish(); setProfile({ ...profile, game: { ...(profile.game || {}), tut: 1 } }); }} />}
+          {gameEnd && <GameEnd res={gameEnd} onClose={() => setGameEnd(null)} onAgain={() => setGameEnd(null)} />}
           {skipOpen && <SkipSheet freezes={freezesAvailable(history)} onSave={saveSkip} onClose={() => setSkipOpen(false)} />}
       {howId && <HowTo id={howId} history={history} onClose={() => setHowId(null)} />}
+          {tourRun && onboard === null && <Tour key={tourRun.ch} run={tourRun} x={tourX} done={tourDone} onStep={i => setTourRun(r => (r && i !== null ? { ...r, i } : null))} onEnd={endTour} onChapterDone={tourChapterDone} onStart={startTour} />}
+          {tourSheet && <TourSheet done={tourDone} ui={ui} onStart={startTour} on3={() => { setUi({ ...uiRef.current, tour3: !ui.tour3, tourOff: false }); }} onClose={() => setTourSheet(false)} />}
           {newsOpen && <WhatsNew at={newsAt} onClose={() => { setNewsOpen(false); setNewsAt(null); if (settings.seenVersion !== APP_VERSION || !settings.seenApp) setSettings({ ...settings, seenVersion: APP_VERSION, seenApp: true }); }} />}
           </>}
         </>

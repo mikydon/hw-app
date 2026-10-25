@@ -1,3 +1,4 @@
+import { mergeShop } from "./economy.js";
 // Web ↔ phone sync (1.7.0, Michael: "merge, not only backup"). Every device signed in to the same account keeps its
 // data in the account's cloud backup (backups/{uid}); when another device changes it, this one merges it in, and the
 // result goes back up. Merging never loses a workout:
@@ -12,7 +13,7 @@
 
 // Settings that follow the account (the rest is per device).
 export const SYNC_SETTINGS = ["theme", "look", "accent", "exOff", "aiCopy"];
-const PROFILE_LISTS = ["freezeDays", "bdays", "bdayGifts"];
+const PROFILE_LISTS = ["freezeDays", "bdays", "bdayGifts", "tourDone"]; // tourDone: chapters of the guide (1.7.6)
 const PROFILE_MAPS = ["skips"];
 // Calorie data that never leaves the phone (Health Connect) or is a per-device choice.
 const KCAL_DEVICE = ["steps", "food", "foodItems", "healthOn", "healthFood", "foodMode", "hcBest"];
@@ -69,6 +70,10 @@ export function mergeProfile(lp, rp, ml, mr, first) {
   PROFILE_MAPS.forEach(k => { if (lp[k] || rp[k]) { const [n, o] = first ? [rp, lp] : order(lp, rp, ml, mr); out[k] = { ...(o[k] || {}), ...(n[k] || {}) }; } });
   // 1.7.4: opened reward cards (claim) only ever go up, so both sides' highest level counts
   if (lp.claim || rp.claim) out.claim = { a: maxMap((lp.claim || {}).a, (rp.claim || {}).a), r: maxMap((lp.claim || {}).r, (rp.claim || {}).r) };
+  // 1.8.0: the same on the 9-rank scale (claim stays for older app versions)
+  if (lp.claim2 || rp.claim2) out.claim2 = { a: maxMap((lp.claim2 || {}).a, (rp.claim2 || {}).a), r: maxMap((lp.claim2 || {}).r, (rp.claim2 || {}).r) };
+  // 1.9.0: purchases and opened chests from both sides (each purchase has an id, so none is lost or counted twice)
+  if (lp.shop || rp.shop) out.shop = mergeShop(lp.shop, rp.shop);
   if (!out.name) out.name = lp.name || rp.name || "User";
   return out;
 }

@@ -48,6 +48,14 @@ export default {
   "ntTest": "Próbaértesítés",
   "ntTestD": "Működik! Így érkeznek majd az üzenetek és a barátkérések."
  },
+ "id": {
+  "ntReq": "{nick} ingin berteman",
+  "ntReqD": "Ketuk untuk menerima atau menolak",
+  "ntAcc": "Kamu dan {nick} sekarang berteman",
+  "ntAccD": "Ketuk untuk menulis pesan pertama",
+  "ntTest": "Notifikasi uji",
+  "ntTestD": "Berhasil! Pesan dan permintaan pertemanan akan datang seperti ini."
+ },
  "it": {
   "ntReq": "{nick} vuole essere tuo amico",
   "ntReqD": "Tocca per accettare o rifiutare",
