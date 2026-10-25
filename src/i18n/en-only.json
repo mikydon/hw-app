@@ -83,6 +83,10 @@
     "gm.j.pr",
     "gm.j.hof",
     "gm.j.coach",
-    "ui.gmTopLocked"
+    "ui.gmTopLocked",
+    "ui.fastT",
+    "ui.fastD",
+    "ui.fastFix",
+    "ui.fastBack"
   ]
 }

@@ -6841,6 +6841,7 @@ function SwapSheet({ item, exclude, history, onPick, onClose }) {
   );
 }
 
+const MIN_REP_S = 0.6; // nobody does a clean rep faster (fast push-ups ~0.8–1 s)
 function Work({ item, rounds, history, sessionResults, onRecord, onSwap, exclude, onLive }) {
   const [swap, setSwap] = useState(false);
   const ex = EX[item.id];
@@ -6868,6 +6869,15 @@ function Work({ item, rounds, history, sessionResults, onRecord, onSwap, exclude
   // One arm / one leg at a time: right side first, then left (Michael, Oct 9). The weaker side is logged.
   const split = ex.type === "reps" && (ex.unit === "arm" || ex.unit === "leg");
   const [side, setSide] = useState("R");
+  // 1.8.0 basic fair play (Michael, Oct 25, 02:51: "only the basic anti-cheat things"): a set logged faster than clean
+  // reps can be done (MIN_REP_S a rep, both sides for one-arm/one-leg moves) asks first and offers what fits the time.
+  const shownAt = useRef(performance.now());
+  const [fast, setFast] = useState(null);
+  const recordFair = n => {
+    const secs = (performance.now() - shownAt.current) / 1000, per = MIN_REP_S * (split ? 2 : 1);
+    if (!window.__hwNoRepCheck && ex.type === "reps" && n > 3 && n * per > secs) { setFast({ n, secs: Math.round(secs), cap: Math.max(0, Math.floor(secs / per)) }); return; }
+    onRecord(n);
+  };
   const [rightReps, setRightReps] = useState(null);
   const sideName = sd => T(`side${sd}_${ex.unit}`);
 
@@ -6916,6 +6926,13 @@ function Work({ item, rounds, history, sessionResults, onRecord, onSwap, exclude
   return (
     <div>
       {how && <HowTo id={item.id} history={history} onClose={() => setHow(false)} onSwap={onSwap && ph === "ready" ? () => { sfxTap(); setHow(false); setSwap(true); } : null} />}
+      {fast && (
+        <Sheet short title={T("fastT")} onClose={() => setFast(null)}>
+          <div data-fast style={{ fontSize: 14.5, color: C.chalk, lineHeight: 1.5 }}>{T("fastD", { n: fast.n, s: fast.secs })}</div>
+          <button type="button" data-fast-fix onClick={() => { sfxTap(); const n = fast.cap; setFast(null); setReps(n); onRecord(n); }} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 14 }}>{T("fastFix", { n: fast.cap })}</button>
+          <button type="button" data-fast-back onClick={() => { sfxTap(); setFast(null); }} style={{ ...ghostBtn, width: "100%", marginTop: 8, padding: "13px 14px", fontSize: 15, color: C.chalk }}>{T("fastBack")}</button>
+        </Sheet>
+      )}
       {swap && <SwapSheet item={item} exclude={exclude || []} history={history} onClose={() => setSwap(false)} onPick={id => { setSwap(false); sfxCheck(); onSwap(item.slot, id); }} />}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10 }}>
         <div style={{ fontFamily: DISPLAY, fontSize: fitFont(ex.name, 46), fontWeight: 900, lineHeight: 0.95, color: C.chalk, flex: 1, minWidth: 0, hyphens: "auto", overflowWrap: "break-word" }}>{ex.name}<ExQ id={item.id} onOpen={() => setHow(true)} style={{ width: 19, height: 19, fontSize: 11, marginLeft: 8, verticalAlign: "0.2em" }} /></div>
@@ -7002,7 +7019,7 @@ function Work({ item, rounds, history, sessionResults, onRecord, onSwap, exclude
               {T("sideNext", { side: sideName("L") })}
             </button>
           ) : (
-            <button data-done-btn onClick={() => { unlockAudio(); onRecord(split && rightReps !== null ? Math.min(rightReps, reps) : reps); }} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 22, fontSize: 18, padding: 19 }}>
+            <button data-done-btn onClick={() => { unlockAudio(); recordFair(split && rightReps !== null ? Math.min(rightReps, reps) : reps); }} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 22, fontSize: 18, padding: 19 }}>
               {T("doneBtn", { v: `${split && rightReps !== null ? Math.min(rightReps, reps) : reps}${unitStr(ex.unit)}` })}
             </button>
           )}
