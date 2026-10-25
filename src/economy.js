@@ -115,10 +115,13 @@ export function buy(profile, bal, what, now = Date.now()) {
   return add({ p });
 }
 
-// The shop's looks today: 6 of the ones for sale you don't have yet, different every day (the same on every device).
+// The shop's looks this week (Michael, Oct 25: "they changed when I bought something; change them every week for
+// now, we have few", then "every Friday"): 6 of the looks for sale, fixed by the week's key (App.jsx shopDay = the
+// latest Friday), the same on every device. Bought ones stay
+// in the list (shown as owned), so a purchase never reshuffles it.
 export const DAILY_N = 6;
-export function dailyLooks(day, own = []) {
-  const r = rng("shop", day), list = LOOK_IDS.filter(id => !LOOKS[id].won && !own.includes(id));
+export function shopLooks(week) {
+  const r = rng("shop", week), list = LOOK_IDS.filter(id => !LOOKS[id].won);
   const out = [];
   while (out.length < DAILY_N && list.length) out.push(list.splice(Math.floor(r() * list.length), 1)[0]);
   return out;

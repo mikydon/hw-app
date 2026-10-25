@@ -1454,7 +1454,7 @@ function BdayHalo({ size, children }) {
 function Avatar({ profile, size = 38 }) {
   const initial = (profile.name || "?").trim().charAt(0).toUpperCase() || "?";
   return profile.pfp ? (
-    <img src={profile.pfp} alt={T("photoAlt")} style={{ width: size, height: size, borderRadius: 99, objectFit: "cover", display: "block", border: `2px solid ${C.signal}` }} />
+    <img src={profile.pfp} alt={T("photoAlt")} style={{ width: size, height: size, boxSizing: "border-box", borderRadius: 99, objectFit: "cover", display: "block", border: `2px solid ${C.signal}` }} />
   ) : (
     <div aria-hidden="true" style={{ width: size, height: size, borderRadius: 99, background: C.signal, color: C.signalInk, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: DISPLAY, fontWeight: 900, fontSize: size * 0.55 }}>{initial}</div>
   );
@@ -4858,6 +4858,48 @@ const PF_LAY = {
   3: { rows: "auto auto 1fr", at: [{ gridColumn: 1, gridRow: 1 }, { gridColumn: 2, gridRow: "1 / span 3" }, { gridColumn: 3, gridRow: "1 / span 3" }, { gridColumn: 1, gridRow: 2 }] },
   2: { rows: "auto auto auto 1fr", at: [{ gridColumn: 1, gridRow: 1 }, { gridColumn: 2, gridRow: "1 / span 4" }, { gridColumn: 1, gridRow: 3 }, { gridColumn: 1, gridRow: 2 }] },
 };
+// The top of a profile: photo, frame, banner, effect, name, title, level and streak. The Profile page and the Shop's
+// preview (Michael: "show it on my profile") draw the very same box; preview = nothing to tap, no edit buttons.
+function ProfileHero({ m, own, onPhoto, onEditProfile, onLooks, onStreak, extra, preview }) {
+  const lv = levelInfo(m.xp), lr = RANKS[lvRank(m.lvl)], lk = m.look || {};
+  return (
+        <Sect {...(preview ? { "data-look-preview": true } : { "data-pf-hero": true })} style={{ marginTop: 0, padding: LOOK === "flat" ? 0 : "16px 16px 14px", position: "relative", overflow: "hidden" }}>
+          <LookFx id={lk.fx} />
+          {lk.bg ? <div data-pf-banner={lk.bg} aria-hidden="true" style={{ position: "absolute", left: 0, right: 0, top: 0, height: 190, pointerEvents: "none", WebkitMaskImage: "linear-gradient(180deg, #000 45%, transparent 100%)", maskImage: "linear-gradient(180deg, #000 45%, transparent 100%)" }}><LookBanner id={lk.bg} /></div>
+            : <div aria-hidden="true" style={{ position: "absolute", inset: 0, background: `radial-gradient(80% 70% at 0% 0%, ${lr.color}26, transparent 60%)`, pointerEvents: "none" }} />}
+          <div style={{ position: "relative", display: "flex", alignItems: "center", gap: lk.frame ? 18 : 14 }}>
+            <button type="button" onClick={own && !preview ? onPhoto : undefined} disabled={!own || preview} aria-label={own ? T("changePhoto") : undefined} className="cardIn" style={{ ...btnBase, background: "transparent", padding: 0, borderRadius: 99, position: "relative", flexShrink: 0, cursor: own && !preview ? "pointer" : "default", margin: lk.frame ? "12px 0 12px 12px" : 0 }}>
+              {own ? <BdayHalo size={80}><Avatar profile={{ name: m.nick, pfp: m.pfp }} size={80} /></BdayHalo> : <Avatar profile={{ name: m.nick, pfp: m.pfp }} size={80} />}
+              {lk.frame && <LookFrame id={lk.frame} size={110} style={{ left: -15, top: -15 }} />}
+              {/* Steam-like level badge on the photo */}
+              <span data-pf-level={m.lvl} style={{ position: "absolute", right: -6, bottom: -4, minWidth: 34, height: 34, padding: "0 6px", boxSizing: "border-box", borderRadius: 99, background: C.ink, border: `2.5px solid ${lr.color}`, color: lr.color, fontFamily: DISPLAY, fontSize: 17, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: `0 0 14px ${lr.color}55` }}>{m.lvl}</span>
+            </button>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div data-pf-name data-name-fx={lk.name || ""} style={{ fontFamily: DISPLAY, fontSize: 30, fontWeight: 900, lineHeight: 1, color: C.chalk, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" , ...INK, ...nameFx(lk.name) }}>{m.nick}</div>
+              {lk.title && <div style={{ marginTop: 6 }}><LookTitle id={lk.title} /></div>}
+              <div style={{ fontSize: 12.5, color: own && bdayToday() ? C.signal : C.dim, fontWeight: own && bdayToday() ? 800 : 400, marginTop: 4 }}>{own && bdayToday() ? T("bdayHero") : m.since ? T("since", { date: fmtDate(m.since, true) }) : T("newMember")}</div>
+            </div>
+            {own && !preview && <span style={{ alignSelf: "flex-start", display: "flex", flexDirection: "column", gap: 6, flexShrink: 0 }}>
+              <button type="button" data-pf-edit onClick={() => { sfxTap(); onEditProfile(); }} aria-label={T("pfEdit")} style={{ ...btnBase, background: SOFT(), color: C.chalk, width: 38, height: 38, borderRadius: 12, fontSize: 15 }}>✏️</button>
+              {onLooks && <button type="button" data-pf-looks onClick={() => { sfxTap(); onLooks(); }} aria-label={T("pfLooks")} title={T("pfLooks")} style={{ ...btnBase, background: SOFT(), color: C.signal, width: 38, height: 38, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center" }}><Ico n="sparkle" size={19} /></button>}
+            </span>}
+          </div>
+          <div style={{ position: "relative", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 14 }}>
+            <div data-pf-lv style={{ background: SOFT(), borderRadius: 14, padding: "10px 12px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: C.dim, fontWeight: 600 }}><span>{T("level")}</span><span aria-hidden="true">⚡</span></div>
+              <div style={{ fontFamily: DISPLAY, fontSize: 28, fontWeight: 900, color: C.sky, lineHeight: 1, marginTop: 4 }}><CountUp n={m.lvl} /></div>
+              <div style={{ height: 5, background: `${C.chalk}14`, borderRadius: 99, marginTop: 7, overflow: "hidden" }}><div className="pvBar" style={{ height: "100%", width: `${(lv.into / lv.need) * 100}%`, background: C.sky, borderRadius: 99 }} /></div>
+              <div style={{ fontSize: 11, color: C.dim, marginTop: 5 }}>{nf(lv.into)} / {nf(lv.need)} XP</div>
+            </div>
+            <button type="button" data-pf-streak onClick={own && !preview ? () => { sfxTap(); onStreak(); } : undefined} disabled={!own || preview} style={{ ...btnBase, fontWeight: 400, textAlign: "left", color: C.chalk, background: SOFT(), borderRadius: 14, padding: "10px 12px", cursor: own && !preview ? "pointer" : "default" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: C.dim, fontWeight: 600 }}><span>{T("streak")}</span><span aria-hidden="true" className={m.streak ? "wiggle" : ""}>🔥</span></div>
+              <div style={{ fontFamily: DISPLAY, fontSize: 28, fontWeight: 900, color: "#ffa94d", lineHeight: 1, marginTop: 4 }}><CountUp n={m.streak} /></div>
+              <div style={{ fontSize: 11, color: C.dim, marginTop: 17 }}>{T("pfBestStreak", { n: m.best })}{own && extra && extra.fz !== undefined ? <span data-pf-freezes> · ❄️ {extra.fz}</span> : null}</div>
+            </button>
+          </div>
+        </Sect>
+  );
+}
 function ProfilePage({ m, own, onEditProfile, onEditSlot, onStreak, onPhoto, onPickRank, onLooks, extra, top, claim }) {
   const pg = usePager("pf", 4, PF_LAY);
   const [focus, setFocus] = useState(null);
@@ -4894,41 +4936,7 @@ function ProfilePage({ m, own, onEditProfile, onEditSlot, onStreak, onPhoto, onP
           </button>
         )}
         {/* the basics: photo, name, level, streak */}
-        <Sect data-pf-hero style={{ marginTop: 0, padding: LOOK === "flat" ? 0 : "16px 16px 14px", position: "relative", overflow: "hidden" }}>
-          <LookFx id={lk.fx} />
-          {lk.bg ? <div data-pf-banner={lk.bg} aria-hidden="true" style={{ position: "absolute", left: 0, right: 0, top: 0, height: 190, pointerEvents: "none", WebkitMaskImage: "linear-gradient(180deg, #000 45%, transparent 100%)", maskImage: "linear-gradient(180deg, #000 45%, transparent 100%)" }}><LookBanner id={lk.bg} /></div>
-            : <div aria-hidden="true" style={{ position: "absolute", inset: 0, background: `radial-gradient(80% 70% at 0% 0%, ${lr.color}26, transparent 60%)`, pointerEvents: "none" }} />}
-          <div style={{ position: "relative", display: "flex", alignItems: "center", gap: lk.frame ? 18 : 14 }}>
-            <button type="button" onClick={own ? onPhoto : undefined} disabled={!own} aria-label={own ? T("changePhoto") : undefined} className="cardIn" style={{ ...btnBase, background: "transparent", padding: 0, borderRadius: 99, position: "relative", flexShrink: 0, cursor: own ? "pointer" : "default", margin: lk.frame ? "12px 0 12px 12px" : 0 }}>
-              {own ? <BdayHalo size={80}><Avatar profile={{ name: m.nick, pfp: m.pfp }} size={80} /></BdayHalo> : <Avatar profile={{ name: m.nick, pfp: m.pfp }} size={80} />}
-              {lk.frame && <LookFrame id={lk.frame} size={110} style={{ left: -15, top: -15 }} />}
-              {/* Steam-like level badge on the photo */}
-              <span data-pf-level={m.lvl} style={{ position: "absolute", right: -6, bottom: -4, minWidth: 34, height: 34, padding: "0 6px", boxSizing: "border-box", borderRadius: 99, background: C.ink, border: `2.5px solid ${lr.color}`, color: lr.color, fontFamily: DISPLAY, fontSize: 17, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: `0 0 14px ${lr.color}55` }}>{m.lvl}</span>
-            </button>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div data-pf-name data-name-fx={lk.name || ""} style={{ fontFamily: DISPLAY, fontSize: 30, fontWeight: 900, lineHeight: 1, color: C.chalk, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" , ...INK, ...nameFx(lk.name) }}>{m.nick}</div>
-              {lk.title && <div style={{ marginTop: 6 }}><LookTitle id={lk.title} /></div>}
-              <div style={{ fontSize: 12.5, color: own && bdayToday() ? C.signal : C.dim, fontWeight: own && bdayToday() ? 800 : 400, marginTop: 4 }}>{own && bdayToday() ? T("bdayHero") : m.since ? T("since", { date: fmtDate(m.since, true) }) : T("newMember")}</div>
-            </div>
-            {own && <span style={{ alignSelf: "flex-start", display: "flex", flexDirection: "column", gap: 6, flexShrink: 0 }}>
-              <button type="button" data-pf-edit onClick={() => { sfxTap(); onEditProfile(); }} aria-label={T("pfEdit")} style={{ ...btnBase, background: SOFT(), color: C.chalk, width: 38, height: 38, borderRadius: 12, fontSize: 15 }}>✏️</button>
-              {onLooks && <button type="button" data-pf-looks onClick={() => { sfxTap(); onLooks(); }} aria-label={T("pfLooks")} title={T("pfLooks")} style={{ ...btnBase, background: SOFT(), color: C.signal, width: 38, height: 38, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center" }}><Ico n="sparkle" size={19} /></button>}
-            </span>}
-          </div>
-          <div style={{ position: "relative", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 14 }}>
-            <div data-pf-lv style={{ background: SOFT(), borderRadius: 14, padding: "10px 12px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: C.dim, fontWeight: 600 }}><span>{T("level")}</span><span aria-hidden="true">⚡</span></div>
-              <div style={{ fontFamily: DISPLAY, fontSize: 28, fontWeight: 900, color: C.sky, lineHeight: 1, marginTop: 4 }}><CountUp n={m.lvl} /></div>
-              <div style={{ height: 5, background: `${C.chalk}14`, borderRadius: 99, marginTop: 7, overflow: "hidden" }}><div className="pvBar" style={{ height: "100%", width: `${(lv.into / lv.need) * 100}%`, background: C.sky, borderRadius: 99 }} /></div>
-              <div style={{ fontSize: 11, color: C.dim, marginTop: 5 }}>{nf(lv.into)} / {nf(lv.need)} XP</div>
-            </div>
-            <button type="button" data-pf-streak onClick={own ? () => { sfxTap(); onStreak(); } : undefined} disabled={!own} style={{ ...btnBase, fontWeight: 400, textAlign: "left", color: C.chalk, background: SOFT(), borderRadius: 14, padding: "10px 12px", cursor: own ? "pointer" : "default" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: C.dim, fontWeight: 600 }}><span>{T("streak")}</span><span aria-hidden="true" className={m.streak ? "wiggle" : ""}>🔥</span></div>
-              <div style={{ fontFamily: DISPLAY, fontSize: 28, fontWeight: 900, color: "#ffa94d", lineHeight: 1, marginTop: 4 }}><CountUp n={m.streak} /></div>
-              <div style={{ fontSize: 11, color: C.dim, marginTop: 17 }}>{T("pfBestStreak", { n: m.best })}{own && extra && extra.fz !== undefined ? <span data-pf-freezes> · ❄️ {extra.fz}</span> : null}</div>
-            </button>
-          </div>
-        </Sect>
+        <ProfileHero m={m} own={own} onPhoto={onPhoto} onEditProfile={onEditProfile} onLooks={onLooks} onStreak={onStreak} extra={extra} />
         {/* the showcase */}
         <Sect data-pf-showcase title={T("pfShowcase")} meta={T("pfSlots", { n, max: SLOT_LV.length })}>
           <div ref={slotsRef} data-pf-slots data-cols={slotCols} style={{ display: "grid", gridTemplateColumns: `repeat(${slotCols}, minmax(0, 1fr))`, gridAutoFlow: "row dense", gap: 8 }}>
@@ -7473,6 +7481,8 @@ function econState(history, profile) {
   const own = [...new Set([...sh.own, ...EC.wonLooks(lookGot(inp))])];
   return { inp, sh, earned, bal: earned.total - sh.spent, own, chests: readyChests(history, profile) };
 }
+// The Shop's looks change every Friday (Michael, Oct 25, 15:13): the key is the latest Friday up to that day.
+function shopDay(k) { const d = parseKey(k); d.setDate(d.getDate() - ((d.getDay() + 2) % 7)); return dateKey(d); }
 // Weeks whose 3 challenges are done and whose chest is still shut (oldest first).
 function readyChests(history, profile) {
   const opened = EC.shopOf(profile).chest;
@@ -7532,7 +7542,7 @@ function LookBanner({ id }) {
     const wv = (y, a, ph) => { let d = `M0 ${y}`; for (let x = 0; x <= 400; x += 10) d += ` L${x} ${(y + Math.sin(x / 45 + ph) * a).toFixed(1)}`; return d + " V148 H0z"; };
     return <><div style={{ ...fill, background: `linear-gradient(180deg, ${C.panelHi}, ${C.panel})` }} /><svg viewBox="0 0 400 148" preserveAspectRatio="none" style={{ ...fill, width: "100%", height: "100%" }}><path d={wv(52, 9, 0)} fill={C.sky} opacity=".22" /><path d={wv(76, 8, 2)} fill={C.sky} opacity=".3" /><path d={wv(100, 7, 4)} fill={C.signal} opacity=".28" /><path d={wv(52, 9, 0).split(" V")[0]} fill="none" stroke={C.sky} strokeOpacity=".7" strokeWidth="1.5" /></svg></>;
   }
-  if (id === "b_bubbles") return <><div style={{ ...fill, background: `linear-gradient(180deg, ${C.panelHi}, ${C.panel})` }} /><div style={{ ...fill, overflow: "hidden" }}>{Array.from({ length: 14 }, (_, i) => { const r = lkRnd(i + 3), sz = 6 + Math.round(lkRnd(i + 40) * 14); return <span key={i} className="lkCol lkUp" style={{ left: `${(r * 100).toFixed(1)}%`, animationDuration: `${(7 + lkRnd(i + 9) * 7).toFixed(1)}s`, animationDelay: `${(-lkRnd(i + 17) * 12).toFixed(1)}s` }}><span style={{ display: "block", width: sz, height: sz, borderRadius: 99, border: `1.5px solid ${C.sky}99`, background: `radial-gradient(circle at 30% 30%, #fff6, transparent 60%)` }} /></span>; })}</div></>;
+  if (id === "b_bubbles") return <><div style={{ ...fill, background: `linear-gradient(180deg, ${C.panelHi}, ${C.panel})` }} /><div style={{ ...fill, overflow: "hidden" }}>{Array.from({ length: 14 }, (_, i) => { const r = lkRnd(i + 3), sz = 6 + Math.round(lkRnd(i + 40) * 14); return <span key={i} className="lkCol lkUp" onAnimationIteration={lkReX} style={{ left: `${(r * 100).toFixed(1)}%`, animationDuration: `${(7 + lkRnd(i + 9) * 7).toFixed(1)}s`, animationDelay: `${(-lkRnd(i + 17) * 12).toFixed(1)}s` }}><span style={{ display: "block", width: sz, height: sz, borderRadius: 99, border: `1.5px solid ${C.sky}99`, background: `radial-gradient(circle at 30% 30%, #fff6, transparent 60%)` }} /></span>; })}</div></>;
   if (id === "b_city") {
     let w = "", x = 0, k = 0;
     while (x < 400) { const bw = 22 + Math.round(lkRnd(k) * 26), bh = 40 + Math.round(lkRnd(k + 50) * 70); w += `<rect x="${x}" y="${148 - bh}" width="${bw - 3}" height="${bh}" fill="#0a0e1f"/>`; for (let yy = 148 - bh + 6; yy < 144; yy += 9) for (let xx = x + 4; xx < x + bw - 7; xx += 7) if (lkRnd(xx * 3 + yy) > 0.55) w += `<rect x="${xx}" y="${yy}" width="3" height="4" fill="${C.signal}" opacity="${(0.5 + lkRnd(xx + yy * 7) * 0.5).toFixed(2)}"${lkRnd(xx + yy) > 0.9 ? ' class="lkTw"' : ""}/>`; x += bw; k++; }
@@ -7590,22 +7600,33 @@ function LookTitle({ id, small }) {
 // Profile effects (Discord-like): drawn over the whole profile card, never catching taps. A fixed pseudo-random spread,
 // so the same effect looks the same everywhere; only transform/opacity animate.
 const lkRnd = k => { const x = Math.sin(k * 12.9898 + 78.233) * 43758.5453; return x - Math.floor(x); };
+// Michael (Oct 25): "they're not random, fireworks just repeat": every particle starts at a random place and, each
+// time its loop ends (animationiteration, when it is out of sight), jumps to a new random place, set on the element
+// itself (no re-render). Fireworks also change colour and spot every burst; lightning strikes somewhere else each time.
+const lkPct = (lo, hi) => `${(lo + Math.random() * (hi - lo)).toFixed(1)}%`;
+const lkReX = e => { if (e.target === e.currentTarget) e.currentTarget.style.left = lkPct(0, 100); };
+const lkReXY = e => { if (e.target === e.currentTarget) { e.currentTarget.style.left = lkPct(2, 94); e.currentTarget.style.top = lkPct(2, 90); } };
 function LookFx({ id, thumb }) {
+  const rs = useMemo(() => Array.from({ length: 120 }, () => Math.random()), [id]);
   if (!id || !EC.LOOKS[id]) return null;
-  const n = (c, f) => Array.from({ length: c }, (_, i) => f(i, lkRnd(i + 1), lkRnd(i + 31), lkRnd(i + 61)));
-  const col = (x, dur, delay, kids, cls = "lkDown") => <span className={"lkCol " + cls} style={{ left: `${(x * 100).toFixed(1)}%`, animationDuration: `${dur.toFixed(1)}s`, animationDelay: `${(-delay).toFixed(1)}s` }}>{kids}</span>;
+  const n = (c, f) => Array.from({ length: c }, (_, i) => f(i, rs[i % 40], rs[(i % 40) + 40], rs[(i % 40) + 80]));
+  const col = (x, dur, delay, kids, cls = "lkDown") => <span className={"lkCol " + cls} onAnimationIteration={lkReX} style={{ left: `${(x * 100).toFixed(1)}%`, animationDuration: `${dur.toFixed(1)}s`, animationDelay: `${(-delay).toFixed(1)}s` }}>{kids}</span>;
   let body = null;
   if (id === "fx_snow") body = n(22, (i, a, b, c) => <Fragment key={i}>{col(a, 6 + b * 6, c * 12, <span style={{ display: "block", width: 2 + Math.round(b * 3), height: 2 + Math.round(b * 3), borderRadius: 99, background: "#fff", opacity: 0.85 }} />)}</Fragment>);
-  if (id === "fx_sparkle") body = n(14, (i, a, b, c) => <svg key={i} viewBox="-6 -6 12 12" width={8 + b * 10} height={8 + b * 10} className="lkTwk" style={{ position: "absolute", left: `${(a * 96).toFixed(1)}%`, top: `${(c * 92).toFixed(1)}%`, animationDelay: `${(b * 2.4).toFixed(2)}s`, animationDuration: `${(1.8 + c * 1.6).toFixed(1)}s` }}><path d="M0 -6 L1.4 -1.4 L6 0 L1.4 1.4 L0 6 L-1.4 1.4 L-6 0 L-1.4 -1.4 Z" fill={i % 3 ? "#fff" : C.signal} /></svg>);
+  if (id === "fx_sparkle") body = n(14, (i, a, b, c) => <svg key={i} viewBox="-6 -6 12 12" width={8 + b * 10} height={8 + b * 10} className="lkTwk" onAnimationIteration={lkReXY} style={{ position: "absolute", left: `${(a * 96).toFixed(1)}%`, top: `${(c * 92).toFixed(1)}%`, animationDelay: `${(b * 2.4).toFixed(2)}s`, animationDuration: `${(1.8 + c * 1.6).toFixed(1)}s` }}><path d="M0 -6 L1.4 -1.4 L6 0 L1.4 1.4 L0 6 L-1.4 1.4 L-6 0 L-1.4 -1.4 Z" fill={i % 3 ? "#fff" : C.signal} /></svg>);
   if (id === "fx_petals") body = n(14, (i, a, b, c) => <Fragment key={i}>{col(a, 8 + b * 6, c * 14, <span className="lkSway" style={{ display: "block", width: 9, height: 6, borderRadius: "60% 40% 60% 40%", background: i % 2 ? "#ffb3c7" : "#ffd1dc", opacity: 0.9, animationDelay: `${(-b * 3).toFixed(1)}s` }} />)}</Fragment>);
   if (id === "fx_embers") body = n(18, (i, a, b, c) => <Fragment key={i}>{col(a, 4 + b * 4, c * 8, <span style={{ display: "block", width: 3 + Math.round(b * 2), height: 3 + Math.round(b * 2), borderRadius: 99, background: i % 3 ? "#ffb347" : "#ff6a2f", boxShadow: "0 0 6px #ff7a1a" }} />, "lkUp lkFade")}</Fragment>);
   if (id === "fx_confetti") { const cs = [C.signal, LK_PINK, C.sky, C.mint, LK_VIOLET]; body = n(20, (i, a, b, c) => <Fragment key={i}>{col(a, 5 + b * 5, c * 10, <span className="lkSpinC" style={{ display: "block", width: 6, height: 9, borderRadius: 1.5, background: cs[i % cs.length], animationDuration: `${(0.8 + b).toFixed(2)}s` }} />)}</Fragment>); }
-  if (id === "fx_lightning") body = <><div className="lkFlash" style={{ position: "absolute", inset: 0, background: "#fff" }} /><svg className={thumb ? "" : "lkBolt"} viewBox="0 0 60 120" style={{ position: "absolute", right: "12%", top: 0, height: "75%", filter: `drop-shadow(0 0 6px ${C.signal})` }}><path d="M34 0 L14 58 L30 58 L18 120 L48 46 L31 46 L44 0 Z" fill={C.signal} /></svg><svg className={thumb ? "" : "lkBolt lkBolt2"} viewBox="0 0 60 120" style={{ position: "absolute", left: "8%", top: "10%", height: "45%", filter: "drop-shadow(0 0 5px #fff)" }}><path d="M34 0 L14 58 L30 58 L18 120 L48 46 L31 46 L44 0 Z" fill="#fff" /></svg></>;
+  if (id === "fx_lightning") body = <><div className="lkFlash" style={{ position: "absolute", inset: 0, background: "#fff" }} /><svg className={thumb ? "" : "lkBolt"} onAnimationIteration={e => { e.currentTarget.style.left = lkPct(45, 85); e.currentTarget.style.transform = Math.random() < 0.5 ? "scaleX(-1)" : "none"; }} viewBox="0 0 60 120" style={{ position: "absolute", left: "70%", top: 0, height: "75%", filter: `drop-shadow(0 0 6px ${C.signal})` }}><path d="M34 0 L14 58 L30 58 L18 120 L48 46 L31 46 L44 0 Z" fill={C.signal} /></svg><svg className={thumb ? "" : "lkBolt lkBolt2"} onAnimationIteration={e => { e.currentTarget.style.left = lkPct(2, 40); e.currentTarget.style.top = lkPct(0, 30); }} viewBox="0 0 60 120" style={{ position: "absolute", left: "8%", top: "10%", height: "45%", filter: "drop-shadow(0 0 5px #fff)" }}><path d="M34 0 L14 58 L30 58 L18 120 L48 46 L31 46 L44 0 Z" fill="#fff" /></svg></>;
   if (id === "fx_frost") {
     const br = (x, y, flip) => { let d = ""; for (let k = 0; k < 5; k++) { const a = (flip ? 180 - (10 + k * 18) : 10 + k * 18) * Math.PI / 180, L = 26 + (k % 2) * 14, ex = x + Math.cos(a) * L, ey = y + Math.sin(a) * L; d += `M${x} ${y} L${ex.toFixed(1)} ${ey.toFixed(1)} `; const mx = x + Math.cos(a) * L * 0.55, my = y + Math.sin(a) * L * 0.55; d += `M${mx.toFixed(1)} ${my.toFixed(1)} l${(Math.cos(a + 0.6) * 8).toFixed(1)} ${(Math.sin(a + 0.6) * 8).toFixed(1)} M${mx.toFixed(1)} ${my.toFixed(1)} l${(Math.cos(a - 0.6) * 8).toFixed(1)} ${(Math.sin(a - 0.6) * 8).toFixed(1)} `; } return d; };
     body = <><svg viewBox="0 0 400 160" preserveAspectRatio="none" style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}><path className="lkPulse" d={br(0, 0, false) + br(400, 0, true)} fill="none" stroke="#d8f3ff" strokeWidth="1.6" strokeLinecap="round" /></svg>{n(8, (i, a, b, c) => <Fragment key={i}>{col(a, 9 + b * 5, c * 12, <svg viewBox="-6 -6 12 12" width={9 + Math.round(b * 6)} height={9 + Math.round(b * 6)} style={{ display: "block", overflow: "visible" }}><path d="M0 -5.5V5.5M-4.8 -2.75L4.8 2.75M-4.8 2.75L4.8 -2.75" stroke="#e6f7ff" strokeWidth="1.2" strokeLinecap="round" /></svg>)}</Fragment>)}</>;
   }
-  if (id === "fx_fireworks") { const cs = [C.signal, LK_PINK, C.sky]; body = [[22, 30], [70, 22], [50, 55]].map(([x, y], k) => <span key={k} style={{ position: "absolute", left: `${x}%`, top: `${y}%`, width: 0, height: 0 }}>{Array.from({ length: 12 }, (_, i) => <span key={i} className="lkBurst" style={{ "--a": `${i * 30}deg`, position: "absolute", width: 4, height: 4, marginLeft: -2, marginTop: -2, borderRadius: 99, background: cs[k], boxShadow: `0 0 6px ${cs[k]}`, animationDelay: `${(k * 0.9).toFixed(1)}s` }} />)}</span>); }
+  if (id === "fx_fireworks") {
+    const cs = [C.signal, LK_PINK, C.sky, C.mint, LK_VIOLET, "#ff8a5c"];
+    const moveBurst = e => { if (e.target.dataset.i !== "0") return; const b = e.currentTarget; b.style.left = lkPct(10, 88); b.style.top = lkPct(12, 72); b.style.setProperty("--c", cs[Math.floor(Math.random() * cs.length)]); b.style.setProperty("--r", `${24 + Math.round(Math.random() * 18)}px`); };
+    body = [0, 1, 2].map(k => <span key={k} onAnimationIteration={moveBurst} style={{ position: "absolute", left: `${(10 + rs[k] * 78).toFixed(1)}%`, top: `${(12 + rs[k + 3] * 60).toFixed(1)}%`, width: 0, height: 0, "--c": cs[Math.floor(rs[k + 6] * cs.length)], "--r": "30px" }}>{Array.from({ length: 12 }, (_, i) => <span key={i} data-i={i} className="lkBurst" style={{ "--a": `${i * 30 + k * 10}deg`, position: "absolute", width: 4, height: 4, marginLeft: -2, marginTop: -2, borderRadius: 99, background: "var(--c)", boxShadow: "0 0 6px var(--c)", animationDelay: `${(k * 0.9 + rs[k + 9] * 0.5).toFixed(2)}s`, animationDuration: `${(2.4 + k * 0.35).toFixed(2)}s` }} />)}</span>);
+  }
   return <div data-look-fx={id} aria-hidden="true" style={{ position: "absolute", inset: 0, pointerEvents: "none", overflow: "hidden", zIndex: 3, borderRadius: "inherit" }}>{body}</div>;
 }
 // A look as a small picture for the shop and the list.
@@ -7619,23 +7640,9 @@ function LookThumb({ id, size = 56 }) {
 }
 // The top of a profile with its looks (the Shop's preview; ProfilePage draws the same pieces into its own hero).
 function LookPreview({ profile, look, history }) {
-  const lv = levelInfo(totalXP(history)), lr = RANKS[lvRank(lv.lvl)];
-  return (
-    <div data-look-preview style={{ ...card, ...tileR(), position: "relative", overflow: "hidden", padding: "18px 16px 16px" }}>
-      <LookFx id={look.fx} />
-      <div aria-hidden="true" style={{ position: "absolute", inset: 0, pointerEvents: "none", WebkitMaskImage: "linear-gradient(180deg, #000 35%, transparent 100%)", maskImage: "linear-gradient(180deg, #000 35%, transparent 100%)" }}>{look.bg ? <LookBanner id={look.bg} /> : <div style={{ position: "absolute", inset: 0, background: `radial-gradient(80% 70% at 0% 0%, ${lr.color}26, transparent 60%)` }} />}</div>
-      <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 16 }}>
-        <span style={{ position: "relative", flexShrink: 0, width: 64, height: 64, margin: look.frame ? 10 : 0 }}>
-          <Avatar profile={profile} size={64} />
-          {look.frame && <LookFrame id={look.frame} size={88} style={{ left: -12, top: -12 }} />}
-        </span>
-        <span style={{ flex: 1, minWidth: 0 }}>
-          <span style={{ display: "block", fontFamily: DISPLAY, fontSize: 26, fontWeight: 900, lineHeight: 1, color: C.chalk, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", ...INK, ...nameFx(look.name) }}>{profile.name || T("defaultName")}</span>
-          {look.title && <span style={{ display: "block", marginTop: 6 }}><LookTitle id={look.title} /></span>}
-        </span>
-      </div>
-    </div>
-  );
+  const base = useMemo(() => ownModel(history, profile, null), [history, profile]);
+  const fz = useMemo(() => freezesAvailable(history), [history]);
+  return <ProfileHero m={{ ...base, look }} own preview extra={{ fz }} />;
 }
 function DiaNum({ n, size = 15, color = C.chalk }) {
   return <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontWeight: 900, color, fontVariantNumeric: "tabular-nums" }}><Ico n="diamond" size={size} color={C.sky} sw={2.4} />{nf(n)}</span>;
@@ -7794,7 +7801,7 @@ function ShopTab({ history, profile, setProfile, onGo }) {
     const wk = chests[0]; if (!wk) return;
     try { const o = EC.openChest(profile, wk); setProfile({ ...profile, shop: o.shop }); setOpening(o.res); } catch (_) {}
   };
-  const today = dateKey(), daily = EC.dailyLooks(today, own);
+  const today = dateKey(), daily = EC.shopLooks(shopDay(today));
   const wonList = EC.LOOK_IDS.filter(id => EC.LOOKS[id].won).sort((a, b) => (own.includes(b) ? 1 : 0) - (own.includes(a) ? 1 : 0) || EC.LOOKS[a].r - EC.LOOKS[b].r);
   const fzHave = freezesAvailable(history), fzMax = 2 + (META.giftThisYear ? 1 : 0), boostTo = EC.boostUntil(sh.boosts, now);
   const wkNow = weekKey(today), chNow = challengeStatus(history, wkNow), chDone = chNow.filter(c => c.done).length, gotNow = !!sh.chest[wkNow];
@@ -7864,7 +7871,9 @@ function ShopTab({ history, profile, setProfile, onGo }) {
       {/* today's looks: tap = see it on your profile */}
       <Sect data-shop-today title={T("shToday")} meta={T("shTodayMeta")}>
         {daily.length ? <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          {daily.map(id => lookRow(id, <span style={{ flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 4, fontWeight: 900, fontSize: 14, color: bal >= EC.lookPrice(id) ? C.chalk : C.dim, background: SOFT(), borderRadius: 10, padding: "6px 9px" }}><Ico n="diamond" size={14} color={C.sky} sw={2.4} />{nf(EC.lookPrice(id))}</span>, { "data-shop-look": id }))}
+          {daily.map(id => lookRow(id, own.includes(id)
+            ? <span data-owned style={{ flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 4, fontWeight: 800, fontSize: 12.5, color: C.mint, padding: "6px 4px" }}><Ico n="check" size={15} sw={2.6} />{T("shOwned")}</span>
+            : <span style={{ flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 4, fontWeight: 900, fontSize: 14, color: bal >= EC.lookPrice(id) ? C.chalk : C.dim, background: SOFT(), borderRadius: 10, padding: "6px 9px" }}><Ico n="diamond" size={14} color={C.sky} sw={2.4} />{nf(EC.lookPrice(id))}</span>, { "data-shop-look": id, "data-has": own.includes(id) ? 1 : 0 }))}
         </div> : <div style={{ fontSize: 13, color: C.dim }}>{T("shAllOwned")}</div>}
       </Sect>
       {/* looks you can only win */}
@@ -9945,7 +9954,7 @@ export default function App() {
         .lkSpinC{animation:lkSpinC 1s linear infinite}@keyframes lkSpinC{to{transform:rotate(360deg) rotateX(180deg)}}
         .lkFlash{opacity:0;animation:lkFlash 5s linear infinite}@keyframes lkFlash{0%,88%,100%{opacity:0}89%{opacity:.32}90%{opacity:0}91.5%{opacity:.22}93%{opacity:0}}
         .lkBolt{opacity:0;animation:lkBoltK 5s linear infinite}.lkBolt2{animation-delay:.12s}@keyframes lkBoltK{0%,88%,96%,100%{opacity:0}89%,94%{opacity:1}}
-        .lkBurst{opacity:0;animation:lkBurst 2.7s ease-out infinite}@keyframes lkBurst{0%{transform:rotate(var(--a)) translateX(0) scale(1);opacity:0}5%{opacity:1}55%{transform:rotate(var(--a)) translateX(30px) scale(.8);opacity:1}75%,100%{transform:rotate(var(--a)) translateX(36px) scale(.3);opacity:0}}
+        .lkBurst{opacity:0;animation:lkBurst 2.7s ease-out infinite}@keyframes lkBurst{0%{transform:rotate(var(--a)) translateX(0) scale(1);opacity:0}5%{opacity:1}55%{transform:rotate(var(--a)) translateX(var(--r,30px)) scale(.8);opacity:1}75%,100%{transform:rotate(var(--a)) translateX(calc(var(--r,30px) + 6px)) scale(.3);opacity:0}}
         .lkFlickI{animation:lkFlickI 1s ease-in-out infinite alternate}@keyframes lkFlickI{from{transform:scale(1)}to{transform:scale(1.15,.9)}}
         @keyframes lkFireT{from{background-position:0 0}to{background-position:0 100%}}
         .shRcpt{animation:shRcpt .5s ${MO.spring} both}@keyframes shRcpt{from{transform:scale(.4);opacity:0}}

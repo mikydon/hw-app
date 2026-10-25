@@ -44,9 +44,8 @@ ok(S(mg).spent === 60 + 150 + 40 && S(mg).own.includes("f_pixel") && S(mg).boost
 ok(JSON.stringify(mg.buys) === JSON.stringify(mg2.buys), "merging is the same in both directions");
 ok(E.mergeShop(null, devA) === devA && E.mergeShop(devA, undefined) === devA, "one side empty: the other");
 console.log("daily shop, chests");
-const a = E.dailyLooks("2026-10-25"), b = E.dailyLooks("2026-10-25"), c = E.dailyLooks("2026-10-26");
-ok(a.length === E.DAILY_N && a.join() === b.join() && a.join() !== c.join() && a.every(id => !E.LOOKS[id].won), `${E.DAILY_N} looks a day, the same on every device, others tomorrow, never won-only ones`);
-ok(!E.dailyLooks("2026-10-25", a).some(id => a.includes(id)), "owned looks are not offered");
+const a = E.shopLooks("2026-10-19"), b = E.shopLooks("2026-10-19"), c = E.shopLooks("2026-10-26");
+ok(a.length === E.DAILY_N && a.join() === b.join() && a.join() !== c.join() && a.every(id => !E.LOOKS[id].won), `${E.DAILY_N} looks a week, the same on every device, others next week, never won-only ones`);
 const kinds = { dia: 0, boost: 0, look: 0 };
 for (let w = 0; w < 2000; w++) kinds[E.weeklyChest("2026-W" + w).kind]++;
 ok(Math.abs(kinds.dia / 20 - 70) < 4 && Math.abs(kinds.boost / 20 - 20) < 4 && Math.abs(kinds.look / 20 - 10) < 3, `chest odds 70/20/10 (${kinds.dia / 20}/${kinds.boost / 20}/${kinds.look / 20})`);

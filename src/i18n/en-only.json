@@ -163,6 +163,7 @@
     "ui.shSeeProfile",
     "ui.shOpenProfile",
     "ui.pfLooks",
-    "ui.pfLooksNone"
+    "ui.pfLooksNone",
+    "ui.shOwned"
   ]
 }
