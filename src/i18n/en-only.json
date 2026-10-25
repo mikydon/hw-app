@@ -82,6 +82,7 @@
     "gm.v",
     "gm.j.pr",
     "gm.j.hof",
-    "gm.j.coach"
+    "gm.j.coach",
+    "ui.gmTopLocked"
   ]
 }

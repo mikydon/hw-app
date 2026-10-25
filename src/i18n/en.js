@@ -732,6 +732,7 @@ export default {
     gmSwapT: "Swap a joker",
     gmSwapD: "All 5 joker slots are taken. Pick one to sell; {name} takes its place.",
     gmNowMult: "Now: +{n} multiplier",
+    gmTopLocked: "Coming with Ranked: the best Ranked players, ranked by their games (not by their exercises). Win to climb, lose and you drop.",
     gmRar0: "Common",
     gmRar1: "Uncommon",
     gmRar2: "Rare",

@@ -7437,6 +7437,15 @@ function GameTab({ history, profile, setProfile, acct, onPlay }) {
         <div style={{ fontSize: 12.5, color: C.dim, marginTop: 10, lineHeight: 1.45 }}>{T("gmPerksHave", { n: lo.perks.length, max: GM.PERK_IDS.length })}</div>
       </Sect>
       <button type="button" data-gm-rules onClick={() => { sfxTap(); setRules(true); }} style={{ ...ghostBtn, width: "100%", marginTop: 12, padding: "12px 14px", fontSize: 14, color: C.chalk }}>{T("gmRulesBtn")}</button>
+      {/* 1.8.0 (Michael, Oct 25, 02:31): the Ranked leaderboard shows, locked like Ranked, until Ranked opens */}
+      {!RANKED_ON && (
+        <Sect data-gm-top-locked title={T("gmTop")} style={{ marginTop: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, opacity: 0.75 }}>
+            <span aria-hidden="true" style={{ fontSize: 26 }}>🔒</span>
+            <span style={{ flex: 1, fontSize: 13, color: C.dim, lineHeight: 1.45 }}>{T("gmTopLocked")}</span>
+          </div>
+        </Sect>
+      )}
       {signed && RANKED_ON && (
         <Sect data-gm-top title={T("gmTop")} style={{ marginTop: 12, padding: "15px 0 6px" }} titlePad="0 16px">
           {top === null ? <div style={{ padding: "4px 16px 10px", color: C.dim, fontSize: 14 }}>{T("frLoading")}</div>
