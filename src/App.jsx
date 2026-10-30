@@ -1,6 +1,6 @@
 import { useState, useEffect, useLayoutEffect, useRef, useMemo, useId, memo, Fragment } from "react";
 import { createPortal } from "react-dom";
-import { isNative, pushBack, setRootBack, exitApp, vibratePattern, keepScreenOn, openExternal, saveBackupFile, bkSupported, bkWrite, bkWriteAuto, bkList, bkRead, bkDelete, bkShare, BK_DIR, bkAutoFile, checkForUpdate, lastUpdate, lastGh, applyUpdateNow, latestApk, isTestBuild, apkState, onApk, apkSupported, apkRestore, apkDownload, apkCanInstall, apkAllow, apkInstall, onAppResume, healthState, healthConnect, healthSettings, healthSteps, healthFoodItems, healthBody, shareText, copyText, pushSupported, pushPermission, pushChannel, pushToken, pushTokenWhy, pushDeleteToken, onPushTap, onPushToken, onPushReceived, hzSupported, hzInfo, hzSet, isPlay, playCheck, playOpenStore, PLAY_STORE_LINK, updTopic, onAppUrl, installCheck, openNotifSettings, showNotif } from "./native.js";
+import { isNative, pushBack, setRootBack, exitApp, vibratePattern, keepScreenOn, openExternal, saveBackupFile, bkSupported, bkWrite, bkWriteAuto, bkList, bkRead, bkDelete, bkShare, BK_DIR, bkAutoFile, checkForUpdate, lastUpdate, lastGh, applyUpdateNow, latestApk, isTestBuild, apkState, onApk, apkSupported, apkRestore, apkDownload, apkCanInstall, apkAllow, apkInstall, onAppResume, healthState, healthConnect, healthSettings, healthSteps, healthFoodItems, healthBody, shareText, copyText, pushSupported, pushPermission, pushChannel, pushToken, pushTokenWhy, pushDeleteToken, onPushTap, onPushToken, onPushReceived, hzSupported, hzInfo, hzSet, isPlay, playCheck, playOpenStore, playUpdate, PLAY_STORE_LINK, updTopic, onAppUrl, installCheck, openNotifSettings, showNotif } from "./native.js";
 import { cloud, NICK_RE, SHARE_BASE, cleanCode, fmtCode } from "./cloud-lazy.js";
 import { QUICK as EMO_QUICK, EMOJI } from "./emoji.js";
 import { mergeAll, syncKey, withIds, entryId, stable, SYNC_SETTINGS, kcalShared } from "./sync.js";
@@ -2537,7 +2537,7 @@ function ApkUpdateCard({ info, busy, onClose, inMenu }) {
   // 1.6.5: an app from Google Play only says that Play has a newer version (never GitHub); the button to the store
   // page comes with PLAY_STORE_LINK once the app is public (Michael, Oct 17)
   const play = !!info.play;
-  const download = () => { sfxTap(); if (play) playOpenStore(); else if (inApp && info.url) apkDownload(info); else openExternal(info.url || "https://github.com/mikydon/hw-app/releases/latest"); };
+  const download = () => { sfxTap(); if (play) playUpdate(info); else if (inApp && info.url) apkDownload(info); else openExternal(info.url || "https://github.com/mikydon/hw-app/releases/latest"); };
   const install = async () => { sfxTap(); if (!(await apkCanInstall())) { setPerm(true); return; } setPerm(false); apkInstall(); };
   const pct = Math.max(0, Math.min(100, Math.round(s.pct || 0)));
   const col = s.kind === "error" ? "#ff8a80" : s.kind === "ready" ? C.mint : s.kind === "downloading" ? C.sky : C.mint;
@@ -2554,7 +2554,9 @@ function ApkUpdateCard({ info, busy, onClose, inMenu }) {
           </div>
           {s.kind === "idle" && <>
             <div style={{ fontSize: 12, color: C.dim, lineHeight: 1.45, marginTop: 2 }}>{T(play ? "playUpdBody" : inApp ? "apkUpdBody" : "apkUpdBodyWeb")}</div>
-            {(!play || PLAY_STORE_LINK) && <button onClick={download} data-apk-download style={link}>{T(play ? "playUpdBtn" : "apkUpdBtn")} <Arrow size="1.25em" style={{ verticalAlign: "-0.08em" }} /></button>}
+            {play && PLAY_STORE_LINK ? (busy ? <div data-apk-busy style={{ fontSize: 12, color: C.signal, lineHeight: 1.45, marginTop: 4 }}>{T("apkBusy")}</div>
+              : <button onClick={download} data-apk-download data-play-update style={solid}>{T("playUpdNow")}</button>)
+              : !play && <button onClick={download} data-apk-download style={link}>{T("apkUpdBtn")} <Arrow size="1.25em" style={{ verticalAlign: "-0.08em" }} /></button>}
           </>}
           {s.kind === "downloading" && <>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 8 }}>
@@ -9637,7 +9639,9 @@ export default function App() {
   }, [acct.st, acct.prof && acct.prof.code, settings.push, settings.lang, (social.blocked || []).join(","), permSeq]);
   // A tap on a notification: straight to that chat, or to Friends for a request (also when it started the app).
   useEffect(() => onPushTap(d => {
-    if (d.kind === "test" || d.kind === "upd") return; // the test and "new version" notifications only open the app
+    if (d.kind === "test") return; // the test notification only opens the app
+    // 1.8.1 (Michael): "new version" opens Home with the update card (even if it was closed), Play asked again
+    if (d.kind === "upd") { setScreen("train"); setMenuOpen(false); if (session) setSessionOpen(false); setApkHidden(false); setUpdSeq(n => n + 1); return; }
     setScreen("friends"); setMenuOpen(false); const who = d.uid || d.from; setChatWith(d.kind === "msg" && who ? who : null);
     if (session) setSessionOpen(false);
   }), [session]);
@@ -9855,6 +9859,7 @@ export default function App() {
   const [apkUpd, setApkUpd] = useState(null);
   // ✕ on Home only hides the cards; the update stays in the ☰ menu (1.5.3, Michael: after ✕ the only way was GitHub)
   const [apkHidden, setApkHidden] = useState(false);
+  const [updSeq, setUpdSeq] = useState(0); // 1.8.1: a "new version" notification tap asks Play again
   const [dlHidden, setDlHidden] = useState(false);
   const [dl, setDl] = useState(null); // small update: {kind: downloading|ready, v, pct, id}
   const [gh, setGh] = useState(() => (lastGh() || {}).v || null); // newest version on GitHub
@@ -9881,6 +9886,7 @@ export default function App() {
       apkRestore(a && a.version); // an APK downloaded earlier is ready again; old ones are deleted
     }).catch(() => {});
   }, [loaded]);
+  useEffect(() => { if (updSeq && isNative) playCheck().then(a => { if (a) setApkUpd(a); }).catch(() => {}); }, [updSeq]);
   const resume = () => { sfxTap(); setMenuOpen(false); setSessionOpen(true); };
   // 1.7.0: on a wide screen the menu is a side panel that stays open (not during the setup or an open workout)
   const side = useSide();

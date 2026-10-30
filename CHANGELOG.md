@@ -16,6 +16,7 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 - The guide no longer points at something you can't see: when you swipe to the other page or have the menu open, it brings the right page back first. A box taller than the screen is lit from its top on down (the bubble floats at the bottom) instead of being cut through a row, and the page can't be scrolled or swiped under the guide.
 - Next in the guide no longer pauses for a few seconds when an optional part isn't on the screen (no calorie profile, signed out…).
 - The guide can be started again from the start (☰ → Guide → Start the guide again: every screen shows its chapter again), a finished chapter has an Again button, and the first start after an update asks once, in a box in the middle of the screen, whether to go through the guide again.
+- Google Play: the "new version" card has an Update now button that runs Google Play's in-app update (Play downloads and installs, the app restarts); where Play doesn't allow that, it opens the app's Play Store page. Not during a workout. Tapping the "new version" notification opens Home with this card, even if it was closed. *(Android app only)*
 - Back from the workout settings (Home → Exercises → Exercises settings) takes you back to Home's Exercises page, not to Settings.
 - Name effects like Glow are no longer cut off at the edges of the name.
 

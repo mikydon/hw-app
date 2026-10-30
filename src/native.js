@@ -335,8 +335,11 @@ export async function apkInstall() {
 // requires) and must never send people to GitHub. Play's own in-app update API (Play Core, through
 // @capawesome/capacitor-app-update) says whether Play has a newer version for this user; the app only shows that
 // (Michael: for now just show it; opening the store page comes once the app is public, PLAY_STORE_LINK).
+// 1.8.1 (Michael, Oct 30: "let them tap Update and go straight to Play"): on. The closed test's testers see the app in
+// Play too. "Update" runs Play's own update screen inside the app (immediate in-app update: Play downloads and
+// installs, then the app restarts); where Play doesn't allow that, the app's page in the Play Store opens.
 // Play reports a version code; ours is major·1000000 + minor·10000 + patch·100 + 4th (.github/scripts/version.mjs).
-export const PLAY_STORE_LINK = false;
+export const PLAY_STORE_LINK = true;
 export const verFromCode = c => {
   const n = Number(c) || 0, a = Math.floor(n / 1e6), b = Math.floor(n / 1e4) % 100, p = Math.floor(n / 100) % 100, q = n % 100;
   return n ? (q ? `${a}.${b}.${p}.${q}` : `${a}.${b}.${p}`) : "";
@@ -348,11 +351,20 @@ export async function playCheck() {
   try {
     const i = await AppUpdate.getAppUpdateInfo();
     const v = verFromCode(i.availableVersionCode);
-    if (v && (i.updateAvailability === 2 || i.updateAvailability === 3)) return { version: v, play: true }; // available / in progress
+    if (v && (i.updateAvailability === 2 || i.updateAvailability === 3)) return { version: v, play: true, immediate: i.immediateUpdateAllowed !== false }; // available / in progress
   } catch (_) {}
   return null;
 }
 export async function playOpenStore() { try { await AppUpdate.openAppStore(); } catch (_) {} }
+// "Update": Play's update screen in the app (result 0 = OK, 1 = cancelled by the user: then nothing more);
+// anything else (not allowed, failed, an older APK without the plugin) → the Play Store page.
+export async function playUpdate(info) {
+  if (info && info.immediate !== false) {
+    try { const r = await AppUpdate.performImmediateUpdate(); if (r && (r.code === 0 || r.code === 1)) return r.code === 0 ? "ok" : "cancel"; } catch (_) {}
+  }
+  await playOpenStore();
+  return "store";
+}
 
 // 1.6.5: links the app owns (App Links: https://mikydon.github.io/hw-app/add/…). A link tapped while the app runs
 // arrives as appUrlOpen; a link that started the app is its launch URL (handled once, a reload doesn't repeat it).
