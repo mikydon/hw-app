@@ -491,6 +491,14 @@ export async function showNotif({ title, body, channel = "social", channelName, 
 }
 // 1.7.5: this app's notification settings in Android (when Android won't ask any more). false = couldn't open them
 // (an older APK without the method): the line under the switch still says where to go.
+// 1.8.1: the theme's background colour behind the page (window + WebView), so nothing navy shows while the keyboard
+// slides in. Older APKs don't have it (the call just fails).
+let lastBg = "";
+export function setNativeBg(color) {
+  if (!isNative || !color || color === lastBg || !Capacitor.isPluginAvailable("HwBuild")) return;
+  lastBg = color;
+  HwBuild.setBg({ color }).catch(() => {});
+}
 export async function openNotifSettings() {
   if (!isNative || !Capacitor.isPluginAvailable("HwBuild")) return false;
   try { await HwBuild.openNotifSettings(); return true; } catch (_) { return false; }

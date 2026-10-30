@@ -1,6 +1,6 @@
 import { useState, useEffect, useLayoutEffect, useRef, useMemo, useId, memo, Fragment } from "react";
 import { createPortal } from "react-dom";
-import { isNative, pushBack, setRootBack, exitApp, vibratePattern, keepScreenOn, openExternal, saveBackupFile, bkSupported, bkWrite, bkWriteAuto, bkList, bkRead, bkDelete, bkShare, BK_DIR, bkAutoFile, checkForUpdate, lastUpdate, lastGh, applyUpdateNow, latestApk, isTestBuild, apkState, onApk, apkSupported, apkRestore, apkDownload, apkCanInstall, apkAllow, apkInstall, onAppResume, healthState, healthConnect, healthSettings, healthSteps, healthFoodItems, healthBody, shareText, copyText, pushSupported, pushPermission, pushChannel, pushToken, pushTokenWhy, pushDeleteToken, onPushTap, onPushToken, onPushReceived, hzSupported, hzInfo, hzSet, isPlay, playCheck, playOpenStore, playUpdate, PLAY_STORE_LINK, updTopic, onAppUrl, installCheck, openNotifSettings, showNotif } from "./native.js";
+import { isNative, pushBack, setRootBack, exitApp, vibratePattern, keepScreenOn, openExternal, saveBackupFile, bkSupported, bkWrite, bkWriteAuto, bkList, bkRead, bkDelete, bkShare, BK_DIR, bkAutoFile, checkForUpdate, lastUpdate, lastGh, applyUpdateNow, latestApk, isTestBuild, apkState, onApk, apkSupported, apkRestore, apkDownload, apkCanInstall, apkAllow, apkInstall, onAppResume, healthState, healthConnect, healthSettings, healthSteps, healthFoodItems, healthBody, shareText, copyText, pushSupported, pushPermission, pushChannel, pushToken, pushTokenWhy, pushDeleteToken, onPushTap, onPushToken, onPushReceived, hzSupported, hzInfo, hzSet, isPlay, playCheck, playOpenStore, playUpdate, PLAY_STORE_LINK, updTopic, onAppUrl, installCheck, openNotifSettings, showNotif, setNativeBg } from "./native.js";
 import { cloud, NICK_RE, SHARE_BASE, cleanCode, fmtCode } from "./cloud-lazy.js";
 import { QUICK as EMO_QUICK, EMOJI } from "./emoji.js";
 import { mergeAll, syncKey, withIds, entryId, stable, SYNC_SETTINGS, kcalShared } from "./sync.js";
@@ -8482,7 +8482,13 @@ function tourPageOf(e) {
 // 1.8.1 (Michael: a tall box lit only down to a row looked "bitten off"): a box that can't fit on the screen together
 // with the bubble is scrolled to just under the top bar and lit from there past the bottom edge of the screen (it simply
 // goes on below); the bubble then floats at the bottom over it.
-const tourTall = h => h > innerHeight - 330;
+// 1.8.1 (Michael, 23:34: the Shop box was put right under the top bar and its top got cut): the space for the guide
+// starts under the real top bar (status bar included); the box and its bubble are centred in it.
+const tourTopGap = () => { const b = document.querySelector("[data-topbar]"); const y = b ? b.getBoundingClientRect().bottom : 0; return Math.max(56, Math.min(innerHeight * 0.3, y)) + 8; };
+// the bubble's height, guessed from its text (it isn't drawn yet when the page is scrolled): ~7.6 px a character
+const tourBubH = (text, done) => { const w = Math.min(innerWidth - 24, 400) - 32; return 104 + Math.max(1, Math.ceil(((text || "").length * 7.6) / w)) * 22.5 + (done ? 56 : 0); };
+// too tall to show together with its bubble: lit from its top on down, the bubble floats at the bottom
+const tourTall = (h, bub = 230) => h + 14 + bub > innerHeight - tourTopGap() - 12;
 async function tourTab(name, i) { const b = tourFind(`[data-${name}-tab="${i}"]`); if (b && b.getAttribute("aria-selected") !== "true") { b.click(); await tourWait(420); } }
 // The steps of a chapter. A step: sel (what to light up), t (text), tap (moves on with the real tap), opt (left out when
 // it isn't there), prep (runs first: go to a screen, open the menu…), done (the chapter's last bubble).
@@ -8607,7 +8613,8 @@ function Tour({ run, x, done, onStep, onEnd, onChapterDone, onStart }) {
     setReady(false); setEl(null); setRect(null);
     (async () => {
       if (step.prep) { try { await step.prep(); } catch (_) {} }
-      else if (!step.keepMenu && x.menuOpen && x.menuOpen()) { x.menu(false); await tourWait(320); }
+      // 1.8.1 (Michael's screenshot: the ☰ menu was open over the lit badge): after any prep too, the menu is closed
+      if (!step.keepMenu && x.menuOpen && x.menuOpen()) { x.menu(false); await tourWait(320); }
       if (dead) return;
       if (step.done) { const n = onChapterDone(run.ch); setDoneNow(n); }
       if (!step.sel) { setReady(true); return; }
@@ -8622,12 +8629,16 @@ function Tour({ run, x, done, onStep, onEnd, onChapterDone, onStart }) {
       if (!e) { if (step.opt) next(); else setReady(true); return; }
       const pg = tourPageOf(e);
       if (pg) { await tourTab(pg[0], pg[1]); if (dead) return; }
-      const r = e.getBoundingClientRect();
-      // a box taller than half the screen: its top goes just under the top bar and only that part is lit
-      if (tourTall(r.height)) { if (Math.abs(r.top - 90) > 4) { window.scrollBy(0, r.top - 90); await tourWait(60); } }
-      else if (r.top < 80 || r.bottom > innerHeight - 40) { e.scrollIntoView({ block: "center", behavior: "instant" }); await tourWait(60); }
-      // no room for the bubble above or below it: its top goes just under the top bar, the bubble below (it fits: not tall)
-      { const q = e.getBoundingClientRect(); if (innerHeight - q.bottom < 250 && q.top - 80 < 250 && Math.abs(q.top - 90) > 4) { window.scrollBy(0, q.top - 90); await tourWait(60); } }
+      const r = e.getBoundingClientRect(), TB = tourTopGap(), bub = tourBubH(step.t, step.done), avail = innerHeight - TB - 12;
+      let want = null;
+      if (tourTall(r.height, bub)) want = TB + 4; // its top just under the top bar, lit on down
+      else {
+        // fine where it is: fully under the top bar with room for the bubble below or above it
+        const fine = r.top >= TB && r.bottom <= innerHeight - 12 && (innerHeight - r.bottom - 12 >= bub + 14 || r.top - TB >= bub + 14);
+        if (!fine) want = TB + Math.max(0, (avail - (r.height + 14 + bub)) / 2); // the box and its bubble in the middle
+      }
+      if (e.closest("[data-topbar], .drawerPanel, [data-side-nav]")) want = null; // fixed places: nothing to scroll
+      if (want !== null && Math.abs(r.top - want) > 4) { window.scrollBy(0, r.top - want); await tourWait(60); }
       if (dead) return;
       shown.current = run.i; setEl(e); setReady(true);
     })();
@@ -8639,13 +8650,14 @@ function Tour({ run, x, done, onStep, onEnd, onChapterDone, onStart }) {
     let raf = 0, last = "", gone = 0, pulling = false;
     const loop = () => {
       setHold(!!document.querySelector("[data-reveal]"));
+      if (!step.keepMenu && !step.tap && x.menuOpen && x.menuOpen() && !document.querySelector("[data-reveal]")) x.menu(false); // a tap step may open it itself (☰)
       if (el) {
         if (!el.isConnected) { if (++gone > 3) { next(); return; } }
         else {
           const pg = tourPageOf(el);
           if (pg && !pulling) { pulling = true; tourTab(pg[0], pg[1]).finally(() => { pulling = false; }); }
           const r = el.getBoundingClientRect();
-          const open = tourTall(r.height), h = open ? Math.min(r.height + 6, innerHeight + 60 - r.top) : r.height;
+          const open = tourTall(r.height, tourBubH(step.t, step.done)), h = open ? Math.min(r.height + 6, innerHeight + 60 - r.top) : r.height;
           const k = [r.left, r.top, r.width, h, open].map(Math.round).join(",");
           if (k !== last) { last = k; setRect({ l: r.left, t: r.top, w: r.width, h, open }); }
         }
@@ -8669,9 +8681,10 @@ function Tour({ run, x, done, onStep, onEnd, onChapterDone, onStart }) {
   const vw = innerWidth, vh = innerHeight, pad = 6;
   const hole = rect && { l: Math.max(4, rect.l - pad), t: Math.max(4, rect.t - pad), r: Math.min(vw - 4, rect.l + rect.w + pad), b: rect.open ? rect.t + rect.h : Math.min(vh - 4, rect.t + rect.h + pad), open: rect.open };
   // below or above the lit box, where there is room; with room for neither it floats at the bottom like a tall box's
-  const roomB = hole ? vh - hole.b : 0, roomA = hole ? hole.t : 0;
-  const below = hole && roomB >= 240 && (roomA < 240 || (hole.t + hole.b) / 2 < vh * 0.55);
-  const float = hole && !hole.open && roomB < 240 && roomA < 240;
+  const need = tourBubH(step.t, step.done) + 14, TB = tourTopGap();
+  const roomB = hole ? vh - hole.b - 8 : 0, roomA = hole ? hole.t - 12 : 0;
+  const below = hole && roomB >= need && (roomA < need || (hole.t + hole.b) / 2 < vh * 0.55);
+  const float = hole && !hole.open && roomB < need && roomA < need;
   const dim = "rgba(3,8,20,.72)";
   const block = e => { e.stopPropagation(); e.preventDefault(); };
   const nSteps = steps.filter(z => !z.done).length, pos = steps.slice(0, run.i + 1).filter(z => !z.done).length;
@@ -9232,6 +9245,7 @@ export default function App() {
     return "train";
   });
   const [menuOpen, setMenuOpen] = useState(false);
+  const menuOpenRef = useRef(false); menuOpenRef.current = menuOpen; // 1.8.1: the guide reads it from inside its loops
   // A running workout can be minimized to the mini player; it stays mounted (hidden), so timers and sounds go on.
   const [sessionOpen, setSessionOpen] = useState(true);
   const [live, setLive] = useState(null);
@@ -9256,6 +9270,7 @@ export default function App() {
   if (LOOK === "liquid") sectionTitle = { ...sectionTitle, color: `${C.chalk}b3` };
   // The liquid background sits at z-index -1: it shows only when body has no background of its own (html keeps the colour).
   try { document.documentElement.style.background = C.ink; document.body.style.background = LOOK === "liquid" || LOOK === "glass" ? "transparent" : C.ink; } catch (_) {}
+  setNativeBg(C.ink);
   applyLang(settings.lang || detectLang());
   const setSettings = n => { setSettingsState(n); saveSettings(n); };
   const [profLoaded, setProfLoaded] = useState(false);
@@ -9906,7 +9921,7 @@ export default function App() {
   const tourX = {
     go: async id => { if (session && sessionOpen) setSessionOpen(false); go(id); await tourWait(450); },
     menu: open => { if (!sideOn) setMenuOpen(open); },
-    menuOpen: () => menuOpen,
+    menuOpen: () => menuOpenRef.current,
   };
   const tourChapterDone = ch => {
     const d = tourDoneSet(profRef.current);

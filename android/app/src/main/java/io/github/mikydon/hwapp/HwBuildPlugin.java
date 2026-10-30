@@ -32,6 +32,25 @@ public class HwBuildPlugin extends Plugin {
     }
 
     /**
+     * 1.8.1 (Michael, Oct 30: a navy box showed behind the keyboard while it slid up): the window and the WebView
+     * kept the default navy (#0E1B36) from the start, which shows wherever the page doesn't reach yet (the keyboard
+     * resizes the WebView while it animates). The app sends the current theme's background colour here.
+     */
+    @PluginMethod
+    public void setBg(PluginCall call) {
+        final String hex = call.getString("color", "");
+        final int color;
+        try { color = android.graphics.Color.parseColor(hex); } catch (Exception e) { call.reject("bad colour"); return; }
+        getActivity().runOnUiThread(() -> {
+            try {
+                getActivity().getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(color));
+                if (getBridge() != null && getBridge().getWebView() != null) getBridge().getWebView().setBackgroundColor(color);
+                call.resolve();
+            } catch (Exception e) { call.reject("failed: " + e.getMessage()); }
+        });
+    }
+
+    /**
      * 1.7.5 (Michael, Oct 23): when Android won't ask for notifications any more (the person refused), the app sends
      * them straight to this app's notification settings (Android 8+), else to the app's info page.
      */
