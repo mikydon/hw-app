@@ -8477,23 +8477,10 @@ function tourPageOf(e) {
   const a = [...pg.attributes].find(x => /^data-.+-page$/.test(x.name));
   return a ? [a.name.slice(5, -5), a.value] : null;
 }
-// A box taller than half the screen is lit only down to the end of the last row that fits (never cut through a row).
-function tourCut(e, top, max) {
-  // walk the rows in order; a block too tall to fit is opened up and its own rows are walked
-  let bottom = top;
-  const walk = el => {
-    for (const k of el.children) {
-      const r = k.getBoundingClientRect();
-      if (r.height <= 0) continue;
-      if (r.bottom - top <= max) { bottom = Math.max(bottom, r.bottom); continue; }
-      if (k.children.length > 1 && r.top - top < max) walk(k);
-      return true; // the rest doesn't fit
-    }
-    return false;
-  };
-  walk(e);
-  return bottom > top + 20 ? bottom : top + max;
-}
+// 1.8.1 (Michael: a tall box lit only down to a row looked "bitten off"): a box that can't fit on the screen together
+// with the bubble is scrolled to just under the top bar and lit from there past the bottom edge of the screen (it simply
+// goes on below); the bubble then floats at the bottom over it.
+const tourTall = h => h > innerHeight - 330;
 async function tourTab(name, i) { const b = tourFind(`[data-${name}-tab="${i}"]`); if (b && b.getAttribute("aria-selected") !== "true") { b.click(); await tourWait(420); } }
 // The steps of a chapter. A step: sel (what to light up), t (text), tap (moves on with the real tap), opt (left out when
 // it isn't there), prep (runs first: go to a screen, open the menu…), done (the chapter's last bubble).
@@ -8513,8 +8500,8 @@ function tourSteps(ch, x) {
     { done: true, t: T("tourAutoD"), keepMenu: true },
   ];
   if (ch === 2) return [
-    s('[data-claim-row="ach:guide"]', 0, { tap: true, opt: true, prep: screen("profile", ["pf", 1]) }),
-    s('[data-ach-row="guide"]', 1, { opt: true, prep: async () => { await tourWaitGone("[data-reveal]"); await tourWait(500); } }),
+    s('[data-claim-row="ach:guide"]', 0, { tap: true, opt: true, wait: 300, prep: screen("profile", ["pf", 1]) }),
+    s('[data-ach-row="guide"]', 1, { opt: true, prep: async () => { if (!document.querySelector("[data-reveal], [data-claim-row]")) return; await tourWait(250); await tourWaitGone("[data-reveal]"); await tourWait(400); } }),
     s("[data-claim-row]", 2, { opt: true }),
     { done: true, t: X[3] },
   ];
@@ -8547,7 +8534,7 @@ function tourSteps(ch, x) {
   ];
   // 1.8.0 (Michael: "let them tap so the screen slides, then explain what they see, not the buttons on top")
   if (ch === 6) return [
-    s("[data-kcsetup]", 0, { opt: true, wait: 1200, prep: screen("calories", ["kc", 0]) }),
+    s("[data-kcsetup]", 0, { opt: true, wait: 1200, skipIf: "[data-kctoday], [data-kc-tabs]", prep: screen("calories", ["kc", 0]) }),
     s("[data-kc-streak-card]", 1, { opt: true, wait: 600 }),
     s("[data-kctoday]", 2, { opt: true, wait: 600 }),
     s("[data-health-card]", 3, { opt: true, wait: 400 }),
@@ -8573,8 +8560,8 @@ function tourSteps(ch, x) {
     { done: true, t: X[4] },
   ];
   if (ch === 7) return [ // friends
-    s("[data-fr-signin]", 0, { opt: true, wait: 1500, prep: screen("friends") }),
-    s("[data-fr-code]", 1, { opt: true, wait: 1500 }),
+    s("[data-fr-signin]", 0, { opt: true, wait: 1500, skipIf: "[data-fr-code], [data-fr-main]", prep: screen("friends") }),
+    s("[data-fr-code]", 1, { opt: true, wait: 1500, late: true, skipIf: "[data-fr-signin]" }),
     s('[data-seg="friends"]', 2, { tap: true, opt: true, wait: 400, t: tt(2, "frFriends") }),
     s('[data-fr-view="friends"]', 3, { opt: true, wait: 600 }),
     s('[data-seg="board"]', 4, { tap: true, opt: true, wait: 400, t: tt(4, "frBoard") }),
@@ -8597,9 +8584,20 @@ function Tour({ run, x, done, onStep, onEnd, onChapterDone, onStart }) {
   const [hold, setHold] = useState(false);
   const [doneNow, setDoneNow] = useState(null); // the badge level this chapter brought
   const live = useRef({ run, steps }); live.current = { run, steps };
+  const shown = useRef(-1); // the last step whose target was really lit (a skipped tap step changed nothing)
   const next = () => onStep(run.i + 1 < steps.length ? run.i + 1 : null);
   useBack(() => onEnd(true), true);
   useEffect(() => { const k = e => { if (e.key === "Escape") onEnd(true); }; window.addEventListener("keydown", k); return () => window.removeEventListener("keydown", k); }, []);
+  // 1.8.1 (Michael's video: Badges and Muscle Deck scrolled under the guide while the light stayed): the person can't
+  // scroll or swipe while a bubble is shown; the guide scrolls and switches pages itself. Not while a reward card is open.
+  useEffect(() => {
+    if (hold) return;
+    const stop = e => { if (e.cancelable) e.preventDefault(); };
+    const keys = e => { if (/^(ArrowUp|ArrowDown|ArrowLeft|ArrowRight|PageUp|PageDown|Home|End| )$/.test(e.key) && !(e.target && e.target.closest && e.target.closest("input,textarea,[contenteditable]"))) e.preventDefault(); };
+    const o = { passive: false, capture: true };
+    window.addEventListener("wheel", stop, o); window.addEventListener("touchmove", stop, o); window.addEventListener("keydown", keys, true);
+    return () => { window.removeEventListener("wheel", stop, o); window.removeEventListener("touchmove", stop, o); window.removeEventListener("keydown", keys, true); };
+  }, [hold]);
   // prepare the step: run its prep, find what to light up (it may still be appearing), scroll it into view
   useEffect(() => {
     if (!step) return;
@@ -8611,18 +8609,25 @@ function Tour({ run, x, done, onStep, onEnd, onChapterDone, onStart }) {
       if (dead) return;
       if (step.done) { const n = onChapterDone(run.ch); setDoneNow(n); }
       if (!step.sel) { setReady(true); return; }
+      // 1.8.1 (Michael: "I tap Next and nothing happens for ~3 s"): a missing optional target was waited for every time.
+      // Only right after something changed (the chapter's start, a prep, a tap) can a target still be on its way;
+      // otherwise the screen is settled and a missing one is skipped at once. skipIf = proof it won't come.
+      const prev = steps[run.i - 1], moved = run.i === 0 || !!step.prep || !!(prev && prev.tap && shown.current === run.i - 1);
+      const lim = moved || step.late ? (step.wait || 2500) : 30;
       const t0 = Date.now(); let e = null;
-      while (!dead && Date.now() - t0 < (step.wait || 2500)) { e = tourFind(step.sel); if (e) break; await tourWait(80); }
+      for (let first = true; !dead && (first || Date.now() - t0 < lim); first = false) { e = tourFind(step.sel); if (e) break; if (step.skipIf && Date.now() - t0 > 120 && document.querySelector(step.skipIf)) break; await tourWait(40); }
       if (dead) return;
       if (!e) { if (step.opt) next(); else setReady(true); return; }
       const pg = tourPageOf(e);
       if (pg) { await tourTab(pg[0], pg[1]); if (dead) return; }
       const r = e.getBoundingClientRect();
       // a box taller than half the screen: its top goes just under the top bar and only that part is lit
-      if (r.height > innerHeight * 0.5) { if (Math.abs(r.top - 90) > 4) { window.scrollBy(0, r.top - 90); await tourWait(60); } }
+      if (tourTall(r.height)) { if (Math.abs(r.top - 90) > 4) { window.scrollBy(0, r.top - 90); await tourWait(60); } }
       else if (r.top < 80 || r.bottom > innerHeight - 40) { e.scrollIntoView({ block: "center", behavior: "instant" }); await tourWait(60); }
+      // no room for the bubble above or below it: its top goes just under the top bar, the bubble below (it fits: not tall)
+      { const q = e.getBoundingClientRect(); if (innerHeight - q.bottom < 250 && q.top - 80 < 250 && Math.abs(q.top - 90) > 4) { window.scrollBy(0, q.top - 90); await tourWait(60); } }
       if (dead) return;
-      setEl(e); setReady(true);
+      shown.current = run.i; setEl(e); setReady(true);
     })();
     return () => { dead = true; };
   }, [run.ch, run.i]);
@@ -8638,9 +8643,9 @@ function Tour({ run, x, done, onStep, onEnd, onChapterDone, onStart }) {
           const pg = tourPageOf(el);
           if (pg && !pulling) { pulling = true; tourTab(pg[0], pg[1]).finally(() => { pulling = false; }); }
           const r = el.getBoundingClientRect();
-          const cut = r.height > innerHeight * 0.5 ? tourCut(el, r.top, innerHeight * 0.42) - r.top : r.height;
-          const k = [r.left, r.top, r.width, cut].map(Math.round).join(",");
-          if (k !== last) { last = k; setRect({ l: r.left, t: r.top, w: r.width, h: cut }); }
+          const open = tourTall(r.height), h = open ? Math.min(r.height + 6, innerHeight + 60 - r.top) : r.height;
+          const k = [r.left, r.top, r.width, h, open].map(Math.round).join(",");
+          if (k !== last) { last = k; setRect({ l: r.left, t: r.top, w: r.width, h, open }); }
         }
       }
       raf = requestAnimationFrame(loop);
@@ -8660,8 +8665,11 @@ function Tour({ run, x, done, onStep, onEnd, onChapterDone, onStart }) {
   const tap = step.tap && el;
   const go = () => { sfxTap(); if (tap) el.click(); else next(); };
   const vw = innerWidth, vh = innerHeight, pad = 6;
-  const hole = rect && { l: Math.max(4, rect.l - pad), t: Math.max(4, rect.t - pad), r: Math.min(vw - 4, rect.l + rect.w + pad), b: Math.min(vh - 4, rect.t + rect.h + pad) };
-  const below = hole && (hole.t + hole.b) / 2 < vh * 0.55;
+  const hole = rect && { l: Math.max(4, rect.l - pad), t: Math.max(4, rect.t - pad), r: Math.min(vw - 4, rect.l + rect.w + pad), b: rect.open ? rect.t + rect.h : Math.min(vh - 4, rect.t + rect.h + pad), open: rect.open };
+  // below or above the lit box, where there is room; with room for neither it floats at the bottom like a tall box's
+  const roomB = hole ? vh - hole.b : 0, roomA = hole ? hole.t : 0;
+  const below = hole && roomB >= 240 && (roomA < 240 || (hole.t + hole.b) / 2 < vh * 0.55);
+  const float = hole && !hole.open && roomB < 240 && roomA < 240;
   const dim = "rgba(3,8,20,.72)";
   const block = e => { e.stopPropagation(); e.preventDefault(); };
   const nSteps = steps.filter(z => !z.done).length, pos = steps.slice(0, run.i + 1).filter(z => !z.done).length;
@@ -8670,7 +8678,7 @@ function Tour({ run, x, done, onStep, onEnd, onChapterDone, onStart }) {
   const nxt = step.done && run.queue && run.queue.length ? run.queue.find(c => !done.has(c) && c !== run.ch) || null : null;
   const bw = Math.min(vw - 24, 400), bl = hole ? Math.max(12, Math.min(vw - bw - 12, (hole.l + hole.r) / 2 - bw / 2)) : (vw - bw) / 2;
   const arrowX = hole ? Math.max(18, Math.min(bw - 18, (hole.l + hole.r) / 2 - bl)) : null;
-  const bubblePos = !hole ? { top: "50%", transform: "translateY(-50%)" } : below ? { top: hole.b + 14 } : { bottom: vh - hole.t + 14 };
+  const bubblePos = !hole ? { top: "50%", transform: "translateY(-50%)" } : hole.open || float ? { bottom: "calc(16px + var(--sab, 0px))" } : below ? { top: hole.b + 14 } : { bottom: vh - hole.t + 14 };
   return createPortal(
     <div data-tour={run.ch} data-tour-step={run.i} data-tour-done={step.done ? 1 : 0} style={{ position: "fixed", inset: 0, zIndex: 110, fontFamily: BODY, pointerEvents: "none" }}>
       {hole ? <>
@@ -8682,7 +8690,7 @@ function Tour({ run, x, done, onStep, onEnd, onChapterDone, onStart }) {
         <div aria-hidden="true" className="tourRing" style={{ position: "absolute", left: hole.l, top: hole.t, width: hole.r - hole.l, height: hole.b - hole.t, borderRadius: 16, boxShadow: `0 0 0 2px ${C.signal}, 0 0 22px ${C.signal}88`, pointerEvents: "none" }} />
       </> : <div onClick={block} style={{ position: "absolute", inset: 0, background: dim, pointerEvents: "auto" }} />}
       <div role="dialog" aria-live="polite" aria-label={title} data-tour-bubble className="tourIn" style={{ pointerEvents: "auto", position: "absolute", left: bl, width: bw, boxSizing: "border-box", ...bubblePos, background: C.panelHi, border: `1.5px solid ${C.signal}`, borderRadius: 18, padding: "14px 16px 12px", color: C.chalk, boxShadow: "0 18px 50px rgba(0,0,0,.55)" }}>
-        {hole && <span aria-hidden="true" style={{ position: "absolute", left: arrowX - 8, [below ? "top" : "bottom"]: -9, width: 16, height: 16, background: C.panelHi, borderLeft: `1.5px solid ${C.signal}`, borderTop: `1.5px solid ${C.signal}`, transform: `rotate(${below ? 45 : 225}deg)` }} />}
+        {hole && !hole.open && !float && <span aria-hidden="true" style={{ position: "absolute", left: arrowX - 8, [below ? "top" : "bottom"]: -9, width: 16, height: 16, background: C.panelHi, borderLeft: `1.5px solid ${C.signal}`, borderTop: `1.5px solid ${C.signal}`, transform: `rotate(${below ? 45 : 225}deg)` }} />}
         <div style={{ display: "flex", alignItems: "baseline", gap: 8, fontSize: 11, fontWeight: 800, letterSpacing: 0.8, textTransform: "uppercase", color: C.signal }}>
           <span style={{ flex: 1, minWidth: 0 }}>{title}</span>
           {!step.done && <span data-tour-pos style={{ color: C.dim, flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>{pos} / {nSteps}</span>}
@@ -8695,7 +8703,8 @@ function Tour({ run, x, done, onStep, onEnd, onChapterDone, onStart }) {
         )}
         <div data-tour-text style={{ fontSize: 15, lineHeight: 1.5, marginTop: 8 }}>{step.t || ""}</div>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 14 }}>
-          <button type="button" data-tour-skip onClick={() => { sfxTap(); onEnd(!step.done); }} style={{ ...btnBase, background: "transparent", color: C.dim, padding: "8px 2px", fontSize: 13, fontWeight: 700 }}>{step.done ? T("tourLater") : T("tourSkip")}</button>
+          {step.done && <button type="button" data-tour-again onClick={() => { sfxTap(); onStart(run.ch, run.queue); }} aria-label={T("tourAgainBtn")} style={{ ...btnBase, background: "transparent", color: C.signal, padding: "8px 2px", fontSize: 13, fontWeight: 800, display: "inline-flex", alignItems: "center", gap: 5 }}><svg width="15" height="15" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.4-5.7M4 4v5h5" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" /></svg>{T("tourAgainBtn")}</button>}
+          {(!step.done || nxt) && <button type="button" data-tour-skip onClick={() => { sfxTap(); onEnd(!step.done); }} style={{ ...btnBase, background: "transparent", color: C.dim, padding: "8px 2px", fontSize: 13, fontWeight: 700 }}>{step.done ? T("tourLater") : T("tourSkip")}</button>}
           <span style={{ flex: 1 }} />
           {step.done ? (
             nxt ? <button type="button" data-tour-next onClick={() => { sfxTap(); onStart(nxt, run.queue.filter(c => c !== nxt)); }} style={{ ...btnBase, background: C.signal, color: C.signalInk, padding: "10px 16px", fontSize: 14 }}>{T("tourNextCh", { t: tourName(nxt) })} <Arrow size={16} style={{ color: C.signalInk, verticalAlign: "-0.05em" }} /></button>
@@ -8711,7 +8720,7 @@ function Tour({ run, x, done, onStep, onEnd, onChapterDone, onStart }) {
 }
 
 // ☰ → Guide: the chapters with ✓, each can be (re)started; the workout chapter is switched on for the next workout.
-function TourSheet({ done, ui, onStart, on3, onClose }) {
+function TourSheet({ done, ui, onStart, on3, onClose, onRestart }) {
   const n = done.size;
   return (
     <Sheet title={T("tourTitle")} onClose={onClose}>
@@ -8732,7 +8741,36 @@ function TourSheet({ done, ui, onStart, on3, onClose }) {
           );
         })}
       </div>
+      <button type="button" data-tour-restart onClick={() => { sfxTap(); onRestart(); }} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), width: "100%", marginTop: 14, fontSize: 16, padding: "12px 14px", borderRadius: 14, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+        <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.4-5.7M4 4v5h5" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
+        {T("tourRestart")}
+      </button>
     </Sheet>
+  );
+}
+
+// 1.8.1 (Michael): after an update, one box in the middle of the screen asks whether to go through the guide again.
+function TourAsk({ onGo, onNo }) {
+  const [on, setOn] = useState(false);
+  useEffect(() => { const r = requestAnimationFrame(() => setOn(true)); return () => cancelAnimationFrame(r); }, []);
+  useBack(onNo, true);
+  const box = LOOK === "glass" ? GLASS() : LOOK === "liquid" ? { ...LIQUID_FLOAT(), borderRadius: 26 } : LOOK === "tiles" ? { ...card, borderRadius: 20, boxShadow: "0 22px 50px rgba(0,0,0,.5)" } : { background: C.panel, border: `1px solid ${C.line}`, borderRadius: 20, boxShadow: "0 22px 50px rgba(0,0,0,.5)" };
+  const title = T("tourAskT");
+  return createPortal(
+    <div data-tour-ask-back style={{ position: "fixed", inset: 0, zIndex: 105, display: "flex", alignItems: "center", justifyContent: "center", padding: "calc(16px + var(--sat)) 16px calc(16px + var(--sab))", background: on ? "rgba(0,0,0,.6)" : "rgba(0,0,0,0)", transition: "background .25s", fontFamily: BODY }}>
+      <div data-tour-ask role="alertdialog" aria-modal="true" aria-label={title}
+        style={{ ...box, width: "min(100%, 380px)", boxSizing: "border-box", padding: "20px 18px 18px", textAlign: "center", opacity: on ? 1 : 0, transform: on ? "scale(1)" : "scale(.92)", transition: `opacity ${MO.t1}, transform ${MO.t3} ${MO.pop}` }}>
+        <div style={{ display: "flex", justifyContent: "center" }}><IcoBox n="compass" size={54} /></div>
+        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: C.dim, marginTop: 12 }}>{T("tourAskV", { v: APP_VERSION })}</div>
+        <div data-tour-ask-title style={{ fontFamily: DISPLAY, fontWeight: 900, fontSize: CJK.test(title) ? 26 : 32, lineHeight: 1, letterSpacing: -0.4, color: C.chalk, marginTop: 6, overflowWrap: "anywhere" }}>{title}</div>
+        <div style={{ fontSize: 14, color: C.dim, marginTop: 10, lineHeight: 1.5 }}>{T("tourAskD")}</div>
+        <div style={{ display: "flex", gap: 8, alignItems: "stretch", marginTop: 18 }}>
+          <button type="button" data-tour-ask-no onClick={() => { sfxTap(); onNo(); }} style={{ ...btnBase, flex: "0 0 auto", padding: "10px 16px", borderRadius: 14, ...SUNK(), color: C.chalk, fontSize: 14, fontWeight: 800 }}>{T("tourSkip")}</button>
+          <button type="button" data-tour-ask-go onClick={() => { sfxTap(); onGo(); }} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), flex: 1, minWidth: 0, fontSize: 16, padding: "10px 10px", borderRadius: 14 }}>{T("tourAskGo")}</button>
+        </div>
+      </div>
+    </div>,
+    document.body
   );
 }
 
@@ -9783,6 +9821,7 @@ export default function App() {
     // From 1.4.2 the app marks its own seenVersion (seenApp), because app 1.4.2 and Browser beta 1.4.2 share the number:
     // a "1.4.2" without the mark was saved by the old website, so that user still gets the big What's new.
     const betaSeen = settings.seenVersion === "1.4.2" && !settings.seenApp;
+    if (settings.seenVersion && verCmp(settings.seenVersion, APP_VERSION) < 0 && history.length > 0) setTourAskDue(true);
     if (!betaSeen && bigVer(settings.seenVersion) === bigVer(APP_VERSION) && verCmp(settings.seenVersion, APP_VERSION) <= 0) {
       // small update: show the card now and remember the version right away, so it's gone next time
       if (newsUnseen(settings.seenVersion)) { setUpdCard(true); setSettings({ ...settings, seenVersion: APP_VERSION, seenApp: true }); }
@@ -9854,6 +9893,9 @@ export default function App() {
   const profRef = useRef(profile); profRef.current = profile;
   const uiRef = useRef(ui); uiRef.current = ui;
   const tourDone = tourDoneSet(profile);
+  // 1.8.1: "Again" restarts the whole guide: ui.tourAuto = chapters seen since then (the badge keeps profile.tourDone)
+  const tourSeen = () => Array.isArray(uiRef.current.tourAuto) ? new Set(uiRef.current.tourAuto) : tourDoneSet(profRef.current);
+  const restartTour = () => { setTourSheet(false); setMenuOpen(false); setTourAsk(false); setUi({ ...uiRef.current, tourOff: false, tourAuto: [], tourAskV: APP_VERSION }); setTourRun({ ch: 1, i: 0, queue: null }); };
   const startTour = (ch, queue) => { setTourSheet(false); setMenuOpen(false); if (uiRef.current.tourOff) setUi({ ...uiRef.current, tourOff: false }); setTourRun({ ch, i: 0, queue: queue || null }); };
   const tourX = {
     go: async id => { if (session && sessionOpen) setSessionOpen(false); go(id); await tourWait(450); },
@@ -9864,13 +9906,16 @@ export default function App() {
     const d = tourDoneSet(profRef.current);
     if (!d.has(ch)) { d.add(ch); setProfile({ ...profRef.current, tourDone: [...d].sort((a, b) => a - b) }); }
     if (ch === 3 && uiRef.current.tour3) setUi({ ...uiRef.current, tour3: false });
+    const a = uiRef.current.tourAuto;
+    if (Array.isArray(a) && !a.includes(ch)) setUi({ ...uiRef.current, tourAuto: [...a, ch] });
     return d.size;
   };
   const endTour = skipped => { setTourRun(null); if (skipped) { setMenuOpen(false); setUi({ ...uiRef.current, tourOff: true }); } }; // finishing Home leaves the ☰ menu open
   // the workout chapter starts with a workout (after the guide was started, or when switched on in the chapter list)
   useEffect(() => {
     if (tourOff() || tourRun || !session || !sessionOpen || session.phase !== "warmup") return;
-    if (!(ui.tour3 || (tourDone.size > 0 && !ui.tourOff && !tourDone.has(3)))) return;
+    const seen = tourSeen();
+    if (!(ui.tour3 || (seen.size > 0 && !ui.tourOff && !seen.has(3)))) return;
     const t = setTimeout(() => setTourRun({ ch: 3, i: 0 }), 600);
     return () => clearTimeout(t);
   }, [session && session.phase, sessionOpen, tourRun, tourDone.size, ui.tour3, ui.tourOff]);
@@ -9880,13 +9925,24 @@ export default function App() {
   useEffect(() => {
     if (tourRun || onboard !== null || !profLoaded || tourOff() || uiRef.current.tourOff) return;
     if (session && sessionOpen) return;
-    const done = tourDoneSet(profRef.current);
+    const done = tourSeen();
     if (!done.has(1)) return;
     const q = (TOUR_SCREEN[screen] || []).filter(c => !done.has(c));
     if (!q.length) return;
     const t = setTimeout(() => setTourRun(r => r || { ch: q[0], i: 0, queue: q.slice(1), auto: true }), 650);
     return () => clearTimeout(t);
-  }, [screen, tourRun, onboard, profLoaded, sessionOpen]);
+  }, [screen, tourRun, onboard, profLoaded, sessionOpen, ui.tourAuto]);
+  // 1.8.1 (Michael): the first start after an update asks in the middle of the screen whether to do the guide again
+  // (not on a new install, not during the setup, a workout, What's new or a running guide; once per version)
+  const [tourAsk, setTourAsk] = useState(false);
+  const [tourAskDue, setTourAskDue] = useState(false);
+  useEffect(() => {
+    if (!tourAskDue || tourAsk || tourRun || newsOpen || onboard !== null || !profLoaded || (session && sessionOpen)) return;
+    if (tourOff() || uiRef.current.tourAskV === APP_VERSION) { setTourAskDue(false); return; }
+    const t = setTimeout(() => setTourAsk(true), 900);
+    return () => clearTimeout(t);
+  }, [tourAskDue, tourAsk, tourRun, newsOpen, onboard, profLoaded, session, sessionOpen]);
+  const tourAskNo = () => { setTourAsk(false); setTourAskDue(false); setUi({ ...uiRef.current, tourAskV: APP_VERSION }); };
   // 1.6.5 (Michael, Oct 17: a friend's link opened the website): the app owns …/hw-app/add/ links (App Links,
   // assetlinks.json on mikydon.github.io), so a tapped link opens the app on Friends with the code filled in.
   const [addSeq, setAddSeq] = useState(0);
@@ -10127,7 +10183,8 @@ export default function App() {
           {skipOpen && <SkipSheet freezes={freezesAvailable(history)} onSave={saveSkip} onClose={() => setSkipOpen(false)} />}
       {howId && <HowTo id={howId} history={history} onClose={() => setHowId(null)} />}
           {tourRun && onboard === null && <Tour key={tourRun.ch} run={tourRun} x={tourX} done={tourDone} onStep={i => setTourRun(r => (r && i !== null ? { ...r, i } : null))} onEnd={endTour} onChapterDone={tourChapterDone} onStart={startTour} />}
-          {tourSheet && <TourSheet done={tourDone} ui={ui} onStart={startTour} on3={() => { setUi({ ...uiRef.current, tour3: !ui.tour3, tourOff: false }); }} onClose={() => setTourSheet(false)} />}
+          {tourAsk && <TourAsk onGo={() => { setTourAskDue(false); restartTour(); }} onNo={tourAskNo} />}
+          {tourSheet && <TourSheet onRestart={restartTour} done={tourDone} ui={ui} onStart={startTour} on3={() => { setUi({ ...uiRef.current, tour3: !ui.tour3, tourOff: false }); }} onClose={() => setTourSheet(false)} />}
           {newsOpen && <WhatsNew at={newsAt} onClose={() => { setNewsOpen(false); setNewsAt(null); if (settings.seenVersion !== APP_VERSION || !settings.seenApp) setSettings({ ...settings, seenVersion: APP_VERSION, seenApp: true }); }} />}
           </>}
         </>

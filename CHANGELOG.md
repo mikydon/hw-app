@@ -13,7 +13,9 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 ## 1.8.1 (2026-10-30)
 
 - The guide is shorter: it shows Home and the ☰ menu, then every screen shows you around by itself the first time you open it. New chapters for Muscle Deck and the Shop (9 chapters; all of them make the Explorer badge Obsidian, 7 stay Diamond).
-- The guide no longer points at something you can't see: when you swipe to the other page or have the menu open, it brings the right page back first. A long list is lit only down to a whole row instead of being cut through one.
+- The guide no longer points at something you can't see: when you swipe to the other page or have the menu open, it brings the right page back first. A box taller than the screen is lit from its top on down (the bubble floats at the bottom) instead of being cut through a row, and the page can't be scrolled or swiped under the guide.
+- Next in the guide no longer pauses for a few seconds when an optional part isn't on the screen (no calorie profile, signed out…).
+- The guide can be started again from the start (☰ → Guide → Start the guide again: every screen shows its chapter again), a finished chapter has an Again button, and the first start after an update asks once, in a box in the middle of the screen, whether to go through the guide again.
 - Back from the workout settings (Home → Exercises → Exercises settings) takes you back to Home's Exercises page, not to Settings.
 - Name effects like Glow are no longer cut off at the edges of the name.
 

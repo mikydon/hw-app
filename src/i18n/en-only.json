@@ -168,6 +168,12 @@
     "tour.c8",
     "tour.c9",
     "ui.tourAutoD",
-    "news181"
+    "news181",
+    "ui.tourAgainBtn",
+    "ui.tourRestart",
+    "ui.tourAskV",
+    "ui.tourAskT",
+    "ui.tourAskD",
+    "ui.tourAskGo"
   ]
 }
