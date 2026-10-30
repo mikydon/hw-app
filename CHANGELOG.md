@@ -10,6 +10,13 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 
 <!-- New version: add a "## x.y.z (date)" section on top (web-only history uses "## Browser beta x.y.z (date)"). On a push to main, .github/workflows/build.yml builds everything and .github/scripts/releases.sh creates/updates the releases (commit = the push, or the one in a commit comment). -->
 
+## 1.8.1 (2026-10-30)
+
+- The guide is shorter: it shows Home and the ☰ menu, then every screen shows you around by itself the first time you open it. New chapters for Muscle Deck and the Shop (9 chapters; all of them make the Explorer badge Obsidian, 7 stay Diamond).
+- The guide no longer points at something you can't see: when you swipe to the other page or have the menu open, it brings the right page back first. A long list is lit only down to a whole row instead of being cut through one.
+- Back from the workout settings (Home → Exercises → Exercises settings) takes you back to Home's Exercises page, not to Settings.
+- Name effects like Glow are no longer cut off at the edges of the name.
+
 ## 1.8.0 (2026-10-25)
 
 **A big update: a new APK** (download it in the app and tap Install; your data stays). Compared with 1.7.5:

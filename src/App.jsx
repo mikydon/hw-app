@@ -7,6 +7,7 @@ import { mergeAll, syncKey, withIds, entryId, stable, SYNC_SETTINGS, kcalShared 
 import { RANK_AT, EX_GROUPS } from "./ranks.js";
 import * as GM from "./game/engine.js";
 import { fairStats } from "./fair.js";
+import EN from "./i18n/en.js";
 import * as EC from "./economy.js";
 import { L, LANG, t as T, tp as TP, fmt, setLang, detectLang, LANGS, fmtLong, fmtShortDM, fmtMonthYear, weekdaysShort, capFirst } from "./i18n/index.js";
 
@@ -37,7 +38,7 @@ const THEMES = {
   slate:  { ink: "#15181d", panel: "#1f242b", panelHi: "#2a313a", line: "#3a434f", chalk: "#f1f4f8", dim: "#9aa6b4", edge: "#0e1115" },
   coffee: { ink: "#1c140f", panel: "#2a1f17", panelHi: "#382a20", line: "#4d3a2c", chalk: "#fbf3ec", dim: "#b8a291", edge: "#130d09" },
 };
-const APP_VERSION = "1.8.0";
+const APP_VERSION = "1.8.1";
 // Big Shoulders has no Cyrillic, so Oswald (also condensed) covers Ukrainian. The browser only
 // downloads the Oswald unicode ranges a page actually uses.
 // 1.7.0: 'HW Emoji' = the app's own emoji (Fluent 3D, fonts/hw-emoji.ttf) for the emoji the app shows; BODY_SYS
@@ -1309,7 +1310,7 @@ const ACH = [
   { k: "kcalHit", icon: "🥗", at: [1, 7, 14, 30, 60, 100, 150, 200, 365], pl: "days", v: c => c.kcalHits },
   { k: "steps", icon: "👟", at: [1, 7, 14, 30, 60, 100, 150, 200, 365], pl: "days", v: c => c.steps10k },
   // 1.7.6: one level per finished chapter of the guide (profile.tourDone): Iron … Emerald, the last one Diamond
-  { k: "guide", icon: "🧭", at: [1, 2, 3, 4, 5, 6, 7], rk: [0, 1, 2, 3, 4, 5, 7], v: c => c.guide },
+  { k: "guide", icon: "🧭", at: [1, 2, 3, 4, 5, 6, 7, 9], rk: [0, 1, 2, 3, 4, 5, 7, 8], v: c => c.guide }, // 1.8.1: 9 chapters, all = Obsidian (7 stays Diamond)
   // 1.8.0 single badges (Michael: "Health Connect doesn't need levels"; some rare, some epic, some secret)
   { k: "health", icon: "❤️", at: [1], rk: [4], single: true, v: c => (c.hc ? 1 : 0) },
   // 1.8.0 Muscle Deck: Runs won (any intensity), and one legendary badge for a win on the top intensity
@@ -3059,9 +3060,12 @@ function SetupCard({ profile, kcal, onFix, onClose }) {
 // The strip is as tall as the page you're on (pages have different lengths; the window scrolls vertically), but at
 // least down to the bottom of the screen, so a swipe on the empty space under a short page works too (1.5.4).
 // name → data-<name>-tabs / -tab / -pager / -page for tests.
+// 1.8.1: a screen we come back to can open on the page it was left on (Michael: back from Settings → Exercises
+// went to Settings instead of Home's Exercises page). Read once, then forgotten.
+const PAGER_START = {};
 function usePager(name, n, lay) {
   const pager = useRef(null), pages = useRef([]), knob = useRef(null), ctl = useRef({});
-  const [page, setPage] = useState(0);
+  const [page, setPage] = useState(() => { const s = PAGER_START[name] || 0; delete PAGER_START[name]; return Math.min(n - 1, s); });
   const [pagerEl, setPagerEl] = useState(null); // the strip may appear later (Calories shows a form first)
   const wide = useWide(); // 1.7.0: on a wide screen the pages stand side by side (no tabs, no swiping)
   const [cols, setCols] = useState(n); // how many pages fit next to each other (at least ~340 px each)
@@ -3445,7 +3449,7 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
           {settings && setSettings && (
             <Sect data-wset title={T("wsTitle")} accent={C.sky} titlePad="0 15px" style={LOOK === "flat" ? {} : { padding: "12px 0 0" }}>
               <div style={LOOK === "flat" ? { ...card } : { borderTop: `1px solid ${C.line}` }}>
-                <button data-wset-ex onClick={() => onGo && onGo("settings", { page: "exercises" })} style={{ ...btnBase, width: "100%", background: "transparent", color: C.chalk, padding: "13px 16px", textAlign: "left", borderRadius: 0, display: "flex", alignItems: "center", gap: 10, fontSize: 15 }}>
+                <button data-wset-ex onClick={() => onGo && onGo("settings", { page: "exercises", ret: { screen: "train", pager: "home", page: 1 } })} style={{ ...btnBase, width: "100%", background: "transparent", color: C.chalk, padding: "13px 16px", textAlign: "left", borderRadius: 0, display: "flex", alignItems: "center", gap: 10, fontSize: 15 }}>
                   <span style={{ flex: 1, minWidth: 0 }}>
                     <span style={{ display: "block", fontWeight: 700 }}>{noEmo(T("exMenu"))}</span>
                     <span style={{ display: "block", fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2, lineHeight: 1.4 }}>{T("exMenuD")}</span>
@@ -4875,7 +4879,7 @@ function ProfileHero({ m, own, onPhoto, onEditProfile, onLooks, onStreak, extra,
               <span data-pf-level={m.lvl} style={{ position: "absolute", right: -6, bottom: -4, minWidth: 34, height: 34, padding: "0 6px", boxSizing: "border-box", borderRadius: 99, background: C.ink, border: `2.5px solid ${lr.color}`, color: lr.color, fontFamily: DISPLAY, fontSize: 17, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: `0 0 14px ${lr.color}55` }}>{m.lvl}</span>
             </button>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div data-pf-name data-name-fx={lk.name || ""} style={{ fontFamily: DISPLAY, fontSize: 30, fontWeight: 900, lineHeight: 1, color: C.chalk, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" , ...INK, ...nameFx(lk.name) }}>{m.nick}</div>
+              <div data-pf-name data-name-fx={lk.name || ""} style={{ fontFamily: DISPLAY, fontSize: 30, fontWeight: 900, lineHeight: 1, color: C.chalk, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" , ...INK, ...nameFx(lk.name), ...(lk.name ? FX_ROOM : {}) }}>{m.nick}</div>
               {lk.title && <div style={{ marginTop: 6 }}><LookTitle id={lk.title} /></div>}
               <div style={{ fontSize: 12.5, color: own && bdayToday() ? C.signal : C.dim, fontWeight: own && bdayToday() ? 800 : 400, marginTop: 4 }}>{own && bdayToday() ? T("bdayHero") : m.since ? T("since", { date: fmtDate(m.since, true) }) : T("newMember")}</div>
             </div>
@@ -6554,7 +6558,7 @@ function SwitchAccountSheet({ onFresh, onKeep, onCancel }) {
 // ─── SETTINGS → EXERCISES ───────────────────────────────────────────────────
 // Every exercise by type, with its how-to, and a switch for "I can do this one". At least one
 // exercise of each type stays on, otherwise that muscle group would drop out of the plan.
-function ExercisesPage({ settings, set, history, onBack }) {
+function ExercisesPage({ settings, set, history, onBack, backLabel }) {
   const [howEx, setHowEx] = useState(null);
   const [warn, setWarn] = useState(null); // group index whose last exercise you tried to turn off
   const off = new Set(settings.exOff || []);
@@ -6571,7 +6575,7 @@ function ExercisesPage({ settings, set, history, onBack }) {
   return (
     <div>
       {howEx && <HowTo id={howEx} history={history} onClose={() => setHowEx(null)} />}
-      <button onClick={() => { sfxTap(); onBack(); }} style={{ ...ghostBtn, marginTop: 10, padding: "8px 12px" }}><Arrow dir="‹" size="1.25em" style={{ verticalAlign: "-0.08em", marginRight: 6 }} />{T("tabSettings")}</button>
+      <button onClick={() => { sfxTap(); onBack(); }} style={{ ...ghostBtn, marginTop: 10, padding: "8px 12px" }}><Arrow dir="‹" size="1.25em" style={{ verticalAlign: "-0.08em", marginRight: 6 }} />{backLabel || T("tabSettings")}</button>
       <div style={{ fontFamily: DISPLAY, fontSize: 28, fontWeight: 900, color: C.chalk, margin: "14px 0 10px" }}>{T("exTitle")}</div>
       <div style={{ fontSize: 13, color: C.dim, lineHeight: 1.55 }}>{T("exIntro")}</div>
       {ALT_GROUPS.map((g, gi) => {
@@ -6619,9 +6623,11 @@ function ExercisesPage({ settings, set, history, onBack }) {
   );
 }
 
-function SettingsTab({ initPage, settings, setSettings, history, profile, setProfile, onImport, kcal, autoBk, onAutoBackup, acct, cloudBk, onAcctOpen, onCloudRestore, onCloudBackupNow, onSignOut, onDeleteAccount }) {
+function SettingsTab({ initPage, ret, settings, setSettings, history, profile, setProfile, onImport, kcal, autoBk, onAutoBackup, acct, cloudBk, onAcctOpen, onCloudRestore, onCloudBackupNow, onSignOut, onDeleteAccount }) {
   const [page, setPage] = useState(initPage || null); // null | "exercises"
-  useBack(() => setPage(null), page === "exercises");
+  // opened from somewhere else (Home → Exercises → workout settings): back goes back there, not to Settings
+  const back = () => (ret && initPage === "exercises" ? ret.go() : setPage(null));
+  useBack(back, page === "exercises");
   const [langOpen, setLangOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [msg, setMsg] = useState("");
@@ -6672,7 +6678,7 @@ function SettingsTab({ initPage, settings, setSettings, history, profile, setPro
   if (page === "exercises") {
     return (
       <div className="scr" key="ex" style={{ padding: "6px 18px 110px", maxWidth: 460, margin: "0 auto" }}>
-        <ExercisesPage settings={settings} set={set} history={history} onBack={() => openPage(null)} />
+        <ExercisesPage settings={settings} set={set} history={history} backLabel={ret && initPage === "exercises" ? ret.label : null} onBack={() => (ret && initPage === "exercises" ? ret.go() : openPage(null))} />
       </div>
     );
   }
@@ -7555,6 +7561,9 @@ function LookBanner({ id }) {
   if (id === "b_aurora") return <><div style={{ ...fill, background: C.ink }} /><div style={{ ...fill, filter: "blur(18px)", opacity: 0.85, overflow: "hidden" }}><div className="lkAur" style={{ position: "absolute", inset: "-20% -10%", background: `linear-gradient(100deg, transparent 15%, ${C.mint}b3 30%, transparent 45%, ${C.signal}99 60%, transparent 75%)` }} /><div className="lkAur lkAur2" style={{ position: "absolute", inset: "-20% -10%", background: `linear-gradient(80deg, transparent 20%, ${LK_VIOLET}99 40%, transparent 55%)` }} /></div></>;
   return null;
 }
+// 1.8.1 (Michael's screenshot: the Glow effect was cut to a rectangle): a name box hides its overflow (for the
+// ellipsis), so an effect that shines past the letters gets room inside the box, given back with negative margins.
+const FX_ROOM = { paddingTop: ".4em", paddingBottom: ".5em", paddingLeft: ".5em", paddingRight: ".5em", marginTop: "-.4em", marginBottom: "-.5em", marginLeft: "-.5em", marginRight: "-.5em" };
 // The name effect as inline style (the name's own colour is inline too, so a class could not override it).
 function nameFx(id) {
   if (id === "n_grad") return { background: `linear-gradient(90deg, ${C.signal}, ${LK_PINK}, ${C.sky})`, WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent" };
@@ -8440,8 +8449,14 @@ function GameEnd({ res, onClose, onAgain }) {
 // teach opening badge cards with your own first badge. Chapter 3 is the workout: it runs when a workout starts.
 // New users get chapter 1 right after the first-start setup; everyone else gets an offer on Home once; the ☰ menu has
 // the chapter list (TourSheet). window.__hwTourOff (tests) keeps it out of the way unless a test wants it.
-const TOUR_N = 7;
-const TOUR_ORDER = [1, 2, 4, 5, 6, 7]; // 3 = the workout, started by a workout
+const TOUR_N = 9;
+const TOUR_ORDER = [1, 2, 4, 5, 6, 7, 8, 9]; // 3 = the workout, started by a workout
+// 1.8.1 (Michael, Oct 30): the guide starts with a short look at Home and ends at the ☰ menu; every other screen shows
+// its own chapter by itself the first time it is opened (after the Home chapter, until the guide is skipped).
+const TOUR_SCREEN = { profile: [4, 2], history: [5], calories: [6], friends: [7], game: [8], shop: [9] };
+// chapter names and texts: chapters 8 and 9 are English until translated
+const tourText = ch => (L.tour && L.tour["c" + ch]) || EN.tour["c" + ch] || [];
+const tourName = ch => (L.tour && L.tour.ch && L.tour.ch[ch - 1]) || EN.tour.ch[ch - 1] || "";
 const tourOff = () => !!window.__hwTourOff;
 function tourDoneSet(profile) { return new Set(((profile && profile.tourDone) || []).map(Number).filter(n => n >= 1 && n <= TOUR_N)); }
 const tourWait = ms => new Promise(r => setTimeout(r, ms));
@@ -8454,25 +8469,48 @@ function tourFind(sel) {
   return null;
 }
 async function tourWaitGone(sel, ms = 120000) { const t = Date.now(); while (document.querySelector(sel) && Date.now() - t < ms) await tourWait(120); }
+// 1.8.1 (Michael: a friend swiped to the other page before the guide started and it lit things you couldn't see):
+// a target on a swipe page that isn't shown brings its page back first.
+function tourPageOf(e) {
+  const pg = e && e.closest(".swPage");
+  if (!pg || pg.getAttribute("aria-hidden") !== "true") return null;
+  const a = [...pg.attributes].find(x => /^data-.+-page$/.test(x.name));
+  return a ? [a.name.slice(5, -5), a.value] : null;
+}
+// A box taller than half the screen is lit only down to the end of the last row that fits (never cut through a row).
+function tourCut(e, top, max) {
+  // walk the rows in order; a block too tall to fit is opened up and its own rows are walked
+  let bottom = top;
+  const walk = el => {
+    for (const k of el.children) {
+      const r = k.getBoundingClientRect();
+      if (r.height <= 0) continue;
+      if (r.bottom - top <= max) { bottom = Math.max(bottom, r.bottom); continue; }
+      if (k.children.length > 1 && r.top - top < max) walk(k);
+      return true; // the rest doesn't fit
+    }
+    return false;
+  };
+  walk(e);
+  return bottom > top + 20 ? bottom : top + max;
+}
 async function tourTab(name, i) { const b = tourFind(`[data-${name}-tab="${i}"]`); if (b && b.getAttribute("aria-selected") !== "true") { b.click(); await tourWait(420); } }
 // The steps of a chapter. A step: sel (what to light up), t (text), tap (moves on with the real tap), opt (left out when
 // it isn't there), prep (runs first: go to a screen, open the menu…), done (the chapter's last bubble).
 function tourSteps(ch, x) {
-  const X = (L.tour && L.tour["c" + ch]) || [];
+  const X = tourText(ch);
   const s = (sel, i, more = {}) => ({ sel, t: X[i], ...more });
   const tt = (i, key) => fmt(X[i] || "", { t: T(key) }); // "Tap {t}." with the tab's real name
   const screen = (id, page) => async () => { await x.go(id); if (page !== undefined) await tourTab(page[0], page[1]); };
-  if (ch === 1) return [
-    { t: X[0], prep: screen("train", ["home", 0]) },
-    s("[data-home-hero]", 1),
+  if (ch === 1) return [ // no welcome text: straight to what's on the screen (Michael)
+    s("[data-home-hero]", 1, { prep: screen("train", ["home", 0]) }),
     s('[data-day-picker="hero"]', 2),
     s("[data-rounds-row]", 3),
     s("[data-home-week]", 4),
     s('[data-home-tab="1"]', 5, { tap: true, opt: true }),
     s('[data-home-ex="0"]', 6, { opt: true }),
-    s("[data-menu-btn]", 7, { tap: true, opt: true, prep: async () => { await tourTab("home", 0); await tourWait(150); window.scrollTo(0, 0); } }),
-    s("[data-nav-box]", 8, { prep: async () => { x.menu(true); await tourWait(380); } }),
-    { done: true, t: X[9], prep: async () => { x.menu(false); await tourWait(300); } },
+    s("[data-menu-btn]", 7, { tap: true, opt: true, prep: async () => { await tourTab("home", 0); await tourWait(150); window.scrollTo(0, 0); } }), // left out on a PC (side menu)
+    { done: true, t: T("tourAutoD"), keepMenu: true },
   ];
   if (ch === 2) return [
     s('[data-claim-row="ach:guide"]', 0, { tap: true, opt: true, prep: screen("profile", ["pf", 1]) }),
@@ -8520,7 +8558,21 @@ function tourSteps(ch, x) {
     s("[data-kcsettings]", 9, { opt: true, wait: 800 }),
     { done: true, t: X[10], prep: async () => { await tourTab("kc", 0); } },
   ];
-  return [ // 7: friends
+  if (ch === 8) return [ // Muscle Deck
+    s("[data-gm-deck]", 0, { opt: true, prep: screen("game") }),
+    s("[data-gm-tut]", 1, { opt: true }),
+    s('[data-gm-mode="run"]', 2, { opt: true }),
+    s("[data-gm-rules]", 3, { opt: true }),
+    { done: true, t: X[4] },
+  ];
+  if (ch === 9) return [ // Shop
+    s("[data-shop-bal]", 0, { prep: screen("shop") }),
+    s("[data-shop-chest]", 1, { opt: true }),
+    s('[data-shop-item="freeze"]', 2, { opt: true }),
+    s("[data-shop-today]", 3, { opt: true }),
+    { done: true, t: X[4] },
+  ];
+  if (ch === 7) return [ // friends
     s("[data-fr-signin]", 0, { opt: true, wait: 1500, prep: screen("friends") }),
     s("[data-fr-code]", 1, { opt: true, wait: 1500 }),
     s('[data-seg="friends"]', 2, { tap: true, opt: true, wait: 400, t: tt(2, "frFriends") }),
@@ -8531,6 +8583,7 @@ function tourSteps(ch, x) {
     s('[data-fr-view="chats"]', 7, { opt: true, wait: 600 }),
     { done: true, t: X[8] },
   ];
+  return [];
 }
 // What comes after a chapter: the next one in the order that isn't done yet (the workout chapter waits for a workout).
 function tourNext(ch, done) { return ch === 3 ? null : TOUR_ORDER.find(n => n > ch && !done.has(n)) || TOUR_ORDER.find(n => !done.has(n)) || null; }
@@ -8554,6 +8607,7 @@ function Tour({ run, x, done, onStep, onEnd, onChapterDone, onStart }) {
     setReady(false); setEl(null); setRect(null);
     (async () => {
       if (step.prep) { try { await step.prep(); } catch (_) {} }
+      else if (!step.keepMenu && x.menuOpen && x.menuOpen()) { x.menu(false); await tourWait(320); }
       if (dead) return;
       if (step.done) { const n = onChapterDone(run.ch); setDoneNow(n); }
       if (!step.sel) { setReady(true); return; }
@@ -8561,6 +8615,8 @@ function Tour({ run, x, done, onStep, onEnd, onChapterDone, onStart }) {
       while (!dead && Date.now() - t0 < (step.wait || 2500)) { e = tourFind(step.sel); if (e) break; await tourWait(80); }
       if (dead) return;
       if (!e) { if (step.opt) next(); else setReady(true); return; }
+      const pg = tourPageOf(e);
+      if (pg) { await tourTab(pg[0], pg[1]); if (dead) return; }
       const r = e.getBoundingClientRect();
       // a box taller than half the screen: its top goes just under the top bar and only that part is lit
       if (r.height > innerHeight * 0.5) { if (Math.abs(r.top - 90) > 4) { window.scrollBy(0, r.top - 90); await tourWait(60); } }
@@ -8573,14 +8629,18 @@ function Tour({ run, x, done, onStep, onEnd, onChapterDone, onStart }) {
   // follow it (scrolling, layout changes); if it goes away (the screen moved on by itself), go on with the guide
   useEffect(() => {
     if (!ready) return;
-    let raf = 0, last = "", gone = 0;
+    let raf = 0, last = "", gone = 0, pulling = false;
     const loop = () => {
       setHold(!!document.querySelector("[data-reveal]"));
       if (el) {
         if (!el.isConnected) { if (++gone > 3) { next(); return; } }
         else {
-          const r = el.getBoundingClientRect(), k = [r.left, r.top, r.width, r.height].map(Math.round).join(",");
-          if (k !== last) { last = k; setRect({ l: r.left, t: r.top, w: r.width, h: r.height }); }
+          const pg = tourPageOf(el);
+          if (pg && !pulling) { pulling = true; tourTab(pg[0], pg[1]).finally(() => { pulling = false; }); }
+          const r = el.getBoundingClientRect();
+          const cut = r.height > innerHeight * 0.5 ? tourCut(el, r.top, innerHeight * 0.42) - r.top : r.height;
+          const k = [r.left, r.top, r.width, cut].map(Math.round).join(",");
+          if (k !== last) { last = k; setRect({ l: r.left, t: r.top, w: r.width, h: cut }); }
         }
       }
       raf = requestAnimationFrame(loop);
@@ -8600,13 +8660,14 @@ function Tour({ run, x, done, onStep, onEnd, onChapterDone, onStart }) {
   const tap = step.tap && el;
   const go = () => { sfxTap(); if (tap) el.click(); else next(); };
   const vw = innerWidth, vh = innerHeight, pad = 6;
-  const hole = rect && { l: Math.max(4, rect.l - pad), t: Math.max(4, rect.t - pad), r: Math.min(vw - 4, rect.l + rect.w + pad), b: Math.min(vh - 4, rect.t + rect.h + pad, rect.h > vh * 0.5 ? Math.max(4, rect.t - pad) + vh * 0.42 : Infinity) };
+  const hole = rect && { l: Math.max(4, rect.l - pad), t: Math.max(4, rect.t - pad), r: Math.min(vw - 4, rect.l + rect.w + pad), b: Math.min(vh - 4, rect.t + rect.h + pad) };
   const below = hole && (hole.t + hole.b) / 2 < vh * 0.55;
   const dim = "rgba(3,8,20,.72)";
   const block = e => { e.stopPropagation(); e.preventDefault(); };
   const nSteps = steps.filter(z => !z.done).length, pos = steps.slice(0, run.i + 1).filter(z => !z.done).length;
-  const title = `${T("tourChN", { n: run.ch })} · ${(L.tour && L.tour.ch[run.ch - 1]) || ""}`;
-  const nxt = step.done ? tourNext(run.ch, new Set([...done, run.ch])) : null;
+  const title = `${T("tourChN", { n: run.ch })} · ${tourName(run.ch)}`;
+  // 1.8.1: chapters come by themselves when a screen is first opened; "next" only for another chapter of the same screen
+  const nxt = step.done && run.queue && run.queue.length ? run.queue.find(c => !done.has(c) && c !== run.ch) || null : null;
   const bw = Math.min(vw - 24, 400), bl = hole ? Math.max(12, Math.min(vw - bw - 12, (hole.l + hole.r) / 2 - bw / 2)) : (vw - bw) / 2;
   const arrowX = hole ? Math.max(18, Math.min(bw - 18, (hole.l + hole.r) / 2 - bl)) : null;
   const bubblePos = !hole ? { top: "50%", transform: "translateY(-50%)" } : below ? { top: hole.b + 14 } : { bottom: vh - hole.t + 14 };
@@ -8637,10 +8698,10 @@ function Tour({ run, x, done, onStep, onEnd, onChapterDone, onStart }) {
           <button type="button" data-tour-skip onClick={() => { sfxTap(); onEnd(!step.done); }} style={{ ...btnBase, background: "transparent", color: C.dim, padding: "8px 2px", fontSize: 13, fontWeight: 700 }}>{step.done ? T("tourLater") : T("tourSkip")}</button>
           <span style={{ flex: 1 }} />
           {step.done ? (
-            nxt ? <button type="button" data-tour-next onClick={() => { sfxTap(); onStart(nxt); }} style={{ ...btnBase, background: C.signal, color: C.signalInk, padding: "10px 16px", fontSize: 14 }}>{T("tourNextCh", { t: L.tour.ch[nxt - 1] })} <Arrow size={16} style={{ color: C.signalInk, verticalAlign: "-0.05em" }} /></button>
+            nxt ? <button type="button" data-tour-next onClick={() => { sfxTap(); onStart(nxt, run.queue.filter(c => c !== nxt)); }} style={{ ...btnBase, background: C.signal, color: C.signalInk, padding: "10px 16px", fontSize: 14 }}>{T("tourNextCh", { t: tourName(nxt) })} <Arrow size={16} style={{ color: C.signalInk, verticalAlign: "-0.05em" }} /></button>
               : <button type="button" data-tour-next onClick={() => { sfxTap(); onEnd(false); }} style={{ ...btnBase, background: C.signal, color: C.signalInk, padding: "10px 18px", fontSize: 14 }}>{T("tourFinish")}</button>
           ) : (
-            <button type="button" data-tour-next onClick={go} style={{ ...btnBase, background: C.signal, color: C.signalInk, padding: "10px 18px", fontSize: 14 }}>{run.i === 0 && run.ch === 1 ? T("tourGo") : T("tourNext")}</button>
+            <button type="button" data-tour-next onClick={go} style={{ ...btnBase, background: C.signal, color: C.signalInk, padding: "10px 18px", fontSize: 14 }}>{T("tourNext")}</button>
           )}
         </div>
       </div>
@@ -8656,7 +8717,7 @@ function TourSheet({ done, ui, onStart, on3, onClose }) {
     <Sheet title={T("tourTitle")} onClose={onClose}>
       <div data-tour-sheet style={{ fontSize: 14, color: C.dim, lineHeight: 1.5, marginBottom: 12 }}>{T("tourSheetD", { n, t: TOUR_N })}</div>
       <div style={{ borderRadius: 18, border: `1px solid ${C.line}`, overflow: "hidden", background: SOFT() }}>
-        {L.tour.ch.map((name, i) => {
+        {Array.from({ length: TOUR_N }, (_, i) => tourName(i + 1)).map((name, i) => {
           const ch = i + 1, ok = done.has(ch), w3 = ch === 3;
           return (
             <button key={ch} type="button" data-tour-ch={ch} data-tour-ch-done={ok ? 1 : 0} onClick={() => { sfxTap(); if (w3) on3(); else onStart(ch); }}
@@ -9734,8 +9795,9 @@ export default function App() {
   useEffect(() => { if (!session || sessionOpen) window.scrollTo?.(0, 0); }, [session?.phase, session?.pos]);
   useEffect(() => { window.scrollTo?.(0, 0); }, [screen, sessionOpen]);
   const [setPage0, setSetPage] = useState(null); // Settings opens on this page (1.5.5: "exercises" from Home)
+  const [setRet, setSetRet] = useState(null); // 1.8.1: where that page goes back to ({screen, pager, page})
   const [histEdit, setHistEdit] = useState(null); // date whose workout opens in the History editor
-  const go = (id, opt) => { if (id !== screen) sfxTap(); setScreen(id); setMenuOpen(false); if (session) setSessionOpen(false); setHistEdit(opt && opt.edit ? opt.edit : null); setSetPage(opt && opt.page ? opt.page : null); setChatWith(null); };
+  const go = (id, opt) => { if (id !== screen) sfxTap(); setScreen(id); setMenuOpen(false); if (session) setSessionOpen(false); setHistEdit(opt && opt.edit ? opt.edit : null); setSetPage(opt && opt.page ? opt.page : null); setSetRet(opt && opt.ret ? opt.ret : null); setChatWith(null); };
   const [howId, setHowId] = useState(null);
   openHowToGlobal = setHowId;
   // Android back with nothing open: minimize the workout, then go Home, then ask before leaving (1.4.0, Michael:
@@ -9792,10 +9854,11 @@ export default function App() {
   const profRef = useRef(profile); profRef.current = profile;
   const uiRef = useRef(ui); uiRef.current = ui;
   const tourDone = tourDoneSet(profile);
-  const startTour = ch => { setTourSheet(false); setMenuOpen(false); if (uiRef.current.tourOff) setUi({ ...uiRef.current, tourOff: false }); setTourRun({ ch, i: 0 }); };
+  const startTour = (ch, queue) => { setTourSheet(false); setMenuOpen(false); if (uiRef.current.tourOff) setUi({ ...uiRef.current, tourOff: false }); setTourRun({ ch, i: 0, queue: queue || null }); };
   const tourX = {
     go: async id => { if (session && sessionOpen) setSessionOpen(false); go(id); await tourWait(450); },
     menu: open => { if (!sideOn) setMenuOpen(open); },
+    menuOpen: () => menuOpen,
   };
   const tourChapterDone = ch => {
     const d = tourDoneSet(profRef.current);
@@ -9803,7 +9866,7 @@ export default function App() {
     if (ch === 3 && uiRef.current.tour3) setUi({ ...uiRef.current, tour3: false });
     return d.size;
   };
-  const endTour = skipped => { setTourRun(null); setMenuOpen(false); if (skipped) setUi({ ...uiRef.current, tourOff: true }); };
+  const endTour = skipped => { setTourRun(null); if (skipped) { setMenuOpen(false); setUi({ ...uiRef.current, tourOff: true }); } }; // finishing Home leaves the ☰ menu open
   // the workout chapter starts with a workout (after the guide was started, or when switched on in the chapter list)
   useEffect(() => {
     if (tourOff() || tourRun || !session || !sessionOpen || session.phase !== "warmup") return;
@@ -9813,6 +9876,17 @@ export default function App() {
   }, [session && session.phase, sessionOpen, tourRun, tourDone.size, ui.tour3, ui.tourOff]);
   // everyone who hasn't seen the guide gets it offered once on Home (new users get chapter 1 after the setup)
   const tourOffer = !tourOff() && profLoaded && tourDone.size === 0 && !ui.tourOff && !tourRun && history.length > 0;
+  // 1.8.1: the first visit of a screen shows its chapter by itself (once the Home chapter was done, until skipped)
+  useEffect(() => {
+    if (tourRun || onboard !== null || !profLoaded || tourOff() || uiRef.current.tourOff) return;
+    if (session && sessionOpen) return;
+    const done = tourDoneSet(profRef.current);
+    if (!done.has(1)) return;
+    const q = (TOUR_SCREEN[screen] || []).filter(c => !done.has(c));
+    if (!q.length) return;
+    const t = setTimeout(() => setTourRun(r => r || { ch: q[0], i: 0, queue: q.slice(1), auto: true }), 650);
+    return () => clearTimeout(t);
+  }, [screen, tourRun, onboard, profLoaded, sessionOpen]);
   // 1.6.5 (Michael, Oct 17: a friend's link opened the website): the app owns …/hw-app/add/ links (App Links,
   // assetlinks.json on mikydon.github.io), so a tapped link opens the app on Friends with the code filled in.
   const [addSeq, setAddSeq] = useState(0);
@@ -10030,7 +10104,7 @@ export default function App() {
                   onSaveEntry={(idx, entry) => editHistory(h => (idx === null ? [...h, entry] : h.map((e, i) => (i === idx ? entry : e))))} />}
                 {screen === "profile" && <ProfileTab history={history} profile={profile} setProfile={setProfile} onFreeze={applyFreeze} kcal={kcal} acct={acct} vis={myVis} onVis={setVis} onFriends={() => go("friends")} onShop={() => go("shop")} />}
                 {screen === "calories" && <Calories history={history} profile={profile} setProfile={setProfile} kcal={kcal} setKcal={setKcal} />}
-                {screen === "settings" && <SettingsTab initPage={setPage0} settings={settings} setSettings={setSettings} history={history} profile={profile} setProfile={setProfile}
+                {screen === "settings" && <SettingsTab initPage={setPage0} ret={setRet ? { label: T(SCREEN_TITLE[setRet.screen]), go: () => { if (setRet.pager) PAGER_START[setRet.pager] = setRet.page; go(setRet.screen); } } : null} settings={settings} setSettings={setSettings} history={history} profile={profile} setProfile={setProfile}
                   kcal={kcal} autoBk={autoBk} onAutoBackup={runAutoBackup}
                   onImport={importAll} acct={acct} cloudBk={cloudBk} onAcctOpen={() => go("friends")} onCloudRestore={restoreFromCloud} onCloudBackupNow={cloudBackupNow} onSignOut={signOut} onDeleteAccount={deleteAccount} />}
                 {screen === "shop" && <ShopTab history={history} profile={profile} setProfile={setProfile} onGo={go} />}

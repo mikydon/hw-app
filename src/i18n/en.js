@@ -521,6 +521,7 @@ export default {
     tourSkip: "Skip the guide",
     tourLater: "Later",
     tourFinish: "Done",
+    tourAutoD: "That's Home. Everything else is in this menu: the first time you open a screen, I'll show you around.",
     tourNextCh: "Next: {t}",
     tourChDone: "Explorer: {rank}!",
     tourAllDone: "Explorer: Diamond! Guide complete.",
@@ -1453,7 +1454,9 @@ export default {
   },
 
   tour: {
-    ch: ["Home", "Badges", "Workout", "Profile", "History", "Calories", "Friends"],
+    ch: ["Home", "Badges", "Workout", "Profile", "History", "Calories", "Friends", "Muscle Deck", "Shop"],
+    c8: ["Your cards come from your training: the higher your exercise ranks, the stronger the cards.", "New to Muscle Deck? Play the short tutorial game first.", "A Run: beat 8 rounds with bigger and bigger targets. Winning one earns diamonds.", "All the rules, with pictures.", "Have fun!"],
+    c9: ["Diamonds: you earn them by training. Tap How to see where they come from.", "Finish all 3 weekly challenges and a chest opens here.", "Streak freezes and XP boosts cost diamonds.", "New looks every Friday. Tap one to see it on your profile.", "Put your looks on with the ✨ button on your Profile."],
     c1: [
       "Hi! Let me show you how HW App works. The guide has 7 short chapters, and each one earns you a badge. Let's go!",
       "This is today's workout. The app has 3 workout days: A, B and C. You take turns with them and train every other day. The app always suggests the one that's up next.",
@@ -1686,6 +1689,12 @@ export default {
     ["Guide","The first setup asked for your details, but nothing showed how the app works.","An interactive guide in 7 chapters lights up the real buttons, you tap through it yourself, and it says what each part does: Home, badges, workout, profile, history, calories and friends. Every chapter raises the new Explorer badge. It starts after the first setup, existing users get an offer on Home, and it's always in the ☰ menu → Guide."],
     ["Indonesian","14 languages.","15: the app now speaks Indonesian too."],
     ["Small fixes","The bottoms of letters like g, y and j were cut off in some titles and names; Leaderboard, Friends and Messages switched without any motion.","Letters show in full, and the page slides in from the side of the tab you tapped."],
+  ],
+  news181: [
+    "The guide is shorter: it shows Home and the ☰ menu, then every screen shows you around by itself the first time you open it. New chapters for Muscle Deck and the Shop.",
+    "The guide no longer points at something you can't see when you swipe to the other page or have the menu open, and a long list is lit only down to a whole row.",
+    "Back from the workout settings (Home → Exercises) takes you back to Home, not to Settings.",
+    "Name effects like Glow are no longer cut off at the edges.",
   ],
   news175: [
     "Every password field has an eye button: tap it to see what you typed and catch typos, tap again to hide it.",
