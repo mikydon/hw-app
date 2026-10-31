@@ -2819,14 +2819,24 @@ function UpdateBanner({ dl, busy, onClose }) {
 // buttons on Home are off screen and slides away when they are visible (then the normal button is right there).
 // 1.8.2: room at the end of a Home page for the bar, so the last box scrolls fully above it
 const FS_H = 106; // bar 94 px + 12 px from the bottom edge
-function FsSpace() { return <div data-fstart-space aria-hidden="true" style={{ height: `calc(var(--sab, 0px) + ${FS_H + 14}px)` }} />; }
+// the page's own bottom padding (~18) and the screen's (24) count too: the last box ends ~12 px above the bar
+// --fsH = the bar's real height + its 12 px gap (longer words wrap on a narrow phone), set by FloatStart
+function FsSpace() { return <div data-fstart-space aria-hidden="true" style={{ height: `calc(var(--sab, 0px) + var(--fsH, ${FS_H}px) - 30px)` }} />; }
 function FloatStart({ show, day, rounds, setRounds, onStart }) {
+  const boxRef = useRef(null);
+  useLayoutEffect(() => {
+    const el = boxRef.current, root = document.documentElement; if (!el) return;
+    const put = () => root.style.setProperty("--fsH", `${Math.ceil(el.offsetHeight) + 12}px`);
+    put();
+    const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(put) : null; if (ro) ro.observe(el);
+    return () => { if (ro) ro.disconnect(); root.style.removeProperty("--fsH"); };
+  }, []);
   return createPortal(
     <div data-fstart={show ? "on" : "off"} aria-hidden={!show} className={"fstart" + (show ? " on" : "")}
       style={{ position: "fixed", left: "var(--side, 0px)", right: 0, bottom: "calc(var(--sab, 0px) + 12px)", zIndex: 40, display: "flex", justifyContent: "center", padding: "0 12px", pointerEvents: show ? "auto" : "none" }}>
       {/* the page fades out under the bar instead of being cut by it */}
-      <div aria-hidden="true" data-fstart-fade style={{ position: "fixed", left: "var(--side, 0px)", right: 0, bottom: 0, height: `calc(var(--sab, 0px) + ${FS_H + 34}px)`, background: `linear-gradient(180deg, ${C.ink}00, ${C.ink}d9 45%, ${C.ink})`, pointerEvents: "none", zIndex: -1 }} />
-      <div data-fstart-box data-rounds-row style={{ display: "flex", gap: 10, width: "100%", maxWidth: 436, padding: 10, borderRadius: 26, background: `${C.ink}f5`, border: `1px solid ${C.line}`, boxShadow: "0 12px 34px rgba(0,0,0,.5)", ...(LOOK === "liquid" ? { ...LIQUID_FLOAT(), borderRadius: 26 } : LOOK === "glass" ? { ...GLASS(), borderRadius: 26 } : {}) }}>
+      <div aria-hidden="true" data-fstart-fade style={{ position: "fixed", left: "var(--side, 0px)", right: 0, bottom: 0, height: `calc(var(--sab, 0px) + var(--fsH, ${FS_H}px) + 22px)`, background: `linear-gradient(180deg, ${C.ink}00, ${C.ink}d9 45%, ${C.ink})`, pointerEvents: "none", zIndex: -1 }} />
+      <div ref={boxRef} data-fstart-box data-rounds-row style={{ display: "flex", gap: 10, width: "100%", maxWidth: 436, padding: 10, borderRadius: 26, background: `${C.ink}f5`, border: `1px solid ${C.line}`, boxShadow: "0 12px 34px rgba(0,0,0,.5)", ...(LOOK === "liquid" ? { ...LIQUID_FLOAT(), borderRadius: 26 } : LOOK === "glass" ? { ...GLASS(), borderRadius: 26 } : {}) }}>
         {[3, 2].map((n, i) => (
           <button key={n} tabIndex={show ? 0 : -1} data-fround={n} data-rounds={n} aria-pressed={rounds === n} aria-label={T("roundsBtn", { n, m: n === 2 ? 13 : 19 })} onClick={() => { sfxTap(); setRounds(n); }} className="fsq" style={{ ...btnBase, position: "relative", "--d": `${60 + i * 50}ms`, width: 74, flexShrink: 0, borderRadius: 17, padding: "12px 0", ...(rounds === n ? { background: C.chalk, border: `1px solid ${C.chalk}` } : SUNK()), color: rounds === n ? C.ink : C.dim, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", lineHeight: 1 }}>
             {n === 3 && <span data-rec style={{ position: "absolute", top: -8, left: "50%", transform: "translateX(-50%)", whiteSpace: "nowrap", fontSize: 9, fontWeight: 900, letterSpacing: 0.3, padding: "2px 6px", borderRadius: 99, background: C.mint, color: C.ink }}>{T("roundsRec")}</span>}
@@ -3435,7 +3445,7 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
   );
 
   return (
-    <div className="scr" style={{ padding: "16px 0 132px", maxWidth: "var(--colMax)", margin: "0 auto" }}>
+    <div className="scr" style={{ padding: active ? "16px 0 40px" : "16px 0 24px", maxWidth: "var(--colMax)", margin: "0 auto" }}>{/* 1.8.2 (Michael: "only room for the bar"): the room for the Start bar is FsSpace at the end of each page */}
       {howEx && <HowTo id={howEx} history={history} onClose={() => setHowEx(null)} />}
 
       <div style={{ padding: "0 18px" }}>
