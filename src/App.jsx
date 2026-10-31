@@ -2827,7 +2827,8 @@ function UpdateBanner({ dl, busy, onClose }) {
 const FS_H = 106; // bar 94 px + 12 px from the bottom edge
 // the page's own bottom padding (~18) and the screen's (24) count too: the last box ends ~12 px above the bar
 // --fsH = the bar's real height + its 12 px gap (longer words wrap on a narrow phone), set by FloatStart
-function FsSpace() { return <div data-fstart-space aria-hidden="true" style={{ height: `calc(var(--sab, 0px) + var(--fsH, ${FS_H}px) - 30px)` }} />; }
+// 1.8.2: the same 124 px every other screen has at its end (with the page's 18 px and the screen's 24 px), more only if the bar is taller
+function FsSpace() { return <div data-fstart-space aria-hidden="true" style={{ height: `calc(var(--sab, 0px) + max(var(--fsH, ${FS_H}px) + 12px, 124px) - 42px)` }} />; }
 function FloatStart({ show, day, rounds, setRounds, onStart }) {
   const boxRef = useRef(null);
   useLayoutEffect(() => {
@@ -3368,7 +3369,11 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
   // Page 1 "Today": one notice at a time, the big day + Start, this week (green = workout, amber = calories), calories
   // and the weekly challenges. Page 2: the day's exercises. A small switch on top shows where you are (and works with
   // a mouse); Android back on page 2 goes to page 1.
-  const pg = usePager("home", 2, undefined, true);
+  const pg = usePager("home", 2);
+  // 1.8.2 (Michael, 23:16: every screen ends with the same room at the bottom): the two pages keep their own height;
+  // switching pages goes back to the top, so a shorter page never makes the screen jump
+  const pgFirst = useRef(true);
+  useEffect(() => { if (pgFirst.current) { pgFirst.current = false; return; } if (window.scrollY > 0) window.scrollTo({ top: 0, behavior: reducedMotion() ? "auto" : "smooth" }); }, [pg.page]);
 
   // One notice at a time (Michael marked it in design A), the most important first. A download in progress and a new
   // APK always show (rare and important).
@@ -4127,7 +4132,7 @@ function Calories({ history, profile, setProfile, kcal, setKcal }) {
     if (k.height !== o.height) Object.assign(n, { hTs: ts, hSrc: "me" });
     setKcal(n); setProfile({ ...profile, birth }); setEditing(false);
   };
-  const wrap = children => <div className="scr" style={{ padding: "16px 18px 110px", maxWidth: 460, margin: "0 auto" }}>{children}</div>;
+  const wrap = children => <div className="scr" style={{ padding: "16px 18px 124px", maxWidth: 460, margin: "0 auto" }}>{children}</div>;
   useBack(() => setEditing(false), !!(ready && editing));
   useBack(() => setChangingGoal(false), !!(ready && !editing && changingGoal));
 
@@ -4190,7 +4195,7 @@ function Calories({ history, profile, setProfile, kcal, setKcal }) {
   // folded or not is decided when Calories opens (connecting food right here doesn't snap the box shut)
   const fold = k => (KC_FOLD[k] === undefined ? foldDef.current[k] : KC_FOLD[k]);
   return (
-    <div className="scr" style={{ padding: "16px 0 110px", maxWidth: "var(--colMax)", margin: "0 auto" }}>
+    <div className="scr" style={{ padding: "16px 0 124px", maxWidth: "var(--colMax)", margin: "0 auto" }}>
       <div style={{ padding: "0 18px" }}>
         <Sect data-kc-streak-card title={T("secWeek")} meta={<KcalStreakChip history={history} small />} style={{ marginTop: 0, marginBottom: 12 }}>
           <KcalWeekDots history={history} full />
@@ -4619,7 +4624,7 @@ function HistoryTab({ history, onDelete, onSaveEntry, editDate, onEditOpened }) 
   const prs = history.reduce((a, e) => a + ((e.prs && e.prs.length) || 0), 0);
   const tiles = [[T("tileTrainings"), history.length, "dumbbell", C.signal], [T("tileSets"), sets, "repeat", C.sky], [T("tilePRs"), prs, "trophy", C.mint]];
   return (
-    <div className="scr" style={{ padding: "16px 18px 110px", maxWidth: "var(--colMax)", margin: "0 auto" }}>
+    <div className="scr" style={{ padding: "16px 18px 124px", maxWidth: "var(--colMax)", margin: "0 auto" }}>
       {editing !== null && (
         <EntryEditor key={String(editing)} entry={editing === "new" ? null : history[editing]} nextDay={DAYS[nextDayIdx(history)].id}
           onClose={() => setEditing(null)}
@@ -5248,7 +5253,7 @@ function ProfileTab({ history, profile, setProfile, onFreeze, kcal, acct, vis, o
     sfxCheck(); setProfile({ ...profile, show: arr }); setSheet(null);
   };
   return (
-    <div className="scr" style={{ padding: "16px 0 110px", maxWidth: "var(--colMax)", margin: "0 auto" }}>
+    <div className="scr" style={{ padding: "16px 0 124px", maxWidth: "var(--colMax)", margin: "0 auto" }}>
       {howEx && <HowTo id={howEx} history={history} onClose={() => setHowEx(null)} />}
       <input ref={fileRef} type="file" accept="image/*" onChange={pick} style={{ display: "none" }} />
       {rev && <RewardReveal items={rev} onDone={() => { setProfile({ ...profile, claim2: withClaims(claimOf(profile), rev) }); setRev(null); setParty(Date.now()); }} />}
@@ -5335,7 +5340,7 @@ function OtherProfile({ p, isFriend, onBack, setTopHead }) {
   useBack(onBack);
   const m = st.card ? cardModel(st.card, { nick: p.nick, pfp: isFriend ? p.pfp : null }) : null;
   return (
-    <div className="scr" data-pv={p.uid} data-pv-state={st.loading ? "loading" : st.hidden ? "hidden" : st.err ? "err" : "ok"} style={{ padding: "6px 0 110px", maxWidth: "var(--colMax)", margin: "0 auto" }}>
+    <div className="scr" data-pv={p.uid} data-pv-state={st.loading ? "loading" : st.hidden ? "hidden" : st.err ? "err" : "ok"} style={{ padding: "6px 0 124px", maxWidth: "var(--colMax)", margin: "0 auto" }}>
       {howEx && <HowTo id={howEx} history={[]} onClose={() => setHowEx(null)} />}
       {m ? <ProfilePage m={m} onPickRank={setHowEx} /> : (
         <div style={{ padding: "0 18px" }}>
@@ -5795,7 +5800,7 @@ function FriendsTab({ acct, history, profile, social, chatWith, setChatWith, onB
   if (acct.st !== "in") {
     const go = cred => { if (!age16 || busy) return; setBusy(true); setErr(""); onSignIn(cred && cred.email ? cred : undefined).catch(e => setErr(cloudErr(e))).finally(() => setBusy(false)); };
     return (
-      <div className="scr" data-fr-out style={{ padding: "6px 18px 110px", maxWidth: 460, margin: "0 auto" }}>
+      <div className="scr" data-fr-out style={{ padding: "6px 18px 124px", maxWidth: 460, margin: "0 auto" }}>
         <Sect title={T("frIntroTitle")}>
           <div style={{ fontSize: 15, color: C.chalk, lineHeight: 1.55 }}>{T("frIntro")}</div>
           <div style={{ fontSize: 13, color: C.dim, lineHeight: 1.5, marginTop: 10 }}>{T("frShared")}</div>
@@ -5847,7 +5852,7 @@ function NickSetup({ initial, onSave, onCancel, title }) {
     </>
   );
   if (onCancel) return <Sheet title={title || T("frNickTitle")} onClose={onCancel} short>{body}</Sheet>;
-  return <div className="scr" data-fr-nicksetup style={{ padding: "6px 18px 110px", maxWidth: 460, margin: "0 auto" }}><Sect title={T("frNickTitle")}>{body}</Sect></div>;
+  return <div className="scr" data-fr-nicksetup style={{ padding: "6px 18px 124px", maxWidth: 460, margin: "0 auto" }}><Sect title={T("frNickTitle")}>{body}</Sect></div>;
 }
 
 function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, chatWith, setChatWith, onBlocked, setTopHead, modHidden, fx = {} }) {
@@ -5965,7 +5970,7 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
       onReport={text => report(p, "message: " + text.slice(0, 280))} onBlock={block} />;
   }
   return (
-    <div className="scr" data-fr-main style={{ padding: "6px 18px 110px", maxWidth: "var(--colMax)", margin: "0 auto" }}>
+    <div className="scr" data-fr-main style={{ padding: "6px 18px 124px", maxWidth: "var(--colMax)", margin: "0 auto" }}>
       {sheet && <PersonSheet p={sheet} isFriend={friendIds.includes(sheet.uid)} fsState={fsStateOf(sheet.uid)} onFs={fsInvite} onClose={() => setSheet(null)} onChat={friendIds.includes(sheet.uid) ? x => { setSheet(null); setChatWith(x.uid); } : null}
         delChatOff={!chats.some(c => c.other === sheet.uid)} onDelChat={x => { const c = chats.find(cc => cc.other === x.uid); setSheet(null); if (c) deleteChat(c); }}
         onFsEnd={fsStateOf(sheet.uid) === "on" ? x => { setSheet(null); act(() => fs.end(x.uid)); } : null}
@@ -6951,14 +6956,14 @@ function SettingsTab({ initPage, ret, settings, setSettings, history, profile, s
 
   if (page === "exercises") {
     return (
-      <div className="scr" key="ex" style={{ padding: "6px 18px 110px", maxWidth: 460, margin: "0 auto" }}>
+      <div className="scr" key="ex" style={{ padding: "6px 18px 124px", maxWidth: 460, margin: "0 auto" }}>
         <ExercisesPage settings={settings} set={set} history={history} backLabel={ret && initPage === "exercises" ? ret.label : null} onBack={() => (ret && initPage === "exercises" ? ret.go() : openPage(null))} />
       </div>
     );
   }
 
   return (
-    <div className="scr" key="main" style={{ padding: "6px 18px 110px", maxWidth: "var(--colMax)", margin: "0 auto" }}>
+    <div className="scr" key="main" style={{ padding: "6px 18px 124px", maxWidth: "var(--colMax)", margin: "0 auto" }}>
       <input ref={fileRef} type="file" accept="application/json,.json" onChange={readBackup} style={{ display: "none" }} />
       {bkOpen && <BackupsSheet onClose={() => setBkOpen(false)} onRestore={txt => { if (loadBackupText(txt)) setBkOpen(false); }} autoOn={!!settings.autoBackup} myId={String(cloudMem().owner || (acct.st === "in" ? acct.uid : "")).replace(/[^A-Za-z0-9]/g, "").slice(0, 8)} />}
 
@@ -8097,7 +8102,7 @@ function LooksSheet({ profile, setProfile, history, own, onShop, onClose }) {
 }
 // 1.8.2 (Michael: Shop and Muscle Deck started right under the top bar, "remember it so it never happens again"):
 // every screen is a .scr with the same 16 px gap under the top bar, side padding and room at the bottom.
-const SCR_STYLE = { padding: "16px 18px 110px", maxWidth: "var(--colMax)", margin: "0 auto" };
+const SCR_STYLE = { padding: "16px 18px 124px", maxWidth: "var(--colMax)", margin: "0 auto" };
 function ShopTab({ history, profile, setProfile, onGo }) {
   const es = useMemo(() => econState(history, profile), [history, profile]);
   const { bal, sh, earned, own, chests } = es;
@@ -10382,6 +10387,8 @@ export default function App() {
         body{overflow-wrap:break-word}button{text-wrap:balance}
         /* 1.8.2 (Michael: holding text must never select it): app-like, nothing is selectable except what you type into */
         body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+        /* 1.8.2 (Michael: the same room at the end of every screen): the screen's own padding is the whole gap */
+        .scr>:last-child{margin-bottom:0!important}
         input,textarea,[contenteditable="true"]{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
         .claimBack{animation:revWob 1.1s ease-in-out infinite alternate}
         .claimGift{display:inline-block;animation:revBob 1.2s ease-in-out infinite alternate}
@@ -10535,7 +10542,8 @@ export default function App() {
           {(!session || !sessionOpen) && (
             <>
               <TopBar side={sideOn} head={screen === "friends" ? topHead : null} badge={socialCount + claimN + chestN} dlPct={dl && dl.kind === "downloading" ? dl.pct || 0 : null} screen={screen} history={history} menuOpen={menuOpen} onGo={go} onMenu={() => { sfxTap(); setMenuOpen(o => !o); }} />
-              <div key={screen}>
+              {/* 1.8.2: the screen's slide-in (translateY 14 px) must not leave 14 px of extra scroll at the end */}
+              <div key={screen} style={{ overflowY: "clip" }}>
                 {screen === "train" && <TrainTab tourOffer={tourOffer ? { start: () => startTour(1), close: () => setUi({ ...ui, tourOff: true }) } : null} settings={settings} setSettings={setSettings} onSetup={st => setOnboard(st)} dl={dlHidden ? null : dl} onDlClose={() => setDlHidden(true)} kcal={kcal} setKcal={setKcal} history={history} onStart={start} onFreeze={applyFreeze} ui={ui} setUi={setUi} active={session} onResume={resume} profile={profile} onGo={go} upd={updCard ? { open: () => { setUpdCard(false); setNewsAt(APP_VERSION); setNewsOpen(true); }, close: () => setUpdCard(false) } : null}
                   apk={apkUpd && !apkHidden ? { info: apkUpd, close: () => setApkHidden(true) } : null} />}
                 {screen === "history" && <HistoryTab history={history} editDate={histEdit} onEditOpened={() => setHistEdit(null)}
