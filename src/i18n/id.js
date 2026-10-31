@@ -1582,7 +1582,7 @@ export default {
     bdayWorkout: ["Latihan ulang tahun","berlatih di hari ulang tahunmu"],
     obsidian: ["Obsidian","peringkat Obsidian di latihan mana pun"],
     deck: ["Muscle Deck","{x} dimenangkan"],
-    deckBeast: ["Beast mode","menangkan Run Muscle Deck di Beast mode"],
+    deckBeast: ["Mode buas","menangkan Run Muscle Deck di Mode buas"],
   },
 
   betaNews14: [
@@ -2012,5 +2012,5 @@ export default {
     "Selesai. Inilah disiplin dalam tindakan.",
     "Hari ini kamu melakukan apa yang kebanyakan orang hanya rencanakan.",
   ],
-  looks: {"f_iron":"Cincin besi","f_dots":"Cincin titik","f_pixel":"Piksel","f_hex":"Heksa","f_wave":"Gelombang","f_pulse":"Denyut","f_flame":"Api","f_laurel":"Daun salam","f_neon":"Neon","f_bolt":"Petir","f_crown":"Mahkota","f_obsidian":"Serpihan obsidian","f_diamond":"Cincin berlian","b_glow":"Pendar tema","b_grid":"Lantai gym","b_sunset":"Matahari terbenam","b_topo":"Garis kontur","b_stars":"Langit malam","b_waves":"Ombak","b_bubbles":"Gelembung","b_ridge":"Punggung bukit saat fajar","b_city":"Lampu kota","b_galaxy":"Galaksi","b_aurora":"Aurora","t_iron":"Tekad baja","t_rookie":"Pemula","t_grind":"Kerja keras harian","t_zen":"Zen","t_beast":"Beast mode","t_legend":"Legenda hidup","t_bird":"Bangun pagi","t_owl":"Burung hantu","t_comeback":"Raja comeback","t_marathon":"Pelari maraton","t_shark":"Hiu kartu","t_streak":"Penjaga runtutan","t_midnight":"Pahlawan tengah malam","t_obsidian":"Obsidian","n_outline":"Garis tepi","n_grad":"Gradasi","n_shadow":"Bayangan retro","n_ice":"Es","n_glow":"Pendar","n_fire":"Api","n_foil":"Kilau metalik","n_rainbow":"Pelangi","n_gold":"Emas murni","fx_snow":"Hujan salju","fx_sparkle":"Kilauan","fx_petals":"Kelopak","fx_embers":"Bara","fx_lightning":"Badai petir","fx_frost":"Embun beku","fx_confetti":"Pesta","fx_fireworks":"Kembang api"},
+  looks: {"f_iron":"Cincin besi","f_dots":"Cincin titik","f_pixel":"Piksel","f_hex":"Heksa","f_wave":"Gelombang","f_pulse":"Denyut","f_flame":"Api","f_laurel":"Daun salam","f_neon":"Neon","f_bolt":"Petir","f_crown":"Mahkota","f_obsidian":"Serpihan obsidian","f_diamond":"Cincin berlian","b_glow":"Pendar tema","b_grid":"Lantai gym","b_sunset":"Matahari terbenam","b_topo":"Garis kontur","b_stars":"Langit malam","b_waves":"Ombak","b_bubbles":"Gelembung","b_ridge":"Punggung bukit saat fajar","b_city":"Lampu kota","b_galaxy":"Galaksi","b_aurora":"Aurora","t_iron":"Tekad baja","t_rookie":"Pemula","t_grind":"Kerja keras harian","t_zen":"Zen","t_beast":"Mode buas","t_legend":"Legenda hidup","t_bird":"Bangun pagi","t_owl":"Burung hantu","t_comeback":"Raja comeback","t_marathon":"Pelari maraton","t_shark":"Hiu kartu","t_streak":"Penjaga runtutan","t_midnight":"Pahlawan tengah malam","t_obsidian":"Obsidian","n_outline":"Garis tepi","n_grad":"Gradasi","n_shadow":"Bayangan retro","n_ice":"Es","n_glow":"Pendar","n_fire":"Api","n_foil":"Kilau metalik","n_rainbow":"Pelangi","n_gold":"Emas murni","fx_snow":"Hujan salju","fx_sparkle":"Kilauan","fx_petals":"Kelopak","fx_embers":"Bara","fx_lightning":"Badai petir","fx_frost":"Embun beku","fx_confetti":"Pesta","fx_fireworks":"Kembang api"},
 };

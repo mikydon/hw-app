@@ -1581,7 +1581,7 @@ export default {
     bdayWorkout: ["생일 운동","생일에 운동"],
     obsidian: ["흑요석","아무 운동에서나 흑요석 랭크"],
     deck: ["Muscle Deck","{x} 승리"],
-    deckBeast: ["Beast mode","Beast mode에서 Muscle Deck 런 승리"],
+    deckBeast: ["야수 모드","야수 모드에서 Muscle Deck 런 승리"],
   },
 
   betaNews14: [
@@ -2010,5 +2010,5 @@ export default {
     "끝. 이게 바로 규율이야.",
     "대부분의 사람이 계획만 하는 걸 오늘 너는 해냈어.",
   ],
-  looks: {"f_iron":"아이언 링","f_dots":"도트 링","f_pixel":"픽셀","f_hex":"육각형","f_wave":"웨이브","f_pulse":"펄스","f_flame":"불꽃","f_laurel":"월계관","f_neon":"네온","f_bolt":"번개","f_crown":"왕관","f_obsidian":"흑요석 조각","f_diamond":"다이아몬드 링","b_glow":"테마 빛","b_grid":"체육관 바닥","b_sunset":"노을","b_topo":"등고선","b_stars":"밤하늘","b_waves":"파도","b_bubbles":"거품","b_ridge":"새벽 능선","b_city":"도시의 불빛","b_galaxy":"은하","b_aurora":"오로라","t_iron":"강철 의지","t_rookie":"루키","t_grind":"매일의 노력","t_zen":"젠","t_beast":"Beast mode","t_legend":"살아 있는 전설","t_bird":"아침형 인간","t_owl":"올빼미","t_comeback":"컴백 키드","t_marathon":"마라토너","t_shark":"카드 상어","t_streak":"연속 기록 수호자","t_midnight":"자정의 영웅","t_obsidian":"흑요석","n_outline":"외곽선","n_grad":"그라데이션","n_shadow":"레트로 그림자","n_ice":"얼음","n_glow":"글로우","n_fire":"불","n_foil":"메탈릭","n_rainbow":"무지개","n_gold":"순금","fx_snow":"눈","fx_sparkle":"반짝임","fx_petals":"꽃잎","fx_embers":"불씨","fx_lightning":"뇌우","fx_frost":"서리","fx_confetti":"파티","fx_fireworks":"불꽃놀이"},
+  looks: {"f_iron":"아이언 링","f_dots":"도트 링","f_pixel":"픽셀","f_hex":"육각형","f_wave":"웨이브","f_pulse":"펄스","f_flame":"불꽃","f_laurel":"월계관","f_neon":"네온","f_bolt":"번개","f_crown":"왕관","f_obsidian":"흑요석 조각","f_diamond":"다이아몬드 링","b_glow":"테마 빛","b_grid":"체육관 바닥","b_sunset":"노을","b_topo":"등고선","b_stars":"밤하늘","b_waves":"파도","b_bubbles":"거품","b_ridge":"새벽 능선","b_city":"도시의 불빛","b_galaxy":"은하","b_aurora":"오로라","t_iron":"강철 의지","t_rookie":"루키","t_grind":"매일의 노력","t_zen":"젠","t_beast":"야수 모드","t_legend":"살아 있는 전설","t_bird":"아침형 인간","t_owl":"올빼미","t_comeback":"컴백 키드","t_marathon":"마라토너","t_shark":"카드 상어","t_streak":"연속 기록 수호자","t_midnight":"자정의 영웅","t_obsidian":"흑요석","n_outline":"외곽선","n_grad":"그라데이션","n_shadow":"레트로 그림자","n_ice":"얼음","n_glow":"글로우","n_fire":"불","n_foil":"메탈릭","n_rainbow":"무지개","n_gold":"순금","fx_snow":"눈","fx_sparkle":"반짝임","fx_petals":"꽃잎","fx_embers":"불씨","fx_lightning":"뇌우","fx_frost":"서리","fx_confetti":"파티","fx_fireworks":"불꽃놀이"},
 };

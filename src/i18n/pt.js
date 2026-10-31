@@ -1582,7 +1582,7 @@ export default {
     bdayWorkout: ["Treino de aniversário","treinaste no dia do teu aniversário"],
     obsidian: ["Obsidiana","nível Obsidiana em qualquer exercício"],
     deck: ["Muscle Deck","{x} vencidas"],
-    deckBeast: ["Beast mode","vença uma Run de Muscle Deck no Beast mode"],
+    deckBeast: ["Modo fera","vença uma Run de Muscle Deck no Modo fera"],
   },
 
   betaNews14: [
@@ -2012,5 +2012,5 @@ export default {
     "Feito. Isso é disciplina na prática.",
     "Hoje você fez o que a maioria só planeja.",
   ],
-  looks: {"f_iron":"Anel de ferro","f_dots":"Anel de pontos","f_pixel":"Pixel","f_hex":"Hexágono","f_wave":"Onda","f_pulse":"Pulso","f_flame":"Chama","f_laurel":"Louro","f_neon":"Neon","f_bolt":"Trovão","f_crown":"Coroa","f_obsidian":"Lasca de obsidiana","f_diamond":"Anel de diamante","b_glow":"Brilho do tema","b_grid":"Piso da academia","b_sunset":"Pôr do sol","b_topo":"Curvas de nível","b_stars":"Céu noturno","b_waves":"Ondas","b_bubbles":"Bolhas","b_ridge":"Serra ao amanhecer","b_city":"Luzes da cidade","b_galaxy":"Galáxia","b_aurora":"Aurora","t_iron":"Vontade de ferro","t_rookie":"Novato","t_grind":"Ralação diária","t_zen":"Zen","t_beast":"Beast mode","t_legend":"Lenda viva","t_bird":"Madrugador","t_owl":"Coruja","t_comeback":"Rei da virada","t_marathon":"Maratonista","t_shark":"Tubarão das cartas","t_streak":"Guardião da sequência","t_midnight":"Herói da meia-noite","t_obsidian":"Obsidiana","n_outline":"Contorno","n_grad":"Degradê","n_shadow":"Sombra retrô","n_ice":"Gelo","n_glow":"Brilho","n_fire":"Fogo","n_foil":"Brilho metálico","n_rainbow":"Arco-íris","n_gold":"Ouro puro","fx_snow":"Neve","fx_sparkle":"Faíscas","fx_petals":"Pétalas","fx_embers":"Brasas","fx_lightning":"Tempestade","fx_frost":"Geada","fx_confetti":"Festa","fx_fireworks":"Fogos de artifício"},
+  looks: {"f_iron":"Anel de ferro","f_dots":"Anel de pontos","f_pixel":"Pixel","f_hex":"Hexágono","f_wave":"Onda","f_pulse":"Pulso","f_flame":"Chama","f_laurel":"Louro","f_neon":"Neon","f_bolt":"Trovão","f_crown":"Coroa","f_obsidian":"Lasca de obsidiana","f_diamond":"Anel de diamante","b_glow":"Brilho do tema","b_grid":"Piso da academia","b_sunset":"Pôr do sol","b_topo":"Curvas de nível","b_stars":"Céu noturno","b_waves":"Ondas","b_bubbles":"Bolhas","b_ridge":"Serra ao amanhecer","b_city":"Luzes da cidade","b_galaxy":"Galáxia","b_aurora":"Aurora","t_iron":"Vontade de ferro","t_rookie":"Novato","t_grind":"Ralação diária","t_zen":"Zen","t_beast":"Modo fera","t_legend":"Lenda viva","t_bird":"Madrugador","t_owl":"Coruja","t_comeback":"Rei da virada","t_marathon":"Maratonista","t_shark":"Tubarão das cartas","t_streak":"Guardião da sequência","t_midnight":"Herói da meia-noite","t_obsidian":"Obsidiana","n_outline":"Contorno","n_grad":"Degradê","n_shadow":"Sombra retrô","n_ice":"Gelo","n_glow":"Brilho","n_fire":"Fogo","n_foil":"Brilho metálico","n_rainbow":"Arco-íris","n_gold":"Ouro puro","fx_snow":"Neve","fx_sparkle":"Faíscas","fx_petals":"Pétalas","fx_embers":"Brasas","fx_lightning":"Tempestade","fx_frost":"Geada","fx_confetti":"Festa","fx_fireworks":"Fogos de artifício"},
 };
