@@ -2148,6 +2148,12 @@ const ICONS = {
   timer: '<circle cx="12" cy="13.5" r="7.5"/><path d="M12 9.5v4l2.6 2.6M10 2.5h4"/>',
   ticket: '<path d="M4 7h16v3a2 2 0 0 0 0 4v3H4v-3a2 2 0 0 0 0-4z"/><path d="M14.5 7.5v1.5M14.5 11v2M14.5 15v1.5"/>',
   tick: '<path d="M5 12.5l4.2 4.2L19 7"/>',
+  trash: '<path d="M4 7h16M9.5 7V4.5h5V7M6.5 7l1 13h9l1-13M10 11v5.5M14 11v5.5"/>',
+  userX: '<circle cx="9.5" cy="8" r="3.5"/><path d="M3 20c.5-3.6 3-5.6 6.5-5.6s6 2 6.5 5.6M17 9l4 4M21 9l-4 4"/>',
+  ban: '<circle cx="12" cy="12" r="8.5"/><path d="M6 6l12 12"/>',
+  flag: '<path d="M5.5 21V4M5.5 4.5h11l-2.2 4 2.2 4h-11"/>',
+  flameOff: '<path d="M12 21c-4 0-6.5-2.7-6.5-6.3 0-3.2 2.2-5.4 3.6-7.6.6 1.6 1.4 2.6 2.5 3.1C12 7 13 4.7 14.6 3c.6 2.9 3.9 5.6 3.9 10.2 0 4.4-2.6 7.8-6.5 7.8z"/><path d="M12 21c-1.8 0-3-1.2-3-3 0-1.6 1.2-2.6 2-3.8.6 1.2 1.6 1.7 2.3 1.2.6 1 .7 1.7.7 2.6 0 1.8-.9 3-2 3z"/><path d="M3.5 3.5l17 17"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
   love: '<path d="M12 20s-7.5-4.6-7.5-10A4.3 4.3 0 0 1 12 7.3 4.3 4.3 0 0 1 19.5 10C19.5 15.4 12 20 12 20z"/>',
   checklist: '<path d="M4 6.5l1.6 1.6L8.5 5M4 12.5l1.6 1.6 2.9-3.1M4 18.5l1.6 1.6 2.9-3.1"/><path d="M11.5 7h8.5M11.5 13h8.5M11.5 19h8.5"/>',
   luggage: '<rect x="5.5" y="7" width="13" height="12.5" rx="2.5"/><path d="M9.5 7V4.8a1.3 1.3 0 0 1 1.3-1.3h2.4a1.3 1.3 0 0 1 1.3 1.3V7M9.5 10.5v5.5M14.5 10.5v5.5M8.5 19.5v1M15.5 19.5v1"/>',
@@ -5690,38 +5696,75 @@ function PersonRow({ p, rank, me, onClick, right, first }) {
 
 // Someone's card: stats, and add / remove / block / report.
 function PersonSheet({ p, isFriend, onAdd, onChat, onRemove, onBlock, onReport, onProfile, onClose, fsState, onFs, onDelChat, onFsEnd }) {
-  const [sure, setSure] = useState(null);
+  const [ask, setAsk] = useState(null); // the action waiting for its confirmation
   const [msg, setMsg] = useState("");
   const [reported, setReported] = useState(false);
-  const twoTap = (k, fn) => { if (sure !== k) { setSure(k); setTimeout(() => setSure(s => (s === k ? null : s)), 4000); return; } setSure(null); fn(); };
   const small = { ...btnBase, background: C.panelHi, color: C.chalk, padding: "10px 12px", fontSize: 14, borderRadius: 12, flex: 1 };
+  const nick = { nick: p.nick };
+  // 1.8.2 (Michael: the text buttons looked bad): one row of icons; each asks in a centred box what it will do
+  const acts = [
+    onFsEnd && { k: "fsend", ic: "flameOff", label: T("fsEnd"), title: T("fsEnd"), text: T("fsEndD", nick), yes: T("fsEnd"), danger: true, go: () => onFsEnd(p), data: { "data-ps-fs-end": true } },
+    onDelChat && { k: "delchat", ic: "trash", label: T("chDelYes"), title: T("chDelTitle", nick), text: T("chDelBody", nick), yes: T("chDelYes"), danger: true, go: () => onDelChat(p), data: { "data-ps-delchat": true } },
+    isFriend && { k: "remove", ic: "userX", label: T("frRemove"), title: T("frRemoveT", nick), text: T("frRemoveB"), yes: T("frRemove"), danger: true, go: () => onRemove(p), data: { "data-ps-remove": true } },
+    { k: "block", ic: "ban", label: T("frBlock"), title: T("frBlockT", nick), text: T("frBlockB", nick), yes: T("frBlock"), danger: true, go: () => onBlock(p), data: { "data-ps-block": true } },
+    { k: "report", ic: "flag", label: T("frReport"), title: T("frReportT", nick), text: T("frReportB"), yes: T("frReport"), go: () => onReport(p).then(m => { setMsg(m); setReported(String(m).startsWith("✓")); }), data: { "data-ps-report": true } },
+  ].filter(Boolean);
+  const cur = ask && acts.find(x => x.k === ask);
   return (
     <Sheet title={p.nick} onClose={onClose} short>
-      <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-        <PersonAvatar p={p} size={64} />
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, auto)", gap: "2px 16px", fontSize: 13, color: C.dim }}>
-          <span>{T("frLevel")}</span><span>{T("frStreak")}</span><span>{T("frWorkouts")}</span>
-          <b style={{ fontFamily: DISPLAY, fontSize: 26, color: C.sky }}><IcoI n="bolt" />{p.lvl || 1}</b><b style={{ fontFamily: DISPLAY, fontSize: 26, color: "#ffa94d" }}><IcoI n="flame" />{p.streak || 0}</b><b style={{ fontFamily: DISPLAY, fontSize: 26, color: C.chalk }}>{p.n || 0}</b>
-        </div>
+      {/* 1.8.2 (Michael: "more creative and artistic"; no Write a message, the row already opens the chat): the top is
+          one card that opens the profile: photo with a glow, the 3 numbers in their colours, View profile in the corner */}
+      {(() => {
+        const st = [["bolt", p.lvl || 1, C.sky, T("frLevel")], ["flame", p.streak || 0, "#ffa94d", T("frStreak")], ["dumbbell", p.n || 0, C.signal, T("frWorkouts")]];
+        const inner = <>
+          <span aria-hidden="true" style={{ position: "absolute", inset: 0, background: `radial-gradient(70% 90% at 0% 0%, ${C.signal}24, transparent 60%), radial-gradient(60% 80% at 100% 100%, ${C.sky}1c, transparent 60%)`, pointerEvents: "none" }} />
+          <span style={{ position: "relative", display: "flex", alignItems: "center", gap: 14 }}>
+            <span style={{ borderRadius: 99, padding: 3, background: `conic-gradient(from 210deg, ${C.signal}, ${C.sky}, ${C.signal})`, boxShadow: `0 0 22px ${C.signal}40`, flexShrink: 0, display: "inline-flex" }}>
+              <span style={{ borderRadius: 99, padding: 2, background: C.panel, display: "inline-flex" }}><PersonAvatar p={p} size={62} /></span>
+            </span>
+            <span style={{ flex: 1, minWidth: 0, display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6 }}>
+              {st.map(([ic, v, col, lab]) => (
+                <span key={ic} data-ps-stat={ic} title={lab} aria-label={`${lab}: ${v}`} style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 5, padding: "10px 2px", borderRadius: 14, background: `${col}14`, boxShadow: `inset 0 0 0 1.5px ${col}40` }}>
+                  <Ico n={ic} size={19} color={col} sw={2.2} />
+                  <span style={{ fontFamily: DISPLAY, fontSize: 26, fontWeight: 900, lineHeight: 1, color: col }}>{nf(v)}</span>
+                </span>
+              ))}
+            </span>
+          </span>
+          {onProfile && <span style={{ position: "relative", display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 2, marginTop: 10, fontSize: 12.5, fontWeight: 800, color: C.signal }}>{T("pvOpen")}<Arrow size={18} /></span>}
+        </>;
+        const box = { ...btnBase, position: "relative", overflow: "hidden", display: "block", width: "100%", textAlign: "left", padding: "14px 14px 12px", borderRadius: 20, background: SOFT(), color: C.chalk, fontWeight: 400, boxShadow: `inset 0 0 0 1px ${C.line}` };
+        return onProfile ? <button type="button" data-ps-profile onClick={() => { sfxTap(); onProfile(p); }} style={box}>{inner}</button> : <div style={box}>{inner}</div>;
+      })()}
+      {!isFriend && onAdd && <button data-ps-add onClick={() => { sfxTap(); onAdd(p).then(setMsg); }} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 10, fontSize: 15, padding: 13, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}><Ico n="duo" size={19} />{T("frAddBtn")}</button>}
+      {/* friend streak: a warm tile; while it can be started the whole tile is the button */}
+      {isFriend && onFs && (() => {
+        const can = !fsState, on = fsState === "on";
+        const col = fsState === "sent" || fsState === "full" ? C.dim : "#ffa94d";
+        return (
+          <button type="button" data-ps-fs={fsState || "none"} disabled={!can} onClick={() => { sfxTap(); onFs(p).then(setMsg); }}
+            style={{ ...btnBase, width: "100%", marginTop: 10, display: "flex", alignItems: "center", gap: 12, padding: "11px 12px", borderRadius: 18, textAlign: "left", color: C.chalk, fontWeight: 400, cursor: can ? "pointer" : "default", opacity: 1,
+              background: `linear-gradient(110deg, ${col}2e, ${col}0a 75%)`, boxShadow: `inset 0 0 0 1.5px ${col}55` }}>
+            <BadgeIco n={on ? "duo" : "flame"} col={col} size={42} />
+            <span style={{ flex: 1, minWidth: 0 }}>
+              <span style={{ display: "block", fontSize: 15.5, fontWeight: 800, color: can || on ? "#ffc58a" : C.dim }}>{noEmo(T(on ? "fsHave" : fsState === "sent" ? "fsSent" : fsState === "full" ? "fsFull" : "fsInvite"))}</span>
+            </span>
+            {can ? <span aria-hidden="true" style={{ width: 34, height: 34, borderRadius: 99, background: "#ffa94d", color: "#2a1300", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 0 16px #ffa94d66" }}><Ico n="plus" size={18} sw={2.8} /></span>
+              : on ? <Ico n="tick" size={22} color="#ffa94d" sw={2.6} /> : null}
+          </button>
+        );
+      })()}
+      <div data-ps-acts style={{ display: "grid", gridTemplateColumns: `repeat(${acts.length}, 1fr)`, gap: 8, marginTop: 10 }}>
+        {acts.map(x => (
+          <button key={x.k} type="button" {...x.data} aria-label={x.label} title={x.label} onClick={() => { sfxTap(); setAsk(x.k); }}
+            style={{ ...btnBase, height: 52, borderRadius: 14, background: SOFT(), color: x.danger ? "#ff8a80" : C.chalk, display: "flex", alignItems: "center", justifyContent: "center", padding: 0 }}>
+            <Ico n={x.ic} size={22} />
+          </button>
+        ))}
       </div>
-      {onProfile && (
-        <button data-ps-profile onClick={() => { sfxTap(); onProfile(p); }} style={{ ...btnBase, width: "100%", marginTop: 14, padding: "12px 14px", borderRadius: 12, background: SOFT(), color: C.chalk, fontSize: 14, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <span>{T("pvOpen")}</span><Arrow />
-        </button>
-      )}
-      <div style={{ display: "flex", gap: 8, marginTop: onProfile ? 8 : 16, flexWrap: "wrap" }}>
-        {!isFriend && onAdd && <button data-ps-add onClick={() => { sfxTap(); onAdd(p).then(setMsg); }} style={{ ...small, background: C.signal, color: C.signalInk, flexBasis: "100%" }}>{T("frAddBtn")}</button>}
-        {isFriend && onChat && <button data-ps-chat onClick={() => { sfxTap(); onChat(p); }} style={{ ...small, background: C.signal, color: C.signalInk, flexBasis: "100%" }}>{T("chWrite")}</button>}
-        {isFriend && onFs && <button data-ps-fs={fsState || "none"} disabled={!!fsState} onClick={() => { sfxTap(); onFs(p).then(setMsg); }} style={{ ...small, flexBasis: "100%", background: fsState ? C.panelHi : `${"#ffa94d"}2e`, color: fsState ? C.dim : "#ffb871", border: `1.5px solid ${fsState ? C.line : "#ffa94d88"}` }}>🔥 {T(fsState === "on" ? "fsHave" : fsState === "sent" ? "fsSent" : fsState === "full" ? "fsFull" : "fsInvite")}</button>}
-        {onFsEnd && <button data-ps-fs-end onClick={() => { sfxTap(); onFsEnd(p); }} style={small}>{T("fsEnd")}</button>}
-        {onDelChat && <button data-ps-delchat onClick={() => { sfxTap(); onDelChat(p); }} style={small}>{T("chDelYes")}</button>}
-        {isFriend && <button data-ps-remove onClick={() => twoTap("rm", () => onRemove(p))} style={{ ...small, color: sure === "rm" ? "#ff8a80" : C.chalk }}>{sure === "rm" ? T("frRemoveSure") : T("frRemove")}</button>}
-        <button data-ps-block onClick={() => twoTap("bl", () => onBlock(p))} style={{ ...small, color: sure === "bl" ? "#ff8a80" : C.chalk }}>{sure === "bl" ? T("frBlockSure") : T("frBlock")}</button>
-        <button data-ps-report onClick={() => { sfxTap(); onReport(p).then(m => { setMsg(m); setReported(String(m).startsWith("✓")); }); }} style={small}>{T("frReport")}</button>
-      </div>
-      <div style={{ fontSize: 12, color: C.dim, marginTop: 10, lineHeight: 1.45 }}>{T("frReportD")}</div>
       {msg && <div role="status" style={{ fontSize: 13, color: msg.startsWith("✓") ? C.mint : "#ff8a80", marginTop: 10 }}>{msg}</div>}
       {reported && <button data-ps-block-too onClick={() => { sfxTap(); onBlock(p); }} style={{ ...small, flex: "none", width: "100%", marginTop: 10, color: "#ff8a80" }}>{T("frBlockToo", { nick: p.nick })}</button>}
+      {cur && <ConfirmBox icon={cur.ic} title={cur.title} text={cur.text} yes={cur.yes} danger={cur.danger} onNo={() => setAsk(null)} onYes={() => { setAsk(null); cur.go(); }} />}
     </Sheet>
   );
 }
@@ -5920,16 +5963,12 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
   return (
     <div className="scr" data-fr-main style={{ padding: "6px 18px 110px", maxWidth: "var(--colMax)", margin: "0 auto" }}>
       {sheet && <PersonSheet p={sheet} isFriend={friendIds.includes(sheet.uid)} fsState={fsStateOf(sheet.uid)} onFs={fsInvite} onClose={() => setSheet(null)} onChat={friendIds.includes(sheet.uid) ? x => { setSheet(null); setChatWith(x.uid); } : null}
-        onDelChat={chats.some(c => c.other === sheet.uid) ? x => { setSheet(null); setDelChat(chats.find(c => c.other === x.uid)); } : null}
-        onFsEnd={fsStateOf(sheet.uid) === "on" ? x => { setSheet(null); setFsEnd(x.uid); } : null}
+        onDelChat={chats.some(c => c.other === sheet.uid) ? x => { setSheet(null); deleteChat(chats.find(c => c.other === x.uid)); } : null}
+        onFsEnd={fsStateOf(sheet.uid) === "on" ? x => { setSheet(null); act(() => fs.end(x.uid)); } : null}
         onAdd={p => sendTo(p.uid, p.nick).catch(cloudErr)} onRemove={p => act(() => cloud().removeFriend(p.uid), () => setSheet(null))}
         onBlock={block} onReport={p => report(p)} onProfile={setView} />}
       {delChat && (() => { const dp = people[delChat.other] || { nick: "…" }; return (
-        <Sheet title={T("chDelTitle", { nick: dp.nick })} onClose={() => setDelChat(null)} short>
-          <div style={{ lineHeight: 1.5 }}>{T("chDelBody", { nick: dp.nick })}</div>
-          <button data-chat-del-yes onClick={() => deleteChat(delChat)} className="b3d" style={{ ...bigBtn("#c62828", "#fff"), marginTop: 16, fontSize: 15, padding: 14, "--e": "#7f1414" }}>{T("chDelYes")}</button>
-          <button data-chat-del-no onClick={() => setDelChat(null)} style={{ ...ghostBtn, width: "100%", marginTop: 10, padding: 12 }}>{T("cancel")}</button>
-        </Sheet>); })()}
+        <ConfirmBox icon="trash" danger title={T("chDelTitle", { nick: dp.nick })} text={T("chDelBody", { nick: dp.nick })} yes={T("chDelYes")} yesData={{ "data-chat-del-yes": true }} onYes={() => deleteChat(delChat)} onNo={() => setDelChat(null)} />); })()}
       {rename && <NickSetup initial={acct.prof.nick} title={T("frRename")} onCancel={() => setRename(false)} onSave={n => onRename(n).then(() => setRename(false))} />}
       {(() => {
         // 1.7.0 (tablet/PC): you and your friends on the left; the leaderboard and messages on the right
@@ -6024,12 +6063,7 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
               <div style={{ fontSize: 12, color: C.dim, lineHeight: 1.45, padding: "6px 16px 10px" }}>{T("fsHow")}</div>
             </Sect>
           )}
-          {fsEnd && (
-            <Sheet short title={T("fsEnd")} onClose={() => setFsEnd(null)}>
-              <div style={{ fontSize: 14.5, color: C.dim, lineHeight: 1.5 }}>{T("fsEndD", { nick: (people[fsEnd] || {}).nick || "…" })}</div>
-              <button type="button" data-fs-end-yes onClick={() => { const u = fsEnd; setFsEnd(null); act(() => fs.end(u)); }} style={{ ...bigBtn("#e5484d", "#fff"), marginTop: 14 }}>{T("fsEnd")}</button>
-            </Sheet>
-          )}
+          {fsEnd && <ConfirmBox icon="flameOff" danger title={T("fsEnd")} text={T("fsEndD", { nick: (people[fsEnd] || {}).nick || "…" })} yes={T("fsEnd")} yesData={{ "data-fs-end-yes": true }} onYes={() => { const u = fsEnd; setFsEnd(null); act(() => fs.end(u)); }} onNo={() => setFsEnd(null)} />}
           {reqs && reqs.length > 0 && (
             <Sect title={T("frRequests")} meta={String(reqs.length)} style={{ padding: "15px 0 4px" }} titlePad="0 16px">
               {reqs.map((p, i) => (
@@ -8059,6 +8093,9 @@ function LooksSheet({ profile, setProfile, history, own, onShop, onClose }) {
     </Sheet>
   );
 }
+// 1.8.2 (Michael: Shop and Muscle Deck started right under the top bar, "remember it so it never happens again"):
+// every screen is a .scr with the same 16 px gap under the top bar, side padding and room at the bottom.
+const SCR_STYLE = { padding: "16px 18px 110px", maxWidth: "var(--colMax)", margin: "0 auto" };
 function ShopTab({ history, profile, setProfile, onGo }) {
   const es = useMemo(() => econState(history, profile), [history, profile]);
   const { bal, sh, earned, own, chests } = es;
@@ -8102,7 +8139,7 @@ function ShopTab({ history, profile, setProfile, onGo }) {
     </button>); };
   const lookGrid = { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(290px, 100%), 1fr))", gap: 10 };
   return (
-    <div data-shop style={{ padding: "0 18px 30px" }}>
+    <div className="scr" data-shop style={SCR_STYLE}>
       {/* balance */}
       <Sect data-shop-bal={bal} style={{ marginTop: 0, position: "relative", overflow: "hidden" }}>
         <div aria-hidden="true" style={{ position: "absolute", inset: 0, background: `radial-gradient(90% 120% at 100% 0%, ${C.sky}2e, transparent 60%)`, pointerEvents: "none" }} />
@@ -8193,7 +8230,7 @@ function GameTab({ history, profile, setProfile, acct, onPlay }) {
     { id: "ranked", icon: "trophy", name: T("gmRanked"), desc: !RANKED_ON ? T("gmSoon") : signed ? T("gmRankedD", { r: rk && typeof rk.r === "number" ? rk.r : 1000 }) : T("gmRankedSign"), off: !RANKED_ON || !signed, soon: !RANKED_ON },
   ];
   return (
-    <div data-game-tab style={{ padding: "0 18px 30px" }}>
+    <div className="scr" data-game-tab style={SCR_STYLE}>
       {!gp.tut && !saved && (
         <div data-gm-tut className="cardIn" style={{ ...card, ...tileR(), padding: "14px 16px", marginBottom: 12, border: `1.5px solid ${C.signal}`, display: "flex", alignItems: "center", gap: 12 }}>
           <IcoBox n="cap" size={46} />
@@ -9073,6 +9110,31 @@ function TourAsk({ onGo, onNo }) {
         <div style={{ display: "flex", gap: 8, alignItems: "stretch", marginTop: 18 }}>
           <button type="button" data-tour-ask-no onClick={() => { sfxTap(); onNo(); }} style={{ ...btnBase, flex: "0 0 auto", padding: "10px 16px", borderRadius: 14, ...SUNK(), color: C.chalk, fontSize: 14, fontWeight: 800 }}>{T("tourSkip")}</button>
           <button type="button" data-tour-ask-go onClick={() => { sfxTap(); onGo(); }} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), flex: 1, minWidth: 0, fontSize: 16, padding: "10px 10px", borderRadius: 14 }}>{T("tourAskGo")}</button>
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
+}
+
+// 1.8.2 (Michael: "a window in the middle to confirm, where it says what it is"): one centred question for a
+// button that can't be undone in one tap (remove, block, report, delete a chat, end a friend streak).
+function ConfirmBox({ icon, title, text, yes, danger, onYes, onNo, yesData }) {
+  const [on, setOn] = useState(false);
+  useEffect(() => { const r = requestAnimationFrame(() => setOn(true)); return () => cancelAnimationFrame(r); }, []);
+  useBack(onNo, true);
+  const col = danger ? "#ff6b6b" : C.signal;
+  const box = LOOK === "glass" ? GLASS() : LOOK === "liquid" ? { ...LIQUID_FLOAT(), borderRadius: 26 } : LOOK === "tiles" ? { ...card, borderRadius: 20, boxShadow: "0 22px 50px rgba(0,0,0,.5)" } : { background: C.panel, border: `1px solid ${C.line}`, borderRadius: 20, boxShadow: "0 22px 50px rgba(0,0,0,.5)" };
+  return createPortal(
+    <div data-confirm-back onClick={e => { if (e.target === e.currentTarget) { sfxTap(); onNo(); } }} style={{ position: "fixed", inset: 0, zIndex: 106, display: "flex", alignItems: "center", justifyContent: "center", padding: "calc(16px + var(--sat)) 16px calc(16px + var(--sab))", background: on ? "rgba(0,0,0,.6)" : "rgba(0,0,0,0)", transition: "background .25s", fontFamily: BODY }}>
+      <div data-confirm role="alertdialog" aria-modal="true" aria-label={title}
+        style={{ ...box, width: "min(100%, 360px)", boxSizing: "border-box", padding: "22px 18px 18px", textAlign: "center", opacity: on ? 1 : 0, transform: on ? "scale(1)" : "scale(.92)", transition: `opacity ${MO.t1}, transform ${MO.t3} ${MO.pop}` }}>
+        <div style={{ display: "flex", justifyContent: "center" }}><BadgeIco n={icon} col={col} size={56} /></div>
+        <div data-confirm-title style={{ fontFamily: DISPLAY, fontWeight: 900, fontSize: CJK.test(title) ? 24 : 28, lineHeight: 1.05, color: C.chalk, marginTop: 14, overflowWrap: "anywhere" }}>{title}</div>
+        {text && <div data-confirm-text style={{ fontSize: 14, color: C.dim, marginTop: 10, lineHeight: 1.5 }}>{text}</div>}
+        <div style={{ display: "flex", gap: 8, alignItems: "stretch", marginTop: 18 }}>
+          <button type="button" data-confirm-no onClick={() => { sfxTap(); onNo(); }} style={{ ...btnBase, flex: 1, padding: "12px 12px", borderRadius: 14, ...SUNK(), color: C.chalk, fontSize: 14.5, fontWeight: 800 }}>{T("cancel")}</button>
+          <button type="button" data-confirm-yes {...(yesData || {})} onClick={() => { sfxTap(); onYes(); }} className="b3d" style={{ ...(danger ? bigBtn("#d64545", "#fff") : bigBtn(C.signal, C.signalInk)), ...(danger ? { "--e": "#8a1f1f" } : {}), flex: 1, minWidth: 0, fontSize: 14.5, padding: "12px 10px", borderRadius: 14 }}>{yes}</button>
         </div>
       </div>
     </div>,
@@ -10316,6 +10378,9 @@ export default function App() {
         .revBack,.revFace{position:absolute;inset:0;border-radius:24px;backface-visibility:hidden;-webkit-backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:22px 18px;box-sizing:border-box}
         .revFace{transform:rotateY(180deg)}
         body{overflow-wrap:break-word}button{text-wrap:balance}
+        /* 1.8.2 (Michael: holding text must never select it): app-like, nothing is selectable except what you type into */
+        body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+        input,textarea,[contenteditable="true"]{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
         .claimBack{animation:revWob 1.1s ease-in-out infinite alternate}
         .claimGift{display:inline-block;animation:revBob 1.2s ease-in-out infinite alternate}
         @keyframes revWob{from{transform:rotate(calc(var(--wob) * -1)) scale(.98)}to{transform:rotate(var(--wob)) scale(1.02)}}
