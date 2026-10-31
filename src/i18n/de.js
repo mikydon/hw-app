@@ -1697,6 +1697,8 @@ export default {
     "Das Abzeichen Entdecker zählt alle 9 Kapitel der Anleitung.",
     "Abzeichen und Ränge: Tippe auf eins und du siehst seine Karte mit allen Stufen (die Ränge einer Übung stehen jetzt dort statt in der Anleitung). Jeder Rang hat ein eigenes gezeichnetes Emblem statt eines Emojis, und der Startbildschirm hat weniger Text.",
     "Looks im Shop sind größere Karten, die den Look auf einem Beispielprofil zeigen, und die Vitrine in deinem Profil hat ein Feld pro Zeile.",
+    "Abzeichen, Statistiken, Challenges, die obere Leiste und mehr haben statt Emojis eigene Icons in einem Stil.",
+    "Start: 19 / 13 Min und Start sind immer in der Leiste unten (die Tageskarte zeigt nur noch den großen Tag und A / B / C), Kalorien und Wochen-Challenges sind zwei lange, schlichte Kästen. Die Seite endet über der Leiste, nichts verschwindet darunter.",
   ],
   news181: [
     "Die Anleitung ist kürzer: Sie zeigt Start und das ☰-Menü, danach zeigt dir jeder Bildschirm sich selbst, wenn du ihn zum ersten Mal öffnest. Neue Kapitel für Muscle Deck und den Shop.",

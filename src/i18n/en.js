@@ -1705,6 +1705,8 @@ export default {
     "The Explorer badge counts all 9 guide chapters.",
     "Badges and ranks: tap one for its card with every level (an exercise's ranks moved there from the how-to sheet). Every rank has its own drawn emblem instead of an emoji, and Home shows fewer lines.",
     "Shop looks are bigger cards that show the look on a sample profile, and the showcase on your profile has one field per row.",
+    "Badges, stats, challenges, the top bar and more have their own line icons in one style instead of emoji.",
+    "Home: 19 / 13 min and Start are always in the bar at the bottom (the day card keeps only the big day and A / B / C), and calories and weekly challenges are two long, simple boxes. The page ends above the bar, so nothing hides under it.",
   ],
   news181: [
     "The guide is shorter: it shows Home and the ☰ menu, then every screen shows you around by itself the first time you open it. New chapters for Muscle Deck and the Shop.",

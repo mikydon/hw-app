@@ -1697,6 +1697,8 @@ export default {
     "Lencana Penjelajah menghitung semua 9 bab panduan.",
     "Lencana dan rank: ketuk salah satu untuk melihat kartunya dengan semua level (rank latihan dipindah ke sana dari panduan). Setiap rank punya lambang gambar sendiri, bukan emoji, dan layar Beranda punya lebih sedikit teks.",
     "Tampilan di Toko jadi kartu yang lebih besar dan menunjukkan tampilannya di profil contoh, dan Etalase di profilmu punya satu kolom per baris.",
+    "Lencana, statistik, tantangan, bilah atas, dan lainnya kini memakai ikon sendiri dengan satu gaya, bukan emoji.",
+    "Beranda: 19 / 13 menit dan Mulai selalu ada di bilah bawah (kartu hari hanya berisi hari besar dan A / B / C), dan kalori serta tantangan mingguan jadi dua kotak panjang yang sederhana. Halaman berakhir di atas bilah, jadi tidak ada yang tertutup.",
   ],
   news181: [
     "Panduannya lebih singkat: menunjukkan Beranda dan menu ☰, lalu setiap layar memperkenalkan dirinya saat pertama kali kamu buka. Bab baru untuk Muscle Deck dan Toko.",

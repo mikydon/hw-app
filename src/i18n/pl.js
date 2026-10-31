@@ -1697,6 +1697,8 @@ export default {
     "Odznaka Odkrywca liczy wszystkie 9 rozdziałów przewodnika.",
     "Odznaki i rangi: dotknij jednej, aby zobaczyć jej kartę ze wszystkimi poziomami (rangi ćwiczenia przeniesiono tam z instrukcji). Każda ranga ma własny rysowany znak zamiast emoji, a na ekranie głównym jest mniej tekstu.",
     "Wyglądy w Sklepie to większe karty pokazujące wygląd na przykładowym profilu, a Gablota na twoim profilu ma jedno pole w wierszu.",
+    "Odznaki, statystyki, wyzwania, górny pasek i inne mają zamiast emoji własne ikony w jednym stylu.",
+    "Ekran główny: 19 / 13 min i Start są zawsze na pasku na dole (karta dnia ma już tylko duży dzień i A / B / C), a kalorie i wyzwania tygodnia to dwa długie, proste pola. Strona kończy się nad paskiem, więc nic się pod nim nie chowa.",
   ],
   news181: [
     "Przewodnik jest krótszy: pokazuje Start i menu ☰, a potem każdy ekran sam cię oprowadza przy pierwszym otwarciu. Nowe rozdziały o Muscle Deck i Sklepie.",

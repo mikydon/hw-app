@@ -1697,6 +1697,8 @@ export default {
     "La insignia Explorador cuenta los 9 capítulos de la guía.",
     "Insignias y rangos: toca uno para ver su tarjeta con todos los niveles (los rangos de un ejercicio pasaron ahí desde la guía). Cada rango tiene su propio emblema dibujado en lugar de un emoji, y la pantalla principal tiene menos texto.",
     "Los estilos de la Tienda son tarjetas más grandes que muestran el estilo en un perfil de ejemplo, y la Vitrina de tu perfil tiene un campo por fila.",
+    "Las insignias, estadísticas, retos, la barra superior y más tienen iconos propios de un mismo estilo en lugar de emojis.",
+    "Inicio: 19 / 13 min y Empezar están siempre en la barra de abajo (la tarjeta del día solo muestra el día en grande y A / B / C), y las calorías y los retos semanales son dos cajas largas y sencillas. La página termina encima de la barra, así que nada queda debajo.",
   ],
   news181: [
     "La guía es más corta: enseña Inicio y el menú ☰, y luego cada pantalla se presenta sola la primera vez que la abres. Capítulos nuevos para Muscle Deck y la Tienda.",

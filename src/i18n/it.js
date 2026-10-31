@@ -1697,6 +1697,8 @@ export default {
     "La medaglia Esploratore conta tutti i 9 capitoli della guida.",
     "Medaglie e ranghi: toccane uno per vedere la sua scheda con tutti i livelli (i ranghi di un esercizio sono stati spostati lì dalla guida). Ogni rango ha il suo emblema disegnato al posto di un'emoji, e la schermata principale ha meno testo.",
     "I look del Negozio sono schede più grandi che mostrano il look su un profilo di esempio, e la Vetrina del tuo profilo ha un campo per riga.",
+    "Medaglie, statistiche, sfide, la barra in alto e altro hanno icone proprie in un unico stile al posto delle emoji.",
+    "Home: 19 / 13 min e Inizia sono sempre nella barra in basso (la scheda del giorno mostra solo il giorno in grande e A / B / C), e calorie e sfide settimanali sono due riquadri lunghi e semplici. La pagina finisce sopra la barra, quindi niente resta nascosto.",
   ],
   news181: [
     "La guida è più corta: mostra la Home e il menu ☰, poi ogni schermata si presenta da sola la prima volta che la apri. Nuovi capitoli per Muscle Deck e il Negozio.",

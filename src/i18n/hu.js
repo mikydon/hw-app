@@ -1697,6 +1697,8 @@ export default {
     "A Felfedező jelvény mind a 9 útmutató-fejezetet számolja.",
     "Jelvények és rangok: koppints egyre, és megnyílik a kártyája az összes szintjével (a gyakorlat rangjai a leírásból ide kerültek). Minden rangnak saját rajzolt jele van emoji helyett, és a főképernyőn kevesebb a szöveg.",
     "A Bolt kinézetei nagyobb kártyák, amelyek egy mintaprofilon mutatják a kinézetet, a profilod Vitrinje pedig soronként egy mezőt mutat.",
+    "A jelvények, statisztikák, kihívások, a felső sáv és más részek emoji helyett saját, egységes ikonokat kaptak.",
+    "Főképernyő: a 19 / 13 perc és az Indítás mindig lent, a sávban van (a nap kártyáján csak a nagy nap és az A / B / C maradt), a kalóriák és a heti kihívások pedig két hosszú, egyszerű doboz. Az oldal a sáv fölött ér véget, így semmi sem bújik alá.",
   ],
   news181: [
     "Rövidebb az útmutató: megmutatja a Kezdőlapot és a ☰ menüt, utána minden képernyő magától körbevezet, amikor először megnyitod. Új fejezetek a Muscle Deckhez és a Bolthoz.",

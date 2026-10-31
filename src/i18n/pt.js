@@ -1697,6 +1697,8 @@ export default {
     "A medalha Explorador conta todos os 9 capítulos do guia.",
     "Medalhas e patentes: toque em uma para ver o cartão com todos os níveis (as patentes de um exercício foram para lá, saindo do guia). Cada patente tem o próprio emblema desenhado em vez de um emoji, e a tela inicial tem menos texto.",
     "Os visuais da Loja são cartões maiores que mostram o visual num perfil de exemplo, e a Vitrine do seu perfil tem um campo por linha.",
+    "Medalhas, estatísticas, desafios, a barra superior e mais têm ícones próprios num só estilo em vez de emojis.",
+    "Início: 19 / 13 min e Começar ficam sempre na barra de baixo (o cartão do dia mostra só o dia em grande e A / B / C), e as calorias e os desafios da semana são duas caixas longas e simples. A página termina acima da barra, então nada fica escondido.",
   ],
   news181: [
     "O guia ficou mais curto: mostra o Início e o menu ☰, e depois cada tela se apresenta sozinha na primeira vez que você a abre. Capítulos novos para o Muscle Deck e a Loja.",

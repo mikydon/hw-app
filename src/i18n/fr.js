@@ -1697,6 +1697,8 @@ export default {
     "Le badge Explorateur compte les 9 chapitres du guide.",
     "Badges et rangs : touche-en un pour voir sa carte avec tous les niveaux (les rangs d'un exercice y ont été déplacés depuis la fiche explicative). Chaque rang a son propre emblème dessiné au lieu d'un emoji, et l'écran d'accueil a moins de texte.",
     "Les looks de la Boutique sont de plus grandes cartes qui montrent le look sur un profil d'exemple, et la Vitrine de ton profil a un champ par ligne.",
+    "Les badges, statistiques, défis, la barre du haut et le reste ont leurs propres icônes dans un même style au lieu d'emojis.",
+    "Accueil : 19 / 13 min et Commencer sont toujours dans la barre du bas (la carte du jour ne garde que le grand jour et A / B / C), et les calories et les défis de la semaine sont deux longues cases simples. La page s'arrête au-dessus de la barre, rien n'est caché dessous.",
   ],
   news181: [
     "Le guide est plus court : il montre l'Accueil et le menu ☰, puis chaque écran se présente lui-même la première fois que tu l'ouvres. Nouveaux chapitres pour Muscle Deck et la Boutique.",

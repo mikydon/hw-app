@@ -492,16 +492,16 @@ function streakInfo(history, today) {
 // Completing all 3 also earns a 🧊 streak freeze. XP is derived from history.
 function weekKey(k) { const d = parseKey(k); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return dateKey(d); }
 function sumReps(w, ids) { return w.reduce((a, e) => a + e.items.filter(it => !ids || ids.includes(it.id)).reduce((b, it) => b + it.res.reduce((c, v) => c + (typeof v === "number" ? v : 0), 0), 0), 0); }
-const CH_BASE = { id: "w3", icon: "📅", goal: 3, xp: 50, val: w => w.length };
+const CH_BASE = { id: "w3", icon: "calendar", goal: 3, xp: 50, val: w => w.length };
 const CH_POOL = [
-  { id: "pr1", icon: "🏆", goal: 1, xp: 40, val: w => w.reduce((a, e) => a + ((e.prs && e.prs.length) || 0), 0) },
-  { id: "r3", icon: "💪", goal: 1, xp: 40, val: w => w.filter(e => e.rounds === 3).length },
-  { id: "warm", icon: "🔥", goal: 2, xp: 30, val: w => w.filter(e => e.warm).length },
-  { id: "cool", icon: "🧘", goal: 2, xp: 30, val: w => w.filter(e => e.cool).length },
-  { id: "push100", icon: "🦾", goal: 100, xp: 50, val: w => sumReps(w, ["k1", "k3", "r1", "kKnee", "kIncl", "r1e", "k3e"]) },
-  { id: "rank", icon: "🎖️", goal: 1, xp: 60, val: w => w.reduce((a, e) => a + ((e.rankUps && e.rankUps.filter(ru => !ru.u || ru.to > 0).length) || 0), 0) },
-  { id: "reps300", icon: "📈", goal: 300, xp: 40, val: w => sumReps(w, null) },
-  { id: "legs100", icon: "🦵", goal: 100, xp: 40, val: w => sumReps(w, ["n1", "n2", "n7", "lunge", "bridge", "sbridge", "n1q"]) },
+  { id: "pr1", icon: "trophy", goal: 1, xp: 40, val: w => w.reduce((a, e) => a + ((e.prs && e.prs.length) || 0), 0) },
+  { id: "r3", icon: "layers", goal: 1, xp: 40, val: w => w.filter(e => e.rounds === 3).length },
+  { id: "warm", icon: "flame", goal: 2, xp: 30, val: w => w.filter(e => e.warm).length },
+  { id: "cool", icon: "lotus", goal: 2, xp: 30, val: w => w.filter(e => e.cool).length },
+  { id: "push100", icon: "pushup", goal: 100, xp: 50, val: w => sumReps(w, ["k1", "k3", "r1", "kKnee", "kIncl", "r1e", "k3e"]) },
+  { id: "rank", icon: "medal", goal: 1, xp: 60, val: w => w.reduce((a, e) => a + ((e.rankUps && e.rankUps.filter(ru => !ru.u || ru.to > 0).length) || 0), 0) },
+  { id: "reps300", icon: "trend", goal: 300, xp: 40, val: w => sumReps(w, null) },
+  { id: "legs100", icon: "squat", goal: 100, xp: 40, val: w => sumReps(w, ["n1", "n2", "n7", "lunge", "bridge", "sbridge", "n1q"]) },
 ];
 function challengesFor(wk) {
   const seed = Math.round(parseKey(wk).getTime() / 604800000);
@@ -1345,44 +1345,44 @@ function totalReps(history) {
 // the old top and Obsidian a long-term feat. Single badges (`at: [1]`, `rk` = rarity) are done or not; `secret` ones
 // stay out of sight until earned.
 const ACH = [
-  { k: "workouts", icon: "🎯", at: [1, 5, 10, 25, 50, 100, 150, 200, 365], pl: "workouts", v: c => c.n },
-  { k: "tenure", icon: "📅", at: [7, 30, 90, 180, 365, 730, 900, 1095, 1825], span: true, v: c => c.tenure },
-  { k: "streak", icon: "🔥", at: [3, 7, 15, 30, 60, 100, 140, 180, 365], pl: "days", v: c => c.bs },
-  { k: "records", icon: "📈", at: [1, 5, 10, 25, 50, 100, 150, 200, 365], pl: "prs", v: c => c.prs },
-  { k: "ranks", icon: "🥇", at: [1, 4, 8, 15, 25, 40, 60, 90, 140], v: c => c.rankSum },
-  { k: "weeks", icon: "✅", at: [1, 2, 4, 8, 12, 26, 39, 52, 104], pl: "weeks", v: c => c.weeks },
-  { k: "level", icon: "⭐", at: [2, 5, 10, 15, 20, 30, 40, 50, 75], v: c => c.lvl },
-  { k: "rounds3", icon: "💪", at: [1, 5, 10, 25, 50, 100, 150, 200, 365], pl: "workouts", v: c => c.r3 },
-  { k: "pushups", icon: "🦾", at: [10, 20, 30, 40, 50, 60, 68, 75, 100], pl: "pushups", v: c => c.push },
-  { k: "reps", icon: "📊", at: [100, 500, 1000, 2500, 5000, 10000, 17500, 25000, 50000], pl: "reps", v: c => c.reps },
-  { k: "birthday", icon: "🎂", at: [1, 2, 3, 4, 5, 7, 8, 10, 15], pl: "birthdays", v: c => c.bdays },
-  { k: "early", icon: "🌅", at: [1, 5, 10, 25, 50, 100, 150, 200, 365], pl: "workouts", v: c => c.early },
-  { k: "night", icon: "🌙", at: [1, 5, 10, 25, 50, 100, 150, 200, 365], pl: "workouts", v: c => c.night },
-  { k: "hours", icon: "⏱️", at: [1, 3, 6, 12, 25, 50, 75, 100, 200], pl: "hours", v: c => c.hours },
-  { k: "abc", icon: "🔤", at: [1, 3, 5, 10, 20, 35, 48, 60, 120], v: c => c.abc },
-  { k: "cool", icon: "🧘", at: [1, 5, 10, 25, 50, 100, 150, 200, 365], pl: "workouts", v: c => c.cool },
-  { k: "plank", icon: "🧱", at: [30, 45, 60, 90, 120, 180, 240, 300, 600], v: c => c.plank },
-  { k: "calories", icon: "🍽️", at: [1, 7, 14, 30, 60, 100, 150, 200, 365], pl: "days", v: c => c.kcalDays },
-  { k: "kcalHit", icon: "🥗", at: [1, 7, 14, 30, 60, 100, 150, 200, 365], pl: "days", v: c => c.kcalHits },
-  { k: "steps", icon: "👟", at: [1, 7, 14, 30, 60, 100, 150, 200, 365], pl: "days", v: c => c.steps10k },
+  { k: "workouts", icon: "target", at: [1, 5, 10, 25, 50, 100, 150, 200, 365], pl: "workouts", v: c => c.n },
+  { k: "tenure", icon: "calendar", at: [7, 30, 90, 180, 365, 730, 900, 1095, 1825], span: true, v: c => c.tenure },
+  { k: "streak", icon: "flame", at: [3, 7, 15, 30, 60, 100, 140, 180, 365], pl: "days", v: c => c.bs },
+  { k: "records", icon: "trend", at: [1, 5, 10, 25, 50, 100, 150, 200, 365], pl: "prs", v: c => c.prs },
+  { k: "ranks", icon: "medal", at: [1, 4, 8, 15, 25, 40, 60, 90, 140], v: c => c.rankSum },
+  { k: "weeks", icon: "calCheck", at: [1, 2, 4, 8, 12, 26, 39, 52, 104], pl: "weeks", v: c => c.weeks },
+  { k: "level", icon: "star", at: [2, 5, 10, 15, 20, 30, 40, 50, 75], v: c => c.lvl },
+  { k: "rounds3", icon: "layers", at: [1, 5, 10, 25, 50, 100, 150, 200, 365], pl: "workouts", v: c => c.r3 },
+  { k: "pushups", icon: "pushup", at: [10, 20, 30, 40, 50, 60, 68, 75, 100], pl: "pushups", v: c => c.push },
+  { k: "reps", icon: "bars", at: [100, 500, 1000, 2500, 5000, 10000, 17500, 25000, 50000], pl: "reps", v: c => c.reps },
+  { k: "birthday", icon: "cake", at: [1, 2, 3, 4, 5, 7, 8, 10, 15], pl: "birthdays", v: c => c.bdays },
+  { k: "early", icon: "sunrise", at: [1, 5, 10, 25, 50, 100, 150, 200, 365], pl: "workouts", v: c => c.early },
+  { k: "night", icon: "moon", at: [1, 5, 10, 25, 50, 100, 150, 200, 365], pl: "workouts", v: c => c.night },
+  { k: "hours", icon: "timer", at: [1, 3, 6, 12, 25, 50, 75, 100, 200], pl: "hours", v: c => c.hours },
+  { k: "abc", icon: "blocks", at: [1, 3, 5, 10, 20, 35, 48, 60, 120], v: c => c.abc },
+  { k: "cool", icon: "lotus", at: [1, 5, 10, 25, 50, 100, 150, 200, 365], pl: "workouts", v: c => c.cool },
+  { k: "plank", icon: "plank", at: [30, 45, 60, 90, 120, 180, 240, 300, 600], v: c => c.plank },
+  { k: "calories", icon: "plate", at: [1, 7, 14, 30, 60, 100, 150, 200, 365], pl: "days", v: c => c.kcalDays },
+  { k: "kcalHit", icon: "bowl", at: [1, 7, 14, 30, 60, 100, 150, 200, 365], pl: "days", v: c => c.kcalHits },
+  { k: "steps", icon: "steps", at: [1, 7, 14, 30, 60, 100, 150, 200, 365], pl: "days", v: c => c.steps10k },
   // 1.7.6: one level per finished chapter of the guide (profile.tourDone): Iron … Emerald, the last one Diamond
-  { k: "guide", icon: "🧭", at: [1, 2, 3, 4, 5, 6, 7, 9], rk: [0, 1, 2, 3, 4, 5, 7, 8], v: c => c.guide }, // 1.8.1: 9 chapters, all = Obsidian (7 stays Diamond)
+  { k: "guide", icon: "compass", at: [1, 2, 3, 4, 5, 6, 7, 9], rk: [0, 1, 2, 3, 4, 5, 7, 8], v: c => c.guide }, // 1.8.1: 9 chapters, all = Obsidian (7 stays Diamond)
   // 1.8.0 single badges (Michael: "Health Connect doesn't need levels"; some rare, some epic, some secret)
-  { k: "health", icon: "❤️", at: [1], rk: [4], single: true, v: c => (c.hc ? 1 : 0) },
+  { k: "health", icon: "heart", at: [1], rk: [4], single: true, v: c => (c.hc ? 1 : 0) },
   // 1.8.0 Muscle Deck: Runs won (any intensity), and one legendary badge for a win on the top intensity
-  { k: "deck", icon: "🃏", at: [1, 2, 3, 5, 8, 12, 20, 30, 50], pl: "runs", v: c => c.deckWins },
-  { k: "deckBeast", icon: "👑", at: [1], rk: [8], single: true, v: c => c.deckBeast },
-  { k: "allex", icon: "🧩", at: [1], rk: [6], single: true, v: c => c.allex },
-  { k: "allDiamond", icon: "💎", at: [1], rk: [8], single: true, v: c => c.allDiamond },
-  { k: "comeback", icon: "🔁", at: [1], rk: [4], single: true, secret: true, v: c => c.comeback },
-  { k: "weekend", icon: "🗓️", at: [1], rk: [4], single: true, secret: true, v: c => c.weekend },
-  { k: "marathon", icon: "🏃", at: [1], rk: [4], single: true, secret: true, v: c => c.marathon },
-  { k: "frozen", icon: "🧊", at: [1], rk: [4], single: true, secret: true, v: c => c.frozen },
-  { k: "triple", icon: "🏆", at: [1], rk: [6], single: true, secret: true, v: c => c.triple },
-  { k: "newyear", icon: "🎆", at: [1], rk: [6], single: true, secret: true, v: c => c.newyear },
-  { k: "midnight", icon: "🕛", at: [1], rk: [6], single: true, secret: true, v: c => c.midnight },
-  { k: "bdayWorkout", icon: "🎉", at: [1], rk: [6], single: true, secret: true, v: c => c.bdayW },
-  { k: "obsidian", icon: "🌋", at: [1], rk: [8], single: true, secret: true, v: c => c.obsidian },
+  { k: "deck", icon: "cards", at: [1, 2, 3, 5, 8, 12, 20, 30, 50], pl: "runs", v: c => c.deckWins },
+  { k: "deckBeast", icon: "crown", at: [1], rk: [8], single: true, v: c => c.deckBeast },
+  { k: "allex", icon: "checklist", at: [1], rk: [6], single: true, v: c => c.allex },
+  { k: "allDiamond", icon: "diamond", at: [1], rk: [8], single: true, v: c => c.allDiamond },
+  { k: "comeback", icon: "comeback", at: [1], rk: [4], single: true, secret: true, v: c => c.comeback },
+  { k: "weekend", icon: "calDay", at: [1], rk: [4], single: true, secret: true, v: c => c.weekend },
+  { k: "marathon", icon: "runner", at: [1], rk: [4], single: true, secret: true, v: c => c.marathon },
+  { k: "frozen", icon: "ice", at: [1], rk: [4], single: true, secret: true, v: c => c.frozen },
+  { k: "triple", icon: "trophy", at: [1], rk: [6], single: true, secret: true, v: c => c.triple },
+  { k: "newyear", icon: "burst", at: [1], rk: [6], single: true, secret: true, v: c => c.newyear },
+  { k: "midnight", icon: "clock", at: [1], rk: [6], single: true, secret: true, v: c => c.midnight },
+  { k: "bdayWorkout", icon: "party", at: [1], rk: [6], single: true, secret: true, v: c => c.bdayW },
+  { k: "obsidian", icon: "volcano", at: [1], rk: [8], single: true, secret: true, v: c => c.obsidian },
 ];
 // Start of a workout (ts is when it was saved; dur = its length, if known).
 const startHour = e => new Date((e.ts || 0) - (e.dur || 0) * 1000).getHours();
@@ -1847,12 +1847,12 @@ function SectionHead({ title, meta }) {
   );
 }
 // One number tile (Profile): label top left, icon top right, the number below (same spot in every tile), a quiet line at the bottom.
-function StatTile({ label, value, icon, color, sub, children, data, compact }) {
+function StatTile({ label, value, icon, icoCol, color, sub, children, data, compact }) {
   return (
     <div data-stat={data} style={{ ...card, ...tileR(), padding: compact ? "11px 12px" : "13px 15px", display: "flex", flexDirection: "column", minWidth: 0 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6 }}>
         <span style={{ fontSize: 12, color: C.dim, fontWeight: 600, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{label}</span>
-        <span aria-hidden="true" style={{ fontSize: compact ? 14 : 17, lineHeight: 1, flexShrink: 0 }}>{icon}</span>
+        {ICONS[icon] ? <Ico n={icon} size={compact ? 17 : 20} color={icoCol || C.dim} /> : <span aria-hidden="true" style={{ fontSize: compact ? 14 : 17, lineHeight: 1, flexShrink: 0 }}>{icon}</span>}
       </div>
       <div style={{ fontFamily: DISPLAY, fontSize: compact ? 30 : 36, fontWeight: 900, color: color || C.chalk, lineHeight: 1, marginTop: 8, fontVariantNumeric: "tabular-nums" }}>{value}</div>
       {children}
@@ -2110,8 +2110,8 @@ function TopBar({ screen, history, menuOpen, onMenu, onGo, dlPct, badge, head, s
             <span data-clock style={{ flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>· {now.toLocaleTimeString(LANG, { hour: "2-digit", minute: "2-digit" })}</span>
           </div>
         </div>
-        <button onClick={() => onGo && onGo("profile")} data-chip="streak" style={{ ...btnBase, ...chip(st.n ? "#ffa94d" : C.dim), ...pill }} aria-label={T("streakAria", { n: st.n })}><span className={st.n ? "wiggle" : ""}>🔥</span>{st.n}</button>
-        <button onClick={() => onGo && onGo("profile")} data-chip="level" style={{ ...btnBase, ...chip(C.sky), ...pill, position: "relative" }} aria-label={T("levelAria", { n: lv.lvl })}>⚡{lv.lvl}{EC.boostUntil(META.boosts) > Date.now() && <span data-chip-boost aria-hidden="true" style={{ position: "absolute", top: -6, right: -6, fontFamily: BODY, fontSize: 9.5, fontWeight: 900, lineHeight: 1, color: C.signalInk, background: C.signal, borderRadius: 99, padding: "2px 4px" }}>2×</span>}</button>
+        <button onClick={() => onGo && onGo("profile")} data-chip="streak" style={{ ...btnBase, ...chip(st.n ? "#ffa94d" : C.dim), ...pill }} aria-label={T("streakAria", { n: st.n })}><span className={st.n ? "wiggle" : ""}><IcoI n="flame" /></span>{st.n}</button>
+        <button onClick={() => onGo && onGo("profile")} data-chip="level" style={{ ...btnBase, ...chip(C.sky), ...pill, position: "relative" }} aria-label={T("levelAria", { n: lv.lvl })}><IcoI n="bolt" />{lv.lvl}{EC.boostUntil(META.boosts) > Date.now() && <span data-chip-boost aria-hidden="true" style={{ position: "absolute", top: -6, right: -6, fontFamily: BODY, fontSize: 9.5, fontWeight: 900, lineHeight: 1, color: C.signalInk, background: C.signal, borderRadius: 99, padding: "2px 4px" }}>2×</span>}</button>
         {!side && <MenuButton open={menuOpen} onClick={onMenu} badge={badge} />}
         </>}
         {typeof prog === "number" && <div data-top-prog={Math.round(prog)} role="progressbar" aria-valuenow={Math.round(prog)} aria-valuemin={0} aria-valuemax={100} style={{ position: "absolute", left: 18, bottom: 4, height: 3, width: `calc((100% - 36px) * ${Math.max(2, Math.min(100, prog)) / 100})`, background: C.sky, borderRadius: 3, transition: "width .3s", boxShadow: `0 0 8px ${C.sky}` }} />}
@@ -2147,10 +2147,66 @@ const ICONS = {
   sparkle: '<path d="M11 3.5l1.7 4.8 4.8 1.7-4.8 1.7L11 16.5l-1.7-4.8L4.5 10l4.8-1.7z"/><path d="M18 14.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z"/>',
   timer: '<circle cx="12" cy="13.5" r="7.5"/><path d="M12 9.5v4l2.6 2.6M10 2.5h4"/>',
   ticket: '<path d="M4 7h16v3a2 2 0 0 0 0 4v3H4v-3a2 2 0 0 0 0-4z"/><path d="M14.5 7.5v1.5M14.5 11v2M14.5 15v1.5"/>',
+  tick: '<path d="M5 12.5l4.2 4.2L19 7"/>',
+  love: '<path d="M12 20s-7.5-4.6-7.5-10A4.3 4.3 0 0 1 12 7.3 4.3 4.3 0 0 1 19.5 10C19.5 15.4 12 20 12 20z"/>',
+  checklist: '<path d="M4 6.5l1.6 1.6L8.5 5M4 12.5l1.6 1.6 2.9-3.1M4 18.5l1.6 1.6 2.9-3.1"/><path d="M11.5 7h8.5M11.5 13h8.5M11.5 19h8.5"/>',
+  luggage: '<rect x="5.5" y="7" width="13" height="12.5" rx="2.5"/><path d="M9.5 7V4.8a1.3 1.3 0 0 1 1.3-1.3h2.4a1.3 1.3 0 0 1 1.3 1.3V7M9.5 10.5v5.5M14.5 10.5v5.5M8.5 19.5v1M15.5 19.5v1"/>',
+  // 1.8.2 (Michael: "the emoji look unprofessional"): one line style for badges, stats, challenges and the rest
+  target: '<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.6"/><circle cx="12" cy="12" r="1.2"/>',
+  calendar: '<rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',
+  calCheck: '<rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M9 14.8l2 2 4-4"/>',
+  calDay: '<rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/><rect x="13" y="13" width="3.6" height="3.6" rx=".8"/>',
+  flame: '<path d="M12 21c-4 0-6.5-2.7-6.5-6.3 0-3.2 2.2-5.4 3.6-7.6.6 1.6 1.4 2.6 2.5 3.1C12 7 13 4.7 14.6 3c.6 2.9 3.9 5.6 3.9 10.2 0 4.4-2.6 7.8-6.5 7.8z"/><path d="M12 21c-1.8 0-3-1.2-3-3 0-1.6 1.2-2.6 2-3.8.6 1.2 1.6 1.7 2.3 1.2.6 1 .7 1.7.7 2.6 0 1.8-.9 3-2 3z"/>',
+  trend: '<path d="M3.5 17.5l5.5-5.5 3.5 3.5 7.5-7.5"/><path d="M15 8h5v5"/>',
+  medal: '<path d="M8.5 3h7l-2 5.5h-3z"/><circle cx="12" cy="15" r="5.8"/><path d="M12.00 12.60L12.68 14.37L14.57 14.47L13.09 15.66L13.59 17.48L12.00 16.45L10.41 17.48L10.91 15.66L9.43 14.47L11.32 14.37z"/>',
+  star: '<path d="M12 3.5l2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L3.6 9.6l5.8-.8z"/>',
+  layers: '<path d="M12 3.5 21 8l-9 4.5L3 8z"/><path d="M3 12l9 4.5 9-4.5M3 16l9 4.5 9-4.5"/>',
+  pushup: '<circle cx="18.6" cy="8.6" r="2.1"/><path d="M3.5 16.5l12-4.3M15.5 12.2l.7 6.8"/><path d="M2.5 19.5h19"/>',
+  bars: '<path d="M5.5 20v-6M10 20V9M14.5 20v-8M19 20V4"/>',
+  cake: '<path d="M4.5 20h15v-6.5a2 2 0 0 0-2-2h-11a2 2 0 0 0-2 2z"/><path d="M4.5 16c1.2.9 2.5.9 3.75 0s2.5-.9 3.75 0 2.5.9 3.75 0 2.5-.9 3.75 0"/><path d="M12 11.5V8"/><path d="M12 3.5c1 1.1 1 2.2 0 3-1-.8-1-1.9 0-3z"/>',
+  sunrise: '<path d="M12 4.5v3M4.6 9.6l2.1 2.1M19.4 9.6l-2.1 2.1M2.5 17h19M7 17a5 5 0 0 1 10 0M8 20.5h8"/>',
+  moon: '<path d="M19.5 14.5A8 8 0 1 1 9.5 4.5a6.5 6.5 0 0 0 10 10z"/><path d="M17 3.5l.6 1.4 1.4.6-1.4.6-.6 1.4-.6-1.4-1.4-.6 1.4-.6z"/>',
+  blocks: '<rect x="3" y="12.5" width="8" height="8" rx="1.8"/><rect x="13" y="12.5" width="8" height="8" rx="1.8"/><rect x="8" y="3.5" width="8" height="8" rx="1.8"/>',
+  lotus: '<path d="M12 20c-2.6-2.2-3.6-5-3.6-7.5S9.9 7 12 4.5c2.1 2.5 3.6 5.5 3.6 8S14.6 17.8 12 20z"/><path d="M12 20c-4.6 0-8-2.4-9-6.2 3.3-.2 6.4 1.6 9 6.2zM12 20c4.6 0 8-2.4 9-6.2-3.3-.2-6.4 1.6-9 6.2z"/>',
+  plank: '<circle cx="18.6" cy="9.4" r="2.1"/><path d="M3.5 16.5l12-3.6M15.5 12.9l-.5 4.1h4.5"/><path d="M2.5 19.5h19"/>',
+  plate: '<path d="M8.5 3v5.5a3.5 3.5 0 0 0 7 0V3M12 3v6M12 12v9"/>',
+  bowl: '<path d="M3 12h18a9 9 0 0 1-18 0z"/><path d="M12 12c0-4 2.2-6.8 6.5-7.8 0 4.2-2.3 6.8-6.5 7.8zM12 12c-.6-2.6-2.3-4.3-5-4.8"/>',
+  steps: '<path d="M7.5 3c2 0 3 2 3 4.6s-1 3.9-3 3.9-3-1.4-3-3.9S5.5 3 7.5 3zM5.4 13.5h4.2v1.6a2.1 2.1 0 0 1-4.2 0zM16.5 6.5c2 0 3 2 3 4.6s-1 3.9-3 3.9-3-1.4-3-3.9 1-4.6 3-4.6zM14.4 17h4.2v1.6a2.1 2.1 0 0 1-4.2 0z"/>',
+  heart: '<path d="M12 20s-7.5-4.6-7.5-10A4.3 4.3 0 0 1 12 7.3 4.3 4.3 0 0 1 19.5 10C19.5 15.4 12 20 12 20z"/><path d="M7 12.5h2.4l1.4-2.4 2 4 1.4-1.6H17"/>',
+  cards: '<rect x="3.5" y="6" width="10" height="14" rx="2" transform="rotate(-10 8.5 13)"/><path d="M14.5 4.6l4.4.8a2 2 0 0 1 1.6 2.3l-1.8 10a2 2 0 0 1-2.3 1.6l-2.3-.4"/>',
+  crown: '<path d="M3 8l4.5 4 4.5-7 4.5 7L21 8l-2 11H5z"/><path d="M5.6 15.5h12.8"/>',
+  puzzle: '<path d="M4 6.5l1.6 1.6 3-3.1M4 12.5l1.6 1.6 3-3.1M4 18.5l1.6 1.6 3-3.1M12 6.5h8M12 12.5h8M12 18.5h8"/>',
+  comeback: '<path d="M20 12a8 8 0 1 1-2.3-5.6"/><path d="M20 4v4h-4"/>',
+  runner: '<circle cx="15.5" cy="4.5" r="2"/><path d="M13.6 8.6 9.6 10.2l-2 3.4M13.6 8.6l-2 6 3.4 3.2V21M11.6 14.6 8.4 21M13.6 8.6l2 3.4h3.5"/>',
+  ice: '<path d="M12 3 20 7.5v9L12 21l-8-4.5v-9z"/><path d="M4 7.5 12 12l8-4.5M12 12v9"/><path d="M7.5 10.6l1.6.9"/>',
+  trophy: '<path d="M7.5 4h9v5a4.5 4.5 0 0 1-9 0z"/><path d="M7.5 6H4.5v1.2a3.3 3.3 0 0 0 3.3 3.3M16.5 6h3v1.2a3.3 3.3 0 0 1-3.3 3.3M12 13.5V17M8.5 20.5h7M9.5 17h5v3.5"/>',
+  burst: '<path d="M15.2 10.0L19.0 10.0M14.3 12.3L16.9 14.9M12.0 13.2L12.0 17.0M9.7 12.3L7.1 14.9M8.8 10.0L5.0 10.0M9.7 7.7L7.1 5.1M12.0 6.8L12.0 3.0M14.3 7.7L16.9 5.1"/><path d="M12 17.5V21"/>',
+  clock: '<circle cx="12" cy="12" r="8.5"/><path d="M12 12V6.8M12 12l2.8 2.8"/>',
+  party: '<path d="M4 20l4.2-11.2 7 7z"/><path d="M13 7.5c.4-1.8 1.6-3 3.4-3M16.5 11c1.8-.4 3-1.6 3-3.4"/><path d="M15 3v.01M21 9.5v.01M19.5 14.5v.01M10.5 3.5v.01"/>',
+  volcano: '<path d="M2.5 20h19l-6.2-10H8.7z"/><path d="M8.7 10l1.6 2.4 1.7-1.4 1.7 1.4 1.6-2.4"/><path d="M10 6.5c0-1.6 1-2.3 2-3.2 1 .9 2 1.6 2 3.2"/>',
+  dumbbell: '<path d="M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11"/>',
+  bolt: '<path d="M13 3 5 13.5h6L10 21l8-10.5h-6z"/>',
+  squat: '<circle cx="11" cy="4" r="2"/><path d="M11.5 6.5 10.5 12l5 1-1 6.5M11 8.5h6.5M10.5 12l-2.5 7.5"/>',
+  sick: '<path d="M14 14.6V5.2a2 2 0 0 0-4 0v9.4a4.2 4.2 0 1 0 4 0z"/><path d="M12 9.5v7.3"/>',
+  pain: '<path d="M8.5 5.5l10 10M5.5 8.5l10 10"/><rect x="2.8" y="8.3" width="18.4" height="7.4" rx="3.7" transform="rotate(45 12 12)"/>',
+  work: '<rect x="3" y="7.5" width="18" height="12" rx="2.5"/><path d="M8.5 7.5V6a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v1.5M3 12.5h18"/>',
+  plane: '<rect x="6" y="7" width="12" height="12" rx="2.5"/><path d="M9.5 7V4.5h5V7M10 10.5v5M14 10.5v5M8.5 19v1.5M15.5 19v1.5"/>',
+  dots: '<circle cx="6" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="18" cy="12" r="1.3"/>',
+  repeat: '<path d="M4 12a6 6 0 0 1 6-6h9M16 3l3 3-3 3M20 12a6 6 0 0 1-6 6H5M8 21l-3-3 3-3"/>',
 };
 // size in px; tone = colour (default: inherit). An Ico inside a tinted square: IcoBox.
 function Ico({ n, size = 22, color, sw = 2, style }) {
   return <svg data-ico={n} viewBox="0 0 24 24" width={size} height={size} aria-hidden="true" style={{ flexShrink: 0, display: "block", fill: "none", stroke: color || "currentColor", strokeWidth: sw, strokeLinecap: "round", strokeLinejoin: "round", ...style }} dangerouslySetInnerHTML={{ __html: ICONS[n] || "" }} />;
+}
+// 1.8.2: an icon inside a line of text (1 em, sits on the text like a letter)
+function IcoI({ n, color, sw = 2.3, style }) {
+  return <svg data-ico={n} viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true" style={{ display: "inline-block", verticalAlign: "-0.14em", flexShrink: 0, fill: "none", stroke: color || "currentColor", strokeWidth: sw, strokeLinecap: "round", strokeLinejoin: "round", ...style }} dangerouslySetInnerHTML={{ __html: ICONS[n] || "" }} />;
+}
+// 1.8.2: a badge's picture: its line icon in the colour of the level it reached (grey while locked), on a tinted tile
+function BadgeIco({ n, col, size = 40, glow }) {
+  const c = col || C.dim;
+  if (!ICONS[n]) return <span aria-hidden="true" style={{ fontSize: size * 0.6, lineHeight: 1, flexShrink: 0 }}>{n}</span>;
+  return <span aria-hidden="true" data-badge-ico={n} style={{ width: size, height: size, borderRadius: Math.round(size * 0.3), background: `${c}22`, boxShadow: `inset 0 0 0 1.5px ${c}55${glow ? `, 0 0 ${Math.round(size * 0.4)}px ${c}55` : ""}`, color: c, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Ico n={n} size={Math.round(size * 0.56)} sw={size > 60 ? 1.8 : 2} /></span>;
 }
 function IcoBox({ n, color = C.signal, size = 40 }) {
   return <span aria-hidden="true" style={{ width: size, height: size, borderRadius: Math.round(size * 0.3), background: `${color}1f`, color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Ico n={n} size={Math.round(size * 0.58)} /></span>;
@@ -2214,7 +2270,7 @@ function MenuBody({ screen, history, profile, session, onGo, onResume, onNews, g
             <BdayHalo size={52}><Avatar profile={profile} size={52} /></BdayHalo>
             <div style={{ minWidth: 0 }}>
               <div style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, lineHeight: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" , ...INK }}>{profile.name || T("defaultName")}</div>
-              <div style={{ fontSize: 13, color: C.dim, marginTop: 4 }}><span style={{ color: C.sky, fontWeight: 800 }}>⚡ {lv.lvl}</span> · <span style={{ color: "#ffa94d", fontWeight: 800 }}>🔥 {st.n}</span></div>
+              <div style={{ fontSize: 13, color: C.dim, marginTop: 4 }}><span style={{ color: C.sky, fontWeight: 800 }}><IcoI n="bolt" /> {lv.lvl}</span> · <span style={{ color: "#ffa94d", fontWeight: 800 }}><IcoI n="flame" /> {st.n}</span></div>
             </div>
           </button>
           {session && (
@@ -2308,51 +2364,64 @@ function MiniPlayer({ session, live, onOpen }) {
 // Home (1.5.3, Michael marked them in design A): two tiles side by side. Calories: today's number, the target and a bar
 // (tap: Calories). Challenges: done/3 and the days left, each challenge as a short line with its progress (Michael: the
 // descriptions must be visible); tap opens the full list with XP.
+// 1.8.2 (Michael: "calories more minimal, a long box like the showcase fields, the challenges under it the same"):
+// two full-width rows: an icon, one big number with a thin bar, and on the right what it is about.
 function HomeTiles({ history, onCalories }) {
   const [sheet, setSheet] = useState(false);
-  // 1.7.5: side by side only while each tile still has room for its text (with the phone's font size); else one under the other
-  const boxRef = useRef(null), bw = useWidth(boxRef), ts = useTextScale(), stack = bw > 0 && bw / ts < 300;
   const s = kcalNow(history);
   const wk = weekKey(dateKey()), list = challengeStatus(history, wk), doneN = list.filter(c => c.done).length;
   const left = daysBetween(dateKey(), addDays(wk, 6)) + 1;
-  const tile = { flex: 1, minWidth: 0, marginTop: 12, cursor: "pointer", display: "flex", flexDirection: "column", ...(LOOK === "flat" ? { ...card, padding: "13px 14px" } : { padding: "13px 14px" }) };
-  const label = t => <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: C.dim, ...SECT_HEAD }}>{t}</div>;
-  const bar = (v, col) => <span style={{ display: "block", height: 5, borderRadius: 99, background: `${C.chalk}14`, overflow: "hidden", marginTop: 8 }}><span style={{ display: "block", width: `${Math.min(1, v) * 100}%`, height: "100%", borderRadius: 99, background: col, transition: `width ${MO.fill} ${MO.ease}` }} /></span>;
   const pct = s ? Math.min(1, s.eaten / Math.max(1, s.target)) : 0, kcol = s && s.hit ? KC_HIT : s && s.left < 0 ? "#ff8a80" : C.signal;
+  const chCol = doneN === 3 ? C.mint : C.sky;
   const key = fn => e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); fn(); } };
   const openCal = () => { sfxTap(); onCalories(); }, openCh = () => { sfxTap(); setSheet(true); };
+  const row = { marginTop: 12, cursor: "pointer", padding: LOOK === "flat" ? 0 : "14px 16px", display: "flex", alignItems: "center", gap: 14 };
+  const label = t => <span style={{ display: "block", fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: C.dim }}>{t}</span>;
+  const bar = (v, col) => <span style={{ display: "block", height: 4, borderRadius: 99, background: `${C.chalk}14`, overflow: "hidden", marginTop: 9 }}><span style={{ display: "block", width: `${Math.min(1, v) * 100}%`, height: "100%", borderRadius: 99, background: col, transition: `width ${MO.fill} ${MO.ease}` }} /></span>;
   return (
-    <div ref={boxRef} data-home-tiles data-stack={stack ? 1 : 0} style={{ display: "flex", flexDirection: stack ? "column" : "row", gap: stack ? 0 : 10, alignItems: "stretch" }}>
-      <Sect role="button" tabIndex={0} data-home-kcal={s ? "on" : "setup"} onClick={openCal} onKeyDown={key(openCal)} aria-label={s ? `${T("kcHomeTitle")}: ${nf(s.eaten)} ${T("kcOf", { n: nf(s.target) })}` : T("kcHomeSetup")} style={tile}>
-        {label(T("kcTile"))}
-        {s ? <>
-          <span style={{ display: "flex", alignItems: "baseline", gap: 4, marginTop: 8, flexWrap: "wrap" }}>
-            <span data-home-kcal-eaten style={{ fontFamily: DISPLAY, fontSize: 34, fontWeight: 900, lineHeight: 1, color: C.chalk }}>{nf(s.eaten)}</span>
-            <span style={{ fontSize: 12, color: C.dim, whiteSpace: "nowrap" }}>/ {nf(s.target)}</span>
-          </span>
-          {bar(pct, kcol)}
-          {s.hit && <span data-home-kcal-hit style={{ display: "flex", marginTop: 8, color: KC_HIT }}><Ico n="check" size={18} sw={2.8} /></span>}
-        </> : <>
-          <span style={{ display: "block", fontSize: 14, fontWeight: 800, color: C.chalk, marginTop: 8, lineHeight: 1.3 }}>{T("kcHomeSetup")}</span>
-          <span style={{ display: "block", fontSize: 12, color: C.dim, marginTop: 4, lineHeight: 1.4 }}>{T("kcHomeSetupD")}</span>
-        </>}
-      </Sect>
-      <Sect role="button" tabIndex={0} data-home-ch onClick={openCh} onKeyDown={key(openCh)} aria-label={T("weeklyChallenges")} style={tile}>
-        {label(T("chTile"))}
-        <span style={{ display: "flex", alignItems: "baseline", gap: 4, marginTop: 8 }}>
-          <span style={{ fontFamily: DISPLAY, fontSize: 34, fontWeight: 900, lineHeight: 1, color: doneN === 3 ? C.mint : C.chalk }}>{doneN}/3</span>
-          <span style={{ fontSize: 12, color: C.dim, whiteSpace: "nowrap" }}>· {TP("days", left)}</span>
-        </span>
-        {bar(list.reduce((a, c) => a + Math.min(1, c.v / c.goal), 0) / 3, doneN === 3 ? C.mint : C.sky)}
-        <span style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 9 }}>
-          {list.map(c => (
-            <span key={c.id} data-home-ch-row={c.id} style={{ display: "flex", alignItems: "flex-start", gap: 6, fontSize: 12, lineHeight: 1.3, color: c.done ? C.mint : C.chalk }}>
-              <span aria-hidden="true" style={{ width: 16, flexShrink: 0, textAlign: "center" }}>{c.done ? "✓" : c.icon}</span>
-              <span style={{ flex: 1, minWidth: 0 }}>{L.ch[c.id]}</span>
-              <span style={{ color: c.done ? C.mint : C.dim, fontWeight: 700, whiteSpace: "nowrap" }}>{Math.min(c.v, c.goal)}/{c.goal}</span>
+    <div data-home-tiles data-stack={1}>
+      <Sect role="button" tabIndex={0} data-home-kcal={s ? "on" : "setup"} onClick={openCal} onKeyDown={key(openCal)} aria-label={s ? `${T("kcHomeTitle")}: ${nf(s.eaten)} ${T("kcOf", { n: nf(s.target) })}` : T("kcHomeSetup")} style={row}>
+        <BadgeIco n="plate" col={s ? kcol : C.dim} size={46} />
+        <span style={{ flex: 1, minWidth: 0 }}>
+          {label(T("kcTile"))}
+          {s ? <>
+            <span style={{ display: "flex", alignItems: "baseline", gap: 6, marginTop: 5 }}>
+              <span data-home-kcal-eaten style={{ fontFamily: DISPLAY, fontSize: 32, fontWeight: 900, lineHeight: 1, color: C.chalk }}>{nf(s.eaten)}</span>
+              <span style={{ fontSize: 12.5, color: C.dim, whiteSpace: "nowrap" }}>/ {nf(s.target)} kcal</span>
             </span>
-          ))}
+            {bar(pct, kcol)}
+          </> : <span style={{ display: "block", fontSize: 15, fontWeight: 800, color: C.chalk, marginTop: 5, lineHeight: 1.3 }}>{T("kcHomeSetup")}</span>}
         </span>
+        {s && s.hit ? <span data-home-kcal-hit style={{ display: "flex", color: KC_HIT, flexShrink: 0 }}><Ico n="check" size={24} sw={2.4} /></span> : <Arrow />}
+      </Sect>
+      {/* 1.8.2 (Michael, 18:19): the challenges one under the other: tap an icon to see what it is, a bar beside it */}
+      <Sect data-home-ch style={{ marginTop: 12, padding: LOOK === "flat" ? 0 : "14px 16px 16px" }}>
+        <div role="button" tabIndex={0} data-home-ch-head onClick={openCh} onKeyDown={key(openCh)} aria-label={T("weeklyChallenges")} style={{ display: "flex", alignItems: "center", gap: 14, cursor: "pointer" }}>
+          <BadgeIco n="calCheck" col={chCol} size={46} />
+          <span style={{ flex: 1, minWidth: 0 }}>
+            {label(T("chTile"))}
+            <span style={{ display: "flex", alignItems: "baseline", gap: 6, marginTop: 5 }}>
+              <span style={{ fontFamily: DISPLAY, fontSize: 32, fontWeight: 900, lineHeight: 1, color: doneN === 3 ? C.mint : C.chalk }}>{doneN}/3</span>
+              <span style={{ fontSize: 12.5, color: C.dim, whiteSpace: "nowrap" }}>· {TP("days", left)}</span>
+            </span>
+          </span>
+          <Arrow />
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 14 }}>
+          {list.map(c => {
+            const info = e => { e.stopPropagation(); sfxTap(); if (openInfoGlobal) openInfoGlobal({ title: L.ch[c.id], text: [`${Math.min(c.v, c.goal)} / ${c.goal} · +${c.xp} XP`, noEmo(T("chFooter"))] }); };
+            const col = c.done ? C.mint : C.sky;
+            return (
+              <div key={c.id} data-home-ch-row={c.id} data-done={c.done ? 1 : 0} style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <button type="button" data-ch-info={c.id} onClick={info} aria-label={L.ch[c.id]} style={{ ...btnBase, width: 46, height: 38, borderRadius: 12, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", padding: 0, background: c.done ? C.mint : `${C.sky}1a`, color: c.done ? C.ink : C.sky, boxShadow: c.done ? "none" : `inset 0 0 0 1.5px ${C.sky}33` }}>
+                  <Ico n={c.done ? "tick" : c.icon} size={20} sw={c.done ? 2.8 : 2} />
+                </button>
+                <span style={{ flex: 1, height: 6, borderRadius: 99, background: `${C.chalk}14`, overflow: "hidden" }}><span style={{ display: "block", height: "100%", width: `${Math.min(1, c.v / c.goal) * 100}%`, background: col, borderRadius: 99, transition: `width ${MO.fill} ${MO.ease}` }} /></span>
+                <span style={{ width: 52, textAlign: "right", fontSize: 12.5, fontWeight: 800, color: c.done ? C.mint : C.dim, fontVariantNumeric: "tabular-nums", flexShrink: 0 }}>{Math.min(c.v, c.goal)}/{c.goal}</span>
+              </div>
+            );
+          })}
+        </div>
       </Sect>
       {sheet && <Sheet title={T("weeklyChallenges")} onClose={() => setSheet(false)} short><ChallengeRows history={history} /></Sheet>}
     </div>
@@ -2365,7 +2434,7 @@ function ChallengeRows({ history }) {
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         {list.map(c => (
           <div key={c.id} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div className={c.done ? "pop" : ""} style={{ width: 36, height: 36, borderRadius: 11, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, background: c.done ? C.mint : C.panelHi }}>{c.done ? "✓" : c.icon}</div>
+            <div className={c.done ? "pop" : ""} style={{ width: 36, height: 36, borderRadius: 11, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: c.done ? C.mint : `${C.sky}1f`, color: c.done ? C.ink : C.sky }}><Ico n={c.done ? "check" : c.icon} size={20} sw={c.done ? 2.4 : 2} /></div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
                 <span style={{ fontSize: 14, fontWeight: 600, color: c.done ? C.mint : C.chalk }}>{L.ch[c.id]}</span>
@@ -2394,7 +2463,7 @@ function ChallengesCard({ history }) {
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         {list.map(c => (
           <div key={c.id} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div className={c.done ? "pop" : ""} style={{ width: 36, height: 36, borderRadius: 11, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, background: c.done ? C.mint : C.panelHi }}>{c.done ? "✓" : c.icon}</div>
+            <div className={c.done ? "pop" : ""} style={{ width: 36, height: 36, borderRadius: 11, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: c.done ? C.mint : `${C.sky}1f`, color: c.done ? C.ink : C.sky }}><Ico n={c.done ? "check" : c.icon} size={20} sw={c.done ? 2.4 : 2} /></div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
                 <span style={{ fontSize: 14, fontWeight: 600, color: c.done ? C.mint : C.chalk }}>{L.ch[c.id]}</span>
@@ -2688,8 +2757,8 @@ function BirthdayCard({ profile, ui, setUi }) {
 
 // "I can't train today" (Michael, Oct 9): a reason, saved with the day (profile.skips[date] = {r, note}),
 // plus a freeze if one is left. Later a free AI may judge the reason; for now it is only recorded.
-const SKIP_REASONS = [["sick", "🤒"], ["pain", "🤕"], ["work", "💼"], ["travel", "✈️"], ["other", "🙂"]];
-const skipIcon = r => (SKIP_REASONS.find(x => x[0] === r) || ["", "🧊"])[1];
+const SKIP_REASONS = [["sick", "sick"], ["pain", "pain"], ["work", "work"], ["travel", "luggage"], ["other", "dots"]];
+const skipIcon = r => (SKIP_REASONS.find(x => x[0] === r) || ["", "ice"])[1];
 function SkipSheet({ freezes, onSave, onClose }) {
   const [r, setR] = useState(null);
   const [note, setNote] = useState("");
@@ -2700,7 +2769,7 @@ function SkipSheet({ freezes, onSave, onClose }) {
         <div role="radiogroup" aria-label={T("skipWhy")} style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
           {SKIP_REASONS.map(([k, ic]) => (
             <button key={k} role="radio" aria-checked={r === k} data-skip-r={k} onClick={() => { sfxTap(); setR(k); }}
-              style={{ ...btnBase, padding: "9px 13px", fontSize: 14, background: r === k ? C.sky : "transparent", color: r === k ? C.ink : C.chalk, border: `1.5px solid ${r === k ? C.sky : C.line}` }}>{ic} {T("skip_" + k)}</button>
+              style={{ ...btnBase, padding: "9px 13px", fontSize: 14, background: r === k ? C.sky : "transparent", color: r === k ? C.ink : C.chalk, border: `1.5px solid ${r === k ? C.sky : C.line}`, display: "inline-flex", alignItems: "center", gap: 7 }}><Ico n={ic} size={17} />{T("skip_" + k)}</button>
           ))}
         </div>
         <label style={{ display: "block", fontSize: 13, color: C.dim, marginTop: 14 }}>{T("skipNote")}
@@ -2709,7 +2778,7 @@ function SkipSheet({ freezes, onSave, onClose }) {
         </label>
         {(r === "sick" || r === "pain") && <div data-skip-rest style={{ marginTop: 12, fontSize: 13, color: C.chalk, lineHeight: 1.5, background: C.panelHi, borderRadius: 12, padding: "10px 12px" }}>{T("skipRestHint")}</div>}
         {freezes > 0 ? (
-          <button data-skip-freeze disabled={!r} onClick={() => onSave({ r, note: note.trim() }, true)} className="b3d" style={{ ...bigBtn(C.sky, C.ink), marginTop: 16, opacity: r ? 1 : 0.5 }}>{T("skipUse", { n: freezes })}</button>
+          <button data-skip-freeze disabled={!r} onClick={() => onSave({ r, note: note.trim() }, true)} className="b3d" style={{ ...bigBtn(C.sky, C.ink), marginTop: 16, opacity: r ? 1 : 0.5 }}><IcoI n="ice" /> {noEmo(T("skipUse", { n: freezes }))}</button>
         ) : (
           <>
             <div style={{ marginTop: 14, fontSize: 13, color: C.signal, lineHeight: 1.5 }}>{T("skipNoFreeze")}</div>
@@ -2748,20 +2817,26 @@ function UpdateBanner({ dl, busy, onClose }) {
 
 // Floating start bar: two small squares (19 / 13 min) and a wide "Start day X". It slides up when the rounds
 // buttons on Home are off screen and slides away when they are visible (then the normal button is right there).
+// 1.8.2: room at the end of a Home page for the bar, so the last box scrolls fully above it
+const FS_H = 106; // bar 94 px + 12 px from the bottom edge
+function FsSpace() { return <div data-fstart-space aria-hidden="true" style={{ height: `calc(var(--sab, 0px) + ${FS_H + 14}px)` }} />; }
 function FloatStart({ show, day, rounds, setRounds, onStart }) {
   return createPortal(
     <div data-fstart={show ? "on" : "off"} aria-hidden={!show} className={"fstart" + (show ? " on" : "")}
       style={{ position: "fixed", left: "var(--side, 0px)", right: 0, bottom: "calc(var(--sab, 0px) + 12px)", zIndex: 40, display: "flex", justifyContent: "center", padding: "0 12px", pointerEvents: show ? "auto" : "none" }}>
-      <div data-fstart-box style={{ display: "flex", gap: 10, width: "100%", maxWidth: 436, padding: 10, borderRadius: 26, background: `${C.ink}f5`, border: `1px solid ${C.line}`, boxShadow: "0 12px 34px rgba(0,0,0,.5)", ...(LOOK === "liquid" ? { ...LIQUID_FLOAT(), borderRadius: 26 } : LOOK === "glass" ? { ...GLASS(), borderRadius: 26, boxShadow: "inset 0 1px 0 rgba(255,255,255,.22), 0 12px 34px rgba(0,0,0,.5)" } : {}) }}>
+      {/* the page fades out under the bar instead of being cut by it */}
+      <div aria-hidden="true" data-fstart-fade style={{ position: "fixed", left: "var(--side, 0px)", right: 0, bottom: 0, height: `calc(var(--sab, 0px) + ${FS_H + 34}px)`, background: `linear-gradient(180deg, ${C.ink}00, ${C.ink}d9 45%, ${C.ink})`, pointerEvents: "none", zIndex: -1 }} />
+      <div data-fstart-box data-rounds-row style={{ display: "flex", gap: 10, width: "100%", maxWidth: 436, padding: 10, borderRadius: 26, background: `${C.ink}f5`, border: `1px solid ${C.line}`, boxShadow: "0 12px 34px rgba(0,0,0,.5)", ...(LOOK === "liquid" ? { ...LIQUID_FLOAT(), borderRadius: 26 } : LOOK === "glass" ? { ...GLASS(), borderRadius: 26 } : {}) }}>
         {[3, 2].map((n, i) => (
-          <button key={n} tabIndex={show ? 0 : -1} data-fround={n} aria-pressed={rounds === n} aria-label={T("roundsBtn", { n, m: n === 2 ? 13 : 19 })} onClick={() => { sfxTap(); setRounds(n); }} className="fsq" style={{ ...btnBase, "--d": `${60 + i * 50}ms`, width: 74, flexShrink: 0, borderRadius: 17, padding: "12px 0", ...(rounds === n ? { background: C.chalk, border: `1px solid ${C.chalk}` } : SUNK()), color: rounds === n ? C.ink : C.dim, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", lineHeight: 1 }}>
+          <button key={n} tabIndex={show ? 0 : -1} data-fround={n} data-rounds={n} aria-pressed={rounds === n} aria-label={T("roundsBtn", { n, m: n === 2 ? 13 : 19 })} onClick={() => { sfxTap(); setRounds(n); }} className="fsq" style={{ ...btnBase, position: "relative", "--d": `${60 + i * 50}ms`, width: 74, flexShrink: 0, borderRadius: 17, padding: "12px 0", ...(rounds === n ? { background: C.chalk, border: `1px solid ${C.chalk}` } : SUNK()), color: rounds === n ? C.ink : C.dim, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", lineHeight: 1 }}>
+            {n === 3 && <span data-rec style={{ position: "absolute", top: -8, left: "50%", transform: "translateX(-50%)", whiteSpace: "nowrap", fontSize: 9, fontWeight: 900, letterSpacing: 0.3, padding: "2px 6px", borderRadius: 99, background: C.mint, color: C.ink }}>{T("roundsRec")}</span>}
             <span style={{ fontFamily: DISPLAY, fontSize: 32, fontWeight: 900 }}>{n === 2 ? 13 : 19}</span>
             <span style={{ fontSize: 11, fontWeight: 800, marginTop: 3 }}>min</span>
           </button>
         ))}
-        <button tabIndex={show ? 0 : -1} data-fstart-go onClick={onStart} className="b3d fsq" style={{ ...bigBtn(C.signal, C.signalInk), "--d": "160ms", flex: 1, minWidth: 0, padding: "12px 12px", fontSize: 21, borderRadius: 17 }}>
+        <button tabIndex={show ? 0 : -1} data-fstart-go data-start onClick={onStart} className="b3d fsq" style={{ ...bigBtn(C.signal, C.signalInk), "--d": "160ms", flex: 1, minWidth: 0, padding: "12px 12px", fontSize: 21, borderRadius: 17 }}>
           {T("startDay", { d: day })}
-          <span data-fstart-rounds style={{ display: "block", fontSize: 12, fontWeight: 700, opacity: 0.75, marginTop: 3 }}>{T("roundsBtn", { n: rounds, m: rounds === 2 ? 13 : 19 })}</span>
+          <span data-fstart-rounds data-start-rounds style={{ display: "block", fontSize: 12, fontWeight: 700, opacity: 0.75, marginTop: 3 }}>{T("roundsBtn", { n: rounds, m: rounds === 2 ? 13 : 19 })}</span>
         </button>
       </div>
     </div>,
@@ -3238,15 +3313,7 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
   const auto = nextDayIdx(history);
   const [dayIdx, setDayIdx] = useState(auto);
   const [rounds, setRounds] = useState(3); // 3 rounds recommended (more weekly sets); 2 when short on time
-  // While the rounds buttons are off screen, a floating bar offers 19 / 13 min + Start (Michael, Oct 10).
-  const roundsRow = useRef(null);
-  const [rowSeen, setRowSeen] = useState(true);
-  useEffect(() => {
-    const el = roundsRow.current; if (!el || typeof IntersectionObserver === "undefined") return;
-    // several entries can come in one batch (it moved out and back in within a frame): the last one is the current state
-    const io = new IntersectionObserver(es => setRowSeen(es[es.length - 1].isIntersecting), { threshold: 0.6 });
-    io.observe(el); return () => io.disconnect();
-  }, [active]);
+  // 1.8.2 (Michael): the floating bar with 19 / 13 min + Start is always on Home (no rounds row on the day card)
   const [howEx, setHowEx] = useState(null);
   const last = history[history.length - 1];
   const gap = last ? daysBetween(last.date, today) : null;
@@ -3332,34 +3399,17 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
       {/* 1.8.2 (Michael: "still useless texts"): only the warning that the streak ends tomorrow stays */}
       {last && !doneToday && gap === 2 && st.n > 0 && <div data-day-status style={{ fontSize: 14, color: C.signal, marginTop: 8, lineHeight: 1.5 }}>{status}</div>}
       {!doneToday && st.gap === 2 && st.n > 0 && !st.frozenToday && !(META.skips || {})[dateKey()] && (
-        <button data-skip-btn onClick={onFreeze} style={{ ...ghostBtn, marginTop: 10, color: C.sky, borderColor: C.sky }}>{T("skipBtn")}</button>
+        <button data-skip-btn onClick={onFreeze} style={{ ...ghostBtn, marginTop: 10, color: C.sky, borderColor: C.sky }}><IcoI n="ice" /> {noEmo(T("skipBtn"))}</button>
       )}
-      {st.frozenToday && <div style={{ fontSize: 13, color: C.sky, marginTop: 8 }}>{T("frozenToday")}</div>}
-      {(META.skips || {})[dateKey()] && <div data-skip-today style={{ fontSize: 13, color: C.dim, marginTop: 4 }}>{T("skipSaved", { r: `${skipIcon(META.skips[dateKey()].r)} ${T("skip_" + META.skips[dateKey()].r)}${META.skips[dateKey()].note ? ` (${META.skips[dateKey()].note})` : ""}` })}</div>}
+      {st.frozenToday && <div style={{ fontSize: 13, color: C.sky, marginTop: 8 }}><IcoI n="ice" /> {noEmo(T("frozenToday"))}</div>}
+      {(META.skips || {})[dateKey()] && <div data-skip-today style={{ fontSize: 13, color: C.dim, marginTop: 4 }}>{T("skipSaved", { r: `${T("skip_" + META.skips[dateKey()].r)}${META.skips[dateKey()].note ? ` (${META.skips[dateKey()].note})` : ""}` })}</div>}
       {dayPicker({ marginTop: 18 })}
-      {/* Same shape as the floating bar (Michael, Oct 10): two squares 19 / 13 min and a wide Start */}
-      <div ref={roundsRow} data-rounds-row style={{ display: "flex", gap: 8, alignItems: "stretch", marginTop: 16 }}>
-        {[3, 2].map(n => (
-          <button key={n} onClick={() => { sfxTap(); setRounds(n); }} aria-pressed={rounds === n} data-rounds={n} aria-label={T("roundsBtn", { n, m: n === 2 ? 13 : 19 })}
-            style={{ ...btnBase, position: "relative", width: 64, flexShrink: 0, padding: "8px 0", borderRadius: 14, ...(rounds === n ? { background: C.chalk, border: `1px solid ${C.chalk}` } : SUNK()), color: rounds === n ? C.ink : C.dim, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", transition: "background .2s, box-shadow .2s" }}>
-            {n === 3 && <span data-rec style={{ position: "absolute", top: -9, left: "50%", transform: "translateX(-50%)", whiteSpace: "nowrap", fontSize: 9, fontWeight: 900, letterSpacing: 0.3, padding: "2px 6px", borderRadius: 99, background: C.mint, color: C.ink }}>{T("roundsRec")}</span>}
-            <span style={{ fontFamily: DISPLAY, fontSize: 26, fontWeight: 900, lineHeight: 1 }}>{n === 2 ? 13 : 19}</span>
-            <span style={{ fontSize: 10, fontWeight: 800, marginTop: 2 }}>min</span>
-          </button>
-        ))}
-        {active ? (
-          <button onClick={() => { unlockAudio(); onResume(); }} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), flex: 1, minWidth: 0, fontSize: 16, padding: "12px 10px", borderRadius: 14 }}>
-            ▶ {T("resumeWorkout", { d: active.day })}
-          </button>
-        ) : (
-          <div data-start-wrap style={{ flex: 1, minWidth: 0, display: "flex" }}>
-            <button onClick={() => { unlockAudio(); onStart(day.id, rounds); }} className="b3d" data-start style={{ ...bigBtn(C.signal, C.signalInk), fontSize: 17, padding: "10px 10px", borderRadius: 14 }}>
-              {T("startDay", { d: day.id })}
-              <span data-start-rounds style={{ display: "block", fontSize: 11, fontWeight: 700, opacity: 0.75, marginTop: 2 }}>{T("roundsBtn", { n: rounds, m: rounds === 2 ? 13 : 19 })}</span>
-            </button>
-          </div>
-        )}
-      </div>
+      {/* 1.8.2 (Michael): 19 / 13 min and Start live only in the bar at the bottom of Home; a minimized workout is resumed here */}
+      {active && (
+        <button onClick={() => { unlockAudio(); onResume(); }} data-home-resume className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 16, fontSize: 16, padding: "14px 10px", borderRadius: 14 }}>
+          ▶ {T("resumeWorkout", { d: active.day })}
+        </button>
+      )}
     </Sect>
   );
 
@@ -3466,6 +3516,7 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
           {weekCard}
           {hero}
           <HomeTiles history={history} onCalories={() => onGo("calories")} />
+          {!active && <FsSpace />}
         </div>
         <div {...pg.pageProps(1)}>
           <Sect title={`${T("secExercises")} · ${T("dayN", { d: day.id })}`} accent={C.sky} titlePad="0 15px" style={LOOK === "flat" ? { marginTop: 0 } : { padding: "12px 0 4px", marginTop: 0 }}>
@@ -3514,9 +3565,10 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
               </div>
             </Sect>
           )}
+          {!active && <FsSpace />}
         </div>
       </div>
-      {!active && <FloatStart show={!rowSeen} day={day.id} rounds={rounds} setRounds={setRounds} onStart={() => { unlockAudio(); onStart(day.id, rounds); }} />}
+      {!active && <FloatStart show day={day.id} rounds={rounds} setRounds={setRounds} onStart={() => { unlockAudio(); onStart(day.id, rounds); }} />}
     </div>
   );
 }
@@ -4312,8 +4364,8 @@ function MonthCalendar({ history }) {
           const isToday = k === today;
           const sk = !on && (META.skips || {})[k], fz = !on && (META.freezeDays || []).includes(k);
           if (sk || fz) return (
-            <div key={i} data-cal-skip={k} title={sk ? `${T("skip_" + sk.r)}${sk.note ? `: ${sk.note}` : ""}` : "🧊"} style={{ aspectRatio: "1", borderRadius: 9, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: `${C.sky}22`, color: C.sky, border: `1.5px solid ${isToday ? C.chalk : `${C.sky}66`}`, fontSize: 13, fontWeight: 700 }}>
-              {d}<span style={{ fontSize: 10, lineHeight: 1 }}>{sk ? skipIcon(sk.r) : "🧊"}</span>
+            <div key={i} data-cal-skip={k} title={sk ? `${T("skip_" + sk.r)}${sk.note ? `: ${sk.note}` : ""}` : T("shFreeze")} style={{ aspectRatio: "1", borderRadius: 9, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: `${C.sky}22`, color: C.sky, border: `1.5px solid ${isToday ? C.chalk : `${C.sky}66`}`, fontSize: 13, fontWeight: 700 }}>
+              {d}<Ico n={sk ? skipIcon(sk.r) : "ice"} size={11} sw={2.2} />
             </div>
           );
           const kc = kcalNow(history, k);
@@ -4547,7 +4599,7 @@ function HistoryTab({ history, onDelete, onSaveEntry, editDate, onEditOpened }) 
   }, [editDate]);
   const sets = history.reduce((a, e) => a + setsIn(e), 0);
   const prs = history.reduce((a, e) => a + ((e.prs && e.prs.length) || 0), 0);
-  const tiles = [[T("tileTrainings"), history.length, "🏋️"], [T("tileSets"), sets, "🔁"], [T("tilePRs"), prs, "🏆"]];
+  const tiles = [[T("tileTrainings"), history.length, "dumbbell", C.signal], [T("tileSets"), sets, "repeat", C.sky], [T("tilePRs"), prs, "trophy", C.mint]];
   return (
     <div className="scr" style={{ padding: "16px 18px 110px", maxWidth: "var(--colMax)", margin: "0 auto" }}>
       {editing !== null && (
@@ -4559,7 +4611,7 @@ function HistoryTab({ history, onDelete, onSaveEntry, editDate, onEditOpened }) 
       {/* 1.7.0: on a wide screen the numbers, calendar and chart on the left, the workouts on the right */}
       <Cols left={<>
       <div data-stat-grid style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 8 }}>
-        {tiles.map(([l, v, ic]) => <StatTile key={l} label={l} icon={ic} value={v} compact />)}
+        {tiles.map(([l, v, ic, ico]) => <StatTile key={l} label={l} icon={ic} icoCol={ico} value={v} compact />)}
       </div>
       <MonthCalendarM history={history} />
       <ProgressChartM history={history} />
@@ -4581,7 +4633,7 @@ function HistoryTab({ history, onDelete, onSaveEntry, editDate, onEditOpened }) 
                 <div style={{ width: 40, height: 40, borderRadius: 12, background: SOFT(), display: "flex", alignItems: "center", justifyContent: "center", fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, flexShrink: 0 }}>{s.day}</div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 15, fontWeight: 700 }}>{capFirst(fmtDate(s.date, true))}</div>
-                  <div style={{ fontSize: 12, color: C.dim }}>{TP("rounds", s.rounds || 2)}, {TP("sets", setsIn(s))}{s.prs && s.prs.length ? `, 🏆 ${s.prs.length}` : ""}</div>
+                  <div style={{ fontSize: 12, color: C.dim }}>{TP("rounds", s.rounds || 2)}, {TP("sets", setsIn(s))}{s.prs && s.prs.length ? <>, <IcoI n="trophy" color={C.signal} /> {s.prs.length}</> : ""}</div>
                 </div>
                 <div style={{ fontFamily: DISPLAY, fontSize: 20, fontWeight: 800, color: C.sky, flexShrink: 0 }}>+{xpFor(s)} XP</div>
                 <Chevron open={isOpen} />
@@ -4595,14 +4647,14 @@ function HistoryTab({ history, onDelete, onSaveEntry, editDate, onEditOpened }) 
                       <div key={it.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderTop: `1px solid ${C.line}` }}>
                         <div style={{ flex: 1, minWidth: 0 }}>
                           {/* 1.8.2 (Michael: "these texts are useless"): the rank at the time is only its emblem in front of the name */}
-                          <div data-hist-ex={it.id} style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 14, fontWeight: 600, color: C.chalk }}>{RANK_AT[it.id] && <span title={T("rankThen", { rank: r.name })} style={{ display: "inline-flex" }}><RankIcon r={RANKS.indexOf(r)} size={16} /></span>}<span style={{ minWidth: 0 }}>{s.prs && s.prs.includes(it.id) ? "🏆 " : ""}{exName(it)}{EX[it.id] && <ExQ id={it.id} />}</span></div>
+                          <div data-hist-ex={it.id} style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 14, fontWeight: 600, color: C.chalk }}>{RANK_AT[it.id] && <span title={T("rankThen", { rank: r.name })} style={{ display: "inline-flex" }}><RankIcon r={RANKS.indexOf(r)} size={16} /></span>}<span style={{ minWidth: 0 }}>{s.prs && s.prs.includes(it.id) ? <><IcoI n="trophy" color={C.signal} /> </> : ""}{exName(it)}{EX[it.id] && <ExQ id={it.id} />}</span></div>
                         </div>
                         <div style={{ fontFamily: DISPLAY, fontSize: 20, fontWeight: 800, color: C.chalk, whiteSpace: "nowrap" }}>{it.res.map(v => fmtRes(v, "")).join(" / ")}<span style={{ fontFamily: BODY, fontSize: 11, color: C.dim, marginLeft: 3 }}>{unitStr(it.unit)}</span></div>
                       </div>
                     );
                   })}
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 6 }}>
-                    <button onClick={() => { sfxTap(); setConfirmDel(null); setEditing(idx); }} style={{ ...btnBase, background: "transparent", color: C.sky, fontSize: 13, padding: "4px 6px", fontWeight: 700 }}>{T("editWorkout")}</button>
+                    <button onClick={() => { sfxTap(); setConfirmDel(null); setEditing(idx); }} style={{ ...btnBase, background: "transparent", color: C.sky, fontSize: 13, padding: "4px 6px", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 6 }}><Ico n="pencil" size={15} />{noEmo(T("editWorkout"))}</button>
                     <button onClick={() => { if (confirmDel === idx) { onDelete(idx); setConfirmDel(null); } else setConfirmDel(idx); }}
                       style={{ ...btnBase, background: "transparent", color: confirmDel === idx ? "#ff8a80" : C.dim, fontSize: 12, padding: "4px 6px", fontWeight: 600 }}>
                       {confirmDel === idx ? T("confirmDelete") : T("deleteWorkout")}
@@ -4692,7 +4744,9 @@ function showcase(m) {
   return out;
 }
 const fmtStat = (m, k) => (k === "min" ? fmtMins(m.min) : k === "since" ? (m.since ? fmtDate(m.since, true) : "") : <CountUp n={m[k] || 0} />);
-const STAT_UI = { n: ["statTrainings", "🏋️"], reps: ["statReps", "📊"], min: ["pvTime", "⏱️"], best: ["statBestStreak", "🏆"], prs: ["tilePRs", "📈"], xp: ["pfXpTotal", "⚡"], since: ["pfSinceL", "📅"] };
+const STAT_UI = { n: ["statTrainings", "dumbbell"], reps: ["statReps", "bars"], min: ["pvTime", "timer"], best: ["statBestStreak", "flame"], prs: ["tilePRs", "trend"], xp: ["pfXpTotal", "bolt"], since: ["pfSinceL", "calendar"] };
+// 1.8.2: each stat's icon has its own colour
+const STAT_COL = () => ({ n: C.signal, reps: C.sky, min: "#ffa94d", best: "#ff8a4c", prs: C.mint, xp: C.sky, since: "#c3a6ff", sets: C.sky, trainings: C.signal });
 const rankUnit = id => (EX[id].type === "time" ? " s" : "");
 
 // One showcase field. Others (and you, outside edit) tap it to see the whole list on the page below.
@@ -4704,7 +4758,7 @@ function SlotTile({ sl, m, i, onTap, own, cols = 2 }) {
   const pen = own && <span aria-hidden="true" style={{ position: "absolute", right: 9, top: 8, opacity: 0.55, color: C.dim }}><Ico n="pencil" size={13} /></span>;
   const mini = (icon, name, sub, col, k) => (
     <div key={k} style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: 4 }}>
-      {typeof icon === "number" ? <RankIcon r={icon} size={30} /> : <span aria-hidden="true" style={{ fontSize: 26, lineHeight: 1 }}>{icon}</span>}
+      {typeof icon === "number" ? <RankIcon r={icon} size={30} /> : <BadgeIco n={icon} col={col} size={34} />}
       <span style={{ fontSize: 12, fontWeight: 800, lineHeight: 1.2, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{name}</span>
       <span style={{ fontSize: 11, fontWeight: 800, color: col }}>{sub}</span>
     </div>
@@ -4734,7 +4788,7 @@ function SlotTile({ sl, m, i, onTap, own, cols = 2 }) {
     body = sl.kind === "ach" ? (() => { const a = items[0], r = RANKS[a.tier - 1]; return (<>
       <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: 0.8, textTransform: "uppercase", color: C.dim }}>{T("pfT_ach")}</div>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 8 }}>
-        <span aria-hidden="true" style={{ fontSize: 38, lineHeight: 1 }}>{a.icon}</span>
+        <BadgeIco n={a.icon} col={r.color} size={46} />
         <span style={{ minWidth: 0 }}>
           <span style={{ display: "block", fontSize: 16, fontWeight: 800, lineHeight: 1.2 }}>{a.name}</span>
           <span style={{ display: "block", marginTop: 4 }}><RankTag r={a.tier - 1} size={15} fs={12.5} /></span>
@@ -4750,7 +4804,7 @@ function SlotTile({ sl, m, i, onTap, own, cols = 2 }) {
     body = (<>
       <div style={{ display: "flex", justifyContent: "space-between", gap: 6 }}>
         <span style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: 0.8, textTransform: "uppercase", color: C.dim }}>{T(lab)}</span>
-        <span aria-hidden="true" style={{ fontSize: 16, lineHeight: 1, marginRight: own ? 14 : 0 }}>{icon}</span>
+        <span style={{ marginRight: own ? 14 : 0 }}><Ico n={icon} size={18} color={STAT_COL()[k]} /></span>
       </div>
       <div style={{ fontFamily: DISPLAY, fontSize: k === "since" ? 22 : 34, fontWeight: 900, lineHeight: 1, marginTop: "auto", paddingTop: 10, fontVariantNumeric: "tabular-nums" }}>{fmtStat(m, k)}</div>
     </>);
@@ -4819,7 +4873,7 @@ function BadgesList({ m, focus, claim }) {
               onClick={() => { sfxTap(); setOpen(a.k); }}
               style={{ ...btnBase, fontWeight: 400, textAlign: "left", width: "100%", color: C.chalk, ...rr.style, padding: "11px 12px", display: "block" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <div aria-hidden="true" style={{ fontSize: 24, lineHeight: 1, flexShrink: 0, filter: r ? "none" : "grayscale(1)", opacity: r ? 1 : 0.55 }}>{a.icon}</div>
+                <BadgeIco n={a.icon} col={r ? RANKS[a.tier - 1].color : null} size={38} />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 14, fontWeight: 800, color: C.chalk, lineHeight: 1.2 }}>{a.name}{m.own && CARD_HIDE.includes(a.k) && <span data-only-you style={{ fontSize: 10.5, fontWeight: 700, color: C.dim, marginLeft: 6, whiteSpace: "nowrap" }}>· {T("pfOnlyYou")}</span>}</div>
                   <div style={{ marginTop: 3 }}>{label}</div>
@@ -4866,7 +4920,7 @@ function BadgeSheet({ a, onClose }) {
   return (
     <Sheet title={a.name} onClose={onClose} short>
       <div data-badge-sheet={a.k}>
-        <SheetHero col={col} icon={<span aria-hidden="true" style={{ fontSize: 64, filter: a.step ? "none" : "grayscale(1)", opacity: a.step ? 1 : 0.6 }}>{a.icon}</span>}>
+        <SheetHero col={col} icon={<BadgeIco n={a.icon} col={a.step ? col : null} size={84} glow={!!a.step} />}>
           <div style={{ marginTop: 10 }}>{a.single ? <RankTag r={a.rk[0]} size={20} fs={15} text={rarityName(a)} style={{ opacity: a.step ? 1 : 0.6 }} /> : cur >= 0 ? <RankTag r={cur} size={20} fs={15} /> : <span style={{ fontSize: 14, fontWeight: 800, color: C.dim }}>{T("achLocked")}</span>}</div>
           {!a.single && <div style={{ fontFamily: DISPLAY, fontSize: 30, fontWeight: 900, color: C.chalk, marginTop: 6, lineHeight: 1 }}>{a.next === null ? val(a.v) : `${val(a.v)} / ${val(a.next)}`}</div>}
           {!a.single && a.next === null && <div style={{ fontSize: 13, color: col, fontWeight: 800, marginTop: 6 }}>{T("achMax")}</div>}
@@ -4987,7 +5041,7 @@ function StatsGrid({ m }) {
   const ks = PF_STATS.filter(k => k !== "since" || m.since);
   return (
     <div data-pf-stats style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-      {ks.map((k, i) => <div key={k} style={{ display: "grid", gridColumn: ks.length % 2 && i === ks.length - 1 ? "1 / -1" : undefined }}><StatTile compact data={"pf-" + k} label={T(STAT_UI[k][0])} icon={STAT_UI[k][1]} value={fmtStat(m, k)} color={k === "best" ? "#ffa94d" : k === "xp" ? C.sky : undefined} /></div>)}
+      {ks.map((k, i) => <div key={k} style={{ display: "grid", gridColumn: ks.length % 2 && i === ks.length - 1 ? "1 / -1" : undefined }}><StatTile compact data={"pf-" + k} label={T(STAT_UI[k][0])} icon={STAT_UI[k][1]} icoCol={STAT_COL()[k]} value={fmtStat(m, k)} color={k === "best" ? "#ffa94d" : k === "xp" ? C.sky : undefined} /></div>)}
     </div>
   );
 }
@@ -5023,21 +5077,21 @@ function ProfileHero({ m, own, onPhoto, onEditProfile, onLooks, onStreak, extra,
               <div style={{ fontSize: 12.5, color: own && bdayToday() ? C.signal : C.dim, fontWeight: own && bdayToday() ? 800 : 400, marginTop: 4 }}>{own && bdayToday() ? T("bdayHero") : m.since ? T("since", { date: fmtDate(m.since, true) }) : T("newMember")}</div>
             </div>
             {own && !preview && <span style={{ alignSelf: "flex-start", display: "flex", flexDirection: "column", gap: 6, flexShrink: 0 }}>
-              <button type="button" data-pf-edit onClick={() => { sfxTap(); onEditProfile(); }} aria-label={T("pfEdit")} style={{ ...btnBase, background: SOFT(), color: C.chalk, width: 38, height: 38, borderRadius: 12, fontSize: 15 }}>✏️</button>
+              <button type="button" data-pf-edit onClick={() => { sfxTap(); onEditProfile(); }} aria-label={T("pfEdit")} style={{ ...btnBase, background: SOFT(), color: C.chalk, width: 38, height: 38, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center" }}><Ico n="pencil" size={18} /></button>
               {onLooks && <button type="button" data-pf-looks onClick={() => { sfxTap(); onLooks(); }} aria-label={T("pfLooks")} title={T("pfLooks")} style={{ ...btnBase, background: SOFT(), color: C.signal, width: 38, height: 38, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center" }}><Ico n="sparkle" size={19} /></button>}
             </span>}
           </div>
           <div style={{ position: "relative", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 14 }}>
             <div data-pf-lv style={{ background: SOFT(), borderRadius: 14, padding: "10px 12px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: C.dim, fontWeight: 600 }}><span>{T("level")}</span><span aria-hidden="true">⚡</span></div>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: C.dim, fontWeight: 600 }}><span>{T("level")}</span><span aria-hidden="true"><IcoI n="bolt" /></span></div>
               <div style={{ fontFamily: DISPLAY, fontSize: 28, fontWeight: 900, color: C.sky, lineHeight: 1, marginTop: 4 }}><CountUp n={m.lvl} /></div>
               <div style={{ height: 5, background: `${C.chalk}14`, borderRadius: 99, marginTop: 7, overflow: "hidden" }}><div className="pvBar" style={{ height: "100%", width: `${(lv.into / lv.need) * 100}%`, background: C.sky, borderRadius: 99 }} /></div>
               <div style={{ fontSize: 11, color: C.dim, marginTop: 5 }}>{nf(lv.into)} / {nf(lv.need)} XP</div>
             </div>
             <button type="button" data-pf-streak onClick={own && !preview ? () => { sfxTap(); onStreak(); } : undefined} disabled={!own || preview} style={{ ...btnBase, fontWeight: 400, textAlign: "left", color: C.chalk, background: SOFT(), borderRadius: 14, padding: "10px 12px", cursor: own && !preview ? "pointer" : "default" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: C.dim, fontWeight: 600 }}><span>{T("streak")}</span><span aria-hidden="true" className={m.streak ? "wiggle" : ""}>🔥</span></div>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: C.dim, fontWeight: 600 }}><span>{T("streak")}</span><span aria-hidden="true" className={m.streak ? "wiggle" : ""}><IcoI n="flame" /></span></div>
               <div style={{ fontFamily: DISPLAY, fontSize: 28, fontWeight: 900, color: "#ffa94d", lineHeight: 1, marginTop: 4 }}><CountUp n={m.streak} /></div>
-              <div style={{ fontSize: 11, color: C.dim, marginTop: 17 }}>{T("pfBestStreak", { n: m.best })}{own && extra && extra.fz !== undefined ? <span data-pf-freezes> · ❄️ {extra.fz}</span> : null}</div>
+              <div style={{ fontSize: 11, color: C.dim, marginTop: 17 }}>{T("pfBestStreak", { n: m.best })}{own && extra && extra.fz !== undefined ? <span data-pf-freezes> · <IcoI n="snow" color={C.sky} /> {extra.fz}</span> : null}</div>
             </button>
           </div>
         </Sect>
@@ -5109,7 +5163,7 @@ function SlotSheet({ m, i, cur, onSave, onClose }) {
   const multi = kind.endsWith("3");
   const pickOne = id => { if (!multi) { onSave(`${kind}:${id}`); return; } setSel(s => (s.includes(id) ? s.filter(x => x !== id) : s.length < 3 ? [...s, id] : s)); sfxTap(); };
   const opts = kind.startsWith("rk") ? rks.map(id => { const ri = rankIdx(id, m.rk[id]); return [id, <RankIcon r={ri} size={26} />, EX[id].name, <RankTag r={ri} size={13} fs={12} text={`${RANKS[ri].name} · ${m.rk[id]}${rankUnit(id)}`} />]; })
-    : kind.startsWith("ach") ? achs.map(a => [a.k, a.icon, a.name, <RankTag r={a.tier - 1} size={13} fs={12} />])
+    : kind.startsWith("ach") ? achs.map(a => [a.k, <BadgeIco n={a.icon} col={RANKS[a.tier - 1].color} size={30} />, a.name, <RankTag r={a.tier - 1} size={13} fs={12} />])
     : kind === "st" ? PF_STATS.filter(k => statVal(m, k) > 0).map(k => [k, STAT_UI[k][1], T(STAT_UI[k][0]), k === "min" ? fmtMins(m.min) : k === "since" ? fmtDate(m.since, true) : nf(m[k])]) : [];
   const chip = (k, label) => <button key={k} type="button" data-slot-kind-pick={k} aria-pressed={kind === k} onClick={() => { sfxTap(); setKind(k); setSel([]); }}
     style={{ ...btnBase, padding: "7px 12px", fontSize: 13, borderRadius: 99, whiteSpace: "nowrap", ...(kind === k ? { background: C.chalk, color: C.ink } : { ...SUNK(), color: C.dim }) }}>{label}</button>;
@@ -5131,7 +5185,7 @@ function SlotSheet({ m, i, cur, onSave, onClose }) {
             {opts.map(([id, icon, name, sub]) => { const on = sel.includes(id); return (
               <button key={id} type="button" data-slot-opt={id} aria-pressed={on} onClick={() => pickOne(id)}
                 style={{ ...btnBase, fontWeight: 400, display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", borderRadius: 12, textAlign: "left", color: C.chalk, background: on ? `${C.signal}22` : SOFT(), border: `1.5px solid ${on ? C.signal : "transparent"}` }}>
-                <span aria-hidden="true" style={{ fontSize: 22, lineHeight: 1, width: 26, textAlign: "center" }}>{icon}</span>
+                <span aria-hidden="true" style={{ fontSize: 22, lineHeight: 1, width: 30, display: "flex", justifyContent: "center", flexShrink: 0 }}>{typeof icon === "string" && ICONS[icon] ? <Ico n={icon} size={22} color={STAT_COL()[id]} /> : icon}</span>
                 <span style={{ flex: 1, minWidth: 0 }}><span style={{ display: "block", fontSize: 14, fontWeight: 800 }}>{name}</span><span style={{ display: "block", fontSize: 12, color: C.dim, marginTop: 2 }}>{sub}</span></span>
                 {multi ? <span aria-hidden="true" style={{ width: 22, height: 22, borderRadius: 7, border: `2px solid ${on ? C.signal : C.line}`, background: on ? C.signal : "transparent", color: C.signalInk, fontSize: 13, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{on ? sel.indexOf(id) + 1 : ""}</span> : <Arrow />}
               </button>
@@ -5271,7 +5325,7 @@ function OtherProfile({ p, isFriend, onBack, setTopHead }) {
             <Avatar profile={{ name: p.nick || "?", pfp: isFriend ? p.pfp || null : null }} size={64} />
             <div style={{ minWidth: 0 }}>
               <div style={{ fontFamily: DISPLAY, fontSize: 26, fontWeight: 900, color: C.chalk }}>{p.nick}</div>
-              <div style={{ fontSize: 12.5, color: C.dim, marginTop: 3 }}>⚡{p.lvl || 1} · 🔥 {p.streak || 0}</div>
+              <div style={{ fontSize: 12.5, color: C.dim, marginTop: 3 }}><IcoI n="bolt" />{p.lvl || 1} · <IcoI n="flame" /> {p.streak || 0}</div>
             </div>
           </Sect>
           {st.loading && <div style={{ fontSize: 13, color: C.dim, textAlign: "center", marginTop: 18 }}>{T("frLoading")}</div>}
@@ -5605,7 +5659,7 @@ function FsChip({ st, uid, size = 15 }) {
   return (
     <span data-fs-row={uid} data-fs-n={st.n} title={T("fsTitle")} aria-label={`${T("fsTitle")}: ${st.n}`}
       style={{ display: "inline-flex", alignItems: "center", gap: 3, flexShrink: 0, padding: "3px 7px", borderRadius: 99, fontSize: size, fontWeight: 900, fontFamily: DISPLAY, color: st.n ? "#ffa94d" : C.dim, background: st.n ? "#ffa94d1f" : SOFT(), border: `1px solid ${st.n ? "#ffa94d55" : C.line}` }}>
-      <Ico n="duo" size={size} color={st.n ? "#ffa94d" : C.dim} sw={2.2} />🔥{st.n}{warn ? <span style={{ fontSize: size * 0.8 }}>⚠</span> : null}
+      <Ico n="duo" size={size} color={st.n ? "#ffa94d" : C.dim} sw={2.2} /><IcoI n="flame" />{st.n}{warn ? <span style={{ fontSize: size * 0.8 }}>⚠</span> : null}
     </span>
   );
 }
@@ -5617,9 +5671,9 @@ function PersonRow({ p, rank, me, onClick, right, first }) {
       <PersonAvatar p={p} size={38} />
       <span style={{ flex: 1, minWidth: 0 }}>
         <span style={{ display: "block", fontSize: 15, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.nick}{me ? <span style={{ color: C.dim, fontWeight: 600 }}> · {T("frYou")}</span> : null}</span>
-        <span style={{ display: "block", fontSize: 12, color: C.dim, marginTop: 1 }}>🔥 {p.streak || 0} · {TP("workouts", p.n || 0)}</span>
+        <span style={{ display: "block", fontSize: 12, color: C.dim, marginTop: 1 }}><IcoI n="flame" /> {p.streak || 0} · {TP("workouts", p.n || 0)}</span>
       </span>
-      {right !== undefined ? right : <span style={{ fontFamily: DISPLAY, fontSize: 20, fontWeight: 900, color: C.sky, flexShrink: 0 }}>⚡{p.lvl || 1}</span>}
+      {right !== undefined ? right : <span style={{ fontFamily: DISPLAY, fontSize: 20, fontWeight: 900, color: C.sky, flexShrink: 0 }}><IcoI n="bolt" />{p.lvl || 1}</span>}
     </button>
   );
 }
@@ -5637,7 +5691,7 @@ function PersonSheet({ p, isFriend, onAdd, onChat, onRemove, onBlock, onReport, 
         <PersonAvatar p={p} size={64} />
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, auto)", gap: "2px 16px", fontSize: 13, color: C.dim }}>
           <span>{T("frLevel")}</span><span>{T("frStreak")}</span><span>{T("frWorkouts")}</span>
-          <b style={{ fontFamily: DISPLAY, fontSize: 26, color: C.sky }}>⚡{p.lvl || 1}</b><b style={{ fontFamily: DISPLAY, fontSize: 26, color: "#ffa94d" }}>🔥{p.streak || 0}</b><b style={{ fontFamily: DISPLAY, fontSize: 26, color: C.chalk }}>{p.n || 0}</b>
+          <b style={{ fontFamily: DISPLAY, fontSize: 26, color: C.sky }}><IcoI n="bolt" />{p.lvl || 1}</b><b style={{ fontFamily: DISPLAY, fontSize: 26, color: "#ffa94d" }}><IcoI n="flame" />{p.streak || 0}</b><b style={{ fontFamily: DISPLAY, fontSize: 26, color: C.chalk }}>{p.n || 0}</b>
         </div>
       </div>
       {onProfile && (
@@ -5951,7 +6005,7 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
                           : [[st.meToday, st.meLast, T("fsYou")], [st.theyToday, st.theyLast, p.nick]].map(([td, last, who]) => (td ? "✓ " : last >= 2 ? "⚠ " : "") + who).join(" · ")}
                       </span>
                     </span>
-                    {f.ok ? <span data-fs-count style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, color: st.n ? "#ffa94d" : C.dim, whiteSpace: "nowrap" }}>🔥{st.n}</span>
+                    {f.ok ? <span data-fs-count style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, color: st.n ? "#ffa94d" : C.dim, whiteSpace: "nowrap" }}><IcoI n="flame" />{st.n}</span>
                       : f.by !== acct.uid ? <span role="button" tabIndex={0} data-fs-accept={f.other} onClick={() => act(() => fs.accept(f.other))} style={{ ...btnBase, background: "#ffa94d", color: C.ink, padding: "8px 11px", fontSize: 13, borderRadius: 10 }}>{T("frAccept")}</span> : null}
                     <button type="button" data-fs-end={f.other} aria-label={T("fsEnd")} onClick={() => { sfxTap(); setFsEnd(f.other); }} style={{ ...btnBase, background: "transparent", color: C.dim, padding: "6px 4px", fontSize: 16 }}>✕</button>
                   </div>
@@ -6008,7 +6062,7 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
                       </span>
                       <span style={{ flex: 1 }} />
                       {fsn && <FsChip st={fsn} uid={p.uid} />}
-                      <span data-fr-lvl style={{ fontFamily: DISPLAY, fontSize: 20, fontWeight: 900, color: C.sky, flexShrink: 0 }}>⚡{p.lvl || 1}</span>
+                      <span data-fr-lvl style={{ fontFamily: DISPLAY, fontSize: 20, fontWeight: 900, color: C.sky, flexShrink: 0 }}><IcoI n="bolt" />{p.lvl || 1}</span>
                     </button>
                   </div>
                 );
@@ -6364,7 +6418,7 @@ function ChatView({ me, other, canWrite, onBack, onOpen, onMenu, onReport, onBlo
         <PersonAvatar p={other} size={38} />
         <span style={{ minWidth: 0 }}>
           <span style={{ display: "block", fontSize: 17, fontWeight: 900, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{other.nick}</span>
-          <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: C.dim }}><span style={{ color: C.sky, fontWeight: 800 }}>⚡{other.lvl || 1}</span>{fs && <FsChip st={fs} uid={other.uid} size={12} />}{fs && <InfoQ title={T("fsTitle")} text={T("fsHow")} style={{ marginLeft: 0 }} />}</span>
+          <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: C.dim }}><span style={{ color: C.sky, fontWeight: 800 }}><IcoI n="bolt" />{other.lvl || 1}</span>{fs && <FsChip st={fs} uid={other.uid} size={12} />}{fs && <InfoQ title={T("fsTitle")} text={T("fsHow")} style={{ marginLeft: 0 }} />}</span>
         </span>
       </button>
       {canWrite && <button data-chat-theme-open onClick={() => { sfxTap(); setThemeOpen(true); }} aria-label={T("chTheme")} style={{ ...btnBase, width: 38, height: 38, borderRadius: 12, background: SOFT(), flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -7000,7 +7054,7 @@ function SettingsTab({ initPage, ret, settings, setSettings, history, profile, s
 
       <button onClick={() => { sfxTap(); openExternal(SUPPORT_URL); }} data-support style={{ ...btnBase, ...card, ...tileR(), width: "100%", marginTop: 22, display: "flex", alignItems: "center", gap: 12, padding: "13px 15px", color: C.chalk, textAlign: "left" }}>
         <span style={{ minWidth: 0, flex: 1, fontSize: 15, fontWeight: 800 }}>{T("support")}</span>
-        <span aria-hidden="true" style={{ fontSize: 20, lineHeight: 1, flexShrink: 0 }}>💛</span>
+        <Ico n="love" size={21} color={C.signal} />
       </button>
       </>} />
       <div style={{ fontSize: 12, color: C.dim, textAlign: "center", marginTop: 26, lineHeight: 1.6, display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
@@ -7483,11 +7537,11 @@ const rankCard = (id, ri, unlock) => {
 function revealList(entry, newAch, xpBefore, gained) {
   if (!entry) return [];
   const out = [];
-  if (entry.prs && entry.prs.length) out.push({ kind: "pr", r: Math.min(3, entry.prs.length), icon: "🏆", name: TP("prs", entry.prs.length), sub: entry.items.filter(it => entry.prs.includes(it.id)).map(exName).join(", "), col: C.signal });
+  if (entry.prs && entry.prs.length) out.push({ kind: "pr", r: Math.min(3, entry.prs.length), icon: "trophy", name: TP("prs", entry.prs.length), sub: entry.items.filter(it => entry.prs.includes(it.id)).map(exName).join(", "), col: C.signal });
   newAch.forEach(a => out.push(achCard(a)));
   (entry.rankUps || []).forEach(ru => out.push(rankCard(ru.id, ru.to, ru.u)));
   const l0 = levelInfo(xpBefore).lvl, l1 = levelInfo(xpBefore + gained).lvl;
-  if (l1 > l0) { const r = lvRank(l1); out.push({ kind: "lvl", r, icon: "⚡", name: `${T("level")} ${l1}`, col: C.sky }); }
+  if (l1 > l0) { const r = lvRank(l1); out.push({ kind: "lvl", r, icon: "bolt", name: `${T("level")} ${l1}`, col: C.sky }); }
   return out.sort((a, b) => a.r - b.r || REV_KIND[a.kind] - REV_KIND[b.kind]);
 }
 // ─── CARD GAME (1.8.0, Michael, Oct 24; offline against the bot with its own levels, ranked against
@@ -8124,9 +8178,9 @@ function GameTab({ history, profile, setProfile, acct, onPlay }) {
     cloud().rankedList(50).then(setTop).catch(() => setTop([]));
   }, [signed]);
   const modes = [
-    { id: "run", icon: "🃏", name: T("gmRun"), desc: null }, // 1.8.2: the Run needs no line under it
+    { id: "run", icon: "cards", name: T("gmRun"), desc: null }, // 1.8.2: the Run needs no line under it
     { id: "duel", icon: "🤖", name: T("gmDuel"), desc: DUEL_ON ? T("gmDuelD", { n: Math.min(10, gl.lvl) }) : T("gmSoon"), off: !DUEL_ON, soon: !DUEL_ON },
-    { id: "ranked", icon: "🏆", name: T("gmRanked"), desc: !RANKED_ON ? T("gmSoon") : signed ? T("gmRankedD", { r: rk && typeof rk.r === "number" ? rk.r : 1000 }) : T("gmRankedSign"), off: !RANKED_ON || !signed, soon: !RANKED_ON },
+    { id: "ranked", icon: "trophy", name: T("gmRanked"), desc: !RANKED_ON ? T("gmSoon") : signed ? T("gmRankedD", { r: rk && typeof rk.r === "number" ? rk.r : 1000 }) : T("gmRankedSign"), off: !RANKED_ON || !signed, soon: !RANKED_ON },
   ];
   return (
     <div data-game-tab style={{ padding: "0 18px 30px" }}>
@@ -8148,7 +8202,7 @@ function GameTab({ history, profile, setProfile, acct, onPlay }) {
         {modes.map(m => (
           <button key={m.id} type="button" data-gm-mode={m.id} data-soon={m.soon ? 1 : undefined} disabled={m.off || !!saved} onClick={() => { sfxTap(); setPick(m.id); }}
             style={{ ...btnBase, ...card, ...tileR(), textAlign: "left", color: C.chalk, padding: "14px 14px", display: "flex", alignItems: "center", gap: 12, opacity: m.off || saved ? 0.55 : 1, fontWeight: 400 }}>
-            {m.soon ? <IcoBox n="lock" color={C.dim} size={44} /> : <span aria-hidden="true" style={{ fontSize: 30, lineHeight: 1 }}>{m.icon}</span>}
+            {m.soon ? <IcoBox n="lock" color={C.dim} size={44} /> : ICONS[m.icon] ? <IcoBox n={m.icon} color={C.signal} size={44} /> : <span aria-hidden="true" style={{ fontSize: 30, lineHeight: 1 }}>{m.icon}</span>}
             <span style={{ flex: 1, minWidth: 0 }}>
               <span style={{ display: "block", fontFamily: DISPLAY, fontSize: 22, fontWeight: 900, lineHeight: 1.1 }}>{m.name}</span>
               {m.desc && <span style={{ display: "block", fontSize: 12.5, color: C.dim, marginTop: 3, lineHeight: 1.4 }}>{m.desc}</span>}
@@ -9146,7 +9200,7 @@ function RewardReveal({ items, onDone }) {
           </div>
           <div className={"revFace" + (r >= 3 ? " foil" : "")} style={{ background: `radial-gradient(100% 70% at 50% 30%, ${col}55, transparent 80%), ${C.ink}`, border: `2px solid ${col}`, boxShadow: `0 0 ${24 + r * 12}px ${col}aa` }}>
             <div style={{ fontSize: 11.5, fontWeight: 900, letterSpacing: 1.6, textTransform: "uppercase", color: col }}>{kindLabel}</div>
-            <div aria-hidden="true" className={open ? "revIcon" : undefined} style={{ fontSize: 84, lineHeight: 1, margin: "18px 0 14px", filter: `drop-shadow(0 0 ${10 + r * 4}px ${col})` }}>{it.kind === "rank" ? <RankIcon r={it.r} size={88} /> : it.icon}</div>
+            <div aria-hidden="true" className={open ? "revIcon" : undefined} style={{ fontSize: 84, lineHeight: 1, margin: "18px 0 14px", filter: `drop-shadow(0 0 ${10 + r * 4}px ${col})` }}>{it.kind === "rank" ? <RankIcon r={it.r} size={88} /> : ICONS[it.icon] ? <span style={{ display: "inline-flex", color: col }}><Ico n={it.icon} size={84} sw={1.6} /></span> : it.icon}</div>
             <div style={{ fontFamily: DISPLAY, fontSize: it.name.length > 18 ? 24 : 30, fontWeight: 900, lineHeight: 1.05, textAlign: "center" }}>{it.name}</div>
             {it.rank && <div data-reveal-rank className={open ? "revStamp" : undefined} style={{ marginTop: 12, fontFamily: DISPLAY, fontSize: 26 + r * 2, fontWeight: 900, letterSpacing: 1, color: col, textTransform: "uppercase", textShadow: `0 0 ${8 + r * 4}px ${col}` }}>{it.rank.name}</div>}
             {it.sub && <div style={{ marginTop: 10, fontSize: 13, color: C.dim, textAlign: "center", lineHeight: 1.4 }}>{it.sub}</div>}
@@ -9277,7 +9331,7 @@ function Summary({ entry, xpBefore = 0, xpGained, newCh = [], newAch = [], histo
       <div style={{ marginTop: 16, background: C.panel, border: `1px solid ${C.line}`, borderRadius: 18, padding: "14px 16px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 10 }}>
           <div style={{ fontFamily: DISPLAY, fontSize: 44, fontWeight: 900, lineHeight: 1, color: C.sky }}>+{shown} XP{EC.boosted(entry.ts, META.boosts) && <span data-sum-boost className="pop" style={{ display: "inline-flex", alignItems: "center", gap: 3, verticalAlign: "middle", marginLeft: 8, fontFamily: BODY, fontSize: 13, fontWeight: 900, color: C.signalInk, background: C.signal, borderRadius: 99, padding: "3px 9px 3px 6px" }}><Ico n="boost" size={14} sw={2.4} />2×</span>}</div>
-          <div style={{ fontFamily: DISPLAY, fontSize: 26, fontWeight: 800, color: "#ffa94d" }}>🔥 {st.n}</div>
+          <div style={{ fontFamily: DISPLAY, fontSize: 26, fontWeight: 800, color: "#ffa94d" }}><IcoI n="flame" /> {st.n}</div>
         </div>
         <div style={{ height: 14, background: C.panelHi, borderRadius: 99, marginTop: 10, overflow: "hidden" }}>
           <div style={{ height: "100%", width: `${(lvNow.into / lvNow.need) * 100}%`, background: C.sky, borderRadius: 99 }} />
@@ -9297,7 +9351,7 @@ function Summary({ entry, xpBefore = 0, xpGained, newCh = [], newAch = [], histo
       {newAch.length > 0 && (
         <div className="cardIn" data-newach style={{ marginTop: 14, border: `2px solid ${C.sky}`, borderRadius: 16, padding: "12px 16px" }}>
           {newAch.map(a => (
-            <div key={a.k} style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, color: RANKS[a.tier - 1].color, lineHeight: 1.2 }}>{a.icon} {T("achUp", { name: a.name, rank: RANKS[a.tier - 1].name })}</div>
+            <div key={a.k} style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, color: RANKS[a.tier - 1].color, lineHeight: 1.2, display: "flex", alignItems: "center", gap: 10 }}><BadgeIco n={a.icon} col={RANKS[a.tier - 1].color} size={30} />{T("achUp", { name: a.name, rank: RANKS[a.tier - 1].name })}</div>
           ))}
         </div>
       )}
@@ -9310,14 +9364,14 @@ function Summary({ entry, xpBefore = 0, xpGained, newCh = [], newAch = [], histo
       )}
       {entry.prs && entry.prs.length > 0 && (
         <div className="cardIn" style={{ marginTop: 14, background: C.signal, color: C.signalInk, borderRadius: 16, padding: "14px 16px" }}>
-          <div style={{ fontFamily: DISPLAY, fontSize: 32, fontWeight: 900, lineHeight: 1 }}>🏆 {TP("prs", entry.prs.length)}</div>
+          <div style={{ fontFamily: DISPLAY, fontSize: 32, fontWeight: 900, lineHeight: 1 }}><IcoI n="trophy" color={C.signal} sw={2.4} /> {TP("prs", entry.prs.length)}</div>
           <div style={{ fontSize: 14, fontWeight: 600, marginTop: 4 }}>{entry.items.filter(it => entry.prs.includes(it.id)).map(exName).join(", ")}</div>
         </div>
       )}
       <div style={{ marginTop: 16, background: C.panel, border: `1px solid ${C.line}`, borderRadius: 18 }}>
         {entry.items.map((it, i) => (
           <div key={it.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, padding: "13px 16px", borderTop: i ? `1px solid ${C.line}` : "none" }}>
-            <div style={{ fontSize: 15, fontWeight: 600, color: C.chalk }}>{entry.prs && entry.prs.includes(it.id) ? "🏆 " : ""}{exName(it)}{EX[it.id] && <ExQ id={it.id} />}</div>
+            <div style={{ fontSize: 15, fontWeight: 600, color: C.chalk }}>{entry.prs && entry.prs.includes(it.id) ? <><IcoI n="trophy" color={C.signal} /> </> : ""}{exName(it)}{EX[it.id] && <ExQ id={it.id} />}</div>
             <div style={{ fontFamily: DISPLAY, fontSize: 22, fontWeight: 800, color: C.chalk, whiteSpace: "nowrap" }}>{it.res.map(r => fmtRes(r, "")).join(" / ")}<span style={{ fontFamily: BODY, fontSize: 11, color: C.dim, marginLeft: 4 }}>{unitStr(it.unit)}</span></div>
           </div>
         ))}

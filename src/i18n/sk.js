@@ -1697,6 +1697,8 @@ export default {
     "Odznak Prieskumník počíta všetkých 9 kapitol návodu.",
     "Odznaky a ranky: ťukni na jeden a uvidíš jeho kartu so všetkými levelmi (ranky cviku sa tam presunuli z návodu). Každý rank má vlastný kreslený znak namiesto emoji a na Domove je menej textu.",
     "Vzhľady v Obchode sú väčšie karty, ktoré ukážu vzhľad na ukážkovom profile, a Showcase na tvojom profile má jedno pole na riadok.",
+    "Odznaky, štatistiky, výzvy, horná lišta a ďalšie majú namiesto emoji vlastné ikony v jednom štýle.",
+    "Domov: 19 / 13 min a Štart sú vždy v lište dole (karta dňa má už len veľký deň a A / B / C) a kalórie a týždenné výzvy sú dva dlhé jednoduché boxy. Stránka končí nad lištou, takže nič nie je schované pod ňou.",
   ],
   news181: [
     "Návod je kratší: ukáže Domov a ☰ menu a potom ti každá obrazovka sama ukáže, čo na nej je, keď ju prvýkrát otvoríš. Nové kapitoly pre Muscle Deck a Obchod.",
