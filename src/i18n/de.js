@@ -869,7 +869,8 @@ export default {
     privacy: "Ohne Konto bleiben alle deine Daten nur auf diesem Gerät.",
 
     warmup: "Aufwärmen",
-    warmupHint: "~3 Minuten. Mach die Übung und tippe sie an. Sieh auch die erste Runde des Trainings als Aufwärmen, gib da noch nicht alles.",
+    warmupHint: "~3 Min. Mach jede Übung und tippe darauf.",
+    warmupInfo: "Nimm auch die erste Runde des Trainings als Aufwärmen: Gib darin nicht alles.",
     letsGo: "Los geht's",
     skipWarmup: "Aufwärmen überspringen",
 
@@ -1160,6 +1161,7 @@ export default {
     pfLooksNone: "Davon hast du noch keinen.",
     shOwned: "Gekauft",
     tourAutoD: "Das ist Start. Alles andere ist in diesem Menü: Wenn du einen Bildschirm zum ersten Mal öffnest, zeige ich ihn dir.",
+    infoMore: "Mehr dazu",
     tourAgainBtn: "Nochmal",
     tourRestart: "Anleitung neu starten",
     tourAskV: "Aktualisiert auf {v}",
@@ -1182,7 +1184,7 @@ export default {
     autoFzT: { one: "{n} Serienschutz hat deine Serie gerettet", other: "{n} Serienschutze haben deine Serie gerettet" },
     autoFzLeft: { one: "Noch {n} Serienschutz übrig.", other: "Noch {n} Serienschutze übrig." },
     celebUnit: { one: "Training in Folge", other: "Trainings in Folge" },
-    secretLeft: { one: "{n} geheimes Abzeichen ist noch versteckt. Trainier weiter, vielleicht findest du es!", other: "{n} geheime Abzeichen sind noch versteckt. Trainier weiter, vielleicht findest du sie!" },
+    secretLeft: { one: "{n} geheimes Abzeichen noch verborgen", other: "{n} geheime Abzeichen noch verborgen" },
     ranksLeft: { one: "{n} weitere Übung hat einen Rang. Mach sie einmal, dann erscheint sie hier.", other: "{n} weitere Übungen haben Ränge. Mach eine davon einmal, dann erscheint sie hier." },
     weeks: { one: "{n} Woche", other: "{n} Wochen" },
     pushups: { one: "{n} Liegestütz", other: "{n} Liegestütze" },
@@ -1463,7 +1465,7 @@ export default {
   tour: {
     ch: ["Start", "Abzeichen", "Training", "Profil", "Verlauf", "Kalorien", "Freunde", "Muscle Deck", "Shop"],
     c1: [
-      "Hi! Ich zeige dir, wie HW App funktioniert. Die Anleitung hat 7 kurze Kapitel, und für jedes bekommst du ein Abzeichen. Los geht's!",
+      "Hi! Ich zeige dir, wie HW App funktioniert. Die Anleitung hat 9 kurze Kapitel, und für jedes bekommst du ein Abzeichen. Los geht's!",
       "Das ist das heutige Training. Die App hat 3 Trainingstage: A, B und C. Du wechselst sie ab und trainierst jeden zweiten Tag. Die App schlägt dir immer den vor, der als Nächstes dran ist.",
       "Wenn du willst, wählst du hier einen anderen Tag.",
       "Wähle die Länge: 3 Runden (~19 Min., empfohlen) oder 2 Runden (~13 Min.). Start beginnt das Training, und die App führt dich Schritt für Schritt hindurch.",
@@ -1524,11 +1526,9 @@ export default {
       "Melde dich mit Google oder E-Mail an. Deine Trainings werden in der Cloud gesichert, du nimmst sie auf ein neues Handy und die Website mit und kannst Freunde hinzufügen.",
       "Dein Code. Schick ihn einem Freund oder teile den Link, dann fügt ihr euch hinzu.",
       "Tippe auf {t}.",
-      "Hier fügst du Freunde per Code oder Spitzname hinzu. Darunter stehen Anfragen und deine Freunde; tippe auf jemanden, um sein Profil zu öffnen.",
+      "Hier fügst du Freunde per Code oder Nickname hinzu. Darunter sind Freunde und Chats eine Liste: Tippe auf einen Freund, um zu schreiben, auf das Foto für sein Profil.",
       "Jetzt {t}.",
       "Bestenliste: vergleiche dich mit Freunden oder mit der ganzen Welt, wenn du mitmachst.",
-      "Und {t}.",
-      "Deine Chats mit Freunden. Öffne einen und schreib; halte eine Nachricht gedrückt, um zu antworten, zu reagieren oder sie zu kopieren.",
       "Das war's! Die Anleitung findest du jederzeit im Menü. Trainiere jeden zweiten Tag, und du siehst Ergebnisse 💪",
     ],
     c8: [
@@ -1569,7 +1569,7 @@ export default {
     kcalHit: ["Punktlandung", "{x} innerhalb ±10 % des Kalorienziels"],
     steps: ["10.000 Schritte", "{x} mit 10.000+ Schritten"],
     health: ["Health Connect","verbinde Health Connect"],
-    guide: ["Entdecker", "{n} von 7 Kapiteln der Anleitung"],
+    guide: ["Entdecker", "{n} von 9 Kapiteln der Anleitung"],
     allex: ["Alles ausprobiert","mach jede Übung der App mindestens einmal (⇄ Tauschen zeigt die anderen)"],
     allDiamond: ["Diamant-Programm","Diamant in allen 12 Übungen des Programms"],
     comeback: ["Comeback","nach 2 Wochen oder mehr wieder trainiert"],
@@ -1689,6 +1689,12 @@ export default {
     pk: {"jpack":["Joker-Pack","Öffne es und wähle 1 von 3 Jokern (manchmal einen seltenen oder legendären)."],"dpack":["Drill-Pack","Öffne es und wähle 1 von 3 Händen zum Aufleveln."]},
     v: {"membership":["Gym-Mitgliedschaft","+1 Joker-Platz."],"extraset":["Extra-Satz","+1 Hand in jedem Blind."],"resttimer":["Pausentimer","+1 Abwurf in jedem Blind."],"discount":["Mitgliederrabatt","Joker, Drills und Packs kosten 25 % weniger."],"bigbag":["Größere Sporttasche","+1 Karte auf der Hand."],"savings":["Sparplan","Zinsen können $5 höher gehen."],"restock":["Nachschub","Der Shop bietet 3 Joker statt 2."],"scout":["Scout","Neu würfeln kostet $2 weniger."]},
   },
+  news182: [
+    "Freunde und Nachrichten sind eine Liste: Tippe auf einen Freund, um zu schreiben, auf das Foto für sein Profil, und halte die Zeile für mehr (entfernen, blockieren, Chat löschen…). Eine Freundes-Serie steht in der Zeile und im Chat neben dem Namen. Vorher gab es getrennte Tabs und bei jedem Tippen ein Menü.",
+    "Weniger Text: Das Menü zeigt nur die Namen, und die Erklärungen unter Schaltern und Boxen sind hinter einem kleinen ?, auf das du tippst, wenn du mehr wissen willst.",
+    "Dein Freundescode hat ein Kopier-Symbol, und die Wochentruhe im Shop zeigt die 3 Challenges als Punkte.",
+    "Das Abzeichen Entdecker zählt alle 9 Kapitel der Anleitung.",
+  ],
   news181: [
     "Die Anleitung ist kürzer: Sie zeigt Start und das ☰-Menü, danach zeigt dir jeder Bildschirm sich selbst, wenn du ihn zum ersten Mal öffnest. Neue Kapitel für Muscle Deck und den Shop.",
     "Die Anleitung zeigt nicht mehr auf etwas, das du nicht siehst, wenn du zur anderen Seite wischst oder das Menü offen hast. Lange Listen leuchten ganz, und die Seite kann nicht unter ihr wegrutschen.",

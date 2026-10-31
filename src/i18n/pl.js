@@ -869,7 +869,8 @@ export default {
     privacy: "Bez konta wszystkie dane są zapisane tylko na tym urządzeniu.",
 
     warmup: "Rozgrzewka",
-    warmupHint: "~3 minuty. Zrób ćwiczenie i je dotknij. Pierwszą rundę treningu też traktuj jak rozgrzewkę, nie dawaj jeszcze z siebie wszystkiego.",
+    warmupHint: "~3 min. Zrób każde ćwiczenie i stuknij w nie.",
+    warmupInfo: "Pierwszą rundę treningu też traktuj jak rozgrzewkę: nie dawaj w niej z siebie wszystkiego.",
     letsGo: "Trenujemy",
     skipWarmup: "Pomiń rozgrzewkę",
 
@@ -1160,6 +1161,7 @@ export default {
     pfLooksNone: "Nie masz jeszcze nic z tego.",
     shOwned: "Masz",
     tourAutoD: "To jest Start. Wszystko inne jest w tym menu: gdy pierwszy raz otworzysz ekran, oprowadzę cię po nim.",
+    infoMore: "Więcej o tym",
     tourAgainBtn: "Jeszcze raz",
     tourRestart: "Zacznij przewodnik od nowa",
     tourAskV: "Zaktualizowano do {v}",
@@ -1182,7 +1184,7 @@ export default {
     autoFzT: { one: "{n} zamrożenie uratowało twoją passę", few: "{n} zamrożenia uratowały twoją passę", many: "{n} zamrożeń uratowało twoją passę", other: "{n} zamrożenia uratowały twoją passę" },
     autoFzLeft: { one: "Zostało {n} zamrożenie.", few: "Zostały {n} zamrożenia.", many: "Zostało {n} zamrożeń.", other: "Zostało {n} zamrożenia." },
     celebUnit: { one: "trening z rzędu", few: "treningi z rzędu", many: "treningów z rzędu", other: "treningu z rzędu" },
-    secretLeft: { one: "{n} tajna odznaka jest jeszcze ukryta. Trenuj dalej, może ją znajdziesz!", few: "{n} tajne odznaki są jeszcze ukryte. Trenuj dalej, może je znajdziesz!", many: "{n} tajnych odznak jest jeszcze ukrytych. Trenuj dalej, może je znajdziesz!", other: "{n} tajnej odznaki jest jeszcze ukryte. Trenuj dalej, może je znajdziesz!" },
+    secretLeft: { one: "{n} tajna odznaka jest jeszcze ukryta", few: "{n} tajne odznaki są jeszcze ukryte", many: "{n} tajnych odznak jest jeszcze ukrytych" },
     ranksLeft: { one: "Rangę ma jeszcze {n} ćwiczenie. Zrób je raz, a pojawi się tutaj.", few: "Rangi mają jeszcze {n} ćwiczenia. Zrób któreś raz, a pojawi się tutaj.", many: "Rangi ma jeszcze {n} ćwiczeń. Zrób któreś raz, a pojawi się tutaj.", other: "Rangi ma jeszcze {n} ćwiczenia. Zrób któreś raz, a pojawi się tutaj." },
     weeks: { one: "{n} tydzień", few: "{n} tygodnie", many: "{n} tygodni", other: "{n} tygodni" },
     pushups: { one: "{n} pompka", few: "{n} pompki", many: "{n} pompek", other: "{n} pompek" },
@@ -1463,7 +1465,7 @@ export default {
   tour: {
     ch: ["Start", "Odznaki", "Trening", "Profil", "Historia", "Kalorie", "Znajomi", "Muscle Deck", "Sklep"],
     c1: [
-      "Cześć! Pokażę ci, jak działa HW App. Przewodnik ma 7 krótkich rozdziałów, a za każdy dostajesz odznakę. Zaczynamy!",
+      "Cześć! Pokażę ci, jak działa HW App. Przewodnik ma 9 krótkich rozdziałów, a za każdy dostajesz odznakę. Zaczynamy!",
       "To jest dzisiejszy trening. Aplikacja ma 3 dni treningowe: A, B i C. Robisz je na zmianę, co drugi dzień. Aplikacja zawsze proponuje ten, który jest następny.",
       "Jeśli chcesz, wybierz tu inny dzień.",
       "Wybierz długość: 3 rundy (~19 min, zalecane) albo 2 rundy (~13 min). Start uruchamia trening, a aplikacja przeprowadzi cię przez niego krok po kroku.",
@@ -1524,11 +1526,9 @@ export default {
       "Zaloguj się przez Google albo e-mail. Twoje treningi trafią do kopii w chmurze, przeniesiesz je na nowy telefon i na stronę, i możesz dodać znajomych.",
       "Twój kod. Wyślij go znajomemu albo udostępnij link i dodajcie się.",
       "Stuknij {t}.",
-      "Tu dodasz znajomego przez kod albo nick. Poniżej są zaproszenia i twoi znajomi; stuknij kogoś, aby otworzyć jego profil.",
+      "Tu dodasz znajomego po kodzie lub nicku. Poniżej znajomi i czaty są na jednej liście: stuknij znajomego, żeby napisać, stuknij zdjęcie, żeby otworzyć jego profil.",
       "Teraz {t}.",
       "Ranking: porównaj się ze znajomymi albo z całym światem, jeśli do niego dołączysz.",
-      "I {t}.",
-      "Twoje czaty ze znajomymi. Otwórz jeden i pisz; przytrzymaj wiadomość, aby odpowiedzieć, zareagować lub ją skopiować.",
       "To wszystko! Przewodnik znajdziesz w menu w każdej chwili. Trenuj co drugi dzień, a zobaczysz efekty 💪",
     ],
     c8: [
@@ -1569,7 +1569,7 @@ export default {
     kcalHit: ["W punkt", "{x} w granicach ±10% celu kalorii"],
     steps: ["10 000 kroków", "{x} z 10 000+ kroków"],
     health: ["Health Connect","połącz Health Connect"],
-    guide: ["Odkrywca", "{n} z 7 rozdziałów przewodnika"],
+    guide: ["Odkrywca", "{n} z 9 rozdziałów przewodnika"],
     allex: ["Wszystkiego spróbował","zrób każde ćwiczenie w aplikacji choć raz (⇄ zamiana pokazuje pozostałe)"],
     allDiamond: ["Diamentowy program","Diament we wszystkich 12 ćwiczeniach programu"],
     comeback: ["Powrót","wróciłeś do treningów po 2 tygodniach lub dłużej"],
@@ -1689,6 +1689,12 @@ export default {
     pk: {"jpack":["Paczka jokerów","Otwórz ją i wybierz 1 z 3 jokerów (czasem rzadkiego lub legendarnego)."],"dpack":["Paczka dryli","Otwórz ją i wybierz 1 z 3 układów do podniesienia poziomu."]},
     v: {"membership":["Karnet na siłownię","+1 miejsce na jokera."],"extraset":["Dodatkowa seria","+1 ręka w każdym blindzie."],"resttimer":["Minutnik przerwy","+1 odrzucenie w każdym blindzie."],"discount":["Zniżka dla członków","Jokery, dryle i paczki kosztują o 25 % mniej."],"bigbag":["Większa torba","+1 karta w ręce."],"savings":["Plan oszczędnościowy","Odsetki mogą być wyższe o $5."],"restock":["Dostawa","Sklep oferuje 3 jokery zamiast 2."],"scout":["Zwiadowca","Losowanie nowych w sklepie kosztuje o $2 mniej."]},
   },
+  news182: [
+    "Znajomi i wiadomości to jedna lista: stuknij znajomego, żeby napisać, stuknij zdjęcie, żeby otworzyć profil, przytrzymaj wiersz, by zobaczyć więcej (usuń, zablokuj, usuń czat…). Wspólna passa jest w wierszu i przy imieniu w czacie. Wcześniej były osobne karty i menu przy każdym stuknięciu.",
+    "Mniej tekstu: menu pokazuje tylko nazwy, a wyjaśnienia pod przełącznikami i polami są za małym ?, które stukasz, gdy chcesz wiedzieć więcej.",
+    "Twój kod znajomego ma ikonę kopiowania, a cotygodniowa skrzynia w Sklepie pokazuje 3 wyzwania jako kropki.",
+    "Odznaka Odkrywca liczy wszystkie 9 rozdziałów przewodnika.",
+  ],
   news181: [
     "Przewodnik jest krótszy: pokazuje Start i menu ☰, a potem każdy ekran sam cię oprowadza przy pierwszym otwarciu. Nowe rozdziały o Muscle Deck i Sklepie.",
     "Przewodnik nie wskazuje już czegoś, czego nie widzisz, gdy przesuniesz na drugą stronę lub masz otwarte menu. Długie listy świecą w całości, a strona nie może się pod nim przesunąć.",

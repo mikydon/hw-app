@@ -869,7 +869,8 @@ export default {
     privacy: "Senza account, tutti i tuoi dati restano solo su questo dispositivo.",
 
     warmup: "Riscaldamento",
-    warmupHint: "~3 minuti. Fai l'esercizio e toccalo. Considera anche il primo giro dell'allenamento come riscaldamento, non dare il massimo.",
+    warmupHint: "~3 min. Fai ogni esercizio e toccalo.",
+    warmupInfo: "Considera anche il primo giro dell'allenamento come riscaldamento: non dare tutto.",
     letsGo: "Alleniamoci",
     skipWarmup: "Salta il riscaldamento",
 
@@ -1160,6 +1161,7 @@ export default {
     pfLooksNone: "Non ne hai ancora nessuno.",
     shOwned: "Comprato",
     tourAutoD: "Questa è la Home. Tutto il resto è in questo menu: quando apri una schermata per la prima volta, te la mostro.",
+    infoMore: "Di più",
     tourAgainBtn: "Ancora",
     tourRestart: "Ricomincia la guida",
     tourAskV: "Aggiornato a {v}",
@@ -1182,7 +1184,7 @@ export default {
     autoFzT: { one: "{n} congelamento ha salvato la tua striscia", many: "{n} congelamenti hanno salvato la tua striscia", other: "{n} congelamenti hanno salvato la tua striscia" },
     autoFzLeft: { one: "Ti resta {n} congelamento.", many: "Ti restano {n} congelamenti.", other: "Ti restano {n} congelamenti." },
     celebUnit: { one: "allenamento di fila", many: "allenamenti di fila", other: "allenamenti di fila" },
-    secretLeft: { one: "{n} medaglia segreta è ancora nascosta. Continua ad allenarti, magari la trovi!", many: "{n} medaglie segrete sono ancora nascoste. Continua ad allenarti, magari le trovi!", other: "{n} medaglie segrete sono ancora nascoste. Continua ad allenarti, magari le trovi!" },
+    secretLeft: { one: "{n} medaglia segreta ancora nascosta", other: "{n} medaglie segrete ancora nascoste" },
     ranksLeft: { one: "Ancora {n} esercizio ha un grado. Fallo una volta e comparirà qui.", many: "Ancora {n} esercizi hanno un grado. Fanne uno una volta e comparirà qui.", other: "Ancora {n} esercizi hanno un grado. Fanne uno una volta e comparirà qui." },
     weeks: { one: "{n} settimana", many: "{n} settimane", other: "{n} settimane" },
     pushups: { one: "{n} piegamento", many: "{n} piegamenti", other: "{n} piegamenti" },
@@ -1463,7 +1465,7 @@ export default {
   tour: {
     ch: ["Home", "Medaglie", "Allenamento", "Profilo", "Storico", "Calorie", "Amici", "Muscle Deck", "Negozio"],
     c1: [
-      "Ciao! Ti mostro come funziona HW App. La guida ha 7 capitoli brevi e ognuno ti dà una medaglia. Andiamo!",
+      "Ciao! Ti mostro come funziona HW App. La guida ha 9 capitoli brevi e ognuno ti dà una medaglia. Andiamo!",
       "Questo è l'allenamento di oggi. L'app ha 3 giorni di allenamento: A, B e C. Li alterni e ti alleni a giorni alterni. L'app ti propone sempre quello che tocca.",
       "Se vuoi, scegli qui un altro giorno.",
       "Scegli la durata: 3 giri (~19 min, consigliato) o 2 giri (~13 min). Inizia avvia l'allenamento e l'app ti guida passo passo.",
@@ -1524,11 +1526,9 @@ export default {
       "Accedi con Google o con l'e-mail. I tuoi allenamenti vengono salvati nel cloud, li porti su un nuovo telefono o sul sito e puoi aggiungere amici.",
       "Il tuo codice. Mandalo a un amico o condividi il link per aggiungervi.",
       "Tocca {t}.",
-      "Qui aggiungi un amico con il codice o il nickname. Sotto ci sono le richieste e i tuoi amici; tocca qualcuno per aprire il suo profilo.",
+      "Qui aggiungi un amico con il codice o il nickname. Sotto, amici e chat sono un'unica lista: tocca un amico per scrivergli, la sua foto per vedere il profilo.",
       "Ora {t}.",
       "Classifica: confrontati con gli amici, o con tutto il mondo se ti unisci.",
-      "E {t}.",
-      "Le tue chat con gli amici. Aprine una e scrivi; tieni premuto un messaggio per rispondere, reagire o copiarlo.",
       "È tutto! Trovi la guida nel menu quando vuoi. Allenati a giorni alterni e vedrai i risultati 💪",
     ],
     c8: [
@@ -1569,7 +1569,7 @@ export default {
     kcalHit: ["Centrato", "{x} entro ±10% dell'obiettivo calorico"],
     steps: ["10.000 passi", "{x} con oltre 10.000 passi"],
     health: ["Health Connect","collega Health Connect"],
-    guide: ["Esploratore", "{n} capitoli su 7 della guida"],
+    guide: ["Esploratore", "{n} capitoli su 9 della guida"],
     allex: ["Provato tutto","fai ogni esercizio dell'app almeno una volta (⇄ cambia mostra gli altri)"],
     allDiamond: ["Programma diamante","Diamante in tutti i 12 esercizi del programma"],
     comeback: ["Ritorno","tornato ad allenarti dopo 2 settimane o più"],
@@ -1689,6 +1689,12 @@ export default {
     pk: {"jpack":["Pacchetto jolly","Aprilo e scegli 1 jolly su 3 (a volte uno raro o leggendario)."],"dpack":["Pacchetto esercizi","Aprilo e scegli 1 mano su 3 da far salire di livello."]},
     v: {"membership":["Abbonamento in palestra","+1 posto jolly."],"extraset":["Serie extra","+1 mano in ogni buio."],"resttimer":["Timer di recupero","+1 scarto in ogni buio."],"discount":["Sconto soci","Jolly, esercizi e pacchetti costano il 25 % in meno."],"bigbag":["Borsa da palestra più grande","+1 carta in mano."],"savings":["Piano di risparmio","Gli interessi possono salire di $5 in più."],"restock":["Rifornimento","Il Negozio offre 3 jolly invece di 2."],"scout":["Osservatore","Rinnova costa $2 in meno."]},
   },
+  news182: [
+    "Amici e messaggi sono un'unica lista: tocca un amico per scrivergli, la foto per il profilo e tieni premuta la riga per altro (rimuovi, blocca, elimina la chat…). La striscia con un amico si vede sulla riga e accanto al nome nella chat. Prima c'erano schede separate e un menu a ogni tocco.",
+    "Meno testo: il menu mostra solo i nomi, e le spiegazioni sotto interruttori e riquadri sono dietro un piccolo ? da toccare quando vuoi saperne di più.",
+    "Il tuo codice amico ha un'icona per copiarlo, e il forziere settimanale nel Negozio mostra le 3 sfide come puntini.",
+    "La medaglia Esploratore conta tutti i 9 capitoli della guida.",
+  ],
   news181: [
     "La guida è più corta: mostra la Home e il menu ☰, poi ogni schermata si presenta da sola la prima volta che la apri. Nuovi capitoli per Muscle Deck e il Negozio.",
     "La guida non indica più qualcosa che non vedi se scorri all'altra pagina o hai il menu aperto. Le liste lunghe si illuminano per intero e la pagina non può scorrere sotto.",

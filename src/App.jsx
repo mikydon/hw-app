@@ -38,7 +38,7 @@ const THEMES = {
   slate:  { ink: "#15181d", panel: "#1f242b", panelHi: "#2a313a", line: "#3a434f", chalk: "#f1f4f8", dim: "#9aa6b4", edge: "#0e1115" },
   coffee: { ink: "#1c140f", panel: "#2a1f17", panelHi: "#382a20", line: "#4d3a2c", chalk: "#fbf3ec", dim: "#b8a291", edge: "#130d09" },
 };
-const APP_VERSION = "1.8.1";
+const APP_VERSION = "1.8.2";
 // Big Shoulders has no Cyrillic, so Oswald (also condensed) covers Ukrainian. The browser only
 // downloads the Oswald unicode ranges a page actually uses.
 // 1.7.0: 'HW Emoji' = the app's own emoji (Fluent 3D, fonts/hw-emoji.ttf) for the emoji the app shows; BODY_SYS
@@ -1157,6 +1157,26 @@ function ExQ({ id, onOpen, style }) {
       style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", boxSizing: "border-box", width: 15, height: 15, borderRadius: 99, border: `1.2px solid ${C.sky}`, color: C.sky, fontFamily: BODY, fontSize: 9.5, fontWeight: 800, marginLeft: 6, opacity: 0.85, verticalAlign: "middle", cursor: "pointer", flexShrink: 0, lineHeight: 1, ...style }} />
   );
 }
+// 1.8.2 (a tester: "a lot of texts, make it understood by visuals"): explanations live behind a small "?" next to a
+// title instead of a line under it. Tap = a short sheet with the text (one sheet for the whole app, opened from here).
+let openInfoGlobal = null;
+function InfoQ({ title, text, id, style }) {
+  const go = e => { e.stopPropagation(); e.preventDefault(); sfxTap(); if (openInfoGlobal) openInfoGlobal({ title, text }); };
+  return (
+    <span role="button" tabIndex={0} data-info={id || ""} className="exq" aria-label={`${T("infoMore")}: ${title}`} onClick={go} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") go(e); }}
+      style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", boxSizing: "border-box", width: 16, height: 16, borderRadius: 99, border: `1.2px solid ${C.dim}`, color: C.dim, fontFamily: BODY, fontSize: 10, fontWeight: 800, marginLeft: 6, verticalAlign: "middle", cursor: "pointer", flexShrink: 0, lineHeight: 1, ...style }} />
+  );
+}
+function InfoSheet({ info, onClose }) {
+  const paras = Array.isArray(info.text) ? info.text : [info.text];
+  return (
+    <Sheet title={info.title} onClose={onClose} short>
+      <div data-info-sheet style={{ fontSize: 14.5, lineHeight: 1.55, color: C.chalk }}>
+        {paras.filter(Boolean).map((t, i) => <p key={i} style={{ margin: i ? "10px 0 0" : 0 }}>{t}</p>)}
+      </div>
+    </Sheet>
+  );
+}
 function HowTo({ id, history, onClose, onSwap }) {
   const ex = EX[id];
   const best = bestFor(history, id);
@@ -2069,6 +2089,8 @@ function TopBar({ screen, history, menuOpen, onMenu, onGo, dlPct, badge, head, s
 // the menu icons' 24-point grid, 2-point round strokes, colour = currentColor (the theme's quiet colour, the main colour
 // when active). Rewards (badges, ranks, cards, the flame/bolt chips) keep their 3D emoji.
 const ICONS = {
+  duo: '<circle cx="9" cy="8.5" r="3.2"/><path d="M3.5 19c.4-3.2 2.6-5 5.5-5s5.1 1.8 5.5 5"/><circle cx="16.5" cy="9.5" r="2.6"/><path d="M16 14.2c2.6 0 4.2 1.6 4.6 4.3"/>',
+  copy: '<rect x="8.5" y="8.5" width="11" height="12" rx="2.2"/><path d="M15.5 8.5V6a2 2 0 0 0-2-2H6.5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/>',
   gear: '<circle cx="12" cy="12" r="3.2"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7"/><circle cx="12" cy="12" r="6.6"/>',
   bulb: '<path d="M9 17.5h6M10 21h4M12 3a6 6 0 0 0-3.6 10.8c.6.5 1 1.2 1 2V16h5.2v-.2c0-.8.4-1.5 1-2A6 6 0 0 0 12 3z"/>',
   compass: '<circle cx="12" cy="12" r="8.5"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/>',
@@ -2148,8 +2170,8 @@ function MenuDrawer({ open, screen, history, profile, session, onGo, onResume, o
 function MenuBody({ screen, history, profile, session, onGo, onResume, onNews, gh, dl, badge, apk, busy, claimN = 0, chestN = 0, onTour, tourN = 0 }) {
   const lv = levelInfo(totalXP(history));
   const st = streakInfo(history, dateKey());
-  const kcs = kcalNow(history);
-  const items = SCREENS.map(id => ({ id, label: T(SCREEN_TITLE[id]), desc: id === "calories" && kcs ? T("kcMenu", { e: nf(kcs.eaten), t: nf(kcs.target) }) : id === "friends" && badge ? T("frMenuNew", { n: badge }) : id === "profile" && claimN ? TP("claimN", claimN) : id === "shop" && chestN ? TP("shChestN", chestN) : T("menuD_" + id), badge: id === "friends" ? badge : id === "profile" ? claimN : id === "shop" ? chestN : 0 }));
+  // 1.8.2 (a tester: "too much text"): icon + name only; counts stay as the red badge (no description lines)
+  const items = SCREENS.map(id => ({ id, label: T(SCREEN_TITLE[id]), badge: id === "friends" ? badge : id === "profile" ? claimN : id === "shop" ? chestN : 0 }));
   return (
     <>
           <button onClick={() => onGo("profile")} className="drawerItem" style={{ ...btnBase, "--i": 0, display: "flex", alignItems: "center", gap: 12, margin: "8px 14px 6px", padding: "12px", borderRadius: 18, background: C.panel, border: `1px solid ${C.line}`, color: C.chalk, textAlign: "left", ...(LOOK === "liquid" ? { ...LIQUID_PILL(), borderRadius: 20 } : {}) }}>
@@ -2171,10 +2193,7 @@ function MenuBody({ screen, history, profile, session, onGo, onResume, onNews, g
                 <button key={it.id} onClick={() => onGo(it.id)} aria-current={on ? "page" : undefined} className="drawerItem" data-screen={it.id}
                   style={{ ...btnBase, "--i": i + 2, width: "100%", display: "flex", alignItems: "center", gap: 14, padding: "10px 10px", margin: "2px 0", borderRadius: 14, background: on ? `${C.signal}1a` : "transparent", color: on ? C.signal : C.chalk, textAlign: "left" }}>
                   <span style={{ width: 40, height: 40, borderRadius: 12, background: on ? `${C.signal}26` : LOOK === "liquid" ? "rgba(255,255,255,.08)" : C.panelHi, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><TabIcon name={it.id} active={on} /></span>
-                  <span style={{ minWidth: 0 }}>
-                    <span style={{ display: "block", fontSize: 16, fontWeight: 800 }}>{it.label}</span>
-                    <span style={{ display: "block", fontSize: 12, fontWeight: it.badge ? 700 : 500, color: it.badge ? C.signal : C.dim, marginTop: 1 }}>{it.desc}</span>
-                  </span>
+                  <span style={{ minWidth: 0, fontSize: 16, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{it.label}</span>
                   {it.badge > 0 && <span style={{ marginLeft: "auto", minWidth: 20, height: 20, borderRadius: 10, padding: "0 6px", boxSizing: "border-box", background: "#ff5a5a", color: "#fff", fontSize: 11.5, fontWeight: 800, lineHeight: "20px", textAlign: "center", flexShrink: 0 }}>{it.badge}</span>}
                 </button>
               );
@@ -2184,10 +2203,8 @@ function MenuBody({ screen, history, profile, session, onGo, onResume, onNews, g
             <button type="button" data-tour-open onClick={() => { sfxTap(); onTour(); }} className="drawerItem"
               style={{ ...btnBase, "--i": items.length + 2, display: "flex", alignItems: "center", gap: 14, margin: "0 14px 12px", padding: "10px 14px", borderRadius: 18, background: C.panel, border: `1px solid ${C.line}`, color: C.chalk, textAlign: "left", ...(LOOK === "liquid" ? { ...LIQUID_PILL(), borderRadius: 20 } : {}) }}>
               <span aria-hidden="true" style={{ width: 40, height: 40, borderRadius: 12, background: LOOK === "liquid" ? "rgba(255,255,255,.08)" : C.panelHi, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: C.signal }}><Ico n="compass" size={23} /></span>
-              <span style={{ flex: 1, minWidth: 0 }}>
-                <span style={{ display: "block", fontSize: 16, fontWeight: 800 }}>{T("tourTitle")}</span>
-                <span style={{ display: "block", fontSize: 12, fontWeight: 500, color: C.dim, marginTop: 1 }}>{T("tourMenuD", { n: tourN, t: TOUR_N })}</span>
-              </span>
+              <span style={{ flex: 1, minWidth: 0, fontSize: 16, fontWeight: 800 }}>{T("tourTitle")}</span>
+              <span data-tour-n style={{ fontSize: 13, fontWeight: 700, color: C.dim, flexShrink: 0 }}>{tourN}/{TOUR_N}</span>
               <Arrow />
             </button>
           )}
@@ -3446,25 +3463,20 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
               );
             })}
           </div>
-          <div style={{ fontSize: 12, color: C.dim, marginTop: 8, padding: LOOK === "flat" ? 0 : "0 15px 8px" }}>{T("tapHint")}</div>
           </Sect>
           {settings && setSettings && (
             <Sect data-wset title={T("wsTitle")} accent={C.sky} titlePad="0 15px" style={LOOK === "flat" ? {} : { padding: "12px 0 0" }}>
               <div style={LOOK === "flat" ? { ...card } : { borderTop: `1px solid ${C.line}` }}>
                 <button data-wset-ex onClick={() => onGo && onGo("settings", { page: "exercises", ret: { screen: "train", pager: "home", page: 1 } })} style={{ ...btnBase, width: "100%", background: "transparent", color: C.chalk, padding: "13px 16px", textAlign: "left", borderRadius: 0, display: "flex", alignItems: "center", gap: 10, fontSize: 15 }}>
-                  <span style={{ flex: 1, minWidth: 0 }}>
-                    <span style={{ display: "block", fontWeight: 700 }}>{noEmo(T("exMenu"))}</span>
-                    <span style={{ display: "block", fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2, lineHeight: 1.4 }}>{T("exMenuD")}</span>
-                  </span>
+                  <span style={{ flex: 1, minWidth: 0, fontWeight: 700 }}>{noEmo(T("exMenu"))}</span>
                   <Arrow />
                 </button>
-                <SettingRow title={T("sndTimer")} desc={T("sndTimerD")} on={settings.sndTimer} onClick={() => { unlockAudio(); const v = !settings.sndTimer; setS("sndTimer", v); if (v) soundExercise(); }} />
-                <SettingRow title={T("vibrate")} desc={T("vibrateD")} on={settings.vibrate} onClick={() => { const v = !settings.vibrate; setS("vibrate", v); if (v) vibratePattern([160]); }} />
-                <SettingRow title={T("keepAwake")} desc={T("keepAwakeD")} on={settings.keepAwake} onClick={() => setS("keepAwake", !settings.keepAwake)} />
+                <SettingRow title={T("sndTimer")} info={T("sndTimerD")} on={settings.sndTimer} onClick={() => { unlockAudio(); const v = !settings.sndTimer; setS("sndTimer", v); if (v) soundExercise(); }} />
+                <SettingRow title={T("vibrate")} info={[T("vibrateD"), T("vibrateHint")]} on={settings.vibrate} onClick={() => { const v = !settings.vibrate; setS("vibrate", v); if (v) vibratePattern([160]); }} />
+                <SettingRow title={T("keepAwake")} on={settings.keepAwake} onClick={() => setS("keepAwake", !settings.keepAwake)} />
               </div>
             </Sect>
           )}
-          <div style={{ fontSize: 12, color: C.dim, margin: "12px 4px 0", lineHeight: 1.5 }}>{T("roundsHint")}</div>
         </div>
       </div>
       {!active && <FloatStart show={!rowSeen} day={day.id} rounds={rounds} setRounds={setRounds} onStart={() => { unlockAudio(); onStart(day.id, rounds); }} />}
@@ -4114,7 +4126,7 @@ function Calories({ history, profile, setProfile, kcal, setKcal }) {
           })()}
         </div>
         <div {...pg.pageProps(2)}>
-          <Sect title={T("kcSettings")} data-kcsettings style={{ marginTop: 0 }}>
+          <Sect title={<>{T("kcSettings")}<InfoQ id="kc" title={T("kcSettings")} text={[T("kcAutoAge"), T("kcDisclaimer")]} /></>} data-kcsettings style={{ marginTop: 0 }}>
             <div style={{ fontSize: 14, color: C.chalk, lineHeight: 1.6 }}>
               {T("kcSummary", { sex: T(kcal.sex === "f" ? "kcFemale" : "kcMale"), age, h: kcal.height, w: kcal.weight })}<br />
               <span style={{ color: C.dim }}>{T("kcAct_" + kcal.activity)}</span>
@@ -4128,9 +4140,7 @@ function Calories({ history, profile, setProfile, kcal, setKcal }) {
               <button onClick={() => { sfxTap(); setEditing(true); }} style={{ ...ghostBtn, flex: 1 }}>{T("kcEdit")}</button>
               <button onClick={() => { sfxTap(); setChangingGoal(true); }} style={{ ...ghostBtn, flex: 1, color: C.sky, borderColor: `${C.sky}88` }}>{T("kcChangeGoal")}</button>
             </div>
-            <div style={{ fontSize: 12, color: C.dim, lineHeight: 1.5, marginTop: 10 }}>{T("kcAutoAge")}</div>
           </Sect>
-          <div style={{ fontSize: 11, color: C.dim, lineHeight: 1.5, margin: "12px 4px 0" }}>{T("kcDisclaimer")}</div>
         </div>
       </div>
     </div>
@@ -4344,7 +4354,6 @@ function ProgressChart({ history }) {
           </g>
         ))}
       </svg>
-      <div style={{ fontSize: 12, color: C.dim }}>{T("chartHint")}</div>
     </Sect>
   );
 }
@@ -4521,7 +4530,7 @@ function HistoryTab({ history, onDelete, onSaveEntry, editDate, onEditOpened }) 
       {/* 1.7.0: the workouts are rows in one box (like the friends list), the newest open */}
       <ListSect title={T("workoutsTitle")} meta={history.length ? String(history.length) : ""} data-workouts>
         <button data-add-workout onClick={() => { sfxTap(); setEditing("new"); }} style={{ ...btnBase, width: "100%", padding: "11px 16px 13px", fontSize: 15, color: C.chalk, background: "transparent", borderRadius: 0, textAlign: "left", display: "flex", alignItems: "center", gap: 10 }}>
-          <span style={{ flex: 1, minWidth: 0 }}>{T("addWorkout").replace(/^➕\s*/, "")}<span style={{ display: "block", fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2 }}>{T("addWorkoutD")}</span></span>
+          <span style={{ flex: 1, minWidth: 0 }}>{T("addWorkout").replace(/^➕\s*/, "")}</span>
           <span aria-hidden="true" style={{ fontSize: 22, color: C.sky, lineHeight: 1, flexShrink: 0 }}>+</span>
         </button>
         {history.length === 0 && <div style={{ color: C.dim, fontSize: 14, padding: "12px 16px", borderTop: `1px solid ${C.line}` }}>{T("noHistory")}</div>}
@@ -4755,7 +4764,7 @@ function BadgesList({ m, focus, claim }) {
   const won = ach.filter(a => a.step && !hid(a)).length;
   return (
     <div data-pf-badges>
-      <div style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.5, margin: "0 2px 10px" }}>{T("achCount", { n: won, max: all.length })} · {T("achTiers", { n: ach.reduce((x, a) => x + (hid(a) ? 0 : a.step), 0), max: all.reduce((x, a) => x + a.at.length, 0) })} · {T("achSheetD")}</div>
+      <div style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.5, margin: "0 2px 10px" }}>{T("achCount", { n: won, max: all.length })} · {T("achTiers", { n: ach.reduce((x, a) => x + (hid(a) ? 0 : a.step), 0), max: all.reduce((x, a) => x + a.at.length, 0) })}</div>
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {list.map((a, k) => {
           if (hid(a)) return <ClaimRow key={a.k} it={claim.items.get("ach:" + a.k)} onOpen={claim.open} />;
@@ -4944,7 +4953,7 @@ function ProfilePage({ m, own, onEditProfile, onEditSlot, onStreak, onPhoto, onP
         {/* the basics: photo, name, level, streak */}
         <ProfileHero m={m} own={own} onPhoto={onPhoto} onEditProfile={onEditProfile} onLooks={onLooks} onStreak={onStreak} extra={extra} />
         {/* the showcase */}
-        <Sect data-pf-showcase title={T("pfShowcase")} meta={T("pfSlots", { n, max: SLOT_LV.length })}>
+        <Sect data-pf-showcase title={own ? <>{T("pfShowcase")}<InfoQ title={T("pfShowcase")} text={T("pfShowcaseD")} /></> : T("pfShowcase")} meta={T("pfSlots", { n, max: SLOT_LV.length })}>
           <div ref={slotsRef} data-pf-slots data-cols={slotCols} style={{ display: "grid", gridTemplateColumns: `repeat(${slotCols}, minmax(0, 1fr))`, gridAutoFlow: "row dense", gap: 8 }}>
             {slots.map((sl, i) => <SlotTile key={i + (sl ? slotStr(sl) : "")} sl={sl} m={sm} i={i} own={own} onTap={open} cols={slotCols} />)}
             {own && nextLv && <div data-slot-next={nextLv} className="cardIn" style={{ animationDelay: `${120 + n * 60}ms`, borderRadius: 16, border: `1.5px dashed ${C.line}`, minHeight: 92, padding: "12px 13px", boxSizing: "border-box", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6, color: C.dim, textAlign: "center" }}>
@@ -4952,7 +4961,6 @@ function ProfilePage({ m, own, onEditProfile, onEditSlot, onStreak, onPhoto, onP
               <span style={{ fontSize: 12, fontWeight: 700, lineHeight: 1.35 }}>{T("pfSlotNext", { lv: nextLv })}</span>
             </div>}
           </div>
-          {own && <div style={{ fontSize: 11.5, color: C.dim, lineHeight: 1.45, marginTop: 9 }}>{T("pfShowcaseD")}</div>}
         </Sect>
         </div>
         {/* on a wide screen there are no tabs: each column gets its title */}
@@ -5205,12 +5213,12 @@ function BackupsSheet({ onClose, onRestore, autoOn, myId }) {
     </Sheet>
   );
 }
-function SettingRow({ title, desc, on, onClick, first }) {
+function SettingRow({ title, desc, info, on, onClick, first }) {
   return (
     <button role="switch" aria-checked={!!on} onClick={onClick}
       style={{ ...btnBase, width: "100%", background: "transparent", color: C.chalk, padding: "13px 16px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, textAlign: "left", borderRadius: 0, borderTop: first ? "none" : `1px solid ${C.line}` }}>
       <span style={{ flex: 1 }}>
-        <span style={{ display: "block", fontSize: 15, fontWeight: 700 }}>{title}</span>
+        <span style={{ display: "block", fontSize: 15, fontWeight: 700 }}>{title}{info && <InfoQ title={title} text={info} />}</span>
         {desc && <span style={{ display: "block", fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2, lineHeight: 1.4 }}>{desc}</span>}
       </span>
       <Toggle on={on} />
@@ -5462,6 +5470,17 @@ function PwSheet({ onClose }) {
 function PersonAvatar({ p, size = 40 }) { return <Avatar profile={{ name: p.nick || "?", pfp: p.pfp || null }} size={size} />; }
 
 // One row of a leaderboard or the friends list.
+// 1.8.2 (Michael): the friend streak with someone, on their row in Friends and next to their name in the chat.
+// Orange = running (with ⚠ when one of you must train today to keep it), grey = ended.
+function FsChip({ st, uid, size = 15 }) {
+  const warn = st.n > 0 && ((!st.meToday && st.meLast >= 2) || (!st.theyToday && st.theyLast >= 2));
+  return (
+    <span data-fs-row={uid} data-fs-n={st.n} title={T("fsTitle")} aria-label={`${T("fsTitle")}: ${st.n}`}
+      style={{ display: "inline-flex", alignItems: "center", gap: 3, flexShrink: 0, padding: "3px 7px", borderRadius: 99, fontSize: size, fontWeight: 900, fontFamily: DISPLAY, color: st.n ? "#ffa94d" : C.dim, background: st.n ? "#ffa94d1f" : SOFT(), border: `1px solid ${st.n ? "#ffa94d55" : C.line}` }}>
+      <Ico n="duo" size={size} color={st.n ? "#ffa94d" : C.dim} sw={2.2} />🔥{st.n}{warn ? <span style={{ fontSize: size * 0.8 }}>⚠</span> : null}
+    </span>
+  );
+}
 function PersonRow({ p, rank, me, onClick, right, first }) {
   return (
     <button data-person={p.uid} data-me={me ? 1 : 0} onClick={onClick} disabled={!onClick}
@@ -5478,7 +5497,7 @@ function PersonRow({ p, rank, me, onClick, right, first }) {
 }
 
 // Someone's card: stats, and add / remove / block / report.
-function PersonSheet({ p, isFriend, onAdd, onChat, onRemove, onBlock, onReport, onProfile, onClose, fsState, onFs }) {
+function PersonSheet({ p, isFriend, onAdd, onChat, onRemove, onBlock, onReport, onProfile, onClose, fsState, onFs, onDelChat, onFsEnd }) {
   const [sure, setSure] = useState(null);
   const [msg, setMsg] = useState("");
   const [reported, setReported] = useState(false);
@@ -5502,6 +5521,8 @@ function PersonSheet({ p, isFriend, onAdd, onChat, onRemove, onBlock, onReport, 
         {!isFriend && onAdd && <button data-ps-add onClick={() => { sfxTap(); onAdd(p).then(setMsg); }} style={{ ...small, background: C.signal, color: C.signalInk, flexBasis: "100%" }}>{T("frAddBtn")}</button>}
         {isFriend && onChat && <button data-ps-chat onClick={() => { sfxTap(); onChat(p); }} style={{ ...small, background: C.signal, color: C.signalInk, flexBasis: "100%" }}>{T("chWrite")}</button>}
         {isFriend && onFs && <button data-ps-fs={fsState || "none"} disabled={!!fsState} onClick={() => { sfxTap(); onFs(p).then(setMsg); }} style={{ ...small, flexBasis: "100%", background: fsState ? C.panelHi : `${"#ffa94d"}2e`, color: fsState ? C.dim : "#ffb871", border: `1.5px solid ${fsState ? C.line : "#ffa94d88"}` }}>🔥 {T(fsState === "on" ? "fsHave" : fsState === "sent" ? "fsSent" : fsState === "full" ? "fsFull" : "fsInvite")}</button>}
+        {onFsEnd && <button data-ps-fs-end onClick={() => { sfxTap(); onFsEnd(p); }} style={small}>{T("fsEnd")}</button>}
+        {onDelChat && <button data-ps-delchat onClick={() => { sfxTap(); onDelChat(p); }} style={small}>{T("chDelYes")}</button>}
         {isFriend && <button data-ps-remove onClick={() => twoTap("rm", () => onRemove(p))} style={{ ...small, color: sure === "rm" ? "#ff8a80" : C.chalk }}>{sure === "rm" ? T("frRemoveSure") : T("frRemove")}</button>}
         <button data-ps-block onClick={() => twoTap("bl", () => onBlock(p))} style={{ ...small, color: sure === "bl" ? "#ff8a80" : C.chalk }}>{sure === "bl" ? T("frBlockSure") : T("frBlock")}</button>
         <button data-ps-report onClick={() => { sfxTap(); onReport(p).then(m => { setMsg(m); setReported(String(m).startsWith("✓")); }); }} style={small}>{T("frReport")}</button>
@@ -5594,9 +5615,9 @@ function NickSetup({ initial, onSave, onCancel, title }) {
 function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, chatWith, setChatWith, onBlocked, setTopHead, modHidden, fx = {} }) {
   const wide = useWide();
   const me = { uid: acct.uid, ...acct.prof, ...cloudStats(history) };
-  const [tab, setTab] = useState(() => (sessionStorage.getItem("hw-add") ? "friends" : chatWith ? "chats" : "board"));
+  const [tab, setTab] = useState("friends"); // 1.8.2: friends and chats are one list, shown first
   const frDir = useRef(0), frPrev = useRef(tab);
-  if (frPrev.current !== tab) { const o = { board: 0, friends: 1, chats: 2 }; frDir.current = Math.sign(o[tab] - o[frPrev.current]); frPrev.current = tab; }
+  if (frPrev.current !== tab) { const o = { friends: 0, board: 1 }; frDir.current = Math.sign(o[tab] - o[frPrev.current]); frPrev.current = tab; }
   const [scope, setScope] = useState("friends"); // board: friends | world
   const [world, setWorld] = useState(null);
   const blocked = social.blocked || [];
@@ -5624,6 +5645,9 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
   const fs = fx.fs || { list: [], days: {}, mine: [] };
   const fsList = (fs.list || []).filter(f => friendIds.includes(f.other));
   const fsStateOf = u => { const f = fsList.find(x => x.other === u); return f ? (f.ok ? "on" : f.by === acct.uid ? "sent" : "asked") : fsList.filter(x => x.ok || x.by === acct.uid).length >= FS_MAX ? "full" : null; };
+  const fsPending = fsList.filter(f => !f.ok);
+  // 1.8.2: the running friend streak with someone (null = none): days, and whether each of you is safe today
+  const fsOf = u => { const f = fsList.find(x => x.other === u && x.ok); return f ? friendStreak(fs.mine, fs.days[u] || [], f.start, dateKey()) : null; };
   const fsInvite = p => fs.invite(p.uid).then(() => { sfxCheck(); return "✓ " + T("fsSentMsg", { nick: p.nick }); }).catch(e => cloudErr(e) || T("frErr"));
   const [fsEnd, setFsEnd] = useState(null);
   const sendTo = async (uid, nick) => {
@@ -5678,6 +5702,14 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
   const people = Object.fromEntries([...(world || []), ...(reqs || []), ...(friends || [])].map(p => [p.uid, p]));
   const chats = (social.chats || []).filter(c => !blocked.includes(c.other) && c.last.ts > Math.max(0, clr[c.cid] || 0)).sort((a, b) => b.last.ts - a.last.ts);
   const unread = c => c.last.from !== acct.uid && c.last.ts > Math.max((social.read || {})[c.cid] || 0, clr[c.cid] || 0);
+  // 1.8.2: one list of friends and chats: chats newest first, then friends without a chat (highest level first);
+  // a chat with someone who isn't a friend any more stays (read-only)
+  const convo = (() => {
+    const byOther = Object.fromEntries(chats.map(c => [c.other, c]));
+    const list = (friends || []).map(p => ({ p, c: byOther[p.uid] || null }));
+    for (const c of chats) if (!friendIds.includes(c.other)) list.push({ p: people[c.other] || { uid: c.other, nick: "…" }, c });
+    return list.sort((a, b) => (b.c ? b.c.last.ts : 0) - (a.c ? a.c.last.ts : 0) || (b.p.xp || 0) - (a.p.xp || 0));
+  })();
   const deleteChat = c => { const m = { ...(cloudMem().clr || {}), [c.cid]: Date.now() }; setClr(m); setCloudMem({ clr: m }); setDelChat(null); sfxTap(); window.dispatchEvent(new Event("hw-read")); };
   // a chat deleted on another device of this account disappears here too
   useEffect(() => { const f = () => setClr(cloudMem().clr || {}); window.addEventListener("hw-read", f); return () => window.removeEventListener("hw-read", f); }, []);
@@ -5687,7 +5719,7 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
   if (view) return <OtherProfile p={people[view.uid] ? { ...view, ...people[view.uid] } : view} isFriend={friendIds.includes(view.uid)} onBack={() => setView(null)} setTopHead={setTopHead} />;
   if (chatWith) {
     const p = people[chatWith] || { uid: chatWith, nick: "…" };
-    return <ChatView setTopHead={setTopHead} me={acct.uid} other={p} th={((social.chats || []).find(c => c.other === chatWith) || {}).th} canWrite={friendIds.includes(chatWith)} onBack={() => setChatWith(null)} onOpen={() => { sfxTap(); setSheet(p); }}
+    return <ChatView setTopHead={setTopHead} me={acct.uid} other={p} fs={friendIds.includes(chatWith) ? fsOf(chatWith) : null} th={((social.chats || []).find(c => c.other === chatWith) || {}).th} canWrite={friendIds.includes(chatWith)} onBack={() => setChatWith(null)} onOpen={() => { sfxTap(); setView(p); }} onMenu={() => { vibrate([30]); setSheet(p); }}
       sheet={<>{sheet && <PersonSheet p={sheet} isFriend={friendIds.includes(sheet.uid)} fsState={fsStateOf(sheet.uid)} onFs={fsInvite} onClose={() => setSheet(null)} onAdd={x => sendTo(x.uid, x.nick).catch(cloudErr)}
         onRemove={x => act(() => cloud().removeFriend(x.uid), () => setSheet(null))} onBlock={block} onReport={x => report(x)} onProfile={setView} />}
 </>}
@@ -5696,6 +5728,8 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
   return (
     <div className="scr" data-fr-main style={{ padding: "6px 18px 110px", maxWidth: "var(--colMax)", margin: "0 auto" }}>
       {sheet && <PersonSheet p={sheet} isFriend={friendIds.includes(sheet.uid)} fsState={fsStateOf(sheet.uid)} onFs={fsInvite} onClose={() => setSheet(null)} onChat={friendIds.includes(sheet.uid) ? x => { setSheet(null); setChatWith(x.uid); } : null}
+        onDelChat={chats.some(c => c.other === sheet.uid) ? x => { setSheet(null); setDelChat(chats.find(c => c.other === x.uid)); } : null}
+        onFsEnd={fsStateOf(sheet.uid) === "on" ? x => { setSheet(null); setFsEnd(x.uid); } : null}
         onAdd={p => sendTo(p.uid, p.nick).catch(cloudErr)} onRemove={p => act(() => cloud().removeFriend(p.uid), () => setSheet(null))}
         onBlock={block} onReport={p => report(p)} onProfile={setView} />}
       {delChat && (() => { const dp = people[delChat.other] || { nick: "…" }; return (
@@ -5716,11 +5750,10 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
               <span style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" , ...INK }}>{me.nick}</span>
               <span aria-hidden="true" style={{ opacity: 0.6, color: C.dim }}><Ico n="pencil" size={14} /></span>
             </button>
-            <div style={{ fontSize: 12, color: C.dim, marginTop: 2 }}>{T("frMyCode")}</div>
           </div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 12 }}>
-          <button data-fr-code onClick={copy} aria-label={T("frCopy")} style={{ ...btnBase, flex: 1, minWidth: 0, padding: "10px 12px", borderRadius: 12, background: SOFT(), color: C.chalk, fontFamily: DISPLAY, fontSize: 22, fontWeight: 900, letterSpacing: 1.5, textAlign: "center" }}>{fmtCode(me.code)}</button>
+          <button data-fr-code onClick={copy} aria-label={T("frCopy")} style={{ ...btnBase, flex: 1, minWidth: 0, padding: "10px 12px", borderRadius: 12, background: SOFT(), color: C.chalk, fontFamily: DISPLAY, fontSize: 22, fontWeight: 900, letterSpacing: 1.5, display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}>{fmtCode(me.code)}<Ico n="copy" size={18} color={C.dim} /></button>
           <button data-fr-share onClick={share} style={{ ...btnBase, padding: "12px 14px", borderRadius: 12, background: C.signal, color: C.signalInk, fontSize: 14, flexShrink: 0 }}>{T("frShare")}</button>
         </div>
         {shareMsg && <div role="status" style={{ fontSize: 12, color: C.mint, marginTop: 6 }}>{shareMsg}</div>}
@@ -5770,9 +5803,10 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
             </div>
             {addMsg && <div role="status" data-fr-add-msg style={{ fontSize: 13, color: addMsg.startsWith("✓") ? C.mint : C.dim, marginTop: 8 }}>{addMsg}</div>}
           </Sect>
-          {fsList.length > 0 && (
+          {/* 1.8.2 (Michael): a running friend streak shows on the friend's row and in the chat; this box only lists invitations */}
+          {fsPending.length > 0 && (
             <Sect data-fs-box title={T("fsTitle")} meta={`${fsList.filter(f => f.ok).length}/${FS_MAX}`} style={{ padding: "15px 0 4px" }} titlePad="0 16px">
-              {fsList.map((f, i) => {
+              {fsPending.map((f, i) => {
                 const p = people[f.other] || { uid: f.other, nick: "…" };
                 const st = f.ok ? friendStreak(fs.mine, fs.days[f.other] || [], f.start, dateKey()) : null;
                 return (
@@ -5815,46 +5849,52 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
               ))}
             </Sect>
           )}
-          <Sect title={T("frFriends")} meta={friends ? String(friends.length) : ""} style={{ padding: "15px 0 4px" }} titlePad="0 16px">
+          {/* 1.8.2 (Michael): friends and messages are one list, like a messenger. A row opens the chat (the newest
+              chats first, unread ones marked); the photo opens the person's card (profile, remove, block). Chats with
+              someone who is no longer a friend stay in the list (read-only). Hold a row with a chat to delete it for you. */}
+          <Sect data-fr-list title={T("frFriends")} meta={friends ? String(friends.length) : ""} style={{ padding: "15px 0 4px" }} titlePad="0 16px">
             {friends === null ? <div style={{ padding: "6px 16px 12px", color: C.dim, fontSize: 14 }}>{T("frLoading")}</div>
-              : !friends.length ? <div style={{ padding: "6px 16px 12px", color: C.dim, fontSize: 13, lineHeight: 1.5 }}>{T("frNoFriends")}</div>
-              : friends.map((p, i) => <PersonRow key={p.uid} p={p} first={i === 0} onClick={() => { sfxTap(); setSheet(p); }} />)}
+              : !convo.length ? <div data-ch-empty style={{ padding: "6px 16px 12px", color: C.dim, fontSize: 13, lineHeight: 1.5 }}>{T("frNoFriends")}</div>
+              : convo.map(({ p, c }, i) => {
+                const u = c && unread(c), fsn = friendIds.includes(p.uid) ? fsOf(p.uid) : null;
+                // 1.8.2 (Michael): tap = the chat at once; the photo = their profile (or "private"); hold (or right-click) = the menu
+                const menuOpen = () => { holdRef.current.fired = true; vibrate([30]); setSheet(p); };
+                return (
+                  <div key={p.uid} data-fr-row={p.uid} style={{ display: "flex", alignItems: "center", borderTop: i ? `1px solid ${C.line}` : "none" }}>
+                    <button type="button" data-person={p.uid} aria-label={`${T("pvOpen")}: ${p.nick}`} onClick={() => { sfxTap(); setView(p); }} style={{ ...btnBase, background: "transparent", padding: "10px 0 10px 14px", borderRadius: 0, flexShrink: 0 }}>
+                      <PersonAvatar p={p} size={42} />
+                    </button>
+                    <button type="button" data-chat={p.uid} data-unread={u ? 1 : 0} data-has-chat={c ? 1 : 0} onClick={() => { if (holdRef.current.fired) { holdRef.current.fired = false; return; } sfxTap(); setChatWith(p.uid); }}
+                      onPointerDown={() => { holdRef.current.fired = false; clearTimeout(holdRef.current.t); holdRef.current.t = setTimeout(menuOpen, 480); }} onPointerUp={holdEnd} onPointerLeave={holdEnd} onPointerCancel={holdEnd}
+                      onContextMenu={e => { e.preventDefault(); holdEnd(); menuOpen(); }}
+                      style={{ ...btnBase, flex: 1, minWidth: 0, display: "flex", alignItems: "center", gap: 10, padding: "10px 14px 10px 11px", background: "transparent", color: C.chalk, textAlign: "left", borderRadius: 0, WebkitTouchCallout: "none", userSelect: "none" }}>
+                      <span style={{ flex: "0 1 62%", minWidth: 0 }}>
+                        <span style={{ display: "flex", alignItems: "baseline", gap: 7 }}>
+                          <span style={{ minWidth: 0, fontSize: 15, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", ...INK }}>{p.nick}</span>
+                          {c && <span style={{ fontSize: 11, color: u ? C.signal : C.dim, flexShrink: 0 }}>{chTime(c.last.ts)}</span>}
+                        </span>
+                        {c && <span style={{ display: "flex", alignItems: "center", gap: 7, marginTop: 2 }}>
+                          <span className="sysEmo" style={{ minWidth: 0, fontSize: 13, color: u ? C.chalk : C.dim, fontWeight: u ? 700 : 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.last.from === acct.uid ? `${T("chYou")}: ` : ""}{c.last.text}</span>
+                          {u && <span aria-label={T("chNew")} style={{ width: 9, height: 9, borderRadius: 5, background: C.signal, flexShrink: 0 }} />}
+                        </span>}
+                      </span>
+                      <span style={{ flex: 1 }} />
+                      {fsn && <FsChip st={fsn} uid={p.uid} />}
+                      <span data-fr-lvl style={{ fontFamily: DISPLAY, fontSize: 20, fontWeight: 900, color: C.sky, flexShrink: 0 }}>⚡{p.lvl || 1}</span>
+                    </button>
+                  </div>
+                );
+              })}
           </Sect>
         </>
-        );
-        const chatsView = (
-        <Sect title={T("chMsgs")} style={{ padding: "15px 0 4px" }} titlePad="0 16px">
-          {social.chats === null ? <div style={{ padding: "6px 16px 12px", color: C.dim, fontSize: 14 }}>{T("frLoading")}</div>
-            : !chats.length ? <div data-ch-empty style={{ padding: "6px 16px 12px", color: C.dim, fontSize: 13, lineHeight: 1.5 }}>{friends && friends.length ? T("chEmpty") : T("chNoFriends")}</div>
-            : chats.map((c, i) => {
-              const p = people[c.other] || { uid: c.other, nick: "…" }, u = unread(c);
-              return (
-                <button key={c.cid} data-chat={c.other} data-unread={u ? 1 : 0} onClick={() => { if (holdRef.current.fired) { holdRef.current.fired = false; return; } sfxTap(); setChatWith(c.other); }}
-                  onPointerDown={() => holdStart(c)} onPointerUp={holdEnd} onPointerLeave={holdEnd} onPointerCancel={holdEnd} onContextMenu={e => { e.preventDefault(); holdEnd(); holdRef.current.fired = true; setDelChat(c); }}
-                  style={{ ...btnBase, width: "100%", display: "flex", alignItems: "center", gap: 11, padding: "10px 14px", background: "transparent", color: C.chalk, textAlign: "left", borderRadius: 0, borderTop: i ? `1px solid ${C.line}` : "none" }}>
-                  <PersonAvatar p={p} size={40} />
-                  <span style={{ flex: 1, minWidth: 0 }}>
-                    <span style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-                      <span style={{ flex: 1, minWidth: 0, fontSize: 15, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.nick}</span>
-                      <span style={{ fontSize: 11, color: u ? C.signal : C.dim, flexShrink: 0 }}>{chTime(c.last.ts)}</span>
-                    </span>
-                    <span style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 2 }}>
-                      <span className="sysEmo" style={{ flex: 1, minWidth: 0, fontSize: 13, color: u ? C.chalk : C.dim, fontWeight: u ? 700 : 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.last.from === acct.uid ? `${T("chYou")}: ` : ""}{c.last.text}</span>
-                      {u && <span aria-label={T("chNew")} style={{ width: 9, height: 9, borderRadius: 5, background: C.signal, flexShrink: 0 }} />}
-                    </span>
-                  </span>
-                </button>
-              );
-            })}
-        </Sect>
         );
         const tabs = list => <div role="tablist" style={segBox}>{list.map(([id, l, n]) => <Fragment key={id}>{seg(tab === id, () => setTab(id), l, id, n)}</Fragment>)}</div>;
         const nReq = reqs ? reqs.length : 0, nChat = chats.filter(unread).length;
         // 1.8.0: the page slides in from the side of the tab you came from
         const view = (id, v) => <div key={id} data-fr-view={id} className={frDir.current ? (frDir.current > 0 ? "frInR" : "frInL") : undefined}>{v}</div>;
-        if (!wide) return <>{idCard}{tabs([["board", T("frBoard")], ["friends", T("frFriends"), nReq], ["chats", T("chMsgs"), nChat]])}{err && <div role="alert" style={{ fontSize: 13, color: "#ff8a80", marginTop: 10 }}>{err}</div>}{view(tab, tab === "board" ? boardView : tab === "friends" ? friendsView : chatsView)}</>;
-        const rt = tab === "chats" ? "chats" : "board";
-        return <Cols left={<>{idCard}<div data-fr-view="friends">{friendsView}</div></>} right={<>{tabs([["board", T("frBoard")], ["chats", T("chMsgs"), nChat]])}{err && <div role="alert" style={{ fontSize: 13, color: "#ff8a80", marginTop: 10 }}>{err}</div>}{view(rt, rt === "board" ? boardView : chatsView)}</>} />;
+        const errLine = err && <div role="alert" style={{ fontSize: 13, color: "#ff8a80", marginTop: 10 }}>{err}</div>;
+        if (!wide) return <>{idCard}{tabs([["friends", T("frFriends"), nReq + nChat], ["board", T("frBoard")]])}{errLine}{view(tab, tab === "board" ? boardView : friendsView)}</>;
+        return <Cols left={<>{idCard}<div data-fr-view="friends">{friendsView}</div></>} right={<>{errLine}<div style={{ ...sectionTitle, margin: "16px 4px 0" }}>{T("frBoard")}</div><div data-fr-view="board">{boardView}</div></>} />;
       })()}
     </div>
   );
@@ -6096,7 +6136,8 @@ function MsgMenu({ at, m, mine, me, other, th, onClose, onReply, onCopy, onEdit,
     document.body
   );
 }
-function ChatView({ me, other, canWrite, onBack, onOpen, onReport, onBlock, sheet, th: thSaved, setTopHead }) {
+function ChatView({ me, other, canWrite, onBack, onOpen, onMenu, onReport, onBlock, sheet, th: thSaved, setTopHead, fs }) {
+  const headHold = useRef({ t: 0, fired: false }); // 1.8.2: tap the name = their profile, hold = the menu
   const [msgs, setMsgs] = useState(null);
   const [repOffer, setRepOffer] = useState(false);
   const [thLocal, setThLocal] = useState(null); // picked here, until the chat's colour comes back from the cloud
@@ -6187,11 +6228,15 @@ function ChatView({ me, other, canWrite, onBack, onOpen, onReport, onBlock, shee
       <button data-chat-back onClick={() => { sfxTap(); onBack(); }} aria-label={T("back")} style={{ ...btnBase, background: SOFT(), color: C.chalk, width: 38, height: 38, borderRadius: 12, fontSize: 22, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
         <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
       </button>
-      <button onClick={onOpen} style={{ ...btnBase, background: "transparent", color: C.chalk, padding: 0, display: "flex", alignItems: "center", gap: 10, minWidth: 0, flex: 1, textAlign: "left" }}>
+      <button data-chat-who onClick={() => { if (headHold.current.fired) { headHold.current.fired = false; return; } onOpen(); }}
+        onPointerDown={() => { headHold.current.fired = false; clearTimeout(headHold.current.t); if (onMenu) headHold.current.t = setTimeout(() => { headHold.current.fired = true; onMenu(); }, 480); }}
+        onPointerUp={() => clearTimeout(headHold.current.t)} onPointerLeave={() => clearTimeout(headHold.current.t)} onPointerCancel={() => clearTimeout(headHold.current.t)}
+        onContextMenu={e => { e.preventDefault(); clearTimeout(headHold.current.t); if (onMenu) { headHold.current.fired = true; onMenu(); } }}
+        style={{ ...btnBase, background: "transparent", color: C.chalk, padding: 0, display: "flex", alignItems: "center", gap: 10, minWidth: 0, flex: 1, textAlign: "left", WebkitTouchCallout: "none", userSelect: "none" }}>
         <PersonAvatar p={other} size={38} />
         <span style={{ minWidth: 0 }}>
           <span style={{ display: "block", fontSize: 17, fontWeight: 900, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{other.nick}</span>
-          <span style={{ display: "block", fontSize: 12, color: C.dim }}>⚡{other.lvl || 1} · 🔥 {other.streak || 0}</span>
+          <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: C.dim }}><span style={{ color: C.sky, fontWeight: 800 }}>⚡{other.lvl || 1}</span>{fs && <FsChip st={fs} uid={other.uid} size={12} />}{fs && <InfoQ title={T("fsTitle")} text={T("fsHow")} style={{ marginLeft: 0 }} />}</span>
         </span>
       </button>
       {canWrite && <button data-chat-theme-open onClick={() => { sfxTap(); setThemeOpen(true); }} aria-label={T("chTheme")} style={{ ...btnBase, width: 38, height: 38, borderRadius: 12, background: SOFT(), flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -6199,7 +6244,7 @@ function ChatView({ me, other, canWrite, onBack, onOpen, onReport, onBlock, shee
       </button>}
     </div>
   );
-  useEffect(() => { setTopHead && setTopHead(head); }, [other.uid, other.nick, other.lvl, other.streak, other.pfp, th, canWrite]);
+  useEffect(() => { setTopHead && setTopHead(head); }, [other.uid, other.nick, other.lvl, other.streak, other.pfp, th, canWrite, fs && fs.n]);
   useEffect(() => () => { setTopHead && setTopHead(null); }, []);
   let lastDay = "";
   const bar = editing || reply;
@@ -6314,7 +6359,7 @@ function AccountBox({ acct, cloudBk, onOpen, onRestore, onBackupNow, onSignOut, 
   if (acct.st !== "in") return (
     <ListSect title={T("acTitle")}>
       <button data-acct-signin onClick={() => { sfxTap(); onOpen(); }} style={rowBtn(true)}>
-        <span style={{ flex: 1 }}>{T("acSignIn")}{sub(T("acSignInD"))}</span>
+        <span style={{ flex: 1 }}>{T("acSignIn")}</span>
         <Arrow />
       </button>
     </ListSect>
@@ -6327,32 +6372,31 @@ function AccountBox({ acct, cloudBk, onOpen, onRestore, onBackupNow, onSignOut, 
           <Arrow />
         </button>
         <div style={{ ...rowBtn(false), display: "block", cursor: "default", boxSizing: "border-box" }}>
-          {T("acBackup")}
-          {sub(T("acBackupD"))}
+          {T("acBackup")}<InfoQ title={T("acBackup")} text={T("acBackupD")} />
           <span data-cloud-bk={cloudBk ? (cloudBk.ok ? "ok" : "err") : "none"} style={{ display: "block", fontSize: 12, marginTop: 4, color: cloudBk && !cloudBk.ok ? "#ff8a80" : cloudBk ? C.mint : C.dim }}>{!cloudBk ? T("acBkNone") : cloudBk.ok ? T("acBkLast", { time: fmtWhen(cloudBk.ts) }) : T("acBkErr", { e: cloudBk.err || "?" })}</span>
           {onBackupNow && <button data-cloud-bk-now onClick={() => { sfxTap(); run("bk", onBackupNow); }} disabled={busy === "bk"}
             style={{ ...btnBase, marginTop: 10, padding: "8px 14px", borderRadius: 99, fontSize: 13, background: C.panelHi, color: C.chalk, border: `1px solid ${C.line}` }}>{busy === "bk" ? T("acBkNowBusy") : T("acBkNow")}</button>}
         </div>
         <button data-acct-pw onClick={() => { sfxTap(); setPwOpen(true); }} style={rowBtn(false)}>
-          <span style={{ flex: 1, minWidth: 0 }}>{T("acPwRow")}{sub(T("acPwRowD"))}</span>
+          <span style={{ flex: 1, minWidth: 0 }}>{T("acPwRow")}</span>
           <Arrow />
         </button>
         <button data-acct-restore onClick={() => run("rs", onRestore)} style={rowBtn(false)}>
-          <span style={{ flex: 1 }}>{busy === "rs" ? "…" : T("acRestore")}{sub(T("acRestoreD"))}</span>
+          <span style={{ flex: 1 }}>{busy === "rs" ? "…" : T("acRestore")}<InfoQ title={T("acRestore")} text={T("acRestoreD")} /></span>
         </button>
         <button data-acct-signout onClick={() => {
             if (!soSure) { setSoSure(true); setTimeout(() => setSoSure(false), 4000); return; }
             setSoSure(false); run("so", onSignOut);
           }} style={{ ...rowBtn(false), color: soSure ? "#ff8a80" : C.chalk, display: "block" }}>
           {busy === "so" ? "…" : soSure ? T("acSignOutSure") : T("acSignOut")}
-          {sub(T("acSignOutD"))}
+          {soSure && sub(T("acSignOutD"))}
         </button>
         <button data-acct-delete onClick={() => {
             if (!sure) { setSure(true); setTimeout(() => setSure(false), 4000); return; }
             setSure(false); run("del", () => onDelete(askPw ? delPw : undefined));
           }} style={{ ...rowBtn(false), color: "#ff8a80", display: "block" }}>
           {busy === "del" ? "…" : sure ? T("acDeleteSure") : T("acDelete")}
-          {sub(`${T("acDeleteD")} ${T("acDelGoogle")}`)}
+          {sure && sub(`${T("acDeleteD")} ${T("acDelGoogle")}`)}
         </button>
         {askPw && <div style={{ padding: "0 16px 14px" }}>
           <PwInput data-del-pw autoComplete="current-password" value={delPw} onChange={e => setDelPw(e.target.value)} placeholder={T("acPwPh")} aria-label={T("acPwPh")}
@@ -6747,7 +6791,7 @@ function SettingsTab({ initPage, ret, settings, setSettings, history, profile, s
         ); })}
       </div>
       <div style={{ fontSize: 12, color: C.dim, marginTop: 6 }}>{T("accent_" + (ACCENTS[settings.accent] ? settings.accent : "yellow"))}</div>
-      <div style={{ fontSize: 13, color: C.chalk, fontWeight: 800, margin: "14px 0 8px" }}>{T("lookTitle")}</div>
+      <div style={{ fontSize: 13, color: C.chalk, fontWeight: 800, margin: "14px 0 8px" }}>{T("lookTitle")}<InfoQ id="look" title={T("lookTitle")} text={T("lookHint")} /></div>
       <div role="radiogroup" aria-label={T("lookTitle")} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
         {["liquid", "cards", "tiles", "glass", "accent", "flat"].map(id => {
           const on = (settings.look || "cards") === id;
@@ -6763,37 +6807,32 @@ function SettingsTab({ initPage, ret, settings, setSettings, history, profile, s
           );
         })}
       </div>
-      <div style={{ fontSize: 12, color: C.dim, marginTop: 6, lineHeight: 1.45 }}>{T("lookHint")}</div>
       {hzSupported() && <div style={{ marginTop: 12, borderRadius: 14, background: SOFT(), overflow: "hidden" }}><HzRow settings={settings} set={set} first /></div>}
       </Sect>
       </>} right={<>
       <ListSect title={T("sounds")}>
-        <SettingRow first title={T("sndTap")} desc={T("sndTapD")} on={settings.sndTap} onClick={() => flip("sndTap")} />
-        <SettingRow title={T("sndFx")} desc={T("sndFxD")} on={settings.sndFx} onClick={() => flip("sndFx")} />
-        <SettingRow title={T("sndTimer")} desc={T("sndTimerD")} on={settings.sndTimer} onClick={() => flip("sndTimer")} />
+        <SettingRow first title={T("sndTap")} on={settings.sndTap} onClick={() => flip("sndTap")} />
+        <SettingRow title={T("sndFx")} info={T("sndFxD")} on={settings.sndFx} onClick={() => flip("sndFx")} />
+        <SettingRow title={T("sndTimer")} info={T("sndTimerD")} on={settings.sndTimer} onClick={() => flip("sndTimer")} />
         <div style={{ padding: "13px 16px", borderTop: `1px solid ${C.line}` }}>
-          <div style={{ fontSize: 15, fontWeight: 700, color: C.chalk }}>{T("volume")}</div>
+          <div style={{ fontSize: 15, fontWeight: 700, color: C.chalk }}>{T("volume")}<InfoQ title={T("volume")} text={T("volHint")} /></div>
           <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
             {[["low", T("volLow")], ["mid", T("volMid")], ["high", T("volHigh")]].map(([id, l]) => (
               <button key={id} onClick={() => { unlockAudio(); set("volume", id); sfxCheck(); }} aria-pressed={settings.volume === id}
                 style={{ ...btnBase, flex: 1, padding: "9px 4px", fontSize: 13, background: settings.volume === id ? C.chalk : "transparent", color: settings.volume === id ? C.ink : C.dim, border: `1.5px solid ${settings.volume === id ? C.chalk : C.line}` }}>{l}</button>
             ))}
           </div>
-          <div style={{ fontSize: 12, color: C.dim, marginTop: 6 }}>{T("volHint")}</div>
         </div>
       </ListSect>
 
       <ListSect title={T("trainingSettings")}>
         <button onClick={() => openPage("exercises")} style={{ ...rowBtn(true), display: "flex", alignItems: "center", gap: 10 }}>
-          <span style={{ flex: 1 }}>
-            {noEmo(T("exMenu"))}
-            <span style={{ display: "block", fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2 }}>{T("exMenuD")}</span>
-          </span>
+          <span style={{ flex: 1 }}>{noEmo(T("exMenu"))}</span>
           <Arrow />
         </button>
-        <SettingRow title={T("vibrate")} desc={`${T("vibrateD")} ${T("vibrateHint")}`} on={settings.vibrate} onClick={() => { set("vibrate", !settings.vibrate); if (!settings.vibrate) vibratePattern([160]); }} />
-        <SettingRow title={T("keepAwake")} desc={T("keepAwakeD")} on={settings.keepAwake} onClick={() => set("keepAwake", !settings.keepAwake)} />
-        <SettingRow title={T("aiCopy")} desc={T("aiCopyD")} on={settings.aiCopy} onClick={() => set("aiCopy", !settings.aiCopy)} />
+        <SettingRow title={T("vibrate")} info={[T("vibrateD"), T("vibrateHint")]} on={settings.vibrate} onClick={() => { set("vibrate", !settings.vibrate); if (!settings.vibrate) vibratePattern([160]); }} />
+        <SettingRow title={T("keepAwake")} on={settings.keepAwake} onClick={() => set("keepAwake", !settings.keepAwake)} />
+        <SettingRow title={T("aiCopy")} info={T("aiCopyD")} on={settings.aiCopy} onClick={() => set("aiCopy", !settings.aiCopy)} />
         {pushSupported() && <NotifRow settings={settings} set={set} acct={acct} onAcctOpen={onAcctOpen} />}
       </ListSect>
 
@@ -6801,22 +6840,20 @@ function SettingsTab({ initPage, ret, settings, setSettings, history, profile, s
 
       <ListSect title={T("dataBackup")}>
         <button onClick={exportBackup} style={rowBtn(true)}>
-          {noEmo(T("backupSave"))}
-          <div style={{ fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2 }}>{isNative ? T("backupSaveDApp", { dir: `Documents/${BK_DIR}` }) : T("backupSaveD")}</div>
+          {noEmo(T("backupSave"))}<InfoQ title={noEmo(T("backupSave"))} text={isNative ? T("backupSaveDApp", { dir: `Documents/${BK_DIR}` }) : T("backupSaveD")} />
         </button>
         {bkSupported() && (
           <>
-            <SettingRow title={noEmo(T("autoBk"))} desc={<>{T("autoBkD", { dir: `Documents/${BK_DIR}` })}<span data-autobk-status={autoBk ? (autoBk.ok ? "ok" : "err") : "none"} style={{ display: "block", marginTop: 4, color: autoBk && !autoBk.ok ? "#ff8a80" : autoBk ? C.mint : C.dim }}>{!settings.autoBackup ? null : !autoBk ? T("autoBkNone") : autoBk.ok ? T("autoBkLast", { time: fmtWhen(autoBk.ts) }) : T("autoBkErr", { e: autoBk.err || "?" })}</span></>}
+            <SettingRow title={noEmo(T("autoBk"))} info={T("autoBkD", { dir: `Documents/${BK_DIR}` })} desc={<><span data-autobk-status={autoBk ? (autoBk.ok ? "ok" : "err") : "none"} style={{ display: "block", color: autoBk && !autoBk.ok ? "#ff8a80" : autoBk ? C.mint : C.dim }}>{!settings.autoBackup ? null : !autoBk ? T("autoBkNone") : autoBk.ok ? T("autoBkLast", { time: fmtWhen(autoBk.ts) }) : T("autoBkErr", { e: autoBk.err || "?" })}</span></>}
               on={settings.autoBackup} onClick={() => { const v = !settings.autoBackup; set("autoBackup", v); sfxTap(); if (v) onAutoBackup(true); }} />
             <button data-bk-open onClick={() => { sfxTap(); setBkOpen(true); }} style={{ ...rowBtn(false), display: "flex", alignItems: "center", gap: 10 }}>
-              <span style={{ flex: 1 }}>{noEmo(T("bkFolder"))}<span style={{ display: "block", fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2 }}>{T("bkFolderD", { dir: `Documents/${BK_DIR}` })}</span></span>
+              <span style={{ flex: 1 }}>{noEmo(T("bkFolder"))}</span>
               <Arrow />
             </button>
           </>
         )}
         <button onClick={() => fileRef.current && fileRef.current.click()} style={rowBtn(false)}>
-          {noEmo(T("backupLoad"))}
-          <div style={{ fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2 }}>{T("backupLoadD")}</div>
+          {noEmo(T("backupLoad"))}<InfoQ title={noEmo(T("backupLoad"))} text={T("backupLoadD")} />
         </button>
         {pending && (
           <div style={{ padding: "12px 16px", borderTop: `1px solid ${C.line}`, background: `${C.signal}14` }}>
@@ -6834,10 +6871,7 @@ function SettingsTab({ initPage, ret, settings, setSettings, history, profile, s
       {msg && <div role="status" style={{ fontSize: 13, color: msg.startsWith("✓") ? C.mint : C.dim, marginTop: 8 }}>{msg}</div>}
 
       <button onClick={() => { sfxTap(); openExternal(SUPPORT_URL); }} data-support style={{ ...btnBase, ...card, ...tileR(), width: "100%", marginTop: 22, display: "flex", alignItems: "center", gap: 12, padding: "13px 15px", color: C.chalk, textAlign: "left" }}>
-        <span style={{ minWidth: 0, flex: 1 }}>
-          <span style={{ display: "block", fontSize: 15, fontWeight: 800 }}>{T("support")}</span>
-          <span style={{ display: "block", fontSize: 12, fontWeight: 500, color: C.dim, marginTop: 2 }}>{T("supportDesc")}</span>
-        </span>
+        <span style={{ minWidth: 0, flex: 1, fontSize: 15, fontWeight: 800 }}>{T("support")}</span>
         <span aria-hidden="true" style={{ fontSize: 20, lineHeight: 1, flexShrink: 0 }}>💛</span>
       </button>
       </>} />
@@ -6856,7 +6890,7 @@ function Warmup({ done, setDone, onNext }) {
   return (
     <div>
       <div style={{ fontFamily: DISPLAY, fontSize: 48, fontWeight: 900, lineHeight: 0.95, color: C.chalk }}>{T("warmup")}</div>
-      <div style={{ fontSize: 14, color: C.dim, marginTop: 8, lineHeight: 1.5 }}>{T("warmupHint")}</div>
+      <div style={{ fontSize: 14, color: C.dim, marginTop: 8, lineHeight: 1.5 }}>{T("warmupHint")}<InfoQ id="warmup" title={T("warmup")} text={T("warmupInfo")} /></div>
       <div data-warmup-list style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 10 }}>
         {WARMUP.map((w, i) => (
           <div key={w.id} style={{ display: "flex", alignItems: "stretch", gap: 8 }}>
@@ -7023,7 +7057,6 @@ function Work({ item, rounds, history, sessionResults, onRecord, onSwap, exclude
             <span className={hit ? "pop" : ""} key={hit ? "hit" : "aim"} style={{ fontFamily: DISPLAY, fontWeight: 900, fontSize: 20, lineHeight: 1, color: hit ? C.mint : C.signal, border: `2px solid ${hit ? C.mint : C.signal}`, borderRadius: 10, padding: "3px 7px", flexShrink: 0 }}>{hit ? "✓" : ex.type === "time" ? "↑" : "+1"}</span>
             <div style={{ fontSize: 13, color: C.chalk, lineHeight: 1.4 }}>
               {goal === null ? T(ex.type === "time" ? "goalMax" : "goalTop", { v: `${prevVal}${unit}` }) : hit ? T("goalHit", { v: `${goal}${unit}` }) : T("goalLine", { v: `${prevVal}${unit}`, g: `${goal}${unit}` })}
-              <div style={{ fontSize: 12, color: C.dim }}>{T("goalOk")}</div>
             </div>
           </div>
         );
@@ -7079,7 +7112,8 @@ function Work({ item, rounds, history, sessionResults, onRecord, onSwap, exclude
               <div style={{ fontSize: 13, color: C.dim, marginTop: 4 }}>{T("reps")}{ex.unit ? ` ${perUnit(ex.unit)}` : ""}</div>
             <div style={{ height: 22, marginTop: 4, fontSize: 14, fontWeight: 800, color: C.signal }}>{best !== null && reps > best ? <span className="pop" style={{ display: "inline-block" }}>{rankIdx(item.id, reps) > rankIdx(item.id, best) ? `${RANKS[rankIdx(item.id, reps)].icon} ${T("newRank", { rank: RANKS[rankIdx(item.id, reps)].name })}` : T("pr")}</span> : ""}</div>
           </div>
-          <div style={{ fontSize: 12, color: C.dim, textAlign: "center", marginTop: 10 }}>{T(prevVal !== null ? "countHint" : "countHint0")}</div>
+          {/* 1.8.2: the how-to-count line only for the first workouts (then it's known) */}
+          {history.length < 3 && <div data-count-hint style={{ fontSize: 12, color: C.dim, textAlign: "center", marginTop: 10 }}>{T(prevVal !== null ? "countHint" : "countHint0")}</div>}
           {split && side === "L" && rightReps !== null && rightReps !== reps && (
             <div data-side-diff style={{ marginTop: 14, border: `1.5px solid ${C.sky}88`, background: `${C.sky}14`, borderRadius: 14, padding: "10px 13px", fontSize: 13, lineHeight: 1.5, color: C.chalk }}>
               <b style={{ color: C.sky }}>{T("sideDiffTitle")}</b> {T("sideDiff", { a: sideName("R"), r: rightReps, b: sideName("L"), l: reps, v: Math.min(rightReps, reps) })}
@@ -7854,8 +7888,9 @@ function ShopTab({ history, profile, setProfile, onGo }) {
         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
           <span className={chests.length ? "chBob" : ""} style={{ flexShrink: 0, opacity: chests.length ? 1 : 0.55 }}><ChestArt size={64} /></span>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontWeight: 800, fontSize: 15 }}>{chests.length ? T("shChestReady") : gotNow ? T("shChestGot") : T("shChestWait", { v: chDone })}</div>
-            <div style={{ fontSize: 12, color: C.dim, marginTop: 3, lineHeight: 1.4 }}>{chests.length ? T("shChestD") : gotNow ? T("shChestGotD") : T("shChestWaitD")}</div>
+            <div style={{ fontWeight: 800, fontSize: 15 }}>{chests.length ? T("shChestReady") : gotNow ? T("shChestGot") : T("shChestWait", { v: chDone })}{!chests.length && !gotNow && <InfoQ title={T("shChest")} text={T("shChestWaitD")} />}</div>
+            {/* 1.8.2: the week's 3 challenges as dots instead of a sentence */}
+            {!chests.length && !gotNow && <div data-chest-dots={chDone} aria-hidden="true" style={{ display: "flex", gap: 6, marginTop: 7 }}>{[0, 1, 2].map(i => <span key={i} style={{ width: 22, height: 6, borderRadius: 3, background: i < chDone ? C.signal : C.line }} />)}</div>}
           </div>
           {chests.length > 0 && <button type="button" data-chest-btn onClick={() => { sfxTap(); openChest(); }} className="b3d" style={{ ...btnBase, flexShrink: 0, background: C.signal, color: C.signalInk, padding: "10px 14px", fontSize: 14, borderRadius: 12 }}>{T("shChestOpen")}</button>}
         </div>
@@ -7865,16 +7900,16 @@ function ShopTab({ history, profile, setProfile, onGo }) {
         <div data-shop-item="freeze" style={row}>
           <IcoBox n="snow" color={C.sky} />
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontWeight: 800, fontSize: 15 }}>{T("shFreeze")}</div>
-            <div style={{ fontSize: 12, color: C.dim, marginTop: 2, lineHeight: 1.35 }}>{fzHave >= fzMax ? T("shFreezeFull", { max: fzMax }) : T("shFreezeD", { n: fzHave, max: fzMax })}</div>
+            <div style={{ fontWeight: 800, fontSize: 15 }}>{T("shFreeze")}<InfoQ title={T("shFreeze")} text={fzHave >= fzMax ? T("shFreezeFull", { max: fzMax }) : T("shFreezeD", { n: fzHave, max: fzMax })} /></div>
+            {fzHave < fzMax && <div data-fz-have style={{ fontSize: 12, color: C.dim, marginTop: 2, display: "flex", alignItems: "center", gap: 4 }}><Ico n="snow" size={12} color={C.sky} />{fzHave}/{fzMax}</div>}
           </div>
           {fzHave >= fzMax ? <span data-shop-full style={{ fontSize: 12, color: C.dim, fontWeight: 700 }}>{fzHave}/{fzMax}</span> : <BuyBtn k="freeze" price={EC.PRICE.freeze} bal={bal} sure={sure} setSure={setSure} onBuy={() => buy("freeze")} />}
         </div>
         <div data-shop-item="boost" style={{ ...row, borderTop: `1px solid ${C.line}` }}>
           <IcoBox n="boost" color={C.signal} />
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontWeight: 800, fontSize: 15 }}>{T("shBoost")}</div>
-            <div style={{ fontSize: 12, color: boostTo ? C.mint : C.dim, marginTop: 2, lineHeight: 1.35, fontWeight: boostTo ? 700 : 400 }} data-boost-on={boostTo ? 1 : 0}>{boostTo ? T("shBoostOn", { t: timeStr(boostTo) }) : T("shBoostD")}</div>
+            <div style={{ fontWeight: 800, fontSize: 15 }}>{T("shBoost")}<InfoQ title={T("shBoost")} text={T("shBoostD")} /></div>
+            {boostTo ? <div style={{ fontSize: 12, color: C.mint, marginTop: 2, lineHeight: 1.35, fontWeight: 700 }} data-boost-on={1}>{T("shBoostOn", { t: timeStr(boostTo) })}</div> : <span data-boost-on={0} hidden />}
           </div>
           <BuyBtn k="boost" price={EC.PRICE.boost} bal={bal} sure={sure} setSure={setSure} onBuy={() => buy("boost")} />
         </div>
@@ -7893,13 +7928,7 @@ function ShopTab({ history, profile, setProfile, onGo }) {
           {wonList.map(id => lookRow(id, own.includes(id) ? <Ico n="check" size={18} color={C.mint} /> : <Ico n="lock" size={17} color={C.dim} />, { "data-shop-wonlook": id, "data-has": own.includes(id) ? 1 : 0 }))}
         </div>
       </Sect>
-      {/* money and ads: later */}
-      <Sect data-shop-get title={T("shGet")}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <IcoBox n="lock" color={C.dim} />
-          <div style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.45 }}>{T("shGetD")}</div>
-        </div>
-      </Sect>
+      {/* money and ads: later (1.8.2: no "coming soon" box until it is there) */}
       {peek && <LookShopSheet key={peek} id={peek} profile={profile} history={history} own={own} bal={bal} onBuy={buy} onEquip={equip} onGo={onGo} onClose={() => setPeek(null)} />}
       {opening && <ChestOpen res={opening} onEquip={opening.kind === "look" ? () => equip(EC.LOOKS[opening.id].kind, opening.id) : null} onClose={() => setOpening(null)} />}
     </div>
@@ -7921,7 +7950,7 @@ function GameTab({ history, profile, setProfile, acct, onPlay }) {
     cloud().rankedList(50).then(setTop).catch(() => setTop([]));
   }, [signed]);
   const modes = [
-    { id: "run", icon: "🃏", name: T("gmRun"), desc: T("gmRunD") },
+    { id: "run", icon: "🃏", name: T("gmRun"), desc: null }, // 1.8.2: the Run needs no line under it
     { id: "duel", icon: "🤖", name: T("gmDuel"), desc: DUEL_ON ? T("gmDuelD", { n: Math.min(10, gl.lvl) }) : T("gmSoon"), off: !DUEL_ON, soon: !DUEL_ON },
     { id: "ranked", icon: "🏆", name: T("gmRanked"), desc: !RANKED_ON ? T("gmSoon") : signed ? T("gmRankedD", { r: rk && typeof rk.r === "number" ? rk.r : 1000 }) : T("gmRankedSign"), off: !RANKED_ON || !signed, soon: !RANKED_ON },
   ];
@@ -7934,9 +7963,9 @@ function GameTab({ history, profile, setProfile, acct, onPlay }) {
           <button type="button" data-gm-tut-go onClick={() => { sfxTap(); startTut(); }} style={{ ...btnBase, padding: "10px 14px", borderRadius: 12, background: C.signal, color: C.signalInk, fontSize: 14, flexShrink: 0 }}>{T("gmTutGo")}</button>
         </div>
       )}
-      <Sect data-gm-level title={T("gmLevelT")} meta={<span style={{ fontFamily: DISPLAY, fontSize: 20, fontWeight: 900, color: C.signal }}>{T("gmLevel", { n: gl.lvl })}</span>}>
+      <Sect data-gm-level title={<>{T("gmLevelT")}<InfoQ title={T("gmLevelT")} text={T("gmLevelD", { a: nf(gl.into), b: nf(gl.need) })} /></>} meta={<span style={{ fontFamily: DISPLAY, fontSize: 20, fontWeight: 900, color: C.signal }}>{T("gmLevel", { n: gl.lvl })}</span>}>
         <div style={{ height: 8, borderRadius: 99, background: C.panelHi, overflow: "hidden" }}><div style={{ width: `${Math.round((gl.into / gl.need) * 100)}%`, height: "100%", background: C.signal, borderRadius: 99 }} /></div>
-        <div style={{ fontSize: 12.5, color: C.dim, marginTop: 7, lineHeight: 1.45 }}>{T("gmLevelD", { a: nf(gl.into), b: nf(gl.need) })}</div>
+        <div data-gm-xp-line style={{ fontSize: 12.5, color: C.dim, marginTop: 7, fontVariantNumeric: "tabular-nums" }}>{nf(gl.into)} / {nf(gl.need)} XP</div>
       </Sect>
       {saved && (
         <button type="button" data-gm-continue onClick={() => { sfxTap(); onPlay(saved); }} style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 12 }} className="b3d">{T("gmContinue")}</button>
@@ -7948,14 +7977,13 @@ function GameTab({ history, profile, setProfile, acct, onPlay }) {
             {m.soon ? <IcoBox n="lock" color={C.dim} size={44} /> : <span aria-hidden="true" style={{ fontSize: 30, lineHeight: 1 }}>{m.icon}</span>}
             <span style={{ flex: 1, minWidth: 0 }}>
               <span style={{ display: "block", fontFamily: DISPLAY, fontSize: 22, fontWeight: 900, lineHeight: 1.1 }}>{m.name}</span>
-              <span style={{ display: "block", fontSize: 12.5, color: C.dim, marginTop: 3, lineHeight: 1.4 }}>{m.desc}</span>
+              {m.desc && <span style={{ display: "block", fontSize: 12.5, color: C.dim, marginTop: 3, lineHeight: 1.4 }}>{m.desc}</span>}
             </span>
             {!m.off && !saved && <Arrow />}
           </button>
         ))}
       </div>
-      <Sect data-gm-deck title={T("gmDeck")} style={{ marginTop: 12 }}>
-        <div style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.45, marginBottom: 10 }}>{T("gmDeckD")}</div>
+      <Sect data-gm-deck title={<>{T("gmDeck")}<InfoQ title={T("gmDeck")} text={T("gmDeckD")} /></>} style={{ marginTop: 12 }}>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
           {GM.SUITS.map(s => { const v = lo.suit[s], rk = v >= 0 ? RANKS[v] : null; return (
             <div key={s} data-gm-suit={s} data-lv={v} style={{ background: SOFT(), borderRadius: 14, padding: "10px 10px", display: "flex", alignItems: "center", gap: 9, minWidth: 0 }}>
@@ -7971,10 +7999,10 @@ function GameTab({ history, profile, setProfile, acct, onPlay }) {
       <button type="button" data-gm-rules onClick={() => { sfxTap(); setRules(true); }} style={{ ...ghostBtn, width: "100%", marginTop: 12, padding: "12px 14px", fontSize: 14, color: C.chalk }}>{T("gmRulesBtn")}</button>
       {/* 1.8.0 (Michael, Oct 25, 02:31): the Ranked leaderboard shows, locked like Ranked, until Ranked opens */}
       {!RANKED_ON && (
-        <Sect data-gm-top-locked title={T("gmTop")} style={{ marginTop: 12 }}>
+        <Sect data-gm-top-locked title={<>{T("gmTop")}<InfoQ title={T("gmTop")} text={T("gmTopLocked")} /></>} style={{ marginTop: 12 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12, opacity: 0.75 }}>
             <IcoBox n="lock" color={C.dim} />
-            <span style={{ flex: 1, fontSize: 13, color: C.dim, lineHeight: 1.45 }}>{T("gmTopLocked")}</span>
+            <span style={{ flex: 1, fontSize: 13, color: C.dim, lineHeight: 1.45 }}>{T("gmSoon")}</span>
           </div>
         </Sect>
       )}
@@ -8574,9 +8602,7 @@ function tourSteps(ch, x) {
     s('[data-fr-view="friends"]', 3, { opt: true, wait: 600 }),
     s('[data-seg="board"]', 4, { tap: true, opt: true, wait: 400, t: tt(4, "frBoard") }),
     s('[data-fr-view="board"]', 5, { opt: true, wait: 600 }),
-    s('[data-seg="chats"]', 6, { tap: true, opt: true, wait: 400, t: tt(6, "chMsgs") }),
-    s('[data-fr-view="chats"]', 7, { opt: true, wait: 600 }),
-    { done: true, t: X[8] },
+    { done: true, t: X[6] }, // 1.8.2: messages are in the friends list now
   ];
   return [];
 }
@@ -9886,6 +9912,8 @@ export default function App() {
   const go = (id, opt) => { if (id !== screen) sfxTap(); setScreen(id); setMenuOpen(false); if (session) setSessionOpen(false); setHistEdit(opt && opt.edit ? opt.edit : null); setSetPage(opt && opt.page ? opt.page : null); setSetRet(opt && opt.ret ? opt.ret : null); setChatWith(null); };
   const [howId, setHowId] = useState(null);
   openHowToGlobal = setHowId;
+  const [info, setInfo] = useState(null); // 1.8.2: the "?" explanation sheet
+  openInfoGlobal = setInfo;
   // Android back with nothing open: minimize the workout, then go Home, then ask before leaving (1.4.0, Michael:
   // like other apps, "really leave?"; a second back or "Leave" closes the app; since 1.5.3 it stays until you choose).
   const [exitAsk, setExitAsk] = useState(false);
@@ -10232,6 +10260,7 @@ export default function App() {
           {gameEnd && <GameEnd res={gameEnd} onClose={() => setGameEnd(null)} onAgain={() => setGameEnd(null)} />}
           {skipOpen && <SkipSheet freezes={freezesAvailable(history)} onSave={saveSkip} onClose={() => setSkipOpen(false)} />}
       {howId && <HowTo id={howId} history={history} onClose={() => setHowId(null)} />}
+      {info && <InfoSheet info={info} onClose={() => setInfo(null)} />}
           {tourRun && onboard === null && <Tour key={tourRun.ch} run={tourRun} x={tourX} done={tourDone} onStep={i => setTourRun(r => (r && i !== null ? { ...r, i } : null))} onEnd={endTour} onChapterDone={tourChapterDone} onStart={startTour} />}
           {tourAsk && <TourAsk onGo={() => { setTourAskDue(false); restartTour(); }} onNo={tourAskNo} />}
           {tourSheet && <TourSheet onRestart={restartTour} done={tourDone} ui={ui} onStart={startTour} on3={() => { setUi({ ...uiRef.current, tour3: !ui.tour3, tourOff: false }); }} onClose={() => setTourSheet(false)} />}

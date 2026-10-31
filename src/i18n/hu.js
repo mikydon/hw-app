@@ -869,7 +869,8 @@ export default {
     privacy: "Fiók nélkül minden adatod csak ezen az eszközön van.",
 
     warmup: "Bemelegítés",
-    warmupHint: "~3 perc. Csináld meg a gyakorlatot, és koppints rá. Az edzés első körét is vedd bemelegítésnek, ne menj bele teljes erőből.",
+    warmupHint: "~3 perc. Csináld meg mindegyiket, és koppints rá.",
+    warmupInfo: "Az edzés első körét is vedd bemelegítésnek: ne told benne a végsőkig.",
     letsGo: "Edzzünk!",
     skipWarmup: "Bemelegítés kihagyása",
 
@@ -1160,6 +1161,7 @@ export default {
     pfLooksNone: "Ezekből még nincs egy sem.",
     shOwned: "Megvan",
     tourAutoD: "Ez a Kezdőlap. Minden más ebben a menüben van: amikor először nyitsz meg egy képernyőt, körbevezetlek rajta.",
+    infoMore: "Bővebben",
     tourAgainBtn: "Újra",
     tourRestart: "Útmutató újrakezdése",
     tourAskV: "Frissítve erre: {v}",
@@ -1182,7 +1184,7 @@ export default {
     autoFzT: { one: "{n} szériavédő megmentette a szériádat", other: "{n} szériavédő megmentette a szériádat" },
     autoFzLeft: { one: "Még {n} szériavédő maradt.", other: "Még {n} szériavédő maradt." },
     celebUnit: { one: "edzés egymás után", other: "edzés egymás után" },
-    secretLeft: { one: "{n} titkos jelvény még rejtve van. Edzz tovább, talán megtalálod!", other: "{n} titkos jelvény még rejtve van. Edzz tovább, talán megtalálod őket!" },
+    secretLeft: { one: "{n} titkos jelvény még rejtve van", other: "{n} titkos jelvény még rejtve van" },
     ranksLeft: { one: "Még {n} gyakorlatnak van rangja. Csináld meg egyszer, és itt megjelenik.", other: "Még {n} gyakorlatnak van rangja. Csinálj meg egyet egyszer, és itt megjelenik." },
     weeks: { one: "{n} hét", other: "{n} hét" },
     pushups: { one: "{n} fekvőtámasz", other: "{n} fekvőtámasz" },
@@ -1463,7 +1465,7 @@ export default {
   tour: {
     ch: ["Kezdőlap", "Jelvények", "Edzés", "Profil", "Előzmények", "Kalóriák", "Barátok", "Muscle Deck", "Bolt"],
     c1: [
-      "Szia! Megmutatom, hogyan működik a HW App. Az útmutató 7 rövid fejezetből áll, és mindegyikért jelvényt kapsz. Kezdjük!",
+      "Szia! Megmutatom, hogyan működik a HW App. Az útmutató 9 rövid fejezetből áll, és mindegyikért jelvényt kapsz. Kezdjük!",
       "Ez a mai edzés. Az appban 3 edzésnap van: A, B és C. Váltogatod őket, és minden második nap edzel. Az app mindig azt ajánlja, amelyik soron következik.",
       "Ha szeretnéd, itt másik napot választhatsz.",
       "Válaszd ki a hosszát: 3 kör (~19 perc, ajánlott) vagy 2 kör (~13 perc). Az Indítás elindítja az edzést, és az app lépésről lépésre végigvezet rajta.",
@@ -1524,11 +1526,9 @@ export default {
       "Jelentkezz be Google-lel vagy e-maillel. Az edzéseid a felhőbe mentődnek, átviheted őket új telefonra és a weboldalra, és barátokat is felvehetsz.",
       "A kódod. Küldd el egy barátodnak vagy oszd meg a linket, és felveszitek egymást.",
       "Koppints erre: {t}.",
-      "Itt vehetsz fel barátot kóddal vagy becenévvel. Alatta a kérések és a barátaid; koppints valakire, és megnyílik a profilja.",
+      "Itt adhatsz hozzá barátot kóddal vagy becenévvel. Alatta a barátaid és a csevegéseid egy listában vannak: koppints egy barátra, hogy írj neki, vagy a fotójára, hogy megnyisd a profilját.",
       "Most: {t}.",
       "Ranglista: mérd össze magad a barátaiddal, vagy az egész világgal, ha csatlakozol.",
-      "És végül: {t}.",
-      "A csevegéseid a barátaiddal. Nyiss meg egyet és írj; tarts lenyomva egy üzenetet, hogy válaszolj, reagálj vagy kimásold.",
       "Ennyi! Az útmutatót bármikor megtalálod a menüben. Eddz minden második nap, és meglátod az eredményt 💪",
     ],
     c8: [
@@ -1569,7 +1569,7 @@ export default {
     kcalHit: ["Célban", "{x} a kalóriacél ±10%-án belül"],
     steps: ["10 000 lépés", "{x} 10 000+ lépéssel"],
     health: ["Health Connect","kapcsold össze a Health Connectet"],
-    guide: ["Felfedező", "az útmutató 7 fejezetéből {n}"],
+    guide: ["Felfedező", "az útmutató 9 fejezetéből {n}"],
     allex: ["Mindent kipróbált","csináld meg az app minden gyakorlatát legalább egyszer (a ⇄ csere mutatja a többit)"],
     allDiamond: ["Gyémánt program","Gyémánt a program mind a 12 gyakorlatában"],
     comeback: ["Visszatérés","2 hét vagy több szünet után visszatértél az edzéshez"],
@@ -1689,6 +1689,12 @@ export default {
     pk: {"jpack":["Jokercsomag","Nyisd ki, és válassz 1 jokert a 3 közül (néha ritkát vagy legendásat)."],"dpack":["Gyakorlócsomag","Nyisd ki, és válassz 1 kezet a 3 közül, amit szintet léptetsz."]},
     v: {"membership":["Edzőtermi bérlet","+1 jokerhely."],"extraset":["Extra sorozat","+1 kéz minden blindban."],"resttimer":["Pihenőidőzítő","+1 eldobás minden blindban."],"discount":["Tagsági kedvezmény","A jokerek, gyakorlások és csomagok 25 %-kal olcsóbbak."],"bigbag":["Nagyobb edzőtáska","+1 lap a kezedben."],"savings":["Megtakarítási terv","A kamat $5-ral magasabb lehet."],"restock":["Utántöltés","A bolt 2 helyett 3 jokert kínál."],"scout":["Felderítő","Az Újak $2-ral olcsóbb."]},
   },
+  news182: [
+    "A barátok és az üzenetek egy lista: koppints egy barátra, hogy írj neki, a fotójára a profiljáért, és tartsd nyomva a sort a többihez (eltávolítás, tiltás, csevegés törlése…). A közös széria a sorban és a csevegésben a név mellett látszik. Korábban külön fülek voltak, és minden koppintásra menü jött fel.",
+    "Kevesebb szöveg: a menü csak a neveket mutatja, a kapcsolók és dobozok alatti magyarázatok pedig egy kis ? mögé kerültek, amire akkor koppintasz, ha többet szeretnél tudni.",
+    "A barátkódod mellett másolás ikon van, a Bolt heti ládája pedig pöttyökként mutatja a 3 kihívást.",
+    "A Felfedező jelvény mind a 9 útmutató-fejezetet számolja.",
+  ],
   news181: [
     "Rövidebb az útmutató: megmutatja a Kezdőlapot és a ☰ menüt, utána minden képernyő magától körbevezet, amikor először megnyitod. Új fejezetek a Muscle Deckhez és a Bolthoz.",
     "Az útmutató már nem mutat olyasmire, amit nem látsz, ha átlapozol a másik oldalra vagy nyitva van a menü. A hosszú listák egészben világítanak, és az oldal nem csúszhat el alatta.",

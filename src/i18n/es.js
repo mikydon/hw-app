@@ -869,7 +869,8 @@ export default {
     privacy: "Sin cuenta, todos tus datos se guardan solo en este dispositivo.",
 
     warmup: "Calentamiento",
-    warmupHint: "~3 minutos. Haz cada ejercicio y tócalo. La primera ronda del entrenamiento también cuenta como calentamiento: no lo des todo.",
+    warmupHint: "~3 min. Haz cada uno y tócalo.",
+    warmupInfo: "Toma también la primera ronda del entreno como calentamiento: no lo des todo en ella.",
     letsGo: "¡A entrenar!",
     skipWarmup: "Saltar calentamiento",
 
@@ -1160,6 +1161,7 @@ export default {
     pfLooksNone: "Todavía no tienes ninguno de estos.",
     shOwned: "Comprado",
     tourAutoD: "Esto es Inicio. Todo lo demás está en este menú: cuando abras una pantalla por primera vez, te la enseño.",
+    infoMore: "Más información",
     tourAgainBtn: "Otra vez",
     tourRestart: "Empezar la guía de nuevo",
     tourAskV: "Actualizado a {v}",
@@ -1182,7 +1184,7 @@ export default {
     autoFzT: { one: "{n} protector salvó tu racha", other: "{n} protectores salvaron tu racha" },
     autoFzLeft: { one: "Te queda {n} protector.", other: "Te quedan {n} protectores." },
     celebUnit: { one: "entreno seguido", other: "entrenos seguidos" },
-    secretLeft: { one: "{n} insignia secreta sigue oculta. ¡Sigue entrenando y quizá la encuentres!", other: "{n} insignias secretas siguen ocultas. ¡Sigue entrenando y quizá las encuentres!" },
+    secretLeft: { one: "{n} insignia secreta aún oculta", other: "{n} insignias secretas aún ocultas" },
     ranksLeft: { one: "{n} ejercicio más tiene rango. Hazlo una vez y aparecerá aquí.", other: "{n} ejercicios más tienen rango. Haz uno una vez y aparecerá aquí." },
     weeks: { one: "{n} semana", other: "{n} semanas" },
     pushups: { one: "{n} flexión", other: "{n} flexiones" },
@@ -1463,7 +1465,7 @@ export default {
   tour: {
     ch: ["Inicio", "Insignias", "Entreno", "Perfil", "Historial", "Calorías", "Amigos", "Muscle Deck", "Tienda"],
     c1: [
-      "¡Hola! Te enseño cómo funciona HW App. La guía tiene 7 capítulos cortos y cada uno te da una insignia. ¡Vamos!",
+      "¡Hola! Te enseño cómo funciona HW App. La guía tiene 9 capítulos cortos y cada uno te da una insignia. ¡Vamos!",
       "Este es el entrenamiento de hoy. La app tiene 3 días de entrenamiento: A, B y C. Los vas rotando y entrenas en días alternos. La app siempre te propone el que toca.",
       "Si quieres, elige aquí otro día.",
       "Elige la duración: 3 rondas (~19 min, recomendado) o 2 rondas (~13 min). Empezar inicia el entrenamiento y la app te guía paso a paso.",
@@ -1524,11 +1526,9 @@ export default {
       "Inicia sesión con Google o con tu correo. Tus entrenamientos se guardan en la nube, los pasas a un móvil nuevo o a la web y puedes añadir amigos.",
       "Tu código. Envíaselo a un amigo o comparte el enlace y os añadís.",
       "Toca {t}.",
-      "Aquí añades un amigo con su código o su apodo. Debajo están las solicitudes y tus amigos; toca a alguien para abrir su perfil.",
+      "Aquí añades un amigo por código o apodo. Debajo, tus amigos y chats son una sola lista: toca a un amigo para escribirle y su foto para ver su perfil.",
       "Ahora {t}.",
       "Clasificación: compárate con tus amigos o con todo el mundo si te unes.",
-      "Y {t}.",
-      "Tus chats con amigos. Abre uno y escribe; mantén pulsado un mensaje para responder, reaccionar o copiarlo.",
       "¡Eso es todo! Tienes la guía en el menú siempre que quieras. Entrena en días alternos y verás resultados 💪",
     ],
     c8: [
@@ -1569,7 +1569,7 @@ export default {
     kcalHit: ["En el objetivo", "{x} dentro de ±10 % del objetivo de calorías"],
     steps: ["10.000 pasos", "{x} con más de 10.000 pasos"],
     health: ["Health Connect","conecta Health Connect"],
-    guide: ["Explorador", "{n} de 7 capítulos de la guía"],
+    guide: ["Explorador", "{n} de 9 capítulos de la guía"],
     allex: ["Lo probó todo","haz cada ejercicio de la app al menos una vez (⇄ cambiar muestra los demás)"],
     allDiamond: ["Programa diamante","Diamante en los 12 ejercicios del programa"],
     comeback: ["Regreso","volviste a entrenar tras 2 semanas o más"],
@@ -1689,6 +1689,12 @@ export default {
     pk: {"jpack":["Sobre de comodines","Ábrelo y elige 1 de 3 comodines (a veces uno raro o legendario)."],"dpack":["Sobre de entrenos","Ábrelo y elige 1 de 3 manos para subir de nivel."]},
     v: {"membership":["Cuota del gimnasio","+1 hueco de comodín."],"extraset":["Serie extra","+1 mano en cada ciega."],"resttimer":["Temporizador de descanso","+1 descarte en cada ciega."],"discount":["Descuento de socio","Comodines, entrenos y sobres cuestan un 25 % menos."],"bigbag":["Bolsa de deporte más grande","+1 carta en la mano."],"savings":["Plan de ahorro","Los intereses pueden subir $5 más."],"restock":["Reposición","La Tienda ofrece 3 comodines en vez de 2."],"scout":["Ojeador","Renovar cuesta $2 menos."]},
   },
+  news182: [
+    "Amigos y mensajes son una sola lista: toca a un amigo para escribirle, su foto para ver su perfil y mantén pulsada la fila para más (quitar, bloquear, borrar el chat…). La racha con un amigo aparece en la fila y junto al nombre en el chat. Antes había pestañas separadas y un menú en cada toque.",
+    "Menos texto: el menú muestra solo los nombres, y las explicaciones bajo interruptores y cuadros están tras un pequeño ? que tocas cuando quieres saber más.",
+    "Tu código de amigo tiene un icono para copiar, y el cofre semanal de la Tienda muestra los 3 retos como puntos.",
+    "La insignia Explorador cuenta los 9 capítulos de la guía.",
+  ],
   news181: [
     "La guía es más corta: enseña Inicio y el menú ☰, y luego cada pantalla se presenta sola la primera vez que la abres. Capítulos nuevos para Muscle Deck y la Tienda.",
     "La guía ya no señala algo que no ves si deslizas a la otra página o tienes el menú abierto. Las listas largas se iluminan enteras y la página no se puede desplazar por debajo.",

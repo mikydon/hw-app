@@ -10,6 +10,13 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 
 <!-- New version: add a "## x.y.z (date)" section on top (web-only history uses "## Browser beta x.y.z (date)"). On a push to main, .github/workflows/build.yml builds everything and .github/scripts/releases.sh creates/updates the releases (commit = the push, or the one in a commit comment). -->
 
+## 1.8.2 (2026-10-31)
+
+- Friends and messages are one list. Tap a friend to write to them, tap their photo to open their profile (or see that it's private), and hold the row for the rest (remove, block, report, delete the chat, end a friend streak). The newest chats are on top, unread ones are marked, and the message takes the left half of the row while the level stays on the right. A running friend streak shows on the row and next to the name at the top of the chat. Before: separate Friends and Messages tabs, and a tap on a friend opened a menu first.
+- Less text (a tester: "too much text"): the ☰ menu shows only icons and names (the Guide row shows 0/9); explanations under switches and boxes (Settings, workout settings, Shop, Muscle Deck, calorie settings, the showcase, backups, account) moved behind a small ? that opens them; helper lines like "Tap an exercise…", "For a workout you did without the app…", the chart hint and "If you don't make it today, that's fine" are gone; the counting hint shows only in the first workouts; the warning under Sign out / Delete account shows on the first tap.
+- Your friend code has a copy icon instead of a "tap to copy" line; the Shop's weekly chest shows the 3 challenges as dots; the "More diamonds: coming soon" box is gone until it's there.
+- The Explorer badge and the guide's first bubble count all 9 chapters (they said 7).
+
 ## 1.8.1 (2026-10-31)
 
 - The guide is shorter: it shows Home and the ☰ menu, then every screen shows you around by itself the first time you open it. New chapters for Muscle Deck and the Shop (9 chapters; all of them make the Explorer badge Obsidian, 7 stay Diamond).

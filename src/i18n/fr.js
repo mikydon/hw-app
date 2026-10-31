@@ -869,7 +869,8 @@ export default {
     privacy: "Sans compte, toutes tes données restent sur cet appareil.",
 
     warmup: "Échauffement",
-    warmupHint: "~3 minutes. Fais l'exercice, puis touche-le. Considère aussi le premier tour de la séance comme un échauffement : ne donne pas tout.",
+    warmupHint: "~3 min. Fais chacun et touche-le.",
+    warmupInfo: "Prends aussi le premier tour de la séance comme échauffement : n'y va pas à fond.",
     letsGo: "On s'entraîne",
     skipWarmup: "Passer l'échauffement",
 
@@ -1160,6 +1161,7 @@ export default {
     pfLooksNone: "Tu n'en as encore aucun.",
     shOwned: "Acheté",
     tourAutoD: "Voici l'Accueil. Tout le reste est dans ce menu : quand tu ouvres un écran pour la première fois, je te le montre.",
+    infoMore: "En savoir plus",
     tourAgainBtn: "Encore",
     tourRestart: "Relancer le guide",
     tourAskV: "Mis à jour en {v}",
@@ -1182,7 +1184,7 @@ export default {
     autoFzT: { one: "{n} gel a sauvé ta flamme", many: "{n} gels ont sauvé ta flamme", other: "{n} gels ont sauvé ta flamme" },
     autoFzLeft: { one: "Il te reste {n} gel.", many: "Il te reste {n} gels.", other: "Il te reste {n} gels." },
     celebUnit: { one: "séance d'affilée", many: "séances d'affilée", other: "séances d'affilée" },
-    secretLeft: { one: "{n} badge secret est encore caché. Continue à t'entraîner, tu le trouveras peut-être !", many: "{n} badges secrets sont encore cachés. Continue à t'entraîner, tu les trouveras peut-être !", other: "{n} badges secrets sont encore cachés. Continue à t'entraîner, tu les trouveras peut-être !" },
+    secretLeft: { one: "{n} badge secret encore caché", other: "{n} badges secrets encore cachés" },
     ranksLeft: { one: "Encore {n} exercice a un rang. Fais-le une fois et il apparaîtra ici.", many: "Encore {n} exercices ont un rang. Fais-en un une fois et il apparaîtra ici.", other: "Encore {n} exercices ont un rang. Fais-en un une fois et il apparaîtra ici." },
     weeks: { one: "{n} semaine", many: "{n} semaines", other: "{n} semaines" },
     pushups: { one: "{n} pompe", many: "{n} pompes", other: "{n} pompes" },
@@ -1463,7 +1465,7 @@ export default {
   tour: {
     ch: ["Accueil", "Badges", "Séance", "Profil", "Historique", "Calories", "Amis", "Muscle Deck", "Boutique"],
     c1: [
-      "Salut ! Je te montre comment marche HW App. Le guide a 7 chapitres courts, et chacun te rapporte un badge. C'est parti !",
+      "Salut ! Je te montre comment marche HW App. Le guide a 9 chapitres courts, et chacun te rapporte un badge. C'est parti !",
       "Voici la séance du jour. L'appli a 3 jours d'entraînement : A, B et C. Tu les alternes et tu t'entraînes un jour sur deux. L'appli te propose toujours celui qui vient ensuite.",
       "Si tu veux, choisis un autre jour ici.",
       "Choisis la durée : 3 tours (~19 min, recommandé) ou 2 tours (~13 min). Le bouton de départ lance la séance, et l'appli te guide pas à pas.",
@@ -1524,11 +1526,9 @@ export default {
       "Connecte-toi avec Google ou un e-mail. Tes séances sont sauvegardées dans le cloud, tu les retrouves sur un nouveau téléphone ou sur le site, et tu peux ajouter des amis.",
       "Ton code. Envoie-le à un ami ou partage le lien pour vous ajouter.",
       "Touche {t}.",
-      "Ici, tu ajoutes un ami avec son code ou son pseudo. En dessous, les demandes et tes amis ; touche quelqu'un pour ouvrir son profil.",
+      "Ajoute ici un ami par code ou pseudo. En dessous, tes amis et tes discussions forment une seule liste : touche un ami pour lui écrire, sa photo pour voir son profil.",
       "Maintenant {t}.",
       "Classement : compare-toi à tes amis, ou au monde entier si tu le rejoins.",
-      "Et {t}.",
-      "Tes discussions avec tes amis. Ouvre-en une et écris ; garde le doigt sur un message pour répondre, réagir ou le copier.",
       "C'est tout ! Tu retrouves le guide dans le menu quand tu veux. Entraîne-toi un jour sur deux et tu verras les résultats 💪",
     ],
     c8: [
@@ -1569,7 +1569,7 @@ export default {
     kcalHit: ["Dans le mille", "{x} à ±10 % de l'objectif calorique"],
     steps: ["10 000 pas", "{x} avec plus de 10 000 pas"],
     health: ["Health Connect","connecte Health Connect"],
-    guide: ["Explorateur", "{n} chapitres du guide sur 7"],
+    guide: ["Explorateur", "{n} chapitres du guide sur 9"],
     allex: ["Tout essayé","fais chaque exercice de l'appli au moins une fois (⇄ changer montre les autres)"],
     allDiamond: ["Programme diamant","Diamant dans les 12 exercices du programme"],
     comeback: ["Retour","reprendre l'entraînement après 2 semaines ou plus"],
@@ -1689,6 +1689,12 @@ export default {
     pk: {"jpack":["Paquet de jokers","Ouvre-le et choisis 1 joker sur 3 (parfois un rare ou un légendaire)."],"dpack":["Paquet d'exercices","Ouvre-le et choisis 1 main sur 3 à faire monter de niveau."]},
     v: {"membership":["Abonnement à la salle","+1 emplacement de joker."],"extraset":["Série en plus","+1 main à chaque blind."],"resttimer":["Minuteur de repos","+1 défausse à chaque blind."],"discount":["Remise membre","Jokers, exercices et paquets coûtent 25 % de moins."],"bigbag":["Plus grand sac de sport","+1 carte en main."],"savings":["Plan d'épargne","Les intérêts peuvent monter de $5 de plus."],"restock":["Réassort","La Boutique propose 3 jokers au lieu de 2."],"scout":["Recruteur","Relancer coûte $2 de moins."]},
   },
+  news182: [
+    "Amis et messages forment une seule liste : touche un ami pour lui écrire, sa photo pour son profil, et reste appuyé sur la ligne pour le reste (retirer, bloquer, supprimer la discussion…). La flamme entre amis s'affiche sur la ligne et à côté du nom dans la discussion. Avant, il y avait des onglets séparés et un menu à chaque toucher.",
+    "Moins de texte : le menu n'affiche que les noms, et les explications sous les interrupteurs et les cadres sont derrière un petit ? que tu touches quand tu veux en savoir plus.",
+    "Ton code ami a une icône pour copier, et le coffre hebdo de la Boutique montre les 3 défis sous forme de points.",
+    "Le badge Explorateur compte les 9 chapitres du guide.",
+  ],
   news181: [
     "Le guide est plus court : il montre l'Accueil et le menu ☰, puis chaque écran se présente lui-même la première fois que tu l'ouvres. Nouveaux chapitres pour Muscle Deck et la Boutique.",
     "Le guide ne montre plus quelque chose que tu ne vois pas si tu glisses vers l'autre page ou si le menu est ouvert. Les longues listes s'éclairent en entier et la page ne peut plus défiler dessous.",

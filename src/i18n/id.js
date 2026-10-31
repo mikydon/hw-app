@@ -869,7 +869,8 @@ export default {
     privacy: "Tanpa akun, semua datamu tetap di perangkat ini.",
 
     warmup: "Pemanasan",
-    warmupHint: "~3 menit. Lakukan gerakannya lalu ketuk. Anggap putaran pertama latihan juga sebagai pemanasan, jangan langsung habis-habisan.",
+    warmupHint: "~3 menit. Lakukan tiap gerakan lalu ketuk.",
+    warmupInfo: "Anggap ronde pertama latihan juga sebagai pemanasan: jangan habis-habisan di situ.",
     letsGo: "Ayo latihan",
     skipWarmup: "Lewati pemanasan",
 
@@ -1160,6 +1161,7 @@ export default {
     pfLooksNone: "Kamu belum punya satu pun.",
     shOwned: "Dibeli",
     tourAutoD: "Ini Beranda. Semua yang lain ada di menu ini: saat kamu membuka sebuah layar untuk pertama kali, aku akan menunjukkannya.",
+    infoMore: "Selengkapnya",
     tourAgainBtn: "Lagi",
     tourRestart: "Mulai ulang panduan",
     tourAskV: "Diperbarui ke {v}",
@@ -1182,7 +1184,7 @@ export default {
     autoFzT: { other: "{n} pembeku menyelamatkan runtutanmu" },
     autoFzLeft: { other: "Sisa {n} pembeku." },
     celebUnit: { other: "latihan berturut-turut" },
-    secretLeft: { other: "{n} lencana rahasia masih tersembunyi. Terus berlatih, siapa tahu kamu menemukannya!" },
+    secretLeft: { other: "{n} lencana rahasia masih tersembunyi" },
     ranksLeft: { other: "Masih ada {n} latihan lain yang punya peringkat. Lakukan sekali dan ia akan muncul di sini." },
     weeks: { other: "{n} minggu" },
     pushups: { other: "{n} push-up" },
@@ -1463,7 +1465,7 @@ export default {
   tour: {
     ch: ["Beranda", "Lencana", "Latihan", "Profil", "Riwayat", "Kalori", "Teman", "Muscle Deck", "Toko"],
     c1: [
-      "Halo! Aku tunjukkan cara kerja HW App. Panduannya ada 7 bab pendek, dan setiap bab memberimu lencana. Ayo mulai!",
+      "Halo! Aku tunjukkan cara kerja HW App. Panduannya ada 9 bab pendek, dan setiap bab memberimu lencana. Ayo mulai!",
       "Ini latihan hari ini. Aplikasi punya 3 hari latihan: A, B, dan C. Kamu bergantian dan berlatih selang sehari. Aplikasi selalu menyarankan hari yang berikutnya.",
       "Kalau mau, pilih hari lain di sini.",
       "Pilih durasinya: 3 putaran (~19 menit, disarankan) atau 2 putaran (~13 menit). Tombol Mulai hari memulai latihan, dan aplikasi memandumu langkah demi langkah.",
@@ -1524,11 +1526,9 @@ export default {
       "Masuk dengan Google atau e-mail. Latihanmu dicadangkan ke cloud, bisa kamu pindahkan ke ponsel baru atau ke situs web, dan kamu bisa menambah teman.",
       "Kodemu. Kirim ke teman atau bagikan tautannya supaya kalian saling menambahkan.",
       "Ketuk {t}.",
-      "Di sini kamu menambah teman lewat kode atau nama panggilan. Di bawahnya ada permintaan pertemanan dan teman-temanmu; ketuk seseorang untuk membuka profilnya.",
+      "Tambahkan teman lewat kode atau nama panggilan di sini. Di bawahnya, teman dan obrolan jadi satu daftar: ketuk teman untuk menulis, ketuk fotonya untuk melihat profilnya.",
       "Sekarang {t}.",
       "Papan peringkat: bandingkan dirimu dengan teman, atau dengan seluruh dunia kalau kamu ikut.",
-      "Lalu {t}.",
-      "Obrolanmu dengan teman. Buka satu dan tulis; tahan sebuah pesan untuk membalas, bereaksi, atau menyalinnya.",
       "Itu saja! Panduan selalu ada di menu. Berlatihlah selang sehari dan kamu akan melihat hasilnya 💪",
     ],
     c8: [
@@ -1569,7 +1569,7 @@ export default {
     kcalHit: ["Tepat sasaran", "{x} dalam ±10 % dari target kalori"],
     steps: ["10.000 langkah", "{x} dengan 10.000+ langkah"],
     health: ["Health Connect","hubungkan Health Connect"],
-    guide: ["Penjelajah", "{n} dari 7 bab panduan"],
+    guide: ["Penjelajah", "{n} dari 9 bab panduan"],
     allex: ["Sudah coba semua","lakukan setiap latihan di aplikasi minimal sekali (⇄ ganti menunjukkan yang lain)"],
     allDiamond: ["Program berlian","Berlian di semua 12 latihan program"],
     comeback: ["Kembali lagi","kembali berlatih setelah 2 minggu atau lebih"],
@@ -1689,6 +1689,12 @@ export default {
     pk: {"jpack":["Paket joker","Buka dan pilih 1 dari 3 joker (kadang yang langka atau legendaris)."],"dpack":["Paket latihan","Buka dan pilih 1 dari 3 tangan untuk dinaikkan levelnya."]},
     v: {"membership":["Member gym","+1 slot joker."],"extraset":["Set tambahan","+1 tangan di setiap blind."],"resttimer":["Timer istirahat","+1 buang di setiap blind."],"discount":["Diskon member","Joker, latihan, dan paket 25 % lebih murah."],"bigbag":["Tas gym lebih besar","+1 kartu di tangan."],"savings":["Rencana tabungan","Bunga bisa naik $5 lebih tinggi."],"restock":["Isi ulang stok","Toko menawarkan 3 joker, bukan 2."],"scout":["Pemandu bakat","Acak ulang $2 lebih murah."]},
   },
+  news182: [
+    "Teman dan pesan jadi satu daftar: ketuk teman untuk menulis, ketuk fotonya untuk profilnya, tahan barisnya untuk opsi lain (hapus teman, blokir, hapus obrolan…). Runtutan teman tampil di baris dan di samping nama di obrolan. Sebelumnya ada tab terpisah dan menu muncul di setiap ketukan.",
+    "Lebih sedikit teks: menu hanya menampilkan nama, dan penjelasan di bawah sakelar dan kotak pindah ke balik ? kecil yang kamu ketuk saat ingin tahu lebih banyak.",
+    "Kode temanmu punya ikon salin, dan peti mingguan di Toko menampilkan 3 tantangan sebagai titik.",
+    "Lencana Penjelajah menghitung semua 9 bab panduan.",
+  ],
   news181: [
     "Panduannya lebih singkat: menunjukkan Beranda dan menu ☰, lalu setiap layar memperkenalkan dirinya saat pertama kali kamu buka. Bab baru untuk Muscle Deck dan Toko.",
     "Panduan tidak lagi menunjuk sesuatu yang tidak terlihat saat kamu menggeser ke halaman lain atau menu sedang terbuka. Daftar panjang menyala seluruhnya dan halaman di bawahnya tidak bisa bergulir.",

@@ -869,7 +869,8 @@ export default {
     privacy: "Sem conta, todos os teus dados ficam só neste dispositivo.",
 
     warmup: "Aquecimento",
-    warmupHint: "~3 minutos. Faça o exercício e toque nele. Considere a primeira rodada do treino também como aquecimento, sem ir com tudo.",
+    warmupHint: "~3 min. Faça cada um e toque nele.",
+    warmupInfo: "Trate também a primeira rodada do treino como aquecimento: não vá ao máximo nela.",
     letsGo: "Bora treinar",
     skipWarmup: "Pular aquecimento",
 
@@ -1160,6 +1161,7 @@ export default {
     pfLooksNone: "Você ainda não tem nenhum destes.",
     shOwned: "Comprado",
     tourAutoD: "Este é o Início. Todo o resto está neste menu: quando você abrir uma tela pela primeira vez, eu mostro como ela funciona.",
+    infoMore: "Saiba mais",
     tourAgainBtn: "De novo",
     tourRestart: "Recomeçar o guia",
     tourAskV: "Atualizado para {v}",
@@ -1182,7 +1184,7 @@ export default {
     autoFzT: { one: "{n} congelamento salvou sua sequência", many: "{n} congelamentos salvaram sua sequência", other: "{n} congelamentos salvaram sua sequência" },
     autoFzLeft: { one: "Resta {n} congelamento.", many: "Restam {n} congelamentos.", other: "Restam {n} congelamentos." },
     celebUnit: { one: "treino seguido", many: "treinos seguidos", other: "treinos seguidos" },
-    secretLeft: { one: "{n} medalha secreta continua escondida. Continua a treinar e talvez a encontres!", many: "{n} medalhas secretas continuam escondidas. Continua a treinar e talvez as encontres!", other: "{n} medalhas secretas continuam escondidas. Continua a treinar e talvez as encontres!" },
+    secretLeft: { one: "{n} medalha secreta ainda escondida", other: "{n} medalhas secretas ainda escondidas" },
     ranksLeft: { one: "Mais {n} exercício tem nível. Faz-o uma vez e aparece aqui.", many: "Mais {n} exercícios têm nível. Faz um deles uma vez e aparece aqui.", other: "Mais {n} exercícios têm nível. Faz um deles uma vez e aparece aqui." },
     weeks: { one: "{n} semana", many: "{n} semanas", other: "{n} semanas" },
     pushups: { one: "{n} flexão", many: "{n} flexões", other: "{n} flexões" },
@@ -1463,7 +1465,7 @@ export default {
   tour: {
     ch: ["Início", "Medalhas", "Treino", "Perfil", "Histórico", "Calorias", "Amigos", "Muscle Deck", "Loja"],
     c1: [
-      "Olá! Vou mostrar-te como funciona a HW App. O guia tem 7 capítulos curtos e cada um dá-te uma medalha. Vamos!",
+      "Olá! Vou mostrar-te como funciona a HW App. O guia tem 9 capítulos curtos e cada um dá-te uma medalha. Vamos!",
       "Este é o treino de hoje. A app tem 3 dias de treino: A, B e C. Vais alternando e treinas dia sim, dia não. A app sugere-te sempre o que vem a seguir.",
       "Se quiseres, escolhe aqui outro dia.",
       "Escolhe a duração: 3 rondas (~19 min, recomendado) ou 2 rondas (~13 min). Começar inicia o treino e a app guia-te passo a passo.",
@@ -1524,11 +1526,9 @@ export default {
       "Inicia sessão com o Google ou com e-mail. Os teus treinos ficam guardados na nuvem, passa-los para um telemóvel novo ou para o site e podes adicionar amigos.",
       "O teu código. Envia-o a um amigo ou partilha a ligação para se adicionarem.",
       "Toca em {t}.",
-      "Aqui adicionas um amigo pelo código ou pela alcunha. Por baixo estão os pedidos e os teus amigos; toca em alguém para abrir o perfil.",
+      "Aqui você adiciona um amigo pelo código ou apelido. Abaixo, amigos e conversas são uma lista só: toque num amigo para escrever, na foto para ver o perfil.",
       "Agora {t}.",
       "Classificação: compara-te com os teus amigos, ou com o mundo inteiro se aderires.",
-      "E {t}.",
-      "As tuas conversas com amigos. Abre uma e escreve; mantém premida uma mensagem para responder, reagir ou copiá-la.",
       "É tudo! Tens o guia no menu sempre que quiseres. Treina dia sim, dia não e vais ver resultados 💪",
     ],
     c8: [
@@ -1569,7 +1569,7 @@ export default {
     kcalHit: ["No alvo", "{x} dentro de ±10% da meta de calorias"],
     steps: ["10 000 passos", "{x} com mais de 10 000 passos"],
     health: ["Health Connect","liga o Health Connect"],
-    guide: ["Explorador", "{n} de 7 capítulos do guia"],
+    guide: ["Explorador", "{n} de 9 capítulos do guia"],
     allex: ["Experimentou tudo","faz cada exercício da app pelo menos uma vez (⇄ trocar mostra os outros)"],
     allDiamond: ["Programa diamante","Diamante nos 12 exercícios do programa"],
     comeback: ["Regresso","voltaste a treinar depois de 2 semanas ou mais"],
@@ -1689,6 +1689,12 @@ export default {
     pk: {"jpack":["Pacote de curingas","Abra e escolha 1 de 3 curingas (às vezes um raro ou lendário)."],"dpack":["Pacote de treinos","Abra e escolha 1 de 3 mãos para subir de nível."]},
     v: {"membership":["Mensalidade da academia","+1 espaço de curinga."],"extraset":["Série extra","+1 mão em cada blind."],"resttimer":["Cronômetro de descanso","+1 descarte em cada blind."],"discount":["Desconto de sócio","Curingas, treinos e pacotes custam 25 % menos."],"bigbag":["Mochila de treino maior","+1 carta na mão."],"savings":["Plano de poupança","Os juros podem subir mais $5."],"restock":["Reposição","A Loja oferece 3 curingas em vez de 2."],"scout":["Olheiro","Renovar custa $2 a menos."]},
   },
+  news182: [
+    "Amigos e mensagens são uma lista só: toque num amigo para escrever, na foto para ver o perfil e segure a linha para mais (remover, bloquear, apagar a conversa…). A sequência com o amigo aparece na linha e ao lado do nome na conversa. Antes eram abas separadas e um menu a cada toque.",
+    "Menos texto: o menu mostra só os nomes, e as explicações sob interruptores e quadros ficam atrás de um pequeno ? que você toca quando quer saber mais.",
+    "Seu código de amigo tem um ícone de copiar, e o baú semanal da Loja mostra os 3 desafios como pontos.",
+    "A medalha Explorador conta todos os 9 capítulos do guia.",
+  ],
   news181: [
     "O guia ficou mais curto: mostra o Início e o menu ☰, e depois cada tela se apresenta sozinha na primeira vez que você a abre. Capítulos novos para o Muscle Deck e a Loja.",
     "O guia não aponta mais para algo que você não vê quando desliza para a outra página ou está com o menu aberto. Listas longas se iluminam inteiras e a página não rola por baixo.",

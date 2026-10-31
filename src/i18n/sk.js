@@ -869,7 +869,8 @@ export default {
     privacy: "Bez účtu sú všetky údaje uložené len v tomto zariadení.",
 
     warmup: "Zahriatie",
-    warmupHint: "~3 minúty. Sprav cvik a ťukni naň. Prvé kolo tréningu ber tiež ako zahriatie, nechoď v ňom na doraz.",
+    warmupHint: "~3 min. Sprav každý cvik a ťukni naň.",
+    warmupInfo: "Prvé kolo tréningu ber tiež ako zahriatie: nechoď v ňom na doraz.",
     letsGo: "Ideme cvičiť",
     skipWarmup: "Preskočiť zahriatie",
 
@@ -1160,6 +1161,7 @@ export default {
     pfLooksNone: "Z tohto ešte nič nemáš.",
     shOwned: "Máš",
     tourAutoD: "Toto je Domov. Všetko ostatné je v tomto menu: keď prvýkrát otvoríš obrazovku, ukážem ti ju.",
+    infoMore: "Viac o tom",
     tourAgainBtn: "Znova",
     tourRestart: "Spustiť návod znova",
     tourAskV: "Aktualizované na {v}",
@@ -1182,7 +1184,7 @@ export default {
     autoFzT: { one: "{n} zmrazenie zachránilo tvoju sériu", few: "{n} zmrazenia zachránili tvoju sériu", other: "{n} zmrazení zachránilo tvoju sériu" },
     autoFzLeft: { one: "Ostáva {n} zmrazenie.", few: "Ostávajú {n} zmrazenia.", other: "Ostáva {n} zmrazení." },
     celebUnit: { one: "tréning v sérii", few: "tréningy v sérii", other: "tréningov v sérii" },
-    secretLeft: { one: "{n} tajný odznak je ešte skrytý. Trénuj ďalej a možno ho nájdeš!", few: "{n} tajné odznaky sú ešte skryté. Trénuj ďalej a možno ich nájdeš!", other: "{n} tajných odznakov je ešte skrytých. Trénuj ďalej a možno ich nájdeš!" },
+    secretLeft: { one: "{n} tajný odznak je ešte skrytý", few: "{n} tajné odznaky sú ešte skryté", other: "{n} tajných odznakov je ešte skrytých" },
     ranksLeft: { one: "Rank má ešte {n} cvik. Sprav ho raz a objaví sa tu.", few: "Rank majú ešte {n} cviky. Sprav niektorý raz a objaví sa tu.", other: "Rank má ešte {n} cvikov. Sprav niektorý raz a objaví sa tu." },
     weeks: { one: "{n} týždeň", few: "{n} týždne", other: "{n} týždňov" },
     pushups: { one: "{n} klik", few: "{n} kliky", other: "{n} klikov" },
@@ -1463,7 +1465,7 @@ export default {
   tour: {
     ch: ["Domov", "Odznaky", "Tréning", "Profil", "História", "Kalórie", "Priatelia", "Muscle Deck", "Obchod"],
     c1: [
-      "Ahoj! Ukážem ti, ako HW App funguje. Návod má 7 krátkych kapitol a za každú dostaneš odznak. Poďme na to!",
+      "Ahoj! Ukážem ti, ako HW App funguje. Návod má 9 krátkych kapitol a za každú dostaneš odznak. Poďme na to!",
       "Toto je dnešný tréning. Appka má 3 tréningové dni: A, B a C. Striedaš ich a cvičíš každý druhý deň. Appka ti vždy ponúkne ten, ktorý je na rade.",
       "Ak chceš, vyber si tu iný deň.",
       "Vyber si dĺžku: 3 kolá (~19 min, odporúčané) alebo 2 kolá (~13 min). Tlačidlo Začať deň spustí tréning a appka ťa ním prevedie krok za krokom.",
@@ -1524,11 +1526,9 @@ export default {
       "Prihlás sa cez Google alebo e-mail. Tréningy sa zálohujú do cloudu, prenesieš ich do nového mobilu aj na web a môžeš si pridať priateľov.",
       "Tvoj kód. Pošli ho kamarátovi alebo zdieľaj odkaz a pridáte sa.",
       "Ťukni na {t}.",
-      "Tu si pridáš priateľa cez kód alebo prezývku. Pod tým sú žiadosti a tvoji priatelia; ťukni na niekoho a otvoríš jeho profil.",
+      "Tu si pridáš priateľa cez kód alebo prezývku. Pod tým sú priatelia aj chaty v jednom zozname: ťukni na priateľa a píšeš mu, ťukni na fotku a otvoríš jeho profil.",
       "Teraz {t}.",
       "Rebríček: porovnaj sa s priateľmi, alebo s celým svetom, ak sa doň pridáš.",
-      "A {t}.",
-      "Tvoje chaty s priateľmi. Otvor jeden a píš; podrž správu a môžeš na ňu odpovedať, reagovať alebo ju skopírovať.",
       "To je všetko! Návod nájdeš kedykoľvek v menu. Trénuj každý druhý deň a uvidíš výsledky 💪",
     ],
     c8: [
@@ -1569,7 +1569,7 @@ export default {
     kcalHit: ["Presne v cieli", "{x} v rozmedzí ±10 % od cieľa kalórií"],
     steps: ["10 000 krokov", "{x} s 10 000+ krokmi"],
     health: ["Health Connect","prepoj Health Connect"],
-    guide: ["Prieskumník", "{n} z 7 kapitol návodu"],
+    guide: ["Prieskumník", "{n} z 9 kapitol návodu"],
     allex: ["Vyskúšal všetko","sprav každý cvik v appke aspoň raz (⇄ výmena ukáže ostatné)"],
     allDiamond: ["Diamantový program","Diamant vo všetkých 12 cvikoch programu"],
     comeback: ["Návrat","vrátil si sa k tréningu po 2 a viac týždňoch"],
@@ -1689,6 +1689,12 @@ export default {
     pk: {"jpack":["Balíček jokerov","Otvor ho a vyber 1 z 3 jokerov (niekedy vzácneho alebo legendárneho)."],"dpack":["Balíček drilov","Otvor ho a vyber 1 z 3 rúk, ktorej zvýšiš level."]},
     v: {"membership":["Permanentka do fitka","+1 miesto na jokera."],"extraset":["Séria navyše","+1 ruka v každom blinde."],"resttimer":["Časovač pauzy","+1 vyhodenie v každom blinde."],"discount":["Členská zľava","Jokeri, drily a balíčky sú o 25 % lacnejšie."],"bigbag":["Väčšia taška","+1 karta v ruke."],"savings":["Sporenie","Úrok môže ísť o $5 vyššie."],"restock":["Doplnenie tovaru","Obchod ponúka 3 jokerov namiesto 2."],"scout":["Skaut","Nové karty v obchode stoja o $2 menej."]},
   },
+  news182: [
+    "Priatelia a správy sú jeden zoznam: ťukni na priateľa a píšeš mu, ťukni na fotku a otvoríš jeho profil, podrž riadok pre ďalšie možnosti (odstrániť, zablokovať, zmazať chat…). Spoločná séria je na riadku aj pri mene v chate. Predtým to boli samostatné karty a pri každom ťuknutí vyskočilo menu.",
+    "Menej textu: menu ukazuje len názvy a vysvetlenia pod prepínačmi a boxmi sú za malým ?, na ktorý ťukneš, keď chceš vedieť viac.",
+    "Tvoj kód priateľa má ikonu na kopírovanie a týždenná truhla v Obchode ukazuje 3 výzvy ako bodky.",
+    "Odznak Prieskumník počíta všetkých 9 kapitol návodu.",
+  ],
   news181: [
     "Návod je kratší: ukáže Domov a ☰ menu a potom ti každá obrazovka sama ukáže, čo na nej je, keď ju prvýkrát otvoríš. Nové kapitoly pre Muscle Deck a Obchod.",
     "Návod už neukazuje na niečo, čo nevidíš, keď si prejdeš na druhú stránku alebo máš otvorené menu. Dlhé zoznamy svietia celé a stránka sa pod ním nemôže posunúť.",
