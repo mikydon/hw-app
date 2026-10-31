@@ -5695,7 +5695,7 @@ function PersonRow({ p, rank, me, onClick, right, first }) {
 }
 
 // Someone's card: stats, and add / remove / block / report.
-function PersonSheet({ p, isFriend, onAdd, onChat, onRemove, onBlock, onReport, onProfile, onClose, fsState, onFs, onDelChat, onFsEnd }) {
+function PersonSheet({ p, isFriend, onAdd, onChat, onRemove, onBlock, onReport, onProfile, onClose, fsState, onFs, onDelChat, onFsEnd, delChatOff }) {
   const [ask, setAsk] = useState(null); // the action waiting for its confirmation
   const [msg, setMsg] = useState("");
   const [reported, setReported] = useState(false);
@@ -5704,7 +5704,8 @@ function PersonSheet({ p, isFriend, onAdd, onChat, onRemove, onBlock, onReport, 
   // 1.8.2 (Michael: the text buttons looked bad): one row of icons; each asks in a centred box what it will do
   const acts = [
     onFsEnd && { k: "fsend", ic: "flameOff", label: T("fsEnd"), title: T("fsEnd"), text: T("fsEndD", nick), yes: T("fsEnd"), danger: true, go: () => onFsEnd(p), data: { "data-ps-fs-end": true } },
-    onDelChat && { k: "delchat", ic: "trash", label: T("chDelYes"), title: T("chDelTitle", nick), text: T("chDelBody", nick), yes: T("chDelYes"), danger: true, go: () => onDelChat(p), data: { "data-ps-delchat": true } },
+    // 1.8.2 (Michael): Delete chat is always there; greyed out while there is no chat yet
+    onDelChat && { k: "delchat", ic: "trash", label: T("chDelYes"), off: delChatOff, title: T("chDelTitle", nick), text: T("chDelBody", nick), yes: T("chDelYes"), danger: true, go: () => onDelChat(p), data: { "data-ps-delchat": true } },
     isFriend && { k: "remove", ic: "userX", label: T("frRemove"), title: T("frRemoveT", nick), text: T("frRemoveB"), yes: T("frRemove"), danger: true, go: () => onRemove(p), data: { "data-ps-remove": true } },
     { k: "block", ic: "ban", label: T("frBlock"), title: T("frBlockT", nick), text: T("frBlockB", nick), yes: T("frBlock"), danger: true, go: () => onBlock(p), data: { "data-ps-block": true } },
     { k: "report", ic: "flag", label: T("frReport"), title: T("frReportT", nick), text: T("frReportB"), yes: T("frReport"), go: () => onReport(p).then(m => { setMsg(m); setReported(String(m).startsWith("✓")); }), data: { "data-ps-report": true } },
@@ -5756,8 +5757,8 @@ function PersonSheet({ p, isFriend, onAdd, onChat, onRemove, onBlock, onReport, 
       })()}
       <div data-ps-acts style={{ display: "grid", gridTemplateColumns: `repeat(${acts.length}, 1fr)`, gap: 8, marginTop: 10 }}>
         {acts.map(x => (
-          <button key={x.k} type="button" {...x.data} aria-label={x.label} title={x.label} onClick={() => { sfxTap(); setAsk(x.k); }}
-            style={{ ...btnBase, height: 52, borderRadius: 14, background: SOFT(), color: x.danger ? "#ff8a80" : C.chalk, display: "flex", alignItems: "center", justifyContent: "center", padding: 0 }}>
+          <button key={x.k} type="button" {...x.data} disabled={!!x.off} data-off={x.off ? 1 : 0} aria-label={x.label} title={x.label} onClick={() => { sfxTap(); setAsk(x.k); }}
+            style={{ ...btnBase, height: 52, borderRadius: 14, background: SOFT(), color: x.danger ? "#ff8a80" : C.chalk, display: "flex", alignItems: "center", justifyContent: "center", padding: 0, opacity: x.off ? 0.35 : 1, cursor: x.off ? "default" : "pointer" }}>
             <Ico n={x.ic} size={22} />
           </button>
         ))}
@@ -5954,19 +5955,20 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
   if (view) return <OtherProfile p={people[view.uid] ? { ...view, ...people[view.uid] } : view} isFriend={friendIds.includes(view.uid)} onBack={() => setView(null)} setTopHead={setTopHead} />;
   if (chatWith) {
     const p = people[chatWith] || { uid: chatWith, nick: "…" };
-    return <ChatView setTopHead={setTopHead} me={acct.uid} other={p} fs={friendIds.includes(chatWith) ? fsOf(chatWith) : null} th={((social.chats || []).find(c => c.other === chatWith) || {}).th} canWrite={friendIds.includes(chatWith)} onBack={() => setChatWith(null)} onOpen={() => { sfxTap(); setView(p); }} onMenu={() => { vibrate([30]); setSheet(p); }}
+    return <ChatView setTopHead={setTopHead} me={acct.uid} other={p} fs={friendIds.includes(chatWith) ? fsOf(chatWith) : null} th={((social.chats || []).find(c => c.other === chatWith) || {}).th} canWrite={friendIds.includes(chatWith)} onBack={() => setChatWith(null)} onOpen={() => { sfxTap(); setView(p); }} onMenu={() => setSheet(p)}
       sheet={<>{sheet && <PersonSheet p={sheet} isFriend={friendIds.includes(sheet.uid)} fsState={fsStateOf(sheet.uid)} onFs={fsInvite} onClose={() => setSheet(null)} onAdd={x => sendTo(x.uid, x.nick).catch(cloudErr)}
-        onRemove={x => act(() => cloud().removeFriend(x.uid), () => setSheet(null))} onBlock={block} onReport={x => report(x)} onProfile={setView} />}
+        onRemove={x => act(() => cloud().removeFriend(x.uid), () => setSheet(null))} onBlock={block} onReport={x => report(x)} onProfile={x => { setSheet(null); setView(x); }}
+        delChatOff={!chats.some(c => c.other === sheet.uid)} onDelChat={x => { const c = chats.find(cc => cc.other === x.uid); setSheet(null); if (c) { deleteChat(c); setChatWith(null); } }} />}
 </>}
       onReport={text => report(p, "message: " + text.slice(0, 280))} onBlock={block} />;
   }
   return (
     <div className="scr" data-fr-main style={{ padding: "6px 18px 110px", maxWidth: "var(--colMax)", margin: "0 auto" }}>
       {sheet && <PersonSheet p={sheet} isFriend={friendIds.includes(sheet.uid)} fsState={fsStateOf(sheet.uid)} onFs={fsInvite} onClose={() => setSheet(null)} onChat={friendIds.includes(sheet.uid) ? x => { setSheet(null); setChatWith(x.uid); } : null}
-        onDelChat={chats.some(c => c.other === sheet.uid) ? x => { setSheet(null); deleteChat(chats.find(c => c.other === x.uid)); } : null}
+        delChatOff={!chats.some(c => c.other === sheet.uid)} onDelChat={x => { const c = chats.find(cc => cc.other === x.uid); setSheet(null); if (c) deleteChat(c); }}
         onFsEnd={fsStateOf(sheet.uid) === "on" ? x => { setSheet(null); act(() => fs.end(x.uid)); } : null}
         onAdd={p => sendTo(p.uid, p.nick).catch(cloudErr)} onRemove={p => act(() => cloud().removeFriend(p.uid), () => setSheet(null))}
-        onBlock={block} onReport={p => report(p)} onProfile={setView} />}
+        onBlock={block} onReport={p => report(p)} onProfile={x => { setSheet(null); setView(x); }} />}
       {delChat && (() => { const dp = people[delChat.other] || { nick: "…" }; return (
         <ConfirmBox icon="trash" danger title={T("chDelTitle", { nick: dp.nick })} text={T("chDelBody", { nick: dp.nick })} yes={T("chDelYes")} yesData={{ "data-chat-del-yes": true }} onYes={() => deleteChat(delChat)} onNo={() => setDelChat(null)} />); })()}
       {rename && <NickSetup initial={acct.prof.nick} title={T("frRename")} onCancel={() => setRename(false)} onSave={n => onRename(n).then(() => setRename(false))} />}
@@ -6363,7 +6365,6 @@ function MsgMenu({ at, m, mine, me, other, th, onClose, onReply, onCopy, onEdit,
   );
 }
 function ChatView({ me, other, canWrite, onBack, onOpen, onMenu, onReport, onBlock, sheet, th: thSaved, setTopHead, fs }) {
-  const headHold = useRef({ t: 0, fired: false }); // 1.8.2: tap the name = their profile, hold = the menu
   const [msgs, setMsgs] = useState(null);
   const [repOffer, setRepOffer] = useState(false);
   const [thLocal, setThLocal] = useState(null); // picked here, until the chat's colour comes back from the cloud
@@ -6454,10 +6455,9 @@ function ChatView({ me, other, canWrite, onBack, onOpen, onMenu, onReport, onBlo
       <button data-chat-back onClick={() => { sfxTap(); onBack(); }} aria-label={T("back")} style={{ ...btnBase, background: SOFT(), color: C.chalk, width: 38, height: 38, borderRadius: 12, fontSize: 22, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
         <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
       </button>
-      <button data-chat-who onClick={() => { if (headHold.current.fired) { headHold.current.fired = false; return; } onOpen(); }}
-        onPointerDown={() => { headHold.current.fired = false; clearTimeout(headHold.current.t); if (onMenu) headHold.current.t = setTimeout(() => { headHold.current.fired = true; onMenu(); }, 480); }}
-        onPointerUp={() => clearTimeout(headHold.current.t)} onPointerLeave={() => clearTimeout(headHold.current.t)} onPointerCancel={() => clearTimeout(headHold.current.t)}
-        onContextMenu={e => { e.preventDefault(); clearTimeout(headHold.current.t); if (onMenu) { headHold.current.fired = true; onMenu(); } }}
+      {/* 1.8.2 (Michael): a tap on the name opens the friend's card (profile tile, streak, remove/block/report/delete chat) */}
+      <button data-chat-who onClick={() => { sfxTap(); if (onMenu) onMenu(); else onOpen(); }}
+        onContextMenu={e => { e.preventDefault(); if (onMenu) onMenu(); }}
         style={{ ...btnBase, background: "transparent", color: C.chalk, padding: 0, display: "flex", alignItems: "center", gap: 10, minWidth: 0, flex: 1, textAlign: "left", WebkitTouchCallout: "none", userSelect: "none" }}>
         <PersonAvatar p={other} size={38} />
         <span style={{ minWidth: 0 }}>
