@@ -10,7 +10,7 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 
 <!-- New version: add a "## x.y.z (date)" section on top (web-only history uses "## Browser beta x.y.z (date)"). On a push to main, .github/workflows/build.yml builds everything and .github/scripts/releases.sh creates/updates the releases (commit = the push, or the one in a commit comment). -->
 
-## 1.8.1 (2026-10-30)
+## 1.8.1 (2026-10-31)
 
 - The guide is shorter: it shows Home and the ☰ menu, then every screen shows you around by itself the first time you open it. New chapters for Muscle Deck and the Shop (9 chapters; all of them make the Explorer badge Obsidian, 7 stay Diamond).
 - The guide no longer points at something you can't see: when you swipe to the other page or have the menu open, it brings the right page back first. A box taller than the screen is lit from its top on down (the bubble floats at the bottom) instead of being cut through a row, and the page can't be scrolled or swiped under the guide.
@@ -22,6 +22,7 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 - Google Play: the "new version" card has an Update now button that runs Google Play's in-app update (Play downloads and installs, the app restarts); where Play doesn't allow that, it opens the app's Play Store page. Not during a workout. Tapping the "new version" notification opens Home with this card, even if it was closed. *(Android app only)*
 - Back from the workout settings (Home → Exercises → Exercises settings) takes you back to Home's Exercises page, not to Settings.
 - Name effects like Glow are no longer cut off at the edges of the name.
+- Everything new in 1.8.0 and 1.8.1 (Muscle Deck with its tutorial and rules, the Shop, diamonds, the weekly chest, profile looks, fair play, the guide) is now translated into all 15 languages; before, these parts were in English in every language.
 
 ## 1.8.0 (2026-10-25)
 

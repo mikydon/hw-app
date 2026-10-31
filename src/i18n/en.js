@@ -1707,6 +1707,7 @@ export default {
     "📱 Google Play: when a new version is out, Update now updates the app right there (Play's own update screen). Tapping the \"new version\" notification opens this card.",
     "Back from the workout settings (Home → Exercises) takes you back to Home, not to Settings.",
     "Name effects like Glow are no longer cut off at the edges.",
+    "Muscle Deck, the Shop, diamonds, profile looks and the new guide chapters are now in every language (they were in English).",
   ],
   news175: [
     "Every password field has an eye button: tap it to see what you typed and catch typos, tap again to hide it.",
