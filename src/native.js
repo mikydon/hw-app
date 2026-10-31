@@ -18,7 +18,10 @@ export const isNative = Capacitor.isNativePlatform();
 const backStack = [];
 let rootBack = null;
 // low = the lowest layer (e.g. Home page 2 → page 1): anything opened on top of it, even later, closes first
-export function pushBack(fn, low) { const h = { fn }; if (low) backStack.unshift(h); else backStack.push(h); return () => { const i = backStack.indexOf(h); if (i >= 0) backStack.splice(i, 1); }; }
+export function pushBack(fn, low) { const h = { fn }; if (low) backStack.unshift(h); else backStack.push(h); const off = () => { const i = backStack.indexOf(h); if (i >= 0) backStack.splice(i, 1); }; off.h = h; return off; }
+// 1.8.1 (the guide): is this handler the newest one, and "press back" once for whatever was opened above it
+export const backIsTop = h => backStack[backStack.length - 1] === h;
+export function backTopRun() { const t = backStack[backStack.length - 1]; if (t) t.fn(); }
 export function setRootBack(fn) { rootBack = fn; }
 export function exitApp() { if (isNative) CapApp.minimizeApp().catch(() => CapApp.exitApp()); }
 if (isNative) {

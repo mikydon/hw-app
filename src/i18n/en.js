@@ -1700,7 +1700,8 @@ export default {
   news181: [
     "The guide is shorter: it shows Home and the ☰ menu, then every screen shows you around by itself the first time you open it. New chapters for Muscle Deck and the Shop.",
     "The guide no longer points at something you can't see when you swipe to the other page or have the menu open. Long lists are lit as a whole, and the page can't slide away under it.",
-    "Next in the guide no longer waits a few seconds when a part isn't there. What it shows sits in the middle of the screen, never under the top bar, and the ☰ menu can't stay open over it.",
+    "Next in the guide no longer waits a few seconds when a part isn't there. What it shows sits in the middle of the screen, never under the top bar, and nothing can open over it. The back gesture goes one step back instead of ending the guide (only Skip ends it).",
+    "Muscle Deck has the same margins as the other screens (its boxes reached the edges).",
     "📱 No more blue strip behind the keyboard while it opens: the app's background now has the colour of your theme.",
     "Start the guide again any time (☰ → Guide), replay a chapter with Again, and after an update the app asks once whether to show you around again.",
     "📱 Google Play: when a new version is out, Update now updates the app right there (Play's own update screen). Tapping the \"new version\" notification opens this card.",

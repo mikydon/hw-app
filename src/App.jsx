@@ -1,6 +1,6 @@
 import { useState, useEffect, useLayoutEffect, useRef, useMemo, useId, memo, Fragment } from "react";
 import { createPortal } from "react-dom";
-import { isNative, pushBack, setRootBack, exitApp, vibratePattern, keepScreenOn, openExternal, saveBackupFile, bkSupported, bkWrite, bkWriteAuto, bkList, bkRead, bkDelete, bkShare, BK_DIR, bkAutoFile, checkForUpdate, lastUpdate, lastGh, applyUpdateNow, latestApk, isTestBuild, apkState, onApk, apkSupported, apkRestore, apkDownload, apkCanInstall, apkAllow, apkInstall, onAppResume, healthState, healthConnect, healthSettings, healthSteps, healthFoodItems, healthBody, shareText, copyText, pushSupported, pushPermission, pushChannel, pushToken, pushTokenWhy, pushDeleteToken, onPushTap, onPushToken, onPushReceived, hzSupported, hzInfo, hzSet, isPlay, playCheck, playOpenStore, playUpdate, PLAY_STORE_LINK, updTopic, onAppUrl, installCheck, openNotifSettings, showNotif, setNativeBg } from "./native.js";
+import { isNative, pushBack, setRootBack, exitApp, vibratePattern, keepScreenOn, openExternal, saveBackupFile, bkSupported, bkWrite, bkWriteAuto, bkList, bkRead, bkDelete, bkShare, BK_DIR, bkAutoFile, checkForUpdate, lastUpdate, lastGh, applyUpdateNow, latestApk, isTestBuild, apkState, onApk, apkSupported, apkRestore, apkDownload, apkCanInstall, apkAllow, apkInstall, onAppResume, healthState, healthConnect, healthSettings, healthSteps, healthFoodItems, healthBody, shareText, copyText, pushSupported, pushPermission, pushChannel, pushToken, pushTokenWhy, pushDeleteToken, onPushTap, onPushToken, onPushReceived, hzSupported, hzInfo, hzSet, isPlay, playCheck, playOpenStore, playUpdate, PLAY_STORE_LINK, updTopic, onAppUrl, installCheck, openNotifSettings, showNotif, setNativeBg, backIsTop, backTopRun } from "./native.js";
 import { cloud, NICK_RE, SHARE_BASE, cleanCode, fmtCode } from "./cloud-lazy.js";
 import { QUICK as EMO_QUICK, EMOJI } from "./emoji.js";
 import { mergeAll, syncKey, withIds, entryId, stable, SYNC_SETTINGS, kcalShared } from "./sync.js";
@@ -7861,7 +7861,7 @@ function ShopTab({ history, profile, setProfile, onGo }) {
         </div>
       </Sect>
       {/* streak freeze, XP boost */}
-      <ListSect title={T("shItems")}>
+      <ListSect data-shop-items title={T("shItems")}>
         <div data-shop-item="freeze" style={row}>
           <IcoBox n="snow" color={C.sky} />
           <div style={{ flex: 1, minWidth: 0 }}>
@@ -7926,7 +7926,7 @@ function GameTab({ history, profile, setProfile, acct, onPlay }) {
     { id: "ranked", icon: "🏆", name: T("gmRanked"), desc: !RANKED_ON ? T("gmSoon") : signed ? T("gmRankedD", { r: rk && typeof rk.r === "number" ? rk.r : 1000 }) : T("gmRankedSign"), off: !RANKED_ON || !signed, soon: !RANKED_ON },
   ];
   return (
-    <div data-game-tab>
+    <div data-game-tab style={{ padding: "0 18px 30px" }}>
       {!gp.tut && !saved && (
         <div data-gm-tut className="cardIn" style={{ ...card, ...tileR(), padding: "14px 16px", marginBottom: 12, border: `1.5px solid ${C.signal}`, display: "flex", alignItems: "center", gap: 12 }}>
           <IcoBox n="cap" size={46} />
@@ -8563,7 +8563,7 @@ function tourSteps(ch, x) {
   if (ch === 9) return [ // Shop
     s("[data-shop-bal]", 0, { prep: screen("shop") }),
     s("[data-shop-chest]", 1, { opt: true }),
-    s('[data-shop-item="freeze"]', 2, { opt: true }),
+    s("[data-shop-items]", 2, { opt: true }), // 1.8.1 (Michael): the whole box, freezes and XP boosts
     s("[data-shop-today]", 3, { opt: true }),
     { done: true, t: X[4] },
   ];
@@ -8594,8 +8594,31 @@ function Tour({ run, x, done, onStep, onEnd, onChapterDone, onStart }) {
   const live = useRef({ run, steps }); live.current = { run, steps };
   const shown = useRef(-1); // the last step whose target was really lit (a skipped tap step changed nothing)
   const next = () => onStep(run.i + 1 < steps.length ? run.i + 1 : null);
-  useBack(() => onEnd(true), true);
-  useEffect(() => { const k = e => { if (e.key === "Escape") onEnd(true); }; window.addEventListener("keydown", k); return () => window.removeEventListener("keydown", k); }, []);
+  // 1.8.1: its own back handler (Android back / Esc = skip), kept as a handle: anything opened above it (a sheet, the
+  // chest…) while the guide runs is closed again with one "back", so it never covers what the guide shows
+  const backH = useRef(null);
+  const endRef = useRef(onEnd); endRef.current = onEnd;
+  // 1.8.1 (Michael: "the back gesture turns the guide off; what if a new user does it by mistake"): back (and Esc) go
+  // one step back; on the first one only "Skip the guide" gives a little shake. Only Skip ends the guide.
+  const trail = useRef([]); // the steps really shown, in order
+  const [nudge, setNudge] = useState(0);
+  const stepBack = () => {
+    const cur = live.current.run.i, t = trail.current.filter(i => i < cur);
+    const prev = t.pop();
+    if (prev !== undefined) { trail.current = t; sfxTap(); onStep(prev); } else setNudge(n => n + 1);
+  };
+  const backRef = useRef(stepBack); backRef.current = stepBack;
+  useEffect(() => { const off = pushBack(() => backRef.current()); backH.current = off.h; return off; }, []);
+  useEffect(() => { const k = e => { if (e.key === "Escape") backRef.current(); }; window.addEventListener("keydown", k); return () => window.removeEventListener("keydown", k); }, []);
+  // 1.8.1 (Michael, Oct 31, 00:53: tapped a look in the Shop while the guide moved on, its sheet covered the lit box):
+  // a sheet, the chest or the ☰ menu open over the guide is closed; reward cards are left alone (they are the point)
+  const lastClose = useRef(0);
+  const clearOver = () => {
+    if (document.querySelector("[data-reveal]")) return false;
+    const over = document.querySelector(".sheetWrap [aria-label], [data-chest-open]");
+    if (over && backH.current && !backIsTop(backH.current) && Date.now() - lastClose.current > 350) { lastClose.current = Date.now(); backTopRun(); return true; }
+    return !!over;
+  };
   // 1.8.1 (Michael's video: Badges and Muscle Deck scrolled under the guide while the light stayed): the person can't
   // scroll or swipe while a bubble is shown; the guide scrolls and switches pages itself. Not while a reward card is open.
   useEffect(() => {
@@ -8615,6 +8638,7 @@ function Tour({ run, x, done, onStep, onEnd, onChapterDone, onStart }) {
       if (step.prep) { try { await step.prep(); } catch (_) {} }
       // 1.8.1 (Michael's screenshot: the ☰ menu was open over the lit badge): after any prep too, the menu is closed
       if (!step.keepMenu && x.menuOpen && x.menuOpen()) { x.menu(false); await tourWait(320); }
+      for (let k = 0; k < 8 && !dead && clearOver(); k++) await tourWait(200); // and any sheet opened over the guide
       if (dead) return;
       if (step.done) { const n = onChapterDone(run.ch); setDoneNow(n); }
       if (!step.sel) { setReady(true); return; }
@@ -8640,7 +8664,7 @@ function Tour({ run, x, done, onStep, onEnd, onChapterDone, onStart }) {
       if (e.closest("[data-topbar], .drawerPanel, [data-side-nav]")) want = null; // fixed places: nothing to scroll
       if (want !== null && Math.abs(r.top - want) > 4) { window.scrollBy(0, r.top - want); await tourWait(60); }
       if (dead) return;
-      shown.current = run.i; setEl(e); setReady(true);
+      shown.current = run.i; if (trail.current[trail.current.length - 1] !== run.i) trail.current.push(run.i); setEl(e); setReady(true);
     })();
     return () => { dead = true; };
   }, [run.ch, run.i]);
@@ -8651,6 +8675,7 @@ function Tour({ run, x, done, onStep, onEnd, onChapterDone, onStart }) {
     const loop = () => {
       setHold(!!document.querySelector("[data-reveal]"));
       if (!step.keepMenu && !step.tap && x.menuOpen && x.menuOpen() && !document.querySelector("[data-reveal]")) x.menu(false); // a tap step may open it itself (☰)
+      clearOver();
       if (el) {
         if (!el.isConnected) { if (++gone > 3) { next(); return; } }
         else {
@@ -8675,7 +8700,9 @@ function Tour({ run, x, done, onStep, onEnd, onChapterDone, onStart }) {
     document.addEventListener("click", h, true);
     return () => document.removeEventListener("click", h, true);
   }, [ready, el, run.i]);
-  if (!step || !ready || hold) return null;
+  if (hold) return null; // a reward card is open: it gets the taps
+  // between steps (finding, scrolling, switching screens) nothing on the page can be tapped: one dim layer catches it
+  if (!step || !ready) return createPortal(<div data-tour-wait onClick={e => { e.stopPropagation(); e.preventDefault(); }} style={{ position: "fixed", inset: 0, zIndex: 110, background: "rgba(3,8,20,.72)", pointerEvents: "auto" }} />, document.body);
   const tap = step.tap && el;
   const go = () => { sfxTap(); if (tap) el.click(); else next(); };
   const vw = innerWidth, vh = innerHeight, pad = 6;
@@ -8719,7 +8746,7 @@ function Tour({ run, x, done, onStep, onEnd, onChapterDone, onStart }) {
         <div data-tour-text style={{ fontSize: 15, lineHeight: 1.5, marginTop: 8 }}>{step.t || ""}</div>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 14 }}>
           {step.done && <button type="button" data-tour-again onClick={() => { sfxTap(); onStart(run.ch, run.queue); }} aria-label={T("tourAgainBtn")} style={{ ...btnBase, background: "transparent", color: C.signal, padding: "8px 2px", fontSize: 13, fontWeight: 800, display: "inline-flex", alignItems: "center", gap: 5 }}><svg width="15" height="15" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.4-5.7M4 4v5h5" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" /></svg>{T("tourAgainBtn")}</button>}
-          {(!step.done || nxt) && <button type="button" data-tour-skip onClick={() => { sfxTap(); onEnd(!step.done); }} style={{ ...btnBase, background: "transparent", color: C.dim, padding: "8px 2px", fontSize: 13, fontWeight: 700 }}>{step.done ? T("tourLater") : T("tourSkip")}</button>}
+          {(!step.done || nxt) && <button key={"sk" + nudge} type="button" data-tour-skip className={nudge ? "gmShake" : undefined} onClick={() => { sfxTap(); onEnd(!step.done); }} style={{ ...btnBase, background: "transparent", color: C.dim, padding: "8px 2px", fontSize: 13, fontWeight: 700 }}>{step.done ? T("tourLater") : T("tourSkip")}</button>}
           <span style={{ flex: 1 }} />
           {step.done ? (
             nxt ? <button type="button" data-tour-next onClick={() => { sfxTap(); onStart(nxt, run.queue.filter(c => c !== nxt)); }} style={{ ...btnBase, background: C.signal, color: C.signalInk, padding: "10px 16px", fontSize: 14 }}>{T("tourNextCh", { t: tourName(nxt) })} <Arrow size={16} style={{ color: C.signalInk, verticalAlign: "-0.05em" }} /></button>
@@ -9655,6 +9682,7 @@ export default function App() {
   // A tap on a notification: straight to that chat, or to Friends for a request (also when it started the app).
   useEffect(() => onPushTap(d => {
     if (d.kind === "test") return; // the test notification only opens the app
+    setTourRun(null); // 1.8.1: a notification takes you somewhere else: the guide stops (it comes back on its own later)
     // 1.8.1 (Michael): "new version" opens Home with the update card (even if it was closed), Play asked again
     if (d.kind === "upd") { setScreen("train"); setMenuOpen(false); if (session) setSessionOpen(false); setApkHidden(false); setUpdSeq(n => n + 1); return; }
     setScreen("friends"); setMenuOpen(false); const who = d.uid || d.from; setChatWith(d.kind === "msg" && who ? who : null);
@@ -9970,6 +9998,7 @@ export default function App() {
   useEffect(() => onAppUrl(u => {
     const c = addFromUrl(u);
     if (!c) return;
+    setTourRun(null);
     try { sessionStorage.setItem("hw-add", c); } catch (_) {}
     setMenuOpen(false); setSessionOpen(false); setScreen("friends"); setAddSeq(n => n + 1);
   }), []);
