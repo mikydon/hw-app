@@ -3209,7 +3209,9 @@ function SetupCard({ profile, kcal, onFix, onClose }) {
 // 1.8.1: a screen we come back to can open on the page it was left on (Michael: back from Settings → Exercises
 // went to Settings instead of Home's Exercises page). Read once, then forgotten.
 const PAGER_START = {};
-function usePager(name, n, lay) {
+// same (1.8.2, Michael: Home jumped when the two pages fitted the bar each on their own): the strip always has the
+// height of the tallest page, so switching pages never changes the scroll length
+function usePager(name, n, lay, same) {
   const pager = useRef(null), pages = useRef([]), knob = useRef(null), ctl = useRef({});
   const [page, setPage] = useState(() => { const s = PAGER_START[name] || 0; delete PAGER_START[name]; return Math.min(n - 1, s); });
   const [pagerEl, setPagerEl] = useState(null); // the strip may appear later (Calories shows a form first)
@@ -3260,7 +3262,7 @@ function usePager(name, n, lay) {
     const floor = () => { let t = 0; for (let x = el; x; x = x.offsetParent) t += x.offsetTop; return Math.round(window.innerHeight - t); };
     const pos = () => Math.max(0, Math.min(n - 1, el.scrollLeft / Math.max(1, el.clientWidth)));
     // while a box on the page closes, never shrink (the cards sliding up would be cut off); refit when it is done
-    const fitRest = () => { const pg = pages.current[Math.round(pos())]; const h = Math.max(pg ? pg.offsetHeight : 0, floor()); if (EXPANDING && h < last) return; setH(h); };
+    const fitRest = () => { const pg = pages.current[Math.round(pos())]; const h = Math.max(same ? Math.max(0, ...pages.current.map(x => (x ? x.offsetHeight : 0))) : pg ? pg.offsetHeight : 0, floor()); if (EXPANDING && h < last) return; setH(h); };
     const refit = () => { if (!moving && !EXPANDING) fitRest(); };
     expandDone.add(refit);
     const grow = () => { if (moving) return; moving = true; setH(Math.max(floor(), ...pages.current.map(x => (x ? x.offsetHeight : 0)))); };
@@ -3366,7 +3368,7 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
   // Page 1 "Today": one notice at a time, the big day + Start, this week (green = workout, amber = calories), calories
   // and the weekly challenges. Page 2: the day's exercises. A small switch on top shows where you are (and works with
   // a mouse); Android back on page 2 goes to page 1.
-  const pg = usePager("home", 2);
+  const pg = usePager("home", 2, undefined, true);
 
   // One notice at a time (Michael marked it in design A), the most important first. A download in progress and a new
   // APK always show (rare and important).
