@@ -972,8 +972,8 @@ export default {
     quitConfirm: "Tényleg kilépsz?",
     progressAria: "{done}/{total} kész",
 
-    ladderTitle: "Rangok (legjobb sorozat: {v})",
-    ladderNone: "Rangok (legjobb sorozat: még nincs)",
+    bestSet: "Legjobb sorozat: {v}",
+    bestSetNone: "Legjobb sorozat: még nincs",
     rankStart: "kezdés",
     figureAria: "Rajz: {labels}",
     figBelly: "Sárga vonal = a has oldala",
@@ -1160,6 +1160,7 @@ export default {
     pfLooks: "Profilkinézetek",
     pfLooksNone: "Ezekből még nincs egy sem.",
     shOwned: "Megvan",
+    shDemo: "Játékos",
     tourAutoD: "Ez a Kezdőlap. Minden más ebben a menüben van: amikor először nyitsz meg egy képernyőt, körbevezetlek rajta.",
     infoMore: "Bővebben",
     tourAgainBtn: "Újra",
@@ -1694,6 +1695,8 @@ export default {
     "Kevesebb szöveg: a menü csak a neveket mutatja, a kapcsolók és dobozok alatti magyarázatok pedig egy kis ? mögé kerültek, amire akkor koppintasz, ha többet szeretnél tudni.",
     "A barátkódod mellett másolás ikon van, a Bolt heti ládája pedig pöttyökként mutatja a 3 kihívást.",
     "A Felfedező jelvény mind a 9 útmutató-fejezetet számolja.",
+    "Jelvények és rangok: koppints egyre, és megnyílik a kártyája az összes szintjével (a gyakorlat rangjai a leírásból ide kerültek). Minden rangnak saját rajzolt jele van emoji helyett, és a főképernyőn kevesebb a szöveg.",
+    "A Bolt kinézetei nagyobb kártyák, amelyek egy mintaprofilon mutatják a kinézetet, a profilod Vitrinje pedig soronként egy mezőt mutat.",
   ],
   news181: [
     "Rövidebb az útmutató: megmutatja a Kezdőlapot és a ☰ menüt, utána minden képernyő magától körbevezet, amikor először megnyitod. Új fejezetek a Muscle Deckhez és a Bolthoz.",

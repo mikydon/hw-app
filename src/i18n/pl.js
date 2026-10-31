@@ -972,8 +972,8 @@ export default {
     quitConfirm: "Na pewno zakończyć?",
     progressAria: "Zrobione: {done} z {total}",
 
-    ladderTitle: "Rangi (najlepsza seria: {v})",
-    ladderNone: "Rangi (najlepsza seria: jeszcze brak)",
+    bestSet: "Najlepsza seria: {v}",
+    bestSetNone: "Najlepsza seria: jeszcze brak",
     rankStart: "start",
     figureAria: "Rysunek: {labels}",
     figBelly: "Żółta kreska = strona brzucha",
@@ -1160,6 +1160,7 @@ export default {
     pfLooks: "Wygląd profilu",
     pfLooksNone: "Nie masz jeszcze nic z tego.",
     shOwned: "Masz",
+    shDemo: "Gracz",
     tourAutoD: "To jest Start. Wszystko inne jest w tym menu: gdy pierwszy raz otworzysz ekran, oprowadzę cię po nim.",
     infoMore: "Więcej o tym",
     tourAgainBtn: "Jeszcze raz",
@@ -1694,6 +1695,8 @@ export default {
     "Mniej tekstu: menu pokazuje tylko nazwy, a wyjaśnienia pod przełącznikami i polami są za małym ?, które stukasz, gdy chcesz wiedzieć więcej.",
     "Twój kod znajomego ma ikonę kopiowania, a cotygodniowa skrzynia w Sklepie pokazuje 3 wyzwania jako kropki.",
     "Odznaka Odkrywca liczy wszystkie 9 rozdziałów przewodnika.",
+    "Odznaki i rangi: dotknij jednej, aby zobaczyć jej kartę ze wszystkimi poziomami (rangi ćwiczenia przeniesiono tam z instrukcji). Każda ranga ma własny rysowany znak zamiast emoji, a na ekranie głównym jest mniej tekstu.",
+    "Wyglądy w Sklepie to większe karty pokazujące wygląd na przykładowym profilu, a Gablota na twoim profilu ma jedno pole w wierszu.",
   ],
   news181: [
     "Przewodnik jest krótszy: pokazuje Start i menu ☰, a potem każdy ekran sam cię oprowadza przy pierwszym otwarciu. Nowe rozdziały o Muscle Deck i Sklepie.",

@@ -957,6 +957,62 @@ const R_DIAMOND = 7, R_OBSIDIAN = 8;
 const RARITY = { 4: "rare", 6: "epic", 8: "legend" };
 // RANK_AT (best set needed for Bronze … Obsidian) lives in ranks.js since 1.8.0: the push server checks the world list with it
 
+// ─── RANK EMBLEMS (1.8.2, Michael: "the emoji look terrible, make own icons for every rank") ─────────────────
+// One family: shields (Iron, Bronze, Silver, Gold), a hexagon (Platinum), gems (Emerald, Amethyst, Diamond) and a
+// glowing shard (Obsidian). Drawn as SVG markup so the same picture works at 14 px in a line and 90 px on a card.
+// Rank emblems (1.8.2): one family, the shape grows with the rank. viewBox 48.
+const RK_EMB = [
+  // [shape, light, mid, dark, line, motif]
+  { s: "shield", c: ["#c9d1de", "#8a95a8", "#4d5668"], line: "#2a303b", m: "rivets" },        // Iron
+  { s: "shield", c: ["#ffc08a", "#d07a3e", "#7a3d17"], line: "#40200b", m: "chev1" },         // Bronze
+  { s: "shield", c: ["#ffffff", "#c4cee0", "#7d889c"], line: "#3f4757", m: "chev2" },         // Silver
+  { s: "shield", c: ["#fff3a8", "#ffcc33", "#b7800a"], line: "#5c3d00", m: "star" },          // Gold
+  { s: "hex", c: ["#e6fffb", "#7fe6da", "#2a9c92"], line: "#0f4a45", m: "star2" },            // Platinum
+  { s: "emerald", c: ["#b8ffd8", "#3ddc84", "#0b7a40"], line: "#043d1f", m: "facets" },       // Emerald
+  { s: "crystal", c: ["#f0dcff", "#b77bff", "#5d23b0"], line: "#2b0d5c", m: "facets" },       // Amethyst
+  { s: "diamond", c: ["#ffffff", "#9fd8ff", "#2f86d6"], line: "#0d3a66", m: "facets" },       // Diamond
+  { s: "shard", c: ["#5a3b6e", "#1d1426", "#07050b"], line: "#ff5c8a", m: "glow" },           // Obsidian
+];
+const SH = {
+  shield: "M24 3.5 40 9v13.5c0 10.2-6.6 17.6-16 21.9C14.6 40.1 8 32.7 8 22.5V9z",
+  hex: "M24 3 42 13.5v21L24 45 6 34.5v-21z",
+  emerald: "M15 4h18l9 9v22l-9 9H15l-9-9V13z",
+  crystal: "M24 2 37 12v24L24 46 11 36V12z",
+  diamond: "M13 7h22l9 11-20 26L4 18z",
+  shard: "M22 2 34 9l8 14-6 18-14 5-12-9L5 18 12 6z",
+};
+function emblemSvg(r, size, uid) {
+  const e = RK_EMB[r], [l, mid, d] = e.c, g = `rkg${uid}`, h = `rkh${uid}`;
+  const p = SH[e.s];
+  let motif = "";
+  if (e.m === "rivets") motif = `<circle cx="16" cy="13" r="1.7" fill="${l}"/><circle cx="32" cy="13" r="1.7" fill="${l}"/><path d="M16 22h16" stroke="${e.line}" stroke-width="2.4" stroke-linecap="round" opacity=".55"/>`;
+  if (e.m === "chev1") motif = `<path d="M15 22l9 6 9-6" fill="none" stroke="${e.line}" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" opacity=".7"/>`;
+  if (e.m === "chev2") motif = `<path d="M15 17l9 6 9-6M15 25l9 6 9-6" fill="none" stroke="${e.line}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity=".6"/>`;
+  const star = (cx, cy, R) => { let s = ""; for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? R * 0.45 : R; s += `${i ? "L" : "M"}${(cx + rr * Math.cos(a)).toFixed(2)} ${(cy + rr * Math.sin(a)).toFixed(2)}`; } return s + "z"; };
+  if (e.m === "star") motif = `<path d="${star(24, 22, 9)}" fill="${l}" stroke="${e.line}" stroke-width="1.6" stroke-linejoin="round"/>`;
+  if (e.m === "star2") motif = `<circle cx="24" cy="24" r="12" fill="none" stroke="${e.line}" stroke-width="1.6" opacity=".45"/><path d="${star(24, 24, 9)}" fill="${l}" stroke="${e.line}" stroke-width="1.5" stroke-linejoin="round"/>`;
+  if (e.m === "facets") {
+    const F = { emerald: "M15 4l4 9h10l4-9M42 13l-9 0M6 13h9M19 13v22M29 13v22M15 44l4-9h10l4 9M6 35h13M29 35h13", crystal: "M24 2v12M11 12l13 2 13-2M24 14v32M11 36l13-6 13 6", diamond: "M4 18h40M13 7l6 11 5-11 5 11 6-11M19 18l5 26M29 18l-5 26" }[e.s];
+    motif = `<path d="${F}" fill="none" stroke="${l}" stroke-width="1.3" stroke-linejoin="round" opacity=".7"/>`;
+  }
+  if (e.m === "glow") motif = `<path d="M24 22 22 2M24 22 34 9M24 22 42 23M24 22 36 41M24 22 22 46M24 22 10 37M24 22 5 18" fill="none" stroke="${e.line}" stroke-width="1.3" opacity=".85"/><circle cx="24" cy="22" r="3" fill="${e.line}"/>`;
+  return `<svg width="${size}" height="${size}" viewBox="0 0 48 48" aria-hidden="true"><defs>
+<linearGradient id="${g}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${l}"/><stop offset=".5" stop-color="${mid}"/><stop offset="1" stop-color="${d}"/></linearGradient>
+<linearGradient id="${h}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
+${e.m === "glow" ? `<path d="${p}" fill="none" stroke="${e.line}" stroke-width="6" stroke-linejoin="round" opacity=".28"/>` : ""}<path d="${p}" fill="url(#${g})" stroke="${e.line}" stroke-width="2.2" stroke-linejoin="round"/>
+<path d="${p}" fill="url(#${h})" transform="translate(24 24) scale(.82) translate(-24 -24)"/>${motif}</svg>`;
+}
+
+function RankIcon({ r, size = 18, style }) {
+  const uid = useId().replace(/[^a-zA-Z0-9]/g, "");
+  if (r == null || r < 0 || !RK_EMB[r]) return null;
+  return <span aria-hidden="true" data-rank-icon={r} style={{ display: "inline-flex", width: size, height: size, flexShrink: 0, lineHeight: 0, ...style }} dangerouslySetInnerHTML={{ __html: emblemSvg(r, size, uid) }} />;
+}
+// The rank as a small label: emblem + name in the rank's colour (the same everywhere: badges, ranks, showcase…)
+function RankTag({ r, size = 15, fs = 12, text, style }) {
+  const rk = RANKS[r]; if (!rk) return null;
+  return <span data-rank-tag={r} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: fs, fontWeight: 800, color: rk.color, whiteSpace: "nowrap", ...style }}><RankIcon r={r} size={size} />{text != null ? text : rk.name}</span>;
+}
 // The 12 exercises of the program (days A, B, C), for the "all Diamond" badge
 const PROGRAM_IDS = ["k1", "row1", "n1", "b5", "r1", "row2", "n2", "b2", "k3", "row3", "n7", "b4"];
 function rankIdx(id, best) {
@@ -975,27 +1031,8 @@ function RankBadge({ id, best, small }) {
   const r = RANKS[rankIdx(id, best)];
   return (
     <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: small ? 12 : 13, fontWeight: 700, color: r.color, border: `1.5px solid ${r.color}55`, borderRadius: 99, padding: small ? "1px 8px" : "3px 10px", whiteSpace: "nowrap" }}>
-      <span aria-hidden="true">{r.icon}</span>{r.name}
+      <RankIcon r={rankIdx(id, best)} size={small ? 14 : 16} />{r.name}
     </span>
-  );
-}
-function RankLadder({ id, best }) {
-  const at = RANK_AT[id]; if (!at) return null;
-  const cur = rankIdx(id, best);
-  const unit = EX[id].type === "time" ? " s" : unitStr(EX[id].unit);
-  return (
-    <div style={{ marginTop: 14, paddingTop: 12, borderTop: `1px solid ${C.line}` }}>
-      <div style={{ fontWeight: 700, color: C.chalk, marginBottom: 8 }}>{best !== null ? T("ladderTitle", { v: `${best}${unit}` }) : T("ladderNone")}</div>
-      <div data-ladder style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6 }}>
-        {RANKS.map((r, i) => (
-          <div key={i} style={{ border: `1.5px solid ${i === cur ? r.color : C.line}`, background: i === cur ? `${r.color}22` : "transparent", borderRadius: 10, padding: "6px 4px", textAlign: "center", opacity: i > cur ? 0.6 : 1 }}>
-            <div style={{ fontSize: 18 }}>{r.icon}</div>
-            <div style={{ fontSize: 12, fontWeight: 700, color: r.color }}>{r.name}</div>
-            <div style={{ fontSize: 11, color: C.dim }}>{i === 0 ? T("rankStart") : `${rankVal(id, at[i - 1])}+`}</div>
-          </div>
-        ))}
-      </div>
-    </div>
   );
 }
 
@@ -1189,7 +1226,6 @@ function HowTo({ id, history, onClose, onSwap }) {
       <div style={{ marginTop: 14, paddingTop: 12, borderTop: `1px solid ${C.line}`, color: C.chalk, display: "flex", gap: 8, alignItems: "flex-start" }}><Ico n="bulb" size={19} color={C.signal} style={{ marginTop: 2 }} /><span>{ex.tip}</span></div>
       {onSwap && ex.swapTip && <button onClick={onSwap} style={{ ...ghostBtn, marginTop: 10, padding: "10px 14px", color: C.sky, borderColor: `${C.sky}88` }}>{T("swap")}</button>}
       <button data-search-howto onClick={() => { sfxTap(); searchHowTo(ex.name); }} className="b3d" style={{ ...bigBtn(C.panelHi, C.chalk), marginTop: 16, fontSize: 14, padding: 14 }}>{T("searchWeb")}</button>
-      <RankLadder id={id} best={best} />
     </Sheet>
   );
 }
@@ -2295,7 +2331,7 @@ function HomeTiles({ history, onCalories }) {
             <span style={{ fontSize: 12, color: C.dim, whiteSpace: "nowrap" }}>/ {nf(s.target)}</span>
           </span>
           {bar(pct, kcol)}
-          <span data-home-kcal-line style={{ display: "block", fontSize: 12, color: s.hit ? KC_HIT : C.dim, lineHeight: 1.4, marginTop: 8 }}>{kcalLine(s)}</span>
+          {s.hit && <span data-home-kcal-hit style={{ display: "flex", marginTop: 8, color: KC_HIT }}><Ico n="check" size={18} sw={2.8} /></span>}
         </> : <>
           <span style={{ display: "block", fontSize: 14, fontWeight: 800, color: C.chalk, marginTop: 8, lineHeight: 1.3 }}>{T("kcHomeSetup")}</span>
           <span style={{ display: "block", fontSize: 12, color: C.dim, marginTop: 4, lineHeight: 1.4 }}>{T("kcHomeSetupD")}</span>
@@ -3279,7 +3315,7 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
         <button key={d.id} role="radio" aria-checked={i === dayIdx} onClick={() => { sfxTap(); setDayIdx(i); }}
           style={{ ...btnBase, flex: 1, padding: "10px 0", fontFamily: DISPLAY, fontSize: 22, fontWeight: 800,
             ...(i === dayIdx ? { background: C.chalk, border: `1px solid ${C.chalk}` } : SUNK()), color: i === dayIdx ? C.ink : C.dim, transition: `background ${MO.t1}, box-shadow ${MO.t1}` }}>
-          {d.id}{i === auto && <span style={{ fontFamily: BODY, fontSize: 10, fontWeight: 600, marginLeft: 5, verticalAlign: "middle" }}>{T("upNext")}</span>}
+          {d.id}
         </button>
       ))}
     </div>
@@ -3293,7 +3329,8 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
       <div data-day-title style={{ fontFamily: DISPLAY, fontWeight: 900, fontSize: fitFont(T("dayN", { d: day.id }).replace(/\s/g, "_"), doneToday ? 84 : 112, 6), lineHeight: 0.85, paddingBottom: "0.16em", letterSpacing: -1, color: C.chalk, marginTop: 8 }}>
         {T("dayN", { d: day.id })}
       </div>
-      <div data-day-status style={{ fontSize: 14, color: !doneToday && gap !== null && gap >= 2 ? C.signal : C.dim, marginTop: 8, lineHeight: 1.5 }}>{status}</div>
+      {/* 1.8.2 (Michael: "still useless texts"): only the warning that the streak ends tomorrow stays */}
+      {last && !doneToday && gap === 2 && st.n > 0 && <div data-day-status style={{ fontSize: 14, color: C.signal, marginTop: 8, lineHeight: 1.5 }}>{status}</div>}
       {!doneToday && st.gap === 2 && st.n > 0 && !st.frozenToday && !(META.skips || {})[dateKey()] && (
         <button data-skip-btn onClick={onFreeze} style={{ ...ghostBtn, marginTop: 10, color: C.sky, borderColor: C.sky }}>{T("skipBtn")}</button>
       )}
@@ -3448,7 +3485,7 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
                     <div style={{ fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2 }}>{ex.muscles}</div>
                     <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 5, flexWrap: "wrap" }}>
                       <RankBadge id={id} best={b} small />
-                      {n && <span style={{ fontSize: 11, color: C.dim, fontWeight: 500 }}>{n.rank.icon} {T("toNext", { n: n.need })}</span>}
+                      {n && <span style={{ fontSize: 11, color: C.dim, fontWeight: 500, display: "inline-flex", alignItems: "center", gap: 3 }}><RankIcon r={RANKS.indexOf(n.rank)} size={12} />{T("toNext", { n: n.need })}</span>}
                     </div>
                     {levelUpFor(history, id) && <div style={{ fontSize: 12, color: C.signal, fontWeight: 700, marginTop: 3 }}>{T("harderShort")}</div>}
                     {id !== slot && <div style={{ fontSize: 12, color: C.sky, fontWeight: 600, marginTop: 3 }}>{T("replacing", { name: EX[slot].name })}</div>}
@@ -4341,7 +4378,7 @@ function ProgressChart({ history }) {
         {nextAt && nextAt <= top && (
           <g>
             <line x1={P.l} x2={W - P.r} y1={yv(nextAt)} y2={yv(nextAt)} stroke={RANKS[at.indexOf(nextAt) + 1].color} strokeWidth="1.5" strokeDasharray="4 4" />
-            <text x={W - P.r} y={yv(nextAt) - 4} textAnchor="end" fontSize="10" fill={C.dim}>{RANKS[at.indexOf(nextAt) + 1].icon} {RANKS[at.indexOf(nextAt) + 1].name} {nextAt}{unit}</text>
+            <text x={W - P.r} y={yv(nextAt) - 4} textAnchor="end" fontSize="10" fill={RANKS[at.indexOf(nextAt) + 1].color}>{RANKS[at.indexOf(nextAt) + 1].name} {nextAt}{unit}</text>
           </g>
         )}
         {pts.length > 1 && <polyline points={pts.map((p, i) => `${x(i)},${yv(p.v)}`).join(" ")} fill="none" stroke={C.sky} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />}
@@ -4557,8 +4594,8 @@ function HistoryTab({ history, onDelete, onSaveEntry, editDate, onEditOpened }) 
                     return (
                       <div key={it.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderTop: `1px solid ${C.line}` }}>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: 14, fontWeight: 600, color: C.chalk }}>{s.prs && s.prs.includes(it.id) ? "🏆 " : ""}{exName(it)}{EX[it.id] && <ExQ id={it.id} />}</div>
-                          {RANK_AT[it.id] && <div style={{ fontSize: 12, color: r.color, fontWeight: 700 }}>{r.icon} {T("rankThen", { rank: r.name })}</div>}
+                          {/* 1.8.2 (Michael: "these texts are useless"): the rank at the time is only its emblem in front of the name */}
+                          <div data-hist-ex={it.id} style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 14, fontWeight: 600, color: C.chalk }}>{RANK_AT[it.id] && <span title={T("rankThen", { rank: r.name })} style={{ display: "inline-flex" }}><RankIcon r={RANKS.indexOf(r)} size={16} /></span>}<span style={{ minWidth: 0 }}>{s.prs && s.prs.includes(it.id) ? "🏆 " : ""}{exName(it)}{EX[it.id] && <ExQ id={it.id} />}</span></div>
                         </div>
                         <div style={{ fontFamily: DISPLAY, fontSize: 20, fontWeight: 800, color: C.chalk, whiteSpace: "nowrap" }}>{it.res.map(v => fmtRes(v, "")).join(" / ")}<span style={{ fontFamily: BODY, fontSize: 11, color: C.dim, marginLeft: 3 }}>{unitStr(it.unit)}</span></div>
                       </div>
@@ -4661,13 +4698,13 @@ const rankUnit = id => (EX[id].type === "time" ? " s" : "");
 // One showcase field. Others (and you, outside edit) tap it to see the whole list on the page below.
 function SlotTile({ sl, m, i, onTap, own, cols = 2 }) {
   const wide = sl && sl.kind.endsWith("3");
-  const base = { ...btnBase, fontWeight: 400, textAlign: "left", color: C.chalk, borderRadius: 16, padding: "12px 13px", minHeight: 92, position: "relative", overflow: "hidden", gridColumn: wide && cols > 1 ? "span 2" : undefined, overflowWrap: "break-word", animationDelay: `${120 + i * 60}ms`, display: "flex", flexDirection: "column" };
+  const base = { ...btnBase, fontWeight: 400, textAlign: "left", color: C.chalk, borderRadius: 16, padding: "12px 13px", minHeight: 76, position: "relative", overflow: "hidden", gridColumn: wide && cols > 1 ? "span 2" : undefined, overflowWrap: "break-word", animationDelay: `${120 + i * 60}ms`, display: "flex", flexDirection: "column" };
   if (!sl) return <div className="cardIn" style={{ ...base, background: SOFT(), border: `1px dashed ${C.line}`, justifyContent: "center", alignItems: "center", color: C.dim, fontSize: 12.5 }}>{T("pfSlotEmpty")}</div>;
   const glow = col => ({ background: `radial-gradient(120% 90% at 100% 0%, ${col}33, transparent 60%), ${SOFT()}`, border: `1px solid ${col}40` });
   const pen = own && <span aria-hidden="true" style={{ position: "absolute", right: 9, top: 8, opacity: 0.55, color: C.dim }}><Ico n="pencil" size={13} /></span>;
   const mini = (icon, name, sub, col, k) => (
     <div key={k} style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: 4 }}>
-      <span aria-hidden="true" style={{ fontSize: 26, lineHeight: 1 }}>{icon}</span>
+      {typeof icon === "number" ? <RankIcon r={icon} size={30} /> : <span aria-hidden="true" style={{ fontSize: 26, lineHeight: 1 }}>{icon}</span>}
       <span style={{ fontSize: 12, fontWeight: 800, lineHeight: 1.2, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{name}</span>
       <span style={{ fontSize: 11, fontWeight: 800, color: col }}>{sub}</span>
     </div>
@@ -4680,15 +4717,15 @@ function SlotTile({ sl, m, i, onTap, own, cols = 2 }) {
     body = sl.kind === "rk" ? (() => { const { id, r } = items[0]; return (<>
       <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: 0.8, textTransform: "uppercase", color: C.dim }}>{T("pfT_rk")}</div>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 8 }}>
-        <span aria-hidden="true" style={{ fontSize: 32, lineHeight: 1 }}>{r.icon}</span>
+        <RankIcon r={RANKS.indexOf(r)} size={44} />
         <span style={{ minWidth: 0 }}>
-          <span style={{ display: "block", fontSize: 14, fontWeight: 800, lineHeight: 1.2 }}>{EX[id].name}</span>
-          <span style={{ display: "block", fontSize: 12, fontWeight: 800, color: r.color, marginTop: 2 }}>{r.name} · {m.rk[id]}{rankUnit(id)}</span>
+          <span style={{ display: "block", fontSize: 16, fontWeight: 800, lineHeight: 1.2 }}>{EX[id].name}</span>
+          <span style={{ display: "block", fontSize: 12.5, fontWeight: 800, color: r.color, marginTop: 3 }}>{r.name} · {m.rk[id]}{rankUnit(id)}</span>
         </span>
       </div>
     </>); })() : (<>
       <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: 0.8, textTransform: "uppercase", color: C.dim }}>{T("pfT_rk3")}</div>
-      <div style={{ display: "flex", gap: 8, marginTop: 10 }}>{items.map(({ id, r }) => mini(r.icon, EX[id].name, `${r.name} · ${m.rk[id]}${rankUnit(id)}`, r.color, id))}</div>
+      <div style={{ display: "flex", gap: 8, marginTop: 10 }}>{items.map(({ id, r }) => mini(RANKS.indexOf(r), EX[id].name, `${r.name} · ${m.rk[id]}${rankUnit(id)}`, r.color, id))}</div>
     </>);
   } else if (sl.kind === "ach" || sl.kind === "ach3") {
     const items = sl.ids.map(k => m.ach.find(a => a.k === k));
@@ -4697,15 +4734,15 @@ function SlotTile({ sl, m, i, onTap, own, cols = 2 }) {
     body = sl.kind === "ach" ? (() => { const a = items[0], r = RANKS[a.tier - 1]; return (<>
       <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: 0.8, textTransform: "uppercase", color: C.dim }}>{T("pfT_ach")}</div>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 8 }}>
-        <span aria-hidden="true" style={{ fontSize: 32, lineHeight: 1 }}>{a.icon}</span>
+        <span aria-hidden="true" style={{ fontSize: 38, lineHeight: 1 }}>{a.icon}</span>
         <span style={{ minWidth: 0 }}>
-          <span style={{ display: "block", fontSize: 14, fontWeight: 800, lineHeight: 1.2 }}>{a.name}</span>
-          <span style={{ display: "block", fontSize: 12, fontWeight: 800, color: r.color, marginTop: 2 }}>{r.icon} {r.name}</span>
+          <span style={{ display: "block", fontSize: 16, fontWeight: 800, lineHeight: 1.2 }}>{a.name}</span>
+          <span style={{ display: "block", marginTop: 4 }}><RankTag r={a.tier - 1} size={15} fs={12.5} /></span>
         </span>
       </div>
     </>); })() : (<>
       <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: 0.8, textTransform: "uppercase", color: C.dim }}>{T("pfT_ach3")}</div>
-      <div style={{ display: "flex", gap: 8, marginTop: 10 }}>{items.map(a => { const r = RANKS[a.tier - 1]; return mini(a.icon, a.name, `${r.icon} ${r.name}`, r.color, a.k); })}</div>
+      <div style={{ display: "flex", gap: 8, marginTop: 10 }}>{items.map(a => { const r = RANKS[a.tier - 1]; return mini(a.icon, a.name, <RankTag r={a.tier - 1} size={13} fs={11} />, r.color, a.k); })}</div>
     </>);
   } else {
     const k = sl.ids[0], [lab, icon] = STAT_UI[k];
@@ -4726,13 +4763,14 @@ function SlotTile({ sl, m, i, onTap, own, cols = 2 }) {
 // cur = rank index (-1 = nothing yet), next = the rank index you're working towards (null = the top), p = 0…1 of the
 // way there. The tint grows from the left with --fill (animated once on mount, @property), the edge is the current
 // rank's colour; rows from Bronze up get a slow sweep of the rank colours Iron → current, each row at its own moment.
-function rankRow(cur, next, p, k = 0) {
+function rankRow(cur, next, p, k = 0, single = false) {
   const c = cur >= 0 ? RANKS[cur].color : C.dim, n = next !== null ? RANKS[next].color : c;
   const bg = card.background || C.panel;
   const tint = next === null
     ? `linear-gradient(90deg, ${c}40, ${c}22)`
     : `linear-gradient(90deg, ${n}4a 0%, ${n}38 calc(var(--fill) - 6%), ${cur >= 0 ? c + "1c" : "transparent"} calc(var(--fill) + 6%), ${cur >= 0 ? c + "14" : "transparent"} 100%)`;
-  const sweep = cur >= 1 ? `linear-gradient(105deg, transparent 32%, ${RANKS.slice(0, cur + 1).map((r, i) => `${r.color}${i === cur ? "aa" : "77"} ${Math.round(38 + (24 * i) / Math.max(1, cur))}%`).join(", ")}, transparent 68%)` : null;
+  // 1.8.2 (Michael): a badge without levels sweeps only its own colour, not the colours of levels it never had
+  const sweep = single ? (cur >= 0 ? `linear-gradient(105deg, transparent 32%, ${c}aa 50%, transparent 68%)` : null) : cur >= 1 ? `linear-gradient(105deg, transparent 32%, ${RANKS.slice(0, cur + 1).map((r, i) => `${r.color}${i === cur ? "aa" : "77"} ${Math.round(38 + (24 * i) / Math.max(1, cur))}%`).join(", ")}, transparent 68%)` : null;
   return {
     cls: "rkRow" + (sweep ? " rkSweep" : ""),
     style: { ...card, ...tileR(), background: `${tint}, ${bg}`, border: `1.5px solid ${cur >= 0 ? c + (next === null ? "dd" : "99") : C.line}`, "--fill": `${Math.round(p * 100)}%`, ...(sweep ? { "--sweep": sweep, "--sd": `${(k * 0.9) % 7}s` } : {}), ...(next === null && cur >= 0 ? { boxShadow: `0 0 16px ${c}33` } : {}) },
@@ -4762,23 +4800,29 @@ function BadgesList({ m, focus, claim }) {
   const hid = a => !!(claim && claim.hid.has("ach:" + a.k)); // 1.7.4: still face down (first in the list)
   const list = [...ach].sort((a, b) => hid(b) - hid(a) || (a.next === null) - (b.next === null) || inTier(b) - inTier(a));
   const won = ach.filter(a => a.step && !hid(a)).length;
+  const [open, setOpen] = useState(null);
+  const openA = open && ach.find(a => a.k === open);
   return (
     <div data-pf-badges>
+      {openA && <BadgeSheet a={openA} onClose={() => setOpen(null)} />}
       <div style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.5, margin: "0 2px 10px" }}>{T("achCount", { n: won, max: all.length })} · {T("achTiers", { n: ach.reduce((x, a) => x + (hid(a) ? 0 : a.step), 0), max: all.reduce((x, a) => x + a.at.length, 0) })}</div>
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {list.map((a, k) => {
           if (hid(a)) return <ClaimRow key={a.k} it={claim.items.get("ach:" + a.k)} onOpen={claim.open} />;
           const r = a.tier ? RANKS[a.tier - 1] : null, nr = a.next === null ? null : RANKS[a.nextRank];
-          const rr = rankRow(a.tier - 1, a.next === null ? null : a.nextRank, inTier(a), k);
-          const label = a.single ? (a.step ? `${r.icon} ${rarityName(a)}${a.secret ? ` · ${T("achSecret")}` : ""}` : `🔒 ${rarityName(a)}`) : r ? `${r.icon} ${r.name}` : `🔒 ${T("achLocked")}`;
+          const rr = rankRow(a.tier - 1, a.next === null ? null : a.nextRank, inTier(a), k, a.single);
+          // 1.8.2: the level as the same emblem + coloured name everywhere; locked = a lock in grey
+          const lock = txt => <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, fontWeight: 800, color: a.single ? RANKS[a.rk[0]].color + "bb" : C.dim }}><Ico n="lock" size={12} sw={2.4} />{txt}</span>;
+          const label = a.single ? (a.step ? <RankTag r={a.rk[0]} size={15} text={`${rarityName(a)}${a.secret ? ` · ${T("achSecret")}` : ""}`} /> : lock(rarityName(a))) : r ? <RankTag r={a.tier - 1} size={15} /> : lock(T("achLocked"));
           return (
-            <div key={a.k} data-ach-row={a.k} data-ach={a.k} data-tier={a.tier} data-single={a.single ? 1 : undefined} data-pct={Math.round(inTier(a) * 100)} className={[rr.cls, focus && focus.k === a.k && "achFlash"].filter(Boolean).join(" ")}
-              style={{ ...rr.style, padding: "11px 12px" }}>
+            <button type="button" key={a.k} data-ach-row={a.k} data-ach={a.k} data-tier={a.tier} data-single={a.single ? 1 : undefined} data-pct={Math.round(inTier(a) * 100)} className={[rr.cls, focus && focus.k === a.k && "achFlash"].filter(Boolean).join(" ")}
+              onClick={() => { sfxTap(); setOpen(a.k); }}
+              style={{ ...btnBase, fontWeight: 400, textAlign: "left", width: "100%", color: C.chalk, ...rr.style, padding: "11px 12px", display: "block" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <div aria-hidden="true" style={{ fontSize: 24, lineHeight: 1, flexShrink: 0, filter: r ? "none" : "grayscale(1)", opacity: r ? 1 : 0.55 }}>{a.icon}</div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 14, fontWeight: 800, color: C.chalk, lineHeight: 1.2 }}>{a.name}{m.own && CARD_HIDE.includes(a.k) && <span data-only-you style={{ fontSize: 10.5, fontWeight: 700, color: C.dim, marginLeft: 6, whiteSpace: "nowrap" }}>· {T("pfOnlyYou")}</span>}</div>
-                  <div style={{ fontSize: 12, fontWeight: 800, color: r ? r.color : a.single ? RANKS[a.rk[0]].color + "bb" : C.dim, marginTop: 2 }}>{label}</div>
+                  <div style={{ marginTop: 3 }}>{label}</div>
                 </div>
                 {!a.single && (
                   <div data-ach-num style={{ textAlign: "right", flexShrink: 0 }}>
@@ -4791,8 +4835,8 @@ function BadgesList({ m, focus, claim }) {
                 {a.single && a.step > 0 && <div style={{ fontFamily: DISPLAY, fontSize: 20, fontWeight: 900, color: r.color, flexShrink: 0 }}>✓</div>}
               </div>
               {!a.single && <RankPips ranks={a.at.map((_, i) => (a.rk ? a.rk[i] : i))} reached={a.step} />}
-              <div style={{ fontSize: 11.5, color: C.dim, marginTop: 6, lineHeight: 1.4 }}>{a.single ? a.desc : a.next === null ? T("achMax") : `${T("achNext", { rank: nr.name })} ${a.desc}`}</div>
-            </div>
+              {/* 1.8.2 (Michael): the "Next: …" line moved into the badge's own sheet (tap the row) */}
+            </button>
           );
         })}
         {secretLeft > 0 && (
@@ -4805,6 +4849,89 @@ function BadgesList({ m, focus, claim }) {
     </div>
   );
 }
+// 1.8.2 (Michael: "tap a badge for more info"): one badge in a sheet: its emblem, where you are, and every level with
+// what it needs (reached ✓, the next one with its progress, the rest dimmed).
+const achLevelText = (a, goal) => fmt(L.ach[a.k][1], { n: nf(goal), x: a.span ? spanText(goal) : a.pl ? TP(a.pl, goal) : nf(goal) });
+function SheetHero({ icon, col, children }) {
+  return (
+    <div data-sheet-hero style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", padding: "14px 10px 16px", marginBottom: 12, borderRadius: 20, overflow: "hidden", background: `radial-gradient(80% 90% at 50% 0%, ${col}38, transparent 70%), ${SOFT()}`, border: `1px solid ${col}44` }}>
+      <div style={{ filter: `drop-shadow(0 0 14px ${col}88)`, lineHeight: 1 }}>{icon}</div>
+      {children}
+    </div>
+  );
+}
+function BadgeSheet({ a, onClose }) {
+  const val = x => (a.span ? spanText(x) : a.k === "plank" ? `${nf(x)} s` : nf(x));
+  const cur = a.tier ? a.tier - 1 : -1, col = cur >= 0 ? RANKS[cur].color : a.single ? RANKS[a.rk[0]].color : C.dim;
+  return (
+    <Sheet title={a.name} onClose={onClose} short>
+      <div data-badge-sheet={a.k}>
+        <SheetHero col={col} icon={<span aria-hidden="true" style={{ fontSize: 64, filter: a.step ? "none" : "grayscale(1)", opacity: a.step ? 1 : 0.6 }}>{a.icon}</span>}>
+          <div style={{ marginTop: 10 }}>{a.single ? <RankTag r={a.rk[0]} size={20} fs={15} text={rarityName(a)} style={{ opacity: a.step ? 1 : 0.6 }} /> : cur >= 0 ? <RankTag r={cur} size={20} fs={15} /> : <span style={{ fontSize: 14, fontWeight: 800, color: C.dim }}>{T("achLocked")}</span>}</div>
+          {!a.single && <div style={{ fontFamily: DISPLAY, fontSize: 30, fontWeight: 900, color: C.chalk, marginTop: 6, lineHeight: 1 }}>{a.next === null ? val(a.v) : `${val(a.v)} / ${val(a.next)}`}</div>}
+          {!a.single && a.next === null && <div style={{ fontSize: 13, color: col, fontWeight: 800, marginTop: 6 }}>{T("achMax")}</div>}
+          {a.single && <div style={{ fontSize: 14, color: C.chalk, lineHeight: 1.45, marginTop: 8, maxWidth: 300 }}>{a.desc}</div>}
+          {a.single && a.step > 0 && <div style={{ marginTop: 8, color: C.mint, display: "flex" }}><Ico n="check" size={22} sw={2.8} /></div>}
+        </SheetHero>
+        {!a.single && (
+          <div data-badge-levels style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            {a.at.map((goal, i) => {
+              const ri = a.rk ? a.rk[i] : i, rk = RANKS[ri], done = i < a.step, now = i === a.step;
+              const prev = i ? a.at[i - 1] : 0, p = now ? Math.max(0, Math.min(1, (a.v - prev) / (goal - prev))) : 0;
+              return (
+                <div key={i} data-badge-level={i} data-done={done ? 1 : 0} style={{ display: "flex", alignItems: "center", gap: 11, padding: "9px 11px", borderRadius: 14, background: now ? `${rk.color}18` : SOFT(), border: `1.5px solid ${now ? rk.color + "88" : done ? rk.color + "44" : "transparent"}`, opacity: done || now ? 1 : 0.55 }}>
+                  <RankIcon r={ri} size={30} style={{ filter: done || now ? "none" : "grayscale(.8)" }} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13.5, fontWeight: 900, color: rk.color }}>{rk.name}</div>
+                    <div style={{ fontSize: 12.5, color: C.chalk, lineHeight: 1.35, marginTop: 1 }}>{achLevelText(a, goal)}</div>
+                    {now && <div style={{ height: 5, borderRadius: 3, background: C.line, marginTop: 6, overflow: "hidden" }}><div style={{ width: `${Math.round(p * 100)}%`, height: "100%", background: rk.color }} /></div>}
+                  </div>
+                  {done ? <span style={{ color: C.mint, flexShrink: 0 }}><Ico n="check" size={18} sw={2.8} /></span>
+                    : now ? <span style={{ fontSize: 11.5, fontWeight: 800, color: rk.color, flexShrink: 0, whiteSpace: "nowrap" }}>{T("achLeft", { n: val(goal - a.v) })}</span> : null}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </Sheet>
+  );
+}
+// 1.8.2 (Michael): an exercise's rank in a sheet: the emblem, your best set, every rank with what it needs; the exercise
+// itself (picture, how to) one tap further.
+function RankSheet({ id, best, onClose, onHowTo }) {
+  const at = RANK_AT[id], ri = rankIdx(id, best), rk = RANKS[ri], next = ri < at.length ? at[ri] : null, prev = ri ? at[ri - 1] : 0;
+  const p = next === null ? 1 : Math.max(0, Math.min(1, ((best || 0) - prev) / (next - prev)));
+  return (
+    <Sheet title={EX[id].name} onClose={onClose} short>
+      <div data-rank-sheet={id}>
+        <SheetHero col={rk.color} icon={<RankIcon r={ri} size={80} />}>
+          <div style={{ fontFamily: DISPLAY, fontSize: 30, fontWeight: 900, color: rk.color, marginTop: 10, lineHeight: 1, letterSpacing: 0.5 }}>{rk.name}</div>
+          <div style={{ fontSize: 13.5, color: C.dim, marginTop: 6 }}>{best != null ? T("bestSet", { v: rankVal(id, best) }) : T("bestSetNone")}</div>
+          {next !== null && <div style={{ width: "min(260px, 80%)", marginTop: 10 }}>
+            <div style={{ height: 6, borderRadius: 3, background: C.line, overflow: "hidden" }}><div style={{ width: `${Math.round(p * 100)}%`, height: "100%", background: `linear-gradient(90deg, ${rk.color}, ${RANKS[ri + 1].color})` }} /></div>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11.5, fontWeight: 800, marginTop: 5 }}><span style={{ color: C.dim }}>{T("achLeft", { n: `${next - (best || 0)}${rankUnit(id)}` })}</span><RankTag r={ri + 1} size={13} fs={11.5} /></div>
+          </div>}
+          {next === null && <div style={{ fontSize: 13, color: rk.color, fontWeight: 800, marginTop: 6 }}>{T("topRank")}</div>}
+        </SheetHero>
+        <div data-rank-levels style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          {RANKS.map((r, i) => {
+            const done = i <= ri, now = i === ri + 1;
+            return (
+              <div key={i} data-rank-level={i} data-done={done ? 1 : 0} style={{ display: "flex", alignItems: "center", gap: 11, padding: "8px 11px", borderRadius: 14, background: i === ri ? `${r.color}1c` : SOFT(), border: `1.5px solid ${i === ri ? r.color + "99" : now ? r.color + "55" : "transparent"}`, opacity: done || now ? 1 : 0.55 }}>
+                <RankIcon r={i} size={28} style={{ filter: done || now ? "none" : "grayscale(.8)" }} />
+                <span style={{ flex: 1, minWidth: 0, fontSize: 13.5, fontWeight: 900, color: r.color }}>{r.name}{i === R_OBSIDIAN && <span style={{ fontSize: 11, fontWeight: 800, color: C.dim, marginLeft: 6 }}>{T("rankChallenge")}</span>}</span>
+                <span style={{ fontFamily: DISPLAY, fontSize: 16, fontWeight: 900, color: C.chalk, whiteSpace: "nowrap" }}>{i === 0 ? T("rankStart") : `${rankVal(id, at[i - 1])}+`}</span>
+                {done && <span style={{ color: C.mint, flexShrink: 0, display: "flex" }}><Ico n="check" size={16} sw={2.8} /></span>}
+              </div>
+            );
+          })}
+        </div>
+        {onHowTo && <button type="button" data-rank-howto onClick={() => { sfxTap(); onHowTo(id); }} className="b3d" style={{ ...bigBtn(C.panelHi, C.chalk), marginTop: 14, fontSize: 15, padding: 14, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}><Ico n="help" size={19} />{T("howTo")}: {EX[id].name}</button>}
+      </div>
+    </Sheet>
+  );
+}
 // Ranks page: every exercise you have done, with its rank, best set and how far to the next rank; the best first.
 // 1.8.0: all exercises have ranks; the ones you haven't done yet stay hidden (one line says how many).
 function RanksList({ m, onPick, focus, claim }) {
@@ -4813,24 +4940,26 @@ function RanksList({ m, onPick, focus, claim }) {
   const ids = Object.keys(RANK_AT).filter(has).sort((a, b) => hid(b) - hid(a) || rankIdx(b, m.rk[b]) - rankIdx(a, m.rk[a]) || (m.rk[b] || 0) / RANK_AT[b][0] - (m.rk[a] || 0) / RANK_AT[a][0]);
   const left = Object.keys(RANK_AT).length - ids.length;
   const lv = ids.reduce((x, id) => x + (hid(id) ? 0 : rankIdx(id, m.rk[id]) + 1), 0);
+  const [open, setOpen] = useState(null); // 1.8.2: a rank opens its own sheet (levels, how far), the exercise from there
   return (
     <div data-pf-ranks>
-      <div style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.5, margin: "0 2px 10px" }}>{T("achTiers", { n: lv, max: Object.keys(RANK_AT).length * RANKS.length })} · {T("pfRanksD")}</div>
+      {open && <RankSheet id={open} best={m.rk[open]} onClose={() => setOpen(null)} onHowTo={onPick ? id => { setOpen(null); onPick(id); } : null} />}
+      <div style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.5, margin: "0 2px 10px" }}>{T("achTiers", { n: lv, max: Object.keys(RANK_AT).length * RANKS.length })}</div>
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {ids.map((id, k) => {
           if (hid(id)) return <ClaimRow key={id} it={claim.items.get("rank:" + id)} onOpen={claim.open} />;
           const b = m.rk[id], ri = rankIdx(id, b), r = RANKS[ri], at = RANK_AT[id];
           const prev = ri ? at[ri - 1] : 0, next = ri < at.length ? at[ri] : null, inR = next === null ? 1 : Math.max(0, Math.min(1, ((b || 0) - prev) / (next - prev)));
           const rr = rankRow(ri, next === null ? null : ri + 1, inR, k);
-          const Tag = onPick ? "button" : "div";
+          const g = GROUP_KEYS[groupOf(id)];
           return (
-            <Tag key={id} data-rank-row={id} data-rank={ri} onClick={onPick ? () => { sfxTap(); onPick(id); } : undefined} className={[rr.cls, focus && focus.k === id && "achFlash"].filter(Boolean).join(" ")}
-              style={{ ...(onPick ? btnBase : {}), fontWeight: 400, textAlign: "left", width: "100%", color: C.chalk, ...rr.style, padding: "11px 12px", display: "block" }}>
+            <button type="button" key={id} data-rank-row={id} data-rank={ri} onClick={() => { sfxTap(); setOpen(id); }} className={[rr.cls, focus && focus.k === id && "achFlash"].filter(Boolean).join(" ")}
+              style={{ ...btnBase, fontWeight: 400, textAlign: "left", width: "100%", color: C.chalk, ...rr.style, padding: "11px 12px", display: "block" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <div aria-hidden="true" style={{ fontSize: 24, lineHeight: 1, flexShrink: 0 }}>{r.icon}</div>
+                <span aria-hidden="true" title={g ? T("grp_" + g) : undefined} style={{ width: 30, height: 30, borderRadius: 9, background: SOFT(), display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{g ? <SuitIcon s={g} size={15} /> : null}</span>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 14, fontWeight: 800, lineHeight: 1.2 }}>{EX[id].name}</div>
-                  <div style={{ fontSize: 12, fontWeight: 800, color: r.color, marginTop: 2 }}>{r.name}</div>
+                  <div style={{ marginTop: 3 }}><RankTag r={ri} size={15} /></div>
                 </div>
                 <div style={{ textAlign: "right", flexShrink: 0 }}>
                   <div style={{ fontFamily: DISPLAY, fontSize: 18, fontWeight: 900, lineHeight: 1, whiteSpace: "nowrap" }}>{next === null ? `${rankVal(id, b)} ✓` : `${b || 0} / ${rankVal(id, next)}`}</div>
@@ -4840,8 +4969,7 @@ function RanksList({ m, onPick, focus, claim }) {
                 </div>
               </div>
               <RankPips ranks={RANKS.map((_, i) => i)} reached={ri + 1} />
-              {next !== null && <div style={{ fontSize: 11.5, color: C.dim, marginTop: 6 }}>{ri + 1 === R_OBSIDIAN ? `${T("rankChallenge")} ` : ""}{T("achNext", { rank: RANKS[ri + 1].name })} {rankVal(id, next)}</div>}
-            </Tag>
+            </button>
           );
         })}
         {m.own && left > 0 && (
@@ -4922,7 +5050,7 @@ function ProfilePage({ m, own, onEditProfile, onEditSlot, onStreak, onPhoto, onP
   const sm = claim ? hideUnclaimed(m, claim.hid) : m; // the showcase never shows a card that is still face down
   const slots = showcase(sm), n = slots.length, nextLv = SLOT_LV[n];
   // 1.7.5: columns of at least 150 px of text room (more with a bigger phone font), so names are never cut
-  const slotsRef = useRef(null), sw = useWidth(slotsRef), sts = useTextScale(), slotCols = sw ? Math.max(1, Math.floor((sw + 8) / (150 * sts + 8))) : 2;
+  const slotsRef = useRef(null), sw = useWidth(slotsRef), sts = useTextScale(), slotCols = sw && sw / sts > 640 ? 2 : 1; // 1.8.2 (Michael): one field per row on a phone, so names never squeeze
   const open = (sl, i) => {
     if (own) return onEditSlot(i);
     const page = sl.kind.startsWith("ach") ? 1 : sl.kind.startsWith("rk") ? 2 : 3;
@@ -4956,7 +5084,7 @@ function ProfilePage({ m, own, onEditProfile, onEditSlot, onStreak, onPhoto, onP
         <Sect data-pf-showcase title={own ? <>{T("pfShowcase")}<InfoQ title={T("pfShowcase")} text={T("pfShowcaseD")} /></> : T("pfShowcase")} meta={T("pfSlots", { n, max: SLOT_LV.length })}>
           <div ref={slotsRef} data-pf-slots data-cols={slotCols} style={{ display: "grid", gridTemplateColumns: `repeat(${slotCols}, minmax(0, 1fr))`, gridAutoFlow: "row dense", gap: 8 }}>
             {slots.map((sl, i) => <SlotTile key={i + (sl ? slotStr(sl) : "")} sl={sl} m={sm} i={i} own={own} onTap={open} cols={slotCols} />)}
-            {own && nextLv && <div data-slot-next={nextLv} className="cardIn" style={{ animationDelay: `${120 + n * 60}ms`, borderRadius: 16, border: `1.5px dashed ${C.line}`, minHeight: 92, padding: "12px 13px", boxSizing: "border-box", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6, color: C.dim, textAlign: "center" }}>
+            {own && nextLv && <div data-slot-next={nextLv} className="cardIn" style={{ animationDelay: `${120 + n * 60}ms`, borderRadius: 16, border: `1.5px dashed ${C.line}`, minHeight: 58, padding: "12px 13px", boxSizing: "border-box", display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, color: C.dim, textAlign: "center" }}>
               <Ico n="lock" size={20} color={C.dim} />
               <span style={{ fontSize: 12, fontWeight: 700, lineHeight: 1.35 }}>{T("pfSlotNext", { lv: nextLv })}</span>
             </div>}
@@ -4980,8 +5108,8 @@ function SlotSheet({ m, i, cur, onSave, onClose }) {
   const rks = rankedIds(m), achs = earnedAch(m);
   const multi = kind.endsWith("3");
   const pickOne = id => { if (!multi) { onSave(`${kind}:${id}`); return; } setSel(s => (s.includes(id) ? s.filter(x => x !== id) : s.length < 3 ? [...s, id] : s)); sfxTap(); };
-  const opts = kind.startsWith("rk") ? rks.map(id => { const r = RANKS[rankIdx(id, m.rk[id])]; return [id, r.icon, EX[id].name, `${r.name} · ${m.rk[id]}${rankUnit(id)}`]; })
-    : kind.startsWith("ach") ? achs.map(a => [a.k, a.icon, a.name, `${RANKS[a.tier - 1].icon} ${RANKS[a.tier - 1].name}`])
+  const opts = kind.startsWith("rk") ? rks.map(id => { const ri = rankIdx(id, m.rk[id]); return [id, <RankIcon r={ri} size={26} />, EX[id].name, <RankTag r={ri} size={13} fs={12} text={`${RANKS[ri].name} · ${m.rk[id]}${rankUnit(id)}`} />]; })
+    : kind.startsWith("ach") ? achs.map(a => [a.k, a.icon, a.name, <RankTag r={a.tier - 1} size={13} fs={12} />])
     : kind === "st" ? PF_STATS.filter(k => statVal(m, k) > 0).map(k => [k, STAT_UI[k][1], T(STAT_UI[k][0]), k === "min" ? fmtMins(m.min) : k === "since" ? fmtDate(m.since, true) : nf(m[k])]) : [];
   const chip = (k, label) => <button key={k} type="button" data-slot-kind-pick={k} aria-pressed={kind === k} onClick={() => { sfxTap(); setKind(k); setSel([]); }}
     style={{ ...btnBase, padding: "7px 12px", fontSize: 13, borderRadius: 99, whiteSpace: "nowrap", ...(kind === k ? { background: C.chalk, color: C.ink } : { ...SUNK(), color: C.dim }) }}>{label}</button>;
@@ -5004,7 +5132,7 @@ function SlotSheet({ m, i, cur, onSave, onClose }) {
               <button key={id} type="button" data-slot-opt={id} aria-pressed={on} onClick={() => pickOne(id)}
                 style={{ ...btnBase, fontWeight: 400, display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", borderRadius: 12, textAlign: "left", color: C.chalk, background: on ? `${C.signal}22` : SOFT(), border: `1.5px solid ${on ? C.signal : "transparent"}` }}>
                 <span aria-hidden="true" style={{ fontSize: 22, lineHeight: 1, width: 26, textAlign: "center" }}>{icon}</span>
-                <span style={{ flex: 1, minWidth: 0 }}><span style={{ display: "block", fontSize: 14, fontWeight: 800 }}>{name}</span><span style={{ display: "block", fontSize: 12, color: C.dim, marginTop: 1 }}>{sub}</span></span>
+                <span style={{ flex: 1, minWidth: 0 }}><span style={{ display: "block", fontSize: 14, fontWeight: 800 }}>{name}</span><span style={{ display: "block", fontSize: 12, color: C.dim, marginTop: 2 }}>{sub}</span></span>
                 {multi ? <span aria-hidden="true" style={{ width: 22, height: 22, borderRadius: 7, border: `2px solid ${on ? C.signal : C.line}`, background: on ? C.signal : "transparent", color: C.signalInk, fontSize: 13, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{on ? sel.indexOf(id) + 1 : ""}</span> : <Arrow />}
               </button>
             ); })}
@@ -7063,7 +7191,7 @@ function Work({ item, rounds, history, sessionResults, onRecord, onSwap, exclude
       })()}
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
         <RankBadge id={item.id} best={best} />
-        {RANK_AT[item.id] && (() => { const n = rankNext(item.id, best); return n ? <span style={{ fontSize: 12, color: C.dim }}>{n.rank.icon} {T("rankFrom", { rank: n.rank.name, v: rankVal(item.id, n.at) })}</span> : <span style={{ fontSize: 12, color: C.dim }}>{T("topRank")}</span>; })()}
+        {RANK_AT[item.id] && (() => { const n = rankNext(item.id, best); return n ? <span style={{ fontSize: 12, color: C.dim, display: "inline-flex", alignItems: "center", gap: 4 }}><RankIcon r={RANKS.indexOf(n.rank)} size={14} />{T("rankFrom", { rank: n.rank.name, v: rankVal(item.id, n.at) })}</span> : <span style={{ fontSize: 12, color: C.dim }}>{T("topRank")}</span>; })()}
         {item.slot !== item.id && <span style={{ fontSize: 12, color: C.sky }}>{T("replacing", { name: EX[item.slot].name })}</span>}
       </div>
       {lvl && item.r === 0 && (
@@ -7110,7 +7238,7 @@ function Work({ item, rounds, history, sessionResults, onRecord, onSwap, exclude
           </div>
           <div style={{ textAlign: "center" }}>
               <div style={{ fontSize: 13, color: C.dim, marginTop: 4 }}>{T("reps")}{ex.unit ? ` ${perUnit(ex.unit)}` : ""}</div>
-            <div style={{ height: 22, marginTop: 4, fontSize: 14, fontWeight: 800, color: C.signal }}>{best !== null && reps > best ? <span className="pop" style={{ display: "inline-block" }}>{rankIdx(item.id, reps) > rankIdx(item.id, best) ? `${RANKS[rankIdx(item.id, reps)].icon} ${T("newRank", { rank: RANKS[rankIdx(item.id, reps)].name })}` : T("pr")}</span> : ""}</div>
+            <div style={{ height: 22, marginTop: 4, fontSize: 14, fontWeight: 800, color: C.signal }}>{best !== null && reps > best ? <span className="pop" style={{ display: "inline-block" }}>{rankIdx(item.id, reps) > rankIdx(item.id, best) ? `${T("newRank", { rank: RANKS[rankIdx(item.id, reps)].name })}` : T("pr")}</span> : ""}</div>
           </div>
           {/* 1.8.2: the how-to-count line only for the first workouts (then it's known) */}
           {history.length < 3 && <div data-count-hint style={{ fontSize: 12, color: C.dim, textAlign: "center", marginTop: 10 }}>{T(prevVal !== null ? "countHint" : "countHint0")}</div>}
@@ -7447,7 +7575,7 @@ function ScoreWhy({ g, cards, bests, onClose }) {
     else if (st.p) rows.push({ k: "p", p: st.p, name: L.gm.perk[st.p][0], d: L.gm.perk[st.p][1], plus });
     else {
       const s = GM.suitOf(st.c), base = GM.chipsOf(st.c), bonus = st.chips - base, rk = g.suit[s] >= 0 ? RANKS[g.suit[s]] : null;
-      rows.push({ k: "card", c: st.c, name: `${cardVal(st.c)} ${T("grp_" + s)}`, d: bonus > 0 && rk ? T("gmWhyCardRk", { v: base, rank: `${rk.icon} ${rk.name}`, n: bonus }) : T("gmWhyCard", { v: base }), plus: `+${st.chips}` });
+      rows.push({ k: "card", c: st.c, name: `${cardVal(st.c)} ${T("grp_" + s)}`, d: bonus > 0 && rk ? T("gmWhyCardRk", { v: base, rank: rk.name, n: bonus }) : T("gmWhyCard", { v: base }), plus: `+${st.chips}` });
     }
   }
   return (
@@ -7683,6 +7811,48 @@ function LookThumb({ id, size = 56 }) {
   if (k === "fx") return <span aria-hidden="true" style={{ ...box, background: `linear-gradient(160deg, ${C.panelHi}, ${C.ink})` }}><span style={{ width: size * 0.42, height: size * 0.42, borderRadius: 99, background: `${C.signal}33` }} /><LookFx id={id} thumb /></span>;
   return <span aria-hidden="true" style={box}><span style={{ fontFamily: DISPLAY, fontSize: size * 0.46, fontWeight: 900, lineHeight: 1, ...nameFx(id) }}>Aa</span></span>;
 }
+// 1.8.2 (Michael: "show how it would look on a profile that isn't the user's, greyed"): a small sample profile in grey
+// with only this one look on it, in colour. Effects run only while the card is on screen.
+function useOnScreen(ref) {
+  const [on, setOn] = useState(false);
+  useEffect(() => {
+    const el = ref.current; if (!el) return;
+    if (typeof IntersectionObserver === "undefined") { setOn(true); return; }
+    const io = new IntersectionObserver(es => setOn(es[es.length - 1].isIntersecting), { rootMargin: "80px" });
+    io.observe(el); return () => io.disconnect();
+  }, []);
+  return on;
+}
+function LookDemo({ id, h = 124 }) {
+  const ref = useRef(null), seen = useOnScreen(ref);
+  const kind = EC.LOOKS[id] && EC.LOOKS[id].kind, grey = `${C.chalk}17`, av = 58, fr = Math.round(av * 116 / 84);
+  const bar = (w, ht, extra) => <span style={{ display: "block", width: w, height: ht, borderRadius: 99, background: grey, ...extra }} />;
+  return (
+    <span ref={ref} data-look-demo={id} aria-hidden="true" style={{ display: "block", position: "relative", height: h, borderRadius: 16, overflow: "hidden", background: `linear-gradient(160deg, ${C.panelHi}, ${C.ink})`, border: `1px solid ${C.line}`, boxSizing: "border-box", isolation: "isolate" }}>
+      {kind === "bg" && <span style={{ position: "absolute", left: 0, right: 0, top: 0, height: h * 1.05, WebkitMaskImage: "linear-gradient(180deg, #000 50%, transparent 100%)", maskImage: "linear-gradient(180deg, #000 50%, transparent 100%)" }}><LookBanner id={id} /></span>}
+      {kind === "fx" && seen && <LookFx id={id} />}
+      <span style={{ position: "relative", display: "flex", alignItems: "center", gap: kind === "frame" ? 20 : 14, padding: kind === "frame" ? "14px 14px 0 24px" : "16px 14px 0 16px" }}>
+        <span style={{ position: "relative", width: av, height: av, flexShrink: 0 }}>
+          <span style={{ position: "absolute", inset: 0, borderRadius: 99, background: `${C.chalk}24`, overflow: "hidden" }}>
+            <svg viewBox="0 0 58 58" width={av} height={av} style={{ display: "block" }}><circle cx="29" cy="23" r="10" fill={`${C.chalk}40`} /><path d="M9 58c2-12 10-18 20-18s18 6 20 18z" fill={`${C.chalk}40`} /></svg>
+          </span>
+          {kind === "frame" && <LookFrame id={id} size={fr} style={{ left: (av - fr) / 2, top: (av - fr) / 2 }} />}
+        </span>
+        <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 8 }}>
+          {kind === "name" ? <span style={{ fontFamily: DISPLAY, fontSize: 28, fontWeight: 900, lineHeight: 1, whiteSpace: "nowrap", overflow: "hidden", ...INK, ...nameFx(id), ...FX_ROOM }}>{T("shDemo")}</span> : bar("62%", 14)}
+          {kind === "title" ? <span style={{ display: "flex" }}><LookTitle id={id} small /></span> : bar("38%", 8)}
+        </span>
+      </span>
+      <span style={{ position: "absolute", left: 14, right: 14, bottom: 12, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>{bar("100%", 18, { borderRadius: 8 })}{bar("100%", 18, { borderRadius: 8 })}</span>
+    </span>
+  );
+}
+// The look's name as a small piece of art: tall letters in its rarity's colour, foil for legendary ones.
+function LookName({ id, size = 22 }) {
+  const r = lookRar(id), col = RAR_COL()[r];
+  const fx = r === 3 ? { background: `linear-gradient(100deg, ${col} 25%, #fff 45%, ${col} 55%, ${C.chalk} 75%)`, backgroundSize: "260% 100%", animation: "lkFoil 3.4s linear infinite" } : { background: `linear-gradient(90deg, ${C.chalk} 10%, ${col})` };
+  return <span data-look-name={id} style={{ display: "block", fontFamily: DISPLAY, fontSize: size, fontWeight: 900, lineHeight: 1.05, letterSpacing: 0.6, textTransform: "uppercase", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", ...INK, ...fx, WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent" }}>{lookName(id)}</span>;
+}
 // The top of a profile with its looks (the Shop's preview; ProfilePage draws the same pieces into its own hero).
 function LookPreview({ profile, look, history }) {
   const base = useMemo(() => ownModel(history, profile, null), [history, profile]);
@@ -7853,16 +8023,20 @@ function ShopTab({ history, profile, setProfile, onGo }) {
   const timeStr = ts => { const d = new Date(ts); return (dateKey(d) === today ? "" : fmtDate(dateKey(d), false) + " ") + d.toLocaleTimeString(LANG, { hour: "2-digit", minute: "2-digit" }); };
   const parts = [["workouts", { n: EC.EARN.day }], ["streak", { n: EC.EARN.streak7 }], ["badges", {}], ["ranks", {}], ["deck", { n: EC.EARN.run }], ["chests", {}]];
   const row = { display: "flex", alignItems: "center", gap: 12, padding: "12px 16px" };
+  // 1.8.2 (Michael): bigger cards that show the look on a grey sample profile, with an artistic name
   const lookRow = (id, right, extra = {}) => { const r = lookRar(id), col = RAR_COL()[r]; return (
     <button key={id} type="button" onClick={() => { sfxTap(); setPeek(id); }} className={r === 3 ? "foil" : ""} {...extra}
-      style={{ ...btnBase, display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", borderRadius: 16, background: SOFT(), border: `1.5px solid ${col}55`, color: C.chalk, textAlign: "left", fontWeight: 400, width: "100%" }}>
-      <LookThumb id={id} size={52} />
-      <span style={{ flex: 1, minWidth: 0 }}>
-        <span style={{ display: "block", fontWeight: 800, fontSize: 14.5 }}>{lookName(id)}</span>
-        <span style={{ display: "block", fontSize: 11.5, marginTop: 2 }}><span data-rar-chip={r} style={{ color: col, fontWeight: 800, textTransform: "uppercase", letterSpacing: 0.4, fontSize: 10.5 }}>{T("gmRar" + r)}</span><span style={{ color: C.dim }}> · {T("lookKind_" + EC.LOOKS[id].kind)}</span></span>
+      style={{ ...btnBase, display: "block", padding: 8, borderRadius: 22, background: SOFT(), border: `1.5px solid ${col}55`, color: C.chalk, textAlign: "left", fontWeight: 400, width: "100%", boxShadow: r >= 2 ? `0 0 18px ${col}1f` : "none" }}>
+      <LookDemo id={id} />
+      <span style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 6px 4px" }}>
+        <span style={{ flex: 1, minWidth: 0 }}>
+          <LookName id={id} />
+          <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, marginTop: 4 }}><span data-rar-chip={r} style={{ color: col, fontWeight: 800, textTransform: "uppercase", letterSpacing: 0.5, fontSize: 10 }}>{T("gmRar" + r)}</span><span aria-hidden="true" style={{ width: 3, height: 3, borderRadius: 9, background: C.dim }} /><span style={{ color: C.dim }}>{T("lookKind_" + EC.LOOKS[id].kind)}</span></span>
+        </span>
+        {right}
       </span>
-      {right}
     </button>); };
+  const lookGrid = { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(290px, 100%), 1fr))", gap: 10 };
   return (
     <div data-shop style={{ padding: "0 18px 30px" }}>
       {/* balance */}
@@ -7916,7 +8090,7 @@ function ShopTab({ history, profile, setProfile, onGo }) {
       </ListSect>
       {/* today's looks: tap = see it on your profile */}
       <Sect data-shop-today title={T("shToday")} meta={T("shTodayMeta")}>
-        {daily.length ? <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {daily.length ? <div style={lookGrid}>
           {daily.map(id => lookRow(id, own.includes(id)
             ? <span data-owned style={{ flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 4, fontWeight: 800, fontSize: 12.5, color: C.mint, padding: "6px 4px" }}><Ico n="check" size={15} sw={2.6} />{T("shOwned")}</span>
             : <span style={{ flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 4, fontWeight: 900, fontSize: 14, color: bal >= EC.lookPrice(id) ? C.chalk : C.dim, background: SOFT(), borderRadius: 10, padding: "6px 9px" }}><Ico n="diamond" size={14} color={C.sky} sw={2.4} />{nf(EC.lookPrice(id))}</span>, { "data-shop-look": id, "data-has": own.includes(id) ? 1 : 0 }))}
@@ -7924,7 +8098,7 @@ function ShopTab({ history, profile, setProfile, onGo }) {
       </Sect>
       {/* looks you can only win */}
       <Sect data-shop-won title={T("shWonT")} meta={T("shWonMeta")}>
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        <div style={lookGrid}>
           {wonList.map(id => lookRow(id, own.includes(id) ? <Ico n="check" size={18} color={C.mint} /> : <Ico n="lock" size={17} color={C.dim} />, { "data-shop-wonlook": id, "data-has": own.includes(id) ? 1 : 0 }))}
         </div>
       </Sect>
@@ -7990,7 +8164,7 @@ function GameTab({ history, profile, setProfile, acct, onPlay }) {
               <SuitIcon s={s} size={22} />
               <span style={{ minWidth: 0 }}>
                 <span style={{ display: "block", fontSize: 13.5, fontWeight: 800, color: C.chalk }}>{T("grp_" + s)}</span>
-                <span style={{ display: "block", fontSize: 12, fontWeight: 700, color: rk ? rk.color : C.dim }}>{rk ? `${rk.icon} ${rk.name} · +${2 * v}` : T("gmSuitNone")}</span>
+                <span style={{ display: "block", fontSize: 12, fontWeight: 700, color: C.dim }}>{rk ? <RankTag r={v} size={13} text={`${rk.name} · +${2 * v}`} /> : T("gmSuitNone")}</span>
               </span>
             </div>); })}
         </div>
@@ -8107,7 +8281,7 @@ function GameRules({ onClose, lo, onTutorial }) {
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
             {GM.SUITS.map(s => { const v = suit[s] ?? -1, rk = v >= 0 ? RANKS[v] : null; return (
               <div key={s} style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 9px", borderRadius: 10, background: SOFT(), fontSize: 13 }}>
-                <SuitIcon s={s} size={16} /><span style={{ flex: 1, minWidth: 0 }}><b>{T("grp_" + s)}</b><span style={{ display: "block", color: rk ? rk.color : C.dim, fontSize: 12 }}>{rk ? `${rk.icon} ${rk.name} → +${2 * v}` : T("gmSuitNone")}</span></span>
+                <SuitIcon s={s} size={16} /><span style={{ flex: 1, minWidth: 0 }}><b>{T("grp_" + s)}</b><span style={{ display: "block", color: C.dim, fontSize: 12 }}>{rk ? <RankTag r={v} size={13} text={`${rk.name} → +${2 * v}`} /> : T("gmSuitNone")}</span></span>
               </div>); })}
           </div>
           <p style={{ ...gP, color: C.dim, fontSize: 13 }}>{T("gmG1Rank")}</p>
@@ -8592,7 +8766,7 @@ function tourSteps(ch, x) {
     s("[data-shop-bal]", 0, { prep: screen("shop") }),
     s("[data-shop-chest]", 1, { opt: true }),
     s("[data-shop-items]", 2, { opt: true }), // 1.8.1 (Michael): the whole box, freezes and XP boosts
-    s("[data-shop-today]", 3, { opt: true }),
+    s("[data-shop-today] [data-shop-look]", 3, { opt: true }), // 1.8.2: the cards are big now: light the first one ("tap one")
     { done: true, t: X[4] },
   ];
   if (ch === 7) return [ // friends
@@ -8972,9 +9146,9 @@ function RewardReveal({ items, onDone }) {
           </div>
           <div className={"revFace" + (r >= 3 ? " foil" : "")} style={{ background: `radial-gradient(100% 70% at 50% 30%, ${col}55, transparent 80%), ${C.ink}`, border: `2px solid ${col}`, boxShadow: `0 0 ${24 + r * 12}px ${col}aa` }}>
             <div style={{ fontSize: 11.5, fontWeight: 900, letterSpacing: 1.6, textTransform: "uppercase", color: col }}>{kindLabel}</div>
-            <div aria-hidden="true" className={open ? "revIcon" : undefined} style={{ fontSize: 84, lineHeight: 1, margin: "18px 0 14px", filter: `drop-shadow(0 0 ${10 + r * 4}px ${col})` }}>{it.icon}</div>
+            <div aria-hidden="true" className={open ? "revIcon" : undefined} style={{ fontSize: 84, lineHeight: 1, margin: "18px 0 14px", filter: `drop-shadow(0 0 ${10 + r * 4}px ${col})` }}>{it.kind === "rank" ? <RankIcon r={it.r} size={88} /> : it.icon}</div>
             <div style={{ fontFamily: DISPLAY, fontSize: it.name.length > 18 ? 24 : 30, fontWeight: 900, lineHeight: 1.05, textAlign: "center" }}>{it.name}</div>
-            {it.rank && <div data-reveal-rank className={open ? "revStamp" : undefined} style={{ marginTop: 12, fontFamily: DISPLAY, fontSize: 26 + r * 2, fontWeight: 900, letterSpacing: 1, color: col, textTransform: "uppercase", textShadow: `0 0 ${8 + r * 4}px ${col}` }}>{it.rank.icon} {it.rank.name}</div>}
+            {it.rank && <div data-reveal-rank className={open ? "revStamp" : undefined} style={{ marginTop: 12, fontFamily: DISPLAY, fontSize: 26 + r * 2, fontWeight: 900, letterSpacing: 1, color: col, textTransform: "uppercase", textShadow: `0 0 ${8 + r * 4}px ${col}` }}>{it.rank.name}</div>}
             {it.sub && <div style={{ marginTop: 10, fontSize: 13, color: C.dim, textAlign: "center", lineHeight: 1.4 }}>{it.sub}</div>}
           </div>
         </div>
@@ -9123,14 +9297,14 @@ function Summary({ entry, xpBefore = 0, xpGained, newCh = [], newAch = [], histo
       {newAch.length > 0 && (
         <div className="cardIn" data-newach style={{ marginTop: 14, border: `2px solid ${C.sky}`, borderRadius: 16, padding: "12px 16px" }}>
           {newAch.map(a => (
-            <div key={a.k} style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, color: RANKS[a.tier - 1].color, lineHeight: 1.2 }}>{a.icon} {T("achUp", { name: a.name, rank: `${RANKS[a.tier - 1].icon} ${RANKS[a.tier - 1].name}` })}</div>
+            <div key={a.k} style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, color: RANKS[a.tier - 1].color, lineHeight: 1.2 }}>{a.icon} {T("achUp", { name: a.name, rank: RANKS[a.tier - 1].name })}</div>
           ))}
         </div>
       )}
       {entry.rankUps && entry.rankUps.length > 0 && (
         <div className="cardIn" style={{ marginTop: 14, border: `2px solid ${C.signal}`, borderRadius: 16, padding: "12px 16px" }}>
           {entry.rankUps.map(ru => (
-            <div key={ru.id} style={{ fontFamily: DISPLAY, fontSize: 26, fontWeight: 900, color: RANKS[ru.to].color, lineHeight: 1.15 }}>{RANKS[ru.to].icon} {EX[ru.id] ? EX[ru.id].name : ru.id}: {RANKS[ru.to].name}</div>
+            <div key={ru.id} style={{ fontFamily: DISPLAY, fontSize: 26, fontWeight: 900, color: RANKS[ru.to].color, lineHeight: 1.15, display: "flex", alignItems: "center", gap: 8 }}><RankIcon r={ru.to} size={26} />{EX[ru.id] ? EX[ru.id].name : ru.id}: {RANKS[ru.to].name}</div>
           ))}
         </div>
       )}
@@ -9223,7 +9397,7 @@ function Session({ session, setSession, history, onSave, onClose, onMinimize, on
     const oldBest = isFinite(prevBest) ? prevBest : null;
     const newRank = rankIdx(it.id, numVal(val));
     const rankUp = (pr || oldBest === null) && newRank > rankIdx(it.id, oldBest);
-    const cheer = rankUp ? `${RANKS[newRank].icon} ${T("newRank", { rank: RANKS[newRank].name })}` : pr ? T("newPR") : pick(L.cheers);
+    const cheer = rankUp ? `${T("newRank", { rank: RANKS[newRank].name })}` : pr ? T("newPR") : pick(L.cheers);
     if (rankUp) { sfxLevel(); vibrate([120, 60, 120, 60, 260]); } else if (pr) { sfxRecord(); vibrate([80, 40, 80]); } else sfxSet();
     setSession({ ...session, results, phase: "rest", rest: { endAt: Date.now() + secs * 1000, total: secs, nextPos: session.pos + 1, newRound: next.r !== it.r, pr, cheer, tip: pick(L.facts), moti: pick(L.moti) } });
   };

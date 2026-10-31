@@ -972,8 +972,8 @@ export default {
     quitConfirm: "Vraiment quitter ?",
     progressAria: "{done} sur {total} faits",
 
-    ladderTitle: "Rangs (meilleure série : {v})",
-    ladderNone: "Rangs (meilleure série : aucune pour l'instant)",
+    bestSet: "Meilleure série : {v}",
+    bestSetNone: "Meilleure série : aucune pour l'instant",
     rankStart: "départ",
     figureAria: "Dessin : {labels}",
     figBelly: "Trait jaune = côté du ventre",
@@ -1160,6 +1160,7 @@ export default {
     pfLooks: "Looks du profil",
     pfLooksNone: "Tu n'en as encore aucun.",
     shOwned: "Acheté",
+    shDemo: "Joueur",
     tourAutoD: "Voici l'Accueil. Tout le reste est dans ce menu : quand tu ouvres un écran pour la première fois, je te le montre.",
     infoMore: "En savoir plus",
     tourAgainBtn: "Encore",
@@ -1694,6 +1695,8 @@ export default {
     "Moins de texte : le menu n'affiche que les noms, et les explications sous les interrupteurs et les cadres sont derrière un petit ? que tu touches quand tu veux en savoir plus.",
     "Ton code ami a une icône pour copier, et le coffre hebdo de la Boutique montre les 3 défis sous forme de points.",
     "Le badge Explorateur compte les 9 chapitres du guide.",
+    "Badges et rangs : touche-en un pour voir sa carte avec tous les niveaux (les rangs d'un exercice y ont été déplacés depuis la fiche explicative). Chaque rang a son propre emblème dessiné au lieu d'un emoji, et l'écran d'accueil a moins de texte.",
+    "Les looks de la Boutique sont de plus grandes cartes qui montrent le look sur un profil d'exemple, et la Vitrine de ton profil a un champ par ligne.",
   ],
   news181: [
     "Le guide est plus court : il montre l'Accueil et le menu ☰, puis chaque écran se présente lui-même la première fois que tu l'ouvres. Nouveaux chapitres pour Muscle Deck et la Boutique.",

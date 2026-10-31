@@ -972,8 +972,8 @@ export default {
     quitConfirm: "Uscire davvero?",
     progressAria: "{done} di {total} completati",
 
-    ladderTitle: "Ranghi (serie migliore: {v})",
-    ladderNone: "Ranghi (serie migliore: ancora nessuna)",
+    bestSet: "Serie migliore: {v}",
+    bestSetNone: "Serie migliore: ancora nessuna",
     rankStart: "inizio",
     figureAria: "Disegno: {labels}",
     figBelly: "Linea gialla = lato della pancia",
@@ -1160,6 +1160,7 @@ export default {
     pfLooks: "Look del profilo",
     pfLooksNone: "Non ne hai ancora nessuno.",
     shOwned: "Comprato",
+    shDemo: "Giocatore",
     tourAutoD: "Questa è la Home. Tutto il resto è in questo menu: quando apri una schermata per la prima volta, te la mostro.",
     infoMore: "Di più",
     tourAgainBtn: "Ancora",
@@ -1694,6 +1695,8 @@ export default {
     "Meno testo: il menu mostra solo i nomi, e le spiegazioni sotto interruttori e riquadri sono dietro un piccolo ? da toccare quando vuoi saperne di più.",
     "Il tuo codice amico ha un'icona per copiarlo, e il forziere settimanale nel Negozio mostra le 3 sfide come puntini.",
     "La medaglia Esploratore conta tutti i 9 capitoli della guida.",
+    "Medaglie e ranghi: toccane uno per vedere la sua scheda con tutti i livelli (i ranghi di un esercizio sono stati spostati lì dalla guida). Ogni rango ha il suo emblema disegnato al posto di un'emoji, e la schermata principale ha meno testo.",
+    "I look del Negozio sono schede più grandi che mostrano il look su un profilo di esempio, e la Vetrina del tuo profilo ha un campo per riga.",
   ],
   news181: [
     "La guida è più corta: mostra la Home e il menu ☰, poi ogni schermata si presenta da sola la prima volta che la apri. Nuovi capitoli per Muscle Deck e il Negozio.",

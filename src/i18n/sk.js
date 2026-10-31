@@ -972,8 +972,8 @@ export default {
     quitConfirm: "Naozaj ukončiť?",
     progressAria: "Hotové {done} z {total}",
 
-    ladderTitle: "Ranky (najlepšia séria: {v})",
-    ladderNone: "Ranky (najlepšia séria: zatiaľ žiadna)",
+    bestSet: "Najlepšia séria: {v}",
+    bestSetNone: "Najlepšia séria: zatiaľ žiadna",
     rankStart: "štart",
     figureAria: "Obrázok: {labels}",
     figBelly: "Žltá čiarka = strana brucha",
@@ -1160,6 +1160,7 @@ export default {
     pfLooks: "Vzhľad profilu",
     pfLooksNone: "Z tohto ešte nič nemáš.",
     shOwned: "Máš",
+    shDemo: "Hráč",
     tourAutoD: "Toto je Domov. Všetko ostatné je v tomto menu: keď prvýkrát otvoríš obrazovku, ukážem ti ju.",
     infoMore: "Viac o tom",
     tourAgainBtn: "Znova",
@@ -1694,6 +1695,8 @@ export default {
     "Menej textu: menu ukazuje len názvy a vysvetlenia pod prepínačmi a boxmi sú za malým ?, na ktorý ťukneš, keď chceš vedieť viac.",
     "Tvoj kód priateľa má ikonu na kopírovanie a týždenná truhla v Obchode ukazuje 3 výzvy ako bodky.",
     "Odznak Prieskumník počíta všetkých 9 kapitol návodu.",
+    "Odznaky a ranky: ťukni na jeden a uvidíš jeho kartu so všetkými levelmi (ranky cviku sa tam presunuli z návodu). Každý rank má vlastný kreslený znak namiesto emoji a na Domove je menej textu.",
+    "Vzhľady v Obchode sú väčšie karty, ktoré ukážu vzhľad na ukážkovom profile, a Showcase na tvojom profile má jedno pole na riadok.",
   ],
   news181: [
     "Návod je kratší: ukáže Domov a ☰ menu a potom ti každá obrazovka sama ukáže, čo na nej je, keď ju prvýkrát otvoríš. Nové kapitoly pre Muscle Deck a Obchod.",

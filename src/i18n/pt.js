@@ -972,8 +972,8 @@ export default {
     quitConfirm: "Sair mesmo?",
     progressAria: "{done} de {total} feitos",
 
-    ladderTitle: "Patentes (melhor série: {v})",
-    ladderNone: "Patentes (melhor série: nenhuma ainda)",
+    bestSet: "Melhor série: {v}",
+    bestSetNone: "Melhor série: nenhuma ainda",
     rankStart: "início",
     figureAria: "Desenho: {labels}",
     figBelly: "Linha amarela = lado da barriga",
@@ -1160,6 +1160,7 @@ export default {
     pfLooks: "Visuais do perfil",
     pfLooksNone: "Você ainda não tem nenhum destes.",
     shOwned: "Comprado",
+    shDemo: "Jogador",
     tourAutoD: "Este é o Início. Todo o resto está neste menu: quando você abrir uma tela pela primeira vez, eu mostro como ela funciona.",
     infoMore: "Saiba mais",
     tourAgainBtn: "De novo",
@@ -1694,6 +1695,8 @@ export default {
     "Menos texto: o menu mostra só os nomes, e as explicações sob interruptores e quadros ficam atrás de um pequeno ? que você toca quando quer saber mais.",
     "Seu código de amigo tem um ícone de copiar, e o baú semanal da Loja mostra os 3 desafios como pontos.",
     "A medalha Explorador conta todos os 9 capítulos do guia.",
+    "Medalhas e patentes: toque em uma para ver o cartão com todos os níveis (as patentes de um exercício foram para lá, saindo do guia). Cada patente tem o próprio emblema desenhado em vez de um emoji, e a tela inicial tem menos texto.",
+    "Os visuais da Loja são cartões maiores que mostram o visual num perfil de exemplo, e a Vitrine do seu perfil tem um campo por linha.",
   ],
   news181: [
     "O guia ficou mais curto: mostra o Início e o menu ☰, e depois cada tela se apresenta sozinha na primeira vez que você a abre. Capítulos novos para o Muscle Deck e a Loja.",

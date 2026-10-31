@@ -16,6 +16,10 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 - Less text (a tester: "too much text"): the ☰ menu shows only icons and names (the Guide row shows 0/9); explanations under switches and boxes (Settings, workout settings, Shop, Muscle Deck, calorie settings, the showcase, backups, account) moved behind a small ? that opens them; helper lines like "Tap an exercise…", "For a workout you did without the app…", the chart hint and "If you don't make it today, that's fine" are gone; the counting hint shows only in the first workouts; the warning under Sign out / Delete account shows on the first tap.
 - Your friend code has a copy icon instead of a "tap to copy" line; the Shop's weekly chest shows the 3 challenges as dots; the "More diamonds: coming soon" box is gone until it's there.
 - The Explorer badge and the guide's first bubble count all 9 chapters (they said 7).
+- Badges and ranks open a card: tap a badge for all its levels with what each one needs, tap an exercise's rank for its 9 ranks with the numbers and a link to the exercise's how-to (the ranks moved there from the how-to sheet). The "Next: …" lines under the rows are gone.
+- Every rank (Iron … Obsidian) has its own drawn emblem instead of an emoji, the same on badges, ranks, the showcase, history, the workout, the summary, reward cards and Muscle Deck. A badge without levels (like Health Connect) shines only in its own colour (it swept the colours of every level).
+- Home: the "Today is a training day. Last workout…" line shows only when your streak is at risk, the "up next" label is gone, and the calorie tile shows a ✓ instead of a sentence.
+- Shop: looks are bigger cards that show each look on a grey sample profile (an effect plays over it, a frame sits around the photo, a title or name effect on the name) with the look's name in its rarity colour. The showcase on your profile has one field per row, so names aren't squeezed.
 
 ## 1.8.1 (2026-10-31)
 

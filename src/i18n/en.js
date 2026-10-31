@@ -729,6 +729,7 @@ export default {
     shToday: "This week's looks",
     shTodayMeta: "New ones on Friday",
     shOwned: "Owned",
+    shDemo: "Player",
     shAllOwned: "You own every look that is for sale.",
     shNone: "None",
     shGet: "More diamonds",
@@ -1121,8 +1122,8 @@ export default {
     quitConfirm: "Really quit?",
     progressAria: "{done} of {total} done",
 
-    ladderTitle: "Ranks (best set: {v})",
-    ladderNone: "Ranks (best set: none yet)",
+    bestSet: "Best set: {v}",
+    bestSetNone: "Best set: none yet",
     rankStart: "start",
     figureAria: "Drawing: {labels}",
     figBelly: "Yellow line = belly side",
@@ -1702,6 +1703,8 @@ export default {
     "Less text: the menu shows only the names, and the explanations under switches and boxes moved behind a small ? that you tap when you want to know more.",
     "Your friend code has a copy icon, and the weekly chest in the Shop shows the 3 challenges as dots.",
     "The Explorer badge counts all 9 guide chapters.",
+    "Badges and ranks: tap one for its card with every level (an exercise's ranks moved there from the how-to sheet). Every rank has its own drawn emblem instead of an emoji, and Home shows fewer lines.",
+    "Shop looks are bigger cards that show the look on a sample profile, and the showcase on your profile has one field per row.",
   ],
   news181: [
     "The guide is shorter: it shows Home and the ☰ menu, then every screen shows you around by itself the first time you open it. New chapters for Muscle Deck and the Shop.",

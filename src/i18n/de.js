@@ -972,8 +972,8 @@ export default {
     quitConfirm: "Wirklich beenden?",
     progressAria: "{done} von {total} erledigt",
 
-    ladderTitle: "Ränge (bester Satz: {v})",
-    ladderNone: "Ränge (bester Satz: noch keiner)",
+    bestSet: "Bester Satz: {v}",
+    bestSetNone: "Bester Satz: noch keiner",
     rankStart: "Start",
     figureAria: "Zeichnung: {labels}",
     figBelly: "Gelbe Linie = Bauchseite",
@@ -1160,6 +1160,7 @@ export default {
     pfLooks: "Profil-Looks",
     pfLooksNone: "Davon hast du noch keinen.",
     shOwned: "Gekauft",
+    shDemo: "Spieler",
     tourAutoD: "Das ist Start. Alles andere ist in diesem Menü: Wenn du einen Bildschirm zum ersten Mal öffnest, zeige ich ihn dir.",
     infoMore: "Mehr dazu",
     tourAgainBtn: "Nochmal",
@@ -1694,6 +1695,8 @@ export default {
     "Weniger Text: Das Menü zeigt nur die Namen, und die Erklärungen unter Schaltern und Boxen sind hinter einem kleinen ?, auf das du tippst, wenn du mehr wissen willst.",
     "Dein Freundescode hat ein Kopier-Symbol, und die Wochentruhe im Shop zeigt die 3 Challenges als Punkte.",
     "Das Abzeichen Entdecker zählt alle 9 Kapitel der Anleitung.",
+    "Abzeichen und Ränge: Tippe auf eins und du siehst seine Karte mit allen Stufen (die Ränge einer Übung stehen jetzt dort statt in der Anleitung). Jeder Rang hat ein eigenes gezeichnetes Emblem statt eines Emojis, und der Startbildschirm hat weniger Text.",
+    "Looks im Shop sind größere Karten, die den Look auf einem Beispielprofil zeigen, und die Vitrine in deinem Profil hat ein Feld pro Zeile.",
   ],
   news181: [
     "Die Anleitung ist kürzer: Sie zeigt Start und das ☰-Menü, danach zeigt dir jeder Bildschirm sich selbst, wenn du ihn zum ersten Mal öffnest. Neue Kapitel für Muscle Deck und den Shop.",

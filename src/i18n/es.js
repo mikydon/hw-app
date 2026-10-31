@@ -972,8 +972,8 @@ export default {
     quitConfirm: "¿Seguro que quieres salir?",
     progressAria: "{done} de {total} hechos",
 
-    ladderTitle: "Rangos (mejor serie: {v})",
-    ladderNone: "Rangos (mejor serie: aún ninguna)",
+    bestSet: "Mejor serie: {v}",
+    bestSetNone: "Mejor serie: aún ninguna",
     rankStart: "inicio",
     figureAria: "Dibujo: {labels}",
     figBelly: "Línea amarilla = lado del abdomen",
@@ -1160,6 +1160,7 @@ export default {
     pfLooks: "Estilos del perfil",
     pfLooksNone: "Todavía no tienes ninguno de estos.",
     shOwned: "Comprado",
+    shDemo: "Jugador",
     tourAutoD: "Esto es Inicio. Todo lo demás está en este menú: cuando abras una pantalla por primera vez, te la enseño.",
     infoMore: "Más información",
     tourAgainBtn: "Otra vez",
@@ -1694,6 +1695,8 @@ export default {
     "Menos texto: el menú muestra solo los nombres, y las explicaciones bajo interruptores y cuadros están tras un pequeño ? que tocas cuando quieres saber más.",
     "Tu código de amigo tiene un icono para copiar, y el cofre semanal de la Tienda muestra los 3 retos como puntos.",
     "La insignia Explorador cuenta los 9 capítulos de la guía.",
+    "Insignias y rangos: toca uno para ver su tarjeta con todos los niveles (los rangos de un ejercicio pasaron ahí desde la guía). Cada rango tiene su propio emblema dibujado en lugar de un emoji, y la pantalla principal tiene menos texto.",
+    "Los estilos de la Tienda son tarjetas más grandes que muestran el estilo en un perfil de ejemplo, y la Vitrina de tu perfil tiene un campo por fila.",
   ],
   news181: [
     "La guía es más corta: enseña Inicio y el menú ☰, y luego cada pantalla se presenta sola la primera vez que la abres. Capítulos nuevos para Muscle Deck y la Tienda.",

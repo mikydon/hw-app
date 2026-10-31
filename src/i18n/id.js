@@ -972,8 +972,8 @@ export default {
     quitConfirm: "Yakin mengakhiri?",
     progressAria: "{done} dari {total} selesai",
 
-    ladderTitle: "Rank (set terbaik: {v})",
-    ladderNone: "Rank (set terbaik: belum ada)",
+    bestSet: "Set terbaik: {v}",
+    bestSetNone: "Set terbaik: belum ada",
     rankStart: "mulai",
     figureAria: "Gambar: {labels}",
     figBelly: "Garis kuning = sisi perut",
@@ -1160,6 +1160,7 @@ export default {
     pfLooks: "Tampilan profil",
     pfLooksNone: "Kamu belum punya satu pun.",
     shOwned: "Dibeli",
+    shDemo: "Pemain",
     tourAutoD: "Ini Beranda. Semua yang lain ada di menu ini: saat kamu membuka sebuah layar untuk pertama kali, aku akan menunjukkannya.",
     infoMore: "Selengkapnya",
     tourAgainBtn: "Lagi",
@@ -1694,6 +1695,8 @@ export default {
     "Lebih sedikit teks: menu hanya menampilkan nama, dan penjelasan di bawah sakelar dan kotak pindah ke balik ? kecil yang kamu ketuk saat ingin tahu lebih banyak.",
     "Kode temanmu punya ikon salin, dan peti mingguan di Toko menampilkan 3 tantangan sebagai titik.",
     "Lencana Penjelajah menghitung semua 9 bab panduan.",
+    "Lencana dan rank: ketuk salah satu untuk melihat kartunya dengan semua level (rank latihan dipindah ke sana dari panduan). Setiap rank punya lambang gambar sendiri, bukan emoji, dan layar Beranda punya lebih sedikit teks.",
+    "Tampilan di Toko jadi kartu yang lebih besar dan menunjukkan tampilannya di profil contoh, dan Etalase di profilmu punya satu kolom per baris.",
   ],
   news181: [
     "Panduannya lebih singkat: menunjukkan Beranda dan menu ☰, lalu setiap layar memperkenalkan dirinya saat pertama kali kamu buka. Bab baru untuk Muscle Deck dan Toko.",
