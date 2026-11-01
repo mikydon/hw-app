@@ -1,0 +1,672 @@
+[
+{
+"id": "k1",
+"en": "Push-up",
+"set": "now"
+},
+{
+"id": "k3",
+"en": "Diamond push-up",
+"set": "now"
+},
+{
+"id": "r1",
+"en": "Pike push-up",
+"set": "now"
+},
+{
+"id": "kIncl",
+"en": "Incline push-up",
+"set": "now"
+},
+{
+"id": "kKnee",
+"en": "Knee push-up",
+"set": "now"
+},
+{
+"id": "r1e",
+"en": "Feet-elevated pike push-up",
+"set": "now"
+},
+{
+"id": "k3e",
+"en": "Feet-elevated diamond push-up",
+"set": "now"
+},
+{
+"id": "row1",
+"en": "Door frame row",
+"set": "now"
+},
+{
+"id": "row2",
+"en": "Towel door row",
+"set": "now"
+},
+{
+"id": "row3",
+"en": "Wide door frame row",
+"set": "now"
+},
+{
+"id": "superman",
+"en": "Superman",
+"set": "now"
+},
+{
+"id": "ytw",
+"en": "Floor Y-T-W",
+"set": "now"
+},
+{
+"id": "n1",
+"en": "ATG squat",
+"set": "now"
+},
+{
+"id": "n2",
+"en": "Bulgarian split squat",
+"set": "now"
+},
+{
+"id": "n7",
+"en": "Towel hamstring curl",
+"set": "now"
+},
+{
+"id": "lunge",
+"en": "Reverse lunge",
+"set": "now"
+},
+{
+"id": "bridge",
+"en": "Glute bridge",
+"set": "now"
+},
+{
+"id": "wallsit",
+"en": "Wall sit",
+"set": "now"
+},
+{
+"id": "sbridge",
+"en": "Single-leg glute bridge",
+"set": "now"
+},
+{
+"id": "n1q",
+"en": "1¼ squat",
+"set": "now"
+},
+{
+"id": "b5",
+"en": "Plank",
+"set": "now"
+},
+{
+"id": "b2",
+"en": "Dead bug",
+"set": "now"
+},
+{
+"id": "b4",
+"en": "Bicycle crunch",
+"set": "now"
+},
+{
+"id": "birddog",
+"en": "Bird dog",
+"set": "now"
+},
+{
+"id": "hollow",
+"en": "Hollow body hold",
+"set": "now"
+},
+{
+"id": "legraise",
+"en": "Leg raise",
+"set": "now"
+},
+{
+"id": "b5l",
+"en": "Single-leg plank",
+"set": "now"
+},
+{
+"id": "bw_calf_raise",
+"en": "Calf raise",
+"set": "bw"
+},
+{
+"id": "bw_single_leg_calf_raise",
+"en": "Single-leg calf raise",
+"set": "bw"
+},
+{
+"id": "bw_tibialis_raise",
+"en": "Tibialis raise",
+"set": "bw"
+},
+{
+"id": "bw_side_lying_leg_raise",
+"en": "Side-lying leg raise",
+"set": "bw"
+},
+{
+"id": "bw_side_lying_adductor_raise",
+"en": "Side-lying adductor raise",
+"set": "bw"
+},
+{
+"id": "bw_short_lever_copenhagen_plank",
+"en": "Short-lever Copenhagen plank",
+"set": "bw"
+},
+{
+"id": "bw_copenhagen_plank",
+"en": "Copenhagen plank",
+"set": "bw"
+},
+{
+"id": "bw_side_plank",
+"en": "Side plank",
+"set": "bw"
+},
+{
+"id": "bw_knee_side_plank",
+"en": "Knee side plank",
+"set": "bw"
+},
+{
+"id": "bw_plank_shoulder_tap",
+"en": "Plank shoulder tap",
+"set": "bw"
+},
+{
+"id": "bw_reverse_crunch",
+"en": "Reverse crunch",
+"set": "bw"
+},
+{
+"id": "bw_prone_back_extension",
+"en": "Prone back extension",
+"set": "bw"
+},
+{
+"id": "bw_single_leg_romanian_deadlift",
+"en": "Single-leg Romanian deadlift",
+"set": "bw"
+},
+{
+"id": "bw_single_leg_hip_thrust",
+"en": "Single-leg hip thrust",
+"set": "bw"
+},
+{
+"id": "bw_nordic_hamstring_curl",
+"en": "Nordic hamstring curl",
+"set": "bw"
+},
+{
+"id": "bw_bodyweight_squat",
+"en": "Bodyweight squat",
+"set": "bw"
+},
+{
+"id": "bw_split_squat",
+"en": "Split squat",
+"set": "bw"
+},
+{
+"id": "bw_step_up",
+"en": "Step-up",
+"set": "bw"
+},
+{
+"id": "bw_lateral_lunge",
+"en": "Lateral lunge",
+"set": "bw"
+},
+{
+"id": "bw_pistol_squat_to_box",
+"en": "Pistol squat to box",
+"set": "bw"
+},
+{
+"id": "bw_wall_push_up",
+"en": "Wall push-up",
+"set": "bw"
+},
+{
+"id": "bw_decline_push_up",
+"en": "Decline push-up",
+"set": "bw"
+},
+{
+"id": "bw_archer_push_up",
+"en": "Archer push-up",
+"set": "bw"
+},
+{
+"id": "bw_scapular_push_up",
+"en": "Scapular push-up",
+"set": "bw"
+},
+{
+"id": "bw_wall_handstand_hold",
+"en": "Wall handstand hold",
+"set": "bw"
+},
+{
+"id": "bw_chair_dip",
+"en": "Chair dip",
+"set": "bw"
+},
+{
+"id": "bw_bodyweight_triceps_extension",
+"en": "Bodyweight triceps extension",
+"set": "bw"
+},
+{
+"id": "bw_inverted_row_table",
+"en": "Inverted row (table)",
+"set": "bw"
+},
+{
+"id": "bw_prone_reverse_snow_angel",
+"en": "Prone reverse snow angel",
+"set": "bw"
+},
+{
+"id": "bw_towel_biceps_curl",
+"en": "Towel biceps curl",
+"set": "bw"
+},
+{
+"id": "fw_pull_up",
+"en": "Pull-up",
+"set": "fw"
+},
+{
+"id": "fw_chin_up",
+"en": "Chin-up",
+"set": "fw"
+},
+{
+"id": "fw_dead_hang",
+"en": "Dead hang",
+"set": "fw"
+},
+{
+"id": "fw_hanging_knee_raise",
+"en": "Hanging knee raise",
+"set": "fw"
+},
+{
+"id": "fw_dumbbell_bench_press",
+"en": "Dumbbell bench press",
+"set": "fw"
+},
+{
+"id": "fw_dumbbell_shoulder_press",
+"en": "Dumbbell shoulder press",
+"set": "fw"
+},
+{
+"id": "fw_dumbbell_lateral_raise",
+"en": "Dumbbell lateral raise",
+"set": "fw"
+},
+{
+"id": "fw_dumbbell_overhead_triceps_extension",
+"en": "Dumbbell overhead triceps extension",
+"set": "fw"
+},
+{
+"id": "fw_lying_triceps_extension",
+"en": "Lying triceps extension",
+"set": "fw"
+},
+{
+"id": "fw_one_arm_dumbbell_row",
+"en": "One-arm dumbbell row",
+"set": "fw"
+},
+{
+"id": "fw_dumbbell_reverse_fly",
+"en": "Dumbbell reverse fly",
+"set": "fw"
+},
+{
+"id": "fw_band_pull_apart",
+"en": "Band pull-apart",
+"set": "fw"
+},
+{
+"id": "fw_dumbbell_biceps_curl",
+"en": "Dumbbell biceps curl",
+"set": "fw"
+},
+{
+"id": "fw_goblet_squat",
+"en": "Goblet squat",
+"set": "fw"
+},
+{
+"id": "fw_dumbbell_romanian_deadlift",
+"en": "Dumbbell Romanian deadlift",
+"set": "fw"
+},
+{
+"id": "fw_dumbbell_bulgarian_split_squat",
+"en": "Dumbbell Bulgarian split squat",
+"set": "fw"
+},
+{
+"id": "fw_dumbbell_hip_thrust",
+"en": "Dumbbell hip thrust",
+"set": "fw"
+},
+{
+"id": "fw_kettlebell_swing",
+"en": "Kettlebell swing",
+"set": "fw"
+},
+{
+"id": "fw_single_leg_dumbbell_calf_raise",
+"en": "Single-leg dumbbell calf raise",
+"set": "fw"
+},
+{
+"id": "fw_farmer_s_carry",
+"en": "Farmer's carry",
+"set": "fw"
+},
+{
+"id": "fw_suitcase_carry",
+"en": "Suitcase carry",
+"set": "fw"
+},
+{
+"id": "fw_band_pallof_press",
+"en": "Band Pallof press",
+"set": "fw"
+},
+{
+"id": "mc_leg_press",
+"en": "Leg press",
+"set": "mc"
+},
+{
+"id": "mc_hack_squat",
+"en": "Hack squat",
+"set": "mc"
+},
+{
+"id": "mc_leg_extension",
+"en": "Leg extension",
+"set": "mc"
+},
+{
+"id": "mc_lying_leg_curl",
+"en": "Lying leg curl",
+"set": "mc"
+},
+{
+"id": "mc_seated_leg_curl",
+"en": "Seated leg curl",
+"set": "mc"
+},
+{
+"id": "mc_hip_thrust_machine",
+"en": "Hip thrust machine",
+"set": "mc"
+},
+{
+"id": "mc_hip_abduction_machine",
+"en": "Hip abduction machine",
+"set": "mc"
+},
+{
+"id": "mc_hip_adduction_machine",
+"en": "Hip adduction machine",
+"set": "mc"
+},
+{
+"id": "mc_standing_calf_raise_machine",
+"en": "Standing calf raise machine",
+"set": "mc"
+},
+{
+"id": "mc_seated_calf_raise_machine",
+"en": "Seated calf raise machine",
+"set": "mc"
+},
+{
+"id": "mc_lat_pulldown",
+"en": "Lat pulldown",
+"set": "mc"
+},
+{
+"id": "mc_assisted_pull_up_machine",
+"en": "Assisted pull-up machine",
+"set": "mc"
+},
+{
+"id": "mc_seated_cable_row",
+"en": "Seated cable row",
+"set": "mc"
+},
+{
+"id": "mc_reverse_pec_deck",
+"en": "Reverse pec deck",
+"set": "mc"
+},
+{
+"id": "mc_cable_face_pull",
+"en": "Cable face pull",
+"set": "mc"
+},
+{
+"id": "mc_cable_biceps_curl",
+"en": "Cable biceps curl",
+"set": "mc"
+},
+{
+"id": "mc_chest_press_machine",
+"en": "Chest press machine",
+"set": "mc"
+},
+{
+"id": "mc_pec_deck_cable_fly",
+"en": "Pec deck / cable fly",
+"set": "mc"
+},
+{
+"id": "mc_shoulder_press_machine",
+"en": "Shoulder press machine",
+"set": "mc"
+},
+{
+"id": "mc_cable_lateral_raise",
+"en": "Cable lateral raise",
+"set": "mc"
+},
+{
+"id": "mc_cable_triceps_pushdown",
+"en": "Cable triceps pushdown",
+"set": "mc"
+},
+{
+"id": "mc_cable_crunch",
+"en": "Cable crunch",
+"set": "mc"
+},
+{
+"id": "mc_45_back_extension",
+"en": "45° back extension",
+"set": "mc"
+},
+{
+"id": "mx_machine_row",
+"en": "Machine row",
+"set": "mx"
+},
+{
+"id": "mx_chest_supported_row",
+"en": "Chest-supported row",
+"set": "mx"
+},
+{
+"id": "mx_t_bar_row",
+"en": "T-bar row",
+"set": "mx"
+},
+{
+"id": "mx_assisted_dip_machine",
+"en": "Assisted dip machine",
+"set": "mx"
+},
+{
+"id": "mx_machine_preacher_curl",
+"en": "Machine preacher curl",
+"set": "mx"
+},
+{
+"id": "mx_machine_lateral_raise",
+"en": "Machine lateral raise",
+"set": "mx"
+},
+{
+"id": "mx_ab_crunch_machine",
+"en": "Ab crunch machine",
+"set": "mx"
+},
+{
+"id": "mx_machine_glute_kickback",
+"en": "Machine glute kickback",
+"set": "mx"
+},
+{
+"id": "mx_reverse_hyperextension",
+"en": "Reverse hyperextension",
+"set": "mx"
+},
+{
+"id": "mx_belt_squat",
+"en": "Belt squat",
+"set": "mx"
+},
+{
+"id": "mx_leg_press_calf_raise",
+"en": "Leg press calf raise",
+"set": "mx"
+},
+{
+"id": "mx_captain_s_chair_knee_raise",
+"en": "Captain's chair knee raise",
+"set": "mx"
+},
+{
+"id": "mx_wide_grip_lat_pulldown",
+"en": "Wide-grip lat pulldown",
+"set": "mx"
+},
+{
+"id": "mx_close_grip_lat_pulldown",
+"en": "Close-grip lat pulldown",
+"set": "mx"
+},
+{
+"id": "mx_straight_arm_pulldown",
+"en": "Straight-arm pulldown",
+"set": "mx"
+},
+{
+"id": "mx_single_arm_cable_row",
+"en": "Single-arm cable row",
+"set": "mx"
+},
+{
+"id": "mx_cable_overhead_triceps_extension",
+"en": "Cable overhead triceps extension",
+"set": "mx"
+},
+{
+"id": "mx_rope_hammer_curl",
+"en": "Rope hammer curl",
+"set": "mx"
+},
+{
+"id": "mx_cable_rear_delt_fly",
+"en": "Cable rear delt fly",
+"set": "mx"
+},
+{
+"id": "mx_cable_front_raise",
+"en": "Cable front raise",
+"set": "mx"
+},
+{
+"id": "mx_incline_cable_fly",
+"en": "Incline cable fly",
+"set": "mx"
+},
+{
+"id": "mx_cable_kickback",
+"en": "Cable kickback",
+"set": "mx"
+},
+{
+"id": "mx_cable_pull_through",
+"en": "Cable pull-through",
+"set": "mx"
+},
+{
+"id": "mx_cable_hip_abduction",
+"en": "Cable hip abduction",
+"set": "mx"
+},
+{
+"id": "mx_cable_hip_adduction",
+"en": "Cable hip adduction",
+"set": "mx"
+},
+{
+"id": "mx_cable_woodchop",
+"en": "Cable woodchop",
+"set": "mx"
+},
+{
+"id": "mx_half_kneeling_pallof_press",
+"en": "Half-kneeling Pallof press",
+"set": "mx"
+},
+{
+"id": "mx_smith_machine_squat",
+"en": "Smith machine squat",
+"set": "mx"
+},
+{
+"id": "mx_smith_machine_bench_press",
+"en": "Smith machine bench press",
+"set": "mx"
+},
+{
+"id": "mx_smith_machine_hip_thrust",
+"en": "Smith machine hip thrust",
+"set": "mx"
+},
+{
+"id": "mx_smith_machine_romanian_deadlift",
+"en": "Smith machine Romanian deadlift",
+"set": "mx"
+},
+{
+"id": "mx_smith_machine_split_squat",
+"en": "Smith machine split squat",
+"set": "mx"
+}
+]
