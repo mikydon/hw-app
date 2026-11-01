@@ -11,34 +11,54 @@
 "diamantové kľuky",
 "kľuky s úzkym úchopom",
 "tricepsové kľuky",
-"diamond push-up"
+"diamond push-up",
+"diamantový klik",
+"diamantové kliky",
+"kliky s úzkym úchopom",
+"tricepsové kliky",
+"diamond klik"
 ],
 "r1": [
 "Pike kľuk",
 "kľuky v predklone",
 "ramenné kľuky",
-"pike push-up"
+"pike push-up",
+"pike klik",
+"kliky v predklone",
+"ramenné kliky"
 ],
 "kIncl": [
 "Šikmý kľuk",
 "kľuky o stôl",
 "kľuky s rukami vyššie",
-"incline push-up"
+"incline push-up",
+"šikmý klik",
+"kliky o stôl",
+"kliky s rukami vyššie",
+"šikmý klik o stôl"
 ],
 "kKnee": [
 "Kľuk na kolenách",
 "kľuky z kolien",
 "dámske kľuky",
-"knee push-up"
+"knee push-up",
+"klik na kolenách",
+"kliky z kolien",
+"dámske kliky"
 ],
 "r1e": [
 "Pike kľuk s nohami na stoličke",
 "pike kľuky s vyvýšenými nohami",
-"elevated pike push-up"
+"elevated pike push-up",
+"pike klik s nohami na stoličke",
+"pike kliky s vyvýšenými nohami"
 ],
 "k3e": [
 "Diamantový kľuk s nohami na stoličke",
-"diamantové kľuky s vyvýšenými nohami"
+"diamantové kľuky s vyvýšenými nohami",
+"diamantový klik s nohami na stoličke",
+"diamantové kliky s vyvýšenými nohami",
+"diamond klik s nohami na stoličke"
 ],
 "row1": [
 "Príťah o rám dverí",
@@ -50,7 +70,8 @@
 "Príťah s uterákom o dvere",
 "veslovanie s uterákom",
 "príťahy s uterákom",
-"towel row"
+"towel row",
+"veslovanie s uterákom o dvere"
 ],
 "row3": [
 "Široký príťah o rám dverí",
@@ -140,7 +161,8 @@
 "Výdrž v miske",
 "hollow body",
 "loďka",
-"hollow hold"
+"hollow hold",
+"hollow body hold"
 ],
 "legraise": [
 "Zdvíhanie nôh v ľahu",
@@ -263,23 +285,33 @@
 "bw_wall_push_up": [
 "Kľuk o stenu",
 "kľuky o stenu",
-"kľuky v stoji"
+"kľuky v stoji",
+"klik o stenu",
+"kliky o stenu",
+"kliky v stoji"
 ],
 "bw_decline_push_up": [
 "Kľuk s nohami vyššie",
 "kľuky s nohami na stoličke",
-"decline push-up"
+"decline push-up",
+"klik s nohami vyššie",
+"kliky s nohami na stoličke"
 ],
 "bw_archer_push_up": [
 "Lukostrelecký kľuk",
 "archer kľuky",
-"kľuky do strán"
+"kľuky do strán",
+"lukostrelecký klik",
+"archer kliky",
+"kliky do strán"
 ],
 "bw_scapular_push_up": [
 "Lopatkový kľuk",
 "lopatkové kľuky",
 "push-up plus",
-"scap push-up"
+"scap push-up",
+"lopatkový klik",
+"lopatkové kliky"
 ],
 "bw_wall_handstand_hold": [
 "Stojka pri stene",
@@ -290,7 +322,9 @@
 "Dipy na stoličke",
 "tricepsové kľuky o stoličku",
 "zadné kľuky",
-"bench dip"
+"bench dip",
+"tricepsové kliky o stoličku",
+"zadné kliky"
 ],
 "bw_bodyweight_triceps_extension": [
 "Tricepsové prepnutie o stôl",
