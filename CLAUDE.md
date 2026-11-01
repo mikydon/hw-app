@@ -70,6 +70,19 @@ Talk to Michael in casual Slovak. Before you deliver anything, test it (build pl
 - Post-workout stretching is optional, per the 2025 Delphi consensus.
 - Turned-off exercises (`exOff`): `effId(slot)` replaces a day's exercise with the next one of the same type from `ALT_GROUPS` that is on, preferring ones no other day uses. At least one per type must stay on (the UI blocks the last one). A workout stores `session.base` (slot → exercise) at the start; older sessions without it fall back to `effId`.
 
+## Open TODO (tidied Nov 1, 2026 after 1.8.2; the ONE list of open work, Michael picks the order)
+Older "TODO" lines in the Roadmap below are history; when something here is done, move it to the Roadmap with its version.
+1. **1.9.0 (Michael, Nov 1: both in one big update; not started, he wants to see the plan first):**
+   - Menu order: a pencil in the ☰ menu; tapping it shows ≡ handles on the right of every row, drag a row and the others move out of the way (like other apps). The first row = the screen the app opens on (e.g. Calories first for people who only count calories). Saved in settings (sync it), Back on that start screen behaves like Home today.
+   - Workout plan: a new screen where the user picks either **Recommended** (today's A/B/C logic) or **My plan**: their own workouts built from the app's exercises (soft recommendation icons push/pull/legs/core, a tap explains why: e.g. only arms, little chest across all days; never forced; timed exercises start at the app's recommended time, a change replaces it, removing it brings the recommendation back), put in an order "day 1, day 2, day 3…" that repeats; **rest days are part of the plan** (Michael). Home offers the plan's next day, any other can be picked for today, days done this week are green (no words). Several workouts can share a day slot and alternate (A1/A2). Open design points: the streak must follow the plan's rest days (also `src/fair.js` + the Worker), history `day` for own workouts (calendar letter, `abc` badge), sync of plans (profile).
+2. **Exercise research** (needed for more exercises in plans): new bodyweight exercises + gym machines: names, how-to texts, figures/pictures; look for a free illustration set (check the licence) that could replace the stick figures.
+3. **Weights**: dumbbells / machines logged as sets × reps × kg with the same "last time + at least one more" push.
+4. **Workout note**: optional note after an exercise/workout ("my hand hurt", "slept badly"), saved in history.
+5. **Muscle Deck Ranked**: only against real players (play a normal Run while waiting; no paid server); its own leaderboard and a rank that drops on losses. The bot is too slow for the free Worker (~60 ms a duel).
+6. **After the app is public on Google Play**: prices "tight like Duolingo" (tune prices, never earnings), rewarded ads (AdMob, by choice, daily cap, consent, privacy + Data safety, Play build only), buying diamonds (Play Billing), 8-week season pass, many more looks, "suggest a look" (text + image with a rights checkbox, e-mailed via the Worker + Resend to hwapp.support@gmail.com), trading items (check Play policy first). Never sell anything random.
+7. **Ideas, not planned**: AI judging "can't train" reasons for the streak; more anti-cheat for the world list (plausibility limits, Worker flags); app name (Koti: Home Workout was the lead candidate, kept HW App for now).
+8. **Reminders**: Android developer verification for sideloaded apps (worldwide planned 2027; Michael's Play account is verified, the app is registered); the Play pre-launch robot's password-reset e-mails to the review account are harmless (no fix, Michael Nov 1).
+
 ## Roadmap (agreed order)
 1. Done in v1.2.0: 11 languages, HW App branding and logo. Settings tab was v1.1.0.
    Done in v1.3.0: sheet fix, daily lines + closable cards, history editing/manual add, full reset, Settings → Exercises.
