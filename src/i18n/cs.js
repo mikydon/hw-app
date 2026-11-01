@@ -1736,6 +1736,7 @@ export default {
     "Jokeři, poukázky, balíčky a perky v Muscle Decku mají místo emoji čárové ikony, stejně jako emoji, která byla v textech (šňůra, zmrazení, rekord…).",
     "Méně textu v Kaloriích, Muscle Decku a Nastavení: barevná legenda týdne a poznámka o soukromí jsou za ?, Duel a Ranked jsou dvě malé zamčené dlaždice a perky jsou řada ikon, na které můžeš ťuknout.",
     "Návod ukazuje novinky: řádky týdenních výzev na Domů, vzhledy profilu a podržení přítele pro jeho kartu.",
+    "Odznaky mají ikonu v tmavé jamce nasvícené zespodu jako hologram (odznak, který ještě nemáš, zůstává tlumený), Železo má vlastní teplou železnou barvu (vypadalo jako Stříbro), Mráz pokrývá všechny čtyři rohy s námrazou po okraji a ohňostroj i jiskry zůstávají vždy celé v rámečku.",
   ],
   news181: [
     "Návod je kratší: ukáže Úvod a ☰ menu a potom ti každá obrazovka sama ukáže, co na ní je, když ji poprvé otevřeš. Nové kapitoly pro Muscle Deck a Obchod.",

@@ -1736,6 +1736,7 @@ export default {
     "Jokery, bony, paczki i perki w Muscle Deck mają ikony zamiast emoji, tak samo jak emoji, które były w tekstach (seria, zamrożenie, rekord…).",
     "Mniej tekstu w Kaloriach, Muscle Deck i Ustawieniach: kolorowa legenda tygodnia i notka o prywatności są pod ?, Pojedynek i Rankingowa to dwa małe zablokowane kafelki, a perki to rząd ikon, które można stuknąć.",
     "Przewodnik pokazuje nowości: wiersze wyzwań tygodnia na Głównej, wygląd profilu i przytrzymanie znajomego, by zobaczyć jego kartę.",
+    "Odznaki mają ikonę w ciemnym zagłębieniu podświetlonym od dołu jak hologram (odznaka, której jeszcze nie masz, jest przygaszona), Żelazo ma własny ciepły kolor żelaza (wyglądało jak Srebro), Szron pokrywa wszystkie cztery rogi ze szronem wzdłuż krawędzi, a fajerwerki i iskry zawsze mieszczą się w całości w ramce.",
   ],
   news181: [
     "Przewodnik jest krótszy: pokazuje Start i menu ☰, a potem każdy ekran sam cię oprowadza przy pierwszym otwarciu. Nowe rozdziały o Muscle Deck i Sklepie.",

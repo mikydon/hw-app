@@ -1736,6 +1736,7 @@ export default {
     "Die Joker, Gutscheine, Packs und Perks in Muscle Deck haben Linien-Symbole statt Emoji, ebenso die Emoji, die in Texten standen (Serie, Freeze, Rekord…).",
     "Weniger Text bei Kalorien, Muscle Deck und Einstellungen: Die Farblegende der Woche und der Datenschutzhinweis sind hinter einem ?, Duell und Ranked sind zwei kleine gesperrte Kacheln, und die Perks sind eine Reihe antippbarer Symbole.",
     "Die Anleitung zeigt das Neue: die Wochen-Challenges als Zeilen auf Start, deine Profil-Looks und das Gedrückthalten eines Freundes für seine Karte.",
+    "Abzeichen zeigen ihr Symbol in einer dunklen Mulde, von unten beleuchtet wie ein Hologramm (ein Abzeichen, das du noch nicht hast, bleibt gedämpft), Eisen hat eine eigene warme Eisenfarbe (es sah aus wie Silber), Frost bedeckt alle vier Ecken mit Raureif am Rand, und Feuerwerk und Funkeln bleiben immer ganz im Rahmen.",
   ],
   news181: [
     "Die Anleitung ist kürzer: Sie zeigt Start und das ☰-Menü, danach zeigt dir jeder Bildschirm sich selbst, wenn du ihn zum ersten Mal öffnest. Neue Kapitel für Muscle Deck und den Shop.",

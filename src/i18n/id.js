@@ -1736,6 +1736,7 @@ export default {
     "Joker, voucher, paket, dan perk di Muscle Deck memakai ikon garis, bukan emoji, begitu juga emoji yang ada di dalam teks (streak, pembeku, rekor…).",
     "Lebih sedikit teks di Kalori, Muscle Deck, dan Pengaturan: legenda warna minggu ini dan catatan privasi ada di balik ?, Duel dan Peringkat jadi dua ubin kecil terkunci, dan perk jadi deretan ikon yang bisa diketuk.",
     "Panduan menunjukkan yang baru: baris tantangan mingguan di Beranda, tampilan profil, dan menahan seorang teman untuk melihat kartunya.",
+    "Lencana menampilkan ikonnya di cekungan gelap yang disinari dari bawah seperti hologram (lencana yang belum kamu punya tetap redup), Besi punya warna besi hangat sendiri (dulu mirip Perak), Embun beku menutupi keempat sudut dengan tepi beku, dan kembang api serta kilau selalu utuh di dalam bingkai.",
   ],
   news181: [
     "Panduannya lebih singkat: menunjukkan Beranda dan menu ☰, lalu setiap layar memperkenalkan dirinya saat pertama kali kamu buka. Bab baru untuk Muscle Deck dan Toko.",

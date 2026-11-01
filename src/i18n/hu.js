@@ -1736,6 +1736,7 @@ export default {
     "A Muscle Deck jokerei, utalványai, csomagjai és perkjei emoji helyett vonalas ikonokat kaptak, ahogy a szövegekben lévő emojik is (széria, fagyasztás, rekord…).",
     "Kevesebb szöveg a Kalóriákban, a Muscle Deckben és a Beállításokban: a hét színmagyarázata és az adatvédelmi megjegyzés a ? mögé került, a Párbaj és a Rangsorolt két kis zárolt csempe, a perkek pedig egy sor koppintható ikon.",
     "Az útmutató megmutatja az újdonságokat: a heti kihívások sorait a Kezdőlapon, a profilkinézeteket és a barát kártyáját lenyomva tartással.",
+    "A jelvények ikonja egy alulról hologramként megvilágított sötét mélyedésben ül (a még meg nem szerzett jelvény halvány marad), a Vas saját meleg vasszínt kapott (olyan volt, mint az Ezüst), a Dér mind a négy sarkot borítja zúzmarás szegéllyel, a tűzijáték és a szikrák pedig mindig egészben a kereten belül maradnak.",
   ],
   news181: [
     "Rövidebb az útmutató: megmutatja a Kezdőlapot és a ☰ menüt, utána minden képernyő magától körbevezet, amikor először megnyitod. Új fejezetek a Muscle Deckhez és a Bolthoz.",

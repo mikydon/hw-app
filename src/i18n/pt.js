@@ -1736,6 +1736,7 @@ export default {
     "Os curingas, vales, pacotes e vantagens do Muscle Deck têm ícones de linha em vez de emojis, assim como os emojis que estavam nos textos (sequência, congelamento, recorde…).",
     "Menos texto em Calorias, Muscle Deck e Configurações: a legenda de cores da semana e a nota de privacidade ficam atrás de um ?, Duelo e Ranqueado são dois blocos pequenos bloqueados e as vantagens são uma linha de ícones que você pode tocar.",
     "O guia mostra as novidades: as linhas dos desafios da semana no Início, os visuais do perfil e segurar um amigo para ver o cartão dele.",
+    "Os emblemas mostram o ícone num buraco escuro iluminado por baixo como um holograma (um emblema que você ainda não tem fica apagado), Ferro tem a sua própria cor de ferro quente (parecia Prata), Geada cobre os quatro cantos com uma borda congelada, e os fogos de artifício e brilhos ficam sempre inteiros dentro da moldura.",
   ],
   news181: [
     "O guia ficou mais curto: mostra o Início e o menu ☰, e depois cada tela se apresenta sozinha na primeira vez que você a abre. Capítulos novos para o Muscle Deck e a Loja.",

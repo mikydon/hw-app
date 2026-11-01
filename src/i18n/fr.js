@@ -1736,6 +1736,7 @@ export default {
     "Les jokers, bons, paquets et avantages de Muscle Deck ont des icônes au trait au lieu d'emojis, tout comme les emojis qui étaient dans les textes (série, gel, record…).",
     "Moins de texte dans Calories, Muscle Deck et Réglages : la légende des couleurs de la semaine et la note sur la confidentialité sont derrière un ?, Duel et Classé sont deux petites tuiles verrouillées, et les avantages sont une rangée d'icônes à toucher.",
     "Le guide montre les nouveautés : les lignes des défis de la semaine sur l'Accueil, les looks du profil et l'appui long sur un ami pour voir sa carte.",
+    "Les badges montrent leur icône dans un creux sombre éclairé par-dessous comme un hologramme (un badge que tu n'as pas encore reste atténué), Fer a sa propre couleur de fer chaude (il ressemblait à Argent), Givre couvre les quatre coins avec un bord givré, et les feux d'artifice et étincelles restent toujours entiers dans le cadre.",
   ],
   news181: [
     "Le guide est plus court : il montre l'Accueil et le menu ☰, puis chaque écran se présente lui-même la première fois que tu l'ouvres. Nouveaux chapitres pour Muscle Deck et la Boutique.",

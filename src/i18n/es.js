@@ -1736,6 +1736,7 @@ export default {
     "Los comodines, vales, sobres y ventajas de Muscle Deck tienen iconos de línea en vez de emojis, igual que los emojis que había en los textos (racha, congelación, récord…).",
     "Menos texto en Calorías, Muscle Deck y Ajustes: la leyenda de colores de la semana y la nota de privacidad están tras un ?, Duelo y Clasificatoria son dos fichas pequeñas bloqueadas y las ventajas son una fila de iconos que puedes tocar.",
     "La guía muestra lo nuevo: las filas de retos semanales en Inicio, los estilos del perfil y mantener pulsado a un amigo para ver su tarjeta.",
+    "Las insignias muestran su icono en un hueco oscuro iluminado desde abajo como un holograma (una insignia que aún no tienes queda atenuada), Hierro tiene su propio color de hierro cálido (parecía Plata), Escarcha cubre las cuatro esquinas con un borde helado, y los fuegos artificiales y destellos siempre quedan enteros dentro del marco.",
   ],
   news181: [
     "La guía es más corta: enseña Inicio y el menú ☰, y luego cada pantalla se presenta sola la primera vez que la abres. Capítulos nuevos para Muscle Deck y la Tienda.",

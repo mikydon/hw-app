@@ -33,6 +33,11 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 - The guide shows what's new in 1.8.2: the weekly challenge rows on Home, the profile looks button, and holding a friend for their card.
 - A pack with more choices than fit on a short screen scrolls.
 
+- Badges (Michael: "the icon has the colour of its background; Iron on bronze is hard to see"): on the Badges page every icon sits in a dark, sunken well with no border, lit from below like a hologram in the badge's level colour; a badge you don't have yet has no light, only a dim icon.
+- Iron and Silver no longer look alike: Iron's colour and emblem are a dark, warm iron (they were the same cool grey-blue as Silver).
+- Frost (profile effect): the frost no longer looks squeezed (it was stretched with the box); it grows in all four corners at its real shape, with a soft rime along every edge.
+- Fireworks (profile effect): a burst sometimes only flashed without opening into a ring, because it was placed near an edge (or in a small box) where most of the ring was cut off. Every burst is now placed so its whole ring is inside the box, and its size fits the box. Sparkles stay whole inside too. All 8 profile effects were checked for this.
+
 ## 1.8.1 (2026-10-31)
 
 - The guide is shorter: it shows Home and the ☰ menu, then every screen shows you around by itself the first time you open it. New chapters for Muscle Deck and the Shop (9 chapters; all of them make the Explorer badge Obsidian, 7 stay Diamond).

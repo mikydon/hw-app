@@ -942,7 +942,7 @@ function ExFigure({ id }) {
 // Platinum → Diamond gap, and Obsidian is a challenge feat (e.g. a 10-minute plank, 80 slow push-ups) that only very
 // well trained people reach. Every exercise has ranks (before 1.8.0 only the 12 of the program).
 const RANKS = [
-  { name: "", icon: "⚙️", color: "#9aa5b8" },
+  { name: "", icon: "⚙️", color: "#8c8279" }, // 1.8.2 (Michael: "Iron and Silver look almost the same"): warm graphite, Silver stays cool and light
   { name: "", icon: "🥉", color: "#e0955a" },
   { name: "", icon: "🥈", color: "#cfd8ea" },
   { name: "", icon: "🥇", color: "#ffd23f" },
@@ -963,7 +963,7 @@ const RARITY = { 4: "rare", 6: "epic", 8: "legend" };
 // Rank emblems (1.8.2): one family, the shape grows with the rank. viewBox 48.
 const RK_EMB = [
   // [shape, light, mid, dark, line, motif]
-  { s: "shield", c: ["#c9d1de", "#8a95a8", "#4d5668"], line: "#2a303b", m: "rivets" },        // Iron
+  { s: "shield", c: ["#b8ada1", "#7f746a", "#3b3530"], line: "#1c1916", m: "rivets" }, // Iron (1.8.2: dark warm iron, never like Silver)
   { s: "shield", c: ["#ffc08a", "#d07a3e", "#7a3d17"], line: "#40200b", m: "chev1" },         // Bronze
   { s: "shield", c: ["#ffffff", "#c4cee0", "#7d889c"], line: "#3f4757", m: "chev2" },         // Silver
   { s: "shield", c: ["#fff3a8", "#ffcc33", "#b7800a"], line: "#5c3d00", m: "star" },          // Gold
@@ -2284,7 +2284,17 @@ function IcoI({ n, color, sw = 2.3, style }) {
   return <svg data-ico={n} viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true" style={{ display: "inline-block", verticalAlign: "-0.14em", flexShrink: 0, fill: "none", stroke: color || "currentColor", strokeWidth: sw, strokeLinecap: "round", strokeLinejoin: "round", ...style }} dangerouslySetInnerHTML={{ __html: ICONS[n] || "" }} />;
 }
 // 1.8.2: a badge's picture: its line icon in the colour of the level it reached (grey while locked), on a tinted tile
-function BadgeIco({ n, col, size = 40, glow }) {
+// well: 1.8.2 (Michael: "on a bronze row the icon is hard to see; put it in a dark 3D hole, no border, lit from below
+// like a hologram") — used on the Badges list.
+function BadgeIco({ n, col, size = 40, glow, well }) {
+  if (well && ICONS[n]) {
+    const c = col || C.dim, R = Math.round(size * 0.3);
+    return <span aria-hidden="true" data-badge-ico={n} data-well="1" style={{ width: size, height: size, borderRadius: R, flexShrink: 0, position: "relative", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", background: "radial-gradient(120% 90% at 50% 20%, #0b0f18 0%, #03050a 70%)", boxShadow: "inset 0 4px 7px rgba(0,0,0,.9), inset 0 -1px 1px rgba(255,255,255,.10), 0 1px 0 rgba(255,255,255,.06)" }}>
+      {col && <span style={{ position: "absolute", left: "8%", right: "8%", bottom: 0, height: "70%", background: `radial-gradient(60% 100% at 50% 100%, ${c}77, transparent 75%)`, pointerEvents: "none" }} />}
+      {col && <span style={{ position: "absolute", left: "22%", right: "22%", bottom: 1, height: 2, borderRadius: 99, background: c, opacity: 0.9, boxShadow: `0 0 8px 1px ${c}`, pointerEvents: "none" }} />}
+      <span style={{ position: "relative", display: "flex", filter: col ? `drop-shadow(0 0 3px ${c}) drop-shadow(0 2px 6px ${c}88)` : "none" }}><Ico n={n} size={Math.round(size * 0.55)} color={col ? `color-mix(in srgb, ${c} 50%, #fff)` : C.dim} sw={2} style={{ opacity: col ? 1 : 0.45 }} /></span>
+    </span>;
+  }
   const c = col || C.dim;
   if (!ICONS[n]) return <span aria-hidden="true" style={{ fontSize: size * 0.6, lineHeight: 1, flexShrink: 0 }}>{n}</span>;
   return <span aria-hidden="true" data-badge-ico={n} style={{ width: size, height: size, borderRadius: Math.round(size * 0.3), background: `${c}22`, boxShadow: `inset 0 0 0 1.5px ${c}55${glow ? `, 0 0 ${Math.round(size * 0.4)}px ${c}55` : ""}`, color: c, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Ico n={n} size={Math.round(size * 0.56)} sw={size > 60 ? 1.8 : 2} /></span>;
@@ -4968,7 +4978,7 @@ function BadgesList({ m, focus, claim }) {
               onClick={() => { sfxTap(); setOpen(a.k); }}
               style={{ ...btnBase, fontWeight: 400, textAlign: "left", width: "100%", color: C.chalk, ...rr.style, padding: "11px 12px", display: "block" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <BadgeIco n={a.icon} col={r ? RANKS[a.tier - 1].color : null} size={38} />
+                <BadgeIco n={a.icon} col={r ? RANKS[a.tier - 1].color : null} size={38} well />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 14, fontWeight: 800, color: C.chalk, lineHeight: 1.2 }}>{a.name}{m.own && CARD_HIDE.includes(a.k) && <span data-only-you style={{ fontSize: 10.5, fontWeight: 700, color: C.dim, marginLeft: 6, whiteSpace: "nowrap" }}>· {T("pfOnlyYou")}</span>}</div>
                   <div style={{ marginTop: 3 }}>{label}</div>
@@ -7962,7 +7972,42 @@ const lkRnd = k => { const x = Math.sin(k * 12.9898 + 78.233) * 43758.5453; retu
 // itself (no re-render). Fireworks also change colour and spot every burst; lightning strikes somewhere else each time.
 const lkPct = (lo, hi) => `${(lo + Math.random() * (hi - lo)).toFixed(1)}%`;
 const lkReX = e => { if (e.target === e.currentTarget) e.currentTarget.style.left = lkPct(0, 100); };
-const lkReXY = e => { if (e.target === e.currentTarget) { e.currentTarget.style.left = lkPct(2, 94); e.currentTarget.style.top = lkPct(2, 90); } };
+// a spot where the whole element is inside its box (1.8.2: sparkles near the bottom edge were cut in half)
+const lkIn = (p, size, pad = 0) => `calc(${(p * 100).toFixed(1)}% - ${(p * (size + 2 * pad) - pad).toFixed(1)}px)`; // pad: room for a turned shape
+const lkReXY = e => { const el = e.currentTarget; if (e.target !== el) return; const w = (el.width && el.width.baseVal && el.width.baseVal.value) || 12; el.style.left = lkIn(Math.random(), w, w * 0.22); el.style.top = lkIn(Math.random(), w, w * 0.22); };
+// 1.8.2 (Michael: "sometimes a small firework only appears and never bursts into a ring"): the bursts were placed in
+// percent with a fixed radius, so near an edge (or in a small box) most of the ring was cut off and only a flash
+// showed. Now every burst is placed in pixels inside its box with the whole ring in view, its radius fits the box,
+// and it moves only between two bursts (when every spark is invisible).
+const FW_COLS = () => [C.signal, LK_PINK, C.sky, C.mint, LK_VIOLET, "#ff8a5c"];
+function fwPlace(el, rnd = Math.random) {
+  const box = el && el.parentElement; if (!box) return;
+  const w = box.clientWidth, h = box.clientHeight; if (!w || !h) return;
+  const r = Math.max(8, Math.min(18 + rnd() * 20, Math.min(w, h) / 2 - 10)), m = r + 8;
+  el.style.left = `${Math.round(m + rnd() * Math.max(0, w - 2 * m))}px`;
+  el.style.top = `${Math.round(m + rnd() * Math.max(0, h - 2 * m))}px`;
+  el.style.setProperty("--r", `${Math.round(r)}px`);
+  const cs = FW_COLS(); el.style.setProperty("--c", cs[Math.floor(rnd() * cs.length)]);
+}
+function FwBurst({ k, rs }) {
+  const ref = useRef(null);
+  useLayoutEffect(() => { let i = 0; fwPlace(ref.current, () => rs[(k * 7 + i++) % rs.length]); }, []);
+  const dur = 2.4 + k * 0.35, delay = k * 0.9 + rs[k + 9] * 0.5;
+  return <span ref={ref} data-fw-burst={k} onAnimationIteration={e => { if (e.target.dataset.i === "0") fwPlace(ref.current); }} style={{ position: "absolute", left: "50%", top: "50%", width: 0, height: 0, "--c": C.signal, "--r": "24px" }}>
+    {Array.from({ length: 12 }, (_, i) => <span key={i} data-i={i} className="lkBurst" style={{ "--a": `${i * 30 + k * 10}deg`, position: "absolute", width: 4, height: 4, marginLeft: -2, marginTop: -2, borderRadius: 99, background: "var(--c)", boxShadow: "0 0 6px var(--c)", animationDelay: `${delay.toFixed(2)}s`, animationDuration: `${dur.toFixed(2)}s` }} />)}
+  </span>;
+}
+// 1.8.2 (Michael: "the frost in the corners looks squeezed"): one frost piece per corner, drawn in a square so it keeps
+// its shape on any box, mirrored into all four corners, plus a soft rime along every edge.
+const FROST_D = (() => {
+  let d = "";
+  const arm = (a, L, side) => {
+    const ca = Math.cos(a), sa = Math.sin(a); d += `M0 0L${(ca * L).toFixed(1)} ${(sa * L).toFixed(1)}`;
+    for (let t = 0.3; t < 0.95; t += 0.22) { const x = ca * L * t, y = sa * L * t, l = L * (1 - t) * 0.42; for (const s2 of side) { const b = a + s2 * 0.75; d += `M${x.toFixed(1)} ${y.toFixed(1)}l${(Math.cos(b) * l).toFixed(1)} ${(Math.sin(b) * l).toFixed(1)}`; } }
+  };
+  [[0.12, 58], [0.42, 44], [0.78, 66], [1.12, 46], [1.45, 56]].forEach(([a, L]) => arm(a, L, [-1, 1]));
+  return d;
+})();
 function LookFx({ id, thumb }) {
   const rs = useMemo(() => Array.from({ length: 120 }, () => Math.random()), [id]);
   if (!id || !EC.LOOKS[id]) return null;
@@ -7970,20 +8015,18 @@ function LookFx({ id, thumb }) {
   const col = (x, dur, delay, kids, cls = "lkDown") => <span className={"lkCol " + cls} onAnimationIteration={lkReX} style={{ left: `${(x * 100).toFixed(1)}%`, animationDuration: `${dur.toFixed(1)}s`, animationDelay: `${(-delay).toFixed(1)}s` }}>{kids}</span>;
   let body = null;
   if (id === "fx_snow") body = n(22, (i, a, b, c) => <Fragment key={i}>{col(a, 6 + b * 6, c * 12, <span style={{ display: "block", width: 2 + Math.round(b * 3), height: 2 + Math.round(b * 3), borderRadius: 99, background: "#fff", opacity: 0.85 }} />)}</Fragment>);
-  if (id === "fx_sparkle") body = n(14, (i, a, b, c) => <svg key={i} viewBox="-6 -6 12 12" width={8 + b * 10} height={8 + b * 10} className="lkTwk" onAnimationIteration={lkReXY} style={{ position: "absolute", left: `${(a * 96).toFixed(1)}%`, top: `${(c * 92).toFixed(1)}%`, animationDelay: `${(b * 2.4).toFixed(2)}s`, animationDuration: `${(1.8 + c * 1.6).toFixed(1)}s` }}><path d="M0 -6 L1.4 -1.4 L6 0 L1.4 1.4 L0 6 L-1.4 1.4 L-6 0 L-1.4 -1.4 Z" fill={i % 3 ? "#fff" : C.signal} /></svg>);
+  if (id === "fx_sparkle") body = n(14, (i, a, b, c) => <svg key={i} viewBox="-6 -6 12 12" width={8 + b * 10} height={8 + b * 10} className="lkTwk" onAnimationIteration={lkReXY} style={{ position: "absolute", left: lkIn(a, 8 + b * 10, (8 + b * 10) * 0.22), top: lkIn(c, 8 + b * 10, (8 + b * 10) * 0.22), animationDelay: `${(b * 2.4).toFixed(2)}s`, animationDuration: `${(1.8 + c * 1.6).toFixed(1)}s` }}><path d="M0 -6 L1.4 -1.4 L6 0 L1.4 1.4 L0 6 L-1.4 1.4 L-6 0 L-1.4 -1.4 Z" fill={i % 3 ? "#fff" : C.signal} /></svg>);
   if (id === "fx_petals") body = n(14, (i, a, b, c) => <Fragment key={i}>{col(a, 8 + b * 6, c * 14, <span className="lkSway" style={{ display: "block", width: 9, height: 6, borderRadius: "60% 40% 60% 40%", background: i % 2 ? "#ffb3c7" : "#ffd1dc", opacity: 0.9, animationDelay: `${(-b * 3).toFixed(1)}s` }} />)}</Fragment>);
   if (id === "fx_embers") body = n(18, (i, a, b, c) => <Fragment key={i}>{col(a, 4 + b * 4, c * 8, <span style={{ display: "block", width: 3 + Math.round(b * 2), height: 3 + Math.round(b * 2), borderRadius: 99, background: i % 3 ? "#ffb347" : "#ff6a2f", boxShadow: "0 0 6px #ff7a1a" }} />, "lkUp lkFade")}</Fragment>);
   if (id === "fx_confetti") { const cs = [C.signal, LK_PINK, C.sky, C.mint, LK_VIOLET]; body = n(20, (i, a, b, c) => <Fragment key={i}>{col(a, 5 + b * 5, c * 10, <span className="lkSpinC" style={{ display: "block", width: 6, height: 9, borderRadius: 1.5, background: cs[i % cs.length], animationDuration: `${(0.8 + b).toFixed(2)}s` }} />)}</Fragment>); }
   if (id === "fx_lightning") body = <><div className="lkFlash" style={{ position: "absolute", inset: 0, background: "#fff" }} /><svg className={thumb ? "" : "lkBolt"} onAnimationIteration={e => { e.currentTarget.style.left = lkPct(45, 85); e.currentTarget.style.transform = Math.random() < 0.5 ? "scaleX(-1)" : "none"; }} viewBox="0 0 60 120" style={{ position: "absolute", left: "70%", top: 0, height: "75%", filter: `drop-shadow(0 0 6px ${C.signal})` }}><path d="M34 0 L14 58 L30 58 L18 120 L48 46 L31 46 L44 0 Z" fill={C.signal} /></svg><svg className={thumb ? "" : "lkBolt lkBolt2"} onAnimationIteration={e => { e.currentTarget.style.left = lkPct(2, 40); e.currentTarget.style.top = lkPct(0, 30); }} viewBox="0 0 60 120" style={{ position: "absolute", left: "8%", top: "10%", height: "45%", filter: "drop-shadow(0 0 5px #fff)" }}><path d="M34 0 L14 58 L30 58 L18 120 L48 46 L31 46 L44 0 Z" fill="#fff" /></svg></>;
   if (id === "fx_frost") {
-    const br = (x, y, flip) => { let d = ""; for (let k = 0; k < 5; k++) { const a = (flip ? 180 - (10 + k * 18) : 10 + k * 18) * Math.PI / 180, L = 26 + (k % 2) * 14, ex = x + Math.cos(a) * L, ey = y + Math.sin(a) * L; d += `M${x} ${y} L${ex.toFixed(1)} ${ey.toFixed(1)} `; const mx = x + Math.cos(a) * L * 0.55, my = y + Math.sin(a) * L * 0.55; d += `M${mx.toFixed(1)} ${my.toFixed(1)} l${(Math.cos(a + 0.6) * 8).toFixed(1)} ${(Math.sin(a + 0.6) * 8).toFixed(1)} M${mx.toFixed(1)} ${my.toFixed(1)} l${(Math.cos(a - 0.6) * 8).toFixed(1)} ${(Math.sin(a - 0.6) * 8).toFixed(1)} `; } return d; };
-    body = <><svg viewBox="0 0 400 160" preserveAspectRatio="none" style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}><path className="lkPulse" d={br(0, 0, false) + br(400, 0, true)} fill="none" stroke="#d8f3ff" strokeWidth="1.6" strokeLinecap="round" /></svg>{n(8, (i, a, b, c) => <Fragment key={i}>{col(a, 9 + b * 5, c * 12, <svg viewBox="-6 -6 12 12" width={9 + Math.round(b * 6)} height={9 + Math.round(b * 6)} style={{ display: "block", overflow: "visible" }}><path d="M0 -5.5V5.5M-4.8 -2.75L4.8 2.75M-4.8 2.75L4.8 -2.75" stroke="#e6f7ff" strokeWidth="1.2" strokeLinecap="round" /></svg>)}</Fragment>)}</>;
+    const corner = (k, x, y) => <svg key={k} data-frost-corner={k} viewBox="0 0 70 70" className="lkPulse" style={{ position: "absolute", [y]: 0, [x]: 0, height: thumb ? "48%" : "min(42%, 84px)", width: "auto", aspectRatio: "1", transform: `scale(${x === "right" ? -1 : 1}, ${y === "bottom" ? -1 : 1})`, overflow: "visible", animationDelay: `${k * 0.45}s` }}><path d={FROST_D} fill="none" stroke="#dff5ff" strokeWidth={thumb ? 2.4 : 1.6} strokeLinecap="round" /></svg>;
+    body = <><span style={{ position: "absolute", inset: 0, borderRadius: "inherit", boxShadow: "inset 0 0 0 1px rgba(214,240,255,.28), inset 0 0 22px rgba(190,230,255,.28), inset 0 0 6px rgba(235,248,255,.35)" }} />
+      {corner(0, "left", "top")}{corner(1, "right", "top")}{corner(2, "left", "bottom")}{corner(3, "right", "bottom")}
+      {!thumb && n(8, (i, a, b, c) => <Fragment key={i}>{col(a, 9 + b * 5, c * 12, <svg viewBox="-6 -6 12 12" width={9 + Math.round(b * 6)} height={9 + Math.round(b * 6)} style={{ display: "block", overflow: "visible" }}><path d="M0 -5.5V5.5M-4.8 -2.75L4.8 2.75M-4.8 2.75L4.8 -2.75" stroke="#e6f7ff" strokeWidth="1.2" strokeLinecap="round" /></svg>)}</Fragment>)}</>;
   }
-  if (id === "fx_fireworks") {
-    const cs = [C.signal, LK_PINK, C.sky, C.mint, LK_VIOLET, "#ff8a5c"];
-    const moveBurst = e => { if (e.target.dataset.i !== "0") return; const b = e.currentTarget; b.style.left = lkPct(10, 88); b.style.top = lkPct(12, 72); b.style.setProperty("--c", cs[Math.floor(Math.random() * cs.length)]); b.style.setProperty("--r", `${24 + Math.round(Math.random() * 18)}px`); };
-    body = [0, 1, 2].map(k => <span key={k} onAnimationIteration={moveBurst} style={{ position: "absolute", left: `${(10 + rs[k] * 78).toFixed(1)}%`, top: `${(12 + rs[k + 3] * 60).toFixed(1)}%`, width: 0, height: 0, "--c": cs[Math.floor(rs[k + 6] * cs.length)], "--r": "30px" }}>{Array.from({ length: 12 }, (_, i) => <span key={i} data-i={i} className="lkBurst" style={{ "--a": `${i * 30 + k * 10}deg`, position: "absolute", width: 4, height: 4, marginLeft: -2, marginTop: -2, borderRadius: 99, background: "var(--c)", boxShadow: "0 0 6px var(--c)", animationDelay: `${(k * 0.9 + rs[k + 9] * 0.5).toFixed(2)}s`, animationDuration: `${(2.4 + k * 0.35).toFixed(2)}s` }} />)}</span>);
-  }
+  if (id === "fx_fireworks") body = [0, 1, 2].map(k => <FwBurst key={k} k={k} rs={rs} />);
   return <div data-look-fx={id} aria-hidden="true" style={{ position: "absolute", inset: 0, pointerEvents: "none", overflow: "hidden", zIndex: 3, borderRadius: "inherit" }}>{body}</div>;
 }
 // A look as a small picture for the shop and the list.

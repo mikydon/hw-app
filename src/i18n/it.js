@@ -1736,6 +1736,7 @@ export default {
     "Jolly, buoni, pacchetti e vantaggi di Muscle Deck hanno icone a linee invece delle emoji, come le emoji che erano nei testi (serie, congelamento, record…).",
     "Meno testo in Calorie, Muscle Deck e Impostazioni: la legenda dei colori della settimana e la nota sulla privacy sono dietro un ?, Duello e Classificata sono due piccole tessere bloccate e i vantaggi sono una fila di icone da toccare.",
     "La guida mostra le novità: le righe delle sfide settimanali nella Home, i look del profilo e la pressione prolungata su un amico per la sua scheda.",
+    "I badge mostrano l'icona in un incavo scuro illuminato dal basso come un ologramma (un badge che non hai ancora resta attenuato), Ferro ha un suo colore caldo di ferro (sembrava Argento), Brina copre tutti e quattro gli angoli con un bordo di brina, e fuochi d'artificio e scintille restano sempre interi nella cornice.",
   ],
   news181: [
     "La guida è più corta: mostra la Home e il menu ☰, poi ogni schermata si presenta da sola la prima volta che la apri. Nuovi capitoli per Muscle Deck e il Negozio.",

@@ -1744,6 +1744,7 @@ export default {
     "Muscle Deck's jokers, vouchers, packs and perks have line icons instead of emoji, and so do the emoji that were inside texts (streak, freeze, record…).",
     "Less text in Calories, Muscle Deck and Settings: the week's colour legend and the privacy note moved behind a ?, Duel and Ranked are two small locked tiles, and the perks are a row of icons you can tap.",
     "The guide shows what's new: the weekly challenge rows on Home, your profile looks, and holding a friend for their card.",
+    "Badges show their icon in a dark well lit from below like a hologram (a badge you don't have yet stays dim), Iron has its own warm iron colour (it looked like Silver), Frost covers all four corners with a frosty edge, and fireworks and sparkles always stay whole inside the box.",
   ],
   news181: [
     "The guide is shorter: it shows Home and the ☰ menu, then every screen shows you around by itself the first time you open it. New chapters for Muscle Deck and the Shop.",
