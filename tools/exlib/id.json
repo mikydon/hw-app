@@ -1,0 +1,694 @@
+{
+"k1": [
+"Push-up",
+"push up",
+"pushup",
+"tekan lantai",
+"telungkup tekan"
+],
+"k3": [
+"Diamond push-up",
+"push-up diamond",
+"push-up tangan rapat",
+"push-up trisep"
+],
+"r1": [
+"Pike push-up",
+"push-up pike",
+"push-up bahu"
+],
+"kIncl": [
+"Incline push-up",
+"push-up tangan ditinggikan",
+"push-up di meja",
+"push-up miring"
+],
+"kKnee": [
+"Push-up lutut",
+"push-up bertumpu lutut",
+"knee push-up",
+"push-up modifikasi"
+],
+"r1e": [
+"Pike push-up kaki ditinggikan",
+"pike push-up kaki di kursi",
+"elevated pike push-up"
+],
+"k3e": [
+"Diamond push-up kaki ditinggikan",
+"diamond push-up kaki di kursi"
+],
+"row1": [
+"Row di kusen pintu",
+"tarikan di kusen pintu",
+"door frame row"
+],
+"row2": [
+"Row pintu dengan handuk",
+"row handuk",
+"towel row"
+],
+"row3": [
+"Row lebar di kusen pintu",
+"row pegangan lebar di kusen pintu",
+"wide door row"
+],
+"superman": [
+"Superman",
+"angkat tangan dan kaki telungkup",
+"back extension di lantai"
+],
+"ytw": [
+"Y-T-W di lantai",
+"YTW",
+"angkat lengan Y T W telungkup"
+],
+"n1": [
+"Squat dalam",
+"ATG squat",
+"squat penuh",
+"deep squat"
+],
+"n2": [
+"Bulgarian split squat",
+"squat Bulgaria",
+"split squat kaki belakang ditinggikan",
+"Bulgarian squat"
+],
+"n7": [
+"Hamstring curl dengan handuk",
+"sliding leg curl",
+"leg curl di lantai"
+],
+"lunge": [
+"Reverse lunge",
+"lunge mundur",
+"lunge ke belakang"
+],
+"bridge": [
+"Glute bridge",
+"angkat pinggul",
+"hip bridge",
+"jembatan bokong"
+],
+"wallsit": [
+"Wall sit",
+"duduk di dinding",
+"squat di dinding",
+"kursi dinding"
+],
+"sbridge": [
+"Glute bridge satu kaki",
+"single-leg glute bridge",
+"angkat pinggul satu kaki"
+],
+"n1q": [
+"Squat 1¼",
+"squat satu seperempat",
+"1 1/4 squat"
+],
+"b5": [
+"Plank",
+"plank siku",
+"front plank",
+"forearm plank"
+],
+"b2": [
+"Dead bug",
+"serangga mati",
+"deadbug"
+],
+"b4": [
+"Bicycle crunch",
+"crunch sepeda",
+"sit-up sepeda"
+],
+"birddog": [
+"Bird dog",
+"angkat tangan dan kaki berlawanan merangkak",
+"birddog"
+],
+"hollow": [
+"Hollow body hold",
+"hollow hold",
+"tahan posisi perahu"
+],
+"legraise": [
+"Leg raise",
+"angkat kaki berbaring",
+"angkat kaki"
+],
+"b5l": [
+"Plank satu kaki",
+"plank angkat kaki",
+"single-leg plank"
+],
+"bw_calf_raise": [
+"Calf raise",
+"jinjit",
+"angkat tumit",
+"angkat betis"
+],
+"bw_single_leg_calf_raise": [
+"Calf raise satu kaki",
+"jinjit satu kaki",
+"single-leg calf raise"
+],
+"bw_tibialis_raise": [
+"Tibialis raise",
+"angkat ujung kaki di dinding",
+"toe raise"
+],
+"bw_side_lying_leg_raise": [
+"Angkat kaki samping berbaring",
+"side leg raise",
+"abduksi pinggul berbaring"
+],
+"bw_side_lying_adductor_raise": [
+"Angkat kaki bawah berbaring miring",
+"adduksi pinggul berbaring",
+"inner thigh raise"
+],
+"bw_short_lever_copenhagen_plank": [
+"Copenhagen plank pendek",
+"Copenhagen plank bertumpu lutut",
+"Copenhagen plank mudah"
+],
+"bw_copenhagen_plank": [
+"Copenhagen plank",
+"plank samping kaki di bangku",
+"Copenhagen adduction"
+],
+"bw_side_plank": [
+"Side plank",
+"plank samping",
+"plank menyamping"
+],
+"bw_knee_side_plank": [
+"Side plank lutut",
+"plank samping bertumpu lutut",
+"side plank mudah"
+],
+"bw_plank_shoulder_tap": [
+"Plank shoulder tap",
+"sentuh bahu dalam plank",
+"shoulder taps"
+],
+"bw_reverse_crunch": [
+"Reverse crunch",
+"crunch terbalik",
+"tarik lutut berbaring"
+],
+"bw_prone_back_extension": [
+"Back extension telungkup",
+"angkat badan telungkup",
+"ekstensi punggung di lantai"
+],
+"bw_single_leg_romanian_deadlift": [
+"Romanian deadlift satu kaki",
+"deadlift satu kaki",
+"single-leg RDL"
+],
+"bw_single_leg_hip_thrust": [
+"Hip thrust satu kaki",
+"single-leg hip thrust",
+"angkat pinggul satu kaki bersandar bangku"
+],
+"bw_nordic_hamstring_curl": [
+"Nordic hamstring curl",
+"nordic curl",
+"leg curl nordik"
+],
+"bw_bodyweight_squat": [
+"Squat",
+"squat berat badan",
+"air squat",
+"jongkok berdiri"
+],
+"bw_split_squat": [
+"Split squat",
+"lunge statis",
+"squat kaki terbuka"
+],
+"bw_step_up": [
+"Step-up",
+"naik kursi",
+"naik tangga"
+],
+"bw_lateral_lunge": [
+"Lunge samping",
+"side lunge",
+"lateral lunge"
+],
+"bw_pistol_squat_to_box": [
+"Pistol squat ke kotak",
+"squat satu kaki ke kursi",
+"box pistol squat"
+],
+"bw_wall_push_up": [
+"Push-up dinding",
+"wall push-up",
+"push-up berdiri"
+],
+"bw_decline_push_up": [
+"Decline push-up",
+"push-up kaki ditinggikan",
+"push-up kaki di kursi"
+],
+"bw_archer_push_up": [
+"Archer push-up",
+"push-up pemanah",
+"push-up kiri kanan"
+],
+"bw_scapular_push_up": [
+"Scapular push-up",
+"push-up skapula",
+"push-up tulang belikat",
+"push-up plus"
+],
+"bw_wall_handstand_hold": [
+"Handstand di dinding",
+"tahan handstand dinding",
+"wall handstand"
+],
+"bw_chair_dip": [
+"Dip di kursi",
+"bench dip",
+"dip trisep"
+],
+"bw_bodyweight_triceps_extension": [
+"Ekstensi trisep berat badan",
+"bodyweight skull crusher",
+"ekstensi trisep di meja"
+],
+"bw_inverted_row_table": [
+"Inverted row di bawah meja",
+"Australian pull-up",
+"row terbalik",
+"inverted row"
+],
+"bw_prone_reverse_snow_angel": [
+"Reverse snow angel telungkup",
+"malaikat salju terbalik",
+"reverse snow angel"
+],
+"bw_towel_biceps_curl": [
+"Bicep curl dengan handuk",
+"towel curl",
+"curl isometrik handuk"
+],
+"fw_pull_up": [
+"Pull-up",
+"pull up",
+"tarik badan di palang",
+"overhand pull-up"
+],
+"fw_chin_up": [
+"Chin-up",
+"chin up",
+"pull-up genggaman terbalik"
+],
+"fw_dead_hang": [
+"Dead hang",
+"menggantung di palang",
+"bergantung"
+],
+"fw_hanging_knee_raise": [
+"Hanging knee raise",
+"angkat lutut menggantung",
+"angkat lutut di palang"
+],
+"fw_dumbbell_bench_press": [
+"Dumbbell bench press",
+"bench press dumbel",
+"chest press dumbel"
+],
+"fw_dumbbell_shoulder_press": [
+"Dumbbell shoulder press",
+"shoulder press dumbel",
+"overhead press dumbel"
+],
+"fw_dumbbell_lateral_raise": [
+"Dumbbell lateral raise",
+"lateral raise",
+"angkat samping dumbel"
+],
+"fw_dumbbell_overhead_triceps_extension": [
+"Ekstensi trisep di atas kepala dengan dumbel",
+"overhead triceps extension",
+"French press dumbel"
+],
+"fw_lying_triceps_extension": [
+"Lying triceps extension",
+"skull crusher",
+"ekstensi trisep berbaring"
+],
+"fw_one_arm_dumbbell_row": [
+"One-arm dumbbell row",
+"dumbbell row satu tangan",
+"row dumbel"
+],
+"fw_dumbbell_reverse_fly": [
+"Dumbbell reverse fly",
+"rear delt fly",
+"reverse fly membungkuk"
+],
+"fw_band_pull_apart": [
+"Band pull-apart",
+"tarik karet ke samping",
+"pull apart band"
+],
+"fw_dumbbell_biceps_curl": [
+"Dumbbell bicep curl",
+"bicep curl",
+"curl dumbel",
+"hammer curl"
+],
+"fw_goblet_squat": [
+"Goblet squat",
+"squat dumbel di dada",
+"goblet squat kettlebell"
+],
+"fw_dumbbell_romanian_deadlift": [
+"Dumbbell Romanian deadlift",
+"RDL dumbel",
+"Romanian deadlift",
+"stiff-leg deadlift"
+],
+"fw_dumbbell_bulgarian_split_squat": [
+"Dumbbell Bulgarian split squat",
+"Bulgarian squat dengan beban",
+"DB Bulgarian squat"
+],
+"fw_dumbbell_hip_thrust": [
+"Dumbbell hip thrust",
+"hip thrust dengan beban",
+"DB hip thrust"
+],
+"fw_kettlebell_swing": [
+"Kettlebell swing",
+"ayunan kettlebell",
+"Russian swing"
+],
+"fw_single_leg_dumbbell_calf_raise": [
+"Calf raise satu kaki dengan dumbel",
+"calf raise berbeban",
+"dumbbell calf raise"
+],
+"fw_farmer_s_carry": [
+"Farmer's walk",
+"farmer's carry",
+"jalan petani"
+],
+"fw_suitcase_carry": [
+"Suitcase carry",
+"jalan bawa koper",
+"farmer's walk satu tangan"
+],
+"fw_band_pallof_press": [
+"Pallof press dengan band",
+"Pallof press",
+"tekan anti-rotasi"
+],
+"mc_leg_press": [
+"Leg press",
+"mesin leg press",
+"tekan kaki"
+],
+"mc_hack_squat": [
+"Hack squat",
+"mesin hack squat",
+"squat hack"
+],
+"mc_leg_extension": [
+"Leg extension",
+"mesin leg extension",
+"ekstensi kaki"
+],
+"mc_lying_leg_curl": [
+"Lying leg curl",
+"leg curl berbaring",
+"mesin leg curl telungkup"
+],
+"mc_seated_leg_curl": [
+"Seated leg curl",
+"leg curl duduk",
+"mesin leg curl duduk"
+],
+"mc_hip_thrust_machine": [
+"Mesin hip thrust",
+"glute drive",
+"hip thrust mesin"
+],
+"mc_hip_abduction_machine": [
+"Mesin abduksi pinggul",
+"mesin abductor",
+"hip abduction"
+],
+"mc_hip_adduction_machine": [
+"Mesin adduksi pinggul",
+"mesin adductor",
+"hip adduction"
+],
+"mc_standing_calf_raise_machine": [
+"Mesin calf raise berdiri",
+"standing calf raise",
+"mesin betis"
+],
+"mc_seated_calf_raise_machine": [
+"Seated calf raise",
+"calf raise duduk",
+"mesin betis duduk"
+],
+"mc_lat_pulldown": [
+"Lat pulldown",
+"lat pull-down",
+"pulldown",
+"tarik kabel atas"
+],
+"mc_assisted_pull_up_machine": [
+"Mesin assisted pull-up",
+"assisted pull-up",
+"gravitron"
+],
+"mc_seated_cable_row": [
+"Seated cable row",
+"cable row",
+"low row",
+"row kabel duduk"
+],
+"mc_reverse_pec_deck": [
+"Reverse pec deck",
+"mesin rear delt",
+"reverse fly mesin"
+],
+"mc_cable_face_pull": [
+"Face pull",
+"cable face pull",
+"tarik tali ke wajah"
+],
+"mc_cable_biceps_curl": [
+"Cable bicep curl",
+"cable curl",
+"curl kabel"
+],
+"mc_chest_press_machine": [
+"Mesin chest press",
+"chest press",
+"tekan dada mesin"
+],
+"mc_pec_deck_cable_fly": [
+"Pec deck",
+"butterfly",
+"cable fly",
+"cable crossover",
+"mesin fly"
+],
+"mc_shoulder_press_machine": [
+"Mesin shoulder press",
+"shoulder press mesin",
+"overhead press mesin"
+],
+"mc_cable_lateral_raise": [
+"Cable lateral raise",
+"lateral raise kabel",
+"angkat samping kabel"
+],
+"mc_cable_triceps_pushdown": [
+"Triceps pushdown",
+"cable pushdown",
+"rope pushdown",
+"tekan trisep kabel"
+],
+"mc_cable_crunch": [
+"Cable crunch",
+"crunch kabel berlutut",
+"rope crunch"
+],
+"mc_45_back_extension": [
+"Back extension 45°",
+"hyperextension",
+"back extension",
+"kursi Romawi"
+],
+"mx_machine_row": [
+"Machine row",
+"row mesin",
+"mesin row duduk"
+],
+"mx_chest_supported_row": [
+"Chest-supported row",
+"row bersandar dada",
+"incline bench row"
+],
+"mx_t_bar_row": [
+"T-bar row",
+"T bar row",
+"landmine row"
+],
+"mx_assisted_dip_machine": [
+"Mesin assisted dip",
+"assisted dip",
+"dip berbantuan"
+],
+"mx_machine_preacher_curl": [
+"Machine preacher curl",
+"preacher curl mesin",
+"preacher curl"
+],
+"mx_machine_lateral_raise": [
+"Machine lateral raise",
+"lateral raise mesin",
+"mesin bahu samping"
+],
+"mx_ab_crunch_machine": [
+"Mesin ab crunch",
+"crunch mesin",
+"mesin perut"
+],
+"mx_machine_glute_kickback": [
+"Machine glute kickback",
+"mesin kickback bokong",
+"mesin hip extension"
+],
+"mx_reverse_hyperextension": [
+"Reverse hyperextension",
+"reverse hyper",
+"ekstensi punggung terbalik"
+],
+"mx_belt_squat": [
+"Belt squat",
+"squat sabuk",
+"mesin belt squat"
+],
+"mx_leg_press_calf_raise": [
+"Calf raise di leg press",
+"calf press",
+"leg press calf press"
+],
+"mx_captain_s_chair_knee_raise": [
+"Captain's chair knee raise",
+"angkat lutut di captain's chair",
+"vertical knee raise"
+],
+"mx_wide_grip_lat_pulldown": [
+"Wide-grip lat pulldown",
+"pulldown lebar",
+"wide pulldown"
+],
+"mx_close_grip_lat_pulldown": [
+"Close-grip lat pulldown",
+"pulldown sempit",
+"V-bar pulldown"
+],
+"mx_straight_arm_pulldown": [
+"Straight-arm pulldown",
+"pulldown lengan lurus",
+"cable pullover"
+],
+"mx_single_arm_cable_row": [
+"Single-arm cable row",
+"cable row satu tangan",
+"row kabel satu tangan"
+],
+"mx_cable_overhead_triceps_extension": [
+"Cable overhead triceps extension",
+"ekstensi trisep di atas kepala kabel",
+"overhead rope extension"
+],
+"mx_rope_hammer_curl": [
+"Rope hammer curl",
+"cable hammer curl",
+"hammer curl tali"
+],
+"mx_cable_rear_delt_fly": [
+"Cable rear delt fly",
+"reverse fly kabel",
+"rear delt kabel"
+],
+"mx_cable_front_raise": [
+"Cable front raise",
+"front raise",
+"angkat depan kabel"
+],
+"mx_incline_cable_fly": [
+"Incline cable fly",
+"cable fly bawah ke atas",
+"low-to-high cable fly"
+],
+"mx_cable_kickback": [
+"Cable kickback",
+"cable glute kickback",
+"tendang belakang kabel"
+],
+"mx_cable_pull_through": [
+"Cable pull-through",
+"pull-through",
+"tarik kabel di antara kaki"
+],
+"mx_cable_hip_abduction": [
+"Cable hip abduction",
+"abduksi pinggul kabel",
+"angkat kaki samping kabel"
+],
+"mx_cable_hip_adduction": [
+"Cable hip adduction",
+"adduksi pinggul kabel",
+"cable inner thigh"
+],
+"mx_cable_woodchop": [
+"Cable woodchop",
+"woodchopper",
+"potong kayu kabel"
+],
+"mx_half_kneeling_pallof_press": [
+"Half-kneeling Pallof press",
+"Pallof press setengah berlutut",
+"tekan anti-rotasi berlutut"
+],
+"mx_smith_machine_squat": [
+"Smith machine squat",
+"squat mesin Smith",
+"Smith squat"
+],
+"mx_smith_machine_bench_press": [
+"Smith machine bench press",
+"bench press mesin Smith",
+"Smith bench press"
+],
+"mx_smith_machine_hip_thrust": [
+"Smith machine hip thrust",
+"hip thrust mesin Smith",
+"Smith hip thrust"
+],
+"mx_smith_machine_romanian_deadlift": [
+"Smith machine Romanian deadlift",
+"RDL mesin Smith",
+"Smith RDL"
+],
+"mx_smith_machine_split_squat": [
+"Smith machine split squat",
+"split squat mesin Smith",
+"Smith lunge"
+]
+}

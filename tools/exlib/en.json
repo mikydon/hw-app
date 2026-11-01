@@ -596,7 +596,8 @@
 "butterfly machine",
 "machine fly",
 "cable fly",
-"cable crossover"
+"cable crossover",
+"chest fly machine"
 ],
 "mc_shoulder_press_machine": [
 "Shoulder press machine",
@@ -800,7 +801,7 @@
 "mx_smith_machine_hip_thrust": [
 "Smith machine hip thrust",
 "Smith hip thrust",
-"hip thrust machine"
+"Smith machine glute bridge"
 ],
 "mx_smith_machine_romanian_deadlift": [
 "Smith machine Romanian deadlift",

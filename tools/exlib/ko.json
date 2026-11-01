@@ -1,0 +1,700 @@
+{
+"k1": [
+"팔굽혀펴기",
+"푸시업",
+"엎드려 팔굽혀펴기",
+"push-up"
+],
+"k3": [
+"다이아몬드 푸시업",
+"좁은 푸시업",
+"삼두 푸시업",
+"다이아몬드 팔굽혀펴기",
+"diamond push-up"
+],
+"r1": [
+"파이크 푸시업",
+"어깨 푸시업",
+"pike push-up"
+],
+"kIncl": [
+"인클라인 푸시업",
+"손 높인 팔굽혀펴기",
+"테이블 푸시업",
+"incline push-up"
+],
+"kKnee": [
+"무릎 대고 팔굽혀펴기",
+"무릎 푸시업",
+"니 푸시업",
+"knee push-up"
+],
+"r1e": [
+"발 올린 파이크 푸시업",
+"엘리베이티드 파이크 푸시업",
+"elevated pike push-up"
+],
+"k3e": [
+"발 올린 다이아몬드 푸시업",
+"발 높인 다이아몬드 푸시업"
+],
+"row1": [
+"문틀 로우",
+"도어 프레임 로우",
+"door frame row"
+],
+"row2": [
+"수건 문 로우",
+"수건 로우",
+"towel row"
+],
+"row3": [
+"와이드 문틀 로우",
+"넓은 문틀 로우",
+"wide door row"
+],
+"superman": [
+"슈퍼맨",
+"엎드려 팔다리 들기",
+"바닥 등 운동"
+],
+"ytw": [
+"바닥 Y-T-W",
+"YTW",
+"엎드려 Y T W 레이즈"
+],
+"n1": [
+"풀 스쿼트",
+"ATG 스쿼트",
+"딥 스쿼트"
+],
+"n2": [
+"불가리안 스플릿 스쿼트",
+"불가리안 스쿼트",
+"뒷발 올린 스플릿 스쿼트",
+"Bulgarian split squat"
+],
+"n7": [
+"수건 햄스트링 컬",
+"슬라이딩 레그 컬",
+"바닥 레그 컬",
+"sliding leg curl"
+],
+"lunge": [
+"리버스 런지",
+"뒤로 런지",
+"백 런지",
+"reverse lunge"
+],
+"bridge": [
+"글루트 브리지",
+"힙 브리지",
+"엉덩이 들기",
+"glute bridge"
+],
+"wallsit": [
+"월 싯",
+"벽 스쿼트",
+"기마자세 벽 버티기",
+"wall sit"
+],
+"sbridge": [
+"한 다리 글루트 브리지",
+"싱글 레그 글루트 브리지",
+"single-leg glute bridge"
+],
+"n1q": [
+"1¼ 스쿼트",
+"원 앤 쿼터 스쿼트",
+"1.25 스쿼트"
+],
+"b5": [
+"플랭크",
+"팔꿈치 플랭크",
+"프론트 플랭크",
+"plank"
+],
+"b2": [
+"데드버그",
+"dead bug",
+"데드 버그"
+],
+"b4": [
+"바이시클 크런치",
+"자전거 크런치",
+"교차 크런치",
+"bicycle crunch"
+],
+"birddog": [
+"버드독",
+"네발 자세 팔다리 뻗기",
+"bird dog"
+],
+"hollow": [
+"할로우 바디 홀드",
+"할로우 홀드",
+"보트 자세 버티기",
+"hollow body hold"
+],
+"legraise": [
+"레그 레이즈",
+"누워서 다리 들기",
+"다리 올리기",
+"leg raise"
+],
+"b5l": [
+"한 다리 플랭크",
+"다리 든 플랭크",
+"single-leg plank"
+],
+"bw_calf_raise": [
+"카프 레이즈",
+"발뒤꿈치 들기",
+"까치발 들기",
+"calf raise"
+],
+"bw_single_leg_calf_raise": [
+"한 다리 카프 레이즈",
+"싱글 레그 카프 레이즈",
+"single-leg calf raise"
+],
+"bw_tibialis_raise": [
+"티비알리스 레이즈",
+"벽 발끝 들기",
+"tibialis raise"
+],
+"bw_side_lying_leg_raise": [
+"사이드 레그 레이즈",
+"옆으로 누워 다리 들기",
+"고관절 외전"
+],
+"bw_side_lying_adductor_raise": [
+"옆으로 누워 내전근 레이즈",
+"아래 다리 들기",
+"고관절 내전"
+],
+"bw_short_lever_copenhagen_plank": [
+"숏 코펜하겐 플랭크",
+"무릎 코펜하겐 플랭크",
+"쉬운 코펜하겐"
+],
+"bw_copenhagen_plank": [
+"코펜하겐 플랭크",
+"코펜하겐 사이드 플랭크",
+"내전근 사이드 플랭크",
+"Copenhagen plank"
+],
+"bw_side_plank": [
+"사이드 플랭크",
+"옆 플랭크",
+"side plank"
+],
+"bw_knee_side_plank": [
+"무릎 사이드 플랭크",
+"쉬운 사이드 플랭크",
+"니 사이드 플랭크"
+],
+"bw_plank_shoulder_tap": [
+"플랭크 숄더 탭",
+"숄더 탭",
+"shoulder tap"
+],
+"bw_reverse_crunch": [
+"리버스 크런치",
+"무릎 당기기 크런치",
+"reverse crunch"
+],
+"bw_prone_back_extension": [
+"바닥 백 익스텐션",
+"엎드려 상체 들기",
+"프론 백 익스텐션"
+],
+"bw_single_leg_romanian_deadlift": [
+"싱글 레그 루마니안 데드리프트",
+"한 다리 데드리프트",
+"single-leg RDL"
+],
+"bw_single_leg_hip_thrust": [
+"싱글 레그 힙 쓰러스트",
+"한 다리 힙 쓰러스트",
+"single-leg hip thrust"
+],
+"bw_nordic_hamstring_curl": [
+"노르딕 햄스트링 컬",
+"노르딕 컬",
+"nordic curl"
+],
+"bw_bodyweight_squat": [
+"맨몸 스쿼트",
+"스쿼트",
+"에어 스쿼트",
+"air squat"
+],
+"bw_split_squat": [
+"스플릿 스쿼트",
+"스태틱 런지",
+"split squat"
+],
+"bw_step_up": [
+"스텝업",
+"의자 스텝업",
+"step-up"
+],
+"bw_lateral_lunge": [
+"사이드 런지",
+"래터럴 런지",
+"lateral lunge"
+],
+"bw_pistol_squat_to_box": [
+"박스 피스톨 스쿼트",
+"의자 한 다리 스쿼트",
+"pistol squat"
+],
+"bw_wall_push_up": [
+"벽 푸시업",
+"벽 팔굽혀펴기",
+"서서 팔굽혀펴기"
+],
+"bw_decline_push_up": [
+"디클라인 푸시업",
+"발 올린 팔굽혀펴기",
+"decline push-up"
+],
+"bw_archer_push_up": [
+"아처 푸시업",
+"궁수 푸시업",
+"archer push-up"
+],
+"bw_scapular_push_up": [
+"스캐퓰러 푸시업",
+"견갑 푸시업",
+"scapular push-up"
+],
+"bw_wall_handstand_hold": [
+"벽 물구나무서기",
+"월 핸드스탠드",
+"물구나무 버티기"
+],
+"bw_chair_dip": [
+"의자 딥스",
+"벤치 딥스",
+"리버스 푸시업",
+"bench dip"
+],
+"bw_bodyweight_triceps_extension": [
+"맨몸 트라이셉스 익스텐션",
+"맨몸 스컬 크러셔",
+"테이블 삼두 익스텐션"
+],
+"bw_inverted_row_table": [
+"테이블 인버티드 로우",
+"호주식 풀업",
+"인버티드 로우",
+"inverted row"
+],
+"bw_prone_reverse_snow_angel": [
+"엎드려 리버스 스노우 엔젤",
+"스노우 엔젤",
+"reverse snow angel"
+],
+"bw_towel_biceps_curl": [
+"수건 바이셉스 컬",
+"수건 컬",
+"towel curl"
+],
+"fw_pull_up": [
+"풀업",
+"턱걸이",
+"오버핸드 풀업",
+"pull-up"
+],
+"fw_chin_up": [
+"친업",
+"언더핸드 턱걸이",
+"chin-up"
+],
+"fw_dead_hang": [
+"데드 행",
+"철봉 매달리기",
+"매달리기",
+"dead hang"
+],
+"fw_hanging_knee_raise": [
+"행잉 니 레이즈",
+"매달려 무릎 올리기",
+"hanging knee raise"
+],
+"fw_dumbbell_bench_press": [
+"덤벨 벤치 프레스",
+"덤벨 프레스",
+"DB bench press"
+],
+"fw_dumbbell_shoulder_press": [
+"덤벨 숄더 프레스",
+"덤벨 오버헤드 프레스",
+"시티드 덤벨 프레스"
+],
+"fw_dumbbell_lateral_raise": [
+"덤벨 사이드 레터럴 레이즈",
+"사이드 레이즈",
+"레터럴 레이즈",
+"lateral raise"
+],
+"fw_dumbbell_overhead_triceps_extension": [
+"덤벨 오버헤드 트라이셉스 익스텐션",
+"덤벨 프렌치 프레스",
+"overhead triceps extension"
+],
+"fw_lying_triceps_extension": [
+"라잉 트라이셉스 익스텐션",
+"스컬 크러셔",
+"skull crusher"
+],
+"fw_one_arm_dumbbell_row": [
+"원암 덤벨 로우",
+"덤벨 로우",
+"dumbbell row"
+],
+"fw_dumbbell_reverse_fly": [
+"덤벨 리버스 플라이",
+"벤트오버 리어 델트 레이즈",
+"reverse fly"
+],
+"fw_band_pull_apart": [
+"밴드 풀 어파트",
+"밴드 벌리기",
+"band pull-apart"
+],
+"fw_dumbbell_biceps_curl": [
+"덤벨 컬",
+"덤벨 바이셉스 컬",
+"biceps curl",
+"해머 컬"
+],
+"fw_goblet_squat": [
+"고블릿 스쿼트",
+"덤벨 고블릿 스쿼트",
+"goblet squat"
+],
+"fw_dumbbell_romanian_deadlift": [
+"덤벨 루마니안 데드리프트",
+"RDL",
+"스티프 레그 데드리프트"
+],
+"fw_dumbbell_bulgarian_split_squat": [
+"덤벨 불가리안 스플릿 스쿼트",
+"중량 불가리안 스쿼트",
+"DB Bulgarian squat"
+],
+"fw_dumbbell_hip_thrust": [
+"덤벨 힙 쓰러스트",
+"중량 힙 쓰러스트",
+"DB hip thrust"
+],
+"fw_kettlebell_swing": [
+"케틀벨 스윙",
+"러시안 스윙",
+"kettlebell swing"
+],
+"fw_single_leg_dumbbell_calf_raise": [
+"덤벨 한 다리 카프 레이즈",
+"중량 카프 레이즈",
+"dumbbell calf raise"
+],
+"fw_farmer_s_carry": [
+"파머스 워크",
+"파머스 캐리",
+"farmer's walk"
+],
+"fw_suitcase_carry": [
+"수트케이스 캐리",
+"한 손 파머스 워크",
+"suitcase carry"
+],
+"fw_band_pallof_press": [
+"밴드 팔로프 프레스",
+"팔로프 프레스",
+"Pallof press"
+],
+"mc_leg_press": [
+"레그 프레스",
+"레그 프레스 머신",
+"leg press"
+],
+"mc_hack_squat": [
+"핵 스쿼트",
+"핵 스쿼트 머신",
+"hack squat"
+],
+"mc_leg_extension": [
+"레그 익스텐션",
+"레그 익스텐션 머신",
+"leg extension"
+],
+"mc_lying_leg_curl": [
+"라잉 레그 컬",
+"엎드려 레그 컬",
+"lying leg curl"
+],
+"mc_seated_leg_curl": [
+"시티드 레그 컬",
+"앉아서 레그 컬",
+"seated leg curl"
+],
+"mc_hip_thrust_machine": [
+"힙 쓰러스트 머신",
+"글루트 드라이브",
+"glute drive"
+],
+"mc_hip_abduction_machine": [
+"힙 어브덕션 머신",
+"어브덕터 머신",
+"외전 머신"
+],
+"mc_hip_adduction_machine": [
+"힙 어덕션 머신",
+"어덕터 머신",
+"내전 머신"
+],
+"mc_standing_calf_raise_machine": [
+"스탠딩 카프 레이즈 머신",
+"카프 머신",
+"머신 카프 레이즈"
+],
+"mc_seated_calf_raise_machine": [
+"시티드 카프 레이즈",
+"앉아서 카프 레이즈",
+"seated calf raise"
+],
+"mc_lat_pulldown": [
+"랫 풀다운",
+"랫 풀 다운",
+"lat pulldown",
+"풀다운"
+],
+"mc_assisted_pull_up_machine": [
+"어시스트 풀업 머신",
+"어시스트 턱걸이",
+"gravitron"
+],
+"mc_seated_cable_row": [
+"시티드 케이블 로우",
+"케이블 로우",
+"로우 로우",
+"seated cable row"
+],
+"mc_reverse_pec_deck": [
+"리버스 펙덱",
+"리어 델트 머신",
+"리버스 플라이 머신"
+],
+"mc_cable_face_pull": [
+"페이스 풀",
+"케이블 페이스 풀",
+"face pull"
+],
+"mc_cable_biceps_curl": [
+"케이블 컬",
+"케이블 바이셉스 컬",
+"cable curl"
+],
+"mc_chest_press_machine": [
+"체스트 프레스",
+"머신 체스트 프레스",
+"chest press"
+],
+"mc_pec_deck_cable_fly": [
+"펙덱 플라이",
+"펙덱",
+"버터플라이 머신",
+"케이블 크로스오버",
+"cable fly"
+],
+"mc_shoulder_press_machine": [
+"숄더 프레스 머신",
+"머신 숄더 프레스",
+"shoulder press"
+],
+"mc_cable_lateral_raise": [
+"케이블 레터럴 레이즈",
+"케이블 사이드 레이즈",
+"cable lateral raise"
+],
+"mc_cable_triceps_pushdown": [
+"케이블 푸시다운",
+"트라이셉스 푸시다운",
+"로프 푸시다운",
+"pushdown"
+],
+"mc_cable_crunch": [
+"케이블 크런치",
+"무릎 꿇고 케이블 크런치",
+"cable crunch"
+],
+"mc_45_back_extension": [
+"백 익스텐션",
+"45도 백 익스텐션",
+"하이퍼 익스텐션",
+"back extension"
+],
+"mx_machine_row": [
+"머신 로우",
+"시티드 로우 머신",
+"machine row"
+],
+"mx_chest_supported_row": [
+"체스트 서포티드 로우",
+"인클라인 벤치 로우",
+"chest-supported row"
+],
+"mx_t_bar_row": [
+"티바 로우",
+"T바 로우",
+"T-bar row"
+],
+"mx_assisted_dip_machine": [
+"어시스트 딥스 머신",
+"어시스트 딥스",
+"assisted dip"
+],
+"mx_machine_preacher_curl": [
+"머신 프리처 컬",
+"프리처 컬 머신",
+"preacher curl"
+],
+"mx_machine_lateral_raise": [
+"머신 레터럴 레이즈",
+"사이드 레이즈 머신",
+"machine lateral raise"
+],
+"mx_ab_crunch_machine": [
+"앱 크런치 머신",
+"복근 머신",
+"ab crunch machine"
+],
+"mx_machine_glute_kickback": [
+"머신 글루트 킥백",
+"힙 익스텐션 머신",
+"킥백 머신"
+],
+"mx_reverse_hyperextension": [
+"리버스 하이퍼 익스텐션",
+"리버스 하이퍼",
+"reverse hyper"
+],
+"mx_belt_squat": [
+"벨트 스쿼트",
+"벨트 스쿼트 머신",
+"belt squat"
+],
+"mx_leg_press_calf_raise": [
+"레그 프레스 카프 레이즈",
+"카프 프레스",
+"calf press"
+],
+"mx_captain_s_chair_knee_raise": [
+"캡틴스 체어 니 레이즈",
+"딥스대 무릎 올리기",
+"captain's chair"
+],
+"mx_wide_grip_lat_pulldown": [
+"와이드 그립 랫 풀다운",
+"와이드 풀다운",
+"wide pulldown"
+],
+"mx_close_grip_lat_pulldown": [
+"클로즈 그립 랫 풀다운",
+"V바 풀다운",
+"V-bar pulldown"
+],
+"mx_straight_arm_pulldown": [
+"스트레이트 암 풀다운",
+"케이블 풀오버",
+"straight-arm pulldown"
+],
+"mx_single_arm_cable_row": [
+"원암 케이블 로우",
+"한 팔 케이블 로우",
+"single-arm cable row"
+],
+"mx_cable_overhead_triceps_extension": [
+"케이블 오버헤드 트라이셉스 익스텐션",
+"케이블 프렌치 프레스",
+"overhead rope extension"
+],
+"mx_rope_hammer_curl": [
+"로프 해머 컬",
+"케이블 해머 컬",
+"rope hammer curl"
+],
+"mx_cable_rear_delt_fly": [
+"케이블 리어 델트 플라이",
+"케이블 리버스 플라이",
+"cable rear delt fly"
+],
+"mx_cable_front_raise": [
+"케이블 프론트 레이즈",
+"프론트 레이즈",
+"front raise"
+],
+"mx_incline_cable_fly": [
+"로우 투 하이 케이블 플라이",
+"인클라인 케이블 플라이",
+"incline cable fly"
+],
+"mx_cable_kickback": [
+"케이블 킥백",
+"케이블 글루트 킥백",
+"cable kickback"
+],
+"mx_cable_pull_through": [
+"케이블 풀 스루",
+"풀 스루",
+"cable pull-through"
+],
+"mx_cable_hip_abduction": [
+"케이블 힙 어브덕션",
+"케이블 다리 외전",
+"cable abduction"
+],
+"mx_cable_hip_adduction": [
+"케이블 힙 어덕션",
+"케이블 다리 내전",
+"cable adduction"
+],
+"mx_cable_woodchop": [
+"케이블 우드찹",
+"우드 찹",
+"woodchop"
+],
+"mx_half_kneeling_pallof_press": [
+"하프 닐링 팔로프 프레스",
+"한쪽 무릎 팔로프 프레스",
+"half-kneeling Pallof press"
+],
+"mx_smith_machine_squat": [
+"스미스 머신 스쿼트",
+"스미스 스쿼트",
+"Smith squat"
+],
+"mx_smith_machine_bench_press": [
+"스미스 머신 벤치 프레스",
+"스미스 벤치",
+"Smith bench press"
+],
+"mx_smith_machine_hip_thrust": [
+"스미스 머신 힙 쓰러스트",
+"스미스 힙 쓰러스트",
+"Smith hip thrust"
+],
+"mx_smith_machine_romanian_deadlift": [
+"스미스 머신 루마니안 데드리프트",
+"스미스 RDL",
+"Smith RDL"
+],
+"mx_smith_machine_split_squat": [
+"스미스 머신 스플릿 스쿼트",
+"스미스 런지",
+"Smith split squat"
+]
+}

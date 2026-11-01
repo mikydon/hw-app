@@ -1,0 +1,703 @@
+{
+"k1": [
+"Flexión",
+"flexiones",
+"lagartija",
+"push-up"
+],
+"k3": [
+"Flexión diamante",
+"flexiones diamante",
+"flexión con agarre cerrado",
+"flexión de tríceps",
+"diamond push-up"
+],
+"r1": [
+"Flexión pike",
+"flexión en pica",
+"flexión de hombros",
+"pike push-up"
+],
+"kIncl": [
+"Flexión inclinada",
+"flexión con manos elevadas",
+"flexión en la mesa",
+"incline push-up"
+],
+"kKnee": [
+"Flexión de rodillas",
+"flexión apoyando rodillas",
+"flexión modificada",
+"knee push-up"
+],
+"r1e": [
+"Flexión pike con pies en la silla",
+"flexión pike con pies elevados",
+"elevated pike push-up"
+],
+"k3e": [
+"Flexión diamante con pies en la silla",
+"flexión diamante con pies elevados"
+],
+"row1": [
+"Remo en el marco de la puerta",
+"remo en la puerta",
+"door frame row"
+],
+"row2": [
+"Remo con toalla en la puerta",
+"remo con toalla",
+"towel row"
+],
+"row3": [
+"Remo abierto en el marco de la puerta",
+"remo con agarre ancho en la puerta",
+"wide door row"
+],
+"superman": [
+"Superman",
+"elevación de brazos y piernas boca abajo",
+"extensión lumbar boca abajo"
+],
+"ytw": [
+"Y-T-W en el suelo",
+"YTW",
+"elevaciones Y T W boca abajo"
+],
+"n1": [
+"Sentadilla profunda",
+"sentadilla ATG",
+"sentadilla completa"
+],
+"n2": [
+"Sentadilla búlgara",
+"zancada búlgara",
+"sentadilla con pie trasero elevado",
+"Bulgarian split squat"
+],
+"n7": [
+"Curl femoral con toalla",
+"curl femoral deslizante",
+"curl de isquios en el suelo",
+"sliding leg curl"
+],
+"lunge": [
+"Zancada hacia atrás",
+"zancada inversa",
+"estocada hacia atrás",
+"reverse lunge"
+],
+"bridge": [
+"Puente de glúteos",
+"puente glúteo",
+"elevación de cadera",
+"glute bridge"
+],
+"wallsit": [
+"Sentadilla en pared",
+"sentadilla isométrica en pared",
+"silla en la pared",
+"wall sit"
+],
+"sbridge": [
+"Puente a una pierna",
+"puente de glúteos a una pierna",
+"single-leg glute bridge"
+],
+"n1q": [
+"Sentadilla 1 y 1/4",
+"sentadilla uno y cuarto",
+"1¼ sentadilla"
+],
+"b5": [
+"Plancha",
+"plancha abdominal",
+"plancha frontal",
+"plank"
+],
+"b2": [
+"Bicho muerto",
+"dead bug",
+"insecto muerto"
+],
+"b4": [
+"Abdominal bicicleta",
+"bicicleta",
+"crunch bicicleta",
+"bicycle crunch"
+],
+"birddog": [
+"Perro de caza",
+"bird dog",
+"perro-pájaro",
+"elevación de brazo y pierna opuestos en cuadrupedia"
+],
+"hollow": [
+"Hollow body",
+"posición hueca",
+"hollow body hold",
+"hollow hold"
+],
+"legraise": [
+"Elevación de piernas",
+"elevación de piernas tumbado",
+"leg raise"
+],
+"b5l": [
+"Plancha con una pierna",
+"plancha con pierna elevada",
+"single-leg plank"
+],
+"bw_calf_raise": [
+"Elevación de talones",
+"elevación de gemelos",
+"ponerse de puntillas",
+"calf raise"
+],
+"bw_single_leg_calf_raise": [
+"Elevación de talones a una pierna",
+"elevación de gemelo unilateral",
+"single-leg calf raise"
+],
+"bw_tibialis_raise": [
+"Elevación de puntas contra la pared",
+"elevación de tibial",
+"tibialis raise"
+],
+"bw_side_lying_leg_raise": [
+"Elevación lateral de pierna tumbado",
+"abducción de cadera tumbado",
+"patada lateral en el suelo"
+],
+"bw_side_lying_adductor_raise": [
+"Elevación de aductor tumbado de lado",
+"aducción de cadera tumbado",
+"elevación de la pierna de abajo"
+],
+"bw_short_lever_copenhagen_plank": [
+"Plancha Copenhague corta",
+"plancha Copenhague con rodilla",
+"Copenhague fácil"
+],
+"bw_copenhagen_plank": [
+"Plancha Copenhague",
+"Copenhagen plank",
+"plancha lateral de aductores",
+"aducción Copenhague"
+],
+"bw_side_plank": [
+"Plancha lateral",
+"puente lateral",
+"side plank"
+],
+"bw_knee_side_plank": [
+"Plancha lateral con rodilla apoyada",
+"plancha lateral modificada",
+"plancha lateral de rodillas"
+],
+"bw_plank_shoulder_tap": [
+"Plancha con toque de hombro",
+"toques de hombro",
+"shoulder taps"
+],
+"bw_reverse_crunch": [
+"Crunch inverso",
+"abdominal inverso",
+"elevación de rodillas tumbado",
+"reverse crunch"
+],
+"bw_prone_back_extension": [
+"Extensión de espalda boca abajo",
+"hiperextensión en el suelo",
+"elevación de tronco boca abajo"
+],
+"bw_single_leg_romanian_deadlift": [
+"Peso muerto rumano a una pierna",
+"peso muerto a una pierna",
+"single-leg RDL"
+],
+"bw_single_leg_hip_thrust": [
+"Hip thrust a una pierna",
+"empuje de cadera a una pierna",
+"single-leg hip thrust"
+],
+"bw_nordic_hamstring_curl": [
+"Curl nórdico",
+"nordic curl",
+"curl de isquios nórdico"
+],
+"bw_bodyweight_squat": [
+"Sentadilla",
+"sentadillas",
+"sentadilla sin peso",
+"air squat"
+],
+"bw_split_squat": [
+"Sentadilla dividida",
+"zancada estática",
+"split squat"
+],
+"bw_step_up": [
+"Subida al cajón",
+"subida a la silla",
+"step-up"
+],
+"bw_lateral_lunge": [
+"Zancada lateral",
+"estocada lateral",
+"lateral lunge"
+],
+"bw_pistol_squat_to_box": [
+"Sentadilla pistol al cajón",
+"sentadilla a una pierna a la silla",
+"pistol squat al banco"
+],
+"bw_wall_push_up": [
+"Flexión en la pared",
+"flexiones contra la pared",
+"flexión de pie"
+],
+"bw_decline_push_up": [
+"Flexión declinada",
+"flexión con pies elevados",
+"decline push-up"
+],
+"bw_archer_push_up": [
+"Flexión arquero",
+"archer push-up",
+"flexiones de arquero"
+],
+"bw_scapular_push_up": [
+"Flexión escapular",
+"flexiones escapulares",
+"scapular push-up"
+],
+"bw_wall_handstand_hold": [
+"Pino contra la pared",
+"parada de manos en la pared",
+"handstand en la pared",
+"vertical en la pared"
+],
+"bw_chair_dip": [
+"Fondos en silla",
+"fondos de tríceps en banco",
+"bench dip"
+],
+"bw_bodyweight_triceps_extension": [
+"Extensión de tríceps con peso corporal",
+"press francés con peso corporal",
+"skull crusher en la mesa"
+],
+"bw_inverted_row_table": [
+"Remo invertido bajo la mesa",
+"dominada australiana",
+"remo invertido",
+"inverted row"
+],
+"bw_prone_reverse_snow_angel": [
+"Ángel de nieve inverso boca abajo",
+"ángel de nieve en el suelo",
+"reverse snow angel"
+],
+"bw_towel_biceps_curl": [
+"Curl de bíceps con toalla",
+"curl isométrico con toalla",
+"towel curl"
+],
+"fw_pull_up": [
+"Dominada",
+"dominadas",
+"dominada prona",
+"pull-up"
+],
+"fw_chin_up": [
+"Dominada supina",
+"chin-up",
+"dominada con agarre supino"
+],
+"fw_dead_hang": [
+"Colgarse de la barra",
+"suspensión en barra",
+"dead hang"
+],
+"fw_hanging_knee_raise": [
+"Elevación de rodillas colgado",
+"elevación de rodillas en barra",
+"hanging knee raise"
+],
+"fw_dumbbell_bench_press": [
+"Press de banca con mancuernas",
+"press de pecho con mancuernas",
+"DB bench press"
+],
+"fw_dumbbell_shoulder_press": [
+"Press de hombros con mancuernas",
+"press militar con mancuernas",
+"press de hombro sentado"
+],
+"fw_dumbbell_lateral_raise": [
+"Elevaciones laterales con mancuernas",
+"elevación lateral",
+"lateral raise"
+],
+"fw_dumbbell_overhead_triceps_extension": [
+"Extensión de tríceps sobre la cabeza con mancuerna",
+"press francés con mancuerna",
+"overhead triceps extension"
+],
+"fw_lying_triceps_extension": [
+"Press francés tumbado",
+"rompecráneos",
+"skull crusher",
+"extensión de tríceps tumbado"
+],
+"fw_one_arm_dumbbell_row": [
+"Remo con mancuerna a una mano",
+"remo unilateral con mancuerna",
+"dumbbell row"
+],
+"fw_dumbbell_reverse_fly": [
+"Pájaros con mancuernas",
+"aperturas inversas inclinado",
+"reverse fly"
+],
+"fw_band_pull_apart": [
+"Separación de banda",
+"band pull-apart",
+"apertura con banda elástica"
+],
+"fw_dumbbell_biceps_curl": [
+"Curl de bíceps con mancuernas",
+"curl con mancuernas",
+"biceps curl",
+"curl martillo"
+],
+"fw_goblet_squat": [
+"Sentadilla goblet",
+"sentadilla copa",
+"sentadilla con mancuerna al pecho",
+"goblet squat"
+],
+"fw_dumbbell_romanian_deadlift": [
+"Peso muerto rumano con mancuernas",
+"RDL",
+"peso muerto con piernas rígidas"
+],
+"fw_dumbbell_bulgarian_split_squat": [
+"Sentadilla búlgara con mancuernas",
+"sentadilla búlgara con peso",
+"DB Bulgarian squat"
+],
+"fw_dumbbell_hip_thrust": [
+"Hip thrust con mancuerna",
+"empuje de cadera con peso",
+"DB hip thrust"
+],
+"fw_kettlebell_swing": [
+"Swing con kettlebell",
+"balanceo con pesa rusa",
+"kettlebell swing"
+],
+"fw_single_leg_dumbbell_calf_raise": [
+"Elevación de talón a una pierna con mancuerna",
+"elevación de gemelos con peso",
+"dumbbell calf raise"
+],
+"fw_farmer_s_carry": [
+"Paseo del granjero",
+"caminata del granjero",
+"farmer's walk"
+],
+"fw_suitcase_carry": [
+"Paseo con maleta",
+"paseo del granjero a una mano",
+"suitcase carry"
+],
+"fw_band_pallof_press": [
+"Press Pallof con banda",
+"Pallof press",
+"press antirrotación"
+],
+"mc_leg_press": [
+"Prensa de piernas",
+"prensa",
+"leg press",
+"prensa inclinada"
+],
+"mc_hack_squat": [
+"Sentadilla hack",
+"hack squat",
+"sentadilla en máquina hack"
+],
+"mc_leg_extension": [
+"Extensión de cuádriceps en máquina",
+"extensión de piernas",
+"leg extension"
+],
+"mc_lying_leg_curl": [
+"Curl femoral tumbado",
+"curl de piernas tumbado",
+"leg curl tumbado"
+],
+"mc_seated_leg_curl": [
+"Curl femoral sentado",
+"curl de piernas sentado",
+"leg curl sentado"
+],
+"mc_hip_thrust_machine": [
+"Hip thrust en máquina",
+"glute drive",
+"máquina de glúteos"
+],
+"mc_hip_abduction_machine": [
+"Máquina de abductores",
+"abducción de cadera en máquina",
+"abductores"
+],
+"mc_hip_adduction_machine": [
+"Máquina de aductores",
+"aducción de cadera en máquina",
+"aductores"
+],
+"mc_standing_calf_raise_machine": [
+"Elevación de talones de pie en máquina",
+"máquina de gemelos",
+"gemelos de pie"
+],
+"mc_seated_calf_raise_machine": [
+"Elevación de talones sentado en máquina",
+"gemelos sentado",
+"seated calf raise"
+],
+"mc_lat_pulldown": [
+"Jalón al pecho",
+"jalón en polea alta",
+"lat pulldown",
+"jalón dorsal"
+],
+"mc_assisted_pull_up_machine": [
+"Dominadas asistidas en máquina",
+"dominada asistida",
+"gravitron"
+],
+"mc_seated_cable_row": [
+"Remo sentado en polea baja",
+"remo en polea",
+"seated cable row",
+"remo gironda"
+],
+"mc_reverse_pec_deck": [
+"Contractora inversa",
+"pec deck inverso",
+"máquina de deltoides posterior"
+],
+"mc_cable_face_pull": [
+"Face pull",
+"jalón a la cara",
+"tirón a la cara en polea"
+],
+"mc_cable_biceps_curl": [
+"Curl de bíceps en polea",
+"curl en polea baja",
+"cable curl"
+],
+"mc_chest_press_machine": [
+"Press de pecho en máquina",
+"press de pecho",
+"chest press"
+],
+"mc_pec_deck_cable_fly": [
+"Contractora",
+"pec deck",
+"mariposa",
+"cruce de poleas",
+"aperturas en polea"
+],
+"mc_shoulder_press_machine": [
+"Press de hombros en máquina",
+"press militar en máquina",
+"shoulder press"
+],
+"mc_cable_lateral_raise": [
+"Elevación lateral en polea",
+"elevación lateral a una mano en polea",
+"cable lateral raise"
+],
+"mc_cable_triceps_pushdown": [
+"Extensión de tríceps en polea alta",
+"jalón de tríceps",
+"pushdown",
+"tríceps en polea con cuerda"
+],
+"mc_cable_crunch": [
+"Crunch en polea",
+"encogimiento abdominal en polea de rodillas",
+"cable crunch"
+],
+"mc_45_back_extension": [
+"Hiperextensión",
+"extensión lumbar en banco",
+"extensión de espalda a 45°",
+"back extension"
+],
+"mx_machine_row": [
+"Remo en máquina",
+"remo sentado en máquina",
+"machine row"
+],
+"mx_chest_supported_row": [
+"Remo con apoyo de pecho",
+"remo en banco inclinado",
+"chest-supported row"
+],
+"mx_t_bar_row": [
+"Remo en barra T",
+"T-bar row",
+"remo T"
+],
+"mx_assisted_dip_machine": [
+"Fondos asistidos en máquina",
+"fondos asistidos",
+"assisted dip"
+],
+"mx_machine_preacher_curl": [
+"Curl predicador en máquina",
+"curl Scott en máquina",
+"preacher curl"
+],
+"mx_machine_lateral_raise": [
+"Elevación lateral en máquina",
+"máquina de deltoides lateral",
+"machine lateral raise"
+],
+"mx_ab_crunch_machine": [
+"Crunch en máquina",
+"máquina de abdominales",
+"ab crunch machine"
+],
+"mx_machine_glute_kickback": [
+"Patada de glúteo en máquina",
+"máquina de patada de glúteo",
+"extensión de cadera en máquina"
+],
+"mx_reverse_hyperextension": [
+"Hiperextensión inversa",
+"reverse hyper",
+"extensión inversa"
+],
+"mx_belt_squat": [
+"Sentadilla con cinturón",
+"belt squat",
+"sentadilla con cinturón en máquina"
+],
+"mx_leg_press_calf_raise": [
+"Gemelos en prensa",
+"elevación de talones en prensa",
+"calf press"
+],
+"mx_captain_s_chair_knee_raise": [
+"Elevación de rodillas en silla romana",
+"captain's chair",
+"elevación de rodillas en paralelas"
+],
+"mx_wide_grip_lat_pulldown": [
+"Jalón al pecho con agarre ancho",
+"jalón ancho",
+"wide pulldown"
+],
+"mx_close_grip_lat_pulldown": [
+"Jalón al pecho con agarre estrecho",
+"jalón con agarre en V",
+"V-bar pulldown"
+],
+"mx_straight_arm_pulldown": [
+"Jalón con brazos rectos",
+"pullover en polea",
+"straight-arm pulldown"
+],
+"mx_single_arm_cable_row": [
+"Remo a una mano en polea",
+"remo unilateral en polea",
+"single-arm cable row"
+],
+"mx_cable_overhead_triceps_extension": [
+"Extensión de tríceps sobre la cabeza en polea",
+"press francés en polea",
+"overhead rope extension"
+],
+"mx_rope_hammer_curl": [
+"Curl martillo con cuerda",
+"curl martillo en polea",
+"rope hammer curl"
+],
+"mx_cable_rear_delt_fly": [
+"Aperturas inversas en polea",
+"deltoides posterior en polea",
+"cable rear delt fly"
+],
+"mx_cable_front_raise": [
+"Elevación frontal en polea",
+"elevación frontal",
+"front raise"
+],
+"mx_incline_cable_fly": [
+"Cruce de poleas de abajo hacia arriba",
+"pecho superior en polea",
+"incline cable fly"
+],
+"mx_cable_kickback": [
+"Patada de glúteo en polea",
+"kickback en polea",
+"cable kickback"
+],
+"mx_cable_pull_through": [
+"Pull-through en polea",
+"tirón entre las piernas",
+"cable pull-through"
+],
+"mx_cable_hip_abduction": [
+"Abducción de cadera en polea",
+"patada lateral en polea",
+"cable abduction"
+],
+"mx_cable_hip_adduction": [
+"Aducción de cadera en polea",
+"aducción en polea",
+"cable adduction"
+],
+"mx_cable_woodchop": [
+"Leñador en polea",
+"woodchop",
+"corte de leña en polea"
+],
+"mx_half_kneeling_pallof_press": [
+"Press Pallof con una rodilla en el suelo",
+"press antirrotación de rodillas",
+"half-kneeling Pallof press"
+],
+"mx_smith_machine_squat": [
+"Sentadilla en máquina Smith",
+"sentadilla en multipower",
+"Smith squat"
+],
+"mx_smith_machine_bench_press": [
+"Press de banca en máquina Smith",
+"press de banca en multipower",
+"Smith bench press"
+],
+"mx_smith_machine_hip_thrust": [
+"Hip thrust en máquina Smith",
+"hip thrust en multipower",
+"Smith hip thrust"
+],
+"mx_smith_machine_romanian_deadlift": [
+"Peso muerto rumano en máquina Smith",
+"RDL en multipower",
+"Smith RDL"
+],
+"mx_smith_machine_split_squat": [
+"Sentadilla dividida en máquina Smith",
+"zancada en multipower",
+"Smith split squat"
+]
+}

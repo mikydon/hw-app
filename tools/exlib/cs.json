@@ -1,0 +1,704 @@
+{
+"k1": [
+"Klik",
+"kliky",
+"push-up",
+"klik na zemi"
+],
+"k3": [
+"Diamantový klik",
+"diamantové kliky",
+"kliky s úzkým postavením rukou",
+"tricepsové kliky",
+"diamond push-up"
+],
+"r1": [
+"Pike klik",
+"kliky v předklonu",
+"ramenní kliky",
+"pike push-up"
+],
+"kIncl": [
+"Klik o vyvýšenou oporu",
+"kliky o stůl",
+"šikmé kliky",
+"incline push-up"
+],
+"kKnee": [
+"Klik na kolenou",
+"kliky z kolen",
+"dámské kliky",
+"knee push-up"
+],
+"r1e": [
+"Pike klik s nohama na židli",
+"pike kliky s vyvýšenýma nohama",
+"elevated pike push-up"
+],
+"k3e": [
+"Diamantový klik s nohama na židli",
+"diamantové kliky s vyvýšenýma nohama",
+"diamond klik s nohama na židli"
+],
+"row1": [
+"Přítah o zárubeň",
+"přítahy ve dveřích",
+"veslování o zárubeň",
+"door frame row"
+],
+"row2": [
+"Přítah s ručníkem o dveře",
+"veslování s ručníkem",
+"přítahy s ručníkem",
+"towel row"
+],
+"row3": [
+"Široký přítah o zárubeň",
+"široké veslování o zárubeň",
+"wide door row"
+],
+"superman": [
+"Superman",
+"zvedání rukou a nohou v lehu na břiše",
+"zádové zdvihy",
+"plavání na zemi"
+],
+"ytw": [
+"Y-T-W na zemi",
+"YTW",
+"zdvihy Y T W v lehu na břiše"
+],
+"n1": [
+"Hluboký dřep",
+"ATG dřep",
+"plný dřep",
+"dřep do hloubky"
+],
+"n2": [
+"Bulharský dřep",
+"bulharský výpad",
+"dřep se zadní nohou na lavičce",
+"Bulgarian split squat"
+],
+"n7": [
+"Zakopávání s ručníkem",
+"zakopávání na podlaze",
+"hamstring curl s ručníkem",
+"sliding leg curl"
+],
+"lunge": [
+"Výpad vzad",
+"zpětný výpad",
+"výpady dozadu",
+"reverse lunge"
+],
+"bridge": [
+"Hýžďový most",
+"most",
+"pánevní most",
+"glute bridge"
+],
+"wallsit": [
+"Sed u zdi",
+"židlička u zdi",
+"dřep u zdi",
+"wall sit"
+],
+"sbridge": [
+"Most na jedné noze",
+"jednonohý hýžďový most",
+"single-leg glute bridge"
+],
+"n1q": [
+"Dřep 1 a 1/4",
+"dřep jedna a čtvrt",
+"1¼ dřep"
+],
+"b5": [
+"Plank",
+"prkno",
+"vzpor na předloktích",
+"planka"
+],
+"b2": [
+"Dead bug",
+"mrtvý brouk",
+"brouk"
+],
+"b4": [
+"Bicykl",
+"bicyklové sklapovačky",
+"kolo",
+"bicycle crunch"
+],
+"birddog": [
+"Bird dog",
+"pes a pták",
+"zvedání protilehlé ruky a nohy ve vzporu klečmo"
+],
+"hollow": [
+"Hollow body hold",
+"hollow hold",
+"loďka",
+"výdrž v loďce"
+],
+"legraise": [
+"Zvedání nohou",
+"zvedání nohou v lehu",
+"leg raise"
+],
+"b5l": [
+"Plank se zvednutou nohou",
+"plank na jedné noze",
+"single-leg plank"
+],
+"bw_calf_raise": [
+"Výpon na špičky",
+"výpony",
+"výpony na lýtka",
+"calf raise"
+],
+"bw_single_leg_calf_raise": [
+"Výpon na jedné noze",
+"jednonohé výpony",
+"single-leg calf raise"
+],
+"bw_tibialis_raise": [
+"Zvedání špiček u zdi",
+"tibialis raise",
+"přitahování špiček"
+],
+"bw_side_lying_leg_raise": [
+"Unožování v lehu na boku",
+"zvedání nohy v lehu na boku",
+"abdukce v lehu"
+],
+"bw_side_lying_adductor_raise": [
+"Přinožování v lehu na boku",
+"zvedání spodní nohy v lehu na boku",
+"addukce v lehu"
+],
+"bw_short_lever_copenhagen_plank": [
+"Kodaňský plank s oporou o koleno",
+"lehčí kodaňský plank",
+"Copenhagen plank na koleni"
+],
+"bw_copenhagen_plank": [
+"Kodaňský plank",
+"Copenhagen plank",
+"boční plank s nohou na lavičce",
+"kodaňská addukce"
+],
+"bw_side_plank": [
+"Boční plank",
+"boční vzpor na předloktí",
+"side plank"
+],
+"bw_knee_side_plank": [
+"Boční plank na kolenou",
+"lehčí boční plank",
+"boční vzpor na koleni"
+],
+"bw_plank_shoulder_tap": [
+"Plank s dotykem ramene",
+"shoulder tap",
+"dotyky ramen ve vzporu"
+],
+"bw_reverse_crunch": [
+"Zpětné sklapovačky",
+"reverse crunch",
+"přitahování kolen v lehu"
+],
+"bw_prone_back_extension": [
+"Záklon v lehu na břiše",
+"zvedání trupu v lehu na břiše",
+"zádové zdvihy na zemi"
+],
+"bw_single_leg_romanian_deadlift": [
+"Rumunský mrtvý tah na jedné noze",
+"jednonohý mrtvý tah",
+"single-leg RDL"
+],
+"bw_single_leg_hip_thrust": [
+"Hip thrust na jedné noze",
+"jednonohý hip thrust",
+"zvedání pánve na jedné noze s oporou zad"
+],
+"bw_nordic_hamstring_curl": [
+"Severské zakopávání",
+"nordic curl",
+"nordický hamstring curl"
+],
+"bw_bodyweight_squat": [
+"Dřep",
+"dřepy",
+"dřep s vlastní vahou",
+"air squat"
+],
+"bw_split_squat": [
+"Dřep ve výpadu",
+"statický výpad",
+"split squat"
+],
+"bw_step_up": [
+"Výstup na židli",
+"výstupy na schod",
+"step-up"
+],
+"bw_lateral_lunge": [
+"Výpad stranou",
+"boční výpad",
+"lateral lunge"
+],
+"bw_pistol_squat_to_box": [
+"Pistolový dřep na židli",
+"jednonohý dřep na židli",
+"pistol squat na box"
+],
+"bw_wall_push_up": [
+"Klik o zeď",
+"kliky o zeď",
+"kliky ve stoje"
+],
+"bw_decline_push_up": [
+"Klik s nohama na židli",
+"kliky s vyvýšenýma nohama",
+"decline push-up"
+],
+"bw_archer_push_up": [
+"Lukostřelecký klik",
+"archer push-up",
+"lukostřelecké kliky"
+],
+"bw_scapular_push_up": [
+"Lopatkový klik",
+"kliky lopatkami",
+"scapular push-up"
+],
+"bw_wall_handstand_hold": [
+"Stoj na rukou u zdi",
+"výdrž ve stoji na rukou",
+"handstand u zdi"
+],
+"bw_chair_dip": [
+"Dipy na židli",
+"zadní kliky",
+"tricepsové kliky o židli",
+"bench dip"
+],
+"bw_bodyweight_triceps_extension": [
+"Tricepsové extenze s vlastní vahou",
+"francouzský tlak s vlastní vahou",
+"skull crusher o stůl"
+],
+"bw_inverted_row_table": [
+"Přítah pod stolem",
+"australský shyb",
+"obrácený přítah",
+"inverted row"
+],
+"bw_prone_reverse_snow_angel": [
+"Sněžný anděl v lehu na břiše",
+"obrácený sněžný anděl",
+"reverse snow angel"
+],
+"bw_towel_biceps_curl": [
+"Bicepsový zdvih s ručníkem",
+"izometrický zdvih s ručníkem",
+"towel curl"
+],
+"fw_pull_up": [
+"Shyb nadhmatem",
+"shyby",
+"přítahy na hrazdě",
+"pull-up"
+],
+"fw_chin_up": [
+"Shyb podhmatem",
+"shyby podhmatem",
+"chin-up"
+],
+"fw_dead_hang": [
+"Vis na hrazdě",
+"volný vis",
+"dead hang"
+],
+"fw_hanging_knee_raise": [
+"Přitahování kolen ve visu",
+"zvedání kolen na hrazdě",
+"hanging knee raise"
+],
+"fw_dumbbell_bench_press": [
+"Tlak s jednoručkami na lavičce",
+"benchpress s jednoručkami",
+"DB bench press"
+],
+"fw_dumbbell_shoulder_press": [
+"Tlak s jednoručkami nad hlavu",
+"ramenní tlak s jednoručkami",
+"military press s jednoručkami"
+],
+"fw_dumbbell_lateral_raise": [
+"Upažování s jednoručkami",
+"upažování",
+"lateral raise"
+],
+"fw_dumbbell_overhead_triceps_extension": [
+"Tricepsové extenze s jednoručkou nad hlavou",
+"francouzský tlak s jednoručkou",
+"overhead triceps extension"
+],
+"fw_lying_triceps_extension": [
+"Francouzský tlak vleže",
+"skull crusher",
+"tricepsové extenze vleže"
+],
+"fw_one_arm_dumbbell_row": [
+"Přítah jednoručky v předklonu",
+"jednoruční přítah",
+"veslování s jednoručkou",
+"dumbbell row"
+],
+"fw_dumbbell_reverse_fly": [
+"Rozpažování v předklonu s jednoručkami",
+"zadní rozpažování",
+"reverse fly"
+],
+"fw_band_pull_apart": [
+"Roztahování gumy",
+"band pull-apart",
+"rozpažování s gumou"
+],
+"fw_dumbbell_biceps_curl": [
+"Bicepsový zdvih s jednoručkami",
+"bicepsový zdvih",
+"biceps curl",
+"kladivový zdvih"
+],
+"fw_goblet_squat": [
+"Goblet dřep",
+"dřep s jednoručkou na hrudi",
+"goblet squat"
+],
+"fw_dumbbell_romanian_deadlift": [
+"Rumunský mrtvý tah s jednoručkami",
+"RDL",
+"mrtvý tah s nataženýma nohama"
+],
+"fw_dumbbell_bulgarian_split_squat": [
+"Bulharský dřep s jednoručkami",
+"bulharský dřep se zátěží",
+"DB Bulgarian squat"
+],
+"fw_dumbbell_hip_thrust": [
+"Hip thrust s jednoručkou",
+"hip thrust se zátěží",
+"zvedání pánve se zátěží"
+],
+"fw_kettlebell_swing": [
+"Kettlebell swing",
+"švih s kettlebellem",
+"ruský swing"
+],
+"fw_single_leg_dumbbell_calf_raise": [
+"Výpon na jedné noze s jednoručkou",
+"výpony se zátěží",
+"dumbbell calf raise"
+],
+"fw_farmer_s_carry": [
+"Farmářská chůze",
+"farmer's walk",
+"nošení jednoruček"
+],
+"fw_suitcase_carry": [
+"Chůze s kufrem",
+"jednoruční farmářská chůze",
+"suitcase carry"
+],
+"fw_band_pallof_press": [
+"Pallof press s gumou",
+"Pallof press",
+"antirotační tlak"
+],
+"mc_leg_press": [
+"Leg press",
+"nožní lis",
+"tlak nohama na stroji",
+"legpress"
+],
+"mc_hack_squat": [
+"Hack dřep",
+"hack squat",
+"dřep na hack stroji"
+],
+"mc_leg_extension": [
+"Předkopávání na stroji",
+"předkopávání",
+"leg extension"
+],
+"mc_lying_leg_curl": [
+"Zakopávání vleže na stroji",
+"zakopávání vleže",
+"leg curl vleže"
+],
+"mc_seated_leg_curl": [
+"Zakopávání vsedě na stroji",
+"zakopávání vsedě",
+"leg curl vsedě"
+],
+"mc_hip_thrust_machine": [
+"Hip thrust na stroji",
+"glute drive",
+"stroj na hýždě"
+],
+"mc_hip_abduction_machine": [
+"Unožování na stroji",
+"abduktory na stroji",
+"abdukce na stroji"
+],
+"mc_hip_adduction_machine": [
+"Přinožování na stroji",
+"adduktory na stroji",
+"addukce na stroji"
+],
+"mc_standing_calf_raise_machine": [
+"Výpony ve stoje na stroji",
+"lýtkový stroj",
+"výpony na stroji"
+],
+"mc_seated_calf_raise_machine": [
+"Výpony vsedě na stroji",
+"výpony vsedě",
+"seated calf raise"
+],
+"mc_lat_pulldown": [
+"Stahování horní kladky",
+"stahování kladky na hrudník",
+"lat pulldown",
+"přítahy horní kladky"
+],
+"mc_assisted_pull_up_machine": [
+"Shyby s dopomocí na stroji",
+"asistované shyby",
+"gravitron"
+],
+"mc_seated_cable_row": [
+"Přítah spodní kladky vsedě",
+"veslování na kladce",
+"seated cable row"
+],
+"mc_reverse_pec_deck": [
+"Zadní rozpažování na stroji",
+"reverse butterfly",
+"stroj na zadní ramena"
+],
+"mc_cable_face_pull": [
+"Face pull",
+"přítah lana k obličeji",
+"face pull na kladce"
+],
+"mc_cable_biceps_curl": [
+"Bicepsový zdvih na kladce",
+"zdvih na spodní kladce",
+"cable curl"
+],
+"mc_chest_press_machine": [
+"Tlak na prsa na stroji",
+"chest press",
+"bench na stroji"
+],
+"mc_pec_deck_cable_fly": [
+"Butterfly",
+"rozpažování na stroji",
+"pec deck",
+"křížení kladek",
+"cable fly"
+],
+"mc_shoulder_press_machine": [
+"Tlak nad hlavu na stroji",
+"ramenní tlak na stroji",
+"shoulder press"
+],
+"mc_cable_lateral_raise": [
+"Upažování na kladce",
+"upažování jednoruč na kladce",
+"cable lateral raise"
+],
+"mc_cable_triceps_pushdown": [
+"Stahování kladky na triceps",
+"tricepsové stahování",
+"pushdown",
+"tricepsy na kladce"
+],
+"mc_cable_crunch": [
+"Sklapovačky na kladce",
+"zkracovačky na kladce v kleku",
+"cable crunch"
+],
+"mc_45_back_extension": [
+"Hyperextenze",
+"záklony na hyperextenzní lavici",
+"zádové extenze",
+"back extension"
+],
+"mx_machine_row": [
+"Přítah na stroji",
+"veslování na stroji",
+"machine row"
+],
+"mx_chest_supported_row": [
+"Přítah s oporou hrudníku",
+"veslování s oporou hrudi",
+"chest-supported row"
+],
+"mx_t_bar_row": [
+"Přítah T-osy",
+"T-bar row",
+"veslování T-osy"
+],
+"mx_assisted_dip_machine": [
+"Dipy s dopomocí na stroji",
+"asistované dipy",
+"bradla s dopomocí"
+],
+"mx_machine_preacher_curl": [
+"Bicepsový zdvih na Scottově stroji",
+"scott na stroji",
+"preacher curl"
+],
+"mx_machine_lateral_raise": [
+"Upažování na stroji",
+"stroj na boční ramena",
+"machine lateral raise"
+],
+"mx_ab_crunch_machine": [
+"Sklapovačky na stroji",
+"břišní stroj",
+"ab crunch machine"
+],
+"mx_machine_glute_kickback": [
+"Zanožování na stroji",
+"kickback na stroji",
+"stroj na hýždě"
+],
+"mx_reverse_hyperextension": [
+"Obrácená hyperextenze",
+"reverse hyper",
+"zanožování na lavici"
+],
+"mx_belt_squat": [
+"Dřep s opaskem",
+"belt squat",
+"dřep s pásem na stroji"
+],
+"mx_leg_press_calf_raise": [
+"Výpony na leg pressu",
+"lýtka na nožním lisu",
+"calf press"
+],
+"mx_captain_s_chair_knee_raise": [
+"Přitahování kolen na bradlové stoličce",
+"captain's chair",
+"zvedání kolen v opoře"
+],
+"mx_wide_grip_lat_pulldown": [
+"Stahování horní kladky širokým úchopem",
+"široké stahování kladky",
+"wide pulldown"
+],
+"mx_close_grip_lat_pulldown": [
+"Stahování horní kladky úzkým úchopem",
+"úzké stahování kladky",
+"V-bar pulldown"
+],
+"mx_straight_arm_pulldown": [
+"Stahování kladky s napnutými pažemi",
+"přítah s propnutými pažemi",
+"straight-arm pulldown"
+],
+"mx_single_arm_cable_row": [
+"Jednoruční přítah na kladce",
+"přítah kladky jednoruč",
+"single-arm cable row"
+],
+"mx_cable_overhead_triceps_extension": [
+"Tricepsové extenze nad hlavou na kladce",
+"francouzský tlak na kladce",
+"overhead rope extension"
+],
+"mx_rope_hammer_curl": [
+"Kladivový zdvih s lanem",
+"kladivový zdvih na kladce",
+"rope hammer curl"
+],
+"mx_cable_rear_delt_fly": [
+"Zadní rozpažování na kladkách",
+"zadní ramena na kladce",
+"cable rear delt fly"
+],
+"mx_cable_front_raise": [
+"Předpažování na kladce",
+"předpažování",
+"front raise"
+],
+"mx_incline_cable_fly": [
+"Křížení kladek zdola nahoru",
+"horní prsa na kladkách",
+"incline cable fly"
+],
+"mx_cable_kickback": [
+"Zanožování na kladce",
+"kickback na kladce",
+"cable kickback"
+],
+"mx_cable_pull_through": [
+"Pull-through na kladce",
+"přítah lana mezi nohama",
+"cable pull-through"
+],
+"mx_cable_hip_abduction": [
+"Unožování na kladce",
+"abdukce na kladce",
+"cable abduction"
+],
+"mx_cable_hip_adduction": [
+"Přinožování na kladce",
+"addukce na kladce",
+"cable adduction"
+],
+"mx_cable_woodchop": [
+"Dřevorubec na kladce",
+"woodchop",
+"sekání dřeva na kladce"
+],
+"mx_half_kneeling_pallof_press": [
+"Pallof press v polokleku",
+"antirotační tlak v kleku",
+"half-kneeling Pallof press"
+],
+"mx_smith_machine_squat": [
+"Dřep v multipressu",
+"dřep na Smithově stroji",
+"Smith squat"
+],
+"mx_smith_machine_bench_press": [
+"Benchpress v multipressu",
+"tlak na lavici na Smithově stroji",
+"Smith bench press"
+],
+"mx_smith_machine_hip_thrust": [
+"Hip thrust v multipressu",
+"hip thrust na Smithově stroji",
+"Smith hip thrust"
+],
+"mx_smith_machine_romanian_deadlift": [
+"Rumunský mrtvý tah v multipressu",
+"RDL na Smithově stroji",
+"Smith RDL"
+],
+"mx_smith_machine_split_squat": [
+"Dřep ve výpadu v multipressu",
+"výpad na Smithově stroji",
+"Smith split squat"
+]
+}

@@ -1,0 +1,701 @@
+{
+"k1": [
+"俯卧撑",
+"标准俯卧撑",
+"掌上压",
+"push-up"
+],
+"k3": [
+"钻石俯卧撑",
+"窄距俯卧撑",
+"三头俯卧撑",
+"diamond push-up"
+],
+"r1": [
+"屈体俯卧撑",
+"派克俯卧撑",
+"肩部俯卧撑",
+"pike push-up"
+],
+"kIncl": [
+"上斜俯卧撑",
+"撑桌俯卧撑",
+"手部垫高俯卧撑",
+"incline push-up"
+],
+"kKnee": [
+"跪姿俯卧撑",
+"跪式俯卧撑",
+"女士俯卧撑",
+"knee push-up"
+],
+"r1e": [
+"垫脚屈体俯卧撑",
+"脚垫高派克俯卧撑",
+"elevated pike push-up"
+],
+"k3e": [
+"垫脚钻石俯卧撑",
+"脚垫高钻石俯卧撑"
+],
+"row1": [
+"门框划船",
+"门框拉",
+"door frame row"
+],
+"row2": [
+"毛巾门把手划船",
+"毛巾划船",
+"towel row"
+],
+"row3": [
+"宽握门框划船",
+"宽距门框划船",
+"wide door row"
+],
+"superman": [
+"超人式",
+"俯卧两头起",
+"超人背起"
+],
+"ytw": [
+"俯卧 Y-T-W",
+"YTW",
+"俯卧 Y T W 举臂"
+],
+"n1": [
+"全幅深蹲",
+"ATG 深蹲",
+"全蹲",
+"全幅深蹲（ATG）"
+],
+"n2": [
+"保加利亚分腿蹲",
+"保加利亚蹲",
+"后脚抬高分腿蹲",
+"Bulgarian split squat"
+],
+"n7": [
+"毛巾腿弯举",
+"滑行腿弯举",
+"地面腿弯举",
+"sliding leg curl"
+],
+"lunge": [
+"后弓步",
+"后撤步弓步",
+"反向弓步",
+"reverse lunge"
+],
+"bridge": [
+"臀桥",
+"仰卧臀桥",
+"骨盆上抬",
+"glute bridge"
+],
+"wallsit": [
+"靠墙静蹲",
+"靠墙蹲",
+"墙壁静蹲",
+"wall sit"
+],
+"sbridge": [
+"单腿臀桥",
+"单腿骨盆上抬",
+"single-leg glute bridge"
+],
+"n1q": [
+"1¼ 深蹲",
+"一又四分之一深蹲",
+"1.25 深蹲"
+],
+"b5": [
+"平板支撑",
+"肘撑平板",
+"前平板支撑",
+"plank"
+],
+"b2": [
+"死虫式",
+"死虫",
+"dead bug"
+],
+"b4": [
+"自行车卷腹",
+"单车卷腹",
+"交叉卷腹",
+"bicycle crunch"
+],
+"birddog": [
+"鸟狗式",
+"四点支撑对侧伸展",
+"bird dog"
+],
+"hollow": [
+"空心支撑",
+"空心体",
+"船式支撑",
+"hollow body hold"
+],
+"legraise": [
+"仰卧举腿",
+"举腿",
+"仰卧抬腿",
+"leg raise"
+],
+"b5l": [
+"单腿平板支撑",
+"抬腿平板支撑",
+"single-leg plank"
+],
+"bw_calf_raise": [
+"提踵",
+"站姿提踵",
+"踮脚",
+"calf raise"
+],
+"bw_single_leg_calf_raise": [
+"单腿提踵",
+"单脚提踵",
+"single-leg calf raise"
+],
+"bw_tibialis_raise": [
+"靠墙勾脚",
+"胫骨前肌抬起",
+"tibialis raise"
+],
+"bw_side_lying_leg_raise": [
+"侧卧抬腿",
+"侧卧髋外展",
+"侧抬腿"
+],
+"bw_side_lying_adductor_raise": [
+"侧卧内收抬腿",
+"侧卧髋内收",
+"下侧腿抬起"
+],
+"bw_short_lever_copenhagen_plank": [
+"短力臂哥本哈根平板",
+"跪膝哥本哈根平板",
+"简易哥本哈根"
+],
+"bw_copenhagen_plank": [
+"哥本哈根平板",
+"哥本哈根侧撑",
+"内收肌侧平板",
+"Copenhagen plank"
+],
+"bw_side_plank": [
+"侧平板支撑",
+"侧桥",
+"side plank"
+],
+"bw_knee_side_plank": [
+"跪姿侧平板支撑",
+"屈膝侧平板",
+"简易侧平板"
+],
+"bw_plank_shoulder_tap": [
+"平板支撑拍肩",
+"拍肩",
+"shoulder tap"
+],
+"bw_reverse_crunch": [
+"反向卷腹",
+"仰卧收腹举腿",
+"reverse crunch"
+],
+"bw_prone_back_extension": [
+"俯卧背伸",
+"俯卧挺身",
+"地面背伸"
+],
+"bw_single_leg_romanian_deadlift": [
+"单腿罗马尼亚硬拉",
+"单腿硬拉",
+"single-leg RDL"
+],
+"bw_single_leg_hip_thrust": [
+"单腿臀推",
+"单腿靠凳臀推",
+"single-leg hip thrust"
+],
+"bw_nordic_hamstring_curl": [
+"北欧腿弯举",
+"北欧挺",
+"nordic curl"
+],
+"bw_bodyweight_squat": [
+"徒手深蹲",
+"深蹲",
+"自重深蹲",
+"air squat"
+],
+"bw_split_squat": [
+"分腿蹲",
+"原地弓步",
+"split squat"
+],
+"bw_step_up": [
+"登阶",
+"踏椅登阶",
+"step-up"
+],
+"bw_lateral_lunge": [
+"侧弓步",
+"侧向弓步",
+"lateral lunge"
+],
+"bw_pistol_squat_to_box": [
+"坐箱手枪蹲",
+"单腿坐椅蹲",
+"box pistol squat"
+],
+"bw_wall_push_up": [
+"靠墙俯卧撑",
+"站姿俯卧撑",
+"墙壁俯卧撑"
+],
+"bw_decline_push_up": [
+"下斜俯卧撑",
+"脚垫高俯卧撑",
+"decline push-up"
+],
+"bw_archer_push_up": [
+"弓箭手俯卧撑",
+"archer push-up",
+"侧移俯卧撑"
+],
+"bw_scapular_push_up": [
+"肩胛俯卧撑",
+"肩胛推",
+"scapular push-up"
+],
+"bw_wall_handstand_hold": [
+"靠墙倒立",
+"靠墙手倒立保持",
+"handstand"
+],
+"bw_chair_dip": [
+"椅子臂屈伸",
+"凳上臂屈伸",
+"反向撑体",
+"bench dip"
+],
+"bw_bodyweight_triceps_extension": [
+"自重三头肌伸展",
+"自重颅骨粉碎者",
+"撑桌三头伸展"
+],
+"bw_inverted_row_table": [
+"桌下反向划船",
+"澳式引体向上",
+"反向划船",
+"inverted row"
+],
+"bw_prone_reverse_snow_angel": [
+"俯卧反向雪天使",
+"俯卧雪天使",
+"reverse snow angel"
+],
+"bw_towel_biceps_curl": [
+"毛巾二头弯举",
+"毛巾等长弯举",
+"towel curl"
+],
+"fw_pull_up": [
+"引体向上",
+"正握引体向上",
+"pull-up"
+],
+"fw_chin_up": [
+"反握引体向上",
+"chin-up",
+"反手引体"
+],
+"fw_dead_hang": [
+"悬垂",
+"单杠悬垂",
+"死悬挂",
+"dead hang"
+],
+"fw_hanging_knee_raise": [
+"悬垂举膝",
+"单杠收腹举膝",
+"hanging knee raise"
+],
+"fw_dumbbell_bench_press": [
+"哑铃卧推",
+"哑铃平板卧推",
+"DB bench press"
+],
+"fw_dumbbell_shoulder_press": [
+"哑铃推举",
+"哑铃肩上推举",
+"坐姿哑铃推举"
+],
+"fw_dumbbell_lateral_raise": [
+"哑铃侧平举",
+"侧平举",
+"lateral raise"
+],
+"fw_dumbbell_overhead_triceps_extension": [
+"哑铃颈后臂屈伸",
+"哑铃过头三头伸展",
+"overhead triceps extension"
+],
+"fw_lying_triceps_extension": [
+"仰卧臂屈伸",
+"颅骨粉碎者",
+"skull crusher",
+"仰卧三头伸展"
+],
+"fw_one_arm_dumbbell_row": [
+"单臂哑铃划船",
+"哑铃划船",
+"dumbbell row"
+],
+"fw_dumbbell_reverse_fly": [
+"哑铃俯身飞鸟",
+"反向飞鸟",
+"reverse fly"
+],
+"fw_band_pull_apart": [
+"弹力带拉开",
+"弹力带扩胸",
+"band pull-apart"
+],
+"fw_dumbbell_biceps_curl": [
+"哑铃弯举",
+"哑铃二头弯举",
+"biceps curl",
+"锤式弯举"
+],
+"fw_goblet_squat": [
+"高脚杯深蹲",
+"杯式深蹲",
+"goblet squat"
+],
+"fw_dumbbell_romanian_deadlift": [
+"哑铃罗马尼亚硬拉",
+"RDL",
+"直腿硬拉"
+],
+"fw_dumbbell_bulgarian_split_squat": [
+"哑铃保加利亚分腿蹲",
+"负重保加利亚蹲",
+"DB Bulgarian squat"
+],
+"fw_dumbbell_hip_thrust": [
+"哑铃臀推",
+"负重臀推",
+"DB hip thrust"
+],
+"fw_kettlebell_swing": [
+"壶铃摆荡",
+"壶铃甩摆",
+"kettlebell swing"
+],
+"fw_single_leg_dumbbell_calf_raise": [
+"哑铃单腿提踵",
+"负重单腿提踵",
+"dumbbell calf raise"
+],
+"fw_farmer_s_carry": [
+"农夫行走",
+"农夫走",
+"farmer's walk"
+],
+"fw_suitcase_carry": [
+"单手提箱走",
+"手提箱行走",
+"suitcase carry"
+],
+"fw_band_pallof_press": [
+"弹力带抗旋转推",
+"Pallof 推",
+"Pallof press"
+],
+"mc_leg_press": [
+"腿举",
+"倒蹬",
+"腿举机",
+"leg press"
+],
+"mc_hack_squat": [
+"哈克深蹲",
+"哈克蹲",
+"hack squat"
+],
+"mc_leg_extension": [
+"坐姿腿屈伸",
+"腿屈伸",
+"leg extension"
+],
+"mc_lying_leg_curl": [
+"俯卧腿弯举",
+"俯卧腿屈",
+"lying leg curl"
+],
+"mc_seated_leg_curl": [
+"坐姿腿弯举",
+"坐姿腿屈",
+"seated leg curl"
+],
+"mc_hip_thrust_machine": [
+"臀推机",
+"器械臀推",
+"glute drive"
+],
+"mc_hip_abduction_machine": [
+"髋外展机",
+"坐姿髋外展",
+"外展机"
+],
+"mc_hip_adduction_machine": [
+"髋内收机",
+"坐姿髋内收",
+"内收机"
+],
+"mc_standing_calf_raise_machine": [
+"站姿提踵机",
+"器械站姿提踵",
+"小腿机"
+],
+"mc_seated_calf_raise_machine": [
+"坐姿提踵机",
+"坐姿提踵",
+"seated calf raise"
+],
+"mc_lat_pulldown": [
+"高位下拉",
+"宽握下拉",
+"lat pulldown",
+"背阔肌下拉"
+],
+"mc_assisted_pull_up_machine": [
+"辅助引体向上机",
+"助力引体向上",
+"gravitron"
+],
+"mc_seated_cable_row": [
+"坐姿绳索划船",
+"坐姿划船",
+"低位划船",
+"seated cable row"
+],
+"mc_reverse_pec_deck": [
+"反向蝴蝶机",
+"反向飞鸟机",
+"后束机"
+],
+"mc_cable_face_pull": [
+"面拉",
+"绳索面拉",
+"face pull"
+],
+"mc_cable_biceps_curl": [
+"绳索弯举",
+"低位绳索二头弯举",
+"cable curl"
+],
+"mc_chest_press_machine": [
+"坐姿推胸",
+"器械推胸",
+"chest press"
+],
+"mc_pec_deck_cable_fly": [
+"蝴蝶机夹胸",
+"蝴蝶机",
+"绳索夹胸",
+"龙门架夹胸",
+"cable fly"
+],
+"mc_shoulder_press_machine": [
+"器械肩推",
+"坐姿肩推机",
+"shoulder press"
+],
+"mc_cable_lateral_raise": [
+"绳索侧平举",
+"单臂绳索侧平举",
+"cable lateral raise"
+],
+"mc_cable_triceps_pushdown": [
+"绳索下压",
+"三头肌下压",
+"pushdown",
+"绳索三头下压"
+],
+"mc_cable_crunch": [
+"绳索卷腹",
+"跪姿绳索卷腹",
+"cable crunch"
+],
+"mc_45_back_extension": [
+"罗马椅挺身",
+"山羊挺身",
+"45° 背伸",
+"back extension"
+],
+"mx_machine_row": [
+"器械划船",
+"坐姿器械划船",
+"machine row"
+],
+"mx_chest_supported_row": [
+"胸托划船",
+"俯卧上斜凳划船",
+"chest-supported row"
+],
+"mx_t_bar_row": [
+"T 杠划船",
+"T-bar row",
+"T 型划船"
+],
+"mx_assisted_dip_machine": [
+"辅助双杠臂屈伸机",
+"助力双杠臂屈伸",
+"assisted dip"
+],
+"mx_machine_preacher_curl": [
+"器械牧师凳弯举",
+"牧师凳弯举机",
+"preacher curl"
+],
+"mx_machine_lateral_raise": [
+"器械侧平举",
+"侧平举机",
+"machine lateral raise"
+],
+"mx_ab_crunch_machine": [
+"卷腹机",
+"器械卷腹",
+"ab crunch machine"
+],
+"mx_machine_glute_kickback": [
+"器械臀部后踢",
+"后踢机",
+"髋伸展机"
+],
+"mx_reverse_hyperextension": [
+"反向挺身",
+"反向背伸",
+"reverse hyper"
+],
+"mx_belt_squat": [
+"腰带深蹲",
+"belt squat",
+"腰带深蹲机"
+],
+"mx_leg_press_calf_raise": [
+"腿举机提踵",
+"倒蹬提踵",
+"calf press"
+],
+"mx_captain_s_chair_knee_raise": [
+"罗马椅举膝",
+"悬臂举膝",
+"captain's chair"
+],
+"mx_wide_grip_lat_pulldown": [
+"宽握高位下拉",
+"宽距下拉",
+"wide pulldown"
+],
+"mx_close_grip_lat_pulldown": [
+"窄握高位下拉",
+"V 把下拉",
+"V-bar pulldown"
+],
+"mx_straight_arm_pulldown": [
+"直臂下压",
+"绳索直臂下拉",
+"straight-arm pulldown"
+],
+"mx_single_arm_cable_row": [
+"单臂绳索划船",
+"单手坐姿划船",
+"single-arm cable row"
+],
+"mx_cable_overhead_triceps_extension": [
+"绳索过头臂屈伸",
+"绳索颈后三头伸展",
+"overhead rope extension"
+],
+"mx_rope_hammer_curl": [
+"绳索锤式弯举",
+"绳索锤式",
+"rope hammer curl"
+],
+"mx_cable_rear_delt_fly": [
+"绳索反向飞鸟",
+"绳索后束飞鸟",
+"cable rear delt fly"
+],
+"mx_cable_front_raise": [
+"绳索前平举",
+"前平举",
+"front raise"
+],
+"mx_incline_cable_fly": [
+"低位绳索夹胸",
+"由下往上夹胸",
+"incline cable fly"
+],
+"mx_cable_kickback": [
+"绳索后踢腿",
+"绳索臀部后踢",
+"cable kickback"
+],
+"mx_cable_pull_through": [
+"绳索胯下前拉",
+"绳索髋铰链",
+"cable pull-through"
+],
+"mx_cable_hip_abduction": [
+"绳索髋外展",
+"绳索侧抬腿",
+"cable abduction"
+],
+"mx_cable_hip_adduction": [
+"绳索髋内收",
+"绳索内收",
+"cable adduction"
+],
+"mx_cable_woodchop": [
+"绳索伐木",
+"伐木式",
+"woodchop"
+],
+"mx_half_kneeling_pallof_press": [
+"半跪姿抗旋转推",
+"半跪 Pallof 推",
+"half-kneeling Pallof press"
+],
+"mx_smith_machine_squat": [
+"史密斯深蹲",
+"史密斯机深蹲",
+"Smith squat"
+],
+"mx_smith_machine_bench_press": [
+"史密斯卧推",
+"史密斯机卧推",
+"Smith bench press"
+],
+"mx_smith_machine_hip_thrust": [
+"史密斯臀推",
+"史密斯机臀推",
+"Smith hip thrust"
+],
+"mx_smith_machine_romanian_deadlift": [
+"史密斯罗马尼亚硬拉",
+"史密斯 RDL",
+"Smith RDL"
+],
+"mx_smith_machine_split_squat": [
+"史密斯分腿蹲",
+"史密斯弓步",
+"Smith split squat"
+]
+}

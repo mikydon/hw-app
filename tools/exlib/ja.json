@@ -1,0 +1,700 @@
+{
+"k1": [
+"腕立て伏せ",
+"プッシュアップ",
+"腕立て",
+"push-up"
+],
+"k3": [
+"ダイヤモンドプッシュアップ",
+"ナロープッシュアップ",
+"ダイヤモンド腕立て伏せ",
+"diamond push-up"
+],
+"r1": [
+"パイクプッシュアップ",
+"パイク腕立て",
+"肩の腕立て伏せ",
+"pike push-up"
+],
+"kIncl": [
+"インクラインプッシュアップ",
+"手を高くした腕立て伏せ",
+"机で腕立て伏せ",
+"incline push-up"
+],
+"kKnee": [
+"膝つき腕立て伏せ",
+"ニープッシュアップ",
+"膝立ち腕立て",
+"knee push-up"
+],
+"r1e": [
+"足上げパイクプッシュアップ",
+"エレベーテッドパイクプッシュアップ",
+"elevated pike push-up"
+],
+"k3e": [
+"足上げダイヤモンドプッシュアップ",
+"足を上げたダイヤモンド腕立て伏せ"
+],
+"row1": [
+"ドア枠ロウ",
+"ドアフレームロウ",
+"door frame row"
+],
+"row2": [
+"タオルでドアロウ",
+"タオルロウ",
+"towel row"
+],
+"row3": [
+"ワイドドア枠ロウ",
+"ワイドドアフレームロウ",
+"wide door row"
+],
+"superman": [
+"スーパーマン",
+"うつ伏せで手足上げ",
+"バックエクステンション（床）"
+],
+"ytw": [
+"床で Y-T-W",
+"YTW",
+"うつ伏せ Y T W レイズ"
+],
+"n1": [
+"フルスクワット",
+"ATG スクワット",
+"ディープスクワット"
+],
+"n2": [
+"ブルガリアンスクワット",
+"ブルガリアンスプリットスクワット",
+"後ろ足を台に乗せたスクワット",
+"Bulgarian split squat"
+],
+"n7": [
+"タオルレッグカール",
+"スライディングレッグカール",
+"床でハムストリングカール",
+"sliding leg curl"
+],
+"lunge": [
+"リバースランジ",
+"後ろ向きランジ",
+"バックランジ",
+"reverse lunge"
+],
+"bridge": [
+"ヒップリフト",
+"グルートブリッジ",
+"ブリッジ",
+"glute bridge"
+],
+"wallsit": [
+"ウォールシット",
+"空気椅子",
+"壁スクワット",
+"wall sit"
+],
+"sbridge": [
+"片脚ヒップリフト",
+"シングルレッググルートブリッジ",
+"single-leg glute bridge"
+],
+"n1q": [
+"1¼ スクワット",
+"ワンアンドクオータースクワット",
+"1.25 スクワット"
+],
+"b5": [
+"プランク",
+"フロントプランク",
+"肘つきプランク",
+"plank"
+],
+"b2": [
+"デッドバグ",
+"dead bug",
+"デッドバグエクササイズ"
+],
+"b4": [
+"バイシクルクランチ",
+"自転車こぎ腹筋",
+"ツイストクランチ",
+"bicycle crunch"
+],
+"birddog": [
+"バードドッグ",
+"四つ這いで対角の手足上げ",
+"bird dog"
+],
+"hollow": [
+"ホロウボディホールド",
+"ホロウホールド",
+"舟のポーズ保持",
+"hollow body hold"
+],
+"legraise": [
+"レッグレイズ",
+"仰向け脚上げ",
+"脚上げ腹筋",
+"leg raise"
+],
+"b5l": [
+"片脚プランク",
+"脚上げプランク",
+"single-leg plank"
+],
+"bw_calf_raise": [
+"カーフレイズ",
+"つま先立ち",
+"かかと上げ",
+"calf raise"
+],
+"bw_single_leg_calf_raise": [
+"片脚カーフレイズ",
+"片足つま先立ち",
+"single-leg calf raise"
+],
+"bw_tibialis_raise": [
+"ティビアリスレイズ",
+"壁でつま先上げ",
+"tibialis raise"
+],
+"bw_side_lying_leg_raise": [
+"サイドレッグレイズ",
+"横向き脚上げ",
+"股関節外転"
+],
+"bw_side_lying_adductor_raise": [
+"横向き内転筋レイズ",
+"下側の脚上げ",
+"股関節内転"
+],
+"bw_short_lever_copenhagen_plank": [
+"ショートコペンハーゲンプランク",
+"膝つきコペンハーゲンプランク",
+"簡単なコペンハーゲン"
+],
+"bw_copenhagen_plank": [
+"コペンハーゲンプランク",
+"コペンハーゲンアダクション",
+"内転筋サイドプランク",
+"Copenhagen plank"
+],
+"bw_side_plank": [
+"サイドプランク",
+"サイドブリッジ",
+"side plank"
+],
+"bw_knee_side_plank": [
+"膝つきサイドプランク",
+"簡単なサイドプランク",
+"ニーサイドプランク"
+],
+"bw_plank_shoulder_tap": [
+"プランクショルダータップ",
+"ショルダータップ",
+"shoulder tap"
+],
+"bw_reverse_crunch": [
+"リバースクランチ",
+"膝の引き寄せ腹筋",
+"reverse crunch"
+],
+"bw_prone_back_extension": [
+"床でバックエクステンション",
+"うつ伏せ上体起こし",
+"背筋"
+],
+"bw_single_leg_romanian_deadlift": [
+"片脚ルーマニアンデッドリフト",
+"シングルレッグデッドリフト",
+"single-leg RDL"
+],
+"bw_single_leg_hip_thrust": [
+"片脚ヒップスラスト",
+"シングルレッグヒップスラスト",
+"single-leg hip thrust"
+],
+"bw_nordic_hamstring_curl": [
+"ノルディックハムストリングカール",
+"ノルディックカール",
+"nordic curl"
+],
+"bw_bodyweight_squat": [
+"自重スクワット",
+"スクワット",
+"エアスクワット",
+"air squat"
+],
+"bw_split_squat": [
+"スプリットスクワット",
+"スタティックランジ",
+"split squat"
+],
+"bw_step_up": [
+"ステップアップ",
+"椅子への踏み台昇降",
+"step-up"
+],
+"bw_lateral_lunge": [
+"サイドランジ",
+"ラテラルランジ",
+"lateral lunge"
+],
+"bw_pistol_squat_to_box": [
+"ボックスピストルスクワット",
+"椅子への片脚スクワット",
+"pistol squat"
+],
+"bw_wall_push_up": [
+"壁腕立て伏せ",
+"ウォールプッシュアップ",
+"立って腕立て伏せ"
+],
+"bw_decline_push_up": [
+"デクラインプッシュアップ",
+"足上げ腕立て伏せ",
+"decline push-up"
+],
+"bw_archer_push_up": [
+"アーチャープッシュアップ",
+"片側寄せ腕立て伏せ",
+"archer push-up"
+],
+"bw_scapular_push_up": [
+"スキャプラプッシュアップ",
+"肩甲骨腕立て",
+"scapular push-up"
+],
+"bw_wall_handstand_hold": [
+"壁倒立",
+"ウォールハンドスタンド",
+"逆立ち保持"
+],
+"bw_chair_dip": [
+"椅子ディップス",
+"ベンチディップス",
+"リバースプッシュアップ",
+"bench dip"
+],
+"bw_bodyweight_triceps_extension": [
+"自重トライセプスエクステンション",
+"自重スカルクラッシャー",
+"机でトライセプスエクステンション"
+],
+"bw_inverted_row_table": [
+"机の下でインバーテッドロウ",
+"斜め懸垂",
+"オーストラリアン懸垂",
+"inverted row"
+],
+"bw_prone_reverse_snow_angel": [
+"うつ伏せリバーススノーエンジェル",
+"スノーエンジェル",
+"reverse snow angel"
+],
+"bw_towel_biceps_curl": [
+"タオルバイセップスカール",
+"タオルカール",
+"towel curl"
+],
+"fw_pull_up": [
+"懸垂",
+"プルアップ",
+"順手懸垂",
+"pull-up"
+],
+"fw_chin_up": [
+"逆手懸垂",
+"チンアップ",
+"chin-up"
+],
+"fw_dead_hang": [
+"ぶら下がり",
+"デッドハング",
+"鉄棒ぶら下がり",
+"dead hang"
+],
+"fw_hanging_knee_raise": [
+"ハンギングニーレイズ",
+"ぶら下がり膝上げ",
+"hanging knee raise"
+],
+"fw_dumbbell_bench_press": [
+"ダンベルベンチプレス",
+"ダンベルプレス",
+"DB bench press"
+],
+"fw_dumbbell_shoulder_press": [
+"ダンベルショルダープレス",
+"ダンベルオーバーヘッドプレス",
+"シーテッドダンベルプレス"
+],
+"fw_dumbbell_lateral_raise": [
+"ダンベルサイドレイズ",
+"サイドレイズ",
+"ラテラルレイズ",
+"lateral raise"
+],
+"fw_dumbbell_overhead_triceps_extension": [
+"ダンベルフレンチプレス",
+"オーバーヘッドトライセプスエクステンション",
+"overhead triceps extension"
+],
+"fw_lying_triceps_extension": [
+"ライイングトライセプスエクステンション",
+"スカルクラッシャー",
+"skull crusher"
+],
+"fw_one_arm_dumbbell_row": [
+"ワンハンドダンベルロウ",
+"ダンベルロウ",
+"dumbbell row"
+],
+"fw_dumbbell_reverse_fly": [
+"ダンベルリアレイズ",
+"リアデルトフライ",
+"reverse fly"
+],
+"fw_band_pull_apart": [
+"バンドプルアパート",
+"チューブ引き離し",
+"band pull-apart"
+],
+"fw_dumbbell_biceps_curl": [
+"ダンベルカール",
+"バイセップスカール",
+"biceps curl",
+"ハンマーカール"
+],
+"fw_goblet_squat": [
+"ゴブレットスクワット",
+"ダンベルを胸で持つスクワット",
+"goblet squat"
+],
+"fw_dumbbell_romanian_deadlift": [
+"ダンベルルーマニアンデッドリフト",
+"RDL",
+"スティッフレッグデッドリフト"
+],
+"fw_dumbbell_bulgarian_split_squat": [
+"ダンベルブルガリアンスクワット",
+"加重ブルガリアンスクワット",
+"DB Bulgarian squat"
+],
+"fw_dumbbell_hip_thrust": [
+"ダンベルヒップスラスト",
+"加重ヒップスラスト",
+"DB hip thrust"
+],
+"fw_kettlebell_swing": [
+"ケトルベルスイング",
+"ロシアンスイング",
+"kettlebell swing"
+],
+"fw_single_leg_dumbbell_calf_raise": [
+"ダンベル片脚カーフレイズ",
+"加重カーフレイズ",
+"dumbbell calf raise"
+],
+"fw_farmer_s_carry": [
+"ファーマーズウォーク",
+"ファーマーズキャリー",
+"farmer's walk"
+],
+"fw_suitcase_carry": [
+"スーツケースキャリー",
+"片手ファーマーズウォーク",
+"suitcase carry"
+],
+"fw_band_pallof_press": [
+"バンドパロフプレス",
+"パロフプレス",
+"Pallof press"
+],
+"mc_leg_press": [
+"レッグプレス",
+"レッグプレスマシン",
+"leg press"
+],
+"mc_hack_squat": [
+"ハックスクワット",
+"ハックスクワットマシン",
+"hack squat"
+],
+"mc_leg_extension": [
+"レッグエクステンション",
+"マシンレッグエクステンション",
+"leg extension"
+],
+"mc_lying_leg_curl": [
+"ライイングレッグカール",
+"うつ伏せレッグカール",
+"lying leg curl"
+],
+"mc_seated_leg_curl": [
+"シーテッドレッグカール",
+"座ってレッグカール",
+"seated leg curl"
+],
+"mc_hip_thrust_machine": [
+"ヒップスラストマシン",
+"グルートドライブ",
+"glute drive"
+],
+"mc_hip_abduction_machine": [
+"アブダクションマシン",
+"ヒップアブダクション",
+"外転マシン"
+],
+"mc_hip_adduction_machine": [
+"アダクションマシン",
+"ヒップアダクション",
+"内転マシン"
+],
+"mc_standing_calf_raise_machine": [
+"スタンディングカーフレイズマシン",
+"カーフマシン",
+"マシンカーフレイズ"
+],
+"mc_seated_calf_raise_machine": [
+"シーテッドカーフレイズ",
+"座ってカーフレイズ",
+"seated calf raise"
+],
+"mc_lat_pulldown": [
+"ラットプルダウン",
+"ラットマシン",
+"lat pulldown",
+"プルダウン"
+],
+"mc_assisted_pull_up_machine": [
+"アシストプルアップマシン",
+"アシスト懸垂",
+"gravitron"
+],
+"mc_seated_cable_row": [
+"シーテッドケーブルロウ",
+"ケーブルロウ",
+"ローロウ",
+"seated cable row"
+],
+"mc_reverse_pec_deck": [
+"リアデルトマシン",
+"リバースペックデック",
+"リバースフライマシン"
+],
+"mc_cable_face_pull": [
+"フェイスプル",
+"ケーブルフェイスプル",
+"face pull"
+],
+"mc_cable_biceps_curl": [
+"ケーブルカール",
+"ケーブルバイセップスカール",
+"cable curl"
+],
+"mc_chest_press_machine": [
+"チェストプレス",
+"マシンチェストプレス",
+"chest press"
+],
+"mc_pec_deck_cable_fly": [
+"ペックデック",
+"バタフライマシン",
+"ケーブルフライ",
+"ケーブルクロスオーバー",
+"cable fly"
+],
+"mc_shoulder_press_machine": [
+"ショルダープレスマシン",
+"マシンショルダープレス",
+"shoulder press"
+],
+"mc_cable_lateral_raise": [
+"ケーブルサイドレイズ",
+"ケーブルラテラルレイズ",
+"cable lateral raise"
+],
+"mc_cable_triceps_pushdown": [
+"ケーブルプッシュダウン",
+"トライセプスプッシュダウン",
+"ロープ プッシュダウン",
+"pushdown"
+],
+"mc_cable_crunch": [
+"ケーブルクランチ",
+"ニーリングケーブルクランチ",
+"cable crunch"
+],
+"mc_45_back_extension": [
+"バックエクステンション",
+"45度バックエクステンション",
+"ハイパーエクステンション",
+"back extension"
+],
+"mx_machine_row": [
+"マシンロウ",
+"シーテッドロウマシン",
+"machine row"
+],
+"mx_chest_supported_row": [
+"チェストサポーテッドロウ",
+"インクラインベンチロウ",
+"chest-supported row"
+],
+"mx_t_bar_row": [
+"T バーロウ",
+"T-bar row",
+"ランドマインロウ"
+],
+"mx_assisted_dip_machine": [
+"アシストディップスマシン",
+"アシストディップス",
+"assisted dip"
+],
+"mx_machine_preacher_curl": [
+"マシンプリーチャーカール",
+"プリーチャーカールマシン",
+"preacher curl"
+],
+"mx_machine_lateral_raise": [
+"マシンサイドレイズ",
+"ラテラルレイズマシン",
+"machine lateral raise"
+],
+"mx_ab_crunch_machine": [
+"アブクランチマシン",
+"腹筋マシン",
+"ab crunch machine"
+],
+"mx_machine_glute_kickback": [
+"マシングルートキックバック",
+"ヒップエクステンションマシン",
+"キックバックマシン"
+],
+"mx_reverse_hyperextension": [
+"リバースハイパーエクステンション",
+"リバースハイパー",
+"reverse hyper"
+],
+"mx_belt_squat": [
+"ベルトスクワット",
+"ベルトスクワットマシン",
+"belt squat"
+],
+"mx_leg_press_calf_raise": [
+"レッグプレスカーフレイズ",
+"カーフプレス",
+"calf press"
+],
+"mx_captain_s_chair_knee_raise": [
+"キャプテンズチェアニーレイズ",
+"ディップスタンドニーレイズ",
+"captain's chair"
+],
+"mx_wide_grip_lat_pulldown": [
+"ワイドグリップラットプルダウン",
+"ワイドプルダウン",
+"wide pulldown"
+],
+"mx_close_grip_lat_pulldown": [
+"ナローグリップラットプルダウン",
+"V バープルダウン",
+"V-bar pulldown"
+],
+"mx_straight_arm_pulldown": [
+"ストレートアームプルダウン",
+"ケーブルプルオーバー",
+"straight-arm pulldown"
+],
+"mx_single_arm_cable_row": [
+"ワンアームケーブルロウ",
+"片手ケーブルロウ",
+"single-arm cable row"
+],
+"mx_cable_overhead_triceps_extension": [
+"ケーブルオーバーヘッドエクステンション",
+"ケーブルフレンチプレス",
+"overhead rope extension"
+],
+"mx_rope_hammer_curl": [
+"ロープハンマーカール",
+"ケーブルハンマーカール",
+"rope hammer curl"
+],
+"mx_cable_rear_delt_fly": [
+"ケーブルリアデルトフライ",
+"ケーブルリバースフライ",
+"cable rear delt fly"
+],
+"mx_cable_front_raise": [
+"ケーブルフロントレイズ",
+"フロントレイズ",
+"front raise"
+],
+"mx_incline_cable_fly": [
+"ロー to ハイ ケーブルフライ",
+"インクラインケーブルフライ",
+"incline cable fly"
+],
+"mx_cable_kickback": [
+"ケーブルキックバック",
+"ケーブルグルートキックバック",
+"cable kickback"
+],
+"mx_cable_pull_through": [
+"ケーブルプルスルー",
+"プルスルー",
+"cable pull-through"
+],
+"mx_cable_hip_abduction": [
+"ケーブルアブダクション",
+"ケーブル脚外転",
+"cable abduction"
+],
+"mx_cable_hip_adduction": [
+"ケーブルアダクション",
+"ケーブル脚内転",
+"cable adduction"
+],
+"mx_cable_woodchop": [
+"ケーブルウッドチョップ",
+"ウッドチョッパー",
+"woodchop"
+],
+"mx_half_kneeling_pallof_press": [
+"ハーフニーリングパロフプレス",
+"片膝立ちパロフプレス",
+"half-kneeling Pallof press"
+],
+"mx_smith_machine_squat": [
+"スミスマシンスクワット",
+"スミススクワット",
+"Smith squat"
+],
+"mx_smith_machine_bench_press": [
+"スミスマシンベンチプレス",
+"スミスベンチ",
+"Smith bench press"
+],
+"mx_smith_machine_hip_thrust": [
+"スミスマシンヒップスラスト",
+"スミスヒップスラスト",
+"Smith hip thrust"
+],
+"mx_smith_machine_romanian_deadlift": [
+"スミスマシンルーマニアンデッドリフト",
+"スミス RDL",
+"Smith RDL"
+],
+"mx_smith_machine_split_squat": [
+"スミスマシンスプリットスクワット",
+"スミスランジ",
+"Smith split squat"
+]
+}

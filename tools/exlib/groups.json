@@ -1,0 +1,538 @@
+{
+"k1": [
+"chest",
+"none"
+],
+"k3": [
+"arms",
+"none"
+],
+"r1": [
+"shoulders",
+"none"
+],
+"kIncl": [
+"chest",
+"none"
+],
+"kKnee": [
+"chest",
+"none"
+],
+"r1e": [
+"shoulders",
+"none"
+],
+"k3e": [
+"arms",
+"none"
+],
+"row1": [
+"back",
+"none"
+],
+"row2": [
+"back",
+"none"
+],
+"row3": [
+"back",
+"none"
+],
+"superman": [
+"back",
+"none"
+],
+"ytw": [
+"back",
+"none"
+],
+"n1": [
+"legs",
+"none"
+],
+"n2": [
+"legs",
+"none"
+],
+"n7": [
+"legs",
+"none"
+],
+"lunge": [
+"legs",
+"none"
+],
+"bridge": [
+"glutes",
+"none"
+],
+"wallsit": [
+"legs",
+"none"
+],
+"sbridge": [
+"glutes",
+"none"
+],
+"n1q": [
+"legs",
+"none"
+],
+"b5": [
+"core",
+"none"
+],
+"b2": [
+"core",
+"none"
+],
+"b4": [
+"core",
+"none"
+],
+"birddog": [
+"core",
+"none"
+],
+"hollow": [
+"core",
+"none"
+],
+"legraise": [
+"core",
+"none"
+],
+"b5l": [
+"core",
+"none"
+],
+"bw_calf_raise": [
+"calves",
+"none"
+],
+"bw_single_leg_calf_raise": [
+"calves",
+"none"
+],
+"bw_tibialis_raise": [
+"calves",
+"none"
+],
+"bw_side_lying_leg_raise": [
+"glutes",
+"none"
+],
+"bw_side_lying_adductor_raise": [
+"legs",
+"none"
+],
+"bw_short_lever_copenhagen_plank": [
+"legs",
+"none"
+],
+"bw_copenhagen_plank": [
+"legs",
+"none"
+],
+"bw_side_plank": [
+"core",
+"none"
+],
+"bw_knee_side_plank": [
+"core",
+"none"
+],
+"bw_plank_shoulder_tap": [
+"core",
+"none"
+],
+"bw_reverse_crunch": [
+"core",
+"none"
+],
+"bw_prone_back_extension": [
+"back",
+"none"
+],
+"bw_single_leg_romanian_deadlift": [
+"legs",
+"none"
+],
+"bw_single_leg_hip_thrust": [
+"glutes",
+"none"
+],
+"bw_nordic_hamstring_curl": [
+"legs",
+"none"
+],
+"bw_bodyweight_squat": [
+"legs",
+"none"
+],
+"bw_split_squat": [
+"legs",
+"none"
+],
+"bw_step_up": [
+"legs",
+"none"
+],
+"bw_lateral_lunge": [
+"legs",
+"none"
+],
+"bw_pistol_squat_to_box": [
+"legs",
+"none"
+],
+"bw_wall_push_up": [
+"chest",
+"none"
+],
+"bw_decline_push_up": [
+"chest",
+"none"
+],
+"bw_archer_push_up": [
+"chest",
+"none"
+],
+"bw_scapular_push_up": [
+"shoulders",
+"none"
+],
+"bw_wall_handstand_hold": [
+"shoulders",
+"none"
+],
+"bw_chair_dip": [
+"arms",
+"none"
+],
+"bw_bodyweight_triceps_extension": [
+"arms",
+"none"
+],
+"bw_inverted_row_table": [
+"back",
+"none"
+],
+"bw_prone_reverse_snow_angel": [
+"back",
+"none"
+],
+"bw_towel_biceps_curl": [
+"arms",
+"none"
+],
+"fw_pull_up": [
+"back",
+"free"
+],
+"fw_chin_up": [
+"back",
+"free"
+],
+"fw_dead_hang": [
+"back",
+"free"
+],
+"fw_hanging_knee_raise": [
+"core",
+"free"
+],
+"fw_dumbbell_bench_press": [
+"chest",
+"free"
+],
+"fw_dumbbell_shoulder_press": [
+"shoulders",
+"free"
+],
+"fw_dumbbell_lateral_raise": [
+"shoulders",
+"free"
+],
+"fw_dumbbell_overhead_triceps_extension": [
+"arms",
+"free"
+],
+"fw_lying_triceps_extension": [
+"arms",
+"free"
+],
+"fw_one_arm_dumbbell_row": [
+"back",
+"free"
+],
+"fw_dumbbell_reverse_fly": [
+"shoulders",
+"free"
+],
+"fw_band_pull_apart": [
+"shoulders",
+"free"
+],
+"fw_dumbbell_biceps_curl": [
+"arms",
+"free"
+],
+"fw_goblet_squat": [
+"legs",
+"free"
+],
+"fw_dumbbell_romanian_deadlift": [
+"legs",
+"free"
+],
+"fw_dumbbell_bulgarian_split_squat": [
+"legs",
+"free"
+],
+"fw_dumbbell_hip_thrust": [
+"glutes",
+"free"
+],
+"fw_kettlebell_swing": [
+"glutes",
+"free"
+],
+"fw_single_leg_dumbbell_calf_raise": [
+"calves",
+"free"
+],
+"fw_farmer_s_carry": [
+"core",
+"free"
+],
+"fw_suitcase_carry": [
+"core",
+"free"
+],
+"fw_band_pallof_press": [
+"core",
+"free"
+],
+"mc_leg_press": [
+"legs",
+"machine"
+],
+"mc_hack_squat": [
+"legs",
+"machine"
+],
+"mc_leg_extension": [
+"legs",
+"machine"
+],
+"mc_lying_leg_curl": [
+"legs",
+"machine"
+],
+"mc_seated_leg_curl": [
+"legs",
+"machine"
+],
+"mc_hip_thrust_machine": [
+"glutes",
+"machine"
+],
+"mc_hip_abduction_machine": [
+"glutes",
+"machine"
+],
+"mc_hip_adduction_machine": [
+"legs",
+"machine"
+],
+"mc_standing_calf_raise_machine": [
+"calves",
+"machine"
+],
+"mc_seated_calf_raise_machine": [
+"calves",
+"machine"
+],
+"mc_lat_pulldown": [
+"back",
+"machine"
+],
+"mc_assisted_pull_up_machine": [
+"back",
+"machine"
+],
+"mc_seated_cable_row": [
+"back",
+"machine"
+],
+"mc_reverse_pec_deck": [
+"shoulders",
+"machine"
+],
+"mc_cable_face_pull": [
+"shoulders",
+"machine"
+],
+"mc_cable_biceps_curl": [
+"arms",
+"machine"
+],
+"mc_chest_press_machine": [
+"chest",
+"machine"
+],
+"mc_pec_deck_cable_fly": [
+"chest",
+"machine"
+],
+"mc_shoulder_press_machine": [
+"shoulders",
+"machine"
+],
+"mc_cable_lateral_raise": [
+"shoulders",
+"machine"
+],
+"mc_cable_triceps_pushdown": [
+"arms",
+"machine"
+],
+"mc_cable_crunch": [
+"core",
+"machine"
+],
+"mc_45_back_extension": [
+"back",
+"machine"
+],
+"mx_machine_row": [
+"back",
+"machine"
+],
+"mx_chest_supported_row": [
+"back",
+"machine"
+],
+"mx_t_bar_row": [
+"back",
+"machine"
+],
+"mx_assisted_dip_machine": [
+"arms",
+"machine"
+],
+"mx_machine_preacher_curl": [
+"arms",
+"machine"
+],
+"mx_machine_lateral_raise": [
+"shoulders",
+"machine"
+],
+"mx_ab_crunch_machine": [
+"core",
+"machine"
+],
+"mx_machine_glute_kickback": [
+"glutes",
+"machine"
+],
+"mx_reverse_hyperextension": [
+"glutes",
+"machine"
+],
+"mx_belt_squat": [
+"legs",
+"machine"
+],
+"mx_leg_press_calf_raise": [
+"calves",
+"machine"
+],
+"mx_captain_s_chair_knee_raise": [
+"core",
+"machine"
+],
+"mx_wide_grip_lat_pulldown": [
+"back",
+"machine"
+],
+"mx_close_grip_lat_pulldown": [
+"back",
+"machine"
+],
+"mx_straight_arm_pulldown": [
+"back",
+"machine"
+],
+"mx_single_arm_cable_row": [
+"back",
+"machine"
+],
+"mx_cable_overhead_triceps_extension": [
+"arms",
+"machine"
+],
+"mx_rope_hammer_curl": [
+"arms",
+"machine"
+],
+"mx_cable_rear_delt_fly": [
+"shoulders",
+"machine"
+],
+"mx_cable_front_raise": [
+"shoulders",
+"machine"
+],
+"mx_incline_cable_fly": [
+"chest",
+"machine"
+],
+"mx_cable_kickback": [
+"glutes",
+"machine"
+],
+"mx_cable_pull_through": [
+"glutes",
+"machine"
+],
+"mx_cable_hip_abduction": [
+"glutes",
+"machine"
+],
+"mx_cable_hip_adduction": [
+"legs",
+"machine"
+],
+"mx_cable_woodchop": [
+"core",
+"machine"
+],
+"mx_half_kneeling_pallof_press": [
+"core",
+"machine"
+],
+"mx_smith_machine_squat": [
+"legs",
+"machine"
+],
+"mx_smith_machine_bench_press": [
+"chest",
+"machine"
+],
+"mx_smith_machine_hip_thrust": [
+"glutes",
+"machine"
+],
+"mx_smith_machine_romanian_deadlift": [
+"legs",
+"machine"
+],
+"mx_smith_machine_split_squat": [
+"legs",
+"machine"
+]
+}

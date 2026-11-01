@@ -1,0 +1,696 @@
+{
+"k1": [
+"Liegestütz",
+"Liegestütze",
+"klassischer Liegestütz",
+"Push-up"
+],
+"k3": [
+"Diamant-Liegestütz",
+"enger Liegestütz",
+"Trizeps-Liegestütz",
+"Diamond Push-up"
+],
+"r1": [
+"Pike-Liegestütz",
+"Pike Push-up",
+"Schulter-Liegestütz"
+],
+"kIncl": [
+"Erhöhter Liegestütz",
+"Incline-Liegestütz",
+"Liegestütz am Tisch",
+"Incline Push-up"
+],
+"kKnee": [
+"Knie-Liegestütz",
+"Liegestütz auf den Knien",
+"Frauen-Liegestütz",
+"Knee Push-up"
+],
+"r1e": [
+"Pike-Liegestütz mit Füßen auf dem Stuhl",
+"erhöhter Pike-Liegestütz",
+"Elevated Pike Push-up"
+],
+"k3e": [
+"Diamant-Liegestütz mit Füßen auf dem Stuhl",
+"erhöhter Diamant-Liegestütz"
+],
+"row1": [
+"Türrahmen-Rudern",
+"Rudern am Türrahmen",
+"Door Frame Row"
+],
+"row2": [
+"Tür-Rudern mit Handtuch",
+"Handtuch-Rudern",
+"Towel Row"
+],
+"row3": [
+"Breites Türrahmen-Rudern",
+"breites Rudern am Türrahmen",
+"Wide Door Row"
+],
+"superman": [
+"Superman",
+"Arme und Beine heben in Bauchlage",
+"Rückenheben in Bauchlage"
+],
+"ytw": [
+"Y-T-W am Boden",
+"YTW",
+"Y-T-W-Heben in Bauchlage"
+],
+"n1": [
+"Tiefe Kniebeuge",
+"ATG-Kniebeuge",
+"volle Kniebeuge",
+"ATG Squat"
+],
+"n2": [
+"Bulgarische Kniebeuge",
+"Bulgarian Split Squat",
+"Kniebeuge mit erhöhtem hinterem Fuß",
+"bulgarischer Ausfallschritt"
+],
+"n7": [
+"Beinbeuger mit Handtuch",
+"gleitendes Beincurl",
+"Handtuch-Beincurl",
+"Sliding Leg Curl"
+],
+"lunge": [
+"Ausfallschritt rückwärts",
+"Rückwärts-Ausfallschritt",
+"Reverse Lunge"
+],
+"bridge": [
+"Beckenheben",
+"Glute Bridge",
+"Hüftbrücke",
+"Gesäßbrücke"
+],
+"wallsit": [
+"Wandsitzen",
+"Wall Sit",
+"Stuhl an der Wand"
+],
+"sbridge": [
+"Einbeiniges Beckenheben",
+"einbeinige Glute Bridge",
+"einbeinige Hüftbrücke"
+],
+"n1q": [
+"1¼-Kniebeuge",
+"Eineinviertel-Kniebeuge",
+"1 1/4 Squat"
+],
+"b5": [
+"Unterarmstütz",
+"Plank",
+"Planke",
+"Brett"
+],
+"b2": [
+"Dead Bug",
+"toter Käfer",
+"Käfer"
+],
+"b4": [
+"Fahrrad-Crunch",
+"Bicycle Crunch",
+"Radfahren am Boden",
+"diagonaler Crunch"
+],
+"birddog": [
+"Vierfüßlerstand mit Arm- und Beinheben",
+"Bird Dog",
+"Bird-Dog-Übung"
+],
+"hollow": [
+"Hollow Body Hold",
+"Schiffchen",
+"Hollow Hold",
+"Hohlkörperhalte"
+],
+"legraise": [
+"Beinheben",
+"Beinheben im Liegen",
+"Leg Raise"
+],
+"b5l": [
+"Unterarmstütz mit gehobenem Bein",
+"einbeiniger Plank",
+"Single-Leg Plank"
+],
+"bw_calf_raise": [
+"Wadenheben",
+"Zehenstand",
+"Fersenheben",
+"Calf Raise"
+],
+"bw_single_leg_calf_raise": [
+"Einbeiniges Wadenheben",
+"einbeiniger Zehenstand",
+"Single-Leg Calf Raise"
+],
+"bw_tibialis_raise": [
+"Fußspitzenheben an der Wand",
+"Tibialis Raise",
+"Zehenheben"
+],
+"bw_side_lying_leg_raise": [
+"Seitliches Beinheben im Liegen",
+"Abduktion in Seitenlage",
+"Beinabspreizen liegend"
+],
+"bw_side_lying_adductor_raise": [
+"Adduktorenheben in Seitenlage",
+"Heben des unteren Beins in Seitenlage",
+"Adduktion liegend"
+],
+"bw_short_lever_copenhagen_plank": [
+"Kurzer Copenhagen Plank",
+"Copenhagen Plank am Knie",
+"leichter Copenhagen Plank"
+],
+"bw_copenhagen_plank": [
+"Copenhagen Plank",
+"Kopenhagen-Seitstütz",
+"Copenhagen-Adduktion",
+"Adduktoren-Seitstütz"
+],
+"bw_side_plank": [
+"Seitstütz",
+"seitlicher Unterarmstütz",
+"Side Plank"
+],
+"bw_knee_side_plank": [
+"Seitstütz auf dem Knie",
+"leichter Seitstütz",
+"Knie-Seitstütz"
+],
+"bw_plank_shoulder_tap": [
+"Liegestützposition mit Schulterberührung",
+"Shoulder Taps",
+"Plank Shoulder Tap"
+],
+"bw_reverse_crunch": [
+"Reverse Crunch",
+"umgekehrter Crunch",
+"Knieanziehen im Liegen"
+],
+"bw_prone_back_extension": [
+"Rückenstrecken in Bauchlage",
+"Oberkörperheben in Bauchlage",
+"Rückenstrecker am Boden"
+],
+"bw_single_leg_romanian_deadlift": [
+"Einbeiniges rumänisches Kreuzheben",
+"einbeiniges Kreuzheben",
+"Single-Leg RDL"
+],
+"bw_single_leg_hip_thrust": [
+"Einbeiniger Hip Thrust",
+"einbeiniges Hüftheben mit Rückenauflage",
+"Single-Leg Hip Thrust"
+],
+"bw_nordic_hamstring_curl": [
+"Nordic Hamstring Curl",
+"Nordic Curl",
+"nordischer Beinbeuger"
+],
+"bw_bodyweight_squat": [
+"Kniebeuge",
+"Kniebeugen",
+"Kniebeuge ohne Gewicht",
+"Air Squat"
+],
+"bw_split_squat": [
+"Split Squat",
+"statischer Ausfallschritt",
+"geteilte Kniebeuge"
+],
+"bw_step_up": [
+"Step-up",
+"Aufsteigen auf den Stuhl",
+"Stufensteigen"
+],
+"bw_lateral_lunge": [
+"Seitlicher Ausfallschritt",
+"Seitausfallschritt",
+"Lateral Lunge"
+],
+"bw_pistol_squat_to_box": [
+"Pistol Squat auf die Box",
+"einbeinige Kniebeuge auf den Stuhl",
+"Box Pistol Squat"
+],
+"bw_wall_push_up": [
+"Wand-Liegestütz",
+"Liegestütz an der Wand",
+"Wall Push-up"
+],
+"bw_decline_push_up": [
+"Liegestütz mit erhöhten Füßen",
+"Decline Push-up",
+"Decline-Liegestütz"
+],
+"bw_archer_push_up": [
+"Archer-Liegestütz",
+"Bogenschützen-Liegestütz",
+"Archer Push-up"
+],
+"bw_scapular_push_up": [
+"Schulterblatt-Liegestütz",
+"Scapula Push-up",
+"Push-up Plus"
+],
+"bw_wall_handstand_hold": [
+"Handstand an der Wand",
+"Wandhandstand",
+"Handstand halten"
+],
+"bw_chair_dip": [
+"Dips am Stuhl",
+"Bank-Dips",
+"Trizeps-Dips",
+"Bench Dip"
+],
+"bw_bodyweight_triceps_extension": [
+"Trizepsstrecken mit Körpergewicht",
+"Körpergewicht-Skull-Crusher",
+"Trizepsstrecken am Tisch"
+],
+"bw_inverted_row_table": [
+"Rudern unter dem Tisch",
+"australischer Klimmzug",
+"umgekehrtes Rudern",
+"Inverted Row"
+],
+"bw_prone_reverse_snow_angel": [
+"Umgekehrter Schneeengel in Bauchlage",
+"Schneeengel in Bauchlage",
+"Reverse Snow Angel"
+],
+"bw_towel_biceps_curl": [
+"Bizepscurl mit Handtuch",
+"isometrischer Handtuch-Curl",
+"Towel Curl"
+],
+"fw_pull_up": [
+"Klimmzug",
+"Klimmzug im Obergriff",
+"Klimmzüge",
+"Pull-up"
+],
+"fw_chin_up": [
+"Klimmzug im Untergriff",
+"Chin-up",
+"Untergriff-Klimmzug"
+],
+"fw_dead_hang": [
+"Hängen an der Stange",
+"Dead Hang",
+"passives Hängen"
+],
+"fw_hanging_knee_raise": [
+"Knieheben im Hang",
+"hängendes Knieheben",
+"Hanging Knee Raise"
+],
+"fw_dumbbell_bench_press": [
+"Kurzhantel-Bankdrücken",
+"Bankdrücken mit Kurzhanteln",
+"Kurzhantel-Brustpresse"
+],
+"fw_dumbbell_shoulder_press": [
+"Kurzhantel-Schulterdrücken",
+"Schulterdrücken mit Kurzhanteln",
+"Kurzhantel-Überkopfdrücken"
+],
+"fw_dumbbell_lateral_raise": [
+"Seitheben mit Kurzhanteln",
+"Seitheben",
+"Lateral Raise"
+],
+"fw_dumbbell_overhead_triceps_extension": [
+"Trizepsdrücken über Kopf mit Kurzhantel",
+"French Press mit Kurzhantel",
+"Overhead Triceps Extension"
+],
+"fw_lying_triceps_extension": [
+"Liegendes Trizepsdrücken",
+"Skull Crusher",
+"French Press liegend",
+"Stirndrücken"
+],
+"fw_one_arm_dumbbell_row": [
+"Einarmiges Kurzhantelrudern",
+"Kurzhantelrudern",
+"Dumbbell Row"
+],
+"fw_dumbbell_reverse_fly": [
+"Vorgebeugtes Seitheben mit Kurzhanteln",
+"Reverse Flys",
+"Reverse Fly"
+],
+"fw_band_pull_apart": [
+"Band Pull-Apart",
+"Band auseinanderziehen",
+"Theraband-Zug"
+],
+"fw_dumbbell_biceps_curl": [
+"Bizepscurl mit Kurzhanteln",
+"Kurzhantelcurl",
+"Bizepscurl",
+"Hammercurl"
+],
+"fw_goblet_squat": [
+"Goblet Squat",
+"Kniebeuge mit Kurzhantel vor der Brust",
+"Kelch-Kniebeuge"
+],
+"fw_dumbbell_romanian_deadlift": [
+"Rumänisches Kreuzheben mit Kurzhanteln",
+"RDL",
+"Kreuzheben mit gestreckten Beinen"
+],
+"fw_dumbbell_bulgarian_split_squat": [
+"Bulgarische Kniebeuge mit Kurzhanteln",
+"bulgarische Kniebeuge mit Gewicht",
+"DB Bulgarian Squat"
+],
+"fw_dumbbell_hip_thrust": [
+"Hip Thrust mit Kurzhantel",
+"Hip Thrust mit Gewicht",
+"Hüftstoß mit Gewicht"
+],
+"fw_kettlebell_swing": [
+"Kettlebell Swing",
+"Kettlebell-Schwung",
+"russischer Swing"
+],
+"fw_single_leg_dumbbell_calf_raise": [
+"Einbeiniges Wadenheben mit Kurzhantel",
+"Wadenheben mit Gewicht",
+"Dumbbell Calf Raise"
+],
+"fw_farmer_s_carry": [
+"Farmer's Walk",
+"Farmerlauf",
+"Farmer's Carry"
+],
+"fw_suitcase_carry": [
+"Koffertragen",
+"einarmiger Farmer's Walk",
+"Suitcase Carry"
+],
+"fw_band_pallof_press": [
+"Pallof Press mit Band",
+"Pallof Press",
+"Anti-Rotations-Drücken"
+],
+"mc_leg_press": [
+"Beinpresse",
+"Leg Press",
+"Beinpressen"
+],
+"mc_hack_squat": [
+"Hackenschmidt-Kniebeuge",
+"Hack Squat",
+"Hackenschmidt"
+],
+"mc_leg_extension": [
+"Beinstrecker",
+"Beinstrecken an der Maschine",
+"Leg Extension"
+],
+"mc_lying_leg_curl": [
+"Liegender Beinbeuger",
+"Beinbeugen liegend",
+"Leg Curl liegend"
+],
+"mc_seated_leg_curl": [
+"Sitzender Beinbeuger",
+"Beinbeugen sitzend",
+"Leg Curl sitzend"
+],
+"mc_hip_thrust_machine": [
+"Hip-Thrust-Maschine",
+"Glute Drive",
+"Gesäßmaschine"
+],
+"mc_hip_abduction_machine": [
+"Abduktorenmaschine",
+"Abduktion an der Maschine",
+"Beinabspreizer"
+],
+"mc_hip_adduction_machine": [
+"Adduktorenmaschine",
+"Adduktion an der Maschine",
+"Beinzusammenführer"
+],
+"mc_standing_calf_raise_machine": [
+"Wadenheben stehend an der Maschine",
+"Wadenmaschine",
+"stehendes Wadenheben"
+],
+"mc_seated_calf_raise_machine": [
+"Wadenheben sitzend an der Maschine",
+"sitzendes Wadenheben",
+"Seated Calf Raise"
+],
+"mc_lat_pulldown": [
+"Latzug",
+"Latziehen",
+"Lat Pulldown",
+"Latzug zur Brust"
+],
+"mc_assisted_pull_up_machine": [
+"Klimmzug mit Unterstützung an der Maschine",
+"unterstützte Klimmzüge",
+"Gravitron"
+],
+"mc_seated_cable_row": [
+"Rudern am Kabelzug sitzend",
+"Kabelrudern",
+"Seated Cable Row",
+"Rudern am tiefen Zug"
+],
+"mc_reverse_pec_deck": [
+"Reverse Butterfly",
+"Butterfly reverse",
+"Maschine für hintere Schulter"
+],
+"mc_cable_face_pull": [
+"Face Pull",
+"Seilzug zum Gesicht",
+"Face Pull am Kabelzug"
+],
+"mc_cable_biceps_curl": [
+"Bizepscurl am Kabelzug",
+"Kabelcurl",
+"Cable Curl"
+],
+"mc_chest_press_machine": [
+"Brustpresse",
+"Brustpresse an der Maschine",
+"Chest Press"
+],
+"mc_pec_deck_cable_fly": [
+"Butterfly",
+"Pec Deck",
+"Butterfly-Maschine",
+"Kabelziehen über Kreuz",
+"Cable Fly"
+],
+"mc_shoulder_press_machine": [
+"Schulterpresse",
+"Schulterdrücken an der Maschine",
+"Shoulder Press"
+],
+"mc_cable_lateral_raise": [
+"Seitheben am Kabelzug",
+"einarmiges Seitheben am Kabel",
+"Cable Lateral Raise"
+],
+"mc_cable_triceps_pushdown": [
+"Trizepsdrücken am Kabelzug",
+"Trizeps-Pushdown",
+"Pushdown",
+"Trizepsdrücken am Seil"
+],
+"mc_cable_crunch": [
+"Kabel-Crunch",
+"kniender Crunch am Seilzug",
+"Cable Crunch"
+],
+"mc_45_back_extension": [
+"Rückenstrecker",
+"Hyperextension",
+"45°-Rückenstrecken",
+"Back Extension"
+],
+"mx_machine_row": [
+"Rudermaschine",
+"Rudern an der Maschine",
+"Machine Row"
+],
+"mx_chest_supported_row": [
+"Rudern mit Brustauflage",
+"Rudern auf der Schrägbank",
+"Chest-Supported Row"
+],
+"mx_t_bar_row": [
+"T-Bar-Rudern",
+"T-Bar Row",
+"T-Hantel-Rudern"
+],
+"mx_assisted_dip_machine": [
+"Dips mit Unterstützung an der Maschine",
+"unterstützte Dips",
+"Assisted Dip"
+],
+"mx_machine_preacher_curl": [
+"Scott-Curl an der Maschine",
+"Scottcurl-Maschine",
+"Preacher Curl"
+],
+"mx_machine_lateral_raise": [
+"Seitheben an der Maschine",
+"Seitheben-Maschine",
+"Machine Lateral Raise"
+],
+"mx_ab_crunch_machine": [
+"Bauchmaschine",
+"Crunch an der Maschine",
+"Ab Crunch Machine"
+],
+"mx_machine_glute_kickback": [
+"Glute Kickback an der Maschine",
+"Gesäß-Kickback-Maschine",
+"Hüftstrecker-Maschine"
+],
+"mx_reverse_hyperextension": [
+"Reverse Hyperextension",
+"Reverse Hyper",
+"umgekehrtes Rückenstrecken"
+],
+"mx_belt_squat": [
+"Belt Squat",
+"Kniebeuge mit Hüftgurt",
+"Gürtel-Kniebeuge"
+],
+"mx_leg_press_calf_raise": [
+"Wadenheben an der Beinpresse",
+"Wadendrücken",
+"Calf Press"
+],
+"mx_captain_s_chair_knee_raise": [
+"Knieheben am Dip-Barren",
+"Captain's Chair",
+"Knieheben im Stütz"
+],
+"mx_wide_grip_lat_pulldown": [
+"Latzug weiter Griff",
+"breiter Latzug",
+"Wide Pulldown"
+],
+"mx_close_grip_lat_pulldown": [
+"Latzug enger Griff",
+"enger Latzug",
+"V-Griff-Latzug"
+],
+"mx_straight_arm_pulldown": [
+"Latziehen mit gestreckten Armen",
+"Überzug am Kabelzug",
+"Straight-Arm Pulldown"
+],
+"mx_single_arm_cable_row": [
+"Einarmiges Rudern am Kabelzug",
+"einarmiges Kabelrudern",
+"Single-Arm Cable Row"
+],
+"mx_cable_overhead_triceps_extension": [
+"Trizepsdrücken über Kopf am Kabelzug",
+"French Press am Kabelzug",
+"Overhead Rope Extension"
+],
+"mx_rope_hammer_curl": [
+"Hammercurl am Seil",
+"Seil-Hammercurl",
+"Rope Hammer Curl"
+],
+"mx_cable_rear_delt_fly": [
+"Reverse Flys am Kabelzug",
+"hintere Schulter am Kabelzug",
+"Cable Rear Delt Fly"
+],
+"mx_cable_front_raise": [
+"Frontheben am Kabelzug",
+"Frontheben",
+"Front Raise"
+],
+"mx_incline_cable_fly": [
+"Kabelziehen von unten nach oben",
+"obere Brust am Kabelzug",
+"Incline Cable Fly"
+],
+"mx_cable_kickback": [
+"Kickback am Kabelzug",
+"Gesäß-Kickback am Kabel",
+"Cable Kickback"
+],
+"mx_cable_pull_through": [
+"Pull-Through am Kabelzug",
+"Seilzug zwischen den Beinen",
+"Cable Pull-Through"
+],
+"mx_cable_hip_abduction": [
+"Abduktion am Kabelzug",
+"Beinabspreizen am Kabel",
+"Cable Abduction"
+],
+"mx_cable_hip_adduction": [
+"Adduktion am Kabelzug",
+"Beinheranziehen am Kabel",
+"Cable Adduction"
+],
+"mx_cable_woodchop": [
+"Holzhacker am Kabelzug",
+"Woodchop",
+"Holzhacken"
+],
+"mx_half_kneeling_pallof_press": [
+"Pallof Press im Halbknien",
+"Anti-Rotations-Drücken kniend",
+"Half-Kneeling Pallof Press"
+],
+"mx_smith_machine_squat": [
+"Kniebeuge an der Multipresse",
+"Smith-Kniebeuge",
+"Smith Squat"
+],
+"mx_smith_machine_bench_press": [
+"Bankdrücken an der Multipresse",
+"Smith-Bankdrücken",
+"Smith Bench Press"
+],
+"mx_smith_machine_hip_thrust": [
+"Hip Thrust an der Multipresse",
+"Smith Hip Thrust",
+"Smith-Hüftstoß"
+],
+"mx_smith_machine_romanian_deadlift": [
+"Rumänisches Kreuzheben an der Multipresse",
+"Smith RDL",
+"Smith-Kreuzheben"
+],
+"mx_smith_machine_split_squat": [
+"Split Squat an der Multipresse",
+"Ausfallschritt an der Multipresse",
+"Smith Split Squat"
+]
+}

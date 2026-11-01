@@ -1,0 +1,693 @@
+{
+"k1": [
+"Fekvőtámasz",
+"fekvőtámaszok",
+"karhajlítás-nyújtás",
+"push-up"
+],
+"k3": [
+"Gyémánt fekvőtámasz",
+"szűk fekvőtámasz",
+"tricepsz fekvőtámasz",
+"diamond push-up"
+],
+"r1": [
+"Pike fekvőtámasz",
+"vállas fekvőtámasz",
+"csukás fekvőtámasz",
+"pike push-up"
+],
+"kIncl": [
+"Emelt kezes fekvőtámasz",
+"ferde fekvőtámasz",
+"fekvőtámasz asztalon",
+"incline push-up"
+],
+"kKnee": [
+"Térdelő fekvőtámasz",
+"térdes fekvőtámasz",
+"női fekvőtámasz",
+"knee push-up"
+],
+"r1e": [
+"Pike fekvőtámasz emelt lábbal",
+"pike fekvőtámasz széken lévő lábbal",
+"elevated pike push-up"
+],
+"k3e": [
+"Gyémánt fekvőtámasz emelt lábbal",
+"szűk fekvőtámasz széken lévő lábbal"
+],
+"row1": [
+"Evezés ajtókeretnél",
+"húzódzkodás ajtókeretben",
+"door frame row"
+],
+"row2": [
+"Evezés törölközővel az ajtón",
+"törölközős evezés",
+"towel row"
+],
+"row3": [
+"Széles evezés ajtókeretnél",
+"széles fogású evezés ajtókeretben",
+"wide door row"
+],
+"superman": [
+"Superman",
+"kar- és lábemelés hason fekve",
+"hátemelés hason"
+],
+"ytw": [
+"Y-T-W a padlón",
+"YTW",
+"Y T W karemelés hason fekve"
+],
+"n1": [
+"Mélyguggolás",
+"ATG guggolás",
+"teljes guggolás"
+],
+"n2": [
+"Bolgár guggolás",
+"bolgár kitörés",
+"hátsó lábas guggolás padon",
+"Bulgarian split squat"
+],
+"n7": [
+"Combhajlítás törölközővel",
+"csúsztatott combhajlítás",
+"sliding leg curl"
+],
+"lunge": [
+"Hátralépéses kitörés",
+"hátrafelé kitörés",
+"hátsó kitörés",
+"reverse lunge"
+],
+"bridge": [
+"Csípőemelés",
+"farizom híd",
+"glute bridge"
+],
+"wallsit": [
+"Falnál ülés",
+"falnál guggolás",
+"székhelyzet a falnál",
+"wall sit"
+],
+"sbridge": [
+"Egylábas csípőemelés",
+"egylábas farizom híd",
+"single-leg glute bridge"
+],
+"n1q": [
+"1 és 1/4 guggolás",
+"másfeles guggolás",
+"1¼ guggolás"
+],
+"b5": [
+"Plank",
+"alkartámasz",
+"deszka",
+"plank tartás",
+"Plank (alkartámasz)"
+],
+"b2": [
+"Dead bug",
+"döglött bogár",
+"hanyatt fekvő kar- és lábnyújtás"
+],
+"b4": [
+"Biciklis hasprés",
+"bicikli",
+"keresztirányú hasprés",
+"bicycle crunch"
+],
+"birddog": [
+"Bird dog",
+"kar- és lábnyújtás négykézláb",
+"madár-kutya"
+],
+"hollow": [
+"Hollow body hold",
+"csónaktartás",
+"hollow hold",
+"homorú tartás"
+],
+"legraise": [
+"Lábemelés",
+"lábemelés hanyatt fekve",
+"leg raise"
+],
+"b5l": [
+"Plank felemelt lábbal",
+"egylábas plank",
+"single-leg plank"
+],
+"bw_calf_raise": [
+"Lábujjhegyre emelés",
+"vádliemelés",
+"sarokemelés",
+"calf raise"
+],
+"bw_single_leg_calf_raise": [
+"Egylábas lábujjhegyre emelés",
+"egylábas vádliemelés",
+"single-leg calf raise"
+],
+"bw_tibialis_raise": [
+"Lábfejemelés a falnál",
+"tibialis emelés",
+"tibialis raise"
+],
+"bw_side_lying_leg_raise": [
+"Oldalfekvéses lábemelés",
+"lábtávolítás oldalfekvésben",
+"csípőtávolítás"
+],
+"bw_side_lying_adductor_raise": [
+"Oldalfekvéses alsó lábemelés",
+"lábközelítés oldalfekvésben",
+"csípőközelítés"
+],
+"bw_short_lever_copenhagen_plank": [
+"Rövid karos Copenhagen plank",
+"könnyített Copenhagen plank",
+"Copenhagen plank térdre"
+],
+"bw_copenhagen_plank": [
+"Copenhagen plank",
+"koppenhágai plank",
+"oldalsó plank lábbal a padon",
+"koppenhágai adduktor"
+],
+"bw_side_plank": [
+"Oldalsó plank",
+"oldalsó alkartámasz",
+"side plank"
+],
+"bw_knee_side_plank": [
+"Térdelő oldalsó plank",
+"könnyített oldalsó plank",
+"oldalsó támasz térden"
+],
+"bw_plank_shoulder_tap": [
+"Plank vállérintéssel",
+"shoulder tap",
+"vállérintés támaszban"
+],
+"bw_reverse_crunch": [
+"Fordított hasprés",
+"reverse crunch",
+"térdhúzás hanyatt fekve"
+],
+"bw_prone_back_extension": [
+"Hátemelés hason fekve",
+"törzsemelés hason",
+"hátnyújtás a padlón"
+],
+"bw_single_leg_romanian_deadlift": [
+"Egylábas román felhúzás",
+"egylábas felhúzás",
+"single-leg RDL"
+],
+"bw_single_leg_hip_thrust": [
+"Egylábas hip thrust",
+"egylábas csípőtolás",
+"egylábas csípőemelés háttámasszal"
+],
+"bw_nordic_hamstring_curl": [
+"Nordic combhajlítás",
+"nordic curl",
+"északi combhajlítás"
+],
+"bw_bodyweight_squat": [
+"Guggolás",
+"saját testsúlyos guggolás",
+"air squat"
+],
+"bw_split_squat": [
+"Helyben kitörés",
+"statikus kitörés",
+"split squat"
+],
+"bw_step_up": [
+"Fellépés székre",
+"fellépés lépcsőre",
+"step-up"
+],
+"bw_lateral_lunge": [
+"Oldalra kitörés",
+"oldalsó kitörés",
+"lateral lunge"
+],
+"bw_pistol_squat_to_box": [
+"Pisztolyguggolás székre",
+"egylábas guggolás székre",
+"pistol squat dobozra"
+],
+"bw_wall_push_up": [
+"Fekvőtámasz falnál",
+"fali fekvőtámasz",
+"álló fekvőtámasz"
+],
+"bw_decline_push_up": [
+"Fekvőtámasz emelt lábbal",
+"negatív fekvőtámasz",
+"decline push-up"
+],
+"bw_archer_push_up": [
+"Íjász fekvőtámasz",
+"archer push-up",
+"oldalazó fekvőtámasz"
+],
+"bw_scapular_push_up": [
+"Lapockás fekvőtámasz",
+"lapocka fekvőtámasz",
+"scapular push-up"
+],
+"bw_wall_handstand_hold": [
+"Kézenállás a falnál",
+"kézenállás tartás falnál",
+"handstand falnál"
+],
+"bw_chair_dip": [
+"Tolódzkodás széken",
+"hátsó tolódzkodás",
+"tricepsz tolódzkodás padon",
+"bench dip"
+],
+"bw_bodyweight_triceps_extension": [
+"Saját testsúlyos tricepsznyújtás",
+"testsúlyos francia nyomás",
+"skull crusher asztalon"
+],
+"bw_inverted_row_table": [
+"Evezés asztal alatt",
+"ausztrál húzódzkodás",
+"fordított evezés",
+"inverted row"
+],
+"bw_prone_reverse_snow_angel": [
+"Fordított hóangyal hason",
+"hóangyal hason fekve",
+"reverse snow angel"
+],
+"bw_towel_biceps_curl": [
+"Bicepszhajlítás törölközővel",
+"izometrikus törölközős hajlítás",
+"towel curl"
+],
+"fw_pull_up": [
+"Húzódzkodás",
+"húzódzkodás felső fogással",
+"pull-up"
+],
+"fw_chin_up": [
+"Húzódzkodás alsó fogással",
+"alsó fogású húzódzkodás",
+"chin-up"
+],
+"fw_dead_hang": [
+"Függés a rúdon",
+"passzív függés",
+"dead hang"
+],
+"fw_hanging_knee_raise": [
+"Térdemelés függésben",
+"függő térdhúzás",
+"hanging knee raise"
+],
+"fw_dumbbell_bench_press": [
+"Kézisúlyzós fekvenyomás",
+"fekvenyomás kézisúlyzóval",
+"DB bench press"
+],
+"fw_dumbbell_shoulder_press": [
+"Kézisúlyzós vállból nyomás",
+"vállnyomás kézisúlyzóval",
+"military press kézisúlyzóval"
+],
+"fw_dumbbell_lateral_raise": [
+"Oldalemelés kézisúlyzóval",
+"oldalemelés",
+"lateral raise"
+],
+"fw_dumbbell_overhead_triceps_extension": [
+"Tricepsznyújtás kézisúlyzóval fej fölött",
+"francia nyomás kézisúlyzóval",
+"overhead triceps extension"
+],
+"fw_lying_triceps_extension": [
+"Fekvő francia nyomás",
+"skull crusher",
+"fekvő tricepsznyújtás"
+],
+"fw_one_arm_dumbbell_row": [
+"Egykezes evezés kézisúlyzóval",
+"egykaros evezés",
+"dumbbell row"
+],
+"fw_dumbbell_reverse_fly": [
+"Döntött törzsű oldalemelés kézisúlyzóval",
+"hátsó váll tárogatás",
+"reverse fly"
+],
+"fw_band_pull_apart": [
+"Gumiszalag széthúzás",
+"band pull-apart",
+"széthúzás gumival"
+],
+"fw_dumbbell_biceps_curl": [
+"Bicepszhajlítás kézisúlyzóval",
+"bicepszhajlítás",
+"biceps curl",
+"kalapácsos hajlítás"
+],
+"fw_goblet_squat": [
+"Serleg guggolás",
+"goblet guggolás",
+"guggolás kézisúlyzóval a mellkasnál"
+],
+"fw_dumbbell_romanian_deadlift": [
+"Román felhúzás kézisúlyzóval",
+"RDL",
+"nyújtott lábas felhúzás"
+],
+"fw_dumbbell_bulgarian_split_squat": [
+"Bolgár guggolás kézisúlyzóval",
+"súlyozott bolgár guggolás",
+"DB Bulgarian squat"
+],
+"fw_dumbbell_hip_thrust": [
+"Hip thrust kézisúlyzóval",
+"súlyozott csípőtolás",
+"súlyozott csípőemelés"
+],
+"fw_kettlebell_swing": [
+"Kettlebell lendítés",
+"kettlebell swing",
+"orosz lendítés"
+],
+"fw_single_leg_dumbbell_calf_raise": [
+"Egylábas vádliemelés kézisúlyzóval",
+"súlyozott vádliemelés",
+"dumbbell calf raise"
+],
+"fw_farmer_s_carry": [
+"Farmerséta",
+"farmer séta",
+"farmer's walk"
+],
+"fw_suitcase_carry": [
+"Bőröndséta",
+"egykezes farmerséta",
+"suitcase carry"
+],
+"fw_band_pallof_press": [
+"Pallof nyomás gumival",
+"Pallof press",
+"rotációgátló nyomás"
+],
+"mc_leg_press": [
+"Lábtolás",
+"lábtoló gép",
+"leg press"
+],
+"mc_hack_squat": [
+"Hack guggolás",
+"hack squat",
+"gépes hack guggolás"
+],
+"mc_leg_extension": [
+"Lábnyújtás gépen",
+"combfeszítő gép",
+"leg extension"
+],
+"mc_lying_leg_curl": [
+"Fekvő lábhajlítás gépen",
+"fekvő combhajlítás",
+"leg curl fekve"
+],
+"mc_seated_leg_curl": [
+"Ülő lábhajlítás gépen",
+"ülő combhajlítás",
+"leg curl ülve"
+],
+"mc_hip_thrust_machine": [
+"Hip thrust gépen",
+"glute drive",
+"farizomgép"
+],
+"mc_hip_abduction_machine": [
+"Combtávolítás gépen",
+"abduktor gép",
+"combkifelé gép"
+],
+"mc_hip_adduction_machine": [
+"Combközelítés gépen",
+"adduktor gép",
+"combbefelé gép"
+],
+"mc_standing_calf_raise_machine": [
+"Álló vádliemelés gépen",
+"vádligép",
+"vádliemelés gépen"
+],
+"mc_seated_calf_raise_machine": [
+"Ülő vádliemelés gépen",
+"ülő vádliemelés",
+"seated calf raise"
+],
+"mc_lat_pulldown": [
+"Mellhez húzás csigán",
+"lehúzás felső csigán",
+"lat pulldown",
+"széles hátra lehúzás"
+],
+"mc_assisted_pull_up_machine": [
+"Gépi segített húzódzkodás",
+"segített húzódzkodás",
+"gravitron"
+],
+"mc_seated_cable_row": [
+"Ülő evezés alsó csigán",
+"ülő csigás evezés",
+"seated cable row"
+],
+"mc_reverse_pec_deck": [
+"Fordított pillangó gépen",
+"hátsó váll gép",
+"reverse butterfly"
+],
+"mc_cable_face_pull": [
+"Face pull",
+"kötél arcvonalba húzás",
+"face pull csigán"
+],
+"mc_cable_biceps_curl": [
+"Bicepszhajlítás csigán",
+"alsó csigás bicepsz",
+"cable curl"
+],
+"mc_chest_press_machine": [
+"Mellnyomás gépen",
+"gépi mellnyomás",
+"chest press"
+],
+"mc_pec_deck_cable_fly": [
+"Pillangó gépen",
+"pec deck",
+"butterfly",
+"kábelkeresztezés",
+"cable fly"
+],
+"mc_shoulder_press_machine": [
+"Vállnyomás gépen",
+"gépi vállból nyomás",
+"shoulder press"
+],
+"mc_cable_lateral_raise": [
+"Oldalemelés csigán",
+"egykezes oldalemelés csigán",
+"cable lateral raise"
+],
+"mc_cable_triceps_pushdown": [
+"Tricepsz letolás csigán",
+"letolás kötéllel",
+"pushdown",
+"csigás tricepsz"
+],
+"mc_cable_crunch": [
+"Hasprés csigán",
+"térdelő csigás hasprés",
+"cable crunch"
+],
+"mc_45_back_extension": [
+"Hiperextenzió",
+"hátemelés hiperextenziós padon",
+"45 fokos hátemelés",
+"back extension"
+],
+"mx_machine_row": [
+"Evezés gépen",
+"gépi evezés",
+"machine row"
+],
+"mx_chest_supported_row": [
+"Mellkastámaszos evezés",
+"evezés ferde padon hasalva",
+"chest-supported row"
+],
+"mx_t_bar_row": [
+"T-rudas evezés",
+"T-bar row",
+"T-rúd evezés"
+],
+"mx_assisted_dip_machine": [
+"Gépi segített tolódzkodás",
+"segített tolódzkodás",
+"asszisztált dip"
+],
+"mx_machine_preacher_curl": [
+"Scott-padas bicepszhajlítás gépen",
+"Scott-gép",
+"preacher curl"
+],
+"mx_machine_lateral_raise": [
+"Oldalemelés gépen",
+"oldalsó vállgép",
+"machine lateral raise"
+],
+"mx_ab_crunch_machine": [
+"Hasprés gépen",
+"hasizomgép",
+"ab crunch machine"
+],
+"mx_machine_glute_kickback": [
+"Hátrarúgás gépen",
+"farizom kickback gép",
+"csípőnyújtó gép"
+],
+"mx_reverse_hyperextension": [
+"Fordított hiperextenzió",
+"reverse hyper",
+"fordított hátemelés"
+],
+"mx_belt_squat": [
+"Övvel guggolás",
+"belt squat",
+"övas guggológép"
+],
+"mx_leg_press_calf_raise": [
+"Vádliemelés lábtoló gépen",
+"vádli lábtolón",
+"calf press"
+],
+"mx_captain_s_chair_knee_raise": [
+"Térdemelés támaszban",
+"captain's chair",
+"térdemelés hasizomtoronyban"
+],
+"mx_wide_grip_lat_pulldown": [
+"Széles fogású lehúzás",
+"széles mellhez húzás",
+"wide pulldown"
+],
+"mx_close_grip_lat_pulldown": [
+"Szűk fogású lehúzás",
+"V-markolatos lehúzás",
+"V-bar pulldown"
+],
+"mx_straight_arm_pulldown": [
+"Nyújtott karos lehúzás",
+"egyenes karos lehúzás csigán",
+"straight-arm pulldown"
+],
+"mx_single_arm_cable_row": [
+"Egykezes evezés csigán",
+"egykaros csigás evezés",
+"single-arm cable row"
+],
+"mx_cable_overhead_triceps_extension": [
+"Tricepsznyújtás fej fölött csigán",
+"francia nyomás csigán",
+"overhead rope extension"
+],
+"mx_rope_hammer_curl": [
+"Kalapácsos hajlítás kötéllel",
+"kalapácsos hajlítás csigán",
+"rope hammer curl"
+],
+"mx_cable_rear_delt_fly": [
+"Hátsó váll tárogatás csigán",
+"fordított tárogatás csigán",
+"cable rear delt fly"
+],
+"mx_cable_front_raise": [
+"Előreemelés csigán",
+"előreemelés",
+"front raise"
+],
+"mx_incline_cable_fly": [
+"Alulról felfelé kábelkeresztezés",
+"felső mell csigán",
+"incline cable fly"
+],
+"mx_cable_kickback": [
+"Hátrarúgás csigán",
+"csigás kickback",
+"cable kickback"
+],
+"mx_cable_pull_through": [
+"Áthúzás csigán",
+"pull-through",
+"kötél áthúzás a lábak között"
+],
+"mx_cable_hip_abduction": [
+"Lábtávolítás csigán",
+"csípőtávolítás csigán",
+"cable abduction"
+],
+"mx_cable_hip_adduction": [
+"Lábközelítés csigán",
+"csípőközelítés csigán",
+"cable adduction"
+],
+"mx_cable_woodchop": [
+"Favágó csigán",
+"woodchop",
+"fahasogatás csigán"
+],
+"mx_half_kneeling_pallof_press": [
+"Pallof nyomás féltérdelésben",
+"rotációgátló nyomás térdelve",
+"half-kneeling Pallof press"
+],
+"mx_smith_machine_squat": [
+"Guggolás Smith-gépen",
+"Smith guggolás",
+"Smith squat"
+],
+"mx_smith_machine_bench_press": [
+"Fekvenyomás Smith-gépen",
+"Smith fekvenyomás",
+"Smith bench press"
+],
+"mx_smith_machine_hip_thrust": [
+"Hip thrust Smith-gépen",
+"Smith hip thrust",
+"Smith csípőtolás"
+],
+"mx_smith_machine_romanian_deadlift": [
+"Román felhúzás Smith-gépen",
+"Smith RDL",
+"Smith román felhúzás"
+],
+"mx_smith_machine_split_squat": [
+"Helyben kitörés Smith-gépen",
+"kitörés Smith-gépen",
+"Smith split squat"
+]
+}
