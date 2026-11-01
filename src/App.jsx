@@ -1209,7 +1209,7 @@ function InfoSheet({ info, onClose }) {
   return (
     <Sheet title={info.title} onClose={onClose} short>
       <div data-info-sheet style={{ fontSize: 14.5, lineHeight: 1.55, color: C.chalk }}>
-        {paras.filter(Boolean).map((t, i) => <p key={i} style={{ margin: i ? "10px 0 0" : 0 }}>{t}</p>)}
+        {paras.filter(Boolean).map((t, i) => <p key={i} style={{ margin: i ? "10px 0 0" : 0 }}>{emo(t)}</p>)}
       </div>
     </Sheet>
   );
@@ -1225,7 +1225,7 @@ function HowTo({ id, history, onClose, onSwap }) {
       <div>{ex.how}</div>
       <div style={{ marginTop: 14, paddingTop: 12, borderTop: `1px solid ${C.line}`, color: C.chalk, display: "flex", gap: 8, alignItems: "flex-start" }}><Ico n="bulb" size={19} color={C.signal} style={{ marginTop: 2 }} /><span>{ex.tip}</span></div>
       {onSwap && ex.swapTip && <button onClick={onSwap} style={{ ...ghostBtn, marginTop: 10, padding: "10px 14px", color: C.sky, borderColor: `${C.sky}88` }}>{T("swap")}</button>}
-      <button data-search-howto onClick={() => { sfxTap(); searchHowTo(ex.name); }} className="b3d" style={{ ...bigBtn(C.panelHi, C.chalk), marginTop: 16, fontSize: 14, padding: 14 }}>{T("searchWeb")}</button>
+      <button data-search-howto onClick={() => { sfxTap(); searchHowTo(ex.name); }} className="b3d" style={{ ...bigBtn(C.panelHi, C.chalk), marginTop: 16, fontSize: 14, padding: 14 }}>{emo(T("searchWeb"))}</button>
     </Sheet>
   );
 }
@@ -2106,7 +2106,7 @@ function TopBar({ screen, history, menuOpen, onMenu, onGo, dlPct, badge, head, s
         <div style={{ flex: 1, minWidth: 0 }}>
           <div key={screen} className="titleIn" style={{ fontFamily: DISPLAY, fontSize: CJK.test(T(SCREEN_TITLE[screen])) ? 21 : 24, fontWeight: 900, lineHeight: 1.05, color: C.chalk, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" , ...INK }}>{T(SCREEN_TITLE[screen])}</div>
           <div style={{ display: "flex", gap: 5, fontSize: 12, color: bdayToday() ? C.signal : C.dim, fontWeight: bdayToday() ? 800 : 400, marginTop: 2, whiteSpace: "nowrap" }}>
-            <span ref={dateRef} data-top-date={dl} style={{ overflow: "hidden", textOverflow: "ellipsis", minWidth: 0 }}>{bdayToday() ? T("bdayTop") : dateText}</span>
+            <span ref={dateRef} data-top-date={dl} style={{ overflow: "hidden", textOverflow: "ellipsis", minWidth: 0 }}>{bdayToday() ? emo(T("bdayTop")) : dateText}</span>
             <span data-clock style={{ flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>· {now.toLocaleTimeString(LANG, { hour: "2-digit", minute: "2-digit" })}</span>
           </div>
         </div>
@@ -2199,10 +2199,85 @@ const ICONS = {
   plane: '<rect x="6" y="7" width="12" height="12" rx="2.5"/><path d="M9.5 7V4.5h5V7M10 10.5v5M14 10.5v5M8.5 19v1.5M15.5 19v1.5"/>',
   dots: '<circle cx="6" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="18" cy="12" r="1.3"/>',
   repeat: '<path d="M4 12a6 6 0 0 1 6-6h9M16 3l3 3-3 3M20 12a6 6 0 0 1-6 6H5M8 21l-3-3 3-3"/>',
+  up: '<path d="M12 19.5v-15M6 10.5l6-6 6 6"/>',
+  search: '<circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.3 15.3 20.5 20.5"/>',
+  robot: '<rect x="4.5" y="8" width="15" height="11.5" rx="3"/><path d="M12 4.5V8M2.5 12.5v3M21.5 12.5v3M9.5 16.5h5"/><circle cx="12" cy="4" r=".6"/><circle cx="9" cy="12.3" r="1.2"/><circle cx="15" cy="12.3" r="1.2"/>',
+  // 1.8.2: Muscle Deck jokers, vouchers, packs and perks (no emoji)
+  jcard: '<rect x="5" y="3" width="14" height="18" rx="2.5"/><path d="M12 7.8l1.25 2.55 2.8.4-2.03 1.98.48 2.8L12 14.2l-2.5 1.33.48-2.8-2.03-1.98 2.8-.4z"/>',
+  cards3: '<rect x="2.5" y="5.5" width="5.4" height="13" rx="1.6"/><rect x="9.3" y="5.5" width="5.4" height="13" rx="1.6"/><rect x="16.1" y="5.5" width="5.4" height="13" rx="1.6"/>',
+  ladder: '<path d="M7.5 3v18M16.5 3v18M7.5 7h9M7.5 11.5h9M7.5 16h9"/>',
+  bicep: '<path d="M4 20v-4.5C4 12.5 6 10.6 8.6 10.6L8 6.8 9.4 3.5h3.6l.6 2.7-2.2 1.3.6 3.2c1.6-2 6.5-2.5 8.1 1.4 1.6 4-.9 7.9-5.4 7.9z"/>',
+  pig: '<path d="M5 12c0-3.4 3.2-5.8 7.3-5.8 1.7 0 3.2.4 4.4 1.1L19 5.8v3.4c.8.7 1.3 1.6 1.5 2.6h1v3.2h-1.2a6 6 0 0 1-2.3 2.6V20h-2.6v-1.7c-1 .2-2 .3-3.1.3s-2.1-.1-3.1-.4V20H6.6v-3c-1-1.2-1.6-3-1.6-5z"/><path d="M10 9.4h3.6"/><path d="M5 12.3c-1.3-.1-2-.8-2-2"/>',
+  orbit: '<circle cx="12" cy="12" r="7.2"/><circle cx="12" cy="4.8" r="1.9"/><circle cx="19.2" cy="12" r="1.9"/><circle cx="12" cy="19.2" r="1.9"/><circle cx="4.8" cy="12" r="1.9"/>',
+  hourglass: '<path d="M6.5 3h11M6.5 21h11M7.5 3c0 4.2 4.5 5.6 4.5 9s-4.5 4.8-4.5 9M16.5 3c0 4.2-4.5 5.6-4.5 9s4.5 4.8 4.5 9"/><path d="M9.6 18.5 12 16.6l2.4 1.9"/>',
+  scale: '<path d="M12 4v16M8 20h8M5 7h14"/><path d="M5 7l-2.5 6a2.5 2.5 0 0 0 5 0zM19 7l-2.5 6a2.5 2.5 0 0 0 5 0z"/>',
+  oddone: '<circle cx="7" cy="7" r="2.7"/><circle cx="17" cy="7" r="2.7"/><circle cx="7" cy="17" r="2.7"/><path d="M17 13.3l3.7 3.7-3.7 3.7-3.7-3.7z"/>',
+  rocket: '<path d="M12 3c3 2 4.5 5 4.5 9v4h-9v-4c0-4 1.5-7 4.5-9z"/><path d="M7.5 12.5 5 15v4l2.5-1.6M16.5 12.5 19 15v4l-2.5-1.6M10.2 19.2c.4 1.2 1 1.8 1.8 1.8s1.4-.6 1.8-1.8"/><circle cx="12" cy="9.5" r="1.6"/>',
+  coins: '<ellipse cx="12" cy="6.3" rx="7" ry="2.7"/><path d="M5 6.3v4c0 1.5 3.1 2.7 7 2.7s7-1.2 7-2.7v-4M5 10.3v4c0 1.5 3.1 2.7 7 2.7s7-1.2 7-2.7v-4M5 14.3v3.4c0 1.5 3.1 2.7 7 2.7s7-1.2 7-2.7v-3.4"/>',
+  hand: '<path d="M8 12.5V6a1.5 1.5 0 0 1 3 0v5.5M11 11V4.5a1.5 1.5 0 0 1 3 0V11M14 11V5.5a1.5 1.5 0 0 1 3 0V12"/><path d="M17 10a1.5 1.5 0 0 1 3 0v4.5a6.5 6.5 0 0 1-6.5 6.5h-1.2a6 6 0 0 1-5-2.7L4.4 14a1.5 1.5 0 0 1 2.5-1.7L8 14"/>',
+  body: '<circle cx="12" cy="4.6" r="2.1"/><path d="M4.5 9h15M12 9v5.5M12 14.5 8.8 21M12 14.5l3.2 6.5"/>',
+  kettle: '<path d="M9 10V7.5a3 3 0 0 1 6 0V10"/><circle cx="12" cy="15" r="6"/>',
+  zz: '<path d="M3.5 11h6l-6 8h6M13.5 4.5h7l-7 8h7"/>',
+  scissors: '<circle cx="6.5" cy="17.5" r="2.8"/><circle cx="17.5" cy="17.5" r="2.8"/><path d="M8.4 15.4 18.5 3.5M15.6 15.4 5.5 3.5"/>',
+  eye: '<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/>',
+  sprout: '<path d="M12 21v-9"/><path d="M12 12c0-4 2.5-6.5 7-7 0 4.5-2.5 7-7 7zM12 14.5c-.3-3.2-2.4-5.2-6.5-5.5.2 3.6 2.3 5.5 6.5 5.5z"/>',
+  eraser: '<path d="M8.5 20 3.6 15.1a2 2 0 0 1 0-2.8L12.3 3.6a2 2 0 0 1 2.8 0l5.3 5.3a2 2 0 0 1 0 2.8L11 20z"/><path d="M8.5 20H21M8.6 8.4l7 7"/>',
+  cardPlus: '<rect x="3" y="4" width="11" height="16" rx="2.2"/><path d="M18.5 9v6M15.5 12h6"/>',
+  percent: '<path d="M18.5 5.5l-13 13"/><circle cx="7" cy="7" r="2.5"/><circle cx="17" cy="17" r="2.5"/>',
+  card1: '<rect x="6" y="3" width="12" height="18" rx="2.5"/><path d="M10.4 9.3 12.6 7.5v9.5"/>',
+  wind: '<path d="M3 8.5h10.5A2.5 2.5 0 1 0 11 6M3 12.5h15.5a2.5 2.5 0 1 1-2.5 2.5M3 16.5h7"/>',
+  cards2x: '<rect x="3.5" y="6.5" width="10" height="14" rx="2"/><path d="M8 6.5v-1a2 2 0 0 1 2-2h8.5a2 2 0 0 1 2 2V16a2 2 0 0 1-2 2h-5"/>',
+  temple: '<path d="M12 3l8.5 4.5h-17z"/><path d="M3 20.5h18M4.5 17.5h15M6.5 10v7.5M10 10v7.5M14 10v7.5M17.5 10v7.5"/>',
+  megaphone: '<path d="M3.5 10v4a1 1 0 0 0 1 1H7l7 4.5v-15L7 9H4.5a1 1 0 0 0-1 1z"/><path d="M7 15l1.2 5h2.3l-1-4.2M17.5 9.5a3.5 3.5 0 0 1 0 5M19.8 7a7 7 0 0 1 0 10"/>',
+  idcard: '<rect x="2.5" y="5.5" width="19" height="13" rx="2.5"/><circle cx="8.5" cy="10.6" r="2"/><path d="M5.5 15.5c.6-1.4 1.6-2 3-2s2.4.6 3 2M14 10h4.5M14 13.5h3"/>',
+  plusCircle: '<circle cx="12" cy="12" r="8.5"/><path d="M12 8v8M8 12h8"/>',
+  tag: '<path d="M3.5 12.2V4.5a1 1 0 0 1 1-1h7.7a1 1 0 0 1 .7.3l8.3 8.3a1.4 1.4 0 0 1 0 2l-6.9 6.9a1.4 1.4 0 0 1-2 0L3.8 12.9a1 1 0 0 1-.3-.7z"/><circle cx="8" cy="8" r="1.5"/>',
+  backpack: '<rect x="2.5" y="9" width="19" height="10.5" rx="3.5"/><path d="M8.5 9V7a1.5 1.5 0 0 1 1.5-1.5h4A1.5 1.5 0 0 1 15.5 7v2M7.5 9v10.5M16.5 9v10.5"/>',
+  jar: '<path d="M8 3.5h8M8.5 3.5v2.8L6.8 8.6A4 4 0 0 0 6 11v8a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-8a4 4 0 0 0-.8-2.4l-1.7-2.3V3.5"/><circle cx="12" cy="14.5" r="2.8"/>',
+  cart: '<circle cx="9" cy="19.5" r="1.5"/><circle cx="17" cy="19.5" r="1.5"/><path d="M2.5 3.5H5l2.3 11.2a1.5 1.5 0 0 0 1.5 1.3h8.4a1.5 1.5 0 0 0 1.5-1.2L20.5 7H6"/>',
+  binoc: '<circle cx="6.5" cy="15.5" r="3.5"/><circle cx="17.5" cy="15.5" r="3.5"/><path d="M10 15.5h4M3 15V8.5A2.5 2.5 0 0 1 5.5 6h2a2 2 0 0 1 2 2v7.5M21 15V8.5A2.5 2.5 0 0 0 18.5 6h-2a2 2 0 0 0-2 2v7.5"/>',
+  gift: '<rect x="3.5" y="8.5" width="17" height="4" rx="1"/><path d="M5 12.5V20h14v-7.5M12 8.5V20M12 8.5C10.5 5 7 4.5 7 6.8 7 8.5 12 8.5 12 8.5zM12 8.5c1.5-3.5 5-4 5-1.7 0 1.7-5 1.7-5 1.7z"/>',
+  box: '<path d="M4 8.5h16V19a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 19z"/><path d="M2.5 4.5h19v4h-19zM10 12h4"/>',
+  moneybag: '<path d="M9 3.5h6l-1.5 3h-3z"/><path d="M10.5 6.5C6.5 8.5 4.5 12 4.5 15a5.5 5.5 0 0 0 5.5 5.5h4a5.5 5.5 0 0 0 5.5-5.5c0-3-2-6.5-6-8.5"/><path d="M10.6 11.2v7M10.6 14.7l3.4-3.5M10.6 14.7l3.4 3.5"/>',
+  battery: '<rect x="2.5" y="7" width="17" height="10" rx="2.5"/><path d="M21.5 10.5v3M6 10v4M9.5 10v4M13 10v4"/>',
+  metronome: '<path d="M6 21h12L14.5 3.5h-5z"/><path d="M12 15.5l5-8.5M8.2 17.5h7.6"/>',
+  link: '<circle cx="8.5" cy="12" r="5"/><circle cx="15.5" cy="12" r="5"/>',
+  barbell: '<path d="M2.5 12h19M5 8v8M8 6v12M16 6v12M19 8v8"/>',
+  feather: '<path d="M19.5 4.5c-6 0-12.5 4-12.5 11.5v1.5h1.5c7.5 0 11-6.5 11-13z"/><path d="M4.5 19.5 14 10"/>',
+  pin: '<path d="M12 21s-6.5-6-6.5-11a6.5 6.5 0 0 1 13 0c0 5-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/>',
+  kcoin: '<circle cx="12" cy="12" r="8.5"/><path d="M10 8v8M10 12l4-4M10 12l4 4"/>',
+  armband: '<path d="M8 3.5 3.5 6.5l2 4 2-1V20.5h9V9.5l2 1 2-4L16 3.5c-.6 1.5-2 2.4-4 2.4S8.6 5 8 3.5z"/><path d="M10.8 12.3l1.6-1.2v6.2"/>',
+  gauge: '<path d="M3.5 17.5a8.5 8.5 0 1 1 17 0"/><path d="M12 17.5l4.2-5.5M3.5 17.5h17"/>',
+  rosette: '<circle cx="12" cy="9" r="5.5"/><path d="M8.5 13.3 7 21l5-2.5 5 2.5-1.5-7.7"/>',
+  house: '<path d="M3.5 11 12 4l8.5 7"/><path d="M5.5 9.5V20h13V9.5M10 20v-5h4v5"/>',
+  grid4: '<rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/>',
+  gemini: '<path d="M5 4.5c4 1.6 10 1.6 14 0M5 19.5c4-1.6 10-1.6 14 0M9 6.2v11.6M15 6.2v11.6"/>',
+  team: '<circle cx="12" cy="7" r="2.5"/><circle cx="5.5" cy="10" r="2"/><circle cx="18.5" cy="10" r="2"/><path d="M7.5 20c0-3 2-5 4.5-5s4.5 2 4.5 5M2 18.5c.3-2 1.6-3.5 3.5-3.5M22 18.5c-.3-2-1.6-3.5-3.5-3.5"/>',
+  pullup: '<path d="M3 4h18M8.5 4l2 5M15.5 4l-2 5"/><circle cx="12" cy="9.8" r="2"/><path d="M12 11.8v4.7M12 16.5l-2.3 4M12 16.5l2.3 4"/>',
+  laurel: '<path d="M9 20.5C5.2 19.3 3 15.8 3.5 11.5M15 20.5c3.8-1.2 6-4.7 5.5-9"/><path d="M3.6 15.6c1.6-.2 2.6-1.3 2.7-2.8M3.8 11.6c1.3.3 2.5-.3 3-1.6M20.4 15.6c-1.6-.2-2.6-1.3-2.7-2.8M20.2 11.6c-1.3.3-2.5-.3-3-1.6"/><path d="M12 6.5l1.4 2.9 3.1.4-2.3 2.2.6 3.1-2.8-1.5-2.8 1.5.6-3.1-2.3-2.2 3.1-.4z"/>',
+  boxPlus: '<path d="M4 8.5h16V19a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 19z"/><path d="M2.5 4.5h19v4h-19zM12 11.5v6M9 14.5h6"/>',
+  searchStar: '<circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.3 15.3 20.5 20.5"/><path d="M10.5 7.6l.95 1.9 2.1.3-1.5 1.5.35 2.1-1.9-1-1.9 1 .35-2.1-1.5-1.5 2.1-.3z"/>',
+  whistle: '<circle cx="9" cy="14" r="5.5"/><path d="M12.6 9.8 20.5 7v4.5H14.3"/><circle cx="9" cy="14" r="1.2"/>',
+  contract: '<path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M9 12h6M9 15.5h4"/>',
+  shelf: '<path d="M3 20.5h18M3 12h18"/><path d="M5.5 12V5h3v7M10 12V6.5h3V12M15.2 12l1.7-6.3 2.8.8-1.5 5.5M5.5 20.5V15h3v5.5M10 20.5v-4h5v4"/>',
+  shield: '<path d="M12 3 4.5 6v5.5c0 4.6 3.2 8.2 7.5 9.5 4.3-1.3 7.5-4.9 7.5-9.5V6z"/><path d="M8.8 12l2.2 2.2 4.2-4.4"/>',
+  trendDown: '<path d="M3.5 6.5l5.5 5.5 3.5-3.5 7.5 7.5"/><path d="M15 16h5v-5"/>',
+  giftStar: '<rect x="3.5" y="8.5" width="17" height="4" rx="1"/><path d="M5 12.5V20h14v-7.5M12 8.5C10.5 5 7 4.5 7 6.8 7 8.5 12 8.5 12 8.5zM12 8.5c1.5-3.5 5-4 5-1.7 0 1.7-5 1.7-5 1.7z"/><path d="M12 14.2l.8 1.6 1.7.3-1.25 1.2.3 1.7-1.55-.8-1.55.8.3-1.7-1.25-1.2 1.7-.3z"/>',
 };
 // size in px; tone = colour (default: inherit). An Ico inside a tinted square: IcoBox.
 function Ico({ n, size = 22, color, sw = 2, style }) {
   return <svg data-ico={n} viewBox="0 0 24 24" width={size} height={size} aria-hidden="true" style={{ flexShrink: 0, display: "block", fill: "none", stroke: color || "currentColor", strokeWidth: sw, strokeLinecap: "round", strokeLinejoin: "round", ...style }} dangerouslySetInnerHTML={{ __html: ICONS[n] || "" }} />;
+}
+// 1.8.2 (Michael: "no emoji, icons"): emoji inside a translated text become the app's line icons; a few that are only decoration go away.
+// Use emo(text) where such a text is drawn (never for aria-labels or string maths: it returns React nodes).
+const EMO_ICO = { "🔥": ["flame", "#ffa94d"], "🧊": ["snow", "#7cc4ff"], "❄️": ["snow", "#7cc4ff"], "⚡": ["bolt"], "🏆": ["trophy"], "🎯": ["target"], "🎂": ["cake"], "🎉": ["party"], "🎊": ["party"], "💪": ["bicep"], "✏️": ["pencil"], "✏": ["pencil"], "✨": ["sparkle"], "🔎": ["search"], "🔍": ["search"], "💾": ["download"], "📋": ["copy"], "➕": ["plus"], "📱": ["phone"], "🥗": ["plate"], "🍽️": ["plate"], "💛": ["love"], "❤️": ["love"], "👋": ["hand"], "⬆️": ["up"], "⬆": ["up"], "🔒": ["lock"], "⏱️": ["timer"], "⏱": ["timer"], "🎁": ["gift"], "👟": ["steps"], "⚖️": ["scale"], "🔄": ["repeat"], "⚠️": ["alert"], "⚠": ["alert"], "✅": ["check"], "⭐": ["star"], "🏅": ["medal"] };
+const EMO_SPLIT = new RegExp("(" + Object.keys(EMO_ICO).sort((a, b) => b.length - a.length).join("|") + ")", "u");
+const EMO_DROP = /\s*(?:🎩|🙂|😊|😉)\uFE0F?/gu;
+function emo(t) {
+  if (typeof t !== "string") return t;
+  const s = t.replace(EMO_DROP, "");
+  if (!EMO_SPLIT.test(s)) return s;
+  return s.split(new RegExp(EMO_SPLIT.source, "gu")).map((p, i) => (i % 2 ? <IcoI key={i} n={EMO_ICO[p][0]} color={EMO_ICO[p][1]} /> : p.replace(/^\uFE0F/, "")));
 }
 // 1.8.2: an icon inside a line of text (1 em, sits on the text like a letter)
 function IcoI({ n, color, sw = 2.3, style }) {
@@ -2415,7 +2490,7 @@ function HomeTiles({ history, onCalories }) {
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 14 }}>
           {list.map(c => {
-            const info = e => { e.stopPropagation(); sfxTap(); if (openInfoGlobal) openInfoGlobal({ title: L.ch[c.id], text: [`${Math.min(c.v, c.goal)} / ${c.goal} · +${c.xp} XP`, noEmo(T("chFooter"))] }); };
+            const info = e => { e.stopPropagation(); sfxTap(); if (openInfoGlobal) openInfoGlobal({ title: L.ch[c.id], text: [`${Math.min(c.v, c.goal)} / ${c.goal} · +${c.xp} XP`, emo(T("chFooter"))] }); };
             const col = c.done ? C.mint : C.sky;
             return (
               <div key={c.id} data-home-ch-row={c.id} data-done={c.done ? 1 : 0} style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -2454,7 +2529,7 @@ function ChallengeRows({ history }) {
           </div>
         ))}
       </div>
-      <div style={{ fontSize: 12, color: C.dim, marginTop: 12 }}>{T("chFooter")}</div>
+      <div style={{ fontSize: 12, color: C.dim, marginTop: 12 }}>{emo(T("chFooter"))}</div>
     </>
   );
 }
@@ -2483,7 +2558,7 @@ function ChallengesCard({ history }) {
           </div>
         ))}
       </div>
-      <div style={{ fontSize: 12, color: C.dim, marginTop: 12 }}>{T("chFooter")}</div>
+      <div style={{ fontSize: 12, color: C.dim, marginTop: 12 }}>{emo(T("chFooter"))}</div>
     </Sect>
   );
 }
@@ -2597,7 +2672,7 @@ function WhatsNew({ onClose, at }) {
                       <div key={g.v} data-news-also-v={g.v} style={{ padding: "10px 0", borderTop: gi ? `1px solid ${C.line}` : "none" }}>
                         <div style={{ fontSize: 12, fontWeight: 900, color: C.sky, marginBottom: 6 }}>{g.v}</div>
                         {g.lines.map((line, j) => (
-                          <div key={j} style={{ display: "flex", gap: 8, fontSize: 13, color: C.chalk, lineHeight: 1.45, marginTop: j ? 5 : 0 }}><span style={{ color: C.mint, fontWeight: 900 }}>•</span><span>{line}</span></div>
+                          <div key={j} style={{ display: "flex", gap: 8, fontSize: 13, color: C.chalk, lineHeight: 1.45, marginTop: j ? 5 : 0 }}><span style={{ color: C.mint, fontWeight: 900 }}>•</span><span>{emo(line)}</span></div>
                         ))}
                       </div>
                     ))}
@@ -2608,7 +2683,7 @@ function WhatsNew({ onClose, at }) {
               <div style={{ fontSize: 14, color: C.dim, lineHeight: 1.5, marginBottom: 12 }}>{T("newsSmall")}</div>
               <div style={{ ...card, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 8 }}>
                 {x.items.map((line, j) => (
-                  <div key={j} style={{ display: "flex", gap: 8, fontSize: 14, color: C.chalk, lineHeight: 1.45 }}><span style={{ color: C.mint, fontWeight: 900 }}>•</span><span>{line}</span></div>
+                  <div key={j} style={{ display: "flex", gap: 8, fontSize: 14, color: C.chalk, lineHeight: 1.45 }}><span style={{ color: C.mint, fontWeight: 900 }}>•</span><span>{emo(line)}</span></div>
                 ))}
               </div>
             </>)}
@@ -2642,7 +2717,7 @@ function PageDots({ n, prog }) {
 function UpdateCard({ onOpen, onClose }) {
   return (
     <div data-update-card className="titleIn" style={{ ...card, position: "relative", padding: "14px 40px 14px 16px", marginBottom: 14, borderColor: `${C.signal}88`, display: "flex", gap: 12, alignItems: "center" }}>
-      <span style={{ fontSize: 26 }}>🎉</span>
+      <Ico n="party" size={28} color={C.signal} />
       <div style={{ minWidth: 0 }}>
         <div style={{ fontSize: 15, fontWeight: 800, color: C.chalk }}>{T("updTitle", { v: APP_VERSION })}</div>
         <button onClick={() => { sfxTap(); onOpen(); }} data-update-open style={{ ...btnBase, background: "transparent", color: C.signal, fontSize: 14, padding: "4px 0 0", textAlign: "left" }}>{T("updBtn")} <Arrow size="1.25em" style={{ verticalAlign: "-0.08em" }} /></button>
@@ -2733,7 +2808,7 @@ function HintCard({ ui, setUi, onGo }) {
       <Ico n="bulb" size={22} color={C.signal} />
       <div style={{ minWidth: 0 }}>
         <div style={{ fontSize: 12, fontWeight: 800, color: C.sky }}>{T("hintTitle")}</div>
-        <div style={{ fontSize: 14, color: C.chalk, lineHeight: 1.45, marginTop: 2 }}>{T("hint_" + h.k)}</div>
+        <div style={{ fontSize: 14, color: C.chalk, lineHeight: 1.45, marginTop: 2 }}>{emo(T("hint_" + h.k))}</div>
         {h.go && <button onClick={() => { setUi({ ...ui, hintHidden: today }); onGo(h.go); }} style={{ ...btnBase, background: "transparent", color: C.sky, padding: "6px 0 0", fontSize: 13 }}>{T("hintGo")} <Arrow size="1.25em" style={{ verticalAlign: "-0.08em" }} /></button>}
       </div>
     </div>
@@ -2753,10 +2828,10 @@ function BirthdayCard({ profile, ui, setUi }) {
     <div data-bday className="cardIn" style={{ position: "relative", marginBottom: 16, borderRadius: 20, padding: "16px 44px 16px 16px", background: `linear-gradient(135deg, ${C.signal}33, #ff7ab633 55%, ${C.sky}33)`, border: `2px solid ${C.signal}` }}>
       {burst && <Confetti count={90} />}
       <CloseX onClick={() => setUi({ ...ui, bdayHidden: today })} />
-      <div style={{ fontSize: 34, lineHeight: 1 }}>🎂🎉</div>
+      <div aria-hidden="true" style={{ display: "flex", gap: 8, color: C.signal }}><Ico n="cake" size={36} /><Ico n="party" size={36} /></div>
       <div style={{ fontFamily: DISPLAY, fontSize: 34, fontWeight: 900, lineHeight: 0.95, color: C.signal, marginTop: 6 }}>{T("bdayTitle", { name: profile.name || T("defaultName") })}</div>
-      {age !== null && <div style={{ fontSize: 15, fontWeight: 800, color: C.chalk, marginTop: 6 }}>{T("bdayAge", { n: age })}</div>}
-      <div style={{ fontSize: 14, color: C.chalk, lineHeight: 1.5, marginTop: 6 }}>{T("bdayBody")}</div>
+      {age !== null && <div style={{ fontSize: 15, fontWeight: 800, color: C.chalk, marginTop: 6 }}>{emo(T("bdayAge", { n: age }))}</div>}
+      <div style={{ fontSize: 14, color: C.chalk, lineHeight: 1.5, marginTop: 6 }}>{emo(T("bdayBody"))}</div>
     </div>
   );
 }
@@ -3106,7 +3181,7 @@ function Onboarding({ start = 0, profile, setProfile, kcal, setKcal, onDone, acc
           <input className="obf" data-ob-name value={name} maxLength={needNick ? 20 : 24} autoFocus onChange={e => { setName(needNick ? e.target.value.replace(/\s/g, "_") : e.target.value); setErr(""); }} onKeyDown={e => { if (e.key === "Enter" && name.trim()) next(); }} placeholder={T("obNamePh")} aria-label={T("obNamePh")} style={bigField} />
         </>}
         {id === "hc" && <>
-          <div aria-hidden="true" style={{ fontSize: 44, lineHeight: 1 }}>👟⚖️</div>
+          <div aria-hidden="true" style={{ display: "flex", gap: 10, color: C.mint }}><Ico n="steps" size={44} sw={1.8} /><Ico n="heart" size={44} sw={1.8} /></div>
           <div style={{ marginTop: 12 }}>{title(T("obHcT"))}</div>
           {desc(T("obHcD"))}
           {hcRes && hcRes.ok ? (
@@ -3136,7 +3211,7 @@ function Onboarding({ start = 0, profile, setProfile, kcal, setKcal, onDone, acc
         </>}
         {id === "birth" && <>
           {title(T("obBirthT"))}
-          {about("birth", T("obBirthD"))}
+          {about("birth", emo(T("obBirthD")))}
           <div style={{ ...sub, marginTop: 0 }}>{T("kcYear")} <span style={{ color: "#ff8a80" }}>*</span></div>
           {numField(year, v => setYear(v), 4, "2000", "", T("kcYear"))}
           <div style={sub}>{T("kcMonth")}</div>
@@ -3420,7 +3495,7 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
         {T("dayN", { d: day.id })}
       </div>
       {/* 1.8.2 (Michael: "still useless texts"): only the warning that the streak ends tomorrow stays */}
-      {last && !doneToday && gap === 2 && st.n > 0 && <div data-day-status style={{ fontSize: 14, color: C.signal, marginTop: 8, lineHeight: 1.5 }}>{status}</div>}
+      {last && !doneToday && gap === 2 && st.n > 0 && <div data-day-status style={{ fontSize: 14, color: C.signal, marginTop: 8, lineHeight: 1.5 }}>{emo(status)}</div>}
       {!doneToday && st.gap === 2 && st.n > 0 && !st.frozenToday && !(META.skips || {})[dateKey()] && (
         <button data-skip-btn onClick={onFreeze} style={{ ...ghostBtn, marginTop: 10, color: C.sky, borderColor: C.sky }}><IcoI n="ice" /> {noEmo(T("skipBtn"))}</button>
       )}
@@ -3505,7 +3580,7 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <Logo size={46} />
             <div>
-              <div style={{ fontFamily: DISPLAY, fontSize: 30, fontWeight: 900, color: C.signal, lineHeight: 1 }}>{T("welcomeTitle")}</div>
+              <div style={{ fontFamily: DISPLAY, fontSize: 30, fontWeight: 900, color: C.signal, lineHeight: 1 }}>{emo(T("welcomeTitle"))}</div>
               <div style={{ fontFamily: DISPLAY, fontSize: 15, fontWeight: 800, color: C.dim, letterSpacing: 1, marginTop: 2 }}>HW APP</div>
             </div>
           </div>
@@ -3522,12 +3597,12 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
       {notice === "hint" && ntBox("hint", C.sky, <>
         <IcoBox n="bulb" size={34} />
         <div style={{ minWidth: 0, fontSize: 14, color: C.chalk, lineHeight: 1.4 }}>
-          {T("hint_" + hint.k)}
+          {emo(T("hint_" + hint.k))}
           {hint.go && <button onClick={() => { setUi({ ...ui, hintHidden: today }); onGo(hint.go); }} style={{ ...btnBase, display: "inline", background: "transparent", color: C.sky, padding: "0 0 0 6px", fontSize: 13, whiteSpace: "nowrap" }}>{T("hintGo")} <Arrow size="1.25em" style={{ verticalAlign: "-0.08em" }} /></button>}
         </div>
       </>, () => setUi({ ...ui, hintHidden: today }), { "data-hint": hint.k })}
       {notice === "daily" && ntBox("daily", C.signal, (
-        <div style={{ borderLeft: `3px solid ${C.signal}`, paddingLeft: 11, fontFamily: DISPLAY, fontSize: 19, fontWeight: 800, lineHeight: 1.15, color: C.chalk }}>{dailyText}</div>
+        <div style={{ borderLeft: `3px solid ${C.signal}`, paddingLeft: 11, fontFamily: DISPLAY, fontSize: 19, fontWeight: 800, lineHeight: 1.15, color: C.chalk }}>{emo(dailyText)}</div>
       ), () => setUi({ ...ui, dailyHidden: today }), { "data-daily": 1 })}
       </div>
 
@@ -3561,7 +3636,7 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
                       <RankBadge id={id} best={b} small />
                       {n && <span style={{ fontSize: 11, color: C.dim, fontWeight: 500, display: "inline-flex", alignItems: "center", gap: 3 }}><RankIcon r={RANKS.indexOf(n.rank)} size={12} />{T("toNext", { n: n.need })}</span>}
                     </div>
-                    {levelUpFor(history, id) && <div style={{ fontSize: 12, color: C.signal, fontWeight: 700, marginTop: 3 }}>{T("harderShort")}</div>}
+                    {levelUpFor(history, id) && <div style={{ fontSize: 12, color: C.signal, fontWeight: 700, marginTop: 3 }}>{emo(T("harderShort"))}</div>}
                     {id !== slot && <div style={{ fontSize: 12, color: C.sky, fontWeight: 600, marginTop: 3 }}>{T("replacing", { name: EX[slot].name })}</div>}
                   </div>
                   <div style={{ textAlign: "right", flexShrink: 0 }}>
@@ -3737,7 +3812,7 @@ function KcalSetup({ kcal, profile, onSave, onCancel }) {
               </button>
             </div>
           </div>
-          <div style={hint}>{T("kcBirthHint")}</div>
+          <div style={hint}>{emo(T("kcBirthHint"))}</div>
         </div>
         <div style={{ display: "flex", gap: 10 }}>
           <div style={{ flex: 1 }}>
@@ -3812,7 +3887,7 @@ function KcalStreakChip({ history, small }) {
   const st = kcalStreak(history);
   if (!st.n) return null;
   const allHit = st.hits === st.n;
-  return <span data-kc-streak={st.n} data-all-hit={allHit ? 1 : 0} title={T("kcStreakTip")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: small ? 12 : 13, fontWeight: 800, padding: small ? "3px 8px" : "4px 10px", borderRadius: 99, background: allHit ? `${KC_HIT}33` : `${KC_HIT}18`, color: KC_HIT, border: `1.5px solid ${KC_HIT}${allHit ? "" : "77"}`, whiteSpace: "nowrap" }}>🥗 {TP("kcStreakDays", st.n)}</span>;
+  return <span data-kc-streak={st.n} data-all-hit={allHit ? 1 : 0} title={T("kcStreakTip")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: small ? 12 : 13, fontWeight: 800, padding: small ? "3px 8px" : "4px 10px", borderRadius: 99, background: allHit ? `${KC_HIT}33` : `${KC_HIT}18`, color: KC_HIT, border: `1.5px solid ${KC_HIT}${allHit ? "" : "77"}`, whiteSpace: "nowrap" }}><IcoI n="plate" /> {TP("kcStreakDays", st.n)}</span>;
 }
 // The last 7 days: a dot per day with its weekday under it; today also shows its date (Michael, Oct 10: plain dots made no sense).
 function KcalWeekDots({ history, full }) {
@@ -3875,7 +3950,7 @@ function HomeKcal({ history, kcal, setKcal, onOpen }) {
       </span>
       <span style={{ display: "block", height: 5, borderRadius: 99, background: `${C.chalk}14`, marginTop: 10, overflow: "hidden" }}><span style={{ display: "block", width: `${pct * 100}%`, height: "100%", borderRadius: 99, background: col, transition: `width ${MO.fill} ${MO.ease}` }} /></span>
       <span style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 9 }}>
-        <span data-home-kcal-line style={{ flex: 1, fontSize: 13, color: s.hit ? KC_HIT : C.dim, lineHeight: 1.45 }}>{kcalLine(s)}</span>
+        <span data-home-kcal-line style={{ flex: 1, fontSize: 13, color: s.hit ? KC_HIT : C.dim, lineHeight: 1.45 }}>{emo(kcalLine(s))}</span>
         <Arrow data-home-kcal-open />
       </span>
     </button>
@@ -3971,13 +4046,13 @@ function HealthCard({ kcal, setKcal, defOpen, onToggle }) {
       </div>
       <div style={{ fontSize: 12, color: C.dim, lineHeight: 1.5, marginTop: 6 }}>{T("hcHow", { n: nf(assumed) })}</div>
       {st.body ? (
-        <div data-hc-body style={{ fontSize: 12, color: C.chalk, lineHeight: 1.5, marginTop: 8 }}>⚖️ {kcal.wSrc === "hc" || kcal.hSrc === "hc" ? T("hcBodyOn", { w: kcal.weight, h: kcal.height }) : T("hcBodyNone")}</div>
+        <div data-hc-body style={{ fontSize: 12, color: C.chalk, lineHeight: 1.5, marginTop: 8 }}><IcoI n="scale" color={C.mint} /> {kcal.wSrc === "hc" || kcal.hSrc === "hc" ? T("hcBodyOn", { w: kcal.weight, h: kcal.height }) : T("hcBodyNone")}</div>
       ) : (
         <button data-hc-body-connect onClick={async () => { sfxTap(); setBusy(true); const ok = await healthConnect(false); if (ok.body) { sfxCheck(); await sync(); } await refresh(); setBusy(false); }} disabled={busy}
-          style={{ ...btnBase, marginTop: 10, padding: "9px 13px", fontSize: 13, background: "transparent", color: C.mint, border: `1.5px solid ${C.mint}88` }}>⚖️ {T("hcBodyConnect")}</button>
+          style={{ ...btnBase, marginTop: 10, padding: "9px 13px", fontSize: 13, background: "transparent", color: C.mint, border: `1.5px solid ${C.mint}88` }}><IcoI n="scale" /> {T("hcBodyConnect")}</button>
       )}
       <div data-hc-food-box={kcal.healthFood === true && st.food ? "on" : "off"} style={{ marginTop: 12, paddingTop: 10, borderTop: `1px solid ${C.line}` }}>
-        <div style={{ fontSize: 13, fontWeight: 800, color: C.chalk }}>🍽️ {T("hcFood")}{kcal.healthFood === true && food ? ` · ${nf(food)} kcal` : ""}</div>
+        <div style={{ fontSize: 13, fontWeight: 800, color: C.chalk }}><IcoI n="plate" color={KC_LOG} /> {T("hcFood")}{kcal.healthFood === true && food ? ` · ${nf(food)} kcal` : ""}</div>
         {kcal.healthFood === true && st.food ? <>
           <div data-hc-mode={kcal.foodMode || "both"} style={{ fontSize: 12, color: C.dim, lineHeight: 1.45, marginTop: 3 }}>{T(kcal.foodMode === "hc" ? "hcFoodOnHc" : "hcFoodOnBoth")}</div>
           <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
@@ -4026,7 +4101,7 @@ function HealthCard({ kcal, setKcal, defOpen, onToggle }) {
   );
   const on = kcal.healthOn && st && st.granted;
   return (
-    <FoldSect data-health-card title={T("hcTitle")} meta={on ? `👟 ${nf(steps || 0)}` : null} defOpen={defOpen} onToggle={onToggle} style={{ marginTop: 10 }}>
+    <FoldSect data-health-card title={T("hcTitle")} meta={on ? <><IcoI n="steps" /> {nf(steps || 0)}</> : null} defOpen={defOpen} onToggle={onToggle} style={{ marginTop: 10 }}>
       {body}
     </FoldSect>
   );
@@ -4065,14 +4140,14 @@ function DayEntries({ kcal, day, onRemove, pad = "8px 0" }) {
       {rows.map((x, i) => (
         <div key={(x.hc ? "h" : "o") + x.ts + "-" + i} data-entry={x.hc ? "hc" : "own"} style={{ display: "flex", alignItems: "center", gap: 8, padding: pad, borderTop: `1px solid ${C.line}`, opacity: x.own && ign ? 0.5 : 1 }}>
           <span data-entry-time style={{ fontSize: 12, color: C.dim, minWidth: 44, flexShrink: 0, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>{time(x.ts)}</span>
-          <span style={{ flex: 1, fontSize: 14, color: C.chalk, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{x.hc ? <><span aria-hidden="true">🍽️ </span><span data-entry-app style={{ color: C.dim }}>{hcAppName(x)}</span></> : (x.note || "—")}</span>
+          <span style={{ flex: 1, fontSize: 14, color: C.chalk, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{x.hc ? <><span aria-hidden="true"><IcoI n="plate" color={KC_LOG} /> </span><span data-entry-app style={{ color: C.dim }}>{hcAppName(x)}</span></> : (x.note || "—")}</span>
           <span style={{ fontFamily: DISPLAY, fontSize: 20, fontWeight: 800, color: x.hc ? KC_HIT : C.chalk, textDecoration: x.own && ign ? "line-through" : "none" }}>{nf(x.kcal)}</span>
           {x.own ? <button onClick={() => onRemove(day, x.ts)} aria-label={T("kcDelete")} style={{ ...btnBase, background: "transparent", color: C.dim, padding: "4px 8px", fontSize: 15 }}>✕</button> : <span style={{ width: 31, flexShrink: 0 }} />}
         </div>
       ))}
       {hc > 0 && !items.length && (
         <div data-hc-food-row style={{ display: "flex", alignItems: "center", gap: 8, padding: pad, borderTop: `1px solid ${C.line}` }}>
-          <span style={{ fontSize: 15, width: 44 }} aria-hidden="true">🍽️</span>
+          <span style={{ width: 44, display: "flex", color: KC_LOG }} aria-hidden="true"><Ico n="plate" size={18} /></span>
           <span style={{ flex: 1, fontSize: 14, color: C.chalk, minWidth: 0 }}>{T("hcFoodRow")}</span>
           <span style={{ fontFamily: DISPLAY, fontSize: 20, fontWeight: 800, color: KC_HIT }}>{nf(hc)}</span>
           <span style={{ width: 31, flexShrink: 0 }} />
@@ -4197,12 +4272,9 @@ function Calories({ history, profile, setProfile, kcal, setKcal }) {
   return (
     <div className="scr" style={{ padding: "16px 0 124px", maxWidth: "var(--colMax)", margin: "0 auto" }}>
       <div style={{ padding: "0 18px" }}>
-        <Sect data-kc-streak-card title={T("secWeek")} meta={<KcalStreakChip history={history} small />} style={{ marginTop: 0, marginBottom: 12 }}>
+        {/* 1.8.2 (less text): the colour legend moved behind the "?" (the calendar keeps its own legend) */}
+        <Sect data-kc-streak-card title={<>{T("secWeek")}<InfoQ id="kcweek" title={T("secWeek")} text={<div data-kc-legend style={{ display: "flex", flexWrap: "wrap", gap: "10px 16px", fontSize: 14, color: C.chalk }}>   {[[KC_LOG, T("calLegLog"), ""], [KC_HIT, `${T("calLegHit")} (±10 %)`, "✓"]].map(([bg, l, mark]) => <span key={l} style={{ display: "inline-flex", alignItems: "center", gap: 5 }}><span style={{ width: 14, height: 14, borderRadius: 4, background: bg, color: "#1a1206", fontSize: 10, fontWeight: 900, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>{mark}</span>{l}</span>)} </div>} /></>} meta={<KcalStreakChip history={history} small />} style={{ marginTop: 0, marginBottom: 12 }}>
           <KcalWeekDots history={history} full />
-          {/* 1.7.0: colour swatches instead of colour names (the calorie colours change with the main colour) */}
-          <div data-kc-legend style={{ display: "flex", flexWrap: "wrap", gap: "6px 14px", fontSize: 11, color: C.dim, marginTop: 8 }}>
-            {[[KC_LOG, T("calLegLog"), ""], [KC_HIT, `${T("calLegHit")} (±10 %)`, "✓"]].map(([bg, l, mark]) => <span key={l} style={{ display: "inline-flex", alignItems: "center", gap: 5 }}><span style={{ width: 14, height: 14, borderRadius: 4, background: bg, color: "#1a1206", fontSize: 10, fontWeight: 900, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>{mark}</span>{l}</span>)}
-          </div>
         </Sect>
         {pg.tabs([T("kcToday"), T("kcTabCal"), T("kcTabMe")])}
       </div>
@@ -4242,7 +4314,7 @@ function Calories({ history, profile, setProfile, kcal, setKcal }) {
             <div style={{ fontSize: 14, color: C.chalk, lineHeight: 1.6 }}>
               {T("kcSummary", { sex: T(kcal.sex === "f" ? "kcFemale" : "kcMale"), age, h: kcal.height, w: kcal.weight })}<br />
               <span style={{ color: C.dim }}>{T("kcAct_" + kcal.activity)}</span>
-              {(kcal.wSrc === "hc" || kcal.hSrc === "hc") && <span data-kc-body-hc style={{ display: "block", fontSize: 12, color: C.mint, marginTop: 4 }}>⚖️ {T("hcBodyOn", { w: kcal.weight, h: kcal.height })}</span>}
+              {(kcal.wSrc === "hc" || kcal.hSrc === "hc") && <span data-kc-body-hc style={{ display: "block", fontSize: 12, color: C.mint, marginTop: 4 }}><IcoI n="scale" /> {T("hcBodyOn", { w: kcal.weight, h: kcal.height })}</span>}
             </div>
             <div style={{ fontSize: 14, color: C.chalk, lineHeight: 1.5, marginTop: 10, paddingTop: 10, borderTop: `1px solid ${C.line}` }}>
               <span style={{ display: "block", fontSize: 12, color: C.dim }}>{T("kcGoalNow")}</span>
@@ -4567,7 +4639,7 @@ function EntryEditor({ entry, nextDay, onSave, onDelete, onClose }) {
           })}
         </div>
         {/* app-styled picker (the phone's own dropdown was full-screen and ignored the theme) */}
-        <button onClick={() => { sfxTap(); setPicking(true); }} data-add-ex style={{ ...btnBase, width: "100%", padding: "11px 12px", borderRadius: 11, border: `1.5px dashed ${C.line}`, background: "transparent", color: C.sky, fontSize: 15, fontWeight: 700, textAlign: "left" }}>{T("addEx")}</button>
+        <button onClick={() => { sfxTap(); setPicking(true); }} data-add-ex style={{ ...btnBase, width: "100%", padding: "11px 12px", borderRadius: 11, border: `1.5px dashed ${C.line}`, background: "transparent", color: C.sky, fontSize: 15, fontWeight: 700, textAlign: "left" }}>{emo(T("addEx"))}</button>
         {picking && (
           <Sheet short title={T("addEx").replace(/^\S+\s/, "").replace(/…$/, "")} onClose={() => setPicking(false)}>
             <div data-add-ex-sheet style={{ display: "flex", flexDirection: "column", gap: 14 }}>
@@ -4946,7 +5018,7 @@ function BadgeSheet({ a, onClose }) {
         <SheetHero col={col} icon={<BadgeIco n={a.icon} col={a.step ? col : null} size={84} glow={!!a.step} />}>
           <div style={{ marginTop: 10 }}>{a.single ? <RankTag r={a.rk[0]} size={20} fs={15} text={rarityName(a)} style={{ opacity: a.step ? 1 : 0.6 }} /> : cur >= 0 ? <RankTag r={cur} size={20} fs={15} /> : <span style={{ fontSize: 14, fontWeight: 800, color: C.dim }}>{T("achLocked")}</span>}</div>
           {!a.single && <div style={{ fontFamily: DISPLAY, fontSize: 30, fontWeight: 900, color: C.chalk, marginTop: 6, lineHeight: 1 }}>{a.next === null ? val(a.v) : `${val(a.v)} / ${val(a.next)}`}</div>}
-          {!a.single && a.next === null && <div style={{ fontSize: 13, color: col, fontWeight: 800, marginTop: 6 }}>{T("achMax")}</div>}
+          {!a.single && a.next === null && <div style={{ fontSize: 13, color: col, fontWeight: 800, marginTop: 6 }}>{emo(T("achMax"))}</div>}
           {a.single && <div style={{ fontSize: 14, color: C.chalk, lineHeight: 1.45, marginTop: 8, maxWidth: 300 }}>{a.desc}</div>}
           {a.single && a.step > 0 && <div style={{ marginTop: 8, color: C.mint, display: "flex" }}><Ico n="check" size={22} sw={2.8} /></div>}
         </SheetHero>
@@ -5097,7 +5169,7 @@ function ProfileHero({ m, own, onPhoto, onEditProfile, onLooks, onStreak, extra,
             <div style={{ flex: 1, minWidth: 0 }}>
               <div data-pf-name data-name-fx={lk.name || ""} style={{ fontFamily: DISPLAY, fontSize: 30, fontWeight: 900, lineHeight: 1, color: C.chalk, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" , ...INK, ...nameFx(lk.name), ...(lk.name ? FX_ROOM : {}) }}>{m.nick}</div>
               {lk.title && <div style={{ marginTop: 6 }}><LookTitle id={lk.title} /></div>}
-              <div style={{ fontSize: 12.5, color: own && bdayToday() ? C.signal : C.dim, fontWeight: own && bdayToday() ? 800 : 400, marginTop: 4 }}>{own && bdayToday() ? T("bdayHero") : m.since ? T("since", { date: fmtDate(m.since, true) }) : T("newMember")}</div>
+              <div style={{ fontSize: 12.5, color: own && bdayToday() ? C.signal : C.dim, fontWeight: own && bdayToday() ? 800 : 400, marginTop: 4 }}>{own && bdayToday() ? emo(T("bdayHero")) : m.since ? T("since", { date: fmtDate(m.since, true) }) : T("newMember")}</div>
             </div>
             {own && !preview && <span style={{ alignSelf: "flex-start", display: "flex", flexDirection: "column", gap: 6, flexShrink: 0 }}>
               <button type="button" data-pf-edit onClick={() => { sfxTap(); onEditProfile(); }} aria-label={T("pfEdit")} style={{ ...btnBase, background: SOFT(), color: C.chalk, width: 38, height: 38, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center" }}><Ico n="pencil" size={18} /></button>
@@ -5147,7 +5219,7 @@ function ProfilePage({ m, own, onEditProfile, onEditSlot, onStreak, onPhoto, onP
         {claim && claim.items.size > 0 && (
           <button type="button" data-claim-all={claim.items.size} onClick={claim.openAll} className="b3d claimBan"
             style={{ ...btnBase, width: "100%", display: "flex", alignItems: "center", gap: 12, textAlign: "left", padding: "13px 14px", marginBottom: 12, borderRadius: 18, color: C.chalk, background: `radial-gradient(120% 140% at 0% 0%, ${claim.top}55, transparent 60%), ${C.panel}`, border: `1.5px solid ${claim.top}`, boxShadow: `0 0 18px ${claim.top}55` }}>
-            <span aria-hidden="true" className="claimGift" style={{ fontSize: 30, lineHeight: 1, flexShrink: 0 }}>🎁</span>
+            <span aria-hidden="true" className="claimGift" style={{ display: "flex", flexShrink: 0, color: C.signal }}><Ico n="gift" size={30} /></span>
             <span style={{ flex: 1, minWidth: 0 }}>
               <span style={{ display: "block", fontFamily: DISPLAY, fontSize: 21, fontWeight: 900, lineHeight: 1.05 }}>{TP("claimN", claim.items.size)}</span>
               <span style={{ display: "block", fontSize: 12, color: C.dim, marginTop: 3, lineHeight: 1.35 }}>{T("claimD")}</span>
@@ -5397,7 +5469,7 @@ function BackupsSheet({ onClose, onRestore, autoOn, myId }) {
           {files.map(f => (
             <div key={f.name} data-bk-file={f.name} data-bk-auto={f.auto ? 1 : 0} style={{ background: SOFT(), borderRadius: 14, padding: "11px 12px" }}>
               <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-                <span style={{ fontSize: 15, fontWeight: 800, color: C.chalk, flex: 1, minWidth: 0 }}>{f.auto ? `🔄 ${T("bkAutoName")}${f.acct ? ` · ${f.acct === myId ? T("bkThisAcct") : T("bkOtherAcct")}` : ""}` : `💾 ${f.mtime ? fmtWhen(f.mtime) : f.name}`}</span>
+                <span style={{ fontSize: 15, fontWeight: 800, color: C.chalk, flex: 1, minWidth: 0 }}><IcoI n={f.auto ? "repeat" : "download"} color={C.dim} /> {f.auto ? `${T("bkAutoName")}${f.acct ? ` · ${f.acct === myId ? T("bkThisAcct") : T("bkOtherAcct")}` : ""}` : `${f.mtime ? fmtWhen(f.mtime) : f.name}`}</span>
                 <span style={{ fontSize: 12, color: C.dim, flexShrink: 0 }}>{Math.max(1, Math.round(f.size / 1024))} kB</span>
               </div>
               <div style={{ fontSize: 12, color: C.dim, marginTop: 2, overflowWrap: "anywhere" }}>{f.auto ? (f.mtime ? `${T("bkUpdated")} ${fmtWhen(f.mtime)}` : f.name) + (autoOn ? "" : ` · ${T("bkAutoOff")}`) : f.name}</div>
@@ -5682,7 +5754,7 @@ function FsChip({ st, uid, size = 15 }) {
   return (
     <span data-fs-row={uid} data-fs-n={st.n} title={T("fsTitle")} aria-label={`${T("fsTitle")}: ${st.n}`}
       style={{ display: "inline-flex", alignItems: "center", gap: 3, flexShrink: 0, padding: "3px 7px", borderRadius: 99, fontSize: size, fontWeight: 900, fontFamily: DISPLAY, color: st.n ? "#ffa94d" : C.dim, background: st.n ? "#ffa94d1f" : SOFT(), border: `1px solid ${st.n ? "#ffa94d55" : C.line}` }}>
-      <Ico n="duo" size={size} color={st.n ? "#ffa94d" : C.dim} sw={2.2} /><IcoI n="flame" />{st.n}{warn ? <span style={{ fontSize: size * 0.8 }}>⚠</span> : null}
+      <Ico n="duo" size={size} color={st.n ? "#ffa94d" : C.dim} sw={2.2} /><IcoI n="flame" />{st.n}{warn ? <IcoI n="alert" color="#ff9a9a" /> : null}
     </span>
   );
 }
@@ -6013,7 +6085,7 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
               {/* 1.8.0: what the server counted for the world list, and why a place may wait for a check */}
               {acct.prof.global && fx.fair && typeof fx.fair.n === "number" && (
                 <div data-fr-fair={fx.fair.wait ? "wait" : "ok"} style={{ padding: "0 16px 13px", fontSize: 12.5, color: C.dim, lineHeight: 1.5 }}>
-                  <div>{T("frFairLine", { n: fx.fair.n, s: fx.fair.streak || 0 })}</div>
+                  <div>{emo(T("frFairLine", { n: fx.fair.n, s: fx.fair.streak || 0 }))}</div>
                   {fx.fair.wait && <div data-fr-fair-wait style={{ color: C.signal, fontWeight: 700, marginTop: 4 }}>{T("frFairWait")}</div>}
                   {(fx.fair.flags || []).length > 0 && <div data-fr-fair-flags style={{ marginTop: 4 }}>{T("frFairWhy")} {fx.fair.flags.filter(f => FAIR_FLAGS.includes(f)).map(f => T("frFlag_" + f)).join(" · ")}</div>}
                 </div>
@@ -6041,7 +6113,7 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
                 style={{ fontFamily: BODY, fontSize: 16, fontWeight: 700, padding: "11px 12px", borderRadius: 12, border: `1.5px solid ${C.line}`, background: C.ink, color: C.chalk, outline: "none", boxSizing: "border-box", minWidth: 0, flex: 1 }} />
               <button data-fr-add-go onClick={addFriend} disabled={busy || !add.trim()} style={{ ...btnBase, padding: "0 14px", borderRadius: 12, background: C.signal, color: C.signalInk, fontSize: 14, opacity: add.trim() ? 1 : 0.5, flexShrink: 0 }}>{busy ? "…" : T("frAddGo")}</button>
             </div>
-            {addMsg && <div role="status" data-fr-add-msg style={{ fontSize: 13, color: addMsg.startsWith("✓") ? C.mint : C.dim, marginTop: 8 }}>{addMsg}</div>}
+            {addMsg && <div role="status" data-fr-add-msg style={{ fontSize: 13, color: addMsg.startsWith("✓") ? C.mint : C.dim, marginTop: 8 }}>{emo(addMsg)}</div>}
           </Sect>
           {/* 1.8.2 (Michael): a running friend streak shows on the friend's row and in the chat; this box only lists invitations */}
           {fsPending.length > 0 && (
@@ -6060,7 +6132,7 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
                       <span style={{ display: "block", fontSize: 12, color: C.dim, lineHeight: 1.4 }}>
                         {!f.ok ? (f.by === acct.uid ? T("fsWaiting") : T("fsAsks"))
                           : st.n === 0 ? T("fsBroken")
-                          : [[st.meToday, st.meLast, T("fsYou")], [st.theyToday, st.theyLast, p.nick]].map(([td, last, who]) => (td ? "✓ " : last >= 2 ? "⚠ " : "") + who).join(" · ")}
+                          : [[st.meToday, st.meLast, T("fsYou")], [st.theyToday, st.theyLast, p.nick]].map(([td, last, who], i) => <span key={i}>{i ? " · " : ""}{td ? <IcoI n="tick" color={C.mint} /> : last >= 2 ? <IcoI n="alert" color="#ff9a9a" /> : null}{td || last >= 2 ? " " : ""}{who}</span>)}
                       </span>
                     </span>
                     {f.ok ? <span data-fs-count style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, color: st.n ? "#ffa94d" : C.dim, whiteSpace: "nowrap" }}><IcoI n="flame" />{st.n}</span>
@@ -6069,7 +6141,7 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
                   </div>
                 );
               })}
-              <div style={{ fontSize: 12, color: C.dim, lineHeight: 1.45, padding: "6px 16px 10px" }}>{T("fsHow")}</div>
+              <div style={{ fontSize: 12, color: C.dim, lineHeight: 1.45, padding: "6px 16px 10px" }}>{emo(T("fsHow"))}</div>
             </Sect>
           )}
           {fsEnd && <ConfirmBox icon="flameOff" danger title={T("fsEnd")} text={T("fsEndD", { nick: (people[fsEnd] || {}).nick || "…" })} yes={T("fsEnd")} yesData={{ "data-fs-end-yes": true }} onYes={() => { const u = fsEnd; setFsEnd(null); act(() => fs.end(u)); }} onNo={() => setFsEnd(null)} />}
@@ -7098,7 +7170,7 @@ function SettingsTab({ initPage, ret, settings, setSettings, history, profile, s
           </div>
         )}
         {settings.aiCopy && (
-          <button onClick={copyAll} style={rowBtn(false)}>{copied ? T("copied") : T("copyAllAI")}</button>
+          <button onClick={copyAll} style={rowBtn(false)}>{copied ? T("copied") : emo(T("copyAllAI"))}</button>
         )}
       </ListSect>
       {msg && <div role="status" style={{ fontSize: 13, color: msg.startsWith("✓") ? C.mint : C.dim, marginTop: 8 }}>{msg}</div>}
@@ -7110,7 +7182,7 @@ function SettingsTab({ initPage, ret, settings, setSettings, history, profile, s
       </>} />
       <div style={{ fontSize: 12, color: C.dim, textAlign: "center", marginTop: 26, lineHeight: 1.6, display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
         <Logo size={44} />
-        <div>{T("about", { v: APP_VERSION })}<br />{T("privacy")}</div>
+        <div data-about style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>{T("about", { v: APP_VERSION })}<InfoQ id="privacy" title={T("privacyLink")} text={T("privacy")} /></div>
         <button data-privacy onClick={() => { sfxTap(); openExternal(PRIVACY_URL); }} style={{ ...btnBase, background: "transparent", color: C.sky, fontSize: 12, padding: "2px 0" }}>{T("privacyLink")} <Arrow size="1.25em" style={{ verticalAlign: "-0.08em" }} /></button>
       </div>
     </div>
@@ -7138,7 +7210,7 @@ function Warmup({ done, setDone, onNext }) {
                 <div style={{ fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2 }}>{w.why}</div>
               </div>
             </button>
-            <button data-search-howto onClick={() => { sfxTap(); searchHowTo(w.name); }} aria-label={T("searchOf", { name: w.name })} style={{ ...btnBase, background: "transparent", border: `1.5px solid ${C.line}`, color: C.dim, padding: "0 13px", fontSize: 14 }}>🔎</button>
+            <button data-search-howto onClick={() => { sfxTap(); searchHowTo(w.name); }} aria-label={T("searchOf", { name: w.name })} style={{ ...btnBase, background: "transparent", border: `1.5px solid ${C.line}`, color: C.dim, padding: "0 13px", fontSize: 14 }}><Ico n="search" size={17} /></button>
           </div>
         ))}
       </div>
@@ -7301,11 +7373,11 @@ function Work({ item, rounds, history, sessionResults, onRecord, onSwap, exclude
       </div>
       {lvl && item.r === 0 && (
         <div style={{ marginTop: 12, border: `1.5px solid ${C.signal}`, borderRadius: 14, padding: "10px 13px", fontSize: 13, color: C.chalk, lineHeight: 1.5 }}>
-          <b style={{ color: C.signal }}>{T("lvlTitle")}</b> {T("lvlBody")} {lvl}
+          <b style={{ color: C.signal }}>{emo(T("lvlTitle"))}</b> {T("lvlBody")} {lvl}
         </div>
       )}
       {isLastRound && (
-        <div style={{ marginTop: 10, fontSize: 13, color: C.signal, fontWeight: 600 }}>{T("lastRound")}</div>
+        <div style={{ marginTop: 10, fontSize: 13, color: C.signal, fontWeight: 600 }}>{emo(T("lastRound"))}</div>
       )}
 
       {ex.type === "reps" && (
@@ -7343,7 +7415,7 @@ function Work({ item, rounds, history, sessionResults, onRecord, onSwap, exclude
           </div>
           <div style={{ textAlign: "center" }}>
               <div style={{ fontSize: 13, color: C.dim, marginTop: 4 }}>{T("reps")}{ex.unit ? ` ${perUnit(ex.unit)}` : ""}</div>
-            <div style={{ height: 22, marginTop: 4, fontSize: 14, fontWeight: 800, color: C.signal }}>{best !== null && reps > best ? <span className="pop" style={{ display: "inline-block" }}>{rankIdx(item.id, reps) > rankIdx(item.id, best) ? `${T("newRank", { rank: RANKS[rankIdx(item.id, reps)].name })}` : T("pr")}</span> : ""}</div>
+            <div style={{ height: 22, marginTop: 4, fontSize: 14, fontWeight: 800, color: C.signal }}>{best !== null && reps > best ? <span className="pop" style={{ display: "inline-block" }}>{rankIdx(item.id, reps) > rankIdx(item.id, best) ? `${T("newRank", { rank: RANKS[rankIdx(item.id, reps)].name })}` : emo(T("pr"))}</span> : ""}</div>
           </div>
           {/* 1.8.2: the how-to-count line only for the first workouts (then it's known) */}
           {history.length < 3 && <div data-count-hint style={{ fontSize: 12, color: C.dim, textAlign: "center", marginTop: 10 }}>{T(prevVal !== null ? "countHint" : "countHint0")}</div>}
@@ -7412,7 +7484,7 @@ function Elapsed({ since }) {
   useEffect(() => { const iv = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(iv); }, []);
   const secs = Math.max(0, Math.round((now - since) / 1000));
   if (secs >= 4 * 3600) return null;
-  return <span data-elapsed aria-label={T("elapsedAria")} style={{ display: "block", fontSize: 12, fontWeight: 600, color: C.dim, marginTop: 2, fontVariantNumeric: "tabular-nums" }}>⏱ {fmtDur(secs)}</span>;
+  return <span data-elapsed aria-label={T("elapsedAria")} style={{ display: "block", fontSize: 12, fontWeight: 600, color: C.dim, marginTop: 2, fontVariantNumeric: "tabular-nums" }}><IcoI n="timer" /> {fmtDur(secs)}</span>;
 }
 
 // Tempo guide (Michael, Oct 9): one rep as phases [shape, seconds, word]. Shape: "down" = the circle shrinks,
@@ -7485,7 +7557,7 @@ function Rest({ rest, nextItem, rounds, onEnd, onAdd }) {
   return (
     <div style={{ textAlign: "center", paddingTop: 10 }}>
       {rest.pr && <Confetti count={55} />}
-      <div className="pop" style={{ fontFamily: DISPLAY, fontSize: 34, fontWeight: 900, lineHeight: 1, color: rest.pr ? C.signal : C.chalk }}>{rest.cheer || T("cheerDefault")}</div>
+      <div className="pop" style={{ fontFamily: DISPLAY, fontSize: 34, fontWeight: 900, lineHeight: 1, color: rest.pr ? C.signal : C.chalk }}>{emo(rest.cheer || T("cheerDefault"))}</div>
       <div style={{ fontSize: 14, color: C.sky, fontWeight: 700, marginTop: 6 }}>{newRound ? T("roundDone", { r: nextItem.r + 1, n: rounds }) : T("rest")}</div>
       <div data-rest-timer style={{ marginTop: 18 }}>
         <Ring value={left} total={rest.total} size={250} color={C.sky}>
@@ -7498,7 +7570,7 @@ function Rest({ rest, nextItem, rounds, onEnd, onAdd }) {
       {(rest.tip || rest.moti) && (
         <div style={{ marginTop: 18, background: C.panel, border: `1px solid ${C.line}`, borderRadius: 16, padding: "12px 14px", textAlign: "left" }}>
           {rest.tip && <div style={{ fontSize: 14, color: C.sky, fontWeight: 600, lineHeight: 1.45, display: "flex", gap: 7, alignItems: "flex-start" }}><Ico n="bulb" size={18} style={{ marginTop: 2 }} /><span>{rest.tip}</span></div>}
-          {rest.moti && <div style={{ fontSize: 16, color: C.chalk, fontWeight: 800, marginTop: 6 }}>{rest.moti}</div>}
+          {rest.moti && <div style={{ fontSize: 16, color: C.chalk, fontWeight: 800, marginTop: 6 }}>{emo(rest.moti)}</div>}
         </div>
       )}
       <div style={{ display: "flex", gap: 10, marginTop: 22 }}>
@@ -7543,7 +7615,7 @@ function CoolItem({ def, done, onDone }) {
         <div style={{ fontSize: 13, color: `${C.chalk}d9`, lineHeight: 1.55, paddingTop: 6 }}>
           {def.fig && <ExFigure id={def.fig} />}
           {def.how}
-          <button data-search-howto onClick={() => { sfxTap(); searchHowTo(def.name); }} style={{ ...btnBase, display: "block", marginTop: 8, background: "transparent", color: C.sky, fontSize: 13, padding: 0 }}>{T("searchWeb")}</button>
+          <button data-search-howto onClick={() => { sfxTap(); searchHowTo(def.name); }} style={{ ...btnBase, display: "block", marginTop: 8, background: "transparent", color: C.sky, fontSize: 13, padding: 0 }}>{emo(T("searchWeb"))}</button>
         </div>
       </Expand>
     </div>
@@ -7607,7 +7679,7 @@ const DUEL_ON = false, RANKED_ON = false;
 const STAKE_COL = ["#8fd3ff", "#3ddc84", "#ffd23f", "#ff8a3d", "#ff4d5e"];
 const stakeXp = k => 1 + 0.5 * k; // +50 % game XP per stake
 const SUIT_COL = { push: "#ff6b5b", pull: "#3d9bff", legs: "#21b36b", core: "#9a5cff" };
-const JOKER_ICON = { joker: "🃏", chips: "🪙", pairs: "🤝", threes: "🎲", straights: "📏", flushes: "🌊", circuit: "🔄", warmup: "🔥", faces: "👑", aces: "⭐", lastround: "⏱️", even: "⚖️", odd: "🌀", momentum: "🚀", bank: "🏦", five: "✋", fullbody: "🧍", pr: "🏅", hof: "🏛️", coach: "📣", ironcore: "🧱", rest: "🛌", short: "✂️", spotter: "👀", coupon: "🎟️", fresh: "🌱", slate: "🧽", bighand: "🖐️", compound: "📈", solo: "☝️", wind: "🌬️", specialist: "🎯", overload: "🏋️", double: "✌️" };
+const JOKER_ICON = { joker: "jcard", pairs: "duo", threes: "cards3", straights: "ladder", flushes: "bicep", chips: "pig", circuit: "orbit", warmup: "flame", faces: "crown", aces: "star", lastround: "hourglass", even: "scale", odd: "oddone", momentum: "rocket", bank: "coins", five: "hand", fullbody: "body", ironcore: "kettle", rest: "zz", short: "scissors", spotter: "eye", coupon: "ticket", fresh: "sprout", slate: "eraser", bighand: "cardPlus", compound: "percent", solo: "card1", wind: "wind", specialist: "target", overload: "dumbbell", double: "cards2x", pr: "trophy", hof: "temple", coach: "megaphone", reps: "repeat", tempo: "metronome", buddy: "link", heavy: "barbell", light: "feather", stride: "steps", pump: "heart", station: "pin", patience: "clock", tips: "kcoin", captain: "armband", vblock: "bars", pace: "gauge", sponsor: "rosette", gold: "medal", burner: "burst", fullx: "house", quads: "grid4", twin: "gemini", team: "team", ironpush: "pushup", ironpull: "pullup", ironlegs: "squat", goat: "laurel" };
 // Kapoke = Muscle Deck's money (Michael, Oct 25: "a special sign made only of K"; the name stays the same in every
 // language, like Muscle Deck). In the game texts "$" stands for it; withK() draws the sign in its place.
 const COIN = "Kapoke";
@@ -7622,9 +7694,9 @@ function KSign({ size = "0.86em" }) {
 const withK = str => { const parts = String(str).split("$"); return parts.length === 1 ? str : parts.flatMap((x, i) => (i ? [<KSign key={i} />, x] : [x])); };
 // joker rarity colours: common, uncommon, rare, legendary (gold, with the foil shine)
 const RAR_COL = () => [C.sky, C.mint, "#ff7ad9", "#ffb02e"];
-const VOUCHER_ICON = { membership: "🎫", extraset: "➕", resttimer: "⏱️", discount: "🏷️", bigbag: "🎒", savings: "🐷", restock: "🛒", scout: "🔭" };
-const PACK_ICON = { jpack: "🎁", dpack: "📦" };
-const PERK_ICON = { streak: "🔥", volume: "💰", warmup: "🤸", endurance: "⏳", allround: "🧩", obsidian: "🌋" };
+const VOUCHER_ICON = { membership: "idcard", extraset: "plusCircle", resttimer: "timer", discount: "tag", bigbag: "backpack", savings: "jar", restock: "cart", scout: "binoc", packplus: "boxPlus", rarehunt: "searchStar", drillmaster: "whistle", sponsorv: "contract", shelf: "shelf", bossscout: "shield", routine: "sunrise", deload: "trendDown" };
+const PACK_ICON = { jpack: "gift", dpack: "box", jmega: "cards", dmega: "blocks", rpack: "giftStar" };
+const PERK_ICON = { streak: "flame", volume: "moneybag", warmup: "runner", endurance: "battery", allround: "blocks", obsidian: "volcano" };
 const gameLoad = () => { try { return JSON.parse(localStorage.getItem(GAME_KEY) || "null"); } catch (_) { return null; } };
 const gameSave = g => { try { if (g) localStorage.setItem(GAME_KEY, JSON.stringify(g)); else localStorage.removeItem(GAME_KEY); } catch (_) {} };
 const cardVal = c => { const v = GM.valueOf(c); return v <= 10 ? String(v) : ["J", "Q", "K", "A"][v - 11]; };
@@ -7678,6 +7750,7 @@ function ScoreWhy({ g, cards, bests, onClose }) {
     if (st.dead) rows.push({ k: "dead", c: st.c, name: `${cardVal(st.c)} ${T("grp_" + GM.suitOf(st.c))}`, d: T("gmWhyDead"), plus: "+0" });
     else if (st.j) rows.push({ k: "j", c: st.c, j: st.j, name: jName(st.j), d: withK(jDesc(st.j)), plus });
     else if (st.p) rows.push({ k: "p", p: st.p, name: L.gm.perk[st.p][0], d: L.gm.perk[st.p][1], plus });
+    else if (st.v) rows.push({ k: "v", v: st.v, name: ((L.gm.v || {})[st.v] || [st.v])[0], d: withK(((L.gm.v || {})[st.v] || ["", ""])[1]), plus });
     else {
       const s = GM.suitOf(st.c), base = GM.chipsOf(st.c), bonus = st.chips - base, rk = g.suit[s] >= 0 ? RANKS[g.suit[s]] : null;
       rows.push({ k: "card", c: st.c, name: `${cardVal(st.c)} ${T("grp_" + s)}`, d: bonus > 0 && rk ? T("gmWhyCardRk", { v: base, rank: rk.name, n: bonus }) : T("gmWhyCard", { v: base }), plus: `+${st.chips}` });
@@ -7690,8 +7763,9 @@ function ScoreWhy({ g, cards, bests, onClose }) {
           <div key={i} data-why-row={r.k} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", borderRadius: 12, background: SOFT() }}>
             <span style={{ width: 34, flexShrink: 0, display: "flex", justifyContent: "center" }}>
               {r.c !== undefined && r.k !== "j" ? <PlayCard c={r.c} w={30} still bests={bests} dead={r.k === "dead"} />
-                : r.k === "j" ? <span aria-hidden="true" style={{ fontSize: 22 }}>{r.j.startsWith("fan_") ? <SuitIcon s={r.j.slice(4)} size={20} /> : JOKER_ICON[r.j] || "🃏"}</span>
-                : r.k === "p" ? <span aria-hidden="true" style={{ fontSize: 22 }}>{PERK_ICON[r.p]}</span>
+                : r.k === "j" ? <span aria-hidden="true" style={{ display: "flex" }}><JkIco id={r.j} size={22} /></span>
+                : r.k === "p" ? <span aria-hidden="true" style={{ display: "flex" }}><Ico n={PERK_ICON[r.p]} size={22} color={C.signal} /></span>
+                : r.k === "v" ? <span aria-hidden="true" style={{ display: "flex" }}><Ico n={VOUCHER_ICON[r.v] || "ticket"} size={22} color="#ffb02e" /></span>
                 : <span aria-hidden="true" style={{ fontSize: 22 }}>🂠</span>}
             </span>
             <span style={{ flex: 1, minWidth: 0 }}>
@@ -7716,13 +7790,18 @@ function ScoreWhy({ g, cards, bests, onClose }) {
     </Sheet>
   );
 }
+// 1.8.2: a joker's line icon in its rarity colour (fans keep the exercise-type icon)
+function JkIco({ id, size = 24, color }) {
+  const col = color || RAR_COL()[GM.JOKERS[id] ? GM.JOKERS[id].r : 0];
+  return id.startsWith("fan_") ? <SuitIcon s={id.slice(4)} size={size} /> : <Ico n={JOKER_ICON[id] || "jcard"} size={size} color={col} />;
+}
 const fmtM = m => (Number.isInteger(m) ? String(m) : m.toFixed(2).replace(/0$/, ""));
 function JokerChip({ id, onClick, sell, buy, price, small, glow }) {
   const r = GM.JOKERS[id] ? GM.JOKERS[id].r : 0, col = RAR_COL()[r];
   return (
     <button type="button" data-joker={id} onClick={onClick} className={glow ? "gmGlow" : undefined}
       style={{ ...btnBase, width: small ? 66 : 92, minHeight: small ? 80 : 118, flexShrink: 0, padding: small ? "6px 4px" : "8px 6px", borderRadius: 12, background: `linear-gradient(160deg, ${col}33, ${C.panelHi})`, border: `1.5px solid ${col}`, color: C.chalk, display: "flex", flexDirection: "column", alignItems: "center", gap: 4, fontWeight: 700, "--gc": col }}>
-      <span aria-hidden="true" style={{ fontSize: small ? 22 : 28, lineHeight: 1, height: small ? 24 : 30, display: "flex", alignItems: "center" }}>{id.startsWith("fan_") ? <SuitIcon s={id.slice(4)} size={small ? 20 : 26} /> : JOKER_ICON[id] || "🃏"}</span>
+      <span aria-hidden="true" style={{ fontSize: small ? 22 : 28, lineHeight: 1, height: small ? 24 : 30, display: "flex", alignItems: "center" }}><JkIco id={id} size={small ? 22 : 28} /></span>
       <span style={{ fontSize: small ? 10.5 : 12, lineHeight: 1.15, textAlign: "center", overflowWrap: "anywhere" }}>{jName(id)}</span>
       {(buy || sell) && <span style={{ marginTop: "auto", fontSize: 12, fontWeight: 900, color: buy ? C.signal : C.dim }}>{buy ? <><KSign />{price}</> : <>+<KSign />{price}</>}</span>}
     </button>
@@ -8233,7 +8312,7 @@ function GameTab({ history, profile, setProfile, acct, onPlay }) {
   }, [signed]);
   const modes = [
     { id: "run", icon: "cards", name: T("gmRun"), desc: null }, // 1.8.2: the Run needs no line under it
-    { id: "duel", icon: "🤖", name: T("gmDuel"), desc: DUEL_ON ? T("gmDuelD", { n: Math.min(10, gl.lvl) }) : T("gmSoon"), off: !DUEL_ON, soon: !DUEL_ON },
+    { id: "duel", icon: "robot", name: T("gmDuel"), desc: DUEL_ON ? T("gmDuelD", { n: Math.min(10, gl.lvl) }) : T("gmSoon"), off: !DUEL_ON, soon: !DUEL_ON },
     { id: "ranked", icon: "trophy", name: T("gmRanked"), desc: !RANKED_ON ? T("gmSoon") : signed ? T("gmRankedD", { r: rk && typeof rk.r === "number" ? rk.r : 1000 }) : T("gmRankedSign"), off: !RANKED_ON || !signed, soon: !RANKED_ON },
   ];
   return (
@@ -8241,7 +8320,7 @@ function GameTab({ history, profile, setProfile, acct, onPlay }) {
       {!gp.tut && !saved && (
         <div data-gm-tut className="cardIn" style={{ ...card, ...tileR(), padding: "14px 16px", marginBottom: 12, border: `1.5px solid ${C.signal}`, display: "flex", alignItems: "center", gap: 12 }}>
           <IcoBox n="cap" size={46} />
-          <span style={{ flex: 1, minWidth: 0 }}><span style={{ display: "block", fontWeight: 800, fontSize: 15.5 }}>{T("gmTutT")}</span><span style={{ display: "block", fontSize: 12.5, color: C.dim, lineHeight: 1.4 }}>{T("gmTutD")}</span></span>
+          <span style={{ flex: 1, minWidth: 0, fontWeight: 800, fontSize: 15.5, lineHeight: 1.3 }}>{T("gmTutT")}</span>
           <button type="button" data-gm-tut-go onClick={() => { sfxTap(); startTut(); }} style={{ ...btnBase, padding: "10px 14px", borderRadius: 12, background: C.signal, color: C.signalInk, fontSize: 14, flexShrink: 0 }}>{T("gmTutGo")}</button>
         </div>
       )}
@@ -8253,7 +8332,7 @@ function GameTab({ history, profile, setProfile, acct, onPlay }) {
         <button type="button" data-gm-continue onClick={() => { sfxTap(); onPlay(saved); }} style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 12 }} className="b3d">{T("gmContinue")}</button>
       )}
       <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 12 }}>
-        {modes.map(m => (
+        {modes.filter(m => !m.soon).map(m => (
           <button key={m.id} type="button" data-gm-mode={m.id} data-soon={m.soon ? 1 : undefined} disabled={m.off || !!saved} onClick={() => { sfxTap(); setPick(m.id); }}
             style={{ ...btnBase, ...card, ...tileR(), textAlign: "left", color: C.chalk, padding: "14px 14px", display: "flex", alignItems: "center", gap: 12, opacity: m.off || saved ? 0.55 : 1, fontWeight: 400 }}>
             {m.soon ? <IcoBox n="lock" color={C.dim} size={44} /> : ICONS[m.icon] ? <IcoBox n={m.icon} color={C.signal} size={44} /> : <span aria-hidden="true" style={{ fontSize: 30, lineHeight: 1 }}>{m.icon}</span>}
@@ -8264,6 +8343,18 @@ function GameTab({ history, profile, setProfile, acct, onPlay }) {
             {!m.off && !saved && <Arrow />}
           </button>
         ))}
+        {/* 1.8.2 (less text): modes that aren't open yet are two small locked tiles side by side */}
+        {modes.some(m => m.soon) && <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+          {modes.filter(m => m.soon).map(m => (
+            <div key={m.id} data-gm-mode={m.id} data-soon={1} aria-disabled="true" style={{ ...card, ...tileR(), padding: "12px 12px", display: "flex", alignItems: "center", gap: 10, opacity: 0.6, minWidth: 0 }}>
+              <IcoBox n={m.icon} color={C.dim} size={38} />
+              <span style={{ minWidth: 0 }}>
+                <span style={{ display: "block", fontFamily: DISPLAY, fontSize: 17, fontWeight: 900, lineHeight: 1.1, color: C.chalk }}>{m.name}</span>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11.5, fontWeight: 800, color: C.dim, marginTop: 3 }}><IcoI n="lock" />{T("gmSoon").replace(/[.…]+$/, "")}</span>
+              </span>
+            </div>
+          ))}
+        </div>}
       </div>
       <Sect data-gm-deck title={<>{T("gmDeck")}<InfoQ title={T("gmDeck")} text={T("gmDeckD")} /></>} style={{ marginTop: 12 }}>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
@@ -8276,7 +8367,14 @@ function GameTab({ history, profile, setProfile, acct, onPlay }) {
               </span>
             </div>); })}
         </div>
-        <div style={{ fontSize: 12.5, color: C.dim, marginTop: 10, lineHeight: 1.45 }}>{T("gmPerksHave", { n: lo.perks.length, max: GM.PERK_IDS.length })}</div>
+        {/* 1.8.2: the perks as icons (lit = unlocked by training); a tap says what it does and how to get it */}
+        <div data-gm-perks aria-label={T("gmPerksHave", { n: lo.perks.length, max: GM.PERK_IDS.length })} style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
+          {GM.PERK_IDS.map(id => { const on = lo.perks.includes(id), pk = L.gm.perk[id]; return (
+            <button key={id} type="button" data-gm-perk-ico={id} data-on={on ? 1 : 0} aria-label={pk[0]} onClick={() => { sfxTap(); if (openInfoGlobal) openInfoGlobal({ title: pk[0], text: [withK(pk[1]), on ? null : pk[2]] }); }}
+              style={{ ...btnBase, width: 40, height: 40, padding: 0, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", background: on ? `${C.signal}22` : "transparent", boxShadow: `inset 0 0 0 1.5px ${on ? C.signal + "77" : C.line}`, color: on ? C.signal : C.dim, opacity: on ? 1 : 0.55 }}>
+              <Ico n={PERK_ICON[id]} size={20} />
+            </button>); })}
+        </div>
       </Sect>
       <button type="button" data-gm-rules onClick={() => { sfxTap(); setRules(true); }} style={{ ...ghostBtn, width: "100%", marginTop: 12, padding: "12px 14px", fontSize: 14, color: C.chalk }}>{T("gmRulesBtn")}</button>
       {/* 1.8.0 (Michael, Oct 25, 02:31): the Ranked leaderboard shows, locked like Ranked, until Ranked opens */}
@@ -8334,7 +8432,7 @@ function PerkSheet({ lo, mode, stakeMax = 0, onClose, onGo }) {
           return (
             <button key={id || "none"} type="button" data-gm-perk={id || "none"} disabled={!have} aria-pressed={on} onClick={() => { sfxTap(); setP(id); }}
               style={{ ...btnBase, textAlign: "left", fontWeight: 400, color: C.chalk, padding: "11px 12px", borderRadius: 14, display: "flex", gap: 10, alignItems: "center", background: on ? `${C.signal}22` : SOFT(), border: `1.5px solid ${on ? C.signal : C.line}`, opacity: have ? 1 : 0.5 }}>
-              <span aria-hidden="true" style={{ fontSize: 22, width: 26, textAlign: "center" }}>{id ? PERK_ICON[id] : "–"}</span>
+              <span aria-hidden="true" style={{ width: 26, display: "flex", justifyContent: "center" }}>{id ? <Ico n={PERK_ICON[id]} size={22} color={C.signal} /> : "–"}</span>
               <span style={{ flex: 1, minWidth: 0 }}>
                 <span style={{ display: "block", fontWeight: 800, fontSize: 14.5 }}>{t[0]}</span>
                 <span style={{ display: "block", fontSize: 12.5, color: C.dim, marginTop: 2, lineHeight: 1.4 }}>{have ? withK(t[1]) : <span style={{ display: "inline-flex", gap: 5, alignItems: "center" }}><Ico n="lock" size={13} />{t[2]}</span>}</span>
@@ -8349,11 +8447,11 @@ function PerkSheet({ lo, mode, stakeMax = 0, onClose, onGo }) {
           <div style={{ display: "flex", gap: 6 }}>
             {GM.STAKES.map((id, i) => (
               <button key={id} type="button" data-gm-stake={i} disabled={i > stakeMax} aria-pressed={k === i} aria-label={L.gm.stake[i][0]} onClick={() => { sfxTap(); setK(i); }}
-                style={{ ...btnBase, flex: 1, height: 42, borderRadius: 12, background: STAKE_COL[i], border: `2.5px solid ${k === i ? C.signal : "rgba(255,255,255,.18)"}`, boxShadow: k === i ? `0 0 0 2px ${C.signal}55` : "none", opacity: i > stakeMax ? 0.35 : 1, color: i === 0 || i === 4 ? "#222" : "#fff", fontSize: 15 }}>{i > stakeMax ? "🔒" : ""}</button>
+                style={{ ...btnBase, flex: 1, height: 42, borderRadius: 12, background: STAKE_COL[i], border: `2.5px solid ${k === i ? C.signal : "rgba(255,255,255,.18)"}`, boxShadow: k === i ? `0 0 0 2px ${C.signal}55` : "none", opacity: i > stakeMax ? 0.35 : 1, color: i === 0 || i === 4 ? "#222" : "#fff", fontSize: 15 }}>{i > stakeMax ? <span style={{ display: "inline-flex" }}><Ico n="lock" size={16} /></span> : ""}</button>
             ))}
           </div>
           <div data-gm-stake-d style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.45, marginTop: 8 }}><b style={{ color: C.chalk }}>{L.gm.stake[k][0]}</b> · {L.gm.stake[k][1]}{k ? ` · ${T("gmStakeXp", { n: Math.round((stakeXp(k) - 1) * 100) })}` : ""}</div>
-          {stakeMax < GM.STAKES.length - 1 && <div style={{ fontSize: 12, color: C.dim, marginTop: 4 }}>🔒 {T("gmStakeNext", { s: L.gm.stake[stakeMax][0] })}</div>}
+          {stakeMax < GM.STAKES.length - 1 && <div style={{ fontSize: 12, color: C.dim, marginTop: 4 }}><IcoI n="lock" /> {T("gmStakeNext", { s: L.gm.stake[stakeMax][0] })}</div>}
         </div>
       )}
       {mode === "ranked" && <div style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.5, marginTop: 12 }}>{T("gmRankedNote")}</div>}
@@ -8474,17 +8572,17 @@ function useTween(target, ms = 480) {
 }
 // An open pack: 3 choices that flip in one by one; pick one or skip (1.8.0, Michael: "more like Balatro").
 function PackOpen({ g, onMove }) {
-  const pk = g.pack, jp = pk.id === "jpack", full = jp && g.jokers.length >= GM.jokerSlots(g);
+  const pk = g.pack, jp = GM.isJokerPack(pk.id), full = jp && g.jokers.length >= GM.jokerSlots(g);
   return createPortal(
-    <div data-gm-pack-open={pk.id} style={{ position: "fixed", inset: 0, zIndex: 92, background: "rgba(4,7,16,.9)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 14, padding: "calc(var(--sat, 0px) + 20px) 16px calc(var(--sab, 0px) + 20px)", fontFamily: BODY, color: C.chalk }}>
-      <div className="gmPop" style={{ fontSize: 46 }} aria-hidden="true">{PACK_ICON[pk.id]}</div>
+    <div data-gm-pack-open={pk.id} style={{ position: "fixed", inset: 0, zIndex: 92, background: "rgba(4,7,16,.9)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "safe center", overflowY: "auto", gap: 14, padding: "calc(var(--sat, 0px) + 20px) 16px calc(var(--sab, 0px) + 20px)", fontFamily: BODY, color: C.chalk }}>
+      <div className="gmPop" aria-hidden="true"><Ico n={PACK_ICON[pk.id]} size={52} color={jp ? "#b78cff" : C.signal} sw={1.8} /></div>
       <div style={{ fontFamily: DISPLAY, fontSize: 28, fontWeight: 900 }}>{T("gmPackT")}</div>
       {full && <div style={{ fontSize: 13, color: C.signal, textAlign: "center", maxWidth: 360 }}>{T("gmPackFull")}</div>}
       <div style={{ display: "flex", flexDirection: "column", gap: 10, width: "min(100%, 420px)" }}>
         {pk.opts.map((o, i) => { const r = jp ? GM.JOKERS[o].r : 0, col = jp ? RAR_COL()[r] : C.signal; return (
           <button key={o} type="button" data-gm-pick={i} disabled={full} onClick={() => onMove({ t: "pick", i })} className={"gmFlipIn" + (jp && r === 3 ? " foil" : "")}
             style={{ ...btnBase, ...card, ...tileR(), position: "relative", overflow: "hidden", display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", textAlign: "left", color: C.chalk, fontWeight: 400, border: `2px solid ${col}`, animationDelay: `${0.15 + i * 0.16}s`, opacity: full ? 0.5 : 1 }}>
-            <span aria-hidden="true" style={{ width: 48, height: 48, flexShrink: 0, borderRadius: 12, background: `linear-gradient(160deg, ${col}44, ${C.panelHi})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26 }}>{jp ? (o.startsWith("fan_") ? <SuitIcon s={o.slice(4)} size={24} /> : JOKER_ICON[o] || "🃏") : "🏋️"}</span>
+            <span aria-hidden="true" style={{ width: 48, height: 48, flexShrink: 0, borderRadius: 12, background: `linear-gradient(160deg, ${col}44, ${C.panelHi})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26 }}>{jp ? <JkIco id={o} size={26} /> : <Ico n="dumbbell" size={26} color={col} />}</span>
             <span style={{ flex: 1, minWidth: 0 }}>
               <span style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", fontWeight: 800, fontSize: 15.5 }}>{jp ? jName(o) : T("gmDrill", { h: handName(o) })}{jp && <span style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: 0.4, textTransform: "uppercase", color: col, border: `1px solid ${col}88`, borderRadius: 99, padding: "1px 7px" }}>{T("gmRar" + r)}</span>}</span>
               <span style={{ display: "block", fontSize: 12.5, color: C.dim, lineHeight: 1.35, marginTop: 2 }}>{jp ? withK(jDesc(o)) : T("gmPackLv", { hand: handName(o), c: GM.HAND_UP[o][0], m: GM.HAND_UP[o][1] })}</span>
@@ -8499,8 +8597,10 @@ function PackOpen({ g, onMove }) {
 // A game being played (full screen). saved = {mode: run|duel|ranked|tut, opts, moves, bot?, opp?, r?}.
 function GameTable({ saved, history, onEnd, onQuit, onTutDone }) {
   const bests = useMemo(() => fairStats(history, { today: dateKey() }).bests, [history]);
-  const [moves, setMoves] = useState(saved.moves || []);
-  const [g, setG] = useState(() => { try { return GM.replay(saved.opts, saved.moves || []); } catch (_) { return GM.newGame(saved.opts); } });
+  // 1.8.2: a game saved under older rules goes on from the last move that still fits (never a crash or a lost Run)
+  const [init] = useState(() => { try { return GM.replayKeep(saved.opts, saved.moves || []); } catch (_) { return { st: GM.newGame(saved.opts), n: 0 }; } });
+  const [moves, setMoves] = useState((saved.moves || []).slice(0, init.n));
+  const [g, setG] = useState(init.st);
   const [sel, setSel] = useState([]);
   const [sortBy, setSortBy] = useState("v");
   const [anim, setAnim] = useState(null); // the hand being scored
@@ -8526,7 +8626,7 @@ function GameTable({ saved, history, onEnd, onQuit, onTutDone }) {
   const play = () => {
     if (!sel.length || anim || (tut && !(tstep.t === "play" && tutSel()))) return;
     const cards = sel.map(i => g.hand[i]), sc = GM.scoreOf(g, cards), next = doMove({ t: "play", c: sel.slice() });
-    const steps = sc.steps.filter(s => s.c !== undefined || s.j || s.p);
+    const steps = sc.steps.filter(s => s.c !== undefined || s.j || s.p || s.v);
     setAnim({ cards, sc, i: -1, chips: GM.HAND_BASE[sc.hand][0] + GM.HAND_UP[sc.hand][0] * ((g.levels || {})[sc.hand] || 0), mult: GM.HAND_BASE[sc.hand][1] + GM.HAND_UP[sc.hand][1] * ((g.levels || {})[sc.hand] || 0) });
     setSel([]);
     // one sound for the whole count (notes on the audio clock), the numbers follow on screen
@@ -8568,12 +8668,12 @@ function GameTable({ saved, history, onEnd, onQuit, onTutDone }) {
         <div data-gm-money style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, color: C.signal }} className={moneyT !== g.money ? "gmMoneyUp" : undefined}><KSign />{moneyT}</div>
       </div>
       <div style={{ height: 6, borderRadius: 99, background: C.panel, marginTop: 8, overflow: "hidden" }}><div style={{ width: `${pct}%`, height: "100%", background: pct >= 100 ? C.mint : C.signal, transition: `width ${MO.t3} ${MO.ease}` }} /></div>
-      {bossTxt && g.phase === "blind" && <div data-gm-boss={g.boss} style={{ marginTop: 8, fontSize: 12.5, color: "#ff9a9a", fontWeight: 700 }}>⚠ {bossTxt[1]}</div>}
+      {bossTxt && g.phase === "blind" && <div data-gm-boss={g.boss} style={{ marginTop: 8, fontSize: 12.5, color: "#ff9a9a", fontWeight: 700 }}><IcoI n="alert" /> {bossTxt[1]}</div>}
       {/* jokers */}
       <div data-gm-jokers style={{ display: "flex", gap: 6, marginTop: 10, overflowX: "auto", minHeight: 82, paddingBottom: 2 }}>
         {g.jokers.length ? g.jokers.map((j, k) => <JokerChip key={j.id + k} id={j.id} small glow={anim && anim.hit && anim.hit.j === j.id} onClick={() => { sfxTap(); setInfo(j.id); }} />)
           : <div style={{ fontSize: 12.5, color: C.dim, alignSelf: "center" }}>{T("gmNoJokers")}</div>}
-        {g.perk && <div data-gm-perk-chip={g.perk} title={L.gm.perk[g.perk][1].replace(/\$(\d+)/g, "$1 " + COIN)} style={{ alignSelf: "center", marginLeft: "auto", fontSize: 12, color: C.dim, whiteSpace: "nowrap" }}>{PERK_ICON[g.perk]}{g.jokers.length < 4 && <> {L.gm.perk[g.perk][0]}</>}</div>}
+        {g.perk && <div data-gm-perk-chip={g.perk} title={L.gm.perk[g.perk][1].replace(/\$(\d+)/g, "$1 " + COIN)} style={{ alignSelf: "center", marginLeft: "auto", fontSize: 12, color: C.dim, whiteSpace: "nowrap" }}><IcoI n={PERK_ICON[g.perk]} color={C.signal} />{g.jokers.length < 4 && <> {L.gm.perk[g.perk][0]}</>}</div>}
       </div>
       {tstep && !anim && <TutCoach key={ts} step={tstep} ready={tutSel() && sel.length > 0} onNext={nextTut} />}
       {g.phase === "blind" || anim ? (
@@ -8650,7 +8750,7 @@ function GameShop({ g, tut, onMove, onMoves, onInfo }) { // onInfo: your own jok
   return (
     <div data-gm-shop style={{ flex: 1, display: "flex", flexDirection: "column", gap: 12, marginTop: 6 }}>
       <div className="cardIn" style={{ ...card, ...tileR(), padding: "12px 14px", display: "flex", alignItems: "center", gap: 10 }}>
-        <span aria-hidden="true" style={{ fontSize: 26 }}>✅</span>
+        <span aria-hidden="true" style={{ display: "flex", color: C.mint }}><Ico n="check" size={28} /></span>
         <span style={{ flex: 1, fontWeight: 800 }}>{T("gmCleared")}</span>
         <span data-gm-pay style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, color: C.signal }}>+<KSign />{pay}</span>
       </div>
@@ -8667,7 +8767,7 @@ function GameShop({ g, tut, onMove, onMoves, onInfo }) { // onInfo: your own jok
           return (
             <div key={i} data-gm-item={it.k} data-gm-drill={it.k === "drill" ? it.id : undefined} data-gm-pack={pk ? it.id : undefined} data-joker-row={jk ? it.id : undefined} data-rarity={jk ? r : undefined} className={"cardIn" + (jk && r === 3 ? " foil" : "")} style={{ ...card, ...tileR(), position: "relative", overflow: "hidden", padding: "10px 12px", display: "flex", alignItems: "center", gap: 12, opacity: it.sold ? 0.4 : 1, borderColor: `${col}80`, animationDelay: `${i * 0.06}s` }}>
               <span aria-hidden="true" className={jk && r >= 2 && !it.sold ? "gmWobble" : undefined} style={{ width: 46, height: 46, flexShrink: 0, borderRadius: 12, background: `linear-gradient(160deg, ${col}40, ${C.panelHi})`, border: `1.5px solid ${col}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 25 }}>
-                {pk ? PACK_ICON[it.id] : !jk ? "🏋️" : it.id.startsWith("fan_") ? <SuitIcon s={it.id.slice(4)} size={24} /> : JOKER_ICON[it.id] || "🃏"}
+                {pk ? <Ico n={PACK_ICON[it.id]} size={26} color={col} /> : !jk ? <Ico n="dumbbell" size={26} color={col} /> : <JkIco id={it.id} size={26} />}
               </span>
               <span style={{ flex: 1, minWidth: 0 }}>
                 <span style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", fontWeight: 800, fontSize: 15, lineHeight: 1.2 }}>{jk ? jName(it.id) : pk ? (L.gm.pk || {})[it.id][0] : T("gmDrill", { h: handName(it.id) })}
@@ -8684,17 +8784,17 @@ function GameShop({ g, tut, onMove, onMoves, onInfo }) { // onInfo: your own jok
       {/* this ante's voucher: a ticket that lasts the whole Run */}
       {sh.items.filter(it => it.k === "voucher").map(it => { const i = sh.items.indexOf(it), v = (L.gm.v || {})[it.id] || [it.id, ""]; return (
         <div key={"v" + i} data-gm-voucher={it.id} className="cardIn" style={{ position: "relative", padding: "12px 14px", borderRadius: 16, border: "2px dashed #ffb02e", background: "linear-gradient(135deg, #ffb02e22, transparent 60%)", display: "flex", alignItems: "center", gap: 12, opacity: it.sold ? 0.45 : 1 }}>
-          <span aria-hidden="true" style={{ fontSize: 28 }}>{VOUCHER_ICON[it.id] || "🎫"}</span>
+          <span aria-hidden="true" style={{ display: "flex" }}><Ico n={VOUCHER_ICON[it.id] || "ticket"} size={30} color="#ffb02e" /></span>
           <span style={{ flex: 1, minWidth: 0 }}>
             <span style={{ display: "block", fontSize: 10.5, fontWeight: 800, letterSpacing: 0.8, textTransform: "uppercase", color: "#ffb02e" }}>{T("gmVoucher")}</span>
             <span style={{ display: "block", fontWeight: 800, fontSize: 15 }}>{v[0]}</span>
-            <span style={{ display: "block", fontSize: 12.5, color: C.dim, lineHeight: 1.35 }}>{withK(v[1])} <span style={{ opacity: 0.8 }}>· {T("gmVoucherD")}</span></span>
+            <span style={{ display: "block", fontSize: 12.5, color: C.dim, lineHeight: 1.35 }}>{withK(v[1])}</span>
           </span>
           <button type="button" data-gm-buy={i} disabled={it.sold || g.money < it.cost} onClick={() => onMove({ t: "buy", i })} style={{ ...btnBase, flexShrink: 0, minWidth: 64, padding: "8px 10px", borderRadius: 12, background: it.sold ? "transparent" : "#ffb02e", color: it.sold ? C.dim : "#1b1405", fontSize: 13, lineHeight: 1.15, opacity: !it.sold && g.money < it.cost ? 0.4 : 1 }}>
             {it.sold ? "✓" : <><span style={{ display: "block", fontFamily: DISPLAY, fontSize: 17, fontWeight: 900 }}><KSign />{it.cost}</span>{T("gmBuy")}</>}
           </button>
         </div>); })}
-      {g.vouchers && g.vouchers.length > 0 && <div data-gm-vouchers style={{ display: "flex", gap: 6, flexWrap: "wrap", fontSize: 12, color: C.dim }}>{g.vouchers.map(v => <span key={v} title={((L.gm.v || {})[v] || [v])[1]} style={{ padding: "3px 9px", borderRadius: 99, border: "1px dashed #ffb02e88" }}>{VOUCHER_ICON[v]} {((L.gm.v || {})[v] || [v])[0]}</span>)}</div>}
+      {g.vouchers && g.vouchers.length > 0 && <div data-gm-vouchers style={{ display: "flex", gap: 6, flexWrap: "wrap", fontSize: 12, color: C.dim }}>{g.vouchers.map(v => <span key={v} title={((L.gm.v || {})[v] || [v])[1]} style={{ padding: "3px 9px", borderRadius: 99, border: "1px dashed #ffb02e88" }}><IcoI n={VOUCHER_ICON[v] || "ticket"} color="#ffb02e" /> {((L.gm.v || {})[v] || [v])[0]}</span>)}</div>}
       {g.pack && <PackOpen g={g} onMove={onMove} />}
       {!tut && <button type="button" data-gm-reroll disabled={g.money < sh.rerollCost} onClick={() => onMove({ t: "reroll" })} style={{ ...ghostBtn, alignSelf: "flex-start", color: C.chalk, opacity: g.money < sh.rerollCost ? 0.5 : 1 }}>{withK(T("gmReroll", { n: sh.rerollCost }))}</button>}
       {g.jokers.length > 0 && (
@@ -8714,7 +8814,7 @@ function GameShop({ g, tut, onMove, onMoves, onInfo }) { // onInfo: your own jok
               return (
                 <button key={j.id} type="button" data-gm-swap-out={ji} disabled={!ok} onClick={() => { const i = swap; setSwap(null); onMoves([{ t: "sell", i: ji }, { t: "buy", i }]); }}
                   style={{ ...btnBase, ...card, ...tileR(), display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", textAlign: "left", color: C.chalk, fontWeight: 400, opacity: ok ? 1 : 0.45 }}>
-                  <span aria-hidden="true" style={{ width: 40, height: 40, flexShrink: 0, borderRadius: 11, background: C.panelHi, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>{j.id.startsWith("fan_") ? <SuitIcon s={j.id.slice(4)} size={20} /> : JOKER_ICON[j.id] || "🃏"}</span>
+                  <span aria-hidden="true" style={{ width: 40, height: 40, flexShrink: 0, borderRadius: 11, background: C.panelHi, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}><JkIco id={j.id} size={22} /></span>
                   <span style={{ flex: 1, minWidth: 0 }}><span style={{ display: "block", fontWeight: 800, fontSize: 15 }}>{jName(j.id)}</span><span style={{ display: "block", fontSize: 12.5, color: C.dim, lineHeight: 1.35 }}>{withK(jDesc(j.id))}</span></span>
                   <span style={{ fontWeight: 800, color: C.signal, whiteSpace: "nowrap" }}>+<KSign />{sellOf(j)}</span>
                 </button>
@@ -8736,7 +8836,7 @@ function GameEnd({ res, onClose, onAgain }) {
   return createPortal(
     <div data-gm-end={won ? "win" : draw ? "draw" : won === null ? "wait" : "lose"} style={{ position: "fixed", inset: 0, zIndex: 91, background: "rgba(4,7,16,.96)", color: C.chalk, fontFamily: BODY, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px 20px", textAlign: "center", gap: 10 }}>
       {won && <Confetti />}
-      <div aria-hidden="true" style={{ fontSize: 76, lineHeight: 1 }} className="gmPop">{won ? "🏆" : draw ? "🤝" : won === null ? "⏳" : "💪"}</div>
+      <div aria-hidden="true" style={{ display: "flex", justifyContent: "center", color: won ? C.signal : C.chalk }} className="gmPop"><Ico n={won ? "trophy" : draw ? "duo" : won === null ? "hourglass" : "bicep"} size={76} sw={1.6} /></div>
       <div style={{ fontFamily: DISPLAY, fontSize: 38, fontWeight: 900, lineHeight: 1 }}>{won === null ? T("gmWaitServer") : won ? (saved.mode === "run" ? T("gmWon") : T("gmWin")) : draw ? T("gmDraw") : saved.mode === "run" ? T("gmOver") : T("gmLose")}</div>
       <div style={{ fontSize: 15, color: C.dim }}>{T("gmResult", { n: me.cleared, t: nf(me.total) })}</div>
       {opp && <div data-gm-opp style={{ fontSize: 14.5, color: C.dim }}>{saved.mode === "duel" ? T("gmBotRes", { n: opp.lvl }) : opp.bot ? T("gmBotRes", { n: opp.bot }) : opp.nick}: {T("gmResult", { n: opp.cleared, t: nf(opp.total) })}</div>}
@@ -8812,6 +8912,7 @@ function tourSteps(ch, x) {
     s('[data-day-picker="hero"]', 2),
     s("[data-rounds-row]", 3),
     s("[data-home-week]", 4),
+    s("[data-home-ch]", 10, { opt: true }), // 1.8.2: the weekly challenges as rows with icons
     s('[data-home-tab="1"]', 5, { tap: true, opt: true }),
     s('[data-home-ex="0"]', 6, { opt: true }),
     s("[data-menu-btn]", 7, { tap: true, opt: true, prep: async () => { await tourTab("home", 0); await tourWait(150); window.scrollTo(0, 0); } }), // left out on a PC (side menu)
@@ -8837,6 +8938,7 @@ function tourSteps(ch, x) {
   if (ch === 4) return [
     s("[data-pf-hero]", 0, { prep: screen("profile", ["pf", 0]) }),
     s("[data-pf-edit]", 1, { opt: true }),
+    s("[data-pf-looks]", 8, { opt: true }), // 1.8.2: profile looks (frames, banners, titles, effects)
     s("[data-pf-showcase]", 2, { opt: true }),
     s('[data-pf-tab="2"]', 3, { tap: true, opt: true }),
     s("[data-pf-ranks]", 4, { opt: true }),
@@ -9051,7 +9153,7 @@ function Tour({ run, x, done, onStep, onEnd, onChapterDone, onStart }) {
             <span style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, lineHeight: 1.1, color: C.chalk }}>{doneNow >= TOUR_N ? T("tourAllDone") : T("tourChDone", { rank: RANKS[doneNow - 1].name })}</span>
           </div>
         )}
-        <div data-tour-text style={{ fontSize: 15, lineHeight: 1.5, marginTop: 8 }}>{step.t || ""}</div>
+        <div data-tour-text style={{ fontSize: 15, lineHeight: 1.5, marginTop: 8 }}>{emo(step.t || "")}</div>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 14 }}>
           {step.done && <button type="button" data-tour-again onClick={() => { sfxTap(); onStart(run.ch, run.queue); }} aria-label={T("tourAgainBtn")} style={{ ...btnBase, background: "transparent", color: C.signal, padding: "8px 2px", fontSize: 13, fontWeight: 800, display: "inline-flex", alignItems: "center", gap: 5 }}><svg width="15" height="15" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.4-5.7M4 4v5h5" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" /></svg>{T("tourAgainBtn")}</button>}
           {(!step.done || nxt) && <button key={"sk" + nudge} type="button" data-tour-skip className={nudge ? "gmShake" : undefined} onClick={() => { sfxTap(); onEnd(!step.done); }} style={{ ...btnBase, background: "transparent", color: C.dim, padding: "8px 2px", fontSize: 13, fontWeight: 700 }}>{step.done ? T("tourLater") : T("tourSkip")}</button>}
@@ -9084,7 +9186,7 @@ function TourSheet({ done, ui, onStart, on3, onClose, onRestart }) {
               <span aria-hidden="true" style={{ width: 30, height: 30, borderRadius: 99, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 14, background: ok ? C.mint : "transparent", color: ok ? C.ink : C.dim, border: `2px solid ${ok ? C.mint : C.line}` }}>{ok ? "✓" : ch}</span>
               <span style={{ flex: 1, minWidth: 0 }}>
                 <span style={{ display: "block", fontSize: 15, fontWeight: 800 }}>{name}</span>
-                <span style={{ display: "block", fontSize: 12, color: w3 && !ok && ui.tour3 ? C.signal : C.dim, marginTop: 2, lineHeight: 1.4 }}>{w3 ? (ok ? T("tourCh3Done") : ui.tour3 ? T("tourCh3On") : T("tourCh3")) : ok ? T("tourAgain") : T("tourStartCh")}</span>
+                <span style={{ display: "block", fontSize: 12, color: w3 && !ok && ui.tour3 ? C.signal : C.dim, marginTop: 2, lineHeight: 1.4 }}>{w3 ? (ok ? T("tourCh3Done") : ui.tour3 ? emo(T("tourCh3On")) : T("tourCh3")) : ok ? T("tourAgain") : T("tourStartCh")}</span>
               </span>
               <Arrow />
             </button>
@@ -9138,7 +9240,7 @@ function ConfirmBox({ icon, title, text, yes, danger, onYes, onNo, yesData }) {
         style={{ ...box, width: "min(100%, 360px)", boxSizing: "border-box", padding: "22px 18px 18px", textAlign: "center", opacity: on ? 1 : 0, transform: on ? "scale(1)" : "scale(.92)", transition: `opacity ${MO.t1}, transform ${MO.t3} ${MO.pop}` }}>
         <div style={{ display: "flex", justifyContent: "center" }}><BadgeIco n={icon} col={col} size={56} /></div>
         <div data-confirm-title style={{ fontFamily: DISPLAY, fontWeight: 900, fontSize: CJK.test(title) ? 24 : 28, lineHeight: 1.05, color: C.chalk, marginTop: 14, overflowWrap: "anywhere" }}>{title}</div>
-        {text && <div data-confirm-text style={{ fontSize: 14, color: C.dim, marginTop: 10, lineHeight: 1.5 }}>{text}</div>}
+        {text && <div data-confirm-text style={{ fontSize: 14, color: C.dim, marginTop: 10, lineHeight: 1.5 }}>{emo(text)}</div>}
         <div style={{ display: "flex", gap: 8, alignItems: "stretch", marginTop: 18 }}>
           <button type="button" data-confirm-no onClick={() => { sfxTap(); onNo(); }} style={{ ...btnBase, flex: 1, padding: "12px 12px", borderRadius: 14, ...SUNK(), color: C.chalk, fontSize: 14.5, fontWeight: 800 }}>{T("cancel")}</button>
           <button type="button" data-confirm-yes {...(yesData || {})} onClick={() => { sfxTap(); onYes(); }} className="b3d" style={{ ...(danger ? bigBtn("#d64545", "#fff") : bigBtn(C.signal, C.signalInk)), ...(danger ? { "--e": "#8a1f1f" } : {}), flex: 1, minWidth: 0, fontSize: 14.5, padding: "12px 10px", borderRadius: 14 }}>{yes}</button>
@@ -9207,7 +9309,7 @@ function ClaimRow({ it, onOpen }) {
         <span style={{ display: "block", fontSize: 14, fontWeight: 800, lineHeight: 1.2 }}>{it.kind === "ach" ? it.name : EX[it.k] ? EX[it.k].name : it.name}</span>
         <span className="revTap" style={{ display: "block", fontSize: 12, fontWeight: 800, color: col, marginTop: 3 }}>{T("claimTap")}</span>
       </span>
-      <span aria-hidden="true" style={{ fontSize: 22, flexShrink: 0 }}>🎁</span>
+      <span aria-hidden="true" style={{ display: "flex", flexShrink: 0, color: C.signal }}><Ico n="gift" size={24} /></span>
     </button>
   );
 }
@@ -9403,10 +9505,10 @@ function Summary({ entry, xpBefore = 0, xpGained, newCh = [], newAch = [], histo
       {celeb ? <StreakCelebration n={streakInfo(history.some(e => e.ts === entry.ts) ? history : [...history, entry], entry.date).n} history={history} entry={entry} onDone={() => setCeleb(false)} />
         : revOn ? <RewardReveal items={rev} onDone={() => { setRevOn(false); if (onClaim) onClaim(rev); }} /> : <Confetti />}
       <div className="pop" style={{ display: "inline-block", transformOrigin: "left center", fontFamily: DISPLAY, fontSize: 60, fontWeight: 900, lineHeight: 0.95, color: C.mint }}>{T("great")}</div>
-      <div style={{ fontSize: 16, color: C.chalk, marginTop: 8, fontWeight: 600, lineHeight: 1.4 }}>{finishLine}</div>
+      <div style={{ fontSize: 16, color: C.chalk, marginTop: 8, fontWeight: 600, lineHeight: 1.4 }}>{emo(finishLine)}</div>
       <div style={{ fontSize: 13, color: C.dim, marginTop: 4 }}>{T("dayDate", { d: entry.day, date: fmtDate(entry.date, true) })}</div>
-      {(() => { const s = kcalNow(history.concat(history.some(e => e.ts === entry.ts) ? [] : [entry])); return s ? <div data-sum-kcal style={{ fontSize: 13, color: s.hit ? KC_HIT : C.sky, marginTop: 6, fontWeight: 700 }}>🥗 {s.left > 0 ? T("kcAfterWorkout", { n: nf(s.left) }) : T("kcAfterWorkoutDone")}</div> : null; })()}
-      {entry.dur > 0 && <div data-total-time style={{ fontSize: 14, color: C.chalk, fontWeight: 700, marginTop: 6 }}>⏱ {T("totalTime", { t: fmtDur(entry.dur) })}</div>}
+      {(() => { const s = kcalNow(history.concat(history.some(e => e.ts === entry.ts) ? [] : [entry])); return s ? <div data-sum-kcal style={{ fontSize: 13, color: s.hit ? KC_HIT : C.sky, marginTop: 6, fontWeight: 700 }}><IcoI n="plate" /> {s.left > 0 ? T("kcAfterWorkout", { n: nf(s.left) }) : T("kcAfterWorkoutDone")}</div> : null; })()}
+      {entry.dur > 0 && <div data-total-time style={{ fontSize: 14, color: C.chalk, fontWeight: 700, marginTop: 6 }}><IcoI n="timer" /> {T("totalTime", { t: fmtDur(entry.dur) })}</div>}
       <div style={{ marginTop: 16, background: C.panel, border: `1px solid ${C.line}`, borderRadius: 18, padding: "14px 16px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 10 }}>
           <div style={{ fontFamily: DISPLAY, fontSize: 44, fontWeight: 900, lineHeight: 1, color: C.sky }}>+{shown} XP{EC.boosted(entry.ts, META.boosts) && <span data-sum-boost className="pop" style={{ display: "inline-flex", alignItems: "center", gap: 3, verticalAlign: "middle", marginLeft: 8, fontFamily: BODY, fontSize: 13, fontWeight: 900, color: C.signalInk, background: C.signal, borderRadius: 99, padding: "3px 9px 3px 6px" }}><Ico n="boost" size={14} sw={2.4} />2×</span>}</div>
@@ -9417,7 +9519,7 @@ function Summary({ entry, xpBefore = 0, xpGained, newCh = [], newAch = [], histo
         </div>
         <div style={{ fontSize: 13, color: C.dim, marginTop: 8 }}>{T("levelLine", { lvl: lvNow.lvl, into: lvNow.into, need: lvNow.need, streak: TP("workouts", st.n) })}</div>
         {leveledUp && shown === gained && (
-          <div className="pop" style={{ display: "table", marginTop: 10, fontFamily: DISPLAY, fontSize: 28, fontWeight: 900, color: C.signal, transformOrigin: "left center" }}>{T("levelUp", { lvl: lvNow.lvl })}</div>
+          <div className="pop" style={{ display: "table", marginTop: 10, fontFamily: DISPLAY, fontSize: 28, fontWeight: 900, color: C.signal, transformOrigin: "left center" }}>{emo(T("levelUp", { lvl: lvNow.lvl }))}</div>
         )}
       </div>
       {newCh.length > 0 && (

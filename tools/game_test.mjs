@@ -93,7 +93,7 @@ console.log("new jokers (1.8.0, Oct 25)");
   if (pi >= 0) { const pj = o.hand.findIndex((x, k) => k !== pi && G.valueOf(x) === G.valueOf(o.hand[pi])); o = G.act(o, { t: "play", c: [pi, pj] }); ok(o.jokers[0].v === 1, "overload grows by 1 after a hand with a pair"); }
   const t = G.newGame({ seed: "j4", mode: "run", suit: {}, deck: [C("push", 13), C("pull", 13), C("legs", 4)] });
   ok(t.hand[0] === C("push", 13) && t.hand[1] === C("pull", 13) && t.hand[2] === C("legs", 4) && new Set(t.hand).size === 8, "tutorial deck: the given cards come first");
-  ok(G.JOKER_IDS.length === 38, "38 jokers (22 + 13 new + 3 legendary)");
+  ok(G.JOKER_IDS.length === 62, `62 jokers (38 + 24 new in 1.8.2) (${G.JOKER_IDS.length})`);
 }
 console.log("vouchers, packs, legendary jokers (1.8.0, Oct 25, 02:17)");
 {
@@ -127,9 +127,55 @@ console.log("vouchers, packs, legendary jokers (1.8.0, Oct 25, 02:17)");
   let c = G.newGame({ seed: "j3", mode: "run", suit: {} }); c.jokers = [{ id: "coach", cost: 15 }];
   const h0 = G.handOf([c.hand[0]]).hand; c = G.act(c, { t: "play", c: [0] });
   ok(c.levels[h0] === 1, "coach: the played hand went up a level");
-  ok(G.JOKER_IDS.filter(j => G.JOKERS[j].r === 3).length === 3, "3 legendary jokers");
+  ok(G.JOKER_IDS.filter(j => G.JOKERS[j].r === 3).length === 4, "4 legendary jokers");
   let tt = G.newGame({ seed: "tutorial", mode: "run", suit: {}, tut: 1, deck: G.TUT_DECK });
   ok(tt.target === 400 && tt.hand.join() === G.TUT_DECK.slice(0, 8).join(), "tutorial: target 400, the fixed first hand");
+}
+console.log("1.8.2: more jokers, vouchers and packs; easier targets; saved games survive new rules");
+{
+  const base = G.newGame({ seed: "n1", mode: "run", suit: { push: -1, pull: -1, legs: -1, core: -1 } });
+  const S = (jokers, extra = {}) => ({ ...base, jokers: jokers.map(id => (typeof id === "string" ? { id, cost: 5 } : id)), ...extra });
+  const pair = [C("push", 5), C("pull", 5)], full = [C("push", 5), C("pull", 5), C("legs", 5), C("core", 9), C("push", 9)];
+  const sc = (j, cards, extra) => G.scoreOf(S(j, extra), cards);
+  const p0 = sc([], pair);
+  ok(sc(["reps"], pair).chips === p0.chips + 12, "reps: +6 chips per scored card");
+  ok(sc(["tempo"], pair).mult === p0.mult + 4, "tempo: +2 mult per played card");
+  ok(sc(["buddy"], pair).chips === p0.chips + 40, "buddy: +40 chips with a pair");
+  ok(sc(["heavy"], [C("push", 12), C("pull", 12)]).mult === p0.mult + 6 && sc(["heavy"], pair).mult === p0.mult, "heavy: +3 mult per scored 10+ only");
+  ok(sc(["light"], pair).mult === p0.mult + 6, "light: +3 mult per scored 2–5");
+  ok(sc(["patience"], pair, { discardsLeft: 3 }).mult === p0.mult + 12, "patience: +4 mult per discard left");
+  ok(sc(["pace"], pair, { handsLeft: 4 }).mult === p0.mult + 12, "pace: +3 mult per hand left");
+  ok(sc(["gold"], pair, { money: 17 }).mult === p0.mult + 3, "gold: +1 mult per $5");
+  ok(sc(["burner"], pair, { discardsLeft: 0 }).mult === p0.mult * 2 && sc(["burner"], pair, { discardsLeft: 1 }).mult === p0.mult, "burner: × 2 only with no discards left");
+  const fh = sc([], full);
+  ok(fh.hand === "full" && sc(["fullx"], full).mult === fh.mult * 2.5, "fullx: × 2.5 with a full house");
+  ok(sc(["twin"], pair).mult === p0.mult * 1.5, "twin: × 1.5 with a pair");
+  ok(sc(["joker", "chips", "team"], pair).mult === Math.round((p0.mult + 4) * 1.4 * 100) / 100, "team: × 1.4 with two other jokers");
+  ok(sc(["goat"], pair).mult === p0.mult * 3, "goat: × 3");
+  ok(sc(["ironpush"], pair).mult === Math.round(p0.mult * 1.2 * 100) / 100, "ironpush: × 1.2 per scored push card");
+  ok(sc([], pair, { vouchers: ["routine"], bp: 0 }).mult === p0.mult + 10 && sc([], pair, { vouchers: ["routine"], bp: 1 }).mult === p0.mult, "routine: +10 mult on the first hand only");
+  let vb = G.newGame({ seed: "n2", mode: "run", suit: {} }); vb.jokers = [{ id: "vblock", cost: 6 }];
+  vb = G.act(vb, { t: "play", c: [0] }); ok(vb.jokers[0].v === 6, "vblock grows by 6 chips after a hand");
+  ok(G.targetOf(0, 0, null, 0, ["deload"]) === Math.round(G.ANTE_BASE[0] * 0.85) && G.targetOf(0, 2, "few", 0, ["bossscout"]) === Math.round(G.ANTE_BASE[0] * 2 * 0.75), "deload −15 %, bossscout −25 % on boss blinds");
+  let g = G.newGame({ seed: "v1", mode: "run", suit: { push: 8, pull: 8, legs: 8, core: 8 }, perk: "obsidian" });
+  while (g.phase === "blind") g = G.act(g, G.botMove(g, 10));
+  g = { ...g, money: 200 };
+  const pi = g.shop.items.findIndex(x => x.k === "pack");
+  const withPack = (id, extra = {}) => G.act({ ...g, ...extra, shop: { ...g.shop, items: g.shop.items.map((x, i) => (i === pi ? { ...x, id } : x)) } }, { t: "buy", i: pi });
+  ok(withPack("jmega").pack.opts.length === 5 && withPack("dmega").pack.opts.length === 5, "big packs show 5 choices");
+  const rp = withPack("rpack"); ok(rp.pack.opts.length === 2 && rp.pack.opts.every(j => G.JOKERS[j].r >= 2), "rare pack: 2 jokers, rare or better");
+  ok(withPack("jpack", { vouchers: ["packplus"] }).pack.opts.length === 4, "packplus: one more choice");
+  const dm = withPack("dpack", { vouchers: ["drillmaster"] }); ok(G.act(dm, { t: "pick", i: 0 }).levels[dm.pack.opts[0]] === (g.levels[dm.pack.opts[0]] || 0) + 2, "drillmaster: a drill levels up twice");
+  ok(G.isJokerPack("jmega") && G.isJokerPack("rpack") && !G.isJokerPack("dmega"), "joker packs: jpack, jmega, rpack");
+  let sh = G.newGame({ seed: "v1", mode: "run", suit: { push: 8, pull: 8, legs: 8, core: 8 }, perk: "obsidian" }); sh.vouchers = ["shelf"];
+  while (sh.phase === "blind") sh = G.act(sh, G.botMove(sh, 10));
+  ok(sh.shop.items.filter(x => x.k === "pack").length === 2, "shelf: two packs in the shop");
+  const opts = { seed: "keep", mode: "run", suit: { push: 3, pull: 3, legs: 3, core: 3 } };
+  const { moves } = G.botGame(opts, 10, 40);
+  const bad = [...moves.slice(0, 20), { t: "buy", i: 99 }, ...moves.slice(20)];
+  const k = G.replayKeep(opts, bad);
+  ok(k.n === 20 && (k.st.phase === "blind" || k.st.phase === "shop"), `replayKeep stops before a move that no longer fits (${k.n})`);
+  ok(G.VOUCHER_IDS.length === 16 && Object.keys(G.PACKS).length === 5, "16 vouchers, 5 packs");
 }
 const weak = wr(3, { push: -1, pull: -1, legs: -1, core: -1 }), strong = wr(10, { push: 6, pull: 6, legs: 6, core: 6 });
 console.log(`   run: blinds cleared on average: weak bot, no training ${weak.toFixed(1)}; strong bot, Emerald ${strong.toFixed(1)} (of 24)`);
