@@ -228,6 +228,8 @@
     "ui.soon",
     "ui.startN",
     "ui.startWd",
+    "ui.statFz",
+    "ui.statRest",
     "ui.tabPlans",
     "ui.wScoreD",
     "ui.wScoreT"

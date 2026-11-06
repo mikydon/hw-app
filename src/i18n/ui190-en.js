@@ -142,3 +142,7 @@ Object.assign(UI, {
   menuOrderD: "Drag ≡ to move. The first one is where the app opens.",
   menuStart: "Opens here",
 });
+Object.assign(UI, {
+  statRest: "Rest days used",
+  statFz: "Freezes used",
+});

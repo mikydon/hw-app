@@ -519,16 +519,19 @@ function streakInfo(history, today) {
 // Completing all 3 also earns a 🧊 streak freeze. XP is derived from history.
 function weekKey(k) { const d = parseKey(k); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return dateKey(d); }
 function sumReps(w, ids) { return w.reduce((a, e) => a + e.items.filter(it => !ids || ids.includes(it.id)).reduce((b, it) => b + it.res.reduce((c, v) => c + (typeof v === "number" ? v : 0), 0), 0), 0); }
+const PUSH_REPS = Object.keys(LIB).filter(id => LIB[id].t === "push" && ["r", "w", "a"].includes(LIB[id].k));
+const LEGS_REPS = Object.keys(LIB).filter(id => LIB[id].t === "legs" && ["r", "w", "a"].includes(LIB[id].k));
 const CH_BASE = { id: "w3", icon: "calendar", goal: 3, xp: 50, val: w => w.length };
 const CH_POOL = [
   { id: "pr1", icon: "trophy", goal: 1, xp: 40, val: w => w.reduce((a, e) => a + ((e.prs && e.prs.length) || 0), 0) },
-  { id: "r3", icon: "layers", goal: 1, xp: 40, val: w => w.filter(e => e.rounds === 3).length },
+  // 1.9.0: an own plan's workout counts when every exercise had 3+ sets
+  { id: "r3", icon: "layers", goal: 1, xp: 40, val: w => w.filter(e => e.rounds === 3 || (!e.day && e.items.length > 0 && e.items.every(it => it.res.filter(v => v !== null && v !== undefined).length >= 3))).length },
   { id: "warm", icon: "flame", goal: 2, xp: 30, val: w => w.filter(e => e.warm).length },
   { id: "cool", icon: "lotus", goal: 2, xp: 30, val: w => w.filter(e => e.cool).length },
-  { id: "push100", icon: "pushup", goal: 100, xp: 50, val: w => sumReps(w, ["k1", "k3", "r1", "kKnee", "kIncl", "r1e", "k3e"]) },
+  { id: "push100", icon: "pushup", goal: 100, xp: 50, val: w => sumReps(w, PUSH_REPS) }, // 1.9.0: every push exercise counted in reps
   { id: "rank", icon: "medal", goal: 1, xp: 60, val: w => w.reduce((a, e) => a + ((e.rankUps && e.rankUps.filter(ru => !ru.u || ru.to > 0).length) || 0), 0) },
   { id: "reps300", icon: "trend", goal: 300, xp: 40, val: w => sumReps(w, null) },
-  { id: "legs100", icon: "squat", goal: 100, xp: 40, val: w => sumReps(w, ["n1", "n2", "n7", "lunge", "bridge", "sbridge", "n1q"]) },
+  { id: "legs100", icon: "squat", goal: 100, xp: 40, val: w => sumReps(w, LEGS_REPS) },
 ];
 function challengesFor(wk) {
   const seed = Math.round(parseKey(wk).getTime() / 604800000);
@@ -1475,6 +1478,12 @@ function fileToAvatar(file) {
 }
 // Best set for an exercise up to and including session index i (rank "at that time").
 function bestUntil(history, id, i) { return bestFor(history.slice(0, i + 1), id); }
+// 1.9.0: rest days that kept a streak going (a 2-day gap between workouts = 1 rest day; frozen days are not rest days)
+function restDaysUsed(history) {
+  const fz = new Set(META.freezeDays || []), d = [...new Set([...history.map(h => h.date), ...fz])].sort();
+  let n = 0; for (let i = 1; i < d.length; i++) if (daysBetween(d[i - 1], d[i]) === 2) n++;
+  return n;
+}
 function bestStreak(history) {
   const dates = [...new Set(history.map(h => h.date))].sort();
   let best = dates.length ? 1 : 0, run = 1;
@@ -5081,7 +5090,8 @@ function HistoryTab({ history, onDelete, onSaveEntry, editDate, onEditOpened }) 
 // Showcase fields unlock at these levels (Michael: the 1st right away, then 5, 15, 30, 60, then doubling; rare and cool).
 const SLOT_LV = [1, 5, 15, 30, 60, 120, 240, 480, 960, 1920];
 const slotsFor = lvl => SLOT_LV.filter(l => lvl >= l).length;
-const PF_STATS = ["n", "reps", "min", "best", "prs", "xp", "since"];
+// 1.9.0: rest days that kept the streak and freezes used (own profile only: cards don't carry them)
+const PF_STATS = ["n", "reps", "min", "best", "prs", "xp", "rest", "fz", "since"];
 const SLOT_KINDS = ["rk", "rk3", "ach", "ach3", "st"];
 // the level badge's colour follows the rank colours: Wood under 5, Iron 5+, Bronze 10+, Silver 20+, Gold 30+,
 // Platinum 50+, Diamond 80+
@@ -5096,6 +5106,7 @@ function ownModel(history, profile, kcal) {
     streak: streakInfo(history, dateKey()).n, best: bestStreak(history), n: history.length, reps: totalReps(history),
     min: Math.floor(history.reduce((a, e) => a + (e.dur || 0), 0) / 60), prs: history.reduce((a, e) => a + ((e.prs && e.prs.length) || 0), 0),
     since: history.length ? history.map(e => e.date).sort()[0] : null,
+    rest: restDaysUsed(history), fz: (profile.freezeDays || []).length,
     ach: achievements(history, achExtra(profile, kcal, history)), rk, show: Array.isArray(profile.show) ? profile.show : [],
     look: lookOn(profile), // 1.9.0: frame, banner, title, name effect
   };
@@ -5148,9 +5159,9 @@ function showcase(m) {
   return out;
 }
 const fmtStat = (m, k) => (k === "min" ? fmtMins(m.min) : k === "since" ? (m.since ? fmtDate(m.since, true) : "") : <CountUp n={m[k] || 0} />);
-const STAT_UI = { n: ["statTrainings", "dumbbell"], reps: ["statReps", "bars"], min: ["pvTime", "timer"], best: ["statBestStreak", "flame"], prs: ["tilePRs", "trend"], xp: ["pfXpTotal", "bolt"], since: ["pfSinceL", "calendar"] };
+const STAT_UI = { rest: ["statRest", "moon"], fz: ["statFz", "snow"], n: ["statTrainings", "dumbbell"], reps: ["statReps", "bars"], min: ["pvTime", "timer"], best: ["statBestStreak", "flame"], prs: ["tilePRs", "trend"], xp: ["pfXpTotal", "bolt"], since: ["pfSinceL", "calendar"] };
 // 1.8.2: each stat's icon has its own colour
-const STAT_COL = () => ({ n: C.signal, reps: C.sky, min: "#ffa94d", best: "#ff8a4c", prs: C.mint, xp: C.sky, since: "#c3a6ff", sets: C.sky, trainings: C.signal });
+const STAT_COL = () => ({ rest: C.sky, fz: "#7fd6ff", n: C.signal, reps: C.sky, min: "#ffa94d", best: "#ff8a4c", prs: C.mint, xp: C.sky, since: "#c3a6ff", sets: C.sky, trainings: C.signal });
 const rankUnit = id => (EX[id].type === "time" ? " s" : "");
 
 // One showcase field. Others (and you, outside edit) tap it to see the whole list on the page below.
@@ -5443,7 +5454,7 @@ function RanksList({ m, onPick, focus, claim }) {
   );
 }
 function StatsGrid({ m }) {
-  const ks = PF_STATS.filter(k => k !== "since" || m.since);
+  const ks = PF_STATS.filter(k => (k !== "since" || m.since) && m[k] !== undefined && m[k] !== null);
   return (
     <div data-pf-stats style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
       {ks.map((k, i) => <div key={k} style={{ display: "grid", gridColumn: ks.length % 2 && i === ks.length - 1 ? "1 / -1" : undefined }}><StatTile compact data={"pf-" + k} label={T(STAT_UI[k][0])} icon={STAT_UI[k][1]} icoCol={STAT_COL()[k]} value={fmtStat(m, k)} color={k === "best" ? "#ffa94d" : k === "xp" ? C.sky : undefined} /></div>)}
