@@ -1227,7 +1227,7 @@ export default {
       lvl: "Dekatkan kaki ke kusen dan condongkan badan lebih jauh ke belakang.",
     },
     n1: {
-      name: "ATG squat",
+      name: "Squat dalam",
       muscles: "Paha depan, bokong",
       tempo: "3 dtk turun, 1 dtk jeda di bawah, naik",
       how: "Kaki selebar bahu, ujung jari kaki sedikit mengarah keluar. Turunkan badan selama 3 detik sedalam mungkin, paha di bawah lutut, tumit tetap di lantai. Tahan 1 detik di bawah lalu berdiri.",

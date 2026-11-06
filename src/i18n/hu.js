@@ -1227,7 +1227,7 @@ export default {
       lvl: "Tedd a lábad közelebb a kerethez, és dőlj hátrébb.",
     },
     n1: {
-      name: "ATG guggolás",
+      name: "Mélyguggolás",
       muscles: "Elülső comb, farizom",
       tempo: "3 mp le, 1 mp szünet lent, fel",
       how: "Lábak vállszélességben, lábujjak kicsit kifelé. 3 másodperc alatt ereszkedj le olyan mélyre, amennyire tudsz: a combod a térded alá kerül, a sarkad a padlón marad. Lent tartsd meg 1 másodpercig, majd állj fel.",
@@ -1235,7 +1235,7 @@ export default {
       lvl: "Cseréld le 1 és 1/4 guggolásra (⇄ Csere).",
     },
     b5: {
-      name: "Plank (alkartámasz)",
+      name: "Plank",
       muscles: "Teljes törzs",
       how: "Az alkarod a vállad alatt, a tested egyenes a fejedtől a sarkadig. Feszítsd meg a hasad és a farizmod, mintha valaki mindjárt gyomron vágna. Ne engedd, hogy a csípőd megemelkedjen vagy belógjon.",
       tip: "Ha mindkét körben megvan a 60 mp, cseréld le Plankre felemelt lábbal. Sokkal nehezebb.",

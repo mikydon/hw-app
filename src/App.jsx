@@ -5,6 +5,8 @@ import { cloud, NICK_RE, SHARE_BASE, cleanCode, fmtCode } from "./cloud-lazy.js"
 import { QUICK as EMO_QUICK, EMOJI } from "./emoji.js";
 import { mergeAll, syncKey, withIds, entryId, stable, SYNC_SETTINGS, kcalShared } from "./sync.js";
 import { RANK_AT, EX_GROUPS } from "./ranks.js";
+import { LIB, W_RANK, wScore, wRankIndex, MUSCLES, GROUPS_ORDER, EQUIP_ORDER } from "./exlib.js";
+import { EX_NAMES } from "./exnames.js";
 import * as GM from "./game/engine.js";
 import { fairStats } from "./fair.js";
 import EN from "./i18n/en.js";
@@ -327,6 +329,15 @@ Object.assign(EX, {
     diff: "mid", tag: "similar", type: "reps", start: 10, unit: "",
   },
 });
+// 1.9.0: every exercise of the library (src/exlib.js) is in EX too. The 27 above keep their figures and settings;
+// the new ones get type "reps" | "time" | "kg" (kg × reps, also assisted machines) | "carry" (kg × seconds).
+const KIND_TYPE = { r: "reps", e: "reps", t: "time", w: "kg", a: "kg", c: "carry" };
+Object.entries(LIB).forEach(([id, x]) => {
+  if (EX[id]) { EX[id].lib = x; return; }
+  EX[id] = { diff: x.d, type: KIND_TYPE[x.k], unit: x.u, start: 0, lib: x, ...(x.durs ? { durs: x.durs, dur: x.dur } : {}) };
+});
+// The 27 exercises from before 1.9.0 (they have figures; the "allex" badge counts only these).
+const OLD_IDS = Object.keys(LIB).filter(id => LIB[id].fig);
 const ALT_GROUPS = EX_GROUPS; // push, pull, legs, core (ranks.js since 1.8.0: the card game uses them too)
 // Same order as ALT_GROUPS; names come from the locale (grp_push…).
 const GROUP_KEYS = ["push", "pull", "legs", "core"];
@@ -1076,7 +1087,12 @@ function applyTheme(id, accent) {
 // Copies the current language's texts into the data objects (like applyTheme does for colours).
 function applyLang(code) {
   if (!setLang(code) && EX.k1.name) return;
-  Object.keys(EX).forEach(id => Object.assign(EX[id], L.ex[id]));
+  Object.keys(EX).forEach(id => {
+    Object.assign(EX[id], L.ex[id]);
+    // 1.9.0: names and aliases from the exercise library (official wording in every language)
+    const nm = (EX_NAMES[LANG] || {})[id] || EX_NAMES.en[id];
+    if (nm) { EX[id].name = nm[0]; EX[id].aka = nm.slice(1); }
+  });
   WARMUP.forEach(w => Object.assign(w, L.warm[w.id]));
   COOL.forEach(c => Object.assign(c, L.cool[c.id]));
   Object.keys(FIGS).forEach(id => FIGS[id].forEach((p, i) => { p.label = (L.fig[id] || [])[i] || ""; }));
@@ -1227,6 +1243,80 @@ function HowTo({ id, history, onClose, onSwap }) {
       {onSwap && ex.swapTip && <button onClick={onSwap} style={{ ...ghostBtn, marginTop: 10, padding: "10px 14px", color: C.sky, borderColor: `${C.sky}88` }}>{T("swap")}</button>}
       <button data-search-howto onClick={() => { sfxTap(); searchHowTo(ex.name); }} className="b3d" style={{ ...bigBtn(C.panelHi, C.chalk), marginTop: 16, fontSize: 14, padding: 14 }}>{emo(T("searchWeb"))}</button>
     </Sheet>
+  );
+}
+
+// ─── EXERCISE LIST (1.9.0) ───────────────────────────────────────────────────
+// All library exercises by body-part group (each only in its main group) with an equipment filter (no equipment /
+// free weights / machines, remembered on this device) and a search that also matches other names (aliases) and
+// shows which one matched, so people learn the app's name. Tap a row = how-to; with onPick a button adds it.
+const EXEQ_KEY = "domaci-trening-v1-exeq";
+const exEqLoad = () => { try { const v = JSON.parse(localStorage.getItem(EXEQ_KEY) || "null"); if (Array.isArray(v) && v.length) return v.filter(x => EQUIP_ORDER.includes(x)); } catch (_) {} return ["none"]; };
+const exEqSave = v => { try { localStorage.setItem(EXEQ_KEY, JSON.stringify(v)); } catch (_) {} };
+const normTxt = s => String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[‐-―-]/g, " ").replace(/\s+/g, " ").trim();
+// The exercise and the name that matched a search (null = the app's own name), or null when nothing matched.
+function exMatch(id, q) {
+  if (!q) return { id, aka: null };
+  const ex = EX[id]; if (!ex) return null;
+  if (normTxt(ex.name).includes(q)) return { id, aka: null };
+  const a = (ex.aka || []).find(x => normTxt(x).includes(q));
+  if (a) return { id, aka: a };
+  // English names and aliases always count too (gym words are often English everywhere)
+  const en = EX_NAMES.en[id] || [];
+  const e = en.find(x => normTxt(x).includes(q));
+  return e ? { id, aka: e === ex.name ? null : e } : null;
+}
+function ExLibrary({ onPick, picked = [], exclude = [], autoFocus }) {
+  const [q, setQ] = useState("");
+  const [eq, setEq] = useState(exEqLoad);
+  const [grp, setGrp] = useState(null);
+  const nq = normTxt(q);
+  const ids = Object.keys(LIB).filter(id => !exclude.includes(id));
+  const found = ids.map(id => exMatch(id, nq)).filter(Boolean);
+  const shown = found.filter(m => eq.includes(LIB[m.id].eq) && (!grp || LIB[m.id].g === grp));
+  const hidden = found.filter(m => !eq.includes(LIB[m.id].eq) && (!grp || LIB[m.id].g === grp)).length;
+  const order = id => GROUPS_ORDER.indexOf(LIB[id].g) * 1000 + EQUIP_ORDER.indexOf(LIB[id].eq) * 100 + ({ easy: 0, mid: 1, hard: 2 }[LIB[id].d] || 1);
+  shown.sort((a, b) => order(a.id) - order(b.id) || EX[a.id].name.localeCompare(EX[b.id].name, LANG));
+  const toggleEq = k => { sfxTap(); const v = eq.includes(k) ? eq.filter(x => x !== k) : EQUIP_ORDER.filter(x => x === k || eq.includes(x)); const nv = v.length ? v : [k]; setEq(nv); exEqSave(nv); };
+  const chipS = on => ({ ...btnBase, padding: "6px 11px", fontSize: 12.5, borderRadius: 99, whiteSpace: "nowrap", flexShrink: 0, ...(on ? { background: `${C.signal}22`, border: `1px solid ${C.signal}66`, color: C.signal } : { ...SUNK(), color: C.dim }) });
+  const row = m => {
+    const id = m.id, on = picked.includes(id);
+    return (
+      <div key={id} data-lib-row={id} onClick={() => { sfxTap(); if (openHowToGlobal) openHowToGlobal(id); }} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 13, background: C.panelHi, cursor: "pointer" }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 15, fontWeight: 700, color: C.chalk, lineHeight: 1.25 }}>{EX[id].name}</div>
+          {m.aka && <div data-lib-aka style={{ fontSize: 12, color: C.dim, marginTop: 2 }}>{T("exAka", { name: m.aka })}</div>}
+          <div style={{ display: "flex", gap: 6, alignItems: "center", marginTop: 5, flexWrap: "wrap" }}><DiffChip id={id} pad="0 7px" />{LIB[id].eq !== "none" && <span style={{ fontSize: 11, color: C.dim }}>{T("eq_" + LIB[id].eq)}</span>}</div>
+        </div>
+        {onPick && <button data-lib-pick={id} aria-pressed={on} onClick={e => { e.stopPropagation(); sfxTap(); onPick(id); }} style={{ ...btnBase, flexShrink: 0, padding: "8px 12px", fontSize: 13, borderRadius: 11, display: "inline-flex", alignItems: "center", gap: 5, ...(on ? { background: `${C.mint}22`, color: C.mint, border: `1px solid ${C.mint}66` } : { background: C.signal, color: C.signalInk || C.ink }) }}><Ico n={on ? "check" : "plus"} size={15} sw={2.4} />{T(on ? "exAdded" : "exAdd")}</button>}
+      </div>
+    );
+  };
+  const groups = nq ? [[null, shown]] : GROUPS_ORDER.map(g => [g, shown.filter(m => LIB[m.id].g === g)]).filter(x => x[1].length);
+  return (
+    <div data-exlib style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+      <div style={{ position: "relative" }}>
+        <Ico n="search" size={18} color={C.dim} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
+        <input data-lib-search value={q} autoFocus={autoFocus} onChange={e => setQ(e.target.value)} placeholder={T("exSearch")} aria-label={T("exSearch")}
+          style={{ fontFamily: BODY, fontSize: 16, fontWeight: 600, padding: "11px 38px 11px 38px", borderRadius: 13, border: `1.5px solid ${C.line}`, background: C.ink, color: C.chalk, outline: "none", boxSizing: "border-box", width: "100%" }} />
+        {q && <button data-lib-clear aria-label={T("close")} onClick={() => setQ("")} style={{ ...btnBase, position: "absolute", right: 6, top: "50%", transform: "translateY(-50%)", background: "transparent", color: C.dim, padding: "6px 8px", fontSize: 14 }}>✕</button>}
+      </div>
+      <div role="group" aria-label={T("eqHint")} style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+        {EQUIP_ORDER.map(k => <button key={k} data-lib-eq={k} aria-pressed={eq.includes(k)} onClick={() => toggleEq(k)} style={chipS(eq.includes(k))}>{T("eq_" + k)}</button>)}
+      </div>
+      <div className="noBar" style={{ display: "flex", gap: 6, overflowX: "auto", margin: "0 -2px", padding: "0 2px 2px" }}>
+        <button data-lib-grp="" aria-pressed={!grp} onClick={() => { sfxTap(); setGrp(null); }} style={chipS(!grp)}>{T("eqAll")}</button>
+        {GROUPS_ORDER.map(g => <button key={g} data-lib-grp={g} aria-pressed={grp === g} onClick={() => { sfxTap(); setGrp(grp === g ? null : g); }} style={chipS(grp === g)}>{T("bg_" + g)}</button>)}
+      </div>
+      {groups.map(([g, list]) => (
+        <div key={g || "all"} data-lib-group={g || ""}>
+          {g && <div style={{ ...sectionTitle, margin: "8px 4px 8px" }}>{T("bg_" + g)}</div>}
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>{list.map(row)}</div>
+        </div>
+      ))}
+      {!shown.length && <div data-lib-empty style={{ color: C.dim, fontSize: 14, padding: "8px 4px" }}>{T("exNone")}</div>}
+      {hidden > 0 && <button data-lib-more onClick={() => { sfxTap(); setEq(EQUIP_ORDER); exEqSave(EQUIP_ORDER); }} style={{ ...ghostBtn, alignSelf: "flex-start" }}>{TP("exMoreEq", hidden)}</button>}
+    </div>
   );
 }
 
@@ -1428,7 +1518,7 @@ function singleCounts(history, extra = {}) {
   const bmd = extra.bmd || null; // "MM-DD" of the birthday (Feb 29 also counts on Feb 28)
   const b1 = x => (x ? 1 : 0);
   return {
-    allex: b1(Object.keys(EX).every(id => done.has(id))),
+    allex: b1(OLD_IDS.every(id => done.has(id))),
     allDiamond: b1(PROGRAM_IDS.every(id => has(id) && rankIdx(id, best(id)) >= R_DIAMOND)),
     comeback: b1(dates.some((d, i) => i > 0 && daysBetween(dates[i - 1], d) >= 14)),
     weekend: b1(dates.some(d => parseKey(d).getDay() === 6 && dset.has(addDays(d, 1)))),

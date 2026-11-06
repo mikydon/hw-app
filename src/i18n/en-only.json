@@ -107,6 +107,26 @@
     "ex.mx_smith_machine_squat",
     "ex.mx_straight_arm_pulldown",
     "ex.mx_t_bar_row",
-    "ex.mx_wide_grip_lat_pulldown"
+    "ex.mx_wide_grip_lat_pulldown",
+    "pl.exMoreEq",
+    "ui.bg_arms",
+    "ui.bg_back",
+    "ui.bg_calves",
+    "ui.bg_chest",
+    "ui.bg_core",
+    "ui.bg_glutes",
+    "ui.bg_legs",
+    "ui.bg_shoulders",
+    "ui.eqAll",
+    "ui.eqHint",
+    "ui.eq_free",
+    "ui.eq_machine",
+    "ui.eq_none",
+    "ui.exAdd",
+    "ui.exAdded",
+    "ui.exAka",
+    "ui.exLib",
+    "ui.exNone",
+    "ui.exSearch"
   ]
 }

@@ -1227,7 +1227,7 @@ export default {
       lvl: "Posuň chodidla blíž k zárubni a zakloň se víc.",
     },
     n1: {
-      name: "ATG dřep",
+      name: "Hluboký dřep",
       muscles: "Přední stehna, hýždě",
       tempo: "3 s dolů, 1 s pauza dole, nahoru",
       how: "Chodidla na šířku ramen, špičky mírně ven. Spouštěj se 3 sekundy co nejhlouběji, stehna pod úroveň kolen, paty na zemi. Dole 1 sekundu vydrž a postav se.",
@@ -1278,8 +1278,8 @@ export default {
       muscles: "Triceps, vnitřní část prsou",
       tempo: "3 s dolů, nahoru",
       how: "Dej ruce pod hrudník tak, aby se palce a ukazováčky dotýkaly a tvořily diamant. Spouštěj se, lokty jdou dozadu podél těla. Hrudník míří k rukám.",
-      tip: "Když bolí zápěstí nebo lokty, dej ruce kousek od sebe. Úzký klik zatíží triceps skoro stejně. Těžší verze je Diamond klik s nohama na židli, můžeš si ho za něj vyměnit.",
-      lvl: "Vyměň ho za Diamond klik s nohama na židli (⇄ Vyměnit).",
+      tip: "Když bolí zápěstí nebo lokty, dej ruce kousek od sebe. Úzký klik zatíží triceps skoro stejně. Těžší verze je Diamantový klik s nohama na židli, můžeš si ho za něj vyměnit.",
+      lvl: "Vyměň ho za Diamantový klik s nohama na židli (⇄ Vyměnit).",
     },
     row3: {
       name: "Široký přítah o zárubeň",
@@ -1334,7 +1334,7 @@ export default {
       tip: "Palce míří nahoru, ramena drž daleko od uší.",
     },
     lunge: {
-      name: "Zpětný výpad",
+      name: "Výpad vzad",
       muscles: "Přední stehna, hýždě",
       tempo: "2 s dolů, nahoru",
       how: "Postav se rovně. Udělej velký krok dozadu, zadní koleno jde skoro k zemi a přední koleno se pokrčí do 90°. Vytlač se přes patu přední nohy zpět do stoje. Udělej všechna opakování jednou nohou, pak druhou.",
@@ -1355,7 +1355,7 @@ export default {
       tip: "Čím svislejší trup, tím víc váhy jde na ramena. Zpevni hýždě, ať se ti neprohýbají bedra. Židle musí stát pevně, nejlépe opřená o zeď. Hlavu spouštěj pomalu, nikdy na ni nepadej.",
     },
     k3e: {
-      name: "Diamond klik s nohama na židli",
+      name: "Diamantový klik s nohama na židli",
       muscles: "Triceps, vnitřní hrudník, ramena",
       tempo: "3 s dolů, nahoru",
       how: "Nohy dej na židli, ruce pod hrudník tak, aby se palce a ukazováčky dotýkaly a tvořily diamant. Tělo rovné od hlavy po paty. Spouštěj se, lokty jdou dozadu podél těla, hrudník k rukám. Vytlač se nahoru.",
@@ -1382,7 +1382,7 @@ export default {
       tip: "Pánev drž rovně, nenech ji padat na stranu zvednuté nohy. Zapiš počet za jednu nohu: 10 levou + 10 pravou = zapiš 10. Když chytá křeč v zadním stehně, vrať se na most na obou nohou.",
     },
     wallsit: {
-      name: "Wall sit",
+      name: "Sed u zdi",
       muscles: "Přední stehna",
       how: "Opři se zády o zeď a sjeď dolů, až budou stehna rovnoběžně se zemí a kolena v 90°. Celá záda na zdi, kolena nad kotníky. Drž.",
       tip: "Neopírej si ruce o stehna, jinak si pomáháš.",

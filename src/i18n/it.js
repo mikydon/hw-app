@@ -1211,7 +1211,7 @@ export default {
 
   ex: {
     k1: {
-      name: "Piegamento",
+      name: "Piegamento sulle braccia",
       muscles: "Petto, tricipiti, deltoidi anteriori",
       tempo: "3 s giù, breve pausa, su",
       how: "Mani un po' più larghe delle spalle, corpo dritto dalla testa ai talloni, addominali e glutei contratti. Scendi in 3 secondi finché il petto quasi tocca il pavimento, fermati un attimo e spingi di nuovo su. Tieni i gomiti a ~45° dal corpo, non aperti verso l'esterno.",
@@ -1227,7 +1227,7 @@ export default {
       lvl: "Avvicina i piedi allo stipite e inclinati più indietro.",
     },
     n1: {
-      name: "Squat ATG",
+      name: "Squat profondo",
       muscles: "Quadricipiti, glutei",
       tempo: "3 s giù, 1 s pausa in basso, su",
       how: "Piedi alla larghezza delle spalle, punte leggermente in fuori. Scendi in 3 secondi più in basso che puoi, cosce sotto le ginocchia, talloni a terra. Resta 1 secondo in basso e risali.",
@@ -1242,12 +1242,12 @@ export default {
       lvl: "Sostituiscilo con il Plank su una gamba (⇄ Cambia).",
     },
     r1: {
-      name: "Pike push-up",
+      name: "Piegamento pike",
       muscles: "Spalle, tricipiti",
       tempo: "3 s giù, su",
       how: "Mettiti a V rovesciata: mani a terra, fianchi alti, gambe più tese che puoi. Piega i gomiti e porta la sommità della testa verso il pavimento appena davanti alle mani, così mani e testa formano un triangolo. Spingi di nuovo su.",
-      tip: "Quando fai 15+ in entrambi i giri, sostituiscili con i Piegamenti pike con piedi sulla sedia. Più peso va sulle spalle.",
-      lvl: "Sostituiscili con i Piegamenti pike con piedi sulla sedia (⇄ Cambia).",
+      tip: "Quando fai 15+ in entrambi i giri, sostituiscilo con il Piegamento pike con piedi sulla sedia. Più peso va sulle spalle.",
+      lvl: "Sostituiscilo con il Piegamento pike con piedi sulla sedia (⇄ Cambia).",
     },
     row2: {
       name: "Rematore alla porta con asciugamano",
@@ -1278,8 +1278,8 @@ export default {
       muscles: "Tricipiti, parte interna del petto",
       tempo: "3 s giù, su",
       how: "Metti le mani sotto il petto così pollici e indici si toccano e formano un diamante. Scendi con i gomiti che vanno indietro lungo il corpo. Il petto va verso le mani.",
-      tip: "Se ti fanno male i polsi o i gomiti, allarga un po' le mani. I piegamenti stretti lavorano i tricipiti quasi allo stesso modo. La versione più difficile sono i Piegamenti diamante con piedi sulla sedia, puoi sostituirli con quelli.",
-      lvl: "Sostituiscili con i Piegamenti diamante con piedi sulla sedia (⇄ Cambia).",
+      tip: "Se ti fanno male i polsi o i gomiti, allarga un po' le mani. I piegamenti stretti lavorano i tricipiti quasi allo stesso modo. La versione più difficile è il Piegamento a diamante con piedi sulla sedia, puoi sostituirlo con quello.",
+      lvl: "Sostituiscilo con il Piegamento a diamante con piedi sulla sedia (⇄ Cambia).",
     },
     row3: {
       name: "Rematore largo allo stipite",
@@ -1298,7 +1298,7 @@ export default {
       lvl: "Fallo con una gamba sola, tieni l'altra in aria. Inizia con un'escursione più corta. Se arriva un crampo o i fianchi cedono, torna a due gambe.",
     },
     b4: {
-      name: "Bicycle crunch",
+      name: "Crunch bicicletta",
       muscles: "Obliqui, tutti gli addominali",
       tempo: "lentamente, 1 s per lato",
       how: "Sdraiati sulla schiena, mani dietro la testa, spalle sollevate da terra. Porta il gomito destro verso il ginocchio sinistro mentre distendi la gamba destra. Poi cambia. Ruota il busto, non solo i gomiti.",
@@ -1345,17 +1345,17 @@ export default {
       muscles: "Glutei, femorali",
       tempo: "su, 2 s contrazione, giù",
       how: "Sdraiati sulla schiena, ginocchia piegate, piedi a terra. Spingi con i talloni e solleva i fianchi finché il corpo forma una linea dritta dalle ginocchia alle spalle. Stringi i glutei per 2 secondi in alto e torna giù lentamente.",
-      tip: "La versione più difficile è il Ponte su una gamba. Quando questo ti sembra facile, sostituiscilo con quello.",
+      tip: "La versione più difficile è il Ponte glutei su una gamba. Quando questo ti sembra facile, sostituiscilo con quello.",
     },
     r1e: {
-      name: "Piegamenti pike con piedi sulla sedia",
+      name: "Piegamento pike con piedi sulla sedia",
       muscles: "Spalle, tricipiti",
       tempo: "3 s giù, su",
       how: "Metti i piedi su una sedia, le mani a terra un po' più avanti e porta i fianchi in alto, così il busto è quasi verticale. Piega i gomiti e porta la testa verso terra appena davanti alle mani, gomiti indietro, non di lato. Spingi di nuovo su.",
       tip: "Più il busto è verticale, più peso va sulle spalle. Stringi i glutei per non inarcare la zona lombare. La sedia deve essere stabile, meglio contro il muro. Scendi con la testa piano, non caderci mai sopra.",
     },
     k3e: {
-      name: "Piegamenti diamante con piedi sulla sedia",
+      name: "Piegamento a diamante con piedi sulla sedia",
       muscles: "Tricipiti, petto interno, spalle",
       tempo: "3 s giù, su",
       how: "Metti i piedi su una sedia e le mani sotto il petto in modo che pollici e indici si tocchino formando un diamante. Corpo dritto dalla testa ai talloni. Scendi con i gomiti indietro lungo il corpo, petto verso le mani. Spingi di nuovo su.",
@@ -1375,14 +1375,14 @@ export default {
       tip: "Non sollevare troppo la gamba, basta staccarla da terra. L'importante è che i fianchi non si muovano.",
     },
     sbridge: {
-      name: "Ponte su una gamba",
+      name: "Ponte glutei su una gamba",
       muscles: "Glutei, femorali",
       tempo: "su, 2 s contrazione, giù",
       how: "Sdraiati sulla schiena, ginocchia piegate, piedi a terra. Distendi una gamba in aria e tieni le cosce vicine. Spingi con il tallone della gamba a terra e solleva i fianchi finché il corpo forma una linea retta dal ginocchio alle spalle. In alto stringi i glutei per 2 secondi e scendi piano. Prima tutte le ripetizioni con una gamba, poi con l'altra.",
       tip: "Tieni i fianchi in linea, non lasciarli cadere dal lato della gamba sollevata. Registra il numero di una gamba: 10 sinistra + 10 destra = scrivi 10. Se arriva un crampo al femorale, torna al ponte su due gambe.",
     },
     wallsit: {
-      name: "Wall sit",
+      name: "Sedia al muro",
       muscles: "Quadricipiti",
       how: "Appoggia la schiena al muro e scivola giù finché le cosce sono parallele al pavimento e le ginocchia a 90°. Tutta la schiena sul muro, ginocchia sopra le caviglie. Tieni.",
       tip: "Non appoggiare le mani sulle cosce, altrimenti ti aiuti.",
@@ -1401,7 +1401,7 @@ export default {
       tip: "Se la zona lombare si stacca da terra, alza di più le gambe o piegale.",
     },
     legraise: {
-      name: "Leg raise",
+      name: "Sollevamento gambe",
       muscles: "Addominali bassi, flessori dell'anca",
       tempo: "2 s su, 2 s giù",
       how: "Sdraiati sulla schiena, braccia lungo i fianchi. Solleva lentamente le gambe tese finché sono verticali e abbassale lentamente quasi fino a terra, ma senza appoggiarle. La zona lombare resta a terra.",

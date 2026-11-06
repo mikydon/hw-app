@@ -1227,7 +1227,7 @@ export default {
       lvl: "Acerca los pies al marco e inclínate más hacia atrás.",
     },
     n1: {
-      name: "Sentadilla ATG",
+      name: "Sentadilla profunda",
       muscles: "Cuádriceps, glúteos",
       tempo: "3 s abajo, 1 s de pausa abajo, arriba",
       how: "Pies a la anchura de los hombros, puntas un poco hacia fuera. Baja durante 3 segundos lo más profundo que puedas, con los muslos por debajo de las rodillas y los talones en el suelo. Aguanta 1 segundo abajo y sube.",
@@ -1266,7 +1266,7 @@ export default {
       lvl: "Ve más lento: 4 s abajo y 2 s de pausa abajo.",
     },
     b2: {
-      name: "Dead bug",
+      name: "Bicho muerto",
       muscles: "Músculos abdominales profundos",
       tempo: "despacio, 2 s afuera, 2 s de vuelta",
       how: "Túmbate boca arriba, brazos estirados hacia el techo, piernas en el aire con las rodillas a 90°. Baja despacio el brazo derecho por detrás de la cabeza y la pierna izquierda hacia el suelo, luego vuelve y cambia de lado.",
@@ -1388,7 +1388,7 @@ export default {
       tip: "No apoyes las manos en los muslos, o te estarás ayudando.",
     },
     birddog: {
-      name: "Bird dog",
+      name: "Perro de caza",
       muscles: "Core, zona lumbar, glúteos",
       tempo: "estira, 2 s pausa, vuelve",
       how: "Ponte en cuatro apoyos: manos debajo de los hombros, rodillas debajo de la cadera. Estira a la vez el brazo derecho hacia delante y la pierna izquierda hacia atrás, con el cuerpo en línea recta. Aguanta 2 segundos, vuelve y cambia de lado.",

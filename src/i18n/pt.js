@@ -1227,7 +1227,7 @@ export default {
       lvl: "Aproxime os pés do batente e incline-se mais para trás.",
     },
     n1: {
-      name: "Agachamento ATG",
+      name: "Agachamento profundo",
       muscles: "Coxa (parte da frente), glúteos",
       tempo: "3 s descendo, 1 s de pausa embaixo, sobe",
       how: "Pés na largura dos ombros, pontas levemente para fora. Desça em 3 segundos o mais fundo que conseguir, coxas abaixo dos joelhos, calcanhares no chão. Segure 1 segundo lá embaixo e suba.",
@@ -1266,7 +1266,7 @@ export default {
       lvl: "Vá mais devagar: 4 s descendo e 2 s de pausa embaixo.",
     },
     b2: {
-      name: "Dead bug",
+      name: "Inseto morto",
       muscles: "Músculos profundos do abdômen",
       tempo: "devagar, 2 s indo, 2 s voltando",
       how: "Deite de barriga para cima, braços esticados para o teto, pernas elevadas com os joelhos a 90°. Desça devagar o braço direito para trás da cabeça e a perna esquerda em direção ao chão, depois volte e troque de lado.",
@@ -1388,7 +1388,7 @@ export default {
       tip: "Não apoie as mãos nas coxas, senão você está se ajudando.",
     },
     birddog: {
-      name: "Bird dog",
+      name: "Perdigueiro",
       muscles: "Core, lombar, glúteos",
       tempo: "estica, 2 s segurando, volta",
       how: "Fique de quatro apoios: mãos embaixo dos ombros, joelhos embaixo do quadril. Estique o braço direito para a frente e a perna esquerda para trás ao mesmo tempo, com o corpo em linha reta. Segure 2 segundos, volte e troque de lado.",

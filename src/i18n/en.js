@@ -1,5 +1,6 @@
 // English (base language). Every other locale falls back to these strings.
 import EX_NEW from "./ex-en.js";
+import { UI as UI190, PL as PL190 } from "./ui190-en.js";
 const en = {
   ui: {
     searchWeb: "🔎 Search the web",
@@ -2054,4 +2055,6 @@ const en = {
 };
 // 1.9.0: the new exercises' texts live in ex-en.js (English first).
 Object.assign(en.ex, EX_NEW);
+Object.assign(en.ui, UI190);
+Object.assign(en.pl, PL190);
 export default en;
