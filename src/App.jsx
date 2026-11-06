@@ -7,6 +7,7 @@ import { mergeAll, syncKey, withIds, entryId, stable, SYNC_SETTINGS, kcalShared 
 import { RANK_AT, EX_GROUPS } from "./ranks.js";
 import { LIB, W_RANK, wScore, wRankIndex, MUSCLES, GROUPS_ORDER, EQUIP_ORDER } from "./exlib.js";
 import { EX_NAMES } from "./exnames.js";
+import * as PLN from "./plans.js";
 import * as GM from "./game/engine.js";
 import { fairStats } from "./fair.js";
 import EN from "./i18n/en.js";
@@ -1954,8 +1955,8 @@ function StatTile({ label, value, icon, icoCol, color, sub, children, data, comp
 // ─── TOP BAR + MENU ─────────────────────────────────────────────────────────
 // Screens: train (home), calories, history, profile, friends (1.5.0), settings. One menu button (☰) top right
 // opens a drawer with all of them; there is no bottom tab bar any more (v1.4.0).
-const SCREENS = ["train", "calories", "history", "profile", "friends", "game", "shop", "settings"];
-const SCREEN_TITLE = { train: "tabTrain", calories: "tabCalories", history: "tabHistory", profile: "tabProfile", friends: "tabFriends", game: "tabGame", shop: "tabShop", settings: "tabSettings" };
+const SCREENS = ["train", "plans", "calories", "history", "profile", "friends", "game", "shop", "settings"];
+const SCREEN_TITLE = { train: "tabTrain", plans: "tabPlans", calories: "tabCalories", history: "tabHistory", profile: "tabProfile", friends: "tabFriends", game: "tabGame", shop: "tabShop", settings: "tabSettings" };
 
 function MenuButton({ open, onClick, btnRef, label, badge }) {
   const bar = (y, rot) => ({ position: "absolute", left: 11, width: 20, height: 2.6, borderRadius: 2, background: C.chalk, top: open ? 20 : y, transform: open ? `rotate(${rot}deg)` : "none", transition: `top ${MO.t1} ${MO.ease}, transform ${MO.t1} ${MO.ease}, opacity ${MO.t1}` });
@@ -2215,6 +2216,16 @@ function TopBar({ screen, history, menuOpen, onMenu, onGo, dlPct, badge, head, s
 // the menu icons' 24-point grid, 2-point round strokes, colour = currentColor (the theme's quiet colour, the main colour
 // when active). Rewards (badges, ranks, cards, the flame/bolt chips) keep their 3D emoji.
 const ICONS = {
+  // 1.9.0: plans and the exercise list
+  sort: '<path d="M4 7h16M7 12h10M10 17h4"/>',
+  arrowUp: '<path d="M12 19V5M6 11l6-6 6 6"/>',
+  arrowDown: '<path d="M12 5v14M6 13l6 6 6-6"/>',
+  x: '<path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/>',
+  undo: '<path d="M9 6.5 4.5 11 9 15.5"/><path d="M4.5 11h10a5 5 0 0 1 0 10H12"/>',
+  tPush: '<path d="M4 5v14"/><path d="M8 12h12M16 8l4 4-4 4"/>',
+  tPull: '<path d="M4 5v14"/><path d="M20 12H8M12 8l-4 4 4 4"/>',
+  tLegs: '<path d="M10 3c0 4 .6 6.3 2.8 8.6L10.2 18l.8 2.5h6.5"/>',
+  tCore: '<rect x="7" y="3.5" width="10" height="17" rx="4"/><path d="M12 7v10M8.8 10h6.4M8.8 14h6.4"/>',
   duo: '<circle cx="9" cy="8.5" r="3.2"/><path d="M3.5 19c.4-3.2 2.6-5 5.5-5s5.1 1.8 5.5 5"/><circle cx="16.5" cy="9.5" r="2.6"/><path d="M16 14.2c2.6 0 4.2 1.6 4.6 4.3"/>',
   copy: '<rect x="8.5" y="8.5" width="11" height="12" rx="2.2"/><path d="M15.5 8.5V6a2 2 0 0 0-2-2H6.5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/>',
   gear: '<circle cx="12" cy="12" r="3.2"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7"/><circle cx="12" cy="12" r="6.6"/>',
@@ -2396,6 +2407,7 @@ function TabIcon({ name, active }) {
   const c = active ? C.signal : C.dim;
   const s = { fill: "none", stroke: c, strokeWidth: 2.2, strokeLinecap: "round", strokeLinejoin: "round" };
   if (name === "train") return <svg width="26" height="26" viewBox="0 0 24 24"><path d="M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11" {...s} /></svg>;
+  if (name === "plans") return <svg width="26" height="26" viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2.5" {...s} /><path d="M9 4V3h6v1M8.5 10h7M8.5 14h7M8.5 18h4" {...s} /></svg>;
   if (name === "history") return <svg width="26" height="26" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="3" {...s} /><path d="M3.5 10h17M8 3v4M16 3v4" {...s} /><circle cx="12" cy="15" r="1.6" fill={c} stroke="none" /></svg>;
   if (name === "calories") return <svg width="26" height="26" viewBox="0 0 24 24"><path d="M12 21c-4 0-6.5-2.7-6.5-6.3 0-3.2 2.2-5.4 3.6-7.6.6 1.6 1.4 2.6 2.5 3.1C12 7 13 4.7 14.6 3c.6 2.9 3.9 5.6 3.9 10.2 0 4.4-2.6 7.8-6.5 7.8z" {...s} /></svg>;
   if (name === "friends") return <svg width="26" height="26" viewBox="0 0 24 24"><circle cx="9" cy="8.5" r="3.4" {...s} /><path d="M2.8 19.5c.9-3.1 3.2-4.8 6.2-4.8s5.3 1.7 6.2 4.8" {...s} /><circle cx="16.6" cy="9.3" r="2.7" {...s} /><path d="M16.4 14.6c2.4.1 4.1 1.6 4.8 4.2" {...s} /></svg>;
@@ -8315,6 +8327,228 @@ function LooksSheet({ profile, setProfile, history, own, onShop, onClose }) {
 // 1.8.2 (Michael: Shop and Muscle Deck started right under the top bar, "remember it so it never happens again"):
 // every screen is a .scr with the same 16 px gap under the top bar, side padding and room at the bottom.
 const SCR_STYLE = { padding: "16px 18px 124px", maxWidth: "var(--colMax)", margin: "0 auto" };
+// ─── WORKOUT PLANS (1.9.0) ───────────────────────────────────────────────────
+// Recommended = today's A/B/C (bodyweight, every other day). My plans = plans built from the app's exercises, one list
+// per weekday (Mon … Sun; an empty weekday is a rest day), in groups, sorted by date or name. Logic in src/plans.js.
+const fmtHold = v => (v >= 60 ? `${Math.floor(v / 60)}:${String(v % 60).padStart(2, "0")} min` : `${v} s`);
+const planTitle = p => (p && (p.name || T("planDefault", { n: p.n }))) || "";
+const groupName = (P, id) => ((P.groups || []).find(g => g.id === id) || {}).name || "";
+const TYPE_ICON = { push: "tPush", pull: "tPull", legs: "tLegs", core: "tCore" };
+// The four "what this day trains" marks: bright = the day trains it, faint = it doesn't.
+function TypeMarks({ items, size = 18, onTap, data }) {
+  const has = PLN.dayTypes(items || [], LIB);
+  return (
+    <span role={onTap ? "button" : undefined} data-type-marks={data || ""} onClick={onTap ? e => { e.stopPropagation(); sfxTap(); onTap(); } : undefined} aria-label={has.map(t => T("grp_" + t)).join(", ")} style={{ display: "inline-flex", gap: 3, alignItems: "center", cursor: onTap ? "pointer" : undefined }}>
+      {PLN.TYPES.map(t => <span key={t} data-type={t} data-on={has.includes(t) ? 1 : 0} style={{ display: "inline-flex", opacity: has.includes(t) ? 1 : 0.28 }}><Ico n={TYPE_ICON[t]} size={size} color={has.includes(t) ? C.signal : C.dim} /></span>)}
+    </span>
+  );
+}
+function hintText(h, wdNames) {
+  const fam = h.fam ? T("fam_" + h.fam) : "";
+  if (h.kind === "missDay") return T("hintMissDay", { day: wdNames[h.wd - 1], types: h.types.map(t => T("grp_" + t).toLowerCase()).join(", ") });
+  if (h.kind === "none") return T("hintNone", { fam });
+  if (h.kind === "fewDays") return TP("hintFewDays", h.days, { fam });
+  if (h.kind === "fewSets") return T("hintFewSets", { fam, n: h.sets });
+  if (h.kind === "rest") return T("hintRest", { n: h.run });
+  return "";
+}
+function PlanHintsSheet({ plan, onClose }) {
+  const wd = weekdaysShort(), hs = PLN.planHints(plan, LIB);
+  return (
+    <Sheet title={T("plTips")} onClose={onClose} short>
+      <div data-plan-hints style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {!hs.filter(h => h.kind !== "fewSets").length && !hs.length && <div style={{ display: "flex", gap: 8, alignItems: "flex-start" }}><Ico n="check" size={18} color={C.mint} style={{ marginTop: 2 }} />{T("hintOk")}</div>}
+        {hs.map((h, i) => <div key={i} data-hint={h.kind} style={{ display: "flex", gap: 8, alignItems: "flex-start", fontSize: 14.5 }}><Ico n={h.kind === "rest" ? "snow" : h.kind === "missDay" ? "alert" : "bulb"} size={17} color={h.kind === "rest" ? C.sky : C.signal} style={{ marginTop: 3, flexShrink: 0 }} /><span>{hintText(h, wd)}</span></div>)}
+        <div style={{ fontSize: 12.5, color: C.dim, marginTop: 6, lineHeight: 1.5 }}>{T("hintWhy")}</div>
+      </div>
+    </Sheet>
+  );
+}
+
+function PlansTab({ profile, setProfile, history, open, onOpened }) {
+  const P = PLN.plansOf(profile);
+  const [tab, setTab] = useState(P.active ? "mine" : "rec");
+  const [edit, setEdit] = useState(null); // plan id being edited
+  const [grp, setGrp] = useState("");      // group filter ("" = all, "-" = no group)
+  const [newGrp, setNewGrp] = useState(null), [delG, setDelG] = useState(null);
+  const profRef = useRef(profile); profRef.current = profile;
+  const setP = fn => { const cur = PLN.plansOf(profRef.current), next = fn(cur), p = { ...profRef.current, plans: next }; profRef.current = p; setProfile(p); };
+  useEffect(() => { if (open && open.plan) { setTab("mine"); setEdit(open.plan); onOpened && onOpened(); } }, [open]);
+  const editing = edit && P.list.find(p => p.id === edit);
+  if (editing) return <PlanEditor plan={editing} P={P} setP={setP} onBack={() => { sfxTap(); setEdit(null); window.scrollTo(0, 0); }} />;
+  const seg = (on, onClick, label, data) => (
+    <button data-plans-seg={data} aria-pressed={on} onClick={() => { sfxTap(); onClick(); }}
+      style={{ ...btnBase, flex: 1, minWidth: 0, padding: "9px 4px", fontSize: 14, borderRadius: 11, background: on ? C.chalk : "transparent", color: on ? C.ink : C.dim, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{label}</button>
+  );
+  const chipS = on => ({ ...btnBase, padding: "6px 11px", fontSize: 12.5, borderRadius: 99, whiteSpace: "nowrap", flexShrink: 0, ...(on ? { background: `${C.signal}22`, border: `1px solid ${C.signal}66`, color: C.signal } : { ...SUNK(), color: C.dim }) });
+  const wd = weekdaysShort();
+  const newPlan = () => { sfxTap(); let id; setP(cur => { const r = PLN.addPlan(cur); id = r.plan.id; const g = grp && grp !== "-" ? grp : null; return g ? PLN.updatePlan(r.P, id, { grp: g }) : r.P; }); setEdit(id); window.scrollTo(0, 0); };
+  const list = PLN.sortPlans(P.list.filter(p => !grp || (grp === "-" ? !p.grp : p.grp === grp)), P.sort, P.dir, planTitle);
+  const useRec = () => { sfxTap(); setP(cur => ({ ...cur, active: "" })); };
+  return (
+    <div className="scr" style={SCR_STYLE} data-plans>
+      <div style={{ display: "flex", gap: 4, padding: 4, borderRadius: 14, ...SUNK() }}>
+        {seg(tab === "rec", () => setTab("rec"), T("plRec"), "rec")}
+        {seg(tab === "mine", () => setTab("mine"), T("plMine"), "mine")}
+      </div>
+      {tab === "rec" && (
+        <Sect title={T("plRecTitle")} data-plan-rec meta={!P.active ? <span data-plan-inuse style={{ fontSize: 12, fontWeight: 800, color: C.mint }}>{T("plInUse")}</span> : null}>
+          <div style={{ fontSize: 14.5, color: C.chalk, lineHeight: 1.5 }}>{T("plRecD")}</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 12 }}>
+            {DAYS.map(d => (
+              <div key={d.id} data-rec-day={d.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 12, background: C.panelHi }}>
+                <span style={{ fontFamily: DISPLAY, fontWeight: 900, fontSize: 22, color: C.signal, width: 22 }}>{d.id}</span>
+                <span style={{ flex: 1, minWidth: 0, fontSize: 13, color: C.dim, lineHeight: 1.35 }}>{d.ids.map(id => EX[effId(id)].name).join(" · ")}</span>
+                <TypeMarks items={d.ids.map(id => ({ id: effId(id) }))} size={16} />
+              </div>
+            ))}
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12.5, color: C.dim, marginTop: 10 }}><TypeMarks items={[{ id: "k1" }, { id: "row1" }, { id: "n1" }, { id: "b5" }]} size={14} />{T("plTypesT")}<InfoQ id="types" title={T("plTypesT")} text={T("plTypesD")} /></div>
+          {P.active && <button data-plan-use-rec onClick={useRec} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 14, padding: 14, fontSize: 15 }}>{T("plUse")}</button>}
+          <div data-plan-gym style={{ display: "flex", gap: 8, alignItems: "flex-start", marginTop: 14, fontSize: 13.5, color: C.chalk }}><Ico n="bulb" size={18} color={C.signal} style={{ marginTop: 1, flexShrink: 0 }} /><span>{T("plGymHint")}</span></div>
+        </Sect>
+      )}
+      {tab === "mine" && (
+        <>
+          <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 16, flexWrap: "wrap" }}>
+            <div className="noBar" style={{ display: "flex", gap: 6, overflowX: "auto", flex: 1, minWidth: 0 }}>
+              <button data-plan-grp="" aria-pressed={!grp} onClick={() => { sfxTap(); setGrp(""); }} style={chipS(!grp)}>{T("plAllGroups")}</button>
+              {P.groups.map(g => <button key={g.id} data-plan-grp={g.id} aria-pressed={grp === g.id} onClick={() => { sfxTap(); setGrp(grp === g.id ? "" : g.id); }} onContextMenu={e => { e.preventDefault(); setDelG(g); }} style={chipS(grp === g.id)}>{g.name}</button>)}
+              {P.groups.length > 0 && <button data-plan-grp="-" aria-pressed={grp === "-"} onClick={() => { sfxTap(); setGrp(grp === "-" ? "" : "-"); }} style={chipS(grp === "-")}>{T("plNoGroup")}</button>}
+              <button data-plan-newgrp onClick={() => { sfxTap(); setNewGrp(""); }} aria-label={T("plNewGroup")} style={{ ...chipS(false), display: "inline-flex", alignItems: "center", gap: 4 }}><Ico n="plus" size={14} sw={2.4} />{T("plNewGroup")}</button>
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: 6, alignItems: "center", marginTop: 10 }}>
+            <button data-plan-sort={P.sort} onClick={() => { sfxTap(); setP(cur => ({ ...cur, sort: cur.sort === "name" ? "date" : "name" })); }} style={{ ...chipS(false), display: "inline-flex", alignItems: "center", gap: 5 }}><Ico n="sort" size={14} />{T(P.sort === "name" ? "plSortName" : "plSortDate")}</button>
+            <button data-plan-dir={P.dir} aria-label={T(P.dir === "asc" ? "plAsc" : "plDesc")} onClick={() => { sfxTap(); setP(cur => ({ ...cur, dir: cur.dir === "asc" ? "desc" : "asc" })); }} style={{ ...chipS(false), padding: "6px 9px", display: "inline-flex" }}><Ico n={P.dir === "asc" ? "arrowUp" : "arrowDown"} size={14} sw={2.4} /></button>
+            {grp && grp !== "-" && <button data-plan-delgrp onClick={() => { sfxTap(); setDelG(P.groups.find(g => g.id === grp)); }} aria-label={T("plDelGroup")} style={{ ...chipS(false), marginLeft: "auto", padding: "6px 9px", display: "inline-flex" }}><Ico n="trash" size={14} /></button>}
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 12 }}>
+            {list.map(p => {
+              const td = PLN.trainDays(p);
+              return (
+                <button key={p.id} data-plan-card={p.id} onClick={() => { sfxTap(); setEdit(p.id); window.scrollTo(0, 0); }} style={{ ...btnBase, ...card, textAlign: "left", padding: "14px 16px", display: "flex", flexDirection: "column", gap: 8, color: C.chalk }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, width: "100%" }}>
+                    <span style={{ fontFamily: DISPLAY, fontSize: 21, fontWeight: 800, lineHeight: 1.1, flex: 1, minWidth: 0, overflowWrap: "anywhere" }}>{planTitle(p)}</span>
+                    {P.active === p.id && <span data-plan-inuse style={{ fontSize: 12, fontWeight: 800, color: C.mint, flexShrink: 0 }}>{T("plInUse")}</span>}
+                    <Arrow />
+                  </div>
+                  <div style={{ display: "flex", gap: 4 }}>
+                    {PLN.WEEKDAYS.map(d => <span key={d} data-plan-wd={d} data-train={td.includes(d) ? 1 : 0} style={{ flex: 1, textAlign: "center", fontSize: 11, fontWeight: 800, padding: "5px 0", borderRadius: 8, ...(td.includes(d) ? { background: `${C.signal}26`, color: C.signal } : { color: C.dim, ...SUNK() }) }}>{wd[d - 1]}</span>)}
+                  </div>
+                  {p.grp && groupName(P, p.grp) && <span style={{ fontSize: 12, color: C.dim }}>{groupName(P, p.grp)}</span>}
+                </button>
+              );
+            })}
+            {!list.length && <div data-plans-empty style={{ color: C.dim, fontSize: 14, padding: "14px 4px" }}>{T("plEmpty")}</div>}
+            <button data-plan-new onClick={newPlan} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), padding: 14, fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}><Ico n="plus" size={18} sw={2.6} />{T("plNew")}</button>
+          </div>
+        </>
+      )}
+      {newGrp !== null && (
+        <Sheet title={T("plNewGroup")} onClose={() => setNewGrp(null)} short>
+          <input data-plan-grp-input autoFocus value={newGrp} maxLength={40} onChange={e => setNewGrp(e.target.value)} placeholder={T("plGroupName")} aria-label={T("plGroupName")}
+            onKeyDown={e => { if (e.key === "Enter" && newGrp.trim()) e.currentTarget.form; }}
+            style={{ fontFamily: BODY, fontSize: 16, fontWeight: 700, padding: "11px 12px", borderRadius: 12, border: `1.5px solid ${C.line}`, background: C.ink, color: C.chalk, outline: "none", boxSizing: "border-box", width: "100%" }} />
+          <button data-plan-grp-save disabled={!newGrp.trim()} onClick={() => { sfxTap(); let gid; setP(cur => { const r = PLN.addGroup(cur, newGrp); gid = r.group.id; return r.P; }); setGrp(gid); setNewGrp(null); }} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 12, padding: 13, fontSize: 15, opacity: newGrp.trim() ? 1 : 0.5 }}>{T("plSave")}</button>
+        </Sheet>
+      )}
+      {delG && <ConfirmBox icon="trash" danger title={T("plDelGroupQ", { name: delG.name })} text={T("plDelGroupD")} yes={T("plDelGroup")} yesData={{ "data-plan-delgrp-yes": true }} onNo={() => setDelG(null)} onYes={() => { setP(cur => PLN.delGroup(cur, delG.id)); if (grp === delG.id) setGrp(""); setDelG(null); }} />}
+    </div>
+  );
+}
+
+function PlanEditor({ plan, P, setP, onBack }) {
+  const wdNames = weekdaysShort();
+  const [wd, setWd] = useState(() => PLN.trainDays(plan)[0] || 1);
+  const [adding, setAdding] = useState(false), [hints, setHints] = useState(false), [del, setDel] = useState(false), [copy, setCopy] = useState(false);
+  const [name, setName] = useState(plan.name || "");
+  useBack(onBack);
+  const upd = fn => setP(cur => PLN.updatePlan(cur, plan.id, fn(cur.list.find(p => p.id === plan.id) || plan)));
+  const items = (plan.days && plan.days[wd]) || [];
+  const hs = PLN.planHints(plan, LIB);
+  const warn = hs.some(h => h.kind === "rest" || h.kind === "missDay");
+  const chipS = on => ({ ...btnBase, padding: "6px 11px", fontSize: 12.5, borderRadius: 99, whiteSpace: "nowrap", flexShrink: 0, ...(on ? { background: `${C.signal}22`, border: `1px solid ${C.signal}66`, color: C.signal } : { ...SUNK(), color: C.dim }) });
+  const step = (on, label, data) => <button data-step={data} onClick={e => { e.stopPropagation(); sfxTap(); on(); }} aria-label={label} style={{ ...btnBase, width: 30, height: 30, padding: 0, borderRadius: 9, ...SUNK(), color: C.chalk, fontSize: 17, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>{data.endsWith("-") ? "−" : "+"}</button>;
+  return (
+    <div className="scr" style={SCR_STYLE} data-plan-editor={plan.id}>
+      <button data-plan-back onClick={onBack} style={{ ...btnBase, background: "transparent", color: C.sky, padding: "4px 0", fontSize: 14, display: "inline-flex", alignItems: "center", gap: 4 }}><Arrow dir="‹" />{T("plBack")}</button>
+      <input data-plan-name value={name} maxLength={40} placeholder={T("planDefault", { n: plan.n })} aria-label={T("plName")}
+        onChange={e => setName(e.target.value)} onBlur={() => { const v = name.trim(); if (v !== (plan.name || "")) upd(() => ({ name: v })); }}
+        style={{ fontFamily: DISPLAY, fontSize: 28, fontWeight: 800, padding: "8px 2px", border: "none", borderBottom: `1.5px solid ${C.line}`, background: "transparent", color: C.chalk, outline: "none", width: "100%", boxSizing: "border-box", marginTop: 6 }} />
+      <div className="noBar" style={{ display: "flex", gap: 6, overflowX: "auto", marginTop: 12 }} role="group" aria-label={T("plGroup")}>
+        <button data-plan-setgrp="" aria-pressed={!plan.grp} onClick={() => { sfxTap(); upd(() => ({ grp: null })); }} style={chipS(!plan.grp)}>{T("plNoGroup")}</button>
+        {P.groups.map(g => <button key={g.id} data-plan-setgrp={g.id} aria-pressed={plan.grp === g.id} onClick={() => { sfxTap(); upd(() => ({ grp: g.id })); }} style={chipS(plan.grp === g.id)}>{g.name}</button>)}
+      </div>
+      <div style={{ display: "flex", gap: 8, marginTop: 14 }}>
+        {P.active === plan.id
+          ? <div data-plan-inuse style={{ flex: 1, padding: 12, borderRadius: 14, textAlign: "center", fontWeight: 800, color: C.mint, ...SUNK() }}>{T("plInUse")}</div>
+          : <button data-plan-use onClick={() => { sfxTap(); setP(cur => ({ ...cur, active: plan.id })); }} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), flex: 1, padding: 12, fontSize: 15 }}>{T("plUse")}</button>}
+        <button data-plan-tips onClick={() => { sfxTap(); setHints(true); }} aria-label={T("plTips")} style={{ ...btnBase, width: 48, flexShrink: 0, borderRadius: 14, ...SUNK(), display: "inline-flex", alignItems: "center", justifyContent: "center", position: "relative" }}><Ico n="bulb" size={21} color={warn ? C.signal : C.dim} />{warn && <span data-plan-warn style={{ position: "absolute", top: 7, right: 8, width: 8, height: 8, borderRadius: 99, background: C.signal }} />}</button>
+        <button data-plan-del onClick={() => { sfxTap(); setDel(true); }} aria-label={T("plDelete")} style={{ ...btnBase, width: 48, flexShrink: 0, borderRadius: 14, ...SUNK(), display: "inline-flex", alignItems: "center", justifyContent: "center" }}><Ico n="trash" size={20} color={C.dim} /></button>
+      </div>
+      <div style={{ display: "flex", gap: 4, marginTop: 18 }} role="tablist">
+        {PLN.WEEKDAYS.map(d => {
+          const on = d === wd, tr = !PLN.isRest(plan, d);
+          return <button key={d} role="tab" aria-selected={on} data-plan-day={d} data-train={tr ? 1 : 0} onClick={() => { sfxTap(); setWd(d); }} style={{ ...btnBase, flex: 1, minWidth: 0, padding: "9px 0 7px", borderRadius: 11, fontSize: 12, display: "flex", flexDirection: "column", alignItems: "center", gap: 4, ...(on ? { background: C.chalk, color: C.ink } : tr ? { background: `${C.signal}22`, color: C.signal } : { ...SUNK(), color: C.dim }) }}>
+            {wdNames[d - 1]}<span style={{ width: 5, height: 5, borderRadius: 99, background: tr ? (on ? C.ink : C.signal) : "transparent" }} />
+          </button>;
+        })}
+      </div>
+      <Sect title={wdNames[wd - 1]} data-plan-dayview={wd} meta={items.length ? <TypeMarks items={items} data="day" onTap={() => setHints(true)} /> : null}>
+        {!items.length && <div data-plan-rest style={{ display: "flex", gap: 10, alignItems: "flex-start", color: C.dim, fontSize: 14 }}><Ico n="moon" size={20} color={C.sky} style={{ flexShrink: 0, marginTop: 1 }} /><span><b style={{ color: C.chalk }}>{T("plRestDay")}</b><br />{T("plRestInfo")}</span></div>}
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          {items.map((x, i) => {
+            const ex = EX[x.id]; if (!ex) return null;
+            const timed = ex.type === "time" || ex.type === "carry", dur = x.dur || ex.dur;
+            return (
+              <div key={x.id} data-plan-item={x.id} style={{ display: "flex", flexDirection: "column", gap: 8, padding: "10px 12px", borderRadius: 13, background: C.panelHi }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <span style={{ flex: 1, minWidth: 0, fontSize: 15, fontWeight: 700, color: C.chalk }}>{ex.name}<ExQ id={x.id} /></span>
+                  <button data-plan-up={x.id} disabled={!i} aria-label={T("plUp")} onClick={() => { sfxTap(); upd(p => ({ days: PLN.moveItem(p, wd, i, i - 1).days })); }} style={{ ...btnBase, background: "transparent", color: C.dim, padding: 4, opacity: i ? 1 : 0.3, display: "inline-flex" }}><Ico n="arrowUp" size={17} /></button>
+                  <button data-plan-down={x.id} disabled={i === items.length - 1} aria-label={T("plDown")} onClick={() => { sfxTap(); upd(p => ({ days: PLN.moveItem(p, wd, i, i + 1).days })); }} style={{ ...btnBase, background: "transparent", color: C.dim, padding: 4, opacity: i < items.length - 1 ? 1 : 0.3, display: "inline-flex" }}><Ico n="arrowDown" size={17} /></button>
+                  <button data-plan-rm={x.id} aria-label={T("plRemove")} onClick={() => { sfxTap(); upd(p => ({ days: PLN.removeItem(p, wd, x.id).days })); }} style={{ ...btnBase, background: "transparent", color: C.dim, padding: 4, display: "inline-flex" }}><Ico n="x" size={17} /></button>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                    {step(() => upd(p => ({ days: PLN.patchItem(p, wd, x.id, { sets: (x.sets || PLN.DEFAULT_SETS) - 1 }).days })), T("plSets") + " −", "sets-")}
+                    <span data-plan-sets={x.sets} style={{ minWidth: 52, textAlign: "center", fontSize: 13.5, color: C.chalk, fontWeight: 700 }}>{x.sets} {T("plSets")}</span>
+                    {step(() => upd(p => ({ days: PLN.patchItem(p, wd, x.id, { sets: (x.sets || PLN.DEFAULT_SETS) + 1 }).days })), T("plSets") + " +", "sets+")}
+                  </span>
+                  {timed && <span style={{ display: "inline-flex", alignItems: "center", gap: 6, marginLeft: "auto" }}>
+                    {step(() => upd(p => ({ days: PLN.patchItem(p, wd, x.id, { dur: Math.max(5, dur - 5) }).days })), "−5 s", "dur-")}
+                    <span data-plan-dur={dur} data-own={x.dur ? 1 : 0} style={{ minWidth: 54, textAlign: "center", fontSize: 13.5, fontWeight: 700, color: x.dur ? C.signal : C.chalk, lineHeight: 1.1 }}>{fmtHold(dur)}<br /><span style={{ fontSize: 10.5, fontWeight: 600, color: C.dim }}>{T(x.dur ? "plTimeOwn" : "plTimeApp")}</span></span>
+                    {step(() => upd(p => ({ days: PLN.patchItem(p, wd, x.id, { dur: Math.min(1800, dur + 5) }).days })), "+5 s", "dur+")}
+                    {x.dur && <button data-plan-dur-reset onClick={() => { sfxTap(); upd(p => ({ days: PLN.patchItem(p, wd, x.id, { dur: null }).days })); }} aria-label={T("plTimeReset")} style={{ ...btnBase, background: "transparent", color: C.dim, padding: 4, display: "inline-flex" }}><Ico n="undo" size={16} /></button>}
+                  </span>}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+          <button data-plan-add onClick={() => { sfxTap(); setAdding(true); }} disabled={items.length >= PLN.MAX_ITEMS} style={{ ...btnBase, flex: 1, padding: "11px 12px", borderRadius: 12, border: `1.5px dashed ${C.line}`, background: "transparent", color: C.sky, fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}><Ico n="plus" size={17} sw={2.4} />{T("plAddEx")}</button>
+          {items.length > 0 && <button data-plan-copy onClick={() => { sfxTap(); setCopy(true); }} aria-label={T("plCopyTo")} style={{ ...btnBase, width: 46, borderRadius: 12, ...SUNK(), display: "inline-flex", alignItems: "center", justifyContent: "center" }}><Ico n="copy" size={18} color={C.dim} /></button>}
+        </div>
+      </Sect>
+      {adding && (
+        <Sheet title={T("plAddEx")} onClose={() => setAdding(false)}>
+          <ExLibrary picked={items.map(x => x.id)} onPick={id => upd(p => ({ days: (items.some(x => x.id === id) ? PLN.removeItem(p, wd, id) : PLN.addItem(p, wd, id)).days }))} />
+        </Sheet>
+      )}
+      {copy && (
+        <Sheet title={T("plCopyTo")} onClose={() => setCopy(false)} short>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
+            {PLN.WEEKDAYS.filter(d => d !== wd).map(d => <button key={d} data-plan-copy-to={d} onClick={() => { sfxTap(); upd(p => ({ days: PLN.copyDay(p, wd, d).days })); setCopy(false); setWd(d); }} style={{ ...btnBase, padding: "12px 0", borderRadius: 12, ...SUNK(), color: C.chalk, fontSize: 14 }}>{wdNames[d - 1]}</button>)}
+          </div>
+        </Sheet>
+      )}
+      {hints && <PlanHintsSheet plan={plan} onClose={() => setHints(false)} />}
+      {del && <ConfirmBox icon="trash" danger title={T("plDeleteQ", { name: planTitle(plan) })} text={T("plDeleteD")} yes={T("plDelete")} yesData={{ "data-plan-del-yes": true }} onNo={() => setDel(false)} onYes={() => { setDel(false); setP(cur => PLN.delPlan(cur, plan.id)); onBack(); }} />}
+    </div>
+  );
+}
+
 function ShopTab({ history, profile, setProfile, onGo }) {
   const es = useMemo(() => econState(history, profile), [history, profile]);
   const { bal, sh, earned, own, chests } = es;
@@ -10451,6 +10685,7 @@ export default function App() {
   const [setPage0, setSetPage] = useState(null); // Settings opens on this page (1.5.5: "exercises" from Home)
   const [setRet, setSetRet] = useState(null); // 1.8.1: where that page goes back to ({screen, pager, page})
   const [histEdit, setHistEdit] = useState(null); // date whose workout opens in the History editor
+  const [plansOpen, setPlansOpen] = useState(null); // 1.9.0: {plan: id} opens that plan in the editor
   const go = (id, opt) => { if (id !== screen) sfxTap(); setScreen(id); setMenuOpen(false); if (session) setSessionOpen(false); setHistEdit(opt && opt.edit ? opt.edit : null); setSetPage(opt && opt.page ? opt.page : null); setSetRet(opt && opt.ret ? opt.ret : null); setChatWith(null); };
   const [howId, setHowId] = useState(null);
   openHowToGlobal = setHowId;
@@ -10789,6 +11024,7 @@ export default function App() {
                 {screen === "settings" && <SettingsTab initPage={setPage0} ret={setRet ? { label: T(SCREEN_TITLE[setRet.screen]), go: () => { if (setRet.pager) PAGER_START[setRet.pager] = setRet.page; go(setRet.screen); } } : null} settings={settings} setSettings={setSettings} history={history} profile={profile} setProfile={setProfile}
                   kcal={kcal} autoBk={autoBk} onAutoBackup={runAutoBackup}
                   onImport={importAll} acct={acct} cloudBk={cloudBk} onAcctOpen={() => go("friends")} onCloudRestore={restoreFromCloud} onCloudBackupNow={cloudBackupNow} onSignOut={signOut} onDeleteAccount={deleteAccount} />}
+                {screen === "plans" && <PlansTab profile={profile} setProfile={setProfile} history={history} open={plansOpen} onOpened={() => setPlansOpen(null)} />}
                 {screen === "shop" && <ShopTab history={history} profile={profile} setProfile={setProfile} onGo={go} />}
                 {screen === "game" && <GameTab history={history} profile={profile} setProfile={setProfile} acct={acct} onPlay={sv => { if (sv.mode !== "tut") gameSave(sv); setGamePlay(sv); }} />}
                 {screen === "friends" && <OpenInApp />}

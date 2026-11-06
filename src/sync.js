@@ -1,4 +1,5 @@
 import { mergeShop } from "./economy.js";
+import { mergePlans } from "./plans.js";
 // Web ↔ phone sync (1.7.0, Michael: "merge, not only backup"). Every device signed in to the same account keeps its
 // data in the account's cloud backup (backups/{uid}); when another device changes it, this one merges it in, and the
 // result goes back up. Merging never loses a workout:
@@ -74,6 +75,8 @@ export function mergeProfile(lp, rp, ml, mr, first) {
   if (lp.claim2 || rp.claim2) out.claim2 = { a: maxMap((lp.claim2 || {}).a, (rp.claim2 || {}).a), r: maxMap((lp.claim2 || {}).r, (rp.claim2 || {}).r) };
   // 1.9.0: purchases and opened chests from both sides (each purchase has an id, so none is lost or counted twice)
   if (lp.shop || rp.shop) out.shop = mergeShop(lp.shop, rp.shop);
+  // 1.9.0: workout plans and their groups by id (newer change wins, deletions travel as tombstones)
+  if (lp.plans || rp.plans) out.plans = mergePlans(lp.plans, rp.plans);
   if (!out.name) out.name = lp.name || rp.name || "User";
   return out;
 }

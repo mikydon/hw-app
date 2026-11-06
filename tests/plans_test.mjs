@@ -1,0 +1,75 @@
+// 1.9.0 plans screen: recommended tab, new plan numbering, editor (days, exercises, sets, own hold time), groups,
+// sorting, delete, persistence after reload.
+import { start, T, shot } from "./harness.mjs";
+const h = await start({ clock: new Date(2026, 10, 4, 10, 0).getTime() });
+const p = h.page;
+const go = async scr => { await p.click("[data-menu-btn]"); await p.click(`[data-nav-box] [data-screen="${scr}"]`); await p.waitForTimeout(500); };
+await go("plans");
+T.ok(await p.locator("[data-plans]").count() === 1, "plans screen opens from the menu");
+T.ok(await p.locator("[data-plan-rec] [data-plan-inuse]").count() === 1, "recommended plan is in use by default");
+T.eq(await p.locator("[data-rec-day]").count(), 3, "A, B, C listed");
+await shot(p, "plans_rec");
+await p.click('[data-plans-seg="mine"]');
+T.ok(await p.locator("[data-plans-empty]").isVisible(), "empty list text");
+await p.click("[data-plan-new]");
+T.ok(await p.locator("[data-plan-editor]").count() === 1, "new plan opens the editor");
+T.eq(await p.getAttribute("[data-plan-name]", "placeholder"), "Workout Plan 1", "default name Workout Plan 1");
+// Monday: add push-up + plank
+await p.click('[data-plan-day="1"]');
+T.ok(await p.locator("[data-plan-rest]").isVisible(), "empty day = rest day");
+await p.click("[data-plan-add]");
+await p.fill("[data-lib-search]", "press-up");
+T.ok(await p.locator('[data-lib-row="k1"] [data-lib-aka]').count() === 1, "alias search shows the matched alias");
+await p.click('[data-lib-pick="k1"]');
+await p.fill("[data-lib-search]", "plank");
+await p.click('[data-lib-pick="b5"]');
+await p.fill("[data-lib-search]", "leg press");
+T.ok(await p.locator("[data-lib-more]").count() === 1, "machines hidden by default, 'more' button shown");
+await p.click("[data-lib-more]");
+await p.click('[data-lib-pick="mc_leg_press"]');
+await p.keyboard.press("Escape").catch(() => {});
+await p.locator(".sheetBox button[aria-label]").first().click();
+await p.waitForTimeout(400);
+T.eq(await p.locator("[data-plan-item]").count(), 3, "three exercises on Monday");
+await p.click('[data-plan-item="k1"] [data-step="sets+"]');
+T.eq(await p.getAttribute('[data-plan-item="k1"] [data-plan-sets]', "data-plan-sets"), "4", "sets 3 → 4");
+await p.click('[data-plan-item="b5"] [data-step="dur+"]');
+T.eq(await p.getAttribute('[data-plan-item="b5"] [data-plan-dur]', "data-own"), "1", "own hold time set");
+await p.click('[data-plan-item="b5"] [data-plan-dur-reset]');
+T.eq(await p.getAttribute('[data-plan-item="b5"] [data-plan-dur]', "data-own"), "0", "reset brings the recommended time back");
+await p.click('[data-plan-down="k1"]');
+T.eq(await p.locator("[data-plan-item]").evaluateAll(n => n.map(x => x.dataset.planItem)), ["b5", "k1", "mc_leg_press"], "move down");
+await p.click("[data-plan-copy]"); await p.click('[data-plan-copy-to="3"]');
+T.eq(await p.getAttribute('[data-plan-day="3"]', "data-train"), "1", "copied to Wednesday");
+await p.fill("[data-plan-name]", "Push day"); await p.click('[data-plan-day="1"]');
+await p.click("[data-plan-use]");
+T.ok(await p.locator("[data-plan-editor] [data-plan-inuse]").count() === 1, "plan in use");
+await shot(p, "plans_editor");
+await p.click("[data-plan-tips]");
+T.ok(await p.locator('[data-plan-hints] [data-hint="rest"]').count() === 1, "rest-in-a-row warning");
+await p.locator(".sheetBox button[aria-label]").first().click(); await p.waitForTimeout(300);
+await p.click("[data-plan-back]");
+// second and third plan, delete the 2nd, the next is 4
+for (let i = 0; i < 2; i++) { await p.click("[data-plan-new]"); await p.click("[data-plan-back]"); }
+T.eq(await p.locator("[data-plan-card]").count(), 3, "3 plans");
+const titles = await p.locator("[data-plan-card]").allInnerTexts();
+T.ok(titles[0].includes("Workout Plan 3"), "date desc: newest first");
+await p.locator("[data-plan-card]").nth(1).click(); await p.click("[data-plan-del]"); await p.click("[data-plan-del-yes]");
+await p.waitForTimeout(300);
+T.eq(await p.locator("[data-plan-card]").count(), 2, "deleted one");
+await p.click("[data-plan-new]"); T.eq(await p.getAttribute("[data-plan-name]", "placeholder"), "Workout Plan 4", "numbers not reused: 4"); await p.click("[data-plan-back]");
+// groups
+await p.click("[data-plan-newgrp]"); await p.fill("[data-plan-grp-input]", "Gym"); await p.click("[data-plan-grp-save]");
+T.ok(await p.locator('[data-plan-grp][aria-pressed="true"]').innerText() === "Gym", "new group selected");
+T.eq(await p.locator("[data-plan-card]").count(), 0, "no plan in Gym yet");
+await p.click("[data-plan-new]"); T.ok(await p.locator('[data-plan-setgrp][aria-pressed="true"]').innerText() === "Gym", "new plan made in the group"); await p.click("[data-plan-back]");
+T.eq(await p.locator("[data-plan-card]").count(), 1, "one plan in Gym");
+await p.click('[data-plan-grp=""]');
+await p.click("[data-plan-sort]");
+const byName = await p.locator("[data-plan-card]").allInnerTexts();
+T.ok(byName[0].includes("Workout Plan 5"), "name desc: Workout Plan 5 first");
+await p.reload(); await p.waitForTimeout(800);
+await go("plans");
+T.eq(await p.locator("[data-plan-card]").count(), 4, "plans kept after reload");
+T.eq(h.errors, [], "no page errors");
+await h.close(); T.done();
