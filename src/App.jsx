@@ -8,6 +8,7 @@ import { RANK_AT, EX_GROUPS } from "./ranks.js";
 import { LIB, W_RANK, wSetScore, wRankAt, REP_CAP, GROUPS_ORDER, EQUIP_ORDER } from "./exlib.js";
 import { EX_NAMES } from "./exnames.js";
 import * as PLN from "./plans.js";
+import * as BD from "./body.js";
 import * as GM from "./game/engine.js";
 import { fairStats } from "./fair.js";
 import EN from "./i18n/en.js";
@@ -3962,7 +3963,7 @@ function TrainTab({ history, onStart, onStartPlan, onStartFree, onFreeze, ui, se
                     <button key={x.id} onClick={() => setHowEx(x.id)} data-home-ex={i} style={{ ...btnBase, display: "flex", width: "100%", alignItems: "center", gap: 12, textAlign: "left", background: "transparent", color: C.chalk, padding: "14px 16px", borderRadius: 0, borderTop: i ? `1px solid ${C.line}` : "none" }}>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: 16, fontWeight: 700 }}>{ex.name}<ExQ id={x.id} onOpen={() => setHowEx(x.id)} /></div>
-                        <div style={{ fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2 }}>{x.sets} {T("plSets")}{x.dur ? ` · ${fmtHold(x.dur)}` : ""} · {ex.muscles}</div>
+                        <div data-ex-sub style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: C.sky, fontWeight: 800, marginTop: 4 }}><span data-ex-sets>{x.sets}×</span>{x.dur ? <span style={{ color: C.dim, fontWeight: 700 }}>{fmtHold(x.dur)}</span> : null}<MuscleIcons id={x.id} /></div>
                         {rankAt(x.id) && <div style={{ marginTop: 5 }}><RankBadge id={x.id} best={b} small /></div>}
                       </div>
                       <div style={{ textAlign: "right", flexShrink: 0, maxWidth: "45%" }}>
@@ -3988,7 +3989,7 @@ function TrainTab({ history, onStart, onStartPlan, onStartFree, onFreeze, ui, se
                   style={{ ...btnBase, display: "flex", width: "100%", alignItems: "center", gap: 12, textAlign: "left", background: "transparent", color: C.chalk, padding: "14px 16px", borderRadius: 0, borderTop: i ? `1px solid ${C.line}` : "none" }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 16, fontWeight: 700 }}>{ex.name}<ExQ id={id} onOpen={() => setHowEx(id)} /></div>
-                    <div style={{ fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2 }}>{ex.muscles}</div>
+                    <div data-ex-sub style={{ marginTop: 4 }}><MuscleIcons id={id} /></div>
                     <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 5, flexWrap: "wrap" }}>
                       <RankBadge id={id} best={b} small />
                       {n && <span style={{ fontSize: 11, color: C.dim, fontWeight: 500, display: "inline-flex", alignItems: "center", gap: 3 }}><RankIcon r={RANKS.indexOf(n.rank)} size={12} />{T("toNext", { n: n.need })}</span>}
@@ -5636,6 +5637,64 @@ function ProfileHero({ m, own, onPhoto, onEditProfile, onLooks, onStreak, extra,
         </Sect>
   );
 }
+// 1.9.0 body ranks (Michael, Nov 6: like a ranked body map, own drawing, the header of the Profile page). A body part's
+// rank = the average of its two best exercises' ranks (rounded down; with one exercise the second counts as Iron), so
+// one great exercise isn't enough: train the part in more ways. Exercises count for the parts of their MAIN muscles.
+function bodyRanks(m) {
+  const out = Object.fromEntries(PLN.FAMILIES.map(f => [f, { r: null, ids: [] }]));
+  RANKED_IDS.forEach(id => {
+    const b = m.rk[id]; if (b === null || b === undefined || !rankAt(id) || !LIB[id]) return;
+    const ri = rankIdx(id, b);
+    new Set(LIB[id].m.map(x => PLN.MUSCLE_FAMILY[x]).filter(Boolean)).forEach(f => out[f].ids.push([id, ri]));
+  });
+  PLN.FAMILIES.forEach(f => { const l = out[f].ids.sort((a, b) => b[1] - a[1]); if (l.length) out[f].r = Math.floor((l[0][1] + (l[1] ? l[1][1] : 0)) / 2); });
+  const sum = PLN.FAMILIES.reduce((a, f) => a + (out[f].r === null ? 0 : out[f].r + 1), 0);
+  return { fam: out, all: Math.floor(sum / PLN.FAMILIES.length) - 1 };
+}
+function BodyRanks({ m, onPick }) {
+  const br = useMemo(() => bodyRanks(m), [m.rk]);
+  const [open, setOpen] = useState(null);
+  const plate = hexMix(C.panelHi, C.chalk, 0.16), base = hexMix(C.panelHi, C.chalk, 0.08);
+  const col = p => { const r = br.fam[p.f].r; return r === null ? null : RANKS[r].color; };
+  const tap = e => { const el = e.target.closest && e.target.closest("[data-fam]"); if (!el) return; sfxTap(); setOpen(el.getAttribute("data-fam")); };
+  const fig = side => <svg data-body-side={side} viewBox={`-2 0 ${BD.BODY_W + 4} ${BD.BODY_H}`} onClick={tap} style={{ height: "100%", width: "auto", display: "block", cursor: "pointer", overflow: "visible" }} dangerouslySetInnerHTML={{ __html: BD.bodySvg(side, { base, plate, gap: C.panel, col }) }} />;
+  const f = open && br.fam[open];
+  return (
+    <Sect data-body-ranks title={<>{T("bodyTitle")}<InfoQ title={T("bodyTitle")} text={T("bodyD")} /></>} meta={br.all >= 0 ? <RankTag r={br.all} size={15} /> : null} style={{ marginTop: 0 }}>
+      <style>{`[data-body-ranks] [data-fam]{transition:filter ${MO.t1}} [data-body-ranks] [data-fam]:hover{filter:brightness(1.18)}`}</style>
+      <div data-body-figs style={{ height: 220, display: "flex", justifyContent: "center", gap: 18 }}>{fig("front")}{fig("back")}</div>
+      <div data-body-legend style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 6, marginTop: 12 }}>
+        {PLN.FAMILIES.map(k => { const r = br.fam[k].r; return (
+          <button key={k} type="button" data-body-fam={k} data-rank={r === null ? -1 : r} onClick={() => { sfxTap(); setOpen(k); }} aria-label={`${T("fam_" + k)}: ${r === null ? T("bodyNoneShort") : RANKS[r].name}`}
+            style={{ ...btnBase, display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 8px 3px 3px", borderRadius: 99, fontSize: 11.5, fontWeight: 800, color: r === null ? C.dim : C.chalk, background: SOFT(), border: `1px solid ${r === null ? "transparent" : RANKS[r].color + "88"}` }}>
+            <BodyIco spec={BD.FAMILY_ICON[k]} size={20} hi={r === null ? C.dim : RANKS[r].color} />{T("fam_" + k)}
+          </button>
+        ); })}
+      </div>
+      {f && (
+        <Sheet title={T("fam_" + open)} onClose={() => setOpen(null)} short>
+          <div data-body-sheet={open} style={{ display: "flex", alignItems: "center", gap: 14 }}>
+            <BodyIco spec={BD.FAMILY_ICON[open]} size={64} hi={f.r === null ? C.dim : RANKS[f.r].color} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              {f.r === null ? <div style={{ fontSize: 14, color: C.dim, lineHeight: 1.5 }}>{T("bodyNone")}</div>
+                : <><RankTag r={f.r} size={20} fs={17} /><div style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.45, marginTop: 6 }}>{T("bodyHow")}</div></>}
+            </div>
+          </div>
+          {f.ids.length > 0 && <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 14 }}>
+            {f.ids.map(([id, ri], k) => (
+              <button key={id} type="button" data-body-ex={id} data-rank={ri} onClick={() => { if (!onPick) return; sfxTap(); setOpen(null); onPick(id); }}
+                style={{ ...btnBase, fontWeight: 400, display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 12, textAlign: "left", color: C.chalk, background: SOFT(), opacity: k < 2 ? 1 : 0.7 }}>
+                <MuscleIcons id={id} size={22} />
+                <span style={{ flex: 1, minWidth: 0, fontSize: 14, fontWeight: 800 }}>{EX[id] ? EX[id].name : id}</span>
+                <RankTag r={ri} size={15} fs={12} />
+              </button>
+            ))}
+          </div>}
+        </Sheet>
+      )}
+    </Sect>
+  );
+}
 function ProfilePage({ m, own, onEditProfile, onEditSlot, onStreak, onPhoto, onPickRank, onLooks, extra, top, claim }) {
   const pg = usePager("pf", 4, PF_LAY);
   const [focus, setFocus] = useState(null);
@@ -5671,6 +5730,8 @@ function ProfilePage({ m, own, onEditProfile, onEditSlot, onStreak, onPhoto, onP
             <span style={{ flexShrink: 0, fontSize: 14, fontWeight: 900, color: C.signalInk, background: C.signal, borderRadius: 12, padding: "9px 13px" }}>{T("claimOpen")}</span>
           </button>
         )}
+        {/* 1.9.0: the body ranks first, as the page's header (Michael) */}
+        <BodyRanks m={sm} onPick={onPickRank} />
         {/* the basics: photo, name, level, streak */}
         <ProfileHero m={m} own={own} onPhoto={onPhoto} onEditProfile={onEditProfile} onLooks={onLooks} onStreak={onStreak} extra={extra} />
         {/* the showcase */}
@@ -7397,7 +7458,7 @@ function ExercisesPage({ settings, set, history, onBack, backLabel }) {
                   <div key={id} style={{ display: "flex", alignItems: "center", borderTop: i ? `1px solid ${C.line}` : "none", opacity: on ? 1 : 0.72 }}>
                     <button onClick={() => setHowEx(id)} style={{ ...btnBase, flex: 1, minWidth: 0, textAlign: "left", background: "transparent", color: C.chalk, padding: "12px 8px 12px 16px", borderRadius: 0 }}>
                       <div style={{ fontSize: 15, fontWeight: 700 }}>{ex.name}<ExQ id={id} onOpen={() => setHowEx(id)} /></div>
-                      <div style={{ fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2 }}>{ex.muscles}</div>
+                      <div style={{ marginTop: 4 }}><MuscleIcons id={id} /></div>
                       <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 5 }}>
                         {d && <span style={{ fontSize: 11, fontWeight: 700, color: C.signal, border: `1.5px solid ${C.signal}55`, borderRadius: 99, padding: "1px 8px" }}>{T("dayN", { d })}</span>}
                         {!d && <span style={{ fontSize: 11, fontWeight: 700, color: C.dim, border: `1.5px solid ${C.line}`, borderRadius: 99, padding: "1px 8px" }}>{T("exAlt")}</span>}
@@ -7692,7 +7753,7 @@ function SwapSheet({ item, exclude, history, onPick, onClose }) {
             <button key={id} onClick={() => onPick(id)} style={{ ...btnBase, textAlign: "left", background: C.panelHi, color: C.chalk, padding: "12px 14px", border: `1.5px solid ${C.line}`, display: "flex", alignItems: "center", gap: 10 }}>
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 15, fontWeight: 700 }}>{ex.name}<ExQ id={id} /></div>
-                <div style={{ fontSize: 12, color: C.dim, marginTop: 2 }}>{ex.muscles}{l ? T("lastShort", { v: l.res.map(r => fmtRes(r, "")).join("/") }) : ""}</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: C.dim, marginTop: 4 }}><MuscleIcons id={id} size={20} />{l ? <span>{T("lastShort", { v: l.res.map(r => fmtRes(r, "")).join("/") }).replace(/^[\s.·,]+/, "")}</span> : null}</div>
               </div>
               <DiffChip id={id} pad="2px 8px" />
               {ex.tag && <span style={{ fontSize: 11, fontWeight: 700, color: C.sky, border: `1.5px solid ${C.sky}55`, borderRadius: 99, padding: "2px 8px", whiteSpace: "nowrap" }}>{T("tag_" + ex.tag)}</span>}
@@ -7908,7 +7969,7 @@ function Work({ item, rounds, history, sessionResults, sessionKg, onRecord, onSw
           {onSwap && ph === "ready" && <button onClick={() => { sfxTap(); setSwap(true); }} style={{ ...ghostBtn, padding: "8px 12px", color: C.sky, borderColor: `${C.sky}88`, whiteSpace: "nowrap" }}>{T("swap")}</button>}
         </div>
       </div>
-      <div style={{ fontSize: 13, color: C.dim, marginTop: 8 }}>{ex.muscles}{ex.tempo ? `. ${T("tempo")}: ${ex.tempo}` : ""}</div>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: C.dim, marginTop: 8 }}><MuscleIcons id={item.id} size={24} />{ex.tempo ? <span>{T("tempo")}: {ex.tempo}</span> : null}</div>
       <div style={{ fontSize: 13, color: C.chalk, marginTop: 6 }}>{lastLine}</div>
       {wt && prevVal === null && (
         <div data-kg-start style={{ display: "flex", gap: 9, alignItems: "flex-start", marginTop: 10, fontSize: 13, color: C.chalk, lineHeight: 1.45, ...SUNK(), borderRadius: 14, padding: "9px 12px" }}>
@@ -8859,13 +8920,31 @@ function TypeMarks({ items, size = 18, onTap, data }) {
 }
 // 1.9.0 (Michael, Nov 6: the four bare icons read like hieroglyphs): the same as chips with a word. Bright = this day
 // trains it, faint = it doesn't; a tap explains.
+// 1.9.0 (Michael, Nov 6: "icons instead of these texts", references: body parts with the muscle lit): own body drawing
+// (src/body.js). A muscle icon = a crop of the body (or the flexed arm) with that muscle in the main colour.
+function hexMix(a, b, t) {
+  const p = h => { h = String(h).replace("#", ""); if (h.length === 3) h = h.split("").map(c => c + c).join(""); return [0, 2, 4].map(i => parseInt(h.slice(i, i + 2), 16) || 0); };
+  const x = p(a), y = p(b); return "#" + x.map((v, i) => Math.round(v + (y[i] - v) * t).toString(16).padStart(2, "0")).join("");
+}
+function BodyIco({ spec, size = 22, hi, title, style }) {
+  if (!spec) return null;
+  const { viewBox, html } = BD.muscleIconSvg(spec, { base: hexMix(C.panelHi, C.chalk, 0.22), plate: hexMix(C.panelHi, C.chalk, 0.32), gap: C.ink, hi: hi || C.signal });
+  return <svg data-body-ico={spec[1].join(",")} viewBox={viewBox} width={size} height={size} role={title ? "img" : undefined} aria-hidden={title ? undefined : "true"} aria-label={title} style={{ flexShrink: 0, display: "block", ...style }} dangerouslySetInnerHTML={{ __html: html }} />;
+}
+// an exercise's main muscles as icons (one per picture); the names stay in the how-to sheet
+function MuscleIcons({ id, size = 26, gap = 4 }) {
+  const x = LIB[id]; if (!x) return null;
+  const seen = new Set(), list = [];
+  x.m.forEach(m => { const k = BD.iconKey(m); if (BD.MUSCLE_ICON[m] && !seen.has(k)) { seen.add(k); list.push(m); } });
+  return <span data-muscle-icons={id} title={EX[id] ? EX[id].muscles : ""} aria-label={EX[id] ? EX[id].muscles : ""} role="img" style={{ display: "inline-flex", alignItems: "center", gap, verticalAlign: "middle" }}>{list.slice(0, 4).map(m => <BodyIco key={m} spec={BD.MUSCLE_ICON[m]} size={size} />)}</span>;
+}
 function TypeChips({ items }) {
   const has = PLN.dayTypes(items || [], LIB);
   return (
     <span data-type-chips role="button" tabIndex={0} onClick={() => { sfxTap(); openInfoGlobal && openInfoGlobal({ title: T("plTypesT"), text: [T("plTypesD")] }); }} style={{ display: "inline-flex", gap: 5, flexWrap: "wrap", cursor: "pointer" }}>
       {PLN.TYPES.map(t => { const on = has.includes(t); return (
         <span key={t} data-type={t} data-on={on ? 1 : 0} style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 8px 3px 6px", borderRadius: 99, fontSize: 11.5, fontWeight: 800, ...(on ? { background: `${C.signal}1f`, color: C.signal, border: `1px solid ${C.signal}55` } : { color: C.dim, border: `1px dashed ${C.line}`, opacity: 0.75 }) }}>
-          <Ico n={TYPE_ICON[t]} size={13} color={on ? C.signal : C.dim} />{T("grp_" + t)}
+          <BodyIco spec={BD.TYPE_ICON[t]} size={18} hi={on ? C.signal : C.dim} style={{ margin: "-2px 0" }} />{T("grp_" + t)}
         </span>
       ); })}
     </span>
