@@ -69,18 +69,20 @@ export function earned(inp) {
     ranks: Object.values(inp.ranks || {}).reduce((a, r) => a + (r >= 0 ? (r + 1) * (r + 2) : 0), 0),
     deck: (inp.runsWon || 0) * EARN.run,
     chests: (inp.chests || []).reduce((a, n) => a + (n || 0), 0),
+    codes: (inp.codes || []).reduce((a, n) => a + (n || 0), 0), // 1.9.0: diamonds from codes (redeemCode)
   };
   return { total: Object.values(parts).reduce((a, n) => a + n, 0), parts };
 }
 // profile.shop = { buys: [{i, w, p, ts, from?, to?}], chest: {week: result} }. Every purchase is its own entry with an
 // id, so two devices that bought something while offline both keep their purchases when they sync (mergeShop: union).
 // Everything else (spent, freezes, boosts, owned looks) is derived from those entries.
-const raw = profile => { const s = (profile && profile.shop) || {}; return { buys: Array.isArray(s.buys) ? s.buys : [], chest: s.chest && typeof s.chest === "object" ? s.chest : {} }; };
+// 1.9.0: codes = {CODE: {d, ts}} = codes this account redeemed (each once; the diamonds count like earned ones)
+const raw = profile => { const s = (profile && profile.shop) || {}; const obj = x => (x && typeof x === "object" && !Array.isArray(x) ? x : {}); return { buys: Array.isArray(s.buys) ? s.buys : [], chest: obj(s.chest), codes: obj(s.codes) }; };
 export function shopOf(profile) {
-  const { buys, chest } = raw(profile);
+  const { buys, chest, codes } = raw(profile);
   const chests = Object.values(chest).filter(Boolean);
   return {
-    buys, chest,
+    buys, chest, codes,
     spent: buys.reduce((a, b) => a + (b.p || 0), 0),
     fz: buys.filter(b => b.w === "freeze").length,
     boosts: [...buys.filter(b => b.w === "boost"), ...chests.filter(c => c.kind === "boost")].filter(b => b.from && b.to).map(b => ({ from: b.from, to: b.to })),
@@ -93,7 +95,11 @@ export function mergeShop(a, b) {
   [...ra.buys, ...rb.buys].forEach(x => { if (x && x.i && !seen.has(x.i)) seen.set(x.i, x); });
   const chest = { ...rb.chest };
   Object.entries(ra.chest).forEach(([w, c]) => { if (!chest[w] || (c && chest[w].ts && c.ts && c.ts < chest[w].ts)) chest[w] = c; }); // the first opening counts
-  return { ...b, ...a, buys: [...seen.values()].sort((x, y) => (x.ts || 0) - (y.ts || 0)), chest };
+  const codes = { ...rb.codes };
+  Object.entries(ra.codes).forEach(([k, c]) => { if (!codes[k] || (c && codes[k].ts && c.ts && c.ts < codes[k].ts)) codes[k] = c; }); // the first redemption counts
+  const out = { ...b, ...a, buys: [...seen.values()].sort((x, y) => (x.ts || 0) - (y.ts || 0)), chest };
+  if (Object.keys(codes).length) out.codes = codes; else delete out.codes;
+  return out;
 }
 export const balance = (inp, profile) => earned(inp).total - shopOf(profile).spent;
 
@@ -144,6 +150,21 @@ export function openChest(profile, week, now = Date.now()) {
   if (res.kind === "boost") res = { ...res, ...nextBoost(sh, now) };
   return { shop: { ...((profile && profile.shop) || {}), buys: sh.buys, chest: { ...sh.chest, [week]: res } }, res };
 }
+// 1.9.0 (Michael, Nov 7: "a field in the Shop for codes, set up on a server so nobody needs an update; I make up any
+// code, e.g. Jozo, and it gives 200 diamonds"): a code lives in Firestore promo/{CODE} {d, until?}; normCode makes what
+// was typed match the document's name (capitals, no spaces). redeemCode records it once in profile.shop.codes.
+export const normCode = s => String(s || "").normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toUpperCase().replace(/[^A-Z0-9_-]/g, "");
+export const CODE_MAX_D = 100000;
+export function redeemCode(profile, code, promo, now = Date.now()) {
+  const c = normCode(code), sh = shopOf(profile);
+  if (!c || c.length < 2 || c.length > 32) throw new Error("code-bad");
+  if (sh.codes[c]) throw new Error("code-used");
+  if (!promo || !(promo.d > 0)) throw new Error("code-none");
+  if (promo.until && now > promo.until) throw new Error("code-old");
+  const d = Math.min(CODE_MAX_D, Math.floor(promo.d));
+  return { shop: { ...((profile && profile.shop) || {}), buys: sh.buys, chest: sh.chest, codes: { ...sh.codes, [c]: { d, ts: now } } }, d, code: c };
+}
+export const codeDiamonds = profile => Object.values(shopOf(profile).codes).map(c => (c && c.d > 0 ? Math.min(CODE_MAX_D, Math.floor(c.d)) : 0));
 export const chestDiamonds = profile => Object.values(shopOf(profile).chest).map(c => (c && c.kind === "dia" ? c.n : 0));
 
 // Looks won by playing (not bought): which ones this person has earned. got = {obsidian, early, night, comeback, deck, streak30, season}

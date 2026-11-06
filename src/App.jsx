@@ -3161,10 +3161,11 @@ const FS_H = 106; // bar 94 px + 12 px from the bottom edge
 // --fsH = the bar's real height + its 12 px gap (longer words wrap on a narrow phone), set by FloatStart
 // 1.8.2: the same 124 px every other screen has at its end (with the page's 18 px and the screen's 24 px), more only if the bar is taller
 function FsSpace() { return <div data-fstart-space aria-hidden="true" style={{ height: `calc(var(--sab, 0px) + max(var(--fsH, ${FS_H}px) + 12px, 124px) - 42px + var(--ftH, 0px))` }} />; }
-// 1.9.0 (Michael, Nov 6, 22:13, like the bottom bar of other apps; icons only): a screen's page switch floats at the
-// bottom: one icon per page, the open page in a lit capsule with its name. Above the Start bar on Home (--fsH) and the
-// mini player (--mpH); it sets --ftH so the pages keep room for it. items: [{label, icon, badge, data}].
-function FloatTabs({ name, items, active, onPick, extra = {} }) {
+// 1.9.0 (Michael, Nov 6, 22:13, like the bottom bar of other apps): a screen's page switch floats at the bottom.
+// Nov 7 (Michael: "much smaller, the big one looks awful"; like his Buffro picture): a small capsule, one icon per
+// page with its name tiny under it; the lit pill slides with the pages (finger or tap). Above the Start bar on Home
+// (--fsH) and the mini player (--mpH); it sets --ftH so the pages keep room for it. items: [{label, icon, badge, data}].
+function FloatTabs({ name, items, active, onPick, knob, extra = {} }) {
   const boxRef = useRef(null);
   useLayoutEffect(() => {
     const el = boxRef.current, root = document.documentElement; if (!el) return;
@@ -3173,21 +3174,26 @@ function FloatTabs({ name, items, active, onPick, extra = {} }) {
     const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(put) : null; if (ro) ro.observe(el);
     return () => { if (ro) ro.disconnect(); root.style.removeProperty("--ftH"); };
   }, []);
-  const bar = { background: C.ink, border: `1px solid ${C.line}`, boxShadow: "0 12px 34px rgba(0,0,0,.5)", ...(LOOK === "liquid" ? LIQUID_FLOAT() : LOOK === "glass" ? GLASS() : {}) };
+  const bar = { background: `${C.ink}f2`, border: `1px solid ${C.line}`, boxShadow: "0 10px 28px rgba(0,0,0,.45)", ...(LOOK === "liquid" ? LIQUID_FLOAT() : LOOK === "glass" ? GLASS() : {}) };
+  const n = items.length;
   return createPortal(
     <div data-ftabs={name} style={{ position: "fixed", left: "var(--side, 0px)", right: 0, bottom: "calc(var(--sab, 0px) + 12px + var(--fsH, 0px) + var(--mpH, 0px))", zIndex: 39, display: "flex", justifyContent: "center", padding: "0 12px", pointerEvents: "none" }}>
-      <div aria-hidden="true" data-ftabs-fade style={{ position: "fixed", left: "var(--side, 0px)", right: 0, bottom: 0, height: "calc(var(--sab, 0px) + var(--ftH, 70px) + var(--fsH, 0px) + 22px)", background: `linear-gradient(180deg, ${C.ink}00, ${C.ink}d9 45%, ${C.ink})`, pointerEvents: "none", zIndex: -1 }} />
-      <div ref={boxRef} role="tablist" {...{ [`data-${name}-tabs`]: 1 }} className="ftabs" style={{ pointerEvents: "auto", display: "flex", gap: 4, padding: 6, width: "100%", maxWidth: 436, boxSizing: "border-box", ...bar, borderRadius: 99 }}>
-        {items.map((it, i) => { const on = active === i; return (
-          <button key={i} type="button" role="tab" aria-selected={on} aria-label={it.label} title={it.label} {...{ [`data-${name}-tab`]: it.data !== undefined ? it.data : i }} {...(extra.btn ? extra.btn(i) : {})}
-            onClick={e => { if (extra.cancel && extra.cancel()) return; sfxTap(); onPick(i, e); }}
-            style={{ ...btnBase, position: "relative", display: "flex", alignItems: "center", justifyContent: "center", flex: on ? "1.7 1 auto" : "1 1 0", minWidth: 46, height: 46, padding: on ? "0 16px 0 13px" : "0 10px", borderRadius: 99, background: on ? `${C.signal}24` : "transparent", color: on ? C.signal : C.dim, fontSize: 13.5, fontWeight: 800, transition: `background ${MO.t1}, color ${MO.t1}, padding ${MO.t2} ${MO.ease}, flex-grow ${MO.t2} ${MO.ease}` }}>
-            <span style={{ position: "relative", display: "flex" }}><Ico n={it.icon} size={22} sw={on ? 2.3 : 2} />
-              {it.badge > 0 && <span data-badge={it.badge} aria-hidden="true" style={{ position: "absolute", top: -5, right: -7, minWidth: 16, height: 16, borderRadius: 8, padding: "0 4px", boxSizing: "border-box", background: "#ff5a5a", color: "#fff", fontSize: 10, fontWeight: 800, lineHeight: "16px", textAlign: "center", border: `2px solid ${C.ink}` }}>{it.badge > 9 ? "9+" : it.badge}</span>}
-            </span>
-            <span aria-hidden="true" style={{ display: "block", maxWidth: on ? 130 : 0, marginLeft: on ? 7 : 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", opacity: on ? 1 : 0, transition: `max-width ${MO.t2} ${MO.ease}, margin ${MO.t2} ${MO.ease}, opacity ${MO.t1}` }}>{it.label}</span>
-          </button>
-        ); })}
+      <div aria-hidden="true" data-ftabs-fade style={{ position: "fixed", left: "var(--side, 0px)", right: 0, bottom: 0, height: "calc(var(--sab, 0px) + var(--ftH, 60px) + var(--fsH, 0px) + 18px)", background: `linear-gradient(180deg, ${C.ink}00, ${C.ink}c0 50%, ${C.ink}e6)`, pointerEvents: "none", zIndex: -1 }} />
+      <div ref={boxRef} role="tablist" {...{ [`data-${name}-tabs`]: 1 }} className="ftabs" style={{ pointerEvents: "auto", padding: 4, boxSizing: "border-box", maxWidth: "100%", ...bar, borderRadius: 20 }}>
+        <div style={{ position: "relative", display: "flex" }}>
+          {/* the lit pill: moved by the strip's scroll (usePager), so it glides with the pages */}
+          <span ref={knob} data-ftabs-knob aria-hidden="true" style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: `${100 / n}%`, borderRadius: 16, background: `${C.signal}24`, boxShadow: `inset 0 0 0 1px ${C.signal}30`, transform: knob ? undefined : `translateX(${active * 100}%)`, willChange: "transform" }} />
+          {items.map((it, i) => { const on = active === i; return (
+            <button key={i} type="button" role="tab" aria-selected={on} aria-label={it.label} title={it.label} {...{ [`data-${name}-tab`]: it.data !== undefined ? it.data : i }} {...(extra.btn ? extra.btn(i) : {})}
+              onClick={e => { if (extra.cancel && extra.cancel()) return; sfxTap(); onPick(i, e); }}
+              style={{ ...btnBase, position: "relative", width: n > 3 ? 64 : 70, maxWidth: `calc((100vw - 34px) / ${n})`, height: 46, padding: "0 2px", borderRadius: 16, background: "transparent", color: on ? C.signal : C.dim, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2, transition: `color ${MO.t2}` }}>
+              <span style={{ position: "relative", display: "flex" }}><Ico n={it.icon} size={20} sw={on ? 2.3 : 2} />
+                {it.badge > 0 && <span data-badge={it.badge} aria-hidden="true" style={{ position: "absolute", top: -5, right: -8, minWidth: 15, height: 15, borderRadius: 8, padding: "0 4px", boxSizing: "border-box", background: "#ff5a5a", color: "#fff", fontSize: 9.5, fontWeight: 800, lineHeight: "15px", textAlign: "center", border: `2px solid ${C.ink}` }}>{it.badge > 9 ? "9+" : it.badge}</span>}
+              </span>
+              <span aria-hidden="true" data-ftabs-label style={{ display: "block", maxWidth: "100%", fontSize: 10, fontWeight: 800, lineHeight: 1.1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{it.label}</span>
+            </button>
+          ); })}
+        </div>
       </div>
     </div>,
     document.body
@@ -3218,14 +3224,18 @@ function FloatStart({ show, day, rounds, setRounds, onStart, plan, tabs }) {
       <div aria-hidden="true" data-fstart-fade style={{ position: "fixed", left: "var(--side, 0px)", right: 0, bottom: 0, height: `calc(var(--sab, 0px) + var(--fsH, ${FS_H}px) + 22px)`, background: `linear-gradient(180deg, ${C.ink}00, ${C.ink}d9 45%, ${C.ink})`, pointerEvents: "none", zIndex: -1 }} />
       <div ref={boxRef} data-fstart-box data-rounds-row style={{ display: "flex", gap: 6, width: "100%", maxWidth: 436, padding: 6, borderRadius: 24, boxSizing: "border-box", background: `${C.ink}f5`, border: `1px solid ${C.line}`, boxShadow: "0 12px 34px rgba(0,0,0,.5)", ...(LOOK === "liquid" ? { ...LIQUID_FLOAT(), borderRadius: 26 } : LOOK === "glass" ? { ...GLASS(), borderRadius: 26 } : {}) }}>
         {tabs && (
-          <div role="tablist" {...{ [`data-${tabs.name}-tabs`]: 1 }} style={{ display: "flex", gap: 2, padding: 3, borderRadius: 18, ...SUNK(), flexShrink: 0 }}>
-            {tabs.items.map((it, i) => { const on = tabs.active === i; return (
-              <button key={i} type="button" role="tab" tabIndex={show ? 0 : -1} aria-selected={on} aria-label={it.label} title={it.label} {...{ [`data-${tabs.name}-tab`]: i }} {...tabs.extra.btn(i)}
-                onClick={() => { if (tabs.extra.cancel()) return; sfxTap(); tabs.onPick(i); }}
-                style={{ ...btnBase, width: 42, borderRadius: 15, display: "flex", alignItems: "center", justifyContent: "center", background: on ? `${C.signal}26` : "transparent", color: on ? C.signal : C.dim, transition: `background ${MO.t1}, color ${MO.t1}` }}>
-                <Ico n={it.icon} size={21} sw={on ? 2.3 : 2} />
-              </button>
-            ); })}
+          <div role="tablist" {...{ [`data-${tabs.name}-tabs`]: 1 }} style={{ display: "flex", padding: 3, borderRadius: 18, ...SUNK(), flexShrink: 0 }}>
+            <div style={{ position: "relative", display: "flex" }}>
+              {/* 1.9.0 (Michael, Nov 7: "the bar doesn't keep up"): the lit pill slides with the pages */}
+              <span ref={tabs.knob} data-ftabs-knob aria-hidden="true" style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: `${100 / tabs.items.length}%`, borderRadius: 15, background: `${C.signal}26`, willChange: "transform" }} />
+              {tabs.items.map((it, i) => { const on = tabs.active === i; return (
+                <button key={i} type="button" role="tab" tabIndex={show ? 0 : -1} aria-selected={on} aria-label={it.label} title={it.label} {...{ [`data-${tabs.name}-tab`]: i }} {...tabs.extra.btn(i)}
+                  onClick={() => { if (tabs.extra.cancel()) return; sfxTap(); tabs.onPick(i); }}
+                  style={{ ...btnBase, position: "relative", width: 42, borderRadius: 15, display: "flex", alignItems: "center", justifyContent: "center", background: "transparent", color: on ? C.signal : C.dim, transition: `color ${MO.t2}` }}>
+                  <Ico n={it.icon} size={21} sw={on ? 2.3 : 2} />
+                </button>
+              ); })}
+            </div>
           </div>
         )}
         {plan && (
@@ -3602,9 +3612,9 @@ function SetupCard({ profile, kcal, onFix, onClose }) {
 const PAGER_START = {};
 // same (1.8.2, Michael: Home jumped when the two pages fitted the bar each on their own): the strip always has the
 // height of the tallest page, so switching pages never changes the scroll length
-function usePager(name, n, lay, same) {
+function usePager(name, n, lay, same, start) {
   const pager = useRef(null), pages = useRef([]), knob = useRef(null), ctl = useRef({});
-  const [page, setPage] = useState(() => { const s = PAGER_START[name] || 0; delete PAGER_START[name]; return Math.min(n - 1, s); });
+  const [page, setPage] = useState(() => { const s = PAGER_START[name] !== undefined ? PAGER_START[name] : start || 0; delete PAGER_START[name]; return Math.max(0, Math.min(n - 1, s)); });
   const [pagerEl, setPagerEl] = useState(null); // the strip may appear later (Calories shows a form first)
   const wide = useWide(); // 1.7.0: on a wide screen the pages stand side by side (no tabs, no swiping)
   const [cols, setCols] = useState(n); // how many pages fit next to each other (at least ~340 px each)
@@ -3626,9 +3636,12 @@ function usePager(name, n, lay, same) {
     if (c.stop) c.stop();
     if (Math.abs(to - from) < 1) return;
     if (reducedMotion()) { el.scrollLeft = to; return; }
-    const dur = 300 + 90 * Math.min(2, Math.abs(to - from) / W - 1 > 0 ? 1 : 0), t0 = performance.now();
-    const ease = t => 1 - Math.pow(1 - t, 4); // close to MO.ease: quick start, soft landing
+    // 1.9.0 (Michael, Nov 7: a tap "jumped" while a swipe glided): longer and eased at both ends, so the page is seen
+    // moving the whole way like after a swipe; the lit tab is set at once and its pill slides with the strip
+    const dur = 420 + 100 * Math.min(1, Math.max(0, Math.abs(to - from) / W - 1)), t0 = performance.now();
+    const ease = t => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
     let raf = 0, live = true;
+    setPage(i);
     el.classList.add("anim"); c.grow && c.grow();
     const stop = () => { if (!live) return; live = false; cancelAnimationFrame(raf); el.classList.remove("anim"); c.stop = null; c.settle && c.settle(); };
     c.stop = stop;
@@ -3636,6 +3649,8 @@ function usePager(name, n, lay, same) {
     raf = requestAnimationFrame(step);
   };
   useBack(() => goPage(0), page > 0, true);
+  // straight to a page without a move (e.g. a sheet opened a plan while the strip wasn't on screen)
+  const jumpPage = i => { setPage(i); const el = pager.current; if (el) el.scrollLeft = i * el.clientWidth; if (knob.current) knob.current.style.transform = `translateX(${i * 100}%)`; };
   // Height (1.5.6/1.5.7): set straight on the element, never animated. At rest the strip is as tall as the page you're
   // on, but at least down to the bottom of the screen (a swipe on the empty space under a short page works). While it
   // moves, it is as tall as the tallest page and does not change: a size change mid-move makes the browser snap again,
@@ -3701,10 +3716,19 @@ function usePager(name, n, lay, same) {
     onContextMenu: e => { e.preventDefault(); },
   } : {};
   // 1.9.0: the page switch floats at the bottom (FloatTabs); labels may be [label, icon] pairs
-  const tabItems = (labels, onHold) => wide ? null : {
-    name, active: page, onPick: i => goPage(i),
-    items: labels.map(lb => (Array.isArray(lb) ? { label: lb[0], icon: lb[1] } : { label: lb, icon: "dots" })),
-    extra: { btn: () => holdProps(onHold), cancel: () => { if (holdT.current === "done") { holdT.current = null; return true; } return false; } },
+  // the lit pill of a page switch follows the strip (finger or tap glide): its element is kept here and moved by the
+  // strip's scroll handler; when it appears it starts where the strip is
+  const knobFn = useRef(null);
+  if (!knobFn.current) knobFn.current = node => { knob.current = node; if (!node) return; const el = pager.current, p = el && el.clientWidth ? el.scrollLeft / el.clientWidth : ctl.current.page || 0; node.style.transform = `translateX(${Math.max(0, Math.min(n - 1, p)) * 100}%)`; };
+  ctl.current.page = page;
+  // labels: [label, icon] or {label, icon, badge, data, attrs}
+  const tabItems = (labels, onHold) => {
+    if (wide) return null;
+    const items = labels.map(lb => (Array.isArray(lb) ? { label: lb[0], icon: lb[1] } : typeof lb === "object" ? lb : { label: lb, icon: "dots" }));
+    return {
+      name, active: page, onPick: i => goPage(i), knob: knobFn.current, items,
+      extra: { btn: i => ({ ...holdProps(onHold), ...((items[i] && items[i].attrs) || {}) }), cancel: () => { if (holdT.current === "done") { holdT.current = null; return true; } return false; } },
+    };
   };
   const tabs = (labels, onHold) => { const t = tabItems(labels, onHold); return t && <FloatTabs {...t} />; };
   // one ref function for the hook's whole life: a new one on every render made React detach and re-attach the strip,
@@ -3717,7 +3741,7 @@ function usePager(name, n, lay, same) {
   // (or a layout the screen gives per column count, e.g. Profile: four pages)
   const span3 = !wide ? null : ly ? ly.at : n === 3 && cols === 2 ? [{ gridColumn: 1, gridRow: 1 }, { gridColumn: 2, gridRow: "1 / span 2" }, { gridColumn: 1, gridRow: 2 }] : null;
   const pageProps = i => ({ ref: el => (pages.current[i] = el), className: "swPage", [`data-${name}-page`]: String(i), "aria-hidden": wide ? undefined : page !== i, ...(span3 ? { style: span3[i] } : {}) });
-  return { page, goPage, tabs, tabItems, pagerProps, pageProps, wide };
+  return { page, goPage, jumpPage, tabs, tabItems, pagerProps, pageProps, wide };
 }
 
 function TrainTab({ history, onStart, onStartPlan, onStartFree, onFreeze, ui, setUi, active, onResume, profile, onGo, upd, apk, kcal, setKcal, dl, onDlClose, onSetup, settings, setSettings, tourOffer }) {
@@ -5301,6 +5325,8 @@ const statVal = (m, k) => (k === "since" ? (m.since ? 1 : 0) : m[k] || 0);
 const rk0 = id => (rankAt(id) || [1])[0] || 1;
 const rankedIds = m => RANKED_IDS.filter(id => rankAt(id) && m.rk[id] !== null && m.rk[id] !== undefined)
   .sort((a, b) => rankIdx(b, m.rk[b]) - rankIdx(a, m.rk[a]) || m.rk[b] / rk0(b) - m.rk[a] / rk0(a));
+// the hero's badge row: "Training for" first (it replaced the "since" line), then the highest levels (rare ones first)
+const heroBadges = m => { const l = m.ach.filter(a => a.step && (!a.secret || a.step) && !CARD_HIDE.includes(a.k) && (a.single || a.tier)); const lv = a => (a.single ? a.rk[0] : a.tier - 1); return l.sort((a, b) => (b.k === "tenure") - (a.k === "tenure") || lv(b) - lv(a)); };
 const earnedAch = m => m.ach.filter(a => a.tier && !CARD_HIDE.includes(a.k)).sort((a, b) => b.tier - a.tier || b.v / (b.next || b.v || 1) - a.v / (a.next || a.v || 1));
 // A field's text ("rk:k1", "ach3:workouts,streak,reps", "st:reps") → what to draw, or null when it can't be shown.
 function parseSlot(str, m) {
@@ -5647,9 +5673,53 @@ const PF_LAY = {
   3: { rows: "auto auto 1fr", at: [{ gridColumn: 1, gridRow: 1 }, { gridColumn: 2, gridRow: "1 / span 3" }, { gridColumn: 3, gridRow: "1 / span 3" }, { gridColumn: 1, gridRow: 2 }] },
   2: { rows: "auto auto auto 1fr", at: [{ gridColumn: 1, gridRow: 1 }, { gridColumn: 2, gridRow: "1 / span 4" }, { gridColumn: 1, gridRow: 3 }, { gridColumn: 1, gridRow: 2 }] },
 };
+// 1.9.0 (Michael, Nov 7: "the 'since' line is useless, do it like Discord"): the badges you earned as small icons under
+// the name ("Training for" first: it says how long you train). A tap shows a small card above the icon (the badge, its
+// level, how far you are); a tap on that card opens the badge with all its levels. More than fit: "+N" opens the Badges page.
+const HERO_BADGES = 5;
+function HeroBadges({ list, onAll }) {
+  const [pop, setPop] = useState(null); // {a, x, y, up}
+  const [sheet, setSheet] = useState(null);
+  useBack(() => setPop(null), !!pop);
+  useEffect(() => { if (!pop) return; const off = () => setPop(null); window.addEventListener("scroll", off, { passive: true }); window.addEventListener("resize", off); return () => { window.removeEventListener("scroll", off); window.removeEventListener("resize", off); }; }, [pop]);
+  // as many as fit the name's column (26 px icons, 3 px apart); when some are left, the last place is "+N"
+  const boxRef = useRef(null), w = useWidth(boxRef), fit = w ? Math.max(1, Math.floor((w - 6 + 3) / 29)) : HERO_BADGES;
+  const cap = Math.min(fit, 8), show = list.slice(0, list.length > cap ? Math.max(1, cap - 1) : cap), more = list.length - show.length;
+  const open = (a, e) => {
+    sfxTap(); const r = e.currentTarget.getBoundingClientRect();
+    setPop(p => (p && p.a.k === a.k ? null : { a, x: r.left + r.width / 2, y: r.top, b: r.bottom, up: r.top > 210 }));
+  };
+  const col = a => RANKS[(a.single ? a.rk[0] : a.tier - 1)].color;
+  const P = pop && pop.a;
+  return (
+    <>
+      <div ref={boxRef} style={{ width: "100%" }}><div data-hero-badges={list.length} style={{ display: "inline-flex", alignItems: "center", gap: 3, marginTop: 7, padding: 3, borderRadius: 11, background: `${C.ink}66`, border: `1px solid ${C.line}`, maxWidth: "100%" }}>
+        {show.map(a => (
+          <button key={a.k} type="button" data-hero-badge={a.k} aria-label={a.name} onClick={e => open(a, e)} style={{ ...btnBase, padding: 0, background: "transparent", borderRadius: 8, display: "flex" }}>
+            <BadgeIco n={a.icon} col={col(a)} size={26} />
+          </button>
+        ))}
+        {more > 0 && <button type="button" data-hero-more={more} onClick={() => { sfxTap(); setPop(null); onAll && onAll(); }} aria-label={T("badgesTitle")} style={{ ...btnBase, padding: 0, width: 26, height: 26, borderRadius: 8, background: SOFT(), color: C.chalk, fontSize: 11, fontWeight: 800 }}>+{more}</button>}
+      </div></div>
+      {P && createPortal(
+        <>
+          <div data-hero-pop-catch onClick={() => setPop(null)} style={{ position: "fixed", inset: 0, zIndex: 88 }} />
+          <button type="button" data-hero-pop={P.k} onClick={() => { sfxTap(); setSheet(P); setPop(null); }} className="heroPop"
+            style={{ ...btnBase, fontWeight: 400, position: "fixed", zIndex: 89, width: 214, left: Math.max(10, Math.min(window.innerWidth - 224, pop.x - 107)), ...(pop.up ? { bottom: window.innerHeight - pop.y + 10 } : { top: pop.b + 10 }), padding: "14px 14px 12px", borderRadius: 18, background: C.panel, border: `1px solid ${C.line}`, boxShadow: "0 14px 40px rgba(0,0,0,.55)", color: C.chalk, display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", fontFamily: BODY }}>
+            <BadgeIco n={P.icon} col={col(P)} size={58} well />
+            <span style={{ fontSize: 12, color: C.dim, fontWeight: 700, marginTop: 9 }}>{P.name}</span>
+            <span style={{ fontFamily: DISPLAY, fontSize: 21, fontWeight: 900, letterSpacing: ".04em", textTransform: "uppercase", color: col(P), lineHeight: 1.1, marginTop: 2 }}>{P.single ? rarityName(P) : RANKS[P.tier - 1].name}</span>
+            <span style={{ fontSize: 12, color: C.dim, lineHeight: 1.4, marginTop: 4 }}>{P.single ? P.desc : achLevelText(P, P.v)}</span>
+            <span style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 11.5, fontWeight: 800, color: C.signal, marginTop: 8 }}>{T("heroBadgeMore")}<Arrow size={14} /></span>
+          </button>
+        </>, document.body)}
+      {sheet && <BadgeSheet a={sheet} onClose={() => setSheet(null)} />}
+    </>
+  );
+}
 // The top of a profile: photo, frame, banner, effect, name, title, level and streak. The Profile page and the Shop's
 // preview (Michael: "show it on my profile") draw the very same box; preview = nothing to tap, no edit buttons.
-function ProfileHero({ m, own, onPhoto, onEditProfile, onLooks, onStreak, extra, preview }) {
+function ProfileHero({ m, own, onPhoto, onEditProfile, onLooks, onStreak, extra, preview, badges, onAllBadges }) {
   const lv = levelInfo(m.xp), lr = RANKS[lvRank(m.lvl)], lk = m.look || {};
   return (
         <Sect {...(preview ? { "data-look-preview": true } : { "data-pf-hero": true })} style={{ marginTop: 0, padding: LOOK === "flat" ? 0 : "16px 16px 14px", position: "relative", overflow: "hidden" }}>
@@ -5660,13 +5730,14 @@ function ProfileHero({ m, own, onPhoto, onEditProfile, onLooks, onStreak, extra,
             <button type="button" onClick={own && !preview ? onPhoto : undefined} disabled={!own || preview} aria-label={own ? T("changePhoto") : undefined} className="cardIn" style={{ ...btnBase, background: "transparent", padding: 0, borderRadius: 99, position: "relative", flexShrink: 0, cursor: own && !preview ? "pointer" : "default", margin: lk.frame ? "12px 0 12px 12px" : 0 }}>
               {own ? <BdayHalo size={80}><Avatar profile={{ name: m.nick, pfp: m.pfp }} size={80} /></BdayHalo> : <Avatar profile={{ name: m.nick, pfp: m.pfp }} size={80} />}
               {lk.frame && <LookFrame id={lk.frame} size={110} style={{ left: -15, top: -15 }} />}
-              {/* Steam-like level badge on the photo */}
-              <span data-pf-level={m.lvl} style={{ position: "absolute", right: -6, bottom: -4, minWidth: 34, height: 34, padding: "0 6px", boxSizing: "border-box", borderRadius: 99, background: C.ink, border: `2.5px solid ${lr.color}`, color: lr.color, fontFamily: DISPLAY, fontSize: 17, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: `0 0 14px ${lr.color}55` }}>{m.lvl}</span>
+              {/* 1.9.0 (Michael, Nov 7): no level circle on the photo any more, the Level tile below shows it once */}
             </button>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div data-pf-name data-name-fx={lk.name || ""} style={{ fontFamily: DISPLAY, fontSize: 30, fontWeight: 900, lineHeight: 1, color: C.chalk, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" , ...INK, ...nameFx(lk.name), ...(lk.name ? FX_ROOM : {}) }}>{m.nick}</div>
               {lk.title && <div style={{ marginTop: 6 }}><LookTitle id={lk.title} /></div>}
-              <div style={{ fontSize: 12.5, color: own && bdayToday() ? C.signal : C.dim, fontWeight: own && bdayToday() ? 800 : 400, marginTop: 4 }}>{own && bdayToday() ? emo(T("bdayHero")) : m.since ? T("since", { date: fmtDate(m.since, true) }) : T("newMember")}</div>
+              {own && bdayToday() ? <div style={{ fontSize: 12.5, color: C.signal, fontWeight: 800, marginTop: 4 }}>{emo(T("bdayHero"))}</div>
+                : badges && badges.length ? <HeroBadges list={badges} onAll={onAllBadges} />
+                : <div style={{ fontSize: 12.5, color: C.dim, marginTop: 4 }}>{m.since ? T("since", { date: fmtDate(m.since, true) }) : T("newMember")}</div>}
             </div>
             {own && !preview && <span style={{ alignSelf: "flex-start", display: "flex", flexDirection: "column", gap: 6, flexShrink: 0 }}>
               <button type="button" data-pf-edit onClick={() => { sfxTap(); onEditProfile(); }} aria-label={T("pfEdit")} style={{ ...btnBase, background: SOFT(), color: C.chalk, width: 38, height: 38, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center" }}><Ico n="pencil" size={18} /></button>
@@ -5710,29 +5781,28 @@ function BodyRanks({ m, onPick }) {
   const [open, setOpen] = useState(null);
   const plate = hexMix(C.panelHi, C.chalk, 0.16), base = hexMix(C.panelHi, C.chalk, 0.08);
   const col = p => { const r = br.fam[p.f].r; return r === null ? null : RANKS[r].color; };
-  // a muscle opens its part; anywhere else on the figure (head, a joint, a thin part missed) the list of all parts
-  const tap = e => { const el = e.target.closest && e.target.closest("[data-fam]"); sfxTap(); setOpen(el ? el.getAttribute("data-fam") : "all"); };
-  const fig = side => <svg data-body-side={side} viewBox={`-2 0 ${BD.BODY_W + 4} ${BD.BODY_H}`} onClick={tap} style={{ height: "100%", width: "auto", display: "block", cursor: "pointer", overflow: "visible" }} dangerouslySetInnerHTML={{ __html: BD.bodySvg(side, { base, plate, gap: C.panel, col }) }} />;
-  const f = open && open !== "all" && br.fam[open];
+  // 1.9.0 (Michael, Nov 7: "I didn't know it can be tapped, and the list only came by tapping the middle"): every part
+  // is a tile under the figures (its rank right there, tap = what counts for it); a muscle on the figure opens the same
+  const tap = e => { const el = e.target.closest && e.target.closest("[data-fam]"); if (!el) return; sfxTap(); setOpen(el.getAttribute("data-fam")); };
+  const fig = side => <svg data-body-side={side} viewBox={`-2 0 ${BD.BODY_W + 4} ${BD.BODY_H}`} onClick={tap} style={{ height: "100%", width: "auto", display: "block", overflow: "visible" }} dangerouslySetInnerHTML={{ __html: BD.bodySvg(side, { base, plate, gap: C.panel, col }) }} />;
+  const f = open && br.fam[open];
   return (
     <Sect data-body-ranks title={<>{T("bodyTitle")}<InfoQ title={T("bodyTitle")} text={T("bodyD")} /></>} meta={br.all >= 0 ? <RankTag r={br.all} size={15} /> : null} style={{ marginTop: 0, marginBottom: 14 }}>
-      <style>{`[data-body-ranks] [data-fam]{transition:filter ${MO.t1}} [data-body-ranks] [data-fam]:hover{filter:brightness(1.18)}`}</style>
-      <div data-body-figs style={{ height: 230, display: "flex", justifyContent: "center", gap: 22 }}>{fig("front")}{fig("back")}</div>
-      {/* 1.9.0 (Michael, 22:20: less room): no legend under the figures; a tap on the body opens the part or the list */}
-      {open === "all" && (
-        <Sheet title={T("bodyTitle")} onClose={() => setOpen(null)} short>
-          <div data-body-all style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            {PLN.FAMILIES.map(k => { const r = br.fam[k].r; return (
-              <button key={k} type="button" data-body-fam={k} data-rank={r === null ? -1 : r} onClick={() => { sfxTap(); setOpen(k); }}
-                style={{ ...btnBase, fontWeight: 400, display: "flex", alignItems: "center", gap: 10, padding: "8px 12px 8px 8px", borderRadius: 12, textAlign: "left", color: C.chalk, background: SOFT() }}>
-                <BodyIco spec={BD.FAMILY_ICON[k]} size={30} hi={r === null ? C.dim : RANKS[r].color} />
-                <span style={{ flex: 1, minWidth: 0, fontSize: 14, fontWeight: 800, color: r === null ? C.dim : C.chalk }}>{T("fam_" + k)}</span>
-                {r === null ? <span style={{ fontSize: 12, color: C.dim }}>–</span> : <RankTag r={r} size={15} fs={12} />}
-              </button>
-            ); })}
-          </div>
-        </Sheet>
-      )}
+      <style>{`[data-body-ranks] [data-fam]{transition:filter ${MO.t1};cursor:pointer} [data-body-ranks] [data-fam]:hover{filter:brightness(1.18)}`}</style>
+      <div data-body-figs style={{ height: 200, display: "flex", justifyContent: "center", gap: 22 }}>{fig("front")}{fig("back")}</div>
+      <div data-body-all style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 6, marginTop: 12 }}>
+        {PLN.FAMILIES.map(k => { const r = br.fam[k].r, c = r === null ? null : RANKS[r].color; return (
+          <button key={k} type="button" data-body-fam={k} data-rank={r === null ? -1 : r} onClick={() => { sfxTap(); setOpen(k); }}
+            style={{ ...btnBase, fontWeight: 400, position: "relative", display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 4, padding: "8px 8px 7px", borderRadius: 13, textAlign: "left", color: C.chalk, background: c ? `linear-gradient(160deg, ${c}26, ${c}08 70%), ${SOFT()}` : SOFT(), border: `1px solid ${c ? c + "44" : "transparent"}`, minWidth: 0 }}>
+            <span style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
+              <BodyIco spec={BD.FAMILY_ICON[k]} size={28} hi={c || C.dim} />
+              {r === null ? <span style={{ fontSize: 13, color: C.dim, fontWeight: 800, paddingRight: 3 }}>–</span> : <RankIcon r={r} size={20} />}
+            </span>
+            <span style={{ fontSize: 12, fontWeight: 800, lineHeight: 1.15, color: r === null ? C.dim : C.chalk, width: "100%", overflowWrap: "anywhere", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{T("fam_" + k)}</span>
+            <span style={{ fontSize: 10.5, fontWeight: 800, color: c || C.dim, opacity: c ? 1 : 0.7 }}>{r === null ? T("bodyNoneShort") : RANKS[r].name}</span>
+          </button>
+        ); })}
+      </div>
       {f && (
         <Sheet title={T("fam_" + open)} onClose={() => setOpen(null)} short>
           <div data-body-sheet={open} style={{ display: "flex", alignItems: "center", gap: 14 }}>
@@ -5795,7 +5865,7 @@ function ProfilePage({ m, own, onEditProfile, onEditSlot, onStreak, onPhoto, onP
         {/* 1.9.0: the body ranks first, as the page's header (Michael) */}
         <BodyRanks m={sm} onPick={onPickRank} />
         {/* the basics: photo, name, level, streak */}
-        <ProfileHero m={m} own={own} onPhoto={onPhoto} onEditProfile={onEditProfile} onLooks={onLooks} onStreak={onStreak} extra={extra} />
+        <ProfileHero m={m} own={own} onPhoto={onPhoto} onEditProfile={onEditProfile} onLooks={onLooks} onStreak={onStreak} extra={extra} badges={heroBadges(sm)} onAllBadges={() => pg.goPage(1)} />
         {/* the showcase */}
         <Sect data-pf-showcase title={own ? <>{T("pfShowcase")}<InfoQ title={T("pfShowcase")} text={T("pfShowcaseD")} /></> : T("pfShowcase")} meta={T("pfSlots", { n, max: SLOT_LV.length })}>
           <div ref={slotsRef} data-pf-slots data-cols={slotCols} style={{ display: "grid", gridTemplateColumns: `repeat(${slotCols}, minmax(0, 1fr))`, gridAutoFlow: "row dense", gap: 8 }}>
@@ -6506,9 +6576,10 @@ const WORLD_ON = false;
 function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, chatWith, setChatWith, onBlocked, setTopHead, modHidden, fx = {} }) {
   const wide = useWide();
   const me = { uid: acct.uid, ...acct.prof, ...cloudStats(history) };
-  const [tab, setTab] = useState("friends"); // 1.8.2: friends and chats are one list, shown first
-  const frDir = useRef(0), frPrev = useRef(tab);
-  if (frPrev.current !== tab) { const o = { friends: 0, board: 1 }; frDir.current = Math.sign(o[tab] - o[frPrev.current]); frPrev.current = tab; }
+  // 1.8.2: friends and chats are one list, shown first. 1.9.0 (Michael, Nov 7: "in Friends I can't swipe with the
+  // finger, only tap below"): the two views are swipe pages like Home
+  const pg = usePager("fr", 2);
+  const tab = pg.page ? "board" : "friends";
   const [scope, setScope] = useState("friends"); // board: friends | world
   const [world, setWorld] = useState(null);
   const blocked = social.blocked || [];
@@ -6773,12 +6844,12 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
         </>
         );
         // 1.9.0: floating at the bottom like every page switch (FloatTabs); keeps data-seg on the buttons
-        const tabs = list => <FloatTabs name="fr" active={list.findIndex(x => x[0] === tab)} onPick={i => setTab(list[i][0])} items={list.map(([id, l, n, ic]) => ({ label: l, icon: ic, badge: n, data: id }))} extra={{ btn: i => ({ "data-seg": list[i][0], "aria-pressed": list[i][0] === tab }) }} />;
+        const tabs = list => pg.tabs(list.map(([id, l, n, ic]) => ({ label: l, icon: ic, badge: n, data: id, attrs: { "data-seg": id, "aria-pressed": id === tab } })));
         const nReq = reqs ? reqs.length : 0, nChat = chats.filter(unread).length;
-        // 1.8.0: the page slides in from the side of the tab you came from
-        const view = (id, v) => <div key={id} data-fr-view={id} className={frDir.current ? (frDir.current > 0 ? "frInR" : "frInL") : undefined}>{v}</div>;
+        const view = (id, v) => <div data-fr-view={id}>{v}</div>;
         const errLine = err && <div role="alert" style={{ fontSize: 13, color: "#ff8a80", marginTop: 10 }}>{err}</div>;
-        if (!wide) return <>{idCard}{tabs([["friends", T("frFriends"), nReq + nChat, "team"], ["board", T("frBoard"), 0, "trophy"]])}{errLine}{view(tab, tab === "board" ? boardView : friendsView)}</>;
+        if (!wide) return <>{idCard}{tabs([["friends", T("frFriends"), nReq + nChat, "team"], ["board", T("frBoard"), 0, "trophy"]])}{errLine}
+          <div style={{ margin: "0 -18px" }}><div {...pg.pagerProps}><div {...pg.pageProps(0)}>{view("friends", friendsView)}</div><div {...pg.pageProps(1)}>{view("board", boardView)}</div></div></div></>;
         return <Cols left={<>{idCard}<div data-fr-view="friends">{friendsView}</div></>} right={<>{errLine}<div style={{ ...sectionTitle, margin: "16px 4px 0" }}>{T("frBoard")}</div><div data-fr-view="board">{boardView}</div></>} />;
       })()}
     </div>
@@ -8577,7 +8648,7 @@ function econInput(history, profile) {
   const ach = achievements(h, achExtra(profile, null, h)).filter(a => !CARD_HIDE.includes(a.k));
   const ranks = {};
   Object.keys(RANK_AT).forEach(id => { const b = bestFor(h, id); if (typeof b === "number" && isFinite(b)) ranks[id] = rankIdx(id, b); });
-  return { dates: h.map(e => e.date), freezeDays: profile.freezeDays || [], ach, ranks, runsWon: (profile.game && profile.game.rw) || 0, chests: EC.chestDiamonds(profile) };
+  return { dates: h.map(e => e.date), freezeDays: profile.freezeDays || [], ach, ranks, runsWon: (profile.game && profile.game.rw) || 0, chests: EC.chestDiamonds(profile), codes: EC.codeDiamonds(profile) };
 }
 // Looks you own: bought or from a chest, plus the ones won by playing.
 function lookGot(inp) {
@@ -9043,13 +9114,15 @@ function PlanHintsSheet({ plan, onClose }) {
 
 function PlansTab({ profile, setProfile, history, open, onOpened }) {
   const P = PLN.plansOf(profile);
-  const [tab, setTab] = useState(P.active ? "mine" : "rec");
+  // 1.9.0 (Michael, Nov 7): Recommended | My plans are swipe pages like Home
+  const pg = usePager("plans", 2, null, false, P.active ? 1 : 0);
+  const tab = pg.page ? "mine" : "rec";
   const [edit, setEdit] = useState(null); // plan id being edited
   const [grp, setGrp] = useState("");      // group filter ("" = all, "-" = no group)
   const [newGrp, setNewGrp] = useState(null), [delG, setDelG] = useState(null);
   const profRef = useRef(profile); profRef.current = profile;
   const setP = fn => { const cur = PLN.plansOf(profRef.current), next = fn(cur), p = { ...profRef.current, plans: next }; profRef.current = p; setProfile(p); };
-  useEffect(() => { if (open && open.plan) { setTab("mine"); setEdit(open.plan); onOpened && onOpened(); } }, [open]);
+  useEffect(() => { if (open && open.plan) { pg.jumpPage(1); setEdit(open.plan); onOpened && onOpened(); } }, [open]);
   const editing = edit && P.list.find(p => p.id === edit);
   if (editing) return <PlanEditor plan={editing} P={P} setP={setP} onBack={() => { sfxTap(); setEdit(null); window.scrollTo(0, 0); }} />;
   const seg = (on, onClick, label, data) => (
@@ -9063,8 +9136,9 @@ function PlansTab({ profile, setProfile, history, open, onOpened }) {
   const useRec = () => { sfxTap(); setP(cur => ({ ...cur, active: "" })); };
   return (
     <div className="scr" style={SCR_STYLE} data-plans>
-      <FloatTabs name="plans" active={tab === "rec" ? 0 : 1} onPick={i => setTab(i ? "mine" : "rec")} items={[{ label: T("plRec"), icon: "star", data: "rec" }, { label: T("plMine"), icon: "checklist", data: "mine" }]} extra={{ btn: i => ({ "data-plans-seg": i ? "mine" : "rec", "aria-pressed": (i ? "mine" : "rec") === tab }) }} />
-      {tab === "rec" && (
+      {pg.tabs([{ label: T("plRec"), icon: "star", data: "rec", attrs: { "data-plans-seg": "rec", "aria-pressed": tab === "rec" } }, { label: T("plMine"), icon: "checklist", data: "mine", attrs: { "data-plans-seg": "mine", "aria-pressed": tab === "mine" } }])}
+      <div style={{ margin: "0 -18px" }}><div {...pg.pagerProps}><div {...pg.pageProps(0)}>
+      {(
         <Sect title={T("plRecTitle")} data-plan-rec meta={!P.active ? <span data-plan-inuse style={{ fontSize: 12, fontWeight: 800, color: C.mint }}>{T("plInUse")}</span> : null}>
           <div style={{ fontSize: 14.5, color: C.chalk, lineHeight: 1.5 }}>{T("plRecD")}</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 12 }}>
@@ -9078,12 +9152,19 @@ function PlansTab({ profile, setProfile, history, open, onOpened }) {
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12.5, color: C.dim, marginTop: 10 }}><TypeMarks items={[{ id: "k1" }, { id: "row1" }, { id: "n1" }, { id: "b5" }]} size={14} />{T("plTypesT")}<InfoQ id="types" title={T("plTypesT")} text={T("plTypesD")} /></div>
           {P.active && <button data-plan-use-rec onClick={useRec} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 14, padding: 14, fontSize: 15 }}>{T("plUse")}</button>}
-          <div data-plan-gym style={{ display: "flex", gap: 8, alignItems: "flex-start", marginTop: 14, fontSize: 13.5, color: C.chalk }}><Ico n="bulb" size={18} color={C.signal} style={{ marginTop: 1, flexShrink: 0 }} /><span>{T("plGymHint")}</span></div>
+          {/* 1.9.0 (Michael, Nov 7: "add the icon so nobody has to guess which one"): the tip names My plans with the
+              same icon as its tab, and a tap takes you there */}
+          <button type="button" data-plan-gym onClick={() => pg.goPage(1)} style={{ ...btnBase, fontWeight: 400, width: "100%", textAlign: "left", display: "flex", gap: 10, alignItems: "center", marginTop: 14, padding: "10px 12px", borderRadius: 14, background: SOFT(), fontSize: 13.5, lineHeight: 1.4, color: C.chalk }}>
+            <Ico n="bulb" size={18} color={C.signal} style={{ flexShrink: 0 }} />
+            <span style={{ flex: 1, minWidth: 0 }}>{T("plGymHint2")}</span>
+            <span data-plan-gym-go style={{ display: "inline-flex", alignItems: "center", gap: 5, flexShrink: 0, padding: "6px 9px", borderRadius: 11, background: `${C.signal}22`, color: C.signal, fontSize: 12.5, fontWeight: 800 }}><Ico n="checklist" size={17} sw={2.2} />{T("plMine")}</span>
+          </button>
         </Sect>
       )}
-      {tab === "mine" && (
+      </div><div {...pg.pageProps(1)}>
+      {(
         <>
-          <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 16, flexWrap: "wrap" }}>
+          <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 0, flexWrap: "wrap" }}>
             <div className="noBar" style={{ display: "flex", gap: 6, overflowX: "auto", flex: 1, minWidth: 0 }}>
               <button data-plan-grp="" aria-pressed={!grp} onClick={() => { sfxTap(); setGrp(""); }} style={chipS(!grp)}>{T("plAllGroups")}</button>
               {P.groups.map(g => <button key={g.id} data-plan-grp={g.id} aria-pressed={grp === g.id} onClick={() => { sfxTap(); setGrp(grp === g.id ? "" : g.id); }} onContextMenu={e => { e.preventDefault(); setDelG(g); }} style={chipS(grp === g.id)}>{g.name}</button>)}
@@ -9118,6 +9199,7 @@ function PlansTab({ profile, setProfile, history, open, onOpened }) {
           </div>
         </>
       )}
+      </div></div></div>
       {newGrp !== null && (
         <Sheet title={T("plNewGroup")} onClose={() => setNewGrp(null)} short>
           <input data-plan-grp-input autoFocus value={newGrp} maxLength={40} onChange={e => setNewGrp(e.target.value)} placeholder={T("plGroupName")} aria-label={T("plGroupName")}
@@ -9222,6 +9304,47 @@ function PlanEditor({ plan, P, setP, onBack }) {
   );
 }
 
+// 1.9.0 (Michael, Nov 7): type a code, get diamonds. The code is read from the server (Firestore promo/{CODE}, Michael
+// adds them in the Firebase console), so a new code works at once in every app version from 1.9.0 on; each code once
+// per account (profile.shop.codes, synced).
+function CodeSheet({ profile, onDone, onClose }) {
+  const [code, setCode] = useState(""), [busy, setBusy] = useState(false), [err, setErr] = useState(""), [got, setGot] = useState(null);
+  const go = async () => {
+    const c = EC.normCode(code); if (!c || busy) return;
+    if (EC.shopOf(profile).codes[c]) { setErr(T("codeUsed")); sfxTap(); return; }
+    setBusy(true); setErr("");
+    try {
+      const promo = await cloud().getPromo(c);
+      const r = EC.redeemCode(profile, c, promo);
+      onDone(r.shop); setGot(r); sfxRecord(); vibrate([20, 40, 60]);
+    } catch (e) {
+      const k = e && e.message;
+      setErr(T(k === "code-used" ? "codeUsed" : k === "code-old" ? "codeOld" : k === "code-none" || k === "code-bad" ? "codeNone" : "codeNet")); sfxTap();
+    }
+    setBusy(false);
+  };
+  return (
+    <Sheet title={T("codeTitle")} onClose={onClose} short>
+      <div data-code-sheet={got ? "got" : "enter"}>
+        {got ? (
+          <div data-code-got={got.d} style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", padding: "6px 0 4px" }}>
+            <Confetti />
+            <IcoBox n="diamond" color={C.sky} size={64} />
+            <div style={{ fontFamily: DISPLAY, fontSize: 44, fontWeight: 900, color: C.sky, lineHeight: 1, marginTop: 12 }}>+{nf(got.d)}</div>
+            <div style={{ fontSize: 14, color: C.dim, marginTop: 6 }}>{T("codeGot", { c: got.code })}</div>
+            <button data-code-ok onClick={onClose} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 18 }}>{T("codeOk")}</button>
+          </div>
+        ) : <>
+          <input data-code-input autoFocus value={code} maxLength={32} autoCapitalize="characters" autoCorrect="off" spellCheck={false}
+            onChange={e => { setCode(e.target.value.toUpperCase()); setErr(""); }} onKeyDown={e => { if (e.key === "Enter") go(); }} placeholder={T("codePh")} aria-label={T("codeTitle")}
+            style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, letterSpacing: ".08em", textAlign: "center", padding: "12px", borderRadius: 14, border: `1.5px solid ${err ? "#ff8a80" : C.line}`, background: C.ink, color: C.chalk, outline: "none", width: "100%", boxSizing: "border-box", userSelect: "text", WebkitUserSelect: "text" }} />
+          {err && <div role="alert" data-code-err style={{ fontSize: 13, color: "#ff8a80", marginTop: 8, textAlign: "center" }}>{err}</div>}
+          <button data-code-go disabled={!EC.normCode(code) || busy} onClick={go} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 14, opacity: EC.normCode(code) && !busy ? 1 : 0.45 }}>{busy ? "…" : T("codeGo")}</button>
+        </>}
+      </div>
+    </Sheet>
+  );
+}
 function ShopTab({ history, profile, setProfile, onGo }) {
   const es = useMemo(() => econState(history, profile), [history, profile]);
   const { bal, sh, earned, own, chests } = es;
@@ -9248,7 +9371,8 @@ function ShopTab({ history, profile, setProfile, onGo }) {
   const fzHave = freezesAvailable(history), fzMax = 2 + (META.giftThisYear ? 1 : 0), boostTo = EC.boostUntil(sh.boosts, now);
   const wkNow = weekKey(today), chNow = challengeStatus(history, wkNow), chDone = chNow.filter(c => c.done).length, gotNow = !!sh.chest[wkNow];
   const timeStr = ts => { const d = new Date(ts); return (dateKey(d) === today ? "" : fmtDate(dateKey(d), false) + " ") + d.toLocaleTimeString(LANG, { hour: "2-digit", minute: "2-digit" }); };
-  const parts = [["workouts", { n: EC.EARN.day }], ["streak", { n: EC.EARN.streak7 }], ["badges", {}], ["ranks", {}], ["deck", { n: EC.EARN.run }], ["chests", {}]];
+  const parts = [["workouts", { n: EC.EARN.day }], ["streak", { n: EC.EARN.streak7 }], ["badges", {}], ["ranks", {}], ["deck", { n: EC.EARN.run }], ["chests", {}], ...(earned.parts.codes ? [["codes", {}]] : [])];
+  const [codeOpen, setCodeOpen] = useState(false);
   const row = { display: "flex", alignItems: "center", gap: 12, padding: "12px 16px" };
   // 1.8.2 (Michael): bigger cards that show the look on a grey sample profile, with an artistic name
   const lookRow = (id, right, extra = {}) => { const r = lookRar(id), col = RAR_COL()[r]; return (
@@ -9329,6 +9453,13 @@ function ShopTab({ history, profile, setProfile, onGo }) {
           {wonList.map(id => lookRow(id, own.includes(id) ? <Ico n="check" size={18} color={C.mint} /> : <Ico n="lock" size={17} color={C.dim} />, { "data-shop-wonlook": id, "data-has": own.includes(id) ? 1 : 0 }))}
         </div>
       </Sect>
+      {/* 1.9.0: a code from Michael (Firestore promo/{CODE}) gives diamonds, no app update needed */}
+      <button type="button" data-shop-code onClick={() => { sfxTap(); setCodeOpen(true); }} style={{ ...btnBase, fontWeight: 400, ...card, width: "100%", marginTop: 16, display: "flex", alignItems: "center", gap: 12, padding: "13px 16px", textAlign: "left", color: C.chalk }}>
+        <IcoBox n="gift" color={C.sky} size={38} />
+        <span style={{ flex: 1, minWidth: 0, fontSize: 15, fontWeight: 800 }}>{T("codeTitle")}</span>
+        <Arrow />
+      </button>
+      {codeOpen && <CodeSheet profile={profile} onDone={shop => { const p = profRef.current, next = { ...p, shop }; profRef.current = next; setProfile(next); }} onClose={() => setCodeOpen(false)} />}
       {/* money and ads: later (1.8.2: no "coming soon" box until it is there) */}
       {peek && <LookShopSheet key={peek} id={peek} profile={profile} history={history} own={own} bal={bal} onBuy={buy} onEquip={equip} onGo={onGo} onClose={() => setPeek(null)} />}
       {opening && <ChestOpen res={opening} onEquip={opening.kind === "look" ? () => equip(EC.LOOKS[opening.id].kind, opening.id) : null} onClose={() => setOpening(null)} />}
@@ -11680,6 +11811,7 @@ export default function App() {
         .scr{animation:scrIn ${MO.t2} ${MO.ease} both}
         :root{--sat:var(--safe-area-inset-top,env(safe-area-inset-top,0px));--sab:var(--safe-area-inset-bottom,env(safe-area-inset-bottom,0px));--colMax:460px}
         @media (min-width: 760px){:root{--colMax:1180px}.sheetWrap{align-items:center!important}}
+        .heroPop{animation:heroPop ${MO.t2} ${MO.pop} backwards}@keyframes heroPop{from{opacity:0;transform:translateY(6px) scale(.94)}}
         .swGrid{display:grid;align-items:start;padding:0 9px}.swGrid>.swPage{min-width:0;box-sizing:border-box;padding:0 9px 12px}
         .colsW{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 18px;align-items:start}.colsW>div{min-width:0}.colsW>div>:first-child,.swGrid>.swPage>:first-child{margin-top:0!important}
         @keyframes shIn{from{opacity:0;transform:translateY(48px)}to{opacity:1;transform:none}} @keyframes shOut{from{opacity:1;transform:none}to{opacity:0;transform:translateY(48px)}}
@@ -11756,9 +11888,6 @@ export default function App() {
         .revPrism{animation:revHue 2.6s linear infinite}
         @keyframes revHue{to{filter:hue-rotate(360deg)}}
         @keyframes revShake{0%,100%{transform:translate(0,0)}15%{transform:translate(-7px,3px)}30%{transform:translate(6px,-4px)}45%{transform:translate(-5px,-2px)}60%{transform:translate(4px,3px)}80%{transform:translate(-2px,1px)}}
-        .frInR{animation:frInR ${MO.t2} ${MO.ease} backwards}.frInL{animation:frInL ${MO.t2} ${MO.ease} backwards}
-        @keyframes frInR{from{opacity:0;transform:translateX(28px)}}@keyframes frInL{from{opacity:0;transform:translateX(-28px)}}
-        @media (prefers-reduced-motion: reduce){.frInR,.frInL{animation:none}}
         @property --fill{syntax:"<percentage>";inherits:false;initial-value:0%}
         .rkRow{position:relative;overflow:hidden;animation:rkFill .9s ${MO.ease} both}
         @keyframes rkFill{from{--fill:0%}}

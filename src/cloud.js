@@ -287,6 +287,15 @@ export const impl = {
   // 1.7.0: the push server then counts the reports about that person (several different people → hidden from the
   // world top 50, mod/{uid})
   async report(about, reason) { await addDoc(collection(db, "reports"), { by: uid(), about, reason: String(reason || "").slice(0, 300), ts: serverTimestamp() }); notify("rep", about); },
+  // 1.9.0: a diamond code (Firestore promo/{CODE} {d: diamonds, until?: timestamp}, made by hand in the console);
+  // readable without an account, never listed, never written by the app. null = no such code.
+  async getPromo(code) {
+    boot();
+    const s = await getDoc(d("promo", String(code)));
+    if (!s.exists()) return null;
+    const x = s.data(), u = x.until && typeof x.until.toMillis === "function" ? x.until.toMillis() : typeof x.until === "number" ? x.until : null;
+    return { d: typeof x.d === "number" ? x.d : Number(x.d) || 0, until: u };
+  },
   async getMod() { const s = await getDoc(d("mod", uid())); return { hidden: s.exists() && s.data().hidden === true }; },
   // Profile cards (1.7.0). getCard: the card, or null when there is none; a card you may not open (friends only,
   // only me, blocked) fails with permission-denied, like one that doesn't exist (older app).

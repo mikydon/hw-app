@@ -281,6 +281,16 @@ await t("an accepted one can't be changed (start date)", false, () => updateDoc(
 await t("ivan can't invite gina (not friends)", false, () => setDoc(doc(as("ivan"), "fstreak", "gina_ivan"), { m: ["gina", "ivan"], by: "ivan", ok: false, start: null, ts: serverTimestamp() }));
 await t("hank ends it", true, () => deleteDoc(doc(as("hank"), "fstreak", "gina_hank")));
 
+console.log("1.9.0 diamond codes");
+await env.withSecurityRulesDisabled(async c => { await setDoc(doc(c.firestore(), "promo", "JOZO"), { d: 200 }); });
+await t("a signed-out phone reads a code by its name", true, () => getDoc(doc(as(null), "promo", "JOZO")));
+await t("a signed-in phone reads it too", true, () => getDoc(doc(as("alice"), "promo", "JOZO")));
+await t("a missing code reads as missing (allowed)", true, () => getDoc(doc(as("alice"), "promo", "NOPE")));
+await t("nobody can list the codes", false, () => getDocs(collection(as("alice"), "promo")));
+await t("nobody makes a code from the app", false, () => setDoc(doc(as("alice"), "promo", "FREE"), { d: 99999 }));
+await t("nobody changes a code from the app", false, () => updateDoc(doc(as("alice"), "promo", "JOZO"), { d: 99999 }));
+await t("nobody deletes a code from the app", false, () => deleteDoc(doc(as("alice"), "promo", "JOZO")));
+
 await env.cleanup();
 console.log(`\n${pass} passed, ${fail} failed`);
 console.log(fail ? `::error title=Firestore rules::${fail} of ${pass + fail} rules tests failed` : `::notice title=Firestore rules::all ${pass} rules tests passed`);

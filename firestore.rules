@@ -36,6 +36,11 @@ service cloud.firestore {
     match /mod/{uid} {
       allow get: if isMe(uid);
     }
+    // 1.9.0: diamond codes. promo/{CODE} {d: diamonds, until: timestamp (optional)} are added by hand in the console.
+    // Anyone may read one code by its exact name (also without an account); nobody can list them or write them from the app.
+    match /promo/{code} {
+      allow get: if true;
+    }
     // World leaderboard: only people who switched it on; read in pages of at most 100. Hidden after reports: can't join.
     // 1.8.0: the real entries (with pts, the checked score the list is ordered by) are written only by the push server
     // from the checked cloud backup (src/fair.js). An older app may still write its own copy without pts: allowed, so

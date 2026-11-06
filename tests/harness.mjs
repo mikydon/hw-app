@@ -58,6 +58,8 @@ export async function start(o = {}) {
       }
     } catch (e) {}
   }, [store, flags]);
+  // o.cloud: signed in through tests/fakecloud.js (o.cloud = the starting server data, see that file)
+  if (o.cloud) { await ctx.addInitScript(c => { window.__fake = c; }, o.cloud === true ? {} : o.cloud); await ctx.addInitScript({ path: path.join(ROOT, "tests", "fakecloud.js") }); }
   const page = await ctx.newPage();
   const errors = [];
   page.on("pageerror", e => errors.push(String(e)));
