@@ -1,5 +1,6 @@
 // English (base language). Every other locale falls back to these strings.
-export default {
+import EX_NEW from "./ex-en.js";
+const en = {
   ui: {
     searchWeb: "🔎 Search the web",
     searchOf: "Search the web: {name}",
@@ -2051,3 +2052,6 @@ export default {
     "Today you did what most people only plan.",
   ],
 };
+// 1.9.0: the new exercises' texts live in ex-en.js (English first).
+Object.assign(en.ex, EX_NEW);
+export default en;
