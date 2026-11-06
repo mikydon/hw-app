@@ -2672,7 +2672,7 @@ function MiniPlayer({ session, live, onOpen }) {
 // descriptions must be visible); tap opens the full list with XP.
 // 1.8.2 (Michael: "calories more minimal, a long box like the showcase fields, the challenges under it the same"):
 // two full-width rows: an icon, one big number with a thin bar, and on the right what it is about.
-function HomeTiles({ history, onCalories }) {
+function HomeTiles({ history, onCalories, onHistory }) {
   const [sheet, setSheet] = useState(false);
   const s = kcalNow(history);
   const wk = weekKey(dateKey()), list = challengeStatus(history, wk), doneN = list.filter(c => c.done).length;
@@ -2730,6 +2730,20 @@ function HomeTiles({ history, onCalories }) {
         </div>
       </Sect>
       {sheet && <Sheet title={T("weeklyChallenges")} onClose={() => setSheet(false)} short><ChallengeRows history={history} /></Sheet>}
+      {/* 1.9.0 (Michael, Nov 6): Home's first page = week, calories, challenges and History */}
+      {onHistory && (() => { const lastE = history[history.length - 1]; const open = () => { sfxTap(); onHistory(); }; return (
+        <Sect role="button" tabIndex={0} data-home-hist onClick={open} onKeyDown={key(open)} aria-label={T("tabHistory")} style={row}>
+          <BadgeIco n="calendar" col={history.length ? C.sky : C.dim} size={46} />
+          <span style={{ flex: 1, minWidth: 0 }}>
+            {label(T("tabHistory"))}
+            <span style={{ display: "flex", alignItems: "baseline", gap: 6, marginTop: 5, minWidth: 0 }}>
+              <span style={{ fontFamily: DISPLAY, fontSize: 32, fontWeight: 900, lineHeight: 1, color: C.chalk }}>{history.length}</span>
+              {lastE && <span data-home-hist-last style={{ fontSize: 12.5, color: C.dim, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>· {fmtShortDM(parseKey(lastE.date))} {entryMark(lastE).length <= 2 && lastE.day ? T("dayN", { d: lastE.day }) : entryTitle(lastE)}</span>}
+            </span>
+          </span>
+          <Arrow />
+        </Sect>
+      ); })()}
     </div>
   );
 }
@@ -3616,11 +3630,18 @@ function usePager(name, n, lay, same) {
       el.style.height = ""; el.classList.remove("anim");
     };
   }, [pagerEl, wide]);
-  const tabs = labels => wide ? null : (
+  // onHold (1.9.0): holding a tab ~0.5 s calls it (Home: swap the two pages)
+  const holdT = useRef(null);
+  const holdProps = onHold => onHold ? {
+    onPointerDown: () => { clearTimeout(holdT.current); holdT.current = setTimeout(() => { holdT.current = "done"; onHold(); }, 500); },
+    onPointerUp: () => { if (holdT.current !== "done") clearTimeout(holdT.current); }, onPointerLeave: () => { if (holdT.current !== "done") clearTimeout(holdT.current); },
+    onContextMenu: e => { e.preventDefault(); },
+  } : {};
+  const tabs = (labels, onHold) => wide ? null : (
     <div {...{ [`data-${name}-tabs`]: 1 }} role="tablist" style={{ position: "relative", display: "flex", padding: 3, borderRadius: 13, ...SUNK(), marginBottom: 12 }}>
       <span ref={knob} aria-hidden="true" style={{ position: "absolute", top: 3, bottom: 3, left: 3, width: `calc((100% - 6px) / ${n})`, borderRadius: 10, background: C.chalk, boxShadow: "0 2px 6px rgba(0,0,0,.3)", transition: "none" }} />
       {labels.map((lb, i) => (
-        <button key={i} role="tab" aria-selected={page === i} {...{ [`data-${name}-tab`]: i }} onClick={() => goPage(i)}
+        <button key={i} role="tab" aria-selected={page === i} {...{ [`data-${name}-tab`]: i }} {...holdProps(onHold)} onClick={() => { if (holdT.current === "done") { holdT.current = null; return; } goPage(i); }}
           style={{ ...btnBase, position: "relative", flex: 1, minWidth: 0, padding: "7px 2px", borderRadius: 10, background: "transparent", color: page === i ? C.ink : C.dim, fontSize: 13, fontWeight: 800, transition: `color ${MO.t1}`, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{lb}</button>
       ))}
     </div>
@@ -3690,6 +3711,11 @@ function TrainTab({ history, onStart, onStartPlan, onStartFree, onFreeze, ui, se
   // Page 1 "Today": one notice at a time, the big day + Start, this week (green = workout, amber = calories), calories
   // and the weekly challenges. Page 2: the day's exercises. A small switch on top shows where you are (and works with
   // a mouse); Android back on page 2 goes to page 1.
+  // 1.9.0 (Michael, Nov 6): the two pages' order is the user's (hold a tab, or Settings → Appearance)
+  const homeOrder = settings && settings.homeOrder === "ex" ? ["ex", "today"] : ["today", "ex"];
+  const homeIdx = k => homeOrder.indexOf(k);
+  HOME_TAB = { today: homeIdx("today"), ex: homeIdx("ex") };
+  const swapHome = () => { if (!setSettings) return; vibrate([20]); sfxCheck(); const n = { ...settings, homeOrder: homeOrder[0] === "today" ? "ex" : "today" }; window._wset = n; setSettings(n); };
   const pg = usePager("home", 2);
   // 1.8.2 (Michael, 23:16: every screen ends with the same room at the bottom): the two pages keep their own height;
   // switching pages goes back to the top, so a shorter page never makes the screen jump
@@ -3735,75 +3761,89 @@ function TrainTab({ history, onStart, onStartPlan, onStartFree, onFreeze, ui, se
   // Settings → Workout, and Settings → Exercises one tap away.
   const setS = (k, v) => { const n = { ...settings, [k]: v }; window._wset = n; setSettings(n); };
   const wdNames = weekdaysShort(), todayWd = PLN.weekdayOf(today);
-  const planHero = own && (
-    <Sect data-home-hero data-home-plan={own.id} style={{ padding: LOOK === "flat" ? 0 : "18px 18px 16px" }}>
-      <button data-home-plan-name onClick={() => { sfxTap(); onGo && onGo("plans", { plan: own.id }); }} style={{ ...btnBase, background: "transparent", padding: 0, fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: C.dim, display: "inline-flex", alignItems: "center", gap: 4, maxWidth: "100%" }}>
-        <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{[planTitle(own), groupName(P, own.grp)].filter(Boolean).join(" · ")}</span><Arrow size={14} />
-      </button>
-      <div data-day-title data-plan-wd={wdSel} style={{ fontFamily: DISPLAY, fontWeight: 900, fontSize: fitFont(planItems.length ? wdLong(wdSel) : T("plRestDay"), 64, 9), lineHeight: 0.9, paddingBottom: "0.12em", letterSpacing: -1, color: planItems.length ? C.chalk : C.sky, marginTop: 6 }}>
-        {planItems.length ? wdLong(wdSel) : T("plRestDay")}
-      </div>
-      {planItems.length > 0 && <div style={{ marginTop: 6 }}><TypeMarks items={planItems} size={18} /></div>}
-      {!planItems.length && <div data-plan-rest-home style={{ fontSize: 13.5, color: C.dim, marginTop: 6, lineHeight: 1.45 }}>{T("plRestInfo")}</div>}
-      {last && !doneToday && gap === 2 && st.n > 0 && <div data-day-status style={{ fontSize: 14, color: C.signal, marginTop: 8, lineHeight: 1.5 }}>{emo(status)}</div>}
-      <div role="radiogroup" aria-label={T("pickDay")} data-day-picker="plan" style={{ display: "flex", gap: 4, marginTop: 16 }}>
-        {PLN.WEEKDAYS.map(d => {
-          const on = d === wdSel, tr = !PLN.isRest(own, d), dn = doneWds.has(d);
-          return <button key={d} role="radio" aria-checked={on} data-home-wd={d} data-done={dn ? 1 : 0} data-train={tr ? 1 : 0} onClick={() => { sfxTap(); setWdSel(d); }} aria-label={`${wdLong(d)}${dn ? " ✓" : ""}`}
-            style={{ ...btnBase, flex: 1, minWidth: 0, padding: "9px 0 6px", borderRadius: 11, fontSize: 12, display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
-              ...(on ? { background: C.chalk, color: C.ink, border: `1px solid ${C.chalk}` } : dn ? { background: C.mint, color: C.ink, border: `1px solid ${C.mint}` } : { ...SUNK(), color: tr ? C.chalk : C.dim }) }}>
-            {wdNames[d - 1]}<span style={{ width: 5, height: 5, borderRadius: 99, background: d === todayWd ? (on || dn ? C.ink : C.signal) : "transparent" }} />
-          </button>;
-        })}
-      </div>
-      {active && (
-        <button onClick={() => { unlockAudio(); onResume(); }} data-home-resume className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 16, fontSize: 16, padding: "14px 10px", borderRadius: 14 }}>
-          ▶ {resumeLabel(active)}
-        </button>
-      )}
-    </Sect>
-  );
-  const hero = planHero || (
-    <Sect data-home-hero style={{ padding: LOOK === "flat" ? 0 : "18px 18px 16px" }}>
-      <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: C.dim }}>{doneToday ? T("nextWorkout") : T("homeToday")}</div>
-      <div data-day-title style={{ fontFamily: DISPLAY, fontWeight: 900, fontSize: fitFont(T("dayN", { d: day.id }).replace(/\s/g, "_"), doneToday ? 84 : 112, 6), lineHeight: 0.85, paddingBottom: "0.16em", letterSpacing: -1, color: C.chalk, marginTop: 8 }}>
-        {T("dayN", { d: day.id })}
-      </div>
-      {/* 1.8.2 (Michael: "still useless texts"): only the warning that the streak ends tomorrow stays */}
-      {last && !doneToday && gap === 2 && st.n > 0 && <div data-day-status style={{ fontSize: 14, color: C.signal, marginTop: 8, lineHeight: 1.5 }}>{emo(status)}</div>}
+  // 1.9.0 (Michael, Nov 6: "too many Wednesdays"): Home's first page is the week + calories + challenges + history;
+  // the week strip itself is where an own plan's day is picked, and the workout (day, picker, exercises) lives on the
+  // Exercises page. The weekday's name is written only in the top bar and on that page.
+  const hType = own ? planItems : day.ids.map(id => ({ id: effId(id) }));
+  const todayBits = (
+    <>
+      {last && !doneToday && gap === 2 && st.n > 0 && <div data-day-status style={{ fontSize: 13.5, color: C.signal, marginTop: 10, lineHeight: 1.45 }}>{emo(status)}</div>}
       {!doneToday && st.gap === 2 && st.n > 0 && !st.frozenToday && !(META.skips || {})[dateKey()] && (
         <button data-skip-btn onClick={onFreeze} style={{ ...ghostBtn, marginTop: 10, color: C.sky, borderColor: C.sky }}><IcoI n="ice" /> {noEmo(T("skipBtn"))}</button>
       )}
       {st.frozenToday && <div style={{ fontSize: 13, color: C.sky, marginTop: 8 }}><IcoI n="ice" /> {noEmo(T("frozenToday"))}</div>}
       {(META.skips || {})[dateKey()] && <div data-skip-today style={{ fontSize: 13, color: C.dim, marginTop: 4 }}>{T("skipSaved", { r: `${T("skip_" + META.skips[dateKey()].r)}${META.skips[dateKey()].note ? ` (${META.skips[dateKey()].note})` : ""}` })}</div>}
-      {dayPicker({ marginTop: 18 })}
-      {/* 1.8.2 (Michael): 19 / 13 min and Start live only in the bar at the bottom of Home; a minimized workout is resumed here */}
       {active && (
-        <button onClick={() => { unlockAudio(); onResume(); }} data-home-resume className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 16, fontSize: 16, padding: "14px 10px", borderRadius: 14 }}>
+        <button onClick={() => { unlockAudio(); onResume(); }} data-home-resume className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 14, fontSize: 16, padding: "14px 10px", borderRadius: 14 }}>
           ▶ {resumeLabel(active)}
         </button>
       )}
+    </>
+  );
+  // The workout page's top: plan name (own plans), the day's title once, the day picker, what the day trains.
+  const dayTitle = own ? (planItems.length ? wdLong(wdSel) : T("plRestDay")) : T("dayN", { d: day.id });
+  const hero = (
+    <Sect data-home-hero {...(own ? { "data-home-plan": own.id } : {})} style={{ marginTop: 0, padding: LOOK === "flat" ? 0 : "16px 18px 16px" }}>
+      {own ? (
+        <button data-home-plan-name onClick={() => { sfxTap(); onGo && onGo("plans", { plan: own.id }); }} style={{ ...btnBase, background: "transparent", padding: 0, fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: C.dim, display: "inline-flex", alignItems: "center", gap: 4, maxWidth: "100%" }}>
+          <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{[planTitle(own), groupName(P, own.grp)].filter(Boolean).join(" · ")}</span><Arrow size={14} />
+        </button>
+      ) : <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: C.dim }}>{T("plRecTitle")}</div>}
+      <div data-day-title {...(own ? { "data-plan-wd": wdSel } : {})} style={{ fontFamily: DISPLAY, fontWeight: 900, fontSize: fitFont(dayTitle, 52, 10), lineHeight: 0.92, paddingBottom: "0.08em", letterSpacing: -0.5, color: own && !planItems.length ? C.sky : C.chalk, marginTop: 6 }}>{dayTitle}</div>
+      {hType.length > 0 && <div style={{ marginTop: 6 }}><TypeMarks items={hType} size={18} /></div>}
+      {own && !planItems.length && <div data-plan-rest-home style={{ fontSize: 13.5, color: C.dim, marginTop: 6, lineHeight: 1.45 }}>{T("plRestInfo")}</div>}
+      {own ? (
+        <div role="radiogroup" aria-label={T("pickDay")} data-day-picker="plan" style={{ display: "flex", gap: 4, marginTop: 14 }}>
+          {PLN.WEEKDAYS.map(d => {
+            const on = d === wdSel, tr = !PLN.isRest(own, d), dn = doneWds.has(d);
+            return <button key={d} role="radio" aria-checked={on} data-home-wd={d} data-done={dn ? 1 : 0} data-train={tr ? 1 : 0} onClick={() => { sfxTap(); setWdSel(d); }} aria-label={`${wdLong(d)}${dn ? " ✓" : ""}`}
+              style={{ ...btnBase, flex: 1, minWidth: 0, padding: "9px 0 6px", borderRadius: 11, fontSize: 12, display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
+                ...(on ? { background: C.chalk, color: C.ink, border: `1px solid ${C.chalk}` } : dn ? { background: C.mint, color: C.ink, border: `1px solid ${C.mint}` } : { ...SUNK(), color: tr ? C.chalk : C.dim }) }}>
+              {wdNames[d - 1]}<span style={{ width: 5, height: 5, borderRadius: 99, background: d === todayWd ? (on || dn ? C.ink : C.signal) : "transparent" }} />
+            </button>;
+          })}
+        </div>
+      ) : dayPicker({ marginTop: 14 })}
     </Sect>
   );
 
+  // Today page: this week. With an own plan the strip is also the day picker: plan days have a dot, the chosen day a
+  // frame; tapping a day you trained opens it in History. Under it one row says what's next and opens the workout.
+  const pickWeekDay = w => {
+    if (w.on) { onGo && onGo("history", { edit: w.k }); return; }
+    if (own && w.k >= today) { sfxTap(); setWdSel(w.wd); return; }
+    onGo && onGo("history", null);
+  };
+  const nextRow = (
+    <button data-home-next onClick={() => { sfxTap(); pg.goPage(homeIdx("ex")); }} style={{ ...btnBase, width: "100%", marginTop: 14, padding: "11px 12px", borderRadius: 14, ...SUNK(), color: C.chalk, display: "flex", alignItems: "center", gap: 12, textAlign: "left" }}>
+      <span style={{ width: 40, height: 40, borderRadius: 11, background: `${C.signal}22`, color: C.signal, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: DISPLAY, fontWeight: 900, fontSize: 22, flexShrink: 0 }}>{own ? <Ico n={planItems.length ? "dumbbell" : "moon"} size={20} /> : day.id}</span>
+      <span style={{ flex: 1, minWidth: 0 }}>
+        <span style={{ display: "block", fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: C.dim }}>{doneToday && !own ? T("nextWorkout") : own && wdSel !== todayWd ? T("homePicked") : T("homeToday")}</span>
+        <span style={{ display: "block", fontSize: 14.5, fontWeight: 700, marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{own ? (planItems.length ? `${planTitle(own)} · ${TP("exN", planItems.length)}` : T("plRestDay")) : `${T("dayN", { d: day.id })} · ${TP("exN", day.ids.length)}`}</span>
+      </span>
+      <Arrow />
+    </button>
+  );
   const weekCard = (
-    <Sect data-home-week title={T("secWeek")} style={{ marginTop: 0 }} meta={<span data-week-count style={{ color: weekCount ? C.mint : C.dim, fontWeight: 800 }}>{weekCount} / 3–4</span>} accent={C.mint}>
+    <Sect data-home-week title={<>{T("secWeek")}<InfoQ id="week" title={T("secWeek")} text={[T("weekInfo")]} /></>} style={{ marginTop: 0 }} meta={<span data-week-count style={{ color: weekCount ? C.mint : C.dim, fontWeight: 800 }}>{weekCount} / 3–4</span>} accent={C.mint}>
       <div style={{ display: "flex", gap: 6 }} aria-label={T("weekLine", { count: TP("workouts", weekCount) })}>
-        {week.map(w => (
-          <button key={w.k} data-week-day={w.k} data-week-kc={w.kc || "none"} onClick={() => onGo && onGo("history", w.on ? { edit: w.k } : null)} aria-label={`${w.lb} ${fmtDate(w.k)}${w.on ? " ✓" : ""}`}
-            style={{ ...btnBase, flex: 1, textAlign: "center", background: "transparent", padding: 0, color: "inherit" }}>
-            <div style={{ fontSize: 11, color: w.isToday ? C.chalk : C.dim, fontWeight: w.isToday ? 800 : 500, marginBottom: 5 }}>{w.lb}</div>
-            <div style={{ height: 26, borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 900,
-              background: w.on ? C.mint : "transparent", color: C.ink, border: `1.5px solid ${w.on ? C.mint : w.isToday ? C.chalk : C.line}` }}>{w.on ? "✓" : ""}</div>
-            <div style={{ height: 5, borderRadius: 99, marginTop: 4, background: w.kc === "hit" ? KC_HIT : w.kc === "log" ? KC_LOG : `${C.chalk}12` }} />
-          </button>
-        ))}
+        {week.map((w, i) => {
+          const wd = i + 1, pick = own && wd === wdSel && !w.on, planDay = own && !PLN.isRest(own, wd);
+          return (
+            <button key={w.k} data-week-day={w.k} data-week-kc={w.kc || "none"} data-week-pick={pick ? 1 : 0} onClick={() => pickWeekDay({ ...w, wd })} aria-label={`${w.lb} ${fmtDate(w.k)}${w.on ? " ✓" : ""}`}
+              style={{ ...btnBase, flex: 1, textAlign: "center", background: "transparent", padding: 0, color: "inherit" }}>
+              <div style={{ fontSize: 11, color: w.isToday ? C.chalk : C.dim, fontWeight: w.isToday ? 800 : 500, marginBottom: 5 }}>{w.lb}</div>
+              <div style={{ height: 26, borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 900,
+                background: w.on ? C.mint : pick ? `${C.signal}26` : "transparent", color: C.ink, border: `1.5px solid ${w.on ? C.mint : pick ? C.signal : w.isToday && !own ? C.chalk : C.line}` }}>
+                {w.on ? "✓" : planDay ? <span style={{ width: 5, height: 5, borderRadius: 99, background: pick ? C.signal : `${C.chalk}66` }} /> : ""}
+              </div>
+              <div style={{ height: 5, borderRadius: 99, marginTop: 4, background: w.kc === "hit" ? KC_HIT : w.kc === "log" ? KC_LOG : `${C.chalk}12` }} />
+            </button>
+          );
+        })}
       </div>
-      <div style={{ display: "flex", gap: 14, fontSize: 11, color: C.dim, marginTop: 9 }}>
-        <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}><span style={{ width: 10, height: 10, borderRadius: 3, background: C.mint }} />{T("calLegTrain")}</span>
-        <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}><span style={{ width: 12, height: 4, borderRadius: 99, background: KC_LOG }} />{T("calLegLog")}</span>
-        <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}><span style={{ width: 12, height: 4, borderRadius: 99, background: KC_HIT }} />{T("calLegHit")}</span>
-      </div>
+      {nextRow}
+      {todayBits}
     </Sect>
   );
 
@@ -3881,19 +3921,21 @@ function TrainTab({ history, onStart, onStartPlan, onStartFree, onFreeze, ui, se
       ), () => setUi({ ...ui, dailyHidden: today }), { "data-daily": 1 })}
       </div>
 
-      {pg.tabs([T("homeToday"), T("secExercises")])}
+      {pg.tabs(homeOrder.map(k => (k === "today" ? T("homeToday") : T("secExercises"))), swapHome)}
       </div>
 
       <div {...pg.pagerProps}>
-        <div {...pg.pageProps(0)}>
+        {homeOrder.map(k => k === "today" ? (
+        <div key="today" {...pg.pageProps(homeIdx("today"))} data-home-pagename="today">
           {weekCard}
-          {hero}
-          <HomeTiles history={history} onCalories={() => onGo("calories")} />
+          <HomeTiles history={history} onCalories={() => onGo("calories")} onHistory={() => onGo("history")} />
           {!active && <FsSpace />}
         </div>
-        <div {...pg.pageProps(1)}>
+        ) : (
+        <div key="ex" {...pg.pageProps(homeIdx("ex"))} data-home-pagename="ex">
+          {hero}
           {own && (
-            <Sect title={`${T("secExercises")} · ${planItems.length ? wdLong(wdSel) : T("plRestDay")}`} data-home-plan-ex accent={C.sky} titlePad="0 15px" style={LOOK === "flat" ? { marginTop: 0 } : { padding: "12px 0 4px", marginTop: 0 }}>
+            <Sect title={T("secExercises")} data-home-plan-ex accent={C.sky} titlePad="0 15px" style={LOOK === "flat" ? {} : { padding: "12px 0 4px" }}>
               <div style={LOOK === "flat" ? { ...card } : { borderTop: `1px solid ${C.line}` }}>
                 {!planItems.length && <div style={{ padding: "14px 16px", color: C.dim, fontSize: 14 }}>{T("plRestInfo")}</div>}
                 {planItems.map((x, i) => {
@@ -3916,8 +3958,7 @@ function TrainTab({ history, onStart, onStartPlan, onStartFree, onFreeze, ui, se
               </div>
             </Sect>
           )}
-          {!own && <Sect title={`${T("secExercises")} · ${T("dayN", { d: day.id })}`} accent={C.sky} titlePad="0 15px" style={LOOK === "flat" ? { marginTop: 0 } : { padding: "12px 0 4px", marginTop: 0 }}>
-          {!pg.wide && dayPicker({ padding: LOOK === "flat" ? "0 0 12px" : "0 15px 12px" }, "ex")}
+          {!own && <Sect title={T("secExercises")} accent={C.sky} titlePad="0 15px" style={LOOK === "flat" ? {} : { padding: "12px 0 4px" }}>
           <div style={LOOK === "flat" ? { ...card } : { borderTop: `1px solid ${C.line}` }}>
             {day.ids.map((slot, i) => {
               const id = effId(slot);
@@ -3952,7 +3993,7 @@ function TrainTab({ history, onStart, onStartPlan, onStartFree, onFreeze, ui, se
           {settings && setSettings && (
             <Sect data-wset title={T("wsTitle")} accent={C.sky} titlePad="0 15px" style={LOOK === "flat" ? {} : { padding: "12px 0 0" }}>
               <div style={LOOK === "flat" ? { ...card } : { borderTop: `1px solid ${C.line}` }}>
-                <button data-wset-ex onClick={() => onGo && onGo("settings", { page: "exercises", ret: { screen: "train", pager: "home", page: 1 } })} style={{ ...btnBase, width: "100%", background: "transparent", color: C.chalk, padding: "13px 16px", textAlign: "left", borderRadius: 0, display: "flex", alignItems: "center", gap: 10, fontSize: 15 }}>
+                <button data-wset-ex onClick={() => onGo && onGo("settings", { page: "exercises", ret: { screen: "train", pager: "home", page: homeIdx("ex") } })} style={{ ...btnBase, width: "100%", background: "transparent", color: C.chalk, padding: "13px 16px", textAlign: "left", borderRadius: 0, display: "flex", alignItems: "center", gap: 10, fontSize: 15 }}>
                   <span style={{ flex: 1, minWidth: 0, fontWeight: 700 }}>{noEmo(T("exMenu"))}</span>
                   <Arrow />
                 </button>
@@ -3964,9 +4005,10 @@ function TrainTab({ history, onStart, onStartPlan, onStartFree, onFreeze, ui, se
           )}
           {!active && <FsSpace />}
         </div>
+        ))}
       </div>
       {!active && !own && <FloatStart show day={day.id} rounds={rounds} setRounds={setRounds} onStart={() => { unlockAudio(); onStart(day.id, rounds); }} />}
-      {!active && own && <FloatStart show plan={planItems.length ? { mins: planMinutes(planItems), label: T("startWd", { d: wdLong(wdSel) }), sub: planTitle(own) } : { mins: "–", label: T("freeWorkout"), sub: T("freePick") }}
+      {!active && own && <FloatStart show plan={planItems.length ? { mins: planMinutes(planItems), label: wdSel === todayWd ? T("start") : T("startWd", { d: wdLong(wdSel) }), sub: planTitle(own) } : { mins: "–", label: T("freeWorkout"), sub: T("freePick") }}
         onStart={() => { unlockAudio(); if (planItems.length) onStartPlan(own, wdSel); else { sfxTap(); setFreePick([]); } }} />}
       {freePick && (
         <Sheet title={T("freeWorkout")} onClose={() => setFreePick(null)}>
@@ -7437,6 +7479,11 @@ function SettingsTab({ initPage, ret, settings, setSettings, history, profile, s
           );
         })}
       </div>
+      {/* 1.9.0 (Michael, Nov 6): which Home page comes first (also: hold a tab on Home) */}
+      <div style={{ fontSize: 13, color: C.chalk, fontWeight: 800, margin: "14px 0 8px" }}>{T("homeOrderT")}</div>
+      <div role="radiogroup" aria-label={T("homeOrderT")} style={{ display: "flex", gap: 4, padding: 4, borderRadius: 14, ...SUNK() }}>
+        {[["today", "homeOrderToday"], ["ex", "homeOrderEx"]].map(([id, k]) => { const on = (settings.homeOrder === "ex" ? "ex" : "today") === id; return <button key={id} role="radio" aria-checked={on} data-home-order={id} onClick={() => { sfxTap(); set("homeOrder", id); }} style={{ ...btnBase, flex: 1, padding: "9px 4px", fontSize: 13.5, borderRadius: 11, background: on ? C.chalk : "transparent", color: on ? C.ink : C.dim }}>{T(k)}</button>; })}
+      </div>
       {hzSupported() && <div style={{ marginTop: 12, borderRadius: 14, background: SOFT(), overflow: "hidden" }}><HzRow settings={settings} set={set} first /></div>}
       </Sect>
       </>} right={<>
@@ -9599,6 +9646,8 @@ function GameEnd({ res, onClose, onAgain }) {
 // teach opening badge cards with your own first badge. Chapter 3 is the workout: it runs when a workout starts.
 // New users get chapter 1 right after the first-start setup; everyone else gets an offer on Home once; the ☰ menu has
 // the chapter list (TourSheet). window.__hwTourOff (tests) keeps it out of the way unless a test wants it.
+// which Home tab holds which page (the order is the user's since 1.9.0), set by TrainTab
+let HOME_TAB = { today: 0, ex: 1 };
 const TOUR_N = 10; // 1.9.0: chapter 10 = Workout plans (the Explorer badge keeps its 9 = Obsidian)
 const TOUR_ORDER = [1, 2, 10, 4, 5, 6, 7, 8, 9]; // 3 = the workout, started by a workout
 // 1.8.1 (Michael, Oct 30): the guide starts with a short look at Home and ends at the ☰ menu; every other screen shows
@@ -9646,14 +9695,15 @@ function tourSteps(ch, x) {
   const tt = (i, key) => fmt(X[i] || "", { t: T(key) }); // "Tap {t}." with the tab's real name
   const screen = (id, page) => async () => { await x.go(id); if (page !== undefined) await tourTab(page[0], page[1]); };
   if (ch === 1) return [ // no welcome text: straight to what's on the screen (Michael)
-    s("[data-home-hero]", 1, { prep: screen("train", ["home", 0]) }),
-    s('[data-day-picker="hero"], [data-day-picker="plan"]', 2),
-    s("[data-rounds-row]", 3),
-    s("[data-home-week]", 4),
+    // 1.9.0: Home's first page is the week; the workout (day, picker, exercises) is on the Exercises page
+    s("[data-home-week]", 4, { prep: screen("train", ["home", HOME_TAB.today]) }),
     s("[data-home-ch]", 10, { opt: true }), // 1.8.2: the weekly challenges as rows with icons
-    s('[data-home-tab="1"]', 5, { tap: true, opt: true }),
+    s(`[data-home-tab="${HOME_TAB.ex}"]`, 5, { tap: true, opt: true }),
+    s("[data-home-hero]", 1),
+    s('[data-day-picker="hero"], [data-day-picker="plan"]', 2),
     s('[data-home-ex="0"]', 6, { opt: true }),
-    s("[data-menu-btn]", 7, { tap: true, opt: true, prep: async () => { await tourTab("home", 0); await tourWait(150); window.scrollTo(0, 0); } }), // left out on a PC (side menu)
+    s("[data-rounds-row]", 3),
+    s("[data-menu-btn]", 7, { tap: true, opt: true, prep: async () => { await tourTab("home", HOME_TAB.today); await tourWait(150); window.scrollTo(0, 0); } }), // left out on a PC (side menu)
     { done: true, t: T("tourAutoD"), keepMenu: true },
   ];
   if (ch === 2) return [

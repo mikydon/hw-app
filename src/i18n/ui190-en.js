@@ -167,3 +167,13 @@ Object.assign(UI, {
   kgStartNoBody: "First time: pick a weight you can lift about {n} times cleanly. Add your body weight in Calories and the app suggests one.",
   kgStartMachine: "First time: pick a weight you can lift about {n} times cleanly. Machines differ, so the app adjusts from this set.",
 });
+Object.assign(UI, {
+  homePicked: "Picked day",
+  weekInfo: "Green = a workout that day, tap it to see it. The thin line under a day: yellow = calories logged, orange = calorie target hit. With your own plan, a dot marks the plan's training days; tap a day to pick it.",
+  homeOrderT: "Home pages",
+  homeOrderToday: "Today first",
+  homeOrderEx: "Exercises first",
+});
+Object.assign(PL, {
+  exN: { one: "{n} exercise", other: "{n} exercises" },
+});

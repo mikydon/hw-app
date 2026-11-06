@@ -13,7 +13,7 @@ import { mergePlans } from "./plans.js";
 // Pure functions only (tested in tools/sync_test.mjs); App.jsx does the storage, the cloud and the state.
 
 // Settings that follow the account (the rest is per device).
-export const SYNC_SETTINGS = ["theme", "look", "accent", "exOff", "aiCopy", "menuOrder"]; // menuOrder: 1.9.0
+export const SYNC_SETTINGS = ["theme", "look", "accent", "exOff", "aiCopy", "menuOrder", "homeOrder"]; // menuOrder, homeOrder: 1.9.0
 const PROFILE_LISTS = ["freezeDays", "bdays", "bdayGifts", "tourDone"]; // tourDone: chapters of the guide (1.7.6)
 const PROFILE_MAPS = ["skips"];
 // Calorie data that never leaves the phone (Health Connect) or is a per-device choice.

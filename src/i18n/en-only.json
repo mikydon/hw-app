@@ -110,6 +110,7 @@
     "ex.mx_wide_grip_lat_pulldown",
     "news19",
     "pl.exMoreEq",
+    "pl.exN",
     "pl.hintFewDays",
     "pl.plDaysN",
     "tour.c10",
@@ -156,6 +157,10 @@
     "ui.hintOk",
     "ui.hintRest",
     "ui.hintWhy",
+    "ui.homeOrderEx",
+    "ui.homeOrderT",
+    "ui.homeOrderToday",
+    "ui.homePicked",
     "ui.kcSkipLong",
     "ui.kgBody",
     "ui.kgEach",
@@ -252,6 +257,7 @@
     "ui.stillT",
     "ui.tabPlans",
     "ui.wScoreD",
-    "ui.wScoreT"
+    "ui.wScoreT",
+    "ui.weekInfo"
   ]
 }
