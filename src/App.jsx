@@ -2508,13 +2508,72 @@ function MenuDrawer({ open, screen, history, profile, session, onGo, onResume, o
   );
 }
 
+// 1.9.0 (Michael, Nov 1): the menu's order is the user's. A pencil shows ≡ handles; drag a row and the others move out
+// of the way. The first row is the screen the app opens on (e.g. Calories for people who only count calories), and
+// Back on it behaves like Home. Saved in settings.menuOrder (follows the account).
+let MENU_ORDER = SCREENS, setMenuOrderGlobal = null;
+const menuOrderOf = st => { const o = ((st && st.menuOrder) || []).filter(x => SCREENS.includes(x)); return [...new Set([...o, ...SCREENS])]; };
+function NavRows({ items, screen, onGo }) {
+  const [edit, setEdit] = useState(false);
+  const [drag, setDrag] = useState(null); // {from, to, dy, h}
+  const rowRefs = useRef([]);
+  const startDrag = (e, i) => {
+    e.preventDefault(); e.stopPropagation();
+    const el = rowRefs.current[i]; if (!el) return;
+    const h = el.getBoundingClientRect().height + 4, y0 = e.clientY;
+    let st = { from: i, to: i, dy: 0, h };
+    setDrag(st); vibrate([12]);
+    const mv = ev => { const dy = ev.clientY - y0, to = Math.max(0, Math.min(items.length - 1, i + Math.round(dy / h))); if (to !== st.to) sfxTap(); st = { ...st, dy, to }; setDrag(st); };
+    const up = () => {
+      window.removeEventListener("pointermove", mv); window.removeEventListener("pointerup", up); window.removeEventListener("pointercancel", up);
+      const ids = items.map(x => x.id), [x] = ids.splice(st.from, 1); ids.splice(st.to, 0, x);
+      setDrag(null); if (st.to !== st.from && setMenuOrderGlobal) { setMenuOrderGlobal(ids); vibrate([20]); }
+    };
+    window.addEventListener("pointermove", mv); window.addEventListener("pointerup", up); window.addEventListener("pointercancel", up);
+  };
+  const shift = i => {
+    if (!drag) return 0;
+    if (i === drag.from) return drag.dy;
+    if (drag.from < drag.to && i > drag.from && i <= drag.to) return -drag.h;
+    if (drag.from > drag.to && i < drag.from && i >= drag.to) return drag.h;
+    return 0;
+  };
+  return (
+    <div data-nav-box data-nav-edit={edit ? 1 : 0} style={{ position: "relative", margin: "6px 14px 12px", padding: "4px", background: C.panel, border: `1px solid ${C.line}`, borderRadius: 18, ...(LOOK === "liquid" ? { ...LIQUID_PILL(), borderRadius: 20 } : {}) }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "4px 6px 2px 10px" }}>
+        <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: C.dim }}>{edit ? T("menuOrderT") : ""}</span>
+        <button data-nav-pencil aria-pressed={edit} aria-label={T(edit ? "noteDone" : "menuOrderT")} onClick={() => { sfxTap(); setEdit(!edit); }} style={{ ...btnBase, padding: "6px 8px", borderRadius: 10, background: edit ? `${C.signal}22` : "transparent", color: edit ? C.signal : C.dim, display: "inline-flex", alignItems: "center", gap: 5, fontSize: 13 }}>{edit ? <><Ico n="check" size={16} />{T("noteDone")}</> : <Ico n="pencil" size={16} />}</button>
+      </div>
+      {edit && <div data-nav-start-hint style={{ fontSize: 12, color: C.dim, padding: "0 10px 6px", lineHeight: 1.4 }}>{T("menuOrderD")}</div>}
+      {items.map((it, i) => {
+        const on = it.id === screen, dragging = drag && drag.from === i;
+        return (
+          <div key={it.id} ref={el => { rowRefs.current[i] = el; }} data-nav-row={it.id} style={{ position: "relative", transform: `translateY(${shift(i)}px)`, transition: dragging ? "none" : `transform ${MO.t1} ${MO.ease}`, zIndex: dragging ? 2 : 1 }}>
+            <button onClick={() => !edit && onGo(it.id)} aria-current={on ? "page" : undefined} className="drawerItem" data-screen={it.id} tabIndex={edit ? -1 : 0}
+              style={{ ...btnBase, "--i": i + 2, width: "100%", display: "flex", alignItems: "center", gap: 14, padding: "10px 10px", margin: "2px 0", borderRadius: 14, background: dragging ? C.panelHi : on && !edit ? `${C.signal}1a` : "transparent", color: on && !edit ? C.signal : C.chalk, textAlign: "left", boxShadow: dragging ? "0 10px 26px rgba(0,0,0,.45)" : "none" }}>
+              <span style={{ width: 40, height: 40, borderRadius: 12, background: on && !edit ? `${C.signal}26` : LOOK === "liquid" ? "rgba(255,255,255,.08)" : C.panelHi, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><TabIcon name={it.id} active={on && !edit} /></span>
+              <span style={{ minWidth: 0, fontSize: 16, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{it.label}</span>
+              {edit && i === 0 && <span data-nav-start style={{ fontSize: 10.5, fontWeight: 800, color: C.mint, border: `1px solid ${C.mint}66`, borderRadius: 99, padding: "1px 7px", flexShrink: 0 }}>{T("menuStart")}</span>}
+              {!edit && it.badge > 0 && <span style={{ marginLeft: "auto", minWidth: 20, height: 20, borderRadius: 10, padding: "0 6px", boxSizing: "border-box", background: "#ff5a5a", color: "#fff", fontSize: 11.5, fontWeight: 800, lineHeight: "20px", textAlign: "center" }}>{it.badge}</span>}
+            </button>
+            {edit && <span data-nav-handle={it.id} role="button" aria-label={T("plMove")} onPointerDown={e => startDrag(e, i)}
+              style={{ position: "absolute", right: 4, top: "50%", transform: "translateY(-50%)", width: 44, height: 44, display: "flex", alignItems: "center", justifyContent: "center", color: C.dim, touchAction: "none", cursor: "grab" }}>
+              <svg width="22" height="22" viewBox="0 0 24 24"><path d="M5 8h14M5 12h14M5 16h14" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" /></svg>
+            </span>}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 // What the menu holds (profile, back to the workout, the screens, about): in the ☰ drawer, or on a wide screen in the
 // side panel that stays open (1.7.0).
 function MenuBody({ screen, history, profile, session, onGo, onResume, onNews, gh, dl, badge, apk, busy, claimN = 0, chestN = 0, onTour, tourN = 0 }) {
   const lv = levelInfo(totalXP(history));
   const st = streakInfo(history, dateKey());
   // 1.8.2 (a tester: "too much text"): icon + name only; counts stay as the red badge (no description lines)
-  const items = SCREENS.map(id => ({ id, label: T(SCREEN_TITLE[id]), badge: id === "friends" ? badge : id === "profile" ? claimN : id === "shop" ? chestN : 0 }));
+  const items = MENU_ORDER.map(id => ({ id, label: T(SCREEN_TITLE[id]), badge: id === "friends" ? badge : id === "profile" ? claimN : id === "shop" ? chestN : 0 }));
   return (
     <>
           <button onClick={() => onGo("profile")} className="drawerItem" style={{ ...btnBase, "--i": 0, display: "flex", alignItems: "center", gap: 12, margin: "8px 14px 6px", padding: "12px", borderRadius: 18, background: C.panel, border: `1px solid ${C.line}`, color: C.chalk, textAlign: "left", ...(LOOK === "liquid" ? { ...LIQUID_PILL(), borderRadius: 20 } : {}) }}>
@@ -2529,19 +2588,7 @@ function MenuBody({ screen, history, profile, session, onGo, onResume, onNews, g
               <span style={{ fontSize: 18 }}>▶</span>{resumeLabel(session)}
             </button>
           )}
-          <div data-nav-box style={{ margin: "6px 14px 12px", padding: "4px", background: C.panel, border: `1px solid ${C.line}`, borderRadius: 18, ...(LOOK === "liquid" ? { ...LIQUID_PILL(), borderRadius: 20 } : {}) }}>
-            {items.map((it, i) => {
-              const on = it.id === screen;
-              return (
-                <button key={it.id} onClick={() => onGo(it.id)} aria-current={on ? "page" : undefined} className="drawerItem" data-screen={it.id}
-                  style={{ ...btnBase, "--i": i + 2, width: "100%", display: "flex", alignItems: "center", gap: 14, padding: "10px 10px", margin: "2px 0", borderRadius: 14, background: on ? `${C.signal}1a` : "transparent", color: on ? C.signal : C.chalk, textAlign: "left" }}>
-                  <span style={{ width: 40, height: 40, borderRadius: 12, background: on ? `${C.signal}26` : LOOK === "liquid" ? "rgba(255,255,255,.08)" : C.panelHi, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><TabIcon name={it.id} active={on} /></span>
-                  <span style={{ minWidth: 0, fontSize: 16, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{it.label}</span>
-                  {it.badge > 0 && <span style={{ marginLeft: "auto", minWidth: 20, height: 20, borderRadius: 10, padding: "0 6px", boxSizing: "border-box", background: "#ff5a5a", color: "#fff", fontSize: 11.5, fontWeight: 800, lineHeight: "20px", textAlign: "center", flexShrink: 0 }}>{it.badge}</span>}
-                </button>
-              );
-            })}
-          </div>
+          <NavRows items={items} screen={screen} onGo={onGo} />
           {onTour && (
             <button type="button" data-tour-open onClick={() => { sfxTap(); onTour(); }} className="drawerItem"
               style={{ ...btnBase, "--i": items.length + 2, display: "flex", alignItems: "center", gap: 14, margin: "0 14px 12px", padding: "10px 14px", borderRadius: 18, background: C.panel, border: `1px solid ${C.line}`, color: C.chalk, textAlign: "left", ...(LOOK === "liquid" ? { ...LIQUID_PILL(), borderRadius: 20 } : {}) }}>
@@ -6190,6 +6237,9 @@ function NickSetup({ initial, onSave, onCancel, title }) {
   return <div className="scr" data-fr-nicksetup style={{ padding: "6px 18px 124px", maxWidth: 460, margin: "0 auto" }}><Sect title={T("frNickTitle")}>{body}</Sect></div>;
 }
 
+// 1.9.0 (Michael, Nov 1, 21:49): the exercise world leaderboard is off for now, shown locked as "coming soon". The app
+// neither joins nor reads board/{uid}; old docs, the Worker's "board" kind and the rules stay for later.
+const WORLD_ON = false;
 function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, chatWith, setChatWith, onBlocked, setTopHead, modHidden, fx = {} }) {
   const wide = useWide();
   const me = { uid: acct.uid, ...acct.prof, ...cloudStats(history) };
@@ -6213,7 +6263,7 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
   const [rename, setRename] = useState(false);
   const [shareMsg, setShareMsg] = useState("");
   useEffect(() => { if (social.err) setErr(social.err); }, [social.err]);
-  const loadWorld = () => { setErr(""); cloud().world(50).then(w => setWorld(w.map(x => ({ ...x, pfp: null })))).catch(e => { setWorld(w => w || []); setErr(cloudErr(e)); }); };
+  const loadWorld = () => { if (!WORLD_ON) return; setErr(""); cloud().world(50).then(w => setWorld(w.map(x => ({ ...x, pfp: null })))).catch(e => { setWorld(w => w || []); setErr(cloudErr(e)); }); };
   useEffect(() => { try { sessionStorage.removeItem("hw-add"); } catch (_) {} }, []);
   useEffect(() => { if (scope === "world" && world === null) loadWorld(); }, [scope]);
   // 1.8.0: the server writes the world entry after its check, so a new result reloads the list (joining shows you at once)
@@ -6336,7 +6386,7 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
         );
         const boardView = (
         <>
-          {scope === "world" && (
+          {WORLD_ON && scope === "world" && (
             modHidden ? (
               <div data-fr-hidden style={{ ...card, ...tileR(), marginTop: 10, padding: "13px 16px" }}>
                 <div style={{ fontSize: 15, fontWeight: 700, color: C.chalk }}>{T("frHiddenT")}</div>
@@ -6358,7 +6408,8 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
           <Sect style={{ padding: "12px 0 4px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "0 12px 10px" }}>
               {chipSeg(scope === "friends", () => setScope("friends"), T("frBoardFriends"), "scope-friends")}
-              {chipSeg(scope === "world", () => setScope("world"), T("frBoardWorld"), "scope-world")}
+              {WORLD_ON ? chipSeg(scope === "world", () => setScope("world"), T("frBoardWorld"), "scope-world")
+                : <span data-seg="scope-world" data-locked aria-disabled="true" style={{ ...btnBase, padding: "6px 12px", fontSize: 12.5, borderRadius: 99, ...SUNK(), color: C.dim, opacity: 0.7, display: "inline-flex", alignItems: "center", gap: 5, whiteSpace: "nowrap" }}><Ico n="lock" size={13} />{T("frBoardWorld")} · {T("soon")}</span>}
               {scope === "world" && <button data-fr-refresh onClick={() => { sfxTap(); loadWorld(); }} aria-label={T("frRefresh")} style={{ ...btnBase, background: "transparent", color: C.dim, padding: "4px 6px", fontSize: 17, marginLeft: "auto", flexShrink: 0 }}>↻</button>}
             </div>
             {board === null ? <div style={{ padding: "6px 16px 12px", color: C.dim, fontSize: 14 }}>{T("frLoading")}</div>
@@ -10412,6 +10463,8 @@ export default function App() {
   setNativeBg(C.ink);
   applyLang(settings.lang || detectLang());
   const setSettings = n => { setSettingsState(n); saveSettings(n); };
+  MENU_ORDER = menuOrderOf(settings);
+  setMenuOrderGlobal = order => setSettings({ ...settings, menuOrder: order });
   const [profLoaded, setProfLoaded] = useState(false);
   useEffect(() => { loadProfile().then(p => { if (p) setProfileState(prev => ({ ...prev, ...p })); setProfLoaded(true); }); loadKcal().then(k => { if (k) setKcalState(k); setKcalLoaded(true); }); }, []);
   // The Health Connect badge stays at its best level, also after disconnecting (1.4.0).
@@ -10453,6 +10506,9 @@ export default function App() {
       if (s && Array.isArray(s.history)) setHistory(s.history);
       loadSettings().then(st => {
         if (st) setSettingsState({ ...DEFAULT_SETTINGS, ...st });
+        // 1.9.0: the app opens on the first screen of the user's menu order (unless a link opened another one)
+        const first = menuOrderOf(st)[0];
+        if (first !== "train") setScreen(sc => (sc === "train" ? first : sc));
         else if (s && s.muted === true) setSettingsState({ ...DEFAULT_SETTINGS, sndTap: false, sndFx: false, sndTimer: false });
         setSettingsLoaded(true);
       });
@@ -10589,7 +10645,7 @@ export default function App() {
       if (r.why === "recent") boardRetry.current = setTimeout(() => boardFn.current && boardFn.current(), 65000);
     }).catch(() => {});
   };
-  const runBoard = force => boardFn.current && boardFn.current(force);
+  const runBoard = force => WORLD_ON && boardFn.current && boardFn.current(force);
   useEffect(() => () => clearTimeout(boardRetry.current), []);
   // 1.8.0 friend streaks: my last training days go to days/{uid} (friends read them), the streaks are watched live
   const [fstreaks, setFstreaks] = useState([]), [fsDays, setFsDays] = useState({});
@@ -11008,7 +11064,7 @@ export default function App() {
   useEffect(() => {
     setRootBack(() => {
       if (session && sessionOpen) { setSessionOpen(false); return true; }
-      if (screen !== "train") { setScreen("train"); return true; }
+      if (screen !== MENU_ORDER[0]) { setScreen(MENU_ORDER[0]); return true; }
       if (!exitAsk) { setExitAsk(true); return true; }
       setExitAsk(false);
       return false;

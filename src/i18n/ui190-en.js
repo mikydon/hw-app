@@ -127,6 +127,7 @@ Object.assign(UI, {
   freePick: "pick exercises",
   startN: "Start ({n})",
   setShort: "Set {r}",
+  soon: "soon",
 });
 Object.assign(UI, {
   noteAdd: "Add a note",
@@ -135,4 +136,9 @@ Object.assign(UI, {
   noteDone: "Done",
   noteRest: "This rest",
   noteRestAfter: "Rest after set {r}",
+});
+Object.assign(UI, {
+  menuOrderT: "Menu order",
+  menuOrderD: "Drag ≡ to move. The first one is where the app opens.",
+  menuStart: "Opens here",
 });
