@@ -3798,9 +3798,9 @@ function TrainTab({ history, onStart, onStartPlan, onStartFree, onFreeze, ui, se
           <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{[planTitle(own), groupName(P, own.grp)].filter(Boolean).join(" · ")}</span><Arrow size={14} />
         </button>
       ) : <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: C.dim }}>{T("plRecTitle")}</div>}
-      <div data-day-title {...(own ? { "data-plan-wd": wdSel } : {})} style={{ fontFamily: DISPLAY, fontWeight: 900, fontSize: fitFont(dayTitle, 52, 10), lineHeight: 0.92, paddingBottom: "0.08em", letterSpacing: -0.5, color: own && !planItems.length ? C.sky : C.chalk, marginTop: 6 }}>{dayTitle}</div>
-      {hType.length > 0 && <div style={{ marginTop: 6 }}><TypeMarks items={hType} size={18} /></div>}
-      {own && !planItems.length && <div data-plan-rest-home style={{ fontSize: 13.5, color: C.dim, marginTop: 6, lineHeight: 1.45 }}>{T("plRestInfo")}</div>}
+      {!own && <div data-day-title style={{ fontFamily: DISPLAY, fontWeight: 900, fontSize: fitFont(dayTitle, 52, 10), lineHeight: 0.92, paddingBottom: "0.08em", letterSpacing: -0.5, color: C.chalk, marginTop: 6 }}>{dayTitle}</div>}
+      {hType.length > 0 && <div style={{ marginTop: own ? 10 : 8 }}><TypeChips items={hType} /></div>}
+      {own && !planItems.length && <div data-plan-rest-home style={{ fontSize: 13.5, color: C.dim, marginTop: 10, lineHeight: 1.45, display: "flex", gap: 8, alignItems: "flex-start" }}><Ico n="moon" size={18} color={C.sky} style={{ flexShrink: 0, marginTop: 1 }} /><span><b style={{ color: C.chalk }}>{T("plRestDay")}</b> · {T("plRestInfo")}</span></div>}
       {own ? (
         <div role="radiogroup" aria-label={T("pickDay")} data-day-picker="plan" style={{ display: "flex", gap: 4, marginTop: 14 }}>
           {PLN.WEEKDAYS.map(d => {
@@ -3834,7 +3834,15 @@ function TrainTab({ history, onStart, onStartPlan, onStartFree, onFreeze, ui, se
     </button>
   );
   const weekCard = (
-    <Sect data-home-week title={<>{T("secWeek")}<InfoQ id="week" title={T("secWeek")} text={[T("weekInfo")]} /></>} style={{ marginTop: 0 }} meta={<span data-week-count style={{ color: weekCount ? C.mint : C.dim, fontWeight: 800 }}>{weekCount} / 3–4</span>} accent={C.mint}>
+    <Sect data-home-week style={{ marginTop: 0 }} accent={C.mint}>
+      {/* 1.9.0 (Michael, Nov 6, 21:12): today's name is the week card's big header */}
+      <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 10, marginBottom: 12 }}>
+        <div data-week-today style={{ fontFamily: DISPLAY, fontWeight: 900, fontSize: fitFont(wdLong(todayWd), 44, 11), lineHeight: 0.95, letterSpacing: -0.3, color: C.chalk, minWidth: 0 }}>{wdLong(todayWd)}</div>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 2, flexShrink: 0, paddingBottom: 3 }}>
+          <span data-week-count title={T("secWeek")} style={{ color: weekCount ? C.mint : C.dim, fontWeight: 800, fontSize: 13 }}>{weekCount} / 3–4</span>
+          <InfoQ id="week" title={T("secWeek")} text={[T("weekInfo")]} />
+        </span>
+      </div>
       <div style={{ display: "flex", gap: 6 }} aria-label={T("weekLine", { count: TP("workouts", weekCount) })}>
         {week.map((w, i) => {
           const wd = i + 1, pick = own && wd === wdSel && !w.on, planDay = own && !PLN.isRest(own, wd);
@@ -3930,7 +3938,7 @@ function TrainTab({ history, onStart, onStartPlan, onStartFree, onFreeze, ui, se
       ), () => setUi({ ...ui, dailyHidden: today }), { "data-daily": 1 })}
       </div>
 
-      {pg.tabs(homeOrder.map(k => (k === "today" ? T("homeToday") : T("secExercises"))), swapHome)}
+      {pg.tabs(homeOrder.map(k => (k === "today" ? T("homeTab") : T("secExercises"))), swapHome)}
       </div>
 
       <div {...pg.pagerProps}>
@@ -7728,20 +7736,31 @@ function startKg(id) {
 }
 // where a set stands in its level: "low" (too heavy), "in", "up" (level done: go heavier)
 const levelOf = (id, reps) => { const rr = repRange(id); if (!rr) return "in"; return reps >= rr[1] + 1 ? "up" : reps < rr[0] ? "low" : "in"; };
-function LevelBar({ id, kg, reps }) {
-  const rr = repRange(id); if (!rr) return null;
-  const [lo, hi] = rr, st = levelOf(id, reps), pct = Math.max(0, Math.min(1, reps / (hi + 1)));
+function LevelBar({ id, kg, reps, from }) {
+  const rr = repRange(id);
+  // animated: starts at `from` reps and fills to `reps` (on the rest screen); level done = a small celebration
+  const [shown, setShown] = useState(typeof from === "number" ? from : reps);
+  const [pop, setPop] = useState(false);
+  useEffect(() => {
+    if (typeof from !== "number") { setShown(reps); return; }
+    const t1 = setTimeout(() => setShown(reps), 250);
+    const t2 = rr && levelOf(id, reps) === "up" ? setTimeout(() => { setPop(true); sfxRecord(); vibrate([60, 40, 120]); }, 950) : null;
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, [reps, from]);
+  if (!rr) return null;
+  const [lo, hi] = rr, st = levelOf(id, shown), pct = Math.max(0, Math.min(1, shown / (hi + 1)));
   const col = st === "up" ? C.mint : st === "low" ? "#ffa94d" : C.signal;
   return (
     <div data-level-bar data-level={st} style={{ marginTop: 12 }}>
       <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: C.dim, fontWeight: 700, marginBottom: 5 }}>
-        <span>{T("lvlKg", { kg: fmtKg(kg) })}</span><span>{T("lvlRange", { a: lo, b: hi })}</span>
+        <span>{T("lvlKg", { kg: fmtKg(kg) })}{typeof from === "number" && from > 0 && reps > from && <span data-level-gain className="pop" style={{ display: "inline-block", marginLeft: 8, color: C.mint, fontWeight: 900 }}>+{reps - from}</span>}</span><span>{T("lvlRange", { a: lo, b: hi })}</span>
       </div>
       <div style={{ position: "relative", height: 10, borderRadius: 99, ...SUNK(), overflow: "hidden" }}>
-        <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: `${pct * 100}%`, background: col, borderRadius: 99, transition: `width ${MO.t2} ${MO.ease}, background ${MO.t1}` }} />
+        <div data-level-fill={shown} style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: `${pct * 100}%`, background: col, borderRadius: 99, transition: `width .7s ${MO.ease}, background ${MO.t1}` }} />
         <div aria-hidden="true" style={{ position: "absolute", top: 0, bottom: 0, left: `${(lo / (hi + 1)) * 100}%`, width: 2, background: `${C.chalk}55` }} />
       </div>
-      <div data-level-line style={{ fontSize: 12.5, marginTop: 6, lineHeight: 1.4, color: st === "up" ? C.mint : st === "low" ? "#ffa94d" : C.dim, fontWeight: st === "in" ? 500 : 700 }}>
+      {pop && <Confetti count={40} />}
+      <div data-level-line className={pop ? "pop" : ""} style={{ fontSize: 12.5, marginTop: 6, lineHeight: 1.4, color: st === "up" ? C.mint : st === "low" ? "#ffa94d" : C.dim, fontWeight: st === "in" ? 500 : 700 }}>
         {st === "up" ? T("lvlUp", { kg: fmtKg(heavierKg(id, kg)) }) : st === "low" ? T("lvlLow", { a: lo }) : T("lvlIn", { n: hi + 1 - reps })}
       </div>
     </div>
@@ -7903,7 +7922,8 @@ function Work({ item, rounds, history, sessionResults, sessionKg, onRecord, onSw
         const v = fmtSet(item.id, prevVal, pk, ""), g = fmtSet(item.id, prevVal + 1, pk, "");
         return (
           <div data-goal data-goal-kg style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 10, background: hit ? `${C.mint}1f` : LOOK === "liquid" ? "rgba(255,255,255,.07)" : C.panel, border: `1.5px solid ${hit ? C.mint : C.signal}66`, borderRadius: 14, padding: "9px 12px" }}>
-            <span className={hit ? "pop" : ""} key={hit ? "hit" : "aim"} style={{ fontFamily: DISPLAY, fontWeight: 900, fontSize: 20, lineHeight: 1, color: hit ? C.mint : C.signal, border: `2px solid ${hit ? C.mint : C.signal}`, borderRadius: 10, padding: "3px 7px", flexShrink: 0 }}>{hit ? "✓" : up ? "↑" : "+1"}</span>
+            {up ? <span style={{ width: 30, height: 30, borderRadius: 99, background: C.mint, color: C.ink, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Ico n="trophy" size={17} /></span>
+              : <span className={hit ? "pop" : ""} key={hit ? "hit" : "aim"} style={{ fontFamily: DISPLAY, fontWeight: 900, fontSize: 20, lineHeight: 1, color: hit ? C.mint : C.signal, border: `2px solid ${hit ? C.mint : C.signal}`, borderRadius: 10, padding: "3px 7px", flexShrink: 0 }}>{hit ? "✓" : "+1"}</span>}
             <div style={{ fontSize: 13, color: C.chalk, lineHeight: 1.4 }}>{hit ? T("goalHit", { v: fmtSet(item.id, reps, kg, "") }) : up ? T("goalKgNew", { v, kg: fmtKg(heavierKg(item.id, pk) === kg ? kg : kg), a: (repRange(item.id) || [8])[0], b: (repRange(item.id) || [8, 12])[1] }) : T(LIB[item.id].k === "a" ? "goalHelp" : "goalKg", { v, g })}</div>
           </div>
         );
@@ -7937,7 +7957,6 @@ function Work({ item, rounds, history, sessionResults, sessionKg, onRecord, onSw
       )}
 
       {wt && <KgField id={item.id} value={kg} onChange={setKg} />}
-      {wt && <LevelBar id={item.id} kg={kg} reps={reps} />}
       {isReps && (
         <>
           {TEMPO[item.id] && (
@@ -8164,6 +8183,10 @@ function Rest({ rest, nextItem, rounds, onEnd, onAdd, perm, onPerm }) {
           {left <= 0 && <div style={{ fontSize: 13, color: C.dim, marginTop: 6 }}>{T("restOver")}</div>}
         </Ring>
       </div>
+      {rest.lvl && <div data-rest-level style={{ ...card, marginTop: 16, padding: "12px 14px 10px", textAlign: "left" }}>
+        <div style={{ fontSize: 12, color: C.dim, fontWeight: 700 }}>{EX[rest.lvl.id].name}</div>
+        <LevelBar id={rest.lvl.id} kg={rest.lvl.kg} reps={rest.lvl.to} from={rest.lvl.from} />
+      </div>}
       <div data-rest-line style={{ fontSize: 12.5, color: C.dim, marginTop: 10, lineHeight: 1.45 }}>{T("restLine")}</div>
       {!restSupported() && <div data-rest-web style={{ fontSize: 12, color: C.dim, marginTop: 4, lineHeight: 1.45 }}>{T(isNative ? "restOldApk" : "restWebOnly")}</div>}
       {onPerm && <RestPermCard perm={perm} onPerm={onPerm} />}
@@ -8831,6 +8854,20 @@ function TypeMarks({ items, size = 18, onTap, data }) {
   return (
     <span role={onTap ? "button" : undefined} data-type-marks={data || ""} onClick={onTap ? e => { e.stopPropagation(); sfxTap(); onTap(); } : undefined} aria-label={has.map(t => T("grp_" + t)).join(", ")} style={{ display: "inline-flex", gap: 3, alignItems: "center", cursor: onTap ? "pointer" : undefined }}>
       {PLN.TYPES.map(t => <span key={t} data-type={t} data-on={has.includes(t) ? 1 : 0} style={{ display: "inline-flex", opacity: has.includes(t) ? 1 : 0.28 }}><Ico n={TYPE_ICON[t]} size={size} color={has.includes(t) ? C.signal : C.dim} /></span>)}
+    </span>
+  );
+}
+// 1.9.0 (Michael, Nov 6: the four bare icons read like hieroglyphs): the same as chips with a word. Bright = this day
+// trains it, faint = it doesn't; a tap explains.
+function TypeChips({ items }) {
+  const has = PLN.dayTypes(items || [], LIB);
+  return (
+    <span data-type-chips role="button" tabIndex={0} onClick={() => { sfxTap(); openInfoGlobal && openInfoGlobal({ title: T("plTypesT"), text: [T("plTypesD")] }); }} style={{ display: "inline-flex", gap: 5, flexWrap: "wrap", cursor: "pointer" }}>
+      {PLN.TYPES.map(t => { const on = has.includes(t); return (
+        <span key={t} data-type={t} data-on={on ? 1 : 0} style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 8px 3px 6px", borderRadius: 99, fontSize: 11.5, fontWeight: 800, ...(on ? { background: `${C.signal}1f`, color: C.signal, border: `1px solid ${C.signal}55` } : { color: C.dim, border: `1px dashed ${C.line}`, opacity: 0.75 }) }}>
+          <Ico n={TYPE_ICON[t]} size={13} color={on ? C.signal : C.dim} />{T("grp_" + t)}
+        </span>
+      ); })}
     </span>
   );
 }
@@ -10428,6 +10465,28 @@ function Summary({ entry, xpBefore = 0, xpGained, newCh = [], newAch = [], histo
           </div>
         ))}
       </div>
+      {!celeb && !revOn && (() => {
+        // 1.9.0: each weighted exercise's level at its heaviest weight today, filling from last time at that weight
+        const before = history.filter(e => e.ts !== entry.ts);
+        const rows = entry.items.filter(it => isW(it.id) && repRange(it.id) && it.kg).map(it => {
+          const top = Math.max(...it.kg.map(k => (typeof k === "number" ? k : 0)));
+          const to = Math.max(0, ...it.res.map((v, k) => (it.kg[k] === top ? numVal(v) : NaN)).filter(x => !isNaN(x)));
+          const l = lastFor(before, it.id); let from = 0;
+          if (l && l.kg) l.res.forEach((v, k) => { if (l.kg[k] === top && !isNaN(numVal(v))) from = Math.max(from, numVal(v)); });
+          return { id: it.id, kg: top, to, from: Math.min(from, to) };
+        }).filter(r => r.kg > 0 && r.to > 0);
+        return rows.length ? (
+          <div data-sum-levels className="cardIn" style={{ marginTop: 14, background: C.panel, border: `1px solid ${C.line}`, borderRadius: 18, padding: "12px 16px 14px" }}>
+            <div style={{ ...sectionTitle, margin: "0 0 4px" }}>{T("sumLevels")}</div>
+            {rows.map((r, i) => (
+              <div key={r.id} data-sum-level={r.id} style={{ marginTop: i ? 14 : 6 }}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: C.chalk }}>{EX[r.id].name}</div>
+                <LevelBar id={r.id} kg={r.kg} reps={r.to} from={r.from} />
+              </div>
+            ))}
+          </div>
+        ) : null;
+      })()}
       {entry.day && <div style={{ fontSize: 14, color: C.dim, marginTop: 14, lineHeight: 1.5 }}>{T("nextLine", { d: DAYS[(DAYS.findIndex(d => d.id === entry.day) + 1) % DAYS.length].id, date: fmtDate(addDays(entry.date, 2)) })}</div>}
       {setting("aiCopy") && <button onClick={copy} className="b3d" style={{ ...bigBtn(copied ? C.mint : C.chalk, C.ink), marginTop: 16 }}>{copied ? T("copied") : T("copyAI")}</button>}
       <button onClick={onClose} className="b3d" style={{ ...bigBtn("transparent", C.dim), marginTop: 8, border: `1.5px solid ${C.line}` }}>{T("home")}</button>
@@ -10572,7 +10631,18 @@ function Session({ session, setSession, history, onSave, onClose, onMinimize, on
     const rankUp = !!rankAt(it.id) && (pr || oldBest === null) && newRank > rankIdx(it.id, oldBest);
     const cheer = rankUp ? `${T("newRank", { rank: RANKS[newRank].name })}` : pr ? T("newPR") : pick(L.cheers);
     if (rankUp) { sfxLevel(); vibrate([120, 60, 120, 60, 260]); } else if (pr) { sfxRecord(); vibrate([80, 40, 80]); } else sfxSet();
-    setSession({ ...session, results, kg: kgs, phase: "rest", rest: { endAt: Date.now() + secs * 1000, total: secs, startAt: Date.now(), nextPos: session.pos + 1, newRound: !session.plan && next.r !== it.r && !next.extra, pr, cheer, tip: pick(L.facts), moti: pick(L.moti) } });
+    // 1.9.0 (Michael, Nov 6): the weight level is shown after the set, on the rest, as a reward: the bar fills from
+    // what this weight had before (an earlier set today, else last time's set at the same weight) to this set's reps
+    let lvl = null;
+    if (isW(it.id) && repRange(it.id)) {
+      const k = typeof kg === "number" ? kg : 0, n = numVal(val);
+      let from = 0;
+      const today = (session.results[it.id] || []).map((v, i) => ((sKg[it.id] || [])[i] === k ? numVal(v) : NaN)).filter(x => !isNaN(x));
+      if (today.length) from = today[today.length - 1];
+      else { const l = lastFor(history, it.id); if (l && l.kg) l.res.forEach((v, i) => { if (l.kg[i] === k && !isNaN(numVal(v))) from = Math.max(from, numVal(v)); }); }
+      lvl = { id: it.id, kg: k, from: Math.min(from, n), to: n };
+    }
+    setSession({ ...session, results, kg: kgs, phase: "rest", rest: { lvl, endAt: Date.now() + secs * 1000, total: secs, startAt: Date.now(), nextPos: session.pos + 1, newRound: !session.plan && next.r !== it.r && !next.extra, pr, cheer, tip: pick(L.facts), moti: pick(L.moti) } });
   };
   // 1.9.0: more exercises during the workout (not tired yet): straight sets after the rest, they count for today
   const addExtra = id => {
@@ -10649,7 +10719,7 @@ function Session({ session, setSession, history, onSave, onClose, onMinimize, on
         return <NoteBox notes={session.notes || {}} targets={targets} onChange={(k, v) => setSession(s => ({ ...s, notes: { ...(s.notes || {}), [k]: v.slice(0, 300) } }))} />;
       })()}
       {(inFlow || session.phase === "cool") && (
-        <button data-add-extra onClick={() => { sfxTap(); setAdding(true); }} style={{ ...btnBase, width: "100%", marginTop: 18, padding: "12px", borderRadius: 13, border: `1.5px dashed ${C.line}`, background: "transparent", color: C.sky, fontSize: 14.5, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}><Ico n="plus" size={16} sw={2.4} />{T("addExtra")}</button>
+        <button data-add-extra onClick={() => { sfxTap(); setAdding(true); }} style={{ ...btnBase, marginTop: 6, padding: "6px 2px", background: "transparent", color: C.dim, fontSize: 13.5, display: "inline-flex", alignItems: "center", gap: 6 }}><Ico n="plus" size={15} sw={2.2} />{T("addExtra")}</button>
       )}
       {adding && (
         <Sheet title={T("addExtra")} onClose={() => setAdding(false)}>

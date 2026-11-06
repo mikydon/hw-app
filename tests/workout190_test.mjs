@@ -8,7 +8,7 @@ const hist = [entry("2026-11-02", null, [{ id: "fw_dumbbell_bench_press", name: 
 const h = await start({ clock: now, seed: { history: hist, profile: { plans: { list: [plan], groups: [{ id: "gG", name: "Gym", ts: 1, mts: 1 }], seq: 3, del: {}, active: "pA", sort: "date", dir: "desc" } }, kcal: { sex: "m", weight: 80, height: 180, activity: "light" } } });
 const p = h.page;
 T.ok(await p.locator("[data-home-plan]").count() === 1, "Home shows the plan in use");
-T.eq(await p.getAttribute("[data-day-title]", "data-plan-wd"), "3", "offers today (Wednesday)");
+T.eq(await p.getAttribute(`[data-home-wd][aria-checked="true"]`, "data-home-wd"), "3", "offers today (Wednesday)");
 T.ok((await p.locator("[data-home-plan-name]").innerText()).includes("WORKOUT PLAN 3 · GYM") || (await p.locator("[data-home-plan-name]").innerText()).toLowerCase().includes("workout plan 3 · gym"), "plan name + group");
 T.ok(Number(await p.getAttribute("[data-fstart-mins]", "data-fstart-mins")) > 3, "minutes estimated from the plan");
 await shot(p, "home_plan");

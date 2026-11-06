@@ -64,7 +64,7 @@ Object.assign(UI, {
   plSave: "Save",
   plBack: "Plans",
   plTypesT: "What a day trains",
-  plTypesD: "The four icons are push, pull, legs and core. Bright = this day trains it, faint = it doesn't. Tap them for tips. Only suggestions, never rules.",
+  plTypesD: "Push, pull, legs and core: a full-body day trains all four. Bright = this day trains it, faint = it doesn't. Only suggestions, never rules.",
   hintMissDay: "{day} has no {types}. A full-body day trains push, pull, legs and core.",
   hintNone: "{fam}: not in this plan.",
   hintFewSets: "{fam}: ~{n} sets a week. About 10 or more a week grow the most.",
@@ -158,6 +158,7 @@ Object.assign(UI, {
 });
 Object.assign(UI, {
   lvlKg: "Level: {kg} kg",
+  sumLevels: "Weight levels",
   lvlRange: "{a}–{b} reps",
   lvlIn: "{n} more reps and this weight is done: next level, a heavier weight.",
   lvlUp: "Level done! Next time: about {kg} kg.",
@@ -169,6 +170,7 @@ Object.assign(UI, {
 });
 Object.assign(UI, {
   homePicked: "Picked day",
+  homeTab: "Home",
   weekInfo: "Green = a workout that day, tap it to see it. The thin line under a day: yellow = calories logged, orange = calorie target hit. With your own plan, a dot marks the plan's training days; tap a day to pick it.",
   homeOrderT: "Home pages",
   homeOrderToday: "Today first",
