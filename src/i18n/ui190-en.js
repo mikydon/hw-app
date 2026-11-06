@@ -102,7 +102,6 @@ Object.assign(UI, {
   kgBody: "0 = body weight only",
   kgType: "Type the weight",
   goalKg: "Last time {v}. Aim for at least {g}.",
-  goalKgUp: "Last time {v}. 15+ reps: time for a bit more weight.",
   goalHelp: "Last time {v}. Aim for at least {g}, or less help.",
   rankNeedsWeight: "Add your body weight in Calories to get ranks for weights.",
   setN: "Set {r} of {n}",
@@ -156,4 +155,15 @@ Object.assign(UI, {
   stillD: "Your rest has gone on for over 10 minutes. Tap to go back to your workout.",
   restCh: "Rest timer",
   restAlertCh: "Workout reminders",
+});
+Object.assign(UI, {
+  lvlKg: "Level: {kg} kg",
+  lvlRange: "{a}–{b} reps",
+  lvlIn: "{n} more reps and this weight is done: next level, a heavier weight.",
+  lvlUp: "Level done! Next time: about {kg} kg.",
+  lvlLow: "Under {a} reps: lighter grows more. The next set adjusts.",
+  goalKgNew: "Last time {v}: level done. New level {kg} kg: {a}–{b} reps.",
+  kgStartEst: "First time: about {kg} kg to start, estimated from your body weight and activity. Do the set; the app adjusts from what you manage.",
+  kgStartNoBody: "First time: pick a weight you can lift about {n} times cleanly. Add your body weight in Calories and the app suggests one.",
+  kgStartMachine: "First time: pick a weight you can lift about {n} times cleanly. Machines differ, so the app adjusts from this set.",
 });

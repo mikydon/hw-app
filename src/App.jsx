@@ -7577,6 +7577,56 @@ function SwapSheet({ item, exclude, history, onPick, onClose }) {
 }
 
 const MIN_REP_S = 0.6; // nobody does a clean rep faster (fast push-ups ~0.8–1 s)
+// 1.9.0 (Michael, Nov 6: "when he lifts a weight too many times, the app should recommend a heavier one"): double
+// progression in weight levels. Every weighted exercise has a rep range: 8–12 for moves with several muscles (ACSM 2009
+// position stand: novices train with an 8–12 RM load) and 10–15 for small one-muscle moves. Inside the range the goal is
+// one more rep; a set that reaches the top + 1 ("1–2 repetitions over the desired number", ACSM) completes the level and
+// the next level is a heavier weight: +5 % (ACSM: 2–10 %), at least one step of that equipment. Under the range the
+// weight is too heavy for growth. The first time, a starting weight is estimated from body weight, sex and activity
+// (free weights: the beginner/novice strength standards in src/exlib.js); machines differ too much, so there the first
+// set decides.
+const repRange = id => { const x = LIB[id]; if (!x || x.k === "c") return null; return x.m.length + x.s.length >= 3 ? [8, 12] : [10, 15]; };
+const kgStep = id => { const x = LIB[id] || {}; return x.k === "a" || x.load === "stack" ? 2.5 : x.load === "each" ? 1 : 2; };
+const roundStep = (v, st) => Math.max(0, Math.round(v / st) * st);
+function heavierKg(id, kg) {
+  const st = kgStep(id);
+  if (LIB[id].k === "a") return Math.max(0, Math.min(kg - st, roundStep(kg - Math.max(st, bodyKg() * 0.05), st))); // less help
+  return Math.max(kg + st, roundStep(kg * 1.05, st));
+}
+// the weight that fits about `reps` reps for a set score (the inverse of wSetScore)
+function kgForReps(id, score, reps) {
+  const x = LIB[id], load = score / (1 + Math.min(reps, REP_CAP) / 30), st = kgStep(id);
+  if (x.k === "a") return roundStep(Math.max(0, (bodyKg() || 75) - load), st);
+  return roundStep(Math.max(0, load - (x.bw || 0) * (bodyKg() || 75)), st);
+}
+// first time: a starting weight for the middle of the range, or null (machines, or no body weight yet)
+function startKg(id) {
+  const rr = repRange(id), at = wRankAt(id, bodySex()), b = bodyKg();
+  if (!rr || !at || !b) return null;
+  const act = (META.kcal && META.kcal.activity) || "none", lv = ["none", "light"].includes(act) ? 0 : ["moderate", "active"].includes(act) ? 1 : 2;
+  return Math.max(kgStep(id), Math.floor(kgForReps(id, at[lv] * b, Math.round((rr[0] + rr[1]) / 2)) / kgStep(id)) * kgStep(id));
+}
+// where a set stands in its level: "low" (too heavy), "in", "up" (level done: go heavier)
+const levelOf = (id, reps) => { const rr = repRange(id); if (!rr) return "in"; return reps >= rr[1] + 1 ? "up" : reps < rr[0] ? "low" : "in"; };
+function LevelBar({ id, kg, reps }) {
+  const rr = repRange(id); if (!rr) return null;
+  const [lo, hi] = rr, st = levelOf(id, reps), pct = Math.max(0, Math.min(1, reps / (hi + 1)));
+  const col = st === "up" ? C.mint : st === "low" ? "#ffa94d" : C.signal;
+  return (
+    <div data-level-bar data-level={st} style={{ marginTop: 12 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: C.dim, fontWeight: 700, marginBottom: 5 }}>
+        <span>{T("lvlKg", { kg: fmtKg(kg) })}</span><span>{T("lvlRange", { a: lo, b: hi })}</span>
+      </div>
+      <div style={{ position: "relative", height: 10, borderRadius: 99, ...SUNK(), overflow: "hidden" }}>
+        <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: `${pct * 100}%`, background: col, borderRadius: 99, transition: `width ${MO.t2} ${MO.ease}, background ${MO.t1}` }} />
+        <div aria-hidden="true" style={{ position: "absolute", top: 0, bottom: 0, left: `${(lo / (hi + 1)) * 100}%`, width: 2, background: `${C.chalk}55` }} />
+      </div>
+      <div data-level-line style={{ fontSize: 12.5, marginTop: 6, lineHeight: 1.4, color: st === "up" ? C.mint : st === "low" ? "#ffa94d" : C.dim, fontWeight: st === "in" ? 500 : 700 }}>
+        {st === "up" ? T("lvlUp", { kg: fmtKg(heavierKg(id, kg)) }) : st === "low" ? T("lvlLow", { a: lo }) : T("lvlIn", { n: hi + 1 - reps })}
+      </div>
+    </div>
+  );
+}
 // 1.9.0: the weight of a set (kg × reps exercises and carries). − / + in steps that fit the equipment, tap to type.
 function KgField({ id, value, onChange }) {
   const x = LIB[id] || {}, help = x.k === "a", step = x.load === "stack" || help ? 2.5 : 1;
@@ -7612,7 +7662,18 @@ function Work({ item, rounds, history, sessionResults, sessionKg, onRecord, onSw
   const lastKg = (() => { if (!last || !last.kg) return null; const own = last.kg[item.r]; if (typeof own === "number") return own; const k = last.kg.filter(v => typeof v === "number"); return k.length ? k[k.length - 1] : null; })();
   const alreadyKg = ((sessionKg || {})[item.id] || [])[item.r];
   const prevSetKg = item.r > 0 ? ((sessionKg || {})[item.id] || [])[item.r - 1] : undefined;
-  const [kg, setKg] = useState(typeof alreadyKg === "number" ? alreadyKg : typeof prevSetKg === "number" && lastKg === null ? prevSetKg : lastKg !== null ? lastKg : 0);
+  // the weight a set starts with: this set already logged > the set before in this workout (adjusted to its level) >
+  // last time's (one level up when last time's set finished the level) > the first-time estimate
+  const adjust = (k, r) => { if (!wt || typeof k !== "number") return k; const lv = levelOf(item.id, r); if (lv === "up") return heavierKg(item.id, k); if (lv === "low" && r > 0) { const rr = repRange(item.id); return rr ? kgForReps(item.id, wSetScore(item.id, r, k, bodyKg()), Math.round((rr[0] + rr[1]) / 2)) : k; } return k; };
+  const prevSetReps = item.r > 0 ? numVal(((sessionResults || {})[item.id] || [])[item.r - 1]) : NaN;
+  const lastSetReps = (() => { if (!last) return NaN; const own = numVal(last.res[item.r]); if (!isNaN(own)) return own; const n = last.res.map(numVal).filter(x => !isNaN(x)); return n.length ? n[n.length - 1] : NaN; })();
+  const firstKg = wt ? startKg(item.id) : null;
+  const initKg = typeof alreadyKg === "number" ? alreadyKg : typeof prevSetKg === "number" && !isNaN(prevSetReps) ? adjust(prevSetKg, prevSetReps) : lastKg !== null ? adjust(lastKg, lastSetReps) : firstKg !== null ? firstKg : 0;
+  const levelUpNow = wt && typeof alreadyKg !== "number" && !(typeof prevSetKg === "number" && !isNaN(prevSetReps)) && lastKg !== null && initKg !== lastKg && levelOf(item.id, lastSetReps) === "up";
+  // a new weight (next level, or lighter after a too-heavy set): the counter starts at the bottom of the range
+  const baseKg = typeof prevSetKg === "number" && !isNaN(prevSetReps) ? prevSetKg : lastKg;
+  const newWeight = wt && typeof alreadyKg !== "number" && typeof baseKg === "number" && initKg !== baseKg;
+  const [kg, setKg] = useState(initKg);
   const [how, setHow] = useState(false);
 
   // Progressive overload: last time's result for this round (or the closest round), and a goal one step above it.
@@ -7627,7 +7688,7 @@ function Work({ item, rounds, history, sessionResults, sessionKg, onRecord, onSw
   const goal = prevVal === null ? null : ex.type === "time" || carry ? (ex.durs.find(d => d > prevVal) ?? null) : prevVal + 1;
   // Coming back to a round that was already logged (Back button): start at that number.
   const already = numVal(((sessionResults || {})[item.id] || [])[item.r]);
-  const startReps = !isNaN(already) ? already : prevVal !== null ? prevVal : 0;
+  const startReps = !isNaN(already) ? already : newWeight ? (repRange(item.id) || [8])[0] : prevVal !== null ? prevVal : 0;
   const [reps, setRepsRaw] = useState(startReps);
   const setReps = n => setRepsRaw(Math.max(0, Math.min(999, Math.round(n) || 0)));
   const [typing, setTyping] = useState(false);
@@ -7710,14 +7771,20 @@ function Work({ item, rounds, history, sessionResults, sessionKg, onRecord, onSw
       </div>
       <div style={{ fontSize: 13, color: C.dim, marginTop: 8 }}>{ex.muscles}{ex.tempo ? `. ${T("tempo")}: ${ex.tempo}` : ""}</div>
       <div style={{ fontSize: 13, color: C.chalk, marginTop: 6 }}>{lastLine}</div>
+      {wt && prevVal === null && (
+        <div data-kg-start style={{ display: "flex", gap: 9, alignItems: "flex-start", marginTop: 10, fontSize: 13, color: C.chalk, lineHeight: 1.45, ...SUNK(), borderRadius: 14, padding: "9px 12px" }}>
+          <Ico n="bulb" size={17} color={C.signal} style={{ marginTop: 1, flexShrink: 0 }} />
+          <span>{firstKg !== null ? T("kgStartEst", { kg: fmtKg(firstKg) }) : W_RANK[item.id] && !bodyKg() ? T("kgStartNoBody", { n: (repRange(item.id) || [8, 12])[1] }) : T("kgStartMachine", { n: (repRange(item.id) || [8, 12])[1] })}</span>
+        </div>
+      )}
       {prevVal !== null && wt && (() => {
-        const pk = lastKg !== null ? lastKg : 0, up = prevVal >= REP_CAP && LIB[item.id].k !== "a";
-        const hit = setScore(item.id, reps, kg) > setScore(item.id, prevVal, pk);
+        const pk = lastKg !== null ? lastKg : 0, up = levelUpNow;
+        const hit = !up && setScore(item.id, reps, kg) > setScore(item.id, prevVal, pk); // a new level is a new start: the bar shows it
         const v = fmtSet(item.id, prevVal, pk, ""), g = fmtSet(item.id, prevVal + 1, pk, "");
         return (
           <div data-goal data-goal-kg style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 10, background: hit ? `${C.mint}1f` : LOOK === "liquid" ? "rgba(255,255,255,.07)" : C.panel, border: `1.5px solid ${hit ? C.mint : C.signal}66`, borderRadius: 14, padding: "9px 12px" }}>
             <span className={hit ? "pop" : ""} key={hit ? "hit" : "aim"} style={{ fontFamily: DISPLAY, fontWeight: 900, fontSize: 20, lineHeight: 1, color: hit ? C.mint : C.signal, border: `2px solid ${hit ? C.mint : C.signal}`, borderRadius: 10, padding: "3px 7px", flexShrink: 0 }}>{hit ? "✓" : up ? "↑" : "+1"}</span>
-            <div style={{ fontSize: 13, color: C.chalk, lineHeight: 1.4 }}>{hit ? T("goalHit", { v: fmtSet(item.id, reps, kg, "") }) : up ? T("goalKgUp", { v }) : T(LIB[item.id].k === "a" ? "goalHelp" : "goalKg", { v, g })}</div>
+            <div style={{ fontSize: 13, color: C.chalk, lineHeight: 1.4 }}>{hit ? T("goalHit", { v: fmtSet(item.id, reps, kg, "") }) : up ? T("goalKgNew", { v, kg: fmtKg(heavierKg(item.id, pk) === kg ? kg : kg), a: (repRange(item.id) || [8])[0], b: (repRange(item.id) || [8, 12])[1] }) : T(LIB[item.id].k === "a" ? "goalHelp" : "goalKg", { v, g })}</div>
           </div>
         );
       })()}
@@ -7750,6 +7817,7 @@ function Work({ item, rounds, history, sessionResults, sessionKg, onRecord, onSw
       )}
 
       {wt && <KgField id={item.id} value={kg} onChange={setKg} />}
+      {wt && <LevelBar id={item.id} kg={kg} reps={reps} />}
       {isReps && (
         <>
           {TEMPO[item.id] && (

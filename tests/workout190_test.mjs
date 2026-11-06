@@ -38,7 +38,7 @@ T.ok(await p.locator("[data-rest-over]").count() === 1, "counts into minus after
 T.ok(await p.locator('[data-mini], [data-work]').count() === 0, "did not move on by itself");
 await p.click("[data-rest-ready]");
 // set 2 (kept the 21 kg from set 1)
-T.eq(await p.getAttribute("[data-kg]", "data-kg"), "20", "set 2 starts at last time's set-2 weight");
+T.eq(await p.getAttribute("[data-kg]", "data-kg"), "21", "set 2 keeps the weight chosen in set 1");
 await p.click("[data-done-btn]");
 await p.click("[data-rest-ready]");
 // plank with the plan's own 20 s
@@ -71,7 +71,7 @@ T.eq(saved.plan && saved.plan.name, "Workout Plan 3", "history keeps the plan na
 T.eq(saved.plan && saved.plan.grp, "Gym", "and the group name");
 T.eq(saved.plan && saved.plan.wd, 3, "and the weekday");
 const bench = saved.items.find(x => x.id === "fw_dumbbell_bench_press");
-T.eq(bench.kg, [21, 20], "kg per set saved");
+T.eq(bench.kg, [21, 21], "kg per set saved");
 T.eq(bench.note, "felt strong", "exercise note saved"); T.eq(bench.rn, ["left shoulder tight", null], "rest note saved with the rest after set 1");
 T.ok(saved.prs.includes("fw_dumbbell_bench_press"), "21 kg × 8 beats 20 kg × 8: record");
 T.ok(saved.items.find(x => x.id === "bw_calf_raise").x === 1, "added exercise marked");
