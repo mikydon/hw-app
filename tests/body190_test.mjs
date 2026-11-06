@@ -13,6 +13,9 @@ await p.waitForSelector("[data-body-ranks]");
 T.ok(await p.locator("[data-body-ranks] [data-body-side]").count() === 2, "front + back figures");
 const box = await p.locator("[data-body-ranks]").boundingBox(), hero = await p.locator("[data-body-ranks] ~ *").first().boundingBox();
 T.ok(box && hero && box.y < hero.y, "body ranks are the first box of the Profile page");
+// a tap off the muscles (the head) opens the list of all parts
+await p.locator('[data-body-side="front"]').click({ position: { x: 30, y: 12 }, force: true });
+await p.waitForSelector("[data-body-all]");
 T.eq(await p.getAttribute('[data-body-fam="back"]', "data-rank"), "-1", "back not trained = grey");
 const chest = Number(await p.getAttribute('[data-body-fam="chest"]', "data-rank"));
 await p.click('[data-body-fam="chest"]');

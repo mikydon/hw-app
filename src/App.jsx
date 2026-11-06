@@ -2636,6 +2636,13 @@ function SideNav(props) {
 // Floating card while a workout runs in the background (like a minimized video). Tap = back to the workout.
 function MiniPlayer({ session, live, onOpen }) {
   const [, tick] = useState(0);
+  const mpRef = useRef(null);
+  useLayoutEffect(() => { // 1.9.0: the floating page switch sits above it
+    const el = mpRef.current, root = document.documentElement; if (!el) return;
+    const put = () => root.style.setProperty("--mpH", `${Math.ceil(el.offsetHeight) + 10}px`); put();
+    const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(put) : null; if (ro) ro.observe(el);
+    return () => { if (ro) ro.disconnect(); root.style.removeProperty("--mpH"); };
+  }, []);
   useEffect(() => { const t = setInterval(() => tick(x => x + 1), 250); return () => clearInterval(t); }, []);
   const seq = sessionSeq(session);
   const cur = seq[Math.min(session.pos, seq.length - 1)];
@@ -2658,7 +2665,7 @@ function MiniPlayer({ session, live, onOpen }) {
   else label = T("miniDone");
   const pct = typeof big === "number" && total ? big / total : 0;
   return createPortal(
-    <button onClick={onOpen} className="miniIn" data-mini aria-label={T("miniOpen")}
+    <button ref={mpRef} onClick={onOpen} className="miniIn" data-mini aria-label={T("miniOpen")}
       style={{ ...btnBase, position: "fixed", left: "calc(50% + var(--side, 0px) / 2)", bottom: "calc(14px + var(--sab))", transform: "translateX(-50%)", zIndex: 40, width: "min(calc(100vw - 24px), 436px)", display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", borderRadius: 20, background: C.panelHi, border: `1.5px solid ${color}88`, boxShadow: "0 12px 34px rgba(0,0,0,.45)", color: C.chalk, textAlign: "left", ...(LOOK === "liquid" ? { ...LIQUID_FLOAT(), border: `1px solid ${color}aa`, borderRadius: 24 } : {}) }}>
       <span style={{ position: "relative", width: 48, height: 48, flexShrink: 0 }}>
         <svg width="48" height="48" style={{ transform: "rotate(-90deg)" }}>
@@ -3152,7 +3159,39 @@ const FS_H = 106; // bar 94 px + 12 px from the bottom edge
 // the page's own bottom padding (~18) and the screen's (24) count too: the last box ends ~12 px above the bar
 // --fsH = the bar's real height + its 12 px gap (longer words wrap on a narrow phone), set by FloatStart
 // 1.8.2: the same 124 px every other screen has at its end (with the page's 18 px and the screen's 24 px), more only if the bar is taller
-function FsSpace() { return <div data-fstart-space aria-hidden="true" style={{ height: `calc(var(--sab, 0px) + max(var(--fsH, ${FS_H}px) + 12px, 124px) - 42px)` }} />; }
+function FsSpace() { return <div data-fstart-space aria-hidden="true" style={{ height: `calc(var(--sab, 0px) + max(var(--fsH, ${FS_H}px) + 12px, 124px) - 42px + var(--ftH, 0px))` }} />; }
+// 1.9.0 (Michael, Nov 6, 22:13, like the bottom bar of other apps; icons only): a screen's page switch floats at the
+// bottom: one icon per page, the open page in a lit capsule with its name. Above the Start bar on Home (--fsH) and the
+// mini player (--mpH); it sets --ftH so the pages keep room for it. items: [{label, icon, badge, data}].
+function FloatTabs({ name, items, active, onPick, extra = {} }) {
+  const boxRef = useRef(null);
+  useLayoutEffect(() => {
+    const el = boxRef.current, root = document.documentElement; if (!el) return;
+    const put = () => root.style.setProperty("--ftH", `${Math.ceil(el.offsetHeight) + 12}px`);
+    put();
+    const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(put) : null; if (ro) ro.observe(el);
+    return () => { if (ro) ro.disconnect(); root.style.removeProperty("--ftH"); };
+  }, []);
+  const bar = { background: C.ink, border: `1px solid ${C.line}`, boxShadow: "0 12px 34px rgba(0,0,0,.5)", ...(LOOK === "liquid" ? LIQUID_FLOAT() : LOOK === "glass" ? GLASS() : {}) };
+  return createPortal(
+    <div data-ftabs={name} style={{ position: "fixed", left: "var(--side, 0px)", right: 0, bottom: "calc(var(--sab, 0px) + 12px + var(--fsH, 0px) + var(--mpH, 0px))", zIndex: 39, display: "flex", justifyContent: "center", padding: "0 12px", pointerEvents: "none" }}>
+      <div aria-hidden="true" data-ftabs-fade style={{ position: "fixed", left: "var(--side, 0px)", right: 0, bottom: 0, height: "calc(var(--sab, 0px) + var(--ftH, 70px) + var(--fsH, 0px) + 22px)", background: `linear-gradient(180deg, ${C.ink}00, ${C.ink}d9 45%, ${C.ink})`, pointerEvents: "none", zIndex: -1 }} />
+      <div ref={boxRef} role="tablist" {...{ [`data-${name}-tabs`]: 1 }} className="ftabs" style={{ pointerEvents: "auto", display: "flex", gap: 4, padding: 6, width: "100%", maxWidth: 436, boxSizing: "border-box", ...bar, borderRadius: 99 }}>
+        {items.map((it, i) => { const on = active === i; return (
+          <button key={i} type="button" role="tab" aria-selected={on} aria-label={it.label} title={it.label} {...{ [`data-${name}-tab`]: it.data !== undefined ? it.data : i }} {...(extra.btn ? extra.btn(i) : {})}
+            onClick={e => { if (extra.cancel && extra.cancel()) return; sfxTap(); onPick(i, e); }}
+            style={{ ...btnBase, position: "relative", display: "flex", alignItems: "center", justifyContent: "center", flex: on ? "1.7 1 auto" : "1 1 0", minWidth: 46, height: 46, padding: on ? "0 16px 0 13px" : "0 10px", borderRadius: 99, background: on ? `${C.signal}24` : "transparent", color: on ? C.signal : C.dim, fontSize: 13.5, fontWeight: 800, transition: `background ${MO.t1}, color ${MO.t1}, padding ${MO.t2} ${MO.ease}, flex-grow ${MO.t2} ${MO.ease}` }}>
+            <span style={{ position: "relative", display: "flex" }}><Ico n={it.icon} size={22} sw={on ? 2.3 : 2} />
+              {it.badge > 0 && <span data-badge={it.badge} aria-hidden="true" style={{ position: "absolute", top: -5, right: -7, minWidth: 16, height: 16, borderRadius: 8, padding: "0 4px", boxSizing: "border-box", background: "#ff5a5a", color: "#fff", fontSize: 10, fontWeight: 800, lineHeight: "16px", textAlign: "center", border: `2px solid ${C.ink}` }}>{it.badge > 9 ? "9+" : it.badge}</span>}
+            </span>
+            <span aria-hidden="true" style={{ display: "block", maxWidth: on ? 130 : 0, marginLeft: on ? 7 : 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", opacity: on ? 1 : 0, transition: `max-width ${MO.t2} ${MO.ease}, margin ${MO.t2} ${MO.ease}, opacity ${MO.t1}` }}>{it.label}</span>
+          </button>
+        ); })}
+      </div>
+    </div>,
+    document.body
+  );
+}
 // 1.9.0: minutes an own plan's day takes: 3 min warm-up + every set (≈40 s a set of reps, the hold time for holds) and
 // its rest (REST_SET_BW / REST_SET_W).
 function planMinutes(items) {
@@ -3160,37 +3199,50 @@ function planMinutes(items) {
   (items || []).forEach(x => { const ex = EX[x.id]; if (!ex) return; const n = x.sets || PLN.DEFAULT_SETS, work = ex.type === "time" || ex.type === "carry" ? x.dur || ex.dur || 30 : 40, rest = isW(x.id) || (LIB[x.id] && LIB[x.id].eq !== "none") ? REST_SET_W : REST_SET_BW; s += n * work + Math.max(0, n - 1) * rest + rest; });
   return Math.max(1, Math.round(s / 60));
 }
-function FloatStart({ show, day, rounds, setRounds, onStart, plan }) {
+// 1.9.0 (Michael, Nov 6, 22:20: the page switch and the Start bar were two big bars: "join them, smaller"): one
+// compact bar: the Home page switch (two icons, the open page lit) + the minutes + Start.
+function FloatStart({ show, day, rounds, setRounds, onStart, plan, tabs }) {
   const boxRef = useRef(null);
   useLayoutEffect(() => {
     const el = boxRef.current, root = document.documentElement; if (!el) return;
-    const put = () => root.style.setProperty("--fsH", `${Math.ceil(el.offsetHeight) + 12}px`);
+    const put = () => root.style.setProperty("--fsH", show ? `${Math.ceil(el.offsetHeight) + 12}px` : "0px");
     put();
     const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(put) : null; if (ro) ro.observe(el);
     return () => { if (ro) ro.disconnect(); root.style.removeProperty("--fsH"); };
-  }, []);
+  }, [show]);
   return createPortal(
     <div data-fstart={show ? "on" : "off"} aria-hidden={!show} className={"fstart" + (show ? " on" : "")}
       style={{ position: "fixed", left: "var(--side, 0px)", right: 0, bottom: "calc(var(--sab, 0px) + 12px)", zIndex: 40, display: "flex", justifyContent: "center", padding: "0 12px", pointerEvents: show ? "auto" : "none" }}>
       {/* the page fades out under the bar instead of being cut by it */}
       <div aria-hidden="true" data-fstart-fade style={{ position: "fixed", left: "var(--side, 0px)", right: 0, bottom: 0, height: `calc(var(--sab, 0px) + var(--fsH, ${FS_H}px) + 22px)`, background: `linear-gradient(180deg, ${C.ink}00, ${C.ink}d9 45%, ${C.ink})`, pointerEvents: "none", zIndex: -1 }} />
-      <div ref={boxRef} data-fstart-box data-rounds-row style={{ display: "flex", gap: 10, width: "100%", maxWidth: 436, padding: 10, borderRadius: 26, background: `${C.ink}f5`, border: `1px solid ${C.line}`, boxShadow: "0 12px 34px rgba(0,0,0,.5)", ...(LOOK === "liquid" ? { ...LIQUID_FLOAT(), borderRadius: 26 } : LOOK === "glass" ? { ...GLASS(), borderRadius: 26 } : {}) }}>
+      <div ref={boxRef} data-fstart-box data-rounds-row style={{ display: "flex", gap: 6, width: "100%", maxWidth: 436, padding: 6, borderRadius: 24, boxSizing: "border-box", background: `${C.ink}f5`, border: `1px solid ${C.line}`, boxShadow: "0 12px 34px rgba(0,0,0,.5)", ...(LOOK === "liquid" ? { ...LIQUID_FLOAT(), borderRadius: 26 } : LOOK === "glass" ? { ...GLASS(), borderRadius: 26 } : {}) }}>
+        {tabs && (
+          <div role="tablist" {...{ [`data-${tabs.name}-tabs`]: 1 }} style={{ display: "flex", gap: 2, padding: 3, borderRadius: 18, ...SUNK(), flexShrink: 0 }}>
+            {tabs.items.map((it, i) => { const on = tabs.active === i; return (
+              <button key={i} type="button" role="tab" tabIndex={show ? 0 : -1} aria-selected={on} aria-label={it.label} title={it.label} {...{ [`data-${tabs.name}-tab`]: i }} {...tabs.extra.btn(i)}
+                onClick={() => { if (tabs.extra.cancel()) return; sfxTap(); tabs.onPick(i); }}
+                style={{ ...btnBase, width: 42, borderRadius: 15, display: "flex", alignItems: "center", justifyContent: "center", background: on ? `${C.signal}26` : "transparent", color: on ? C.signal : C.dim, transition: `background ${MO.t1}, color ${MO.t1}` }}>
+                <Ico n={it.icon} size={21} sw={on ? 2.3 : 2} />
+              </button>
+            ); })}
+          </div>
+        )}
         {plan && (
-          <div data-fstart-mins={plan.mins} className="fsq" style={{ fontFamily: BODY, width: 74, flexShrink: 0, borderRadius: 17, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", ...SUNK(), color: C.chalk }}>
-            <span style={{ fontFamily: DISPLAY, fontSize: 30, fontWeight: 900, lineHeight: 1 }}>{plan.mins}</span>
-            <span style={{ fontSize: 11, fontWeight: 800, marginTop: 3, color: C.dim }}>min</span>
+          <div data-fstart-mins={plan.mins} className="fsq" style={{ fontFamily: BODY, width: 54, flexShrink: 0, borderRadius: 16, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", ...SUNK(), color: C.chalk }}>
+            <span style={{ fontFamily: DISPLAY, fontSize: 23, fontWeight: 900, lineHeight: 1 }}>{plan.mins}</span>
+            <span style={{ fontSize: 10, fontWeight: 800, marginTop: 2, color: C.dim }}>min</span>
           </div>
         )}
         {!plan && [3, 2].map((n, i) => (
-          <button key={n} tabIndex={show ? 0 : -1} data-fround={n} data-rounds={n} aria-pressed={rounds === n} aria-label={T("roundsBtn", { n, m: n === 2 ? 13 : 19 })} onClick={() => { sfxTap(); setRounds(n); }} className="fsq" style={{ ...btnBase, position: "relative", "--d": `${60 + i * 50}ms`, width: 74, flexShrink: 0, borderRadius: 17, padding: "12px 0", ...(rounds === n ? { background: C.chalk, border: `1px solid ${C.chalk}` } : SUNK()), color: rounds === n ? C.ink : C.dim, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", lineHeight: 1 }}>
-            {n === 3 && <span data-rec style={{ position: "absolute", top: -8, left: "50%", transform: "translateX(-50%)", whiteSpace: "nowrap", fontSize: 9, fontWeight: 900, letterSpacing: 0.3, padding: "2px 6px", borderRadius: 99, background: C.mint, color: C.ink }}>{T("roundsRec")}</span>}
-            <span style={{ fontFamily: DISPLAY, fontSize: 32, fontWeight: 900 }}>{n === 2 ? 13 : 19}</span>
-            <span style={{ fontSize: 11, fontWeight: 800, marginTop: 3 }}>min</span>
+          <button key={n} tabIndex={show ? 0 : -1} data-fround={n} data-rounds={n} aria-pressed={rounds === n} aria-label={T("roundsBtn", { n, m: n === 2 ? 13 : 19 })} onClick={() => { sfxTap(); setRounds(n); }} className="fsq" style={{ ...btnBase, position: "relative", "--d": `${60 + i * 50}ms`, width: 52, flexShrink: 0, borderRadius: 16, padding: "9px 0", ...(rounds === n ? { background: C.chalk, border: `1px solid ${C.chalk}` } : SUNK()), color: rounds === n ? C.ink : C.dim, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", lineHeight: 1 }}>
+            {n === 3 && <span data-rec title={T("roundsRec")} aria-label={T("roundsRec")} style={{ position: "absolute", top: 4, right: 4, width: 7, height: 7, borderRadius: 99, background: C.mint }} />}
+            <span style={{ fontFamily: DISPLAY, fontSize: 23, fontWeight: 900 }}>{n === 2 ? 13 : 19}</span>
+            <span style={{ fontSize: 10, fontWeight: 800, marginTop: 2 }}>min</span>
           </button>
         ))}
-        <button tabIndex={show ? 0 : -1} data-fstart-go data-start onClick={onStart} className="b3d fsq" style={{ ...bigBtn(C.signal, C.signalInk), "--d": "160ms", flex: 1, minWidth: 0, padding: "12px 12px", fontSize: 21, borderRadius: 17 }}>
+        <button tabIndex={show ? 0 : -1} data-fstart-go data-start onClick={onStart} className="b3d fsq" style={{ ...bigBtn(C.signal, C.signalInk), "--d": "160ms", flex: 1, minWidth: 0, padding: "8px 10px", fontSize: plan ? 18 : 17, lineHeight: 1.1, borderRadius: 16, textWrap: "balance", overflow: "hidden", textOverflow: "ellipsis", ...(plan ? { whiteSpace: "nowrap" } : {}) }}>
           {plan ? plan.label : T("startDay", { d: day })}
-          {plan ? <span data-fstart-plan style={{ display: "block", fontSize: 12, fontWeight: 700, opacity: 0.75, marginTop: 3, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{plan.sub}</span> : <span data-fstart-rounds data-start-rounds style={{ display: "block", fontSize: 12, fontWeight: 700, opacity: 0.75, marginTop: 3 }}>{T("roundsBtn", { n: rounds, m: rounds === 2 ? 13 : 19 })}</span>}
+          {plan ? <span data-fstart-plan style={{ display: "block", fontSize: 11.5, fontWeight: 700, opacity: 0.75, marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{plan.sub}</span> : <span data-fstart-rounds data-start-rounds style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0 0 0 0)" }}>{T("roundsBtn", { n: rounds, m: rounds === 2 ? 13 : 19 })}</span>}
         </button>
       </div>
     </div>,
@@ -3647,15 +3699,13 @@ function usePager(name, n, lay, same) {
     onPointerUp: () => { if (holdT.current !== "done") clearTimeout(holdT.current); }, onPointerLeave: () => { if (holdT.current !== "done") clearTimeout(holdT.current); },
     onContextMenu: e => { e.preventDefault(); },
   } : {};
-  const tabs = (labels, onHold) => wide ? null : (
-    <div {...{ [`data-${name}-tabs`]: 1 }} role="tablist" style={{ position: "relative", display: "flex", padding: 3, borderRadius: 13, ...SUNK(), marginBottom: 12 }}>
-      <span ref={knob} aria-hidden="true" style={{ position: "absolute", top: 3, bottom: 3, left: 3, width: `calc((100% - 6px) / ${n})`, borderRadius: 10, background: C.chalk, boxShadow: "0 2px 6px rgba(0,0,0,.3)", transition: "none" }} />
-      {labels.map((lb, i) => (
-        <button key={i} role="tab" aria-selected={page === i} {...{ [`data-${name}-tab`]: i }} {...holdProps(onHold)} onClick={() => { if (holdT.current === "done") { holdT.current = null; return; } goPage(i); }}
-          style={{ ...btnBase, position: "relative", flex: 1, minWidth: 0, padding: "7px 2px", borderRadius: 10, background: "transparent", color: page === i ? C.ink : C.dim, fontSize: 13, fontWeight: 800, transition: `color ${MO.t1}`, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{lb}</button>
-      ))}
-    </div>
-  );
+  // 1.9.0: the page switch floats at the bottom (FloatTabs); labels may be [label, icon] pairs
+  const tabItems = (labels, onHold) => wide ? null : {
+    name, active: page, onPick: i => goPage(i),
+    items: labels.map(lb => (Array.isArray(lb) ? { label: lb[0], icon: lb[1] } : { label: lb, icon: "dots" })),
+    extra: { btn: () => holdProps(onHold), cancel: () => { if (holdT.current === "done") { holdT.current = null; return true; } return false; } },
+  };
+  const tabs = (labels, onHold) => { const t = tabItems(labels, onHold); return t && <FloatTabs {...t} />; };
   // one ref function for the hook's whole life: a new one on every render made React detach and re-attach the strip,
   // which restarted everything (and stopped a page move halfway)
   const refFn = useRef(null);
@@ -3666,7 +3716,7 @@ function usePager(name, n, lay, same) {
   // (or a layout the screen gives per column count, e.g. Profile: four pages)
   const span3 = !wide ? null : ly ? ly.at : n === 3 && cols === 2 ? [{ gridColumn: 1, gridRow: 1 }, { gridColumn: 2, gridRow: "1 / span 2" }, { gridColumn: 1, gridRow: 2 }] : null;
   const pageProps = i => ({ ref: el => (pages.current[i] = el), className: "swPage", [`data-${name}-page`]: String(i), "aria-hidden": wide ? undefined : page !== i, ...(span3 ? { style: span3[i] } : {}) });
-  return { page, goPage, tabs, pagerProps, pageProps, wide };
+  return { page, goPage, tabs, tabItems, pagerProps, pageProps, wide };
 }
 
 function TrainTab({ history, onStart, onStartPlan, onStartFree, onFreeze, ui, setUi, active, onResume, profile, onGo, upd, apk, kcal, setKcal, dl, onDlClose, onSetup, settings, setSettings, tourOffer }) {
@@ -3725,6 +3775,7 @@ function TrainTab({ history, onStart, onStartPlan, onStartFree, onFreeze, ui, se
   const homeOrder = settings && settings.homeOrder === "ex" ? ["ex", "today"] : ["today", "ex"];
   const homeIdx = k => homeOrder.indexOf(k);
   HOME_TAB = { today: homeIdx("today"), ex: homeIdx("ex") };
+  const homeTabL = homeOrder.map(k => (k === "today" ? [T("homeTab"), "house"] : [T("secExercises"), "dumbbell"]));
   const swapHome = () => { if (!setSettings) return; vibrate([20]); sfxCheck(); const n = { ...settings, homeOrder: homeOrder[0] === "today" ? "ex" : "today" }; window._wset = n; setSettings(n); };
   const pg = usePager("home", 2);
   // 1.8.2 (Michael, 23:16: every screen ends with the same room at the bottom): the two pages keep their own height;
@@ -3939,7 +3990,7 @@ function TrainTab({ history, onStart, onStartPlan, onStartFree, onFreeze, ui, se
       ), () => setUi({ ...ui, dailyHidden: today }), { "data-daily": 1 })}
       </div>
 
-      {pg.tabs(homeOrder.map(k => (k === "today" ? T("homeTab") : T("secExercises"))), swapHome)}
+      {active && pg.tabs(homeTabL, swapHome)}
       </div>
 
       <div {...pg.pagerProps}>
@@ -4025,8 +4076,8 @@ function TrainTab({ history, onStart, onStartPlan, onStartFree, onFreeze, ui, se
         </div>
         ))}
       </div>
-      {!active && !own && <FloatStart show day={day.id} rounds={rounds} setRounds={setRounds} onStart={() => { unlockAudio(); onStart(day.id, rounds); }} />}
-      {!active && own && <FloatStart show plan={planItems.length ? { mins: planMinutes(planItems), label: wdSel === todayWd ? T("start") : T("startWd", { d: wdLong(wdSel) }), sub: planTitle(own) } : { mins: "–", label: T("freeWorkout"), sub: T("freePick") }}
+      {!active && !own && <FloatStart show tabs={pg.tabItems(homeTabL, swapHome)} day={day.id} rounds={rounds} setRounds={setRounds} onStart={() => { unlockAudio(); onStart(day.id, rounds); }} />}
+      {!active && own && <FloatStart show tabs={pg.tabItems(homeTabL, swapHome)} plan={planItems.length ? { mins: planMinutes(planItems), label: wdSel === todayWd ? T("start") : T("startWd", { d: wdLong(wdSel) }), sub: planTitle(own) } : { mins: "–", label: T("freeWorkout"), sub: T("freePick") }}
         onStart={() => { unlockAudio(); if (planItems.length) onStartPlan(own, wdSel); else { sfxTap(); setFreePick([]); } }} />}
       {freePick && (
         <Sheet title={T("freeWorkout")} onClose={() => setFreePick(null)}>
@@ -4718,7 +4769,7 @@ function Calories({ history, profile, setProfile, kcal, setKcal }) {
         <Sect data-kc-streak-card title={<>{T("secWeek")}<InfoQ id="kcweek" title={T("secWeek")} text={<div data-kc-legend style={{ display: "flex", flexWrap: "wrap", gap: "10px 16px", fontSize: 14, color: C.chalk }}>   {[[KC_LOG, T("calLegLog"), ""], [KC_HIT, `${T("calLegHit")} (±10 %)`, "✓"]].map(([bg, l, mark]) => <span key={l} style={{ display: "inline-flex", alignItems: "center", gap: 5 }}><span style={{ width: 14, height: 14, borderRadius: 4, background: bg, color: "#1a1206", fontSize: 10, fontWeight: 900, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>{mark}</span>{l}</span>)} </div>} /></>} meta={<KcalStreakChip history={history} small />} style={{ marginTop: 0, marginBottom: 12 }}>
           <KcalWeekDots history={history} full />
         </Sect>
-        {pg.tabs([T("kcToday"), T("kcTabCal"), T("kcTabMe")])}
+        {pg.tabs([[T("kcToday"), "plate"], [T("kcTabCal"), "calendar"], [T("kcTabMe"), "scale"]])}
       </div>
       <div {...pg.pagerProps}>
         <div {...pg.pageProps(0)}>
@@ -5656,21 +5707,29 @@ function BodyRanks({ m, onPick }) {
   const [open, setOpen] = useState(null);
   const plate = hexMix(C.panelHi, C.chalk, 0.16), base = hexMix(C.panelHi, C.chalk, 0.08);
   const col = p => { const r = br.fam[p.f].r; return r === null ? null : RANKS[r].color; };
-  const tap = e => { const el = e.target.closest && e.target.closest("[data-fam]"); if (!el) return; sfxTap(); setOpen(el.getAttribute("data-fam")); };
+  // a muscle opens its part; anywhere else on the figure (head, a joint, a thin part missed) the list of all parts
+  const tap = e => { const el = e.target.closest && e.target.closest("[data-fam]"); sfxTap(); setOpen(el ? el.getAttribute("data-fam") : "all"); };
   const fig = side => <svg data-body-side={side} viewBox={`-2 0 ${BD.BODY_W + 4} ${BD.BODY_H}`} onClick={tap} style={{ height: "100%", width: "auto", display: "block", cursor: "pointer", overflow: "visible" }} dangerouslySetInnerHTML={{ __html: BD.bodySvg(side, { base, plate, gap: C.panel, col }) }} />;
-  const f = open && br.fam[open];
+  const f = open && open !== "all" && br.fam[open];
   return (
-    <Sect data-body-ranks title={<>{T("bodyTitle")}<InfoQ title={T("bodyTitle")} text={T("bodyD")} /></>} meta={br.all >= 0 ? <RankTag r={br.all} size={15} /> : null} style={{ marginTop: 0 }}>
+    <Sect data-body-ranks title={<>{T("bodyTitle")}<InfoQ title={T("bodyTitle")} text={T("bodyD")} /></>} meta={br.all >= 0 ? <RankTag r={br.all} size={15} /> : null} style={{ marginTop: 0, marginBottom: 14 }}>
       <style>{`[data-body-ranks] [data-fam]{transition:filter ${MO.t1}} [data-body-ranks] [data-fam]:hover{filter:brightness(1.18)}`}</style>
-      <div data-body-figs style={{ height: 220, display: "flex", justifyContent: "center", gap: 18 }}>{fig("front")}{fig("back")}</div>
-      <div data-body-legend style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 6, marginTop: 12 }}>
-        {PLN.FAMILIES.map(k => { const r = br.fam[k].r; return (
-          <button key={k} type="button" data-body-fam={k} data-rank={r === null ? -1 : r} onClick={() => { sfxTap(); setOpen(k); }} aria-label={`${T("fam_" + k)}: ${r === null ? T("bodyNoneShort") : RANKS[r].name}`}
-            style={{ ...btnBase, display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 8px 3px 3px", borderRadius: 99, fontSize: 11.5, fontWeight: 800, color: r === null ? C.dim : C.chalk, background: SOFT(), border: `1px solid ${r === null ? "transparent" : RANKS[r].color + "88"}` }}>
-            <BodyIco spec={BD.FAMILY_ICON[k]} size={20} hi={r === null ? C.dim : RANKS[r].color} />{T("fam_" + k)}
-          </button>
-        ); })}
-      </div>
+      <div data-body-figs style={{ height: 230, display: "flex", justifyContent: "center", gap: 22 }}>{fig("front")}{fig("back")}</div>
+      {/* 1.9.0 (Michael, 22:20: less room): no legend under the figures; a tap on the body opens the part or the list */}
+      {open === "all" && (
+        <Sheet title={T("bodyTitle")} onClose={() => setOpen(null)} short>
+          <div data-body-all style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            {PLN.FAMILIES.map(k => { const r = br.fam[k].r; return (
+              <button key={k} type="button" data-body-fam={k} data-rank={r === null ? -1 : r} onClick={() => { sfxTap(); setOpen(k); }}
+                style={{ ...btnBase, fontWeight: 400, display: "flex", alignItems: "center", gap: 10, padding: "8px 12px 8px 8px", borderRadius: 12, textAlign: "left", color: C.chalk, background: SOFT() }}>
+                <BodyIco spec={BD.FAMILY_ICON[k]} size={30} hi={r === null ? C.dim : RANKS[r].color} />
+                <span style={{ flex: 1, minWidth: 0, fontSize: 14, fontWeight: 800, color: r === null ? C.dim : C.chalk }}>{T("fam_" + k)}</span>
+                {r === null ? <span style={{ fontSize: 12, color: C.dim }}>–</span> : <RankTag r={r} size={15} fs={12} />}
+              </button>
+            ); })}
+          </div>
+        </Sheet>
+      )}
       {f && (
         <Sheet title={T("fam_" + open)} onClose={() => setOpen(null)} short>
           <div data-body-sheet={open} style={{ display: "flex", alignItems: "center", gap: 14 }}>
@@ -5714,7 +5773,7 @@ function ProfilePage({ m, own, onEditProfile, onEditSlot, onStreak, onPhoto, onP
       <style>{`@keyframes achFlash{0%,100%{box-shadow:0 0 0 0 transparent}30%{box-shadow:0 0 0 2px ${C.signal}}} .achFlash{animation:achFlash 1.4s ease}`}</style>
       <div style={{ padding: "0 18px" }}>
         {top}
-        {pg.tabs([T("tabProfile"), T("badgesTitle"), T("ranksTitle"), T("pfStats")])}
+        {pg.tabs([[T("tabProfile"), "idcard"], [T("badgesTitle"), "medal"], [T("ranksTitle"), "shield"], [T("pfStats"), "bars"]])}
       </div>
       <div {...pg.pagerProps}>
         <div {...pg.pageProps(0)}>
@@ -6704,12 +6763,13 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
           </Sect>
         </>
         );
-        const tabs = list => <div role="tablist" style={segBox}>{list.map(([id, l, n]) => <Fragment key={id}>{seg(tab === id, () => setTab(id), l, id, n)}</Fragment>)}</div>;
+        // 1.9.0: floating at the bottom like every page switch (FloatTabs); keeps data-seg on the buttons
+        const tabs = list => <FloatTabs name="fr" active={list.findIndex(x => x[0] === tab)} onPick={i => setTab(list[i][0])} items={list.map(([id, l, n, ic]) => ({ label: l, icon: ic, badge: n, data: id }))} extra={{ btn: i => ({ "data-seg": list[i][0], "aria-pressed": list[i][0] === tab }) }} />;
         const nReq = reqs ? reqs.length : 0, nChat = chats.filter(unread).length;
         // 1.8.0: the page slides in from the side of the tab you came from
         const view = (id, v) => <div key={id} data-fr-view={id} className={frDir.current ? (frDir.current > 0 ? "frInR" : "frInL") : undefined}>{v}</div>;
         const errLine = err && <div role="alert" style={{ fontSize: 13, color: "#ff8a80", marginTop: 10 }}>{err}</div>;
-        if (!wide) return <>{idCard}{tabs([["friends", T("frFriends"), nReq + nChat], ["board", T("frBoard")]])}{errLine}{view(tab, tab === "board" ? boardView : friendsView)}</>;
+        if (!wide) return <>{idCard}{tabs([["friends", T("frFriends"), nReq + nChat, "team"], ["board", T("frBoard"), 0, "trophy"]])}{errLine}{view(tab, tab === "board" ? boardView : friendsView)}</>;
         return <Cols left={<>{idCard}<div data-fr-view="friends">{friendsView}</div></>} right={<>{errLine}<div style={{ ...sectionTitle, margin: "16px 4px 0" }}>{T("frBoard")}</div><div data-fr-view="board">{boardView}</div></>} />;
       })()}
     </div>
@@ -8994,10 +9054,7 @@ function PlansTab({ profile, setProfile, history, open, onOpened }) {
   const useRec = () => { sfxTap(); setP(cur => ({ ...cur, active: "" })); };
   return (
     <div className="scr" style={SCR_STYLE} data-plans>
-      <div style={{ display: "flex", gap: 4, padding: 4, borderRadius: 14, ...SUNK() }}>
-        {seg(tab === "rec", () => setTab("rec"), T("plRec"), "rec")}
-        {seg(tab === "mine", () => setTab("mine"), T("plMine"), "mine")}
-      </div>
+      <FloatTabs name="plans" active={tab === "rec" ? 0 : 1} onPick={i => setTab(i ? "mine" : "rec")} items={[{ label: T("plRec"), icon: "star", data: "rec" }, { label: T("plMine"), icon: "checklist", data: "mine" }]} extra={{ btn: i => ({ "data-plans-seg": i ? "mine" : "rec", "aria-pressed": (i ? "mine" : "rec") === tab }) }} />
       {tab === "rec" && (
         <Sect title={T("plRecTitle")} data-plan-rec meta={!P.active ? <span data-plan-inuse style={{ fontSize: 12, fontWeight: 800, color: C.mint }}>{T("plInUse")}</span> : null}>
           <div style={{ fontSize: 14.5, color: C.chalk, lineHeight: 1.5 }}>{T("plRecD")}</div>
