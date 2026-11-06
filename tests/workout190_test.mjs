@@ -22,6 +22,10 @@ T.ok((await p.locator("[data-goal-kg]").innerText()).includes("20 kg × 9"), "go
 await p.click("[data-kg-plus]");
 T.eq(await p.getAttribute("[data-kg]", "data-kg"), "21", "+1 kg for dumbbells");
 await p.click("[data-done-btn]");
+// a note during the rest: belongs to the rest by default, a second one to the exercise
+await p.click("[data-note-open]"); await p.fill("[data-note-text]", "left shoulder tight");
+await p.click('[data-note-target="ex:fw_dumbbell_bench_press"]'); await p.fill("[data-note-text]", "felt strong");
+await p.click("[data-note-close]");
 // rest: 90 s for weights, + buttons, count into minus
 T.ok(await p.locator("[data-rest-line]").count() === 1, "rest explains itself");
 T.ok(await p.locator("[data-rest-web]").count() === 1, "website line about the screen-off beep");
@@ -68,6 +72,7 @@ T.eq(saved.plan && saved.plan.grp, "Gym", "and the group name");
 T.eq(saved.plan && saved.plan.wd, 3, "and the weekday");
 const bench = saved.items.find(x => x.id === "fw_dumbbell_bench_press");
 T.eq(bench.kg, [21, 20], "kg per set saved");
+T.eq(bench.note, "felt strong", "exercise note saved"); T.eq(bench.rn, ["left shoulder tight", null], "rest note saved with the rest after set 1");
 T.ok(saved.prs.includes("fw_dumbbell_bench_press"), "21 kg × 8 beats 20 kg × 8: record");
 T.ok(saved.items.find(x => x.id === "bw_calf_raise").x === 1, "added exercise marked");
 T.ok(saved.rests && saved.rests.fw_dumbbell_bench_press && saved.rests.fw_dumbbell_bench_press[0] >= 130 && saved.rests.b5[0] === 60, "real rest saved (135 s waited); a long break left out saves the recommended 60 s: " + JSON.stringify(saved.rests));

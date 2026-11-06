@@ -128,3 +128,11 @@ Object.assign(UI, {
   startN: "Start ({n})",
   setShort: "Set {r}",
 });
+Object.assign(UI, {
+  noteAdd: "Add a note",
+  noteEdit: "Your note",
+  notePh: "e.g. my wrist hurt, slept badly…",
+  noteDone: "Done",
+  noteRest: "This rest",
+  noteRestAfter: "Rest after set {r}",
+});

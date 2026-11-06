@@ -5003,6 +5003,7 @@ function HistoryTab({ history, onDelete, onSaveEntry, editDate, onEditOpened }) 
                         <div style={{ flex: 1, minWidth: 0 }}>
                           {/* 1.8.2 (Michael: "these texts are useless"): the rank at the time is only its emblem in front of the name */}
                           <div data-hist-ex={it.id} style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 14, fontWeight: 600, color: C.chalk }}>{rankAt(it.id) && <span title={T("rankThen", { rank: r.name })} style={{ display: "inline-flex" }}><RankIcon r={RANKS.indexOf(r)} size={16} /></span>}<span style={{ minWidth: 0 }}>{s.prs && s.prs.includes(it.id) ? <><IcoI n="trophy" color={C.signal} /> </> : ""}{exName(it)}{EX[it.id] && <ExQ id={it.id} />}</span></div>
+                          {(it.note || (it.rn || []).some(Boolean)) && <div data-hist-note style={{ fontSize: 12.5, color: C.dim, marginTop: 3, lineHeight: 1.4, whiteSpace: "pre-wrap" }}>{it.note ? <div><Ico n="pencil" size={12} style={{ verticalAlign: "-1px", marginRight: 4 }} />{it.note}</div> : null}{(it.rn || []).map((t, k) => (t ? <div key={k}><Ico n="timer" size={12} style={{ verticalAlign: "-1px", marginRight: 4 }} />{T("noteRestAfter", { r: k + 1 })}: {t}</div> : null))}</div>}
                         </div>
                         <div style={{ fontFamily: DISPLAY, fontSize: isW(it.id) ? 15 : 20, fontWeight: 800, color: C.chalk, whiteSpace: isW(it.id) ? "normal" : "nowrap", textAlign: "right" }}>{it.res.map((v, k) => (isW(it.id) ? fmtSet(it.id, v, (it.kg || [])[k], "") : fmtRes(v, ""))).join(" / ")}{!isW(it.id) && <span style={{ fontFamily: BODY, fontSize: 11, color: C.dim, marginLeft: 3 }}>{unitStr(it.unit)}</span>}</div>
                       </div>
@@ -10151,6 +10152,31 @@ function Summary({ entry, xpBefore = 0, xpGained, newCh = [], newAch = [], histo
 }
 
 // ─── SESSION SHELL ──────────────────────────────────────────────────────────
+// 1.9.0 (Michael, Nov 1): a note anywhere in the workout ("my wrist hurt", "slept badly"). During a rest it belongs to
+// that rest by default; a chip switches it to an exercise. Saved with the exercise: item.note, item.rn[set] (the rest
+// after that set).
+function NoteBox({ notes, targets, onChange }) {
+  const [open, setOpen] = useState(false);
+  const [key, setKey] = useState(targets[0].key);
+  useEffect(() => { setKey(targets[0].key); }, [targets[0].key]);
+  const has = targets.some(t => (notes[t.key] || "").trim());
+  return (
+    <div data-note style={{ marginTop: 16 }}>
+      {!open ? (
+        <button data-note-open onClick={() => { sfxTap(); setOpen(true); }} style={{ ...btnBase, background: "transparent", color: has ? C.signal : C.dim, fontSize: 13.5, padding: "6px 2px", display: "inline-flex", alignItems: "center", gap: 6 }}><Ico n="pencil" size={15} />{has ? T("noteEdit") : T("noteAdd")}</button>
+      ) : (
+        <div style={{ ...card, padding: 12 }}>
+          {targets.length > 1 && <div className="noBar" style={{ display: "flex", gap: 6, overflowX: "auto", marginBottom: 8 }}>
+            {targets.map(t => <button key={t.key} data-note-target={t.key} aria-pressed={key === t.key} onClick={() => { sfxTap(); setKey(t.key); }} style={{ ...btnBase, padding: "5px 10px", fontSize: 12, borderRadius: 99, whiteSpace: "nowrap", flexShrink: 0, ...(key === t.key ? { background: `${C.signal}22`, border: `1px solid ${C.signal}66`, color: C.signal } : { ...SUNK(), color: C.dim }) }}>{t.label}</button>)}
+          </div>}
+          <textarea data-note-text value={notes[key] || ""} maxLength={300} rows={2} placeholder={T("notePh")} aria-label={T("noteAdd")} onChange={e => onChange(key, e.target.value)}
+            style={{ width: "100%", boxSizing: "border-box", resize: "vertical", fontFamily: BODY, fontSize: 15, padding: "9px 10px", borderRadius: 11, border: `1.5px solid ${C.line}`, background: C.ink, color: C.chalk, outline: "none" }} />
+          <button data-note-close onClick={() => { sfxTap(); setOpen(false); }} style={{ ...btnBase, background: "transparent", color: C.sky, fontSize: 13, padding: "6px 2px 0" }}>{T("noteDone")}</button>
+        </div>
+      )}
+    </div>
+  );
+}
 // 1.9.0: a workout is either a recommended day (session.day A/B/C: a circuit of rounds) or an own plan's day
 // (session.plan: {id, name, grp, gname, wd, items: [{id, sets, dur}]}: straight sets, one exercise at a time).
 // Exercises added during the workout (session.extra: [{id, sets}]) come after them as straight sets.
@@ -10195,9 +10221,11 @@ function Session({ session, setSession, history, onSave, onClose, onMinimize, on
         const it = { id, name: EX[id].name, unit: EX[id].unit, res };
         if (isW(id)) it.kg = Array.from({ length: n }, (_, r) => { const k = (sKg[id] || [])[r]; return typeof k === "number" ? k : null; });
         if (seq.some(x => x.id === id && x.extra)) it.x = 1; // added during the workout
+        const nt = session.notes || {}, en = (nt["ex:" + id] || "").trim(); if (en) it.note = en;
+        const rn = Array.from({ length: n }, (_, r) => (nt[`rest:${id}:${r}`] || "").trim() || null); if (rn.some(Boolean)) it.rn = rn;
         return it;
       })
-      .filter(it => it.res.some(v => v !== null));
+      .filter(it => it.res.some(v => v !== null) || it.note || it.rn);
     const prs = items.filter(it => { const b = bestFor(history, it.id); return b !== null && itemTop(it) > b; }).map(it => it.id);
     const rankUps = items.map(it => {
       const b = bestFor(history, it.id), t0 = itemTop(it);
@@ -10321,6 +10349,11 @@ function Session({ session, setSession, history, onSave, onClose, onMinimize, on
           })} />
       )}
       {session.phase === "cool" && <Cool onFinish={finish} />}
+      {inFlow && (() => {
+        const prev = session.phase === "rest" && session.rest ? seq[session.rest.nextPos - 1] : null, nx = session.phase === "rest" && session.rest ? seq[session.rest.nextPos] : cur;
+        const targets = prev ? [{ key: `rest:${prev.id}:${prev.r}`, label: T("noteRest") }, { key: "ex:" + prev.id, label: EX[prev.id].name }, ...(nx && nx.id !== prev.id ? [{ key: "ex:" + nx.id, label: EX[nx.id].name }] : [])] : [{ key: "ex:" + cur.id, label: EX[cur.id].name }];
+        return <NoteBox notes={session.notes || {}} targets={targets} onChange={(k, v) => setSession(s => ({ ...s, notes: { ...(s.notes || {}), [k]: v.slice(0, 300) } }))} />;
+      })()}
       {(inFlow || session.phase === "cool") && (
         <button data-add-extra onClick={() => { sfxTap(); setAdding(true); }} style={{ ...btnBase, width: "100%", marginTop: 18, padding: "12px", borderRadius: 13, border: `1.5px dashed ${C.line}`, background: "transparent", color: C.sky, fontSize: 14.5, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}><Ico n="plus" size={16} sw={2.4} />{T("addExtra")}</button>
       )}
