@@ -17,11 +17,12 @@
 // m, s  muscles: main and helping (codes below); a plan counts main muscles as 1 set, helping ones as ½
 // fig   true = has a stick figure (only the 27 exercises from before 1.9.0)
 //
+// bw    part of the body weight that is lifted too (45° back extension: the upper body), for the set score
+//
 // Ranks: bodyweight exercises use RANK_AT in src/ranks.js (best set: reps, or seconds). Free weights use
-// W_RANK: estimated one-rep max (Epley, kg × (1 + reps / 30), only sets of 1–10 reps) ÷ body weight, by
-// sex; `rule` "load10" = the heaviest weight lifted for 10+ reps (swings), "carry30" = the heaviest
-// weight carried for 30+ s. Machines (eq machine) and effort moves have no ranks: machines differ from
-// gym to gym, so they only compare with your own last time.
+// W_RANK: the set score (wSetScore, an Epley-style strength estimate) ÷ body weight, by sex. Machines
+// (eq machine) and effort moves have no ranks: machines differ from gym to gym, so they only compare with
+// your own last time (records).
 export const MUSCLES = ["chest", "delt_f", "delt_s", "delt_r", "lats", "upback", "lowback", "biceps", "triceps", "forearm",
   "quads", "hams", "glutes", "abduct", "adduct", "calves", "tib", "abs", "obl"];
 
@@ -108,10 +109,10 @@ export const LIB = {
   fw_dumbbell_romanian_deadlift: X("legs", "legs", "free", "w", "", "mid", ["hams", "glutes"], ["lowback", "forearm"], { load: "each" }),
   fw_dumbbell_bulgarian_split_squat: X("legs", "legs", "free", "w", "leg", "hard", ["quads", "glutes"], ["adduct", "forearm"], { load: "each" }),
   fw_dumbbell_hip_thrust: X("legs", "glutes", "free", "w", "", "mid", ["glutes"], ["hams"], { load: "one" }),
-  fw_kettlebell_swing: X("legs", "glutes", "free", "w", "", "mid", ["glutes", "hams"], ["lowback", "forearm"], { load: "one", rule: "load10" }),
+  fw_kettlebell_swing: X("legs", "glutes", "free", "w", "", "mid", ["glutes", "hams"], ["lowback", "forearm"], { load: "one" }),
   fw_single_leg_dumbbell_calf_raise: X("legs", "calves", "free", "w", "leg", "mid", ["calves"], [], { load: "one" }),
-  fw_farmer_s_carry: X("core", "core", "free", "c", "", "mid", ["forearm", "upback"], ["abs", "obl"], { load: "each", rule: "carry30", durs: [20, 30, 45, 60], dur: 30 }),
-  fw_suitcase_carry: X("core", "core", "free", "c", "side", "mid", ["obl", "forearm"], ["abs", "upback"], { load: "one", rule: "carry30", durs: [20, 30, 45, 60], dur: 30 }),
+  fw_farmer_s_carry: X("core", "core", "free", "c", "", "mid", ["forearm", "upback"], ["abs", "obl"], { load: "each", durs: [20, 30, 45, 60], dur: 30 }),
+  fw_suitcase_carry: X("core", "core", "free", "c", "side", "mid", ["obl", "forearm"], ["abs", "upback"], { load: "one", durs: [20, 30, 45, 60], dur: 30 }),
   fw_band_pallof_press: X("core", "core", "free", "e", "side", "easy", ["obl", "abs"]),
 
   // ── machines and cables ──
@@ -137,7 +138,7 @@ export const LIB = {
   mc_cable_lateral_raise: X("push", "shoulders", "machine", "w", "arm", "easy", ["delt_s"], [], { load: "stack" }),
   mc_cable_triceps_pushdown: X("push", "arms", "machine", "w", "", "easy", ["triceps"], [], { load: "stack" }),
   mc_cable_crunch: X("core", "core", "machine", "w", "", "mid", ["abs"], ["obl"], { load: "stack" }),
-  mc_45_back_extension: X("pull", "back", "machine", "w", "", "easy", ["lowback", "glutes"], ["hams"], { load: "one" }),
+  mc_45_back_extension: X("pull", "back", "machine", "w", "", "easy", ["lowback", "glutes"], ["hams"], { load: "one", bw: 0.5 }),
   mx_machine_row: X("pull", "back", "machine", "w", "", "easy", ["upback", "lats"], ["biceps", "delt_r"], { load: "stack" }),
   mx_chest_supported_row: X("pull", "back", "machine", "w", "", "easy", ["upback", "lats"], ["biceps", "delt_r"], { load: "stack" }),
   mx_t_bar_row: X("pull", "back", "machine", "w", "", "mid", ["upback", "lats"], ["biceps", "lowback", "hams"], { load: "stack" }),
@@ -198,21 +199,29 @@ const SL = {
 // advanced, elite, elite × 1.2 (the Obsidian challenge, like the bodyweight ones).
 const r2 = x => Math.round(x * 100) / 100;
 const to8 = ([b, n, i, a, e]) => [b, n, r2((n + i) / 2), i, r2((i + a) / 2), a, e, r2(e * 1.2)];
-export const W_RANK = Object.fromEntries(Object.entries(SL).map(([id, [m, f]]) => [id, { m: to8(m), f: to8(f) }]));
+// Swings were measured as the weight for 10+ reps: their score at 10 reps is that × (1 + 10/30).
+const SCALE = { fw_kettlebell_swing: 4 / 3 };
+export const W_RANK = Object.fromEntries(Object.entries(SL).map(([id, [m, f]]) => [id, { m: to8(m).map(v => r2(v * (SCALE[id] || 1))), f: to8(f).map(v => r2(v * (SCALE[id] || 1))) }]));
 
-// Epley one-rep max; only sets of 1–10 reps (more reps make the estimate unreliable).
-export const e1rm = (kg, reps) => (kg > 0 && reps >= 1 && reps <= 10 ? kg * (1 + reps / 30) : 0);
-// The number a free-weight set is ranked by (a body-weight ratio), or 0. set = {kg, r} (reps) or {kg, s} (seconds).
-export function wScore(id, set, bodyKg) {
-  const x = LIB[id]; if (!x || !W_RANK[id] || !bodyKg || !set || !(set.kg > 0)) return 0;
-  if (x.rule === "load10") return set.r >= 10 ? set.kg / bodyKg : 0;
-  if (x.rule === "carry30") return set.s >= 30 ? set.kg / bodyKg : 0;
-  return e1rm(set.kg, set.r) / bodyKg;
+// One number per weighted set, used for records AND ranks: an Epley-style strength estimate,
+// kg × (1 + reps / 30), with reps counted up to 15 (beyond that the estimate drifts, and 15+ reps means it's time for
+// more weight; the workout says so). Assisted machines: (body weight − help). Carries: kg × seconds / 30, up to 60 s
+// (30 s = the weight itself). The rank tables are body-weight ratios of this number.
+export const REP_CAP = 15;
+export function wSetScore(id, reps, kg, bodyKg) {
+  const x = LIB[id], n = Number(reps), k = Number(kg) || 0;
+  if (!x || !(n > 0)) return 0;
+  if (x.k === "c") return k * Math.min(n, 60) / 30;
+  const load = x.k === "a" ? Math.max(1, (bodyKg || 75) - k) : k + (x.bw || 0) * (bodyKg || 75);
+  return load * (1 + Math.min(n, REP_CAP) / 30);
 }
 // Rank index 0 (Iron) … 8 (Obsidian) from a body-weight ratio; sex "m" | "f" | other = between the two.
+export function wRankAt(id, sex) {
+  const t = W_RANK[id]; if (!t) return null;
+  return sex === "f" ? t.f : sex === "m" ? t.m : t.m.map((v, i) => r2(Math.sqrt(v * t.f[i])));
+}
 export function wRankIndex(id, ratio, sex) {
-  const t = W_RANK[id]; if (!t || !(ratio > 0)) return 0;
-  const at = sex === "f" ? t.f : sex === "m" ? t.m : t.m.map((v, i) => Math.sqrt(v * t.f[i]));
+  const at = wRankAt(id, sex); if (!at || !(ratio > 0)) return 0;
   let r = 0; at.forEach((v, i) => { if (ratio >= v - 1e-9) r = i + 1; }); return r;
 }
 export const GROUPS_ORDER = ["chest", "back", "shoulders", "arms", "legs", "glutes", "calves", "core"];

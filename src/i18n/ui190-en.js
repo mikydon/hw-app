@@ -90,3 +90,40 @@ Object.assign(PL, {
   hintFewDays: { one: "{fam}: only {n} day a week. At least 2 days a week is better.", other: "{fam}: only {n} days a week. At least 2 days a week is better." },
   plDaysN: { one: "{n} training day", other: "{n} training days" },
 });
+Object.assign(UI, {
+  wScoreT: "Strength number",
+  wScoreD: "For weights the chart shows one number per workout: the best set as kg × (1 + reps ÷ 30), reps counted up to 15. More weight or more reps both raise it, so you see your progress even when you change the weight.",
+  kgLabel: "kg",
+  kgEach: "kg per dumbbell",
+  kgOne: "kg",
+  kgStack: "kg on the machine",
+  kgHelp: "kg of help",
+  kgHelpD: "Less help = harder.",
+  kgBody: "0 = body weight only",
+  kgType: "Type the weight",
+  goalKg: "Last time {v}. Aim for at least {g}.",
+  goalKgUp: "Last time {v}. 15+ reps: time for a bit more weight.",
+  goalHelp: "Last time {v}. Aim for at least {g}, or less help.",
+  rankNeedsWeight: "Add your body weight in Calories to get ranks for weights.",
+  setN: "Set {r} of {n}",
+  carryHint: "Pick up the weight, then start. You get 5 s to get ready.",
+});
+Object.assign(UI, {
+  restLine: "This is the recommended rest. Need more? Take it, we count it for you.",
+  restOver: "extra rest",
+  restWebOnly: "The beep with the screen off works only in the Android app.",
+  restLongQ: "Count the whole {t} break?",
+  restLongD: "A long break makes the workout time and its calories bigger. If you stopped for something else, don't count it.",
+  restLongYes: "Yes, count it",
+  restLongNo: "No, leave it out",
+  addExtra: "Add exercise",
+  addExtraD: "Not tired yet? Added exercises count for today, and a better result is a record.",
+  freeWorkout: "Free workout",
+  resumePlan: "Back to the workout ({name})",
+  kcSkipLong: "This workout took unusually long, so it doesn't add calories to your day.",
+});
+Object.assign(UI, {
+  startWd: "Start {d}",
+  freePick: "pick exercises",
+  startN: "Start ({n})",
+});

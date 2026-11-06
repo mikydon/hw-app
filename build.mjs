@@ -50,7 +50,7 @@ for (const [pkg, f] of fontFiles) copyFileSync(`node_modules/@fontsource/${pkg}/
 const out = await build({
   entryPoints: ["src/main.jsx"],
   bundle: true,
-  minify: true,
+  minify: !process.env.HW_DEBUG, // HW_DEBUG=1 npm run build: readable names in errors (tests only, never committed)
   write: false,
   jsx: "automatic",
   loader: { ".jsx": "jsx" },

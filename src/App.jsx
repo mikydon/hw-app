@@ -5,7 +5,7 @@ import { cloud, NICK_RE, SHARE_BASE, cleanCode, fmtCode } from "./cloud-lazy.js"
 import { QUICK as EMO_QUICK, EMOJI } from "./emoji.js";
 import { mergeAll, syncKey, withIds, entryId, stable, SYNC_SETTINGS, kcalShared } from "./sync.js";
 import { RANK_AT, EX_GROUPS } from "./ranks.js";
-import { LIB, W_RANK, wScore, wRankIndex, MUSCLES, GROUPS_ORDER, EQUIP_ORDER } from "./exlib.js";
+import { LIB, W_RANK, wSetScore, wRankAt, REP_CAP, GROUPS_ORDER, EQUIP_ORDER } from "./exlib.js";
 import { EX_NAMES } from "./exnames.js";
 import * as PLN from "./plans.js";
 import * as GM from "./game/engine.js";
@@ -411,6 +411,13 @@ function dateKey(d = new Date()) { return `${d.getFullYear()}-${pad(d.getMonth()
 function parseKey(k) { const [y, m, d] = k.split("-").map(Number); return new Date(y, m - 1, d); }
 function fmtDate(k, withYear) { return fmtLong(parseKey(k), withYear); }
 function daysBetween(a, b) { return Math.round((parseKey(b) - parseKey(a)) / 86400000); }
+// 1.9.0: one logged set as text: "12", "45 s", "20 kg × 8", "24 kg · 40 s"
+function fmtSet(id, r, kg, unit) {
+  if (r === null || r === undefined) return "–";
+  if (EX[id] && EX[id].type === "kg") return `${typeof kg === "number" ? fmtKg(kg) : "?"} kg × ${numVal(r)}`;
+  if (EX[id] && EX[id].type === "carry") return `${typeof kg === "number" ? fmtKg(kg) : "?"} kg · ${numVal(r)} s`;
+  return fmtRes(r, unit);
+}
 function fmtRes(r, unit) { if (r === null || r === undefined) return "–"; return typeof r === "number" ? `${r}${unitStr(unit)}` : String(r); }
 // History saved before v1.2 stores Slovak unit suffixes; map them to the new codes.
 const LEGACY_UNIT = { "/ruku": "arm", "/nohu": "leg", "/stranu": "side" };
@@ -434,10 +441,10 @@ function sortHistory(h) { return h.map((e, i) => [e, i]).sort((a, b) => (a[0].da
 function recomputeFlags(h) {
   const out = [];
   h.forEach(e => {
-    const top = it => Math.max(...it.res.map(numVal).filter(n => !isNaN(n)));
+    const top = itemTop;
     const prs = e.items.filter(it => { const b = bestFor(out, it.id); return b !== null && top(it) > b; }).map(it => it.id);
     // 1.8.0: the first time an exercise is done counts too (from -1 to Iron, `u` = unlocked), so Iron comes as a card
-    const rankUps = e.items.map(it => { const t0 = top(it); if (!isFinite(t0)) return null; const b = bestFor(out, it.id), to = rankIdx(it.id, t0); return b === null || b === undefined ? (RANK_AT[it.id] ? { id: it.id, to, u: 1 } : null) : to > rankIdx(it.id, b) ? { id: it.id, to } : null; }).filter(Boolean);
+    const rankUps = e.items.map(it => { const t0 = top(it); if (!isFinite(t0)) return null; const b = bestFor(out, it.id), to = rankIdx(it.id, t0); return b === null || b === undefined ? (rankAt(it.id) ? { id: it.id, to, u: 1 } : null) : to > rankIdx(it.id, b) ? { id: it.id, to } : null; }).filter(Boolean);
     out.push({ ...e, prs, rankUps });
   });
   return out;
@@ -445,7 +452,7 @@ function recomputeFlags(h) {
 function lastFor(history, id) {
   for (let i = history.length - 1; i >= 0; i--) {
     const it = history[i].items.find(x => x.id === id && x.res.some(v => v !== null && v !== undefined));
-    if (it) return { date: history[i].date, res: it.res };
+    if (it) return { date: history[i].date, res: it.res, kg: it.kg || null };
   }
   return null;
 }
@@ -454,7 +461,7 @@ function bestFor(history, id) {
   let b = null;
   history.forEach(sess => sess.items.forEach(it => {
     if (it.id !== id) return;
-    it.res.forEach(v => { const n = numVal(v); if (!isNaN(n) && (b === null || n > b)) b = n; });
+    const n = itemTop(it); if (isFinite(n) && (b === null || n > b)) b = n;
   }));
   return b;
 }
@@ -469,8 +476,16 @@ function addDays(k, n) { const d = parseKey(k); d.setDate(d.getDate() + n); retu
 
 // XP: 10 per set, 25 per personal record, 10 for full warm-up, 10 for cool-down.
 function setsIn(e) { return e.items.reduce((a, it) => a + it.res.filter(v => v !== null && v !== undefined).length, 0); }
-function xpFor(e) { return (10 * setsIn(e) + 25 * ((e.prs && e.prs.length) || 0) + (e.warm ? 10 : 0) + (e.cool ? 10 : 0)) * (EC.boosted(e.ts, META.boosts) ? 2 : 1); } // 1.9.0: 2× while an XP boost runs
-function totalXP(h) { return h.reduce((a, e) => a + xpFor(e), 0) + challengeXP(h); }
+// 1.9.0 (Michael, Nov 1: added exercises must not farm XP): a day's first XP_SETS_DAY sets give 10 XP each, every set
+// after that 2 (before 1.9.0 a day had at most 12 sets, so nobody loses XP). `before` = sets already done that day.
+const XP_SETS_DAY = 20;
+function xpFor(e, before = 0) {
+  const n = setsIn(e), full = Math.max(0, Math.min(n, XP_SETS_DAY - before)), setXp = 10 * full + 2 * (n - full);
+  return (setXp + 25 * ((e.prs && e.prs.length) || 0) + (e.warm ? 10 : 0) + (e.cool ? 10 : 0)) * (EC.boosted(e.ts, META.boosts) ? 2 : 1); // 2× while an XP boost runs
+}
+// The XP of each workout with the daily set limit applied in date order.
+function xpList(h) { const day = {}; return h.map(e => { const b = day[e.date] || 0; day[e.date] = b + setsIn(e); return xpFor(e, b); }); }
+function totalXP(h) { return xpList(h).reduce((a, x) => a + x, 0) + challengeXP(h); }
 function levelInfo(xp) { let lvl = 1, need = 100, rest = xp; while (rest >= need) { rest -= need; lvl++; need += 50; } return { lvl, into: rest, need }; }
 // Streak for an every-other-day plan: it holds while no gap is longer than 2 days.
 // META (from the profile) holds freeze days that bridge a gap and a manual reset time.
@@ -612,13 +627,33 @@ function uiForToday(ui, history, today, profile) {
 }
 
 
+// 1.9.0: how a workout is named: "Day A · date" or "Workout Plan 3 · Gym · date" (a copy saved with the workout, so a
+// renamed or deleted plan keeps its old name in History)
+// A short mark where a full name has no room (calendar cell, history row): A / B / C, "P3" for Workout Plan 3,
+// initials for a named plan ("PD" for Push day), "+" for a free workout.
+function entryMark(e) {
+  if (e.day) return e.day;
+  if (!e.plan) return "+";
+  const nm = String(e.plan.name || ""), num = nm.match(/(\d+)\s*$/);
+  if (num && nm.replace(num[0], "").trim() === T("planDefault", { n: "" }).trim()) return "P" + num[1];
+  const w = nm.split(/\s+/).filter(Boolean);
+  return (w.length > 1 ? w[0][0] + w[1][0] : (w[0] || "P").slice(0, 2)).toUpperCase();
+}
+function entryTitle(e, withDate) {
+  const d = withDate ? fmtDate(e.date, true) : "";
+  if (e.plan) return [e.plan.name, e.plan.grp, d].filter(Boolean).join(" · ");
+  if (e.day) return withDate ? T("dayDate", { d: e.day, date: d }) : T("dayN", { d: e.day });
+  return [T("freeWorkout"), d].filter(Boolean).join(" · ");
+}
 function nextDayIdx(history) {
-  if (!history.length) return 0;
-  const i = DAYS.findIndex(d => d.id === history[history.length - 1].day);
+  // 1.9.0: the last RECOMMENDED workout decides (own plans' workouts have no A/B/C)
+  const lastRec = [...history].reverse().find(e => e.day && DAYS.some(d => d.id === e.day));
+  if (!lastRec) return 0;
+  const i = DAYS.findIndex(d => d.id === lastRec.day);
   return i < 0 ? 0 : (i + 1) % DAYS.length;
 }
 function logText(entry) {
-  const head = T("dayDate", { d: entry.day, date: fmtDate(entry.date, true) });
+  const head = entryTitle(entry, true);
   const lines = entry.items.map(it => `${exName(it)}: ${it.res.map((r, i) => `${i + 1}. ${fmtRes(r, it.unit)}`).join("  ")}`);
   return [head, ...lines].join("\n");
 }
@@ -1027,19 +1062,42 @@ function RankTag({ r, size = 15, fs = 12, text, style }) {
 }
 // The 12 exercises of the program (days A, B, C), for the "all Diamond" badge
 const PROGRAM_IDS = ["k1", "row1", "n1", "b5", "r1", "row2", "n2", "b2", "k3", "row3", "n7", "b4"];
+// 1.9.0: weighted exercises. A set's number for records and ranks is setScore: reps or seconds for bodyweight
+// moves, wSetScore (kg × (1 + reps / 30), see src/exlib.js) for weights. Free weights rank by that ÷ body weight
+// (Calories → weight and sex); rankAt gives every ranked exercise's thresholds in its own units.
+const bodyKg = () => { const w = META.kcal && Number(META.kcal.weight); return w > 0 ? w : 0; };
+const bodySex = () => (META.kcal && META.kcal.sex) || null;
+const isW = id => !!(EX[id] && (EX[id].type === "kg" || EX[id].type === "carry"));
+function rankAt(id) {
+  if (RANK_AT[id]) return RANK_AT[id];
+  const t = wRankAt(id, bodySex()), b = bodyKg();
+  return t && b ? t.map(r => Math.round(r * b * 10) / 10) : null;
+}
+const isRanked = id => !!(RANK_AT[id] || W_RANK[id]);
+const RANKED_IDS = [...Object.keys(RANK_AT), ...Object.keys(W_RANK)];
+function setScore(id, v, kg) {
+  const n = numVal(v); if (isNaN(n)) return NaN;
+  return isW(id) ? Math.round(wSetScore(id, n, kg, bodyKg()) * 10) / 10 : n;
+}
+// The best set of a logged exercise (its res + kg arrays).
+function itemTop(it) {
+  let t = -Infinity;
+  (it.res || []).forEach((v, i) => { const x = setScore(it.id, v, (it.kg || [])[i]); if (!isNaN(x) && x > t) t = x; });
+  return t;
+}
 function rankIdx(id, best) {
-  const at = RANK_AT[id];
+  const at = rankAt(id);
   if (!at || best === null || best === undefined || isNaN(best)) return 0;
   let r = 0; at.forEach((v, i) => { if (best >= v) r = i + 1; });
   return r;
 }
 function rankNext(id, best) {
-  const at = RANK_AT[id]; const r = rankIdx(id, best);
+  const at = rankAt(id); const r = rankIdx(id, best);
   if (!at || r >= at.length) return null;
   return { rank: RANKS[r + 1], need: at[r] - (best || 0), at: at[r] };
 }
 function RankBadge({ id, best, small }) {
-  if (!RANK_AT[id]) return null;
+  if (!rankAt(id)) return null;
   const r = RANKS[rankIdx(id, best)];
   return (
     <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: small ? 12 : 13, fontWeight: 700, color: r.color, border: `1.5px solid ${r.color}55`, borderRadius: 99, padding: small ? "1px 8px" : "3px 10px", whiteSpace: "nowrap" }}>
@@ -2468,7 +2526,7 @@ function MenuBody({ screen, history, profile, session, onGo, onResume, onNews, g
           </button>
           {session && (
             <button onClick={onResume} className="drawerItem" data-resume style={{ ...btnBase, "--i": 1, margin: "6px 14px", padding: "13px 14px", borderRadius: 16, background: C.signal, color: C.signalInk, display: "flex", alignItems: "center", gap: 10, fontSize: 15, textAlign: "left" }}>
-              <span style={{ fontSize: 18 }}>▶</span>{T("resumeWorkout", { d: session.day })}
+              <span style={{ fontSize: 18 }}>▶</span>{resumeLabel(session)}
             </button>
           )}
           <div data-nav-box style={{ margin: "6px 14px 12px", padding: "4px", background: C.panel, border: `1px solid ${C.line}`, borderRadius: 18, ...(LOOK === "liquid" ? { ...LIQUID_PILL(), borderRadius: 20 } : {}) }}>
@@ -2513,15 +2571,14 @@ function SideNav(props) {
 function MiniPlayer({ session, live, onOpen }) {
   const [, tick] = useState(0);
   useEffect(() => { const t = setInterval(() => tick(x => x + 1), 250); return () => clearInterval(t); }, []);
-  const day = DAYS.find(d => d.id === session.day);
-  const base = session.base || {};
-  const seq = buildSeq(session.day, session.rounds, session.swaps || {}, base);
+  const seq = sessionSeq(session);
   const cur = seq[Math.min(session.pos, seq.length - 1)];
   const secsLeft = endAt => Math.max(0, Math.ceil((endAt - Date.now()) / 1000));
   let label, big = null, total = null, color = C.signal;
   if (session.phase === "rest" && session.rest) {
     const nxt = seq[session.rest.nextPos];
-    big = secsLeft(session.rest.endAt); total = session.rest.total; color = C.sky;
+    const l = Math.ceil((session.rest.endAt - Date.now()) / 1000);
+    big = l > 0 ? l : `−${Math.floor(-l / 60)}:${String(-l % 60).padStart(2, "0")}`; total = session.rest.total; color = l > 0 ? C.sky : C.signal;
     label = T("miniRest", { name: EX[nxt.id].name });
   } else if (session.phase === "work" && live && live.kind === "up" && live.from) {
     big = Math.max(0, Math.floor((Date.now() - live.from) / 1000)); total = null; color = C.chalk;
@@ -2533,7 +2590,7 @@ function MiniPlayer({ session, live, onOpen }) {
   else if (session.phase === "warmup") label = T("miniWarmup");
   else if (session.phase === "cool") label = T("miniCool");
   else label = T("miniDone");
-  const pct = big !== null && total ? big / total : 0;
+  const pct = typeof big === "number" && total ? big / total : 0;
   return createPortal(
     <button onClick={onOpen} className="miniIn" data-mini aria-label={T("miniOpen")}
       style={{ ...btnBase, position: "fixed", left: "calc(50% + var(--side, 0px) / 2)", bottom: "calc(14px + var(--sab))", transform: "translateX(-50%)", zIndex: 40, width: "min(calc(100vw - 24px), 436px)", display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", borderRadius: 20, background: C.panelHi, border: `1.5px solid ${color}88`, boxShadow: "0 12px 34px rgba(0,0,0,.45)", color: C.chalk, textAlign: "left", ...(LOOK === "liquid" ? { ...LIQUID_FLOAT(), border: `1px solid ${color}aa`, borderRadius: 24 } : {}) }}>
@@ -2542,10 +2599,10 @@ function MiniPlayer({ session, live, onOpen }) {
           <circle cx="24" cy="24" r="20" fill="none" stroke={C.line} strokeWidth="4" />
           {big !== null && <circle cx="24" cy="24" r="20" fill="none" stroke={color} strokeWidth="4" strokeLinecap="round" strokeDasharray={125.7} strokeDashoffset={125.7 * (1 - pct)} style={{ transition: "stroke-dashoffset .25s linear" }} />}
         </svg>
-        <span style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: DISPLAY, fontWeight: 900, fontSize: big !== null ? 20 : 18, color }}>{big !== null ? big : "▶"}</span>
+        <span style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: DISPLAY, fontWeight: 900, fontSize: typeof big === "string" ? 13 : big !== null ? 20 : 18, color }}>{big !== null ? big : "▶"}</span>
       </span>
       <span style={{ flex: 1, minWidth: 0 }}>
-        <span style={{ display: "block", fontSize: 12, color: C.dim, fontWeight: 600 }}>{T("dayRound", { d: day.id, r: cur.r + 1, n: session.rounds })}</span>
+        <span style={{ display: "block", fontSize: 12, color: C.dim, fontWeight: 600 }}>{session.plan || cur.extra ? `${sessionTitle(session)} · ${T("setN", { r: cur.r + 1, n: cur.n })}` : T("dayRound", { d: session.day, r: cur.r + 1, n: session.rounds })}</span>
         <span style={{ display: "block", fontSize: 15, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{label}</span>
       </span>
       <span aria-hidden="true" style={{ fontSize: 13, fontWeight: 800, color: C.signal, flexShrink: 0 }}>{T("miniBack")}</span>
@@ -3016,7 +3073,14 @@ const FS_H = 106; // bar 94 px + 12 px from the bottom edge
 // --fsH = the bar's real height + its 12 px gap (longer words wrap on a narrow phone), set by FloatStart
 // 1.8.2: the same 124 px every other screen has at its end (with the page's 18 px and the screen's 24 px), more only if the bar is taller
 function FsSpace() { return <div data-fstart-space aria-hidden="true" style={{ height: `calc(var(--sab, 0px) + max(var(--fsH, ${FS_H}px) + 12px, 124px) - 42px)` }} />; }
-function FloatStart({ show, day, rounds, setRounds, onStart }) {
+// 1.9.0: minutes an own plan's day takes: 3 min warm-up + every set (≈40 s a set of reps, the hold time for holds) and
+// its rest (REST_SET_BW / REST_SET_W).
+function planMinutes(items) {
+  let s = 180;
+  (items || []).forEach(x => { const ex = EX[x.id]; if (!ex) return; const n = x.sets || PLN.DEFAULT_SETS, work = ex.type === "time" || ex.type === "carry" ? x.dur || ex.dur || 30 : 40, rest = isW(x.id) || (LIB[x.id] && LIB[x.id].eq !== "none") ? REST_SET_W : REST_SET_BW; s += n * work + Math.max(0, n - 1) * rest + rest; });
+  return Math.max(1, Math.round(s / 60));
+}
+function FloatStart({ show, day, rounds, setRounds, onStart, plan }) {
   const boxRef = useRef(null);
   useLayoutEffect(() => {
     const el = boxRef.current, root = document.documentElement; if (!el) return;
@@ -3031,7 +3095,13 @@ function FloatStart({ show, day, rounds, setRounds, onStart }) {
       {/* the page fades out under the bar instead of being cut by it */}
       <div aria-hidden="true" data-fstart-fade style={{ position: "fixed", left: "var(--side, 0px)", right: 0, bottom: 0, height: `calc(var(--sab, 0px) + var(--fsH, ${FS_H}px) + 22px)`, background: `linear-gradient(180deg, ${C.ink}00, ${C.ink}d9 45%, ${C.ink})`, pointerEvents: "none", zIndex: -1 }} />
       <div ref={boxRef} data-fstart-box data-rounds-row style={{ display: "flex", gap: 10, width: "100%", maxWidth: 436, padding: 10, borderRadius: 26, background: `${C.ink}f5`, border: `1px solid ${C.line}`, boxShadow: "0 12px 34px rgba(0,0,0,.5)", ...(LOOK === "liquid" ? { ...LIQUID_FLOAT(), borderRadius: 26 } : LOOK === "glass" ? { ...GLASS(), borderRadius: 26 } : {}) }}>
-        {[3, 2].map((n, i) => (
+        {plan && (
+          <div data-fstart-mins={plan.mins} className="fsq" style={{ width: 74, flexShrink: 0, borderRadius: 17, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", ...SUNK(), color: C.chalk }}>
+            <span style={{ fontFamily: DISPLAY, fontSize: 30, fontWeight: 900, lineHeight: 1 }}>{plan.mins}</span>
+            <span style={{ fontSize: 11, fontWeight: 800, marginTop: 3, color: C.dim }}>min</span>
+          </div>
+        )}
+        {!plan && [3, 2].map((n, i) => (
           <button key={n} tabIndex={show ? 0 : -1} data-fround={n} data-rounds={n} aria-pressed={rounds === n} aria-label={T("roundsBtn", { n, m: n === 2 ? 13 : 19 })} onClick={() => { sfxTap(); setRounds(n); }} className="fsq" style={{ ...btnBase, position: "relative", "--d": `${60 + i * 50}ms`, width: 74, flexShrink: 0, borderRadius: 17, padding: "12px 0", ...(rounds === n ? { background: C.chalk, border: `1px solid ${C.chalk}` } : SUNK()), color: rounds === n ? C.ink : C.dim, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", lineHeight: 1 }}>
             {n === 3 && <span data-rec style={{ position: "absolute", top: -8, left: "50%", transform: "translateX(-50%)", whiteSpace: "nowrap", fontSize: 9, fontWeight: 900, letterSpacing: 0.3, padding: "2px 6px", borderRadius: 99, background: C.mint, color: C.ink }}>{T("roundsRec")}</span>}
             <span style={{ fontFamily: DISPLAY, fontSize: 32, fontWeight: 900 }}>{n === 2 ? 13 : 19}</span>
@@ -3039,8 +3109,8 @@ function FloatStart({ show, day, rounds, setRounds, onStart }) {
           </button>
         ))}
         <button tabIndex={show ? 0 : -1} data-fstart-go data-start onClick={onStart} className="b3d fsq" style={{ ...bigBtn(C.signal, C.signalInk), "--d": "160ms", flex: 1, minWidth: 0, padding: "12px 12px", fontSize: 21, borderRadius: 17 }}>
-          {T("startDay", { d: day })}
-          <span data-fstart-rounds data-start-rounds style={{ display: "block", fontSize: 12, fontWeight: 700, opacity: 0.75, marginTop: 3 }}>{T("roundsBtn", { n: rounds, m: rounds === 2 ? 13 : 19 })}</span>
+          {plan ? plan.label : T("startDay", { d: day })}
+          {plan ? <span data-fstart-plan style={{ display: "block", fontSize: 12, fontWeight: 700, opacity: 0.75, marginTop: 3, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{plan.sub}</span> : <span data-fstart-rounds data-start-rounds style={{ display: "block", fontSize: 12, fontWeight: 700, opacity: 0.75, marginTop: 3 }}>{T("roundsBtn", { n: rounds, m: rounds === 2 ? 13 : 19 })}</span>}
         </button>
       </div>
     </div>,
@@ -3512,7 +3582,7 @@ function usePager(name, n, lay, same) {
   return { page, goPage, tabs, pagerProps, pageProps, wide };
 }
 
-function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, profile, onGo, upd, apk, kcal, setKcal, dl, onDlClose, onSetup, settings, setSettings, tourOffer }) {
+function TrainTab({ history, onStart, onStartPlan, onStartFree, onFreeze, ui, setUi, active, onResume, profile, onGo, upd, apk, kcal, setKcal, dl, onDlClose, onSetup, settings, setSettings, tourOffer }) {
   const today = dateKey();
   // Make sure today's daily line and the "done" card texts are picked (and saved) before painting.
   useLayoutEffect(() => { const n = uiForToday(ui, history, today, profile); if (n !== ui) setUi(n); });
@@ -3525,6 +3595,14 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
   const gap = last ? daysBetween(last.date, today) : null;
   const day = DAYS[dayIdx];
   const st = streakInfo(history, today);
+  // 1.9.0: an own plan in use: its week (Mon … Sun), the day it offers, days done this week green
+  const P = PLN.plansOf(profile), own = P.active ? P.list.find(p => p.id === P.active) || null : null;
+  const [wdSel, setWdSel] = useState(() => (own ? PLN.offerDay(own, history, today) : 1));
+  useEffect(() => { if (own) setWdSel(PLN.offerDay(own, history, today)); }, [own && own.id]);
+  const doneWds = own ? PLN.doneThisWeek(own, history, today) : new Set();
+  const planItems = own ? (own.days && own.days[wdSel]) || [] : [];
+  const wdLong = k => capFirst(new Intl.DateTimeFormat(LANG, { weekday: "long" }).format(new Date(2024, 0, k)));
+  const [freePick, setFreePick] = useState(null);
 
   const doneToday = !!last && gap <= 0;
   const lastTs = last ? entryTs(last) : 0;
@@ -3600,7 +3678,36 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
   // Quick workout settings under the exercises (1.5.5, Michael: the page was half empty): the same switches as
   // Settings → Workout, and Settings → Exercises one tap away.
   const setS = (k, v) => { const n = { ...settings, [k]: v }; window._wset = n; setSettings(n); };
-  const hero = (
+  const wdNames = weekdaysShort(), todayWd = PLN.weekdayOf(today);
+  const planHero = own && (
+    <Sect data-home-hero data-home-plan={own.id} style={{ padding: LOOK === "flat" ? 0 : "18px 18px 16px" }}>
+      <button data-home-plan-name onClick={() => { sfxTap(); onGo && onGo("plans", { plan: own.id }); }} style={{ ...btnBase, background: "transparent", padding: 0, fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: C.dim, display: "inline-flex", alignItems: "center", gap: 4, maxWidth: "100%" }}>
+        <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{[planTitle(own), groupName(P, own.grp)].filter(Boolean).join(" · ")}</span><Arrow size={14} />
+      </button>
+      <div data-day-title data-plan-wd={wdSel} style={{ fontFamily: DISPLAY, fontWeight: 900, fontSize: fitFont(planItems.length ? wdLong(wdSel) : T("plRestDay"), 64, 9), lineHeight: 0.9, paddingBottom: "0.12em", letterSpacing: -1, color: planItems.length ? C.chalk : C.sky, marginTop: 6 }}>
+        {planItems.length ? wdLong(wdSel) : T("plRestDay")}
+      </div>
+      {planItems.length > 0 && <div style={{ marginTop: 6 }}><TypeMarks items={planItems} size={18} /></div>}
+      {!planItems.length && <div data-plan-rest-home style={{ fontSize: 13.5, color: C.dim, marginTop: 6, lineHeight: 1.45 }}>{T("plRestInfo")}</div>}
+      {last && !doneToday && gap === 2 && st.n > 0 && <div data-day-status style={{ fontSize: 14, color: C.signal, marginTop: 8, lineHeight: 1.5 }}>{emo(status)}</div>}
+      <div role="radiogroup" aria-label={T("pickDay")} data-day-picker="plan" style={{ display: "flex", gap: 4, marginTop: 16 }}>
+        {PLN.WEEKDAYS.map(d => {
+          const on = d === wdSel, tr = !PLN.isRest(own, d), dn = doneWds.has(d);
+          return <button key={d} role="radio" aria-checked={on} data-home-wd={d} data-done={dn ? 1 : 0} data-train={tr ? 1 : 0} onClick={() => { sfxTap(); setWdSel(d); }} aria-label={`${wdLong(d)}${dn ? " ✓" : ""}`}
+            style={{ ...btnBase, flex: 1, minWidth: 0, padding: "9px 0 6px", borderRadius: 11, fontSize: 12, display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
+              ...(on ? { background: C.chalk, color: C.ink, border: `1px solid ${C.chalk}` } : dn ? { background: C.mint, color: C.ink, border: `1px solid ${C.mint}` } : { ...SUNK(), color: tr ? C.chalk : C.dim }) }}>
+            {wdNames[d - 1]}<span style={{ width: 5, height: 5, borderRadius: 99, background: d === todayWd ? (on || dn ? C.ink : C.signal) : "transparent" }} />
+          </button>;
+        })}
+      </div>
+      {active && (
+        <button onClick={() => { unlockAudio(); onResume(); }} data-home-resume className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 16, fontSize: 16, padding: "14px 10px", borderRadius: 14 }}>
+          ▶ {resumeLabel(active)}
+        </button>
+      )}
+    </Sect>
+  );
+  const hero = planHero || (
     <Sect data-home-hero style={{ padding: LOOK === "flat" ? 0 : "18px 18px 16px" }}>
       <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: C.dim }}>{doneToday ? T("nextWorkout") : T("homeToday")}</div>
       <div data-day-title style={{ fontFamily: DISPLAY, fontWeight: 900, fontSize: fitFont(T("dayN", { d: day.id }).replace(/\s/g, "_"), doneToday ? 84 : 112, 6), lineHeight: 0.85, paddingBottom: "0.16em", letterSpacing: -1, color: C.chalk, marginTop: 8 }}>
@@ -3617,7 +3724,7 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
       {/* 1.8.2 (Michael): 19 / 13 min and Start live only in the bar at the bottom of Home; a minimized workout is resumed here */}
       {active && (
         <button onClick={() => { unlockAudio(); onResume(); }} data-home-resume className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 16, fontSize: 16, padding: "14px 10px", borderRadius: 14 }}>
-          ▶ {T("resumeWorkout", { d: active.day })}
+          ▶ {resumeLabel(active)}
         </button>
       )}
     </Sect>
@@ -3729,7 +3836,31 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
           {!active && <FsSpace />}
         </div>
         <div {...pg.pageProps(1)}>
-          <Sect title={`${T("secExercises")} · ${T("dayN", { d: day.id })}`} accent={C.sky} titlePad="0 15px" style={LOOK === "flat" ? { marginTop: 0 } : { padding: "12px 0 4px", marginTop: 0 }}>
+          {own && (
+            <Sect title={`${T("secExercises")} · ${planItems.length ? wdLong(wdSel) : T("plRestDay")}`} data-home-plan-ex accent={C.sky} titlePad="0 15px" style={LOOK === "flat" ? { marginTop: 0 } : { padding: "12px 0 4px", marginTop: 0 }}>
+              <div style={LOOK === "flat" ? { ...card } : { borderTop: `1px solid ${C.line}` }}>
+                {!planItems.length && <div style={{ padding: "14px 16px", color: C.dim, fontSize: 14 }}>{T("plRestInfo")}</div>}
+                {planItems.map((x, i) => {
+                  const ex = EX[x.id]; if (!ex) return null;
+                  const l = lastFor(history, x.id), b = bestFor(history, x.id);
+                  return (
+                    <button key={x.id} onClick={() => setHowEx(x.id)} data-home-ex={i} style={{ ...btnBase, display: "flex", width: "100%", alignItems: "center", gap: 12, textAlign: "left", background: "transparent", color: C.chalk, padding: "14px 16px", borderRadius: 0, borderTop: i ? `1px solid ${C.line}` : "none" }}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 16, fontWeight: 700 }}>{ex.name}<ExQ id={x.id} onOpen={() => setHowEx(x.id)} /></div>
+                        <div style={{ fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2 }}>{x.sets} {T("plSets")}{x.dur ? ` · ${fmtHold(x.dur)}` : ""} · {ex.muscles}</div>
+                        {rankAt(x.id) && <div style={{ marginTop: 5 }}><RankBadge id={x.id} best={b} small /></div>}
+                      </div>
+                      <div style={{ textAlign: "right", flexShrink: 0, maxWidth: "45%" }}>
+                        <div style={{ fontFamily: DISPLAY, fontSize: 17, fontWeight: 800, color: l ? C.chalk : C.dim, overflowWrap: "anywhere" }}>{l ? l.res.map((r, k) => fmtSet(x.id, r, l.kg && l.kg[k], "")).join(" / ") : T("newEx")}</div>
+                        <div style={{ fontSize: 11, color: C.dim, fontWeight: 500 }}>{l ? T("lastTime") : T("tapInfo")}</div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </Sect>
+          )}
+          {!own && <Sect title={`${T("secExercises")} · ${T("dayN", { d: day.id })}`} accent={C.sky} titlePad="0 15px" style={LOOK === "flat" ? { marginTop: 0 } : { padding: "12px 0 4px", marginTop: 0 }}>
           {!pg.wide && dayPicker({ padding: LOOK === "flat" ? "0 0 12px" : "0 15px 12px" }, "ex")}
           <div style={LOOK === "flat" ? { ...card } : { borderTop: `1px solid ${C.line}` }}>
             {day.ids.map((slot, i) => {
@@ -3761,7 +3892,7 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
               );
             })}
           </div>
-          </Sect>
+          </Sect>}
           {settings && setSettings && (
             <Sect data-wset title={T("wsTitle")} accent={C.sky} titlePad="0 15px" style={LOOK === "flat" ? {} : { padding: "12px 0 0" }}>
               <div style={LOOK === "flat" ? { ...card } : { borderTop: `1px solid ${C.line}` }}>
@@ -3778,7 +3909,17 @@ function TrainTab({ history, onStart, onFreeze, ui, setUi, active, onResume, pro
           {!active && <FsSpace />}
         </div>
       </div>
-      {!active && <FloatStart show day={day.id} rounds={rounds} setRounds={setRounds} onStart={() => { unlockAudio(); onStart(day.id, rounds); }} />}
+      {!active && !own && <FloatStart show day={day.id} rounds={rounds} setRounds={setRounds} onStart={() => { unlockAudio(); onStart(day.id, rounds); }} />}
+      {!active && own && <FloatStart show plan={planItems.length ? { mins: planMinutes(planItems), label: T("startWd", { d: wdLong(wdSel) }), sub: planTitle(own) } : { mins: "–", label: T("freeWorkout"), sub: T("freePick") }}
+        onStart={() => { unlockAudio(); if (planItems.length) onStartPlan(own, wdSel); else { sfxTap(); setFreePick([]); } }} />}
+      {freePick && (
+        <Sheet title={T("freeWorkout")} onClose={() => setFreePick(null)}>
+          <ExLibrary picked={freePick} onPick={id => setFreePick(f => (f.includes(id) ? f.filter(x => x !== id) : [...f, id]))} />
+          <div style={{ position: "sticky", bottom: -26, padding: "12px 0 4px", background: C.panel, marginTop: 10 }}>
+            <button data-free-start disabled={!freePick.length} onClick={() => { unlockAudio(); const ids = freePick; setFreePick(null); onStartFree(ids); }} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), padding: 15, fontSize: 16, opacity: freePick.length ? 1 : 0.5 }}>{T("startN", { n: freePick.length })}</button>
+          </div>
+        </Sheet>
+      )}
     </div>
   );
 }
@@ -3807,8 +3948,17 @@ function ageOn(birth, today = dateKey()) {
 function bmrOf(k, age) { return 10 * k.weight + 6.25 * k.height - 5 * age + (k.sex === "f" ? -161 : 5); }
 function tdeeOf(k, age) { return bmrOf(k, age) * (ACTIVITY.find(a => a[0] === k.activity) || ACTIVITY[0])[1]; }
 // Extra kcal burned by workouts done in the app that day (net, above resting: (MET − 1) × kg × hours).
+// 1.9.0 (Michael, Nov 1): from the workout's real time (`dur`, measured by the workout clock; long breaks the user
+// left out are not in it). Older or hand-added workouts without a time use the estimate (19 / 13 min by rounds, or the
+// plan estimate). A workout that took implausibly long (over 3× its estimate and over 90 min, e.g. a chat after
+// tapping Start) is not counted, and the summary says so.
+function entryMinutes(e) {
+  if (e.day || (!e.plan && e.rounds)) return e.rounds === 3 ? 19 : 13;
+  return planMinutes((e.items || []).map(it => ({ id: it.id, sets: (it.res || []).filter(v => v !== null && v !== undefined).length || 1, dur: numVal((it.res || [])[0]) || undefined })));
+}
+const kcalSkipped = e => !e.manual && e.dur > 0 && e.dur / 60 > Math.max(90, 3 * entryMinutes(e));
 function workoutKcal(history, day, kg) {
-  return Math.round(history.filter(e => e.date === day).reduce((a, e) => a + (WORKOUT_MET - 1) * kg * ((e.rounds === 3 ? 19 : 13) / 60), 0));
+  return Math.round(history.filter(e => e.date === day && !kcalSkipped(e)).reduce((a, e) => a + (WORKOUT_MET - 1) * kg * ((e.dur > 0 && !e.manual ? e.dur / 60 : entryMinutes(e)) / 60), 0));
 }
 function goalDelta(goal) { if (!goal || goal.type === "maintain") return 0; const d = Math.round((goal.rate * KCAL_PER_KG) / 7); return goal.type === "lose" ? -d : d; }
 // Steps from Health Connect (app 1.1.0): only the steps above what the chosen activity level already assumes add calories,
@@ -4546,7 +4696,7 @@ function MonthCalendar({ history }) {
   const days = new Date(y, m + 1, 0).getDate();
   const lead = (first.getDay() + 6) % 7;
   const byDate = {};
-  history.forEach(e => { byDate[e.date] = e.day; });
+  history.forEach(e => { byDate[e.date] = entryMark(e); });
   const cells = [];
   for (let i = 0; i < lead; i++) cells.push(null);
   for (let d = 1; d <= days; d++) cells.push(d);
@@ -4600,19 +4750,19 @@ function MonthCalendar({ history }) {
 const MonthCalendarM = memo(MonthCalendar);
 const ProgressChartM = memo(props => <ProgressChart {...props} />);
 function ProgressChart({ history }) {
-  const withData = Object.keys(RANK_AT).filter(id => history.some(e => e.items.some(it => it.id === id)));
+  const withData = Object.keys(EX).filter(id => history.some(e => e.items.some(it => it.id === id)));
   const [sel, setSel] = useState(withData.includes("k1") ? "k1" : withData[0]);
   const [tip, setTip] = useState(null);
   if (!withData.length) return null;
   const pts = history.map(e => {
     const it = e.items.find(x => x.id === sel);
     if (!it) return null;
-    const nums = it.res.map(numVal).filter(n => !isNaN(n));
-    return nums.length ? { date: e.date, v: Math.max(...nums) } : null;
+    const v = itemTop(it);
+    return isFinite(v) ? { date: e.date, v: Math.round(v * 10) / 10 } : null;
   }).filter(Boolean);
   const W = 320, H = 150, P = { l: 30, r: 14, t: 16, b: 26 };
   const vals = pts.map(p => p.v);
-  const at = RANK_AT[sel];
+  const at = rankAt(sel) || [];
   const maxV = Math.max(...vals, 5);
   const top = Math.ceil((maxV * 1.15) / 5) * 5;
   const x = i => P.l + (pts.length === 1 ? (W - P.l - P.r) / 2 : (i * (W - P.l - P.r)) / (pts.length - 1));
@@ -4626,7 +4776,7 @@ function ProgressChart({ history }) {
           <button key={id} onClick={() => { sfxTap(); setSel(id); setTip(null); }} style={{ ...btnBase, flexShrink: 0, padding: "6px 11px", fontSize: 12, background: sel === id ? C.chalk : "transparent", color: sel === id ? C.ink : C.dim, border: `1.5px solid ${sel === id ? C.chalk : C.line}` }}>{EX[id].name}</button>
         ))}
       </div>
-      <div style={{ fontSize: 13, color: C.chalk, fontWeight: 700 }}>{T("chartTitle", { name: EX[sel].name })}{unit ? T("chartSeconds") : ""}</div>
+      <div style={{ fontSize: 13, color: C.chalk, fontWeight: 700 }}>{T("chartTitle", { name: EX[sel].name })}{unit ? T("chartSeconds") : ""}{isW(sel) && <InfoQ id="strength" title={T("wScoreT")} text={T("wScoreD")} />}</div>
       <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: "auto", display: "block", marginTop: 6 }} onClick={() => setTip(null)}>
         {[0, top / 2, top].map(g => (
           <g key={g}>
@@ -4806,6 +4956,7 @@ function HistoryTab({ history, onDelete, onSaveEntry, editDate, onEditOpened }) 
   }, [editDate]);
   const sets = history.reduce((a, e) => a + setsIn(e), 0);
   const prs = history.reduce((a, e) => a + ((e.prs && e.prs.length) || 0), 0);
+  const xps = xpList(history);
   const tiles = [[T("tileTrainings"), history.length, "dumbbell", C.signal], [T("tileSets"), sets, "repeat", C.sky], [T("tilePRs"), prs, "trophy", C.mint]];
   return (
     <div className="scr" style={{ padding: "16px 18px 124px", maxWidth: "var(--colMax)", margin: "0 auto" }}>
@@ -4837,12 +4988,13 @@ function HistoryTab({ history, onDelete, onSaveEntry, editDate, onEditOpened }) 
             <div key={`${s.date}-${idx}`} data-workout-row style={{ padding: "12px 16px", borderTop: `1px solid ${C.line}` }}>
               <button onClick={() => { sfxTap(); setOpen(open === idx ? null : idx); }} aria-expanded={isOpen}
                 style={{ ...btnBase, width: "100%", background: "transparent", color: C.chalk, padding: 0, textAlign: "left", display: "flex", alignItems: "center", gap: 10, borderRadius: 0 }}>
-                <div style={{ width: 40, height: 40, borderRadius: 12, background: SOFT(), display: "flex", alignItems: "center", justifyContent: "center", fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, flexShrink: 0 }}>{s.day}</div>
+                <div style={{ width: 40, height: 40, borderRadius: 12, background: SOFT(), display: "flex", alignItems: "center", justifyContent: "center", fontFamily: DISPLAY, fontSize: entryMark(s).length > 1 ? 18 : 24, fontWeight: 900, flexShrink: 0 }}>{entryMark(s)}</div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 15, fontWeight: 700 }}>{capFirst(fmtDate(s.date, true))}</div>
-                  <div style={{ fontSize: 12, color: C.dim }}>{TP("rounds", s.rounds || 2)}, {TP("sets", setsIn(s))}{s.prs && s.prs.length ? <>, <IcoI n="trophy" color={C.signal} /> {s.prs.length}</> : ""}</div>
+                  {!s.day && <div data-hist-plan style={{ fontSize: 12.5, color: C.chalk, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{entryTitle(s)}</div>}
+                  <div style={{ fontSize: 12, color: C.dim }}>{s.day ? <>{TP("rounds", s.rounds || 2)}, </> : null}{TP("sets", setsIn(s))}{s.prs && s.prs.length ? <>, <IcoI n="trophy" color={C.signal} /> {s.prs.length}</> : ""}</div>
                 </div>
-                <div style={{ fontFamily: DISPLAY, fontSize: 20, fontWeight: 800, color: C.sky, flexShrink: 0 }}>+{xpFor(s)} XP</div>
+                <div style={{ fontFamily: DISPLAY, fontSize: 20, fontWeight: 800, color: C.sky, flexShrink: 0 }}>+{xps[idx]} XP</div>
                 <Chevron open={isOpen} />
               </button>
               <Expand open={isOpen}>
@@ -4854,9 +5006,9 @@ function HistoryTab({ history, onDelete, onSaveEntry, editDate, onEditOpened }) 
                       <div key={it.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderTop: `1px solid ${C.line}` }}>
                         <div style={{ flex: 1, minWidth: 0 }}>
                           {/* 1.8.2 (Michael: "these texts are useless"): the rank at the time is only its emblem in front of the name */}
-                          <div data-hist-ex={it.id} style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 14, fontWeight: 600, color: C.chalk }}>{RANK_AT[it.id] && <span title={T("rankThen", { rank: r.name })} style={{ display: "inline-flex" }}><RankIcon r={RANKS.indexOf(r)} size={16} /></span>}<span style={{ minWidth: 0 }}>{s.prs && s.prs.includes(it.id) ? <><IcoI n="trophy" color={C.signal} /> </> : ""}{exName(it)}{EX[it.id] && <ExQ id={it.id} />}</span></div>
+                          <div data-hist-ex={it.id} style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 14, fontWeight: 600, color: C.chalk }}>{rankAt(it.id) && <span title={T("rankThen", { rank: r.name })} style={{ display: "inline-flex" }}><RankIcon r={RANKS.indexOf(r)} size={16} /></span>}<span style={{ minWidth: 0 }}>{s.prs && s.prs.includes(it.id) ? <><IcoI n="trophy" color={C.signal} /> </> : ""}{exName(it)}{EX[it.id] && <ExQ id={it.id} />}</span></div>
                         </div>
-                        <div style={{ fontFamily: DISPLAY, fontSize: 20, fontWeight: 800, color: C.chalk, whiteSpace: "nowrap" }}>{it.res.map(v => fmtRes(v, "")).join(" / ")}<span style={{ fontFamily: BODY, fontSize: 11, color: C.dim, marginLeft: 3 }}>{unitStr(it.unit)}</span></div>
+                        <div style={{ fontFamily: DISPLAY, fontSize: isW(it.id) ? 15 : 20, fontWeight: 800, color: C.chalk, whiteSpace: isW(it.id) ? "normal" : "nowrap", textAlign: "right" }}>{it.res.map((v, k) => (isW(it.id) ? fmtSet(it.id, v, (it.kg || [])[k], "") : fmtRes(v, ""))).join(" / ")}{!isW(it.id) && <span style={{ fontFamily: BODY, fontSize: 11, color: C.dim, marginLeft: 3 }}>{unitStr(it.unit)}</span>}</div>
                       </div>
                     );
                   })}
@@ -4894,7 +5046,7 @@ const lvRank = lvl => (lvl >= 150 ? 8 : lvl >= 100 ? 7 : lvl >= 80 ? 6 : lvl >= 
 // Health Connect are only ever in your own model (marked "only you").
 function ownModel(history, profile, kcal) {
   const xp = totalXP(history), rk = {};
-  Object.keys(RANK_AT).forEach(id => { const b = bestFor(history, id); rk[id] = typeof b === "number" && isFinite(b) ? b : null; });
+  RANKED_IDS.forEach(id => { const b = bestFor(history, id); rk[id] = typeof b === "number" && isFinite(b) ? b : null; });
   return {
     own: true, nick: profile.name || T("defaultName"), pfp: profile.pfp || null, lvl: levelInfo(xp).lvl, xp,
     streak: streakInfo(history, dateKey()).n, best: bestStreak(history), n: history.length, reps: totalReps(history),
@@ -4915,15 +5067,16 @@ function cardModel(c, p) {
 }
 const statVal = (m, k) => (k === "since" ? (m.since ? 1 : 0) : m[k] || 0);
 // The exercises with a result, best first (rank, then how far into the rank).
-const rankedIds = m => Object.keys(RANK_AT).filter(id => m.rk[id] !== null && m.rk[id] !== undefined)
-  .sort((a, b) => rankIdx(b, m.rk[b]) - rankIdx(a, m.rk[a]) || m.rk[b] / RANK_AT[b][0] - m.rk[a] / RANK_AT[a][0]);
+const rk0 = id => (rankAt(id) || [1])[0] || 1;
+const rankedIds = m => RANKED_IDS.filter(id => rankAt(id) && m.rk[id] !== null && m.rk[id] !== undefined)
+  .sort((a, b) => rankIdx(b, m.rk[b]) - rankIdx(a, m.rk[a]) || m.rk[b] / rk0(b) - m.rk[a] / rk0(a));
 const earnedAch = m => m.ach.filter(a => a.tier && !CARD_HIDE.includes(a.k)).sort((a, b) => b.tier - a.tier || b.v / (b.next || b.v || 1) - a.v / (a.next || a.v || 1));
 // A field's text ("rk:k1", "ach3:workouts,streak,reps", "st:reps") → what to draw, or null when it can't be shown.
 function parseSlot(str, m) {
   const [kind, rest] = String(str || "").split(":");
   if (!SLOT_KINDS.includes(kind) || !rest) return null;
   const ids = [...new Set(rest.split(",").filter(Boolean))].slice(0, kind.endsWith("3") ? 3 : 1);
-  if (kind.startsWith("rk")) { const ok = ids.filter(id => RANK_AT[id] && m.rk[id] !== null && m.rk[id] !== undefined); return ok.length ? { kind, ids: ok } : null; }
+  if (kind.startsWith("rk")) { const ok = ids.filter(id => rankAt(id) && m.rk[id] !== null && m.rk[id] !== undefined); return ok.length ? { kind, ids: ok } : null; }
   if (kind.startsWith("ach")) { const ok = ids.filter(k => !CARD_HIDE.includes(k) && m.ach.some(a => a.k === k && a.tier)); return ok.length ? { kind, ids: ok } : null; }
   return PF_STATS.includes(ids[0]) && statVal(m, ids[0]) > 0 ? { kind, ids } : null;
 }
@@ -5048,7 +5201,8 @@ function RankPips({ ranks, reached }) {
     </div>
   );
 }
-const rankVal = (id, v) => (EX[id] && EX[id].type === "time" && v >= 120 ? `${Math.floor(v / 60)}:${String(v % 60).padStart(2, "0")} min` : `${v}${rankUnit(id)}`);
+const fmtKg = v => { const r = Math.round(v * 2) / 2; return String(r).replace(".", LANG === "en" || LANG === "zh" || LANG === "ja" || LANG === "ko" ? "." : ","); };
+const rankVal = (id, v) => (isW(id) ? (EX[id].type === "carry" ? `${fmtKg(v)} kg · 30 s` : `${fmtKg(v / (1 + 10 / 30))} kg × 10`) : EX[id] && EX[id].type === "time" && v >= 120 ? `${Math.floor(v / 60)}:${String(v % 60).padStart(2, "0")} min` : `${v}${rankUnit(id)}`);
 
 // Badges page: all of them with the progress, closest to the next level first, finished last. 1.8.0: single badges
 // show their rarity; secret ones only once earned (the rest is one line at the end).
@@ -5161,7 +5315,7 @@ function BadgeSheet({ a, onClose }) {
 // 1.8.2 (Michael): an exercise's rank in a sheet: the emblem, your best set, every rank with what it needs; the exercise
 // itself (picture, how to) one tap further.
 function RankSheet({ id, best, onClose, onHowTo }) {
-  const at = RANK_AT[id], ri = rankIdx(id, best), rk = RANKS[ri], next = ri < at.length ? at[ri] : null, prev = ri ? at[ri - 1] : 0;
+  const at = rankAt(id), ri = rankIdx(id, best), rk = RANKS[ri], next = ri < at.length ? at[ri] : null, prev = ri ? at[ri - 1] : 0;
   const p = next === null ? 1 : Math.max(0, Math.min(1, ((best || 0) - prev) / (next - prev)));
   return (
     <Sheet title={EX[id].name} onClose={onClose} short>
@@ -5198,18 +5352,18 @@ function RankSheet({ id, best, onClose, onHowTo }) {
 function RanksList({ m, onPick, focus, claim }) {
   const hid = id => !!(claim && claim.hid.has("rank:" + id)); // 1.7.4: still face down (first in the list)
   const has = id => m.rk[id] !== null && m.rk[id] !== undefined;
-  const ids = Object.keys(RANK_AT).filter(has).sort((a, b) => hid(b) - hid(a) || rankIdx(b, m.rk[b]) - rankIdx(a, m.rk[a]) || (m.rk[b] || 0) / RANK_AT[b][0] - (m.rk[a] || 0) / RANK_AT[a][0]);
-  const left = Object.keys(RANK_AT).length - ids.length;
+  const ids = RANKED_IDS.filter(id => rankAt(id) && has(id)).sort((a, b) => hid(b) - hid(a) || rankIdx(b, m.rk[b]) - rankIdx(a, m.rk[a]) || (m.rk[b] || 0) / rk0(b) - (m.rk[a] || 0) / rk0(a));
+  const left = RANKED_IDS.filter(id => rankAt(id)).length - ids.length;
   const lv = ids.reduce((x, id) => x + (hid(id) ? 0 : rankIdx(id, m.rk[id]) + 1), 0);
   const [open, setOpen] = useState(null); // 1.8.2: a rank opens its own sheet (levels, how far), the exercise from there
   return (
     <div data-pf-ranks>
       {open && <RankSheet id={open} best={m.rk[open]} onClose={() => setOpen(null)} onHowTo={onPick ? id => { setOpen(null); onPick(id); } : null} />}
-      <div style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.5, margin: "0 2px 10px" }}>{T("achTiers", { n: lv, max: Object.keys(RANK_AT).length * RANKS.length })}</div>
+      <div style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.5, margin: "0 2px 10px" }}>{T("achTiers", { n: lv, max: RANKED_IDS.filter(id => rankAt(id)).length * RANKS.length })}</div>
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {ids.map((id, k) => {
           if (hid(id)) return <ClaimRow key={id} it={claim.items.get("rank:" + id)} onOpen={claim.open} />;
-          const b = m.rk[id], ri = rankIdx(id, b), r = RANKS[ri], at = RANK_AT[id];
+          const b = m.rk[id], ri = rankIdx(id, b), r = RANKS[ri], at = rankAt(id);
           const prev = ri ? at[ri - 1] : 0, next = ri < at.length ? at[ri] : null, inR = next === null ? 1 : Math.max(0, Math.min(1, ((b || 0) - prev) / (next - prev)));
           const rr = rankRow(ri, next === null ? null : ri + 1, inR, k);
           const g = GROUP_KEYS[groupOf(id)];
@@ -7364,11 +7518,42 @@ function SwapSheet({ item, exclude, history, onPick, onClose }) {
 }
 
 const MIN_REP_S = 0.6; // nobody does a clean rep faster (fast push-ups ~0.8–1 s)
-function Work({ item, rounds, history, sessionResults, onRecord, onSwap, exclude, onLive }) {
+// 1.9.0: the weight of a set (kg × reps exercises and carries). − / + in steps that fit the equipment, tap to type.
+function KgField({ id, value, onChange }) {
+  const x = LIB[id] || {}, help = x.k === "a", step = x.load === "stack" || help ? 2.5 : 1;
+  const [typing, setTyping] = useState(false);
+  const set = v => onChange(Math.max(0, Math.min(999, Math.round((Number(v) || 0) * 4) / 4)));
+  const label = help ? T("kgHelp") : x.load === "each" ? T("kgEach") : x.load === "stack" ? T("kgStack") : T("kgOne");
+  const sb = { ...btnBase, width: 46, height: 46, borderRadius: 99, background: C.panelHi, color: C.chalk, fontSize: 24, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, ...(LOOK === "liquid" ? LIQUID_PILL() : {}) };
+  return (
+    <div data-kg-field style={{ marginTop: 20, textAlign: "center" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 14 }}>
+        <button data-kg-minus className={LOOK === "liquid" ? "" : "b3d"} onClick={() => { sfxTap(); set(value - step); }} aria-label={`${label} −${step}`} style={sb}>−</button>
+        {typing ? (
+          <input data-kg-input type="number" inputMode="decimal" step="0.25" min={0} max={999} autoFocus defaultValue={value || ""} aria-label={T("kgType")}
+            onFocus={e => e.target.select()} onBlur={e => { set(String(e.target.value).replace(",", ".")); setTyping(false); }} onKeyDown={e => { if (e.key === "Enter") e.target.blur(); }}
+            style={{ width: 130, fontFamily: DISPLAY, fontSize: 52, fontWeight: 900, textAlign: "center", color: C.chalk, background: C.panel, border: `2px solid ${C.signal}`, borderRadius: 14, outline: "none", MozAppearance: "textfield" }} />
+        ) : (
+          <button data-kg={value} onClick={() => { sfxTap(); setTyping(true); }} aria-label={`${fmtKg(value)} ${label}. ${T("kgType")}`} style={{ ...btnBase, background: "transparent", padding: 0, minWidth: 130, fontFamily: DISPLAY, fontSize: 60, fontWeight: 900, lineHeight: 0.9, color: C.chalk }}>{fmtKg(value)}</button>
+        )}
+        <button data-kg-plus className={LOOK === "liquid" ? "" : "b3d"} onClick={() => { sfxTap(); set(value + step); }} aria-label={`${label} +${step}`} style={sb}>+</button>
+      </div>
+      <div style={{ fontSize: 13, color: C.dim, marginTop: 4 }}>{label}{help ? ` · ${T("kgHelpD")}` : x.bw ? ` · ${T("kgBody")}` : ""}</div>
+    </div>
+  );
+}
+
+function Work({ item, rounds, history, sessionResults, sessionKg, onRecord, onSwap, exclude, onLive }) {
   const [swap, setSwap] = useState(false);
   const ex = EX[item.id];
   const last = lastFor(history, item.id);
-  const isLastRound = item.r === rounds - 1;
+  const isLastRound = item.r === (item.n || rounds) - 1;
+  // 1.9.0: weights. The counter works like reps; the weight starts at what this set had last time (or the closest set).
+  const wt = ex.type === "kg", carry = ex.type === "carry", isReps = ex.type === "reps" || wt;
+  const lastKg = (() => { if (!last || !last.kg) return null; const own = last.kg[item.r]; if (typeof own === "number") return own; const k = last.kg.filter(v => typeof v === "number"); return k.length ? k[k.length - 1] : null; })();
+  const alreadyKg = ((sessionKg || {})[item.id] || [])[item.r];
+  const prevSetKg = item.r > 0 ? ((sessionKg || {})[item.id] || [])[item.r - 1] : undefined;
+  const [kg, setKg] = useState(typeof alreadyKg === "number" ? alreadyKg : typeof prevSetKg === "number" && lastKg === null ? prevSetKg : lastKg !== null ? lastKg : 0);
   const [how, setHow] = useState(false);
 
   // Progressive overload: last time's result for this round (or the closest round), and a goal one step above it.
@@ -7380,7 +7565,7 @@ function Work({ item, rounds, history, sessionResults, onRecord, onSwap, exclude
     const nums = last.res.map(numVal).filter(n => !isNaN(n));
     return nums.length ? nums[nums.length - 1] : null;
   })();
-  const goal = prevVal === null ? null : ex.type === "time" ? (ex.durs.find(d => d > prevVal) ?? null) : prevVal + 1;
+  const goal = prevVal === null ? null : ex.type === "time" || carry ? (ex.durs.find(d => d > prevVal) ?? null) : prevVal + 1;
   // Coming back to a round that was already logged (Back button): start at that number.
   const already = numVal(((sessionResults || {})[item.id] || [])[item.r]);
   const startReps = !isNaN(already) ? already : prevVal !== null ? prevVal : 0;
@@ -7389,7 +7574,7 @@ function Work({ item, rounds, history, sessionResults, onRecord, onSwap, exclude
   const [typing, setTyping] = useState(false);
   const [tempoOn, setTempoOn] = useState(false);
   // One arm / one leg at a time: right side first, then left (Michael, Oct 9). The weaker side is logged.
-  const split = ex.type === "reps" && (ex.unit === "arm" || ex.unit === "leg");
+  const split = isReps && (ex.unit === "arm" || ex.unit === "leg");
   const [side, setSide] = useState("R");
   // 1.8.0 basic fair play (Michael, Oct 25, 02:51: "only the basic anti-cheat things"): a set logged faster than clean
   // reps can be done (MIN_REP_S a rep, both sides for one-arm/one-leg moves) asks first and offers what fits the time.
@@ -7397,8 +7582,8 @@ function Work({ item, rounds, history, sessionResults, onRecord, onSwap, exclude
   const [fast, setFast] = useState(null);
   const recordFair = n => {
     const secs = (performance.now() - shownAt.current) / 1000, per = MIN_REP_S * (split ? 2 : 1);
-    if (!window.__hwNoRepCheck && ex.type === "reps" && n > 3 && n * per > secs) { setFast({ n, secs: Math.round(secs), cap: Math.max(0, Math.floor(secs / per)) }); return; }
-    onRecord(n);
+    if (!window.__hwNoRepCheck && isReps && n > 3 && n * per > secs) { setFast({ n, secs: Math.round(secs), cap: Math.max(0, Math.floor(secs / per)) }); return; }
+    onRecord(n, wt ? kg : undefined);
   };
   const [rightReps, setRightReps] = useState(null);
   const sideName = sd => T(`side${sd}_${ex.unit}`);
@@ -7406,7 +7591,8 @@ function Work({ item, rounds, history, sessionResults, onRecord, onSwap, exclude
   // 1.8.0: durations hold 0 = Max: the time counts up until you stop (for records past the longest preset, e.g. the
   // 10-minute Obsidian plank). After a hold longer than every preset, Max is preselected.
   const initDur = () => {
-    if (ex.type !== "time") return 0;
+    if (ex.type !== "time" && !carry) return 0;
+    if (item.dur) return item.dur; // 1.9.0: the plan's own time for this exercise
     if (goal !== null) return goal;
     if (prevVal !== null && prevVal >= Math.max(...ex.durs)) return 0;
     if (prevVal !== null && ex.durs.includes(prevVal)) return prevVal;
@@ -7423,7 +7609,7 @@ function Work({ item, rounds, history, sessionResults, onRecord, onSwap, exclude
   const left = useCountdown(endAt,
     () => {
       if (ph === "prep") { soundExercise(); setPh("hold"); if (dur === 0) { setEndAt(null); setUpFrom(Date.now()); } else setEndAt(Date.now() + dur * 1000); }
-      else if (ph === "hold") { soundExercise(); vibrate([250]); setEndAt(null); onRecord(`${dur}s`); }
+      else if (ph === "hold") { soundExercise(); vibrate([250]); setEndAt(null); onRecord(`${dur}s`, carry ? kg : undefined); }
     },
     () => { if (ph === "prep") soundPrepEnd(); }
   );
@@ -7435,15 +7621,15 @@ function Work({ item, rounds, history, sessionResults, onRecord, onSwap, exclude
   const stopHold = () => {
     unlockAudio();
     if (ph === "prep") { setPh("ready"); setEndAt(null); return; }
-    if (upFrom) { const held = Math.max(1, upSecs); setUpFrom(null); soundExercise(); vibrate([250]); onRecord(`${held}s`); return; }
+    if (upFrom) { const held = Math.max(1, upSecs); setUpFrom(null); soundExercise(); vibrate([250]); onRecord(`${held}s`, carry ? kg : undefined); return; }
     const held = Math.max(1, dur - left);
     setEndAt(null);
-    onRecord(`${held}s`);
+    onRecord(`${held}s`, carry ? kg : undefined);
   };
 
   const best = bestFor(history, item.id);
   const lvl = levelUpFor(history, item.id);
-  const lastLine = last ? T("lastLine", { date: fmtDate(last.date), res: last.res.map(r => fmtRes(r, ex.unit)).join(" / ") }) : T("newExHint");
+  const lastLine = last ? T("lastLine", { date: fmtDate(last.date), res: last.res.map((r, i) => fmtSet(item.id, r, last.kg && last.kg[i], ex.unit)).join(" / ") }) : T("newExHint");
 
   return (
     <div>
@@ -7465,23 +7651,35 @@ function Work({ item, rounds, history, sessionResults, onRecord, onSwap, exclude
       </div>
       <div style={{ fontSize: 13, color: C.dim, marginTop: 8 }}>{ex.muscles}{ex.tempo ? `. ${T("tempo")}: ${ex.tempo}` : ""}</div>
       <div style={{ fontSize: 13, color: C.chalk, marginTop: 6 }}>{lastLine}</div>
-      {prevVal !== null && (() => {
+      {prevVal !== null && wt && (() => {
+        const pk = lastKg !== null ? lastKg : 0, up = prevVal >= REP_CAP && LIB[item.id].k !== "a";
+        const hit = setScore(item.id, reps, kg) > setScore(item.id, prevVal, pk);
+        const v = fmtSet(item.id, prevVal, pk, ""), g = fmtSet(item.id, prevVal + 1, pk, "");
+        return (
+          <div data-goal data-goal-kg style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 10, background: hit ? `${C.mint}1f` : LOOK === "liquid" ? "rgba(255,255,255,.07)" : C.panel, border: `1.5px solid ${hit ? C.mint : C.signal}66`, borderRadius: 14, padding: "9px 12px" }}>
+            <span className={hit ? "pop" : ""} key={hit ? "hit" : "aim"} style={{ fontFamily: DISPLAY, fontWeight: 900, fontSize: 20, lineHeight: 1, color: hit ? C.mint : C.signal, border: `2px solid ${hit ? C.mint : C.signal}`, borderRadius: 10, padding: "3px 7px", flexShrink: 0 }}>{hit ? "✓" : up ? "↑" : "+1"}</span>
+            <div style={{ fontSize: 13, color: C.chalk, lineHeight: 1.4 }}>{hit ? T("goalHit", { v: fmtSet(item.id, reps, kg, "") }) : up ? T("goalKgUp", { v }) : T(LIB[item.id].k === "a" ? "goalHelp" : "goalKg", { v, g })}</div>
+          </div>
+        );
+      })()}
+      {prevVal !== null && !wt && (() => {
         // Holds: the goal is preselected as the duration, so "reached" only makes sense for reps.
         const hit = ex.type === "reps" && goal !== null && reps >= goal;
-        const unit = ex.type === "time" ? " s" : unitStr(ex.unit);
+        const unit = ex.type === "time" || carry ? " s" : unitStr(ex.unit);
         return (
           <div data-goal style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 10, background: hit ? `${C.mint}1f` : LOOK === "liquid" ? "rgba(255,255,255,.07)" : C.panel, border: `1.5px solid ${hit ? C.mint : C.signal}66`, borderRadius: 14, padding: "9px 12px" }}>
             <span className={hit ? "pop" : ""} key={hit ? "hit" : "aim"} style={{ fontFamily: DISPLAY, fontWeight: 900, fontSize: 20, lineHeight: 1, color: hit ? C.mint : C.signal, border: `2px solid ${hit ? C.mint : C.signal}`, borderRadius: 10, padding: "3px 7px", flexShrink: 0 }}>{hit ? "✓" : ex.type === "time" ? "↑" : "+1"}</span>
             <div style={{ fontSize: 13, color: C.chalk, lineHeight: 1.4 }}>
-              {goal === null ? T(ex.type === "time" ? "goalMax" : "goalTop", { v: `${prevVal}${unit}` }) : hit ? T("goalHit", { v: `${goal}${unit}` }) : T("goalLine", { v: `${prevVal}${unit}`, g: `${goal}${unit}` })}
+              {goal === null ? T(ex.type === "time" || carry ? "goalMax" : "goalTop", { v: `${prevVal}${unit}` }) : hit ? T("goalHit", { v: `${goal}${unit}` }) : T("goalLine", { v: `${prevVal}${unit}`, g: `${goal}${unit}` })}
             </div>
           </div>
         );
       })()}
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
         <RankBadge id={item.id} best={best} />
-        {RANK_AT[item.id] && (() => { const n = rankNext(item.id, best); return n ? <span style={{ fontSize: 12, color: C.dim, display: "inline-flex", alignItems: "center", gap: 4 }}><RankIcon r={RANKS.indexOf(n.rank)} size={14} />{T("rankFrom", { rank: n.rank.name, v: rankVal(item.id, n.at) })}</span> : <span style={{ fontSize: 12, color: C.dim }}>{T("topRank")}</span>; })()}
-        {item.slot !== item.id && <span style={{ fontSize: 12, color: C.sky }}>{T("replacing", { name: EX[item.slot].name })}</span>}
+        {W_RANK[item.id] && !bodyKg() && <span data-rank-needs-weight style={{ fontSize: 12, color: C.dim }}>{T("rankNeedsWeight")}</span>}
+        {rankAt(item.id) && (() => { const n = rankNext(item.id, best); return n ? <span style={{ fontSize: 12, color: C.dim, display: "inline-flex", alignItems: "center", gap: 4 }}><RankIcon r={RANKS.indexOf(n.rank)} size={14} />{T("rankFrom", { rank: n.rank.name, v: rankVal(item.id, n.at) })}</span> : <span style={{ fontSize: 12, color: C.dim }}>{T("topRank")}</span>; })()}
+        {item.slot !== item.id && EX[item.slot] && <span style={{ fontSize: 12, color: C.sky }}>{T("replacing", { name: EX[item.slot].name })}</span>}
       </div>
       {lvl && item.r === 0 && (
         <div style={{ marginTop: 12, border: `1.5px solid ${C.signal}`, borderRadius: 14, padding: "10px 13px", fontSize: 13, color: C.chalk, lineHeight: 1.5 }}>
@@ -7492,7 +7690,8 @@ function Work({ item, rounds, history, sessionResults, onRecord, onSwap, exclude
         <div style={{ marginTop: 10, fontSize: 13, color: C.signal, fontWeight: 600 }}>{emo(T("lastRound"))}</div>
       )}
 
-      {ex.type === "reps" && (
+      {wt && <KgField id={item.id} value={kg} onChange={setKg} />}
+      {isReps && (
         <>
           {TEMPO[item.id] && (
             <button data-tempo-btn onClick={() => { unlockAudio(); sfxTap(); setTempoOn(!tempoOn); }} aria-pressed={tempoOn} style={{ ...ghostBtn, display: "block", margin: "16px auto 0", color: tempoOn ? C.ink : C.sky, background: tempoOn ? C.sky : "transparent", borderColor: tempoOn ? C.sky : `${C.sky}88` }}>
@@ -7510,7 +7709,7 @@ function Work({ item, rounds, history, sessionResults, onRecord, onSwap, exclude
             </div>
           )}
           {/* 1.4.0 (Michael): − and + sit exactly in line with the number; the label and the record line go below */}
-          <div data-counter style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 18, marginTop: split ? 14 : 26 }}>
+          <div data-counter style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 18, marginTop: split ? 14 : wt ? 12 : 26 }}>
             <button className={LOOK === "liquid" ? "" : "b3d"} onClick={() => { sfxTap(); setReps(Math.max(0, reps - 1)); }} aria-label={T("less")} style={stepBtn()}>−</button>
             <div style={{ textAlign: "center", minWidth: 120 }}>
               {typing ? (
@@ -7520,14 +7719,14 @@ function Work({ item, rounds, history, sessionResults, onRecord, onSwap, exclude
                   onKeyDown={e => { if (e.key === "Enter") e.target.blur(); }}
                   style={{ width: 150, fontFamily: DISPLAY, fontSize: 104, fontWeight: 900, lineHeight: 1, textAlign: "center", color: C.chalk, background: C.panel, border: `2px solid ${C.signal}`, borderRadius: 18, padding: "4px 0", outline: "none", MozAppearance: "textfield" }} />
               ) : (
-                <button data-reps onClick={() => { sfxTap(); setTyping(true); }} aria-label={`${reps}. ${T("typeReps")}`} key={reps} className="bump" style={{ ...btnBase, background: "transparent", padding: 0, fontFamily: DISPLAY, fontSize: 132, fontWeight: 900, lineHeight: 0.85, color: best !== null && reps > best ? C.signal : C.chalk, borderBottom: `2px dashed ${C.line}` }}>{reps}</button>
+                <button data-reps onClick={() => { sfxTap(); setTyping(true); }} aria-label={`${reps}. ${T("typeReps")}`} key={reps} className="bump" style={{ ...btnBase, background: "transparent", padding: 0, fontFamily: DISPLAY, fontSize: 132, fontWeight: 900, lineHeight: 0.85, color: best !== null && (wt ? setScore(item.id, reps, kg) > best : reps > best) ? C.signal : C.chalk, borderBottom: `2px dashed ${C.line}` }}>{reps}</button>
               )}
             </div>
-            <button className={LOOK === "liquid" ? "" : "b3d"} onClick={() => { const n = reps + 1; if (best !== null && n === best + 1) sfxRecord(); else sfxTap(); setReps(n); }} aria-label={T("more")} style={stepBtn()}>+</button>
+            <button className={LOOK === "liquid" ? "" : "b3d"} onClick={() => { const n = reps + 1; if (!wt && best !== null && n === best + 1) sfxRecord(); else sfxTap(); setReps(n); }} aria-label={T("more")} style={stepBtn()}>+</button>
           </div>
           <div style={{ textAlign: "center" }}>
               <div style={{ fontSize: 13, color: C.dim, marginTop: 4 }}>{T("reps")}{ex.unit ? ` ${perUnit(ex.unit)}` : ""}</div>
-            <div style={{ height: 22, marginTop: 4, fontSize: 14, fontWeight: 800, color: C.signal }}>{best !== null && reps > best ? <span className="pop" style={{ display: "inline-block" }}>{rankIdx(item.id, reps) > rankIdx(item.id, best) ? `${T("newRank", { rank: RANKS[rankIdx(item.id, reps)].name })}` : emo(T("pr"))}</span> : ""}</div>
+            <div style={{ height: 22, marginTop: 4, fontSize: 14, fontWeight: 800, color: C.signal }}>{wt ? (best !== null && setScore(item.id, reps, kg) > best ? <span className="pop" style={{ display: "inline-block" }}>{emo(T("pr"))}</span> : null) : best !== null && reps > best ? <span className="pop" style={{ display: "inline-block" }}>{rankIdx(item.id, reps) > rankIdx(item.id, best) ? `${T("newRank", { rank: RANKS[rankIdx(item.id, reps)].name })}` : emo(T("pr"))}</span> : ""}</div>
           </div>
           {/* 1.8.2: the how-to-count line only for the first workouts (then it's known) */}
           {history.length < 3 && <div data-count-hint style={{ fontSize: 12, color: C.dim, textAlign: "center", marginTop: 10 }}>{T(prevVal !== null ? "countHint" : "countHint0")}</div>}
@@ -7542,7 +7741,7 @@ function Work({ item, rounds, history, sessionResults, onRecord, onSwap, exclude
             </button>
           ) : (
             <button data-done-btn onClick={() => { unlockAudio(); recordFair(split && rightReps !== null ? Math.min(rightReps, reps) : reps); }} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 22, fontSize: 18, padding: 19 }}>
-              {T("doneBtn", { v: `${split && rightReps !== null ? Math.min(rightReps, reps) : reps}${unitStr(ex.unit)}` })}
+              {T("doneBtn", { v: wt ? fmtSet(item.id, split && rightReps !== null ? Math.min(rightReps, reps) : reps, kg, "") : `${split && rightReps !== null ? Math.min(rightReps, reps) : reps}${unitStr(ex.unit)}` })}
             </button>
           )}
           {split && side === "L" && (
@@ -7551,17 +7750,18 @@ function Work({ item, rounds, history, sessionResults, onRecord, onSwap, exclude
         </>
       )}
 
-      {ex.type === "time" && (
+      {(ex.type === "time" || carry) && (
         <>
           {ph === "ready" && (
             <>
+              {carry && <KgField id={item.id} value={kg} onChange={setKg} />}
               <div style={{ display: "flex", gap: 8, justifyContent: "center", marginTop: 24 }}>
                 {[...ex.durs, 0].map(d => (
                   <button key={d} data-dur={d} onClick={() => setDur(d)} aria-pressed={dur === d} style={{ ...btnBase, padding: "10px 12px", fontSize: 15, background: dur === d ? C.chalk : "transparent", color: dur === d ? C.ink : C.dim, border: `1.5px solid ${dur === d ? C.chalk : C.line}` }}>{d ? `${d} s` : T("holdMax")}</button>
                 ))}
               </div>
               <div style={{ fontFamily: DISPLAY, fontSize: 132, fontWeight: 900, lineHeight: 0.85, color: C.chalk, textAlign: "center", marginTop: 20 }}>{dur || "∞"}</div>
-              <div style={{ fontSize: 13, color: C.dim, textAlign: "center", marginTop: 4, lineHeight: 1.45 }}>{dur ? T("secondsHint") : T("holdMaxHint")}</div>
+              <div style={{ fontSize: 13, color: C.dim, textAlign: "center", marginTop: 4, lineHeight: 1.45 }}>{carry ? T("carryHint") : dur ? T("secondsHint") : T("holdMaxHint")}</div>
               <button onClick={startHold} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 22, fontSize: 18, padding: 19 }}>{T("start")}</button>
             </>
           )}
@@ -7662,33 +7862,53 @@ function TempoGuide({ seq }) {
 }
 
 // ─── SESSION: REST ──────────────────────────────────────────────────────────
+// 1.9.0 (Michael, Nov 1): the rest no longer moves on by itself. At 0 it beeps and counts on into minus; that time is
+// added to the rest and the real rest is saved with the set. +15 / +30 / +60 s add time before 0. After 10 minutes
+// over, "Ready" asks whether to count the whole break in the workout's time (else total time and calories go wrong).
+const LONG_REST = 600;
 function Rest({ rest, nextItem, rounds, onEnd, onAdd }) {
-  const left = useCountdown(rest.endAt, () => { soundRest(); vibrate([250]); onEnd(); }, s => { if (s <= 3) soundPrepEnd(); });
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => { const iv = setInterval(() => setNow(Date.now()), 250); return () => clearInterval(iv); }, []);
+  const left = Math.ceil((rest.endAt - now) / 1000);
+  const beeped = useRef(rest.endAt <= Date.now()), counted = useRef(new Set());
+  useEffect(() => {
+    if (left <= 3 && left >= 1 && !counted.current.has(left)) { counted.current.add(left); soundPrepEnd(); }
+    if (left <= 0 && !beeped.current) { beeped.current = true; soundRest(); vibrate([250, 120, 250]); }
+  }, [left]);
+  const over = Math.max(0, -left);
+  const [askLong, setAskLong] = useState(false);
+  const realSecs = () => Math.max(0, Math.round((Date.now() - (rest.startAt || rest.endAt - rest.total * 1000)) / 1000));
+  const ready = () => { unlockAudio(); if (over >= LONG_REST) { setAskLong(true); return; } onEnd(realSecs(), true); };
   const ex = EX[nextItem.id];
   const newRound = !!rest.newRound;
+  const mmss = v => `${Math.floor(v / 60)}:${String(v % 60).padStart(2, "0")}`;
   return (
     <div style={{ textAlign: "center", paddingTop: 10 }}>
+      {askLong && <ConfirmBox icon="timer" title={T("restLongQ", { t: mmss(realSecs()) })} text={T("restLongD")} yes={T("restLongYes")} no={T("restLongNo")} onDismiss={() => setAskLong(false)} yesData={{ "data-rest-long-yes": true }} onYes={() => { setAskLong(false); onEnd(realSecs(), true); }} onNo={() => { setAskLong(false); onEnd(realSecs(), false); }} />}
       {rest.pr && <Confetti count={55} />}
       <div className="pop" style={{ fontFamily: DISPLAY, fontSize: 34, fontWeight: 900, lineHeight: 1, color: rest.pr ? C.signal : C.chalk }}>{emo(rest.cheer || T("cheerDefault"))}</div>
       <div style={{ fontSize: 14, color: C.sky, fontWeight: 700, marginTop: 6 }}>{newRound ? T("roundDone", { r: nextItem.r + 1, n: rounds }) : T("rest")}</div>
-      <div data-rest-timer style={{ marginTop: 18 }}>
-        <Ring value={left} total={rest.total} size={250} color={C.sky}>
-          <div className={left <= 3 && left > 0 ? "pulse" : ""} style={{ fontFamily: DISPLAY, fontSize: 124, fontWeight: 900, lineHeight: 0.85, color: left <= 3 ? C.signal : C.chalk }}>{left}</div>
+      <div data-rest-timer data-rest-left={left} style={{ marginTop: 18 }}>
+        <Ring value={Math.max(0, left)} total={rest.total} size={250} color={left > 0 ? C.sky : C.signal}>
+          <div className={left <= 3 && left > 0 ? "pulse" : ""} data-rest-over={over || undefined} style={{ fontFamily: DISPLAY, fontSize: left > 0 ? (left >= 100 ? 96 : 124) : 84, fontWeight: 900, lineHeight: 0.85, color: left <= 3 ? C.signal : C.chalk, fontVariantNumeric: "tabular-nums" }}>{left > 0 ? left : `−${mmss(over)}`}</div>
+          {left <= 0 && <div style={{ fontSize: 13, color: C.dim, marginTop: 6 }}>{T("restOver")}</div>}
         </Ring>
       </div>
-      <div style={{ marginTop: 22, fontSize: 13, color: C.dim }}>{T("next")}</div>
+      <div data-rest-line style={{ fontSize: 12.5, color: C.dim, marginTop: 10, lineHeight: 1.45 }}>{T("restLine")}</div>
+      {!isNative && <div data-rest-web style={{ fontSize: 12, color: C.dim, marginTop: 4, lineHeight: 1.45 }}>{T("restWebOnly")}</div>}
+      <div style={{ marginTop: 18, fontSize: 13, color: C.dim }}>{T("next")}</div>
       <div style={{ fontFamily: DISPLAY, fontSize: 36, fontWeight: 800, color: C.chalk, lineHeight: 1.05 }}>{ex.name}<ExQ id={nextItem.id} style={{ width: 17, height: 17, fontSize: 10, verticalAlign: "0.25em" }} /></div>
-      <div style={{ fontSize: 13, color: C.dim, marginTop: 4 }}>{T("prepare")}</div>
+      {nextItem.n && <div style={{ fontSize: 13, color: C.dim, marginTop: 4 }}>{T("setN", { r: nextItem.r + 1, n: nextItem.n })}</div>}
       {(rest.tip || rest.moti) && (
         <div style={{ marginTop: 18, background: C.panel, border: `1px solid ${C.line}`, borderRadius: 16, padding: "12px 14px", textAlign: "left" }}>
           {rest.tip && <div style={{ fontSize: 14, color: C.sky, fontWeight: 600, lineHeight: 1.45, display: "flex", gap: 7, alignItems: "flex-start" }}><Ico n="bulb" size={18} style={{ marginTop: 2 }} /><span>{rest.tip}</span></div>}
           {rest.moti && <div style={{ fontSize: 16, color: C.chalk, fontWeight: 800, marginTop: 6 }}>{emo(rest.moti)}</div>}
         </div>
       )}
-      <div style={{ display: "flex", gap: 10, marginTop: 22 }}>
-        <button data-rest-add onClick={onAdd} style={{ ...ghostBtn, flex: 1, padding: 14, fontSize: 14 }}>+15 s</button>
-        <button onClick={() => { unlockAudio(); onEnd(); }} style={{ ...btnBase, flex: 2, padding: 14, fontSize: 15, background: C.panelHi, color: C.chalk }}>{T("ready")}</button>
+      <div style={{ display: "flex", gap: 8, marginTop: 22 }}>
+        {[15, 30, 60].map(n => <button key={n} data-rest-add={n} onClick={() => { sfxTap(); if (left <= 0) beeped.current = false; onAdd(n); }} style={{ ...ghostBtn, flex: 1, padding: "13px 4px", fontSize: 14 }}>+{n} s</button>)}
       </div>
+      <button data-rest-ready onClick={ready} className="b3d" style={{ ...bigBtn(left <= 0 ? C.signal : C.panelHi, left <= 0 ? C.signalInk : C.chalk), marginTop: 10, padding: 15, fontSize: 16 }}>{T("ready")}</button>
     </div>
   );
 }
@@ -7745,7 +7965,7 @@ function Cool({ onFinish }) {
       <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 10 }}>
         {COOL.map((c, i) => <CoolItem key={c.id} def={c} done={done[i]} onDone={() => setDone(d => d.map((v, j) => (j === i ? true : v)))} />)}
       </div>
-      <button onClick={() => onFinish(done.some(Boolean))} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 18 }}>
+      <button data-cool-finish onClick={() => onFinish(done.some(Boolean))} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 18 }}>
         {done.some(Boolean) ? T("saveWorkout") : T("skipSave")}
       </button>
     </div>
@@ -7765,7 +7985,7 @@ const rarityName = a => T("rar_" + (RARITY[a.rk[0]] || "rare"));
 // 1.8.0 (Michael: "Iron must feel like a reward, not just appear"): the first rank of a new exercise is its own card:
 // "New exercise" on top, the line under it says what Bronze needs.
 const rankCard = (id, ri, unlock) => {
-  const rk = RANKS[ri], at = RANK_AT[id];
+  const rk = RANKS[ri], at = rankAt(id);
   const nx = at && ri < at.length ? `${T("achNext", { rank: RANKS[ri + 1].name })} ${rankVal(id, at[ri])}` : "";
   return { kind: "rank", k: id, r: ri, icon: rk.icon, name: EX[id] ? EX[id].name : id, rank: rk, col: rk.color, ...(unlock || ri === 0 ? { unlock: 1, sub: `${T("revUnlockD")}${nx ? " " + nx : ""}` } : {}) };
 };
@@ -9595,21 +9815,23 @@ function TourAsk({ onGo, onNo }) {
 
 // 1.8.2 (Michael: "a window in the middle to confirm, where it says what it is"): one centred question for a
 // button that can't be undone in one tap (remove, block, report, delete a chat, end a friend streak).
-function ConfirmBox({ icon, title, text, yes, danger, onYes, onNo, yesData }) {
+// 1.9.0: `no` = own label for the second button, `onDismiss` = what back / a tap outside do (default: onNo)
+function ConfirmBox({ icon, title, text, yes, no, danger, onYes, onNo, onDismiss, yesData }) {
+  const dismiss = onDismiss || onNo;
   const [on, setOn] = useState(false);
   useEffect(() => { const r = requestAnimationFrame(() => setOn(true)); return () => cancelAnimationFrame(r); }, []);
-  useBack(onNo, true);
+  useBack(dismiss, true);
   const col = danger ? "#ff6b6b" : C.signal;
   const box = LOOK === "glass" ? GLASS() : LOOK === "liquid" ? { ...LIQUID_FLOAT(), borderRadius: 26 } : LOOK === "tiles" ? { ...card, borderRadius: 20, boxShadow: "0 22px 50px rgba(0,0,0,.5)" } : { background: C.panel, border: `1px solid ${C.line}`, borderRadius: 20, boxShadow: "0 22px 50px rgba(0,0,0,.5)" };
   return createPortal(
-    <div data-confirm-back onClick={e => { if (e.target === e.currentTarget) { sfxTap(); onNo(); } }} style={{ position: "fixed", inset: 0, zIndex: 106, display: "flex", alignItems: "center", justifyContent: "center", padding: "calc(16px + var(--sat)) 16px calc(16px + var(--sab))", background: on ? "rgba(0,0,0,.6)" : "rgba(0,0,0,0)", transition: "background .25s", fontFamily: BODY }}>
+    <div data-confirm-back onClick={e => { if (e.target === e.currentTarget) { sfxTap(); dismiss(); } }} style={{ position: "fixed", inset: 0, zIndex: 106, display: "flex", alignItems: "center", justifyContent: "center", padding: "calc(16px + var(--sat)) 16px calc(16px + var(--sab))", background: on ? "rgba(0,0,0,.6)" : "rgba(0,0,0,0)", transition: "background .25s", fontFamily: BODY }}>
       <div data-confirm role="alertdialog" aria-modal="true" aria-label={title}
         style={{ ...box, width: "min(100%, 360px)", boxSizing: "border-box", padding: "22px 18px 18px", textAlign: "center", opacity: on ? 1 : 0, transform: on ? "scale(1)" : "scale(.92)", transition: `opacity ${MO.t1}, transform ${MO.t3} ${MO.pop}` }}>
         <div style={{ display: "flex", justifyContent: "center" }}><BadgeIco n={icon} col={col} size={56} /></div>
         <div data-confirm-title style={{ fontFamily: DISPLAY, fontWeight: 900, fontSize: CJK.test(title) ? 24 : 28, lineHeight: 1.05, color: C.chalk, marginTop: 14, overflowWrap: "anywhere" }}>{title}</div>
         {text && <div data-confirm-text style={{ fontSize: 14, color: C.dim, marginTop: 10, lineHeight: 1.5 }}>{emo(text)}</div>}
         <div style={{ display: "flex", gap: 8, alignItems: "stretch", marginTop: 18 }}>
-          <button type="button" data-confirm-no onClick={() => { sfxTap(); onNo(); }} style={{ ...btnBase, flex: 1, padding: "12px 12px", borderRadius: 14, ...SUNK(), color: C.chalk, fontSize: 14.5, fontWeight: 800 }}>{T("cancel")}</button>
+          <button type="button" data-confirm-no onClick={() => { sfxTap(); onNo(); }} style={{ ...btnBase, flex: 1, padding: "12px 12px", borderRadius: 14, ...SUNK(), color: C.chalk, fontSize: 14.5, fontWeight: 800 }}>{no || T("cancel")}</button>
           <button type="button" data-confirm-yes {...(yesData || {})} onClick={() => { sfxTap(); onYes(); }} className="b3d" style={{ ...(danger ? bigBtn("#d64545", "#fff") : bigBtn(C.signal, C.signalInk)), ...(danger ? { "--e": "#8a1f1f" } : {}), flex: 1, minWidth: 0, fontSize: 14.5, padding: "12px 10px", borderRadius: 14 }}>{yes}</button>
         </div>
       </div>
@@ -9646,7 +9868,7 @@ function unclaimed(m, claim) {
   const a = (claim && claim.a) || {}, r = (claim && claim.r) || {};
   const out = m.ach.filter(x => x.tier > (a[x.k] || 0)).map(achCard);
   // 1.8.0: an exercise never opened (no entry at all) waits as a card too, Iron included
-  Object.keys(RANK_AT).forEach(id => { if (m.rk[id] === null || m.rk[id] === undefined) return; const ri = rankIdx(id, m.rk[id]); if (ri > (typeof r[id] === "number" ? r[id] : -1)) out.push(rankCard(id, ri)); });
+  RANKED_IDS.forEach(id => { if (!rankAt(id) || m.rk[id] === null || m.rk[id] === undefined) return; const ri = rankIdx(id, m.rk[id]); if (ri > (typeof r[id] === "number" ? r[id] : -1)) out.push(rankCard(id, ri)); });
   return out.sort((x, y) => x.r - y.r || REV_KIND[x.kind] - REV_KIND[y.kind]);
 }
 const unclaimedFor = (history, profile, kcal) => unclaimed(ownModel(history, profile, kcal), claimOf(profile));
@@ -9873,8 +10095,9 @@ function Summary({ entry, xpBefore = 0, xpGained, newCh = [], newAch = [], histo
         : revOn ? <RewardReveal items={rev} onDone={() => { setRevOn(false); if (onClaim) onClaim(rev); }} /> : <Confetti />}
       <div className="pop" style={{ display: "inline-block", transformOrigin: "left center", fontFamily: DISPLAY, fontSize: 60, fontWeight: 900, lineHeight: 0.95, color: C.mint }}>{T("great")}</div>
       <div style={{ fontSize: 16, color: C.chalk, marginTop: 8, fontWeight: 600, lineHeight: 1.4 }}>{emo(finishLine)}</div>
-      <div style={{ fontSize: 13, color: C.dim, marginTop: 4 }}>{T("dayDate", { d: entry.day, date: fmtDate(entry.date, true) })}</div>
+      <div style={{ fontSize: 13, color: C.dim, marginTop: 4 }}>{entryTitle(entry, true)}</div>
       {(() => { const s = kcalNow(history.concat(history.some(e => e.ts === entry.ts) ? [] : [entry])); return s ? <div data-sum-kcal style={{ fontSize: 13, color: s.hit ? KC_HIT : C.sky, marginTop: 6, fontWeight: 700 }}><IcoI n="plate" /> {s.left > 0 ? T("kcAfterWorkout", { n: nf(s.left) }) : T("kcAfterWorkoutDone")}</div> : null; })()}
+      {kcalSkipped(entry) && <div data-sum-kcal-skip style={{ fontSize: 12.5, color: C.dim, marginTop: 4, lineHeight: 1.45 }}>{T("kcSkipLong")}</div>}
       {entry.dur > 0 && <div data-total-time style={{ fontSize: 14, color: C.chalk, fontWeight: 700, marginTop: 6 }}><IcoI n="timer" /> {T("totalTime", { t: fmtDur(entry.dur) })}</div>}
       <div style={{ marginTop: 16, background: C.panel, border: `1px solid ${C.line}`, borderRadius: 18, padding: "14px 16px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 10 }}>
@@ -9920,11 +10143,11 @@ function Summary({ entry, xpBefore = 0, xpGained, newCh = [], newAch = [], histo
         {entry.items.map((it, i) => (
           <div key={it.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, padding: "13px 16px", borderTop: i ? `1px solid ${C.line}` : "none" }}>
             <div style={{ fontSize: 15, fontWeight: 600, color: C.chalk }}>{entry.prs && entry.prs.includes(it.id) ? <><IcoI n="trophy" color={C.signal} /> </> : ""}{exName(it)}{EX[it.id] && <ExQ id={it.id} />}</div>
-            <div style={{ fontFamily: DISPLAY, fontSize: 22, fontWeight: 800, color: C.chalk, whiteSpace: "nowrap" }}>{it.res.map(r => fmtRes(r, "")).join(" / ")}<span style={{ fontFamily: BODY, fontSize: 11, color: C.dim, marginLeft: 4 }}>{unitStr(it.unit)}</span></div>
+            <div style={{ fontFamily: DISPLAY, fontSize: 22, fontWeight: 800, color: C.chalk, whiteSpace: isW(it.id) ? "normal" : "nowrap", textAlign: "right" }}>{it.res.map((r, k) => (isW(it.id) ? fmtSet(it.id, r, (it.kg || [])[k], "") : fmtRes(r, ""))).join(" / ")}<span style={{ fontFamily: BODY, fontSize: 11, color: C.dim, marginLeft: 4 }}>{isW(it.id) ? "" : unitStr(it.unit)}</span></div>
           </div>
         ))}
       </div>
-      <div style={{ fontSize: 14, color: C.dim, marginTop: 14, lineHeight: 1.5 }}>{T("nextLine", { d: DAYS[(DAYS.findIndex(d => d.id === entry.day) + 1) % DAYS.length].id, date: fmtDate(addDays(entry.date, 2)) })}</div>
+      {entry.day && <div style={{ fontSize: 14, color: C.dim, marginTop: 14, lineHeight: 1.5 }}>{T("nextLine", { d: DAYS[(DAYS.findIndex(d => d.id === entry.day) + 1) % DAYS.length].id, date: fmtDate(addDays(entry.date, 2)) })}</div>}
       {setting("aiCopy") && <button onClick={copy} className="b3d" style={{ ...bigBtn(copied ? C.mint : C.chalk, C.ink), marginTop: 16 }}>{copied ? T("copied") : T("copyAI")}</button>}
       <button onClick={onClose} className="b3d" style={{ ...bigBtn("transparent", C.dim), marginTop: 8, border: `1.5px solid ${C.line}` }}>{T("home")}</button>
     </div>
@@ -9932,37 +10155,64 @@ function Summary({ entry, xpBefore = 0, xpGained, newCh = [], newAch = [], histo
 }
 
 // ─── SESSION SHELL ──────────────────────────────────────────────────────────
+// 1.9.0: a workout is either a recommended day (session.day A/B/C: a circuit of rounds) or an own plan's day
+// (session.plan: {id, name, grp, gname, wd, items: [{id, sets, dur}]}: straight sets, one exercise at a time).
+// Exercises added during the workout (session.extra: [{id, sets}]) come after them as straight sets.
+const REST_SET_BW = 60, REST_SET_W = 90; // own plans: rest after a set (bodyweight / weights), more with +15/+30/+60
+function sessionSeq(session) {
+  const swaps = session.swaps || {}, seq = [];
+  if (session.plan) session.plan.items.forEach((x, i) => { const slot = "p" + i, n = x.sets || PLN.DEFAULT_SETS; for (let r = 0; r < n; r++) seq.push({ id: swaps[slot] || x.id, slot, base: x.id, r, n, dur: x.dur }); });
+  else if (session.day) {
+    const day = DAYS.find(d => d.id === session.day);
+    const base = session.base || Object.fromEntries(day.ids.map(slot => [slot, effId(slot)]));
+    seq.push(...buildSeq(session.day, session.rounds, swaps, base));
+  }
+  (session.extra || []).forEach((x, i) => { for (let r = 0; r < x.sets; r++) seq.push({ id: x.id, slot: "x" + i, base: x.id, r, n: x.sets, dur: x.dur, extra: true }); });
+  return seq;
+}
+const resumeLabel = session => (session.day && !session.plan ? T("resumeWorkout", { d: session.day }) : T("resumePlan", { name: sessionTitle(session) }));
+const sessionTitle = session => (session.plan ? session.plan.name : session.day ? T("dayN", { d: session.day }) : T("freeWorkout"));
+// The rest after a set: recommended circuits keep 30 s between exercises and 60 s between rounds.
+function restAfter(session, it, next) {
+  if (!session.plan && !it.extra && !next.extra) return next.r !== it.r ? REST_ROUND : REST_BETWEEN;
+  return isW(it.id) || (LIB[it.id] && LIB[it.id].eq !== "none") ? REST_SET_W : REST_SET_BW;
+}
 function Session({ session, setSession, history, onSave, onClose, onMinimize, onLive, onClaim }) {
   useWakeLock();
   const [confirmQuit, setConfirmQuit] = useState(false);
+  const [adding, setAdding] = useState(false);
   const swaps = session.swaps || {};
-  const day = DAYS.find(d => d.id === session.day);
-  // Exercises fixed at the start (older saved sessions don't have them: work them out now).
-  const base = session.base || Object.fromEntries(day.ids.map(slot => [slot, effId(slot)]));
-  const seq = buildSeq(session.day, session.rounds, swaps, base);
+  const day = session.day ? DAYS.find(d => d.id === session.day) : null;
+  const base = day ? session.base || Object.fromEntries(day.ids.map(slot => [slot, effId(slot)])) : {};
+  const seq = sessionSeq(session);
   const doSwap = (slot, id) => setSession({ ...session, swaps: { ...swaps, [slot]: id === base[slot] ? undefined : id } });
-  const usedIds = day.ids.map(slot => swaps[slot] || base[slot]);
+  const usedIds = [...new Set(seq.map(x => x.id))];
   const hasResults = Object.values(session.results).some(a => a && a.some(v => v !== null && v !== undefined));
+  const sKg = session.kg || {};
 
   const finish = (coolDone = false) => {
-    const ids = [...new Set(day.ids.flatMap(slot => [slot, base[slot], swaps[slot]].filter(Boolean)))];
+    const ids = [...new Set([...(day ? day.ids.flatMap(slot => [slot, base[slot], swaps[slot]].filter(Boolean)) : []), ...seq.map(x => x.id)])];
+    const len = id => Math.max(session.rounds || 0, ...seq.filter(x => x.id === id).map(x => x.r + 1));
     const items = ids
-      .map(id => ({ id, name: EX[id].name, unit: EX[id].unit, res: Array.from({ length: session.rounds }, (_, r) => { const v = (session.results[id] || [])[r]; return v === undefined ? null : v; }) }))
+      .map(id => {
+        const n = len(id), res = Array.from({ length: n }, (_, r) => { const v = (session.results[id] || [])[r]; return v === undefined ? null : v; });
+        const it = { id, name: EX[id].name, unit: EX[id].unit, res };
+        if (isW(id)) it.kg = Array.from({ length: n }, (_, r) => { const k = (sKg[id] || [])[r]; return typeof k === "number" ? k : null; });
+        if (seq.some(x => x.id === id && x.extra)) it.x = 1; // added during the workout
+        return it;
+      })
       .filter(it => it.res.some(v => v !== null));
-    const prs = items.filter(it => {
-      const b = bestFor(history, it.id);
-      const top = Math.max(...it.res.map(numVal).filter(n => !isNaN(n)));
-      return b !== null && top > b;
-    }).map(it => it.id);
+    const prs = items.filter(it => { const b = bestFor(history, it.id); return b !== null && itemTop(it) > b; }).map(it => it.id);
     const rankUps = items.map(it => {
-      const b = bestFor(history, it.id), t0 = Math.max(...it.res.map(numVal).filter(n => !isNaN(n)));
-      if (!isFinite(t0) || !RANK_AT[it.id]) return null;
+      const b = bestFor(history, it.id), t0 = itemTop(it);
+      if (!isFinite(t0) || !rankAt(it.id)) return null;
       const to = rankIdx(it.id, t0);
       if (b === null || b === undefined) return { id: it.id, to, u: 1 }; // 1.8.0: a new exercise = Iron (or more) unlocked
       return to > rankIdx(it.id, b) ? { id: it.id, to } : null;
     }).filter(Boolean);
     const secs = session.startTs ? Math.round((Date.now() - session.startTs) / 1000) : 0;
-    const entry = items.length ? { date: dateKey(), ts: Date.now(), day: session.day, rounds: session.rounds, items, prs, rankUps, warm: session.warm.every(Boolean), cool: !!coolDone, ...(secs > 0 && secs < 4 * 3600 ? { dur: secs } : {}) } : null;
+    const pl = session.plan ? { plan: { id: session.plan.id, name: session.plan.name, ...(session.plan.gname ? { grp: session.plan.gname } : {}), wd: session.plan.wd } } : {};
+    const entry = items.length ? { date: dateKey(), ts: Date.now(), day: session.day || null, ...pl, ...(session.day ? { rounds: session.rounds } : {}), items, prs, rankUps, warm: session.warm.every(Boolean), cool: !!coolDone, ...(secs > 0 && secs < 4 * 3600 ? { dur: secs } : {}), ...(session.rests ? { rests: session.rests } : {}) } : null;
     const xpBefore = totalXP(history);
     let xpGained = 0, newCh = [], newAch = [];
     if (entry) {
@@ -9982,26 +10232,36 @@ function Session({ session, setSession, history, onSave, onClose, onMinimize, on
     setSession({ ...session, phase: "summary", entry, xpBefore, xpGained, newCh, newAch, rest: null });
   };
 
-  const record = (val) => {
+  const record = (val, kg) => {
     const it = seq[session.pos];
     const arr = [...(session.results[it.id] || [])];
     arr[it.r] = val;
     const results = { ...session.results, [it.id]: arr };
+    const kgs = isW(it.id) ? { ...sKg, [it.id]: (() => { const a = [...(sKg[it.id] || [])]; a[it.r] = typeof kg === "number" ? kg : 0; return a; })() } : sKg;
     if (session.pos >= seq.length - 1) {
       sfxSet();
-      setSession({ ...session, results, phase: "cool", rest: null });
+      setSession({ ...session, results, kg: kgs, phase: "cool", rest: null });
       return;
     }
     const next = seq[session.pos + 1];
-    const secs = next.r !== it.r ? REST_ROUND : REST_BETWEEN;
-    const prevBest = Math.max(bestFor(history, it.id) ?? -Infinity, ...(session.results[it.id] || []).map(numVal).filter(n => !isNaN(n)));
-    const pr = bestFor(history, it.id) !== null && numVal(val) > prevBest;
+    const secs = restAfter(session, it, next);
+    const score = setScore(it.id, val, kg);
+    const sessTop = itemTop({ id: it.id, res: session.results[it.id] || [], kg: sKg[it.id] || [] });
+    const prevBest = Math.max(bestFor(history, it.id) ?? -Infinity, sessTop);
+    const pr = bestFor(history, it.id) !== null && score > prevBest;
     const oldBest = isFinite(prevBest) ? prevBest : null;
-    const newRank = rankIdx(it.id, numVal(val));
-    const rankUp = (pr || oldBest === null) && newRank > rankIdx(it.id, oldBest);
+    const newRank = rankIdx(it.id, score);
+    const rankUp = !!rankAt(it.id) && (pr || oldBest === null) && newRank > rankIdx(it.id, oldBest);
     const cheer = rankUp ? `${T("newRank", { rank: RANKS[newRank].name })}` : pr ? T("newPR") : pick(L.cheers);
     if (rankUp) { sfxLevel(); vibrate([120, 60, 120, 60, 260]); } else if (pr) { sfxRecord(); vibrate([80, 40, 80]); } else sfxSet();
-    setSession({ ...session, results, phase: "rest", rest: { endAt: Date.now() + secs * 1000, total: secs, nextPos: session.pos + 1, newRound: next.r !== it.r, pr, cheer, tip: pick(L.facts), moti: pick(L.moti) } });
+    setSession({ ...session, results, kg: kgs, phase: "rest", rest: { endAt: Date.now() + secs * 1000, total: secs, startAt: Date.now(), nextPos: session.pos + 1, newRound: !session.plan && next.r !== it.r && !next.extra, pr, cheer, tip: pick(L.facts), moti: pick(L.moti) } });
+  };
+  // 1.9.0: more exercises during the workout (not tired yet): straight sets after the rest, they count for today
+  const addExtra = id => {
+    if (usedIds.includes(id)) return;
+    const n = 3, extra = [...(session.extra || []), { id, sets: n }];
+    if (session.phase === "cool") { const pos = seq.length; setSession({ ...session, extra, phase: "work", pos }); setAdding(false); return; }
+    setSession({ ...session, extra });
   };
 
   const goBack = () => {
@@ -10020,7 +10280,7 @@ function Session({ session, setSession, history, onSave, onClose, onMinimize, on
         <>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
             <div style={{ fontSize: 14, color: C.dim, fontWeight: 600, minWidth: 0 }}>
-              {inFlow ? T("dayRound", { d: session.day, r: cur.r + 1, n: session.rounds }) : T("dayN", { d: session.day })}
+              {inFlow ? (session.plan || cur.extra ? `${session.plan ? session.plan.name : T("dayN", { d: session.day })} · ${T("setN", { r: cur.r + 1, n: cur.n })}` : T("dayRound", { d: session.day, r: cur.r + 1, n: session.rounds })) : sessionTitle(session)}
               {session.startTs && <Elapsed since={session.startTs} />}
             </div>
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
@@ -10045,14 +10305,35 @@ function Session({ session, setSession, history, onSave, onClose, onMinimize, on
         <Warmup done={session.warm} setDone={w => setSession({ ...session, warm: w })} onNext={() => { unlockAudio(); setSession({ ...session, phase: "work", pos: 0 }); }} />
       )}
       {session.phase === "work" && (
-        <Work key={`${session.pos}-${seq[session.pos].id}`} item={seq[session.pos]} rounds={session.rounds} history={history} sessionResults={session.results} onRecord={record} onSwap={doSwap} exclude={usedIds} onLive={onLive} />
+        <Work key={`${session.pos}-${seq[session.pos].id}`} item={seq[session.pos]} rounds={session.rounds} history={history} sessionResults={session.results} sessionKg={sKg} onRecord={record} onSwap={day && !seq[session.pos].extra ? doSwap : null} exclude={usedIds} onLive={onLive} />
       )}
       {session.phase === "rest" && session.rest && (
         <Rest key={session.rest.nextPos} rest={session.rest} nextItem={seq[session.rest.nextPos]} rounds={session.rounds}
-          onEnd={() => setSession(s => (s.phase === "rest" && s.rest ? { ...s, phase: "work", pos: s.rest.nextPos, rest: null } : s))}
-          onAdd={() => setSession(s => (s.rest ? { ...s, rest: { ...s.rest, endAt: s.rest.endAt + 15000, total: s.rest.total + 15 } } : s))} />
+          onEnd={(real, countAll) => setSession(s => {
+            if (s.phase !== "rest" || !s.rest) return s;
+            // the real rest is saved with the set before it: rests[exercise][set]
+            const prev = seq[s.rest.nextPos - 1], rests = { ...(s.rests || {}) };
+            if (prev && typeof real === "number") { const a = [...(rests[prev.id] || [])]; a[prev.r] = countAll === false ? s.rest.total : real; rests[prev.id] = a; }
+            const pause = countAll === false ? Math.max(0, real - s.rest.total) : 0;
+            return { ...s, phase: "work", pos: s.rest.nextPos, rest: null, rests, ...(pause ? { startTs: s.startTs + pause * 1000 } : {}) };
+          })}
+          onAdd={n => setSession(s => {
+            if (!s.rest) return s;
+            // after 0, + adds from now (a new short rest), before 0 to the end
+            const base = Math.max(s.rest.endAt, Date.now());
+            return { ...s, rest: { ...s.rest, endAt: base + n * 1000, total: Math.round((base + n * 1000 - (s.rest.startAt || s.rest.endAt - s.rest.total * 1000)) / 1000) } };
+          })} />
       )}
       {session.phase === "cool" && <Cool onFinish={finish} />}
+      {(inFlow || session.phase === "cool") && (
+        <button data-add-extra onClick={() => { sfxTap(); setAdding(true); }} style={{ ...btnBase, width: "100%", marginTop: 18, padding: "12px", borderRadius: 13, border: `1.5px dashed ${C.line}`, background: "transparent", color: C.sky, fontSize: 14.5, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}><Ico n="plus" size={16} sw={2.4} />{T("addExtra")}</button>
+      )}
+      {adding && (
+        <Sheet title={T("addExtra")} onClose={() => setAdding(false)}>
+          <div style={{ fontSize: 13, color: C.dim, marginBottom: 10 }}>{T("addExtraD")}</div>
+          <ExLibrary picked={usedIds} onPick={id => { addExtra(id); }} />
+        </Sheet>
+      )}
       {session.phase === "summary" && <Summary entry={session.entry} xpBefore={session.xpBefore || 0} xpGained={session.xpGained} newCh={session.newCh || []} newAch={session.newAch || []} history={history} onClose={onClose} onClaim={onClaim} />}
       </div>
     </div>
@@ -10686,7 +10967,7 @@ export default function App() {
   const [setRet, setSetRet] = useState(null); // 1.8.1: where that page goes back to ({screen, pager, page})
   const [histEdit, setHistEdit] = useState(null); // date whose workout opens in the History editor
   const [plansOpen, setPlansOpen] = useState(null); // 1.9.0: {plan: id} opens that plan in the editor
-  const go = (id, opt) => { if (id !== screen) sfxTap(); setScreen(id); setMenuOpen(false); if (session) setSessionOpen(false); setHistEdit(opt && opt.edit ? opt.edit : null); setSetPage(opt && opt.page ? opt.page : null); setSetRet(opt && opt.ret ? opt.ret : null); setChatWith(null); };
+  const go = (id, opt) => { if (id !== screen) sfxTap(); setScreen(id); setMenuOpen(false); if (session) setSessionOpen(false); setHistEdit(opt && opt.edit ? opt.edit : null); setPlansOpen(opt && opt.plan ? { plan: opt.plan } : null); setSetPage(opt && opt.page ? opt.page : null); setSetRet(opt && opt.ret ? opt.ret : null); setChatWith(null); };
   const [howId, setHowId] = useState(null);
   openHowToGlobal = setHowId;
   const [info, setInfo] = useState(null); // 1.8.2: the "?" explanation sheet
@@ -10811,6 +11092,18 @@ export default function App() {
   const start = (dayId, rounds) => {
     const day = DAYS.find(d => d.id === dayId);
     setSession({ day: dayId, rounds, base: Object.fromEntries(day.ids.map(slot => [slot, effId(slot)])), phase: "warmup", pos: 0, warm: WARMUP.map(() => false), results: {}, rest: null, startTs: Date.now() });
+    setSessionOpen(true);
+  };
+  // 1.9.0: an own plan's day (a copy of its exercises, name and group, so editing the plan mid-workout changes nothing)
+  const startPlan = (plan, wd) => {
+    const P = PLN.plansOf(profile), items = ((plan.days && plan.days[wd]) || []).filter(x => EX[x.id]).map(x => ({ ...x }));
+    if (!items.length) return;
+    setSession({ plan: { id: plan.id, name: planTitle(plan), gname: groupName(P, plan.grp) || "", wd, items }, phase: "warmup", pos: 0, warm: WARMUP.map(() => false), results: {}, rest: null, startTs: Date.now() });
+    setSessionOpen(true);
+  };
+  const startFree = ids => {
+    if (!ids.length) return;
+    setSession({ free: true, extra: ids.map(id => ({ id, sets: 3 })), phase: "warmup", pos: 0, warm: WARMUP.map(() => false), results: {}, rest: null, startTs: Date.now() });
     setSessionOpen(true);
   };
 
@@ -11014,7 +11307,7 @@ export default function App() {
               <TopBar side={sideOn} head={screen === "friends" ? topHead : null} badge={socialCount + claimN + chestN} dlPct={dl && dl.kind === "downloading" ? dl.pct || 0 : null} screen={screen} history={history} menuOpen={menuOpen} onGo={go} onMenu={() => { sfxTap(); setMenuOpen(o => !o); }} />
               {/* 1.8.2: the screen's slide-in (translateY 14 px) must not leave 14 px of extra scroll at the end */}
               <div key={screen} style={{ overflowY: "clip" }}>
-                {screen === "train" && <TrainTab tourOffer={tourOffer ? { start: () => startTour(1), close: () => setUi({ ...ui, tourOff: true }) } : null} settings={settings} setSettings={setSettings} onSetup={st => setOnboard(st)} dl={dlHidden ? null : dl} onDlClose={() => setDlHidden(true)} kcal={kcal} setKcal={setKcal} history={history} onStart={start} onFreeze={applyFreeze} ui={ui} setUi={setUi} active={session} onResume={resume} profile={profile} onGo={go} upd={updCard ? { open: () => { setUpdCard(false); setNewsAt(APP_VERSION); setNewsOpen(true); }, close: () => setUpdCard(false) } : null}
+                {screen === "train" && <TrainTab tourOffer={tourOffer ? { start: () => startTour(1), close: () => setUi({ ...ui, tourOff: true }) } : null} settings={settings} setSettings={setSettings} onSetup={st => setOnboard(st)} dl={dlHidden ? null : dl} onDlClose={() => setDlHidden(true)} kcal={kcal} setKcal={setKcal} history={history} onStart={start} onStartPlan={startPlan} onStartFree={startFree} onFreeze={applyFreeze} ui={ui} setUi={setUi} active={session} onResume={resume} profile={profile} onGo={go} upd={updCard ? { open: () => { setUpdCard(false); setNewsAt(APP_VERSION); setNewsOpen(true); }, close: () => setUpdCard(false) } : null}
                   apk={apkUpd && !apkHidden ? { info: apkUpd, close: () => setApkHidden(true) } : null} />}
                 {screen === "history" && <HistoryTab history={history} editDate={histEdit} onEditOpened={() => setHistEdit(null)}
                   onDelete={idx => { const e = history[idx]; if (e) syncTomb("del", entryId(e)); editHistory(h => h.filter((_, i) => i !== idx)); }}
