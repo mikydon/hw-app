@@ -3096,7 +3096,7 @@ function FloatStart({ show, day, rounds, setRounds, onStart, plan }) {
       <div aria-hidden="true" data-fstart-fade style={{ position: "fixed", left: "var(--side, 0px)", right: 0, bottom: 0, height: `calc(var(--sab, 0px) + var(--fsH, ${FS_H}px) + 22px)`, background: `linear-gradient(180deg, ${C.ink}00, ${C.ink}d9 45%, ${C.ink})`, pointerEvents: "none", zIndex: -1 }} />
       <div ref={boxRef} data-fstart-box data-rounds-row style={{ display: "flex", gap: 10, width: "100%", maxWidth: 436, padding: 10, borderRadius: 26, background: `${C.ink}f5`, border: `1px solid ${C.line}`, boxShadow: "0 12px 34px rgba(0,0,0,.5)", ...(LOOK === "liquid" ? { ...LIQUID_FLOAT(), borderRadius: 26 } : LOOK === "glass" ? { ...GLASS(), borderRadius: 26 } : {}) }}>
         {plan && (
-          <div data-fstart-mins={plan.mins} className="fsq" style={{ width: 74, flexShrink: 0, borderRadius: 17, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", ...SUNK(), color: C.chalk }}>
+          <div data-fstart-mins={plan.mins} className="fsq" style={{ fontFamily: BODY, width: 74, flexShrink: 0, borderRadius: 17, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", ...SUNK(), color: C.chalk }}>
             <span style={{ fontFamily: DISPLAY, fontSize: 30, fontWeight: 900, lineHeight: 1 }}>{plan.mins}</span>
             <span style={{ fontSize: 11, fontWeight: 800, marginTop: 3, color: C.dim }}>min</span>
           </div>
@@ -10429,8 +10429,9 @@ export default function App() {
       });
       if (s && s.session && s.session.phase !== "summary") {
         const ss = s.session;
-        // A rest timer can't survive a reload, so resume at the next exercise.
-        if (ss.phase === "rest" && ss.rest) setSession({ ...ss, phase: "work", pos: ss.rest.nextPos, rest: null });
+        // 1.9.0: a rest keeps going after a reload (it has its end time, so it counts on into minus); older saved rests
+        // (no start time) resume at the next exercise as before
+        if (ss.phase === "rest" && ss.rest && !ss.rest.startAt) setSession({ ...ss, phase: "work", pos: ss.rest.nextPos, rest: null });
         else setSession(ss);
       }
       setLoaded(true);
