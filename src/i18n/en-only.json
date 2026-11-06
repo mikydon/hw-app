@@ -215,6 +215,7 @@
     "ui.restWebOnly",
     "ui.resumePlan",
     "ui.setN",
+    "ui.setShort",
     "ui.startN",
     "ui.startWd",
     "ui.tabPlans",

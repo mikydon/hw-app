@@ -126,4 +126,5 @@ Object.assign(UI, {
   startWd: "Start {d}",
   freePick: "pick exercises",
   startN: "Start ({n})",
+  setShort: "Set {r}",
 });

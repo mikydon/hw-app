@@ -4813,33 +4813,44 @@ function fromField(s, type) {
   return type === "time" ? `${Math.min(n, 3600)}s` : Math.min(n, 999);
 }
 const exType = id => (EX[id] ? EX[id].type : "reps");
+// 1.9.0: also workouts from own plans and free workouts (each exercise its own number of sets, no A/B/C or rounds;
+// the plan's name stays as saved) and weights (a kg box under every set).
+const toKg = v => (typeof v === "number" ? String(v) : "");
+function kgFromField(sv) { const n = parseFloat(String(sv).replace(",", ".")); return isNaN(n) || n < 0 ? null : Math.min(999, Math.round(n * 4) / 4); }
 function EntryEditor({ entry, nextDay, onSave, onDelete, onClose }) {
   const today = dateKey();
   const isNew = !entry;
-  const rowsFor = (dayId, rounds) => DAYS.find(d => d.id === dayId).ids.map(slot => ({ id: effId(slot), vals: Array(rounds).fill("") }));
+  const free = !!entry && !entry.day; // a plan or free workout: sets per exercise
+  const rowsFor = (dayId, rounds) => DAYS.find(d => d.id === dayId).ids.map(slot => ({ id: effId(slot), vals: Array(rounds).fill(""), kgs: Array(rounds).fill("") }));
   const [date, setDate] = useState(entry ? entry.date : today);
   const [day, setDay] = useState(entry ? entry.day : nextDay);
   const [rounds, setRounds] = useState(entry ? Math.max(1, entry.rounds || 2) : 3);
   const [rows, setRows] = useState(() => entry
-    ? entry.items.map(it => ({ id: it.id, name: it.name, unit: it.unit, vals: Array.from({ length: Math.max(1, entry.rounds || it.res.length) }, (_, r) => toField(it.res[r])) }))
+    ? entry.items.map(it => { const n = free ? Math.max(1, it.res.length) : Math.max(1, entry.rounds || it.res.length); return { id: it.id, name: it.name, unit: it.unit, vals: Array.from({ length: n }, (_, r) => toField(it.res[r])), kgs: Array.from({ length: n }, (_, r) => toKg((it.kg || [])[r])) }; })
     : rowsFor(nextDay, 3));
   const [picking, setPicking] = useState(false);
   const [err, setErr] = useState("");
   const [confirmDel, setConfirmDel] = useState(false);
   const untouched = rows.every(r => r.vals.every(v => v === ""));
 
-  const setRoundsN = n => { sfxTap(); setRounds(n); setRows(rs => rs.map(r => ({ ...r, vals: Array.from({ length: n }, (_, i) => r.vals[i] ?? "") }))); };
+  const fit = (a, n) => Array.from({ length: n }, (_, i) => a[i] ?? "");
+  const setRoundsN = n => { sfxTap(); setRounds(n); setRows(rs => rs.map(r => ({ ...r, vals: fit(r.vals, n), kgs: fit(r.kgs, n) }))); };
+  const setSets = (ri, n) => { sfxTap(); setRows(rs => rs.map((r, i) => (i === ri ? { ...r, vals: fit(r.vals, Math.max(1, Math.min(10, n))), kgs: fit(r.kgs, Math.max(1, Math.min(10, n))) } : r))); };
   // For a new, still empty workout, picking another day loads that day's exercises.
   const setDayId = id => { sfxTap(); setDay(id); if (isNew && untouched) setRows(rowsFor(id, rounds)); };
   const setVal = (ri, k, v) => setRows(rs => rs.map((r, i) => (i === ri ? { ...r, vals: r.vals.map((x, j) => (j === k ? v.replace(/[^0-9]/g, "").slice(0, 4) : x)) } : r)));
+  const setKgV = (ri, k, v) => setRows(rs => rs.map((r, i) => (i === ri ? { ...r, kgs: r.kgs.map((x, j) => (j === k ? v.replace(/[^0-9.,]/g, "").slice(0, 6) : x)) } : r)));
   const removeRow = ri => { sfxTap(); setRows(rs => rs.filter((_, i) => i !== ri)); };
-  const addRow = id => { if (!id) return; sfxTap(); setRows(rs => [...rs, { id, vals: Array(rounds).fill("") }]); };
-  const used = new Set(rows.map(r => r.id));
+  const toggleRow = id => { sfxTap(); setRows(rs => (rs.some(r => r.id === id) ? rs.filter(r => r.id !== id) : [...rs, { id, vals: Array(free ? 3 : rounds).fill(""), kgs: Array(free ? 3 : rounds).fill("") }])); };
+  const used = rows.map(r => r.id);
 
   const save = () => {
     const items = rows.map(r => {
-      const ex = EX[r.id];
-      return { id: r.id, name: ex ? ex.name : r.name, unit: ex ? ex.unit : r.unit, res: r.vals.slice(0, rounds).map(v => fromField(v, exType(r.id))) };
+      const ex = EX[r.id], n = free ? r.vals.length : rounds;
+      const it = { id: r.id, name: ex ? ex.name : r.name, unit: ex ? ex.unit : r.unit, res: r.vals.slice(0, n).map(v => fromField(v, exType(r.id) === "carry" ? "time" : exType(r.id))) };
+      if (isW(r.id)) it.kg = r.kgs.slice(0, n).map(kgFromField);
+      const old = entry && entry.items.find(x => x.id === r.id); if (old && old.x) it.x = 1;
+      return it;
     }).filter(it => it.res.some(v => v !== null));
     if (!items.length) { setErr(T("editEmpty")); return; }
     if (!date || date > today) { setErr(T("editBadDate")); return; }
@@ -4848,12 +4859,13 @@ function EntryEditor({ entry, nextDay, onSave, onDelete, onClose }) {
     const ts = entry && entry.date === date ? entryTs(entry) : isNew && date === today ? Date.now() : parseKey(date).getTime() + tod;
     const base = entry || { warm: false, cool: false, manual: true };
     sfxCheck();
-    onSave({ ...base, date, ts, day, rounds, items, mts: Date.now() }); // mts: when it was last changed (sync, 1.7.0)
+    onSave({ ...base, date, ts, ...(free ? {} : { day, rounds }), items, mts: Date.now() }); // mts: when it was last changed (sync, 1.7.0)
   };
 
   const field = { fontFamily: BODY, fontSize: 16, fontWeight: 700, padding: "9px 10px", borderRadius: 11, border: `1.5px solid ${C.line}`, background: C.ink, color: C.chalk, outline: "none", boxSizing: "border-box" };
   const label = { fontSize: 12, color: C.dim, fontWeight: 600, marginBottom: 6 };
   const pill = on => ({ ...btnBase, flex: 1, padding: "9px 0", fontSize: 15, background: on ? C.chalk : "transparent", color: on ? C.ink : C.dim, border: `1.5px solid ${on ? C.chalk : C.line}` });
+  const mini = { ...btnBase, width: 28, height: 28, padding: 0, borderRadius: 8, ...SUNK(), color: C.chalk, fontSize: 16, display: "inline-flex", alignItems: "center", justifyContent: "center" };
 
   return (
     <Sheet title={isNew ? T("addTitle") : T("editTitle")} onClose={onClose}>
@@ -4862,37 +4874,44 @@ function EntryEditor({ entry, nextDay, onSave, onDelete, onClose }) {
           <div style={label}>{T("fDate")}</div>
           <DateField value={date} max={today} label={T("fDate")} field={field} onChange={v => { setDate(v); setErr(""); }} />
         </div>
-        <div style={{ display: "flex", gap: 12 }}>
-          <div style={{ flex: 3 }}>
-            <div style={label}>{T("fDay")}</div>
-            <div style={{ display: "flex", gap: 6 }}>{DAYS.map(d => <button key={d.id} onClick={() => setDayId(d.id)} aria-pressed={day === d.id} style={{ ...pill(day === d.id), fontFamily: DISPLAY, fontSize: 20 }}>{d.id}</button>)}</div>
+        {free ? (
+          <div data-edit-plan style={{ fontSize: 14, color: C.chalk, fontWeight: 700 }}>{entryTitle(entry)}</div>
+        ) : (
+          <div style={{ display: "flex", gap: 12 }}>
+            <div style={{ flex: 3 }}>
+              <div style={label}>{T("fDay")}</div>
+              <div style={{ display: "flex", gap: 6 }}>{DAYS.map(d => <button key={d.id} onClick={() => setDayId(d.id)} aria-pressed={day === d.id} style={{ ...pill(day === d.id), fontFamily: DISPLAY, fontSize: 20 }}>{d.id}</button>)}</div>
+            </div>
+            <div style={{ flex: 2 }}>
+              <div style={label}>{T("fRounds")}</div>
+              <div style={{ display: "flex", gap: 6 }}>{[2, 3].map(n => <button key={n} onClick={() => setRoundsN(n)} aria-pressed={rounds === n} style={pill(rounds === n)}>{n}</button>)}</div>
+            </div>
           </div>
-          <div style={{ flex: 2 }}>
-            <div style={label}>{T("fRounds")}</div>
-            <div style={{ display: "flex", gap: 6 }}>{[2, 3].map(n => <button key={n} onClick={() => setRoundsN(n)} aria-pressed={rounds === n} style={pill(rounds === n)}>{n}</button>)}</div>
-          </div>
-        </div>
+        )}
         <div style={{ fontSize: 13, color: C.dim, lineHeight: 1.5 }}>{T("editHint")}</div>
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {rows.map((r, ri) => {
             const ex = EX[r.id];
-            const time = exType(r.id) === "time";
+            const time = exType(r.id) === "time" || exType(r.id) === "carry", w = isW(r.id);
             return (
-              <div key={r.id} style={{ background: C.panelHi, borderRadius: 14, padding: "10px 12px" }}>
+              <div key={r.id} data-edit-row={r.id} style={{ background: C.panelHi, borderRadius: 14, padding: "10px 12px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <div style={{ flex: 1, minWidth: 0, fontSize: 15, fontWeight: 700, color: C.chalk }}>
                     {ex ? ex.name : r.name}
                     <span style={{ fontSize: 12, color: C.dim, fontWeight: 500 }}>{time ? ` (${T("secondsUnit")})` : ex && ex.unit ? ` (${perUnit(ex.unit)})` : ""}</span>
                     {ex && <ExQ id={r.id} />}
                   </div>
+                  {free && <span style={{ display: "inline-flex", gap: 4, alignItems: "center" }}><button data-edit-sets-minus onClick={() => setSets(ri, r.vals.length - 1)} aria-label={`${T("plSets")} −`} style={mini}>−</button><button data-edit-sets-plus onClick={() => setSets(ri, r.vals.length + 1)} aria-label={`${T("plSets")} +`} style={mini}>+</button></span>}
                   <button onClick={() => removeRow(ri)} aria-label={T("removeEx", { name: ex ? ex.name : r.name })} style={{ ...btnBase, background: "transparent", color: "#ff8a80", fontSize: 15, padding: "4px 8px" }}>✕</button>
                 </div>
-                <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+                <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
                   {r.vals.map((v, k) => (
-                    <label key={k} style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 11, color: C.dim, marginBottom: 3 }}>{T("roundN", { r: k + 1 })}</div>
-                      <input inputMode="numeric" pattern="[0-9]*" value={v} placeholder="–" onChange={e => { setVal(ri, k, e.target.value); setErr(""); }}
+                    <label key={k} style={{ flex: "1 0 60px", minWidth: 0 }}>
+                      <div style={{ fontSize: 11, color: C.dim, marginBottom: 3 }}>{free ? T("setShort", { r: k + 1 }) : T("roundN", { r: k + 1 })}</div>
+                      <input inputMode="numeric" pattern="[0-9]*" data-edit-val={k} value={v} placeholder="–" onChange={e => { setVal(ri, k, e.target.value); setErr(""); }}
                         aria-label={`${ex ? ex.name : r.name}, ${T("roundN", { r: k + 1 })}`} style={{ ...field, width: "100%", textAlign: "center" }} />
+                      {w && <input inputMode="decimal" data-edit-kg={k} value={r.kgs[k]} placeholder="kg" onChange={e => { setKgV(ri, k, e.target.value); setErr(""); }}
+                        aria-label={`${ex ? ex.name : r.name}, ${T("roundN", { r: k + 1 })}, kg`} style={{ ...field, width: "100%", textAlign: "center", marginTop: 4, fontSize: 14, padding: "6px 6px" }} />}
                     </label>
                   ))}
                 </div>
@@ -4900,37 +4919,14 @@ function EntryEditor({ entry, nextDay, onSave, onDelete, onClose }) {
             );
           })}
         </div>
-        {/* app-styled picker (the phone's own dropdown was full-screen and ignored the theme) */}
         <button onClick={() => { sfxTap(); setPicking(true); }} data-add-ex style={{ ...btnBase, width: "100%", padding: "11px 12px", borderRadius: 11, border: `1.5px dashed ${C.line}`, background: "transparent", color: C.sky, fontSize: 15, fontWeight: 700, textAlign: "left" }}>{emo(T("addEx"))}</button>
         {picking && (
-          <Sheet short title={T("addEx").replace(/^\S+\s/, "").replace(/…$/, "")} onClose={() => setPicking(false)}>
-            <div data-add-ex-sheet style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-              {ALT_GROUPS.map((g, gi) => {
-                const left = g.filter(id => !used.has(id));
-                if (!left.length) return null;
-                return (
-                  <div key={gi}>
-                    <div style={{ fontSize: 12, color: C.dim, fontWeight: 800, letterSpacing: 0.5, textTransform: "uppercase", marginBottom: 6 }}>{T("grp_" + GROUP_KEYS[gi])}</div>
-                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                      {left.map(id => (
-                        <button key={id} data-pick-ex={id} onClick={() => { addRow(id); setPicking(false); }}
-                          style={{ ...btnBase, display: "flex", alignItems: "center", gap: 10, textAlign: "left", background: C.panelHi, color: C.chalk, padding: "11px 12px", border: `1.5px solid ${C.line}`, borderRadius: 13 }}>
-                          <span style={{ flex: 1, minWidth: 0 }}>
-                            <span style={{ display: "block", fontSize: 15, fontWeight: 700 }}>{EX[id].name}<ExQ id={id} /></span>
-                            <span style={{ display: "block", fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 1 }}>{EX[id].muscles}</span>
-                          </span>
-                          <DiffChip id={id} />
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+          <Sheet title={T("plAddEx")} onClose={() => setPicking(false)}>
+            <div data-add-ex-sheet><ExLibrary picked={used} onPick={toggleRow} /></div>
           </Sheet>
         )}
         {err && <div role="alert" style={{ fontSize: 13, color: "#ff8a80", fontWeight: 600 }}>{err}</div>}
-        <button onClick={save} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk) }}>{T("save")}</button>
+        <button onClick={save} data-edit-save className="b3d" style={{ ...bigBtn(C.signal, C.signalInk) }}>{T("save")}</button>
         {!isNew && (
           <button onClick={() => { if (!confirmDel) { setConfirmDel(true); setTimeout(() => setConfirmDel(false), 4000); return; } onDelete(); }}
             style={{ ...ghostBtn, width: "100%", padding: 12, color: confirmDel ? "#ff8a80" : C.dim, borderColor: confirmDel ? "#ff8a80" : C.line }}>
