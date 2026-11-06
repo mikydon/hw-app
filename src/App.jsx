@@ -1279,7 +1279,7 @@ function ExQ({ id, onOpen, style }) {
   const go = e => { e.stopPropagation(); e.preventDefault(); sfxTap(); if (onOpen) onOpen(); else if (openHowToGlobal) openHowToGlobal(id); };
   return (
     <span role="button" tabIndex={0} data-exq={id} className="exq" aria-label={`${T("howTo")}: ${EX[id] ? EX[id].name : ""}`} onClick={go} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") go(e); }}
-      style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", boxSizing: "border-box", width: 15, height: 15, borderRadius: 99, border: `1.2px solid ${C.sky}`, color: C.sky, fontFamily: BODY, fontSize: 9.5, fontWeight: 800, marginLeft: 6, opacity: 0.85, verticalAlign: "middle", cursor: "pointer", flexShrink: 0, lineHeight: 1, ...style }} />
+      style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", color: C.sky, marginLeft: 6, opacity: 0.9, verticalAlign: "middle", position: "relative", top: "-0.08em", cursor: "pointer", flexShrink: 0, lineHeight: 1, ...style }}><Ico n="info" size={(style && style.width) || 16} sw={2.1} /></span>
   );
 }
 // 1.8.2 (a tester: "a lot of texts, make it understood by visuals"): explanations live behind a small "?" next to a
@@ -1289,7 +1289,7 @@ function InfoQ({ title, text, id, style }) {
   const go = e => { e.stopPropagation(); e.preventDefault(); sfxTap(); if (openInfoGlobal) openInfoGlobal({ title, text }); };
   return (
     <span role="button" tabIndex={0} data-info={id || ""} className="exq" aria-label={`${T("infoMore")}: ${title}`} onClick={go} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") go(e); }}
-      style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", boxSizing: "border-box", width: 16, height: 16, borderRadius: 99, border: `1.2px solid ${C.dim}`, color: C.dim, fontFamily: BODY, fontSize: 10, fontWeight: 800, marginLeft: 6, verticalAlign: "middle", cursor: "pointer", flexShrink: 0, lineHeight: 1, ...style }} />
+      style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", color: C.dim, marginLeft: 6, verticalAlign: "middle", position: "relative", top: "-0.08em", cursor: "pointer", flexShrink: 0, lineHeight: 1, ...style }}><Ico n="info" size={(style && style.width) || 16} sw={2.1} /></span>
   );
 }
 function InfoSheet({ info, onClose }) {
@@ -1744,7 +1744,7 @@ function Sect({ title, meta, children, style, titlePad, accent, flatTitle, onHea
   // onHead (1.7.0): the title row is a button (e.g. Profile → Badges opens all badges with the progress), with a ›
   const head = st => {
     if (!title) return null;
-    if (!onHead) return <div style={{ ...st, ...SECT_HEAD }}><span>{title}</span>{sectMeta(meta)}</div>;
+    if (!onHead) return <div style={{ ...st, ...SECT_HEAD }}><span style={{ display: "inline-flex", alignItems: "center", minWidth: 0, lineHeight: 1 }}>{title}</span>{sectMeta(meta)}</div>;
     return (
       <button type="button" onClick={() => { sfxTap(); onHead(); }} data-sect-open aria-haspopup="dialog" aria-label={headLabel}
         style={{ ...st, ...SECT_HEAD, width: "100%", border: "none", background: "transparent", cursor: "pointer", textAlign: "left", fontFamily: BODY, borderRadius: 8 }}>
@@ -2310,6 +2310,7 @@ const ICONS = {
   compass: '<circle cx="12" cy="12" r="8.5"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/>',
   lock: '<rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/>',
   pencil: '<path d="M4 20l1-4.2L15.6 5.2a2 2 0 0 1 2.8 0l.4.4a2 2 0 0 1 0 2.8L8.2 19z"/><path d="M13.5 7.3l3.2 3.2"/>',
+  info: '<circle cx="12" cy="12" r="9"/><path d="M12 11.2v5.3"/><circle cx="12" cy="7.7" r="1.15" fill="currentColor" stroke="none"/>',
   help: '<circle cx="12" cy="12" r="8.5"/><path d="M9.6 9.6a2.5 2.5 0 1 1 3.4 2.3c-.6.3-1 .8-1 1.5v.6M12 16.8v.2"/>',
   phone: '<rect x="6.5" y="3" width="11" height="18" rx="2.5"/><path d="M10.5 18h3"/>',
   download: '<path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19.5h14"/>',
@@ -8974,7 +8975,7 @@ function TypeMarks({ items, size = 18, onTap, data }) {
   const has = PLN.dayTypes(items || [], LIB);
   return (
     <span role={onTap ? "button" : undefined} data-type-marks={data || ""} onClick={onTap ? e => { e.stopPropagation(); sfxTap(); onTap(); } : undefined} aria-label={has.map(t => T("grp_" + t)).join(", ")} style={{ display: "inline-flex", gap: 3, alignItems: "center", cursor: onTap ? "pointer" : undefined }}>
-      {PLN.TYPES.map(t => <span key={t} data-type={t} data-on={has.includes(t) ? 1 : 0} style={{ display: "inline-flex", opacity: has.includes(t) ? 1 : 0.28 }}><Ico n={TYPE_ICON[t]} size={size} color={has.includes(t) ? C.signal : C.dim} /></span>)}
+      {PLN.TYPES.map(t => <span key={t} data-type={t} data-on={has.includes(t) ? 1 : 0} title={T("grp_" + t)} style={{ display: "inline-flex", opacity: has.includes(t) ? 1 : 0.35 }}><BodyIco spec={BD.TYPE_ICON[t]} size={size + 4} hi={has.includes(t) ? C.signal : C.dim} /></span>)}
     </span>
   );
 }
@@ -11677,7 +11678,7 @@ export default function App() {
         .sheetDim{animation:dFadeIn ${MO.t2} ease both} .sheetWrap>.sheetBox{animation:shIn ${MO.t3} ${MO.pop} both}
         .sheetGhost>.sheetDim{animation:dFadeOut ${MO.out} ease-in both} .sheetGhost>.sheetGhostBox{box-sizing:border-box;animation:shOut ${MO.out} ${MO.exit} both}
         .sheetBox{box-sizing:border-box;max-height:86vh;max-height:calc(100dvh - 24px - var(--sat) - var(--sab))}
-        .exq::after{content:"?"} .exq{position:relative} .exq::before{content:"";position:absolute;inset:-4px}
+        .exq{position:relative} .exq::before{content:"";position:absolute;inset:-4px}
         .swPager{display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;align-items:flex-start}.swPager::-webkit-scrollbar{display:none}.swPage{flex:0 0 100%;min-width:0;box-sizing:border-box;scroll-snap-align:start;scroll-snap-stop:always;padding:0 18px 18px}.swPager.anim{scroll-snap-type:none}
         .noBar{scrollbar-width:none}.noBar::-webkit-scrollbar{display:none}
         ::selection{background:${C.signal}55;color:${C.chalk}} input,textarea{caret-color:${C.signal};accent-color:${C.signal}}
