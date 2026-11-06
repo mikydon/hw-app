@@ -207,6 +207,12 @@ await t("since must be a date (YYYY-MM-DD)", false, () => setDoc(doc(as("erin"),
 await t("since may be empty (no workouts yet)", true, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ since: null })));
 await t("badges must be a small map", false, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ ach: Object.fromEntries(Array.from({ length: 41 }, (_, i) => ["a" + i, 1])) })));
 await t("timestamps come from the server", false, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ ts: new Date(0) })));
+// 1.9.0: 134 exercises: up to 61 numbers in rk + weighted ranks in rr
+const many = (n, v) => Object.fromEntries(Array.from({ length: n }, (_, i) => ["x" + i, v]));
+await t("1.9.0: 61 ranked exercises fit (was ≤ 40)", true, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ rk: many(61, 10) })));
+await t("1.9.0: weighted ranks rr fit", true, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ rr: { fw_dumbbell_bench_press: 3, mc_leg_press: 0 } })));
+await t("1.9.0: rr must be a map", false, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ rr: [1, 2] })));
+await t("1.9.0: rk over 200 refused", false, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ rk: many(201, 1) })));
 await t("showcase + badge values + records are fine", true, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ av: { workouts: 13, streak: 9 }, show: ["rk:k1", "ach3:workouts,streak,reps", "st:reps", ""], prs: 4 })));
 await t("a showcase over 10 fields is refused", false, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ show: Array.from({ length: 11 }, () => "st:reps") })));
 await t("badge values must be a small map", false, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ av: Object.fromEntries(Array.from({ length: 41 }, (_, i) => ["a" + i, 1])) })));

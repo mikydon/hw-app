@@ -5291,7 +5291,7 @@ function cardModel(c, p) {
   const k = cleanCard(c);
   return {
     own: false, nick: p.nick || "?", pfp: p.pfp || null, lvl: k.lvl, xp: k.xp, streak: k.streak, best: k.best, n: k.n, reps: k.reps,
-    min: k.min, prs: k.prs, since: k.since, rk: k.rk, show: k.show, look: k.look,
+    min: k.min, prs: k.prs, since: k.since, rk: k.rk, rr: k.rr, show: k.show, look: k.look,
     // values when the card has them (1.7.0+), else the lowest value of the level they reached
     ach: ACH.filter(a => !CARD_HIDE.includes(a.k)).map(a => achFrom(a, k.av[a.k] !== undefined ? k.av[a.k] : (k.ach[a.k] ? a.at[Math.max(0, (a.rk ? a.rk.indexOf(k.ach[a.k] - 1) : k.ach[a.k] - 1))] ?? 0 : 0))),
   };
@@ -5695,8 +5695,10 @@ function ProfileHero({ m, own, onPhoto, onEditProfile, onLooks, onStreak, extra,
 function bodyRanks(m) {
   const out = Object.fromEntries(PLN.FAMILIES.map(f => [f, { r: null, ids: [] }]));
   RANKED_IDS.forEach(id => {
-    const b = m.rk[id]; if (b === null || b === undefined || !rankAt(id) || !LIB[id]) return;
-    const ri = rankIdx(id, b);
+    const own = m.rr && typeof m.rr[id] === "number"; // someone else's card: weighted ranks come ready (their body weight)
+    const b = m.rk[id]; if (!own && (b === null || b === undefined || !rankAt(id))) return;
+    if (!LIB[id]) return;
+    const ri = own ? m.rr[id] : rankIdx(id, b);
     new Set(LIB[id].m.map(x => PLN.MUSCLE_FAMILY[x]).filter(Boolean)).forEach(f => out[f].ids.push([id, ri]));
   });
   PLN.FAMILIES.forEach(f => { const l = out[f].ids.sort((a, b) => b[1] - a[1]); if (l.length) out[f].r = Math.floor((l[0][1] + (l[1] ? l[1][1] : 0)) / 2); });
@@ -5704,7 +5706,7 @@ function bodyRanks(m) {
   return { fam: out, all: Math.floor(sum / PLN.FAMILIES.length) - 1 };
 }
 function BodyRanks({ m, onPick }) {
-  const br = useMemo(() => bodyRanks(m), [m.rk]);
+  const br = useMemo(() => bodyRanks(m), [m.rk, m.rr]);
   const [open, setOpen] = useState(null);
   const plate = hexMix(C.panelHi, C.chalk, 0.16), base = hexMix(C.panelHi, C.chalk, 0.08);
   const col = p => { const r = br.fam[p.f].r; return r === null ? null : RANKS[r].color; };
@@ -6161,16 +6163,19 @@ const CARD_VIS = ["friends", "all", "none"];
 const FAIR_FLAGS = ["cap", "day", "jump", "fast", "late"]; // 1.8.0: reasons from the server's world-list check (src/fair.js)
 const CARD_HIDE = ["calories", "kcalHit", "steps", "health"];
 function cardData(history, profile) {
-  const xp = totalXP(history), ach = {}, av = {}, rk = {};
+  const xp = totalXP(history), ach = {}, av = {}, rk = {}, rr = {};
   // av = each badge's value, so others see how far you are (1.7.0, Michael: "aby ľudia videli aký mám progress")
   achievements(history, achExtra(profile, null, history)).forEach(a => { if (CARD_HIDE.includes(a.k)) return; if (a.tier) ach[a.k] = a.tier; if (a.v > 0) av[a.k] = Math.max(0, Math.floor(a.v)); });
   Object.keys(RANK_AT).forEach(id => { const b = bestFor(history, id); if (typeof b === "number" && isFinite(b)) rk[id] = Math.max(0, Math.round(b)); });
+  // 1.9.0: weighted exercises are ranked against YOUR body weight, so the card carries their rank (0–8), not a number
+  // the viewer would rank against their own weight (needs the 1.9.0 rules: rk ≤ 200, rr)
+  Object.keys(W_RANK).forEach(id => { const b = bestFor(history, id); if (typeof b === "number" && isFinite(b) && rankAt(id)) rr[id] = rankIdx(id, b); });
   // the showcase exactly as your Profile shows it (your choices, the rest filled with your best)
   const show = showcase(ownModel(history, profile, null)).map(sl => (sl ? slotStr(sl) : ""));
   return {
     lvl: levelInfo(xp).lvl, xp, streak: streakInfo(history, dateKey()).n, best: bestStreak(history), n: history.length,
     reps: totalReps(history), min: Math.floor(history.reduce((a, e) => a + (e.dur || 0), 0) / 60), prs: history.reduce((a, e) => a + ((e.prs && e.prs.length) || 0), 0),
-    since: history.length ? history.map(e => e.date).sort()[0] : null, ach, av, rk, show,
+    since: history.length ? history.map(e => e.date).sort()[0] : null, ach, av, rk, rr, show,
     // 1.9.0: the profile looks you wear (sent once you have put one on, also {} to take them all off; needs the 1.9.0 rules)
     ...(profile.look ? { look: lookOn(profile) } : {}),
   };
@@ -6178,16 +6183,19 @@ function cardData(history, profile) {
 // A card from the cloud is someone else's data: only numbers we know, in sane ranges, are shown.
 const cardNum = v => (typeof v === "number" && isFinite(v) ? Math.max(0, Math.floor(v)) : 0);
 function cleanCard(c) {
-  const ach = {}, av = {}, rk = {};
+  const ach = {}, av = {}, rk = {}, rr = {};
+  Object.keys(W_RANK).forEach(id => { const v = c.rr && c.rr[id]; if (typeof v === "number" && isFinite(v)) rr[id] = Math.max(0, Math.min(RANKS.length - 1, Math.floor(v))); });
   ACH.forEach(a => { if (!CARD_HIDE.includes(a.k)) { const t = Math.min(cardNum(c.ach && c.ach[a.k]), RANKS.length); if (t) ach[a.k] = t; if (c.av && typeof c.av[a.k] === "number") av[a.k] = Math.min(cardNum(c.av[a.k]), 1e9); } });
   Object.keys(RANK_AT).forEach(id => { const v = c.rk && c.rk[id]; rk[id] = typeof v === "number" && isFinite(v) && v >= 0 ? Math.min(Math.round(v), 99999) : null; });
   return {
     lvl: Math.max(1, cardNum(c.lvl)), xp: cardNum(c.xp), streak: cardNum(c.streak), best: cardNum(c.best), n: cardNum(c.n), reps: cardNum(c.reps), min: cardNum(c.min),
-    since: typeof c.since === "string" && /^\d{4}-\d{2}-\d{2}$/.test(c.since) ? c.since : null, ach, av, rk, prs: cardNum(c.prs), ts: cardNum(c.ts), vis: CARD_VIS.includes(c.vis) ? c.vis : "friends",
+    since: typeof c.since === "string" && /^\d{4}-\d{2}-\d{2}$/.test(c.since) ? c.since : null, ach, av, rk, rr, prs: cardNum(c.prs), ts: cardNum(c.ts), vis: CARD_VIS.includes(c.vis) ? c.vis : "friends",
     look: lookOn({ look: c.look && typeof c.look === "object" ? c.look : {} }),
     show: Array.isArray(c.show) ? c.show.slice(0, SLOT_LV.length).map(x => (typeof x === "string" ? x.slice(0, 80) : "")) : [],
   };
 }
+// tests read the card logic directly (the cloud can't be reached in the test sandbox)
+if (typeof window !== "undefined" && window.__hwTestHooks) window.__hwCardT = { cardData: (h, p) => cardData(h, p), cardModel: (c, p) => cardModel(c, p), bodyRanks: m => bodyRanks(m) };
 const fmtMins = m => (m >= 60 ? T("pvH", { n: nf(Math.floor(m / 60)) }) : T("pvMin", { n: m }));
 // Short, human error text. Cancelled sign-ins say nothing.
 function cloudErr(e) {
