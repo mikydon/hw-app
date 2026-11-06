@@ -7819,7 +7819,12 @@ function Work({ item, rounds, history, sessionResults, sessionKg, onRecord, onSw
                   <button key={d} data-dur={d} onClick={() => setDur(d)} aria-pressed={dur === d} style={{ ...btnBase, padding: "10px 12px", fontSize: 15, background: dur === d ? C.chalk : "transparent", color: dur === d ? C.ink : C.dim, border: `1.5px solid ${dur === d ? C.chalk : C.line}` }}>{d ? `${d} s` : T("holdMax")}</button>
                 ))}
               </div>
-              <div style={{ fontFamily: DISPLAY, fontSize: 132, fontWeight: 900, lineHeight: 0.85, color: C.chalk, textAlign: "center", marginTop: 20 }}>{dur || "∞"}</div>
+              {/* 1.9.0 (Michael): the time can be changed during the workout too, in 5 s steps (e.g. 1:00 → 1:15) */}
+              <div data-dur-row style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 14, marginTop: 20 }}>
+                {dur > 0 && <button data-dur-minus className={LOOK === "liquid" ? "" : "b3d"} onClick={() => { sfxTap(); setDur(Math.max(5, dur - 5)); }} aria-label="−5 s" style={{ ...stepBtn(), width: 48, height: 48, fontSize: 18 }}>−5</button>}
+                <div data-dur-value={dur} style={{ fontFamily: DISPLAY, fontSize: dur >= 100 ? 104 : 132, fontWeight: 900, lineHeight: 0.85, color: C.chalk, textAlign: "center", minWidth: 120 }}>{dur || "∞"}</div>
+                {dur > 0 && <button data-dur-plus className={LOOK === "liquid" ? "" : "b3d"} onClick={() => { sfxTap(); setDur(Math.min(1800, dur + 5)); }} aria-label="+5 s" style={{ ...stepBtn(), width: 48, height: 48, fontSize: 18 }}>+5</button>}
+              </div>
               <div style={{ fontSize: 13, color: C.dim, textAlign: "center", marginTop: 4, lineHeight: 1.45 }}>{carry ? T("carryHint") : dur ? T("secondsHint") : T("holdMaxHint")}</div>
               <button onClick={startHold} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 22, fontSize: 18, padding: 19 }}>{T("start")}</button>
             </>
@@ -9507,11 +9512,11 @@ function GameEnd({ res, onClose, onAgain }) {
 // teach opening badge cards with your own first badge. Chapter 3 is the workout: it runs when a workout starts.
 // New users get chapter 1 right after the first-start setup; everyone else gets an offer on Home once; the ☰ menu has
 // the chapter list (TourSheet). window.__hwTourOff (tests) keeps it out of the way unless a test wants it.
-const TOUR_N = 9;
-const TOUR_ORDER = [1, 2, 4, 5, 6, 7, 8, 9]; // 3 = the workout, started by a workout
+const TOUR_N = 10; // 1.9.0: chapter 10 = Workout plans (the Explorer badge keeps its 9 = Obsidian)
+const TOUR_ORDER = [1, 2, 10, 4, 5, 6, 7, 8, 9]; // 3 = the workout, started by a workout
 // 1.8.1 (Michael, Oct 30): the guide starts with a short look at Home and ends at the ☰ menu; every other screen shows
 // its own chapter by itself the first time it is opened (after the Home chapter, until the guide is skipped).
-const TOUR_SCREEN = { profile: [4, 2], history: [5], calories: [6], friends: [7], game: [8], shop: [9] };
+const TOUR_SCREEN = { plans: [10], profile: [4, 2], history: [5], calories: [6], friends: [7], game: [8], shop: [9] };
 // chapter names and texts: chapters 8 and 9 are English until translated
 const tourText = ch => (L.tour && L.tour["c" + ch]) || EN.tour["c" + ch] || [];
 const tourName = ch => (L.tour && L.tour.ch && L.tour.ch[ch - 1]) || EN.tour.ch[ch - 1] || "";
@@ -9555,7 +9560,7 @@ function tourSteps(ch, x) {
   const screen = (id, page) => async () => { await x.go(id); if (page !== undefined) await tourTab(page[0], page[1]); };
   if (ch === 1) return [ // no welcome text: straight to what's on the screen (Michael)
     s("[data-home-hero]", 1, { prep: screen("train", ["home", 0]) }),
-    s('[data-day-picker="hero"]', 2),
+    s('[data-day-picker="hero"], [data-day-picker="plan"]', 2),
     s("[data-rounds-row]", 3),
     s("[data-home-week]", 4),
     s("[data-home-ch]", 10, { opt: true }), // 1.8.2: the weekly challenges as rows with icons
@@ -9616,6 +9621,13 @@ function tourSteps(ch, x) {
     s("[data-gm-tut]", 1, { opt: true }),
     s('[data-gm-mode="run"]', 2, { opt: true }),
     s("[data-gm-rules]", 3, { opt: true }),
+    { done: true, t: X[4] },
+  ];
+  if (ch === 10) return [ // 1.9.0: Workout plans
+    s('[data-plans-seg="rec"]', 0, { tap: true, opt: true, prep: screen("plans"), t: tt(0, "plRec") }),
+    s("[data-plan-rec]", 1, { opt: true, wait: 400 }),
+    s('[data-plans-seg="mine"]', 2, { tap: true, opt: true, t: tt(2, "plMine") }),
+    s("[data-plan-new]", 3, { opt: true, wait: 400 }),
     { done: true, t: X[4] },
   ];
   if (ch === 9) return [ // Shop

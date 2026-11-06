@@ -1472,11 +1472,12 @@ const en = {
   },
 
   tour: {
-    ch: ["Home", "Badges", "Workout", "Profile", "History", "Calories", "Friends", "Muscle Deck", "Shop"],
+    ch: ["Home", "Badges", "Workout", "Profile", "History", "Calories", "Friends", "Muscle Deck", "Shop", "Workout plans"],
+    c10: ["Tap {t}.", "The recommended plan: days A, B and C every other day, push, pull, legs and core, no equipment needed.", "Tap {t} to build your own.", "Make a plan from the app's exercises, also with dumbbells and machines. Pick exercises for each weekday; empty days are rest days.", "Tap Use this plan and Home shows that plan's week, with the days you've done in green."],
     c8: ["Your cards come from your training: the higher your exercise ranks, the stronger the cards.", "New to Muscle Deck? Play the short tutorial game first.", "A Run: beat 8 rounds with bigger and bigger targets. Winning one earns diamonds.", "All the rules, with pictures.", "Have fun!"],
     c9: ["Diamonds: you earn them by training. Tap How to see where they come from.", "Finish all 3 weekly challenges and a chest opens here.", "Streak freezes and XP boosts cost diamonds.", "New looks every Friday. Tap one to see it on your profile.", "Put your looks on with the ✨ button on your Profile."],
     c1: [
-      "Hi! Let me show you how HW App works. The guide has 9 short chapters, and each one earns you a badge. Let's go!",
+      "Hi! Let me show you how HW App works. The guide has 10 short chapters, and each one earns you a badge. Let's go!",
       "This is today's workout. The app has 3 workout days: A, B and C. You take turns with them and train every other day. The app always suggests the one that's up next.",
       "If you like, pick a different day here.",
       "Choose the length: 3 rounds (~19 min, recommended) or 2 rounds (~13 min). The \"Start day\" button begins the workout, and the app takes you through it step by step.",
