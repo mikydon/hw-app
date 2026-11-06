@@ -177,3 +177,22 @@ Object.assign(UI, {
 Object.assign(PL, {
   exN: { one: "{n} exercise", other: "{n} exercises" },
 });
+Object.assign(UI, {
+  hcNotInstalled: "Health Connect isn't on this phone yet, so the app can't read your steps.",
+  hcGuideBtn: "How to set it up",
+  hcGuideT: "Set up Health Connect",
+  hcG1: "Health Connect",
+  hcG1ok: "Ready on this phone.",
+  hcG1no: "On Android 14 and newer it's part of the phone. On Android 13 and older install the free Health Connect app from Google Play, open it once, then come back here.",
+  hcG1upd: "Health Connect needs an update. Update it in Google Play, then come back here.",
+  hcInstallBtn: "Install from Google Play",
+  hcUpdateBtn: "Update in Google Play",
+  hcRecheck: "Check again",
+  hcG2: "Your health app shares its data",
+  hcG2d: "The app that counts your steps or food must allow Health Connect to read them:",
+  hcSrcSamsung: "Samsung Health → ⋮ (top right) → Settings → Health Connect → allow the data.",
+  hcHowLink: "How to connect it",
+  hcOtherApps: "Other apps (Google's guide)",
+  hcG3: "Connect HW App",
+  hcG3d: "Tap Connect and allow steps, weight and height.",
+});

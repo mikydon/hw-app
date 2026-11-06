@@ -1252,6 +1252,15 @@ function Sheet({ title, onClose, children, short, sysEmo }) {
   );
 }
 
+// 1.9.0 (Michael, Nov 6: "Reload had no sign that it was pressed"): a button that starts something shows a spinner
+// while it runs and a ✓ for a moment after, besides the darker look every button gets while pressed (global CSS).
+function useAct() {
+  const [st, setSt] = useState("idle"), t = useRef(null);
+  useEffect(() => () => clearTimeout(t.current), []);
+  const run = async fn => { if (st === "busy") return; clearTimeout(t.current); setSt("busy"); const t0 = Date.now(); try { await fn(); } finally { await new Promise(r => setTimeout(r, Math.max(0, 350 - (Date.now() - t0)))); setSt("done"); t.current = setTimeout(() => setSt("idle"), 1600); } };
+  const icon = st === "busy" ? <span className="hwSpin" aria-hidden="true" style={{ marginRight: 7 }} /> : st === "done" ? <span className="hwDone" aria-hidden="true" style={{ marginRight: 6 }}><Ico n="check" size={15} sw={2.4} /></span> : null;
+  return { st, run, icon };
+}
 // Difficulty compared with the program: easy / mid / hard ("diff" in EX). Shown as a small chip.
 function DiffChip({ id, pad = "1px 8px" }) {
   const d = EX[id] && EX[id].diff;
@@ -4351,12 +4360,71 @@ function KcalGoals({ kcal, age, onPick }) {
 }
 
 // App only: steps from Health Connect (Samsung Health, Google Fit, Fitbit… all write there).
+// 1.9.0 (a tester, Nov 6: "I didn't have Health Connect installed, connecting didn't work"): a step-by-step guide.
+// Health Connect is part of Android 14+; Android 13 and older need the Health Connect app from the Play Store
+// (support.google.com/android/answer/12201227). Then the app that has the data (Samsung Health, Google Fit, Fitbit…)
+// must share it with Health Connect; for those the guide links their own help pages.
+const HC_PLAY = "https://play.google.com/store/apps/details?id=com.google.android.apps.healthdata";
+const HC_HELP = "https://support.google.com/android/answer/12201227";
+const HC_SOURCES = [
+  ["Samsung Health", null, "hcSrcSamsung"],
+  ["Google Fit", "https://support.google.com/fit/answer/12830119"],
+  ["Fitbit / Google Health", "https://support.google.com/fitbit/answer/14506680"],
+  ["MyFitnessPal", "https://support.myfitnesspal.com/hc/en-us/articles/10553948248973"],
+];
+function HcGuide({ st, onClose, onCheck, onConnect }) {
+  const chk = useAct();
+  const step = (n, done, title, kids) => (
+    <div data-hc-step={n} data-done={done ? 1 : 0} style={{ display: "flex", gap: 12, alignItems: "flex-start", marginTop: n > 1 ? 18 : 0 }}>
+      <span style={{ width: 28, height: 28, borderRadius: 99, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 14, background: done ? C.mint : C.panelHi, color: done ? C.ink : C.chalk }}>{done ? <Ico n="check" size={16} sw={2.6} /> : n}</span>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 15, fontWeight: 800, color: C.chalk, lineHeight: 1.3 }}>{title}</div>
+        <div style={{ fontSize: 13.5, color: C.dim, lineHeight: 1.5, marginTop: 4 }}>{kids}</div>
+      </div>
+    </div>
+  );
+  const link = (url, label) => <button onClick={() => { sfxTap(); openExternal(url); }} style={{ ...btnBase, background: "transparent", color: C.sky, padding: "4px 0", fontSize: 13.5, display: "inline-flex", alignItems: "center", gap: 4 }}>{label}<Arrow size={14} /></button>;
+  const has = !!(st && st.available), upd = st && /update/i.test(st.reason || "");
+  return (
+    <Sheet title={T("hcGuideT")} onClose={onClose}>
+      <div data-hc-guide>
+        {step(1, has, T("hcG1"), <>
+          {has ? T("hcG1ok") : upd ? T("hcG1upd") : T("hcG1no")}
+          {!has && <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 8 }}>
+            <button data-hc-install onClick={() => { sfxTap(); openExternal(HC_PLAY); }} className="b3d" style={{ ...btnBase, background: C.signal, color: C.signalInk, padding: "9px 14px", fontSize: 13.5 }}>{T(upd ? "hcUpdateBtn" : "hcInstallBtn")}</button>
+            <button data-hc-recheck onClick={() => chk.run(onCheck)} style={{ ...btnBase, ...SUNK(), color: C.chalk, padding: "9px 14px", fontSize: 13.5, display: "inline-flex", alignItems: "center" }}>{chk.icon}{T("hcRecheck")}</button>
+          </div>}
+        </>)}
+        {step(2, false, T("hcG2"), <>
+          {T("hcG2d")}
+          <div style={{ display: "flex", flexDirection: "column", marginTop: 6 }}>
+            {HC_SOURCES.map(([name, url, key]) => (
+              <div key={name} data-hc-src={name} style={{ padding: "6px 0", borderTop: `1px solid ${C.line}` }}>
+                <div style={{ fontSize: 13.5, fontWeight: 700, color: C.chalk }}>{name}</div>
+                {key ? <div style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.45 }}>{T(key)}</div> : link(url, T("hcHowLink"))}
+              </div>
+            ))}
+            <div style={{ paddingTop: 6, borderTop: `1px solid ${C.line}` }}>{link(HC_HELP, T("hcOtherApps"))}</div>
+          </div>
+        </>)}
+        {step(3, !!(st && st.granted), T("hcG3"), <>
+          {T("hcG3d")}
+          {has && !(st && st.granted) && <button data-hc-guide-connect onClick={() => { sfxTap(); onClose(); onConnect(); }} className="b3d" style={{ ...btnBase, display: "block", marginTop: 8, background: C.signal, color: C.signalInk, padding: "9px 14px", fontSize: 13.5 }}>{T("hcConnect")}</button>}
+        </>)}
+      </div>
+    </Sheet>
+  );
+}
 function HealthCard({ kcal, setKcal, defOpen, onToggle }) {
   const [st, setSt] = useState(null); // {available, granted, reason}
   const [busy, setBusy] = useState(false);
   const [denied, setDenied] = useState(false);
+  const [guide, setGuide] = useState(false);
+  const syncAct = useAct();
   const refresh = () => healthState().then(setSt);
   useEffect(() => { refresh(); }, []);
+  // back from the Play Store / Health Connect: check again by itself
+  useEffect(() => onAppResume(() => { refresh(); }), []);
   const today = dateKey();
   const sync = async (k = kcal) => {
     const m = await healthSteps(7), f = await healthSteps(7, "dietaryEnergyConsumed");
@@ -4394,8 +4462,11 @@ function HealthCard({ kcal, setKcal, defOpen, onToggle }) {
   if (!st) body = <div style={{ fontSize: 13, color: C.dim }}>…</div>;
   else if (!st.available) body = (
     <>
-      <div data-hc="unavailable" style={{ fontSize: 13, color: C.chalk, lineHeight: 1.5 }}>{T("hcUnavailable")}</div>
-      <button onClick={() => { sfxTap(); refresh(); }} style={{ ...ghostBtn, marginTop: 10 }}>{T("hcRetry")}</button>
+      <div data-hc="unavailable" style={{ fontSize: 13, color: C.chalk, lineHeight: 1.5 }}>{T("hcNotInstalled")}</div>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10 }}>
+        <button data-hc-guide-open onClick={() => { sfxTap(); setGuide(true); }} className="b3d" style={{ ...btnBase, background: C.signal, color: C.signalInk, padding: "9px 14px", fontSize: 13.5 }}>{T("hcGuideBtn")}</button>
+        <button data-hc-retry onClick={() => syncAct.run(refresh)} style={{ ...ghostBtn, display: "inline-flex", alignItems: "center" }}>{syncAct.icon}{T("hcRetry")}</button>
+      </div>
     </>
   );
   else if (kcal.healthOn && st.granted) body = (
@@ -4443,7 +4514,7 @@ function HealthCard({ kcal, setKcal, defOpen, onToggle }) {
         </Sheet>
       )}
       <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
-        <button data-hc-sync onClick={async () => { sfxTap(); setBusy(true); await sync(); setBusy(false); }} disabled={busy} style={{ ...btn, background: C.panelHi, color: C.chalk }}>{T("hcSync")}</button>
+        <button data-hc-sync onClick={() => { sfxTap(); syncAct.run(async () => { setBusy(true); await sync(); setBusy(false); }); }} disabled={busy && syncAct.st !== "busy"} style={{ ...btn, background: C.panelHi, color: C.chalk, display: "inline-flex", alignItems: "center" }}>{syncAct.icon}{T("hcSync")}</button>
         <button onClick={() => { sfxTap(); healthSettings(); }} style={{ ...btn, background: "transparent", color: C.sky, border: `1.5px solid ${C.sky}88` }}>{T("hcSettings")}</button>
         <button data-hc-off onClick={() => { sfxTap(); setKcal({ ...kcal, healthOn: false }); }} style={{ ...btn, background: "transparent", color: C.dim, border: `1.5px solid ${C.line}` }}>{T("hcOff")}</button>
       </div>
@@ -4456,6 +4527,7 @@ function HealthCard({ kcal, setKcal, defOpen, onToggle }) {
       <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
         <button data-hc-connect onClick={connect} disabled={busy} className="b3d" style={{ ...btn, background: C.mint, color: C.ink, "--e": "#2c8a5c" }}>{T("hcConnect")}</button>
         {denied && <button onClick={() => { sfxTap(); healthSettings(); }} style={{ ...btn, background: "transparent", color: C.sky, border: `1.5px solid ${C.sky}88` }}>{T("hcSettings")}</button>}
+        <button data-hc-guide-open onClick={() => { sfxTap(); setGuide(true); }} style={{ ...btn, background: "transparent", color: C.sky, padding: "9px 4px" }}>{T("hcGuideBtn")}</button>
       </div>
     </>
   );
@@ -4463,6 +4535,7 @@ function HealthCard({ kcal, setKcal, defOpen, onToggle }) {
   return (
     <FoldSect data-health-card title={T("hcTitle")} meta={on ? <><IcoI n="steps" /> {nf(steps || 0)}</> : null} defOpen={defOpen} onToggle={onToggle} style={{ marginTop: 10 }}>
       {body}
+      {guide && <HcGuide st={st} onClose={() => setGuide(false)} onCheck={refresh} onConnect={connect} />}
     </FoldSect>
   );
 }
@@ -4641,7 +4714,7 @@ function Calories({ history, profile, setProfile, kcal, setKcal }) {
       <div {...pg.pagerProps}>
         <div {...pg.pageProps(0)}>
           <KcTodayRing kcal={kcal} age={age} history={history} today={today} target={target} eaten={eaten} left={left} pct={pct} over={over} wk={wk} goalName={goalName} />
-          {isNative && <HealthCard kcal={kcal} setKcal={setKcal} defOpen={fold("hc")} onToggle={v => (KC_FOLD.hc = v)} />}
+          {(isNative || window.__hwHealthSim) && <HealthCard kcal={kcal} setKcal={setKcal} defOpen={fold("hc")} onToggle={v => (KC_FOLD.hc = v)} />}
           <FoldSect data-kc-log title={T("kcAddTitle")} defOpen={fold("log")} onToggle={v => (KC_FOLD.log = v)} style={{ marginTop: 10 }}>
             <div style={{ display: "flex", gap: 8 }}>
               <input value={amount} onChange={e => setAmount(e.target.value.replace(/[^0-9]/g, "").slice(0, 4))} onKeyDown={e => { if (e.key === "Enter") add(); }} inputMode="numeric" placeholder="kcal" aria-label={T("kcAmount")} style={{ ...field, flex: 1 }} />
@@ -11368,6 +11441,12 @@ export default function App() {
       {(LOOK === "liquid" || LOOK === "glass") && <LiquidBg />}
       <style>{`
         button:focus-visible{outline:3px solid ${C.signal};outline-offset:2px}
+        button,[role=button]{-webkit-tap-highlight-color:transparent}
+        button:not(:disabled):not(.b3d):active,[role=button]:active{filter:brightness(.78)}
+        @keyframes hwSpin{to{transform:rotate(360deg)}}
+        .hwSpin{display:inline-block;width:1em;height:1em;border-radius:50%;border:2px solid currentColor;border-right-color:transparent;animation:hwSpin .7s linear infinite;vertical-align:-0.15em}
+        @keyframes hwDone{from{transform:scale(.4);opacity:0}to{transform:none;opacity:1}}
+        .hwDone{display:inline-flex;animation:hwDone .25s cubic-bezier(.2,1.4,.4,1)}
         [data-reps-input]::-webkit-inner-spin-button,[data-reps-input]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
         .fstart{transform:translateY(calc(100% + 24px));opacity:0;transition:transform ${MO.out} ${MO.exit},opacity ${MO.out} ease}
         .fstart.on{transition:transform ${MO.t3} ${MO.pop},opacity ${MO.t1} ease}

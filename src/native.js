@@ -395,6 +395,7 @@ export function onAppResume(fn) {
 const HC_READ = ["steps", "dietaryEnergyConsumed"];
 const HC_BODY = ["weight", "height"]; // 1.3.0 (Michael, Oct 10): weight and height come from Health Connect too
 export async function healthState() {
+  if (typeof window !== "undefined" && window.__hwHealthSim) return window.__hwHealthSim(); // tests (1.9.0)
   if (!isNative) return { available: false, web: true };
   try {
     const a = await Health.isAvailable();
