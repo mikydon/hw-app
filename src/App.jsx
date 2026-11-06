@@ -1,6 +1,6 @@
 import { useState, useEffect, useLayoutEffect, useRef, useMemo, useId, memo, Fragment } from "react";
 import { createPortal } from "react-dom";
-import { isNative, pushBack, setRootBack, exitApp, vibratePattern, keepScreenOn, openExternal, saveBackupFile, bkSupported, bkWrite, bkWriteAuto, bkList, bkRead, bkDelete, bkShare, BK_DIR, bkAutoFile, checkForUpdate, lastUpdate, lastGh, applyUpdateNow, latestApk, isTestBuild, apkState, onApk, apkSupported, apkRestore, apkDownload, apkCanInstall, apkAllow, apkInstall, onAppResume, healthState, healthConnect, healthSettings, healthSteps, healthFoodItems, healthBody, shareText, copyText, pushSupported, pushPermission, pushChannel, pushToken, pushTokenWhy, pushDeleteToken, onPushTap, onPushToken, onPushReceived, hzSupported, hzInfo, hzSet, isPlay, playCheck, playOpenStore, playUpdate, PLAY_STORE_LINK, updTopic, onAppUrl, installCheck, openNotifSettings, showNotif, setNativeBg, backIsTop, backTopRun } from "./native.js";
+import { restSupported, restPermission, restStart, restStop, isNative, pushBack, setRootBack, exitApp, vibratePattern, keepScreenOn, openExternal, saveBackupFile, bkSupported, bkWrite, bkWriteAuto, bkList, bkRead, bkDelete, bkShare, BK_DIR, bkAutoFile, checkForUpdate, lastUpdate, lastGh, applyUpdateNow, latestApk, isTestBuild, apkState, onApk, apkSupported, apkRestore, apkDownload, apkCanInstall, apkAllow, apkInstall, onAppResume, healthState, healthConnect, healthSettings, healthSteps, healthFoodItems, healthBody, shareText, copyText, pushSupported, pushPermission, pushChannel, pushToken, pushTokenWhy, pushDeleteToken, onPushTap, onPushToken, onPushReceived, hzSupported, hzInfo, hzSet, isPlay, playCheck, playOpenStore, playUpdate, PLAY_STORE_LINK, updTopic, onAppUrl, installCheck, openNotifSettings, showNotif, setNativeBg, backIsTop, backTopRun } from "./native.js";
 import { cloud, NICK_RE, SHARE_BASE, cleanCode, fmtCode } from "./cloud-lazy.js";
 import { QUICK as EMO_QUICK, EMOJI } from "./emoji.js";
 import { mergeAll, syncKey, withIds, entryId, stable, SYNC_SETTINGS, kcalShared } from "./sync.js";
@@ -41,7 +41,7 @@ const THEMES = {
   slate:  { ink: "#15181d", panel: "#1f242b", panelHi: "#2a313a", line: "#3a434f", chalk: "#f1f4f8", dim: "#9aa6b4", edge: "#0e1115" },
   coffee: { ink: "#1c140f", panel: "#2a1f17", panelHi: "#382a20", line: "#4d3a2c", chalk: "#fbf3ec", dim: "#b8a291", edge: "#130d09" },
 };
-const APP_VERSION = "1.8.2";
+const APP_VERSION = "1.9.0";
 // Big Shoulders has no Cyrillic, so Oswald (also condensed) covers Ukrainian. The browser only
 // downloads the Oswald unicode ranges a page actually uses.
 // 1.7.0: 'HW Emoji' = the app's own emoji (Fluent 3D, fonts/hw-emoji.ttf) for the emoji the app shows; BODY_SYS
@@ -7930,7 +7930,25 @@ function TempoGuide({ seq }) {
 // added to the rest and the real rest is saved with the set. +15 / +30 / +60 s add time before 0. After 10 minutes
 // over, "Ready" asks whether to count the whole break in the workout's time (else total time and calories go wrong).
 const LONG_REST = 600;
-function Rest({ rest, nextItem, rounds, onEnd, onAdd }) {
+// 1.9.0: asked once, at the first rest (Michael: not at app start), with one line why
+const RESTPERM_KEY = "domaci-trening-v1-restperm";
+const restAsked = () => { try { return !!localStorage.getItem(RESTPERM_KEY); } catch (_) { return true; } };
+function RestPermCard({ perm, onPerm }) {
+  const [gone, setGone] = useState(false);
+  if (gone || perm !== "prompt" || restAsked()) return null;
+  const done = v => { try { localStorage.setItem(RESTPERM_KEY, JSON.stringify({ ts: Date.now(), v })); } catch (_) {} setGone(true); };
+  return (
+    <div data-rest-perm style={{ ...card, marginTop: 14, padding: "12px 14px", display: "flex", gap: 11, alignItems: "center", textAlign: "left", borderColor: `${C.sky}66` }}>
+      <Ico n="timer" size={24} color={C.sky} style={{ flexShrink: 0 }} />
+      <div style={{ flex: 1, minWidth: 0, fontSize: 13.5, color: C.chalk, lineHeight: 1.45 }}>{T("restPermD")}</div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 6, flexShrink: 0 }}>
+        <button data-rest-perm-yes onClick={() => { sfxTap(); restPermission(true).then(v => { done(v); onPerm(v); }); }} style={{ ...btnBase, background: C.signal, color: C.signalInk, padding: "8px 12px", fontSize: 13 }}>{T("restPermYes")}</button>
+        <button data-rest-perm-no onClick={() => { sfxTap(); done("no"); }} style={{ ...btnBase, background: "transparent", color: C.dim, padding: "4px 6px", fontSize: 12 }}>{T("restPermNo")}</button>
+      </div>
+    </div>
+  );
+}
+function Rest({ rest, nextItem, rounds, onEnd, onAdd, perm, onPerm }) {
   const [now, setNow] = useState(Date.now());
   useEffect(() => { const iv = setInterval(() => setNow(Date.now()), 250); return () => clearInterval(iv); }, []);
   const left = Math.ceil((rest.endAt - now) / 1000);
@@ -7959,7 +7977,8 @@ function Rest({ rest, nextItem, rounds, onEnd, onAdd }) {
         </Ring>
       </div>
       <div data-rest-line style={{ fontSize: 12.5, color: C.dim, marginTop: 10, lineHeight: 1.45 }}>{T("restLine")}</div>
-      {!isNative && <div data-rest-web style={{ fontSize: 12, color: C.dim, marginTop: 4, lineHeight: 1.45 }}>{T("restWebOnly")}</div>}
+      {!restSupported() && <div data-rest-web style={{ fontSize: 12, color: C.dim, marginTop: 4, lineHeight: 1.45 }}>{T(isNative ? "restOldApk" : "restWebOnly")}</div>}
+      {onPerm && <RestPermCard perm={perm} onPerm={onPerm} />}
       <div style={{ marginTop: 18, fontSize: 13, color: C.dim }}>{T("next")}</div>
       <div style={{ fontFamily: DISPLAY, fontSize: 36, fontWeight: 800, color: C.chalk, lineHeight: 1.05 }}>{ex.name}<ExQ id={nextItem.id} style={{ width: 17, height: 17, fontSize: 10, verticalAlign: "0.25em" }} /></div>
       {nextItem.n && <div style={{ fontSize: 13, color: C.dim, marginTop: 4 }}>{T("setN", { r: nextItem.r + 1, n: nextItem.n })}</div>}
@@ -10277,6 +10296,16 @@ function Session({ session, setSession, history, onSave, onClose, onMinimize, on
   useWakeLock();
   const [confirmQuit, setConfirmQuit] = useState(false);
   const [adding, setAdding] = useState(false);
+  // 1.9.0: the rest timer with the screen off (app only): the service runs during every rest once allowed
+  const [restPerm, setRestPerm] = useState(null);
+  useEffect(() => { if (restSupported()) restPermission(false).then(setRestPerm); }, []);
+  const restKey = session.phase === "rest" && session.rest ? `${session.rest.endAt}` : "";
+  useEffect(() => {
+    if (!restKey || restPerm !== "granted") { restStop(); return; }
+    const r = session.rest, nx = sessionSeq(session)[r.nextPos];
+    restStart({ endAt: r.endAt, startAt: r.startAt || r.endAt - r.total * 1000, stillAfter: LONG_REST * 1000, title: T("restNotifT", { name: nx ? EX[nx.id].name : "" }), bodyOver: T("restOver"), stillTitle: T("stillT"), stillBody: T("stillD"), channelName: T("restCh"), alertName: T("restAlertCh") });
+  }, [restKey, restPerm]);
+  useEffect(() => () => { restStop(); }, []);
   const swaps = session.swaps || {};
   const day = session.day ? DAYS.find(d => d.id === session.day) : null;
   const base = day ? session.base || Object.fromEntries(day.ids.map(slot => [slot, effId(slot)])) : {};
@@ -10406,7 +10435,7 @@ function Session({ session, setSession, history, onSave, onClose, onMinimize, on
         <Work key={`${session.pos}-${seq[session.pos].id}`} item={seq[session.pos]} rounds={session.rounds} history={history} sessionResults={session.results} sessionKg={sKg} onRecord={record} onSwap={day && !seq[session.pos].extra ? doSwap : null} exclude={usedIds} onLive={onLive} />
       )}
       {session.phase === "rest" && session.rest && (
-        <Rest key={session.rest.nextPos} rest={session.rest} nextItem={seq[session.rest.nextPos]} rounds={session.rounds}
+        <Rest key={session.rest.nextPos} rest={session.rest} nextItem={seq[session.rest.nextPos]} rounds={session.rounds} perm={restPerm} onPerm={restSupported() ? setRestPerm : null}
           onEnd={(real, countAll) => setSession(s => {
             if (s.phase !== "rest" || !s.rest) return s;
             // the real rest is saved with the set before it: rests[exercise][set]

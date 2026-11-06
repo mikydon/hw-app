@@ -52,11 +52,19 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths"></meta-data>
         </provider>
+        <!-- 1.9.0: the rest timer while the screen is off (foreground service type "health", Android 14+) -->
+        <service android:name=".RestService" android:exported="false" android:foregroundServiceType="health" />
     </application>
 
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- 1.9.0: rest timer with the screen off. Android 14+ needs FOREGROUND_SERVICE_HEALTH plus one runtime permission;
+         ACTIVITY_RECOGNITION ("Physical activity") is asked at the first rest, with one line why. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_HEALTH" />
+    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
     <!-- The permission to install APKs (in-app APK update, 1.2.0) is only in the GitHub build: src/direct/AndroidManifest.xml (1.6.1) -->
     <!-- 1.4.0: backups in Documents/HW App. Android 11+ needs no permission for the app's own files there; Android 8–10
          ask for storage access once (requestLegacyExternalStorage keeps Android 10 on the old file access). -->

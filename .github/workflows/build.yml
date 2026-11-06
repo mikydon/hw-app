@@ -125,6 +125,9 @@ jobs:
             rm_=$(echo "$all" | grep -c "'Lcom/google/firebase/messaging/RemoteMessage;'")
             # 1.7.5: the real app must be built like the tested one (no renaming): Capacitor keeps its own names
             cap=$(echo "$all" | grep -c "'Lcom/getcapacitor/annotation/CapacitorPlugin;'\|'Lcom/getcapacitor/Plugin;'\|'Lcom/getcapacitor/annotation/Permission;'")
+            # 1.9.0: the rest timer service and its plugin (the manifest names the service; the plugin's permission callback runs by name)
+            rest=$(echo "$all" | grep -c "'Lio/github/mikydon/hwapp/RestService;'\|'Lio/github/mikydon/hwapp/HwRestPlugin;'")
+            if [ "$rest" -lt 2 ]; then echo "::error::RestService/HwRestPlugin missing in the real APK ($rest/2)"; exit 1; fi
             if [ "$svc" -ge 2 ] && [ "$rm_" -ge 1 ] && [ "$cap" -ge 3 ]; then echo "::notice::Real APK keeps its real names like the test build (push receive path, Capacitor plugins and permissions)"; else echo "::error::R8 renamed code in the real APK (push methods $svc/2, RemoteMessage $rm_, Capacitor classes $cap/3)"; exit 1; fi
           fi
           # Google Play bundle (1.6.1): signed with the same key (Play's upload key = the app signing key Michael gives Play)

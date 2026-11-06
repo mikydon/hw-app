@@ -146,3 +146,14 @@ Object.assign(UI, {
   statRest: "Rest days used",
   statFz: "Freezes used",
 });
+Object.assign(UI, {
+  restPermD: "Beep with the screen off? Allow \"Physical activity\" so the rest timer runs on the lock screen and beeps at 0.",
+  restPermYes: "Allow",
+  restPermNo: "Not now",
+  restOldApk: "The beep with the screen off needs the newest app version.",
+  restNotifT: "Rest · next: {name}",
+  stillT: "Still training?",
+  stillD: "Your rest has gone on for over 10 minutes. Tap to go back to your workout.",
+  restCh: "Rest timer",
+  restAlertCh: "Workout reminders",
+});

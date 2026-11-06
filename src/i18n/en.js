@@ -1714,6 +1714,17 @@ const en = {
       "Run: 8 antes. A higher intensity makes it harder and gives more game XP. Duel and Ranked (coming soon): 3 antes on the same cards for both players; the one who beats more blinds wins, a tie goes to the higher total score.",
     ],
   },
+  news19: [
+    ["Workout plans", "One plan for everyone: days A, B and C.", "Build your own plans from the app's exercises: pick exercises and sets for every weekday (empty days are rest days), sort plans into groups and use one. Home then shows that plan's week, with the days you've done in green. Small icons show what each day trains, and tips say when a muscle gets little work. The recommended A, B, C plan is still there."],
+    ["134 exercises", "27 bodyweight exercises.", "134: new bodyweight ones plus dumbbells, kettlebells, bands, a pull-up bar and gym machines, sorted by body part with an equipment filter. The search also knows other names: press-up finds Push-up."],
+    ["Weights", "Only reps and seconds.", "kg × reps for weights (kg × seconds for carries). The weight starts at last time's and the goal is one more rep. Records for everything, ranks for free weights (they need your body weight in Calories)."],
+    ["Rest", "The rest ended at 0 and the next exercise started by itself.", "+15, +30 or +60 s. At 0 it beeps and counts on into minus until you tap Ready, and the real rest is saved. A very long break asks whether to count it."],
+    ["📱 Rest with the screen off", "With the screen off the rest timer was silent.", "The rest runs on the lock screen and beeps at 0 (allow \"Physical activity\" at your first rest)."],
+    ["More during a workout", "A workout had fixed exercises.", "Add exercises when you're not tired yet (a better result is a record), change a hold's time by 5 s, and write a note to an exercise or a rest."],
+    ["Your menu", "The menu had a fixed order.", "Tap the pencil and drag the rows. The first one is where the app opens."],
+    ["Calories from your real time", "A workout counted as 13 or 19 minutes.", "Your real workout time counts (long breaks you leave out don't). A workout that took unusually long adds nothing."],
+    ["World leaderboard", "World top 50.", "Paused for now, coming back later. The friends leaderboard stays."],
+  ],
   news18: [
     ["Muscle Deck", "There was no game in the app.", "A poker-style card game powered by your training: the four suits are push, pull, legs and core, and every card scores more the higher your rank in that type. Poker hands plus the Circuit (all four types), blinds with bosses, a shop with 38 jokers and drills, perks you unlock by training, and 5 intensity levels for more risk and more game XP. The Run (8 antes) works offline, pays in Kapoke (the game's own money), lets you swap a joker when all 5 slots are full, and has game levels that add jokers to the shop; every Run you win raises the new Muscle Deck badge; a Duel against the bot and Ranked games against other players are coming. A tutorial game and a picture guide explain it step by step, and packs and vouchers give more to buy."],
     ["Shop and diamonds", "There was nothing to spend your training on.", "Your training earns diamonds: every workout day, every 7 in a row, badge levels, exercise ranks and the Runs you win. Spend them in the new Shop (☰ menu) on streak freezes, a 2× XP boost for 24 hours and profile looks. Nothing you buy helps in Ranked or the world list."],

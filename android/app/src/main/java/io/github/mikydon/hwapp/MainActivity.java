@@ -12,6 +12,7 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(HwVibratePlugin.class); // 1.3.0: timer vibration that ignores the touch-feedback setting
         registerPlugin(HwDisplayPlugin.class); // 1.6.0: refresh rate (highest the phone allows, or 60 Hz)
         registerPlugin(HwBuildPlugin.class); // 1.6.1: GitHub APK or Google Play build
+        registerPlugin(HwRestPlugin.class); // 1.9.0: the rest timer with the screen off (RestService)
         super.onCreate(savedInstanceState);
         // the saved choice (default: 60 Hz since 1.7.5) before the first frame
         try { HwDisplayPlugin.apply(this, HwDisplayPlugin.saved(this)); } catch (Exception ignored) {}
@@ -21,7 +22,14 @@ public class MainActivity extends BridgeActivity {
     @Override
     public void onResume() {
         super.onResume();
+        RestService.appInFront = true; // 1.9.0: the app beeps itself while it is on screen
         fixedTextSize();
+    }
+
+    @Override
+    public void onPause() {
+        RestService.appInFront = false;
+        super.onPause();
     }
 
     // 1.7.5 (Michael, Oct 23: "everyone should have the same text size"): the WebView makes every font bigger with the

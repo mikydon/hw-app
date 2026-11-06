@@ -592,3 +592,17 @@ const HwDisplay = registerPlugin("HwDisplay");
 export const hzSupported = () => isNative && Capacitor.isPluginAvailable("HwDisplay");
 export async function hzInfo() { if (!hzSupported()) return null; try { return await HwDisplay.info(); } catch (_) { return null; } }
 export async function hzSet(mode) { if (!hzSupported()) return; try { await HwDisplay.set({ mode: mode === "60" ? "60" : "max" }); } catch (_) {} }
+
+// ─── 1.9.0: the rest timer with the screen off (android RestService via the app's own HwRest plugin) ───
+// Tests put a fake on window.__hwRest (the browser has no native side).
+const HwRest = registerPlugin("HwRest");
+const restImpl = () => (typeof window !== "undefined" && window.__hwRest) || (isNative && Capacitor.isPluginAvailable("HwRest") ? HwRest : null);
+export const restSupported = () => !!restImpl();
+// "granted" | "prompt" | "denied" | null (not supported)
+export async function restPermission(ask) {
+  const r = restImpl(); if (!r) return null;
+  try { const s = await (ask ? r.ask() : r.state()); return (s && s.activity) || "denied"; } catch (_) { return "denied"; }
+}
+let restRunning = false; // stop only what was started (no service start just to stop it)
+export function restStart(o) { const r = restImpl(); if (!r) return Promise.resolve(false); return r.start(o).then(() => (restRunning = true), () => false); }
+export function restStop() { const r = restImpl(); if (!r || !restRunning) return Promise.resolve(); restRunning = false; return r.stop().catch(() => {}); }
