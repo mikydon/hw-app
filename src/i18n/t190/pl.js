@@ -1,6 +1,27 @@
 // 1.9.0 texts in Polish (merged over pl.js; English originals in ui190-en.js, ex-en.js and en.js news19).
 export default {
   ui: {
+    // 1.9.1
+    rpRow: "Punkty przywracania",
+    rpTitle: "Punkty przywracania",
+    rpD: "Chmura przechowuje twoje dane w stanie z końca każdego z ostatnich 4 dni, w których używałeś aplikacji. Powrót zastępuje treningi, profil i ustawienia tymi z tego dnia na wszystkich twoich urządzeniach.",
+    rpNone: "Na razie brak punktów przywracania. Pierwszy pojawi się następnego dnia, w którym użyjesz aplikacji.",
+    rpErr: "Nie udało się wczytać punktów przywracania. Sprawdź połączenie i spróbuj ponownie.",
+    rpN: "Treningi: {n}",
+    rpGo: "Wróć",
+    rpAskT: "Wrócić do {date}?",
+    rpAskD: "Treningi dodane po tym dniu znikną ze wszystkich twoich urządzeń. Zakupy, otwarte karty i zjedzone kalorie zostaną.",
+    rpDone: "Przywrócono do {date}",
+    swNewTitle: "Ten telefon ma już treningi",
+    swNewBody: "Treningi na tym telefonie nie są jeszcze zapisane na żadnym koncie, a to konto ma własne. Co ma się stać?",
+    swNewFresh: "Użyj danych z konta",
+    swNewFreshD: "Czyści ten telefon i wczytuje kopię konta.",
+    swNewKeep: "Dodaj treningi z telefonu do konta",
+    swNewKeepD: "Imię, zdjęcie i ustawienia konta zostają; treningi z tego telefonu zostaną do nich dodane.",
+    restRow: "Licznik przerwy przy wyłączonym ekranie",
+    restRowD: "Pokazuje czas przerwy na ekranie blokady i piszczy na 3, 2, 1 i 0, nawet gdy telefon jest zablokowany. Android nazywa to uprawnienie „Aktywność fizyczna”; aplikacja nie odczytuje przez nie żadnych danych o aktywności.",
+    restRowOpen: "Zablokowane w Androidzie: zezwól na „Aktywność fizyczna” w ustawieniach aplikacji",
+    restRowBlocked: "Zablokowane w Androidzie: Ustawienia → Aplikacje → HW App → Uprawnienia → Aktywność fizyczna",
     addExtra: "Dodaj ćwiczenie",
     addExtraD: "Jeszcze nie jesteś zmęczony? Dodane ćwiczenia liczą się do dzisiejszego treningu, a lepszy wynik to rekord.",
     bg_arms: "Ręce", bg_back: "Plecy", bg_calves: "Łydki", bg_chest: "Klatka", bg_core: "Brzuch", bg_glutes: "Pośladki", bg_legs: "Nogi", bg_shoulders: "Barki",
@@ -392,4 +413,16 @@ export default {
     mx_t_bar_row: { muscles: "Górna część pleców, najszerszy, biceps", how: "Stań nad sztangą (lub na maszynie), kolana miękkie, pochyl się z płaskimi plecami. Przyciągnij uchwyt do dolnej części klatki, potem powoli opuść do prostych rąk.", tip: "Plecy zostają płaskie i nieruchome. Jeśli musisz się prostować, żeby ruszyć ciężar, jest za ciężki." },
     mx_wide_grip_lat_pulldown: { muscles: "Plecy (najszerszy), górna część pleców", how: "Usiądź z udami pod poduszką i chwyć drążek szeroko (około 1,5× szerokość barków). Ściągnij go do górnej części klatki, łokcie w dół i na zewnątrz, potem pozwól mu powoli wrócić.", tip: "Nie ściągaj go za kark." },
   },
+  // 1.9.1
+  news191: [
+    "Logowanie na telefonie, którego treningi nie należą do żadnego konta, najpierw pyta: użyć danych z konta czy dodać treningi z telefonu do konta. Wcześniej łączyły się bez pytania, a „User” z telefonu mógł zastąpić twoje imię i zdjęcie.",
+    "Jeśli telefonowi zabraknie imienia lub zdjęcia, aplikacja weźmie je z profilu twojego konta i nigdy nie usunie zdjęcia widocznego dla znajomych.",
+    "Punkty przywracania: chmura przechowuje twoje dane z ostatnich 4 dni, w których używałeś aplikacji, i możesz do któregoś wrócić (Konto i chmura → Punkty przywracania).",
+    "📱 Przy wyłączonym ekranie sygnały przerwy na 3, 2, 1 i 0 przychodzą teraz dokładnie na czas (wcześniej mogły spóźniać się nawet o sekundę) i słuchają ustawień dźwięku, głośności i wibracji. Potrzebne APK 1.9.1.",
+    "📱 Ustawienia → Trening: „Licznik przerwy przy wyłączonym ekranie”. Przy pierwszej przerwie kliknąłeś „Nie teraz”? Tu to włączysz albo otworzysz ustawienia Androida, jeśli jest zablokowane.",
+    "Górny pasek nie zostaje już przycięty po uruchomieniu aplikacji (zakrywał tylko pasek stanu, dopóki nie przewinąłeś).",
+    "Postęp w Muscle Deck (poziom, gry, wygrane) idzie teraz z kontem jak wszystko inne: telefon z mniejszą liczbą gier już go nie zabierze.",
+    "📱 Po ponownej instalacji aplikacji (lub pierwszym połączeniu z Health Connect) wczytywane jest ostatnie 30 dni kroków i kalorii z Health Connect, nie tylko 7.",
+    "Muscle Deck: długie nazwy jokerów mieszczą się na karcie.",
+  ],
 };

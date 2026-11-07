@@ -1,6 +1,27 @@
 // 1.9.0 texts in Italian (merged over it.js; English originals in ui190-en.js, ex-en.js and en.js news19).
 export default {
   ui: {
+    // 1.9.1
+    rpRow: "Punti di ripristino",
+    rpTitle: "Punti di ripristino",
+    rpD: "Il cloud conserva i tuoi dati com'erano alla fine di ciascuno degli ultimi 4 giorni in cui hai usato l'app. Tornare indietro sostituisce allenamenti, profilo e impostazioni con quelli di quel giorno su tutti i tuoi dispositivi.",
+    rpNone: "Ancora nessun punto di ripristino. Il primo arriva il prossimo giorno in cui usi l'app.",
+    rpErr: "Impossibile caricare i punti di ripristino. Controlla la connessione e riprova.",
+    rpN: "Allenamenti: {n}",
+    rpGo: "Torna indietro",
+    rpAskT: "Tornare al {date}?",
+    rpAskD: "Gli allenamenti aggiunti dopo quel giorno spariscono da tutti i tuoi dispositivi. Acquisti, carte aperte e calorie mangiate restano.",
+    rpDone: "Tornato al {date}",
+    swNewTitle: "Questo telefono ha già degli allenamenti",
+    swNewBody: "Gli allenamenti su questo telefono non sono ancora salvati in nessun account, e questo account ha i suoi. Cosa vuoi fare?",
+    swNewFresh: "Usa i dati dell'account",
+    swNewFreshD: "Svuota questo telefono e carica il backup dell'account.",
+    swNewKeep: "Aggiungi gli allenamenti del telefono all'account",
+    swNewKeepD: "Nome, foto e impostazioni dell'account restano; gli allenamenti di questo telefono si aggiungono.",
+    restRow: "Timer di recupero a schermo spento",
+    restRowD: "Mostra il recupero sulla schermata di blocco e suona a 3, 2, 1 e 0 anche a telefono bloccato. Android chiama questo permesso «Attività fisica»; l'app non legge con esso alcun dato di attività.",
+    restRowOpen: "Bloccato in Android: consenti «Attività fisica» nelle impostazioni dell'app",
+    restRowBlocked: "Bloccato in Android: Impostazioni → App → HW App → Autorizzazioni → Attività fisica",
     addExtra: "Aggiungi esercizio",
     addExtraD: "Non sei ancora stanco? Gli esercizi aggiunti contano per oggi e un risultato migliore è un record.",
     bg_arms: "Braccia", bg_back: "Schiena", bg_calves: "Polpacci", bg_chest: "Petto", bg_core: "Core", bg_glutes: "Glutei", bg_legs: "Gambe", bg_shoulders: "Spalle",
@@ -392,4 +413,16 @@ export default {
     mx_t_bar_row: { muscles: "Parte alta della schiena, dorsali, bicipiti", how: "In piedi sopra il bilanciere (o sulla macchina), ginocchia morbide, piegati in avanti a schiena piatta. Tira la maniglia verso la parte bassa del petto, poi abbassala lentamente fino alle braccia tese.", tip: "La schiena resta piatta e ferma. Se devi raddrizzarti per muoverlo, è troppo pesante." },
     mx_wide_grip_lat_pulldown: { muscles: "Schiena (dorsali), parte alta della schiena", how: "Siediti con le cosce sotto il cuscino e afferra la barra larga (circa 1,5 volte la larghezza delle spalle). Tirala alla parte alta del petto, gomiti giù e in fuori, poi lasciala risalire lentamente.", tip: "Non tirarla dietro la nuca." },
   },
+  // 1.9.1
+  news191: [
+    "L'accesso su un telefono i cui allenamenti non appartengono a nessun account ora chiede prima: usare i dati dell'account o aggiungervi gli allenamenti del telefono. Prima venivano uniti senza chiedere, e il nome provvisorio «User» del telefono poteva sostituire il tuo nome e la tua foto.",
+    "Se su un telefono mancano il tuo nome o la tua foto, l'app li riprende dal profilo del tuo account e non toglie mai la foto che vedono gli amici.",
+    "Punti di ripristino: il cloud conserva i tuoi dati degli ultimi 4 giorni in cui hai usato l'app, e puoi tornare a uno di essi (Account e cloud → Punti di ripristino).",
+    "📱 A schermo spento, i bip del recupero a 3, 2, 1 e 0 ora arrivano puntuali (prima potevano tardare fino a un secondo) e seguono le tue impostazioni di suono, volume e vibrazione. Serve l'APK 1.9.1.",
+    "📱 Impostazioni → Allenamento: «Timer di recupero a schermo spento». Al primo recupero hai toccato «Non ora»? Qui puoi consentirlo, o aprire le impostazioni di Android se è bloccato.",
+    "La barra in alto non resta più tagliata all'avvio dell'app (copriva solo la barra di stato finché non scorrevi).",
+    "I progressi in Muscle Deck (livello, partite, vittorie) ora seguono il tuo account come tutto il resto: un telefono con meno partite non te li toglie più.",
+    "📱 Dopo aver reinstallato l'app (o collegato Health Connect per la prima volta) vengono letti gli ultimi 30 giorni di passi e calorie di Health Connect, non solo 7.",
+    "Muscle Deck: i nomi lunghi dei jolly stanno nella loro carta.",
+  ],
 };

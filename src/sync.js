@@ -84,10 +84,25 @@ export function mergeProfile(lp, rp, ml, mr, first) {
   if (lp.shop || rp.shop) out.shop = mergeShop(lp.shop, rp.shop);
   // 1.9.0: workout plans and their groups by id (newer change wins, deletions travel as tombstones)
   if (lp.plans || rp.plans) out.plans = mergePlans(lp.plans, rp.plans);
+  // 1.9.1 (Michael, Nov 7: Muscle Deck level and games were gone after a phone with no games won the profile):
+  // its counters only grow, so both sides' highest values count (the chosen intensity: the newer side's)
+  if (lp.game || rp.game) out.game = mergeGame(lp.game, rp.game, first ? rp.game : (order(lp, rp, ml, mr)[0] === lp ? lp.game : rp.game));
   if (!out.name) out.name = lp.name || rp.name || "User";
   return out;
 }
 
+const GAME_LAST = ["stake"]; // per-device choices: the newer side's value
+function mergeGame(a, b, newer) {
+  if (!a) return b; if (!b) return a;
+  const out = {};
+  [...new Set([...Object.keys(a), ...Object.keys(b)])].forEach(k => {
+    const x = a[k], y = b[k];
+    if (GAME_LAST.includes(k)) { const n = newer || {}; out[k] = n[k] !== undefined ? n[k] : x !== undefined ? x : y; return; }
+    if (typeof x === "number" && typeof y === "number") out[k] = Math.max(x, y);
+    else out[k] = x !== undefined ? (y !== undefined && typeof y === "number" && typeof x !== "number" ? y : x) : y;
+  });
+  return out;
+}
 const pickKeys = (o, keys) => Object.fromEntries(keys.filter(k => o && o[k] !== undefined).map(k => [k, o[k]]));
 export function mergeSettings(ls, rs, ml, mr, first) {
   if (!rs) return ls;
@@ -158,3 +173,22 @@ export function syncKey(d) {
     del: s.del || {}, kdel: s.kdel || {},
   });
 }
+
+// 1.9.1 (Michael, Nov 7: "at least 4 backups to choose from, to revert the app"): going back to a cloud restore point.
+// The point's workouts replace this device's: the others get a tombstone (so they leave the other devices too), and a
+// workout deleted after the point comes back under a new id (its old id is a tombstone everywhere). The point's
+// profile, synced settings and calorie details win (marked as changed now); purchases, opened cards, plans and lists
+// are still joined (nothing paid for or earned is lost), the eaten-calorie log keeps both sides' entries.
+export function restoreFrom(local, point, now) {
+  const ls = local.sync || {}, ps = point.sync || {};
+  const del = maxMap(ls.del, ps.del), kdel = maxMap(ls.kdel, ps.kdel);
+  const keep = withIds(point.history || []).map(e => (del[e.id] ? { ...e, id: e.id + "r" + now, mts: now } : e));
+  const ids = new Set(keep.map(e => e.id));
+  withIds(local.history || []).forEach(e => { if (!ids.has(e.id)) del[e.id] = Math.max(del[e.id] || 0, now); });
+  const history = mergeHistory(keep, [], del);
+  const profile = mergeProfile(local.profile, point.profile, 0, now, false);
+  const settings = mergeSettings(local.settings, point.settings, 0, now, false);
+  const kcal = point.kcal ? mergeKcal(local.kcal, point.kcal, 0, now, kdel, false) : local.kcal;
+  return { history, profile, settings, kcal, sync: { del, kdel, mod: { ...(ls.mod || {}), profile: now, settings: now, kcal: now } } };
+}
+

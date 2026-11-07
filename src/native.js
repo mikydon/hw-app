@@ -604,6 +604,16 @@ export async function restPermission(ask) {
   const r = restImpl(); if (!r) return null;
   try { const s = await (ask ? r.ask() : r.state()); return (s && s.activity) || "denied"; } catch (_) { return "denied"; }
 }
+// 1.9.1: the app's page in Android's settings (where "Physical activity" can be allowed after two refusals)
+export async function restOpenSettings() { const r = restImpl(); if (!r || !r.openSettings) return false; try { await r.openSettings(); return true; } catch (_) { return false; } }
 let restRunning = false; // stop only what was started (no service start just to stop it)
-export function restStart(o) { const r = restImpl(); if (!r) return Promise.resolve(false); return r.start(o).then(() => (restRunning = true), () => false); }
+// 1.9.1: an APK whose service beeps 3-2-1-0 itself answers {beeps: true}; then, while the app is off screen ("front"
+// events from the plugin), the app stays quiet (its web timers wake only about once a second there, so its beeps came late).
+let restBeeps = false, appFront = true, frontOn = false;
+export const restNativeBeeps = () => restBeeps && !appFront;
+export function restStart(o) {
+  const r = restImpl(); if (!r) return Promise.resolve(false);
+  if (!frontOn && r.addListener) { frontOn = true; try { r.addListener("front", e => { appFront = !!(e && e.on); }); } catch (_) {} }
+  return r.start(o).then(x => { restRunning = true; restBeeps = !!(x && x.beeps); return true; }, () => false);
+}
 export function restStop() { const r = restImpl(); if (!r || !restRunning) return Promise.resolve(); restRunning = false; return r.stop().catch(() => {}); }

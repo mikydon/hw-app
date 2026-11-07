@@ -1,9 +1,9 @@
 import { useState, useEffect, useLayoutEffect, useRef, useMemo, useId, memo, Fragment } from "react";
 import { createPortal } from "react-dom";
-import { restSupported, restPermission, restStart, restStop, isNative, pushBack, setRootBack, exitApp, vibratePattern, keepScreenOn, openExternal, saveBackupFile, bkSupported, bkWrite, bkWriteAuto, bkList, bkRead, bkDelete, bkShare, BK_DIR, bkAutoFile, checkForUpdate, lastUpdate, lastGh, applyUpdateNow, latestApk, isTestBuild, apkState, onApk, apkSupported, apkRestore, apkDownload, apkCanInstall, apkAllow, apkInstall, onAppResume, healthState, healthConnect, healthSettings, healthSteps, healthFoodItems, healthBody, shareText, copyText, pushSupported, pushPermission, pushChannel, pushToken, pushTokenWhy, pushDeleteToken, onPushTap, onPushToken, onPushReceived, hzSupported, hzInfo, hzSet, isPlay, playCheck, playOpenStore, playUpdate, PLAY_STORE_LINK, updTopic, onAppUrl, installCheck, openNotifSettings, showNotif, setNativeBg, backIsTop, backTopRun } from "./native.js";
+import { restSupported, restPermission, restStart, restStop, restNativeBeeps, restOpenSettings, isNative, pushBack, setRootBack, exitApp, vibratePattern, keepScreenOn, openExternal, saveBackupFile, bkSupported, bkWrite, bkWriteAuto, bkList, bkRead, bkDelete, bkShare, BK_DIR, bkAutoFile, checkForUpdate, lastUpdate, lastGh, applyUpdateNow, latestApk, isTestBuild, apkState, onApk, apkSupported, apkRestore, apkDownload, apkCanInstall, apkAllow, apkInstall, onAppResume, healthState, healthConnect, healthSettings, healthSteps, healthFoodItems, healthBody, shareText, copyText, pushSupported, pushPermission, pushChannel, pushToken, pushTokenWhy, pushDeleteToken, onPushTap, onPushToken, onPushReceived, hzSupported, hzInfo, hzSet, isPlay, playCheck, playOpenStore, playUpdate, PLAY_STORE_LINK, updTopic, onAppUrl, installCheck, openNotifSettings, showNotif, setNativeBg, backIsTop, backTopRun } from "./native.js";
 import { cloud, NICK_RE, SHARE_BASE, cleanCode, fmtCode } from "./cloud-lazy.js";
 import { QUICK as EMO_QUICK, EMOJI } from "./emoji.js";
-import { mergeAll, syncKey, withIds, entryId, stable, SYNC_SETTINGS, kcalShared } from "./sync.js";
+import { mergeAll, restoreFrom, syncKey, withIds, entryId, stable, SYNC_SETTINGS, kcalShared } from "./sync.js";
 import { RANK_AT, EX_GROUPS } from "./ranks.js";
 import { LIB, W_RANK, wSetScore, wRankAt, REP_CAP, GROUPS_ORDER, EQUIP_ORDER } from "./exlib.js";
 import { EX_NAMES } from "./exnames.js";
@@ -42,7 +42,7 @@ const THEMES = {
   slate:  { ink: "#15181d", panel: "#1f242b", panelHi: "#2a313a", line: "#3a434f", chalk: "#f1f4f8", dim: "#9aa6b4", edge: "#0e1115" },
   coffee: { ink: "#1c140f", panel: "#2a1f17", panelHi: "#382a20", line: "#4d3a2c", chalk: "#fbf3ec", dim: "#b8a291", edge: "#130d09" },
 };
-const APP_VERSION = "1.9.0";
+const APP_VERSION = "1.9.1";
 // Big Shoulders has no Cyrillic, so Oswald (also condensed) covers Ukrainian. The browser only
 // downloads the Oswald unicode ranges a page actually uses.
 // 1.7.0: 'HW Emoji' = the app's own emoji (Fluent 3D, fonts/hw-emoji.ttf) for the emoji the app shows; BODY_SYS
@@ -2272,6 +2272,10 @@ function TopBar({ screen, history, menuOpen, onMenu, onGo, dlPct, badge, head, s
     window.addEventListener("resize", on);
     const ro = typeof ResizeObserver !== "undefined" && outRef.current ? new ResizeObserver(on) : null;
     if (ro) ro.observe(outRef.current);
+    // 1.9.1 (Michael, Nov 7: at start the plate covered only the status bar until a scroll): the safe-area inset
+    // (--sat) can arrive after the first frame; it only makes the shape layer itself taller (it reaches up under the
+    // status bar), so that layer is watched too
+    if (ro && gooRef.current) ro.observe(gooRef.current);
     return () => { clearTimeout(t); window.removeEventListener("resize", on); if (ro) ro.disconnect(); };
   }, []);
   useLayoutEffect(() => {
@@ -2344,6 +2348,7 @@ const ICONS = {
   arrowUp: '<path d="M12 19V5M6 11l6-6 6 6"/>',
   arrowDown: '<path d="M12 5v14M6 13l6 6 6-6"/>',
   x: '<path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/>',
+  history: '<path d="M3.6 12.6A8.5 8.5 0 1 0 6 5.7"/><path d="M5.6 2.8v3.6h3.6"/><path d="M12 7.5V12l3 2"/>', // 1.9.1 restore points
   undo: '<path d="M9 6.5 4.5 11 9 15.5"/><path d="M4.5 11h10a5 5 0 0 1 0 10H12"/>',
   tPush: '<path d="M4 5v14"/><path d="M8 12h12M16 8l4 4-4 4"/>',
   tPull: '<path d="M4 5v14"/><path d="M20 12H8M12 8l-4 4 4 4"/>',
@@ -3449,7 +3454,7 @@ function Onboarding({ start = 0, profile, setProfile, kcal, setKcal, onDone, acc
     unlockAudio(); sfxTap(); setHcRes("busy");
     const ok = await healthConnect(false);
     if (!ok.steps && !ok.body) { setHcRes("denied"); return; }
-    const [st, body] = await Promise.all([healthSteps(7), healthBody()]);
+    const [st, body] = await Promise.all([healthSteps(30), healthBody()]);
     const k = withBody({ ...(kcal || {}), log: (kcal && kcal.log) || {}, healthOn: true, steps: { ...((kcal && kcal.steps) || {}), ...(st || {}) } }, body);
     setKcal(k);
     if (k.height) setHeight(String(k.height));
@@ -4595,8 +4600,8 @@ function HealthCard({ kcal, setKcal, defOpen, onToggle }) {
   useEffect(() => onAppResume(() => { refresh(); }), []);
   const today = dateKey();
   const sync = async (k = kcal) => {
-    const m = await healthSteps(7), f = await healthSteps(7, "dietaryEnergyConsumed");
-    const it = k.healthFood === true ? await healthFoodItems(7) : null;
+    const n = hcDays(k), m = await healthSteps(n), f = await healthSteps(n, "dietaryEnergyConsumed");
+    const it = k.healthFood === true ? await healthFoodItems(n) : null;
     const body = await healthBody();
     if (m || f || body) setKcal(withBody({ ...k, healthOn: true, steps: { ...(k.steps || {}), ...(m || {}) }, food: { ...(k.food || {}), ...(f || {}) }, foodItems: { ...(k.foodItems || {}), ...(it || {}) } }, body));
     return m;
@@ -4619,7 +4624,7 @@ function HealthCard({ kcal, setKcal, defOpen, onToggle }) {
   };
   const saveMode = async () => {
     sfxCheck(); setModeSheet(false);
-    const f = await healthSteps(7, "dietaryEnergyConsumed"), it = await healthFoodItems(7);
+    const n = hcDays(kcal), f = await healthSteps(n, "dietaryEnergyConsumed"), it = await healthFoodItems(n);
     setKcal({ ...kcal, healthFood: true, foodMode: mode, food: { ...(kcal.food || {}), ...(f || {}) }, foodItems: { ...(kcal.foodItems || {}), ...(it || {}) } });
   };
   const food = (kcal.food || {})[today];
@@ -6493,6 +6498,9 @@ function BackupsSheet({ onClose, onRestore, autoOn, myId }) {
     </Sheet>
   );
 }
+// 1.9.1 (Michael, Nov 7: after a reinstall the Samsung Health calories of past days were missing): Health Connect
+// lets a newly connected app read the last 30 days, so until the phone has more than a week of it, read 30 days
+const hcDays = k => (Object.keys((k && k.food) || {}).length + Object.keys((k && k.steps) || {}).length < 16 ? 30 : 7);
 function SettingRow({ title, desc, info, on, onClick, first }) {
   return (
     <button role="switch" aria-checked={!!on} onClick={onClick}
@@ -7680,8 +7688,9 @@ function LiveNotice({ n, people, onOpen, onClose }) {
 }
 
 // Settings → Account & cloud: who is signed in, the cloud backup, sign out, delete the account.
-function AccountBox({ acct, cloudBk, onOpen, onRestore, onBackupNow, onSignOut, onDelete, settings, set }) {
+function AccountBox({ acct, cloudBk, onOpen, onRestore, onRestorePoint, onBackupNow, onSignOut, onDelete, settings, set }) {
   const [sure, setSure] = useState(false);
+  const [rpOpen, setRpOpen] = useState(false); // 1.9.1 restore points
   const [askPw, setAskPw] = useState(false); // e-mail account after a restart: the password confirms the deletion
   const [pwOpen, setPwOpen] = useState(false);
   const [delPw, setDelPw] = useState("");
@@ -7719,6 +7728,10 @@ function AccountBox({ acct, cloudBk, onOpen, onRestore, onBackupNow, onSignOut, 
         <button data-acct-restore onClick={() => run("rs", onRestore)} style={rowBtn(false)}>
           <span style={{ flex: 1 }}>{busy === "rs" ? "…" : T("acRestore")}<InfoQ title={T("acRestore")} text={T("acRestoreD")} /></span>
         </button>
+        {onRestorePoint && <button data-acct-points onClick={() => { sfxTap(); setRpOpen(true); }} style={rowBtn(false)}>
+          <Ico n="history" size={17} color={C.dim} /><span style={{ flex: 1, minWidth: 0 }}>{T("rpRow")}</span>
+          <Arrow />
+        </button>}
         <button data-acct-signout onClick={() => { sfxTap(); setSoSure(true); }} style={{ ...rowBtn(false), color: C.chalk }}>
           <Ico n="logout" size={17} color={C.dim} /><span style={{ flex: 1 }}>{busy === "so" ? "…" : T("acSignOut")}</span>
         </button>
@@ -7732,9 +7745,43 @@ function AccountBox({ acct, cloudBk, onOpen, onRestore, onBackupNow, onSignOut, 
       </ListSect>
       {msg && <div role="status" style={{ fontSize: 13, color: msg.startsWith("✓") ? C.mint : "#ff8a80", marginTop: 8 }}>{msg}</div>}
       {pwOpen && <PwSheet onClose={() => setPwOpen(false)} />}
+      {rpOpen && <PointsSheet onRestore={onRestorePoint} onClose={() => setRpOpen(false)} />}
       {soSure && <ConfirmBox icon="logout" title={T("cfSignOutT")} text={T("acSignOutD")} yes={T("acSignOut")} yesData={{ "data-acct-signout-yes": true }} onNo={() => setSoSure(false)} onYes={() => { setSoSure(false); run("so", onSignOut); }} />}
       {sure && <ConfirmBox icon="trash" danger title={T("cfDelAcctT")} text={`${T("acDeleteD")} ${T("acDelGoogle")}`} yes={T("acDelete")} yesData={{ "data-acct-delete-yes": true }} onNo={() => setSure(false)} onYes={() => { setSure(false); run("del", () => onDelete(askPw ? delPw : undefined)); }} />}
     </>
+  );
+}
+
+// 1.9.1 (Michael, Nov 7: "at least 4 backups to choose from"): the cloud's restore points (the account's data at the end
+// of each of the last 4 days the app was used), newest first; going back asks first.
+function PointsSheet({ onRestore, onClose }) {
+  const [list, setList] = useState(null); // null = loading, "err", or the points
+  const [ask, setAsk] = useState(null);
+  const [msg, setMsg] = useState("");
+  const [busy, setBusy] = useState(false);
+  useEffect(() => { let dead = false; cloud().listPoints().then(l => { if (!dead) setList(l || []); }).catch(() => { if (!dead) setList("err"); }); return () => { dead = true; }; }, []);
+  const go = pt => { setAsk(null); setBusy(true); setMsg(""); onRestore(pt).then(m => { setMsg(m || ""); sfxCheck(); }).catch(e => setMsg(cloudErr(e))).finally(() => setBusy(false)); };
+  return (
+    <Sheet title={T("rpTitle")} onClose={onClose} short>
+      <div data-rp-sheet style={{ fontSize: 13.5, color: C.dim, lineHeight: 1.5, marginBottom: 12 }}>{T("rpD")}</div>
+      {list === null ? <div style={{ color: C.dim, padding: "10px 0" }}>…</div>
+        : list === "err" ? <div data-rp-err style={{ color: "#ff8a80", padding: "10px 0" }}>{T("rpErr")}</div>
+        : !list.length ? <div data-rp-none style={{ background: SOFT(), borderRadius: 14, padding: "14px 16px", color: C.dim, fontSize: 14, lineHeight: 1.45 }}>{T("rpNone")}</div>
+        : <div style={{ display: "grid", gap: 8 }}>
+          {list.map(pt => (
+            <div key={pt.day} data-rp={pt.day} style={{ background: SOFT(), borderRadius: 14, display: "flex", alignItems: "center", gap: 12, padding: "12px 14px" }}>
+              <Ico n="history" size={20} color={C.signal} style={{ flexShrink: 0 }} />
+              <span style={{ flex: 1, minWidth: 0 }}>
+                <span style={{ display: "block", fontWeight: 800, color: C.chalk, fontSize: 15 }}>{capFirst(fmtDate(pt.day, true))}</span>
+                <span style={{ display: "block", fontSize: 12.5, color: C.dim, marginTop: 2 }}>{T("rpN", { n: pt.n })}</span>
+              </span>
+              <button data-rp-go={pt.day} disabled={busy} onClick={() => { sfxTap(); setAsk(pt); }} style={{ ...btnBase, background: C.panelHi, color: C.chalk, border: `1px solid ${C.line}`, padding: "8px 14px", fontSize: 13, borderRadius: 99, flexShrink: 0 }}>{T("rpGo")}</button>
+            </div>
+          ))}
+        </div>}
+      {msg && <div data-rp-msg role="status" style={{ fontSize: 13, color: msg.startsWith("✓") ? C.mint : "#ff8a80", marginTop: 12 }}>{msg}</div>}
+      {ask && <ConfirmBox icon="history" title={T("rpAskT", { date: fmtDate(ask.day, true) })} text={T("rpAskD")} yes={T("rpGo")} yesData={{ "data-rp-yes": true }} onNo={() => setAsk(null)} onYes={() => go(ask)} />}
+    </Sheet>
   );
 }
 
@@ -7835,6 +7882,31 @@ function UpdNotifRow({ settings, set, perm, setPerm }) {
 }
 // 1.7.5 (Michael, Oct 23): Android won't ask any more: the line says so and a button opens this app's notification
 // settings in Android; coming back with notifications allowed switches them on again (the App's notification check).
+// 1.9.1 (Michael, Nov 7: "what if someone taps 'no' by mistake?"): the rest timer with the screen off ("Physical
+// activity") in Settings: on = allowed; tapping it asks Android, and once Android stops asking (two refusals) it opens
+// the app's page in Android's settings. Read again whenever the app comes back.
+function RestPermRow() {
+  const [perm, setPerm] = useState(null);
+  const [failed, setFailed] = useState(false);
+  useEffect(() => { const chk = () => { if (!document.hidden) restPermission(false).then(setPerm); }; chk(); document.addEventListener("visibilitychange", chk); return () => document.removeEventListener("visibilitychange", chk); }, []);
+  const on = perm === "granted";
+  const tap = async () => {
+    sfxTap();
+    if (on || perm === "denied") { if (!(await restOpenSettings())) setFailed(true); return; }
+    const v = await restPermission(true); setPerm(v);
+    try { localStorage.setItem(RESTPERM_KEY, v); } catch (_) {}
+  };
+  return (<>
+    <button role="switch" aria-checked={on} data-rest-row={perm || ""} onClick={tap}
+      style={{ ...btnBase, width: "100%", background: "transparent", color: C.chalk, padding: "13px 16px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, textAlign: "left", borderRadius: 0, borderTop: `1px solid ${C.line}` }}>
+      <span style={{ flex: 1 }}>
+        <span style={{ display: "block", fontSize: 15, fontWeight: 700 }}>{T("restRow")}<InfoQ title={T("restRow")} text={T("restRowD")} /></span>
+        {perm === "denied" && <span data-rest-row-blocked style={{ display: "block", fontSize: 12, color: C.signal, fontWeight: 600, marginTop: 3, lineHeight: 1.4 }}>{failed ? T("restRowBlocked") : <>{T("restRowOpen")} <Arrow /></>}</span>}
+      </span>
+      <Toggle on={on} />
+    </button>
+  </>);
+}
 function NotifBlocked({ data }) {
   const [failed, setFailed] = useState(false);
   return (
@@ -7916,15 +7988,21 @@ function HzRow({ settings, set, first }) {
   );
 }
 
-// After signing in (or at start), when the cloud has a backup with more workouts than this phone.
-function SwitchAccountSheet({ onFresh, onKeep, onCancel }) {
+// 1.9.1: workouts in a cloud backup (b.n is written with every upload; older docs: count the JSON)
+function bkWorkouts(b) {
+  if (!b || !b.json) return 0;
+  if (typeof b.n === "number" && b.n > 0) return b.n;
+  try { const d = JSON.parse(b.json); return Array.isArray(d.history) ? d.history.length : 0; } catch (_) { return 0; }
+}
+// After signing in, when this phone's data belongs to another account (1.6.2) or to no account yet (1.9.1, `fresh`).
+function SwitchAccountSheet({ fresh, onFresh, onKeep, onCancel }) {
   return (
-    <Sheet title={T("swTitle")} onClose={onCancel} short>
-      <div style={{ lineHeight: 1.5 }}>{T("swBody")}</div>
-      <button data-sw-fresh onClick={onFresh} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 16, fontSize: 15, padding: 14 }}>{T("swFresh")}</button>
-      <div style={{ fontSize: 12, color: C.dim, margin: "6px 4px 0", lineHeight: 1.45 }}>{T("swFreshD")}</div>
-      <button data-sw-keep onClick={onKeep} style={{ ...ghostBtn, width: "100%", marginTop: 12, padding: 12, fontSize: 14 }}>{T("swKeep")}</button>
-      <div style={{ fontSize: 12, color: C.dim, margin: "6px 4px 0", lineHeight: 1.45 }}>{T("swKeepD")}</div>
+    <Sheet title={T(fresh ? "swNewTitle" : "swTitle")} onClose={onCancel} short>
+      <div data-sw-kind={fresh ? "new" : "other"} style={{ lineHeight: 1.5 }}>{T(fresh ? "swNewBody" : "swBody")}</div>
+      <button data-sw-fresh onClick={onFresh} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 16, fontSize: 15, padding: 14 }}>{T(fresh ? "swNewFresh" : "swFresh")}</button>
+      <div style={{ fontSize: 12, color: C.dim, margin: "6px 4px 0", lineHeight: 1.45 }}>{T(fresh ? "swNewFreshD" : "swFreshD")}</div>
+      <button data-sw-keep onClick={onKeep} style={{ ...ghostBtn, width: "100%", marginTop: 12, padding: 12, fontSize: 14 }}>{T(fresh ? "swNewKeep" : "swKeep")}</button>
+      <div style={{ fontSize: 12, color: C.dim, margin: "6px 4px 0", lineHeight: 1.45 }}>{T(fresh ? "swNewKeepD" : "swKeepD")}</div>
       <button data-sw-cancel onClick={onCancel} style={{ ...btnBase, display: "block", margin: "12px auto 0", background: "transparent", color: C.dim, fontSize: 14, padding: "8px 14px" }}>{T("cancel")}</button>
     </Sheet>
   );
@@ -7998,7 +8076,7 @@ function ExercisesPage({ settings, set, history, onBack, backLabel }) {
   );
 }
 
-function SettingsTab({ initPage, ret, settings, setSettings, history, profile, setProfile, onImport, kcal, autoBk, onAutoBackup, acct, cloudBk, onAcctOpen, onCloudRestore, onCloudBackupNow, onSignOut, onDeleteAccount }) {
+function SettingsTab({ initPage, ret, settings, setSettings, history, profile, setProfile, onImport, kcal, autoBk, onAutoBackup, acct, cloudBk, onAcctOpen, onCloudRestore, onCloudPoint, onCloudBackupNow, onSignOut, onDeleteAccount }) {
   const [page, setPage] = useState(initPage || null); // null | "exercises"
   // opened from somewhere else (Home → Exercises → workout settings): back goes back there, not to Settings
   const back = () => (ret && initPage === "exercises" ? ret.go() : setPage(null));
@@ -8168,9 +8246,10 @@ function SettingsTab({ initPage, ret, settings, setSettings, history, profile, s
         <SettingRow title={T("keepAwake")} on={settings.keepAwake} onClick={() => set("keepAwake", !settings.keepAwake)} />
         <SettingRow title={T("aiCopy")} info={T("aiCopyD")} on={settings.aiCopy} onClick={() => set("aiCopy", !settings.aiCopy)} />
         {pushSupported() && <NotifRow settings={settings} set={set} acct={acct} onAcctOpen={onAcctOpen} />}
+        {restSupported() && <RestPermRow />}
       </ListSect>
 
-      <AccountBox acct={acct || { st: "out" }} cloudBk={cloudBk} onOpen={onAcctOpen} onRestore={onCloudRestore} onBackupNow={onCloudBackupNow} onSignOut={onSignOut} onDelete={onDeleteAccount} settings={settings} set={set} />
+      <AccountBox acct={acct || { st: "out" }} cloudBk={cloudBk} onOpen={onAcctOpen} onRestore={onCloudRestore} onRestorePoint={onCloudPoint} onBackupNow={onCloudBackupNow} onSignOut={onSignOut} onDelete={onDeleteAccount} settings={settings} set={set} />
 
       <ListSect title={T("dataBackup")}>
         <button onClick={exportBackup} style={rowBtn(true)}>
@@ -8729,8 +8808,10 @@ function Rest({ rest, nextItem, rounds, onEnd, onAdd, perm, onPerm }) {
   const left = Math.ceil((rest.endAt - now) / 1000);
   const beeped = useRef(rest.endAt <= Date.now()), counted = useRef(new Set());
   useEffect(() => {
-    if (left <= 3 && left >= 1 && !counted.current.has(left)) { counted.current.add(left); soundPrepEnd(); }
-    if (left <= 0 && !beeped.current) { beeped.current = true; soundRest(); vibrate([250, 120, 250]); }
+    // 1.9.1: off screen with a 1.9.1+ APK, the rest service plays these on time (marked as done here all the same)
+    const quiet = restNativeBeeps();
+    if (left <= 3 && left >= 1 && !counted.current.has(left)) { counted.current.add(left); if (!quiet) soundPrepEnd(); }
+    if (left <= 0 && !beeped.current) { beeped.current = true; if (!quiet) { soundRest(); vibrate([250, 120, 250]); } }
   }, [left]);
   const over = Math.max(0, -left);
   const [askLong, setAskLong] = useState(false);
@@ -8993,6 +9074,8 @@ const fmtM = m => (Number.isInteger(m) ? String(m) : m.toFixed(2).replace(/0$/, 
 // 1.9.0 (Michael, Nov 7: "make selling, the game UI and the shop nicer"): a joker is a small card of its own: a frame in
 // its rarity colour, a glowing well with its icon, the name on a band at the bottom, rarity pips at the top (legendary
 // ones shine). Own look; nothing copied from any other game.
+// the name's size: a long single word ("Momentum") gets smaller instead of breaking in the middle (1.9.1)
+const jkFs = (id, w) => { const lw = Math.max(1, ...String(jName(id)).split(/\s+/).map(x => x.length)); return Math.max(8, Math.min(Math.round(w * 0.155), Math.floor((w - 10) / (lw * 0.66)))); };
 function JokerCard({ id, w = 62, onClick, glow, sellP, still, pop, dim }) {
   const r = GM.JOKERS[id] ? GM.JOKERS[id].r : 0, col = RAR_COL()[r], h = Math.round(w * 1.42), rr = Math.round(w * 0.16), Tag = still ? "span" : "button";
   return (
@@ -9005,7 +9088,7 @@ function JokerCard({ id, w = 62, onClick, glow, sellP, still, pop, dim }) {
         </span>
         <span style={{ position: "absolute", left: 0, right: 0, top: Math.round(h * (w < 52 ? 0.22 : 0.15)), height: Math.round(h * (w < 52 ? 0.56 : 0.46)), display: "flex", alignItems: "center", justifyContent: "center", filter: `drop-shadow(0 0 ${Math.round(w * 0.08)}px ${col}aa)` }}><JkIco id={id} size={Math.round(w * 0.44)} /></span>
         {w >= 52 && <span style={{ position: "absolute", left: 0, right: 0, bottom: 0, minHeight: Math.round(h * 0.33), padding: `${Math.round(w * 0.04)}px ${Math.round(w * 0.06)}px`, boxSizing: "border-box", display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,.34)", borderTop: `1px solid ${col}55` }}>
-          <span style={{ fontSize: Math.max(9, Math.round(w * 0.155)), fontWeight: 800, lineHeight: 1.08, textAlign: "center", overflowWrap: "anywhere", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", color: C.chalk }}>{jName(id)}</span>
+          <span lang={LANG} style={{ fontSize: jkFs(id, w), fontWeight: 800, lineHeight: 1.08, textAlign: "center", hyphens: "auto", WebkitHyphens: "auto", overflowWrap: "anywhere", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", color: C.chalk }}>{jName(id)}</span>
         </span>}
       </span>
       {sellP ? <span aria-hidden="true" style={{ position: "absolute", right: 3, top: 3, padding: "1px 5px", borderRadius: 99, background: "rgba(0,0,0,.55)", color: C.signal, fontSize: 10, fontWeight: 900, lineHeight: 1.5 }}>+<KSign />{sellP}</span> : null}
@@ -11502,7 +11585,8 @@ function Session({ session, setSession, history, onSave, onClose, onMinimize, on
   useEffect(() => {
     if (!restKey || restPerm !== "granted") { restStop(); return; }
     const r = session.rest, nx = sessionSeq(session)[r.nextPos];
-    restStart({ endAt: r.endAt, startAt: r.startAt || r.endAt - r.total * 1000, stillAfter: LONG_REST * 1000, title: T("restNotifT", { name: nx ? EX[nx.id].name : "" }), bodyOver: T("restOver"), stillTitle: T("stillT"), stillBody: T("stillD"), channelName: T("restCh"), alertName: T("restAlertCh") });
+    restStart({ endAt: r.endAt, startAt: r.startAt || r.endAt - r.total * 1000, stillAfter: LONG_REST * 1000, title: T("restNotifT", { name: nx ? EX[nx.id].name : "" }), bodyOver: T("restOver"), stillTitle: T("stillT"), stillBody: T("stillD"), channelName: T("restCh"), alertName: T("restAlertCh"),
+      sound: setting("sndTimer") !== false, buzz: setting("vibrate") !== false, vol: Math.round(Math.min(1, 0.9 * volMul()) * 100) });
   }, [restKey, restPerm]);
   useEffect(() => () => { restStop(); }, []);
   const swaps = session.swaps || {};
@@ -11885,8 +11969,16 @@ export default function App() {
       cloudReady.current = false; setSwOffer({ uid: u.uid, b, nick: (p && p.nick) || "" });
       return { uid: u.uid, name: u.name || "", prof: p, got: null, switching: true };
     }
+    // 1.9.1 (Michael, Nov 7: a phone that was never signed in, with a workout from recording a video, was joined into
+    // his account without a word): a phone with workouts that belong to no account asks too, when the account
+    // already has workouts of its own (an empty account simply takes the phone's data, as before).
+    let b0; try { b0 = await cloud().loadBackup(); } catch (_) { b0 = undefined; }
+    if (!own && history.length > 0 && b0 && bkWorkouts(b0) > 0) {
+      cloudReady.current = false; setSwOffer({ uid: u.uid, b: b0, nick: (p && p.nick) || "", fresh: true });
+      return { uid: u.uid, name: u.name || "", prof: p, got: null, switching: true };
+    }
     setCloudMem({ owner: u.uid });
-    try { got = takeCloudBackup(await cloud().loadBackup(), u.uid); } catch (_) {}
+    try { if (b0 !== undefined) got = takeCloudBackup(b0, u.uid); } catch (_) {}
     // signed in during the first-start setup and the account has workouts: everything is there, the setup ends
     if (got && got.restored && onboard !== null) { setOnboard(null); setSettings({ ...stRef.current.settings, onboarded: true }); window.scrollTo(0, 0); }
     return { uid: u.uid, name: u.name || "", prof: p, got };
@@ -12035,12 +12127,27 @@ export default function App() {
   const swKeep = () => {
     const o = swOffer; setSwOffer(null); if (!o) return;
     // 1.7.0: keep = this phone's details win (marked as just changed), its workouts are joined with the account's
+    // 1.9.1: a phone that belonged to no account only adds its workouts; the account's details stay (first merge)
     const now = Date.now();
-    setSyncMem({ acct: o.uid, mod: { profile: now, settings: now, kcal: now } });
+    if (!o.fresh) setSyncMem({ acct: o.uid, mod: { profile: now, settings: now, kcal: now } });
     setCloudMem({ owner: o.uid }); try { takeCloudBackup(o.b, o.uid); } catch (_) {} sfxCheck();
   };
   // Settings → Account & cloud → "Restore from the cloud": since 1.7.0 the account's data is joined with this phone's
   // (the same merge as the live sync), so nothing on either side is lost.
+  // 1.9.1: back to a restore point (sync.js restoreFrom), then the normal upload sends it to the other devices
+  const restorePoint = async pt => {
+    if (swOffer || !cloudReady.current) return T("acBkNowWait");
+    let d = null; try { d = JSON.parse(pt.json); } catch (_) {}
+    if (!d || !(BACKUP_IDS.includes(d.app) && Array.isArray(d.history))) throw new Error("bad backup");
+    const R = restoreFrom({ ...stRef.current, sync: syncMem() }, { ...d, sync: d.sync || {} }, Date.now());
+    const h = recomputeFlags(sortHistory(R.history)); stRef.current.history = h; setHistory(h);
+    stRef.current.profile = R.profile; setProfile(R.profile);
+    stRef.current.settings = R.settings; setSettings(R.settings);
+    if (R.kcal) { stRef.current.kcal = R.kcal; setKcal(R.kcal); }
+    setSyncMem({ acct: acct.uid, del: R.sync.del, kdel: R.sync.kdel, mod: R.sync.mod });
+    setSyncTick(x => x + 1);
+    return "✓ " + T("rpDone", { date: fmtDate(pt.day, true) });
+  };
   const restoreFromCloud = async () => { const b = await cloud().loadBackup(); if (!b || !b.json) return T("acNoBackup"); takeCloudBackup(b, acct.uid); return T("msgRestored"); };
   // Live friend requests, friends and chats while the app is open (1.5.0). New requests and messages show a short
   // in-app notice (LiveNotice) unless that chat is open; the counts show on ☰, in the menu and on the Friends tabs.
@@ -12138,13 +12245,23 @@ export default function App() {
     if (acct.st !== "in" || !acct.prof || !loaded || !profLoaded || swOffer) return;
     let dead = false;
     const t = setTimeout(async () => {
-      const s = { ...acct.prof, ...cloudStats(history), pfp: await smallPfp(profile.pfp) };
+      // 1.9.1: a phone without a photo never removes the one the account has (the app has no "remove photo")
+      const s = { ...acct.prof, ...cloudStats(history), pfp: (await smallPfp(profile.pfp)) || acct.prof.pfp || null };
       const key = dateKey() + JSON.stringify([s.nick, s.global, s.xp, s.lvl, s.streak, s.n, (s.pfp || "").length]);
       if (dead || cloudMem().synced === key) return;
       cloud().saveProfile(s).then(() => setCloudMem({ synced: key })).catch(() => {});
     }, 2500);
     return () => { dead = true; clearTimeout(t); };
   }, [acct.st, acct.prof, history, profile.pfp, loaded, profLoaded, swOffer]);
+  // 1.9.1 (Michael, Nov 7: "User" and no photo after signing in): once the account's backup is merged, a phone that
+  // still has no name or photo takes them from the account's friends profile (nickname, small photo)
+  useEffect(() => {
+    if (acct.st !== "in" || !acct.prof || !cloudReady.current || swOffer || !profLoaded) return;
+    const p = stRef.current.profile || profile, fix = {};
+    if ((!p.name || p.name === "User") && acct.prof.nick) fix.name = acct.prof.nick;
+    if (!p.pfp && acct.prof.pfp) fix.pfp = acct.prof.pfp;
+    if (Object.keys(fix).length) setProfile({ ...p, ...fix });
+  }, [acct.st, acct.prof, swOffer, profLoaded, syncTick]);
   // Profile card (1.7.0): who may open it (vis, read from the cloud once per start: it may have been changed on another
   // phone or the website), the stats part (when it changes, and once a day for the streak), and the block list the
   // rules use to keep blocked people off it.
@@ -12254,7 +12371,9 @@ export default function App() {
       if (dk === lastRemoteKey.current || dk === lastUpKey.current) return;
       const json = cloudBackupJson(history, profile, settings, kcal), key = json.replace(/"exportedAt":"[^"]*",/, "");
       const save = bk => { setCloudMem({ bk }); setCloudBk(bk); };
-      cloud().saveBackup(json, history.length).then(() => { lastUpKey.current = dk; lastCloud.current = key; setCloudMem({ bkHash: strHash(key) }); cloudN.current = history.length; save({ ts: Date.now(), ok: true }); runBoard(); })
+      // 1.9.1: the first upload of a day keeps the last day's backup as a restore point first
+      const today = dateKey(), snap = cloudMem().rpDay === today ? Promise.resolve() : cloud().snapshotBackup(today).then(() => setCloudMem({ rpDay: today }), () => {});
+      snap.then(() => cloud().saveBackup(json, history.length)).then(() => { lastUpKey.current = dk; lastCloud.current = key; setCloudMem({ bkHash: strHash(key) }); cloudN.current = history.length; save({ ts: Date.now(), ok: true }); runBoard(); })
         .catch(e => save({ ts: Date.now(), ok: false, err: String((e && (e.code || e.message)) || e).slice(0, 120) }));
     }, 4000);
     return () => clearTimeout(t);
@@ -12359,7 +12478,8 @@ export default function App() {
   useEffect(() => {
     if (!isNative || stepsSynced || !kcal || !kcal.healthOn) return;
     setStepsSynced(true);
-    Promise.all([healthSteps(7), healthSteps(7, "dietaryEnergyConsumed"), kcal.healthFood === true ? healthFoodItems(7) : null, healthBody()]).then(([m, f, it, body]) => { if (m || f || body) setKcalState(k => { const n = withBody({ ...k, steps: { ...(k.steps || {}), ...(m || {}) }, food: { ...(k.food || {}), ...(f || {}) }, foodItems: { ...(k.foodItems || {}), ...(it || {}) } }, body); saveKcal(n); return n; }); });
+    const n = hcDays(kcal);
+    Promise.all([healthSteps(n), healthSteps(n, "dietaryEnergyConsumed"), kcal.healthFood === true ? healthFoodItems(n) : null, healthBody()]).then(([m, f, it, body]) => { if (m || f || body) setKcalState(k => { const n = withBody({ ...k, steps: { ...(k.steps || {}), ...(m || {}) }, food: { ...(k.food || {}), ...(f || {}) }, foodItems: { ...(k.foodItems || {}), ...(it || {}) } }, body); saveKcal(n); return n; }); });
   }, [kcal]);
   // Website: the newest Android app version on GitHub for the menu (the API allows browsers; 60 calls an hour per IP).
   useEffect(() => {
@@ -12664,7 +12784,7 @@ export default function App() {
         <div style={{ padding: 40, display: "flex", flexDirection: "column", alignItems: "center", gap: 12, color: C.dim }}><Logo size={64} />{T("loading")}</div>
       ) : (
         <>
-          {swOffer && <SwitchAccountSheet onFresh={swFresh} onKeep={swKeep} onCancel={swCancel} />}
+          {swOffer && <SwitchAccountSheet fresh={!!swOffer.fresh} onFresh={swFresh} onKeep={swKeep} onCancel={swCancel} />}
           {onboard !== null && !session ? (
             <Onboarding start={onboard} profile={profile} setProfile={setProfile} kcal={kcal} setKcal={setKcal} acct={acct} onSignIn={signIn} onCreate={createProfile}
               onDone={() => { setOnboard(null); setUi({ ...ui, setupHidden: false }); if (!settings.onboarded) setSettings({ ...settings, onboarded: true }); window.scrollTo(0, 0);
@@ -12693,7 +12813,7 @@ export default function App() {
                 {screen === "calories" && <Calories history={history} profile={profile} setProfile={setProfile} kcal={kcal} setKcal={setKcal} />}
                 {screen === "settings" && <SettingsTab initPage={setPage0} ret={setRet ? { label: T(SCREEN_TITLE[setRet.screen]), go: () => { if (setRet.pager) PAGER_START[setRet.pager] = setRet.page; go(setRet.screen); } } : null} settings={settings} setSettings={setSettings} history={history} profile={profile} setProfile={setProfile}
                   kcal={kcal} autoBk={autoBk} onAutoBackup={runAutoBackup}
-                  onImport={importAll} acct={acct} cloudBk={cloudBk} onAcctOpen={() => go("friends")} onCloudRestore={restoreFromCloud} onCloudBackupNow={cloudBackupNow} onSignOut={signOut} onDeleteAccount={deleteAccount} />}
+                  onImport={importAll} acct={acct} cloudBk={cloudBk} onAcctOpen={() => go("friends")} onCloudRestore={restoreFromCloud} onCloudPoint={restorePoint} onCloudBackupNow={cloudBackupNow} onSignOut={signOut} onDeleteAccount={deleteAccount} />}
                 {screen === "plans" && <PlansTab profile={profile} setProfile={setProfile} history={history} open={plansOpen} onOpened={() => setPlansOpen(null)} />}
                 {screen === "shop" && <ShopTab history={history} profile={profile} setProfile={setProfile} onGo={go} />}
                 {screen === "game" && <GameTab history={history} profile={profile} setProfile={setProfile} acct={acct} onPlay={sv => { if (sv.mode !== "tut") gameSave(sv); setGamePlay(sv); }} />}

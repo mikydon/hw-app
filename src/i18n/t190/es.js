@@ -1,6 +1,27 @@
 // 1.9.0 texts in Spanish (merged over es.js; English originals in ui190-en.js, ex-en.js and en.js news19).
 export default {
   ui: {
+    // 1.9.1
+    rpRow: "Puntos de restauración",
+    rpTitle: "Puntos de restauración",
+    rpD: "La nube guarda tus datos tal como estaban al final de cada uno de los últimos 4 días en que usaste la app. Volver reemplaza tus entrenamientos, perfil y ajustes por los de ese día en todos tus dispositivos.",
+    rpNone: "Aún no hay puntos de restauración. El primero aparecerá el próximo día que uses la app.",
+    rpErr: "No se pudieron cargar los puntos de restauración. Revisa la conexión y vuelve a intentarlo.",
+    rpN: "Entrenamientos: {n}",
+    rpGo: "Volver",
+    rpAskT: "¿Volver al {date}?",
+    rpAskD: "Los entrenamientos añadidos después de ese día desaparecen en todos tus dispositivos. Las compras, las cartas abiertas y las calorías comidas se quedan.",
+    rpDone: "Vuelto al {date}",
+    swNewTitle: "Este teléfono ya tiene entrenamientos",
+    swNewBody: "Los entrenamientos de este teléfono aún no están guardados en ninguna cuenta, y esta cuenta tiene los suyos. ¿Qué quieres hacer?",
+    swNewFresh: "Usar los datos de la cuenta",
+    swNewFreshD: "Borra este teléfono y carga la copia de la cuenta.",
+    swNewKeep: "Añadir los entrenamientos del teléfono a la cuenta",
+    swNewKeepD: "El nombre, la foto y los ajustes de la cuenta se quedan; los entrenamientos de este teléfono se añaden.",
+    restRow: "Temporizador de descanso con la pantalla apagada",
+    restRowD: "Muestra el descanso en la pantalla de bloqueo y pita en 3, 2, 1 y 0 aunque el teléfono esté bloqueado. Android llama a este permiso «Actividad física»; la app no lee con él ningún dato de actividad.",
+    restRowOpen: "Bloqueado en Android: permite «Actividad física» en los ajustes de la app",
+    restRowBlocked: "Bloqueado en Android: Ajustes → Aplicaciones → HW App → Permisos → Actividad física",
     addExtra: "Añadir ejercicio",
     addExtraD: "¿Aún no estás cansado? Los ejercicios añadidos cuentan para hoy y un resultado mejor es un récord.",
     bg_arms: "Brazos", bg_back: "Espalda", bg_calves: "Gemelos", bg_chest: "Pecho", bg_core: "Core", bg_glutes: "Glúteos", bg_legs: "Piernas", bg_shoulders: "Hombros",
@@ -392,4 +413,16 @@ export default {
     mx_t_bar_row: { muscles: "Espalda alta, dorsales, bíceps", how: "De pie sobre la barra (o en la máquina), rodillas suaves, inclínate con la espalda plana. Lleva el agarre a la parte baja del pecho y bájalo despacio hasta los brazos rectos.", tip: "La espalda queda plana y quieta. Si tienes que incorporarte para moverlo, pesa demasiado." },
     mx_wide_grip_lat_pulldown: { muscles: "Espalda (dorsal), espalda alta", how: "Siéntate con los muslos bajo la almohadilla y coge la barra ancha (unas 1,5 veces el ancho de hombros). Llévala al pecho alto, codos hacia abajo y hacia fuera, y deja que suba despacio.", tip: "No la bajes por detrás de la nuca." },
   },
+  // 1.9.1
+  news191: [
+    "Iniciar sesión en un teléfono cuyos entrenamientos no son de ninguna cuenta ahora pregunta primero: usar los datos de la cuenta o añadir los entrenamientos del teléfono a ella. Antes se juntaban sin preguntar, y el nombre provisional «User» del teléfono podía reemplazar tu nombre y tu foto.",
+    "Si a un teléfono le falta tu nombre o tu foto, la app los recupera del perfil de tu cuenta, y nunca borra la foto que ven tus amigos.",
+    "Puntos de restauración: la nube guarda tus datos de los últimos 4 días en que usaste la app, y puedes volver a uno (Cuenta y nube → Puntos de restauración).",
+    "📱 Con la pantalla apagada, los pitidos del descanso en 3, 2, 1 y 0 llegan ahora justo a tiempo (antes podían retrasarse hasta un segundo) y siguen tus ajustes de sonido, volumen y vibración. Necesita el APK 1.9.1.",
+    "📱 Ajustes → Entrenamiento: «Temporizador de descanso con la pantalla apagada». ¿Tocaste «Ahora no» en el primer descanso? Aquí puedes permitirlo, o abrir los ajustes de Android si está bloqueado.",
+    "La barra superior ya no se queda cortada al abrir la app (cubría solo la barra de estado hasta que hacías scroll).",
+    "El progreso de Muscle Deck (nivel, partidas, victorias) ahora sigue a tu cuenta como todo lo demás: un teléfono con menos partidas ya no te lo quita.",
+    "📱 Tras reinstalar la app (o conectar Health Connect por primera vez) se leen los últimos 30 días de pasos y calorías de Health Connect, no solo 7.",
+    "Muscle Deck: los nombres largos de los comodines caben en su carta.",
+  ],
 };

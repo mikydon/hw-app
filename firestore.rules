@@ -159,6 +159,12 @@ service cloud.firestore {
       allow get, delete: if isMe(uid);
       allow create, update: if isMe(uid) && only(['json', 'n', 'ts']) && data().json is string
         && data().json.size() < 900000 && intIn(data().n, 0, 100000) && nowTs();
+      // 1.9.1: restore points, one per day (the id is that day), a copy of the backup with its own time
+      match /old/{day} {
+        allow get, list, delete: if isMe(uid);
+        allow create, update: if isMe(uid) && day.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$') && only(['json', 'n', 'ts'])
+          && data().json is string && data().json.size() < 900000 && intIn(data().n, 0, 100000) && data().ts is timestamp;
+      }
     }
     // Chats (1.5.0): only the two people in the chat id (their uids, sorted, joined by "_") can read it;
     // writing needs them to be friends right now. Either of them can delete (account deletion).

@@ -1,6 +1,27 @@
 // 1.9.0 texts in Slovak (merged over sk.js; English originals in ui190-en.js, ex-en.js and en.js news19).
 export default {
   ui: {
+    // 1.9.1
+    rpRow: "Body obnovy",
+    rpTitle: "Body obnovy",
+    rpD: "Cloud si pamätá tvoje dáta tak, ako boli na konci každého z posledných 4 dní, keď si použil appku. Návrat nahradí tréningy, profil a nastavenia tými z toho dňa na všetkých tvojich zariadeniach.",
+    rpNone: "Zatiaľ žiadny bod obnovy. Prvý pribudne v ďalší deň, keď použiješ appku.",
+    rpErr: "Body obnovy sa nepodarilo načítať. Skontroluj pripojenie a skús znova.",
+    rpN: "Tréningy: {n}",
+    rpGo: "Vrátiť sa",
+    rpAskT: "Vrátiť sa na {date}?",
+    rpAskD: "Tréningy pridané po tom dni zmiznú zo všetkých tvojich zariadení. Nákupy, otvorené karty a zjedené kalórie ostanú.",
+    rpDone: "Vrátené na {date}",
+    swNewTitle: "Tento mobil už má tréningy",
+    swNewBody: "Tréningy na tomto mobile ešte nie sú uložené v žiadnom účte a tento účet má svoje vlastné. Čo sa má stať?",
+    swNewFresh: "Použiť dáta z účtu",
+    swNewFreshD: "Vymaže tento mobil a načíta zálohu účtu.",
+    swNewKeep: "Pridať tréningy z mobilu do účtu",
+    swNewKeepD: "Meno, fotka a nastavenia účtu ostanú; tréningy z tohto mobilu sa k nim pridajú.",
+    restRow: "Časovač oddychu pri zhasnutej obrazovke",
+    restRowD: "Ukazuje čas oddychu na zamknutej obrazovke a pípa na 3, 2, 1 a 0, aj keď je mobil zamknutý. Android toto povolenie volá „Fyzická aktivita“; appka cez neho nečíta žiadne údaje o aktivite.",
+    restRowOpen: "Zablokované v Androide: povoľ „Fyzická aktivita“ v nastaveniach appky",
+    restRowBlocked: "Zablokované v Androide: Nastavenia → Aplikácie → HW App → Povolenia → Fyzická aktivita",
     addExtra: "Pridať cvik",
     addExtraD: "Ešte nie si unavený? Pridané cviky sa rátajú do dnešného tréningu a lepší výsledok je rekord.",
     bg_arms: "Ruky", bg_back: "Chrbát", bg_calves: "Lýtka", bg_chest: "Hrudník", bg_core: "Brucho", bg_glutes: "Zadok", bg_legs: "Nohy", bg_shoulders: "Ramená",
@@ -392,4 +413,16 @@ export default {
     mx_t_bar_row: { muscles: "Horný chrbát, široký sval chrbta, biceps", how: "Postav sa nad osu (alebo na stroj), kolená mäkké, predkloň sa s rovným chrbtom. Pritiahni rukoväť k spodnej časti hrudníka, potom ju pomaly spusti do vystretých rúk.", tip: "Chrbát ostáva rovný a na mieste. Ak sa musíš vzpriamiť, aby si ňou pohol, je príliš ťažká." },
     mx_wide_grip_lat_pulldown: { muscles: "Chrbát (široký sval), horný chrbát", how: "Sadni si so stehnami pod podložkou a chyť tyč široko (asi 1,5× šírka ramien). Stiahni ju k hornej časti hrudníka, lakte dole a von, potom ju pomaly pusti hore.", tip: "Neťahaj ju za krk." },
   },
+  // 1.9.1
+  news191: [
+    "Prihlásenie na mobile, ktorého tréningy nepatria žiadnemu účtu, sa teraz najprv spýta: použiť dáta z účtu, alebo pridať tréningy z mobilu do účtu. Predtým sa spojili bez opýtania a „User“ z mobilu mohol prepísať tvoje meno a fotku.",
+    "Ak by mobilu niekedy chýbalo meno alebo fotka, appka si ich vezme späť z profilu tvojho účtu a fotku pre kamošov už nikdy nezmaže.",
+    "Body obnovy: cloud si pamätá tvoje dáta z posledných 4 dní, keď si použil appku, a môžeš sa na niektorý vrátiť (Účet a cloud → Body obnovy).",
+    "📱 Pri zhasnutej obrazovke teraz pípnutia oddychu na 3, 2, 1 a 0 prídu presne načas (predtým mohli meškať až o sekundu) a riadia sa tvojím nastavením zvuku, hlasitosti a vibrácií. Treba APK 1.9.1.",
+    "📱 Nastavenia → Tréning: „Časovač oddychu pri zhasnutej obrazovke“. Klikol si pri prvom oddychu „Teraz nie“? Tu to povolíš, alebo otvoríš nastavenia Androidu, ak je to zablokované.",
+    "Horná lišta už po zapnutí appky neostane skrátená (zakrývala len stavový riadok, kým si neposunul obrazovku).",
+    "Postup v Muscle Decku (level, hry, výhry) teraz ide s účtom ako všetko ostatné: mobil s menej hrami ti ho už nezoberie.",
+    "📱 Po novej inštalácii appky (alebo prvom prepojení Health Connect) sa načíta posledných 30 dní krokov a kalórií z Health Connect, nie len 7.",
+    "Muscle Deck: dlhé mená jokerov sa zmestia na kartu.",
+  ],
 };
