@@ -96,8 +96,8 @@ public class RestService extends Service {
         long now = System.currentTimeMillis();
         holdCpu(Math.max(0, endAt - now) + stillAfter + 60000L);
         if (endAt > now) handler.postDelayed(this::atZero, endAt - now);
-        for (int k = 3; k >= 1; k--) { final long at = endAt - k * 1000L; if (at > now + 50) handler.postDelayed(this::countBeep, at - now); }
         else show();
+        for (int k = 3; k >= 1; k--) { final long at = endAt - k * 1000L; if (at > now + 50) handler.postDelayed(this::countBeep, at - now); }
         handler.postDelayed(tick, nextTick(now));
         if (back) handler.postDelayed(this::ensureShown, 300);
         handler.postDelayed(this::stillTraining, Math.max(0, endAt + stillAfter - now));
