@@ -9075,7 +9075,7 @@ const fmtM = m => (Number.isInteger(m) ? String(m) : m.toFixed(2).replace(/0$/, 
 // its rarity colour, a glowing well with its icon, the name on a band at the bottom, rarity pips at the top (legendary
 // ones shine). Own look; nothing copied from any other game.
 // the name's size: a long single word ("Momentum") gets smaller instead of breaking in the middle (1.9.1)
-const jkFs = (id, w) => { const lw = Math.max(1, ...String(jName(id)).split(/\s+/).map(x => x.length)); return Math.max(8, Math.min(Math.round(w * 0.155), Math.floor((w - 10) / (lw * 0.66)))); };
+const jkFs = (id, w) => { const lw = Math.max(1, ...String(jName(id)).split(/\s+/).map(x => x.length)); return Math.max(8, Math.min(Math.round(w * 0.155), Math.floor((w - 10) / (lw * 0.74)))); };
 function JokerCard({ id, w = 62, onClick, glow, sellP, still, pop, dim }) {
   const r = GM.JOKERS[id] ? GM.JOKERS[id].r : 0, col = RAR_COL()[r], h = Math.round(w * 1.42), rr = Math.round(w * 0.16), Tag = still ? "span" : "button";
   return (
