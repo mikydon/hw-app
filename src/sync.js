@@ -66,7 +66,14 @@ export function mergeProfile(lp, rp, ml, mr, first) {
   if (!lp) return rp;
   let out;
   if (first) out = fillFirst(lp.name === "User" ? { ...lp, name: "" } : lp, rp);
-  else { const [n, o] = order(lp, rp, ml, mr); out = { ...o, ...n }; }
+  else {
+    const [n, o] = order(lp, rp, ml, mr); out = { ...o, ...n };
+    // Nov 7 (Michael's test app showed "User" and no photo): the newer side wins, but a placeholder never beats a real
+    // value: an empty/"User" name or a missing photo (the app has no way to remove a photo on purpose) keeps the other's
+    const noName = x => !x || x === "User";
+    if (noName(n.name) && !noName(o.name)) out.name = o.name;
+    if (!n.pfp && o.pfp) out.pfp = o.pfp;
+  }
   PROFILE_LISTS.forEach(k => { const u = [...new Set([...(lp[k] || []), ...(rp[k] || [])])].sort(); if (u.length || lp[k] || rp[k]) out[k] = u; });
   PROFILE_MAPS.forEach(k => { if (lp[k] || rp[k]) { const [n, o] = first ? [rp, lp] : order(lp, rp, ml, mr); out[k] = { ...(o[k] || {}), ...(n[k] || {}) }; } });
   // 1.7.4: opened reward cards (claim) only ever go up, so both sides' highest level counts

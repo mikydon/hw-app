@@ -76,5 +76,18 @@ console.log("1.8.0: claim2 (9-rank scale) merges the same way, next to the old c
   const m2 = mergeProfile({ name: "A", claim2: { a: {}, r: { k1: 2 } } }, { name: "B", claim2: { a: { level: 5 }, r: { k1: 7 } } }, 1, 2, false);
   ok(stable(m2.claim2) === stable({ a: { level: 5 }, r: { k1: 7 } }), "max per key on both sides");
 }
+console.log("Nov 7: a placeholder name or a missing photo never beats a real one (Michael's test app: \"User\", no photo)");
+{
+  const real = { name: "Michael", pfp: "data:image/jpeg;base64,AAAA", tourDone: [1] }, blank = { name: "User", pfp: null, tourDone: [2] };
+  const m = mergeProfile(blank, real, 9, 1, false); // the device with "User" changed its profile later
+  ok(m.name === "Michael" && m.pfp === real.pfp, "newer \"User\" without a photo keeps the account's name and photo");
+  ok(stable(m.tourDone) === stable([1, 2]), "the rest still merges");
+  const m2 = mergeProfile({ name: "", pfp: null }, real, 9, 1, false);
+  ok(m2.name === "Michael" && m2.pfp === real.pfp, "an empty name keeps the real one too");
+  const m3 = mergeProfile({ name: "Miško", pfp: "data:new" }, real, 9, 1, false);
+  ok(m3.name === "Miško" && m3.pfp === "data:new", "a real newer name and photo still win");
+  const m4 = mergeProfile(real, blank, 1, 9, false);
+  ok(m4.name === "Michael" && m4.pfp === real.pfp, "the same when the placeholder is on the other side");
+}
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
