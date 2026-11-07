@@ -1,5 +1,7 @@
 // 한국어 (Korean). Machine-assisted translation by Claude, Oct 2026; native speakers are welcome to improve it (see TRANSLATING.md).
-export default {
+import { with190 } from "./t190/merge.js";
+import T190 from "./t190/ko.js";
+const L = {
   ui: {
     searchWeb: "🔎 인터넷에서 검색",
     searchOf: "인터넷에서 검색: {name}",
@@ -2061,3 +2063,4 @@ export default {
   ],
   looks: {"f_iron":"아이언 링","f_dots":"도트 링","f_pixel":"픽셀","f_hex":"육각형","f_wave":"웨이브","f_pulse":"펄스","f_flame":"불꽃","f_laurel":"월계관","f_neon":"네온","f_bolt":"번개","f_crown":"왕관","f_obsidian":"흑요석 조각","f_diamond":"다이아몬드 링","b_glow":"테마 빛","b_grid":"체육관 바닥","b_sunset":"노을","b_topo":"등고선","b_stars":"밤하늘","b_waves":"파도","b_bubbles":"거품","b_ridge":"새벽 능선","b_city":"도시의 불빛","b_galaxy":"은하","b_aurora":"오로라","t_iron":"강철 의지","t_rookie":"루키","t_grind":"매일의 노력","t_zen":"젠","t_beast":"야수 모드","t_legend":"살아 있는 전설","t_bird":"아침형 인간","t_owl":"올빼미","t_comeback":"컴백 키드","t_marathon":"마라토너","t_shark":"카드 상어","t_streak":"연속 기록 수호자","t_midnight":"자정의 영웅","t_obsidian":"흑요석","n_outline":"외곽선","n_grad":"그라데이션","n_shadow":"레트로 그림자","n_ice":"얼음","n_glow":"글로우","n_fire":"불","n_foil":"메탈릭","n_rainbow":"무지개","n_gold":"순금","fx_snow":"눈","fx_sparkle":"반짝임","fx_petals":"꽃잎","fx_embers":"불씨","fx_lightning":"뇌우","fx_frost":"서리","fx_confetti":"파티","fx_fireworks":"불꽃놀이"},
 };
+export default with190(L, T190);
