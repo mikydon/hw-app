@@ -7,7 +7,8 @@
   <img src="https://img.shields.io/badge/Android-8.0%2B-b78cff?labelColor=172443&style=for-the-badge" alt="Android 8.0+">
 </p>
 
-<h3 align="center">🏠 Train at home, no equipment needed &nbsp;·&nbsp; 🏋️ dumbbells and gym machines if you have them</h3>
+<h3 align="center">🏠 Train at home, no equipment needed</h3>
+<p align="center">🏋️ Got dumbbells or a gym? Your plans can use them too.</p>
 
 <p align="center">
   <a href="https://github.com/mikydon/hw-app/releases/latest"><b>⬇️ Download the APK</b></a> &nbsp;•&nbsp;
