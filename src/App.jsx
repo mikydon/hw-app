@@ -2371,6 +2371,7 @@ const ICONS = {
   ticket: '<path d="M4 7h16v3a2 2 0 0 0 0 4v3H4v-3a2 2 0 0 0 0-4z"/><path d="M14.5 7.5v1.5M14.5 11v2M14.5 15v1.5"/>',
   tick: '<path d="M5 12.5l4.2 4.2L19 7"/>',
   trash: '<path d="M4 7h16M9.5 7V4.5h5V7M6.5 7l1 13h9l1-13M10 11v5.5M14 11v5.5"/>',
+  logout: '<path d="M14 4.5H7.5a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2H14M10.5 12H20M16.5 8l4 4-4 4"/>',
   userX: '<circle cx="9.5" cy="8" r="3.5"/><path d="M3 20c.5-3.6 3-5.6 6.5-5.6s6 2 6.5 5.6M17 9l4 4M21 9l-4 4"/>',
   ban: '<circle cx="12" cy="12" r="8.5"/><path d="M6 6l12 12"/>',
   flag: '<path d="M5.5 21V4M5.5 4.5h11l-2.2 4 2.2 4h-11"/>',
@@ -5263,11 +5264,12 @@ function EntryEditor({ entry, nextDay, onSave, onDelete, onClose }) {
         {err && <div role="alert" style={{ fontSize: 13, color: "#ff8a80", fontWeight: 600 }}>{err}</div>}
         <button onClick={save} data-edit-save className="b3d" style={{ ...bigBtn(C.signal, C.signalInk) }}>{T("save")}</button>
         {!isNew && (
-          <button onClick={() => { if (!confirmDel) { setConfirmDel(true); setTimeout(() => setConfirmDel(false), 4000); return; } onDelete(); }}
-            style={{ ...ghostBtn, width: "100%", padding: 12, color: confirmDel ? "#ff8a80" : C.dim, borderColor: confirmDel ? "#ff8a80" : C.line }}>
-            {confirmDel ? T("confirmDelete") : T("deleteWorkout")}
+          <button data-edit-delete onClick={() => { sfxTap(); setConfirmDel(true); }}
+            style={{ ...ghostBtn, width: "100%", padding: 12, color: "#ff8a80", borderColor: C.line, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+            <Ico n="trash" size={16} />{T("deleteWorkout")}
           </button>
         )}
+        {confirmDel && <ConfirmBox icon="trash" danger title={T("cfDelWorkoutT")} text={T("cfDelWorkoutD")} yes={T("deleteWorkout")} yesData={{ "data-del-workout-yes": true }} onNo={() => setConfirmDel(false)} onYes={() => { setConfirmDel(false); onDelete(); }} />}
       </div>
     </Sheet>
   );
@@ -5291,6 +5293,7 @@ function HistoryTab({ history, onDelete, onSaveEntry, editDate, onEditOpened }) 
   const tiles = [[T("tileTrainings"), history.length, "dumbbell", C.signal], [T("tileSets"), sets, "repeat", C.sky], [T("tilePRs"), prs, "trophy", C.mint]];
   return (
     <div className="scr" style={{ padding: "16px 18px 124px", maxWidth: "var(--colMax)", margin: "0 auto" }}>
+      {confirmDel !== null && <ConfirmBox icon="trash" danger title={T("cfDelWorkoutT")} text={T("cfDelWorkoutD")} yes={T("deleteWorkout")} yesData={{ "data-del-workout-yes": true }} onNo={() => setConfirmDel(null)} onYes={() => { const i = confirmDel; setConfirmDel(null); onDelete(i); }} />}
       {editing !== null && (
         <EntryEditor key={String(editing)} entry={editing === "new" ? null : history[editing]} nextDay={DAYS[nextDayIdx(history)].id}
           onClose={() => setEditing(null)}
@@ -5346,9 +5349,9 @@ function HistoryTab({ history, onDelete, onSaveEntry, editDate, onEditOpened }) 
                   })}
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 6 }}>
                     <button onClick={() => { sfxTap(); setConfirmDel(null); setEditing(idx); }} style={{ ...btnBase, background: "transparent", color: C.sky, fontSize: 13, padding: "4px 6px", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 6 }}><Ico n="pencil" size={15} />{noEmo(T("editWorkout"))}</button>
-                    <button onClick={() => { if (confirmDel === idx) { onDelete(idx); setConfirmDel(null); } else setConfirmDel(idx); }}
-                      style={{ ...btnBase, background: "transparent", color: confirmDel === idx ? "#ff8a80" : C.dim, fontSize: 12, padding: "4px 6px", fontWeight: 600 }}>
-                      {confirmDel === idx ? T("confirmDelete") : T("deleteWorkout")}
+                    <button data-hist-delete onClick={() => { sfxTap(); setConfirmDel(idx); }} aria-label={T("deleteWorkout")}
+                      style={{ ...btnBase, background: "transparent", color: C.dim, fontSize: 12, padding: "4px 6px", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 5 }}>
+                      <Ico n="trash" size={14} />{T("deleteWorkout")}
                     </button>
                   </div>
                 </div>
@@ -6418,6 +6421,7 @@ function BackupsSheet({ onClose, onRestore, autoOn, myId }) {
   return (
     <Sheet title={noEmo(T("bkFolder"))} onClose={onClose}>
       <div style={{ fontSize: 13, color: C.dim, lineHeight: 1.5 }}>{T("bkSheetD", { dir: `Documents/${BK_DIR}` })}</div>
+      {sure && <ConfirmBox icon="trash" danger title={T("cfDelBackupT")} text={T("cfDelBackupD")} yes={T("bkDelete")} yesData={{ "data-bk-delete-yes": true }} onNo={() => setSure(null)} onYes={() => { const n = sure; setSure(null); bkDelete(n).then(() => { sfxTap(); load(); }).catch(() => setErr(T("msgBackupFail"))); }} />}
       {files === null ? null : !files.length ? <div data-bk-empty style={{ marginTop: 14, fontSize: 14, color: C.dim }}>{T("bkEmpty")}</div> : (
         <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 8 }}>
           {files.map(f => (
@@ -6430,10 +6434,7 @@ function BackupsSheet({ onClose, onRestore, autoOn, myId }) {
               <div style={{ display: "flex", gap: 6, marginTop: 9, flexWrap: "wrap" }}>
                 <button data-bk-restore onClick={() => { sfxTap(); bkRead(f.name).then(onRestore).catch(() => setErr(T("msgNotBackup"))); }} style={{ ...small, background: C.signal, color: C.signalInk }}>{T("bkRestore")}</button>
                 <button data-bk-share onClick={() => { sfxTap(); bkShare(f.name).catch(() => setErr(T("msgBackupFail"))); }} style={small}>{T("bkShare")}</button>
-                <button data-bk-delete onClick={() => {
-                    if (sure !== f.name) { setSure(f.name); setTimeout(() => setSure(s => (s === f.name ? null : s)), 4000); return; }
-                    bkDelete(f.name).then(() => { setSure(null); sfxTap(); load(); }).catch(() => setErr(T("msgBackupFail")));
-                  }} style={{ ...small, color: "#ff8a80", marginLeft: "auto" }}>{sure === f.name ? T("bkDeleteSure") : T("bkDelete")}</button>
+                <button data-bk-delete onClick={() => { sfxTap(); setSure(f.name); }} style={{ ...small, color: "#ff8a80", marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 5 }}><Ico n="trash" size={14} />{T("bkDelete")}</button>
               </div>
             </div>
           ))}
@@ -7655,19 +7656,11 @@ function AccountBox({ acct, cloudBk, onOpen, onRestore, onBackupNow, onSignOut, 
         <button data-acct-restore onClick={() => run("rs", onRestore)} style={rowBtn(false)}>
           <span style={{ flex: 1 }}>{busy === "rs" ? "…" : T("acRestore")}<InfoQ title={T("acRestore")} text={T("acRestoreD")} /></span>
         </button>
-        <button data-acct-signout onClick={() => {
-            if (!soSure) { setSoSure(true); setTimeout(() => setSoSure(false), 4000); return; }
-            setSoSure(false); run("so", onSignOut);
-          }} style={{ ...rowBtn(false), color: soSure ? "#ff8a80" : C.chalk, display: "block" }}>
-          {busy === "so" ? "…" : soSure ? T("acSignOutSure") : T("acSignOut")}
-          {soSure && sub(T("acSignOutD"))}
+        <button data-acct-signout onClick={() => { sfxTap(); setSoSure(true); }} style={{ ...rowBtn(false), color: C.chalk }}>
+          <Ico n="logout" size={17} color={C.dim} /><span style={{ flex: 1 }}>{busy === "so" ? "…" : T("acSignOut")}</span>
         </button>
-        <button data-acct-delete onClick={() => {
-            if (!sure) { setSure(true); setTimeout(() => setSure(false), 4000); return; }
-            setSure(false); run("del", () => onDelete(askPw ? delPw : undefined));
-          }} style={{ ...rowBtn(false), color: "#ff8a80", display: "block" }}>
-          {busy === "del" ? "…" : sure ? T("acDeleteSure") : T("acDelete")}
-          {sure && sub(`${T("acDeleteD")} ${T("acDelGoogle")}`)}
+        <button data-acct-delete onClick={() => { sfxTap(); setSure(true); }} style={{ ...rowBtn(false), color: "#ff8a80" }}>
+          <Ico n="trash" size={17} /><span style={{ flex: 1 }}>{busy === "del" ? "…" : T("acDelete")}</span>
         </button>
         {askPw && <div style={{ padding: "0 16px 14px" }}>
           <PwInput data-del-pw autoComplete="current-password" value={delPw} onChange={e => setDelPw(e.target.value)} placeholder={T("acPwPh")} aria-label={T("acPwPh")}
@@ -7676,6 +7669,8 @@ function AccountBox({ acct, cloudBk, onOpen, onRestore, onBackupNow, onSignOut, 
       </ListSect>
       {msg && <div role="status" style={{ fontSize: 13, color: msg.startsWith("✓") ? C.mint : "#ff8a80", marginTop: 8 }}>{msg}</div>}
       {pwOpen && <PwSheet onClose={() => setPwOpen(false)} />}
+      {soSure && <ConfirmBox icon="logout" title={T("cfSignOutT")} text={T("acSignOutD")} yes={T("acSignOut")} yesData={{ "data-acct-signout-yes": true }} onNo={() => setSoSure(false)} onYes={() => { setSoSure(false); run("so", onSignOut); }} />}
+      {sure && <ConfirmBox icon="trash" danger title={T("cfDelAcctT")} text={`${T("acDeleteD")} ${T("acDelGoogle")}`} yes={T("acDelete")} yesData={{ "data-acct-delete-yes": true }} onNo={() => setSure(false)} onYes={() => { setSure(false); run("del", () => onDelete(askPw ? delPw : undefined)); }} />}
     </>
   );
 }
@@ -8131,15 +8126,7 @@ function SettingsTab({ initPage, ret, settings, setSettings, history, profile, s
         <button onClick={() => fileRef.current && fileRef.current.click()} style={rowBtn(false)}>
           {noEmo(T("backupLoad"))}<InfoQ title={noEmo(T("backupLoad"))} text={T("backupLoadD")} />
         </button>
-        {pending && (
-          <div style={{ padding: "12px 16px", borderTop: `1px solid ${C.line}`, background: `${C.signal}14` }}>
-            <div style={{ fontSize: 14, color: C.chalk, fontWeight: 600 }}>{T("backupFrom", { date: pending.exportedAt ? fmtDate(dateKey(new Date(pending.exportedAt)), true) : T("unknownDate"), count: TP("workouts", pending.history.length) })}</div>
-            <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
-              <button onClick={() => { onImport(pending); setPending(null); setMsg(T("msgRestored")); sfxCheck(); }} className="b3d" style={{ ...btnBase, background: C.signal, color: C.signalInk, padding: "9px 14px", "--e": EDGE[C.signal] }}>{T("yesRestore")}</button>
-              <button onClick={() => setPending(null)} style={{ ...ghostBtn, padding: "9px 14px" }}>{T("cancel")}</button>
-            </div>
-          </div>
-        )}
+        {pending && <ConfirmBox icon="download" title={T("cfRestoreT")} text={`${pending.exportedAt ? fmtDate(dateKey(new Date(pending.exportedAt)), true) : T("unknownDate")} · ${TP("workouts", pending.history.length)}. ${T("cfRestoreD")}`} yes={T("yesRestore")} yesData={{ "data-restore-yes": true }} onNo={() => setPending(null)} onYes={() => { onImport(pending); setPending(null); setMsg(T("msgRestored")); sfxCheck(); }} />}
         {settings.aiCopy && (
           <button onClick={copyAll} style={rowBtn(false)}>{copied ? T("copied") : emo(T("copyAllAI"))}</button>
         )}

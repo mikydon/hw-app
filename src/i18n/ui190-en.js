@@ -217,6 +217,14 @@ Object.assign(UI, {
   sumSets: "Sets",
   sumEarned: "Earned today",
   sumRecord: "New record",
+  cfDelWorkoutT: "Delete this workout?",
+  cfDelWorkoutD: "It disappears from History, and your XP, records and ranks are counted again without it.",
+  cfDelBackupT: "Delete this backup?",
+  cfDelBackupD: "The file is removed from your phone for good.",
+  cfSignOutT: "Sign out?",
+  cfDelAcctT: "Delete your account?",
+  cfRestoreT: "Restore this backup?",
+  cfRestoreD: "It replaces the workouts, profile and settings on this phone.",
   plGymHint2: "Got dumbbells or a gym? Build your own plan with them.",
 });
 // 1.9.0 (Michael, Nov 7): the Stats page with charts and calories
