@@ -1,5 +1,7 @@
 // 日本語 (Japanese). Machine-assisted translation by Claude, Oct 2026; native speakers are welcome to improve it (see TRANSLATING.md).
-export default {
+import { with190 } from "./t190/merge.js";
+import T190 from "./t190/ja.js";
+const L = {
   ui: {
     searchWeb: "🔎 ネットで検索",
     searchOf: "ネットで検索：{name}",
@@ -2061,3 +2063,4 @@ export default {
   ],
   looks: {"f_iron":"アイアンリング","f_dots":"ドットリング","f_pixel":"ピクセル","f_hex":"ヘックス","f_wave":"ウェーブ","f_pulse":"パルス","f_flame":"フレイム","f_laurel":"月桂冠","f_neon":"ネオン","f_bolt":"サンダー","f_crown":"クラウン","f_obsidian":"黒曜石のかけら","f_diamond":"ダイヤモンドリング","b_glow":"テーマの輝き","b_grid":"ジムの床","b_sunset":"夕焼け","b_topo":"等高線","b_stars":"夜空","b_waves":"波","b_bubbles":"泡","b_ridge":"夜明けの尾根","b_city":"街の灯り","b_galaxy":"銀河","b_aurora":"オーロラ","t_iron":"鉄の意志","t_rookie":"ルーキー","t_grind":"毎日の積み重ね","t_zen":"禅","t_beast":"ビーストモード","t_legend":"生ける伝説","t_bird":"早起き","t_owl":"夜ふかし","t_comeback":"カムバックキッド","t_marathon":"マラソンランナー","t_shark":"カードの鮫","t_streak":"連続記録の守り手","t_midnight":"真夜中のヒーロー","t_obsidian":"オブシディアン","n_outline":"アウトライン","n_grad":"グラデーション","n_shadow":"レトロシャドウ","n_ice":"氷","n_glow":"グロー","n_fire":"炎","n_foil":"メタリック","n_rainbow":"虹","n_gold":"純金","fx_snow":"雪","fx_sparkle":"きらめき","fx_petals":"花びら","fx_embers":"火の粉","fx_lightning":"雷雨","fx_frost":"霜","fx_confetti":"パーティー","fx_fireworks":"花火"},
 };
+export default with190(L, T190);
