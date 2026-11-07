@@ -33,7 +33,11 @@ import androidx.core.content.ContextCompat;
  * keeps the CPU awake for the timer only during the rest.
  */
 public class RestService extends Service {
-    static final String CH_REST = "rest", CH_ALERT = "rest_alert";
+    // Nov 7: "rest" was IMPORTANCE_LOW (a silent notification), and Android/Nothing OS hide silent notifications on the
+    // lock screen by default (Michael's test: beep + vibration at 0 worked, no notification on the lock screen). A
+    // channel's importance can't be raised once created, so the rest timer uses a new channel id: default importance
+    // (shown on the lock screen) with its sound and vibration switched off (the service beeps itself at 0).
+    static final String CH_REST = "rest2", CH_REST_OLD = "rest", CH_ALERT = "rest_alert";
     static final int ID = 7101, ID_STILL = 7102;
     static volatile boolean appInFront = false;
 
@@ -80,8 +84,12 @@ public class RestService extends Service {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
         NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         if (nm == null) return;
-        NotificationChannel rest = new NotificationChannel(CH_REST, restName.isEmpty() ? "Rest timer" : restName, NotificationManager.IMPORTANCE_LOW);
+        try { nm.deleteNotificationChannel(CH_REST_OLD); } catch (Exception ignored) {}
+        NotificationChannel rest = new NotificationChannel(CH_REST, restName.isEmpty() ? "Rest timer" : restName, NotificationManager.IMPORTANCE_DEFAULT);
         rest.setShowBadge(false);
+        rest.setSound(null, null);
+        rest.enableVibration(false);
+        rest.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
         nm.createNotificationChannel(rest);
         nm.createNotificationChannel(new NotificationChannel(CH_ALERT, alertName.isEmpty() ? "Workout reminders" : alertName, NotificationManager.IMPORTANCE_HIGH));
     }
