@@ -1,5 +1,7 @@
 // French (français).
-export default {
+import { with190 } from "./t190/merge.js";
+import T190 from "./t190/fr.js";
+const L = {
   ui: {
     searchWeb: "🔎 Chercher sur le web",
     searchOf: "Chercher sur le web : {name}",
@@ -2063,3 +2065,4 @@ export default {
   ],
   looks: {"f_iron":"Anneau de fer","f_dots":"Anneau de points","f_pixel":"Pixel","f_hex":"Hexa","f_wave":"Vague","f_pulse":"Pouls","f_flame":"Flamme","f_laurel":"Laurier","f_neon":"Néon","f_bolt":"Tonnerre","f_crown":"Couronne","f_obsidian":"Éclat d'obsidienne","f_diamond":"Anneau de diamant","b_glow":"Lueur du thème","b_grid":"Sol de la salle","b_sunset":"Coucher de soleil","b_topo":"Courbes de niveau","b_stars":"Ciel de nuit","b_waves":"Vagues","b_bubbles":"Bulles","b_ridge":"Crête à l'aube","b_city":"Lumières de la ville","b_galaxy":"Galaxie","b_aurora":"Aurore","t_iron":"Volonté de fer","t_rookie":"Débutant","t_grind":"Effort quotidien","t_zen":"Zen","t_beast":"Mode bête","t_legend":"Légende vivante","t_bird":"Lève-tôt","t_owl":"Oiseau de nuit","t_comeback":"Roi du retour","t_marathon":"Marathonien","t_shark":"Requin des cartes","t_streak":"Gardien de la flamme","t_midnight":"Héros de minuit","t_obsidian":"Obsidienne","n_outline":"Contour","n_grad":"Dégradé","n_shadow":"Ombre rétro","n_ice":"Glace","n_glow":"Lueur","n_fire":"Feu","n_foil":"Reflet métallisé","n_rainbow":"Arc-en-ciel","n_gold":"Or pur","fx_snow":"Neige","fx_sparkle":"Étincelles","fx_petals":"Pétales","fx_embers":"Braises","fx_lightning":"Orage","fx_frost":"Givre","fx_confetti":"Fête","fx_fireworks":"Feu d'artifice"},
 };
+export default with190(L, T190);
