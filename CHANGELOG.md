@@ -34,7 +34,7 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 | Calories | a workout counted as 13 or 19 minutes | your real workout time counts (long breaks you leave out don't), and a workout that took unusually long adds nothing (the app tells you) |
 | XP | every set gave 10 XP | the first 20 sets of a day give 10 XP each, every set after that 2 XP, so adding exercises can't farm XP |
 | Health Connect *(Android app only)* | no help when Health Connect was missing on the phone or your health app didn't share its data with it | a step-by-step guide: install or update Health Connect, let your health app share (Samsung Health steps shown), then connect |
-| Guide | 9 chapters | a 10th chapter for Workout plans |
+| Guide | 9 chapters | a 10th chapter for Workout plans; the Profile chapter shows your body ranks, your last workout and the new Stats charts; the Shop chapter shows diamond codes; the workout chapter explains the rest that counts on; the Muscle Deck practice game points at the hand counter, joker cards and drills |
 | Buttons | some buttons gave no sign that a tap worked | every button reacts when pressed; buttons that wait for the network show a spinner, then a ✓ |
 | World leaderboard | world top 50 | paused for now and shown as "coming soon"; the friends leaderboard stays |
 | Workout summary | a long list of numbers | a calm summary that animates: time, sets and reps, XP and streak, what you earned today, your sets as small chips |

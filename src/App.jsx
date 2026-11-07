@@ -10465,7 +10465,7 @@ function ScoreMeter({ chips, mult, total, idle }) {
     <div data-gm-meter data-idle={idle ? 1 : 0} className={total !== null && total !== undefined ? "gmMeterHit" : undefined} style={{ position: "relative", width: "min(100%, 320px)" }}>
       <div data-gm-score style={{ display: "flex", height: 66, borderRadius: 22, overflow: "hidden", boxShadow: idle ? `0 0 0 1px ${C.line} inset` : `0 10px 30px ${C.signal}33, 0 0 0 1px ${C.chalk}22 inset` }}>
         <div style={half(C.sky, "l")}>{!idle && <span key={"c" + chips} className="gmFlash" aria-hidden="true" style={{ position: "absolute", inset: 0, background: "#ffffff" }} />}<span style={num}>{idle ? "–" : nf(tc)}</span></div>
-        <div style={half(C.signal, "r")}>{!idle && <span key={"m" + mult} className="gmFlash" aria-hidden="true" style={{ position: "absolute", inset: 0, background: "#ffffff" }} />}<span style={num}>{idle ? "–" : Number.isInteger(tm) ? tm : tm.toFixed(1)}</span></div>
+        <div style={half(C.signal, "r")}>{!idle && <span key={"m" + mult} className="gmFlash" aria-hidden="true" style={{ position: "absolute", inset: 0, background: "#ffffff" }} />}<span style={num}>{idle ? "–" : Number.isInteger(mult) ? Math.round(tm) : tm.toFixed(1)}</span></div>
       </div>
       <span aria-hidden="true" style={{ position: "absolute", left: "50%", top: "50%", width: 40, height: 40, marginLeft: -20, marginTop: -20, borderRadius: 99, display: "flex", alignItems: "center", justifyContent: "center", background: C.ink, border: `2px solid ${idle ? C.line : C.chalk + "55"}`, fontFamily: DISPLAY, fontSize: 22, fontWeight: 900, color: idle ? C.dim : C.chalk, boxShadow: "0 4px 14px rgba(0,0,0,.45)" }}>×</span>
       {total !== null && total !== undefined && <span data-gm-total className="gmRise" style={{ position: "absolute", left: "50%", top: "100%", marginTop: 10, fontFamily: DISPLAY, fontSize: 44, fontWeight: 900, color: C.signal, whiteSpace: "nowrap", textShadow: `0 0 22px ${C.signal}aa, 0 3px 10px rgba(0,0,0,.6)` }}>+{nf(total)}</span>}
@@ -10539,7 +10539,7 @@ function GameShop({ g, tut, W = 412, onMove, onMoves, onTap, onSell, onHands }) 
             <div key={i} data-gm-item={it.k} data-gm-drill={it.k === "drill" ? it.id : undefined} data-gm-pack={pk ? it.id : undefined} data-joker-row={jk ? it.id : undefined} data-rarity={jk ? r : undefined} data-sold={it.sold ? 1 : undefined} className="cardIn"
               style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center", gap: 8, padding: "12px 10px 10px", borderRadius: 18, background: `linear-gradient(180deg, ${col}1c, ${C.panel} 55%)`, border: `1px solid ${col}44`, opacity: it.sold ? 0.45 : 1, minWidth: 0 }}>
               <button type="button" data-gm-item-open={i} aria-expanded={isOpen} onClick={() => { sfxTap(); setOpen(isOpen ? null : i); }} className={jk && r >= 2 && !it.sold ? "gmWobble" : undefined} style={{ ...btnBase, background: "transparent", padding: 0 }}><ShopArt it={it} w={cw} g={g} /></button>
-              <span style={{ position: "absolute", right: 8, top: 8, padding: "2px 8px", borderRadius: 99, background: it.sold ? "transparent" : "rgba(0,0,0,.45)", color: C.signal, fontFamily: DISPLAY, fontSize: 15, fontWeight: 900, lineHeight: 1.3 }}>{it.sold ? <Ico n="check" size={15} color={C.mint} /> : <><KSign />{it.cost}</>}</span>
+              <span style={{ position: "absolute", right: 8, top: 8, padding: "2px 8px", borderRadius: 99, background: it.sold ? "transparent" : "rgba(0,0,0,.45)", color: C.signal, fontFamily: DISPLAY, fontSize: 15, fontWeight: 900, lineHeight: 1.3 }}>{it.sold ? null : <><KSign />{it.cost}</>}</span>
               {pfull && <span data-gm-full title={T("gmFull")} style={{ position: "absolute", left: 8, top: 8, width: 24, height: 24, borderRadius: 99, display: "flex", alignItems: "center", justifyContent: "center", background: "#ff6b6b26", border: "1px solid #ff9a9a88" }}><Ico n="lock" size={13} color="#ff9a9a" sw={2.4} /></span>}
               <button type="button" onClick={() => { sfxTap(); setOpen(isOpen ? null : i); }} style={{ ...btnBase, background: "transparent", padding: 0, color: C.chalk, textAlign: "center", width: "100%", fontWeight: 400 }}>
                 <span style={{ display: "block", fontWeight: 800, fontSize: 13.5, lineHeight: 1.2 }}>{name}</span>
@@ -10548,7 +10548,7 @@ function GameShop({ g, tut, W = 412, onMove, onMoves, onTap, onSell, onHands }) 
                 <span data-gm-item-desc style={{ display: isOpen ? "block" : "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", marginTop: 4, fontSize: 11.5, color: C.dim, lineHeight: 1.35 }}>{desc}</span>
               </button>
               <button type="button" data-gm-buy={i} data-gm-swap={sw ? 1 : undefined} disabled={off} onClick={() => (sw ? (sfxTap(), setSwap(i)) : onMove({ t: "buy", i }))} className={off ? undefined : "b3d"}
-                style={{ ...btnBase, marginTop: "auto", width: "100%", padding: "9px 8px", borderRadius: 12, background: it.sold ? "transparent" : off ? `${C.chalk}10` : C.signal, color: it.sold || off ? C.dim : C.signalInk, fontSize: 14, fontWeight: 900 }}>
+                style={{ ...btnBase, marginTop: "auto", width: "100%", display: "flex", alignItems: "center", justifyContent: "center", padding: "9px 8px", borderRadius: 12, background: it.sold ? "transparent" : off ? `${C.chalk}10` : C.signal, color: it.sold || off ? C.dim : C.signalInk, fontSize: 14, fontWeight: 900 }}>
                 {it.sold ? <Ico n="check" size={16} color={C.mint} /> : T(sw ? "gmSwap" : pk ? "gmOpen" : "gmBuy")}
               </button>
             </div>
@@ -10707,13 +10707,15 @@ function tourSteps(ch, x) {
   ];
   if (ch === 4) return [
     s("[data-pf-hero]", 0, { prep: screen("profile", ["pf", 0]) }),
+    s("[data-pf-last]", 10, { opt: true }), // 1.9.0: the last workout line
     s("[data-pf-edit]", 1, { opt: true }),
     s("[data-pf-looks]", 8, { opt: true }), // 1.8.2: profile looks (frames, banners, titles, effects)
+    s("[data-body-ranks]", 9, { opt: true }), // 1.9.0: body ranks
     s("[data-pf-showcase]", 2, { opt: true }),
     s('[data-pf-tab="2"]', 3, { tap: true, opt: true }),
     s("[data-pf-ranks]", 4, { opt: true }),
     s('[data-pf-tab="3"]', 5, { tap: true, opt: true }),
-    s("[data-pf-stats]", 6, { opt: true }),
+    s("[data-st-own] [data-st-card], [data-pf-stats]", 6, { opt: true }), // 1.9.0: the charts first (heat map)
     { done: true, t: X[7], prep: async () => { await tourTab("pf", 0); } },
   ];
   if (ch === 5) return [
@@ -10754,6 +10756,7 @@ function tourSteps(ch, x) {
     s("[data-shop-chest]", 1, { opt: true }),
     s("[data-shop-items]", 2, { opt: true }), // 1.8.1 (Michael): the whole box, freezes and XP boosts
     s("[data-shop-today] [data-shop-look]", 3, { opt: true }), // 1.8.2: the cards are big now: light the first one ("tap one")
+    s("[data-shop-code]", 5, { opt: true }), // 1.9.0: diamond codes
     { done: true, t: X[4] },
   ];
   if (ch === 7) return [ // friends

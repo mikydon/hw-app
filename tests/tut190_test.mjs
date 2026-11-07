@@ -1,0 +1,38 @@
+// 1.9.0: the Muscle Deck practice game still works with the new table (HUD, score meter, joker cards, drills row,
+// shop cards): every coach step, the taps it asks for, the end. Also its texts point at the new parts.
+import { start, T, shot } from "./harness.mjs";
+const h = await start({ seed: {} });
+const p = h.page;
+await p.click("[data-menu-btn]"); await p.click('[data-screen="game"]'); await p.waitForTimeout(500);
+await p.click("[data-gm-tut-go]"); await p.waitForSelector("[data-game]"); await p.waitForTimeout(700);
+const step = () => p.getAttribute("[data-gm-tut-step]", "data-gm-tut-step");
+const txt = () => p.textContent("[data-gm-tut-text]");
+const pick = async cards => { for (const c of cards) { await p.click(`[data-gm-hand] [data-card="${c}"]`); await p.waitForTimeout(120); } };
+const waitStep = async k => { for (let i = 0; i < 40 && (await p.$(`[data-gm-tut-step="${k}"]`)) === null; i++) await p.waitForTimeout(150); return step(); };
+T.eq(await step(), "intro", "starts with the intro");
+T.ok(await p.isVisible("[data-gm-meter]"), "the empty score meter is there");
+await p.click("[data-gm-tut-next]");
+T.eq(await waitStep("pair"), "pair", "step: the pair");
+await pick([11, 24]); T.ok((await txt()).includes("Play hand"), "after picking: tap Play hand");
+await shot(p, "tut190_pair");
+await p.click("[data-gm-play]"); T.eq(await waitStep("pairDone"), "pairDone", "pair played");
+T.ok((await txt()).includes("hand counter"), "the text points at the hand counter at the top");
+T.eq(await p.getAttribute("[data-gm-hands]", "data-gm-hands"), "3", "and it shows 3");
+await p.click("[data-gm-tut-next]"); T.eq(await waitStep("circuit"), "circuit", "step: the circuit");
+await pick([10, 18, 29, 39]); await p.click("[data-gm-play]"); T.eq(await waitStep("circuitDone"), "circuitDone", "circuit played");
+await p.click("[data-gm-tut-next]"); T.eq(await waitStep("discard"), "discard", "step: discard");
+await pick([27, 1, 15, 35]); await p.click("[data-gm-discard]"); T.eq(await waitStep("flush"), "flush", "discarded, step: the flush");
+T.eq(await p.getAttribute("[data-gm-discards]", "data-gm-discards"), "2", "the discard counter went down");
+await pick([41, 46, 43, 48, 50]); await p.click("[data-gm-play]"); T.eq(await waitStep("shop"), "shop", "flush played: the shop");
+T.ok(await p.isVisible("[data-gm-shop] [data-gm-items]"), "the shop cards are shown");
+await p.click("[data-gm-tut-next]"); T.eq(await waitStep("buy"), "buy", "step: buy the joker");
+await p.click('[data-gm-buy="0"]'); T.eq(await waitStep("end"), "end", "bought: the end");
+T.ok((await txt()).includes("under the jokers"), "the end text mentions the drills row");
+T.ok(await p.isVisible('[data-gm-shop] [data-gm-jokers] [data-joker="joker"]'), "the bought joker is in the row");
+await shot(p, "tut190_end");
+await p.click("[data-gm-tut-next]"); await p.waitForTimeout(600);
+T.ok(!(await p.$("[data-game]")), "Finish closes the table");
+const pr = await p.evaluate(() => JSON.parse(localStorage.getItem("domaci-trening-v1-profile")).game);
+T.ok(pr && pr.tut === 1, "the tutorial is marked done");
+T.eq(h.errors, [], "no page errors");
+await h.close(); T.done();
