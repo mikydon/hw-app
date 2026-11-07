@@ -31,6 +31,16 @@ await p.click('[data-pf-tab="2"]'); await p.waitForTimeout(700);
 T.ok(await p.locator('[data-pf-page="2"][aria-hidden="false"]').count() === 1, "Profile: the Ranks page opens");
 T.eq(await p.getAttribute('[data-pf-tab="2"]', "aria-selected"), "true", "the tapped icon is lit");
 await shot(p, "ftabs_profile");
+// Nov 7: tabs are equal columns as wide as the longest name ("Recommended" was cut at 70 px); the lit pill is one column
+await p.click("[data-menu-btn]"); await p.click('[data-screen="plans"]'); await p.waitForTimeout(700);
+const tw = await p.evaluate(() => {
+  const bs = [...document.querySelectorAll("[data-ftabs=plans] [role=tab]")], k = document.querySelector("[data-ftabs=plans] [data-ftabs-knob]");
+  return { w: bs.map(b => Math.round(b.getBoundingClientRect().width)), knob: Math.round(k.getBoundingClientRect().width),
+    cut: [...document.querySelectorAll("[data-ftabs=plans] [data-ftabs-label]")].filter(l => l.scrollWidth > l.clientWidth + 1).map(l => l.textContent) };
+});
+T.eq(tw.cut, [], "Plans: no tab name is cut (" + tw.w.join(", ") + " px)");
+T.ok(tw.w[0] === tw.w[1] && tw.w[0] >= 70, "Plans: both tabs equally wide, at least 70 px");
+T.ok(Math.abs(tw.knob - tw.w[0]) <= 1, "the lit pill is one tab wide (" + tw.knob + " px)");
 // leaving the screen removes the bar
 await p.click("[data-menu-btn]"); await p.click('[data-screen="settings"]'); await p.waitForTimeout(500);
 T.eq(await p.locator("[data-ftabs]").count(), 0, "Settings: no page switch bar");

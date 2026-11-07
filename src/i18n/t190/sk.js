@@ -31,7 +31,7 @@ export default {
     exNone: "Nič som nenašiel.",
     exSearch: "Hľadať cvik",
     fam_arms: "Ruky", fam_back: "Chrbát", fam_calves: "Lýtka", fam_chest: "Hrudník", fam_core: "Brucho", fam_glutes: "Zadok",
-    fam_hams: "Zadná strana stehien", fam_quads: "Predná strana stehien", fam_shoulders: "Ramená",
+    fam_hams: "Zadné stehná", fam_quads: "Predné stehná", fam_shoulders: "Ramená",
     freePick: "vyber si cviky",
     freeWorkout: "Voľný tréning",
     goalHelp: "Minule {v}. Skús aspoň {g} alebo menšiu pomoc.",

@@ -31,7 +31,7 @@ export default {
     exNone: "Нічого не знайдено.",
     exSearch: "Шукати вправу",
     fam_arms: "Руки", fam_back: "Спина", fam_calves: "Литки", fam_chest: "Груди", fam_core: "Прес", fam_glutes: "Сідниці",
-    fam_hams: "Задня поверхня стегна", fam_quads: "Передня поверхня стегна", fam_shoulders: "Плечі",
+    fam_hams: "Біцепс стегна", fam_quads: "Квадрицепс", fam_shoulders: "Плечі",
     freePick: "обери вправи",
     freeWorkout: "Вільне тренування",
     goalHelp: "Минулого разу {v}. Ціль — щонайменше {g} або менше допомоги.",

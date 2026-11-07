@@ -2060,11 +2060,11 @@ function SectionHead({ title, meta }) {
 function StatTile({ label, value, icon, icoCol, color, sub, children, data, compact }) {
   return (
     <div data-stat={data} style={{ ...card, ...tileR(), padding: compact ? "11px 12px" : "13px 15px", display: "flex", flexDirection: "column", minWidth: 0 }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6 }}>
-        <span style={{ fontSize: 12, color: C.dim, fontWeight: 600, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{label}</span>
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 6 }}>
+        <span data-stat-label style={{ fontSize: 12, color: C.dim, fontWeight: 600, minWidth: 0, lineHeight: 1.25, overflowWrap: "anywhere", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{label}</span>
         {ICONS[icon] ? <Ico n={icon} size={compact ? 17 : 20} color={icoCol || C.dim} /> : <span aria-hidden="true" style={{ fontSize: compact ? 14 : 17, lineHeight: 1, flexShrink: 0 }}>{icon}</span>}
       </div>
-      <div style={{ fontFamily: DISPLAY, fontSize: compact ? 30 : 36, fontWeight: 900, color: color || C.chalk, lineHeight: 1, marginTop: 8, fontVariantNumeric: "tabular-nums" }}>{value}</div>
+      <div style={{ fontFamily: DISPLAY, fontSize: compact ? 30 : 36, fontWeight: 900, color: color || C.chalk, lineHeight: 1, marginTop: sub || children ? 8 : "auto", paddingTop: sub || children ? 0 : 8, fontVariantNumeric: "tabular-nums" }}>{value}</div>
       {children}
       {sub && <div style={{ fontSize: 11.5, color: C.dim, marginTop: "auto", paddingTop: 7, lineHeight: 1.35 }}>{sub}</div>}
     </div>
@@ -3236,17 +3236,18 @@ function FloatTabs({ name, items, active, onPick, knob, extra = {} }) {
     <div data-ftabs={name} style={{ position: "fixed", left: "var(--side, 0px)", right: 0, bottom: "calc(var(--sab, 0px) + 12px + var(--fsH, 0px) + var(--mpH, 0px))", zIndex: 39, display: "flex", justifyContent: "center", padding: "0 12px", pointerEvents: "none" }}>
       <div aria-hidden="true" data-ftabs-fade style={{ position: "fixed", left: "var(--side, 0px)", right: 0, bottom: 0, height: "calc(var(--sab, 0px) + var(--ftH, 60px) + var(--fsH, 0px) + 18px)", background: `linear-gradient(180deg, ${C.ink}00, ${C.ink}c0 50%, ${C.ink}e6)`, pointerEvents: "none", zIndex: -1 }} />
       <div ref={boxRef} role="tablist" {...{ [`data-${name}-tabs`]: 1 }} className="ftabs" style={{ pointerEvents: "auto", padding: 4, boxSizing: "border-box", maxWidth: "100%", ...bar, borderRadius: 20 }}>
-        <div style={{ position: "relative", display: "flex" }}>
+        {/* equal columns as wide as the longest label (min 64/70 px); the lit pill is one column wide */}
+        <div data-ftabs-row style={{ position: "relative", display: "grid", gridTemplateColumns: `repeat(${n}, minmax(0, 1fr))` }}>
           {/* the lit pill: moved by the strip's scroll (usePager), so it glides with the pages */}
           <span ref={knob} data-ftabs-knob aria-hidden="true" style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: `${100 / n}%`, borderRadius: 16, background: `${C.signal}24`, boxShadow: `inset 0 0 0 1px ${C.signal}30`, transform: knob ? undefined : `translateX(${active * 100}%)`, willChange: "transform" }} />
           {items.map((it, i) => { const on = active === i; return (
             <button key={i} type="button" role="tab" aria-selected={on} aria-label={it.label} title={it.label} {...{ [`data-${name}-tab`]: it.data !== undefined ? it.data : i }} {...(extra.btn ? extra.btn(i) : {})}
               onClick={e => { if (extra.cancel && extra.cancel()) return; sfxTap(); onPick(i, e); }}
-              style={{ ...btnBase, position: "relative", width: n > 3 ? 64 : 70, maxWidth: `calc((100vw - 34px) / ${n})`, height: 46, padding: "0 2px", borderRadius: 16, background: "transparent", color: on ? C.signal : C.dim, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2, transition: `color ${MO.t2}` }}>
+              style={{ ...btnBase, position: "relative", minWidth: 0, width: "100%", boxSizing: "border-box", height: 46, padding: "0 2px", borderRadius: 16, background: "transparent", color: on ? C.signal : C.dim, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2, transition: `color ${MO.t2}` }}>
               <span style={{ position: "relative", display: "flex" }}><Ico n={it.icon} size={20} sw={on ? 2.3 : 2} />
                 {it.badge > 0 && <span data-badge={it.badge} aria-hidden="true" style={{ position: "absolute", top: -5, right: -8, minWidth: 15, height: 15, borderRadius: 8, padding: "0 4px", boxSizing: "border-box", background: "#ff5a5a", color: "#fff", fontSize: 9.5, fontWeight: 800, lineHeight: "15px", textAlign: "center", border: `2px solid ${C.ink}` }}>{it.badge > 9 ? "9+" : it.badge}</span>}
               </span>
-              <span aria-hidden="true" data-ftabs-label style={{ display: "block", maxWidth: "100%", fontSize: 10, fontWeight: 800, lineHeight: 1.1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{it.label}</span>
+              <span aria-hidden="true" data-ftabs-label style={{ display: "block", maxWidth: "100%", minWidth: n > 3 ? 60 : 66, padding: "0 4px", boxSizing: "border-box", textAlign: "center", fontSize: 10, fontWeight: 800, lineHeight: 1.1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{it.label}</span>
             </button>
           ); })}
         </div>

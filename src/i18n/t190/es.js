@@ -31,7 +31,7 @@ export default {
     exNone: "No se encontró nada.",
     exSearch: "Buscar ejercicios",
     fam_arms: "Brazos", fam_back: "Espalda", fam_calves: "Gemelos", fam_chest: "Pecho", fam_core: "Core", fam_glutes: "Glúteos",
-    fam_hams: "Parte trasera del muslo", fam_quads: "Parte delantera del muslo", fam_shoulders: "Hombros",
+    fam_hams: "Femorales", fam_quads: "Cuádriceps", fam_shoulders: "Hombros",
     freePick: "elige ejercicios",
     freeWorkout: "Entreno libre",
     goalHelp: "La última vez {v}. Apunta a al menos {g} o a menos ayuda.",
