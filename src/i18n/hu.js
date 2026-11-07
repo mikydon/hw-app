@@ -1,5 +1,7 @@
 // Hungarian (magyar).
-export default {
+import { with190 } from "./t190/merge.js";
+import T190 from "./t190/hu.js";
+const L = {
   ui: {
     searchWeb: "🔎 Keresés a neten",
     searchOf: "Keresés a neten: {name}",
@@ -2063,3 +2065,4 @@ export default {
   ],
   looks: {"f_iron":"Vasgyűrű","f_dots":"Pöttyös gyűrű","f_pixel":"Pixel","f_hex":"Hatszög","f_wave":"Hullám","f_pulse":"Pulzus","f_flame":"Láng","f_laurel":"Babér","f_neon":"Neon","f_bolt":"Mennydörgés","f_crown":"Korona","f_obsidian":"Obszidiánszilánk","f_diamond":"Gyémántgyűrű","b_glow":"Témafény","b_grid":"Edzőtermi padló","b_sunset":"Naplemente","b_topo":"Szintvonalak","b_stars":"Éjszakai égbolt","b_waves":"Hullámok","b_bubbles":"Buborékok","b_ridge":"Hajnali gerinc","b_city":"Városi fények","b_galaxy":"Galaxis","b_aurora":"Sarki fény","t_iron":"Vasakarat","t_rookie":"Újonc","t_grind":"Napi robot","t_zen":"Zen","t_beast":"Beast mode","t_legend":"Élő legenda","t_bird":"Korán kelő","t_owl":"Éjjeli bagoly","t_comeback":"A visszatérés királya","t_marathon":"Maratonista","t_shark":"Kártyacápa","t_streak":"Szériaőr","t_midnight":"Éjféli hős","t_obsidian":"Obszidián","n_outline":"Körvonal","n_grad":"Színátmenet","n_shadow":"Retró árnyék","n_ice":"Jég","n_glow":"Ragyogás","n_fire":"Tűz","n_foil":"Fóliacsillogás","n_rainbow":"Szivárvány","n_gold":"Színarany","fx_snow":"Hóesés","fx_sparkle":"Szikrák","fx_petals":"Szirmok","fx_embers":"Parázs","fx_lightning":"Zivatar","fx_frost":"Dér","fx_confetti":"Buli","fx_fireworks":"Tűzijáték"},
 };
+export default with190(L, T190);
