@@ -242,6 +242,9 @@ Object.assign(UI, {
   gmQuitNoSaveD: "The Run ends now and counts as lost. No XP.",
   gmQuitNoSaveYes: "Quit",
   gmJokersT: "Jokers",
+  gmHandsT: "Hands",
+  gmDrillsT: "Drills",
+  gmHandsD: "Drills raise a hand's level for the whole Run. No limit: stack as many as you like.",
 });
 // 1.9.0 (Michael, Nov 7): the Stats page with charts and calories
 Object.assign(UI, {

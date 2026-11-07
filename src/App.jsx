@@ -9013,15 +9013,18 @@ function JokerCard({ id, w = 62, onClick, glow, sellP, still, pop, dim }) {
   );
 }
 // your jokers in a row, with the empty slots drawn as dashed places (so "full" is plain to see)
-function JokerRow({ g, w = 60, onTap, hit, sell, label = true }) {
+// what a scoring step adds, as a short floating label: +12 (chips), +4 (multiplier), ×2
+const hitTxt = h => (h.x ? `×${fmtM(h.x)}` : h.mult ? `+${fmtM(h.mult)}` : h.chips ? `+${h.chips}` : "");
+function JokerRow({ g, w = 60, onTap, hit, hitTxt: ht, hitCol, hitK, sell, label = true }) {
   const slots = GM.jokerSlots(g), empty = Math.max(0, slots - g.jokers.length);
   return (
     <div data-gm-jokers-box>
       {label && <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 800, letterSpacing: 0.7, textTransform: "uppercase", color: C.dim, marginBottom: 6 }}>
         <Ico n="jcard" size={14} color={C.dim} />{T("gmJokersT")}<span data-gm-slots={`${g.jokers.length}/${slots}`} style={{ marginLeft: "auto", color: g.jokers.length >= slots ? "#ff9a9a" : C.dim, fontVariantNumeric: "tabular-nums" }}>{g.jokers.length}/{slots}</span>
       </div>}
-      <div data-gm-jokers style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4, scrollbarWidth: "none" }}>
-        {g.jokers.map((j, k) => <JokerCard key={j.id + k} id={j.id} w={w} glow={hit === j.id} sellP={sell ? Math.max(1, Math.floor(j.cost / 2)) : 0} onClick={() => { sfxTap(); onTap(k); }} />)}
+      <div data-gm-jokers style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4, paddingTop: 2, scrollbarWidth: "none" }}>
+        {g.jokers.map((j, k) => <span key={j.id + k} style={{ position: "relative", flexShrink: 0 }}><JokerCard id={j.id} w={w} glow={hit === j.id} sellP={sell ? Math.max(1, Math.floor(j.cost / 2)) : 0} onClick={() => { sfxTap(); onTap(k); }} />
+          {hit === j.id && ht && <span key={hitK} data-gm-float className="gmFloat" style={{ position: "absolute", left: "50%", top: "45%", pointerEvents: "none", fontFamily: DISPLAY, fontSize: 22, fontWeight: 900, whiteSpace: "nowrap", color: hitCol || C.signal, textShadow: "0 2px 8px rgba(0,0,0,.7)" }}>{ht}</span>}</span>)}
         {Array.from({ length: empty }, (_, k) => <span key={"e" + k} aria-hidden="true" data-gm-slot style={{ width: w, height: Math.round(w * 1.42), flexShrink: 0, borderRadius: Math.round(w * 0.16), border: `1.5px dashed ${C.chalk}26`, background: `${C.chalk}05`, boxSizing: "border-box" }} />)}
       </div>
     </div>
@@ -10214,7 +10217,7 @@ function useTween(target, ms = 480) {
   }, [target]);
   return v;
 }
-// An open pack: 3 choices that flip in one by one; pick one or skip (1.8.0, Michael: "more like Balatro").
+// An open pack: 3 choices that flip in one by one; pick one or skip (1.8.0).
 function PackOpen({ g, onMove, onSell }) {
   const pk = g.pack, jp = GM.isJokerPack(pk.id), full = jp && g.jokers.length >= GM.jokerSlots(g);
   return createPortal(
@@ -10256,6 +10259,8 @@ function GameTable({ saved, history, onEnd, onQuit, onTutDone }) {
   const shownT = useTween(shown), moneyT = useTween(g.money);
   const [fx, setFx] = useState(null); // "shake" (a big hand) | "win" (blind beaten: confetti + shake)
   const [quit, setQuit] = useState(false);
+  const [hands, setHands] = useState(false); // 1.9.0: the hands sheet (levels from drills)
+  const [lvPop, setLvPop] = useState(null); // 1.9.0: {h, lv, k} after a drill: "Pair → lv 2"
   const [insp, setInsp] = useState(null); // 1.9.0: {i, ask} = a joker held up (JokerInspect); ask = straight to "Sell?"
   const [noSave, setNoSave] = useState(false); // 1.9.0: "Quit without saving?" asked
   const [why, setWhy] = useState(false); // the breakdown of the selected cards' score
@@ -10265,7 +10270,7 @@ function GameTable({ saved, history, onEnd, onQuit, onTutDone }) {
   const tutSel = () => !tstep || !tstep.cards || (sel.length === tstep.cards.length && sel.every(i => tstep.cards.includes(g.hand[i])));
   const timers = useRef([]);
   useEffect(() => () => timers.current.forEach(clearTimeout), []);
-  useBack(() => setQuit(true), !quit && !insp); // the open boxes handle Back themselves
+  useBack(() => setQuit(true), !quit && !insp && !hands); // the open boxes handle Back themselves
   useEffect(() => { if (!tut) gameSave({ ...saved, moves }); }, [moves]);
   const ended = g.phase === "over" || g.phase === "won";
   useEffect(() => { if (ended && !anim) { const t = setTimeout(() => onEnd({ ...saved, moves }, g), 500); return () => clearTimeout(t); } }, [ended, anim]);
@@ -10302,7 +10307,10 @@ function GameTable({ saved, history, onEnd, onQuit, onTutDone }) {
   const canSell = !tut && !anim && (g.phase === "blind" || g.phase === "shop");
   const sellNow = i => { try { const next = doMove({ t: "sell", i }); setG(next); } catch (_) {} setInsp(null); };
   const shopMoves = ms => { try { let st = g; for (const m of ms) st = GM.act(st, m); setMoves(x => [...x, ...ms]); setG(st); gmSfx.buy(); } catch (_) {} };
-  const shopMove = m => { if (tut && !(tstep.t === "buy" && m.t === "buy" && m.i === tstep.i)) return; if (tut) setTs(t => t + 1); try { const next = doMove(m); setG(next); if (m.t === "buy" && next.pack) gmSfx.pack(); else if (m.t === "buy") gmSfx.buy(); else if (m.t === "pick") gmSfx.reveal(next.jokers.length > g.jokers.length && GM.JOKERS[next.jokers[next.jokers.length - 1].id].r >= 2); else if (m.t === "skip") sfxTap(); else if (m.t === "sell") gmSfx.sell(); else if (m.t === "reroll") gmSfx.reroll(); else gmSfx.deal(8); if (m.t === "next") { setShown(0); setDealKey(k => k + 1); } } catch (_) {} };
+  const shopMove = m => { if (tut && !(tstep.t === "buy" && m.t === "buy" && m.i === tstep.i)) return; if (tut) setTs(t => t + 1); try { const next = doMove(m); setG(next);
+    const up = GM.HANDS.find(h => ((next.levels || {})[h] || 0) > ((g.levels || {})[h] || 0)); // a drill (bought or picked)
+    if (up) { setLvPop({ h: up, lv: (next.levels[up] || 0) + 1, k: Date.now() }); timers.current.push(setTimeout(() => setLvPop(p => (p && Date.now() - p.k >= 1700 ? null : p)), 1800)); }
+    if (m.t === "buy" && next.pack) gmSfx.pack(); else if (m.t === "buy") gmSfx.buy(); else if (m.t === "pick") gmSfx.reveal(next.jokers.length > g.jokers.length && GM.JOKERS[next.jokers[next.jokers.length - 1].id].r >= 2); else if (m.t === "skip") sfxTap(); else if (m.t === "sell") gmSfx.sell(); else if (m.t === "reroll") gmSfx.reroll(); else gmSfx.deal(8); if (m.t === "next") { setShown(0); setDealKey(k => k + 1); } } catch (_) {} };
   const toggle = i => { if (anim || (tut && !(tstep.cards && tstep.cards.includes(g.hand[i])))) return; gmSfx.pick(GM.valueOf(g.hand[i]), !sel.includes(i)); setSel(s => (s.includes(i) ? s.filter(x => x !== i) : s.length >= GM.RULES.maxPlay ? s : [...s, i])); };
   const W = Math.min(innerWidth, 560), cw = Math.max(46, Math.min(78, Math.floor((W - 40) / 5.6))); // 1.9.0: bigger cards
   const step = Math.min(cw + 6, Math.floor((W - 60 - cw) / Math.max(1, g.hand.length - 1))); // 1.9.0: room for the fan's tilt
@@ -10313,6 +10321,8 @@ function GameTable({ saved, history, onEnd, onQuit, onTutDone }) {
   const gmPill = { display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 5, padding: "4px 10px", borderRadius: 99, border: "1px solid", background: `${C.chalk}08`, fontFamily: DISPLAY, fontSize: 16, fontWeight: 900, lineHeight: 1.1, flexShrink: 0 };
   return createPortal(
     <div data-game={g.phase} data-gm-mode={saved.mode} className={"gmTable" + (fx ? " gmShake" : "")} style={{ position: "fixed", inset: 0, zIndex: 90, background: `radial-gradient(120% 60% at 50% 0%, ${hexMix(C.panelHi, C.signal, 0.06)}, transparent 70%), radial-gradient(90% 50% at 50% 100%, ${hexMix(C.panel, C.sky, 0.1)}, transparent 75%), repeating-linear-gradient(135deg, ${C.chalk}05 0 1px, transparent 1px 9px), ${C.ink}`, color: C.chalk, fontFamily: BODY, display: "flex", flexDirection: "column", padding: "calc(var(--sat, 0px) + 10px) 14px calc(var(--sab, 0px) + 12px)", boxSizing: "border-box", overflowY: "auto", overscrollBehavior: "contain" }}>
+      {/* a slow glow drifting over the table (Michael: "more dynamic"); behind everything, no taps */}
+      <div aria-hidden="true" className="gmAmb" style={{ position: "fixed", inset: 0, zIndex: -1, pointerEvents: "none", background: `radial-gradient(30% 22% at 30% 35%, ${C.signal}14, transparent 70%), radial-gradient(28% 20% at 72% 62%, ${C.sky}16, transparent 70%)` }} />
       {/* 1.9.0 (Michael, Nov 7: "nicer, more icons, less text"): one HUD: the blind as a medallion with its target, your
           money, the score bar, hands and discards as icon counters, then your jokers as cards with their empty slots */}
       <div data-gm-hud style={{ display: "flex", alignItems: "stretch", gap: 8, position: "relative" }}>
@@ -10334,7 +10344,7 @@ function GameTable({ saved, history, onEnd, onQuit, onTutDone }) {
         {g.perk && <span data-gm-perk-chip={g.perk} title={L.gm.perk[g.perk][0] + ": " + L.gm.perk[g.perk][1].replace(/\$(\d+)/g, "$1 " + COIN)} style={{ ...gmPill, marginLeft: "auto", color: C.signal, borderColor: `${C.signal}44` }}><Ico n={PERK_ICON[g.perk]} size={15} color={C.signal} /></span>}
       </div>
       {/* jokers (also in the shop, so they show once: the shop draws its own row) */}
-      {g.phase !== "shop" && <div style={{ marginTop: 10 }}><JokerRow g={g} w={Math.min(62, Math.floor((W - 28 - 6 * 5) / 6))} hit={anim && anim.hit && anim.hit.j} onTap={k => setInsp({ i: k })} /></div>}
+      {g.phase !== "shop" && <div style={{ marginTop: 10 }}><JokerRow g={g} w={Math.min(62, Math.floor((W - 28 - 6 * 5) / 6))} hit={anim && anim.hit && anim.hit.j} hitTxt={anim && anim.hit && anim.hit.j ? hitTxt(anim.hit) : null} hitCol={anim && anim.hit && anim.hit.chips && !anim.hit.mult && !anim.hit.x ? C.sky : C.signal} hitK={anim ? anim.i : 0} onTap={k => setInsp({ i: k })} /><div style={{ marginTop: 8 }}><DrillRow g={g} onOpen={() => setHands(true)} /></div></div>}
       {tstep && !anim && <TutCoach key={ts} step={tstep} ready={tutSel() && sel.length > 0} onNext={nextTut} />}
       {g.phase === "blind" || anim ? (
         <>
@@ -10342,24 +10352,31 @@ function GameTable({ saved, history, onEnd, onQuit, onTutDone }) {
           <div style={{ flex: 1, minHeight: 170, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 10 }}>
             {anim ? (
               <>
-                <div style={{ display: "flex", gap: 6, justifyContent: "center", flexWrap: "wrap" }}>{anim.cards.map((c, k) => <PlayCard key={c} c={c} w={Math.min(56, cw)} bests={bests} pop={anim.hit && anim.hit.c === c} out={!anim.sc.scored.includes(c)} dead={anim.sc.steps.some(s => s.c === c && s.dead)} />)}</div>
-                <div data-gm-hand-name style={{ fontFamily: DISPLAY, fontSize: 26, fontWeight: 900 }}>{handName(anim.sc.hand)}</div>
-                <ScoreBox chips={anim.chips} mult={anim.mult} total={anim.total ? anim.sc.score : null} />
+                <div style={{ display: "flex", gap: 6, justifyContent: "center", flexWrap: "wrap", paddingTop: 22 }}>{anim.cards.map((c, k) => { const hit = anim.hit && anim.hit.c === c && !anim.hit.j ? anim.hit : null; return (
+                  <span key={c} style={{ position: "relative", display: "inline-block" }}>
+                    <PlayCard c={c} w={Math.min(60, cw)} bests={bests} pop={!!hit} out={!anim.sc.scored.includes(c)} dead={anim.sc.steps.some(s => s.c === c && s.dead)} />
+                    {hit && <span key={anim.i} data-gm-float className="gmFloat" style={{ position: "absolute", left: "50%", top: -6, fontFamily: DISPLAY, fontSize: 20, fontWeight: 900, whiteSpace: "nowrap", color: hit.chips ? C.sky : C.signal, textShadow: "0 2px 8px rgba(0,0,0,.6)" }}>{hitTxt(hit)}</span>}
+                  </span>); })}</div>
+                <div key={"h" + anim.sc.hand} data-gm-hand-name className="gmPop" style={{ fontFamily: DISPLAY, fontSize: 32, fontWeight: 900, lineHeight: 1.05 }}>{handName(anim.sc.hand)}</div>
+                <ScoreMeter chips={anim.chips} mult={anim.mult} total={anim.total ? anim.sc.score : null} />
               </>
             ) : preview ? (
               <>
-                <div data-gm-hand-name style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900 }}>{handName(preview.hand)}{(g.levels || {})[preview.hand] ? <span style={{ fontSize: 14, color: C.dim }}> · {T("gmLv", { n: (g.levels[preview.hand] || 0) + 1 })}</span> : null}</div>
-                <ScoreBox chips={preview.chips} mult={preview.mult} />
+                <div key={"h" + preview.hand} data-gm-hand-name className="gmPop" style={{ fontFamily: DISPLAY, fontSize: 32, fontWeight: 900, lineHeight: 1.05, textAlign: "center" }}>{handName(preview.hand)}{(g.levels || {})[preview.hand] ? <span style={{ fontSize: 14, color: C.dim }}> · {T("gmLv", { n: (g.levels[preview.hand] || 0) + 1 })}</span> : null}</div>
+                <ScoreMeter chips={preview.chips} mult={preview.mult} />
                 <button type="button" data-gm-why onClick={() => { sfxTap(); setWhy(true); }} style={{ ...btnBase, background: "transparent", color: C.signal, fontSize: 13.5, padding: "4px 10px", display: "flex", alignItems: "center", gap: 4 }}>
                   {preview.scored.length < sel.length ? T("gmCounts", { n: preview.scored.length, m: sel.length }) + " · " : ""}{T("gmWhy")}<Arrow />
                 </button>
               </>
-            ) : <div style={{ fontSize: 14, color: C.dim, textAlign: "center" }}>{T("gmPick")}</div>}
+            ) : <>
+              <div data-gm-pick-hint style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, color: C.dim, textAlign: "center", minHeight: 34 }}><span className="gmHint" style={{ display: "flex" }}><Ico n="hand" size={22} color={`${C.chalk}66`} /></span>{T("gmPick")}</div>
+              <ScoreMeter idle chips={0} mult={0} />
+            </>}
           </div>
           {/* hand */}
-          <div key={dealKey} data-gm-hand style={{ position: "relative", height: Math.round(cw * 1.4) + 40, margin: "0 auto", width: cw + step * Math.max(0, g.hand.length - 1) }}>
+          <div key={dealKey} data-gm-hand style={{ position: "relative", height: Math.round(cw * 1.4) + 52, margin: "0 auto", width: cw + step * Math.max(0, g.hand.length - 1) }}>
             {!anim && order.map((hi, k) => { const mid = (g.hand.length - 1) / 2, d = k - mid; return (
-              <div key={g.hand[hi]} style={{ position: "absolute", left: k * step, bottom: 22, transform: `translateY(${Math.round(d * d * 1.6)}px) rotate(${(d * 2.6).toFixed(1)}deg)`, transformOrigin: "50% 130%" /* 1.9.0: a soft fan */ }}>
+              <div key={g.hand[hi]} style={{ position: "absolute", left: k * step, bottom: 32, transform: `translateY(${Math.round(d * d * 1.4)}px) rotate(${(d * 2.4).toFixed(1)}deg)`, transformOrigin: "50% 130%" /* 1.9.0: a soft fan */ }}>
                 <PlayCard c={g.hand[hi]} w={cw} bests={bests} glow={!!(tstep && tstep.cards && tstep.cards.includes(g.hand[hi]) && !sel.includes(hi))} sel={sel.includes(hi)} out={!!preview && sel.includes(hi) && !preview.scored.includes(g.hand[hi])} onClick={() => toggle(hi)} i={k} deal dead={g.blind === 2 && g.boss === "skip_" + GM.suitOf(g.hand[hi])} />
               </div>); })}
           </div>
@@ -10374,10 +10391,14 @@ function GameTable({ saved, history, onEnd, onQuit, onTutDone }) {
           </div>
         </>
       ) : g.phase === "shop" ? (
-        <GameShop g={g} tut={tut} W={W} onMove={shopMove} onMoves={shopMoves} onTap={k => setInsp({ i: k })} onSell={canSell ? k => setInsp({ i: k, ask: true }) : null} />
+        <GameShop g={g} tut={tut} W={W} onMove={shopMove} onMoves={shopMoves} onTap={k => setInsp({ i: k })} onSell={canSell ? k => setInsp({ i: k, ask: true }) : null} onHands={() => setHands(true)} />
       ) : <div style={{ flex: 1 }} />}
       {fx === "win" && <Confetti count={45} />}
       {why && sel.length > 0 && <ScoreWhy g={g} cards={sel.map(i => g.hand[i])} bests={bests} onClose={() => setWhy(false)} />}
+      {hands && <HandsSheet g={g} onClose={() => setHands(false)} />}
+      {lvPop && createPortal(<div key={lvPop.k} data-gm-lvup={lvPop.h} aria-live="polite" className="gmLvUp" style={{ position: "fixed", left: "50%", top: "38%", zIndex: 104, pointerEvents: "none", display: "flex", alignItems: "center", gap: 10, padding: "12px 18px", borderRadius: 18, background: C.panel, border: `1.5px solid ${C.signal}`, boxShadow: `0 16px 40px rgba(0,0,0,.5), 0 0 24px ${C.signal}55`, color: C.chalk, fontFamily: BODY, whiteSpace: "nowrap" }}>
+        <Ico n="dumbbell" size={22} color={C.signal} /><span style={{ fontFamily: DISPLAY, fontSize: 22, fontWeight: 900 }}>{handName(lvPop.h)}</span><Arrow style={{ color: C.dim }} /><span style={{ fontFamily: DISPLAY, fontSize: 22, fontWeight: 900, color: C.signal }}>{T("gmLv", { n: lvPop.lv })}</span>
+      </div>, document.body)}
       {insp && g.jokers[insp.i] && <JokerInspect key={insp.i + (insp.ask ? "a" : "v")} g={g} i={insp.i} ask={!!insp.ask} canSell={canSell} onSell={sellNow} onClose={() => setInsp(null)} />}
       {/* 1.9.0 (Michael, Nov 1): clear choices in a centred box. Save and quit keeps the Run for later; quitting without
           saving ends it and counts as lost (else people would leave Runs they're losing). Ranked: leaving = a loss. */}
@@ -10398,22 +10419,77 @@ function GameTable({ saved, history, onEnd, onQuit, onTutDone }) {
     document.body
   );
 }
-function ScoreBox({ chips, mult, total }) {
-  // 1.9.0: two solid pills (chips in sky, the multiplier in the main colour) with a soft glow; own colours
-  const pill = col => ({ minWidth: 64, textAlign: "center", padding: "8px 14px", borderRadius: 16, background: `linear-gradient(180deg, ${hexMix(col, "#ffffff", 0.18)}, ${col})`, color: "#0b0f1c", fontFamily: DISPLAY, fontSize: 28, fontWeight: 900, lineHeight: 1.05, boxShadow: `0 0 0 1px ${hexMix(col, "#ffffff", 0.35)} inset, 0 6px 18px ${col}55`, fontVariantNumeric: "tabular-nums" });
+// 1.9.0 (Michael, Nov 7: "what does a drill do? I don't see it anywhere"): every hand with its level and what it is
+// worth now (chips × multiplier); levelled hands are lit. Opened from the HUD on the table and in the shop.
+const handVal = (g, h) => { const lv = (g.levels || {})[h] || 0; return [GM.HAND_BASE[h][0] + GM.HAND_UP[h][0] * lv, GM.HAND_BASE[h][1] + GM.HAND_UP[h][1] * lv, lv]; };
+// 1.9.0 (Michael, Nov 7: "I still don't know where to see which drills I have"): under the jokers, every hand that a
+// drill raised as a chip with its level; a tap (or the empty chip) opens the full list
+function DrillRow({ g, onOpen }) {
+  const up = GM.HANDS.filter(h => (g.levels || {})[h]).reverse(), n = up.reduce((a, h) => a + g.levels[h], 0);
   return (
-    <div data-gm-score style={{ display: "flex", alignItems: "center", gap: 8 }}>
+    <button type="button" data-gm-hands-open data-lv={n} aria-label={T("gmHandsT")} onClick={() => { sfxTap(); onOpen(); }} style={{ ...btnBase, display: "block", width: "100%", background: "transparent", padding: 0, textAlign: "left", color: C.chalk, fontWeight: 400 }}>
+      <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 800, letterSpacing: 0.7, textTransform: "uppercase", color: C.dim, marginBottom: 6 }}>
+        <Ico n="dumbbell" size={14} color={C.dim} />{T("gmDrillsT")}<span style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 2, color: n ? C.signal : C.dim }}>{T("gmHandsT")}<Arrow size={15} style={{ color: n ? C.signal : C.dim }} /></span>
+      </span>
+      <span data-gm-drills style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+        {up.length ? up.map(h => <span key={h} data-gm-drill-chip={h} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 10px", borderRadius: 99, background: `${C.signal}18`, border: `1px solid ${C.signal}66`, fontSize: 12.5, fontWeight: 800 }}>{handName(h)}<span style={{ fontSize: 10.5, fontWeight: 900, padding: "1px 6px", borderRadius: 99, background: C.signal, color: C.signalInk }}>{T("gmLv", { n: g.levels[h] + 1 })}</span></span>)
+          : <span data-gm-drill-chip="" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 12px", borderRadius: 99, border: `1.5px dashed ${C.chalk}2e`, color: C.dim, fontSize: 12.5, fontWeight: 700 }}><Ico n="dumbbell" size={14} color={C.dim} />0</span>}
+      </span>
+    </button>
+  );
+}
+function HandsSheet({ g, onClose }) {
+  return (
+    <Sheet short title={T("gmHandsT")} onClose={onClose}>
+      <div data-gm-hands-sheet style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12.5, color: C.dim, lineHeight: 1.4, marginBottom: 4 }}><Ico n="dumbbell" size={16} color={C.signal} />{T("gmHandsD")}</div>
+        {GM.HANDS.slice().reverse().map(h => { const [c, m, lv] = handVal(g, h); return (
+          <div key={h} data-gm-hand-row={h} data-lv={lv + 1} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", borderRadius: 12, background: lv ? `${C.signal}14` : SOFT(), border: `1px solid ${lv ? C.signal + "66" : "transparent"}` }}>
+            <span style={{ flex: 1, minWidth: 0, fontWeight: 800, fontSize: 14.5, color: lv ? C.chalk : C.dim }}>{handName(h)}</span>
+            <span style={{ fontSize: 11, fontWeight: 900, letterSpacing: 0.4, textTransform: "uppercase", padding: "2px 8px", borderRadius: 99, color: lv ? C.signalInk : C.dim, background: lv ? C.signal : "transparent", border: lv ? "none" : `1px solid ${C.line}` }}>{T("gmLv", { n: lv + 1 })}</span>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontFamily: DISPLAY, fontWeight: 900, fontSize: 15, fontVariantNumeric: "tabular-nums", minWidth: 86, justifyContent: "flex-end" }}><span style={{ color: C.sky }}>{c}</span><span style={{ color: C.dim, fontSize: 12 }}>×</span><span style={{ color: C.signal }}>{m}</span></span>
+          </div>); })}
+      </div>
+    </Sheet>
+  );
+}
+// 1.9.0 (Michael, Nov 7: "not bigger, redesign it, more dynamic"): the table's score as one meter: chips on the left,
+// the multiplier on the right, × in a round badge where they meet. Numbers roll to their new value, the half that
+// changed flashes, and when the hand is counted the result rises out of the meter. Own design and colours.
+function ScoreMeter({ chips, mult, total, idle }) {
+  const tc = useTween(chips, 320), tm = useTween(Math.round(mult * 10), 320) / 10;
+  const half = (col, side) => ({ flex: 1, minWidth: 0, display: "flex", alignItems: "center", justifyContent: "center", padding: side === "l" ? "0 26px 0 10px" : "0 10px 0 26px", position: "relative", overflow: "hidden",
+    background: idle ? `${col}14` : `linear-gradient(${side === "l" ? "90deg" : "270deg"}, ${hexMix(col, C.ink, 0.55)}, ${col})`, color: idle ? `${col}88` : "#0b0f1c", transition: `background ${MO.t2}, color ${MO.t2}` });
+  const num = { fontFamily: DISPLAY, fontSize: 38, fontWeight: 900, lineHeight: 1, fontVariantNumeric: "tabular-nums", position: "relative" };
+  return (
+    <div data-gm-meter data-idle={idle ? 1 : 0} className={total !== null && total !== undefined ? "gmMeterHit" : undefined} style={{ position: "relative", width: "min(100%, 320px)" }}>
+      <div data-gm-score style={{ display: "flex", height: 66, borderRadius: 22, overflow: "hidden", boxShadow: idle ? `0 0 0 1px ${C.line} inset` : `0 10px 30px ${C.signal}33, 0 0 0 1px ${C.chalk}22 inset` }}>
+        <div style={half(C.sky, "l")}>{!idle && <span key={"c" + chips} className="gmFlash" aria-hidden="true" style={{ position: "absolute", inset: 0, background: "#ffffff" }} />}<span style={num}>{idle ? "–" : nf(tc)}</span></div>
+        <div style={half(C.signal, "r")}>{!idle && <span key={"m" + mult} className="gmFlash" aria-hidden="true" style={{ position: "absolute", inset: 0, background: "#ffffff" }} />}<span style={num}>{idle ? "–" : Number.isInteger(tm) ? tm : tm.toFixed(1)}</span></div>
+      </div>
+      <span aria-hidden="true" style={{ position: "absolute", left: "50%", top: "50%", width: 40, height: 40, marginLeft: -20, marginTop: -20, borderRadius: 99, display: "flex", alignItems: "center", justifyContent: "center", background: C.ink, border: `2px solid ${idle ? C.line : C.chalk + "55"}`, fontFamily: DISPLAY, fontSize: 22, fontWeight: 900, color: idle ? C.dim : C.chalk, boxShadow: "0 4px 14px rgba(0,0,0,.45)" }}>×</span>
+      {total !== null && total !== undefined && <span data-gm-total className="gmRise" style={{ position: "absolute", left: "50%", top: "100%", marginTop: 10, fontFamily: DISPLAY, fontSize: 44, fontWeight: 900, color: C.signal, whiteSpace: "nowrap", textShadow: `0 0 22px ${C.signal}aa, 0 3px 10px rgba(0,0,0,.6)` }}>+{nf(total)}</span>}
+    </div>
+  );
+}
+function ScoreBox({ chips, mult, total, big }) {
+  // 1.9.0: two solid pills (chips in sky, the multiplier in the main colour) with a soft glow; own colours. big = on the
+  // table (Michael, Nov 7: "make it bigger, the whole game more dynamic")
+  const fs = big ? 40 : 28;
+  const pill = col => ({ boxSizing: "border-box", minWidth: big ? 104 : 64, textAlign: "center", padding: big ? "10px 18px" : "8px 14px", borderRadius: big ? 20 : 16, background: `linear-gradient(180deg, ${hexMix(col, "#ffffff", 0.18)}, ${col})`, color: "#0b0f1c", fontFamily: DISPLAY, fontSize: fs, fontWeight: 900, lineHeight: 1.05, boxShadow: `0 0 0 1px ${hexMix(col, "#ffffff", 0.35)} inset, 0 8px ${big ? 26 : 18}px ${col}66`, fontVariantNumeric: "tabular-nums" });
+  return (
+    <div data-gm-score style={{ display: "flex", alignItems: "center", gap: big ? 10 : 8, flexWrap: "wrap", justifyContent: "center" }}>
       <span key={"c" + chips} className="gmBump" style={pill(C.sky)}>{nf(chips)}</span>
-      <span style={{ fontFamily: DISPLAY, fontSize: 22, fontWeight: 900, color: C.dim }}>×</span>
+      <span style={{ fontFamily: DISPLAY, fontSize: big ? 28 : 22, fontWeight: 900, color: C.dim }}>×</span>
       <span key={"m" + mult} className="gmBump" style={pill(C.signal)}>{Number.isInteger(mult) ? mult : mult.toFixed(1)}</span>
-      {total !== null && total !== undefined && <span data-gm-total className="gmPop" style={{ fontFamily: DISPLAY, fontSize: 30, fontWeight: 900, color: C.signal, marginLeft: 4 }}>= {nf(total)}</span>}
+      {total !== null && total !== undefined && <span data-gm-total className="gmPop" style={{ fontFamily: DISPLAY, fontSize: big ? 42 : 30, fontWeight: 900, color: C.signal, marginLeft: 4, textShadow: `0 0 18px ${C.signal}88` }}>= {nf(total)}</span>}
     </div>
   );
 }
 // 1.9.0 (Michael, Nov 7: "nicer shop, more icons, less text; a tap opens the details"): the shop as a counter of
 // cards in two columns (a joker as its card, packs and drills as their own cards), the price on a tag, one Buy button;
 // a tap on a card opens its full text. Your jokers sit below as cards with their sell price; a tap holds one up.
-function ShopArt({ it, w }) {
+function ShopArt({ it, w, g }) {
   if (it.k === "joker") return <JokerCard id={it.id} w={w} still />;
   const pk = it.k === "pack", col = pk ? "#b78cff" : C.signal, h = Math.round(w * 1.42), rr = Math.round(w * 0.16);
   return (
@@ -10422,12 +10498,12 @@ function ShopArt({ it, w }) {
         {pk && <span style={{ position: "absolute", left: 0, right: 0, top: "50%", height: 8, marginTop: -4, background: `${col}88` }} />}
         <span style={{ position: "relative", display: "flex", padding: pk ? 8 : 0, borderRadius: 99, background: pk ? hexMix(C.ink, col, 0.25) : "transparent", filter: `drop-shadow(0 0 6px ${col}aa)` }}><Ico n={pk ? PACK_ICON[it.id] : "dumbbell"} size={Math.round(w * (pk ? 0.36 : 0.42))} color={col} /></span>
         {pk && <span style={{ position: "absolute", right: 5, bottom: 5, fontFamily: DISPLAY, fontSize: Math.round(w * 0.2), fontWeight: 900, color: C.chalk, lineHeight: 1 }}>×{GM.PACKS[it.id].n}</span>}
-        {!pk && <span style={{ position: "absolute", left: 0, right: 0, bottom: 6, textAlign: "center", fontFamily: DISPLAY, fontSize: Math.round(w * 0.17), fontWeight: 900, color: col }}>{T("gmLv", { n: "+1" })}</span>}
+        {!pk && <span data-gm-drill-lv style={{ position: "absolute", left: 0, right: 0, bottom: 6, textAlign: "center", fontFamily: DISPLAY, fontSize: Math.round(w * 0.17), fontWeight: 900, color: col, whiteSpace: "nowrap" }}>{!g ? T("gmLv", { n: "+1" }) : it.sold ? T("gmLv", { n: ((g.levels || {})[it.id] || 0) + 1 }) : `${((g.levels || {})[it.id] || 0) + 1} → ${((g.levels || {})[it.id] || 0) + 1 + (GM.hasV(g, "drillmaster") ? 2 : 1)}`}</span>}
       </span>
     </span>
   );
 }
-function GameShop({ g, tut, W = 412, onMove, onMoves, onTap, onSell }) {
+function GameShop({ g, tut, W = 412, onMove, onMoves, onTap, onSell, onHands }) {
   const sh = g.shop, pay = sh.pay ?? ((g.last && g.last.pay) || 0);
   // 1.8.0 (Michael, Oct 25: "let me swap them if I like another one more"): with all joker slots taken, Buy becomes
   // Swap: pick one of yours, it is sold and the new one bought in one go
@@ -10462,7 +10538,7 @@ function GameShop({ g, tut, W = 412, onMove, onMoves, onTap, onSell }) {
           return (
             <div key={i} data-gm-item={it.k} data-gm-drill={it.k === "drill" ? it.id : undefined} data-gm-pack={pk ? it.id : undefined} data-joker-row={jk ? it.id : undefined} data-rarity={jk ? r : undefined} data-sold={it.sold ? 1 : undefined} className="cardIn"
               style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center", gap: 8, padding: "12px 10px 10px", borderRadius: 18, background: `linear-gradient(180deg, ${col}1c, ${C.panel} 55%)`, border: `1px solid ${col}44`, opacity: it.sold ? 0.45 : 1, minWidth: 0 }}>
-              <button type="button" data-gm-item-open={i} aria-expanded={isOpen} onClick={() => { sfxTap(); setOpen(isOpen ? null : i); }} className={jk && r >= 2 && !it.sold ? "gmWobble" : undefined} style={{ ...btnBase, background: "transparent", padding: 0 }}><ShopArt it={it} w={cw} /></button>
+              <button type="button" data-gm-item-open={i} aria-expanded={isOpen} onClick={() => { sfxTap(); setOpen(isOpen ? null : i); }} className={jk && r >= 2 && !it.sold ? "gmWobble" : undefined} style={{ ...btnBase, background: "transparent", padding: 0 }}><ShopArt it={it} w={cw} g={g} /></button>
               <span style={{ position: "absolute", right: 8, top: 8, padding: "2px 8px", borderRadius: 99, background: it.sold ? "transparent" : "rgba(0,0,0,.45)", color: C.signal, fontFamily: DISPLAY, fontSize: 15, fontWeight: 900, lineHeight: 1.3 }}>{it.sold ? <Ico n="check" size={15} color={C.mint} /> : <><KSign />{it.cost}</>}</span>
               {pfull && <span data-gm-full title={T("gmFull")} style={{ position: "absolute", left: 8, top: 8, width: 24, height: 24, borderRadius: 99, display: "flex", alignItems: "center", justifyContent: "center", background: "#ff6b6b26", border: "1px solid #ff9a9a88" }}><Ico n="lock" size={13} color="#ff9a9a" sw={2.4} /></span>}
               <button type="button" onClick={() => { sfxTap(); setOpen(isOpen ? null : i); }} style={{ ...btnBase, background: "transparent", padding: 0, color: C.chalk, textAlign: "center", width: "100%", fontWeight: 400 }}>
@@ -10495,6 +10571,7 @@ function GameShop({ g, tut, W = 412, onMove, onMoves, onTap, onSell }) {
       {g.vouchers && g.vouchers.length > 0 && <div data-gm-vouchers style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>{g.vouchers.map(v => <span key={v} title={((L.gm.v || {})[v] || [v])[0] + ": " + ((L.gm.v || {})[v] || ["", ""])[1]} style={{ display: "inline-flex", padding: 6, borderRadius: 10, border: "1px dashed #ffb02e88" }}><Ico n={VOUCHER_ICON[v] || "ticket"} size={16} color="#ffb02e" /></span>)}</div>}
       {g.pack && <PackOpen g={g} onMove={onMove} onSell={onSell} />}
       <JokerRow g={g} w={Math.min(60, Math.floor((W - 28 - 6 * 5) / 6))} sell={!tut} onTap={k => onTap(k)} />
+      <DrillRow g={g} onOpen={onHands} />
       {swap !== null && (
         <Sheet short title={T("gmSwapT")} onClose={() => setSwap(null)}>
           <div data-gm-swap-sheet style={{ fontSize: 14, color: C.dim, lineHeight: 1.5, marginBottom: 10 }}>{T("gmSwapD", { name: jName(sh.items[swap].id) })}</div>
@@ -12489,10 +12566,17 @@ export default function App() {
         .gmLift{animation:gmLift .55s ${MO.spring} both}@keyframes gmLift{from{transform:perspective(700px) rotateY(-28deg) translateY(16px) scale(.8);opacity:0}}
         .gmSold{animation:gmSold .6s ${MO.exit} forwards}@keyframes gmSold{30%{transform:scale(1.06) rotate(-3deg)}100%{transform:scale(.2) rotate(14deg) translateY(-30px);opacity:0}}
         .gmCoinUp{animation:gmCoinUp .62s ${MO.pop} forwards}@keyframes gmCoinUp{from{opacity:0;margin-top:10px}35%{opacity:1}to{opacity:1;margin-top:-46px}}
+        .gmLvUp{animation:gmLvUp 1.8s ${MO.pop} forwards}@keyframes gmLvUp{0%{opacity:0;transform:translate(-50%,14px) scale(.85)}14%{opacity:1;transform:translate(-50%,0) scale(1.06)}22%{transform:translate(-50%,0) scale(1)}80%{opacity:1;transform:translate(-50%,0)}100%{opacity:0;transform:translate(-50%,-16px)}}
+        .gmFloat{animation:gmFloat .7s ${MO.pop} forwards}@keyframes gmFloat{0%{opacity:0;transform:translate(-50%,8px) scale(.7)}25%{opacity:1;transform:translate(-50%,-6px) scale(1.15)}100%{opacity:0;transform:translate(-50%,-30px) scale(1)}}
+        .gmAmb{animation:gmAmb 16s ease-in-out infinite alternate;will-change:transform}@keyframes gmAmb{from{transform:translate(-4%,-3%) rotate(0)}to{transform:translate(5%,4%) rotate(8deg)}}
+        .gmHint{animation:gmHint 2.2s ease-in-out infinite}@keyframes gmHint{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+        .gmMeterHit{animation:gmMeterHit .5s ${MO.spring}}@keyframes gmMeterHit{40%{transform:scale(1.07)}100%{transform:none}}
+        .gmFlash{animation:gmFlash .45s ease-out forwards;opacity:0}@keyframes gmFlash{0%{opacity:.55}100%{opacity:0}}
+        .gmRise{animation:gmRise 1s ${MO.pop} forwards}@keyframes gmRise{0%{opacity:0;transform:translate(-50%,-30px) scale(.5)}35%{opacity:1;transform:translate(-50%,4px) scale(1.18)}60%{transform:translate(-50%,0) scale(1)}100%{opacity:1;transform:translate(-50%,0) scale(1)}}
         .gmBossPulse{animation:gmBossPulse 1.8s ease-in-out infinite}@keyframes gmBossPulse{50%{box-shadow:0 0 0 6px #ff6b6b22,0 0 24px #ff6b6baa}}
         @keyframes gmGlowCard{from{box-shadow:0 0 0 2px ${C.signal}66, 0 0 10px ${C.signal}55}to{box-shadow:0 0 0 3px ${C.signal}, 0 0 22px ${C.signal}aa}}
         @keyframes gmGlow{0%{transform:translateY(0)}40%{transform:translateY(-6px) scale(1.08)}100%{transform:none}}
-        @media (prefers-reduced-motion: reduce){.gmDeal,.gmPop,.gmBump,.gmGlow,.gmLift,.gmBossPulse{animation:none}}
+        @media (prefers-reduced-motion: reduce){.gmDeal,.gmPop,.gmBump,.gmGlow,.gmLift,.gmBossPulse,.gmAmb,.gmHint,.gmFlash{animation:none}}
         @keyframes revDeal{from{transform:translateY(55vh) rotate(-18deg) scale(.6);opacity:0}to{transform:none;opacity:1}}
         .revTw{position:absolute;border-radius:2px;transform:translate(-50%,-50%) rotate(45deg) scale(0);animation:revTw var(--du) ease-in-out var(--dl) infinite}
         @keyframes revTw{0%,100%{transform:translate(-50%,-50%) rotate(45deg) scale(0);opacity:0}50%{transform:translate(-50%,-50%) rotate(45deg) scale(1);opacity:1}}

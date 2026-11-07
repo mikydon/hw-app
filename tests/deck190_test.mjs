@@ -58,6 +58,22 @@ const open = async (h, extra) => {
   T.eq(await p.$$eval(J, e => e.length), n0 - 1, "after the confirmation one joker is sold");
   T.ok((await p.textContent("[data-gm-money]")) !== money0, "money changed");
   T.ok(!(await p.$(`${row} [data-gm-full]`)) && !(await p.isDisabled(`[data-gm-buy="${F.i}"]`)), "a free slot: the pack is open to buy again");
+  // 1.9.0 (Michael: "what does a drill do? I don't see it anywhere"): buying a drill pops "Hand → lv N", the hands
+  // sheet lists every hand with its level and chips × multiplier
+  const di = await p.$$eval("[data-gm-buy]", els => { const b = els.find(e => e.closest('[data-gm-item="drill"]') && !e.disabled); return b ? b.getAttribute("data-gm-buy") : null; });
+  if (di !== null) {
+    const h = await p.getAttribute(`[data-gm-item="drill"]:has([data-gm-buy="${di}"])`, "data-gm-drill");
+    T.eq(await p.textContent(`[data-gm-item="drill"]:has([data-gm-buy="${di}"]) [data-gm-drill-lv]`), "1 → 2", "the drill card shows lv 1 → 2");
+    await p.click(`[data-gm-buy="${di}"]`); await p.waitForSelector("[data-gm-lvup]");
+    T.eq(await p.getAttribute("[data-gm-lvup]", "data-gm-lvup"), h, "the drill pops its hand going up a level");
+    await p.waitForTimeout(400); await shot(p, "deck190_lvup");
+    T.eq(await p.getAttribute("[data-gm-hands-open]", "data-lv"), "1", "the hands button counts the levels");
+    await p.click("[data-gm-hands-open]"); await p.waitForSelector("[data-gm-hands-sheet]"); await p.waitForTimeout(400);
+    T.eq(await p.getAttribute(`[data-gm-hand-row="${h}"]`, "data-lv"), "2", "the sheet shows that hand at lv 2");
+    T.eq(await p.$$eval("[data-gm-hand-row]", e => e.length), 10, "all 10 hands are listed");
+    await shot(p, "deck190_hands");
+    await p.keyboard.press("Escape"); await p.locator(".sheetBox button[aria-label]").first().click().catch(() => {}); await p.waitForTimeout(500);
+  } else T.ok(true, "(no affordable drill in this shop)");
   // a tap on a shop card opens its full text
   await p.click('[data-gm-item-open="0"]');
   T.eq(await p.getAttribute('[data-gm-item-open="0"]', "aria-expanded"), "true", "a shop card opens its details");
@@ -126,11 +142,18 @@ const open = async (h, extra) => {
   for (let n = 0; n < 300 && !(st.phase === "blind" && st.jokers.length); n++) { const m = G.botMove(st, 5); st = G.act(st, m); moves.push(m); }
   const h = await start({ seed: { extra: { [GAME_KEY]: { mode: "run", opts: F.opts, moves, at: 1 } } } });
   const p = h.page; await open(h);
-  const n0 = await p.$$eval("[data-gm-jokers] > button", e => e.length);
+  const n0 = await p.$$eval("[data-gm-jokers] [data-joker]", e => e.length);
   await p.waitForTimeout(500); await shot(p, "deck190_table0");
-  await p.click("[data-gm-jokers] > button"); await p.waitForSelector("[data-gm-joker-sell]");
+  // the fanned hand never reaches the Play / Discard buttons (Michael: "won't it touch the buttons?"), also with cards picked
+  const gap = async () => p.evaluate(() => { const top = Math.min(...[...document.querySelectorAll("[data-gm-play],[data-gm-discard],[data-gm-sort]")].map(b => b.getBoundingClientRect().top)); return top - Math.max(...[...document.querySelectorAll("[data-gm-hand] [data-card]")].map(c => c.getBoundingClientRect().bottom)); });
+  const g0 = await gap(); T.ok(g0 >= 8, `cards stay above the buttons (${Math.round(g0)} px)`);
+  await p.click("[data-gm-hand] [data-card] >> nth=0"); await p.click("[data-gm-hand] [data-card] >> nth=-1"); await p.waitForTimeout(400);
+  const g1 = await gap(); T.ok(g1 >= 8, `also with the outer cards picked (${Math.round(g1)} px)`);
+  T.ok(await p.isVisible("[data-gm-score]"), "the score preview shows");
+  await p.click("[data-gm-hand] [data-card] >> nth=0"); await p.click("[data-gm-hand] [data-card] >> nth=-1"); await p.waitForTimeout(300);
+  await p.click("[data-gm-jokers] [data-joker]"); await p.waitForSelector("[data-gm-joker-sell]");
   await p.click("[data-gm-joker-sell]"); await p.click("[data-gm-sell-yes]"); await p.waitForTimeout(900);
-  T.eq(await p.$$eval("[data-gm-jokers] > button", e => e.length), n0 - 1, "sold on the table");
+  T.eq(await p.$$eval("[data-gm-jokers] [data-joker]", e => e.length), n0 - 1, "sold on the table");
   await shot(p, "deck190_table");
   T.eq(await p.getAttribute("[data-game]", "data-game"), "blind", "the blind goes on");
   T.eq(h.errors, [], "no page errors");
