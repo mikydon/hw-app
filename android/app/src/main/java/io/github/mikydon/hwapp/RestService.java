@@ -38,7 +38,15 @@ public class RestService extends Service {
     // channel's importance can't be raised once created, so the rest timer uses a new channel id: default importance
     // (shown on the lock screen) with its sound and vibration switched off (the service beeps itself at 0).
     static final String CH_REST = "rest2", CH_REST_OLD = "rest", CH_ALERT = "rest_alert";
-    static final int ID = 7101, ID_STILL = 7102;
+    static final int ID = 7101, ID_STILL = 7102, ID_OVER = 7103;
+    // Nov 7 (Michael: "first the normal countdown, then into minus"; "if I swipe it away at the start, it doesn't come
+    // back at 0"): the service writes the time itself once a second (no system chronometer, which OEMs draw
+    // differently): 0:25 … 0:01, 0:00, −0:01 …, with a bar while it counts down. A swiped-away notification isn't
+    // re-posted every second (deleteIntent → dismissed); at 0 it comes back as a new notification (ID_OVER), because
+    // Android keeps a dismissed foreground-service notification hidden under its own id.
+    private int curId = ID;
+    private volatile boolean dismissed = false;
+    private final Runnable tick = new Runnable() { public void run() { onTick(); } };
     static volatile boolean appInFront = false;
 
     private final Handler handler = new Handler(Looper.getMainLooper());
@@ -53,6 +61,7 @@ public class RestService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent == null || "stop".equals(intent.getAction())) { stopAll(); return START_NOT_STICKY; }
+        if ("dismissed".equals(intent.getAction())) { dismissed = true; return START_NOT_STICKY; }
         endAt = intent.getLongExtra("endAt", System.currentTimeMillis() + 60000L);
         startAt = intent.getLongExtra("startAt", System.currentTimeMillis());
         title = str(intent, "title");
@@ -63,7 +72,10 @@ public class RestService extends Service {
         channels(str(intent, "channelName"), str(intent, "alertName"));
         try {
             int type = Build.VERSION.SDK_INT >= 34 ? ServiceInfo.FOREGROUND_SERVICE_TYPE_HEALTH : 0;
-            ServiceCompat.startForeground(this, ID, build(false), type);
+            dismissed = false;
+            curId = ID;
+            try { ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).cancel(ID_OVER); } catch (Exception ignored) {}
+            ServiceCompat.startForeground(this, ID, build(), type);
         } catch (Exception e) {
             // e.g. Android 14+ without the "Physical activity" permission: no service, the app keeps its own timer
             stopSelf();
@@ -73,7 +85,8 @@ public class RestService extends Service {
         long now = System.currentTimeMillis();
         holdCpu(Math.max(0, endAt - now) + stillAfter + 60000L);
         if (endAt > now) handler.postDelayed(this::atZero, endAt - now);
-        else show(true);
+        else show();
+        handler.postDelayed(tick, nextTick(now));
         handler.postDelayed(this::stillTraining, Math.max(0, endAt + stillAfter - now));
         return START_NOT_STICKY;
     }
@@ -101,35 +114,59 @@ public class RestService extends Service {
         return PendingIntent.getActivity(this, 1, open, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
     }
 
-    /** over = the rest is past 0: the clock counts up from the end ("extra rest"). */
-    private Notification build(boolean over) {
+    /** The time as the app shows it: 0:25 while counting down, 0:00, then −0:12 (extra rest). */
+    private String clock(long now) {
+        long left = endAt - now;
+        long secs = left > 0 ? (left + 999) / 1000 : (-left) / 1000;
+        String t = (secs / 60) + ":" + String.format(java.util.Locale.ROOT, "%02d", secs % 60);
+        return left <= 0 && secs > 0 ? "\u2212" + t : t;
+    }
+
+    /** Next whole second of the countdown (so 0:00 and the minus start exactly at the rest's end). */
+    private long nextTick(long now) {
+        long d = ((now - endAt) % 1000 + 1000) % 1000;
+        long wait = 1000 - d;
+        return wait < 40 ? wait + 1000 : wait;
+    }
+
+    private Notification build() {
+        long now = System.currentTimeMillis();
+        boolean over = now >= endAt;
+        Intent del = new Intent(this, RestService.class).setAction("dismissed");
         NotificationCompat.Builder b = new NotificationCompat.Builder(this, CH_REST)
             .setSmallIcon(R.drawable.ic_stat_hw)
             .setColor(ContextCompat.getColor(this, R.color.hw_notify))
-            .setContentTitle(title)
+            .setContentTitle(clock(now))
+            .setContentText(over && !bodyOver.isEmpty() ? bodyOver + " · " + title : title)
             .setOngoing(true)
             .setOnlyAlertOnce(true)
             .setSilent(true)
             .setCategory(NotificationCompat.CATEGORY_STOPWATCH)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setContentIntent(openApp())
-            .setShowWhen(true)
-            .setUsesChronometer(true)
-            // Nov 7 (Michael: past 0 it counted up from 0:00 and showed no minus): always a countdown to endAt; past it
-            // Android's chronometer shows the time as negative ("−0:12"), like the app's own rest screen
-            .setChronometerCountDown(true)
-            .setWhen(endAt);
-        if (over) b.setContentText(bodyOver);
+            .setDeleteIntent(PendingIntent.getService(this, 2, del, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE))
+            .setShowWhen(false);
+        long total = Math.max(1000, endAt - startAt);
+        if (!over) b.setProgress(1000, (int) Math.min(1000, Math.max(0, (now - startAt) * 1000 / total)), false);
         return b.build();
     }
 
-    private void show(boolean over) {
+    private void show() {
         NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        if (nm != null) nm.notify(ID, build(over));
+        if (nm != null && !dismissed) nm.notify(curId, build());
+    }
+
+    private void onTick() {
+        long now = System.currentTimeMillis();
+        show();
+        // tick as long as the CPU is kept awake for the rest (the rest, 10 min over, + 1 min)
+        if (now < endAt + stillAfter + 60000L) handler.postDelayed(tick, nextTick(now));
     }
 
     private void atZero() {
-        show(true);
+        // swiped away earlier: 0 is news again, so it comes back as a new notification
+        if (dismissed) { dismissed = false; curId = ID_OVER; }
+        show();
         if (appInFront) return; // the app is on screen and beeps itself
         try {
             ToneGenerator tg = new ToneGenerator(AudioManager.STREAM_MUSIC, 90);
@@ -185,7 +222,7 @@ public class RestService extends Service {
         try { if (lock != null && lock.isHeld()) lock.release(); } catch (Exception ignored) {}
         try {
             NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-            if (nm != null) nm.cancel(ID_STILL);
+            if (nm != null) { nm.cancel(ID_STILL); nm.cancel(ID_OVER); }
         } catch (Exception ignored) {}
         ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE);
         stopSelf();
