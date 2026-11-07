@@ -1,5 +1,7 @@
 // Ukrainian (українська).
-export default {
+import { with190 } from "./t190/merge.js";
+import T190 from "./t190/uk.js";
+const L = {
   ui: {
     searchWeb: "🔎 Пошукати в інтернеті",
     searchOf: "Пошукати в інтернеті: {name}",
@@ -2063,3 +2065,4 @@ export default {
   ],
   looks: {"f_iron":"Залізне кільце","f_dots":"Кільце з крапок","f_pixel":"Піксель","f_hex":"Гекс","f_wave":"Хвиля","f_pulse":"Пульс","f_flame":"Полум'я","f_laurel":"Лавр","f_neon":"Неон","f_bolt":"Грім","f_crown":"Корона","f_obsidian":"Уламок обсидіану","f_diamond":"Діамантове кільце","b_glow":"Сяйво теми","b_grid":"Підлога залу","b_sunset":"Захід сонця","b_topo":"Горизонталі","b_stars":"Нічне небо","b_waves":"Хвилі","b_bubbles":"Бульбашки","b_ridge":"Хребет на світанку","b_city":"Вогні міста","b_galaxy":"Галактика","b_aurora":"Полярне сяйво","t_iron":"Залізна воля","t_rookie":"Новачок","t_grind":"Щоденна праця","t_zen":"Дзен","t_beast":"Режим звіра","t_legend":"Жива легенда","t_bird":"Рання пташка","t_owl":"Нічна сова","t_comeback":"Король повернень","t_marathon":"Марафонець","t_shark":"Картярська акула","t_streak":"Охоронець серії","t_midnight":"Опівнічний герой","t_obsidian":"Обсидіан","n_outline":"Контур","n_grad":"Градієнт","n_shadow":"Ретро-тінь","n_ice":"Лід","n_glow":"Сяйво","n_fire":"Вогонь","n_foil":"Блиск фольги","n_rainbow":"Веселка","n_gold":"Чисте золото","fx_snow":"Снігопад","fx_sparkle":"Іскри","fx_petals":"Пелюстки","fx_embers":"Жаринки","fx_lightning":"Гроза","fx_frost":"Іній","fx_confetti":"Вечірка","fx_fireworks":"Феєрверк"},
 };
+export default with190(L, T190);
