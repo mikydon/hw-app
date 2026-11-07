@@ -1,5 +1,7 @@
 // Spanish (español).
-export default {
+import { with190 } from "./t190/merge.js";
+import T190 from "./t190/es.js";
+const L = {
   ui: {
     searchWeb: "🔎 Buscar en internet",
     searchOf: "Buscar en internet: {name}",
@@ -2063,3 +2065,4 @@ export default {
   ],
   looks: {"f_iron":"Anillo de hierro","f_dots":"Anillo de puntos","f_pixel":"Píxel","f_hex":"Hexágono","f_wave":"Onda","f_pulse":"Pulso","f_flame":"Llama","f_laurel":"Laurel","f_neon":"Neón","f_bolt":"Trueno","f_crown":"Corona","f_obsidian":"Fragmento de obsidiana","f_diamond":"Anillo de diamante","b_glow":"Brillo del tema","b_grid":"Suelo del gimnasio","b_sunset":"Atardecer","b_topo":"Curvas de nivel","b_stars":"Cielo nocturno","b_waves":"Olas","b_bubbles":"Burbujas","b_ridge":"Cresta al amanecer","b_city":"Luces de la ciudad","b_galaxy":"Galaxia","b_aurora":"Aurora","t_iron":"Voluntad de hierro","t_rookie":"Novato","t_grind":"Esfuerzo diario","t_zen":"Zen","t_beast":"Modo bestia","t_legend":"Leyenda viva","t_bird":"Madrugador","t_owl":"Ave nocturna","t_comeback":"Rey del regreso","t_marathon":"Maratoniano","t_shark":"Tiburón de las cartas","t_streak":"Guardián de la racha","t_midnight":"Héroe de medianoche","t_obsidian":"Obsidiana","n_outline":"Contorno","n_grad":"Degradado","n_shadow":"Sombra retro","n_ice":"Hielo","n_glow":"Brillo","n_fire":"Fuego","n_foil":"Brillo metálico","n_rainbow":"Arcoíris","n_gold":"Oro puro","fx_snow":"Nevada","fx_sparkle":"Destellos","fx_petals":"Pétalos","fx_embers":"Brasas","fx_lightning":"Tormenta","fx_frost":"Escarcha","fx_confetti":"Fiesta","fx_fireworks":"Fuegos artificiales"},
 };
+export default with190(L, T190);
