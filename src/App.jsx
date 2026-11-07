@@ -2536,10 +2536,21 @@ const menuOrderOf = st => { const o = ((st && st.menuOrder) || []).filter(x => S
 function NavRows({ items, screen, onGo }) {
   const [edit, setEdit] = useState(false);
   const [drag, setDrag] = useState(null); // {from, to, dy, h}
-  const rowRefs = useRef([]);
+  // 1.9.0 (Michael, Nov 7: "when I let go of the ≡ it jumps up, too far"): after a drop the rows take their new order at
+  // once without a transition, and only the dropped row glides from where the finger left it into its new place
+  const [drop, setDrop] = useState(null); // {id, off}
+  const rowRefs = useRef({});
+  useLayoutEffect(() => {
+    if (!drop) return;
+    const el = rowRefs.current[drop.id];
+    if (el && drop.off && !reducedMotion() && el.animate) {
+      const a = el.animate([{ transform: `translateY(${drop.off}px)` }, { transform: "translateY(0px)" }], { duration: 220, easing: MO.ease });
+      a.onfinish = a.oncancel = () => setDrop(null);
+    } else setDrop(null);
+  }, [drop]);
   const startDrag = (e, i) => {
     e.preventDefault(); e.stopPropagation();
-    const el = rowRefs.current[i]; if (!el) return;
+    const el = rowRefs.current[items[i].id]; if (!el) return;
     const h = el.getBoundingClientRect().height + 4, y0 = e.clientY;
     let st = { from: i, to: i, dy: 0, h };
     setDrag(st); vibrate([12]);
@@ -2547,6 +2558,8 @@ function NavRows({ items, screen, onGo }) {
     const up = () => {
       window.removeEventListener("pointermove", mv); window.removeEventListener("pointerup", up); window.removeEventListener("pointercancel", up);
       const ids = items.map(x => x.id), [x] = ids.splice(st.from, 1); ids.splice(st.to, 0, x);
+      // where the row was let go, measured from its new place (its new slot is (to − from) rows away from the old one)
+      setDrop({ id: x, off: st.dy - (st.to - st.from) * st.h });
       setDrag(null); if (st.to !== st.from && setMenuOrderGlobal) { setMenuOrderGlobal(ids); vibrate([20]); }
     };
     window.addEventListener("pointermove", mv); window.addEventListener("pointerup", up); window.addEventListener("pointercancel", up);
@@ -2568,7 +2581,7 @@ function NavRows({ items, screen, onGo }) {
       {items.map((it, i) => {
         const on = it.id === screen, dragging = drag && drag.from === i;
         return (
-          <div key={it.id} ref={el => { rowRefs.current[i] = el; }} data-nav-row={it.id} style={{ position: "relative", transform: `translateY(${shift(i)}px)`, transition: dragging ? "none" : `transform ${MO.t1} ${MO.ease}`, zIndex: dragging ? 2 : 1 }}>
+          <div key={it.id} ref={el => { rowRefs.current[it.id] = el; }} data-nav-row={it.id} style={{ position: "relative", transform: `translateY(${shift(i)}px)`, transition: dragging || drop ? "none" : `transform ${MO.t1} ${MO.ease}`, zIndex: dragging || (drop && drop.id === it.id) ? 2 : 1 }}>
             <button onClick={() => !edit && onGo(it.id)} aria-current={on ? "page" : undefined} className="drawerItem" data-screen={it.id} tabIndex={edit ? -1 : 0}
               style={{ ...btnBase, "--i": i + 2, width: "100%", display: "flex", alignItems: "center", gap: 14, padding: "10px 10px", margin: "2px 0", borderRadius: 14, background: dragging ? C.panelHi : on && !edit ? `${C.signal}1a` : "transparent", color: on && !edit ? C.signal : C.chalk, textAlign: "left", boxShadow: dragging ? "0 10px 26px rgba(0,0,0,.45)" : "none" }}>
               <span style={{ width: 40, height: 40, borderRadius: 12, background: on && !edit ? `${C.signal}26` : LOOK === "liquid" ? "rgba(255,255,255,.08)" : C.panelHi, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><TabIcon name={it.id} active={on && !edit} /></span>

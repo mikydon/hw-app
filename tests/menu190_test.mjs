@@ -17,7 +17,14 @@ for (let k = 1; k <= 10; k++) await p.mouse.move(hd.x + hd.width / 2, hd.y + hd.
 const mid = await p.locator('[data-nav-row="train"]').evaluate(el => el.style.transform);
 T.ok(mid.includes("translateY(") && !mid.includes("(0px)"), "others move out of the way while dragging");
 await shot(p, "menu_drag");
-await p.mouse.up(); await p.waitForTimeout(300);
+// 1.9.0 (Michael, Nov 7: the row jumped up too far after letting go): record the dropped row every frame
+const held = (await p.locator('[data-nav-row="calories"]').boundingBox()).y;
+await p.evaluate(() => { window.__fr = []; const t0 = performance.now(); const f = () => { const el = document.querySelector('[data-nav-row="calories"]'); window.__fr.push(el.getBoundingClientRect().y); if (performance.now() - t0 < 600) requestAnimationFrame(f); }; requestAnimationFrame(f); });
+await p.mouse.up(); await p.waitForTimeout(700);
+const fr = await p.evaluate(() => window.__fr), fin = fr[fr.length - 1];
+T.ok(Math.abs(fr[0] - held) < 6, `the row starts where it was let go (${Math.round(held)} → ${Math.round(fr[0])})`);
+T.ok(fr.every(y => y >= Math.min(held, fin) - 1 && y <= Math.max(held, fin) + 1), `it never jumps past its place (min ${Math.round(Math.min(...fr))}, place ${Math.round(fin)})`);
+T.ok(Math.abs(fin - top.y) < 3, "it ends exactly in the first slot");
 T.eq((await order()).slice(0, 3), ["calories", "train", "plans"], "Calories moved to the top");
 T.ok(await p.locator('[data-nav-row="calories"] [data-nav-start]').count() === 1, "first row marked as start screen");
 await p.click("[data-nav-pencil]");
