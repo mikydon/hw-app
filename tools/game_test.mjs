@@ -180,5 +180,42 @@ console.log("1.8.2: more jokers, vouchers and packs; easier targets; saved games
 const weak = wr(3, { push: -1, pull: -1, legs: -1, core: -1 }), strong = wr(10, { push: 6, pull: 6, legs: 6, core: 6 });
 console.log(`   run: blinds cleared on average: weak bot, no training ${weak.toFixed(1)}; strong bot, Emerald ${strong.toFixed(1)} (of 24)`);
 ok(strong > weak, "training makes the deck stronger");
+console.log("1.9.0: selling during a blind and with a pack open");
+{
+  // a bot game up to a shop with every joker slot taken and a joker pack it can pay for
+  let found = null;
+  for (let k = 0; k < 400 && !found; k++) {
+    const opts = { seed: "ff" + k, mode: "run", suit: { push: 3, pull: 3, legs: 3, core: 3 } };
+    let st = G.newGame(opts);
+    for (let n = 0; n < 500 && st.phase !== "over" && st.phase !== "won"; n++) {
+      if (st.phase === "shop" && !st.pack && st.jokers.length >= G.jokerSlots(st)) {
+        const i = st.shop.items.findIndex(it => it.k === "pack" && G.isJokerPack(it.id) && !it.sold && st.money >= it.cost);
+        if (i >= 0) { found = { st, i }; break; }
+      }
+      const m = G.botMove(st, 5); if (!m) break; st = G.act(st, m);
+    }
+  }
+  ok(!!found, "found a shop with full joker slots and a joker pack");
+  if (found) {
+    let st = G.act(found.st, { t: "buy", i: found.i });
+    ok(!!st.pack && st.pack.opts.length > 0, "the pack is open");
+    let threw = false; try { G.act(st, { t: "pick", i: 0 }); } catch (_) { threw = true; }
+    ok(threw, "full slots: a pick is refused");
+    const m0 = st.money, j0 = st.jokers[0];
+    st = G.act(st, { t: "sell", i: 0 });
+    ok(st.pack && st.jokers.length === G.jokerSlots(st) - 1 && st.money === m0 + Math.max(1, Math.floor(j0.cost / 2)), "selling inside the open pack frees a slot and pays half");
+    const want = st.pack.opts[0];
+    st = G.act(st, { t: "pick", i: 0 });
+    ok(!st.pack && st.jokers.some(j => j.id === want), "then the pick works");
+  }
+  // a sale during a blind
+  let st = G.newGame({ seed: "sellb", mode: "run", suit: { push: 3, pull: 3, legs: 3, core: 3 } });
+  for (let n = 0; n < 300 && !(st.phase === "blind" && st.jokers.length); n++) { const m = G.botMove(st, 5); if (!m) break; st = G.act(st, m); }
+  ok(st.phase === "blind" && st.jokers.length > 0, "a blind with a joker");
+  const n0 = st.jokers.length, m1 = st.money, after = G.act(st, { t: "sell", i: 0 });
+  ok(after.phase === "blind" && after.jokers.length === n0 - 1 && after.money > m1 && after.hand.length === st.hand.length, "selling during a blind keeps the hand and pays");
+  let bad = false; try { G.act(st, { t: "sell", i: 9 }); } catch (_) { bad = true; }
+  ok(bad, "selling a joker you don't have is refused");
+}
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

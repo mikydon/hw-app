@@ -358,11 +358,19 @@ function blindWon(st) {
   st.phase = "shop"; st.shop = { ...makeShop(st, 0), pay }; // pay stays with the shop (st.last changes with every buy)
 }
 // One move. Returns the new state; an impossible move throws (the server rejects such a replay).
+// Selling one of your jokers: half its price (at least 1). 1.9.0: also during a blind and while a pack is open (with
+// all slots full a joker pack locked every option, so the paid pack was lost); older games never had these moves.
+function sellJoker(st, i, bad) {
+  const j = st.jokers[i]; if (!j) bad("sell");
+  st.jokers.splice(i, 1); st.money += Math.max(1, Math.floor(j.cost / 2)); st.last = { t: "sell", id: j.id };
+  return st;
+}
 export function act(state, a) {
   const st = clone(state);
   st.n++;
   const bad = m => { throw new Error("bad move: " + m); };
   if (st.phase === "blind") {
+    if (a.t === "sell") return sellJoker(st, a.i, bad);
     if (a.t !== "play" && a.t !== "discard") bad(a.t);
     const idx = [...new Set(a.c || [])];
     if (!idx.length || idx.length > RULES.maxPlay || idx.some(i => !(i >= 0 && i < st.hand.length))) bad("cards");
@@ -392,6 +400,7 @@ export function act(state, a) {
     // an open pack: pick one of its options or skip it; nothing else until then
     if (st.pack) {
       if (a.t === "skip") { st.pack = null; st.last = { t: "skip" }; return st; }
+      if (a.t === "sell") return sellJoker(st, a.i, bad); // free a slot, then pick
       if (a.t !== "pick") bad("pack open");
       const o = st.pack.opts[a.i]; if (o === undefined) bad("pick");
       if (isJokerPack(st.pack.id)) { if (st.jokers.length >= jokerSlots(st)) bad("full"); st.jokers.push({ id: o, cost: JOKERS[o].cost }); }
@@ -409,11 +418,7 @@ export function act(state, a) {
       st.money -= it.cost; it.sold = 1; st.last = { t: "buy", it };
       return st;
     }
-    if (a.t === "sell") {
-      const j = st.jokers[a.i]; if (!j) bad("sell");
-      st.jokers.splice(a.i, 1); st.money += Math.max(1, Math.floor(j.cost / 2)); st.last = { t: "sell", id: j.id };
-      return st;
-    }
+    if (a.t === "sell") return sellJoker(st, a.i, bad);
     if (a.t === "reroll") {
       if (st.money < sh.rerollCost) bad("reroll");
       st.money -= sh.rerollCost; st.shop = { ...makeShop(st, sh.rerolls + 1), pay: sh.pay }; st.last = { t: "reroll" };

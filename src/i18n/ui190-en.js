@@ -226,6 +226,22 @@ Object.assign(UI, {
   cfRestoreT: "Restore this backup?",
   cfRestoreD: "It replaces the workouts, profile and settings on this phone.",
   plGymHint2: "Got dumbbells or a gym? Build your own plan with them.",
+  // 1.9.0 (Nov 7): last workout on the profile, 0-rep sets, Muscle Deck selling and quitting
+  pfLast: "Last workout",
+  pfLastHand: "added by hand",
+  editZero: "Sets with 0 don't count: fill in at least one real set, or delete the workout.",
+  gmPackFull2: "Slots full: sell one to pick a new one.",
+  gmFull: "Full",
+  gmSellT: "Sell {name}?",
+  gmSellD: "You get ${n} back. It's gone for the rest of this Run.",
+  gmSellYes: "Sell",
+  gmSaveQuit: "Save and quit",
+  gmSaveQuitD: "Your Run waits here. Continue it any time.",
+  gmQuitNoSave: "Quit without saving",
+  gmQuitNoSaveT: "Quit without saving?",
+  gmQuitNoSaveD: "The Run ends now and counts as lost. No XP.",
+  gmQuitNoSaveYes: "Quit",
+  gmJokersT: "Jokers",
 });
 // 1.9.0 (Michael, Nov 7): the Stats page with charts and calories
 Object.assign(UI, {

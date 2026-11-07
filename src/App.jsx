@@ -476,7 +476,10 @@ function levelUpFor(history, id) {
 function addDays(k, n) { const d = parseKey(k); d.setDate(d.getDate() + n); return dateKey(d); }
 
 // XP: 10 per set, 25 per personal record, 10 for full warm-up, 10 for cool-down.
-function setsIn(e) { return e.items.reduce((a, it) => a + it.res.filter(v => v !== null && v !== undefined).length, 0); }
+// 1.9.0 (Michael, Nov 7: a fake streak from warm-up + stretching + quit): only a set with a result above 0 is a set.
+const realSet = v => numVal(v) > 0; // holds are saved as "15s"
+const hasRealSet = items => (items || []).some(it => (it.res || []).some(realSet));
+function setsIn(e) { return e.items.reduce((a, it) => a + it.res.filter(realSet).length, 0); }
 // 1.9.0 (Michael, Nov 1: added exercises must not farm XP): a day's first XP_SETS_DAY sets give 10 XP each, every set
 // after that 2 (before 1.9.0 a day had at most 12 sets, so nobody loses XP). `before` = sets already done that day.
 const XP_SETS_DAY = 20;
@@ -5189,6 +5192,7 @@ function EntryEditor({ entry, nextDay, onSave, onDelete, onClose }) {
       return it;
     }).filter(it => it.res.some(v => v !== null));
     if (!items.length) { setErr(T("editEmpty")); return; }
+    if (!hasRealSet(items)) { setErr(T("editZero")); return; } // 1.9.0: sets with 0 alone are no workout
     if (!date || date > today) { setErr(T("editBadDate")); return; }
     // Keep the time of day when only the date changes; a new workout for today gets "now".
     const tod = entry ? (entryTs(entry) - parseKey(entry.date).getTime()) : 12 * 3600000;
@@ -5391,13 +5395,14 @@ function ownModel(history, profile, kcal) {
     rest: restDaysUsed(history), fz: (profile.freezeDays || []).length,
     ach: achievements(history, achExtra(profile, kcal, history)), rk, show: Array.isArray(profile.show) ? profile.show : [],
     look: lookOn(profile), // 1.9.0: frame, banner, title, name effect
+    lw: cleanLw(lastWork(history)), // 1.9.0: last workout line
   };
 }
 function cardModel(c, p) {
   const k = cleanCard(c);
   return {
     own: false, nick: p.nick || "?", pfp: p.pfp || null, lvl: k.lvl, xp: k.xp, streak: k.streak, best: k.best, n: k.n, reps: k.reps,
-    min: k.min, prs: k.prs, since: k.since, rk: k.rk, rr: k.rr, show: k.show, look: k.look,
+    min: k.min, prs: k.prs, since: k.since, rk: k.rk, rr: k.rr, show: k.show, look: k.look, lw: k.lw,
     // values when the card has them (1.7.0+), else the lowest value of the level they reached
     ach: ACH.filter(a => !CARD_HIDE.includes(a.k)).map(a => achFrom(a, k.av[a.k] !== undefined ? k.av[a.k] : (k.ach[a.k] ? a.at[Math.max(0, (a.rk ? a.rk.indexOf(k.ach[a.k] - 1) : k.ach[a.k] - 1))] ?? 0 : 0))),
   };
@@ -6038,7 +6043,50 @@ function ProfileHero({ m, own, onPhoto, onEditProfile, onLooks, onStreak, extra,
               <div style={{ fontSize: 11, color: C.dim, marginTop: 17 }}>{T("pfBestStreak", { n: m.best })}{own && extra && extra.fz !== undefined ? <span data-pf-freezes> · <IcoI n="snow" color={C.sky} /> {extra.fz}</span> : null}</div>
             </button>
           </div>
+          {!preview && m.lw && <LastWorkLine lw={m.lw} />}
         </Sect>
+  );
+}
+// "Last workout · today · 24 min · 9 sets · 186 reps": one quiet line under the hero tiles, the same for everyone who
+// opens the profile (1.9.0, Michael: minimal; a workout of only a warm-up and a stretch can't hide behind the streak).
+function LastWorkLine({ lw }) {
+  // Michael (Nov 7, 14:18): "more minimal, icons, little text; a tap opens the details"
+  const [open, setOpen] = useState(false);
+  const k = lw.d, day = k === dateKey() ? T("today") : k === addDays(dateKey(), -1) ? T("yesterday") : fmtShortDM(parseKey(k));
+  const full = [T("pfLast"), day, lw.m ? T("pvMin", { n: lw.m }) : null, TP("sets", lw.s), lw.r ? TP("reps", lw.r) : null, lw.h ? T("pfLastHand") : null].filter(Boolean).join(" · ");
+  const bit = (ico, v, key) => <span key={key} data-lw={key} style={{ display: "inline-flex", alignItems: "center", gap: 4 }}><Ico n={ico} size={14} color={C.dim} />{v}</span>;
+  const tile = (ico, v, label, key) => (
+    <div key={key} data-lw-tile={key} style={{ background: SOFT(), borderRadius: 12, padding: "8px 10px", minWidth: 0 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 11, color: C.dim, fontWeight: 600, gap: 4 }}><span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{label}</span><Ico n={ico} size={13} color={C.dim} /></div>
+      <div style={{ fontFamily: DISPLAY, fontSize: 22, fontWeight: 900, lineHeight: 1.1, marginTop: 3, color: C.chalk }}>{v}</div>
+    </div>
+  );
+  return (
+    <div style={{ position: "relative", marginTop: 10 }}>
+      <button type="button" data-pf-last data-sets={lw.s} data-reps={lw.r} data-min={lw.m || 0} data-hand={lw.h || 0} aria-expanded={open} aria-label={full} onClick={() => { sfxTap(); setOpen(o => !o); }}
+        style={{ ...btnBase, width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "7px 10px", borderRadius: 12, background: "transparent", border: `1px solid ${C.line}`, color: C.chalk, fontSize: 12.5, fontWeight: 700, textAlign: "left", minWidth: 0 }}>
+        <Ico n="dumbbell" size={16} color={C.signal} />
+        <span style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", flex: 1, minWidth: 0 }}>
+          <span data-lw="day">{day}</span>
+          {lw.m ? bit("timer", lw.m + "′", "min") : null}
+          {bit("layers", lw.s, "sets")}
+          {lw.r ? bit("repeat", lw.r, "reps") : null}
+          {lw.h ? <span data-lw="hand" title={T("pfLastHand")} style={{ display: "inline-flex" }}><Ico n="pencil" size={14} color="#ffb02e" /></span> : null}
+        </span>
+        <Chevron open={open} color={C.dim} />
+      </button>
+      <Expand open={open}>
+        <div data-pf-last-detail style={{ paddingTop: 8 }}>
+          <div style={{ fontSize: 12, color: C.dim, fontWeight: 700, marginBottom: 6 }}>{T("pfLast")} · {capFirst(fmtDate(k))}</div>
+          <div style={{ display: "grid", gridTemplateColumns: lw.m ? "1fr 1fr 1fr" : "1fr 1fr", gap: 6 }}>
+            {lw.m ? tile("timer", T("pvMin", { n: lw.m }), T("stM_min"), "min") : null}
+            {tile("layers", lw.s, T("sumSets"), "sets")}
+            {tile("repeat", lw.r, T("stM_reps"), "reps")}
+          </div>
+          {lw.h ? <div data-lw-hand style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#ffb02e", fontWeight: 700, marginTop: 7 }}><Ico n="pencil" size={13} color="#ffb02e" />{capFirst(T("pfLastHand"))}</div> : null}
+        </div>
+      </Expand>
+    </div>
   );
 }
 // 1.9.0 body ranks (Michael, Nov 6: like a ranked body map, own drawing, the header of the Profile page). A body part's
@@ -6550,6 +6598,20 @@ function cloudStats(history) { const xp = totalXP(history); return { xp, lvl: le
 const CARD_VIS = ["friends", "all", "none"];
 const FAIR_FLAGS = ["cap", "day", "jump", "fast", "late"]; // 1.8.0: reasons from the server's world-list check (src/fair.js)
 const CARD_HIDE = ["calories", "kcalHit", "steps", "health"];
+// 1.9.0 (Michael, Nov 7: "anyone can do the warm-up, stretching, quit and save, and get the streak; people should see
+// it and report him"): the last workout on the profile, small: day · minutes · sets · reps (· added by hand). A fake
+// workout shows itself there. Sets with 0 never count (realSet), so it can't be empty.
+function lastWork(history) {
+  if (!history.length) return null;
+  const e = history.reduce((a, b) => (b.date > a.date || (b.date === a.date && entryTs(b) > entryTs(a)) ? b : a));
+  const reps = e.items.reduce((a, it) => a + (["time", "carry"].includes(exType(it.id)) ? 0 : it.res.filter(realSet).reduce((x, v) => x + numVal(v), 0)), 0);
+  return { d: e.date, ...(e.dur ? { m: Math.max(1, Math.round(e.dur / 60)) } : {}), s: setsIn(e), r: Math.round(reps), ...(e.manual ? { h: 1 } : {}) };
+}
+function cleanLw(l) {
+  if (!l || typeof l !== "object" || typeof l.d !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(l.d)) return null;
+  const n = (v, max) => (typeof v === "number" && isFinite(v) ? Math.max(0, Math.min(max, Math.floor(v))) : 0);
+  return { d: l.d, m: n(l.m, 1440), s: n(l.s, 1000), r: n(l.r, 100000), h: l.h === 1 ? 1 : 0 };
+}
 function cardData(history, profile) {
   const xp = totalXP(history), ach = {}, av = {}, rk = {}, rr = {};
   // av = each badge's value, so others see how far you are (1.7.0, Michael: "aby ľudia videli aký mám progress")
@@ -6564,6 +6626,7 @@ function cardData(history, profile) {
     lvl: levelInfo(xp).lvl, xp, streak: streakInfo(history, dateKey()).n, best: bestStreak(history), n: history.length,
     reps: totalReps(history), min: Math.floor(history.reduce((a, e) => a + (e.dur || 0), 0) / 60), prs: history.reduce((a, e) => a + ((e.prs && e.prs.length) || 0), 0),
     since: history.length ? history.map(e => e.date).sort()[0] : null, ach, av, rk, rr, show,
+    ...(history.length ? { lw: lastWork(history) } : {}), // 1.9.0: last workout (needs the 1.9.0 rules: lwOk)
     // 1.9.0: the profile looks you wear (sent once you have put one on, also {} to take them all off; needs the 1.9.0 rules)
     ...(profile.look ? { look: lookOn(profile) } : {}),
   };
@@ -6578,7 +6641,7 @@ function cleanCard(c) {
   return {
     lvl: Math.max(1, cardNum(c.lvl)), xp: cardNum(c.xp), streak: cardNum(c.streak), best: cardNum(c.best), n: cardNum(c.n), reps: cardNum(c.reps), min: cardNum(c.min),
     since: typeof c.since === "string" && /^\d{4}-\d{2}-\d{2}$/.test(c.since) ? c.since : null, ach, av, rk, rr, prs: cardNum(c.prs), ts: cardNum(c.ts), vis: CARD_VIS.includes(c.vis) ? c.vis : "friends",
-    look: lookOn({ look: c.look && typeof c.look === "object" ? c.look : {} }),
+    look: lookOn({ look: c.look && typeof c.look === "object" ? c.look : {} }), lw: cleanLw(c.lw),
     show: Array.isArray(c.show) ? c.show.slice(0, SLOT_LV.length).map(x => (typeof x === "string" ? x.slice(0, 80) : "")) : [],
   };
 }
@@ -8927,15 +8990,94 @@ function JkIco({ id, size = 24, color }) {
   return id.startsWith("fan_") ? <SuitIcon s={id.slice(4)} size={size} /> : <Ico n={JOKER_ICON[id] || "jcard"} size={size} color={col} />;
 }
 const fmtM = m => (Number.isInteger(m) ? String(m) : m.toFixed(2).replace(/0$/, ""));
-function JokerChip({ id, onClick, sell, buy, price, small, glow }) {
-  const r = GM.JOKERS[id] ? GM.JOKERS[id].r : 0, col = RAR_COL()[r];
+// 1.9.0 (Michael, Nov 7: "make selling, the game UI and the shop nicer"): a joker is a small card of its own: a frame in
+// its rarity colour, a glowing well with its icon, the name on a band at the bottom, rarity pips at the top (legendary
+// ones shine). Own look; nothing copied from any other game.
+function JokerCard({ id, w = 62, onClick, glow, sellP, still, pop, dim }) {
+  const r = GM.JOKERS[id] ? GM.JOKERS[id].r : 0, col = RAR_COL()[r], h = Math.round(w * 1.42), rr = Math.round(w * 0.16), Tag = still ? "span" : "button";
   return (
-    <button type="button" data-joker={id} onClick={onClick} className={glow ? "gmGlow" : undefined}
-      style={{ ...btnBase, width: small ? 66 : 92, minHeight: small ? 80 : 118, flexShrink: 0, padding: small ? "6px 4px" : "8px 6px", borderRadius: 12, background: `linear-gradient(160deg, ${col}33, ${C.panelHi})`, border: `1.5px solid ${col}`, color: C.chalk, display: "flex", flexDirection: "column", alignItems: "center", gap: 4, fontWeight: 700, "--gc": col }}>
-      <span aria-hidden="true" style={{ fontSize: small ? 22 : 28, lineHeight: 1, height: small ? 24 : 30, display: "flex", alignItems: "center" }}><JkIco id={id} size={small ? 22 : 28} /></span>
-      <span style={{ fontSize: small ? 10.5 : 12, lineHeight: 1.15, textAlign: "center", overflowWrap: "anywhere" }}>{jName(id)}</span>
-      {(buy || sell) && <span style={{ marginTop: "auto", fontSize: 12, fontWeight: 900, color: buy ? C.signal : C.dim }}>{buy ? <><KSign />{price}</> : <>+<KSign />{price}</>}</span>}
-    </button>
+    <Tag type={still ? undefined : "button"} data-joker={id} data-rarity={r} onClick={onClick} aria-label={still ? undefined : `${jName(id)}, ${T("gmRar" + r)}`} role={still ? "img" : undefined}
+      className={[glow ? "gmGlow" : "", pop ? "gmPop" : "", r === 3 ? "foil" : ""].filter(Boolean).join(" ") || undefined}
+      style={{ ...btnBase, position: "relative", display: "block", width: w, height: h, flexShrink: 0, padding: 0, borderRadius: rr, overflow: "hidden", background: `linear-gradient(160deg, ${col}, ${hexMix(col, "#000000", 0.55)})`, boxShadow: `0 ${Math.round(w * 0.1)}px ${Math.round(w * 0.22)}px rgba(0,0,0,.38)`, color: C.chalk, opacity: dim ? 0.45 : 1, "--gc": col }}>
+      <span aria-hidden="true" style={{ position: "absolute", inset: Math.max(2, Math.round(w * 0.035)), borderRadius: rr - 2, overflow: "hidden", background: `radial-gradient(85% 55% at 50% 36%, ${col}5c, transparent 72%), repeating-linear-gradient(135deg, ${C.chalk}07 0 2px, transparent 2px 7px), linear-gradient(180deg, ${hexMix(C.panelHi, col, 0.12)}, ${C.ink})` }}>
+        <span style={{ position: "absolute", left: Math.round(w * 0.09), top: Math.round(w * 0.09), display: "flex", gap: Math.max(2, Math.round(w * 0.035)) }}>
+          {Array.from({ length: r + 1 }, (_, k) => <span key={k} style={{ width: Math.max(3, Math.round(w * 0.06)), height: Math.max(3, Math.round(w * 0.06)), borderRadius: 99, background: col, boxShadow: `0 0 4px ${col}` }} />)}
+        </span>
+        <span style={{ position: "absolute", left: 0, right: 0, top: Math.round(h * (w < 52 ? 0.22 : 0.15)), height: Math.round(h * (w < 52 ? 0.56 : 0.46)), display: "flex", alignItems: "center", justifyContent: "center", filter: `drop-shadow(0 0 ${Math.round(w * 0.08)}px ${col}aa)` }}><JkIco id={id} size={Math.round(w * 0.44)} /></span>
+        {w >= 52 && <span style={{ position: "absolute", left: 0, right: 0, bottom: 0, minHeight: Math.round(h * 0.33), padding: `${Math.round(w * 0.04)}px ${Math.round(w * 0.06)}px`, boxSizing: "border-box", display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,.34)", borderTop: `1px solid ${col}55` }}>
+          <span style={{ fontSize: Math.max(9, Math.round(w * 0.155)), fontWeight: 800, lineHeight: 1.08, textAlign: "center", overflowWrap: "anywhere", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", color: C.chalk }}>{jName(id)}</span>
+        </span>}
+      </span>
+      {sellP ? <span aria-hidden="true" style={{ position: "absolute", right: 3, top: 3, padding: "1px 5px", borderRadius: 99, background: "rgba(0,0,0,.55)", color: C.signal, fontSize: 10, fontWeight: 900, lineHeight: 1.5 }}>+<KSign />{sellP}</span> : null}
+    </Tag>
+  );
+}
+// your jokers in a row, with the empty slots drawn as dashed places (so "full" is plain to see)
+function JokerRow({ g, w = 60, onTap, hit, sell, label = true }) {
+  const slots = GM.jokerSlots(g), empty = Math.max(0, slots - g.jokers.length);
+  return (
+    <div data-gm-jokers-box>
+      {label && <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 800, letterSpacing: 0.7, textTransform: "uppercase", color: C.dim, marginBottom: 6 }}>
+        <Ico n="jcard" size={14} color={C.dim} />{T("gmJokersT")}<span data-gm-slots={`${g.jokers.length}/${slots}`} style={{ marginLeft: "auto", color: g.jokers.length >= slots ? "#ff9a9a" : C.dim, fontVariantNumeric: "tabular-nums" }}>{g.jokers.length}/{slots}</span>
+      </div>}
+      <div data-gm-jokers style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4, scrollbarWidth: "none" }}>
+        {g.jokers.map((j, k) => <JokerCard key={j.id + k} id={j.id} w={w} glow={hit === j.id} sellP={sell ? Math.max(1, Math.floor(j.cost / 2)) : 0} onClick={() => { sfxTap(); onTap(k); }} />)}
+        {Array.from({ length: empty }, (_, k) => <span key={"e" + k} aria-hidden="true" data-gm-slot style={{ width: w, height: Math.round(w * 1.42), flexShrink: 0, borderRadius: Math.round(w * 0.16), border: `1.5px dashed ${C.chalk}26`, background: `${C.chalk}05`, boxSizing: "border-box" }} />)}
+      </div>
+    </div>
+  );
+}
+// A joker up close (centred, like a card held up): rarity, what it does, what it holds now; Sell asks in the same box
+// (the card shrinks into coins when sold). ask = open on the question at once (from a pack's Sell).
+function JokerInspect({ g, i, canSell, ask, onSell, onClose }) {
+  const j = g.jokers[i];
+  const [step, setStep] = useState(ask ? "ask" : "view"); // view | ask | sold
+  const [on, setOn] = useState(false);
+  useEffect(() => { const r = requestAnimationFrame(() => setOn(true)); return () => cancelAnimationFrame(r); }, []);
+  const close = () => { if (step !== "sold") onClose(); };
+  useBack(() => { if (step === "ask" && !ask) setStep("view"); else close(); }, true);
+  if (!j) return null;
+  const r = GM.JOKERS[j.id] ? GM.JOKERS[j.id].r : 0, col = RAR_COL()[r], price = Math.max(1, Math.floor(j.cost / 2));
+  const sell = () => { sfxTap(); setStep("sold"); gmSfx.buy(); vibrate([25, 40, 25]); setTimeout(() => onSell(i), 620); };
+  const btn = { ...btnBase, flex: 1, minWidth: 0, padding: "12px 12px", borderRadius: 14, fontSize: 14.5, fontWeight: 800 };
+  return createPortal(
+    <div data-gm-inspect={j.id} data-state={step} onClick={e => { if (e.target === e.currentTarget) { sfxTap(); close(); } }}
+      style={{ position: "fixed", inset: 0, zIndex: 106, display: "flex", alignItems: "center", justifyContent: "center", padding: "calc(16px + var(--sat, 0px)) 16px calc(16px + var(--sab, 0px))", background: on ? "rgba(3,6,14,.88)" : "rgba(3,6,14,0)", transition: `background ${MO.t2}`, fontFamily: BODY, color: C.chalk }}>
+      <div style={{ width: "min(100%, 340px)", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", opacity: on ? 1 : 0, transform: on ? "none" : "translateY(18px) scale(.94)", transition: `opacity ${MO.t1}, transform ${MO.t3} ${MO.pop}` }}>
+        <div style={{ position: "relative", zIndex: 1 }}>
+          <span aria-hidden="true" style={{ position: "absolute", inset: -40, background: `radial-gradient(closest-side, ${col}55, transparent)`, pointerEvents: "none" }} />
+          <div className={step === "sold" ? "gmSold" : "gmLift"}><JokerCard id={j.id} w={132} still /></div>
+          {step === "sold" && <span data-gm-sold-coins aria-hidden="true" className="gmCoinUp" style={{ position: "absolute", left: "50%", top: "40%", transform: "translateX(-50%)", fontFamily: DISPLAY, fontSize: 34, fontWeight: 900, color: C.signal, whiteSpace: "nowrap", textShadow: "0 2px 12px rgba(0,0,0,.6)" }}>+<KSign />{price}</span>}
+        </div>
+        <div data-gm-inspect-box style={{ width: "100%", boxSizing: "border-box", marginTop: -34, padding: "46px 16px 16px", borderRadius: 22, background: `linear-gradient(180deg, ${hexMix(C.panel, col, 0.1)}, ${C.panel})`, border: `1px solid ${col}44`, boxShadow: "0 22px 50px rgba(0,0,0,.5)", display: "flex", flexDirection: "column", alignItems: "center" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
+          <span style={{ fontFamily: DISPLAY, fontSize: 28, fontWeight: 900, lineHeight: 1.05 }}>{jName(j.id)}</span>
+          <span data-rar-chip={r} style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: 0.4, textTransform: "uppercase", color: col, border: `1px solid ${col}88`, borderRadius: 99, padding: "1px 8px" }}>{T("gmRar" + r)}</span>
+        </div>
+        {step === "ask" ? (
+          <div data-gm-sell-ask style={{ marginTop: 10, fontSize: 15, lineHeight: 1.45 }}>
+            <div style={{ fontWeight: 800 }}>{T("gmSellT", { name: jName(j.id) })}</div>
+            <div style={{ color: C.dim, fontSize: 13.5, marginTop: 4 }}>{withK(T("gmSellD", { n: price }))}</div>
+          </div>
+        ) : (
+          <div data-gm-joker-info style={{ marginTop: 10, fontSize: 14.5, lineHeight: 1.45, color: C.chalk, maxWidth: 300 }}>
+            {withK(jDesc(j.id))}
+            {j.v ? <div style={{ marginTop: 6, fontWeight: 800, color: C.signal }}>{T("gmNowMult", { n: j.v })}</div> : null}
+          </div>
+        )}
+        <div style={{ display: "flex", gap: 8, width: "100%", marginTop: 18, visibility: step === "sold" ? "hidden" : "visible" }}>
+          {step === "ask" ? <>
+            <button type="button" data-confirm-no onClick={() => { sfxTap(); if (ask) onClose(); else setStep("view"); }} style={{ ...btn, ...SUNK(), color: C.chalk }}>{T("cancel")}</button>
+            <button type="button" data-gm-sell-yes onClick={sell} className="b3d" style={{ ...btn, ...bigBtn("#d64545", "#fff"), "--e": "#8a1f1f", width: "auto", fontSize: 14.5, padding: "12px 12px" }}>{T("gmSellYes")} +<KSign />{price}</button>
+          </> : <>
+            <button type="button" data-gm-inspect-close onClick={() => { sfxTap(); close(); }} style={{ ...btn, ...SUNK(), color: C.chalk }}>{T("close")}</button>
+            {canSell && <button type="button" data-gm-joker-sell={i} onClick={() => { sfxTap(); setStep("ask"); }} style={{ ...btn, background: `${C.signal}1f`, border: `1.5px solid ${C.signal}`, color: C.signal, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}><Ico n="coins" size={17} color={C.signal} /><span>{withK(T("gmSell", { n: price }))}</span></button>}
+          </>}
+        </div>
+        </div>
+      </div>
+    </div>,
+    document.body
   );
 }
 // ─── DIAMONDS, SHOP, PROFILE LOOKS (1.9.0) ─────────────────────────────────────────────────────────────────────
@@ -10073,18 +10215,22 @@ function useTween(target, ms = 480) {
   return v;
 }
 // An open pack: 3 choices that flip in one by one; pick one or skip (1.8.0, Michael: "more like Balatro").
-function PackOpen({ g, onMove }) {
+function PackOpen({ g, onMove, onSell }) {
   const pk = g.pack, jp = GM.isJokerPack(pk.id), full = jp && g.jokers.length >= GM.jokerSlots(g);
   return createPortal(
-    <div data-gm-pack-open={pk.id} style={{ position: "fixed", inset: 0, zIndex: 92, background: "rgba(4,7,16,.9)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "safe center", overflowY: "auto", gap: 14, padding: "calc(var(--sat, 0px) + 20px) 16px calc(var(--sab, 0px) + 20px)", fontFamily: BODY, color: C.chalk }}>
+    <div data-gm-pack-open={pk.id} style={{ position: "fixed", inset: 0, zIndex: 92, background: "rgba(4,7,16,.96)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "safe center", overflowY: "auto", gap: 14, padding: "calc(var(--sat, 0px) + 20px) 16px calc(var(--sab, 0px) + 20px)", fontFamily: BODY, color: C.chalk }}>
       <div className="gmPop" aria-hidden="true"><Ico n={PACK_ICON[pk.id]} size={52} color={jp ? "#b78cff" : C.signal} sw={1.8} /></div>
       <div style={{ fontFamily: DISPLAY, fontSize: 28, fontWeight: 900 }}>{T("gmPackT")}</div>
-      {full && <div style={{ fontSize: 13, color: C.signal, textAlign: "center", maxWidth: 360 }}>{T("gmPackFull")}</div>}
+      {full && <div data-gm-pack-full style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 700, color: "#ff9a9a", textAlign: "center", maxWidth: 360 }}><Ico n="lock" size={15} color="#ff9a9a" sw={2.4} />{T("gmPackFull2")}</div>}
+      {/* 1.9.0 (Michael, Nov 1: with full slots the paid pack was lost): your jokers right here, sell one to free a slot */}
+      {full && onSell && <div data-gm-pack-own style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center", width: "min(100%, 420px)" }}>
+        {g.jokers.map((j, i) => <button key={j.id} type="button" data-gm-pack-sell={i} aria-label={`${jName(j.id)}: ${T("gmSell", { n: Math.max(1, Math.floor(j.cost / 2)) }).replace("$", COIN + " ")}`} onClick={() => { sfxTap(); onSell(i); }} style={{ ...btnBase, background: "transparent", padding: 0 }}><JokerCard id={j.id} w={56} still sellP={Math.max(1, Math.floor(j.cost / 2))} /></button>)}
+      </div>}
       <div style={{ display: "flex", flexDirection: "column", gap: 10, width: "min(100%, 420px)" }}>
         {pk.opts.map((o, i) => { const r = jp ? GM.JOKERS[o].r : 0, col = jp ? RAR_COL()[r] : C.signal; return (
           <button key={o} type="button" data-gm-pick={i} disabled={full} onClick={() => onMove({ t: "pick", i })} className={"gmFlipIn" + (jp && r === 3 ? " foil" : "")}
             style={{ ...btnBase, ...card, ...tileR(), position: "relative", overflow: "hidden", display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", textAlign: "left", color: C.chalk, fontWeight: 400, border: `2px solid ${col}`, animationDelay: `${0.15 + i * 0.16}s`, opacity: full ? 0.5 : 1 }}>
-            <span aria-hidden="true" style={{ width: 48, height: 48, flexShrink: 0, borderRadius: 12, background: `linear-gradient(160deg, ${col}44, ${C.panelHi})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26 }}>{jp ? <JkIco id={o} size={26} /> : <Ico n="dumbbell" size={26} color={col} />}</span>
+            {jp ? <span aria-hidden="true" style={{ flexShrink: 0 }}><JokerCard id={o} w={46} still /></span> : <span aria-hidden="true" style={{ width: 48, height: 48, flexShrink: 0, borderRadius: 12, background: `linear-gradient(160deg, ${col}44, ${C.panelHi})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26 }}><Ico n="dumbbell" size={26} color={col} /></span>}
             <span style={{ flex: 1, minWidth: 0 }}>
               <span style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", fontWeight: 800, fontSize: 15.5 }}>{jp ? jName(o) : T("gmDrill", { h: handName(o) })}{jp && <span style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: 0.4, textTransform: "uppercase", color: col, border: `1px solid ${col}88`, borderRadius: 99, padding: "1px 7px" }}>{T("gmRar" + r)}</span>}</span>
               <span style={{ display: "block", fontSize: 12.5, color: C.dim, lineHeight: 1.35, marginTop: 2 }}>{jp ? withK(jDesc(o)) : T("gmPackLv", { hand: handName(o), c: GM.HAND_UP[o][0], m: GM.HAND_UP[o][1] })}</span>
@@ -10110,7 +10256,8 @@ function GameTable({ saved, history, onEnd, onQuit, onTutDone }) {
   const shownT = useTween(shown), moneyT = useTween(g.money);
   const [fx, setFx] = useState(null); // "shake" (a big hand) | "win" (blind beaten: confetti + shake)
   const [quit, setQuit] = useState(false);
-  const [info, setInfo] = useState(null); // a joker whose text is open
+  const [insp, setInsp] = useState(null); // 1.9.0: {i, ask} = a joker held up (JokerInspect); ask = straight to "Sell?"
+  const [noSave, setNoSave] = useState(false); // 1.9.0: "Quit without saving?" asked
   const [why, setWhy] = useState(false); // the breakdown of the selected cards' score
   const [dealKey, setDealKey] = useState(0);
   const tut = saved.mode === "tut", [ts, setTs] = useState(0), tstep = tut ? TUT[ts] : null;
@@ -10118,7 +10265,7 @@ function GameTable({ saved, history, onEnd, onQuit, onTutDone }) {
   const tutSel = () => !tstep || !tstep.cards || (sel.length === tstep.cards.length && sel.every(i => tstep.cards.includes(g.hand[i])));
   const timers = useRef([]);
   useEffect(() => () => timers.current.forEach(clearTimeout), []);
-  useBack(() => { if (info) setInfo(null); else setQuit(true); }, true);
+  useBack(() => setQuit(true), !quit && !insp); // the open boxes handle Back themselves
   useEffect(() => { if (!tut) gameSave({ ...saved, moves }); }, [moves]);
   const ended = g.phase === "over" || g.phase === "won";
   useEffect(() => { if (ended && !anim) { const t = setTimeout(() => onEnd({ ...saved, moves }, g), 500); return () => clearTimeout(t); } }, [ended, anim]);
@@ -10150,33 +10297,44 @@ function GameTable({ saved, history, onEnd, onQuit, onTutDone }) {
   };
   const discard = () => { if (!sel.length || anim || g.discardsLeft <= 0 || (tut && !(tstep.t === "discard" && tutSel()))) return; gmSfx.discard(); const next = doMove({ t: "discard", c: sel.slice() }); setSel([]); setG(next); setDealKey(k => k + 1); if (tut) setTs(t => t + 1); };
   // several shop moves at once (swap = sell one of your jokers, then buy the new one)
+  // 1.9.0 (Michael, Nov 1): selling a joker is asked first (a tap sold it at once); on the table, in the shop and with a
+  // pack open. Not while a hand is being scored, never in the tutorial.
+  const canSell = !tut && !anim && (g.phase === "blind" || g.phase === "shop");
+  const sellNow = i => { try { const next = doMove({ t: "sell", i }); setG(next); } catch (_) {} setInsp(null); };
   const shopMoves = ms => { try { let st = g; for (const m of ms) st = GM.act(st, m); setMoves(x => [...x, ...ms]); setG(st); gmSfx.buy(); } catch (_) {} };
   const shopMove = m => { if (tut && !(tstep.t === "buy" && m.t === "buy" && m.i === tstep.i)) return; if (tut) setTs(t => t + 1); try { const next = doMove(m); setG(next); if (m.t === "buy" && next.pack) gmSfx.pack(); else if (m.t === "buy") gmSfx.buy(); else if (m.t === "pick") gmSfx.reveal(next.jokers.length > g.jokers.length && GM.JOKERS[next.jokers[next.jokers.length - 1].id].r >= 2); else if (m.t === "skip") sfxTap(); else if (m.t === "sell") gmSfx.sell(); else if (m.t === "reroll") gmSfx.reroll(); else gmSfx.deal(8); if (m.t === "next") { setShown(0); setDealKey(k => k + 1); } } catch (_) {} };
   const toggle = i => { if (anim || (tut && !(tstep.cards && tstep.cards.includes(g.hand[i])))) return; gmSfx.pick(GM.valueOf(g.hand[i]), !sel.includes(i)); setSel(s => (s.includes(i) ? s.filter(x => x !== i) : s.length >= GM.RULES.maxPlay ? s : [...s, i])); };
-  const W = Math.min(innerWidth, 560), cw = Math.max(46, Math.min(70, Math.floor((W - 40) / 6.4)));
-  const step = Math.min(cw + 6, Math.floor((W - 32 - cw) / Math.max(1, g.hand.length - 1)));
+  const W = Math.min(innerWidth, 560), cw = Math.max(46, Math.min(78, Math.floor((W - 40) / 5.6))); // 1.9.0: bigger cards
+  const step = Math.min(cw + 6, Math.floor((W - 60 - cw) / Math.max(1, g.hand.length - 1))); // 1.9.0: room for the fan's tilt
   const bossTxt = g.boss && g.blind === 2 && L.gm.boss[g.boss];
   const blindName = [T("gmSmall"), T("gmBig"), bossTxt ? bossTxt[0] : T("gmBoss")][g.blind];
   const pct = Math.min(100, (shown / g.target) * 100);
+  const bcol = [C.sky, C.signal, "#ff6b6b"][g.blind];
+  const gmPill = { display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 5, padding: "4px 10px", borderRadius: 99, border: "1px solid", background: `${C.chalk}08`, fontFamily: DISPLAY, fontSize: 16, fontWeight: 900, lineHeight: 1.1, flexShrink: 0 };
   return createPortal(
-    <div data-game={g.phase} data-gm-mode={saved.mode} className={"gmTable" + (fx ? " gmShake" : "")} style={{ position: "fixed", inset: 0, zIndex: 90, background: `radial-gradient(120% 70% at 50% 0%, ${C.panelHi}, ${C.ink} 70%)`, color: C.chalk, fontFamily: BODY, display: "flex", flexDirection: "column", padding: "calc(var(--sat, 0px) + 10px) 14px calc(var(--sab, 0px) + 12px)", boxSizing: "border-box", overflowY: "auto", overscrollBehavior: "contain" }}>
-      {/* top: blind, target, score, money, hands, discards */}
-      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <button type="button" data-gm-quit onClick={() => { sfxTap(); setQuit(true); }} aria-label={T("gmQuit")} style={{ ...btnBase, width: 40, height: 40, borderRadius: 12, background: C.panel, color: C.dim, border: `1px solid ${C.line}`, fontSize: 18, flexShrink: 0 }}>✕</button>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 11.5, fontWeight: 800, letterSpacing: 0.8, textTransform: "uppercase", color: g.blind === 2 ? "#ff7a7a" : C.dim, display: "flex", alignItems: "center", gap: 6 }}>{g.stake > 0 && <span data-gm-stake-chip={g.stake} title={L.gm.stake[g.stake][0]} style={{ width: 10, height: 10, borderRadius: 3, background: STAKE_COL[g.stake], border: "1px solid rgba(255,255,255,.4)", flexShrink: 0 }} />}{T("gmAnte", { n: g.ante + 1, m: g.antes })} · {blindName}</div>
-          <div data-gm-target style={{ fontFamily: DISPLAY, fontSize: 22, fontWeight: 900, lineHeight: 1.05 }}>{nf(shownT)} <span style={{ color: C.dim, fontSize: 16 }}>/ {nf(g.target)}</span></div>
+    <div data-game={g.phase} data-gm-mode={saved.mode} className={"gmTable" + (fx ? " gmShake" : "")} style={{ position: "fixed", inset: 0, zIndex: 90, background: `radial-gradient(120% 60% at 50% 0%, ${hexMix(C.panelHi, C.signal, 0.06)}, transparent 70%), radial-gradient(90% 50% at 50% 100%, ${hexMix(C.panel, C.sky, 0.1)}, transparent 75%), repeating-linear-gradient(135deg, ${C.chalk}05 0 1px, transparent 1px 9px), ${C.ink}`, color: C.chalk, fontFamily: BODY, display: "flex", flexDirection: "column", padding: "calc(var(--sat, 0px) + 10px) 14px calc(var(--sab, 0px) + 12px)", boxSizing: "border-box", overflowY: "auto", overscrollBehavior: "contain" }}>
+      {/* 1.9.0 (Michael, Nov 7: "nicer, more icons, less text"): one HUD: the blind as a medallion with its target, your
+          money, the score bar, hands and discards as icon counters, then your jokers as cards with their empty slots */}
+      <div data-gm-hud style={{ display: "flex", alignItems: "stretch", gap: 8, position: "relative" }}>
+        <button type="button" data-gm-quit onClick={() => { sfxTap(); setQuit(true); }} aria-label={T("gmQuit")} style={{ ...btnBase, width: 40, borderRadius: 14, ...SUNK(), color: C.dim, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}><Ico n="x" size={18} color={C.dim} /></button>
+        <div data-gm-blind={g.blind} style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", borderRadius: 16, background: `linear-gradient(135deg, ${bcol}22, ${C.panel} 60%)`, border: `1px solid ${bcol}55` }}>
+          <span aria-hidden="true" className={g.blind === 2 ? "gmBossPulse" : undefined} style={{ width: 40, height: 40, flexShrink: 0, borderRadius: 99, display: "flex", alignItems: "center", justifyContent: "center", background: `radial-gradient(circle at 35% 30%, ${bcol}, ${hexMix(bcol, "#000000", 0.5)})`, boxShadow: `0 0 0 3px ${bcol}33, 0 0 16px ${bcol}55` }}><Ico n={g.blind === 2 ? "alert" : g.blind === 1 ? "medal" : "target"} size={20} color="#0b0f1c" sw={2.4} /></span>
+          <span style={{ minWidth: 0, flex: 1 }}>
+            <span style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 10.5, fontWeight: 800, letterSpacing: 0.7, textTransform: "uppercase", color: bcol, whiteSpace: "nowrap", overflow: "hidden" }}>{g.stake > 0 && <span data-gm-stake-chip={g.stake} title={L.gm.stake[g.stake][0]} style={{ width: 9, height: 9, borderRadius: 3, background: STAKE_COL[g.stake], border: "1px solid rgba(255,255,255,.4)", flexShrink: 0 }} />}<span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{blindName}</span><span style={{ color: C.dim, marginLeft: "auto", fontVariantNumeric: "tabular-nums" }}>{g.ante + 1}/{g.antes}</span></span>
+            <span data-gm-target style={{ display: "block", fontFamily: DISPLAY, fontSize: 22, fontWeight: 900, lineHeight: 1.05, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>{nf(shownT)} <span style={{ color: C.dim, fontSize: 15 }}>/ {nf(g.target)}</span></span>
+          </span>
         </div>
-        <div data-gm-money style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, color: C.signal }} className={moneyT !== g.money ? "gmMoneyUp" : undefined}><KSign />{moneyT}</div>
+        <div data-gm-money className={moneyT !== g.money ? "gmMoneyUp" : undefined} style={{ display: "flex", alignItems: "center", padding: "0 12px", borderRadius: 16, background: `${C.signal}14`, border: `1px solid ${C.signal}55`, fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, color: C.signal, flexShrink: 0 }}><KSign />{moneyT}</div>
       </div>
-      <div style={{ height: 6, borderRadius: 99, background: C.panel, marginTop: 8, overflow: "hidden" }}><div style={{ width: `${pct}%`, height: "100%", background: pct >= 100 ? C.mint : C.signal, transition: `width ${MO.t3} ${MO.ease}` }} /></div>
-      {bossTxt && g.phase === "blind" && <div data-gm-boss={g.boss} style={{ marginTop: 8, fontSize: 12.5, color: "#ff9a9a", fontWeight: 700 }}><IcoI n="alert" /> {bossTxt[1]}</div>}
-      {/* jokers */}
-      <div data-gm-jokers style={{ display: "flex", gap: 6, marginTop: 10, overflowX: "auto", minHeight: 82, paddingBottom: 2 }}>
-        {g.jokers.length ? g.jokers.map((j, k) => <JokerChip key={j.id + k} id={j.id} small glow={anim && anim.hit && anim.hit.j === j.id} onClick={() => { sfxTap(); setInfo(j.id); }} />)
-          : <div style={{ fontSize: 12.5, color: C.dim, alignSelf: "center" }}>{T("gmNoJokers")}</div>}
-        {g.perk && <div data-gm-perk-chip={g.perk} title={L.gm.perk[g.perk][1].replace(/\$(\d+)/g, "$1 " + COIN)} style={{ alignSelf: "center", marginLeft: "auto", fontSize: 12, color: C.dim, whiteSpace: "nowrap" }}><IcoI n={PERK_ICON[g.perk]} color={C.signal} />{g.jokers.length < 4 && <> {L.gm.perk[g.perk][0]}</>}</div>}
+      <div style={{ height: 6, borderRadius: 99, background: `${C.chalk}12`, marginTop: 8, overflow: "hidden" }}><div data-gm-bar style={{ width: `${pct}%`, height: "100%", background: pct >= 100 ? C.mint : `linear-gradient(90deg, ${hexMix(C.signal, C.ink, 0.25)}, ${C.signal})`, borderRadius: 99, boxShadow: `0 0 10px ${pct >= 100 ? C.mint : C.signal}88`, transition: `width ${MO.t3} ${MO.ease}` }} /></div>
+      <div data-gm-stats style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 8 }}>
+        <span data-gm-hands={g.handsLeft} title={T("gmPlay")} style={{ ...gmPill, color: C.sky, borderColor: `${C.sky}55` }}><Ico n="hand" size={15} color={C.sky} />{g.handsLeft}</span>
+        <span data-gm-discards={g.discardsLeft} title={T("gmDiscard")} style={{ ...gmPill, color: "#ff8a65", borderColor: "#ff8a6555" }}><Ico n="eraser" size={15} color="#ff8a65" />{g.discardsLeft}</span>
+        {bossTxt && g.phase === "blind" && <span data-gm-boss={g.boss} style={{ ...gmPill, color: "#ff9a9a", borderColor: "#ff6b6b55", flex: 1, minWidth: 0, fontSize: 11.5, fontWeight: 700, fontFamily: BODY, justifyContent: "flex-start" }}><Ico n="alert" size={14} color="#ff9a9a" /><span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{bossTxt[1]}</span></span>}
+        {g.perk && <span data-gm-perk-chip={g.perk} title={L.gm.perk[g.perk][0] + ": " + L.gm.perk[g.perk][1].replace(/\$(\d+)/g, "$1 " + COIN)} style={{ ...gmPill, marginLeft: "auto", color: C.signal, borderColor: `${C.signal}44` }}><Ico n={PERK_ICON[g.perk]} size={15} color={C.signal} /></span>}
       </div>
+      {/* jokers (also in the shop, so they show once: the shop draws its own row) */}
+      {g.phase !== "shop" && <div style={{ marginTop: 10 }}><JokerRow g={g} w={Math.min(62, Math.floor((W - 28 - 6 * 5) / 6))} hit={anim && anim.hit && anim.hit.j} onTap={k => setInsp({ i: k })} /></div>}
       {tstep && !anim && <TutCoach key={ts} step={tstep} ready={tutSel() && sel.length > 0} onNext={nextTut} />}
       {g.phase === "blind" || anim ? (
         <>
@@ -10199,85 +10357,123 @@ function GameTable({ saved, history, onEnd, onQuit, onTutDone }) {
             ) : <div style={{ fontSize: 14, color: C.dim, textAlign: "center" }}>{T("gmPick")}</div>}
           </div>
           {/* hand */}
-          <div key={dealKey} data-gm-hand style={{ position: "relative", height: Math.round(cw * 1.4) + 20, margin: "0 auto", width: cw + step * Math.max(0, g.hand.length - 1) }}>
-            {!anim && order.map((hi, k) => (
-              <div key={g.hand[hi]} style={{ position: "absolute", left: k * step, bottom: 0 }}>
+          <div key={dealKey} data-gm-hand style={{ position: "relative", height: Math.round(cw * 1.4) + 40, margin: "0 auto", width: cw + step * Math.max(0, g.hand.length - 1) }}>
+            {!anim && order.map((hi, k) => { const mid = (g.hand.length - 1) / 2, d = k - mid; return (
+              <div key={g.hand[hi]} style={{ position: "absolute", left: k * step, bottom: 22, transform: `translateY(${Math.round(d * d * 1.6)}px) rotate(${(d * 2.6).toFixed(1)}deg)`, transformOrigin: "50% 130%" /* 1.9.0: a soft fan */ }}>
                 <PlayCard c={g.hand[hi]} w={cw} bests={bests} glow={!!(tstep && tstep.cards && tstep.cards.includes(g.hand[hi]) && !sel.includes(hi))} sel={sel.includes(hi)} out={!!preview && sel.includes(hi) && !preview.scored.includes(g.hand[hi])} onClick={() => toggle(hi)} i={k} deal dead={g.blind === 2 && g.boss === "skip_" + GM.suitOf(g.hand[hi])} />
-              </div>
-            ))}
+              </div>); })}
           </div>
           <div style={{ display: "flex", gap: 8, marginTop: 10, alignItems: "stretch" }}>
-            <button type="button" data-gm-discard disabled={!sel.length || g.discardsLeft <= 0 || !!anim} onClick={discard} style={{ ...btnBase, flex: 1, padding: "14px 8px", borderRadius: 14, background: C.panel, color: C.chalk, border: `1.5px solid ${C.line}`, opacity: !sel.length || g.discardsLeft <= 0 || anim ? 0.5 : 1, fontSize: 15 }}>
-              {T("gmDiscard")}<span style={{ display: "block", fontSize: 11.5, color: C.dim, fontWeight: 700 }}>{T("gmLeft", { n: g.discardsLeft })}</span>
+            <button type="button" data-gm-discard disabled={!sel.length || g.discardsLeft <= 0 || !!anim} onClick={discard} style={{ ...btnBase, flex: 1, padding: "14px 8px", borderRadius: 14, ...SUNK(), color: C.chalk, opacity: !sel.length || g.discardsLeft <= 0 || anim ? 0.5 : 1, fontSize: 15 }}>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><Ico n="eraser" size={17} color="#ff8a65" />{T("gmDiscard")}</span>
             </button>
-            <button type="button" data-gm-sort onClick={() => { sfxTap(); setSortBy(s => (s === "v" ? "s" : "v")); }} aria-label={T("gmSort")} style={{ ...btnBase, width: 52, borderRadius: 14, background: C.panel, color: C.dim, border: `1.5px solid ${C.line}`, fontSize: 12, padding: 4 }}>{sortBy === "v" ? "A-2" : <span style={{ display: "flex", gap: 1, justifyContent: "center" }}>{GM.SUITS.map(s => <SuitIcon key={s} s={s} size={9} />)}</span>}</button>
+            <button type="button" data-gm-sort onClick={() => { sfxTap(); setSortBy(s => (s === "v" ? "s" : "v")); }} aria-label={T("gmSort")} style={{ ...btnBase, width: 52, borderRadius: 14, ...SUNK(), color: C.dim, fontSize: 12, padding: 4 }}>{sortBy === "v" ? "A-2" : <span style={{ display: "flex", gap: 1, justifyContent: "center" }}>{GM.SUITS.map(s => <SuitIcon key={s} s={s} size={9} />)}</span>}</button>
             <button type="button" data-gm-play disabled={!sel.length || !!anim} onClick={play} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), flex: 1.4, width: "auto", padding: "14px 8px", opacity: !sel.length || anim ? 0.55 : 1 }}>
-              {T("gmPlay")}<span style={{ display: "block", fontSize: 11.5, fontWeight: 700, opacity: 0.8 }}>{T("gmLeft", { n: g.handsLeft })}</span>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><Ico n="hand" size={18} color={C.signalInk} />{T("gmPlay")}</span>
             </button>
           </div>
         </>
       ) : g.phase === "shop" ? (
-        <GameShop g={g} tut={tut} onMove={shopMove} onMoves={shopMoves} onInfo={setInfo} />
+        <GameShop g={g} tut={tut} W={W} onMove={shopMove} onMoves={shopMoves} onTap={k => setInsp({ i: k })} onSell={canSell ? k => setInsp({ i: k, ask: true }) : null} />
       ) : <div style={{ flex: 1 }} />}
       {fx === "win" && <Confetti count={45} />}
       {why && sel.length > 0 && <ScoreWhy g={g} cards={sel.map(i => g.hand[i])} bests={bests} onClose={() => setWhy(false)} />}
-      {info && <Sheet short title={jName(info)} onClose={() => setInfo(null)}><div data-gm-joker-info style={{ fontSize: 15, lineHeight: 1.5, color: C.chalk }}>{withK(jDesc(info))}{(g.jokers.find(x => x.id === info) || {}).v ? <div style={{ marginTop: 6, fontWeight: 800, color: C.signal }}>{T("gmNowMult", { n: g.jokers.find(x => x.id === info).v })}</div> : null}</div></Sheet>}
-      {quit && (
-        <Sheet short title={T("gmQuitT")} onClose={() => setQuit(false)}>
-          <div style={{ fontSize: 14.5, color: C.dim, lineHeight: 1.5 }}>{T(saved.mode === "ranked" ? "gmQuitRankedD" : "gmQuitD")}</div>
-          <button type="button" data-gm-quit-yes onClick={() => { sfxTap(); setQuit(false); onQuit({ ...saved, moves }); }} style={{ ...bigBtn("#e5484d", "#fff"), marginTop: 14 }}>{T("gmQuit")}</button>
-          <button type="button" data-gm-quit-no onClick={() => { sfxTap(); setQuit(false); }} style={{ ...ghostBtn, width: "100%", marginTop: 8, padding: "13px 14px", fontSize: 15, color: C.chalk }}>{T("gmStay")}</button>
-        </Sheet>
+      {insp && g.jokers[insp.i] && <JokerInspect key={insp.i + (insp.ask ? "a" : "v")} g={g} i={insp.i} ask={!!insp.ask} canSell={canSell} onSell={sellNow} onClose={() => setInsp(null)} />}
+      {/* 1.9.0 (Michael, Nov 1): clear choices in a centred box. Save and quit keeps the Run for later; quitting without
+          saving ends it and counts as lost (else people would leave Runs they're losing). Ranked: leaving = a loss. */}
+      {quit && !noSave && (saved.mode === "run" || saved.mode === "duel" ? (
+        <ConfirmBox icon="cards" title={T("gmQuitT")} text={T("gmSaveQuitD")} yes={T("gmSaveQuit")} no={T("gmStay")} yesData={{ "data-gm-quit-yes": true }}
+          onYes={() => { setQuit(false); onQuit({ ...saved, moves }, false); }} onNo={() => setQuit(false)}>
+          <button type="button" data-gm-quit-nosave onClick={() => { sfxTap(); setNoSave(true); }} style={{ ...btnBase, background: "transparent", color: "#ff7a7a", fontSize: 13.5, fontWeight: 800, marginTop: 14, padding: "6px 10px" }}>{T("gmQuitNoSave")}</button>
+        </ConfirmBox>
+      ) : (
+        <ConfirmBox icon="cards" danger title={T("gmQuitT")} text={T(saved.mode === "ranked" ? "gmQuitRankedD" : "gmQuitD")} yes={T("gmQuit")} no={T("gmStay")} yesData={{ "data-gm-quit-yes": true }}
+          onYes={() => { setQuit(false); onQuit({ ...saved, moves }, true); }} onNo={() => setQuit(false)} />
+      ))}
+      {quit && noSave && (
+        <ConfirmBox icon="alert" danger title={T("gmQuitNoSaveT")} text={T("gmQuitNoSaveD")} yes={T("gmQuitNoSaveYes")} no={T("cancel")} yesData={{ "data-gm-quit-nosave-yes": true }}
+          onYes={() => { setQuit(false); setNoSave(false); onQuit({ ...saved, moves }, true); }} onNo={() => setNoSave(false)} />
       )}
     </div>,
     document.body
   );
 }
 function ScoreBox({ chips, mult, total }) {
+  // 1.9.0: two solid pills (chips in sky, the multiplier in the main colour) with a soft glow; own colours
+  const pill = col => ({ minWidth: 64, textAlign: "center", padding: "8px 14px", borderRadius: 16, background: `linear-gradient(180deg, ${hexMix(col, "#ffffff", 0.18)}, ${col})`, color: "#0b0f1c", fontFamily: DISPLAY, fontSize: 28, fontWeight: 900, lineHeight: 1.05, boxShadow: `0 0 0 1px ${hexMix(col, "#ffffff", 0.35)} inset, 0 6px 18px ${col}55`, fontVariantNumeric: "tabular-nums" });
   return (
     <div data-gm-score style={{ display: "flex", alignItems: "center", gap: 8 }}>
-      <span key={"c" + chips} className="gmBump" style={{ minWidth: 70, textAlign: "center", padding: "8px 12px", borderRadius: 12, background: `${C.sky}22`, border: `1.5px solid ${C.sky}`, color: C.sky, fontFamily: DISPLAY, fontSize: 26, fontWeight: 900 }}>{nf(chips)}</span>
+      <span key={"c" + chips} className="gmBump" style={pill(C.sky)}>{nf(chips)}</span>
       <span style={{ fontFamily: DISPLAY, fontSize: 22, fontWeight: 900, color: C.dim }}>×</span>
-      <span key={"m" + mult} className="gmBump" style={{ minWidth: 56, textAlign: "center", padding: "8px 12px", borderRadius: 12, background: C.signal, color: C.signalInk, fontFamily: DISPLAY, fontSize: 26, fontWeight: 900 }}>{Number.isInteger(mult) ? mult : mult.toFixed(1)}</span>
+      <span key={"m" + mult} className="gmBump" style={pill(C.signal)}>{Number.isInteger(mult) ? mult : mult.toFixed(1)}</span>
       {total !== null && total !== undefined && <span data-gm-total className="gmPop" style={{ fontFamily: DISPLAY, fontSize: 30, fontWeight: 900, color: C.signal, marginLeft: 4 }}>= {nf(total)}</span>}
     </div>
   );
 }
-function GameShop({ g, tut, onMove, onMoves, onInfo }) { // onInfo: your own jokers' text
+// 1.9.0 (Michael, Nov 7: "nicer shop, more icons, less text; a tap opens the details"): the shop as a counter of
+// cards in two columns (a joker as its card, packs and drills as their own cards), the price on a tag, one Buy button;
+// a tap on a card opens its full text. Your jokers sit below as cards with their sell price; a tap holds one up.
+function ShopArt({ it, w }) {
+  if (it.k === "joker") return <JokerCard id={it.id} w={w} still />;
+  const pk = it.k === "pack", col = pk ? "#b78cff" : C.signal, h = Math.round(w * 1.42), rr = Math.round(w * 0.16);
+  return (
+    <span aria-hidden="true" style={{ position: "relative", display: "block", width: w, height: h, borderRadius: rr, overflow: "hidden", background: `linear-gradient(160deg, ${col}, ${hexMix(col, "#000000", 0.55)})`, boxShadow: `0 ${Math.round(w * 0.1)}px ${Math.round(w * 0.22)}px rgba(0,0,0,.38)` }}>
+      <span style={{ position: "absolute", inset: 3, borderRadius: rr - 2, background: pk ? `repeating-linear-gradient(135deg, ${col}2e 0 6px, transparent 6px 14px), linear-gradient(180deg, ${hexMix(C.panelHi, col, 0.18)}, ${C.ink})` : `radial-gradient(85% 55% at 50% 40%, ${col}44, transparent 72%), linear-gradient(180deg, ${hexMix(C.panelHi, col, 0.1)}, ${C.ink})`, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 4 }}>
+        {pk && <span style={{ position: "absolute", left: 0, right: 0, top: "50%", height: 8, marginTop: -4, background: `${col}88` }} />}
+        <span style={{ position: "relative", display: "flex", padding: pk ? 8 : 0, borderRadius: 99, background: pk ? hexMix(C.ink, col, 0.25) : "transparent", filter: `drop-shadow(0 0 6px ${col}aa)` }}><Ico n={pk ? PACK_ICON[it.id] : "dumbbell"} size={Math.round(w * (pk ? 0.36 : 0.42))} color={col} /></span>
+        {pk && <span style={{ position: "absolute", right: 5, bottom: 5, fontFamily: DISPLAY, fontSize: Math.round(w * 0.2), fontWeight: 900, color: C.chalk, lineHeight: 1 }}>×{GM.PACKS[it.id].n}</span>}
+        {!pk && <span style={{ position: "absolute", left: 0, right: 0, bottom: 6, textAlign: "center", fontFamily: DISPLAY, fontSize: Math.round(w * 0.17), fontWeight: 900, color: col }}>{T("gmLv", { n: "+1" })}</span>}
+      </span>
+    </span>
+  );
+}
+function GameShop({ g, tut, W = 412, onMove, onMoves, onTap, onSell }) {
   const sh = g.shop, pay = sh.pay ?? ((g.last && g.last.pay) || 0);
   // 1.8.0 (Michael, Oct 25: "let me swap them if I like another one more"): with all joker slots taken, Buy becomes
   // Swap: pick one of yours, it is sold and the new one bought in one go
   const full = g.jokers.length >= GM.jokerSlots(g), sellOf = j => Math.max(1, Math.floor(j.cost / 2));
   const [swap, setSwap] = useState(null); // index of the shop item being swapped in
+  const [open, setOpen] = useState(null); // the item whose full text is open
+  const cw = Math.min(84, Math.floor((W - 28 - 10) / 2 * 0.5));
   return (
-    <div data-gm-shop style={{ flex: 1, display: "flex", flexDirection: "column", gap: 12, marginTop: 6 }}>
-      <div className="cardIn" style={{ ...card, ...tileR(), padding: "12px 14px", display: "flex", alignItems: "center", gap: 10 }}>
-        <span aria-hidden="true" style={{ display: "flex", color: C.mint }}><Ico n="check" size={28} /></span>
+    <div data-gm-shop style={{ flex: 1, display: "flex", flexDirection: "column", gap: 12, marginTop: 10 }}>
+      <div className="cardIn" data-gm-cleared style={{ padding: "10px 14px", borderRadius: 16, display: "flex", alignItems: "center", gap: 10, background: `linear-gradient(135deg, ${C.mint}26, transparent 70%)`, border: `1px solid ${C.mint}55` }}>
+        <span aria-hidden="true" style={{ display: "flex", color: C.mint }}><Ico n="check" size={24} color={C.mint} /></span>
         <span style={{ flex: 1, fontWeight: 800 }}>{T("gmCleared")}</span>
-        <span data-gm-pay style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, color: C.signal }}>+<KSign />{pay}</span>
+        <span data-gm-pay style={{ fontFamily: DISPLAY, fontSize: 22, fontWeight: 900, color: C.signal }}>+<KSign />{pay}</span>
       </div>
-      <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <Ico n="bag" size={20} color={C.chalk} />
         <div style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, flex: 1 }}>{T("gmShop")}</div>
-        <div data-gm-coin style={{ fontSize: 13, color: C.dim, fontWeight: 700 }}><span style={{ color: C.signal }}><KSign />{g.money}</span> {COIN}</div>
+        <span data-gm-coin style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0 0 0 0)" }}>{g.money} {COIN}</span>
+        {!tut && <button type="button" data-gm-reroll disabled={g.money < sh.rerollCost} onClick={() => onMove({ t: "reroll" })} aria-label={T("gmReroll", { n: sh.rerollCost }).replace("$", COIN + " ")}
+          style={{ ...btnBase, display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 12px", borderRadius: 99, ...SUNK(), color: C.chalk, fontSize: 14, fontWeight: 900, opacity: g.money < sh.rerollCost ? 0.45 : 1 }}><Ico n="repeat" size={16} color={C.chalk} /><span style={{ color: C.signal }}><KSign />{sh.rerollCost}</span></button>}
       </div>
-      {/* one row per item: what it is, what it does, the price (Michael wants it readable, not a tap per joker) */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      <div data-gm-items style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
         {sh.items.filter(it => it.k !== "voucher").map(it => {
           const i = sh.items.indexOf(it), jk = it.k === "joker", pk = it.k === "pack", r = jk && GM.JOKERS[it.id] ? GM.JOKERS[it.id].r : 0, col = jk ? RAR_COL()[r] : pk ? "#b78cff" : C.signal;
           const sw = jk && full && !it.sold; // Swap instead of Buy
-          const off = it.sold || (sw ? !g.jokers.some(j => g.money + sellOf(j) >= it.cost) : g.money < it.cost);
+          // 1.9.0 (Michael, Nov 1: "decide what to sell before buying"): a joker pack can't be opened with every slot taken
+          const pfull = pk && GM.isJokerPack(it.id) && full && !it.sold;
+          const off = it.sold || pfull || (sw ? !g.jokers.some(j => g.money + sellOf(j) >= it.cost) : g.money < it.cost);
+          const name = jk ? jName(it.id) : pk ? (L.gm.pk || {})[it.id][0] : T("gmDrill", { h: handName(it.id) });
+          const desc = jk ? withK(jDesc(it.id)) : pk ? (L.gm.pk || {})[it.id][1] : T("gmDrillD", { c: GM.HAND_UP[it.id][0], m: GM.HAND_UP[it.id][1] });
+          const isOpen = open === i;
           return (
-            <div key={i} data-gm-item={it.k} data-gm-drill={it.k === "drill" ? it.id : undefined} data-gm-pack={pk ? it.id : undefined} data-joker-row={jk ? it.id : undefined} data-rarity={jk ? r : undefined} className={"cardIn" + (jk && r === 3 ? " foil" : "")} style={{ ...card, ...tileR(), position: "relative", overflow: "hidden", padding: "10px 12px", display: "flex", alignItems: "center", gap: 12, opacity: it.sold ? 0.4 : 1, borderColor: `${col}80`, animationDelay: `${i * 0.06}s` }}>
-              <span aria-hidden="true" className={jk && r >= 2 && !it.sold ? "gmWobble" : undefined} style={{ width: 46, height: 46, flexShrink: 0, borderRadius: 12, background: `linear-gradient(160deg, ${col}40, ${C.panelHi})`, border: `1.5px solid ${col}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 25 }}>
-                {pk ? <Ico n={PACK_ICON[it.id]} size={26} color={col} /> : !jk ? <Ico n="dumbbell" size={26} color={col} /> : <JkIco id={it.id} size={26} />}
-              </span>
-              <span style={{ flex: 1, minWidth: 0 }}>
-                <span style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", fontWeight: 800, fontSize: 15, lineHeight: 1.2 }}>{jk ? jName(it.id) : pk ? (L.gm.pk || {})[it.id][0] : T("gmDrill", { h: handName(it.id) })}
-                  {jk && <span data-rar-chip={r} style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: 0.4, textTransform: "uppercase", color: col, border: `1px solid ${col}88`, borderRadius: 99, padding: "1px 7px" }}>{T("gmRar" + r)}</span>}</span>
-                <span style={{ display: "block", fontSize: 12.5, color: C.dim, lineHeight: 1.35, marginTop: 2 }}>{jk ? withK(jDesc(it.id)) : pk ? (L.gm.pk || {})[it.id][1] : T("gmDrillD", { c: GM.HAND_UP[it.id][0], m: GM.HAND_UP[it.id][1] })}</span>
-              </span>
-              <button type="button" data-gm-buy={i} data-gm-swap={sw ? 1 : undefined} disabled={off} onClick={() => (sw ? (sfxTap(), setSwap(i)) : onMove({ t: "buy", i }))} style={{ ...btnBase, flexShrink: 0, minWidth: 64, padding: "8px 10px", borderRadius: 12, background: it.sold ? "transparent" : C.signal, color: it.sold ? C.dim : C.signalInk, fontSize: 13, lineHeight: 1.15, opacity: off && !it.sold ? 0.4 : 1 }}>
-                {it.sold ? "✓" : <><span style={{ display: "block", fontFamily: DISPLAY, fontSize: 17, fontWeight: 900 }}><KSign />{it.cost}</span>{T(sw ? "gmSwap" : pk ? "gmOpen" : "gmBuy")}</>}
+            <div key={i} data-gm-item={it.k} data-gm-drill={it.k === "drill" ? it.id : undefined} data-gm-pack={pk ? it.id : undefined} data-joker-row={jk ? it.id : undefined} data-rarity={jk ? r : undefined} data-sold={it.sold ? 1 : undefined} className="cardIn"
+              style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center", gap: 8, padding: "12px 10px 10px", borderRadius: 18, background: `linear-gradient(180deg, ${col}1c, ${C.panel} 55%)`, border: `1px solid ${col}44`, opacity: it.sold ? 0.45 : 1, minWidth: 0 }}>
+              <button type="button" data-gm-item-open={i} aria-expanded={isOpen} onClick={() => { sfxTap(); setOpen(isOpen ? null : i); }} className={jk && r >= 2 && !it.sold ? "gmWobble" : undefined} style={{ ...btnBase, background: "transparent", padding: 0 }}><ShopArt it={it} w={cw} /></button>
+              <span style={{ position: "absolute", right: 8, top: 8, padding: "2px 8px", borderRadius: 99, background: it.sold ? "transparent" : "rgba(0,0,0,.45)", color: C.signal, fontFamily: DISPLAY, fontSize: 15, fontWeight: 900, lineHeight: 1.3 }}>{it.sold ? <Ico n="check" size={15} color={C.mint} /> : <><KSign />{it.cost}</>}</span>
+              {pfull && <span data-gm-full title={T("gmFull")} style={{ position: "absolute", left: 8, top: 8, width: 24, height: 24, borderRadius: 99, display: "flex", alignItems: "center", justifyContent: "center", background: "#ff6b6b26", border: "1px solid #ff9a9a88" }}><Ico n="lock" size={13} color="#ff9a9a" sw={2.4} /></span>}
+              <button type="button" onClick={() => { sfxTap(); setOpen(isOpen ? null : i); }} style={{ ...btnBase, background: "transparent", padding: 0, color: C.chalk, textAlign: "center", width: "100%", fontWeight: 400 }}>
+                <span style={{ display: "block", fontWeight: 800, fontSize: 13.5, lineHeight: 1.2 }}>{name}</span>
+                {jk && <span data-rar-chip={r} style={{ display: "inline-block", marginTop: 3, fontSize: 9.5, fontWeight: 800, letterSpacing: 0.4, textTransform: "uppercase", color: col }}>{T("gmRar" + r)}</span>}
+                {pfull && <span style={{ display: "block", marginTop: 3, fontSize: 10.5, fontWeight: 800, textTransform: "uppercase", letterSpacing: 0.4, color: "#ff9a9a" }}>{T("gmFull")}</span>}
+                <span data-gm-item-desc style={{ display: isOpen ? "block" : "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", marginTop: 4, fontSize: 11.5, color: C.dim, lineHeight: 1.35 }}>{desc}</span>
+              </button>
+              <button type="button" data-gm-buy={i} data-gm-swap={sw ? 1 : undefined} disabled={off} onClick={() => (sw ? (sfxTap(), setSwap(i)) : onMove({ t: "buy", i }))} className={off ? undefined : "b3d"}
+                style={{ ...btnBase, marginTop: "auto", width: "100%", padding: "9px 8px", borderRadius: 12, background: it.sold ? "transparent" : off ? `${C.chalk}10` : C.signal, color: it.sold || off ? C.dim : C.signalInk, fontSize: 14, fontWeight: 900 }}>
+                {it.sold ? <Ico n="check" size={16} color={C.mint} /> : T(sw ? "gmSwap" : pk ? "gmOpen" : "gmBuy")}
               </button>
             </div>
           );
@@ -10293,20 +10489,12 @@ function GameShop({ g, tut, onMove, onMoves, onInfo }) { // onInfo: your own jok
             <span style={{ display: "block", fontSize: 12.5, color: C.dim, lineHeight: 1.35 }}>{withK(v[1])}</span>
           </span>
           <button type="button" data-gm-buy={i} disabled={it.sold || g.money < it.cost} onClick={() => onMove({ t: "buy", i })} style={{ ...btnBase, flexShrink: 0, minWidth: 64, padding: "8px 10px", borderRadius: 12, background: it.sold ? "transparent" : "#ffb02e", color: it.sold ? C.dim : "#1b1405", fontSize: 13, lineHeight: 1.15, opacity: !it.sold && g.money < it.cost ? 0.4 : 1 }}>
-            {it.sold ? "✓" : <><span style={{ display: "block", fontFamily: DISPLAY, fontSize: 17, fontWeight: 900 }}><KSign />{it.cost}</span>{T("gmBuy")}</>}
+            {it.sold ? <Ico n="check" size={16} color={C.mint} /> : <><span style={{ display: "block", fontFamily: DISPLAY, fontSize: 17, fontWeight: 900 }}><KSign />{it.cost}</span>{T("gmBuy")}</>}
           </button>
         </div>); })}
-      {g.vouchers && g.vouchers.length > 0 && <div data-gm-vouchers style={{ display: "flex", gap: 6, flexWrap: "wrap", fontSize: 12, color: C.dim }}>{g.vouchers.map(v => <span key={v} title={((L.gm.v || {})[v] || [v])[1]} style={{ padding: "3px 9px", borderRadius: 99, border: "1px dashed #ffb02e88" }}><IcoI n={VOUCHER_ICON[v] || "ticket"} color="#ffb02e" /> {((L.gm.v || {})[v] || [v])[0]}</span>)}</div>}
-      {g.pack && <PackOpen g={g} onMove={onMove} />}
-      {!tut && <button type="button" data-gm-reroll disabled={g.money < sh.rerollCost} onClick={() => onMove({ t: "reroll" })} style={{ ...ghostBtn, alignSelf: "flex-start", color: C.chalk, opacity: g.money < sh.rerollCost ? 0.5 : 1 }}>{withK(T("gmReroll", { n: sh.rerollCost }))}</button>}
-      {g.jokers.length > 0 && (
-        <div>
-          <div style={{ fontSize: 12.5, color: C.dim, marginBottom: 6 }}>{T("gmYourJokers", { n: g.jokers.length, max: GM.jokerSlots(g) })}</div>
-          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-            {g.jokers.map((j, i) => <div key={j.id} style={{ display: "flex", flexDirection: "column", gap: 4, alignItems: "center" }}><JokerChip id={j.id} small onClick={() => { sfxTap(); onInfo(j.id); }} /><button type="button" data-gm-sell={i} onClick={() => onMove({ t: "sell", i })} style={{ ...btnBase, background: "transparent", color: C.dim, fontSize: 11.5, padding: "3px 6px" }}>{withK(T("gmSell", { n: Math.max(1, Math.floor(j.cost / 2)) }))}</button></div>)}
-          </div>
-        </div>
-      )}
+      {g.vouchers && g.vouchers.length > 0 && <div data-gm-vouchers style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>{g.vouchers.map(v => <span key={v} title={((L.gm.v || {})[v] || [v])[0] + ": " + ((L.gm.v || {})[v] || ["", ""])[1]} style={{ display: "inline-flex", padding: 6, borderRadius: 10, border: "1px dashed #ffb02e88" }}><Ico n={VOUCHER_ICON[v] || "ticket"} size={16} color="#ffb02e" /></span>)}</div>}
+      {g.pack && <PackOpen g={g} onMove={onMove} onSell={onSell} />}
+      <JokerRow g={g} w={Math.min(60, Math.floor((W - 28 - 6 * 5) / 6))} sell={!tut} onTap={k => onTap(k)} />
       {swap !== null && (
         <Sheet short title={T("gmSwapT")} onClose={() => setSwap(null)}>
           <div data-gm-swap-sheet style={{ fontSize: 14, color: C.dim, lineHeight: 1.5, marginBottom: 10 }}>{T("gmSwapD", { name: jName(sh.items[swap].id) })}</div>
@@ -10325,7 +10513,7 @@ function GameShop({ g, tut, onMove, onMoves, onInfo }) { // onInfo: your own jok
           </div>
         </Sheet>
       )}
-      {!tut && <button type="button" data-gm-next onClick={() => onMove({ t: "next" })} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: "auto" }}>{T("gmNext")}</button>}
+      {!tut && <button type="button" data-gm-next onClick={() => onMove({ t: "next" })} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: "auto", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>{T("gmNext")}<Arrow style={{ color: C.signalInk }} /></button>}
     </div>
   );
 }
@@ -10741,7 +10929,7 @@ function TourAsk({ onGo, onNo }) {
 // 1.8.2 (Michael: "a window in the middle to confirm, where it says what it is"): one centred question for a
 // button that can't be undone in one tap (remove, block, report, delete a chat, end a friend streak).
 // 1.9.0: `no` = own label for the second button, `onDismiss` = what back / a tap outside do (default: onNo)
-function ConfirmBox({ icon, title, text, yes, no, danger, onYes, onNo, onDismiss, yesData }) {
+function ConfirmBox({ icon, title, text, yes, no, danger, onYes, onNo, onDismiss, yesData, children }) {
   const dismiss = onDismiss || onNo;
   const [on, setOn] = useState(false);
   useEffect(() => { const r = requestAnimationFrame(() => setOn(true)); return () => cancelAnimationFrame(r); }, []);
@@ -10759,6 +10947,7 @@ function ConfirmBox({ icon, title, text, yes, no, danger, onYes, onNo, onDismiss
           <button type="button" data-confirm-no onClick={() => { sfxTap(); onNo(); }} style={{ ...btnBase, flex: 1, padding: "12px 12px", borderRadius: 14, ...SUNK(), color: C.chalk, fontSize: 14.5, fontWeight: 800 }}>{no || T("cancel")}</button>
           <button type="button" data-confirm-yes {...(yesData || {})} onClick={() => { sfxTap(); onYes(); }} className="b3d" style={{ ...(danger ? bigBtn("#d64545", "#fff") : bigBtn(C.signal, C.signalInk)), ...(danger ? { "--e": "#8a1f1f" } : {}), flex: 1, minWidth: 0, fontSize: 14.5, padding: "12px 10px", borderRadius: 14 }}>{yes}</button>
         </div>
+        {children}
       </div>
     </div>,
     document.body
@@ -11242,7 +11431,7 @@ function Session({ session, setSession, history, onSave, onClose, onMinimize, on
   const seq = sessionSeq(session);
   const doSwap = (slot, id) => setSession({ ...session, swaps: { ...swaps, [slot]: id === base[slot] ? undefined : id } });
   const usedIds = [...new Set(seq.map(x => x.id))];
-  const hasResults = Object.values(session.results).some(a => a && a.some(v => v !== null && v !== undefined));
+  const hasResults = Object.values(session.results).some(a => a && a.some(realSet)); // 1.9.0: only sets above 0 are saved
   const sKg = session.kg || {};
 
   const finish = (coolDone = false) => {
@@ -11269,7 +11458,8 @@ function Session({ session, setSession, history, onSave, onClose, onMinimize, on
     }).filter(Boolean);
     const secs = session.startTs ? Math.round((Date.now() - session.startTs) / 1000) : 0;
     const pl = session.plan ? { plan: { id: session.plan.id, name: session.plan.name, ...(session.plan.gname ? { grp: session.plan.gname } : {}), wd: session.plan.wd } } : {};
-    const entry = items.length ? { date: dateKey(), ts: Date.now(), day: session.day || null, ...pl, ...(session.day ? { rounds: session.rounds } : {}), items, prs, rankUps, warm: session.warm.every(Boolean), cool: !!coolDone, ...(secs > 0 && secs < 4 * 3600 ? { dur: secs } : {}), ...(session.rests ? { rests: session.rests } : {}) } : null;
+    // 1.9.0 (Michael, Nov 7): at least one set above 0, else nothing is saved (no XP, no streak, no badge)
+    const entry = hasRealSet(items) ? { date: dateKey(), ts: Date.now(), day: session.day || null, ...pl, ...(session.day ? { rounds: session.rounds } : {}), items, prs, rankUps, warm: session.warm.every(Boolean), cool: !!coolDone, ...(secs > 0 && secs < 4 * 3600 ? { dur: secs } : {}), ...(session.rests ? { rests: session.rests } : {}) } : null;
     const xpBefore = totalXP(history);
     let xpGained = 0, newCh = [], newAch = [];
     if (entry) {
@@ -11353,7 +11543,7 @@ function Session({ session, setSession, history, onSave, onClose, onMinimize, on
             </div>
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
               {inFlow && <button onClick={goBack} style={{ ...ghostBtn, padding: "7px 11px", fontSize: 12 }}>{T("back")}</button>}
-              <button onClick={() => { if (!confirmQuit) { setConfirmQuit(true); setTimeout(() => setConfirmQuit(false), 3000); return; } if (hasResults) finish(); else onClose(); }}
+              <button data-quit onClick={() => { if (!confirmQuit) { setConfirmQuit(true); setTimeout(() => setConfirmQuit(false), 3000); return; } if (hasResults) finish(); else onClose(); }}
                 style={{ ...ghostBtn, padding: "7px 11px", fontSize: 12, color: confirmQuit ? "#ff8a80" : C.dim, borderColor: confirmQuit ? "#ff8a80" : C.line }}>
                 {confirmQuit ? (hasResults ? T("quitSave") : T("quitConfirm")) : T("quit")}
               </button>
@@ -11677,9 +11867,15 @@ export default function App() {
     gameSave(null);
     setGameEnd({ saved, g, xp, lvlUp: after > before ? after : 0, stakeUp });
   };
-  const quitGame = saved => {
-    setGamePlay(null); gameSave(null);
-    if (saved.mode === "ranked") cloud().rkEnd(null, true).catch(() => {});
+  // 1.9.0: lost = false → Save and quit (the Run waits under "Continue"); lost = true → it ends and, for a Run or a duel,
+  // counts as a lost game (no XP); the tutorial just closes; Ranked tells the server.
+  const quitGame = (saved, lost) => {
+    setGamePlay(null);
+    if (saved.mode === "tut") return;
+    if (!lost) { gameSave(saved); return; }
+    gameSave(null);
+    if (saved.mode === "ranked") { cloud().rkEnd(null, true).catch(() => {}); return; }
+    const gp = profile.game || {}; setProfile({ ...profile, game: { ...gp, games: (gp.games || 0) + 1, quit: (gp.quit || 0) + 1 } });
   };
   // once a few seconds after each start (also the first check for people who joined the world list before 1.8.0)
   useEffect(() => { if (acct.st !== "in" || !acct.prof || !acct.prof.global) return; const t = setTimeout(() => runBoard(), 8000); return () => clearTimeout(t); }, [acct.st, acct.uid]);
@@ -12290,9 +12486,13 @@ export default function App() {
         .gmFlipIn{animation:gmFlipIn .5s ${MO.spring} both}@keyframes gmFlipIn{from{transform:perspective(600px) rotateY(90deg) scale(.8);opacity:0}to{transform:none;opacity:1}}
         .gmWobble{animation:gmWobble 2.4s ease-in-out infinite}@keyframes gmWobble{0%,80%,100%{transform:none}86%{transform:rotate(-8deg) scale(1.08)}92%{transform:rotate(7deg) scale(1.08)}}
         .gmGlowCard{animation:gmGlowCard 1.1s ease-in-out infinite alternate}
+        .gmLift{animation:gmLift .55s ${MO.spring} both}@keyframes gmLift{from{transform:perspective(700px) rotateY(-28deg) translateY(16px) scale(.8);opacity:0}}
+        .gmSold{animation:gmSold .6s ${MO.exit} forwards}@keyframes gmSold{30%{transform:scale(1.06) rotate(-3deg)}100%{transform:scale(.2) rotate(14deg) translateY(-30px);opacity:0}}
+        .gmCoinUp{animation:gmCoinUp .62s ${MO.pop} forwards}@keyframes gmCoinUp{from{opacity:0;margin-top:10px}35%{opacity:1}to{opacity:1;margin-top:-46px}}
+        .gmBossPulse{animation:gmBossPulse 1.8s ease-in-out infinite}@keyframes gmBossPulse{50%{box-shadow:0 0 0 6px #ff6b6b22,0 0 24px #ff6b6baa}}
         @keyframes gmGlowCard{from{box-shadow:0 0 0 2px ${C.signal}66, 0 0 10px ${C.signal}55}to{box-shadow:0 0 0 3px ${C.signal}, 0 0 22px ${C.signal}aa}}
         @keyframes gmGlow{0%{transform:translateY(0)}40%{transform:translateY(-6px) scale(1.08)}100%{transform:none}}
-        @media (prefers-reduced-motion: reduce){.gmDeal,.gmPop,.gmBump,.gmGlow{animation:none}}
+        @media (prefers-reduced-motion: reduce){.gmDeal,.gmPop,.gmBump,.gmGlow,.gmLift,.gmBossPulse{animation:none}}
         @keyframes revDeal{from{transform:translateY(55vh) rotate(-18deg) scale(.6);opacity:0}to{transform:none;opacity:1}}
         .revTw{position:absolute;border-radius:2px;transform:translate(-50%,-50%) rotate(45deg) scale(0);animation:revTw var(--du) ease-in-out var(--dl) infinite}
         @keyframes revTw{0%,100%{transform:translate(-50%,-50%) rotate(45deg) scale(0);opacity:0}50%{transform:translate(-50%,-50%) rotate(45deg) scale(1);opacity:1}}

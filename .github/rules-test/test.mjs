@@ -214,6 +214,11 @@ await t("1.9.0: 61 ranked exercises fit (was ≤ 40)", true, () => setDoc(doc(as
 await t("1.9.0: weighted ranks rr fit", true, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ rr: { fw_dumbbell_bench_press: 3, mc_leg_press: 0 } })));
 await t("1.9.0: rr must be a map", false, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ rr: [1, 2] })));
 await t("1.9.0: rk over 200 refused", false, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ rk: many(201, 1) })));
+await t("1.9.0: last workout lw fits", true, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ lw: { d: "2026-11-07", m: 24, s: 9, r: 186 } })));
+await t("1.9.0: last workout added by hand", true, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ lw: { d: "2026-11-07", s: 1, r: 1, h: 1 } })));
+await t("1.9.0: lw with an unknown key refused", false, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ lw: { d: "2026-11-07", s: 9, x: 1 } })));
+await t("1.9.0: lw with a bad date refused", false, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ lw: { d: "yesterday", s: 9 } })));
+await t("1.9.0: lw sets must be whole numbers", false, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ lw: { d: "2026-11-07", s: 9.5 } })));
 await t("showcase + badge values + records are fine", true, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ av: { workouts: 13, streak: 9 }, show: ["rk:k1", "ach3:workouts,streak,reps", "st:reps", ""], prs: 4 })));
 await t("a showcase over 10 fields is refused", false, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ show: Array.from({ length: 11 }, () => "st:reps") })));
 await t("badge values must be a small map", false, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ av: Object.fromEntries(Array.from({ length: 81 }, (_, i) => ["a" + i, 1])) })));

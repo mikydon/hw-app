@@ -37,6 +37,11 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 | Guide | 9 chapters | a 10th chapter for Workout plans |
 | Buttons | some buttons gave no sign that a tap worked | every button reacts when pressed; buttons that wait for the network show a spinner, then a ✓ |
 | World leaderboard | world top 50 | paused for now and shown as "coming soon"; the friends leaderboard stays |
+| Workout summary | a long list of numbers | a calm summary that animates: time, sets and reps, XP and streak, what you earned today, your sets as small chips |
+| Are you sure? | deleting took two taps on a text button | deleting a workout, a backup or your account, signing out and loading a backup ask in a box in the middle of the screen |
+| Sets with 0 | a set logged as 0 counted, so a workout of only a warm-up, 0s and stretching kept the streak and gave XP | sets with 0 don't count: a workout needs at least one real set, else nothing is saved (no XP, no streak); History's editor says so too |
+| Last workout on the profile | not shown | one quiet row on every profile (yours and what others see): day, minutes, sets, reps, a mark when it was added by hand; a tap opens the details |
+| Muscle Deck | with all joker slots full an opened joker pack locked every option (the paid pack was lost); a tap on Sell sold at once; ✕ only left the game | a new table and shop: the blind as a medallion with its target, hands and discards as icon counters, jokers as cards with their empty slots, a fanned hand, the shop as cards in two columns (a tap opens the full text). A tap on a joker shows it up close; Sell asks first (on the table, in the shop and inside a pack, so a full pack can be saved). A joker pack is marked Full and locked while every slot is taken. ✕ offers Save and quit, or Quit without saving (counts as a lost game) |
 | Languages | new texts of 1.8.x were translated | all new texts in all 15 languages (AI-assisted for most; fixes welcome, see TRANSLATING.md) |
 
 ## 1.8.2 (2026-11-01)
