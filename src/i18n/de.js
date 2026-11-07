@@ -1,5 +1,7 @@
 // German (Deutsch).
-export default {
+import { with190 } from "./t190/merge.js";
+import T190 from "./t190/de.js";
+const L = {
   ui: {
     searchWeb: "🔎 Im Web suchen",
     searchOf: "Im Web suchen: {name}",
@@ -2063,3 +2065,4 @@ export default {
   ],
   looks: {"f_iron":"Eisenring","f_dots":"Punktring","f_pixel":"Pixel","f_hex":"Hex","f_wave":"Welle","f_pulse":"Puls","f_flame":"Flamme","f_laurel":"Lorbeer","f_neon":"Neon","f_bolt":"Donner","f_crown":"Krone","f_obsidian":"Obsidiansplitter","f_diamond":"Diamantring","b_glow":"Themenglühen","b_grid":"Hallenboden","b_sunset":"Sonnenuntergang","b_topo":"Höhenlinien","b_stars":"Nachthimmel","b_waves":"Wellen","b_bubbles":"Blasen","b_ridge":"Grat im Morgenrot","b_city":"Lichter der Stadt","b_galaxy":"Galaxie","b_aurora":"Polarlicht","t_iron":"Eiserner Wille","t_rookie":"Rookie","t_grind":"Täglicher Grind","t_zen":"Zen","t_beast":"Beast Mode","t_legend":"Lebende Legende","t_bird":"Frühaufsteher","t_owl":"Nachteule","t_comeback":"Comeback-Kid","t_marathon":"Marathonläufer","t_shark":"Kartenhai","t_streak":"Serienhüter","t_midnight":"Mitternachtsheld","t_obsidian":"Obsidian","n_outline":"Kontur","n_grad":"Verlauf","n_shadow":"Retro-Schatten","n_ice":"Eis","n_glow":"Glühen","n_fire":"Feuer","n_foil":"Folienglanz","n_rainbow":"Regenbogen","n_gold":"Pures Gold","fx_snow":"Schneefall","fx_sparkle":"Funkeln","fx_petals":"Blütenblätter","fx_embers":"Glut","fx_lightning":"Gewitter","fx_frost":"Frost","fx_confetti":"Party","fx_fireworks":"Feuerwerk"},
 };
+export default with190(L, T190);
