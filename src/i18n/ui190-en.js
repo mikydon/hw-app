@@ -213,5 +213,6 @@ Object.assign(UI, {
   codeNet: "Couldn't check the code. Are you online?",
   shE_codes: "From codes",
   shE_gift: "Gift from HW App",
+  pfLooksUndo: "Put back what is saved",
   plGymHint2: "Got dumbbells or a gym? Build your own plan with them.",
 });

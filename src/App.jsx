@@ -2293,6 +2293,7 @@ function TopBar({ screen, history, menuOpen, onMenu, onGo, dlPct, badge, head, s
 // the menu icons' 24-point grid, 2-point round strokes, colour = currentColor (the theme's quiet colour, the main colour
 // when active). Rewards (badges, ranks, cards, the flame/bolt chips) keep their 3D emoji.
 const ICONS = {
+  camera: '<path d="M4 8.5h3.2l1.8-2.5h6l1.8 2.5H20V19H4z"/><circle cx="12" cy="13.2" r="3.4"/>',
   // 1.9.0: plans and the exercise list
   sort: '<path d="M4 7h16M7 12h10M10 17h4"/>',
   arrowUp: '<path d="M12 19V5M6 11l6-6 6 6"/>',
@@ -3684,12 +3685,35 @@ function usePager(name, n, lay, same, start) {
     const fitRest = () => { const pg = pages.current[Math.round(pos())]; const h = Math.max(same ? Math.max(0, ...pages.current.map(x => (x ? x.offsetHeight : 0))) : pg ? pg.offsetHeight : 0, floor()); if (EXPANDING && h < last) return; setH(h); };
     const refit = () => { if (!moving && !EXPANDING) fitRest(); };
     expandDone.add(refit);
-    const grow = () => { if (moving) return; moving = true; setH(Math.max(floor(), ...pages.current.map(x => (x ? x.offsetHeight : 0)))); };
+    // 1.9.0 (Michael, Nov 7: "at the bottom of Badges I swipe to Ranks: nothing shows for a moment, then it jumps up"):
+    // the window was scrolled deep into the long page, so the short page's top was far above the screen while it slid
+    // in, and the strip shrinking afterwards threw the window up. Now, when a move starts while the window is scrolled
+    // past the strip's top, every other page is shifted down (transform) so its top is just under the top bar the whole
+    // way, and when the move ends the shift is swapped for a real scroll in the same frame: nothing on screen moves.
+    const topBar = () => { const b = document.querySelector("[data-topbar]"); return b ? Math.max(0, b.getBoundingClientRect().bottom) : 0; };
+    const lift = () => {
+      c.fin = null; c.from = Math.round(pos());
+      const sy = window.scrollY, want = Math.max(0, el.getBoundingClientRect().top + sy - topBar() - 8);
+      if (sy <= want + 1) return;
+      const docH = document.documentElement.scrollHeight, stripH = el.offsetHeight, fl = floor(), fin = {};
+      pages.current.forEach((pg, i) => {
+        if (!pg || i === c.from) return;
+        const maxS = Math.max(0, docH - stripH + Math.max(pg.offsetHeight, fl) - window.innerHeight), f = Math.min(want, maxS);
+        fin[i] = f; pg.style.transform = `translateY(${Math.round(sy - f)}px)`;
+      });
+      c.fin = fin;
+    };
+    const land = r => {
+      const fin = c.fin; c.fin = null; if (!fin) return;
+      pages.current.forEach(pg => { if (pg) pg.style.transform = ""; });
+      if (r !== c.from && fin[r] !== undefined) window.scrollTo({ top: fin[r], behavior: "instant" });
+    };
+    const grow = () => { if (moving) return; moving = true; lift(); setH(Math.max(floor(), ...pages.current.map(x => (x ? x.offsetHeight : 0)))); };
     const settle = () => {
       clearTimeout(idle);
       if (c.stop || !moving) { if (!c.stop) fitRest(); return; } // still moving by itself / nothing to do
       moving = false; fitRest();
-      const r = Math.round(pos()); setPage(x => (x === r ? x : r));
+      const r = Math.round(pos()); land(r); setPage(x => (x === r ? x : r));
     };
     c.grow = grow; c.settle = settle;
     const on = () => {
@@ -3715,7 +3739,7 @@ function usePager(name, n, lay, same, start) {
     return () => {
       el.removeEventListener("scroll", on); el.removeEventListener("scrollend", settle); el.removeEventListener("pointerdown", touch); el.removeEventListener("touchstart", touch);
       window.removeEventListener("resize", fitRest); expandDone.delete(refit); if (ro) ro.disconnect(); if (raf) cancelAnimationFrame(raf); clearTimeout(idle);
-      if (c.stop) c.stop(); c.grow = c.settle = null;
+      if (c.stop) c.stop(); c.grow = c.settle = null; c.fin = null; pages.current.forEach(pg => { if (pg) pg.style.transform = ""; });
       // 1.6.5 (Michael, Oct 17: "Change goal" in Calories opened with a huge empty gap): when the strip goes away
       // (a form takes its place), React may reuse its <div> for the next element, which then kept the strip's height.
       el.style.height = ""; el.classList.remove("anim");
@@ -3818,8 +3842,7 @@ function TrainTab({ history, onStart, onStartPlan, onStartFree, onFreeze, ui, se
   const pg = usePager("home", 2);
   // 1.8.2 (Michael, 23:16: every screen ends with the same room at the bottom): the two pages keep their own height;
   // switching pages goes back to the top, so a shorter page never makes the screen jump
-  const pgFirst = useRef(true);
-  useEffect(() => { if (pgFirst.current) { pgFirst.current = false; return; } if (window.scrollY > 0) window.scrollTo({ top: 0, behavior: reducedMotion() ? "auto" : "smooth" }); }, [pg.page]);
+  // 1.9.0: no smooth scroll to the top on a page switch any more: usePager lands the new page at its top itself
 
   // One notice at a time (Michael marked it in design A), the most important first. A download in progress and a new
   // APK always show (rare and important).
@@ -5943,14 +5966,93 @@ function SlotSheet({ m, i, cur, onSave, onClose }) {
   );
 }
 
+// 1.9.0 (Michael, Nov 7: "make editing the profile bigger, more minimal and modern, and add a Save button: someone may
+// only be trying things and not want to keep them"): everything here is a draft (photo, name, who sees the profile,
+// automatic showcase) until Save; closing the sheet (✕, back, tap outside) keeps the profile as it was.
+function ProfileEditSheet({ profile, setProfile, acct, vis, onVis, onFriends, onClose }) {
+  const fileRef = useRef(null);
+  const [name, setName] = useState(profile.name && profile.name !== T("defaultName") ? profile.name : "");
+  const [pfp, setPfp] = useState(profile.pfp || null);
+  const [v, setV] = useState(vis);
+  const [auto, setAuto] = useState(false);
+  const [err, setErr] = useState(""), [busy, setBusy] = useState(false);
+  useEffect(() => { if (v === undefined && vis !== undefined) setV(vis); }, [vis]);
+  const signed = acct && acct.st === "in" && acct.prof;
+  const nm = name.trim() || T("defaultName");
+  const changed = nm !== (profile.name || T("defaultName")) || pfp !== (profile.pfp || null) || (signed && v !== undefined && v !== vis) || auto;
+  const pick = async e => {
+    const f = e.target.files && e.target.files[0]; e.target.value = ""; if (!f) return;
+    try { setPfp(await fileToAvatar(f)); setErr(""); sfxTap(); } catch (_) { setErr(T("photoErr")); }
+  };
+  const save = async () => {
+    if (!changed || busy) return;
+    setBusy(true); setErr("");
+    try { if (signed && v !== undefined && v !== vis) await onVis(v); }
+    catch (e) { setErr(cloudErr(e) || T("frOffline")); setBusy(false); return; }
+    setProfile({ ...profile, name: nm, pfp, ...(auto ? { show: [] } : {}) }); sfxCheck(); vibrate([15]);
+    setBusy(false); onClose();
+  };
+  const label = { fontSize: 11.5, fontWeight: 800, letterSpacing: ".08em", textTransform: "uppercase", color: C.dim, margin: "0 2px 8px" };
+  return (
+    <Sheet title={T("pfEdit")} onClose={onClose}>
+      <div data-pf-edit-sheet data-changed={changed ? 1 : 0}>
+        <input ref={fileRef} type="file" accept="image/*" onChange={pick} style={{ display: "none" }} />
+        {/* the photo, big and in the middle; a tap picks a new one */}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "4px 0 20px" }}>
+          <button type="button" data-pf-photo onClick={() => { sfxTap(); fileRef.current && fileRef.current.click(); }} aria-label={T("changePhoto")}
+            style={{ ...btnBase, position: "relative", padding: 0, borderRadius: 99, background: "transparent" }}>
+            <Avatar profile={{ name: nm, pfp }} size={112} />
+            <span aria-hidden="true" style={{ position: "absolute", right: 0, bottom: 2, width: 36, height: 36, borderRadius: 99, background: C.signal, color: C.signalInk, display: "flex", alignItems: "center", justifyContent: "center", border: `3px solid ${C.panel}` }}><Ico n="camera" size={18} sw={2.3} /></span>
+          </button>
+          <button type="button" data-pf-photo-text onClick={() => { sfxTap(); fileRef.current && fileRef.current.click(); }} style={{ ...btnBase, background: "transparent", color: C.signal, fontSize: 14, fontWeight: 800, marginTop: 10, padding: "4px 8px" }}>{T("changePhoto")}</button>
+        </div>
+        {/* name */}
+        <div style={label}>{T("nameLabel")}</div>
+        <div style={{ position: "relative" }}>
+          <input data-name-input value={name} placeholder={T("defaultName")} onChange={e => setName(e.target.value.slice(0, 24))} aria-label={T("nameLabel")} className="obf"
+            style={{ fontFamily: BODY, fontSize: 19, fontWeight: 700, padding: "15px 58px 15px 16px", borderRadius: 16, border: `1.5px solid ${C.line}`, background: C.ink, color: C.chalk, width: "100%", boxSizing: "border-box", outline: "none" }} />
+          <span aria-hidden="true" style={{ position: "absolute", right: 16, top: "50%", transform: "translateY(-50%)", fontSize: 12, fontWeight: 700, color: C.dim }}>{name.length}/24</span>
+        </div>
+        {/* who sees it */}
+        <div style={{ ...label, marginTop: 24 }}>{T("pvWho")}</div>
+        {signed ? (
+          <div data-pv-who>
+            <div role="radiogroup" aria-label={T("pvWho")} style={{ display: "flex", gap: 4, padding: 4, borderRadius: 16, ...SUNK() }}>
+              {CARD_VIS.map(x => { const on = (v || "friends") === x; return (
+                <button key={x} type="button" role="radio" aria-checked={on} data-vis={x} data-on={on ? 1 : 0} disabled={v === undefined} onClick={() => { if (on) return; sfxTap(); setErr(""); setV(x); }}
+                  style={{ ...btnBase, flex: 1, minWidth: 0, padding: "12px 4px", fontSize: 14, borderRadius: 12, background: on ? C.chalk : "transparent", color: on ? C.ink : C.dim, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", opacity: v === undefined ? 0.5 : 1, transition: `background ${MO.t1}, color ${MO.t1}` }}>{T("pvVis_" + x)}</button>
+              ); })}
+            </div>
+            <div data-pv-vis-desc style={{ fontSize: 13, color: C.dim, lineHeight: 1.5, margin: "10px 2px 0" }}>{v === undefined ? T("frLoading") : T("pvVisD_" + v)} {T("pvPrivate")}</div>
+          </div>
+        ) : (
+          <div data-pv-who style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", borderRadius: 16, background: SOFT() }}>
+            <div style={{ flex: 1, fontSize: 13.5, color: C.dim, lineHeight: 1.5 }}>{T("pvSignIn")}</div>
+            <button type="button" data-pv-signin onClick={() => { sfxTap(); onClose(); onFriends && onFriends(); }} style={{ ...btnBase, background: C.signal, color: C.signalInk, padding: "10px 14px", fontSize: 13.5, borderRadius: 12, flexShrink: 0 }}>{T("pvSignInBtn")}</button>
+          </div>
+        )}
+        {(profile.show || []).some(Boolean) && (
+          <button type="button" data-pf-auto-all aria-pressed={auto} onClick={() => { sfxTap(); setAuto(a => !a); }}
+            style={{ ...btnBase, fontWeight: 400, width: "100%", marginTop: 24, padding: "14px 16px", borderRadius: 16, background: auto ? `${C.signal}1c` : SOFT(), border: `1px solid ${auto ? C.signal + "66" : "transparent"}`, color: C.chalk, fontSize: 14.5, display: "flex", alignItems: "center", gap: 12, textAlign: "left" }}>
+            <Ico n="undo" size={19} color={auto ? C.signal : C.dim} />
+            <span style={{ flex: 1, minWidth: 0, fontWeight: 700 }}>{T("pfAutoAll")}</span>
+            {auto && <Ico n="check" size={18} sw={2.6} color={C.signal} />}
+          </button>
+        )}
+        {err && <div role="alert" style={{ fontSize: 13, color: "#ff8a80", marginTop: 14, textAlign: "center" }}>{err}</div>}
+        {/* Save stays at the bottom of the sheet; nothing is kept without it */}
+        <div style={{ position: "sticky", bottom: 0, margin: "22px 0 0", padding: "0 0 4px" }}>
+          <button type="button" data-pf-save disabled={!changed || busy} onClick={save} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), opacity: changed && !busy ? 1 : 0.45 }}>{busy ? "…" : T("save")}</button>
+        </div>
+      </div>
+    </Sheet>
+  );
+}
 function ProfileTab({ history, profile, setProfile, onFreeze, kcal, acct, vis, onVis, onFriends, onShop }) {
   const fz = freezesAvailable(history);
-  const fileRef = useRef(null);
   const [howEx, setHowEx] = useState(null);
   const [err, setErr] = useState("");
   const [sheet, setSheet] = useState(null); // "edit" | "freeze" | {slot: i}
-  const [name, setName] = useState(profile.name || "");
-  const [visErr, setVisErr] = useState("");
   const today = dateKey();
   const st = streakInfo(history, today);
   const m = ownModel(history, profile, kcal);
@@ -5961,13 +6063,6 @@ function ProfileTab({ history, profile, setProfile, onFreeze, kcal, acct, vis, o
   const claim = pend.length ? { items: new Map(pend.map(it => [claimKey(it), it])), hid: new Set(pend.map(claimKey)), top: pend[pend.length - 1].col,
     open: it => { sfxTap(); setRev([it]); }, openAll: () => { sfxTap(); setRev(pend); } } : null;
   const sm = claim ? hideUnclaimed(m, claim.hid) : m;
-  const pick = async e => {
-    const f = e.target.files && e.target.files[0];
-    e.target.value = "";
-    if (!f) return;
-    try { const url = await fileToAvatar(f); setProfile({ ...profile, pfp: url }); setErr(""); sfxCheck(); }
-    catch (_) { setErr(T("photoErr")); }
-  };
   const saveSlot = (i, v) => {
     const n = slotsFor(m.lvl), cur = showcase(sm).map(sl => (sl && sl.set ? slotStr(sl) : ""));
     const arr = Array.from({ length: n }, (_, k) => (k === i ? v : cur[k] || ""));
@@ -5977,10 +6072,9 @@ function ProfileTab({ history, profile, setProfile, onFreeze, kcal, acct, vis, o
   return (
     <div className="scr" style={{ padding: "16px 0 124px", maxWidth: "var(--colMax)", margin: "0 auto" }}>
       {howEx && <HowTo id={howEx} history={history} onClose={() => setHowEx(null)} />}
-      <input ref={fileRef} type="file" accept="image/*" onChange={pick} style={{ display: "none" }} />
       {rev && <RewardReveal items={rev} onDone={() => { setProfile({ ...profile, claim2: withClaims(claimOf(profile), rev) }); setRev(null); setParty(Date.now()); }} />}
       {party > 0 && <Confetti key={party} />}
-      <ProfilePage m={m} own claim={claim} extra={{ fz }} onPhoto={() => fileRef.current && fileRef.current.click()} onEditProfile={() => { setName(profile.name || ""); setSheet("edit"); }}
+      <ProfilePage m={m} own claim={claim} extra={{ fz }} onPhoto={() => { sfxTap(); setSheet("edit"); }} onEditProfile={() => setSheet("edit")}
         onStreak={() => setSheet("freeze")} onEditSlot={i => setSheet({ slot: i })} onPickRank={setHowEx} onLooks={() => setSheet("looks")}
         top={err ? <div role="alert" style={{ fontSize: 13, color: "#ff8a80", marginBottom: 10 }}>{err}</div> : null} />
       {sheet && sheet.slot !== undefined && <SlotSheet m={sm} i={sheet.slot} cur={(showcase(sm)[sheet.slot] || {}).set ? slotStr(showcase(sm)[sheet.slot]) : ""} onSave={v => saveSlot(sheet.slot, v)} onClose={() => setSheet(null)} />}
@@ -6000,39 +6094,7 @@ function ProfileTab({ history, profile, setProfile, onFreeze, kcal, acct, vis, o
           <div style={{ fontSize: 12.5, color: st.gap === 2 ? C.signal : C.dim, marginTop: 12 }}>{st.gap === 2 ? T("streakRisk") : T("streakHold")}</div>
         </Sheet>
       )}
-      {sheet === "edit" && (
-        <Sheet title={T("pfEdit")} onClose={() => setSheet(null)}>
-          <div data-pf-edit-sheet style={{ fontSize: 12, color: C.dim, fontWeight: 700, marginBottom: 6 }}>{T("nameLabel")}</div>
-          <div style={{ display: "flex", gap: 8 }}>
-            <input data-name-input value={name} onChange={e => setName(e.target.value.slice(0, 24))} aria-label={T("nameLabel")} className="obf"
-              style={{ fontFamily: BODY, fontSize: 17, fontWeight: 700, padding: "10px 12px", borderRadius: 12, border: `1.5px solid ${C.line}`, background: C.ink, color: C.chalk, flex: 1, minWidth: 0, outline: "none" }} />
-            <button data-name-save onClick={() => { setProfile({ ...profile, name: name.trim() || T("defaultName") }); sfxCheck(); }} disabled={(name.trim() || T("defaultName")) === profile.name}
-              className="b3d" style={{ ...btnBase, background: C.signal, color: C.signalInk, padding: "0 16px", "--e": EDGE[C.signal], opacity: (name.trim() || T("defaultName")) === profile.name ? 0.5 : 1 }}>{T("save")}</button>
-          </div>
-          <button type="button" data-pf-photo onClick={() => fileRef.current && fileRef.current.click()} style={{ ...btnBase, width: "100%", marginTop: 12, padding: "12px 13px", borderRadius: 12, background: SOFT(), color: C.chalk, fontSize: 14, display: "flex", alignItems: "center", gap: 10, textAlign: "left" }}>
-            <span style={{ flex: 1 }}>{T("changePhoto")}</span><Arrow />
-          </button>
-          <div style={{ fontSize: 12, color: C.dim, fontWeight: 700, margin: "18px 0 8px" }}>{T("pvWho")}</div>
-          {acct && acct.st === "in" && acct.prof ? (
-            <div data-pv-who>
-              <div role="radiogroup" aria-label={T("pvWho")} style={{ display: "flex", gap: 4, padding: 4, borderRadius: 13, ...SUNK() }}>
-                {CARD_VIS.map(v => { const on = (vis || "friends") === v; return (
-                  <button key={v} role="radio" aria-checked={on} data-vis={v} data-on={on ? 1 : 0} disabled={vis === undefined} onClick={() => { if (on) return; sfxTap(); setVisErr(""); onVis(v).catch(e => setVisErr(cloudErr(e) || T("frOffline"))); }}
-                    style={{ ...btnBase, flex: 1, minWidth: 0, padding: "9px 4px", fontSize: 13.5, borderRadius: 10, background: on ? C.chalk : "transparent", color: on ? C.ink : C.dim, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", opacity: vis === undefined ? 0.5 : 1 }}>{T("pvVis_" + v)}</button>
-                ); })}
-              </div>
-              <div data-pv-vis-desc style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.5, marginTop: 9 }}>{vis === undefined ? T("frLoading") : T("pvVisD_" + vis)} {T("pvPrivate")}</div>
-              {visErr && <div role="alert" style={{ fontSize: 12.5, color: "#ff8a80", marginTop: 6 }}>{visErr}</div>}
-            </div>
-          ) : (
-            <div data-pv-who style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <div style={{ flex: 1, fontSize: 13, color: C.dim, lineHeight: 1.5 }}>{T("pvSignIn")}</div>
-              <button data-pv-signin onClick={() => { sfxTap(); setSheet(null); onFriends && onFriends(); }} style={{ ...btnBase, background: C.signal, color: C.signalInk, padding: "9px 12px", fontSize: 13, borderRadius: 10, flexShrink: 0 }}>{T("pvSignInBtn")}</button>
-            </div>
-          )}
-          {(profile.show || []).some(Boolean) && <button type="button" data-pf-auto-all onClick={() => { sfxTap(); setProfile({ ...profile, show: [] }); }} style={{ ...btnBase, width: "100%", marginTop: 18, padding: "12px 13px", borderRadius: 12, background: "transparent", border: `1px solid ${C.line}`, color: C.dim, fontSize: 13.5 }}>{T("pfAutoAll")}</button>}
-        </Sheet>
-      )}
+      {sheet === "edit" && <ProfileEditSheet profile={profile} setProfile={setProfile} acct={acct} vis={vis} onVis={onVis} onFriends={onFriends} onClose={() => setSheet(null)} />}
     </div>
   );
 }
@@ -9017,36 +9079,62 @@ function LookShopSheet({ id, profile, history, own, bal, onBuy, onEquip, onGo, o
   );
 }
 // Your looks: changed only on your own Profile (Michael: "changing them only in the shop wouldn't make sense").
+// 1.9.0 (Michael, Nov 7: like the profile editor: bigger, modern, and a draft until Save, "someone may only be trying"):
+// the preview on top stays in view while you pick; closing without Save keeps the profile as it was.
+const LOOK_KIND_ICO = { frame: "frame", bg: "layers", title: "tag", name: "sparkle", fx: "burst" };
 function LooksSheet({ profile, setProfile, history, own, onShop, onClose }) {
   const [kind, setKind] = useState("frame");
-  const look = lookOn(profile, own);
+  const saved = lookOn(profile, own);
+  const [draft, setDraft] = useState(() => ({ ...saved }));
+  const cur = k => draft[k] || null, diff = k => cur(k) !== (saved[k] || null);
+  const changed = EC.LOOK_KINDS.some(diff);
   const mine = EC.LOOK_IDS.filter(id => EC.LOOKS[id].kind === kind && own.includes(id));
-  const equip = id => { sfxTap(); setProfile({ ...profile, look: { ...(profile.look || {}), [kind]: id || null } }); };
-  const row = on => ({ ...btnBase, display: "flex", alignItems: "center", gap: 12, padding: "9px 12px", borderRadius: 14, background: SOFT(), color: C.chalk, textAlign: "left", fontWeight: 400, border: `1.5px solid ${on ? C.signal : "transparent"}` });
+  const pick = id => { sfxTap(); setDraft(d => ({ ...d, [kind]: id || null })); };
+  const save = () => { if (!changed) return; const look = { ...(profile.look || {}) }; EC.LOOK_KINDS.forEach(k => { look[k] = cur(k); }); setProfile({ ...profile, look }); sfxCheck(); vibrate([15]); onClose(); };
+  const tile = on => ({ ...btnBase, fontWeight: 400, position: "relative", display: "flex", flexDirection: "column", alignItems: "center", gap: 7, padding: "12px 6px 10px", borderRadius: 16, background: on ? `${C.signal}14` : SOFT(), color: C.chalk, textAlign: "center", border: `1.5px solid ${on ? C.signal : "transparent"}`, minWidth: 0, transition: `border-color ${MO.t1}, background ${MO.t1}` });
+  const tick = <span aria-hidden="true" style={{ position: "absolute", top: 6, right: 6, width: 20, height: 20, borderRadius: 99, background: C.signal, color: C.signalInk, display: "flex", alignItems: "center", justifyContent: "center" }}><Ico n="check" size={13} sw={3} /></span>;
+  const nameS = { fontSize: 12, fontWeight: 800, lineHeight: 1.2, width: "100%", overflowWrap: "anywhere", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" };
   return (
     <Sheet title={T("pfLooks")} onClose={onClose}>
-      <div data-looks-sheet>
-        <LookPreview profile={profile} look={look} history={history} />
-        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", margin: "12px 0 10px" }}>
-          {EC.LOOK_KINDS.map(k => <button key={k} type="button" data-look-kind={k} aria-pressed={kind === k} onClick={() => { sfxTap(); setKind(k); }} style={{ ...btnBase, padding: "7px 11px", fontSize: 12.5, borderRadius: 99, background: kind === k ? C.signal : SOFT(), color: kind === k ? C.signalInk : C.chalk }}>{T("lookKind_" + k)}</button>)}
+      <div data-looks-sheet data-changed={changed ? 1 : 0}>
+        {/* the preview stays on top while the list scrolls under it (not on a short screen: the list would have no room) */}
+        <style>{`@media (max-height: 679px){[data-looks-preview]{position:static!important}}`}</style>
+        <div data-looks-preview style={{ position: "sticky", top: -22, zIndex: 2, margin: "-6px -20px 0", padding: "6px 20px 12px", background: C.panel }}>
+          <div style={{ borderRadius: 20, overflow: "hidden", isolation: "isolate" }}><LookPreview profile={profile} look={draft} history={history} /></div>
+          {/* kinds as one segmented strip: icon + a small name; a dot = changed and not saved yet */}
+          <div role="tablist" style={{ display: "flex", gap: 3, padding: 4, marginTop: 12, borderRadius: 16, ...SUNK() }}>
+            {EC.LOOK_KINDS.map(k => { const on = kind === k; return (
+              <button key={k} type="button" role="tab" aria-selected={on} data-look-kind={k} aria-pressed={on} onClick={() => { if (on) return; sfxTap(); setKind(k); }}
+                style={{ ...btnBase, position: "relative", flex: 1, minWidth: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-start", gap: 3, padding: "8px 2px 6px", borderRadius: 12, background: on ? C.chalk : "transparent", color: on ? C.ink : C.dim, transition: `background ${MO.t1}, color ${MO.t1}` }}>
+                <Ico n={LOOK_KIND_ICO[k]} size={19} sw={2.2} />
+                <span style={{ fontSize: 10, fontWeight: 800, lineHeight: 1.1, maxWidth: "100%", textAlign: "center", overflowWrap: "anywhere", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{T("lookKind_" + k)}</span>
+                {diff(k) && <span data-look-kind-dot aria-hidden="true" style={{ position: "absolute", top: 5, right: "calc(50% - 17px)", width: 7, height: 7, borderRadius: 99, background: C.signal, boxShadow: `0 0 0 2px ${on ? C.chalk : C.ink}` }} />}
+              </button>); })}
+          </div>
         </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-          <button type="button" data-look-none={kind} onClick={() => equip(null)} aria-pressed={!look[kind]} style={{ ...row(!look[kind]), fontWeight: 700, fontSize: 14 }}>
-            <span style={{ width: 44, height: 44, borderRadius: 12, border: `1.5px dashed ${C.line}`, flexShrink: 0 }} /><span style={{ flex: 1 }}>{T("shNone")}</span>{!look[kind] && <Ico n="check" size={18} color={C.signal} />}
+        <div data-looks-grid style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 8, marginTop: 4 }}>
+          <button type="button" data-look-none={kind} onClick={() => pick(null)} aria-pressed={!cur(kind)} style={tile(!cur(kind))}>
+            <span aria-hidden="true" style={{ width: 56, height: 56, borderRadius: 16, border: `1.5px dashed ${C.line}`, boxSizing: "border-box", display: "flex", alignItems: "center", justifyContent: "center", color: C.dim }}><Ico n="ban" size={20} /></span>
+            <span style={{ ...nameS, color: C.dim }}>{T("shNone")}</span>
+            {!cur(kind) && tick}
           </button>
-          {mine.map(id => { const on = look[kind] === id, r = EC.LOOKS[id].r; return (
-            <button key={id} type="button" data-look-own={id} onClick={() => equip(on ? null : id)} aria-pressed={on} style={row(on)}>
-              <LookThumb id={id} size={44} />
-              <span style={{ flex: 1, minWidth: 0 }}>
-                <span style={{ display: "block", fontWeight: 800, fontSize: 14 }}>{lookName(id)}</span>
-                <span style={{ display: "block", fontSize: 10.5, marginTop: 3, color: RAR_COL()[r], fontWeight: 800, textTransform: "uppercase", letterSpacing: 0.4 }}>{T("gmRar" + r)}</span>
-              </span>
-              {on && <Ico n="check" size={18} color={C.signal} />}
+          {mine.map(id => { const on = cur(kind) === id, r = EC.LOOKS[id].r; return (
+            <button key={id} type="button" data-look-own={id} onClick={() => pick(on ? null : id)} aria-pressed={on} style={tile(on)}>
+              <LookThumb id={id} size={56} />
+              <span style={nameS}>{lookName(id)}</span>
+              <span style={{ fontSize: 9.5, marginTop: -3, color: RAR_COL()[r], fontWeight: 800, textTransform: "uppercase", letterSpacing: 0.4 }}>{T("gmRar" + r)}</span>
+              {on && tick}
             </button>); })}
-          {!mine.length && <div data-looks-empty style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 2px" }}>
-            <span style={{ flex: 1, fontSize: 13, color: C.dim, lineHeight: 1.4 }}>{T("pfLooksNone")}</span>
-            <button type="button" data-looks-shop onClick={() => { sfxTap(); onClose(); onShop(); }} style={{ ...btnBase, background: C.signal, color: C.signalInk, padding: "9px 14px", fontSize: 13.5, display: "inline-flex", alignItems: "center", gap: 6 }}><Ico n="bag" size={16} sw={2.4} />{T("tabShop")}</button>
-          </div>}
+          <button type="button" data-looks-shop onClick={() => { sfxTap(); onClose(); onShop(); }} style={{ ...tile(false), border: `1.5px dashed ${C.line}`, background: "transparent" }}>
+            <span aria-hidden="true" style={{ width: 56, height: 56, borderRadius: 16, background: `${C.signal}1c`, display: "flex", alignItems: "center", justifyContent: "center", color: C.signal }}><Ico n="bag" size={22} sw={2.2} /></span>
+            <span style={{ ...nameS, color: C.signal }}>{T("tabShop")}</span>
+          </button>
+        </div>
+        {!mine.length && <div data-looks-empty style={{ fontSize: 13, color: C.dim, lineHeight: 1.45, margin: "12px 2px 0" }}>{T("pfLooksNone")}</div>}
+        {/* Save at the bottom; the arrow puts back what is saved */}
+        <div style={{ position: "sticky", bottom: -26, zIndex: 2, display: "flex", gap: 8, margin: "18px -20px -26px", padding: "12px 20px 18px", borderRadius: "0 0 22px 22px", background: `linear-gradient(${C.panel}00, ${C.panel} 14px)` }}>
+          {changed && <button type="button" data-looks-undo aria-label={T("pfLooksUndo")} title={T("pfLooksUndo")} onClick={() => { sfxTap(); setDraft({ ...saved }); }} style={{ ...btnBase, width: 54, flexShrink: 0, borderRadius: 16, ...SUNK(), color: C.chalk, display: "flex", alignItems: "center", justifyContent: "center" }}><Ico n="undo" size={20} /></button>}
+          <button type="button" data-looks-save disabled={!changed} onClick={save} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), flex: 1, opacity: changed ? 1 : 0.45 }}>{T("save")}</button>
         </div>
       </div>
     </Sheet>

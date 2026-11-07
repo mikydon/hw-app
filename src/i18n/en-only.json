@@ -220,6 +220,7 @@
     "ui.notePh",
     "ui.noteRest",
     "ui.noteRestAfter",
+    "ui.pfLooksUndo",
     "ui.plAddEx",
     "ui.plAllGroups",
     "ui.plAsc",
