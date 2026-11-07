@@ -115,9 +115,11 @@ public class RestService extends Service {
             .setContentIntent(openApp())
             .setShowWhen(true)
             .setUsesChronometer(true)
+            // Nov 7 (Michael: past 0 it counted up from 0:00 and showed no minus): always a countdown to endAt; past it
+            // Android's chronometer shows the time as negative ("−0:12"), like the app's own rest screen
+            .setChronometerCountDown(true)
             .setWhen(endAt);
         if (over) b.setContentText(bodyOver);
-        else b.setChronometerCountDown(true);
         return b.build();
     }
 
