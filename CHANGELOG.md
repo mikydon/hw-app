@@ -19,6 +19,7 @@ A small update: it arrives in the app by itself. Two points need the 1.9.1 APK *
 - **Restore points:** the cloud keeps your data as it was at the end of each of the last 4 days you used the app; Settings → Account & cloud → Restore points lists them and goes back to one on all your devices (workouts added later are removed; purchases, opened cards and eaten calories stay).
 - **Rest beeps on time with the screen off** *(Android app only, 1.9.1 APK)*: the lock-screen service plays the 3, 2, 1 and 0 beeps itself on its own clock (the app's web part wakes only about once a second there, so they came up to a second late), and follows the sound, volume and vibration settings.
 - **Rest timer setting** *(Android app only)*: Settings → Workout → "Rest timer with the screen off" allows "Physical activity" later, or opens Android's settings when Android no longer asks.
+- **Top bar at start:** the plate no longer stays cut short when the app opens (the phone's status-bar inset arrives after the first frame; it covered only the status bar until a scroll).
 - **Muscle Deck:** long joker names shrink or hyphenate to fit their card.
 
 ## 1.9.0 (2026-11-07)

@@ -420,6 +420,7 @@ export default {
     "Points de restauration : le cloud garde tes données des 4 derniers jours où tu as utilisé l'app, et tu peux revenir à l'un d'eux (Compte et cloud → Points de restauration).",
     "📱 Écran éteint, les bips du repos à 3, 2, 1 et 0 arrivent maintenant pile à l'heure (avant, ils pouvaient avoir jusqu'à une seconde de retard) et suivent tes réglages de son, de volume et de vibration. Il faut l'APK 1.9.1.",
     "📱 Réglages → Entraînement : « Minuteur de repos écran éteint ». Tu as touché « Pas maintenant » au premier repos ? Autorise-le ici, ou ouvre les réglages d'Android s'il est bloqué.",
+    "La barre du haut ne reste plus trop courte au démarrage de l'app (elle ne couvrait que la barre d'état jusqu'au premier défilement).",
     "Muscle Deck : les noms longs des jokers tiennent sur leur carte.",
   ],
 };

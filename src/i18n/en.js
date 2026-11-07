@@ -1791,6 +1791,7 @@ const en = {
     "Restore points: the cloud keeps your data as it was on the last 4 days you used the app, and you can go back to one (Account & cloud → Restore points).",
     "📱 With the screen off, the rest's 3, 2, 1 and 0 beeps now come exactly on time (before, they could be up to a second late) and follow your sound, volume and vibration settings. Needs the 1.9.1 APK.",
     "📱 Settings → Workout: \"Rest timer with the screen off\". Tapped \"Not now\" at the first rest? Allow it here, or open Android's settings if it is blocked.",
+    "The top bar no longer stays cut short when the app starts (it covered only the status bar until you scrolled).",
     "Muscle Deck: long joker names fit their card.",
   ],
   news182: [

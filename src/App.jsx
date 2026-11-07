@@ -2272,6 +2272,10 @@ function TopBar({ screen, history, menuOpen, onMenu, onGo, dlPct, badge, head, s
     window.addEventListener("resize", on);
     const ro = typeof ResizeObserver !== "undefined" && outRef.current ? new ResizeObserver(on) : null;
     if (ro) ro.observe(outRef.current);
+    // 1.9.1 (Michael, Nov 7: at start the plate covered only the status bar until a scroll): the safe-area inset
+    // (--sat) can arrive after the first frame; it only makes the shape layer itself taller (it reaches up under the
+    // status bar), so that layer is watched too
+    if (ro && gooRef.current) ro.observe(gooRef.current);
     return () => { clearTimeout(t); window.removeEventListener("resize", on); if (ro) ro.disconnect(); };
   }, []);
   useLayoutEffect(() => {

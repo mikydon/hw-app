@@ -420,6 +420,7 @@ export default {
     "Body obnovy: cloud si pamätá tvoje dáta z posledných 4 dní, keď si použil appku, a môžeš sa na niektorý vrátiť (Účet a cloud → Body obnovy).",
     "📱 Pri zhasnutej obrazovke teraz pípnutia oddychu na 3, 2, 1 a 0 prídu presne načas (predtým mohli meškať až o sekundu) a riadia sa tvojím nastavením zvuku, hlasitosti a vibrácií. Treba APK 1.9.1.",
     "📱 Nastavenia → Tréning: „Časovač oddychu pri zhasnutej obrazovke“. Klikol si pri prvom oddychu „Teraz nie“? Tu to povolíš, alebo otvoríš nastavenia Androidu, ak je to zablokované.",
+    "Horná lišta už po zapnutí appky neostane skrátená (zakrývala len stavový riadok, kým si neposunul obrazovku).",
     "Muscle Deck: dlhé mená jokerov sa zmestia na kartu.",
   ],
 };

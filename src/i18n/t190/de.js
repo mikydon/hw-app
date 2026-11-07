@@ -420,6 +420,7 @@ export default {
     "Wiederherstellungspunkte: Die Cloud hebt deine Daten der letzten 4 Tage auf, an denen du die App benutzt hast, und du kannst zu einem zurück (Konto & Cloud → Wiederherstellungspunkte).",
     "📱 Bei ausgeschaltetem Bildschirm kommen die Pieptöne der Pause bei 3, 2, 1 und 0 jetzt genau pünktlich (vorher bis zu einer Sekunde zu spät) und folgen deinen Ton-, Lautstärke- und Vibrationseinstellungen. Braucht die APK 1.9.1.",
     "📱 Einstellungen → Training: „Pausentimer bei ausgeschaltetem Bildschirm“. Bei der ersten Pause „Nicht jetzt“ getippt? Hier kannst du es erlauben oder Androids Einstellungen öffnen, wenn es blockiert ist.",
+    "Die obere Leiste bleibt beim Start der App nicht mehr zu kurz (sie deckte bis zum Scrollen nur die Statusleiste ab).",
     "Muscle Deck: Lange Joker-Namen passen auf ihre Karte.",
   ],
 };

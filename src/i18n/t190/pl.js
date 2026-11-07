@@ -420,6 +420,7 @@ export default {
     "Punkty przywracania: chmura przechowuje twoje dane z ostatnich 4 dni, w których używałeś aplikacji, i możesz do któregoś wrócić (Konto i chmura → Punkty przywracania).",
     "📱 Przy wyłączonym ekranie sygnały przerwy na 3, 2, 1 i 0 przychodzą teraz dokładnie na czas (wcześniej mogły spóźniać się nawet o sekundę) i słuchają ustawień dźwięku, głośności i wibracji. Potrzebne APK 1.9.1.",
     "📱 Ustawienia → Trening: „Licznik przerwy przy wyłączonym ekranie”. Przy pierwszej przerwie kliknąłeś „Nie teraz”? Tu to włączysz albo otworzysz ustawienia Androida, jeśli jest zablokowane.",
+    "Górny pasek nie zostaje już przycięty po uruchomieniu aplikacji (zakrywał tylko pasek stanu, dopóki nie przewinąłeś).",
     "Muscle Deck: długie nazwy jokerów mieszczą się na karcie.",
   ],
 };

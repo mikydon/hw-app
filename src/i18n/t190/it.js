@@ -420,6 +420,7 @@ export default {
     "Punti di ripristino: il cloud conserva i tuoi dati degli ultimi 4 giorni in cui hai usato l'app, e puoi tornare a uno di essi (Account e cloud → Punti di ripristino).",
     "📱 A schermo spento, i bip del recupero a 3, 2, 1 e 0 ora arrivano puntuali (prima potevano tardare fino a un secondo) e seguono le tue impostazioni di suono, volume e vibrazione. Serve l'APK 1.9.1.",
     "📱 Impostazioni → Allenamento: «Timer di recupero a schermo spento». Al primo recupero hai toccato «Non ora»? Qui puoi consentirlo, o aprire le impostazioni di Android se è bloccato.",
+    "La barra in alto non resta più tagliata all'avvio dell'app (copriva solo la barra di stato finché non scorrevi).",
     "Muscle Deck: i nomi lunghi dei jolly stanno nella loro carta.",
   ],
 };

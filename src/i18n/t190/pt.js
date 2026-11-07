@@ -420,6 +420,7 @@ export default {
     "Pontos de restauro: a nuvem guarda os teus dados dos últimos 4 dias em que usaste a app, e podes voltar a um deles (Conta e nuvem → Pontos de restauro).",
     "📱 Com o ecrã desligado, os apitos do descanso aos 3, 2, 1 e 0 chegam agora mesmo a horas (antes podiam atrasar-se até um segundo) e seguem os teus ajustes de som, volume e vibração. Precisa do APK 1.9.1.",
     "📱 Ajustes → Treino: \"Temporizador de descanso com o ecrã desligado\". Tocaste em \"Agora não\" no primeiro descanso? Aqui podes permitir, ou abrir as definições do Android se estiver bloqueado.",
+    "A barra de cima já não fica cortada ao abrir a app (cobria só a barra de estado até deslizares o ecrã).",
     "Muscle Deck: os nomes longos dos jokers cabem na carta.",
   ],
 };

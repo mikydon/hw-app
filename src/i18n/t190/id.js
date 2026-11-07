@@ -420,6 +420,7 @@ export default {
     "Titik pemulihan: cloud menyimpan datamu dari 4 hari terakhir kamu memakai aplikasi, dan kamu bisa kembali ke salah satunya (Akun & cloud → Titik pemulihan).",
     "📱 Saat layar mati, bunyi istirahat di 3, 2, 1, dan 0 sekarang tepat waktu (dulu bisa telat sampai satu detik) dan mengikuti pengaturan suara, volume, dan getaranmu. Perlu APK 1.9.1.",
     "📱 Pengaturan → Latihan: \"Timer istirahat saat layar mati\". Mengetuk \"Nanti saja\" di istirahat pertama? Izinkan di sini, atau buka pengaturan Android kalau diblokir.",
+    "Bilah atas tidak lagi terpotong saat aplikasi dibuka (dulu hanya menutupi bilah status sampai kamu menggulir).",
     "Muscle Deck: nama joker yang panjang muat di kartunya.",
   ],
 };

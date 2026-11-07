@@ -420,6 +420,7 @@ export default {
     "Body obnovení: cloud si pamatuje tvoje data z posledních 4 dnů, kdy jsi aplikaci použil, a můžeš se na některý vrátit (Účet a cloud → Body obnovení).",
     "📱 Při zhasnuté obrazovce teď pípnutí pauzy na 3, 2, 1 a 0 přijdou přesně včas (dřív mohla mít až sekundu zpoždění) a řídí se tvým nastavením zvuku, hlasitosti a vibrací. Je potřeba APK 1.9.1.",
     "📱 Nastavení → Trénink: „Časovač pauzy při zhasnuté obrazovce“. Klikl jsi u první pauzy na „Teď ne“? Tady to povolíš, nebo otevřeš nastavení Androidu, pokud je to zablokované.",
+    "Horní lišta už po spuštění aplikace nezůstane zkrácená (zakrývala jen stavový řádek, dokud jsi neposunul obrazovku).",
     "Muscle Deck: dlouhá jména žolíků se vejdou na kartu.",
   ],
 };
