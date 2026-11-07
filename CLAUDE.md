@@ -2,6 +2,7 @@
 
 Home bodyweight workout app by Michael (GitHub: mikydon). Formerly "Domáci tréning". The UI is in 15 languages (English base and fallback, Slovak original; zh/ja/ko since 1.2.0 and id (Indonesian) since 1.7.6, AI-assisted).
 Talk to Michael in casual Slovak. Before you deliver anything, test it (build plus a browser run). He wants certainty, not "should work".
+Think ahead (Michael, Nov 7, 23:10, after the 1.8.2 merge lost his looks and Muscle Deck progress: "treba myslieť dopredu"): for every change, ask what could go wrong later (old app versions still running, sync between devices, reinstalls, data loss, cheating, Play policy) and fix or flag it before it ships. Propose ideas and improvements on your own, not only what he asks for (he wants them).
 
 ## Layout
 - `src/App.jsx`: the whole React app in one file (exercise data, figures, ranks, challenges, UI). No user-facing text lives here.
