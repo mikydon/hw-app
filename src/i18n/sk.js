@@ -1,5 +1,7 @@
 // Slovak (slovenčina).
-export default {
+import { with190 } from "./t190/merge.js";
+import T190 from "./t190/sk.js";
+const L = {
   ui: {
     searchWeb: "🔎 Vyhľadať na internete",
     searchOf: "Vyhľadať na internete: {name}",
@@ -2063,3 +2065,4 @@ export default {
   ],
   looks: {"f_iron":"Železný kruh","f_dots":"Bodkový kruh","f_pixel":"Pixel","f_hex":"Hex","f_wave":"Vlna","f_pulse":"Pulz","f_flame":"Plameň","f_laurel":"Vavrín","f_neon":"Neón","f_bolt":"Hrom","f_crown":"Koruna","f_obsidian":"Obsidiánový črep","f_diamond":"Diamantový kruh","b_glow":"Žiara témy","b_grid":"Podlaha fitka","b_sunset":"Západ slnka","b_topo":"Vrstevnice","b_stars":"Nočná obloha","b_waves":"Vlny","b_bubbles":"Bubliny","b_ridge":"Hrebeň pri východe","b_city":"Svetlá mesta","b_galaxy":"Galaxia","b_aurora":"Polárna žiara","t_iron":"Železná vôľa","t_rookie":"Nováčik","t_grind":"Každodenná drina","t_zen":"Zen","t_beast":"Beast mode","t_legend":"Živá legenda","t_bird":"Ranné vtáča","t_owl":"Nočná sova","t_comeback":"Návratový kráľ","t_marathon":"Maratónec","t_shark":"Kartový žralok","t_streak":"Strážca série","t_midnight":"Polnočný hrdina","t_obsidian":"Obsidián","n_outline":"Obrys","n_grad":"Prechod","n_shadow":"Retro tieň","n_ice":"Ľad","n_glow":"Žiara","n_fire":"Oheň","n_foil":"Lesklá fólia","n_rainbow":"Dúha","n_gold":"Čisté zlato","fx_snow":"Sneženie","fx_sparkle":"Iskry","fx_petals":"Lupene","fx_embers":"Žeravé uhlíky","fx_lightning":"Búrka","fx_frost":"Mráz","fx_confetti":"Párty","fx_fireworks":"Ohňostroj"},
 };
+export default with190(L, T190);
