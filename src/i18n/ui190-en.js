@@ -214,6 +214,9 @@ Object.assign(UI, {
   shE_codes: "From codes",
   shE_gift: "Gift from HW App",
   pfLooksUndo: "Put back what is saved",
+  sumSets: "Sets",
+  sumEarned: "Earned today",
+  sumRecord: "New record",
   plGymHint2: "Got dumbbells or a gym? Build your own plan with them.",
 });
 // 1.9.0 (Michael, Nov 7): the Stats page with charts and calories

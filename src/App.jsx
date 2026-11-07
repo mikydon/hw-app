@@ -1695,7 +1695,7 @@ function achExtra(profile, kcal, history) {
 // Tiers that went up between two histories, for the end-of-workout summary.
 function achUps(before, after, extra) {
   const a = achievements(before, extra), b = achievements(after, extra);
-  return b.filter((x, i) => x.tier > a[i].tier).map(x => ({ k: x.k, icon: x.icon, name: x.name, tier: x.tier }));
+  return b.filter((x, i) => x.tier > a[i].tier).map(x => ({ k: x.k, icon: x.icon, name: x.name, tier: x.tier, ...(x.single ? { single: true, rk: x.rk } : {}) }));
 }
 
 // On the user's birthday: little confetti pieces and emojis floating around the avatar.
@@ -11027,63 +11027,117 @@ function Summary({ entry, xpBefore = 0, xpGained, newCh = [], newAch = [], histo
       </div>
     );
   }
+  // 1.9.0 (Michael, Nov 7: "looks terrible: minimal, logical, modern, animated"): a calm hero (the check draws itself,
+  // the title, three numbers that count up), the XP card, what was earned today as equal tiles, the results as small
+  // set chips, then Home. Sections slide in one after another (sumIn, MO tokens); reduced motion shows them at once.
+  const timed = id => EX[id] && (EX[id].type === "time" || EX[id].type === "carry");
+  const nSets = setsIn(entry);
+  const nReps = entry.items.reduce((a, it) => a + (timed(it.id) ? 0 : it.res.reduce((b, v) => b + (isNaN(numVal(v)) ? 0 : numVal(v)), 0)), 0);
+  const cSets = useTween(revOn || celeb ? 0 : nSets, 700), cReps = useTween(revOn || celeb ? 0 : nReps, 900);
+  const earned = [
+    ...newCh.map(c => ({ key: "ch" + c.id, ico: <IcoBox n="calCheck" color={C.mint} />, name: noEmo(L.ch[c.id] || ""), sub: `+${c.xp} XP`, col: C.mint, kind: "ch" })),
+    ...(entry.prs || []).map(id => ({ key: "pr" + id, ico: <IcoBox n="trophy" color={C.signal} />, name: exName(entry.items.find(it => it.id === id) || { id }), sub: T("sumRecord"), col: C.signal, kind: "pr" })),
+    ...newAch.map(a => { const col = RANKS[a.tier - 1].color; return { key: "a" + a.k, ico: <BadgeIco n={a.icon} col={col} size={40} />, name: a.name, sub: a.single ? rarityName(a) : RANKS[a.tier - 1].name, col, kind: "ach" }; }),
+    ...(entry.rankUps || []).map(ru => ({ key: "r" + ru.id, ico: <span style={{ width: 40, height: 40, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><RankIcon r={ru.to} size={34} /></span>, name: EX[ru.id] ? EX[ru.id].name : ru.id, sub: ru.u ? `${T("revUnlock")} · ${RANKS[ru.to].name}` : RANKS[ru.to].name, col: RANKS[ru.to].color, kind: "rank" })),
+  ];
+  const lvEnd = levelInfo(xpBefore + gained);
+  const kc = kcalNow(history.concat(history.some(e => e.ts === entry.ts) ? [] : [entry]));
+  let k = 0; const d = () => ({ animationDelay: `${0.12 + 0.09 * k++}s` });
   return (
-    <div>
+    <div data-summary>
+      <style>{`
+        @keyframes sumIn { from { opacity: 0; transform: translateY(12px) } to { opacity: 1; transform: none } }
+        @keyframes sumRing { from { stroke-dashoffset: 214 } to { stroke-dashoffset: 0 } }
+        @keyframes sumTick { from { stroke-dashoffset: 48 } to { stroke-dashoffset: 0 } }
+        @keyframes sumGlow { 0% { transform: scale(.6); opacity: .55 } 100% { transform: scale(1.7); opacity: 0 } }
+        .sumIn { animation: sumIn .5s ${MO.ease} both }
+        .sumRing { stroke-dasharray: 214; animation: sumRing .7s ${MO.ease} .05s both }
+        .sumTick { stroke-dasharray: 48; animation: sumTick .38s ${MO.ease} .55s both }
+        .sumGlow { animation: sumGlow 1.1s ${MO.ease} .6s both }
+        @media (prefers-reduced-motion: reduce) { .sumIn, .sumRing, .sumTick, .sumGlow { animation: none } }
+      `}</style>
       {celeb ? <StreakCelebration n={streakInfo(history.some(e => e.ts === entry.ts) ? history : [...history, entry], entry.date).n} history={history} entry={entry} onDone={() => setCeleb(false)} />
         : revOn ? <RewardReveal items={rev} onDone={() => { setRevOn(false); if (onClaim) onClaim(rev); }} /> : <Confetti />}
-      <div className="pop" style={{ display: "inline-block", transformOrigin: "left center", fontFamily: DISPLAY, fontSize: 60, fontWeight: 900, lineHeight: 0.95, color: C.mint }}>{T("great")}</div>
-      <div style={{ fontSize: 16, color: C.chalk, marginTop: 8, fontWeight: 600, lineHeight: 1.4 }}>{emo(finishLine)}</div>
-      <div style={{ fontSize: 13, color: C.dim, marginTop: 4 }}>{entryTitle(entry, true)}</div>
-      {(() => { const s = kcalNow(history.concat(history.some(e => e.ts === entry.ts) ? [] : [entry])); return s ? <div data-sum-kcal style={{ fontSize: 13, color: s.hit ? KC_HIT : C.sky, marginTop: 6, fontWeight: 700 }}><IcoI n="plate" /> {s.left > 0 ? T("kcAfterWorkout", { n: nf(s.left) }) : T("kcAfterWorkoutDone")}</div> : null; })()}
-      {kcalSkipped(entry) && <div data-sum-kcal-skip style={{ fontSize: 12.5, color: C.dim, marginTop: 4, lineHeight: 1.45 }}>{T("kcSkipLong")}</div>}
-      {entry.dur > 0 && <div data-total-time style={{ fontSize: 14, color: C.chalk, fontWeight: 700, marginTop: 6 }}><IcoI n="timer" /> {T("totalTime", { t: fmtDur(entry.dur) })}</div>}
-      <div style={{ marginTop: 16, background: C.panel, border: `1px solid ${C.line}`, borderRadius: 18, padding: "14px 16px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 10 }}>
-          <div style={{ fontFamily: DISPLAY, fontSize: 44, fontWeight: 900, lineHeight: 1, color: C.sky }}>+{shown} XP{EC.boosted(entry.ts, META.boosts) && <span data-sum-boost className="pop" style={{ display: "inline-flex", alignItems: "center", gap: 3, verticalAlign: "middle", marginLeft: 8, fontFamily: BODY, fontSize: 13, fontWeight: 900, color: C.signalInk, background: C.signal, borderRadius: 99, padding: "3px 9px 3px 6px" }}><Ico n="boost" size={14} sw={2.4} />2×</span>}</div>
-          <div style={{ fontFamily: DISPLAY, fontSize: 26, fontWeight: 800, color: "#ffa94d" }}><IcoI n="flame" /> {st.n}</div>
+      {/* hero */}
+      <div data-sum-hero style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", padding: "6px 0 2px" }}>
+        <div style={{ position: "relative", width: 76, height: 76 }}>
+          <span aria-hidden="true" className="sumGlow" style={{ position: "absolute", inset: 0, borderRadius: 99, background: C.mint }} />
+          <svg width="76" height="76" viewBox="0 0 76 76" aria-hidden="true" style={{ position: "relative", display: "block" }}>
+            <circle cx="38" cy="38" r="34" fill={`${C.mint}1f`} stroke={C.mint} strokeWidth="3.5" strokeLinecap="round" className="sumRing" transform="rotate(-90 38 38)" />
+            <path d="M25 39.5 34.5 49 52 29" fill="none" stroke={C.mint} strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" className="sumTick" />
+          </svg>
         </div>
-        <div style={{ height: 14, background: C.panelHi, borderRadius: 99, marginTop: 10, overflow: "hidden" }}>
-          <div style={{ height: "100%", width: `${(lvNow.into / lvNow.need) * 100}%`, background: C.sky, borderRadius: 99 }} />
+        <div className="sumIn" style={{ ...d(), fontFamily: DISPLAY, fontSize: 44, fontWeight: 900, lineHeight: 1, color: C.chalk, marginTop: 14 }}>{T("great")}</div>
+        <div className="sumIn" style={{ ...d(), fontSize: 15, color: C.dim, marginTop: 8, fontWeight: 600, lineHeight: 1.45, maxWidth: 340 }}>{emo(finishLine)}</div>
+        <div className="sumIn" style={{ ...d(), fontSize: 12.5, color: C.dim, marginTop: 6, opacity: 0.85 }}>{entryTitle(entry, true)}</div>
+      </div>
+      {/* three numbers */}
+      <div className="sumIn" data-sum-stats style={{ ...d(), display: "grid", gridTemplateColumns: `repeat(${entry.dur > 0 ? 3 : 2}, 1fr)`, gap: 8, marginTop: 18 }}>
+        {entry.dur > 0 && <SumStat ico="timer" val={fmtDur(entry.dur)} label={T("stM_min")} data="time" />}
+        <SumStat ico="layers" val={cSets} label={T("sumSets")} data="sets" />
+        <SumStat ico="repeat" val={cReps} label={T("stM_reps")} data="reps" />
+      </div>
+      {entry.dur > 0 && <span data-total-time style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0 0 0 0)" }}>{T("totalTime", { t: fmtDur(entry.dur) })}</span>}
+      {/* XP + level */}
+      <div className="sumIn" data-sum-xp style={{ ...d(), ...card, marginTop: 10, padding: "15px 16px 16px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+            <span style={{ fontFamily: DISPLAY, fontSize: 34, fontWeight: 900, lineHeight: 1, color: C.sky, fontVariantNumeric: "tabular-nums" }}>+{shown} XP</span>
+            {EC.boosted(entry.ts, META.boosts) && <span data-sum-boost className="pop" style={{ display: "inline-flex", alignItems: "center", gap: 3, fontFamily: BODY, fontSize: 12.5, fontWeight: 900, color: C.signalInk, background: C.signal, borderRadius: 99, padding: "3px 9px 3px 6px" }}><Ico n="boost" size={14} sw={2.4} />2×</span>}
+          </div>
+          <span data-sum-streak title={T("streak")} style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "6px 11px", borderRadius: 99, background: "#ffa94d1f", color: "#ffa94d", fontFamily: DISPLAY, fontSize: 20, fontWeight: 800, lineHeight: 1 }}><Ico n="flame" size={17} sw={2.3} />{st.n}</span>
         </div>
-        <div style={{ fontSize: 13, color: C.dim, marginTop: 8 }}>{T("levelLine", { lvl: lvNow.lvl, into: lvNow.into, need: lvNow.need, streak: TP("workouts", st.n) })}</div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginTop: 14, fontSize: 12.5, fontWeight: 700 }}>
+          <span style={{ color: C.chalk }}>{T("level")} {lvNow.lvl}</span>
+          <span style={{ color: C.dim, fontVariantNumeric: "tabular-nums" }}>{lvNow.into} / {lvNow.need} XP</span>
+        </div>
+        <div style={{ height: 8, background: C.panelHi, borderRadius: 99, marginTop: 7, overflow: "hidden" }}>
+          <div data-sum-bar style={{ height: "100%", width: `${(lvNow.into / lvNow.need) * 100}%`, background: `linear-gradient(90deg, ${C.sky}aa, ${C.sky})`, borderRadius: 99 }} />
+        </div>
         {leveledUp && shown === gained && (
-          <div className="pop" style={{ display: "table", marginTop: 10, fontFamily: DISPLAY, fontSize: 28, fontWeight: 900, color: C.signal, transformOrigin: "left center" }}>{emo(T("levelUp", { lvl: lvNow.lvl }))}</div>
+          <div data-sum-lvlup className="pop" style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 12, padding: "6px 12px", borderRadius: 99, background: `${C.signal}22`, color: C.signal, fontWeight: 900, fontSize: 14, transformOrigin: "left center" }}><Ico n="bolt" size={16} sw={2.4} />{T("revLevel")} · {T("level")} {lvEnd.lvl}</div>
         )}
       </div>
-      {newCh.length > 0 && (
-        <div className="cardIn" style={{ marginTop: 14, background: `${C.mint}1f`, border: `2px solid ${C.mint}`, borderRadius: 16, padding: "12px 16px" }}>
-          {newCh.map(c => (
-            <div key={c.id} style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, color: C.mint, lineHeight: 1.2 }}>{T("challengeDone", { text: L.ch[c.id] })} <span style={{ color: C.sky }}>+{c.xp} XP</span></div>
-          ))}
-        </div>
-      )}
-      {newAch.length > 0 && (
-        <div className="cardIn" data-newach style={{ marginTop: 14, border: `2px solid ${C.sky}`, borderRadius: 16, padding: "12px 16px" }}>
-          {newAch.map(a => (
-            <div key={a.k} style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, color: RANKS[a.tier - 1].color, lineHeight: 1.2, display: "flex", alignItems: "center", gap: 10 }}><BadgeIco n={a.icon} col={RANKS[a.tier - 1].color} size={30} />{T("achUp", { name: a.name, rank: RANKS[a.tier - 1].name })}</div>
-          ))}
-        </div>
-      )}
-      {entry.rankUps && entry.rankUps.length > 0 && (
-        <div className="cardIn" style={{ marginTop: 14, border: `2px solid ${C.signal}`, borderRadius: 16, padding: "12px 16px" }}>
-          {entry.rankUps.map(ru => (
-            <div key={ru.id} style={{ fontFamily: DISPLAY, fontSize: 26, fontWeight: 900, color: RANKS[ru.to].color, lineHeight: 1.15, display: "flex", alignItems: "center", gap: 8 }}><RankIcon r={ru.to} size={26} />{EX[ru.id] ? EX[ru.id].name : ru.id}: {RANKS[ru.to].name}</div>
-          ))}
-        </div>
-      )}
-      {entry.prs && entry.prs.length > 0 && (
-        <div className="cardIn" style={{ marginTop: 14, background: C.signal, color: C.signalInk, borderRadius: 16, padding: "14px 16px" }}>
-          <div style={{ fontFamily: DISPLAY, fontSize: 32, fontWeight: 900, lineHeight: 1 }}><IcoI n="trophy" color={C.signal} sw={2.4} /> {TP("prs", entry.prs.length)}</div>
-          <div style={{ fontSize: 14, fontWeight: 600, marginTop: 4 }}>{entry.items.filter(it => entry.prs.includes(it.id)).map(exName).join(", ")}</div>
-        </div>
-      )}
-      <div style={{ marginTop: 16, background: C.panel, border: `1px solid ${C.line}`, borderRadius: 18 }}>
-        {entry.items.map((it, i) => (
-          <div key={it.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, padding: "13px 16px", borderTop: i ? `1px solid ${C.line}` : "none" }}>
-            <div style={{ fontSize: 15, fontWeight: 600, color: C.chalk }}>{entry.prs && entry.prs.includes(it.id) ? <><IcoI n="trophy" color={C.signal} /> </> : ""}{exName(it)}{EX[it.id] && <ExQ id={it.id} />}</div>
-            <div style={{ fontFamily: DISPLAY, fontSize: 22, fontWeight: 800, color: C.chalk, whiteSpace: isW(it.id) ? "normal" : "nowrap", textAlign: "right" }}>{it.res.map((r, k) => (isW(it.id) ? fmtSet(it.id, r, (it.kg || [])[k], "") : fmtRes(r, ""))).join(" / ")}<span style={{ fontFamily: BODY, fontSize: 11, color: C.dim, marginLeft: 4 }}>{isW(it.id) ? "" : unitStr(it.unit)}</span></div>
+      {/* earned today */}
+      {earned.length > 0 && (
+        <div className="sumIn" data-newach style={d()}>
+          <div style={{ ...sectionTitle, margin: "22px 4px 8px" }}>{T("sumEarned")}</div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(150px, 100%), 1fr))", gap: 8 }}>
+            {earned.map((x, i) => (
+              <div key={x.key} data-sum-earned={x.kind} className="sumIn" style={{ animationDelay: `${0.12 + 0.09 * k + 0.06 * i}s`, ...card, padding: "11px 12px", display: "flex", alignItems: "center", gap: 10, minWidth: 0, borderColor: `${x.col}55`, background: `linear-gradient(135deg, ${x.col}14, transparent 70%), ${C.panel}` }}>
+                {x.ico}
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: 13.5, fontWeight: 800, color: C.chalk, lineHeight: 1.25, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", overflowWrap: "anywhere" }}>{x.name}</div>
+                  <div style={{ fontSize: 12, fontWeight: 800, color: x.col, marginTop: 3, lineHeight: 1.2 }}>{x.sub}</div>
+                </div>
+              </div>
+            ))}
           </div>
-        ))}
+        </div>
+      )}
+      {/* results */}
+      <div className="sumIn" style={d()}>
+        <div style={{ ...sectionTitle, margin: "22px 4px 8px" }}>{T("secExercises")}</div>
+        <div data-sum-results style={{ ...card, padding: "2px 0" }}>
+          {entry.items.map((it, i) => {
+            const sets = it.res.map((r, j) => [r, j]).filter(([r]) => r !== null && r !== undefined);
+            const pr = entry.prs && entry.prs.includes(it.id);
+            return (
+              <div key={it.id} data-sum-row={it.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, padding: "12px 14px", borderTop: i ? `1px solid ${C.line}` : "none" }}>
+                <div style={{ fontSize: 14.5, fontWeight: 700, color: C.chalk, minWidth: 0, display: "flex", alignItems: "center", gap: 6 }}>
+                  {pr && <Ico n="trophy" size={15} color={C.signal} sw={2.4} />}
+                  <span style={{ minWidth: 0, overflowWrap: "anywhere" }}>{exName(it)}</span>{EX[it.id] && <ExQ id={it.id} />}
+                </div>
+                <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "flex-end", alignItems: "center", gap: 4, flexShrink: 0, maxWidth: "55%" }}>
+                  {sets.map(([r, j]) => (
+                    <span key={j} data-sum-set style={{ fontFamily: DISPLAY, fontSize: 15, fontWeight: 800, lineHeight: 1, color: C.chalk, background: C.panelHi, borderRadius: 8, padding: "5px 8px", fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{isW(it.id) ? fmtSet(it.id, r, (it.kg || [])[j], "") : fmtRes(r, "")}</span>
+                  ))}
+                  {!isW(it.id) && unitStr(it.unit) && <span style={{ fontSize: 11, color: C.dim, fontWeight: 700 }}>{unitStr(it.unit)}</span>}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
       {!celeb && !revOn && (() => {
         // 1.9.0: each weighted exercise's level at its heaviest weight today, filling from last time at that weight
@@ -11096,7 +11150,7 @@ function Summary({ entry, xpBefore = 0, xpGained, newCh = [], newAch = [], histo
           return { id: it.id, kg: top, to, from: Math.min(from, to) };
         }).filter(r => r.kg > 0 && r.to > 0);
         return rows.length ? (
-          <div data-sum-levels className="cardIn" style={{ marginTop: 14, background: C.panel, border: `1px solid ${C.line}`, borderRadius: 18, padding: "12px 16px 14px" }}>
+          <div data-sum-levels className="cardIn" style={{ marginTop: 10, ...card, padding: "12px 16px 14px" }}>
             <div style={{ ...sectionTitle, margin: "0 0 4px" }}>{T("sumLevels")}</div>
             {rows.map((r, i) => (
               <div key={r.id} data-sum-level={r.id} style={{ marginTop: i ? 14 : 6 }}>
@@ -11107,9 +11161,28 @@ function Summary({ entry, xpBefore = 0, xpGained, newCh = [], newAch = [], histo
           </div>
         ) : null;
       })()}
-      {entry.day && <div style={{ fontSize: 14, color: C.dim, marginTop: 14, lineHeight: 1.5 }}>{T("nextLine", { d: DAYS[(DAYS.findIndex(d => d.id === entry.day) + 1) % DAYS.length].id, date: fmtDate(addDays(entry.date, 2)) })}</div>}
-      {setting("aiCopy") && <button onClick={copy} className="b3d" style={{ ...bigBtn(copied ? C.mint : C.chalk, C.ink), marginTop: 16 }}>{copied ? T("copied") : T("copyAI")}</button>}
-      <button onClick={onClose} className="b3d" style={{ ...bigBtn("transparent", C.dim), marginTop: 8, border: `1.5px solid ${C.line}` }}>{T("home")}</button>
+      {/* what's next: calories left today, the next recommended day */}
+      {(kc || kcalSkipped(entry) || entry.day) && (
+        <div className="sumIn" style={{ ...d(), marginTop: 16, display: "flex", flexDirection: "column", gap: 8 }}>
+          {kc && <div data-sum-kcal style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, fontWeight: 700, color: kc.hit ? KC_HIT : C.chalk }}><Ico n="plate" size={16} color={kc.hit ? KC_HIT : C.dim} />{kc.left > 0 ? T("kcAfterWorkout", { n: nf(kc.left) }) : T("kcAfterWorkoutDone")}</div>}
+          {kcalSkipped(entry) && <div data-sum-kcal-skip style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.45 }}>{T("kcSkipLong")}</div>}
+          {entry.day && <div data-sum-next style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, fontWeight: 600, color: C.dim }}><Ico n="calendar" size={16} color={C.dim} />{T("nextLine", { d: DAYS[(DAYS.findIndex(x => x.id === entry.day) + 1) % DAYS.length].id, date: fmtDate(addDays(entry.date, 2)) })}</div>}
+        </div>
+      )}
+      <div className="sumIn" style={{ ...d(), marginTop: 20 }}>
+        {setting("aiCopy") && <button onClick={copy} className="b3d" style={{ ...bigBtn(copied ? C.mint : C.panelHi, copied ? C.ink : C.chalk), marginBottom: 8 }}>{copied ? T("copied") : T("copyAI")}</button>}
+        <button data-sum-home onClick={onClose} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), fontWeight: 900 }}>{T("home")}</button>
+      </div>
+    </div>
+  );
+}
+// One of the summary's three numbers: icon, value, label
+function SumStat({ ico, val, label, data }) {
+  return (
+    <div data-sum-stat={data} style={{ ...card, ...tileR(), padding: "12px 10px 11px", display: "flex", flexDirection: "column", alignItems: "center", gap: 6, minWidth: 0 }}>
+      <Ico n={ico} size={18} color={C.dim} />
+      <div style={{ fontFamily: DISPLAY, fontSize: 26, fontWeight: 900, lineHeight: 1, color: C.chalk, fontVariantNumeric: "tabular-nums" }}>{val}</div>
+      <div style={{ fontSize: 11.5, fontWeight: 700, color: C.dim, textAlign: "center", lineHeight: 1.2 }}>{label}</div>
     </div>
   );
 }
