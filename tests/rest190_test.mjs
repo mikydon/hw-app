@@ -8,7 +8,7 @@ for (const mode of ["web", "app"]) {
   if (mode === "app") await p.evaluate(() => {
     window.__restLog = []; let perm = "prompt";
     window.__hwRest = { state: async () => ({ activity: perm }), ask: async () => { window.__restLog.push(["ask"]); perm = "granted"; return { activity: perm }; },
-      start: async o => { window.__restLog.push(["start", o.endAt, o.title]); }, stop: async () => { window.__restLog.push(["stop"]); } };
+      start: async o => { window.__restLog.push(["start", o.endAt, o.title, o.startAt]); }, stop: async () => { window.__restLog.push(["stop"]); } };
   });
   await p.click("[data-fstart-go]"); await p.click("[data-warmup-go]");
   await p.click("[data-done-btn]");
@@ -25,6 +25,7 @@ for (const mode of ["web", "app"]) {
     await p.click('[data-rest-add="30"]'); await p.waitForTimeout(300);
     log = await p.evaluate(() => window.__restLog);
     T.ok(log.filter(x => x[0] === "start").pop()[1] === first[1] + 30000, "+30 s moves the service's end time");
+    T.ok(log.filter(x => x[0] === "start").pop()[3] === first[3] && first[1] - first[3] >= 25000, "…the rest's start stays the same (the bar keeps its place), any length works (" + (first[1] - first[3]) / 1000 + " s)");
     await p.click("[data-rest-ready]"); await p.waitForTimeout(300);
     log = await p.evaluate(() => window.__restLog);
     T.eq(log[log.length - 1][0], "stop", "Ready stops the service");
