@@ -12636,7 +12636,7 @@ export default function App() {
         .revCard.on{transform:rotateY(180deg);animation:revPop .82s cubic-bezier(.3,.7,.25,1)}
         .revBack,.revFace{position:absolute;inset:0;border-radius:24px;backface-visibility:hidden;-webkit-backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:22px 18px;box-sizing:border-box}
         .revFace{transform:rotateY(180deg)}
-        body{overflow-wrap:break-word}button{text-wrap:balance}
+        body{overflow-wrap:break-word}button{text-wrap:balance}:lang(ko){word-break:keep-all}
         /* 1.8.2 (Michael: holding text must never select it): app-like, nothing is selectable except what you type into */
         body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
         /* 1.8.2 (Michael: the same room at the end of every screen): the screen's own padding is the whole gap */
