@@ -421,6 +421,8 @@ export default {
     "📱 Saat layar mati, bunyi istirahat di 3, 2, 1, dan 0 sekarang tepat waktu (dulu bisa telat sampai satu detik) dan mengikuti pengaturan suara, volume, dan getaranmu. Perlu APK 1.9.1.",
     "📱 Pengaturan → Latihan: \"Timer istirahat saat layar mati\". Mengetuk \"Nanti saja\" di istirahat pertama? Izinkan di sini, atau buka pengaturan Android kalau diblokir.",
     "Bilah atas tidak lagi terpotong saat aplikasi dibuka (dulu hanya menutupi bilah status sampai kamu menggulir).",
+    "Progres Muscle Deck (level, permainan, kemenangan) sekarang ikut akunmu seperti yang lain: ponsel dengan permainan lebih sedikit tidak lagi menghapusnya.",
+    "📱 Setelah memasang ulang aplikasi (atau pertama kali menghubungkan Health Connect), 30 hari terakhir langkah dan kalori Health Connect dibaca, bukan hanya 7.",
     "Muscle Deck: nama joker yang panjang muat di kartunya.",
   ],
 };

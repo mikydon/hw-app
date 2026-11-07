@@ -421,6 +421,8 @@ export default {
     "📱 Com o ecrã desligado, os apitos do descanso aos 3, 2, 1 e 0 chegam agora mesmo a horas (antes podiam atrasar-se até um segundo) e seguem os teus ajustes de som, volume e vibração. Precisa do APK 1.9.1.",
     "📱 Ajustes → Treino: \"Temporizador de descanso com o ecrã desligado\". Tocaste em \"Agora não\" no primeiro descanso? Aqui podes permitir, ou abrir as definições do Android se estiver bloqueado.",
     "A barra de cima já não fica cortada ao abrir a app (cobria só a barra de estado até deslizares o ecrã).",
+    "O progresso no Muscle Deck (nível, jogos, vitórias) agora acompanha a tua conta como o resto: um telemóvel com menos jogos já não to tira.",
+    "📱 Depois de reinstalar a app (ou ligar o Health Connect pela primeira vez) são lidos os últimos 30 dias de passos e calorias do Health Connect, não só 7.",
     "Muscle Deck: os nomes longos dos jokers cabem na carta.",
   ],
 };

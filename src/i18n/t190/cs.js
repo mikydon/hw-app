@@ -421,6 +421,8 @@ export default {
     "📱 Při zhasnuté obrazovce teď pípnutí pauzy na 3, 2, 1 a 0 přijdou přesně včas (dřív mohla mít až sekundu zpoždění) a řídí se tvým nastavením zvuku, hlasitosti a vibrací. Je potřeba APK 1.9.1.",
     "📱 Nastavení → Trénink: „Časovač pauzy při zhasnuté obrazovce“. Klikl jsi u první pauzy na „Teď ne“? Tady to povolíš, nebo otevřeš nastavení Androidu, pokud je to zablokované.",
     "Horní lišta už po spuštění aplikace nezůstane zkrácená (zakrývala jen stavový řádek, dokud jsi neposunul obrazovku).",
+    "Postup v Muscle Decku (level, hry, výhry) teď jde s účtem jako všechno ostatní: telefon s méně hrami ti ho už nevezme.",
+    "📱 Po nové instalaci aplikace (nebo prvním propojení Health Connect) se načte posledních 30 dní kroků a kalorií z Health Connect, ne jen 7.",
     "Muscle Deck: dlouhá jména žolíků se vejdou na kartu.",
   ],
 };

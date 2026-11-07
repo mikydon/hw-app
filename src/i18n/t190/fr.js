@@ -421,6 +421,8 @@ export default {
     "📱 Écran éteint, les bips du repos à 3, 2, 1 et 0 arrivent maintenant pile à l'heure (avant, ils pouvaient avoir jusqu'à une seconde de retard) et suivent tes réglages de son, de volume et de vibration. Il faut l'APK 1.9.1.",
     "📱 Réglages → Entraînement : « Minuteur de repos écran éteint ». Tu as touché « Pas maintenant » au premier repos ? Autorise-le ici, ou ouvre les réglages d'Android s'il est bloqué.",
     "La barre du haut ne reste plus trop courte au démarrage de l'app (elle ne couvrait que la barre d'état jusqu'au premier défilement).",
+    "La progression dans Muscle Deck (niveau, parties, victoires) suit maintenant ton compte comme le reste : un téléphone avec moins de parties ne te l'enlève plus.",
+    "📱 Après une réinstallation de l'app (ou une première connexion à Health Connect), les 30 derniers jours de pas et de calories Health Connect sont lus, pas seulement 7.",
     "Muscle Deck : les noms longs des jokers tiennent sur leur carte.",
   ],
 };

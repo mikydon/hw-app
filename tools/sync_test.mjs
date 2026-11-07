@@ -109,5 +109,15 @@ console.log("1.9.1: going back to a cloud restore point");
   const other = mergeAll({ history: [w("a", "2026-11-01"), w("c", "2026-11-07")], profile: { name: "Michael" }, settings: {}, kcal: null, sync: { mod: { profile: 500 } } }, r, false);
   ok(!other.history.some(e => e.id === "c") && other.history.some(e => e.id === "dr1000"), "another device follows the restore");
 }
+console.log("1.9.1: Muscle Deck progress only grows (a phone with fewer games never takes it away)");
+{
+  const mine = { name: "Michael", game: { xp: 5200, games: 40, wins: 12, best: 7, top: 91000, stake: 3, rw: 9, topWin: 2, tut: 1 } };
+  const fresh = { name: "Michael", game: { xp: 30, games: 1, wins: 0, best: 1, top: 800, stake: 0 } };
+  const m = mergeProfile(fresh, mine, 9, 1, false);
+  ok(m.game.xp === 5200 && m.game.games === 40 && m.game.rw === 9 && m.game.topWin === 2 && m.game.tut === 1, "the higher counters stay");
+  ok(m.game.stake === 0, "the intensity chosen last (newer side) wins");
+  ok(stable(mergeProfile(fresh, mine, 9, 1, false).game) === stable(mergeProfile(mine, fresh, 1, 9, false).game), "the same both ways");
+  ok(mergeProfile({ name: "A" }, mine, 9, 1, false).game.xp === 5200, "a side without games keeps the other's");
+}
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

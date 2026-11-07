@@ -421,6 +421,8 @@ export default {
     "📱 Bei ausgeschaltetem Bildschirm kommen die Pieptöne der Pause bei 3, 2, 1 und 0 jetzt genau pünktlich (vorher bis zu einer Sekunde zu spät) und folgen deinen Ton-, Lautstärke- und Vibrationseinstellungen. Braucht die APK 1.9.1.",
     "📱 Einstellungen → Training: „Pausentimer bei ausgeschaltetem Bildschirm“. Bei der ersten Pause „Nicht jetzt“ getippt? Hier kannst du es erlauben oder Androids Einstellungen öffnen, wenn es blockiert ist.",
     "Die obere Leiste bleibt beim Start der App nicht mehr zu kurz (sie deckte bis zum Scrollen nur die Statusleiste ab).",
+    "Der Fortschritt in Muscle Deck (Level, Spiele, Siege) folgt jetzt wie alles andere deinem Konto: Ein Handy mit weniger Spielen nimmt ihn nicht mehr weg.",
+    "📱 Nach einer Neuinstallation der App (oder der ersten Verbindung mit Health Connect) werden die letzten 30 Tage Schritte und Health-Connect-Kalorien gelesen, nicht nur 7.",
     "Muscle Deck: Lange Joker-Namen passen auf ihre Karte.",
   ],
 };

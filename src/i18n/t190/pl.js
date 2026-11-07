@@ -421,6 +421,8 @@ export default {
     "📱 Przy wyłączonym ekranie sygnały przerwy na 3, 2, 1 i 0 przychodzą teraz dokładnie na czas (wcześniej mogły spóźniać się nawet o sekundę) i słuchają ustawień dźwięku, głośności i wibracji. Potrzebne APK 1.9.1.",
     "📱 Ustawienia → Trening: „Licznik przerwy przy wyłączonym ekranie”. Przy pierwszej przerwie kliknąłeś „Nie teraz”? Tu to włączysz albo otworzysz ustawienia Androida, jeśli jest zablokowane.",
     "Górny pasek nie zostaje już przycięty po uruchomieniu aplikacji (zakrywał tylko pasek stanu, dopóki nie przewinąłeś).",
+    "Postęp w Muscle Deck (poziom, gry, wygrane) idzie teraz z kontem jak wszystko inne: telefon z mniejszą liczbą gier już go nie zabierze.",
+    "📱 Po ponownej instalacji aplikacji (lub pierwszym połączeniu z Health Connect) wczytywane jest ostatnie 30 dni kroków i kalorii z Health Connect, nie tylko 7.",
     "Muscle Deck: długie nazwy jokerów mieszczą się na karcie.",
   ],
 };

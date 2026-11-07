@@ -421,6 +421,8 @@ export default {
     "📱 Kikapcsolt képernyőnél a pihenő 3-as, 2-es, 1-es és 0-s sípolása most pontosan időben szól (korábban akár egy másodpercet késhetett), és követi a hang-, hangerő- és rezgésbeállításaidat. Az 1.9.1-es APK kell hozzá.",
     "📱 Beállítások → Edzés: „Pihenő időzítő kikapcsolt képernyőnél”. Az első pihenőnél a „Most nem” gombra koppintottál? Itt engedélyezheted, vagy megnyithatod az Android beállításait, ha le van tiltva.",
     "A felső sáv már nem marad csonka az app indításakor (görgetésig csak az állapotsort takarta).",
+    "A Muscle Deck előrehaladás (szint, játékok, győzelmek) mostantól a fiókkal megy, mint minden más: egy kevesebb játékkal rendelkező telefon már nem veszi el.",
+    "📱 Az app újratelepítése (vagy a Health Connect első csatlakoztatása) után az utolsó 30 nap lépései és Health Connect-kalóriái töltődnek be, nem csak 7.",
     "Muscle Deck: a hosszú jokernevek is elférnek a kártyán.",
   ],
 };

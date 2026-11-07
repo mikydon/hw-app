@@ -421,6 +421,8 @@ export default {
     "📱 Con la pantalla apagada, los pitidos del descanso en 3, 2, 1 y 0 llegan ahora justo a tiempo (antes podían retrasarse hasta un segundo) y siguen tus ajustes de sonido, volumen y vibración. Necesita el APK 1.9.1.",
     "📱 Ajustes → Entrenamiento: «Temporizador de descanso con la pantalla apagada». ¿Tocaste «Ahora no» en el primer descanso? Aquí puedes permitirlo, o abrir los ajustes de Android si está bloqueado.",
     "La barra superior ya no se queda cortada al abrir la app (cubría solo la barra de estado hasta que hacías scroll).",
+    "El progreso de Muscle Deck (nivel, partidas, victorias) ahora sigue a tu cuenta como todo lo demás: un teléfono con menos partidas ya no te lo quita.",
+    "📱 Tras reinstalar la app (o conectar Health Connect por primera vez) se leen los últimos 30 días de pasos y calorías de Health Connect, no solo 7.",
     "Muscle Deck: los nombres largos de los comodines caben en su carta.",
   ],
 };

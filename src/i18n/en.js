@@ -1792,6 +1792,8 @@ const en = {
     "📱 With the screen off, the rest's 3, 2, 1 and 0 beeps now come exactly on time (before, they could be up to a second late) and follow your sound, volume and vibration settings. Needs the 1.9.1 APK.",
     "📱 Settings → Workout: \"Rest timer with the screen off\". Tapped \"Not now\" at the first rest? Allow it here, or open Android's settings if it is blocked.",
     "The top bar no longer stays cut short when the app starts (it covered only the status bar until you scrolled).",
+    "Muscle Deck progress (level, games, wins) now follows your account like the rest: a phone with fewer games never takes it away.",
+    "📱 After installing the app again (or connecting Health Connect for the first time), the last 30 days of steps and Health Connect food calories are read, not only 7.",
     "Muscle Deck: long joker names fit their card.",
   ],
   news182: [

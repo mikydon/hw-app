@@ -421,6 +421,8 @@ export default {
     "📱 A schermo spento, i bip del recupero a 3, 2, 1 e 0 ora arrivano puntuali (prima potevano tardare fino a un secondo) e seguono le tue impostazioni di suono, volume e vibrazione. Serve l'APK 1.9.1.",
     "📱 Impostazioni → Allenamento: «Timer di recupero a schermo spento». Al primo recupero hai toccato «Non ora»? Qui puoi consentirlo, o aprire le impostazioni di Android se è bloccato.",
     "La barra in alto non resta più tagliata all'avvio dell'app (copriva solo la barra di stato finché non scorrevi).",
+    "I progressi in Muscle Deck (livello, partite, vittorie) ora seguono il tuo account come tutto il resto: un telefono con meno partite non te li toglie più.",
+    "📱 Dopo aver reinstallato l'app (o collegato Health Connect per la prima volta) vengono letti gli ultimi 30 giorni di passi e calorie di Health Connect, non solo 7.",
     "Muscle Deck: i nomi lunghi dei jolly stanno nella loro carta.",
   ],
 };

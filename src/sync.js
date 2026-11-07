@@ -84,10 +84,25 @@ export function mergeProfile(lp, rp, ml, mr, first) {
   if (lp.shop || rp.shop) out.shop = mergeShop(lp.shop, rp.shop);
   // 1.9.0: workout plans and their groups by id (newer change wins, deletions travel as tombstones)
   if (lp.plans || rp.plans) out.plans = mergePlans(lp.plans, rp.plans);
+  // 1.9.1 (Michael, Nov 7: Muscle Deck level and games were gone after a phone with no games won the profile):
+  // its counters only grow, so both sides' highest values count (the chosen intensity: the newer side's)
+  if (lp.game || rp.game) out.game = mergeGame(lp.game, rp.game, first ? rp.game : (order(lp, rp, ml, mr)[0] === lp ? lp.game : rp.game));
   if (!out.name) out.name = lp.name || rp.name || "User";
   return out;
 }
 
+const GAME_LAST = ["stake"]; // per-device choices: the newer side's value
+function mergeGame(a, b, newer) {
+  if (!a) return b; if (!b) return a;
+  const out = {};
+  [...new Set([...Object.keys(a), ...Object.keys(b)])].forEach(k => {
+    const x = a[k], y = b[k];
+    if (GAME_LAST.includes(k)) { const n = newer || {}; out[k] = n[k] !== undefined ? n[k] : x !== undefined ? x : y; return; }
+    if (typeof x === "number" && typeof y === "number") out[k] = Math.max(x, y);
+    else out[k] = x !== undefined ? (y !== undefined && typeof y === "number" && typeof x !== "number" ? y : x) : y;
+  });
+  return out;
+}
 const pickKeys = (o, keys) => Object.fromEntries(keys.filter(k => o && o[k] !== undefined).map(k => [k, o[k]]));
 export function mergeSettings(ls, rs, ml, mr, first) {
   if (!rs) return ls;

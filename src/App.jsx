@@ -3454,7 +3454,7 @@ function Onboarding({ start = 0, profile, setProfile, kcal, setKcal, onDone, acc
     unlockAudio(); sfxTap(); setHcRes("busy");
     const ok = await healthConnect(false);
     if (!ok.steps && !ok.body) { setHcRes("denied"); return; }
-    const [st, body] = await Promise.all([healthSteps(7), healthBody()]);
+    const [st, body] = await Promise.all([healthSteps(30), healthBody()]);
     const k = withBody({ ...(kcal || {}), log: (kcal && kcal.log) || {}, healthOn: true, steps: { ...((kcal && kcal.steps) || {}), ...(st || {}) } }, body);
     setKcal(k);
     if (k.height) setHeight(String(k.height));
@@ -4600,8 +4600,8 @@ function HealthCard({ kcal, setKcal, defOpen, onToggle }) {
   useEffect(() => onAppResume(() => { refresh(); }), []);
   const today = dateKey();
   const sync = async (k = kcal) => {
-    const m = await healthSteps(7), f = await healthSteps(7, "dietaryEnergyConsumed");
-    const it = k.healthFood === true ? await healthFoodItems(7) : null;
+    const n = hcDays(k), m = await healthSteps(n), f = await healthSteps(n, "dietaryEnergyConsumed");
+    const it = k.healthFood === true ? await healthFoodItems(n) : null;
     const body = await healthBody();
     if (m || f || body) setKcal(withBody({ ...k, healthOn: true, steps: { ...(k.steps || {}), ...(m || {}) }, food: { ...(k.food || {}), ...(f || {}) }, foodItems: { ...(k.foodItems || {}), ...(it || {}) } }, body));
     return m;
@@ -4624,7 +4624,7 @@ function HealthCard({ kcal, setKcal, defOpen, onToggle }) {
   };
   const saveMode = async () => {
     sfxCheck(); setModeSheet(false);
-    const f = await healthSteps(7, "dietaryEnergyConsumed"), it = await healthFoodItems(7);
+    const n = hcDays(kcal), f = await healthSteps(n, "dietaryEnergyConsumed"), it = await healthFoodItems(n);
     setKcal({ ...kcal, healthFood: true, foodMode: mode, food: { ...(kcal.food || {}), ...(f || {}) }, foodItems: { ...(kcal.foodItems || {}), ...(it || {}) } });
   };
   const food = (kcal.food || {})[today];
@@ -6498,6 +6498,9 @@ function BackupsSheet({ onClose, onRestore, autoOn, myId }) {
     </Sheet>
   );
 }
+// 1.9.1 (Michael, Nov 7: after a reinstall the Samsung Health calories of past days were missing): Health Connect
+// lets a newly connected app read the last 30 days, so until the phone has more than a week of it, read 30 days
+const hcDays = k => (Object.keys((k && k.food) || {}).length + Object.keys((k && k.steps) || {}).length < 16 ? 30 : 7);
 function SettingRow({ title, desc, info, on, onClick, first }) {
   return (
     <button role="switch" aria-checked={!!on} onClick={onClick}
@@ -12475,7 +12478,8 @@ export default function App() {
   useEffect(() => {
     if (!isNative || stepsSynced || !kcal || !kcal.healthOn) return;
     setStepsSynced(true);
-    Promise.all([healthSteps(7), healthSteps(7, "dietaryEnergyConsumed"), kcal.healthFood === true ? healthFoodItems(7) : null, healthBody()]).then(([m, f, it, body]) => { if (m || f || body) setKcalState(k => { const n = withBody({ ...k, steps: { ...(k.steps || {}), ...(m || {}) }, food: { ...(k.food || {}), ...(f || {}) }, foodItems: { ...(k.foodItems || {}), ...(it || {}) } }, body); saveKcal(n); return n; }); });
+    const n = hcDays(kcal);
+    Promise.all([healthSteps(n), healthSteps(n, "dietaryEnergyConsumed"), kcal.healthFood === true ? healthFoodItems(n) : null, healthBody()]).then(([m, f, it, body]) => { if (m || f || body) setKcalState(k => { const n = withBody({ ...k, steps: { ...(k.steps || {}), ...(m || {}) }, food: { ...(k.food || {}), ...(f || {}) }, foodItems: { ...(k.foodItems || {}), ...(it || {}) } }, body); saveKcal(n); return n; }); });
   }, [kcal]);
   // Website: the newest Android app version on GitHub for the menu (the API allows browsers; 60 calls an hour per IP).
   useEffect(() => {

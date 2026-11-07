@@ -20,6 +20,8 @@ A small update: it arrives in the app by itself. Two points need the 1.9.1 APK *
 - **Rest beeps on time with the screen off** *(Android app only, 1.9.1 APK)*: the lock-screen service plays the 3, 2, 1 and 0 beeps itself on its own clock (the app's web part wakes only about once a second there, so they came up to a second late), and follows the sound, volume and vibration settings.
 - **Rest timer setting** *(Android app only)*: Settings → Workout → "Rest timer with the screen off" allows "Physical activity" later, or opens Android's settings when Android no longer asks.
 - **Top bar at start:** the plate no longer stays cut short when the app opens (the phone's status-bar inset arrives after the first frame; it covered only the status bar until a scroll).
+- **Muscle Deck progress follows the account:** level, games, wins and the other counters merge by their highest value (before, a phone with fewer games could replace them).
+- **Health Connect after a reinstall** *(Android app only)*: while the app has less than about a week of steps and food from Health Connect, it reads the last 30 days (the most Health Connect allows a newly connected app), not only 7.
 - **Muscle Deck:** long joker names shrink or hyphenate to fit their card.
 
 ## 1.9.0 (2026-11-07)
