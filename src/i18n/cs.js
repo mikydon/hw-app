@@ -1,5 +1,7 @@
 // Czech (čeština).
-export default {
+import { with190 } from "./t190/merge.js";
+import T190 from "./t190/cs.js";
+const L = {
   ui: {
     searchWeb: "🔎 Vyhledat na internetu",
     searchOf: "Vyhledat na internetu: {name}",
@@ -2063,3 +2065,4 @@ export default {
   ],
   looks: {"f_iron":"Železný kruh","f_dots":"Tečkovaný kruh","f_pixel":"Pixel","f_hex":"Hex","f_wave":"Vlna","f_pulse":"Puls","f_flame":"Plamen","f_laurel":"Vavřín","f_neon":"Neon","f_bolt":"Hrom","f_crown":"Koruna","f_obsidian":"Obsidiánový střep","f_diamond":"Diamantový kruh","b_glow":"Záře tématu","b_grid":"Podlaha fitka","b_sunset":"Západ slunce","b_topo":"Vrstevnice","b_stars":"Noční obloha","b_waves":"Vlny","b_bubbles":"Bubliny","b_ridge":"Hřeben při východu","b_city":"Světla města","b_galaxy":"Galaxie","b_aurora":"Polární záře","t_iron":"Železná vůle","t_rookie":"Nováček","t_grind":"Každodenní dřina","t_zen":"Zen","t_beast":"Beast mode","t_legend":"Živá legenda","t_bird":"Ranní ptáče","t_owl":"Noční sova","t_comeback":"Král návratů","t_marathon":"Maratonec","t_shark":"Karetní žralok","t_streak":"Strážce šňůry","t_midnight":"Půlnoční hrdina","t_obsidian":"Obsidián","n_outline":"Obrys","n_grad":"Přechod","n_shadow":"Retro stín","n_ice":"Led","n_glow":"Záře","n_fire":"Oheň","n_foil":"Lesklá fólie","n_rainbow":"Duha","n_gold":"Čisté zlato","fx_snow":"Sněžení","fx_sparkle":"Jiskry","fx_petals":"Okvětní lístky","fx_embers":"Žhavé uhlíky","fx_lightning":"Bouřka","fx_frost":"Mráz","fx_confetti":"Párty","fx_fireworks":"Ohňostroj"},
 };
+export default with190(L, T190);
