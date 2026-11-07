@@ -1,5 +1,7 @@
 // 简体中文 (Simplified Chinese). Machine-assisted translation by Claude, Oct 2026; native speakers are welcome to improve it (see TRANSLATING.md).
-export default {
+import { with190 } from "./t190/merge.js";
+import T190 from "./t190/zh.js";
+const L = {
   ui: {
     searchWeb: "🔎 在网上搜索",
     searchOf: "在网上搜索：{name}",
@@ -2061,3 +2063,4 @@ export default {
   ],
   looks: {"f_iron":"铁环","f_dots":"点环","f_pixel":"像素","f_hex":"六边形","f_wave":"波浪","f_pulse":"脉搏","f_flame":"火焰","f_laurel":"桂冠","f_neon":"霓虹","f_bolt":"雷电","f_crown":"王冠","f_obsidian":"黑曜石碎片","f_diamond":"钻石环","b_glow":"主题光晕","b_grid":"健身房地板","b_sunset":"日落","b_topo":"等高线","b_stars":"夜空","b_waves":"海浪","b_bubbles":"气泡","b_ridge":"黎明山脊","b_city":"城市灯火","b_galaxy":"星系","b_aurora":"极光","t_iron":"钢铁意志","t_rookie":"新秀","t_grind":"每日苦练","t_zen":"禅","t_beast":"野兽模式","t_legend":"活传奇","t_bird":"早起鸟","t_owl":"夜猫子","t_comeback":"逆袭之王","t_marathon":"马拉松选手","t_shark":"牌桌鲨鱼","t_streak":"连胜守护者","t_midnight":"午夜英雄","t_obsidian":"黑曜石","n_outline":"描边","n_grad":"渐变","n_shadow":"复古阴影","n_ice":"冰","n_glow":"光晕","n_fire":"火","n_foil":"金属光泽","n_rainbow":"彩虹","n_gold":"纯金","fx_snow":"飘雪","fx_sparkle":"闪光","fx_petals":"花瓣","fx_embers":"余烬","fx_lightning":"雷暴","fx_frost":"霜","fx_confetti":"派对","fx_fireworks":"烟花"},
 };
+export default with190(L, T190);
