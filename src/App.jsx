@@ -8993,6 +8993,8 @@ const fmtM = m => (Number.isInteger(m) ? String(m) : m.toFixed(2).replace(/0$/, 
 // 1.9.0 (Michael, Nov 7: "make selling, the game UI and the shop nicer"): a joker is a small card of its own: a frame in
 // its rarity colour, a glowing well with its icon, the name on a band at the bottom, rarity pips at the top (legendary
 // ones shine). Own look; nothing copied from any other game.
+// the name's size: a long single word ("Momentum") gets smaller instead of breaking in the middle (1.9.1)
+const jkFs = (id, w) => { const lw = Math.max(1, ...String(jName(id)).split(/\s+/).map(x => x.length)); return Math.max(8, Math.min(Math.round(w * 0.155), Math.floor((w - 10) / (lw * 0.66)))); };
 function JokerCard({ id, w = 62, onClick, glow, sellP, still, pop, dim }) {
   const r = GM.JOKERS[id] ? GM.JOKERS[id].r : 0, col = RAR_COL()[r], h = Math.round(w * 1.42), rr = Math.round(w * 0.16), Tag = still ? "span" : "button";
   return (
@@ -9005,7 +9007,7 @@ function JokerCard({ id, w = 62, onClick, glow, sellP, still, pop, dim }) {
         </span>
         <span style={{ position: "absolute", left: 0, right: 0, top: Math.round(h * (w < 52 ? 0.22 : 0.15)), height: Math.round(h * (w < 52 ? 0.56 : 0.46)), display: "flex", alignItems: "center", justifyContent: "center", filter: `drop-shadow(0 0 ${Math.round(w * 0.08)}px ${col}aa)` }}><JkIco id={id} size={Math.round(w * 0.44)} /></span>
         {w >= 52 && <span style={{ position: "absolute", left: 0, right: 0, bottom: 0, minHeight: Math.round(h * 0.33), padding: `${Math.round(w * 0.04)}px ${Math.round(w * 0.06)}px`, boxSizing: "border-box", display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,.34)", borderTop: `1px solid ${col}55` }}>
-          <span style={{ fontSize: Math.max(9, Math.round(w * 0.155)), fontWeight: 800, lineHeight: 1.08, textAlign: "center", overflowWrap: "anywhere", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", color: C.chalk }}>{jName(id)}</span>
+          <span lang={LANG} style={{ fontSize: jkFs(id, w), fontWeight: 800, lineHeight: 1.08, textAlign: "center", hyphens: "auto", WebkitHyphens: "auto", overflowWrap: "anywhere", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", color: C.chalk }}>{jName(id)}</span>
         </span>}
       </span>
       {sellP ? <span aria-hidden="true" style={{ position: "absolute", right: 3, top: 3, padding: "1px 5px", borderRadius: 99, background: "rgba(0,0,0,.55)", color: C.signal, fontSize: 10, fontWeight: 900, lineHeight: 1.5 }}>+<KSign />{sellP}</span> : null}
