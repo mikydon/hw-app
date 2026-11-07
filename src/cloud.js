@@ -13,6 +13,7 @@
 //   inbox/{to}/from/{from}   a friend request {ts}
 //   friends/{me}/list/{uid}  {ts}: written for both people in one batch when a request is accepted
 //   backups/{uid}            {json, ts, n}: the automatic cloud backup (owner only)
+//   backups/{uid}/old/{day}  {json, n, ts}: restore points (1.9.1): the backup as it was at the end of a day, newest 4
 //   reports/{auto id}        {by, about, reason, ts}: a reported profile (create only; read in the console)
 //   cards/{uid}              {vis, lvl, xp, streak, best, n, reps, min, prs, since, ach: {badge: tier}, av: {badge: value},
 //                            rk: {exercise: best}, show: [showcase fields], ts}:
@@ -60,6 +61,7 @@ function boot() {
   onAuthStateChanged(auth, u => { user = u ? { uid: u.uid } : null; subs.forEach(f => f(user)); });
 }
 const d = (...p) => doc(db, ...p);
+const RP_KEEP = 4; // 1.9.1: cloud restore points kept
 let emailPw = null;
 const uid = () => { if (!user) throw Object.assign(new Error("signed out"), { code: "signed-out" }); return user.uid; };
 async function googleCredential() {
@@ -340,6 +342,26 @@ export const impl = {
       cb({ json: v.json, n: v.n, ts: v.ts && v.ts.toMillis ? v.ts.toMillis() : 0, local: s.metadata.hasPendingWrites });
     }, onErr);
   },
+  // 1.9.1: restore points. Before a device's first upload of a day, the backup as it is (the last day's state, never
+  // today's half-done one) is copied to old/{its day}; only the newest RP_KEEP stay.
+  async snapshotBackup(today) {
+    const me = uid(), s = await getDoc(d("backups", me));
+    if (!s.exists()) return false;
+    const v = s.data(), ts = v.ts && v.ts.toDate ? v.ts.toDate() : null;
+    if (!ts || typeof v.json !== "string") return false;
+    const day = `${ts.getFullYear()}-${String(ts.getMonth() + 1).padStart(2, "0")}-${String(ts.getDate()).padStart(2, "0")}`;
+    if (day >= today) return false;
+    await setDoc(d("backups", me, "old", day), { json: v.json, n: v.n || 0, ts: v.ts });
+    const all = await getDocs(collection(db, "backups", me, "old"));
+    const ids = all.docs.map(x => x.id).sort().reverse();
+    await Promise.all(ids.slice(RP_KEEP).map(id => deleteDoc(d("backups", me, "old", id))));
+    return true;
+  },
+  async listPoints() {
+    const all = await getDocs(collection(db, "backups", uid(), "old"));
+    return all.docs.map(x => { const v = x.data(); return { day: x.id, json: v.json, n: v.n || 0, ts: v.ts && v.ts.toMillis ? v.ts.toMillis() : 0 }; })
+      .sort((a, b) => (a.day < b.day ? 1 : -1)).slice(0, RP_KEEP);
+  },
   async loadBackup() { const s = await getDoc(d("backups", uid())); if (!s.exists()) return null; const v = s.data(); return { json: v.json, n: v.n, ts: v.ts && v.ts.toMillis ? v.ts.toMillis() : 0 }; },
   // Everything about this account, then the account itself. Google asks again if the last sign-in is too old.
   // 1.5.0 (Michael: after deleting, the account buttons stayed): Google is asked to confirm FIRST (Firebase only deletes
@@ -354,6 +376,7 @@ export const impl = {
     } else if (native()) await reauthenticateWithCredential(cu, await googleCredential());
     else await reauthenticateWithPopup(cu, new GoogleAuthProvider());
     const fr = await getDocs(collection(db, "friends", me, "list")).catch(() => ({ docs: [] }));
+    const old = await getDocs(collection(db, "backups", me, "old")).catch(() => ({ docs: [] })); // 1.9.1 restore points
     const inbox = await getDocs(collection(db, "inbox", me, "from")).catch(() => ({ docs: [] }));
     // Chats: every message and the chat itself (members may delete; the other person loses the chat too).
     const chats = await getDocs(query(collection(db, "chats"), where("m", "array-contains", me))).catch(() => ({ docs: [] }));
@@ -365,6 +388,7 @@ export const impl = {
     const b = writeBatch(db);
     chats.docs.forEach(c => b.delete(c.ref));
     fs.docs.forEach(c => b.delete(c.ref)); // 1.8.0 friend streaks
+    old.docs.forEach(c => b.delete(c.ref));
     b.delete(d("days", me));
     fr.docs.forEach(x => { b.delete(d("friends", me, "list", x.id)); b.delete(d("friends", x.id, "list", me)); });
     inbox.docs.forEach(x => b.delete(d("inbox", me, "from", x.id)));

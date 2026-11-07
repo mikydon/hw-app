@@ -1,6 +1,27 @@
 // 1.9.0 texts in German (merged over de.js; English originals in ui190-en.js, ex-en.js and en.js news19).
 export default {
   ui: {
+    // 1.9.1
+    rpRow: "Wiederherstellungspunkte",
+    rpTitle: "Wiederherstellungspunkte",
+    rpD: "Die Cloud hebt deine Daten so auf, wie sie am Ende jedes der letzten 4 Tage waren, an denen du die App benutzt hast. Zurückgehen ersetzt Trainings, Profil und Einstellungen auf all deinen Geräten durch die von diesem Tag.",
+    rpNone: "Noch keine Wiederherstellungspunkte. Der erste kommt am nächsten Tag, an dem du die App benutzt.",
+    rpErr: "Die Wiederherstellungspunkte konnten nicht geladen werden. Prüfe die Verbindung und versuche es erneut.",
+    rpN: "Trainings: {n}",
+    rpGo: "Zurückgehen",
+    rpAskT: "Zurück zu {date}?",
+    rpAskD: "Trainings, die nach diesem Tag dazukamen, verschwinden auf all deinen Geräten. Käufe, geöffnete Karten und gegessene Kalorien bleiben.",
+    rpDone: "Zurück auf {date}",
+    swNewTitle: "Auf diesem Handy sind schon Trainings",
+    swNewBody: "Die Trainings auf diesem Handy sind noch in keinem Konto gespeichert, und dieses Konto hat eigene. Was soll passieren?",
+    swNewFresh: "Daten des Kontos verwenden",
+    swNewFreshD: "Leert dieses Handy und lädt die Sicherung des Kontos.",
+    swNewKeep: "Trainings des Handys zum Konto hinzufügen",
+    swNewKeepD: "Name, Foto und Einstellungen des Kontos bleiben; die Trainings dieses Handys kommen dazu.",
+    restRow: "Pausentimer bei ausgeschaltetem Bildschirm",
+    restRowD: "Zeigt die Pausenzeit auf dem Sperrbildschirm und piept bei 3, 2, 1 und 0, auch wenn das Handy gesperrt ist. Android nennt diese Berechtigung „Körperliche Aktivität“; die App liest damit keine Aktivitätsdaten.",
+    restRowOpen: "In Android blockiert: erlaube „Körperliche Aktivität“ in den Einstellungen der App",
+    restRowBlocked: "In Android blockiert: Einstellungen → Apps → HW App → Berechtigungen → Körperliche Aktivität",
     addExtra: "Übung hinzufügen",
     addExtraD: "Noch nicht müde? Hinzugefügte Übungen zählen für heute, und ein besseres Ergebnis ist ein Rekord.",
     bg_arms: "Arme", bg_back: "Rücken", bg_calves: "Waden", bg_chest: "Brust", bg_core: "Rumpf", bg_glutes: "Po", bg_legs: "Beine", bg_shoulders: "Schultern",
@@ -392,4 +413,13 @@ export default {
     mx_t_bar_row: { muscles: "Oberer Rücken, Latissimus, Bizeps", how: "Steh über der Stange (oder auf der Maschine), Knie leicht gebeugt, beug dich mit flachem Rücken vor. Zieh den Griff zur unteren Brust, dann senk ihn langsam bis zu gestreckten Armen.", tip: "Der Rücken bleibt flach und ruhig. Musst du dich aufrichten, um es zu bewegen, ist es zu schwer." },
     mx_wide_grip_lat_pulldown: { muscles: "Rücken (Latissimus), oberer Rücken", how: "Setz dich mit den Oberschenkeln unter das Polster und greif die Stange weit (etwa 1,5-fache Schulterbreite). Zieh sie zur oberen Brust, Ellbogen nach unten und außen, dann lass sie langsam hoch.", tip: "Zieh sie nicht hinter den Nacken." },
   },
+  // 1.9.1
+  news191: [
+    "Die Anmeldung auf einem Handy, dessen Trainings zu keinem Konto gehören, fragt jetzt zuerst: die Daten des Kontos verwenden oder die Trainings des Handys zum Konto hinzufügen. Vorher wurden sie ohne Nachfrage zusammengeführt, und der Platzhaltername „User“ des Handys konnte deinen Namen und dein Foto ersetzen.",
+    "Fehlen auf einem Handy einmal Name oder Foto, holt die App sie aus dem Profil deines Kontos zurück und entfernt dein Foto für Freunde nie.",
+    "Wiederherstellungspunkte: Die Cloud hebt deine Daten der letzten 4 Tage auf, an denen du die App benutzt hast, und du kannst zu einem zurück (Konto & Cloud → Wiederherstellungspunkte).",
+    "📱 Bei ausgeschaltetem Bildschirm kommen die Pieptöne der Pause bei 3, 2, 1 und 0 jetzt genau pünktlich (vorher bis zu einer Sekunde zu spät) und folgen deinen Ton-, Lautstärke- und Vibrationseinstellungen. Braucht die APK 1.9.1.",
+    "📱 Einstellungen → Training: „Pausentimer bei ausgeschaltetem Bildschirm“. Bei der ersten Pause „Nicht jetzt“ getippt? Hier kannst du es erlauben oder Androids Einstellungen öffnen, wenn es blockiert ist.",
+    "Muscle Deck: Lange Joker-Namen passen auf ihre Karte.",
+  ],
 };

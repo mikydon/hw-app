@@ -1,6 +1,27 @@
 // 1.9.0 texts in Hungarian (merged over hu.js; English originals in ui190-en.js, ex-en.js and en.js news19).
 export default {
   ui: {
+    // 1.9.1
+    rpRow: "Visszaállítási pontok",
+    rpTitle: "Visszaállítási pontok",
+    rpD: "A felhő megőrzi az adataidat úgy, ahogy az utolsó 4 olyan nap végén voltak, amikor használtad az appot. A visszaállítás minden eszközödön lecseréli az edzéseket, a profilt és a beállításokat az aznapiakra.",
+    rpNone: "Még nincs visszaállítási pont. Az első a következő napon jelenik meg, amikor használod az appot.",
+    rpErr: "Nem sikerült betölteni a visszaállítási pontokat. Ellenőrizd a kapcsolatot, és próbáld újra.",
+    rpN: "Edzések: {n}",
+    rpGo: "Visszaállítás",
+    rpAskT: "Visszaállítod erre: {date}?",
+    rpAskD: "Az az utáni napokon hozzáadott edzések minden eszközödről eltűnnek. A vásárlások, a kinyitott kártyák és a megevett kalóriák megmaradnak.",
+    rpDone: "Visszaállítva erre: {date}",
+    swNewTitle: "Ezen a telefonon már vannak edzések",
+    swNewBody: "Az edzések ezen a telefonon még egyik fiókba sincsenek mentve, és ennek a fióknak saját edzései vannak. Mi történjen?",
+    swNewFresh: "A fiók adatainak használata",
+    swNewFreshD: "Törli a telefont, és betölti a fiók mentését.",
+    swNewKeep: "A telefon edzéseinek hozzáadása a fiókhoz",
+    swNewKeepD: "A fiók neve, fotója és beállításai maradnak; a telefon edzései hozzáadódnak.",
+    restRow: "Pihenő időzítő kikapcsolt képernyőnél",
+    restRowD: "Zárolt telefonon is mutatja a pihenőidőt a zárolt képernyőn, és sípol 3-nál, 2-nél, 1-nél és 0-nál. Az Android ezt az engedélyt „Fizikai aktivitás”-nak hívja; az app semmilyen aktivitási adatot nem olvas vele.",
+    restRowOpen: "Az Android letiltotta: engedélyezd a „Fizikai aktivitás” jogot az app beállításaiban",
+    restRowBlocked: "Az Android letiltotta: Beállítások → Alkalmazások → HW App → Engedélyek → Fizikai aktivitás",
     addExtra: "Gyakorlat hozzáadása",
     addExtraD: "Még nem fáradtál el? A hozzáadott gyakorlatok beleszámítanak a mai edzésbe, és a jobb eredmény rekord.",
     bg_arms: "Kar", bg_back: "Hát", bg_calves: "Vádli", bg_chest: "Mell", bg_core: "Has", bg_glutes: "Farizom", bg_legs: "Láb", bg_shoulders: "Váll",
@@ -392,4 +413,13 @@ export default {
     mx_t_bar_row: { muscles: "Felső hát, széles hátizom, bicepsz", how: "Állj a rúd fölé (vagy a gépre), térd puha, hajolj előre egyenes háttal. Húzd a fogantyút a mellkasod alsó részéhez, aztán lassan engedd le nyújtott karig.", tip: "A hát egyenes és mozdulatlan marad. Ha fel kell egyenesedned a mozgatásához, túl nehéz." },
     mx_wide_grip_lat_pulldown: { muscles: "Hát (széles hátizom), felső hát", how: "Ülj le, combod a párna alatt, és fogd meg szélesen a rudat (kb. másfélszeres vállszélesség). Húzd a mellkasod felső részéhez, könyök lefelé és kifelé, aztán lassan engedd fel.", tip: "Ne húzd a tarkód mögé." },
   },
+  // 1.9.1
+  news191: [
+    "Ha olyan telefonon jelentkezel be, amelynek edzései egyik fiókhoz sem tartoznak, az app előbb megkérdezi: a fiók adatait használja, vagy a telefon edzéseit adja hozzá a fiókhoz. Korábban kérdés nélkül összevonta őket, és a telefon „User” neve felülírhatta a neved és a fotód.",
+    "Ha egy telefonról valaha hiányozna a neved vagy a fotód, az app visszaveszi őket a fiókod profiljából, és a barátaidnak szánt fotót soha nem törli.",
+    "Visszaállítási pontok: a felhő megőrzi az adataidat az utolsó 4 napról, amikor használtad az appot, és bármelyikre visszaállhatsz (Fiók és felhő → Visszaállítási pontok).",
+    "📱 Kikapcsolt képernyőnél a pihenő 3-as, 2-es, 1-es és 0-s sípolása most pontosan időben szól (korábban akár egy másodpercet késhetett), és követi a hang-, hangerő- és rezgésbeállításaidat. Az 1.9.1-es APK kell hozzá.",
+    "📱 Beállítások → Edzés: „Pihenő időzítő kikapcsolt képernyőnél”. Az első pihenőnél a „Most nem” gombra koppintottál? Itt engedélyezheted, vagy megnyithatod az Android beállításait, ha le van tiltva.",
+    "Muscle Deck: a hosszú jokernevek is elférnek a kártyán.",
+  ],
 };

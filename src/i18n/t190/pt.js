@@ -1,6 +1,27 @@
 // 1.9.0 texts in Portuguese (merged over pt.js; English originals in ui190-en.js, ex-en.js and en.js news19).
 export default {
   ui: {
+    // 1.9.1
+    rpRow: "Pontos de restauro",
+    rpTitle: "Pontos de restauro",
+    rpD: "A nuvem guarda os teus dados como estavam no fim de cada um dos últimos 4 dias em que usaste a app. Voltar substitui os treinos, o perfil e os ajustes pelos desse dia em todos os teus dispositivos.",
+    rpNone: "Ainda não há pontos de restauro. O primeiro aparece no próximo dia em que usares a app.",
+    rpErr: "Não foi possível carregar os pontos de restauro. Verifica a ligação e tenta de novo.",
+    rpN: "Treinos: {n}",
+    rpGo: "Voltar",
+    rpAskT: "Voltar a {date}?",
+    rpAskD: "Os treinos adicionados depois desse dia desaparecem de todos os teus dispositivos. As compras, as cartas abertas e as calorias comidas ficam.",
+    rpDone: "De volta a {date}",
+    swNewTitle: "Este telemóvel já tem treinos",
+    swNewBody: "Os treinos deste telemóvel ainda não estão guardados em nenhuma conta, e esta conta tem os seus. O que queres fazer?",
+    swNewFresh: "Usar os dados da conta",
+    swNewFreshD: "Limpa este telemóvel e carrega a cópia da conta.",
+    swNewKeep: "Juntar os treinos do telemóvel à conta",
+    swNewKeepD: "O nome, a foto e os ajustes da conta ficam; os treinos deste telemóvel são adicionados.",
+    restRow: "Temporizador de descanso com o ecrã desligado",
+    restRowD: "Mostra o descanso no ecrã de bloqueio e apita aos 3, 2, 1 e 0 mesmo com o telemóvel bloqueado. O Android chama a esta permissão \"Atividade física\"; a app não lê com ela nenhum dado de atividade.",
+    restRowOpen: "Bloqueado no Android: permite \"Atividade física\" nas definições da app",
+    restRowBlocked: "Bloqueado no Android: Definições → Aplicações → HW App → Permissões → Atividade física",
     addExtra: "Adicionar exercício",
     addExtraD: "Ainda não está cansado? Exercícios adicionados contam para hoje, e um resultado melhor é um recorde.",
     bg_arms: "Braços", bg_back: "Costas", bg_calves: "Panturrilhas", bg_chest: "Peito", bg_core: "Core", bg_glutes: "Glúteos", bg_legs: "Pernas", bg_shoulders: "Ombros",
@@ -392,4 +413,13 @@ export default {
     mx_t_bar_row: { muscles: "Parte alta das costas, dorsais, bíceps", how: "Fique sobre a barra (ou na máquina), joelhos levemente dobrados, incline-se com as costas retas. Puxe o pegador até a parte baixa do peito, depois desça devagar até os braços retos.", tip: "As costas ficam retas e paradas. Se precisar se endireitar para mover, está pesado demais." },
     mx_wide_grip_lat_pulldown: { muscles: "Costas (dorsal), parte alta das costas", how: "Sente com as coxas sob a almofada e segure a barra aberta (cerca de 1,5 vez a largura dos ombros). Puxe até a parte alta do peito, cotovelos para baixo e para fora, depois deixe subir devagar.", tip: "Não puxe atrás da nuca." },
   },
+  // 1.9.1
+  news191: [
+    "Iniciar sessão num telemóvel cujos treinos não pertencem a nenhuma conta agora pergunta primeiro: usar os dados da conta ou juntar-lhe os treinos do telemóvel. Antes juntavam-se sem perguntar, e o nome provisório \"User\" do telemóvel podia substituir o teu nome e a tua foto.",
+    "Se num telemóvel faltar o teu nome ou a tua foto, a app vai buscá-los ao perfil da tua conta e nunca apaga a foto que os amigos veem.",
+    "Pontos de restauro: a nuvem guarda os teus dados dos últimos 4 dias em que usaste a app, e podes voltar a um deles (Conta e nuvem → Pontos de restauro).",
+    "📱 Com o ecrã desligado, os apitos do descanso aos 3, 2, 1 e 0 chegam agora mesmo a horas (antes podiam atrasar-se até um segundo) e seguem os teus ajustes de som, volume e vibração. Precisa do APK 1.9.1.",
+    "📱 Ajustes → Treino: \"Temporizador de descanso com o ecrã desligado\". Tocaste em \"Agora não\" no primeiro descanso? Aqui podes permitir, ou abrir as definições do Android se estiver bloqueado.",
+    "Muscle Deck: os nomes longos dos jokers cabem na carta.",
+  ],
 };

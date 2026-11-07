@@ -55,6 +55,11 @@ public class RestService extends Service {
     private long endAt, startAt;
     private String title = "", bodyOver = "", stillTitle = "", stillBody = "";
     private long stillAfter = 600000L;
+    // 1.9.1 (Michael, Nov 7: the 3-2-1 beeps on the lock screen came late): with the app off screen its web part only
+    // wakes about once a second, so the service plays the whole countdown itself, on its own clock; the app's sound
+    // and vibration settings come with every start.
+    private boolean sound = true, buzz = true;
+    private int vol = 90;
 
     @Override
     public IBinder onBind(Intent intent) { return null; }
@@ -70,6 +75,9 @@ public class RestService extends Service {
         stillTitle = str(intent, "stillTitle");
         stillBody = str(intent, "stillBody");
         stillAfter = intent.getLongExtra("stillAfter", 600000L);
+        sound = intent.getBooleanExtra("sound", true);
+        buzz = intent.getBooleanExtra("buzz", true);
+        vol = Math.max(0, Math.min(100, intent.getIntExtra("vol", 90)));
         channels(str(intent, "channelName"), str(intent, "alertName"));
         boolean back;
         try {
@@ -88,6 +96,7 @@ public class RestService extends Service {
         long now = System.currentTimeMillis();
         holdCpu(Math.max(0, endAt - now) + stillAfter + 60000L);
         if (endAt > now) handler.postDelayed(this::atZero, endAt - now);
+        for (int k = 3; k >= 1; k--) { final long at = endAt - k * 1000L; if (at > now + 50) handler.postDelayed(this::countBeep, at - now); }
         else show();
         handler.postDelayed(tick, nextTick(now));
         if (back) handler.postDelayed(this::ensureShown, 300);
@@ -184,12 +193,23 @@ public class RestService extends Service {
         if (dismissed) { dismissed = false; show(); handler.postDelayed(this::ensureShown, 300); }
         else show();
         if (appInFront) return; // the app is on screen and beeps itself
+        tone(ToneGenerator.TONE_PROP_BEEP2, 450);
+        if (buzz) vibrate(new long[] {0, 250, 120, 250});
+    }
+
+    /** 3, 2, 1 before the end: a short beep, like the app's own countdown (only while the app is off screen). */
+    private void countBeep() {
+        if (appInFront) return;
+        tone(ToneGenerator.TONE_PROP_BEEP, 120);
+    }
+
+    private void tone(int type, int ms) {
+        if (!sound || vol <= 0) return;
         try {
-            ToneGenerator tg = new ToneGenerator(AudioManager.STREAM_MUSIC, 90);
-            tg.startTone(ToneGenerator.TONE_PROP_BEEP2, 450);
-            handler.postDelayed(tg::release, 900);
+            ToneGenerator tg = new ToneGenerator(AudioManager.STREAM_MUSIC, vol);
+            tg.startTone(type, ms);
+            handler.postDelayed(tg::release, ms + 450);
         } catch (Exception ignored) {}
-        vibrate(new long[] {0, 250, 120, 250});
     }
 
     private void stillTraining() {

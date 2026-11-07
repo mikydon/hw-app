@@ -9,15 +9,20 @@
   const ok = v => Promise.resolve(v);
   const watch = key => (cb) => { setTimeout(() => cb(F[key] || []), 0); return () => {}; };
   const known = {
-    init: () => ok({ uid: F.uid }),
+    init: () => ok(F.out ? null : { uid: F.uid }),
+    signIn: () => { F.out = false; return ok({ uid: F.uid, name: F.gname || "" }); },
+    signOut: () => { F.out = true; return ok(); },
+    saveBackup: (json, n) => { F.backup = { json, n, ts: Date.now() }; return ok(); },
+    snapshotBackup: today => { const b = F.backup; if (!b) return ok(false); const t = new Date(b.ts), day = `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, "0")}-${String(t.getDate()).padStart(2, "0")}`; if (day >= today) return ok(false); F.points = { ...(F.points || {}), [day]: { json: b.json, n: b.n, ts: b.ts } }; return ok(true); },
+    listPoints: () => ok(Object.entries(F.points || {}).map(([day, v]) => ({ day, ...v })).sort((a, b) => (a.day < b.day ? 1 : -1)).slice(0, 4)),
     onUser: cb => { return () => {}; },
     getProfile: () => ok(F.prof),
     watchRequests: watch("reqs"), watchFriends: watch("friends"), watchChats: watch("chats"),
     watchBlocks: cb => { setTimeout(() => cb([]), 0); return () => {}; },
     watchChatMem: cb => { setTimeout(() => cb({}), 0); return () => {}; },
     watchFStreaks: cb => { setTimeout(() => cb([]), 0); return () => {}; },
-    watchBackup: () => () => {},
-    loadBackup: () => ok(null),
+    watchBackup: cb => { if (F.backup) setTimeout(() => cb(F.backup), 0); return () => {}; },
+    loadBackup: () => ok(F.backup || null),
     getMod: () => ok(null),
     authInfo: () => ({ email: "m@x.sk", google: false, password: true, verified: true }),
     getPromo: code => ok(F.promo[code] || null),
@@ -31,5 +36,5 @@
     },
   });
   // the app reads this before it starts Firebase
-  try { const m = JSON.parse(localStorage.getItem("domaci-trening-v1-cloud") || "{}"); if (!m.uid) localStorage.setItem("domaci-trening-v1-cloud", JSON.stringify({ ...m, uid: F.uid, prof: F.prof, owner: F.uid, memUid: F.uid })); } catch (_) {}
+  try { const m = JSON.parse(localStorage.getItem("domaci-trening-v1-cloud") || "{}"); if (!m.uid && !F.out) localStorage.setItem("domaci-trening-v1-cloud", JSON.stringify({ ...m, uid: F.uid, prof: F.prof, owner: F.uid, memUid: F.uid })); } catch (_) {}
 })();

@@ -101,6 +101,19 @@ await t("alice reads it", true, () => getDoc(doc(as("alice"), "backups", "alice"
 await t("bob can't read alice's backup", false, () => getDoc(doc(as("bob"), "backups", "alice")));
 await t("bob can't overwrite it", false, () => setDoc(doc(as("bob"), "backups", "alice"), { json: "{}", n: 0, ts: serverTimestamp() }));
 await t("a backup over 900 000 characters is refused", false, () => setDoc(doc(as("alice"), "backups", "alice"), { json: "x".repeat(900001), n: 3, ts: serverTimestamp() }));
+// 1.9.1: restore points backups/{uid}/old/{day}
+{
+  const pt = (u, day) => doc(as(u), "backups", "alice", "old", day);
+  const old = { json: "{\"app\":\"hw-app\"}", n: 3, ts: Timestamp.fromMillis(Date.UTC(2026, 10, 6, 20)) };
+  await t("alice keeps a restore point of a past day", true, () => setDoc(pt("alice", "2026-11-06"), old));
+  await t("alice lists her restore points", true, () => getDocs(collection(as("alice"), "backups", "alice", "old")));
+  await t("alice deletes an old point", true, () => deleteDoc(pt("alice", "2026-11-06")));
+  await t("bob can't list alice's points", false, () => getDocs(collection(as("bob"), "backups", "alice", "old")));
+  await t("bob can't write alice a point", false, () => setDoc(pt("bob", "2026-11-05"), old));
+  await t("a point id must be a day", false, () => setDoc(pt("alice", "latest"), old));
+  await t("a point with other fields is refused", false, () => setDoc(pt("alice", "2026-11-04"), { ...old, x: 1 }));
+  await t("a point over 900 000 characters is refused", false, () => setDoc(pt("alice", "2026-11-03"), { ...old, json: "x".repeat(900001) }));
+}
 await t("bob reports a profile", true, () => addDoc(collection(as("bob"), "reports"), { by: "bob", about: "carol", reason: "nickname", ts: serverTimestamp() }));
 await t("a report in someone else's name is refused", false, () => addDoc(collection(as("bob"), "reports"), { by: "alice", about: "carol", reason: "x", ts: serverTimestamp() }));
 await t("reports can't be read in the app", false, () => getDocs(collection(as("bob"), "reports")));

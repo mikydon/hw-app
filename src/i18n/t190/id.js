@@ -1,6 +1,27 @@
 // 1.9.0 texts in Indonesian (merged over id.js; English originals in ui190-en.js, ex-en.js and en.js news19).
 export default {
   ui: {
+    // 1.9.1
+    rpRow: "Titik pemulihan",
+    rpTitle: "Titik pemulihan",
+    rpD: "Cloud menyimpan datamu seperti di akhir masing-masing dari 4 hari terakhir kamu memakai aplikasi. Kembali ke titik itu mengganti latihan, profil, dan pengaturan dengan yang dari hari itu di semua perangkatmu.",
+    rpNone: "Belum ada titik pemulihan. Yang pertama muncul pada hari berikutnya kamu memakai aplikasi.",
+    rpErr: "Gagal memuat titik pemulihan. Periksa koneksi dan coba lagi.",
+    rpN: "Latihan: {n}",
+    rpGo: "Kembalikan",
+    rpAskT: "Kembali ke {date}?",
+    rpAskD: "Latihan yang ditambahkan setelah hari itu hilang dari semua perangkatmu. Pembelian, kartu yang sudah dibuka, dan kalori yang dimakan tetap ada.",
+    rpDone: "Dikembalikan ke {date}",
+    swNewTitle: "Ponsel ini sudah punya latihan",
+    swNewBody: "Latihan di ponsel ini belum tersimpan di akun mana pun, dan akun ini punya latihannya sendiri. Apa yang harus dilakukan?",
+    swNewFresh: "Pakai data akun",
+    swNewFreshD: "Mengosongkan ponsel ini dan memuat cadangan akun.",
+    swNewKeep: "Tambahkan latihan ponsel ke akun",
+    swNewKeepD: "Nama, foto, dan pengaturan akun tetap; latihan dari ponsel ini ditambahkan.",
+    restRow: "Timer istirahat saat layar mati",
+    restRowD: "Menampilkan waktu istirahat di layar kunci dan berbunyi di 3, 2, 1, dan 0 meski ponsel terkunci. Android menyebut izin ini \"Aktivitas fisik\"; aplikasi tidak membaca data aktivitas apa pun lewat izin ini.",
+    restRowOpen: "Diblokir di Android: izinkan \"Aktivitas fisik\" di pengaturan aplikasi",
+    restRowBlocked: "Diblokir di Android: Setelan → Aplikasi → HW App → Izin → Aktivitas fisik",
     addExtra: "Tambah latihan",
     addExtraD: "Belum capek? Latihan tambahan dihitung untuk hari ini, dan hasil yang lebih baik jadi rekor.",
     bg_arms: "Lengan", bg_back: "Punggung", bg_calves: "Betis", bg_chest: "Dada", bg_core: "Inti", bg_glutes: "Bokong", bg_legs: "Kaki", bg_shoulders: "Bahu",
@@ -392,4 +413,13 @@ export default {
     mx_t_bar_row: { muscles: "Punggung atas, lat, bisep", how: "Berdiri di atas barbel (atau di mesin), lutut sedikit ditekuk, bungkukkan badan dengan punggung datar. Tarik pegangan ke dada bawah, lalu turunkan perlahan sampai lengan lurus.", tip: "Punggung tetap datar dan diam. Kalau harus menegakkan badan untuk menggerakkannya, terlalu berat." },
     mx_wide_grip_lat_pulldown: { muscles: "Punggung (lat), punggung atas", how: "Duduk dengan paha di bawah bantalan dan pegang batang lebar (sekitar 1,5× lebar bahu). Tarik ke dada atas, siku turun dan keluar, lalu biarkan naik perlahan.", tip: "Jangan menariknya ke belakang leher." },
   },
+  // 1.9.1
+  news191: [
+    "Masuk di ponsel yang latihannya bukan milik akun mana pun sekarang bertanya dulu: pakai data akun, atau tambahkan latihan ponsel ke akun. Dulu langsung digabung tanpa bertanya, dan nama sementara \"User\" di ponsel bisa menggantikan nama dan fotomu.",
+    "Kalau nama atau fotomu hilang di sebuah ponsel, aplikasi mengambilnya kembali dari profil akunmu dan tidak pernah menghapus foto yang dilihat teman.",
+    "Titik pemulihan: cloud menyimpan datamu dari 4 hari terakhir kamu memakai aplikasi, dan kamu bisa kembali ke salah satunya (Akun & cloud → Titik pemulihan).",
+    "📱 Saat layar mati, bunyi istirahat di 3, 2, 1, dan 0 sekarang tepat waktu (dulu bisa telat sampai satu detik) dan mengikuti pengaturan suara, volume, dan getaranmu. Perlu APK 1.9.1.",
+    "📱 Pengaturan → Latihan: \"Timer istirahat saat layar mati\". Mengetuk \"Nanti saja\" di istirahat pertama? Izinkan di sini, atau buka pengaturan Android kalau diblokir.",
+    "Muscle Deck: nama joker yang panjang muat di kartunya.",
+  ],
 };

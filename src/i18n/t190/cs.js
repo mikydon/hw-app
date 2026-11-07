@@ -1,6 +1,27 @@
 // 1.9.0 texts in Czech (merged over cs.js; English originals in ui190-en.js, ex-en.js and en.js news19).
 export default {
   ui: {
+    // 1.9.1
+    rpRow: "Body obnovení",
+    rpTitle: "Body obnovení",
+    rpD: "Cloud si pamatuje tvoje data tak, jak byla na konci každého z posledních 4 dnů, kdy jsi aplikaci použil. Návrat nahradí tréninky, profil a nastavení těmi z toho dne na všech tvých zařízeních.",
+    rpNone: "Zatím žádný bod obnovení. První přibude další den, kdy aplikaci použiješ.",
+    rpErr: "Body obnovení se nepodařilo načíst. Zkontroluj připojení a zkus to znovu.",
+    rpN: "Tréninky: {n}",
+    rpGo: "Vrátit se",
+    rpAskT: "Vrátit se na {date}?",
+    rpAskD: "Tréninky přidané po tom dni zmizí ze všech tvých zařízení. Nákupy, otevřené karty a snědené kalorie zůstanou.",
+    rpDone: "Vráceno na {date}",
+    swNewTitle: "Tento telefon už má tréninky",
+    swNewBody: "Tréninky v tomto telefonu ještě nejsou uložené v žádném účtu a tento účet má své vlastní. Co se má stát?",
+    swNewFresh: "Použít data z účtu",
+    swNewFreshD: "Vymaže tento telefon a načte zálohu účtu.",
+    swNewKeep: "Přidat tréninky z telefonu do účtu",
+    swNewKeepD: "Jméno, fotka a nastavení účtu zůstanou; tréninky z tohoto telefonu se k nim přidají.",
+    restRow: "Časovač pauzy při zhasnuté obrazovce",
+    restRowD: "Ukazuje čas pauzy na zamčené obrazovce a pípá na 3, 2, 1 a 0, i když je telefon zamčený. Android toto oprávnění nazývá „Fyzická aktivita“; aplikace přes něj nečte žádné údaje o aktivitě.",
+    restRowOpen: "Zablokováno v Androidu: povol „Fyzická aktivita“ v nastavení aplikace",
+    restRowBlocked: "Zablokováno v Androidu: Nastavení → Aplikace → HW App → Oprávnění → Fyzická aktivita",
     addExtra: "Přidat cvik",
     addExtraD: "Ještě nejsi unavený? Přidané cviky se počítají do dnešního tréninku a lepší výsledek je rekord.",
     bg_arms: "Paže", bg_back: "Záda", bg_calves: "Lýtka", bg_chest: "Hrudník", bg_core: "Břicho", bg_glutes: "Hýždě", bg_legs: "Nohy", bg_shoulders: "Ramena",
@@ -392,4 +413,13 @@ export default {
     mx_t_bar_row: { muscles: "Horní záda, široký sval zad, biceps", how: "Postav se nad osu (nebo na stroj), kolena měkká, předkloň se s rovnými zády. Přitáhni rukojeť ke spodní části hrudníku, pak ji pomalu spusť do natažených paží.", tip: "Záda zůstávají rovná a na místě. Když se musíš napřímit, abys s ní pohnul, je moc těžká." },
     mx_wide_grip_lat_pulldown: { muscles: "Záda (široký sval), horní záda", how: "Sedni si se stehny pod opěrkou a chyť tyč široko (asi 1,5× šířka ramen). Stáhni ji k horní části hrudníku, lokty dolů a ven, pak ji pomalu pusť nahoru.", tip: "Netahej ji za krk." },
   },
+  // 1.9.1
+  news191: [
+    "Přihlášení na telefonu, jehož tréninky nepatří žádnému účtu, se teď nejdřív zeptá: použít data z účtu, nebo přidat tréninky z telefonu do účtu. Dřív se spojily bez ptaní a „User“ z telefonu mohl přepsat tvoje jméno a fotku.",
+    "Kdyby telefonu někdy chybělo jméno nebo fotka, aplikace si je vezme zpět z profilu tvého účtu a fotku pro kamarády už nikdy nesmaže.",
+    "Body obnovení: cloud si pamatuje tvoje data z posledních 4 dnů, kdy jsi aplikaci použil, a můžeš se na některý vrátit (Účet a cloud → Body obnovení).",
+    "📱 Při zhasnuté obrazovce teď pípnutí pauzy na 3, 2, 1 a 0 přijdou přesně včas (dřív mohla mít až sekundu zpoždění) a řídí se tvým nastavením zvuku, hlasitosti a vibrací. Je potřeba APK 1.9.1.",
+    "📱 Nastavení → Trénink: „Časovač pauzy při zhasnuté obrazovce“. Klikl jsi u první pauzy na „Teď ne“? Tady to povolíš, nebo otevřeš nastavení Androidu, pokud je to zablokované.",
+    "Muscle Deck: dlouhá jména žolíků se vejdou na kartu.",
+  ],
 };

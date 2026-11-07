@@ -27,6 +27,14 @@ public class HwRestPlugin extends Plugin {
             || ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_GRANTED;
     }
 
+    /** 1.9.1: tells the app when it goes off screen / comes back, so it leaves the rest beeps to the service then
+     *  (the same moments RestService.appInFront changes, in MainActivity). */
+    @Override
+    protected void handleOnPause() { super.handleOnPause(); JSObject r = new JSObject(); r.put("on", false); notifyListeners("front", r); }
+
+    @Override
+    protected void handleOnResume() { super.handleOnResume(); JSObject r = new JSObject(); r.put("on", true); notifyListeners("front", r); }
+
     @PluginMethod
     public void state(PluginCall call) {
         JSObject r = new JSObject();
@@ -65,10 +73,29 @@ public class HwRestPlugin extends Plugin {
             i.putExtra("startAt", num(call, "startAt", now));
             i.putExtra("stillAfter", num(call, "stillAfter", 600000L));
             for (String k : new String[] { "title", "bodyOver", "stillTitle", "stillBody", "channelName", "alertName" }) i.putExtra(k, call.getString(k, ""));
+            i.putExtra("sound", call.getBoolean("sound", true));
+            i.putExtra("buzz", call.getBoolean("buzz", true));
+            i.putExtra("vol", (int) num(call, "vol", 90));
             ContextCompat.startForegroundService(getContext(), i);
-            call.resolve();
+            JSObject r = new JSObject();
+            r.put("beeps", true); // 1.9.1: the service plays 3-2-1-0 itself while the app is off screen
+            call.resolve(r);
         } catch (Exception e) {
             call.reject("start failed: " + e.getMessage());
+        }
+    }
+
+    /** 1.9.1: Settings → "Rest timer with the screen off": Android asks only twice, after that the app's own system
+     *  settings page is the only place to allow "Physical activity". */
+    @PluginMethod
+    public void openSettings(PluginCall call) {
+        try {
+            Intent i = new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS, android.net.Uri.fromParts("package", getContext().getPackageName(), null));
+            i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            getContext().startActivity(i);
+            call.resolve();
+        } catch (Exception e) {
+            call.reject("open failed: " + e.getMessage());
         }
     }
 

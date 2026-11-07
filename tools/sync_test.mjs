@@ -1,5 +1,5 @@
 // Unit tests for src/sync.js (web ↔ phone merge). Run: node tools/sync_test.mjs
-import { mergeAll, syncKey, mergeHistory, withIds, stable, mergeProfile } from "../src/sync.js";
+import { restoreFrom, mergeAll, syncKey, mergeHistory, withIds, stable, mergeProfile } from "../src/sync.js";
 let pass = 0, fail = 0;
 const ok = (c, name) => { if (c) { pass++; console.log("  ✓", name); } else { fail++; console.log("  ✗ FAIL:", name); } };
 const W = (date, ts, extra = {}) => ({ date, ts, day: "A", rounds: 2, items: [{ id: "k1", res: [10, 10] }], ...extra });
@@ -88,6 +88,26 @@ console.log("Nov 7: a placeholder name or a missing photo never beats a real one
   ok(m3.name === "Miško" && m3.pfp === "data:new", "a real newer name and photo still win");
   const m4 = mergeProfile(real, blank, 1, 9, false);
   ok(m4.name === "Michael" && m4.pfp === real.pfp, "the same when the placeholder is on the other side");
+}
+console.log("1.9.1: going back to a cloud restore point");
+{
+  const w = (id, date, mts) => ({ id, date, ts: 1000 + date.length, day: "A", items: [], ...(mts ? { mts } : {}) });
+  const local = { history: [w("a", "2026-11-01"), w("b", "2026-11-02", 50), w("c", "2026-11-07")], profile: { name: "User", pfp: null, freezeDays: ["2026-11-03"], shop: { buys: [{ i: "x1", w: "freeze", p: 10, ts: 5 }] } },
+    settings: { theme: "wine", lang: "sk", sndTap: false }, kcal: { sex: "m", log: { "2026-11-07": [{ ts: 7, kcal: 300 }] } }, sync: { del: { d: 40 }, kdel: {}, mod: { profile: 900 } } };
+  const point = { history: [w("a", "2026-11-01"), w("b", "2026-11-02"), w("d", "2026-11-04")], profile: { name: "Michael", pfp: "data:p", freezeDays: [] },
+    settings: { theme: "navy" }, kcal: { sex: "m", log: { "2026-11-04": [{ ts: 4, kcal: 500 }] } }, sync: { del: {}, kdel: {}, mod: {} } };
+  const r = restoreFrom(local, point, 1000);
+  const ids = r.history.map(e => e.id);
+  ok(ids.includes("a") && ids.includes("b") && !ids.includes("c"), "the point's workouts stay, the newer one goes");
+  ok(r.sync.del.c === 1000, "the newer workout leaves a tombstone (so other devices drop it too)");
+  ok(ids.includes("dr1000") && !ids.includes("d"), "a workout deleted after the point comes back under a new id");
+  ok(r.profile.name === "Michael" && r.profile.pfp === "data:p", "the point's name and photo");
+  ok(r.profile.shop && r.profile.shop.buys.length === 1, "purchases made since are kept");
+  ok(r.settings.theme === "navy" && r.settings.lang === "sk" && r.settings.sndTap === false, "synced settings from the point, device settings stay");
+  ok(r.kcal.log["2026-11-07"] && r.kcal.log["2026-11-04"], "eaten calories: both sides kept");
+  ok(r.sync.mod.profile === 1000 && r.sync.mod.settings === 1000, "marked as changed now (wins on the other devices)");
+  const other = mergeAll({ history: [w("a", "2026-11-01"), w("c", "2026-11-07")], profile: { name: "Michael" }, settings: {}, kcal: null, sync: { mod: { profile: 500 } } }, r, false);
+  ok(!other.history.some(e => e.id === "c") && other.history.some(e => e.id === "dr1000"), "another device follows the restore");
 }
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
