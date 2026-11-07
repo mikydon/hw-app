@@ -1,5 +1,7 @@
 // Bahasa Indonesia (Indonesian; AI-assisted translation, 1.7.6). Fixes are welcome: see TRANSLATING.md.
-export default {
+import { with190 } from "./t190/merge.js";
+import T190 from "./t190/id.js";
+const L = {
   ui: {
     searchWeb: "🔎 Cari di web",
     searchOf: "Cari di web: {name}",
@@ -2063,3 +2065,4 @@ export default {
   ],
   looks: {"f_iron":"Cincin besi","f_dots":"Cincin titik","f_pixel":"Piksel","f_hex":"Heksa","f_wave":"Gelombang","f_pulse":"Denyut","f_flame":"Api","f_laurel":"Daun salam","f_neon":"Neon","f_bolt":"Petir","f_crown":"Mahkota","f_obsidian":"Serpihan obsidian","f_diamond":"Cincin berlian","b_glow":"Pendar tema","b_grid":"Lantai gym","b_sunset":"Matahari terbenam","b_topo":"Garis kontur","b_stars":"Langit malam","b_waves":"Ombak","b_bubbles":"Gelembung","b_ridge":"Punggung bukit saat fajar","b_city":"Lampu kota","b_galaxy":"Galaksi","b_aurora":"Aurora","t_iron":"Tekad baja","t_rookie":"Pemula","t_grind":"Kerja keras harian","t_zen":"Zen","t_beast":"Mode buas","t_legend":"Legenda hidup","t_bird":"Bangun pagi","t_owl":"Burung hantu","t_comeback":"Raja comeback","t_marathon":"Pelari maraton","t_shark":"Hiu kartu","t_streak":"Penjaga runtutan","t_midnight":"Pahlawan tengah malam","t_obsidian":"Obsidian","n_outline":"Garis tepi","n_grad":"Gradasi","n_shadow":"Bayangan retro","n_ice":"Es","n_glow":"Pendar","n_fire":"Api","n_foil":"Kilau metalik","n_rainbow":"Pelangi","n_gold":"Emas murni","fx_snow":"Hujan salju","fx_sparkle":"Kilauan","fx_petals":"Kelopak","fx_embers":"Bara","fx_lightning":"Badai petir","fx_frost":"Embun beku","fx_confetti":"Pesta","fx_fireworks":"Kembang api"},
 };
+export default with190(L, T190);
