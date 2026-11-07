@@ -1,0 +1,38 @@
+HW App: Trening w domu
+Trening w domu w 19 minut, własne plany z ciężarami, rangi i passa.
+HW App to plan treningowy, który rośnie razem z tobą. Ćwicz w domu z masą własnego ciała, bez sprzętu, albo ułóż własne plany z hantlami i maszynami na siłowni.
+
+PLAN
+• Polecany: trzy dni treningowe (A, B, C), co drugi dzień. Każdy ćwiczy pchanie, przyciąganie, nogi i core w ~19 min (3 rundy) lub ~13 min (2 rundy).
+• Moje plany: ułóż własne ze 134 ćwiczeń (57 bez sprzętu, 22 z wolnymi ciężarami, 55 na maszynach i wyciągach), przypisz je do dni tygodnia i podziel na grupy.
+• Ostatnia runda idzie do upadku technicznego: tyle czystych powtórzeń, ile dasz radę, i kończysz, zanim technika się posypie.
+• Aplikacja pokazuje, ile zrobiłeś ostatnio, i cel +1 dla powtórzeń i ciężarów, żebyś stale robił postępy.
+
+W TRAKCIE TRENINGU
+• Minutnik przerwy z +15, +30 i +60 s, który liczy dalej także na ekranie blokady, z sygnałem i wibracją.
+• Notatki, dodatkowe ćwiczenia, gdy masz jeszcze siłę, i przewodnik tempa.
+• Instrukcja do każdego ćwiczenia oraz łatwiejsze lub trudniejsze wersje do zamiany.
+• Rozgrzewka przed treningiem i opcjonalne rozciąganie po nim.
+
+POSTĘPY I MOTYWACJA
+• 9 rang dla każdego ćwiczenia, od Żelaza do Obsydianu, i mapa ciała z rangami 9 partii.
+• 47 odznak, XP i poziomy, passa z zamrożeniami i tygodniowe wyzwania.
+• Statystyki z mapą aktywności i tygodniowymi wykresami oraz historia, którą możesz edytować.
+• Diamenty zdobywane treningiem, na zamrożenia passy, boosty XP i wygląd profilu.
+• Muscle Deck: gra karciana, w której twój trening to twoja siła.
+
+KALORIE
+• Kalkulator kalorii (Mifflin-St Jeor) z celem: schudnąć, utrzymać lub przytyć.
+• Dzienny dziennik kalorii z kalendarzem; twoje treningi są doliczane do dziennego celu.
+• Opcjonalnie Health Connect: kroki, jedzenie z innych aplikacji, waga i wzrost. Te dane nigdy nie opuszczają twojego telefonu.
+
+ZNAJOMI (OPCJONALNIE, 16+)
+• Zaloguj się przez Google lub e-mailem i hasłem, a potem dodaj znajomych przez kod lub nick.
+• Profile z odznakami i rangami, ranking znajomych, wiadomości i wspólne passy ze znajomymi.
+• Powiadomienia, kopia zapasowa w chmurze z punktami przywracania i synchronizacja między twoimi urządzeniami.
+
+TAKŻE
+• 15 języków, 8 motywów kolorystycznych, 6 kolorów głównych i 6 wyglądów.
+• Bez reklam i bez śledzenia. Bez konta wszystko zostaje w twoim telefonie.
+
+HW App tworzy jeden programista. Pomysły i błędy możesz zgłaszać na GitHubie: github.com/mikydon/hw-app

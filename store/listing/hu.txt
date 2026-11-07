@@ -1,0 +1,38 @@
+HW App: Otthoni edzés
+Otthoni edzés 19 perc alatt, saját tervek súlyokkal, rangok és széria.
+A HW App egy edzésterv, amely veled együtt fejlődik. Eddz otthon a saját testsúlyoddal, eszközök nélkül, vagy állíts össze saját terveket kézisúlyzókkal és edzőtermi gépekkel.
+
+A TERV
+• Ajánlott: három edzésnap (A, B, C), minden második nap. Mindegyik edzi a nyomást, a húzást, a lábat és a törzset ~19 perc (3 kör) vagy ~13 perc (2 kör) alatt.
+• Saját tervek: állítsd össze 134 gyakorlatból (57 eszköz nélkül, 22 szabadsúllyal, 55 gépen és csigán), rendeld őket a hét napjaihoz, és rendezd csoportokba.
+• Az utolsó kör technikai bukásig megy: annyi tiszta ismétlés, amennyi megy, és abbahagyod, mielőtt a technika romlana.
+• Az app mutatja, mennyit csináltál legutóbb, és egy +1-es célt ismétlésekre és súlyokra is, így folyamatosan fejlődsz.
+
+EDZÉS KÖZBEN
+• Pihenőidőzítő +15, +30 és +60 mp-cel, amely a zárolt képernyőn is tovább számol, hangjelzéssel és rezgéssel.
+• Jegyzetek, extra gyakorlatok, ha még van erőd, és tempóvezető.
+• Leírás minden gyakorlathoz, és könnyebb vagy nehezebb változatok cserére.
+• Bemelegítés előtte és opcionális nyújtás utána.
+
+FEJLŐDÉS ÉS MOTIVÁCIÓ
+• 9 rang minden gyakorlathoz, Vastól Obszidiánig, és egy testtérkép, amely 9 testrészt rangsorol.
+• 47 jelvény, XP és szintek, széria szériavédőkkel és heti kihívások.
+• Statisztikák aktivitástérképpel és heti grafikonokkal, és szerkeszthető előzmények.
+• Edzéssel szerzett gyémántok szériavédőkre, XP-boostokra és profilkinézetekre.
+• Muscle Deck: kártyajáték, amelyben az edzésed az erőd.
+
+KALÓRIÁK
+• Kalóriakalkulátor (Mifflin-St Jeor) fogyás, megtartás vagy hízás céllal.
+• Napi kalórianapló naptárral; az edzéseid hozzáadódnak a napi célhoz.
+• Opcionálisan Health Connect: lépések, étel más appokból, testsúly és magasság. Ezek az adatok soha nem hagyják el a telefonodat.
+
+BARÁTOK (OPCIONÁLIS, 16+)
+• Jelentkezz be Google-lel vagy e-maillel és jelszóval, majd adj hozzá barátokat kóddal vagy becenévvel.
+• Profilok jelvényekkel és rangokkal, baráti ranglista, üzenetek és közös baráti szériák.
+• Értesítések, felhőmentés visszaállítási pontokkal és szinkronizálás az eszközeid között.
+
+EZENKÍVÜL
+• 15 nyelv, 8 színtéma, 6 fő szín és 6 megjelenés.
+• Nincs reklám és nincs követés. Fiók nélkül minden a telefonodon marad.
+
+A HW App-ot egyetlen fejlesztő készíti. Ötleteket és hibákat a GitHubon küldhetsz: github.com/mikydon/hw-app

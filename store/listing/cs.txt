@@ -1,0 +1,38 @@
+HW App: Domácí trénink
+Domácí trénink za 19 minut, vlastní plány s vahami, ranky a šňůra.
+HW App je tréninkový plán, který roste s tebou. Cvič doma s vlastní vahou bez náčiní, nebo si sestav vlastní plány s činkami a stroji v posilovně.
+
+PLÁN
+• Doporučený: tři tréninkové dny (A, B, C), cvičené každý druhý den. Každý procvičí tlak, tah, nohy a střed těla za ~19 min (3 kola) nebo ~13 min (2 kola).
+• Moje plány: sestav si vlastní ze 134 cviků (57 bez náčiní, 22 s volnými vahami, 55 na strojích a kladkách), přiřaď je ke dnům v týdnu a rozděl do skupin.
+• Poslední kolo jde do technického selhání: tolik čistých opakování, kolik zvládneš, a skončíš dřív, než se pokazí technika.
+• Aplikace ukáže, kolik jsi udělal minule, a cíl +1 u opakování i vah, abys stále dělal pokroky.
+
+BĚHEM TRÉNINKU
+• Časovač pauzy s +15, +30 a +60 s, který běží dál i na zamčené obrazovce, s pípnutím a vibrací.
+• Poznámky, cviky navíc, když ještě máš sílu, a průvodce tempem.
+• Návod ke každému cviku a lehčí či těžší verze na výměnu.
+• Rozcvička před tréninkem a protažení po něm (nepovinné).
+
+POKROK A MOTIVACE
+• 9 ranků pro každý cvik, od Železa po Obsidián, a tělo, které hodnotí 9 částí těla.
+• 47 odznaků, XP a levely, šňůra se zmrazením a týdenní výzvy.
+• Statistiky s mapou aktivity a týdenními grafy, a historie, kterou můžeš upravit.
+• Diamanty, které získáš tréninkem, na zmrazení šňůry, XP boosty a vzhled profilu.
+• Muscle Deck: karetní hra, ve které je tvůj trénink tvoje síla.
+
+KALORIE
+• Kalkulačka kalorií (Mifflin-St Jeor) s cílem zhubnout, udržet nebo přibrat.
+• Denní záznam kalorií s kalendářem; tvoje tréninky se přičtou k dennímu cíli.
+• Volitelně Health Connect: kroky, jídlo z jiných aplikací, váha a výška. Tyto údaje nikdy neopustí tvůj telefon.
+
+PŘÁTELÉ (VOLITELNÉ, 16+)
+• Přihlas se přes Google nebo e-mailem a heslem a přidej si přátele přes kód nebo přezdívku.
+• Profily s odznaky a ranky, žebříček přátel, zprávy a společné šňůry s přáteli.
+• Upozornění, záloha v cloudu s body obnovení a synchronizace mezi tvými zařízeními.
+
+DÁLE
+• 15 jazyků, 8 barevných motivů, 6 hlavních barev a 6 vzhledů.
+• Žádné reklamy a žádné sledování. Bez účtu všechno zůstává v tvém telefonu.
+
+HW App dělá jeden vývojář. Nápady a chyby můžeš poslat na GitHubu: github.com/mikydon/hw-app

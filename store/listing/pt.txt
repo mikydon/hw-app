@@ -1,0 +1,38 @@
+HW App: Treino em casa
+Treino em casa em 19 min, seus planos com pesos, ranks e sequências.
+O HW App é um plano de treino que cresce com você. Treine em casa com o peso do corpo e sem equipamento, ou monte seus próprios planos com halteres e máquinas de academia.
+
+O PLANO
+• Recomendado: três dias de treino (A, B, C), em dias alternados. Cada um trabalha empurrar, puxar, pernas e core em ~19 min (3 rodadas) ou ~13 min (2 rodadas).
+• Meus planos: monte os seus com 134 exercícios (57 sem equipamento, 22 com peso livre, 55 em máquinas e polias), defina os dias da semana e organize em grupos.
+• A última rodada vai até a falha técnica: o máximo de repetições limpas que conseguir, parando antes de a técnica falhar.
+• O app mostra o que você fez da última vez e uma meta de +1, para repetições e pesos, para você continuar evoluindo.
+
+DURANTE O TREINO
+• Um timer de descanso com +15, +30 e +60 s que continua contando na tela de bloqueio, com bipe e vibração.
+• Notas, exercícios extras quando ainda tiver energia, e um guia de ritmo.
+• Instruções para cada exercício e versões mais fáceis ou mais difíceis para trocar.
+• Aquecimento antes e alongamento opcional depois.
+
+PROGRESSO E MOTIVAÇÃO
+• 9 ranks para cada exercício, de Ferro a Obsidiana, e um mapa do corpo com o rank de 9 partes.
+• 47 medalhas, XP e níveis, uma sequência com congelamentos e desafios semanais.
+• Estatísticas com mapa de atividade e gráficos semanais, e um histórico que você pode editar.
+• Diamantes que você ganha treinando, para congelamentos de sequência, boosts de XP e visuais de perfil.
+• Muscle Deck: um jogo de cartas em que seu treino é a sua força.
+
+CALORIAS
+• Uma calculadora de calorias (Mifflin-St Jeor) com metas para perder, manter ou ganhar peso.
+• Um registro diário de calorias com calendário; seus treinos são somados à meta do dia.
+• Health Connect opcional: passos, comida de outros apps, peso e altura. Esses dados nunca saem do seu celular.
+
+AMIGOS (OPCIONAL, 16+)
+• Entre com o Google ou com e-mail e senha e adicione amigos por código ou apelido.
+• Perfis com medalhas e ranks, ranking de amigos, mensagens e sequências com amigos.
+• Notificações, backup na nuvem com pontos de restauração e sincronização entre seus dispositivos.
+
+E MAIS
+• 15 idiomas, 8 temas de cor, 6 cores principais e 6 visuais.
+• Sem anúncios e sem rastreamento. Sem conta, tudo fica no seu celular.
+
+O HW App é feito por um único desenvolvedor. Ideias e relatos de bugs são bem-vindos no GitHub: github.com/mikydon/hw-app
