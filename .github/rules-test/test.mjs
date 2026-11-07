@@ -216,7 +216,7 @@ await t("1.9.0: rr must be a map", false, () => setDoc(doc(as("erin"), "cards", 
 await t("1.9.0: rk over 200 refused", false, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ rk: many(201, 1) })));
 await t("showcase + badge values + records are fine", true, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ av: { workouts: 13, streak: 9 }, show: ["rk:k1", "ach3:workouts,streak,reps", "st:reps", ""], prs: 4 })));
 await t("a showcase over 10 fields is refused", false, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ show: Array.from({ length: 11 }, () => "st:reps") })));
-await t("badge values must be a small map", false, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ av: Object.fromEntries(Array.from({ length: 41 }, (_, i) => ["a" + i, 1])) })));
+await t("badge values must be a small map", false, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ av: Object.fromEntries(Array.from({ length: 81 }, (_, i) => ["a" + i, 1])) })));
 await t("records must be a whole number", false, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ prs: "4" })));
 await t("frank can't write erin's card", false, () => setDoc(doc(as("frank"), "cards", "erin"), cardDoc()));
 await t("signed-out visitor can't read a card", false, () => getDoc(card(null)));
