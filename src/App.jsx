@@ -8648,7 +8648,7 @@ function econInput(history, profile) {
   const ach = achievements(h, achExtra(profile, null, h)).filter(a => !CARD_HIDE.includes(a.k));
   const ranks = {};
   Object.keys(RANK_AT).forEach(id => { const b = bestFor(h, id); if (typeof b === "number" && isFinite(b)) ranks[id] = rankIdx(id, b); });
-  return { dates: h.map(e => e.date), freezeDays: profile.freezeDays || [], ach, ranks, runsWon: (profile.game && profile.game.rw) || 0, chests: EC.chestDiamonds(profile), codes: EC.codeDiamonds(profile) };
+  return { dates: h.map(e => e.date), freezeDays: profile.freezeDays || [], ach, ranks, runsWon: (profile.game && profile.game.rw) || 0, chests: EC.chestDiamonds(profile), codes: EC.codeDiamonds(profile), gift: EC.shopOf(profile).gift };
 }
 // Looks you own: bought or from a chest, plus the ones won by playing.
 function lookGot(inp) {
@@ -9371,7 +9371,7 @@ function ShopTab({ history, profile, setProfile, onGo }) {
   const fzHave = freezesAvailable(history), fzMax = 2 + (META.giftThisYear ? 1 : 0), boostTo = EC.boostUntil(sh.boosts, now);
   const wkNow = weekKey(today), chNow = challengeStatus(history, wkNow), chDone = chNow.filter(c => c.done).length, gotNow = !!sh.chest[wkNow];
   const timeStr = ts => { const d = new Date(ts); return (dateKey(d) === today ? "" : fmtDate(dateKey(d), false) + " ") + d.toLocaleTimeString(LANG, { hour: "2-digit", minute: "2-digit" }); };
-  const parts = [["workouts", { n: EC.EARN.day }], ["streak", { n: EC.EARN.streak7 }], ["badges", {}], ["ranks", {}], ["deck", { n: EC.EARN.run }], ["chests", {}], ...(earned.parts.codes ? [["codes", {}]] : [])];
+  const parts = [["workouts", { n: EC.EARN.day }], ["streak", { n: EC.EARN.streak7 }], ["badges", {}], ["ranks", {}], ["deck", { n: EC.EARN.run }], ["chests", {}], ...(earned.parts.codes ? [["codes", {}]] : []), ...(earned.parts.gift ? [["gift", {}]] : [])];
   const [codeOpen, setCodeOpen] = useState(false);
   const row = { display: "flex", alignItems: "center", gap: 12, padding: "12px 16px" };
   // 1.8.2 (Michael): bigger cards that show the look on a grey sample profile, with an artistic name
@@ -11479,6 +11479,13 @@ export default function App() {
     cloud().getCard(u).then(c => putVis(u, c && CARD_VIS.includes(c.vis) ? c.vis : (cloudMem().cardVis || {})[u] || "friends")).catch(() => { visRead.current = ""; });
     cloud().getMod().then(m => setModHidden(!!m.hidden)).catch(() => {});
   }, [acct.st, acct.prof && acct.prof.code]);
+  // 1.9.0: diamonds given to this account in the console (gift/{uid}); read after signing in and whenever the Shop opens
+  useEffect(() => {
+    if (acct.st !== "in" || !acct.uid) return;
+    let live = true;
+    cloud().getGift().then(v => { if (!live) return; const p = profRef.current, shop = EC.withGift(p, v); if (shop) setProfile({ ...p, shop }); }).catch(() => {});
+    return () => { live = false; };
+  }, [acct.st, acct.uid, screen === "shop"]);
   const setVis = async v => {
     const u = acct.uid, old = cardVis[u] || "friends";
     putVis(u, v);

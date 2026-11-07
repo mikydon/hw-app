@@ -296,6 +296,8 @@ export const impl = {
     const x = s.data(), u = x.until && typeof x.until.toMillis === "function" ? x.until.toMillis() : typeof x.until === "number" ? x.until : null;
     return { d: typeof x.d === "number" ? x.d : Number(x.d) || 0, until: u };
   },
+  // 1.9.0: diamonds given to this account by hand (Firestore gift/{uid} {d}); 0 when there is none
+  async getGift() { const s = await getDoc(d("gift", uid())); return s.exists() ? Number(s.data().d) || 0 : 0; },
   async getMod() { const s = await getDoc(d("mod", uid())); return { hidden: s.exists() && s.data().hidden === true }; },
   // Profile cards (1.7.0). getCard: the card, or null when there is none; a card you may not open (friends only,
   // only me, blocked) fails with permission-denied, like one that doesn't exist (older app).

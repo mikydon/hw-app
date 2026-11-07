@@ -70,6 +70,7 @@ export function earned(inp) {
     deck: (inp.runsWon || 0) * EARN.run,
     chests: (inp.chests || []).reduce((a, n) => a + (n || 0), 0),
     codes: (inp.codes || []).reduce((a, n) => a + (n || 0), 0), // 1.9.0: diamonds from codes (redeemCode)
+    gift: Math.max(0, Math.floor(inp.gift || 0)), // 1.9.0: diamonds Michael set for this account (Firestore gift/{uid})
   };
   return { total: Object.values(parts).reduce((a, n) => a + n, 0), parts };
 }
@@ -77,12 +78,12 @@ export function earned(inp) {
 // id, so two devices that bought something while offline both keep their purchases when they sync (mergeShop: union).
 // Everything else (spent, freezes, boosts, owned looks) is derived from those entries.
 // 1.9.0: codes = {CODE: {d, ts}} = codes this account redeemed (each once; the diamonds count like earned ones)
-const raw = profile => { const s = (profile && profile.shop) || {}; const obj = x => (x && typeof x === "object" && !Array.isArray(x) ? x : {}); return { buys: Array.isArray(s.buys) ? s.buys : [], chest: obj(s.chest), codes: obj(s.codes) }; };
+const raw = profile => { const s = (profile && profile.shop) || {}; const obj = x => (x && typeof x === "object" && !Array.isArray(x) ? x : {}); return { buys: Array.isArray(s.buys) ? s.buys : [], chest: obj(s.chest), codes: obj(s.codes), gift: s.gift && typeof s.gift === "object" ? s.gift : null }; };
 export function shopOf(profile) {
-  const { buys, chest, codes } = raw(profile);
+  const { buys, chest, codes, gift } = raw(profile);
   const chests = Object.values(chest).filter(Boolean);
   return {
-    buys, chest, codes,
+    buys, chest, codes, gift: gift ? Math.max(0, Math.min(GIFT_MAX, Math.floor(gift.d) || 0)) : 0,
     spent: buys.reduce((a, b) => a + (b.p || 0), 0),
     fz: buys.filter(b => b.w === "freeze").length,
     boosts: [...buys.filter(b => b.w === "boost"), ...chests.filter(c => c.kind === "boost")].filter(b => b.from && b.to).map(b => ({ from: b.from, to: b.to })),
@@ -99,6 +100,8 @@ export function mergeShop(a, b) {
   Object.entries(ra.codes).forEach(([k, c]) => { if (!codes[k] || (c && codes[k].ts && c.ts && c.ts < codes[k].ts)) codes[k] = c; }); // the first redemption counts
   const out = { ...b, ...a, buys: [...seen.values()].sort((x, y) => (x.ts || 0) - (y.ts || 0)), chest };
   if (Object.keys(codes).length) out.codes = codes; else delete out.codes;
+  const ga = ra.gift, gb = rb.gift, g = ga && gb ? ((ga.ts || 0) >= (gb.ts || 0) ? ga : gb) : ga || gb; // the newest reading of the server wins
+  if (g) out.gift = g; else delete out.gift;
   return out;
 }
 export const balance = (inp, profile) => earned(inp).total - shopOf(profile).spent;
@@ -163,6 +166,17 @@ export function redeemCode(profile, code, promo, now = Date.now()) {
   if (promo.until && now > promo.until) throw new Error("code-old");
   const d = Math.min(CODE_MAX_D, Math.floor(promo.d));
   return { shop: { ...((profile && profile.shop) || {}), buys: sh.buys, chest: sh.chest, codes: { ...sh.codes, [c]: { d, ts: now } } }, d, code: c };
+}
+// 1.9.0 (Michael, Nov 7: "can't I just add diamonds to my account in Firebase, without a code?"): Firestore gift/{uid}
+// {d} = diamonds given to that one account (only its owner can read it; written by hand in the console). The app reads it
+// while signed in and keeps the newest value in profile.shop.gift {d, ts}; changing d later changes the gift.
+export const GIFT_MAX = 1e9;
+export function withGift(profile, d, now = Date.now()) {
+  const sh = (profile && profile.shop) || {}, v = Math.max(0, Math.min(GIFT_MAX, Math.floor(Number(d) || 0)));
+  const cur = sh.gift && typeof sh.gift === "object" ? sh.gift : null;
+  if (!v && !cur) return null;              // nothing given, nothing stored
+  if (cur && cur.d === v) return null;       // no change
+  return { ...sh, gift: { d: v, ts: now } };
 }
 export const codeDiamonds = profile => Object.values(shopOf(profile).codes).map(c => (c && c.d > 0 ? Math.min(CODE_MAX_D, Math.floor(c.d)) : 0));
 export const chestDiamonds = profile => Object.values(shopOf(profile).chest).map(c => (c && c.kind === "dia" ? c.n : 0));

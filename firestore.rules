@@ -41,6 +41,10 @@ service cloud.firestore {
     match /promo/{code} {
       allow get: if true;
     }
+    // 1.9.0: gift/{uid} {d: diamonds} = diamonds given to one account by hand in the console; only that account reads it.
+    match /gift/{uid} {
+      allow get: if isMe(uid);
+    }
     // World leaderboard: only people who switched it on; read in pages of at most 100. Hidden after reports: can't join.
     // 1.8.0: the real entries (with pts, the checked score the list is ordered by) are written only by the push server
     // from the checked cloud backup (src/fair.js). An older app may still write its own copy without pts: allowed, so

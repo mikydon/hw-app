@@ -85,5 +85,17 @@ const ca = { buys: [], chest: {}, codes: { JOZO: { d: 200, ts: 5 } } }, cb = { b
 const cm = E.mergeShop(ca, cb);
 ok(Object.keys(cm.codes).sort().join() === "JOZO,MAX" && cm.codes.JOZO.ts === 3, "sync: codes from both phones, the first redemption counts");
 ok(!("codes" in E.mergeShop({ buys: [], chest: {} }, { buys: [], chest: {} })), "no codes: no empty field");
+// 1.9.0 gifts (gift/{uid} in the console)
+ok(E.withGift({}, 0) === null, "no gift on the server, none stored: nothing to save");
+const g1 = E.withGift({ shop: { buys: [], chest: {} } }, 1e6, 10);
+ok(g1 && g1.gift.d === 1e6 && E.shopOf({ shop: g1 }).gift === 1e6, "a gift of a million is stored and counted");
+ok(E.withGift({ shop: g1 }, 1e6, 20) === null, "the same value again: no save");
+const g2 = E.withGift({ shop: g1 }, 500, 30);
+ok(g2.gift.d === 500, "Michael lowers it: the newer value counts");
+ok(E.withGift({ shop: g1 }, 0, 30).gift.d === 0, "deleted on the server: back to 0");
+ok(E.earned({ dates: [], gift: 1e6 }).parts.gift === 1e6, "earned has a gift part");
+ok(E.mergeShop({ buys: [], chest: {}, gift: { d: 5, ts: 1 } }, { buys: [], chest: {}, gift: { d: 9, ts: 2 } }).gift.d === 9, "sync: the newest reading wins");
+ok(E.mergeShop({ buys: [], chest: {}, gift: { d: 5, ts: 3 } }, { buys: [], chest: {} }).gift.d === 5, "sync: one side has it: kept");
+ok(E.withGift({}, 1e15).gift.d === E.GIFT_MAX, "a typo with too many zeros is capped");
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

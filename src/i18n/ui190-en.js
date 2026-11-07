@@ -212,5 +212,6 @@ Object.assign(UI, {
   codeOld: "This code has expired.",
   codeNet: "Couldn't check the code. Are you online?",
   shE_codes: "From codes",
+  shE_gift: "Gift from HW App",
   plGymHint2: "Got dumbbells or a gym? Build your own plan with them.",
 });

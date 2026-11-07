@@ -21,6 +21,7 @@
     getMod: () => ok(null),
     authInfo: () => ({ email: "m@x.sk", google: false, password: true, verified: true }),
     getPromo: code => ok(F.promo[code] || null),
+    getGift: () => ok(F.gift || 0),
   };
   window.__hwCloud = new Proxy(known, {
     get(t, k) {

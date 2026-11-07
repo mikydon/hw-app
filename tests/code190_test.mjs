@@ -38,4 +38,12 @@ T.eq(Number(await p.getAttribute("[data-shop-bal]", "data-shop-bal")), bal1, "af
 await p.click("[data-shop-how]"); await p.waitForTimeout(400);
 T.ok(/From codes/.test(await p.textContent("[data-shop-parts]")), "How you got them lists the codes");
 T.eq(h.errors, [], "no page errors"); await h.close();
+// a gift set for this account in the console (gift/{uid} {d}): no code needed
+const g = await start({ viewport: { width: 360, height: 760 }, cloud: { gift: 1000000 }, seed: { history: [entry("2026-11-02", "A", [it("k1", [20, 18])])], profile: { name: "Michael" } } });
+await g.page.click("[data-menu-btn]"); await g.page.click('[data-screen="shop"]'); await g.page.waitForTimeout(900);
+const gb = Number(await g.page.getAttribute("[data-shop-bal]", "data-shop-bal"));
+T.ok(gb >= 1000000, "gift: a million diamonds arrive by themselves (" + gb + ")");
+await g.page.click("[data-shop-how]"); await g.page.waitForTimeout(400);
+T.ok(/Gift from HW App/.test(await g.page.textContent("[data-shop-parts]")), "gift: listed in How you got them");
+T.eq(g.errors, [], "gift: no page errors"); await g.close();
 T.done();

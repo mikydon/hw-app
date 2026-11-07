@@ -290,6 +290,12 @@ await t("nobody can list the codes", false, () => getDocs(collection(as("alice")
 await t("nobody makes a code from the app", false, () => setDoc(doc(as("alice"), "promo", "FREE"), { d: 99999 }));
 await t("nobody changes a code from the app", false, () => updateDoc(doc(as("alice"), "promo", "JOZO"), { d: 99999 }));
 await t("nobody deletes a code from the app", false, () => deleteDoc(doc(as("alice"), "promo", "JOZO")));
+await env.withSecurityRulesDisabled(async c => { await setDoc(doc(c.firestore(), "gift", "alice"), { d: 1000 }); });
+await t("alice reads her own gift", true, () => getDoc(doc(as("alice"), "gift", "alice")));
+await t("bob can't read alice's gift", false, () => getDoc(doc(as("bob"), "gift", "alice")));
+await t("a signed-out phone can't read a gift", false, () => getDoc(doc(as(null), "gift", "alice")));
+await t("alice can't give herself diamonds", false, () => setDoc(doc(as("alice"), "gift", "alice"), { d: 1e9 }));
+await t("nobody lists the gifts", false, () => getDocs(collection(as("alice"), "gift")));
 
 await env.cleanup();
 console.log(`\n${pass} passed, ${fail} failed`);
