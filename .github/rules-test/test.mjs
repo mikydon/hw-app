@@ -205,7 +205,8 @@ await t("1.9.0: looks must be a map", false, () => setDoc(doc(as("erin"), "cards
 await t("level must be a whole number", false, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ lvl: "99" })));
 await t("since must be a date (YYYY-MM-DD)", false, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ since: "yesterday" })));
 await t("since may be empty (no workouts yet)", true, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ since: null })));
-await t("badges must be a small map", false, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ ach: Object.fromEntries(Array.from({ length: 41 }, (_, i) => ["a" + i, 1])) })));
+await t("badges must be a small map", false, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ ach: Object.fromEntries(Array.from({ length: 81 }, (_, i) => ["a" + i, 1])) })));
+await t("1.9.0: 43 badges + their values fit (was ≤ 40)", true, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ ach: Object.fromEntries(Array.from({ length: 43 }, (_, i) => ["a" + i, 1])), av: Object.fromEntries(Array.from({ length: 43 }, (_, i) => ["a" + i, 5])) })));
 await t("timestamps come from the server", false, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ ts: new Date(0) })));
 // 1.9.0: 134 exercises: up to 61 numbers in rk + weighted ranks in rr
 const many = (n, v) => Object.fromEntries(Array.from({ length: n }, (_, i) => ["x" + i, v]));

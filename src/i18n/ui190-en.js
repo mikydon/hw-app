@@ -216,3 +216,58 @@ Object.assign(UI, {
   pfLooksUndo: "Put back what is saved",
   plGymHint2: "Got dumbbells or a gym? Build your own plan with them.",
 });
+// 1.9.0 (Michael, Nov 7): the Stats page with charts and calories
+Object.assign(UI, {
+  stActivity: "Activity",
+  stTapDay: "Tap a day",
+  stRest: "rest day",
+  stLess: "Less",
+  stMore: "More",
+  stPerWeek: "Per week",
+  stM_reps: "Reps",
+  stM_min: "Time",
+  stM_n: "Workouts",
+  stThisWeek: "This week",
+  stRhythm: "Your training days",
+  stKcal: "Calories",
+  stLast30: "last 30 days",
+  stLast14: "Last 14 days",
+  stKcalHit: "Target hit",
+  stKcalLogged: "Logged",
+  stKcalAvg: "Eaten a day",
+  stKcalStreak: "Streak",
+  stKcalNone: "nothing logged",
+  stKcalSetup: "Set up calories and you'll see your days here.",
+  stKcalGo: "Set up",
+  stTarget: "target",
+  stAvg: "avg. {v}",
+  stAllTime: "All time",
+});
+Object.assign(PL, {
+  stInWeeks: { one: "{n} workout in {w} weeks", other: "{n} workouts in {w} weeks" },
+  stRepsN: { one: "{n} rep", other: "{n} reps" },
+  stWorkoutsN: { one: "{n} workout", other: "{n} workouts" },
+  stDaysN: { one: "{n} day", other: "{n} days" },
+});
+// 1.9.0 (Michael, Nov 7: "more badges"): [name, description] like en.ach
+export const ACH = {
+  variety: ["Variety", "{n} different exercises"],
+  sets: ["Sets", "{x} in total"],
+  lifted: ["Weight lifted", "{x} in total (weight × reps)"],
+  plans: ["My plans", "{x} from your own plans"],
+  squats: ["Squats in a set", "{x} in one set"],
+  pullups: ["Pull-ups in a set", "{x} in one set"],
+  allBody: ["Whole body", "a rank in all 9 body parts"],
+  bodyGold: ["Golden body", "Gold or higher in all 9 body parts"],
+  ton: ["A ton", "1,000 kg lifted in one workout"],
+  bigDay: ["Big day", "500 reps in one workout"],
+  notes: ["Dear diary", "wrote a note during a workout"],
+  xmas: ["Christmas spirit", "trained between December 24 and 26"],
+  friday13: ["Lucky 13", "trained on a Friday the 13th"],
+  leap: ["Leap day", "trained on February 29"],
+};
+Object.assign(PL, {
+  kgN: { one: "{n} kg", other: "{n} kg" },
+  squatsN: { one: "{n} squat", other: "{n} squats" },
+  pullupsN: { one: "{n} pull-up", other: "{n} pull-ups" },
+});

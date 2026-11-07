@@ -40,7 +40,7 @@ check(await p.evaluate(() => window.__fr), "Badges → Ranks (swipe)");
 // 2) Badges → tap Stats (skips a page), from the bottom of Badges
 await p.click('[data-pf-tab="1"]'); await p.waitForTimeout(900);
 await p.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight)); await p.waitForTimeout(400);
-await rec(3, "[data-pf-stats]");
+await rec(3, "[data-st-card=heat]");
 await p.click('[data-pf-tab="3"]'); await p.waitForTimeout(1400);
 check(await p.evaluate(() => window.__fr), "Badges → Stats (tap)");
 // 3) back to Badges from Stats at the top: no shift needed, still fine

@@ -1551,6 +1551,21 @@ const ACH = [
   { k: "midnight", icon: "clock", at: [1], rk: [6], single: true, secret: true, v: c => c.midnight },
   { k: "bdayWorkout", icon: "party", at: [1], rk: [6], single: true, secret: true, v: c => c.bdayW },
   { k: "obsidian", icon: "volcano", at: [1], rk: [8], single: true, secret: true, v: c => c.obsidian },
+  // 1.9.0 (Michael, Nov 7: "make more badges"): the new exercises, weights, own plans, body parts and notes
+  { k: "variety", icon: "grid4", at: [3, 5, 10, 15, 20, 30, 45, 65, 90], v: c => c.variety },
+  { k: "sets", icon: "repeat", at: [25, 100, 250, 500, 1000, 2500, 5000, 7500, 10000], pl: "sets", v: c => c.sets },
+  { k: "lifted", icon: "barbell", at: [500, 2500, 10000, 25000, 50000, 100000, 250000, 500000, 1000000], pl: "kgN", v: c => c.kg },
+  { k: "plans", icon: "contract", at: [1, 5, 10, 25, 50, 100, 150, 200, 365], pl: "workouts", v: c => c.plans },
+  { k: "squats", icon: "squat", at: [10, 20, 30, 40, 50, 60, 75, 90, 120], pl: "squatsN", v: c => c.squat },
+  { k: "pullups", icon: "pullup", at: [1, 3, 5, 8, 10, 12, 15, 20, 25], pl: "pullupsN", v: c => c.pull },
+  { k: "allBody", icon: "body", at: [1], rk: [4], single: true, v: c => c.allBody },
+  { k: "bodyGold", icon: "shield", at: [1], rk: [8], single: true, v: c => c.bodyGold },
+  { k: "ton", icon: "kettle", at: [1], rk: [6], single: true, v: c => c.ton },
+  { k: "bigDay", icon: "rocket", at: [1], rk: [6], single: true, v: c => c.bigDay },
+  { k: "notes", icon: "pencil", at: [1], rk: [4], single: true, v: c => c.notes },
+  { k: "xmas", icon: "gift", at: [1], rk: [4], single: true, secret: true, v: c => c.xmas },
+  { k: "friday13", icon: "eye", at: [1], rk: [4], single: true, secret: true, v: c => c.f13 },
+  { k: "leap", icon: "sprout", at: [1], rk: [8], single: true, secret: true, v: c => c.leap },
 ];
 // Start of a workout (ts is when it was saved; dur = its length, if known).
 const startHour = e => new Date((e.ts || 0) - (e.dur || 0) * 1000).getHours();
@@ -1607,6 +1622,33 @@ function singleCounts(history, extra = {}) {
     midnight: b1(history.some(e => e.ts && !e.manual && startHour(e) < 4)),
     bdayW: b1(bmd && dates.some(d => d.slice(5) === bmd || (bmd === "02-29" && d.slice(5) === "02-28"))),
     obsidian: b1(Object.keys(RANK_AT).some(id => has(id) && rankIdx(id, best(id)) >= R_OBSIDIAN)),
+    ...newCounts(history, dates, done, best),
+  };
+}
+// 1.9.0 badges: weights (kg × reps of every weighted set), own plans, body parts (the body ranks of the Profile), notes,
+// and three secret dates
+const SQUAT_IDS = ["n1", "bw_bodyweight_squat"], PULL_IDS = ["fw_pull_up", "fw_chin_up"];
+function newCounts(history, dates, done, best) {
+  let sets = 0, kg = 0, ton = 0, bigDay = 0, notes = 0;
+  history.forEach(e => {
+    let ek = 0, er = 0;
+    (e.items || []).forEach(it => {
+      if (it.note || (it.rn || []).some(Boolean)) notes = 1;
+      (it.res || []).forEach((v, i) => { if (typeof v !== "number") return; sets++; er += v; const w = it.kg && Number(it.kg[i]); if (w > 0) ek += w * v; });
+    });
+    kg += ek; if (ek >= 1000) ton = 1; if (er >= 500) bigDay = 1;
+  });
+  const rk = {}; RANKED_IDS.forEach(id => { const b = best(id); rk[id] = typeof b === "number" && isFinite(b) ? b : null; });
+  const br = bodyRanks({ rk }), fams = PLN.FAMILIES.map(f => br.fam[f].r);
+  const top = ids => Math.max(0, ...ids.map(id => best(id) || 0));
+  return {
+    variety: done.size, sets, kg: Math.round(kg), plans: history.filter(e => e.plan && e.plan.id).length,
+    squat: top(SQUAT_IDS), pull: top(PULL_IDS),
+    allBody: fams.every(r => r !== null) ? 1 : 0, bodyGold: fams.every(r => r !== null && r >= 3) ? 1 : 0,
+    ton, bigDay, notes,
+    xmas: dates.some(d => ["12-24", "12-25", "12-26"].includes(d.slice(5))) ? 1 : 0,
+    f13: dates.some(d => d.slice(8) === "13" && parseKey(d).getDay() === 5) ? 1 : 0,
+    leap: dates.some(d => d.slice(5) === "02-29") ? 1 : 0,
   };
 }
 function achievements(history, extra) {
@@ -5700,6 +5742,205 @@ function StatsGrid({ m }) {
   );
 }
 
+// 1.9.0 (Michael, Nov 7: "make Stats nicer, add calories, modern and minimal but beautiful, some graphs, artistic"):
+// your own Stats page draws your history (others' cards carry only the totals, so they see the tiles only).
+// One hue per chart (the main colour; calories keep their amber), thin marks, a tap shows the value.
+const ST_WEEKS = 12;
+function statDays(history) {
+  const d = {};
+  history.forEach(e => {
+    const x = d[e.date] || (d[e.date] = { n: 0, reps: 0, sets: 0, min: 0 });
+    x.n++; x.min += Math.round((e.dur || 0) / 60);
+    e.items.forEach(it => it.res.forEach(v => { if (typeof v === "number") { x.reps += v; x.sets++; } }));
+  });
+  return d;
+}
+const weekStart = k => { const d = parseKey(k); return addDays(k, -((d.getDay() + 6) % 7)); };
+const shortNum = n => (n >= 10000 ? Math.round(n / 1000) + "k" : n >= 1000 ? (n / 1000).toLocaleString(LANG, { maximumFractionDigits: 1 }) + "k" : String(n));
+function StatCard({ title, meta, children, data }) {
+  return (
+    <div data-st-card={data} style={{ ...card, ...tileR(), borderRadius: 20, padding: "15px 15px 13px", marginBottom: 10, minWidth: 0 }}>
+      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 10, marginBottom: 12 }}>
+        <span style={{ fontSize: 11.5, fontWeight: 800, letterSpacing: ".08em", textTransform: "uppercase", color: C.dim }}>{title}</span>
+        {meta && <span style={{ fontSize: 12, color: C.dim, fontWeight: 600, textAlign: "right" }}>{meta}</span>}
+      </div>
+      {children}
+    </div>
+  );
+}
+// the last 12 weeks, a square per day (Mon … Sun from the top), a bigger square = more sets that day (one colour:
+// lighter mixes of the main colour on the dark panel looked muddy)
+const HEAT_SZ = [0, 42, 60, 78, 100];
+function StHeat({ days, today }) {
+  const [sel, setSel] = useState(null);
+  const start = addDays(weekStart(today), -7 * (ST_WEEKS - 1));
+  const cols = Array.from({ length: ST_WEEKS }, (_, w) => Array.from({ length: 7 }, (_, i) => addDays(start, w * 7 + i)));
+  const max = Math.max(1, ...cols.flat().map(k => (days[k] ? days[k].sets : 0)));
+  const lv = k => { const x = days[k]; if (!x) return 0; return Math.min(4, 1 + Math.floor((x.sets / max) * 3.999)); };
+  const n = cols.flat().filter(k => days[k]).length;
+  const wd = weekdaysShort(), s = sel && days[sel];
+
+  return (
+    <StatCard data="heat" title={T("stActivity")} meta={TP("stInWeeks", n, { w: ST_WEEKS })}>
+      <div style={{ display: "flex", gap: 6 }}>
+        <div aria-hidden="true" style={{ display: "grid", gridTemplateRows: "repeat(7, 1fr)", gap: 3, fontSize: 9, fontWeight: 700, color: C.dim, lineHeight: 1 }}>
+          {wd.map((w, i) => <span key={i} style={{ display: "flex", alignItems: "center", opacity: i % 2 ? 0 : 1 }}>{w.slice(0, 2)}</span>)}
+        </div>
+        <div data-st-heat style={{ flex: 1, display: "grid", gridTemplateColumns: `repeat(${ST_WEEKS}, 1fr)`, gap: 3 }}>
+          {cols.map((c, w) => <div key={w} style={{ display: "grid", gridTemplateRows: "repeat(7, 1fr)", gap: 3 }}>
+            {c.map(k => { const fut = k > today, l = lv(k); return (
+              <button key={k} type="button" data-st-day={k} data-lv={l} disabled={fut} aria-label={fmtDate(k)} onClick={() => { sfxTap(); setSel(x => (x === k ? null : k)); }}
+                style={{ ...btnBase, padding: 0, aspectRatio: "1", borderRadius: 4, background: fut ? "transparent" : `${C.chalk}10`, boxShadow: k === sel ? `0 0 0 2px ${C.chalk}` : k === today ? `inset 0 0 0 1.5px ${C.signal}88` : "none", minWidth: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                {l > 0 && <span className="stPop" style={{ width: `${HEAT_SZ[l]}%`, height: `${HEAT_SZ[l]}%`, borderRadius: l === 4 ? 4 : 3, background: C.signal, animationDelay: `${w * 25}ms` }} />}
+              </button>); })}
+          </div>)}
+        </div>
+      </div>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginTop: 10, minHeight: 18 }}>
+        <span data-st-heat-sel style={{ fontSize: 12.5, color: s ? C.chalk : C.dim, fontWeight: s ? 700 : 500, minWidth: 0 }}>
+          {sel ? `${capFirst(fmtDate(sel))} · ${s ? `${TP("stRepsN", s.reps)}${s.min ? " · " + fmtMins(s.min) : ""}` : T("stRest")}` : T("stTapDay")}
+        </span>
+        <span aria-hidden="true" style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 10, color: C.dim, flexShrink: 0 }}>
+          {T("stLess")}{[1, 2, 3, 4].map(l => <span key={l} style={{ width: 10, height: 10, borderRadius: 2.5, background: `${C.chalk}10`, display: "flex", alignItems: "center", justifyContent: "center" }}><span style={{ width: `${HEAT_SZ[l]}%`, height: `${HEAT_SZ[l]}%`, borderRadius: 2, background: C.signal }} /></span>)}{T("stMore")}
+        </span>
+      </div>
+    </StatCard>
+  );
+}
+// per week: reps / minutes / workouts as one line with a soft area under it; a tap picks a week
+const ST_METRIC = ["reps", "min", "n"];
+function StWeeks({ days, today }) {
+  const [mt, setMt] = useState("reps");
+  const ref = useRef(null), w = useWidth(ref) || 300, h = 132, padT = 30, padB = 20;
+  const start = addDays(weekStart(today), -7 * (ST_WEEKS - 1));
+  const wk = Array.from({ length: ST_WEEKS }, (_, i) => { const a = addDays(start, i * 7); let v = 0; for (let j = 0; j < 7; j++) { const x = days[addDays(a, j)]; if (x) v += x[mt]; } return { a, v }; });
+  const [sel, setSel] = useState(ST_WEEKS - 1);
+  const max = Math.max(1, ...wk.map(x => x.v)), step = (w - 16) / (ST_WEEKS - 1);
+  const X = i => 8 + i * step, Y = v => padT + (h - padT - padB) * (1 - v / max);
+  const pts = wk.map((x, i) => [X(i), Y(x.v)]);
+  // a smooth line through the points (monotone-ish: control points halfway, same height)
+  const line = pts.reduce((d, [x, y], i) => (i ? `${d} C${pts[i - 1][0] + step / 2},${pts[i - 1][1]} ${x - step / 2},${y} ${x},${y}` : `M${x},${y}`), "");
+  const area = `${line} L${X(ST_WEEKS - 1)},${h - padB} L${X(0)},${h - padB} Z`;
+  const fmtV = v => (mt === "min" ? fmtMins(v) : mt === "reps" ? TP("stRepsN", v) : TP("stWorkoutsN", v));
+  // the average of the finished weeks since the first workout in the chart (this week isn't over yet)
+  const done = wk.slice(0, -1), first = done.findIndex(x => x.v > 0), avg = first < 0 ? 0 : Math.round(done.slice(first).reduce((a, x) => a + x.v, 0) / (done.length - first));
+  const cur = wk[sel];
+  const gid = "stg" + mt;
+  const lx = Math.max(40, Math.min(w - 40, X(sel)));
+  return (
+    <StatCard data="weeks" title={T("stPerWeek")} meta={avg > 0 ? <span data-st-avg>{T("stAvg", { v: mt === "min" ? fmtMins(avg) : nf(avg) })}</span> : null}>
+      <div role="radiogroup" aria-label={T("stPerWeek")} style={{ display: "flex", gap: 3, padding: 3, borderRadius: 12, ...SUNK(), marginBottom: 6 }}>
+        {ST_METRIC.map(k => <button key={k} type="button" role="radio" aria-checked={mt === k} data-st-metric={k} onClick={() => { if (mt === k) return; sfxTap(); setMt(k); }}
+          style={{ ...btnBase, flex: 1, minWidth: 0, padding: "7px 4px", fontSize: 12.5, borderRadius: 9, background: mt === k ? C.chalk : "transparent", color: mt === k ? C.ink : C.dim, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", transition: `background ${MO.t1}, color ${MO.t1}` }}>{T("stM_" + k)}</button>)}
+      </div>
+      <div ref={ref} style={{ position: "relative" }}>
+        <svg data-st-weeks={mt} width={w} height={h} viewBox={`0 0 ${w} ${h}`} style={{ display: "block", overflow: "visible", touchAction: "pan-y" }}
+          onPointerDown={e => { const r = e.currentTarget.getBoundingClientRect(); const i = Math.max(0, Math.min(ST_WEEKS - 1, Math.round((e.clientX - r.left - 8) / step))); if (i !== sel) { sfxTap(); setSel(i); } }}>
+          <defs><linearGradient id={gid} x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor={C.signal} stopOpacity=".2" /><stop offset=".85" stopColor={C.signal} stopOpacity="0" /></linearGradient></defs>
+          {[0.5, 1].map(f => <line key={f} x1={0} x2={w} y1={Y(max * f)} y2={Y(max * f)} stroke={C.line} strokeWidth="1" strokeDasharray="2 4" />)}
+          <line x1={0} x2={w} y1={h - padB} y2={h - padB} stroke={C.line} strokeWidth="1" />
+          <path key={"a" + mt} className="stFade" d={area} fill={`url(#${gid})`} />
+          <path key={"l" + mt} className="stDraw" d={line} pathLength="1" fill="none" stroke={C.signal} strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round" />
+          <line x1={X(sel)} x2={X(sel)} y1={Y(cur.v)} y2={h - padB} stroke={C.signal} strokeWidth="1" strokeDasharray="3 3" opacity=".7" />
+          <circle cx={X(sel)} cy={Y(cur.v)} r="5" fill={C.signal} stroke={C.panel} strokeWidth="2.5" />
+          {[0, Math.floor((ST_WEEKS - 1) / 2), ST_WEEKS - 1].map(i => <text key={i} x={X(i)} y={h - 4} textAnchor={i ? (i === ST_WEEKS - 1 ? "end" : "middle") : "start"} fontSize="10" fontWeight="600" fill={C.dim} style={{ fontFamily: BODY }}>{i === ST_WEEKS - 1 ? T("stThisWeek") : fmtShortDM(parseKey(wk[i].a))}</text>)}
+        </svg>
+        <div data-st-week-val aria-live="polite" style={{ position: "absolute", top: 0, left: lx, transform: "translateX(-50%)", padding: "3px 8px", borderRadius: 8, background: C.panelHi, border: `1px solid ${C.line}`, fontSize: 12, fontWeight: 800, color: C.chalk, whiteSpace: "nowrap", pointerEvents: "none", transition: `left ${MO.t1} ${MO.ease}` }}>{fmtV(cur.v)}</div>
+      </div>
+    </StatCard>
+  );
+}
+// which weekdays you train (all your history), the strongest day lit
+function StRhythm({ history }) {
+  const c = Array(7).fill(0); history.forEach(e => { c[(parseKey(e.date).getDay() + 6) % 7]++; });
+  const max = Math.max(1, ...c), top = c.indexOf(Math.max(...c)), wd = weekdaysShort();
+  return (
+    <StatCard data="rhythm" title={T("stRhythm")} meta={c[top] ? capFirst(wd[top]) : null}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 8, alignItems: "end", height: 86 }}>
+        {c.map((v, i) => <div key={i} data-st-wd={i} data-n={v} title={`${wd[i]}: ${v}`} style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", gap: 5, height: "100%" }}>
+          <span style={{ fontSize: 10.5, fontWeight: 800, color: v ? C.chalk : C.dim, fontVariantNumeric: "tabular-nums" }}>{v || ""}</span>
+          <span className="stGrow" style={{ width: "100%", maxWidth: 22, height: `${Math.max(4, (v / max) * 52)}px`, borderRadius: "6px 6px 3px 3px", background: i === top && v ? C.signal : v ? `${C.chalk}30` : `${C.chalk}12`, animationDelay: `${i * 40}ms` }} />
+        </div>)}
+      </div>
+      <div aria-hidden="true" style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 8, marginTop: 6 }}>
+        {wd.map((w, i) => <span key={i} style={{ textAlign: "center", fontSize: 10.5, fontWeight: 700, color: i === top && c[i] ? C.chalk : C.dim }}>{w.slice(0, 2)}</span>)}
+      </div>
+    </StatCard>
+  );
+}
+// calories: a ring for the target hit on the last 30 days, three numbers, and the last 14 days as bars with the target
+function StKcal({ history, onKcal }) {
+  const today = dateKey(), [sel, setSel] = useState(null);
+  const ready = !!kcalNow(history, today);
+  if (!ready) return (
+    <StatCard data="kcal" title={T("stKcal")}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <span aria-hidden="true" style={{ width: 44, height: 44, borderRadius: 14, background: `${KC_HIT}22`, color: KC_HIT, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Ico n="plate" size={22} /></span>
+        <span style={{ flex: 1, fontSize: 13.5, color: C.dim, lineHeight: 1.45 }}>{T("stKcalSetup")}</span>
+        {onKcal && <button type="button" data-st-kcal-go onClick={() => { sfxTap(); onKcal(); }} style={{ ...btnBase, background: C.signal, color: C.signalInk, padding: "9px 13px", fontSize: 13.5, borderRadius: 12, flexShrink: 0 }}>{T("stKcalGo")}</button>}
+      </div>
+    </StatCard>
+  );
+  const d30 = Array.from({ length: 30 }, (_, i) => { const k = addDays(today, i - 29); return { k, s: kcalNow(history, k) }; });
+  const logged = d30.filter(x => x.s && x.s.logged), hits = logged.filter(x => x.s.hit).length;
+  const avg = logged.length ? Math.round(logged.reduce((a, x) => a + x.s.eaten, 0) / logged.length) : 0;
+  const streak = kcalStreak(history).n;
+  const d14 = d30.slice(-14), max = Math.max(1, ...d14.map(x => Math.max(x.s ? x.s.eaten : 0, x.s ? x.s.target : 0))) * 1.08;
+  const R = 34, L = 2 * Math.PI * R, frac = hits / 30;
+  const cur = sel && d14.find(x => x.k === sel);
+  return (
+    <StatCard data="kcal" title={T("stKcal")} meta={T("stLast30")}>
+      <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+        <div data-st-kcal-ring={hits} style={{ position: "relative", width: 84, height: 84, flexShrink: 0 }}>
+          <svg width="84" height="84" viewBox="0 0 84 84" aria-hidden="true" style={{ transform: "rotate(-90deg)" }}>
+            <circle cx="42" cy="42" r={R} fill="none" stroke={`${C.chalk}14`} strokeWidth="8" />
+            <circle className="stRing" cx="42" cy="42" r={R} fill="none" stroke={KC_HIT} strokeWidth="8" strokeLinecap="round" strokeDasharray={`${L * frac} ${L}`} style={{ "--len": L * frac }} />
+          </svg>
+          <span style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", lineHeight: 1 }}>
+            <span style={{ fontFamily: DISPLAY, fontSize: 26, fontWeight: 900, color: C.chalk }}><CountUp n={hits} /></span>
+            <span style={{ fontSize: 9.5, fontWeight: 800, color: C.dim, marginTop: 3 }}>/ 30</span>
+          </span>
+        </div>
+        <div style={{ flex: 1, minWidth: 0, display: "grid", gap: 7 }}>
+          {[["stKcalHit", hits ? <span style={{ color: KC_HIT }}>{TP("stDaysN", hits)}</span> : TP("stDaysN", 0)], ["stKcalLogged", TP("stDaysN", logged.length)], ["stKcalAvg", avg ? `${nf(avg)} kcal` : "–"], ["stKcalStreak", TP("stDaysN", streak)]].map(([k, v]) => (
+            <div key={k} data-st-kcal={k} style={{ display: "flex", justifyContent: "space-between", gap: 8, fontSize: 12.5 }}>
+              <span style={{ color: C.dim, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{T(k)}</span>
+              <span style={{ fontWeight: 800, color: C.chalk, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>{v}</span>
+            </div>))}
+        </div>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(14, 1fr)", gap: 3, alignItems: "end", height: 74, marginTop: 16, position: "relative" }}>
+        {d14.map(({ k, s }, i) => { const e = s ? s.eaten : 0, t = s ? s.target : 0; return (
+          <button key={k} type="button" data-st-kcal-day={k} data-kind={s && s.hit ? "hit" : e ? "log" : ""} onClick={() => { sfxTap(); setSel(x => (x === k ? null : k)); }} aria-label={fmtDate(k)}
+            style={{ ...btnBase, padding: 0, height: "100%", position: "relative", background: "transparent", display: "flex", alignItems: "flex-end", justifyContent: "center", minWidth: 0 }}>
+            {t > 0 && <span aria-hidden="true" style={{ position: "absolute", left: -1.5, right: -1.5, bottom: `${(t / max) * 100}%`, borderTop: `1.5px dashed ${C.chalk}55` }} />}
+            <span className="stGrow" style={{ width: "100%", maxWidth: 16, height: e ? `${Math.max(6, (e / max) * 100)}%` : 4, borderRadius: "5px 5px 2px 2px", background: !e ? `${C.chalk}12` : s.hit ? KC_HIT : `${KC_LOG}8c`, boxShadow: k === sel ? `0 0 0 2px ${C.chalk}` : "none", animationDelay: `${i * 25}ms` }} />
+          </button>); })}
+      </div>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginTop: 8, fontSize: 12, minHeight: 18 }}>
+        <span data-st-kcal-sel style={{ color: cur ? C.chalk : C.dim, fontWeight: cur ? 700 : 500, minWidth: 0 }}>
+          {cur ? `${capFirst(fmtDate(cur.k))} · ${cur.s && cur.s.eaten ? `${nf(cur.s.eaten)} / ${nf(cur.s.target)} kcal` : T("stKcalNone")}` : T("stLast14")}
+        </span>
+        <span aria-hidden="true" style={{ display: "flex", alignItems: "center", gap: 5, color: C.dim, fontSize: 10.5, flexShrink: 0 }}><span style={{ width: 12, borderTop: `1.5px dashed ${C.chalk}77` }} />{T("stTarget")}</span>
+      </div>
+    </StatCard>
+  );
+}
+function OwnStats({ history, onKcal }) {
+  const today = dateKey(), days = useMemo(() => statDays(history), [history]);
+  return (
+    <div data-st-own>
+      <style>{`.stDraw{stroke-dasharray:1;stroke-dashoffset:0;animation:stDraw .9s ${MO.ease} both}.stFade{animation:stFade .9s ease both}.stGrow{transform-origin:bottom;animation:stGrow .55s ${MO.ease} both}.stRing{animation:stRing .9s ${MO.ease} both}
+.stPop{animation:stPop .45s ${MO.pop || MO.ease} both}@keyframes stPop{from{transform:scale(0)}}@keyframes stDraw{from{stroke-dashoffset:1}}@keyframes stFade{from{opacity:0}}@keyframes stGrow{from{transform:scaleY(0)}}@keyframes stRing{from{stroke-dasharray:0 999}}
+@media (prefers-reduced-motion: reduce){.stDraw,.stFade,.stGrow,.stRing,.stPop{animation:none}}`}</style>
+      <StHeat days={days} today={today} />
+      <StWeeks days={days} today={today} />
+      <StKcal history={history} onKcal={onKcal} />
+      {history.length > 0 && <StRhythm history={history} />}
+    </div>
+  );
+}
+
 // The whole profile page; the same for you and for others (own = edit buttons, freezes behind the streak).
 // 1.7.0 (Michael, Oct 18, 16:36: "nie že pôjdeš dole, ale že slidneš doprava na ďalšiu stranu"): four swipe pages like
 // Home: Profile (photo, level, streak, showcase) | Badges | Ranks | Stats. Wide screens: Profile + Stats on the left,
@@ -5713,7 +5954,7 @@ const PF_LAY = {
 // the name ("Training for" first: it says how long you train). A tap shows a small card above the icon (the badge, its
 // level, how far you are); a tap on that card opens the badge with all its levels. More than fit: "+N" opens the Badges page.
 const HERO_BADGES = 5;
-function HeroBadges({ list, onAll }) {
+function HeroBadges({ list, onAll, still }) {
   const [pop, setPop] = useState(null); // {a, x, y, up}
   const [sheet, setSheet] = useState(null);
   useBack(() => setPop(null), !!pop);
@@ -5729,7 +5970,7 @@ function HeroBadges({ list, onAll }) {
   const P = pop && pop.a;
   return (
     <>
-      <div ref={boxRef} style={{ width: "100%" }}><div data-hero-badges={list.length} style={{ display: "inline-flex", alignItems: "center", gap: 3, marginTop: 7, padding: 3, borderRadius: 11, background: `${C.ink}66`, border: `1px solid ${C.line}`, maxWidth: "100%" }}>
+      <div ref={boxRef} style={{ width: "100%", pointerEvents: still ? "none" : undefined }}><div data-hero-badges={list.length} style={{ display: "inline-flex", alignItems: "center", gap: 3, marginTop: 7, padding: 3, borderRadius: 11, background: `${C.ink}66`, border: `1px solid ${C.line}`, maxWidth: "100%" }}>
         {show.map(a => (
           <button key={a.k} type="button" data-hero-badge={a.k} aria-label={a.name} onClick={e => open(a, e)} style={{ ...btnBase, padding: 0, background: "transparent", borderRadius: 8, display: "flex" }}>
             <BadgeIco n={a.icon} col={col(a)} size={26} />
@@ -5772,8 +6013,8 @@ function ProfileHero({ m, own, onPhoto, onEditProfile, onLooks, onStreak, extra,
               <div data-pf-name data-name-fx={lk.name || ""} style={{ fontFamily: DISPLAY, fontSize: 30, fontWeight: 900, lineHeight: 1, color: C.chalk, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" , ...INK, ...nameFx(lk.name), ...(lk.name ? FX_ROOM : {}) }}>{m.nick}</div>
               {lk.title && <div style={{ marginTop: 6 }}><LookTitle id={lk.title} /></div>}
               {own && bdayToday() ? <div style={{ fontSize: 12.5, color: C.signal, fontWeight: 800, marginTop: 4 }}>{emo(T("bdayHero"))}</div>
-                : badges && badges.length ? <HeroBadges list={badges} onAll={onAllBadges} />
-                : <div style={{ fontSize: 12.5, color: C.dim, marginTop: 4 }}>{m.since ? T("since", { date: fmtDate(m.since, true) }) : T("newMember")}</div>}
+                : badges && badges.length ? <HeroBadges list={badges} onAll={onAllBadges} still={preview} />
+                : !m.since ? <div style={{ fontSize: 12.5, color: C.dim, marginTop: 4 }}>{T("newMember")}</div> : null /* 1.9.0 (Michael, Nov 7): no "Training since" line any more, the badges say it */}
             </div>
             {own && !preview && <span style={{ alignSelf: "flex-start", display: "flex", flexDirection: "column", gap: 6, flexShrink: 0 }}>
               <button type="button" data-pf-edit onClick={() => { sfxTap(); onEditProfile(); }} aria-label={T("pfEdit")} style={{ ...btnBase, background: SOFT(), color: C.chalk, width: 38, height: 38, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center" }}><Ico n="pencil" size={18} /></button>
@@ -5863,7 +6104,7 @@ function BodyRanks({ m, onPick }) {
     </Sect>
   );
 }
-function ProfilePage({ m, own, onEditProfile, onEditSlot, onStreak, onPhoto, onPickRank, onLooks, extra, top, claim }) {
+function ProfilePage({ m, own, onEditProfile, onEditSlot, onStreak, onPhoto, onPickRank, onLooks, extra, top, claim, stats }) {
   const pg = usePager("pf", 4, PF_LAY);
   const [focus, setFocus] = useState(null);
   const lv = levelInfo(m.xp), lr = RANKS[lvRank(m.lvl)], lk = m.look || {};
@@ -5916,7 +6157,7 @@ function ProfilePage({ m, own, onEditProfile, onEditSlot, onStreak, onPhoto, onP
         {/* on a wide screen there are no tabs: each column gets its title */}
         <div {...pg.pageProps(1)}>{pg.wide && <div data-pf-col-title style={{ ...sectionTitle, marginTop: 0 }}>{T("badgesTitle")}</div>}<BadgesList m={m} focus={focus} claim={claim} /></div>
         <div {...pg.pageProps(2)}>{pg.wide && <div data-pf-col-title style={{ ...sectionTitle, marginTop: 0 }}>{T("ranksTitle")}</div>}<RanksList m={m} focus={focus} onPick={onPickRank} claim={claim} /></div>
-        <div {...pg.pageProps(3)}>{pg.wide && <div data-pf-col-title style={{ ...sectionTitle, marginTop: 14 }}>{T("pfStats")}</div>}<StatsGrid m={m} /></div>
+        <div {...pg.pageProps(3)}>{pg.wide && <div data-pf-col-title style={{ ...sectionTitle, marginTop: 14 }}>{T("pfStats")}</div>}{stats}{stats && <div data-st-all style={{ fontSize: 11.5, fontWeight: 800, letterSpacing: ".08em", textTransform: "uppercase", color: C.dim, margin: "16px 2px 9px" }}>{T("stAllTime")}</div>}<StatsGrid m={m} /></div>
       </div>
     </>
   );
@@ -6048,7 +6289,7 @@ function ProfileEditSheet({ profile, setProfile, acct, vis, onVis, onFriends, on
     </Sheet>
   );
 }
-function ProfileTab({ history, profile, setProfile, onFreeze, kcal, acct, vis, onVis, onFriends, onShop }) {
+function ProfileTab({ history, profile, setProfile, onFreeze, kcal, acct, vis, onVis, onFriends, onShop, onKcal }) {
   const fz = freezesAvailable(history);
   const [howEx, setHowEx] = useState(null);
   const [err, setErr] = useState("");
@@ -6074,7 +6315,7 @@ function ProfileTab({ history, profile, setProfile, onFreeze, kcal, acct, vis, o
       {howEx && <HowTo id={howEx} history={history} onClose={() => setHowEx(null)} />}
       {rev && <RewardReveal items={rev} onDone={() => { setProfile({ ...profile, claim2: withClaims(claimOf(profile), rev) }); setRev(null); setParty(Date.now()); }} />}
       {party > 0 && <Confetti key={party} />}
-      <ProfilePage m={m} own claim={claim} extra={{ fz }} onPhoto={() => { sfxTap(); setSheet("edit"); }} onEditProfile={() => setSheet("edit")}
+      <ProfilePage m={m} own claim={claim} extra={{ fz }} stats={<OwnStats history={history} onKcal={onKcal} />} onPhoto={() => { sfxTap(); setSheet("edit"); }} onEditProfile={() => setSheet("edit")}
         onStreak={() => setSheet("freeze")} onEditSlot={i => setSheet({ slot: i })} onPickRank={setHowEx} onLooks={() => setSheet("looks")}
         top={err ? <div role="alert" style={{ fontSize: 13, color: "#ff8a80", marginBottom: 10 }}>{err}</div> : null} />
       {sheet && sheet.slot !== undefined && <SlotSheet m={sm} i={sheet.slot} cur={(showcase(sm)[sheet.slot] || {}).set ? slotStr(showcase(sm)[sheet.slot]) : ""} onSave={v => saveSlot(sheet.slot, v)} onClose={() => setSheet(null)} />}
@@ -8976,7 +9217,8 @@ function LookName({ id, size = 22 }) {
 function LookPreview({ profile, look, history }) {
   const base = useMemo(() => ownModel(history, profile, null), [history, profile]);
   const fz = useMemo(() => freezesAvailable(history), [history]);
-  return <ProfileHero m={{ ...base, look }} own preview extra={{ fz }} />;
+  const shown = useMemo(() => { const pend = unclaimed(base, claimOf(profile)); return heroBadges(hideUnclaimed(base, new Set(pend.map(claimKey)))); }, [base, profile]);
+  return <ProfileHero m={{ ...base, look }} own preview extra={{ fz }} badges={shown} />;
 }
 function DiaNum({ n, size = 15, color = C.chalk }) {
   return <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontWeight: 900, color, fontVariantNumeric: "tabular-nums" }}><Ico n="diamond" size={size} color={C.sky} sw={2.4} />{nf(n)}</span>;
@@ -12099,7 +12341,7 @@ export default function App() {
                 {screen === "history" && <HistoryTab history={history} editDate={histEdit} onEditOpened={() => setHistEdit(null)}
                   onDelete={idx => { const e = history[idx]; if (e) syncTomb("del", entryId(e)); editHistory(h => h.filter((_, i) => i !== idx)); }}
                   onSaveEntry={(idx, entry) => editHistory(h => (idx === null ? [...h, entry] : h.map((e, i) => (i === idx ? entry : e))))} />}
-                {screen === "profile" && <ProfileTab history={history} profile={profile} setProfile={setProfile} onFreeze={applyFreeze} kcal={kcal} acct={acct} vis={myVis} onVis={setVis} onFriends={() => go("friends")} onShop={() => go("shop")} />}
+                {screen === "profile" && <ProfileTab history={history} profile={profile} setProfile={setProfile} onFreeze={applyFreeze} kcal={kcal} acct={acct} vis={myVis} onVis={setVis} onFriends={() => go("friends")} onShop={() => go("shop")} onKcal={() => go("calories")} />}
                 {screen === "calories" && <Calories history={history} profile={profile} setProfile={setProfile} kcal={kcal} setKcal={setKcal} />}
                 {screen === "settings" && <SettingsTab initPage={setPage0} ret={setRet ? { label: T(SCREEN_TITLE[setRet.screen]), go: () => { if (setRet.pager) PAGER_START[setRet.pager] = setRet.page; go(setRet.screen); } } : null} settings={settings} setSettings={setSettings} history={history} profile={profile} setProfile={setProfile}
                   kcal={kcal} autoBk={autoBk} onAutoBackup={runAutoBackup}
