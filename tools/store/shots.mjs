@@ -31,14 +31,14 @@ const seed = { history: hist, profile: { name: "Alex", birth: { y: 1998 }, tourD
 let gst = null, gmoves = [], gopts = null;
 for (let k = 0; k < 60 && !gst; k++) { gopts = { seed: "rd" + k, mode: "run", suit: { push: 4, pull: 3, legs: 4, core: 3 } }; let s = G.newGame(gopts), mv = [];
   for (let n = 0; n < 400 && s.phase !== "over" && s.phase !== "won"; n++) { if (s.phase === "blind" && s.jokers.length >= 4 && Object.keys(s.levels || {}).length && s.score === 0) { gst = s; gmoves = mv; break; } const m = G.botMove(s, 5); s = G.act(s, m); mv.push(m); } }
-const menu = async (p, s) => { await p.click("[data-menu-btn]"); await p.waitForTimeout(400); await p.click(`[data-screen="${s}"]`); await p.waitForTimeout(1400); };
+const menu = async (p, s) => { if (await p.locator("[data-menu-btn]").isVisible().catch(() => false)) { await p.click("[data-menu-btn]"); await p.waitForTimeout(400); } await p.click(`[data-screen="${s}"]`); await p.waitForTimeout(1400); };
 const SHOTS = [
   ["01_home", async p => { for (let k = 0; k < 6; k++) { const n = await p.getAttribute("[data-notice]", "data-notice").catch(() => "none"); if (!n || n === "none") break; await p.evaluate(() => { const b = document.querySelector("[data-notice] button[aria-label]"); if (b) b.click(); }); await p.waitForTimeout(600); } await p.evaluate(() => scrollTo(0, 0)); await p.waitForTimeout(400); }],
   ["02_workout", async p => { await p.click("[data-fstart-go]"); await p.click("[data-warmup-go]"); await p.waitForSelector("[data-done-btn]"); await p.waitForTimeout(900); }],
   ["03_summary", "summary"],
-  ["04_plans", async p => { await menu(p, "plans"); await p.click('[data-plans-seg="mine"]'); await p.waitForTimeout(1200); }],
+  ["04_plans", async p => { await menu(p, "plans"); await p.click('[data-plans-seg="mine"]', { timeout: 1500 }).catch(() => {}); await p.waitForTimeout(1200); }],
   ["05_profile", async p => { await menu(p, "profile"); await p.evaluate(() => scrollTo(0, 0)); await p.waitForTimeout(700); }],
-  ["06_stats", async p => { await menu(p, "profile"); await p.click('[data-pf-tab="3"]'); await p.waitForTimeout(1600); }],
+  ["06_stats", async p => { await menu(p, "profile"); await p.click('[data-pf-tab="3"]', { timeout: 1500 }).catch(() => {}); await p.waitForTimeout(1600); }],
   ["07_calories", async p => { await menu(p, "calories"); await p.evaluate(() => scrollTo(0, 0)); await p.waitForTimeout(900); }],
   ["08_deck", async p => {
     await menu(p, "game"); await p.click("[data-gm-continue]"); await p.waitForSelector("[data-game]"); await p.waitForTimeout(900);
@@ -49,7 +49,7 @@ const SHOTS = [
     await p.waitForTimeout(1000);
   }],
 ];
-const VIEW = { width: 412, height: 733 }, DPR = 1080 / 412;
+const VIEW = { width: +(process.env.W || 412), height: +(process.env.H || 733) }, DPR = +(process.env.DPR || 1080 / 412);
 for (const lang of LANGS) {
   fs.mkdirSync(ROOT + lang, { recursive: true });
   for (const [name, fn] of SHOTS) {
