@@ -47,15 +47,23 @@ public class HwRestPlugin extends Plugin {
         call.resolve(r);
     }
 
+    /** Nov 7 (Michael: "after +time it goes from 0 into minus"): PluginCall.getDouble returns the default for a Long,
+     *  and a time in ms from JS (Date.now(), ~1.8e12) arrives as a Long, so endAt/startAt were always "now". */
+    static long num(PluginCall call, String k, long def) {
+        Object v = call.getData().opt(k);
+        return v instanceof Number ? ((Number) v).longValue() : def;
+    }
+
     @PluginMethod
     public void start(PluginCall call) {
         if (!granted()) { call.reject("no permission"); return; }
         try {
             Intent i = new Intent(getContext(), RestService.class);
             i.setAction("start");
-            i.putExtra("endAt", (long) call.getDouble("endAt", (double) System.currentTimeMillis()).doubleValue());
-            i.putExtra("startAt", (long) call.getDouble("startAt", (double) System.currentTimeMillis()).doubleValue());
-            i.putExtra("stillAfter", (long) call.getDouble("stillAfter", 600000d).doubleValue());
+            long now = System.currentTimeMillis();
+            i.putExtra("endAt", num(call, "endAt", now));
+            i.putExtra("startAt", num(call, "startAt", now));
+            i.putExtra("stillAfter", num(call, "stillAfter", 600000L));
             for (String k : new String[] { "title", "bodyOver", "stillTitle", "stillBody", "channelName", "alertName" }) i.putExtra(k, call.getString(k, ""));
             ContextCompat.startForegroundService(getContext(), i);
             call.resolve();
