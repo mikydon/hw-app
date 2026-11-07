@@ -20,6 +20,7 @@ import android.os.VibrationAttributes;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.os.VibratorManager;
+import android.service.notification.StatusBarNotification;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.ServiceCompat;
 import androidx.core.content.ContextCompat;
@@ -70,8 +71,10 @@ public class RestService extends Service {
         stillBody = str(intent, "stillBody");
         stillAfter = intent.getLongExtra("stillAfter", 600000L);
         channels(str(intent, "channelName"), str(intent, "alertName"));
+        boolean back;
         try {
             int type = Build.VERSION.SDK_INT >= 34 ? ServiceInfo.FOREGROUND_SERVICE_TYPE_HEALTH : 0;
+            back = dismissed || curId == ID_OVER; // swiped away before (or already shown again as ID_OVER) and now changed: show it again
             dismissed = false;
             curId = ID;
             try { ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).cancel(ID_OVER); } catch (Exception ignored) {}
@@ -87,6 +90,7 @@ public class RestService extends Service {
         if (endAt > now) handler.postDelayed(this::atZero, endAt - now);
         else show();
         handler.postDelayed(tick, nextTick(now));
+        if (back) handler.postDelayed(this::ensureShown, 300);
         handler.postDelayed(this::stillTraining, Math.max(0, endAt + stillAfter - now));
         return START_NOT_STICKY;
     }
@@ -156,6 +160,18 @@ public class RestService extends Service {
         if (nm != null && !dismissed) nm.notify(curId, build());
     }
 
+    /** Nov 7 (Michael: "when I add time, show the notification again"): after a swipe Android keeps the service's
+     *  notification hidden under its id, so if ours isn't on screen, it is posted as a new one (ID_OVER). */
+    private void ensureShown() {
+        try {
+            NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            if (nm == null || dismissed) return;
+            boolean on = false;
+            if (Build.VERSION.SDK_INT >= 23) for (StatusBarNotification n : nm.getActiveNotifications()) if (n.getId() == curId) on = true;
+            if (!on) { curId = ID_OVER; nm.notify(curId, build()); }
+        } catch (Exception ignored) {}
+    }
+
     private void onTick() {
         long now = System.currentTimeMillis();
         show();
@@ -164,9 +180,9 @@ public class RestService extends Service {
     }
 
     private void atZero() {
-        // swiped away earlier: 0 is news again, so it comes back as a new notification
-        if (dismissed) { dismissed = false; curId = ID_OVER; }
-        show();
+        // swiped away earlier: 0 is news again, so it comes back
+        if (dismissed) { dismissed = false; show(); handler.postDelayed(this::ensureShown, 300); }
+        else show();
         if (appInFront) return; // the app is on screen and beeps itself
         try {
             ToneGenerator tg = new ToneGenerator(AudioManager.STREAM_MUSIC, 90);
