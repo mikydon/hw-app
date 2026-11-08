@@ -10867,15 +10867,16 @@ function tourSteps(ch, x) {
   const s = (sel, i, more = {}) => ({ sel, t: X[i], ...more });
   const tt = (i, key) => fmt(X[i] || "", { t: T(key) }); // "Tap {t}." with the tab's real name
   const screen = (id, page) => async () => { await x.go(id); if (page !== undefined) await tourTab(page[0], page[1]); };
+  const pm = ch === 1 && x.plans ? x.plans() : { week: false, own: false };
   if (ch === 1) return [ // no welcome text: straight to what's on the screen (Michael)
     // 1.9.0: Home's first page is the week; the workout (day, picker, exercises) is on the Exercises page
     s("[data-home-week]", 4, { prep: screen("train", ["home", HOME_TAB.today]) }),
     s("[data-home-ch]", 10, { opt: true }), // 1.8.2: the weekly challenges as rows with icons
     s(`[data-home-tab="${HOME_TAB.ex}"]`, 5, { tap: true, opt: true }),
-    s("[data-home-hero]", 1),
-    s('[data-day-picker="hero"], [data-day-picker="plan"]', 2),
+    s("[data-home-hero]", 1, pm.week ? { t: T("tourPlHero", { w: T("plWeek") }) } : {}), // 1.9.2: with My week Home shows the weekday's plan
+    s('[data-day-picker="hero"], [data-day-picker="plan"]', 2, pm.week ? { t: T("tourPlDay") } : {}),
     s('[data-home-ex="0"]', 6, { opt: true }),
-    s("[data-rounds-row]", 3),
+    s("[data-rounds-row]", 3, pm.week || pm.own ? { t: T("tourPlStart", { o: T("plOther") }) } : {}), // own plans: Start = today's plan or the picker
     s("[data-menu-btn]", 7, { tap: true, opt: true, prep: async () => { await tourTab("home", HOME_TAB.today); await tourWait(150); window.scrollTo(0, 0); } }), // left out on a PC (side menu)
     { done: true, t: T("tourAutoD"), keepMenu: true },
   ];
@@ -12626,6 +12627,7 @@ export default function App() {
     go: async id => { if (session && sessionOpen) setSessionOpen(false); go(id); await tourWait(450); },
     menu: open => { if (!sideOn) setMenuOpen(open); },
     menuOpen: () => menuOpenRef.current,
+    plans: () => { const P = plansOfP(profile); return { week: PLN.hasWeek(P), own: P.list.some(p => p.items.length) }; }, // 1.9.2: Home chapter texts
   };
   const tourChapterDone = ch => {
     const d = tourDoneSet(profRef.current);

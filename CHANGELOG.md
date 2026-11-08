@@ -18,6 +18,7 @@ A small update: it arrives in the app by itself, no new APK needed.
 - **Your plans move over by themselves:** a 1.9.0/1.9.1 plan whose training days all held the same exercises becomes one workout; one with different days becomes one workout per list of exercises, named after its days ("Push day · Mon, Thu"). The plan that was in use fills My week. Phones still on 1.9.0/1.9.1 keep seeing each plan on the days it is scheduled.
 - **Start picker:** with plans but no week, or on a rest day, Start opens "What do you train today?": your plans (today's first), the recommended A/B/C with 19 or 13 minutes, or a free workout; the workout you did last is green with its day. "Train something else" on the workout page opens it any time.
 - **Tips:** a plan's tips name what the workout leaves out (push, pull, legs or core); the week's tips check every muscle group over the whole week and the rest days in a row.
+- **Guide:** the Home chapter explains your week's plan and the Start choice when you use your own plans; the Workout plans chapter shows My week.
 - **Korean:** words no longer break in the middle at the end of a line; long Muscle Deck joker names never split inside a word.
 
 ## 1.9.1 (2026-11-07)
