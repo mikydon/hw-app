@@ -296,7 +296,7 @@ export default {
   },
   tour: {
     ch: ["Accueil", "Badges", "Séance", "Profil", "Historique", "Calories", "Amis", "Muscle Deck", "Boutique", "Programmes"],
-    c10: ["Touche {t}.", "Le programme recommandé : jours A, B et C un jour sur deux, poussée, tirage, jambes et gainage, sans matériel.", "Touche {t} pour créer le tien.", "Compose une séance avec les exercices de l'appli, aussi avec haltères et machines. Puis, dans Ma semaine, choisis quel programme tu fais chaque jour ; les jours sans programme sont des jours de repos.", "L'Accueil montre ensuite le programme du jour et en vert les jours entraînés. Pas de semaine ? Démarrer te laisse choisir un programme."],
+    c10: ["Touche {t}.", "Le programme recommandé : jours A, B et C un jour sur deux, poussée, tirage, jambes et gainage, sans matériel.", "Touche {t} pour créer le tien.", "Ma semaine : touche un jour et choisis le programme que tu fais ce jour-là. Les jours sans programme sont des jours de repos. L'ampoule vérifie toute la semaine.", "L'Accueil montre ensuite le programme du jour et en vert les jours entraînés. Pas de semaine ? Démarrer te laisse choisir un programme.", "{t} crée un nouvel entraînement : tu lui donnes un nom et tu ajoutes des exercices de l'appli.", "Touche un programme pour l'ouvrir.", "Jours de ma semaine : touche les jours où tu fais ce programme, ils s'allument. Un point sur un jour sombre veut dire qu'un autre programme y est prévu.", "Exercices : ajoute-les depuis la liste de l'appli (la recherche connaît aussi d'autres noms), règle les séries et ton propre temps de maintien ; les flèches changent l'ordre.", "L'ampoule donne des conseils pour cet entraînement, par ex. il manque les jambes ou les abdos. Ce ne sont que des conseils, rien n'est obligatoire."],
   },
   news19: [
     ["Programmes", "Un programme pour tous : jours A, B et C.", "Crée tes propres programmes avec les exercices de l'app : choisis exercices et séries pour chaque jour de la semaine (les jours vides sont des jours de repos), range-les en groupes et utilises-en un. L'Accueil montre alors la semaine de ce programme, les jours faits en vert. De petites icônes montrent ce que travaille chaque jour, et des conseils te disent quand un muscle travaille peu. Le programme recommandé A, B, C est toujours là."],
@@ -430,6 +430,9 @@ export default {
     mx_wide_grip_lat_pulldown: { muscles: "Dos (grand dorsal), haut du dos", how: "Assieds-toi cuisses sous le coussin et prends la barre large (environ 1,5 fois la largeur des épaules). Tire-la vers le haut de la poitrine, coudes vers le bas et l'extérieur, puis laisse-la remonter lentement.", tip: "Ne la tire pas derrière la nuque." },
   },
   // 1.9.1
+  news193: [
+    "Guide : le chapitre Programmes présente maintenant les nouveaux programmes : Ma semaine, Nouveau programme et, dans un programme, les jours de ta semaine, les exercices et les conseils. Si tu l'as déjà vu, il revient une fois la prochaine fois que tu ouvres Programmes.",
+  ],
   news192: [
     "Les programmes sont maintenant des séances uniques, et Ma semaine en attribue un à chaque jour (par exemple le Programme A lun, mer et ven, le Programme B mar et jeu). Avant, un programme était une semaine entière et un seul pouvait être utilisé. Tes programmes ont été convertis tout seuls : un programme avec des jours différents est devenu une séance par liste d'exercices.",
     "Pas de semaine ou jour de repos ? Démarrer te laisse choisir quoi faire : tes programmes, le recommandé A/B/C ou une séance libre, et le dernier fait est en vert.",

@@ -42,7 +42,7 @@ const THEMES = {
   slate:  { ink: "#15181d", panel: "#1f242b", panelHi: "#2a313a", line: "#3a434f", chalk: "#f1f4f8", dim: "#9aa6b4", edge: "#0e1115" },
   coffee: { ink: "#1c140f", panel: "#2a1f17", panelHi: "#382a20", line: "#4d3a2c", chalk: "#fbf3ec", dim: "#b8a291", edge: "#130d09" },
 };
-const APP_VERSION = "1.9.2";
+const APP_VERSION = "1.9.3";
 // Big Shoulders has no Cyrillic, so Oswald (also condensed) covers Ukrainian. The browser only
 // downloads the Oswald unicode ranges a page actually uses.
 // 1.7.0: 'HW Emoji' = the app's own emoji (Fluent 3D, fonts/hw-emoji.ttf) for the emoji the app shows; BODY_SYS
@@ -10941,6 +10941,13 @@ function tourSteps(ch, x) {
     s("[data-plan-rec]", 1, { opt: true, wait: 400 }),
     s('[data-plans-seg="mine"]', 2, { tap: true, opt: true, t: tt(2, "plMine") }),
     s("[data-plan-week]", 3, { opt: true, wait: 400 }), // 1.9.2: My week
+    // 1.9.3 (Michael: "does the new plans UI have a guide?"): new plan, then open a plan and walk the editor;
+    // without plans the editor steps are skipped (opt), and nothing is created or changed by the guide
+    s("[data-plan-new]", 5, { opt: true, t: tt(5, "plNew") }),
+    s("[data-plan-card]", 6, { tap: true, opt: true }),
+    s("[data-plan-days-set]", 7, { opt: true, wait: 450 }),
+    s("[data-plan-dayview]", 8, { opt: true }),
+    s("[data-plan-tips]", 9, { opt: true }),
     { done: true, t: X[4] },
   ];
   if (ch === 9) return [ // Shop
@@ -12669,6 +12676,11 @@ export default function App() {
     const t = setTimeout(() => setTourAsk(true), 900);
     return () => clearTimeout(t);
   }, [tourAskDue, tourAsk, tourRun, newsOpen, onboard, profLoaded, session, sessionOpen]);
+  useEffect(() => {
+    if (!profLoaded || uiRef.current.tourPl3) return;
+    const seen = tourSeen();
+    setUi({ ...uiRef.current, tourPl3: 1, ...(seen.has(10) ? { tourAuto: [...seen].filter(c => c !== 10) } : {}) });
+  }, [profLoaded]);
   const tourAskNo = () => { setTourAsk(false); setTourAskDue(false); setUi({ ...uiRef.current, tourAskV: APP_VERSION }); };
   // 1.6.5 (Michael, Oct 17: a friend's link opened the website): the app owns …/hw-app/add/ links (App Links,
   // assetlinks.json on mikydon.github.io), so a tapped link opens the app on Friends with the code filled in.

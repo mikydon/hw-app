@@ -296,7 +296,7 @@ export default {
   },
   tour: {
     ch: ["Home", "Medaglie", "Allenamento", "Profilo", "Storico", "Calorie", "Amici", "Muscle Deck", "Negozio", "Schede"],
-    c10: ["Tocca {t}.", "La scheda consigliata: giorni A, B e C a giorni alterni, spinta, trazione, gambe e core, senza attrezzi.", "Tocca {t} per creare la tua.", "Componi un allenamento con gli esercizi dell'app, anche con manubri e macchine. Poi, in La mia settimana, scegli quale scheda fai ogni giorno; i giorni senza scheda sono di riposo.", "La Home mostrerà la scheda di oggi e in verde i giorni allenati. Nessuna settimana? Inizia ti fa scegliere una scheda."],
+    c10: ["Tocca {t}.", "La scheda consigliata: giorni A, B e C a giorni alterni, spinta, trazione, gambe e core, senza attrezzi.", "Tocca {t} per creare la tua.", "La mia settimana: tocca un giorno e scegli quale scheda fai quel giorno. I giorni senza scheda sono di riposo. La lampadina controlla tutta la settimana.", "La Home mostrerà la scheda di oggi e in verde i giorni allenati. Nessuna settimana? Inizia ti fa scegliere una scheda.", "{t} crea un nuovo allenamento: gli dai un nome e aggiungi esercizi dall'app.", "Tocca una scheda per aprirla.", "Giorni della mia settimana: tocca i giorni in cui fai questa scheda e si illuminano. Un punto su un giorno scuro vuol dire che c'è un'altra scheda.", "Esercizi: aggiungili dall'elenco dell'app (la ricerca conosce anche altri nomi), imposta le serie e il tuo tempo di tenuta; le frecce cambiano l'ordine.", "La lampadina dà consigli per questo allenamento, ad es. mancano gambe o core. Sono solo consigli, niente è obbligatorio."],
   },
   news19: [
     ["Schede di allenamento", "Una scheda per tutti: giorni A, B e C.", "Crea le tue schede con gli esercizi dell'app: scegli esercizi e serie per ogni giorno della settimana (i giorni vuoti sono di riposo), ordina le schede in gruppi e usane una. La Home mostra poi la settimana di quella scheda, con i giorni fatti in verde. Piccole icone mostrano cosa allena ogni giorno e dei consigli avvisano quando un muscolo lavora poco. La scheda consigliata A, B, C c'è ancora."],
@@ -430,6 +430,9 @@ export default {
     mx_wide_grip_lat_pulldown: { muscles: "Schiena (dorsali), parte alta della schiena", how: "Siediti con le cosce sotto il cuscino e afferra la barra larga (circa 1,5 volte la larghezza delle spalle). Tirala alla parte alta del petto, gomiti giù e in fuori, poi lasciala risalire lentamente.", tip: "Non tirarla dietro la nuca." },
   },
   // 1.9.1
+  news193: [
+    "Guida: il capitolo Schede ora mostra le nuove schede: La mia settimana, Nuova scheda e, dentro una scheda, i giorni della tua settimana, gli esercizi e i consigli. Se l'hai già visto, compare ancora una volta la prossima volta che apri Schede.",
+  ],
   news192: [
     "Le schede ora sono singoli allenamenti, e La mia settimana ne assegna una a ogni giorno (per esempio Scheda A lun, mer e ven, Scheda B mar e gio). Prima una scheda era un'intera settimana e se ne poteva usare solo una. Le tue schede sono state convertite da sole: una scheda con giorni diversi è diventata un allenamento per ogni lista di esercizi.",
     "Nessuna settimana o giorno di riposo? Inizia ti fa scegliere cosa allenare: le tue schede, la consigliata A/B/C o un allenamento libero, e l'ultimo fatto è in verde.",

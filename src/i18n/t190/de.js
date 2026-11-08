@@ -296,7 +296,7 @@ export default {
   },
   tour: {
     ch: ["Start", "Abzeichen", "Training", "Profil", "Verlauf", "Kalorien", "Freunde", "Muscle Deck", "Shop", "Trainingspläne"],
-    c10: ["Tippe auf {t}.", "Der empfohlene Plan: Tage A, B und C jeden zweiten Tag, Drücken, Ziehen, Beine und Rumpf, ohne Geräte.", "Tippe auf {t}, um deinen eigenen zu bauen.", "Stell aus den Übungen der App ein Training zusammen, auch mit Kurzhanteln und Geräten. Wähl dann in Meine Woche, welchen Plan du an welchem Tag trainierst; Tage ohne Plan sind Ruhetage.", "Start zeigt dann den heutigen Plan und die trainierten Tage in Grün. Keine Woche eingestellt? Mit Start wählst du einen Plan."],
+    c10: ["Tippe auf {t}.", "Der empfohlene Plan: Tage A, B und C jeden zweiten Tag, Drücken, Ziehen, Beine und Rumpf, ohne Geräte.", "Tippe auf {t}, um deinen eigenen zu bauen.", "Meine Woche: Tippe auf einen Tag und wähl, welchen Plan du dann trainierst. Tage ohne Plan sind Ruhetage. Die Glühbirne prüft die ganze Woche.", "Start zeigt dann den heutigen Plan und die trainierten Tage in Grün. Keine Woche eingestellt? Mit Start wählst du einen Plan.", "{t} erstellt ein neues Training: Du gibst ihm einen Namen und fügst Übungen aus der App hinzu.", "Tippe auf einen Plan, um ihn zu öffnen.", "Tage in meiner Woche: Tippe auf die Tage, an denen du diesen Plan trainierst; sie leuchten auf. Ein Punkt an einem dunklen Tag heißt, dass dort ein anderer Plan ist.", "Übungen: Füg sie aus der Liste der App hinzu (die Suche kennt auch andere Namen), stell die Sätze und deine eigene Haltezeit ein; die Pfeile ändern die Reihenfolge.", "Die Glühbirne gibt Tipps zu diesem Training, z. B. fehlen Beine oder Rumpf. Nur Tipps, nichts ist Pflicht."],
   },
   news19: [
     ["Trainingspläne", "Ein Plan für alle: Tage A, B und C.", "Stell eigene Pläne aus den Übungen der App zusammen: Wähle Übungen und Sätze für jeden Wochentag (leere Tage sind Ruhetage), sortiere Pläne in Gruppen und nutze einen. Start zeigt dann die Woche dieses Plans, erledigte Tage in Grün. Kleine Symbole zeigen, was jeder Tag trainiert, und Tipps sagen, wenn ein Muskel wenig Arbeit bekommt. Der empfohlene Plan A, B, C ist weiterhin da."],
@@ -430,6 +430,9 @@ export default {
     mx_wide_grip_lat_pulldown: { muscles: "Rücken (Latissimus), oberer Rücken", how: "Setz dich mit den Oberschenkeln unter das Polster und greif die Stange weit (etwa 1,5-fache Schulterbreite). Zieh sie zur oberen Brust, Ellbogen nach unten und außen, dann lass sie langsam hoch.", tip: "Zieh sie nicht hinter den Nacken." },
   },
   // 1.9.1
+  news193: [
+    "Anleitung: Das Kapitel Trainingspläne zeigt jetzt die neuen Pläne: Meine Woche, Neuer Plan und in einem Plan die Tage in deiner Woche, die Übungen und die Tipps. Hast du es schon gesehen, kommt es beim nächsten Öffnen der Pläne noch einmal.",
+  ],
   news192: [
     "Trainingspläne sind jetzt einzelne Trainings, und Meine Woche legt einen davon auf jeden Tag (zum Beispiel Plan A auf Mo, Mi und Fr, Plan B auf Di und Do). Vorher war ein Plan eine ganze Woche und nur einer konnte aktiv sein. Deine Pläne wurden von selbst umgestellt: Ein Plan mit verschiedenen Tagen wurde zu einem Training pro Übungsliste.",
     "Keine Woche eingestellt oder Ruhetag? Mit Start wählst du, was du trainierst: deine Pläne, das empfohlene A/B/C oder ein freies Training, und das zuletzt gemachte ist grün.",

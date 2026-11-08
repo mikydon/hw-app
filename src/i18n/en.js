@@ -1516,7 +1516,7 @@ const en = {
 
   tour: {
     ch: ["Home", "Badges", "Workout", "Profile", "History", "Calories", "Friends", "Muscle Deck", "Shop", "Workout plans"],
-    c10: ["Tap {t}.", "The recommended plan: days A, B and C every other day, push, pull, legs and core, no equipment needed.", "Tap {t} to build your own.", "Build a workout from the app's exercises, also with dumbbells and machines. Then, in My week, pick which plan you train on each day; days without a plan are rest days.", "Home then shows today's plan and the days you've trained in green. No week set? Start lets you pick a plan."],
+    c10: ["Tap {t}.", "The recommended plan: days A, B and C every other day, push, pull, legs and core, no equipment needed.", "Tap {t} to build your own.", "My week: tap a day and pick which plan you train then. Days without a plan are rest days. The bulb checks the whole week.", "Home then shows today's plan and the days you've trained in green. No week set? Start lets you pick a plan.", "{t} makes a new workout: you name it and add exercises from the app.", "Tap a plan to open it.", "Days in my week: tap the days you train this plan; they light up. A dot on a dark day means another plan is on it.", "Exercises: add them from the app's list (the search knows other names too), set the sets and your own hold time; the arrows change the order.", "The bulb gives tips for this workout, e.g. no legs or core. Only tips, nothing is forced."],
     c8: ["Your cards come from your training: the higher your exercise ranks, the stronger the cards.", "New to Muscle Deck? Play the short tutorial game first.", "A Run: beat 8 rounds with bigger and bigger targets. Winning one earns diamonds.", "All the rules, with pictures.", "Have fun!"],
     c9: [
       "Diamonds: you earn them by training. Tap How to see where they come from.",
@@ -1806,6 +1806,9 @@ const en = {
     ["Guide","The first setup asked for your details, but nothing showed how the app works.","An interactive guide in 7 chapters lights up the real buttons, you tap through it yourself, and it says what each part does: Home, badges, workout, profile, history, calories and friends. Every chapter raises the new Explorer badge. It starts after the first setup, existing users get an offer on Home, and it's always in the ☰ menu → Guide."],
     ["Indonesian","14 languages.","15: the app now speaks Indonesian too."],
     ["Small fixes","The bottoms of letters like g, y and j were cut off in some titles and names; Leaderboard, Friends and Messages switched without any motion.","Letters show in full, and the page slides in from the side of the tab you tapped."],
+  ],
+  news193: [
+    "Guide: the Workout plans chapter now walks through the new plans: My week, New plan, and inside a plan the days in your week, the exercises and the tips. If you already saw it, it shows once more the next time you open Workout plans.",
   ],
   news192: [
     "Workout plans are single workouts now, and My week picks one of them for each day (for example Plan A on Mon, Wed and Fri, Plan B on Tue and Thu). Before, a plan was a whole week and only one could be in use. Your plans were changed over by themselves: a plan with different days became one workout per list of exercises.",

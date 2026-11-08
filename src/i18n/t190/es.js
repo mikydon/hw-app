@@ -296,7 +296,7 @@ export default {
   },
   tour: {
     ch: ["Inicio", "Insignias", "Entreno", "Perfil", "Historial", "Calorías", "Amigos", "Muscle Deck", "Tienda", "Planes de entreno"],
-    c10: ["Toca {t}.", "El plan recomendado: días A, B y C en días alternos, empuje, tracción, piernas y core, sin material.", "Toca {t} para crear el tuyo.", "Arma un entreno con los ejercicios de la app, también con mancuernas y máquinas. Luego, en Mi semana, elige qué plan entrenas cada día; los días sin plan son de descanso.", "Inicio te mostrará el plan de hoy y en verde los días que entrenaste. ¿Sin semana? Empezar te deja elegir un plan."],
+    c10: ["Toca {t}.", "El plan recomendado: días A, B y C en días alternos, empuje, tracción, piernas y core, sin material.", "Toca {t} para crear el tuyo.", "Mi semana: toca un día y elige qué plan entrenas ese día. Los días sin plan son de descanso. La bombilla revisa toda la semana.", "Inicio te mostrará el plan de hoy y en verde los días que entrenaste. ¿Sin semana? Empezar te deja elegir un plan.", "{t} crea un entrenamiento nuevo: le pones nombre y añades ejercicios de la app.", "Toca un plan para abrirlo.", "Días de mi semana: toca los días en que entrenas este plan y se iluminan. Un punto en un día oscuro significa que tiene otro plan.", "Ejercicios: añádelos de la lista de la app (la búsqueda también conoce otros nombres), ajusta las series y tu propio tiempo de aguante; las flechas cambian el orden.", "La bombilla da consejos para este entrenamiento, p. ej. faltan piernas o core. Solo son consejos, nada es obligatorio."],
   },
   news19: [
     ["Planes de entreno", "Un plan para todos: días A, B y C.", "Crea tus propios planes con los ejercicios de la app: elige ejercicios y series para cada día de la semana (los días vacíos son de descanso), ordena los planes en grupos y usa uno. Inicio muestra entonces la semana de ese plan, con los días hechos en verde. Unos iconos pequeños muestran qué entrena cada día y unos consejos avisan cuando un músculo trabaja poco. El plan recomendado A, B, C sigue ahí."],
@@ -430,6 +430,9 @@ export default {
     mx_wide_grip_lat_pulldown: { muscles: "Espalda (dorsal), espalda alta", how: "Siéntate con los muslos bajo la almohadilla y coge la barra ancha (unas 1,5 veces el ancho de hombros). Llévala al pecho alto, codos hacia abajo y hacia fuera, y deja que suba despacio.", tip: "No la bajes por detrás de la nuca." },
   },
   // 1.9.1
+  news193: [
+    "Guía: el capítulo Planes de entreno ahora recorre los planes nuevos: Mi semana, Nuevo plan y, dentro de un plan, los días de tu semana, los ejercicios y los consejos. Si ya lo viste, aparece una vez más la próxima vez que abras Planes.",
+  ],
   news192: [
     "Los planes de entreno ahora son entrenos sueltos, y Mi semana asigna uno a cada día (por ejemplo, el Plan A el lun, mié y vie, y el Plan B el mar y jue). Antes un plan era una semana entera y solo podía usarse uno. Tus planes se adaptaron solos: un plan con días distintos pasó a ser un entreno por cada lista de ejercicios.",
     "¿Sin semana o día de descanso? Empezar te deja elegir qué entrenar: tus planes, el recomendado A/B/C o un entreno libre, y el último que hiciste sale en verde.",

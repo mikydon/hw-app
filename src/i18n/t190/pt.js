@@ -296,7 +296,7 @@ export default {
   },
   tour: {
     ch: ["Início", "Medalhas", "Treino", "Perfil", "Histórico", "Calorias", "Amigos", "Muscle Deck", "Loja", "Planos de treino"],
-    c10: ["Toque em {t}.", "O plano recomendado: dias A, B e C em dias alternados, empurrar, puxar, pernas e core, sem equipamento.", "Toque em {t} para montar o seu.", "Monte um treino com os exercícios do app, também com halteres e máquinas. Depois, em Minha semana, escolha qual plano você faz em cada dia; dias sem plano são de descanso.", "O Início então mostra o plano de hoje e, em verde, os dias treinados. Sem semana? Começar deixa escolher um plano."],
+    c10: ["Toque em {t}.", "O plano recomendado: dias A, B e C em dias alternados, empurrar, puxar, pernas e core, sem equipamento.", "Toque em {t} para montar o seu.", "Minha semana: toque num dia e escolha qual plano você treina nesse dia. Dias sem plano são de descanso. A lâmpada confere a semana toda.", "O Início então mostra o plano de hoje e, em verde, os dias treinados. Sem semana? Começar deixa escolher um plano.", "{t} cria um treino novo: você dá um nome e adiciona exercícios do app.", "Toque num plano para abri-lo.", "Dias da minha semana: toque nos dias em que você treina este plano e eles acendem. Um ponto num dia escuro significa que ele tem outro plano.", "Exercícios: adicione da lista do app (a busca também conhece outros nomes), ajuste as séries e o seu próprio tempo de sustentação; as setas mudam a ordem.", "A lâmpada dá dicas para este treino, por ex. faltam pernas ou core. São só dicas, nada é obrigatório."],
   },
   news19: [
     ["Planos de treino", "Um plano para todos: dias A, B e C.", "Monte seus próprios planos com os exercícios do app: escolha exercícios e séries para cada dia da semana (os dias vazios são de descanso), organize os planos em grupos e use um. O Início passa a mostrar a semana desse plano, com os dias feitos em verde. Pequenos ícones mostram o que cada dia treina, e dicas avisam quando um músculo trabalha pouco. O plano recomendado A, B, C continua lá."],
@@ -430,6 +430,9 @@ export default {
     mx_wide_grip_lat_pulldown: { muscles: "Costas (dorsal), parte alta das costas", how: "Sente com as coxas sob a almofada e segure a barra aberta (cerca de 1,5 vez a largura dos ombros). Puxe até a parte alta do peito, cotovelos para baixo e para fora, depois deixe subir devagar.", tip: "Não puxe atrás da nuca." },
   },
   // 1.9.1
+  news193: [
+    "Guia: o capítulo Planos de treino agora mostra os planos novos: Minha semana, Novo plano e, dentro de um plano, os dias da sua semana, os exercícios e as dicas. Se você já viu, ele aparece mais uma vez na próxima vez que abrir Planos.",
+  ],
   news192: [
     "Os planos de treino agora são treinos únicos, e Minha semana atribui um a cada dia (por exemplo, Plano A na seg, qua e sex, Plano B na ter e qui). Antes, um plano era uma semana inteira e só um podia estar em uso. Seus planos foram convertidos sozinhos: um plano com dias diferentes virou um treino para cada lista de exercícios.",
     "Sem semana ou em dia de descanso? Começar deixa escolher o que treinar: seus planos, o recomendado A/B/C ou um treino livre, e o último feito fica verde.",

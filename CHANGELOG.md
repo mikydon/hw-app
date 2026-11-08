@@ -10,6 +10,12 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 
 <!-- New version: add a "## x.y.z (date)" section on top (web-only history uses "## Browser beta x.y.z (date)"). On a push to main, .github/workflows/build.yml builds everything and .github/scripts/releases.sh creates/updates the releases (commit = the push, or the one in a commit comment). -->
 
+## 1.9.3 (2026-11-08)
+
+A small update: it arrives in the app by itself, no new APK needed.
+
+- **Guide for the new plans:** the Workout plans chapter now walks through My week, New plan, and inside a plan the row "Days in my week", the exercises and the tips. Before, it showed only My week. People who already saw the chapter get it once more the next time they open Workout plans.
+
 ## 1.9.2 (2026-11-08)
 
 A small update: it arrives in the app by itself, no new APK needed.

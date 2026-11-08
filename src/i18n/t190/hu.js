@@ -296,7 +296,7 @@ export default {
   },
   tour: {
     ch: ["Kezdőlap", "Jelvények", "Edzés", "Profil", "Előzmények", "Kalóriák", "Barátok", "Muscle Deck", "Bolt", "Edzéstervek"],
-    c10: ["Koppints erre: {t}.", "Az ajánlott terv: A, B és C nap másnaponta, nyomás, húzás, láb és has, eszköz nélkül.", "Koppints erre: {t}, és rakd össze a sajátodat.", "Állíts össze edzést az app gyakorlataiból, kézisúlyzókkal és gépekkel is. Aztán A hetemben válaszd ki, melyik napon melyik tervet edzed; a terv nélküli napok pihenőnapok.", "A Kezdőlap ezután a mai tervet és zölddel az edzett napokat mutatja. Nincs beállított heted? A Starttal választhatsz tervet."],
+    c10: ["Koppints erre: {t}.", "Az ajánlott terv: A, B és C nap másnaponta, nyomás, húzás, láb és has, eszköz nélkül.", "Koppints erre: {t}, és rakd össze a sajátodat.", "A hetem: koppints egy napra, és válaszd ki, melyik tervet edzed akkor. A terv nélküli napok pihenőnapok. A villanykörte az egész hetet ellenőrzi.", "A Kezdőlap ezután a mai tervet és zölddel az edzett napokat mutatja. Nincs beállított heted? A Starttal választhatsz tervet.", "{t}: új edzést hoz létre, elnevezed, és gyakorlatokat adsz hozzá az appból.", "Koppints egy tervre a megnyitásához.", "Napok a hetemben: koppints azokra a napokra, amikor ezt a tervet edzed, és kivilágítanak. A pötty egy sötét napon azt jelenti, hogy azon másik terv van.", "Gyakorlatok: add hozzá őket az app listájából (a keresés más neveket is ismer), állítsd be a sorozatokat és a saját tartási idődet; a nyilak a sorrendet változtatják.", "A villanykörte tippeket ad ehhez az edzéshez, pl. hiányzik a láb vagy a törzs. Csak tippek, semmi sem kötelező."],
   },
   news19: [
     ["Edzéstervek", "Egy terv mindenkinek: A, B és C nap.", "Rakj össze saját terveket az app gyakorlataiból: válassz gyakorlatokat és sorozatokat a hét minden napjára (az üres napok pihenőnapok), rendezd csoportokba a terveket, és használj egyet. A Kezdőlap ezután a terv hetét mutatja, a kész napok zölden. Kis ikonok mutatják, mit edz egy nap, és tippek szólnak, ha egy izom kevés munkát kap. Az ajánlott A, B, C terv továbbra is ott van."],
@@ -430,6 +430,9 @@ export default {
     mx_wide_grip_lat_pulldown: { muscles: "Hát (széles hátizom), felső hát", how: "Ülj le, combod a párna alatt, és fogd meg szélesen a rudat (kb. másfélszeres vállszélesség). Húzd a mellkasod felső részéhez, könyök lefelé és kifelé, aztán lassan engedd fel.", tip: "Ne húzd a tarkód mögé." },
   },
   // 1.9.1
+  news193: [
+    "Útmutató: az Edzéstervek fejezet most végigvezet az új terveken: A hetem, Új terv, és egy terven belül a heted napjai, a gyakorlatok és a tippek. Ha már láttad, a következő alkalommal, amikor megnyitod a Terveket, még egyszer megjelenik.",
+  ],
   news192: [
     "Az edzéstervek most egyedi edzések, és A hetem minden naphoz hozzárendel egyet (például A terv hétfőn, szerdán és pénteken, B terv kedden és csütörtökön). Korábban egy terv egy egész hét volt, és csak egy lehetett használatban. A terveid maguktól átalakultak: a különböző napokból álló terv gyakorlatlistánként egy-egy edzés lett.",
     "Nincs beállított heted, vagy pihenőnapod van? A Starttal kiválaszthatod, mit edzel: a terveidet, az ajánlott A/B/C-t vagy egy szabad edzést, és a legutóbb végzett zöld.",

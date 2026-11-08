@@ -296,7 +296,7 @@ export default {
   },
   tour: {
     ch: ["Start", "Odznaki", "Trening", "Profil", "Historia", "Kalorie", "Znajomi", "Muscle Deck", "Sklep", "Plany treningowe"],
-    c10: ["Dotknij {t}.", "Polecany plan: dni A, B i C co drugi dzień, pchanie, przyciąganie, nogi i brzuch, bez sprzętu.", "Dotknij {t}, aby ułożyć własny.", "Złóż trening z ćwiczeń w aplikacji, także z hantlami i maszynami. Potem w Moim tygodniu wybierz, który plan ćwiczysz w który dzień; dni bez planu to dni wolne.", "Start pokaże wtedy dzisiejszy plan, a dni z treningiem na zielono. Nie masz ustawionego tygodnia? Start pozwoli wybrać plan."],
+    c10: ["Dotknij {t}.", "Polecany plan: dni A, B i C co drugi dzień, pchanie, przyciąganie, nogi i brzuch, bez sprzętu.", "Dotknij {t}, aby ułożyć własny.", "Mój tydzień: stuknij dzień i wybierz, który plan wtedy ćwiczysz. Dni bez planu to dni odpoczynku. Żarówka sprawdza cały tydzień.", "Start pokaże wtedy dzisiejszy plan, a dni z treningiem na zielono. Nie masz ustawionego tygodnia? Start pozwoli wybrać plan.", "{t} tworzy nowy trening: nadajesz mu nazwę i dodajesz ćwiczenia z aplikacji.", "Stuknij plan, żeby go otworzyć.", "Dni w moim tygodniu: stuknij dni, w które ćwiczysz ten plan, a się podświetlą. Kropka na ciemnym dniu oznacza, że jest na nim inny plan.", "Ćwiczenia: dodaj je z listy aplikacji (wyszukiwarka zna też inne nazwy), ustaw serie i własny czas utrzymania; strzałki zmieniają kolejność.", "Żarówka daje wskazówki do tego treningu, np. brakuje nóg albo brzucha. To tylko wskazówki, nic nie jest obowiązkowe."],
   },
   news19: [
     ["Plany treningowe", "Jeden plan dla wszystkich: dni A, B i C.", "Układaj własne plany z ćwiczeń w aplikacji: wybierz ćwiczenia i serie na każdy dzień tygodnia (puste dni to dni wolne), podziel plany na grupy i używaj jednego. Start pokazuje wtedy tydzień tego planu, z zaliczonymi dniami na zielono. Małe ikony pokazują, co trenuje każdy dzień, a wskazówki mówią, gdy jakiś mięsień ma mało pracy. Polecany plan A, B, C nadal jest."],
@@ -430,6 +430,9 @@ export default {
     mx_wide_grip_lat_pulldown: { muscles: "Plecy (najszerszy), górna część pleców", how: "Usiądź z udami pod poduszką i chwyć drążek szeroko (około 1,5× szerokość barków). Ściągnij go do górnej części klatki, łokcie w dół i na zewnątrz, potem pozwól mu powoli wrócić.", tip: "Nie ściągaj go za kark." },
   },
   // 1.9.1
+  news193: [
+    "Przewodnik: rozdział Plany treningowe pokazuje teraz nowe plany: Mój tydzień, Nowy plan, a w planie dni w twoim tygodniu, ćwiczenia i wskazówki. Jeśli już go widziałeś, pojawi się jeszcze raz, gdy następnym razem otworzysz Plany.",
+  ],
   news192: [
     "Plany treningowe to teraz pojedyncze treningi, a Mój tydzień przypisuje jeden z nich do każdego dnia (np. Plan A w pon., śr. i pt., Plan B we wt. i czw.). Wcześniej plan był całym tygodniem i tylko jeden mógł być w użyciu. Twoje plany zmieniły się same: plan z różnymi dniami stał się jednym treningiem na każdą listę ćwiczeń.",
     "Nie masz ustawionego tygodnia albo masz dzień wolny? Start pozwala wybrać, co ćwiczyć: twoje plany, polecany A/B/C albo wolny trening, a ten ostatnio zrobiony jest zielony.",

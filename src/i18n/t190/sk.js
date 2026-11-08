@@ -296,7 +296,7 @@ export default {
   },
   tour: {
     ch: ["Domov", "Odznaky", "Tréning", "Profil", "História", "Kalórie", "Priatelia", "Muscle Deck", "Obchod", "Tréningové plány"],
-    c10: ["Ťukni na {t}.", "Odporúčaný plán: dni A, B a C obdeň, tlak, ťah, nohy a brucho, bez náradia.", "Ťukni na {t} a poskladaj si vlastný.", "Zostav si tréning z cvikov v appke, aj s činkami a strojmi. Potom v Mojom týždni vyber, ktorý plán cvičíš v ktorý deň; dni bez plánu sú dni voľna.", "Domov potom ukáže dnešný plán a odcvičené dni zelenou. Nemáš nastavený týždeň? Štart ti dá vybrať plán."],
+    c10: ["Ťukni na {t}.", "Odporúčaný plán: dni A, B a C obdeň, tlak, ťah, nohy a brucho, bez náradia.", "Ťukni na {t} a poskladaj si vlastný.", "Môj týždeň: ťukni na deň a vyber, ktorý plán vtedy cvičíš. Dni bez plánu sú dni voľna. Žiarovka skontroluje celý týždeň.", "Domov potom ukáže dnešný plán a odcvičené dni zelenou. Nemáš nastavený týždeň? Štart ti dá vybrať plán.", "{t} vytvorí nový tréning: pomenuješ ho a pridáš cviky z appky.", "Ťukni na plán a otvoríš ho.", "Dni v mojom týždni: ťukni na dni, keď cvičíš tento plán, a rozsvietia sa. Bodka na tmavom dni znamená, že je na ňom iný plán.", "Cviky: pridáš ich zo zoznamu appky (vyhľadávanie pozná aj iné názvy), nastavíš série a vlastný čas výdrže; šípky menia poradie.", "Žiarovka dá tipy k tomuto tréningu, napr. chýbajú nohy alebo brucho. Sú to len tipy, nič nie je povinné."],
   },
   news19: [
     ["Tréningové plány", "Jeden plán pre všetkých: dni A, B a C.", "Poskladaj si vlastné plány z cvikov v appke: ku každému dňu v týždni vyber cviky a série (prázdne dni sú dni voľna), zoraď plány do skupín a jeden používaj. Domov potom ukazuje týždeň toho plánu, odcvičené dni na zeleno. Malé ikony ukážu, čo ktorý deň trénuje, a tipy povedia, keď niektorý sval dostáva málo práce. Odporúčaný plán A, B, C tam stále je."],
@@ -430,6 +430,9 @@ export default {
     mx_wide_grip_lat_pulldown: { muscles: "Chrbát (široký sval), horný chrbát", how: "Sadni si so stehnami pod podložkou a chyť tyč široko (asi 1,5× šírka ramien). Stiahni ju k hornej časti hrudníka, lakte dole a von, potom ju pomaly pusti hore.", tip: "Neťahaj ju za krk." },
   },
   // 1.9.1
+  news193: [
+    "Sprievodca: kapitola Tréningové plány teraz prejde nové plány: Môj týždeň, Nový plán a v pláne dni v tvojom týždni, cviky a tipy. Ak si ju už videl, ukáže sa ešte raz, keď nabudúce otvoríš Plány.",
+  ],
   news192: [
     "Tréningové plány sú teraz samostatné tréningy a Môj týždeň priradí jeden z nich ku každému dňu (napríklad Plán A na Po, St a Pi, Plán B na Ut a Št). Predtým bol plán celý týždeň a zapnutý mohol byť len jeden. Tvoje plány sa prerobili samy: plán s rôznymi dňami sa zmenil na jeden tréning pre každý zoznam cvikov.",
     "Nemáš nastavený týždeň alebo máš deň voľna? Štart ti dá vybrať, čo cvičiť: tvoje plány, odporúčaný A/B/C alebo voľný tréning, a ten, čo si cvičil naposledy, je zelený.",

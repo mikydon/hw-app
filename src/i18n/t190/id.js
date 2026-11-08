@@ -296,7 +296,7 @@ export default {
   },
   tour: {
     ch: ["Beranda", "Lencana", "Latihan", "Profil", "Riwayat", "Kalori", "Teman", "Muscle Deck", "Toko", "Rencana latihan"],
-    c10: ["Ketuk {t}.", "Rencana yang disarankan: hari A, B, dan C selang sehari, dorong, tarik, kaki, dan inti, tanpa alat.", "Ketuk {t} untuk membuat rencanamu sendiri.", "Susun latihan dari latihan-latihan di aplikasi, juga dengan dumbel dan mesin. Lalu di Mingguku, pilih rencana mana yang kamu latih tiap hari; hari tanpa rencana adalah hari istirahat.", "Beranda lalu menampilkan rencana hari ini dan hari yang sudah dilatih berwarna hijau. Belum atur minggu? Mulai memungkinkanmu memilih rencana."],
+    c10: ["Ketuk {t}.", "Rencana yang disarankan: hari A, B, dan C selang sehari, dorong, tarik, kaki, dan inti, tanpa alat.", "Ketuk {t} untuk membuat rencanamu sendiri.", "Mingguku: ketuk sebuah hari dan pilih rencana yang kamu latih hari itu. Hari tanpa rencana adalah hari istirahat. Bohlam memeriksa seluruh minggu.", "Beranda lalu menampilkan rencana hari ini dan hari yang sudah dilatih berwarna hijau. Belum atur minggu? Mulai memungkinkanmu memilih rencana.", "{t} membuat latihan baru: beri nama lalu tambahkan latihan dari aplikasi.", "Ketuk sebuah rencana untuk membukanya.", "Hari di mingguku: ketuk hari-hari saat kamu melatih rencana ini, lalu harinya menyala. Titik di hari yang gelap berarti hari itu ada rencana lain.", "Latihan: tambahkan dari daftar aplikasi (pencarian juga mengenal nama lain), atur set dan waktu tahanmu sendiri; panah mengubah urutan.", "Bohlam memberi tips untuk latihan ini, misalnya kaki atau core belum ada. Hanya tips, tidak ada yang wajib."],
   },
   news19: [
     ["Rencana latihan", "Satu rencana untuk semua: hari A, B, dan C.", "Buat rencanamu sendiri dari latihan di aplikasi: pilih latihan dan set untuk tiap hari dalam seminggu (hari kosong adalah hari istirahat), kelompokkan rencana, lalu pakai salah satunya. Beranda kemudian menampilkan minggu rencana itu, hari yang selesai berwarna hijau. Ikon kecil menunjukkan apa yang dilatih tiap hari, dan tips memberi tahu kalau ada otot yang kurang dilatih. Rencana yang disarankan A, B, C tetap ada."],
@@ -430,6 +430,9 @@ export default {
     mx_wide_grip_lat_pulldown: { muscles: "Punggung (lat), punggung atas", how: "Duduk dengan paha di bawah bantalan dan pegang batang lebar (sekitar 1,5× lebar bahu). Tarik ke dada atas, siku turun dan keluar, lalu biarkan naik perlahan.", tip: "Jangan menariknya ke belakang leher." },
   },
   // 1.9.1
+  news193: [
+    "Panduan: bab Rencana latihan sekarang menunjukkan rencana baru: Mingguku, Rencana baru, dan di dalam rencana hari di minggumu, latihan, serta tips. Jika sudah pernah melihatnya, bab ini muncul sekali lagi saat kamu membuka Rencana berikutnya.",
+  ],
   news192: [
     "Rencana latihan sekarang berupa satu sesi latihan, dan Mingguku memasang salah satunya ke tiap hari (misalnya Rencana A di Sen, Rab, dan Jum, Rencana B di Sel dan Kam). Dulu satu rencana berisi satu minggu penuh dan hanya satu yang bisa dipakai. Rencanamu sudah diubah otomatis: rencana dengan hari yang berbeda menjadi satu latihan untuk tiap daftar latihan.",
     "Belum atur minggu atau sedang hari istirahat? Mulai memungkinkanmu memilih apa yang dilatih: rencanamu, A/B/C yang disarankan, atau latihan bebas, dan yang terakhir kamu lakukan berwarna hijau.",
