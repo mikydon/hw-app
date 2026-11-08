@@ -44,6 +44,10 @@ export default {
     tourPlHero: "{w}: tohle je dnešní trénink, tvůj plán na dnešek, nebo den volna.",
     tourPlDay: "Tady si vyber jiný den v týdnu a uvidíš jeho plán.",
     tourPlStart: "Start spustí dnešní plán. V den volna nebo bez nastaveného týdne ti Start dá vybrat: jeden z tvých plánů, doporučený A/B/C, nebo volný trénink. „{o}“ otevře stejný výběr kdykoli.",
+    tourMenuOrder: "Tužka mění pořadí v menu. První řádek je obrazovka, na které se aplikace otevře.",
+    tourKg: "U činek a strojů tu nastavíš kila. Příště aplikace začne od poslední váhy a řekne ti, kdy přidat.",
+    tourNote: "Poznámky: napiš, jak to šlo, např. „levé rameno ztuhlé“. Během pauzy patří poznámka k pauze; můžeš ji přepnout na cvik.",
+    tourExtra: "Ještě nejsi unavený? Tady přidáš další cvik. Počítá se jako ostatní.",
     addExtra: "Přidat cvik",
     addExtraD: "Ještě nejsi unavený? Přidané cviky se počítají do dnešního tréninku a lepší výsledek je rekord.",
     bg_arms: "Paže", bg_back: "Záda", bg_calves: "Lýtka", bg_chest: "Hrudník", bg_core: "Břicho", bg_glutes: "Hýždě", bg_legs: "Nohy", bg_shoulders: "Ramena",
@@ -432,6 +436,7 @@ export default {
   // 1.9.1
   news193: [
     "Průvodce: kapitola Tréninkové plány teď projde nové plány: Můj týden, Nový plán a v plánu dny v tvém týdnu, cviky a tipy. Pokud jsi ji už viděl, ukáže se ještě jednou, až příště otevřeš Plány.",
+    "Průvodce: kapitola Trénink teď vysvětlí i kila u činek, poznámky a přidání cviku, a kapitola Úvod ukáže tužku, která mění pořadí v menu.",
   ],
   news192: [
     "Tréninkové plány jsou teď samostatné tréninky a Můj týden přiřadí jeden z nich ke každému dni (například Plán A na Po, St a Pá, Plán B na Út a Čt). Dřív byl plán celý týden a zapnutý mohl být jen jeden. Tvoje plány se předělaly samy: plán s různými dny se změnil na jeden trénink pro každý seznam cviků.",

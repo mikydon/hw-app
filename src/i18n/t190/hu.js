@@ -44,6 +44,10 @@ export default {
     tourPlHero: "{w}: ez a mai edzésed, a mai terved vagy egy pihenőnap.",
     tourPlDay: "Itt válassz másik napot a héten, hogy lásd a tervét.",
     tourPlStart: "A Start elindítja a mai tervet. Pihenőnapon, vagy ha nincs beállítva hét, a Start választást ad: egy terved, az ajánlott A/B/C vagy egy szabad edzés. A „{o}” bármikor ugyanezt a választást nyitja meg.",
+    tourMenuOrder: "A ceruza a menü sorrendjét módosítja. Az első sor az a képernyő, amelyen az app megnyílik.",
+    tourKg: "Súlyoknál itt állítod a kilót. Legközelebb az app az utolsó súlyodról indul, és szól, mikor emelj.",
+    tourNote: "Jegyzetek: írd le, hogy ment, pl. „bal váll merev”. Pihenő alatt a jegyzet a pihenőhöz tartozik; átteheted egy gyakorlathoz.",
+    tourExtra: "Még nem fáradtál el? Itt adhatsz hozzá még egy gyakorlatot. Ugyanúgy számít, mint a többi.",
     addExtra: "Gyakorlat hozzáadása",
     addExtraD: "Még nem fáradtál el? A hozzáadott gyakorlatok beleszámítanak a mai edzésbe, és a jobb eredmény rekord.",
     bg_arms: "Kar", bg_back: "Hát", bg_calves: "Vádli", bg_chest: "Mell", bg_core: "Has", bg_glutes: "Farizom", bg_legs: "Láb", bg_shoulders: "Váll",
@@ -432,6 +436,7 @@ export default {
   // 1.9.1
   news193: [
     "Útmutató: az Edzéstervek fejezet most végigvezet az új terveken: A hetem, Új terv, és egy terven belül a heted napjai, a gyakorlatok és a tippek. Ha már láttad, a következő alkalommal, amikor megnyitod a Terveket, még egyszer megjelenik.",
+    "Útmutató: az Edzés fejezet most a kg-mezőt, a jegyzeteket és egy gyakorlat hozzáadását is elmagyarázza, a Kezdőlap fejezet pedig megmutatja a menü sorrendjét módosító ceruzát.",
   ],
   news192: [
     "Az edzéstervek most egyedi edzések, és A hetem minden naphoz hozzárendel egyet (például A terv hétfőn, szerdán és pénteken, B terv kedden és csütörtökön). Korábban egy terv egy egész hét volt, és csak egy lehetett használatban. A terveid maguktól átalakultak: a különböző napokból álló terv gyakorlatlistánként egy-egy edzés lett.",

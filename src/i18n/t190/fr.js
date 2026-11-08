@@ -44,6 +44,10 @@ export default {
     tourPlHero: "{w} : voici l'entraînement du jour, ton programme d'aujourd'hui ou un jour de repos.",
     tourPlDay: "Choisis ici un autre jour de la semaine pour voir son programme.",
     tourPlStart: "Démarrer lance le programme du jour. Un jour de repos, ou sans semaine définie, Démarrer te laisse choisir : un de tes programmes, le A/B/C recommandé ou un entraînement libre. « {o} » ouvre le même choix à tout moment.",
+    tourMenuOrder: "Le crayon change l'ordre du menu. La première ligne est l'écran sur lequel l'appli s'ouvre.",
+    tourKg: "Avec des poids, règle les kg ici. La prochaine fois, l'appli part de ton dernier poids et te dit quand monter.",
+    tourNote: "Notes : écris comment ça s'est passé, par ex. « épaule gauche raide ». Pendant un repos, la note va au repos ; tu peux la passer à un exercice.",
+    tourExtra: "Pas encore fatigué ? Ajoute ici un autre exercice. Il compte comme les autres.",
     addExtra: "Ajouter un exercice",
     addExtraD: "Pas encore fatigué ? Les exercices ajoutés comptent pour aujourd'hui, et un meilleur résultat est un record.",
     bg_arms: "Bras", bg_back: "Dos", bg_calves: "Mollets", bg_chest: "Pectoraux", bg_core: "Gainage", bg_glutes: "Fessiers", bg_legs: "Jambes", bg_shoulders: "Épaules",
@@ -432,6 +436,7 @@ export default {
   // 1.9.1
   news193: [
     "Guide : le chapitre Programmes présente maintenant les nouveaux programmes : Ma semaine, Nouveau programme et, dans un programme, les jours de ta semaine, les exercices et les conseils. Si tu l'as déjà vu, il revient une fois la prochaine fois que tu ouvres Programmes.",
+    "Guide : le chapitre Séance explique aussi le champ kg, les notes et l'ajout d'un exercice, et le chapitre Accueil montre le crayon qui réordonne le menu.",
   ],
   news192: [
     "Les programmes sont maintenant des séances uniques, et Ma semaine en attribue un à chaque jour (par exemple le Programme A lun, mer et ven, le Programme B mar et jeu). Avant, un programme était une semaine entière et un seul pouvait être utilisé. Tes programmes ont été convertis tout seuls : un programme avec des jours différents est devenu une séance par liste d'exercices.",

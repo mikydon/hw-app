@@ -465,6 +465,10 @@ const en = {
     tourPlHero: "This is today's workout from {w}: your plan for today, or a rest day.",
     tourPlDay: "Pick another day of the week here to see its plan.",
     tourPlStart: "Start begins today's plan. On a rest day, or with no week set, Start lets you choose: one of your plans, the recommended A/B/C or a free workout. \"{o}\" opens the same choice any time.",
+    tourMenuOrder: "The pencil changes the order of the menu. The first row is the screen the app opens on.",
+    tourKg: "With weights, set the kg here. Next time the app starts from your last weight and tells you when to go heavier.",
+    tourNote: "Notes: write how it went, e.g. \"left shoulder tight\". During a rest the note belongs to the rest; you can switch it to an exercise.",
+    tourExtra: "Not tired yet? Add another exercise here. It counts like the others.",
     acBkNowBusy: "Backing up…",
     acBkNow: "Back up now",
     acBkNone: "Not saved yet",
@@ -1809,6 +1813,7 @@ const en = {
   ],
   news193: [
     "Guide: the Workout plans chapter now walks through the new plans: My week, New plan, and inside a plan the days in your week, the exercises and the tips. If you already saw it, it shows once more the next time you open Workout plans.",
+    "Guide: the workout chapter now also explains the kg field, notes and adding an exercise, and the Home chapter shows the pencil that reorders the menu.",
   ],
   news192: [
     "Workout plans are single workouts now, and My week picks one of them for each day (for example Plan A on Mon, Wed and Fri, Plan B on Tue and Thu). Before, a plan was a whole week and only one could be in use. Your plans were changed over by themselves: a plan with different days became one workout per list of exercises.",

@@ -44,6 +44,10 @@ export default {
     tourPlHero: "{w}: ini latihan hari ini, rencanamu untuk hari ini, atau hari istirahat.",
     tourPlDay: "Pilih hari lain dalam minggu ini di sini untuk melihat rencananya.",
     tourPlStart: "Mulai menjalankan rencana hari ini. Di hari istirahat, atau jika minggu belum diatur, Mulai membiarkanmu memilih: salah satu rencanamu, A/B/C yang disarankan, atau latihan bebas. \"{o}\" membuka pilihan yang sama kapan saja.",
+    tourMenuOrder: "Pensil mengubah urutan menu. Baris pertama adalah layar yang dibuka aplikasi.",
+    tourKg: "Dengan beban, atur kg di sini. Lain kali aplikasi mulai dari beban terakhirmu dan memberi tahu kapan menambah.",
+    tourNote: "Catatan: tulis bagaimana hasilnya, misalnya \"bahu kiri kaku\". Saat istirahat, catatan milik istirahat; kamu bisa memindahkannya ke latihan.",
+    tourExtra: "Belum lelah? Tambahkan latihan lain di sini. Dihitung seperti yang lain.",
     addExtra: "Tambah latihan",
     addExtraD: "Belum capek? Latihan tambahan dihitung untuk hari ini, dan hasil yang lebih baik jadi rekor.",
     bg_arms: "Lengan", bg_back: "Punggung", bg_calves: "Betis", bg_chest: "Dada", bg_core: "Inti", bg_glutes: "Bokong", bg_legs: "Kaki", bg_shoulders: "Bahu",
@@ -432,6 +436,7 @@ export default {
   // 1.9.1
   news193: [
     "Panduan: bab Rencana latihan sekarang menunjukkan rencana baru: Mingguku, Rencana baru, dan di dalam rencana hari di minggumu, latihan, serta tips. Jika sudah pernah melihatnya, bab ini muncul sekali lagi saat kamu membuka Rencana berikutnya.",
+    "Panduan: bab Latihan kini juga menjelaskan kolom kg, catatan, dan menambah latihan, dan bab Beranda menunjukkan pensil untuk mengubah urutan menu.",
   ],
   news192: [
     "Rencana latihan sekarang berupa satu sesi latihan, dan Mingguku memasang salah satunya ke tiap hari (misalnya Rencana A di Sen, Rab, dan Jum, Rencana B di Sel dan Kam). Dulu satu rencana berisi satu minggu penuh dan hanya satu yang bisa dipakai. Rencanamu sudah diubah otomatis: rencana dengan hari yang berbeda menjadi satu latihan untuk tiap daftar latihan.",

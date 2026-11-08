@@ -44,6 +44,10 @@ export default {
     tourPlHero: "{w}: Das ist dein heutiges Training, dein Plan für heute oder ein Ruhetag.",
     tourPlDay: "Wähl hier einen anderen Wochentag, um seinen Plan zu sehen.",
     tourPlStart: "Start beginnt den heutigen Plan. An einem Ruhetag oder ohne eingestellte Woche lässt dich Start wählen: einen deiner Pläne, das empfohlene A/B/C oder ein freies Training. „{o}“ öffnet dieselbe Auswahl jederzeit.",
+    tourMenuOrder: "Der Stift ändert die Reihenfolge im Menü. Die erste Zeile ist der Bildschirm, mit dem die App startet.",
+    tourKg: "Bei Gewichten stellst du hier die kg ein. Nächstes Mal startet die App mit deinem letzten Gewicht und sagt dir, wann du steigern kannst.",
+    tourNote: "Notizen: Schreib auf, wie es lief, z. B. „linke Schulter verspannt“. In einer Pause gehört die Notiz zur Pause; du kannst sie einer Übung zuordnen.",
+    tourExtra: "Noch nicht müde? Füg hier eine weitere Übung hinzu. Sie zählt wie die anderen.",
     addExtra: "Übung hinzufügen",
     addExtraD: "Noch nicht müde? Hinzugefügte Übungen zählen für heute, und ein besseres Ergebnis ist ein Rekord.",
     bg_arms: "Arme", bg_back: "Rücken", bg_calves: "Waden", bg_chest: "Brust", bg_core: "Rumpf", bg_glutes: "Po", bg_legs: "Beine", bg_shoulders: "Schultern",
@@ -432,6 +436,7 @@ export default {
   // 1.9.1
   news193: [
     "Anleitung: Das Kapitel Trainingspläne zeigt jetzt die neuen Pläne: Meine Woche, Neuer Plan und in einem Plan die Tage in deiner Woche, die Übungen und die Tipps. Hast du es schon gesehen, kommt es beim nächsten Öffnen der Pläne noch einmal.",
+    "Anleitung: Das Kapitel Training erklärt jetzt auch das kg-Feld, Notizen und das Hinzufügen einer Übung, und das Kapitel Start zeigt den Stift, der das Menü umsortiert.",
   ],
   news192: [
     "Trainingspläne sind jetzt einzelne Trainings, und Meine Woche legt einen davon auf jeden Tag (zum Beispiel Plan A auf Mo, Mi und Fr, Plan B auf Di und Do). Vorher war ein Plan eine ganze Woche und nur einer konnte aktiv sein. Deine Pläne wurden von selbst umgestellt: Ein Plan mit verschiedenen Tagen wurde zu einem Training pro Übungsliste.",

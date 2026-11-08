@@ -15,6 +15,7 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 A small update: it arrives in the app by itself, no new APK needed.
 
 - **Guide for the new plans:** the Workout plans chapter now walks through My week, New plan, and inside a plan the row "Days in my week", the exercises and the tips. Before, it showed only My week. People who already saw the chapter get it once more the next time they open Workout plans.
+- **Guide for the rest of 1.9.0:** the workout chapter now explains the kg field (only on exercises with weights), notes and adding an exercise during a workout, and the Home chapter shows the pencil that changes the menu order. Before, the guide said nothing about them.
 
 ## 1.9.2 (2026-11-08)
 

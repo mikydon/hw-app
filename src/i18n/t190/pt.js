@@ -44,6 +44,10 @@ export default {
     tourPlHero: "{w}: este é o treino de hoje, o seu plano de hoje ou um dia de descanso.",
     tourPlDay: "Escolha aqui outro dia da semana para ver o plano dele.",
     tourPlStart: "Começar inicia o plano de hoje. Num dia de descanso, ou sem semana definida, Começar deixa você escolher: um dos seus planos, o A/B/C recomendado ou um treino livre. \"{o}\" abre a mesma escolha a qualquer momento.",
+    tourMenuOrder: "O lápis muda a ordem do menu. A primeira linha é a tela em que o app abre.",
+    tourKg: "Com pesos, ajuste aqui os kg. Na próxima vez o app começa do seu último peso e avisa quando aumentar.",
+    tourNote: "Notas: escreva como foi, por ex. \"ombro esquerdo travado\". Durante um descanso a nota é do descanso; você pode passá-la para um exercício.",
+    tourExtra: "Ainda não cansou? Adicione aqui outro exercício. Ele conta como os outros.",
     addExtra: "Adicionar exercício",
     addExtraD: "Ainda não está cansado? Exercícios adicionados contam para hoje, e um resultado melhor é um recorde.",
     bg_arms: "Braços", bg_back: "Costas", bg_calves: "Panturrilhas", bg_chest: "Peito", bg_core: "Core", bg_glutes: "Glúteos", bg_legs: "Pernas", bg_shoulders: "Ombros",
@@ -432,6 +436,7 @@ export default {
   // 1.9.1
   news193: [
     "Guia: o capítulo Planos de treino agora mostra os planos novos: Minha semana, Novo plano e, dentro de um plano, os dias da sua semana, os exercícios e as dicas. Se você já viu, ele aparece mais uma vez na próxima vez que abrir Planos.",
+    "Guia: o capítulo Treino agora também explica o campo de kg, as notas e como adicionar um exercício, e o capítulo Início mostra o lápis que reordena o menu.",
   ],
   news192: [
     "Os planos de treino agora são treinos únicos, e Minha semana atribui um a cada dia (por exemplo, Plano A na seg, qua e sex, Plano B na ter e qui). Antes, um plano era uma semana inteira e só um podia estar em uso. Seus planos foram convertidos sozinhos: um plano com dias diferentes virou um treino para cada lista de exercícios.",

@@ -44,6 +44,10 @@ export default {
     tourPlHero: "{w}: to dzisiejszy trening, twój plan na dziś albo dzień odpoczynku.",
     tourPlDay: "Wybierz tu inny dzień tygodnia, żeby zobaczyć jego plan.",
     tourPlStart: "Start uruchamia dzisiejszy plan. W dzień odpoczynku albo bez ustawionego tygodnia Start pozwala wybrać: jeden z twoich planów, polecane A/B/C albo wolny trening. „{o}” otwiera ten sam wybór w każdej chwili.",
+    tourMenuOrder: "Ołówek zmienia kolejność menu. Pierwszy wiersz to ekran, od którego otwiera się aplikacja.",
+    tourKg: "Przy ciężarach ustaw tu kg. Następnym razem aplikacja zacznie od ostatniego ciężaru i powie, kiedy dołożyć.",
+    tourNote: "Notatki: zapisz, jak poszło, np. „lewy bark spięty”. W czasie przerwy notatka należy do przerwy; możesz przełączyć ją na ćwiczenie.",
+    tourExtra: "Jeszcze nie jesteś zmęczony? Dodaj tu kolejne ćwiczenie. Liczy się jak pozostałe.",
     addExtra: "Dodaj ćwiczenie",
     addExtraD: "Jeszcze nie jesteś zmęczony? Dodane ćwiczenia liczą się do dzisiejszego treningu, a lepszy wynik to rekord.",
     bg_arms: "Ręce", bg_back: "Plecy", bg_calves: "Łydki", bg_chest: "Klatka", bg_core: "Brzuch", bg_glutes: "Pośladki", bg_legs: "Nogi", bg_shoulders: "Barki",
@@ -432,6 +436,7 @@ export default {
   // 1.9.1
   news193: [
     "Przewodnik: rozdział Plany treningowe pokazuje teraz nowe plany: Mój tydzień, Nowy plan, a w planie dni w twoim tygodniu, ćwiczenia i wskazówki. Jeśli już go widziałeś, pojawi się jeszcze raz, gdy następnym razem otworzysz Plany.",
+    "Przewodnik: rozdział Trening objaśnia teraz też pole kg, notatki i dodawanie ćwiczenia, a rozdział Start pokazuje ołówek do zmiany kolejności menu.",
   ],
   news192: [
     "Plany treningowe to teraz pojedyncze treningi, a Mój tydzień przypisuje jeden z nich do każdego dnia (np. Plan A w pon., śr. i pt., Plan B we wt. i czw.). Wcześniej plan był całym tygodniem i tylko jeden mógł być w użyciu. Twoje plany zmieniły się same: plan z różnymi dniami stał się jednym treningiem na każdą listę ćwiczeń.",

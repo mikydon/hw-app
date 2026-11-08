@@ -44,6 +44,10 @@ export default {
     tourPlHero: "{w}: questo è l'allenamento di oggi, la tua scheda di oggi o un giorno di riposo.",
     tourPlDay: "Scegli qui un altro giorno della settimana per vederne la scheda.",
     tourPlStart: "Inizia avvia la scheda di oggi. In un giorno di riposo, o senza settimana impostata, Inizia ti fa scegliere: una delle tue schede, l'A/B/C consigliato o un allenamento libero. «{o}» apre la stessa scelta in qualsiasi momento.",
+    tourMenuOrder: "La matita cambia l'ordine del menu. La prima riga è la schermata con cui si apre l'app.",
+    tourKg: "Con i pesi, imposta qui i kg. La prossima volta l'app parte dal tuo ultimo peso e ti dice quando aumentare.",
+    tourNote: "Note: scrivi com'è andata, ad es. «spalla sinistra rigida». Durante un recupero la nota è del recupero; puoi spostarla su un esercizio.",
+    tourExtra: "Non sei ancora stanco? Aggiungi qui un altro esercizio. Conta come gli altri.",
     addExtra: "Aggiungi esercizio",
     addExtraD: "Non sei ancora stanco? Gli esercizi aggiunti contano per oggi e un risultato migliore è un record.",
     bg_arms: "Braccia", bg_back: "Schiena", bg_calves: "Polpacci", bg_chest: "Petto", bg_core: "Core", bg_glutes: "Glutei", bg_legs: "Gambe", bg_shoulders: "Spalle",
@@ -432,6 +436,7 @@ export default {
   // 1.9.1
   news193: [
     "Guida: il capitolo Schede ora mostra le nuove schede: La mia settimana, Nuova scheda e, dentro una scheda, i giorni della tua settimana, gli esercizi e i consigli. Se l'hai già visto, compare ancora una volta la prossima volta che apri Schede.",
+    "Guida: il capitolo Allenamento ora spiega anche il campo kg, le note e come aggiungere un esercizio, e il capitolo Home mostra la matita che riordina il menu.",
   ],
   news192: [
     "Le schede ora sono singoli allenamenti, e La mia settimana ne assegna una a ogni giorno (per esempio Scheda A lun, mer e ven, Scheda B mar e gio). Prima una scheda era un'intera settimana e se ne poteva usare solo una. Le tue schede sono state convertite da sole: una scheda con giorni diversi è diventata un allenamento per ogni lista di esercizi.",

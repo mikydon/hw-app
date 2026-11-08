@@ -44,6 +44,10 @@ export default {
     tourPlHero: "{w}: toto je dnešný tréning, tvoj plán na dnes alebo deň voľna.",
     tourPlDay: "Tu si vyber iný deň v týždni a uvidíš jeho plán.",
     tourPlStart: "Štart spustí dnešný plán. V deň voľna alebo bez nastaveného týždňa ti Štart dá vybrať: jeden z tvojich plánov, odporúčaný A/B/C alebo voľný tréning. „{o}“ otvorí ten istý výber kedykoľvek.",
+    tourMenuOrder: "Ceruzka mení poradie v menu. Prvý riadok je obrazovka, na ktorej sa appka otvorí.",
+    tourKg: "Pri činkách a strojoch tu nastavíš kilá. Nabudúce appka začne od poslednej váhy a povie ti, kedy pridať.",
+    tourNote: "Poznámky: napíš, ako to išlo, napr. „ľavé rameno stuhnuté“. Počas oddychu patrí poznámka k oddychu; môžeš ju prepnúť na cvik.",
+    tourExtra: "Ešte nie si unavený? Tu pridáš ďalší cvik. Počíta sa ako ostatné.",
     addExtra: "Pridať cvik",
     addExtraD: "Ešte nie si unavený? Pridané cviky sa rátajú do dnešného tréningu a lepší výsledok je rekord.",
     bg_arms: "Ruky", bg_back: "Chrbát", bg_calves: "Lýtka", bg_chest: "Hrudník", bg_core: "Brucho", bg_glutes: "Zadok", bg_legs: "Nohy", bg_shoulders: "Ramená",
@@ -432,6 +436,7 @@ export default {
   // 1.9.1
   news193: [
     "Sprievodca: kapitola Tréningové plány teraz prejde nové plány: Môj týždeň, Nový plán a v pláne dni v tvojom týždni, cviky a tipy. Ak si ju už videl, ukáže sa ešte raz, keď nabudúce otvoríš Plány.",
+    "Sprievodca: kapitola Tréning teraz vysvetlí aj kilá pri činkách, poznámky a pridanie cviku, a kapitola Domov ukáže ceruzku, ktorá mení poradie v menu.",
   ],
   news192: [
     "Tréningové plány sú teraz samostatné tréningy a Môj týždeň priradí jeden z nich ku každému dňu (napríklad Plán A na Po, St a Pi, Plán B na Ut a Št). Predtým bol plán celý týždeň a zapnutý mohol byť len jeden. Tvoje plány sa prerobili samy: plán s rôznymi dňami sa zmenil na jeden tréning pre každý zoznam cvikov.",

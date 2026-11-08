@@ -10878,6 +10878,7 @@ function tourSteps(ch, x) {
     s('[data-home-ex="0"]', 6, { opt: true }),
     s("[data-rounds-row]", 3, pm.week || pm.own ? { t: T("tourPlStart", { o: T("plOther") }) } : {}), // own plans: Start = today's plan or the picker
     s("[data-menu-btn]", 7, { tap: true, opt: true, prep: async () => { await tourTab("home", HOME_TAB.today); await tourWait(150); window.scrollTo(0, 0); } }), // left out on a PC (side menu)
+    s("[data-nav-pencil]", 7, { opt: true, keepMenu: true, wait: 400, t: T("tourMenuOrder") }), // 1.9.3: menu order (1.9.0) had no bubble
     { done: true, t: T("tourAutoD"), keepMenu: true },
   ];
   if (ch === 2) return [
@@ -10890,10 +10891,13 @@ function tourSteps(ch, x) {
     s("[data-warmup-list]", 0, { opt: true }),
     s("[data-warmup-go]", 1, { tap: true, opt: true }),
     s("[data-reps]", 2, { opt: true, wait: 4000 }),
+    s("[data-kg-field]", 2, { opt: true, t: T("tourKg") }), // 1.9.3: weights (1.9.0) had no bubble; only exercises with kg show it
     s("[data-goal]", 3, { opt: true, wait: 400 }),
     s("[data-tempo-btn]", 4, { opt: true, wait: 400 }),
     s("[data-done-btn], [data-side-next]", 5, { tap: true, opt: true }),
     s("[data-rest-timer]", 6, { opt: true, wait: 3000 }),
+    s("[data-note-open]", 6, { opt: true, t: T("tourNote") }), // 1.9.3: notes and adding an exercise (1.9.0) had no bubble
+    s("[data-add-extra]", 6, { opt: true, t: T("tourExtra") }),
     s("[data-minimize]", 7, { opt: true }),
     { done: true, t: X[8] },
   ];
