@@ -22,6 +22,25 @@ export default {
     restRowD: "Mostra il recupero sulla schermata di blocco e suona a 3, 2, 1 e 0 anche a telefono bloccato. Android chiama questo permesso «Attività fisica»; l'app non legge con esso alcun dato di attività.",
     restRowOpen: "Bloccato in Android: consenti «Attività fisica» nelle impostazioni dell'app",
     restRowBlocked: "Bloccato in Android: Impostazioni → App → HW App → Autorizzazioni → Attività fisica",
+    // 1.9.2: plans = single workouts + My week
+    plWeek: "La mia settimana",
+    plWeekD: "Scegli una delle tue schede per ogni giorno. Un giorno senza scheda è un giorno di riposo; puoi comunque allenarti: Inizia ti fa scegliere qualsiasi scheda.",
+    plRest: "Riposo",
+    plWeekNone: "Prima crea una scheda, poi assegnala ai giorni.",
+    plWeekClear: "Svuota la settimana",
+    plWeekClearQ: "Svuotare la settimana?",
+    plWeekClearD: "Ogni giorno diventa di riposo e la Home mostra di nuovo la scheda consigliata. Le tue schede restano.",
+    plTipsNoWeek: "Assegna le schede ai giorni in La mia settimana per vedere cosa allena la tua settimana.",
+    hintMissPlan: "Questo allenamento non ha {types}. Un allenamento total body allena spinta, trazione, gambe e core.",
+    plRecWeekOn: "La tua settimana usa le tue schede. Svuotala in Le mie schede per riallenare questa.",
+    plNoEx: "Ancora nessun esercizio",
+    plDaysT: "Giorni della mia settimana",
+    plDaysD: "Tocca i giorni in cui fai questa scheda. Un giorno che aveva un'altra scheda prende questa; i giorni senza scheda sono di riposo.",
+    plDaysEmpty: "Prima aggiungi gli esercizi.",
+    plPick: "Cosa alleni oggi?",
+    plPickSub: "scegli una scheda",
+    plOther: "Allena altro",
+    plRestInfo2: "Oggi niente scheda. Vuoi allenarti lo stesso? Tocca Inizia e scegline una.",
     addExtra: "Aggiungi esercizio",
     addExtraD: "Non sei ancora stanco? Gli esercizi aggiunti contano per oggi e un risultato migliore è un record.",
     bg_arms: "Braccia", bg_back: "Schiena", bg_calves: "Polpacci", bg_chest: "Petto", bg_core: "Core", bg_glutes: "Glutei", bg_legs: "Gambe", bg_shoulders: "Spalle",
@@ -274,13 +293,7 @@ export default {
   },
   tour: {
     ch: ["Home", "Medaglie", "Allenamento", "Profilo", "Storico", "Calorie", "Amici", "Muscle Deck", "Negozio", "Schede"],
-    c10: [
-      "Tocca {t}.",
-      "La scheda consigliata: giorni A, B e C a giorni alterni, spinta, trazione, gambe e core, senza attrezzi.",
-      "Tocca {t} per creare la tua.",
-      "Crea una scheda con gli esercizi dell'app, anche con manubri e macchine. Scegli gli esercizi per ogni giorno della settimana; i giorni vuoti sono di riposo.",
-      "Tocca Usa questa scheda e la Home mostrerà la settimana di quella scheda, con i giorni fatti in verde.",
-    ],
+    c10: ["Tocca {t}.", "La scheda consigliata: giorni A, B e C a giorni alterni, spinta, trazione, gambe e core, senza attrezzi.", "Tocca {t} per creare la tua.", "Componi un allenamento con gli esercizi dell'app, anche con manubri e macchine. Poi, in La mia settimana, scegli quale scheda fai ogni giorno; i giorni senza scheda sono di riposo.", "La Home mostrerà la scheda di oggi e in verde i giorni allenati. Nessuna settimana? Inizia ti fa scegliere una scheda."],
   },
   news19: [
     ["Schede di allenamento", "Una scheda per tutti: giorni A, B e C.", "Crea le tue schede con gli esercizi dell'app: scegli esercizi e serie per ogni giorno della settimana (i giorni vuoti sono di riposo), ordina le schede in gruppi e usane una. La Home mostra poi la settimana di quella scheda, con i giorni fatti in verde. Piccole icone mostrano cosa allena ogni giorno e dei consigli avvisano quando un muscolo lavora poco. La scheda consigliata A, B, C c'è ancora."],
@@ -414,6 +427,11 @@ export default {
     mx_wide_grip_lat_pulldown: { muscles: "Schiena (dorsali), parte alta della schiena", how: "Siediti con le cosce sotto il cuscino e afferra la barra larga (circa 1,5 volte la larghezza delle spalle). Tirala alla parte alta del petto, gomiti giù e in fuori, poi lasciala risalire lentamente.", tip: "Non tirarla dietro la nuca." },
   },
   // 1.9.1
+  news192: [
+    "Le schede ora sono singoli allenamenti, e La mia settimana ne assegna una a ogni giorno (per esempio Scheda A lun, mer e ven, Scheda B mar e gio). Prima una scheda era un'intera settimana e se ne poteva usare solo una. Le tue schede sono state convertite da sole: una scheda con giorni diversi è diventata un allenamento per ogni lista di esercizi.",
+    "Nessuna settimana o giorno di riposo? Inizia ti fa scegliere cosa allenare: le tue schede, la consigliata A/B/C o un allenamento libero, e l'ultimo fatto è in verde.",
+    "Coreano: le parole non si spezzano più a metà a fine riga, e i nomi lunghi dei jolly di Muscle Deck non si dividono mai dentro una parola.",
+  ],
   news191: [
     "L'accesso su un telefono i cui allenamenti non appartengono a nessun account ora chiede prima: usare i dati dell'account o aggiungervi gli allenamenti del telefono. Prima venivano uniti senza chiedere, e il nome provvisorio «User» del telefono poteva sostituire il tuo nome e la tua foto.",
     "Se su un telefono mancano il tuo nome o la tua foto, l'app li riprende dal profilo del tuo account e non toglie mai la foto che vedono gli amici.",

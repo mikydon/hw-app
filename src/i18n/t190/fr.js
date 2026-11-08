@@ -22,6 +22,25 @@ export default {
     restRowD: "Affiche le repos sur l'écran verrouillé et bipe à 3, 2, 1 et 0 même téléphone verrouillé. Android appelle cette autorisation « Activité physique » ; l'app ne lit aucune donnée d'activité avec.",
     restRowOpen: "Bloqué dans Android : autorise « Activité physique » dans les réglages de l'app",
     restRowBlocked: "Bloqué dans Android : Paramètres → Applications → HW App → Autorisations → Activité physique",
+    // 1.9.2: plans = single workouts + My week
+    plWeek: "Ma semaine",
+    plWeekD: "Choisis un de tes programmes pour chaque jour. Un jour sans programme est un jour de repos ; tu peux quand même t'entraîner : Démarrer te laisse choisir n'importe quel programme.",
+    plRest: "Repos",
+    plWeekNone: "Crée d'abord un programme, puis attribue-le à tes jours.",
+    plWeekClear: "Vider la semaine",
+    plWeekClearQ: "Vider ta semaine ?",
+    plWeekClearD: "Chaque jour devient un jour de repos et l'Accueil montre à nouveau le programme recommandé. Tes programmes restent.",
+    plTipsNoWeek: "Attribue des programmes à tes jours dans Ma semaine pour voir ce que ta semaine travaille.",
+    hintMissPlan: "Cette séance n'a pas de {types}. Une séance complète travaille la poussée, le tirage, les jambes et le gainage.",
+    plRecWeekOn: "Ta semaine utilise tes propres programmes. Vide-la dans Mes programmes pour refaire celui-ci.",
+    plNoEx: "Pas encore d'exercices",
+    plDaysT: "Jours de ma semaine",
+    plDaysD: "Touche les jours où tu fais ce programme. Un jour qui avait un autre programme prend celui-ci ; les jours sans programme sont des jours de repos.",
+    plDaysEmpty: "Ajoute d'abord des exercices.",
+    plPick: "Tu fais quoi aujourd'hui ?",
+    plPickSub: "choisis un programme",
+    plOther: "Faire autre chose",
+    plRestInfo2: "Pas de programme aujourd'hui. Tu veux quand même t'entraîner ? Touche Démarrer et choisis.",
     addExtra: "Ajouter un exercice",
     addExtraD: "Pas encore fatigué ? Les exercices ajoutés comptent pour aujourd'hui, et un meilleur résultat est un record.",
     bg_arms: "Bras", bg_back: "Dos", bg_calves: "Mollets", bg_chest: "Pectoraux", bg_core: "Gainage", bg_glutes: "Fessiers", bg_legs: "Jambes", bg_shoulders: "Épaules",
@@ -274,13 +293,7 @@ export default {
   },
   tour: {
     ch: ["Accueil", "Badges", "Séance", "Profil", "Historique", "Calories", "Amis", "Muscle Deck", "Boutique", "Programmes"],
-    c10: [
-      "Touche {t}.",
-      "Le programme recommandé : jours A, B et C un jour sur deux, poussée, tirage, jambes et gainage, sans matériel.",
-      "Touche {t} pour créer le tien.",
-      "Crée un programme avec les exercices de l'app, aussi avec haltères et machines. Choisis des exercices pour chaque jour de la semaine ; les jours vides sont des jours de repos.",
-      "Touche Utiliser ce programme et l'Accueil montrera la semaine de ce programme, les jours faits en vert.",
-    ],
+    c10: ["Touche {t}.", "Le programme recommandé : jours A, B et C un jour sur deux, poussée, tirage, jambes et gainage, sans matériel.", "Touche {t} pour créer le tien.", "Compose une séance avec les exercices de l'appli, aussi avec haltères et machines. Puis, dans Ma semaine, choisis quel programme tu fais chaque jour ; les jours sans programme sont des jours de repos.", "L'Accueil montre ensuite le programme du jour et en vert les jours entraînés. Pas de semaine ? Démarrer te laisse choisir un programme."],
   },
   news19: [
     ["Programmes", "Un programme pour tous : jours A, B et C.", "Crée tes propres programmes avec les exercices de l'app : choisis exercices et séries pour chaque jour de la semaine (les jours vides sont des jours de repos), range-les en groupes et utilises-en un. L'Accueil montre alors la semaine de ce programme, les jours faits en vert. De petites icônes montrent ce que travaille chaque jour, et des conseils te disent quand un muscle travaille peu. Le programme recommandé A, B, C est toujours là."],
@@ -414,6 +427,11 @@ export default {
     mx_wide_grip_lat_pulldown: { muscles: "Dos (grand dorsal), haut du dos", how: "Assieds-toi cuisses sous le coussin et prends la barre large (environ 1,5 fois la largeur des épaules). Tire-la vers le haut de la poitrine, coudes vers le bas et l'extérieur, puis laisse-la remonter lentement.", tip: "Ne la tire pas derrière la nuque." },
   },
   // 1.9.1
+  news192: [
+    "Les programmes sont maintenant des séances uniques, et Ma semaine en attribue un à chaque jour (par exemple le Programme A lun, mer et ven, le Programme B mar et jeu). Avant, un programme était une semaine entière et un seul pouvait être utilisé. Tes programmes ont été convertis tout seuls : un programme avec des jours différents est devenu une séance par liste d'exercices.",
+    "Pas de semaine ou jour de repos ? Démarrer te laisse choisir quoi faire : tes programmes, le recommandé A/B/C ou une séance libre, et le dernier fait est en vert.",
+    "Coréen : les mots ne se coupent plus au milieu en fin de ligne, et les longs noms de jokers de Muscle Deck ne se coupent jamais dans un mot.",
+  ],
   news191: [
     "Se connecter sur un téléphone dont les entraînements n'appartiennent à aucun compte demande maintenant d'abord : utiliser les données du compte, ou y ajouter les entraînements du téléphone. Avant, ils étaient fusionnés sans demander, et le nom provisoire « User » du téléphone pouvait remplacer ton nom et ta photo.",
     "Si ton nom ou ta photo manque un jour sur un téléphone, l'app les reprend du profil de ton compte, et elle ne supprime jamais la photo que voient tes amis.",

@@ -22,6 +22,25 @@ export default {
     restRowD: "Muestra el descanso en la pantalla de bloqueo y pita en 3, 2, 1 y 0 aunque el teléfono esté bloqueado. Android llama a este permiso «Actividad física»; la app no lee con él ningún dato de actividad.",
     restRowOpen: "Bloqueado en Android: permite «Actividad física» en los ajustes de la app",
     restRowBlocked: "Bloqueado en Android: Ajustes → Aplicaciones → HW App → Permisos → Actividad física",
+    // 1.9.2: plans = single workouts + My week
+    plWeek: "Mi semana",
+    plWeekD: "Elige uno de tus planes para cada día. Un día sin plan es día de descanso; aun así puedes entrenar: Empezar te deja elegir cualquier plan.",
+    plRest: "Descanso",
+    plWeekNone: "Primero crea un plan y luego asígnalo a tus días.",
+    plWeekClear: "Vaciar la semana",
+    plWeekClearQ: "¿Vaciar tu semana?",
+    plWeekClearD: "Todos los días pasan a ser de descanso e Inicio vuelve a mostrar el plan recomendado. Tus planes se quedan.",
+    plTipsNoWeek: "Asigna planes a tus días en Mi semana para ver qué entrena tu semana.",
+    hintMissPlan: "Este entreno no tiene {types}. Un entreno de cuerpo completo trabaja empuje, tirón, piernas y core.",
+    plRecWeekOn: "Tu semana usa tus propios planes. Vacíala en Mis planes para volver a entrenar este.",
+    plNoEx: "Aún sin ejercicios",
+    plDaysT: "Días de mi semana",
+    plDaysD: "Toca los días en que entrenas este plan. Un día que tenía otro plan pasa a tener este; los días sin plan son de descanso.",
+    plDaysEmpty: "Primero añade ejercicios.",
+    plPick: "¿Qué entrenas hoy?",
+    plPickSub: "elige un plan",
+    plOther: "Entrenar otra cosa",
+    plRestInfo2: "Hoy no tienes plan. ¿Quieres entrenar igual? Toca Empezar y elige uno.",
     addExtra: "Añadir ejercicio",
     addExtraD: "¿Aún no estás cansado? Los ejercicios añadidos cuentan para hoy y un resultado mejor es un récord.",
     bg_arms: "Brazos", bg_back: "Espalda", bg_calves: "Gemelos", bg_chest: "Pecho", bg_core: "Core", bg_glutes: "Glúteos", bg_legs: "Piernas", bg_shoulders: "Hombros",
@@ -274,13 +293,7 @@ export default {
   },
   tour: {
     ch: ["Inicio", "Insignias", "Entreno", "Perfil", "Historial", "Calorías", "Amigos", "Muscle Deck", "Tienda", "Planes de entreno"],
-    c10: [
-      "Toca {t}.",
-      "El plan recomendado: días A, B y C en días alternos, empuje, tracción, piernas y core, sin material.",
-      "Toca {t} para crear el tuyo.",
-      "Crea un plan con los ejercicios de la app, también con mancuernas y máquinas. Elige ejercicios para cada día de la semana; los días vacíos son de descanso.",
-      "Toca Usar este plan e Inicio mostrará la semana de ese plan, con los días hechos en verde.",
-    ],
+    c10: ["Toca {t}.", "El plan recomendado: días A, B y C en días alternos, empuje, tracción, piernas y core, sin material.", "Toca {t} para crear el tuyo.", "Arma un entreno con los ejercicios de la app, también con mancuernas y máquinas. Luego, en Mi semana, elige qué plan entrenas cada día; los días sin plan son de descanso.", "Inicio te mostrará el plan de hoy y en verde los días que entrenaste. ¿Sin semana? Empezar te deja elegir un plan."],
   },
   news19: [
     ["Planes de entreno", "Un plan para todos: días A, B y C.", "Crea tus propios planes con los ejercicios de la app: elige ejercicios y series para cada día de la semana (los días vacíos son de descanso), ordena los planes en grupos y usa uno. Inicio muestra entonces la semana de ese plan, con los días hechos en verde. Unos iconos pequeños muestran qué entrena cada día y unos consejos avisan cuando un músculo trabaja poco. El plan recomendado A, B, C sigue ahí."],
@@ -414,6 +427,11 @@ export default {
     mx_wide_grip_lat_pulldown: { muscles: "Espalda (dorsal), espalda alta", how: "Siéntate con los muslos bajo la almohadilla y coge la barra ancha (unas 1,5 veces el ancho de hombros). Llévala al pecho alto, codos hacia abajo y hacia fuera, y deja que suba despacio.", tip: "No la bajes por detrás de la nuca." },
   },
   // 1.9.1
+  news192: [
+    "Los planes de entreno ahora son entrenos sueltos, y Mi semana asigna uno a cada día (por ejemplo, el Plan A el lun, mié y vie, y el Plan B el mar y jue). Antes un plan era una semana entera y solo podía usarse uno. Tus planes se adaptaron solos: un plan con días distintos pasó a ser un entreno por cada lista de ejercicios.",
+    "¿Sin semana o día de descanso? Empezar te deja elegir qué entrenar: tus planes, el recomendado A/B/C o un entreno libre, y el último que hiciste sale en verde.",
+    "Coreano: las palabras ya no se cortan por la mitad al final de la línea, y los nombres largos de los comodines de Muscle Deck nunca se parten dentro de una palabra.",
+  ],
   news191: [
     "Iniciar sesión en un teléfono cuyos entrenamientos no son de ninguna cuenta ahora pregunta primero: usar los datos de la cuenta o añadir los entrenamientos del teléfono a ella. Antes se juntaban sin preguntar, y el nombre provisional «User» del teléfono podía reemplazar tu nombre y tu foto.",
     "Si a un teléfono le falta tu nombre o tu foto, la app los recupera del perfil de tu cuenta, y nunca borra la foto que ven tus amigos.",

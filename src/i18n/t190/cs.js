@@ -22,6 +22,25 @@ export default {
     restRowD: "Ukazuje čas pauzy na zamčené obrazovce a pípá na 3, 2, 1 a 0, i když je telefon zamčený. Android toto oprávnění nazývá „Fyzická aktivita“; aplikace přes něj nečte žádné údaje o aktivitě.",
     restRowOpen: "Zablokováno v Androidu: povol „Fyzická aktivita“ v nastavení aplikace",
     restRowBlocked: "Zablokováno v Androidu: Nastavení → Aplikace → HW App → Oprávnění → Fyzická aktivita",
+    // 1.9.2: plans = single workouts + My week
+    plWeek: "Můj týden",
+    plWeekD: "Ke každému dni si vyber jeden ze svých plánů. Den bez plánu je den volna; i tehdy můžeš cvičit: Start ti dá vybrat jakýkoli plán.",
+    plRest: "Volno",
+    plWeekNone: "Nejdřív si udělej plán, pak ho přiřaď ke dnům.",
+    plWeekClear: "Vyčistit týden",
+    plWeekClearQ: "Vyčistit týden?",
+    plWeekClearD: "Každý den bude den volna a Úvod znovu ukáže doporučený plán. Tvoje plány zůstanou.",
+    plTipsNoWeek: "Vyber plány ke dnům v Mém týdnu a uvidíš, co tvůj týden procvičí.",
+    hintMissPlan: "Tento trénink nemá {types}. Trénink celého těla procvičí tlak, tah, nohy a střed těla.",
+    plRecWeekOn: "Tvůj týden používá tvoje vlastní plány. Jestli chceš znovu tento, vyčisti týden v Mých plánech.",
+    plNoEx: "Zatím bez cviků",
+    plDaysT: "Dny v mém týdnu",
+    plDaysD: "Klepni na dny, kdy cvičíš tento plán. Den, který měl jiný plán, dostane tento; dny bez plánu jsou dny volna.",
+    plDaysEmpty: "Nejdřív přidej cviky.",
+    plPick: "Co dnes cvičíš?",
+    plPickSub: "vyber si plán",
+    plOther: "Cvičit něco jiného",
+    plRestInfo2: "Dnes nemáš plán. Chceš přesto cvičit? Klepni na Start a vyber si.",
     addExtra: "Přidat cvik",
     addExtraD: "Ještě nejsi unavený? Přidané cviky se počítají do dnešního tréninku a lepší výsledek je rekord.",
     bg_arms: "Paže", bg_back: "Záda", bg_calves: "Lýtka", bg_chest: "Hrudník", bg_core: "Břicho", bg_glutes: "Hýždě", bg_legs: "Nohy", bg_shoulders: "Ramena",
@@ -274,13 +293,7 @@ export default {
   },
   tour: {
     ch: ["Úvod", "Odznaky", "Trénink", "Profil", "Historie", "Kalorie", "Přátelé", "Muscle Deck", "Obchod", "Tréninkové plány"],
-    c10: [
-      "Klepni na {t}.",
-      "Doporučený plán: dny A, B a C obden, tlak, tah, nohy a břicho, bez nářadí.",
-      "Klepni na {t} a sestav si vlastní.",
-      "Plán si sestavíš z cviků v aplikaci, i s jednoručkami a stroji. Ke každému dni v týdnu vyber cviky; prázdné dny jsou dny volna.",
-      "Klepni na Použít tento plán a Úvod ukáže týden toho plánu, odcvičené dny zeleně.",
-    ],
+    c10: ["Klepni na {t}.", "Doporučený plán: dny A, B a C obden, tlak, tah, nohy a břicho, bez nářadí.", "Klepni na {t} a sestav si vlastní.", "Sestav si trénink z cviků v aplikaci, i s činkami a stroji. Pak v Mém týdnu vyber, který plán cvičíš který den; dny bez plánu jsou dny volna.", "Úvod pak ukáže dnešní plán a odcvičené dny zeleně. Nemáš nastavený týden? Start ti dá vybrat plán."],
   },
   news19: [
     ["Tréninkové plány", "Jeden plán pro všechny: dny A, B a C.", "Sestav si vlastní plány z cviků v aplikaci: ke každému dni v týdnu vyber cviky a série (prázdné dny jsou dny volna), roztřiď plány do skupin a jeden používej. Úvod pak ukazuje týden toho plánu, odcvičené dny zeleně. Malé ikony ukážou, co který den trénuje, a tipy řeknou, když některý sval dostává málo práce. Doporučený plán A, B, C tam pořád je."],
@@ -414,6 +427,11 @@ export default {
     mx_wide_grip_lat_pulldown: { muscles: "Záda (široký sval), horní záda", how: "Sedni si se stehny pod opěrkou a chyť tyč široko (asi 1,5× šířka ramen). Stáhni ji k horní části hrudníku, lokty dolů a ven, pak ji pomalu pusť nahoru.", tip: "Netahej ji za krk." },
   },
   // 1.9.1
+  news192: [
+    "Tréninkové plány jsou teď samostatné tréninky a Můj týden přiřadí jeden z nich ke každému dni (například Plán A na Po, St a Pá, Plán B na Út a Čt). Dřív byl plán celý týden a zapnutý mohl být jen jeden. Tvoje plány se předělaly samy: plán s různými dny se změnil na jeden trénink pro každý seznam cviků.",
+    "Nemáš nastavený týden nebo máš den volna? Start ti dá vybrat, co cvičit: tvoje plány, doporučený A/B/C nebo volný trénink, a ten, který jsi cvičil naposledy, je zelený.",
+    "Korejština: slova se na konci řádku už nedělí v půlce a dlouhá jména jokerů v Muscle Decku se nikdy nerozdělí uvnitř slova.",
+  ],
   news191: [
     "Přihlášení na telefonu, jehož tréninky nepatří žádnému účtu, se teď nejdřív zeptá: použít data z účtu, nebo přidat tréninky z telefonu do účtu. Dřív se spojily bez ptaní a „User“ z telefonu mohl přepsat tvoje jméno a fotku.",
     "Kdyby telefonu někdy chybělo jméno nebo fotka, aplikace si je vezme zpět z profilu tvého účtu a fotku pro kamarády už nikdy nesmaže.",

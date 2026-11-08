@@ -18,11 +18,12 @@ for (let i = 1; i < 40; i++) {
   hist.push(entry(key(d), day, items, { dur: 1100 + (i % 4) * 90 }));
 }
 hist.reverse();
-const P = (id, n, ts, days) => ({ id, n, name: "", grp: null, ts, mts: ts, days });
-const plans = { list: [
-  P("pA", 1, NOW - 9e8, { 0: [{ id: "k1", sets: 3 }, { id: "row1", sets: 3 }, { id: "n1", sets: 3 }, { id: "b5", sets: 2 }], 2: [{ id: "r1", sets: 3 }, { id: "n2", sets: 3 }, { id: "b2", sets: 3 }], 4: [{ id: "k3", sets: 3 }, { id: "bridge", sets: 3 }, { id: "hollow", sets: 2 }] }),
-  P("pB", 2, NOW - 5e8, { 1: [{ id: "fw_goblet_squat", sets: 4 }, { id: "fw_dumbbell_row", sets: 4 }], 3: [{ id: "k1", sets: 4 }, { id: "n1", sets: 3 }], 5: [{ id: "fw_goblet_squat", sets: 3 }, { id: "b5", sets: 3 }] }),
-], groups: [], seq: 2, del: {}, active: "", sort: "date", dir: "desc" };
+// 1.9.2: plans are single workouts + a week (Mon A, Tue B, Wed A, Fri A, Sat B)
+const P = (id, n, name, ts, items) => ({ id, n, name, grp: null, ts, mts: ts, items, days: {}, ds: "{}" });
+const plans = { v: 2, list: [
+  P("pA", 1, "", NOW - 9e8, [{ id: "k1", sets: 3 }, { id: "row1", sets: 3 }, { id: "n1", sets: 3 }, { id: "b5", sets: 2 }]),
+  P("pB", 2, "", NOW - 5e8, [{ id: "fw_goblet_squat", sets: 4 }, { id: "fw_dumbbell_row", sets: 4 }, { id: "hollow", sets: 2 }]),
+], groups: [], seq: 2, del: {}, week: { 1: "pA", 2: "pB", 3: "pA", 5: "pA", 6: "pB" }, wmts: 1, sort: "date", dir: "asc" };
 const kcLog = {};
 for (let i = 0; i < 20; i++) { const d = new Date(2026, 10, 7 - i); kcLog[key(d)] = [{ ts: d.getTime() + 3600e3 * 12, kcal: 1900 + ((i * 137) % 600), note: "" }]; }
 const seed = { history: hist, profile: { name: "Alex", birth: { y: 1998 }, tourDone: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], plans, look: { frame: "f_neon", title: "t_rookie" }, shop: { buys: [{ i: "f_neon", w: "look", p: 0, ts: 1 }, { i: "t_rookie", w: "look", p: 0, ts: 1 }] } },
@@ -56,10 +57,10 @@ for (const lang of LANGS) {
     if (ONLY && !ONLY.includes(name)) continue;
     if (fn === "summary") {
       // a plan workout that beats last time: records, ranks, badges on the summary
-      const day = items => ({ id: "pS", n: 3, name: "", grp: null, ts: 1, mts: 1, days: { 5: items } });
+      const day = items => ({ id: "pS", n: 3, name: "", grp: null, ts: 1, mts: 1, items, days: {}, ds: "{}" });
       const h4 = [];
       for (let i = 0; i < 4; i++) h4.push(entry(`2026-10-${String(20 + i * 2).padStart(2, "0")}`, null, [it("k1", [10, 9])], { plan: { id: "pS", name: "", wd: 5 }, dur: 900 }));
-      const h = await start({ lang, dpr: DPR, viewport: VIEW, clock: new Date(2026, 10, 7, 18).getTime(), seed: { history: h4, kcal: seed.kcal, profile: { name: "Alex", birth: { y: 1998 }, plans: { list: [day([{ id: "k1", sets: 2 }, { id: "fw_goblet_squat", sets: 2 }])], groups: [], seq: 3, del: {}, active: "pS" } } } });
+      const h = await start({ lang, dpr: DPR, viewport: VIEW, clock: new Date(2026, 10, 7, 18).getTime(), seed: { history: h4, kcal: seed.kcal, profile: { name: "Alex", birth: { y: 1998 }, plans: { list: [day([{ id: "k1", sets: 2 }, { id: "fw_goblet_squat", sets: 2 }])], groups: [], seq: 3, del: {}, v: 2, week: { 6: "pS" }, wmts: 1 } } } });
       const p = h.page;
       try {
         await p.click("[data-fstart-go]"); await p.click("[data-warmup-go]");

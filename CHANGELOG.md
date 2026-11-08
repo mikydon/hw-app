@@ -10,6 +10,16 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 
 <!-- New version: add a "## x.y.z (date)" section on top (web-only history uses "## Browser beta x.y.z (date)"). On a push to main, .github/workflows/build.yml builds everything and .github/scripts/releases.sh creates/updates the releases (commit = the push, or the one in a commit comment). -->
 
+## 1.9.2 (2026-11-08)
+
+A small update: it arrives in the app by itself, no new APK needed.
+
+- **Plans are single workouts, with a week:** a workout plan is now one workout (its exercises, sets and hold times), and Workout plans → My plans → **My week** gives each weekday one of your plans or a rest day (for example Plan A on Mon, Wed and Fri, Plan B on Tue and Thu). A plan's editor also has the row "Days in my week". Before, a plan was a whole week of different days and only one plan could be in use.
+- **Your plans move over by themselves:** a 1.9.0/1.9.1 plan whose training days all held the same exercises becomes one workout; one with different days becomes one workout per list of exercises, named after its days ("Push day · Mon, Thu"). The plan that was in use fills My week. Phones still on 1.9.0/1.9.1 keep seeing each plan on the days it is scheduled.
+- **Start picker:** with plans but no week, or on a rest day, Start opens "What do you train today?": your plans (today's first), the recommended A/B/C with 19 or 13 minutes, or a free workout; the workout you did last is green with its day. "Train something else" on the workout page opens it any time.
+- **Tips:** a plan's tips name what the workout leaves out (push, pull, legs or core); the week's tips check every muscle group over the whole week and the rest days in a row.
+- **Korean:** words no longer break in the middle at the end of a line; long Muscle Deck joker names never split inside a word.
+
 ## 1.9.1 (2026-11-07)
 
 A small update: it arrives in the app by itself. Two points need the 1.9.1 APK *(Android app only)*; the app works with the 1.9.0 APK too, as before.

@@ -22,6 +22,25 @@ export default {
     restRowD: "Zárolt telefonon is mutatja a pihenőidőt a zárolt képernyőn, és sípol 3-nál, 2-nél, 1-nél és 0-nál. Az Android ezt az engedélyt „Fizikai aktivitás”-nak hívja; az app semmilyen aktivitási adatot nem olvas vele.",
     restRowOpen: "Az Android letiltotta: engedélyezd a „Fizikai aktivitás” jogot az app beállításaiban",
     restRowBlocked: "Az Android letiltotta: Beállítások → Alkalmazások → HW App → Engedélyek → Fizikai aktivitás",
+    // 1.9.2: plans = single workouts + My week
+    plWeek: "A hetem",
+    plWeekD: "Minden napra válassz egyet a terveid közül. A terv nélküli nap pihenőnap; akkor is edzhetsz: a Starttal bármelyik tervet választhatod.",
+    plRest: "Pihenő",
+    plWeekNone: "Előbb készíts egy tervet, aztán rendeld a napokhoz.",
+    plWeekClear: "Hét törlése",
+    plWeekClearQ: "Törlöd a hetet?",
+    plWeekClearD: "Minden nap pihenőnap lesz, és a Kezdőlap újra az ajánlott tervet mutatja. A terveid megmaradnak.",
+    plTipsNoWeek: "Válassz terveket a napokhoz A hetemben, és látod, mit edz a heted.",
+    hintMissPlan: "Ebben az edzésben nincs {types}. Egy teljes testes edzés nyomást, húzást, lábat és törzset is edz.",
+    plRecWeekOn: "A heted a saját terveidet használja. Ha újra ezt szeretnéd, töröld a hetet a Saját tervekben.",
+    plNoEx: "Még nincs gyakorlat",
+    plDaysT: "Napok a hetemben",
+    plDaysD: "Koppints a napokra, amikor ezt a tervet edzed. Egy másik tervhez rendelt nap ezt kapja; a terv nélküli napok pihenőnapok.",
+    plDaysEmpty: "Előbb adj hozzá gyakorlatokat.",
+    plPick: "Mit edzel ma?",
+    plPickSub: "válassz tervet",
+    plOther: "Valami mást edzek",
+    plRestInfo2: "Ma nincs terved. Mégis edzenél? Koppints a Startra, és válassz.",
     addExtra: "Gyakorlat hozzáadása",
     addExtraD: "Még nem fáradtál el? A hozzáadott gyakorlatok beleszámítanak a mai edzésbe, és a jobb eredmény rekord.",
     bg_arms: "Kar", bg_back: "Hát", bg_calves: "Vádli", bg_chest: "Mell", bg_core: "Has", bg_glutes: "Farizom", bg_legs: "Láb", bg_shoulders: "Váll",
@@ -274,13 +293,7 @@ export default {
   },
   tour: {
     ch: ["Kezdőlap", "Jelvények", "Edzés", "Profil", "Előzmények", "Kalóriák", "Barátok", "Muscle Deck", "Bolt", "Edzéstervek"],
-    c10: [
-      "Koppints erre: {t}.",
-      "Az ajánlott terv: A, B és C nap másnaponta, nyomás, húzás, láb és has, eszköz nélkül.",
-      "Koppints erre: {t}, és rakd össze a sajátodat.",
-      "Rakj össze tervet az app gyakorlataiból, kézisúlyzóval és gépekkel is. Válassz gyakorlatokat a hét minden napjára; az üres napok pihenőnapok.",
-      "Koppints a Ezt a tervet használom gombra, és a Kezdőlap a terv hetét mutatja, a kész napok zölden.",
-    ],
+    c10: ["Koppints erre: {t}.", "Az ajánlott terv: A, B és C nap másnaponta, nyomás, húzás, láb és has, eszköz nélkül.", "Koppints erre: {t}, és rakd össze a sajátodat.", "Állíts össze edzést az app gyakorlataiból, kézisúlyzókkal és gépekkel is. Aztán A hetemben válaszd ki, melyik napon melyik tervet edzed; a terv nélküli napok pihenőnapok.", "A Kezdőlap ezután a mai tervet és zölddel az edzett napokat mutatja. Nincs beállított heted? A Starttal választhatsz tervet."],
   },
   news19: [
     ["Edzéstervek", "Egy terv mindenkinek: A, B és C nap.", "Rakj össze saját terveket az app gyakorlataiból: válassz gyakorlatokat és sorozatokat a hét minden napjára (az üres napok pihenőnapok), rendezd csoportokba a terveket, és használj egyet. A Kezdőlap ezután a terv hetét mutatja, a kész napok zölden. Kis ikonok mutatják, mit edz egy nap, és tippek szólnak, ha egy izom kevés munkát kap. Az ajánlott A, B, C terv továbbra is ott van."],
@@ -414,6 +427,11 @@ export default {
     mx_wide_grip_lat_pulldown: { muscles: "Hát (széles hátizom), felső hát", how: "Ülj le, combod a párna alatt, és fogd meg szélesen a rudat (kb. másfélszeres vállszélesség). Húzd a mellkasod felső részéhez, könyök lefelé és kifelé, aztán lassan engedd fel.", tip: "Ne húzd a tarkód mögé." },
   },
   // 1.9.1
+  news192: [
+    "Az edzéstervek most egyedi edzések, és A hetem minden naphoz hozzárendel egyet (például A terv hétfőn, szerdán és pénteken, B terv kedden és csütörtökön). Korábban egy terv egy egész hét volt, és csak egy lehetett használatban. A terveid maguktól átalakultak: a különböző napokból álló terv gyakorlatlistánként egy-egy edzés lett.",
+    "Nincs beállított heted, vagy pihenőnapod van? A Starttal kiválaszthatod, mit edzel: a terveidet, az ajánlott A/B/C-t vagy egy szabad edzést, és a legutóbb végzett zöld.",
+    "Koreai: a szavak a sor végén már nem törnek ketté, és a Muscle Deck hosszú jokerneve sosem válik szét egy szó közepén.",
+  ],
   news191: [
     "Ha olyan telefonon jelentkezel be, amelynek edzései egyik fiókhoz sem tartoznak, az app előbb megkérdezi: a fiók adatait használja, vagy a telefon edzéseit adja hozzá a fiókhoz. Korábban kérdés nélkül összevonta őket, és a telefon „User” neve felülírhatta a neved és a fotód.",
     "Ha egy telefonról valaha hiányozna a neved vagy a fotód, az app visszaveszi őket a fiókod profiljából, és a barátaidnak szánt fotót soha nem törli.",

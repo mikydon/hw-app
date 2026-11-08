@@ -443,6 +443,25 @@ const en = {
     restRowD: "Shows the rest time on the lock screen and beeps at 3, 2, 1 and 0 while the phone is locked. Android calls this permission \"Physical activity\"; the app reads no activity data with it.",
     restRowOpen: "Blocked in Android: allow \"Physical activity\" in the app's settings",
     restRowBlocked: "Blocked in Android: Settings → Apps → HW App → Permissions → Physical activity",
+    // 1.9.2: plans = single workouts + My week
+    plWeek: "My week",
+    plWeekD: "Pick one of your plans for each day. A day without a plan is a rest day; you can still train then: Start lets you pick any plan.",
+    plRest: "Rest",
+    plWeekNone: "Make a plan first, then pick it for your days.",
+    plWeekClear: "Clear the week",
+    plWeekClearQ: "Clear your week?",
+    plWeekClearD: "Every day becomes a rest day and Home shows the recommended plan again. Your plans stay.",
+    plTipsNoWeek: "Pick plans for your days in My week to see what your week trains.",
+    hintMissPlan: "This workout has no {types}. A full-body workout trains push, pull, legs and core.",
+    plRecWeekOn: "Your week uses your own plans. Clear it in My plans to train this one again.",
+    plNoEx: "No exercises yet",
+    plDaysT: "Days in my week",
+    plDaysD: "Tap the days you train this plan. A day that had another plan gets this one instead; days without a plan are rest days.",
+    plDaysEmpty: "Add exercises first.",
+    plPick: "What do you train today?",
+    plPickSub: "pick a plan",
+    plOther: "Train something else",
+    plRestInfo2: "No plan today. Want to train anyway? Tap Start and pick one.",
     acBkNowBusy: "Backing up…",
     acBkNow: "Back up now",
     acBkNone: "Not saved yet",
@@ -1494,7 +1513,7 @@ const en = {
 
   tour: {
     ch: ["Home", "Badges", "Workout", "Profile", "History", "Calories", "Friends", "Muscle Deck", "Shop", "Workout plans"],
-    c10: ["Tap {t}.", "The recommended plan: days A, B and C every other day, push, pull, legs and core, no equipment needed.", "Tap {t} to build your own.", "Make a plan from the app's exercises, also with dumbbells and machines. Pick exercises for each weekday; empty days are rest days.", "Tap Use this plan and Home shows that plan's week, with the days you've done in green."],
+    c10: ["Tap {t}.", "The recommended plan: days A, B and C every other day, push, pull, legs and core, no equipment needed.", "Tap {t} to build your own.", "Build a workout from the app's exercises, also with dumbbells and machines. Then, in My week, pick which plan you train on each day; days without a plan are rest days.", "Home then shows today's plan and the days you've trained in green. No week set? Start lets you pick a plan."],
     c8: ["Your cards come from your training: the higher your exercise ranks, the stronger the cards.", "New to Muscle Deck? Play the short tutorial game first.", "A Run: beat 8 rounds with bigger and bigger targets. Winning one earns diamonds.", "All the rules, with pictures.", "Have fun!"],
     c9: [
       "Diamonds: you earn them by training. Tap How to see where they come from.",
@@ -1784,6 +1803,11 @@ const en = {
     ["Guide","The first setup asked for your details, but nothing showed how the app works.","An interactive guide in 7 chapters lights up the real buttons, you tap through it yourself, and it says what each part does: Home, badges, workout, profile, history, calories and friends. Every chapter raises the new Explorer badge. It starts after the first setup, existing users get an offer on Home, and it's always in the ☰ menu → Guide."],
     ["Indonesian","14 languages.","15: the app now speaks Indonesian too."],
     ["Small fixes","The bottoms of letters like g, y and j were cut off in some titles and names; Leaderboard, Friends and Messages switched without any motion.","Letters show in full, and the page slides in from the side of the tab you tapped."],
+  ],
+  news192: [
+    "Workout plans are single workouts now, and My week picks one of them for each day (for example Plan A on Mon, Wed and Fri, Plan B on Tue and Thu). Before, a plan was a whole week and only one could be in use. Your plans were changed over by themselves: a plan with different days became one workout per list of exercises.",
+    "No week set, or a rest day? Start lets you pick what to train: your plans, the recommended A/B/C or a free workout, and the one you did last is green.",
+    "Korean: words no longer break in the middle at the end of a line, and long Muscle Deck joker names never split inside a word.",
   ],
   news191: [
     "Signing in on a phone whose workouts belong to no account now asks first: use the account's data, or add this phone's workouts to it. Before, they were joined without asking, and the phone's placeholder name \"User\" could replace your name and photo.",

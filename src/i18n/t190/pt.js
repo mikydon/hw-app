@@ -22,6 +22,25 @@ export default {
     restRowD: "Mostra o descanso no ecrã de bloqueio e apita aos 3, 2, 1 e 0 mesmo com o telemóvel bloqueado. O Android chama a esta permissão \"Atividade física\"; a app não lê com ela nenhum dado de atividade.",
     restRowOpen: "Bloqueado no Android: permite \"Atividade física\" nas definições da app",
     restRowBlocked: "Bloqueado no Android: Definições → Aplicações → HW App → Permissões → Atividade física",
+    // 1.9.2: plans = single workouts + My week
+    plWeek: "Minha semana",
+    plWeekD: "Escolha um dos seus planos para cada dia. Um dia sem plano é dia de descanso; mesmo assim você pode treinar: Começar deixa escolher qualquer plano.",
+    plRest: "Descanso",
+    plWeekNone: "Primeiro crie um plano, depois atribua-o aos seus dias.",
+    plWeekClear: "Limpar a semana",
+    plWeekClearQ: "Limpar sua semana?",
+    plWeekClearD: "Todos os dias viram dias de descanso e o Início volta a mostrar o plano recomendado. Seus planos ficam.",
+    plTipsNoWeek: "Atribua planos aos seus dias em Minha semana para ver o que sua semana treina.",
+    hintMissPlan: "Este treino não tem {types}. Um treino de corpo inteiro trabalha empurrar, puxar, pernas e core.",
+    plRecWeekOn: "Sua semana usa seus próprios planos. Limpe-a em Meus planos para treinar este de novo.",
+    plNoEx: "Ainda sem exercícios",
+    plDaysT: "Dias da minha semana",
+    plDaysD: "Toque nos dias em que você faz este plano. Um dia que tinha outro plano passa a ter este; dias sem plano são de descanso.",
+    plDaysEmpty: "Primeiro adicione exercícios.",
+    plPick: "O que você treina hoje?",
+    plPickSub: "escolha um plano",
+    plOther: "Treinar outra coisa",
+    plRestInfo2: "Hoje sem plano. Quer treinar mesmo assim? Toque em Começar e escolha um.",
     addExtra: "Adicionar exercício",
     addExtraD: "Ainda não está cansado? Exercícios adicionados contam para hoje, e um resultado melhor é um recorde.",
     bg_arms: "Braços", bg_back: "Costas", bg_calves: "Panturrilhas", bg_chest: "Peito", bg_core: "Core", bg_glutes: "Glúteos", bg_legs: "Pernas", bg_shoulders: "Ombros",
@@ -274,13 +293,7 @@ export default {
   },
   tour: {
     ch: ["Início", "Medalhas", "Treino", "Perfil", "Histórico", "Calorias", "Amigos", "Muscle Deck", "Loja", "Planos de treino"],
-    c10: [
-      "Toque em {t}.",
-      "O plano recomendado: dias A, B e C em dias alternados, empurrar, puxar, pernas e core, sem equipamento.",
-      "Toque em {t} para montar o seu.",
-      "Monte um plano com os exercícios do app, também com halteres e máquinas. Escolha exercícios para cada dia da semana; os dias vazios são de descanso.",
-      "Toque em Usar este plano e o Início mostra a semana desse plano, com os dias feitos em verde.",
-    ],
+    c10: ["Toque em {t}.", "O plano recomendado: dias A, B e C em dias alternados, empurrar, puxar, pernas e core, sem equipamento.", "Toque em {t} para montar o seu.", "Monte um treino com os exercícios do app, também com halteres e máquinas. Depois, em Minha semana, escolha qual plano você faz em cada dia; dias sem plano são de descanso.", "O Início então mostra o plano de hoje e, em verde, os dias treinados. Sem semana? Começar deixa escolher um plano."],
   },
   news19: [
     ["Planos de treino", "Um plano para todos: dias A, B e C.", "Monte seus próprios planos com os exercícios do app: escolha exercícios e séries para cada dia da semana (os dias vazios são de descanso), organize os planos em grupos e use um. O Início passa a mostrar a semana desse plano, com os dias feitos em verde. Pequenos ícones mostram o que cada dia treina, e dicas avisam quando um músculo trabalha pouco. O plano recomendado A, B, C continua lá."],
@@ -414,6 +427,11 @@ export default {
     mx_wide_grip_lat_pulldown: { muscles: "Costas (dorsal), parte alta das costas", how: "Sente com as coxas sob a almofada e segure a barra aberta (cerca de 1,5 vez a largura dos ombros). Puxe até a parte alta do peito, cotovelos para baixo e para fora, depois deixe subir devagar.", tip: "Não puxe atrás da nuca." },
   },
   // 1.9.1
+  news192: [
+    "Os planos de treino agora são treinos únicos, e Minha semana atribui um a cada dia (por exemplo, Plano A na seg, qua e sex, Plano B na ter e qui). Antes, um plano era uma semana inteira e só um podia estar em uso. Seus planos foram convertidos sozinhos: um plano com dias diferentes virou um treino para cada lista de exercícios.",
+    "Sem semana ou em dia de descanso? Começar deixa escolher o que treinar: seus planos, o recomendado A/B/C ou um treino livre, e o último feito fica verde.",
+    "Coreano: as palavras não se partem mais no meio no fim da linha, e os nomes longos dos curingas do Muscle Deck nunca se dividem dentro de uma palavra.",
+  ],
   news191: [
     "Iniciar sessão num telemóvel cujos treinos não pertencem a nenhuma conta agora pergunta primeiro: usar os dados da conta ou juntar-lhe os treinos do telemóvel. Antes juntavam-se sem perguntar, e o nome provisório \"User\" do telemóvel podia substituir o teu nome e a tua foto.",
     "Se num telemóvel faltar o teu nome ou a tua foto, a app vai buscá-los ao perfil da tua conta e nunca apaga a foto que os amigos veem.",

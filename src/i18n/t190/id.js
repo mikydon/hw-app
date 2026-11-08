@@ -22,6 +22,25 @@ export default {
     restRowD: "Menampilkan waktu istirahat di layar kunci dan berbunyi di 3, 2, 1, dan 0 meski ponsel terkunci. Android menyebut izin ini \"Aktivitas fisik\"; aplikasi tidak membaca data aktivitas apa pun lewat izin ini.",
     restRowOpen: "Diblokir di Android: izinkan \"Aktivitas fisik\" di pengaturan aplikasi",
     restRowBlocked: "Diblokir di Android: Setelan → Aplikasi → HW App → Izin → Aktivitas fisik",
+    // 1.9.2: plans = single workouts + My week
+    plWeek: "Mingguku",
+    plWeekD: "Pilih salah satu rencanamu untuk tiap hari. Hari tanpa rencana adalah hari istirahat; kamu tetap bisa latihan: Mulai memungkinkanmu memilih rencana apa saja.",
+    plRest: "Istirahat",
+    plWeekNone: "Buat rencana dulu, lalu pasang ke hari-harimu.",
+    plWeekClear: "Kosongkan minggu",
+    plWeekClearQ: "Kosongkan minggumu?",
+    plWeekClearD: "Semua hari jadi hari istirahat dan Beranda kembali menampilkan rencana yang disarankan. Rencanamu tetap ada.",
+    plTipsNoWeek: "Pasang rencana ke hari-harimu di Mingguku untuk melihat apa yang dilatih mingguanmu.",
+    hintMissPlan: "Latihan ini tidak punya {types}. Latihan seluruh tubuh melatih dorong, tarik, kaki, dan inti tubuh.",
+    plRecWeekOn: "Minggumu memakai rencanamu sendiri. Kosongkan di Rencanaku untuk melatih yang ini lagi.",
+    plNoEx: "Belum ada latihan",
+    plDaysT: "Hari di mingguku",
+    plDaysD: "Ketuk hari saat kamu melatih rencana ini. Hari yang punya rencana lain akan diganti dengan ini; hari tanpa rencana adalah hari istirahat.",
+    plDaysEmpty: "Tambahkan latihan dulu.",
+    plPick: "Latihan apa hari ini?",
+    plPickSub: "pilih rencana",
+    plOther: "Latihan yang lain",
+    plRestInfo2: "Hari ini tidak ada rencana. Tetap mau latihan? Ketuk Mulai lalu pilih.",
     addExtra: "Tambah latihan",
     addExtraD: "Belum capek? Latihan tambahan dihitung untuk hari ini, dan hasil yang lebih baik jadi rekor.",
     bg_arms: "Lengan", bg_back: "Punggung", bg_calves: "Betis", bg_chest: "Dada", bg_core: "Inti", bg_glutes: "Bokong", bg_legs: "Kaki", bg_shoulders: "Bahu",
@@ -274,13 +293,7 @@ export default {
   },
   tour: {
     ch: ["Beranda", "Lencana", "Latihan", "Profil", "Riwayat", "Kalori", "Teman", "Muscle Deck", "Toko", "Rencana latihan"],
-    c10: [
-      "Ketuk {t}.",
-      "Rencana yang disarankan: hari A, B, dan C selang sehari, dorong, tarik, kaki, dan inti, tanpa alat.",
-      "Ketuk {t} untuk membuat rencanamu sendiri.",
-      "Buat rencana dari latihan di aplikasi, juga dengan dumbel dan mesin. Pilih latihan untuk tiap hari dalam seminggu; hari kosong adalah hari istirahat.",
-      "Ketuk Pakai rencana ini dan Beranda akan menampilkan minggu rencana itu, hari yang sudah selesai berwarna hijau.",
-    ],
+    c10: ["Ketuk {t}.", "Rencana yang disarankan: hari A, B, dan C selang sehari, dorong, tarik, kaki, dan inti, tanpa alat.", "Ketuk {t} untuk membuat rencanamu sendiri.", "Susun latihan dari latihan-latihan di aplikasi, juga dengan dumbel dan mesin. Lalu di Mingguku, pilih rencana mana yang kamu latih tiap hari; hari tanpa rencana adalah hari istirahat.", "Beranda lalu menampilkan rencana hari ini dan hari yang sudah dilatih berwarna hijau. Belum atur minggu? Mulai memungkinkanmu memilih rencana."],
   },
   news19: [
     ["Rencana latihan", "Satu rencana untuk semua: hari A, B, dan C.", "Buat rencanamu sendiri dari latihan di aplikasi: pilih latihan dan set untuk tiap hari dalam seminggu (hari kosong adalah hari istirahat), kelompokkan rencana, lalu pakai salah satunya. Beranda kemudian menampilkan minggu rencana itu, hari yang selesai berwarna hijau. Ikon kecil menunjukkan apa yang dilatih tiap hari, dan tips memberi tahu kalau ada otot yang kurang dilatih. Rencana yang disarankan A, B, C tetap ada."],
@@ -414,6 +427,11 @@ export default {
     mx_wide_grip_lat_pulldown: { muscles: "Punggung (lat), punggung atas", how: "Duduk dengan paha di bawah bantalan dan pegang batang lebar (sekitar 1,5× lebar bahu). Tarik ke dada atas, siku turun dan keluar, lalu biarkan naik perlahan.", tip: "Jangan menariknya ke belakang leher." },
   },
   // 1.9.1
+  news192: [
+    "Rencana latihan sekarang berupa satu sesi latihan, dan Mingguku memasang salah satunya ke tiap hari (misalnya Rencana A di Sen, Rab, dan Jum, Rencana B di Sel dan Kam). Dulu satu rencana berisi satu minggu penuh dan hanya satu yang bisa dipakai. Rencanamu sudah diubah otomatis: rencana dengan hari yang berbeda menjadi satu latihan untuk tiap daftar latihan.",
+    "Belum atur minggu atau sedang hari istirahat? Mulai memungkinkanmu memilih apa yang dilatih: rencanamu, A/B/C yang disarankan, atau latihan bebas, dan yang terakhir kamu lakukan berwarna hijau.",
+    "Bahasa Korea: kata tidak lagi terpotong di tengah di akhir baris, dan nama joker yang panjang di Muscle Deck tidak pernah terbelah di dalam kata.",
+  ],
   news191: [
     "Masuk di ponsel yang latihannya bukan milik akun mana pun sekarang bertanya dulu: pakai data akun, atau tambahkan latihan ponsel ke akun. Dulu langsung digabung tanpa bertanya, dan nama sementara \"User\" di ponsel bisa menggantikan nama dan fotomu.",
     "Kalau nama atau fotomu hilang di sebuah ponsel, aplikasi mengambilnya kembali dari profil akunmu dan tidak pernah menghapus foto yang dilihat teman.",

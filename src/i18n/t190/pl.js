@@ -22,6 +22,25 @@ export default {
     restRowD: "Pokazuje czas przerwy na ekranie blokady i piszczy na 3, 2, 1 i 0, nawet gdy telefon jest zablokowany. Android nazywa to uprawnienie „Aktywność fizyczna”; aplikacja nie odczytuje przez nie żadnych danych o aktywności.",
     restRowOpen: "Zablokowane w Androidzie: zezwól na „Aktywność fizyczna” w ustawieniach aplikacji",
     restRowBlocked: "Zablokowane w Androidzie: Ustawienia → Aplikacje → HW App → Uprawnienia → Aktywność fizyczna",
+    // 1.9.2: plans = single workouts + My week
+    plWeek: "Mój tydzień",
+    plWeekD: "Do każdego dnia wybierz jeden ze swoich planów. Dzień bez planu to dzień wolny; wtedy też możesz ćwiczyć: Start pozwala wybrać dowolny plan.",
+    plRest: "Wolne",
+    plWeekNone: "Najpierw zrób plan, potem przypisz go do dni.",
+    plWeekClear: "Wyczyść tydzień",
+    plWeekClearQ: "Wyczyścić tydzień?",
+    plWeekClearD: "Każdy dzień stanie się dniem wolnym, a Start znów pokaże polecany plan. Twoje plany zostaną.",
+    plTipsNoWeek: "Wybierz plany na dni w Moim tygodniu, a zobaczysz, co ćwiczy twój tydzień.",
+    hintMissPlan: "Ten trening nie ma {types}. Trening całego ciała ćwiczy pchanie, przyciąganie, nogi i core.",
+    plRecWeekOn: "Twój tydzień korzysta z twoich planów. Jeśli chcesz znów ten, wyczyść tydzień w Moich planach.",
+    plNoEx: "Na razie bez ćwiczeń",
+    plDaysT: "Dni w moim tygodniu",
+    plDaysD: "Stuknij dni, w które ćwiczysz ten plan. Dzień, który miał inny plan, dostanie ten; dni bez planu to dni wolne.",
+    plDaysEmpty: "Najpierw dodaj ćwiczenia.",
+    plPick: "Co dziś ćwiczysz?",
+    plPickSub: "wybierz plan",
+    plOther: "Poćwicz coś innego",
+    plRestInfo2: "Dziś nie masz planu. Chcesz mimo to ćwiczyć? Stuknij Start i wybierz.",
     addExtra: "Dodaj ćwiczenie",
     addExtraD: "Jeszcze nie jesteś zmęczony? Dodane ćwiczenia liczą się do dzisiejszego treningu, a lepszy wynik to rekord.",
     bg_arms: "Ręce", bg_back: "Plecy", bg_calves: "Łydki", bg_chest: "Klatka", bg_core: "Brzuch", bg_glutes: "Pośladki", bg_legs: "Nogi", bg_shoulders: "Barki",
@@ -274,13 +293,7 @@ export default {
   },
   tour: {
     ch: ["Start", "Odznaki", "Trening", "Profil", "Historia", "Kalorie", "Znajomi", "Muscle Deck", "Sklep", "Plany treningowe"],
-    c10: [
-      "Dotknij {t}.",
-      "Polecany plan: dni A, B i C co drugi dzień, pchanie, przyciąganie, nogi i brzuch, bez sprzętu.",
-      "Dotknij {t}, aby ułożyć własny.",
-      "Ułóż plan z ćwiczeń w aplikacji, także z hantlami i maszynami. Wybierz ćwiczenia na każdy dzień tygodnia; puste dni to dni wolne.",
-      "Dotknij Użyj tego planu, a Start pokaże tydzień tego planu, z zaliczonymi dniami na zielono.",
-    ],
+    c10: ["Dotknij {t}.", "Polecany plan: dni A, B i C co drugi dzień, pchanie, przyciąganie, nogi i brzuch, bez sprzętu.", "Dotknij {t}, aby ułożyć własny.", "Złóż trening z ćwiczeń w aplikacji, także z hantlami i maszynami. Potem w Moim tygodniu wybierz, który plan ćwiczysz w który dzień; dni bez planu to dni wolne.", "Start pokaże wtedy dzisiejszy plan, a dni z treningiem na zielono. Nie masz ustawionego tygodnia? Start pozwoli wybrać plan."],
   },
   news19: [
     ["Plany treningowe", "Jeden plan dla wszystkich: dni A, B i C.", "Układaj własne plany z ćwiczeń w aplikacji: wybierz ćwiczenia i serie na każdy dzień tygodnia (puste dni to dni wolne), podziel plany na grupy i używaj jednego. Start pokazuje wtedy tydzień tego planu, z zaliczonymi dniami na zielono. Małe ikony pokazują, co trenuje każdy dzień, a wskazówki mówią, gdy jakiś mięsień ma mało pracy. Polecany plan A, B, C nadal jest."],
@@ -414,6 +427,11 @@ export default {
     mx_wide_grip_lat_pulldown: { muscles: "Plecy (najszerszy), górna część pleców", how: "Usiądź z udami pod poduszką i chwyć drążek szeroko (około 1,5× szerokość barków). Ściągnij go do górnej części klatki, łokcie w dół i na zewnątrz, potem pozwól mu powoli wrócić.", tip: "Nie ściągaj go za kark." },
   },
   // 1.9.1
+  news192: [
+    "Plany treningowe to teraz pojedyncze treningi, a Mój tydzień przypisuje jeden z nich do każdego dnia (np. Plan A w pon., śr. i pt., Plan B we wt. i czw.). Wcześniej plan był całym tygodniem i tylko jeden mógł być w użyciu. Twoje plany zmieniły się same: plan z różnymi dniami stał się jednym treningiem na każdą listę ćwiczeń.",
+    "Nie masz ustawionego tygodnia albo masz dzień wolny? Start pozwala wybrać, co ćwiczyć: twoje plany, polecany A/B/C albo wolny trening, a ten ostatnio zrobiony jest zielony.",
+    "Koreański: słowa nie dzielą się już w połowie na końcu linii, a długie nazwy jokerów w Muscle Deck nigdy nie rozdzielają się w środku słowa.",
+  ],
   news191: [
     "Logowanie na telefonie, którego treningi nie należą do żadnego konta, najpierw pyta: użyć danych z konta czy dodać treningi z telefonu do konta. Wcześniej łączyły się bez pytania, a „User” z telefonu mógł zastąpić twoje imię i zdjęcie.",
     "Jeśli telefonowi zabraknie imienia lub zdjęcia, aplikacja weźmie je z profilu twojego konta i nigdy nie usunie zdjęcia widocznego dla znajomych.",

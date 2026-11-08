@@ -1,4 +1,5 @@
-// 1.9.0 workout from an own plan: Home offers today's weekday, weights (kg × reps), a hold with the plan's own time,
+// 1.9.0 workout from an own plan (1.9.2: seeded as a 1.9.1 week plan with different Wed/Fri days, so it is upgraded
+// into "Workout Plan 3 · Wed" + "Workout Plan 3 · Fri" in the week): Home offers today's weekday, weights (kg × reps), a hold with the plan's own time,
 // a carry, the rest that counts into minus and saves the real rest, adding an exercise mid-workout, the long-rest
 // question, the history entry (plan name copy, kg arrays, rests), records with weights, and the XP limit.
 import { start, T, shot, entry } from "./harness.mjs";
@@ -9,7 +10,7 @@ const h = await start({ clock: now, seed: { history: hist, profile: { plans: { l
 const p = h.page;
 T.ok(await p.locator("[data-home-plan]").count() === 1, "Home shows the plan in use");
 T.eq(await p.getAttribute(`[data-home-wd][aria-checked="true"]`, "data-home-wd"), "3", "offers today (Wednesday)");
-T.ok((await p.locator("[data-home-plan-name]").innerText()).includes("WORKOUT PLAN 3 · GYM") || (await p.locator("[data-home-plan-name]").innerText()).toLowerCase().includes("workout plan 3 · gym"), "plan name + group");
+T.ok((await p.locator("[data-home-plan-name]").innerText()).toLowerCase().includes("workout plan 3 · wed · gym"), "plan name (split by its days) + group");
 T.ok(Number(await p.getAttribute("[data-fstart-mins]", "data-fstart-mins")) > 3, "minutes estimated from the plan");
 await shot(p, "home_plan");
 await p.click('[data-home-wd="2"]'); T.ok(await p.locator("[data-plan-rest-home]").count() === 1, "Tuesday = rest day");
@@ -67,7 +68,7 @@ await p.click("[data-cool-finish]");
 await p.waitForTimeout(500);
 await shot(p, "summary_plan");
 const saved = await p.evaluate(() => JSON.parse(localStorage.getItem("domaci-trening-v1")).history.slice(-1)[0]);
-T.eq(saved.plan && saved.plan.name, "Workout Plan 3", "history keeps the plan name");
+T.eq(saved.plan && saved.plan.name, "Workout Plan 3 · Wed", "history keeps the plan name");
 T.eq(saved.plan && saved.plan.grp, "Gym", "and the group name");
 T.eq(saved.plan && saved.plan.wd, 3, "and the weekday");
 const bench = saved.items.find(x => x.id === "fw_dumbbell_bench_press");

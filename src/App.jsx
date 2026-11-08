@@ -42,7 +42,7 @@ const THEMES = {
   slate:  { ink: "#15181d", panel: "#1f242b", panelHi: "#2a313a", line: "#3a434f", chalk: "#f1f4f8", dim: "#9aa6b4", edge: "#0e1115" },
   coffee: { ink: "#1c140f", panel: "#2a1f17", panelHi: "#382a20", line: "#4d3a2c", chalk: "#fbf3ec", dim: "#b8a291", edge: "#130d09" },
 };
-const APP_VERSION = "1.9.1";
+const APP_VERSION = "1.9.2";
 // Big Shoulders has no Cyrillic, so Oswald (also condensed) covers Ukrainian. The browser only
 // downloads the Oswald unicode ranges a page actually uses.
 // 1.7.0: 'HW Emoji' = the app's own emoji (Fluent 3D, fonts/hw-emoji.ttf) for the emoji the app shows; BODY_SYS
@@ -3846,14 +3846,14 @@ function TrainTab({ history, onStart, onStartPlan, onStartFree, onFreeze, ui, se
   const gap = last ? daysBetween(last.date, today) : null;
   const day = DAYS[dayIdx];
   const st = streakInfo(history, today);
-  // 1.9.0: an own plan in use: its week (Mon … Sun), the day it offers, days done this week green
-  const P = PLN.plansOf(profile), own = P.active ? P.list.find(p => p.id === P.active) || null : null;
-  const [wdSel, setWdSel] = useState(() => (own ? PLN.offerDay(own, history, today) : 1));
-  useEffect(() => { if (own) setWdSel(PLN.offerDay(own, history, today)); }, [own && own.id]);
-  const doneWds = own ? PLN.doneThisWeek(own, history, today) : new Set();
-  const planItems = own ? (own.days && own.days[wdSel]) || [] : [];
-  const wdLong = k => capFirst(new Intl.DateTimeFormat(LANG, { weekday: "long" }).format(new Date(2024, 0, k)));
-  const [freePick, setFreePick] = useState(null);
+  // 1.9.2 (Michael, Nov 8): your week gives each weekday one of your plans or a rest day (weekOn); without a week Home
+  // shows the recommended A/B/C. Start on a rest day, or with plans but no week, opens the picker (StartPicker).
+  const P = plansOfP(profile), weekOn = PLN.hasWeek(P), hasOwn = P.list.some(p => p.items.length);
+  const [wdSel, setWdSel] = useState(() => PLN.weekdayOf(today));
+  const own = weekOn ? PLN.planOn(P, wdSel) : null; // the chosen weekday's plan (null = rest day)
+  const planItems = own ? own.items : [];
+  const wdLong = wdLongName;
+  const [freePick, setFreePick] = useState(null), [picker, setPicker] = useState(false);
 
   const doneToday = !!last && gap <= 0;
   const lastTs = last ? entryTs(last) : 0;
@@ -3938,7 +3938,7 @@ function TrainTab({ history, onStart, onStartPlan, onStartFree, onFreeze, ui, se
   // 1.9.0 (Michael, Nov 6: "too many Wednesdays"): Home's first page is the week + calories + challenges + history;
   // the week strip itself is where an own plan's day is picked, and the workout (day, picker, exercises) lives on the
   // Exercises page. The weekday's name is written only in the top bar and on that page.
-  const hType = own ? planItems : day.ids.map(id => ({ id: effId(id) }));
+  const hType = weekOn ? planItems : day.ids.map(id => ({ id: effId(id) }));
   const todayBits = (
     <>
       {last && !doneToday && gap === 2 && st.n > 0 && <div data-day-status style={{ fontSize: 13.5, color: C.signal, marginTop: 10, lineHeight: 1.45 }}>{emo(status)}</div>}
@@ -3955,21 +3955,21 @@ function TrainTab({ history, onStart, onStartPlan, onStartFree, onFreeze, ui, se
     </>
   );
   // The workout page's top: plan name (own plans), the day's title once, the day picker, what the day trains.
-  const dayTitle = own ? (planItems.length ? wdLong(wdSel) : T("plRestDay")) : T("dayN", { d: day.id });
+  const dayTitle = weekOn ? (own ? wdLong(wdSel) : T("plRestDay")) : T("dayN", { d: day.id });
   const hero = (
-    <Sect data-home-hero {...(own ? { "data-home-plan": own.id } : {})} style={{ marginTop: 0, padding: LOOK === "flat" ? 0 : "16px 18px 16px" }}>
-      {own ? (
+    <Sect data-home-hero {...(weekOn ? { "data-home-plan": own ? own.id : "" } : {})} style={{ marginTop: 0, padding: LOOK === "flat" ? 0 : "16px 18px 16px" }}>
+      {weekOn && !own ? <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: C.dim }}>{wdLong(wdSel)}</div> : own ? (
         <button data-home-plan-name onClick={() => { sfxTap(); onGo && onGo("plans", { plan: own.id }); }} style={{ ...btnBase, background: "transparent", padding: 0, fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: C.dim, display: "inline-flex", alignItems: "center", gap: 4, maxWidth: "100%" }}>
           <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{[planTitle(own), groupName(P, own.grp)].filter(Boolean).join(" · ")}</span><Arrow size={14} />
         </button>
       ) : <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: C.dim }}>{T("plRecTitle")}</div>}
-      {!own && <div data-day-title style={{ fontFamily: DISPLAY, fontWeight: 900, fontSize: fitFont(dayTitle, 52, 10), lineHeight: 0.92, paddingBottom: "0.08em", letterSpacing: -0.5, color: C.chalk, marginTop: 6 }}>{dayTitle}</div>}
-      {hType.length > 0 && <div style={{ marginTop: own ? 10 : 8 }}><TypeChips items={hType} /></div>}
-      {own && !planItems.length && <div data-plan-rest-home style={{ fontSize: 13.5, color: C.dim, marginTop: 10, lineHeight: 1.45, display: "flex", gap: 8, alignItems: "flex-start" }}><Ico n="moon" size={18} color={C.sky} style={{ flexShrink: 0, marginTop: 1 }} /><span><b style={{ color: C.chalk }}>{T("plRestDay")}</b> · {T("plRestInfo")}</span></div>}
-      {own ? (
+      {!weekOn && <div data-day-title style={{ fontFamily: DISPLAY, fontWeight: 900, fontSize: fitFont(dayTitle, 52, 10), lineHeight: 0.92, paddingBottom: "0.08em", letterSpacing: -0.5, color: C.chalk, marginTop: 6 }}>{dayTitle}</div>}
+      {hType.length > 0 && <div style={{ marginTop: weekOn ? 10 : 8 }}><TypeChips items={hType} /></div>}
+      {weekOn && !own && <div data-plan-rest-home style={{ fontSize: 13.5, color: C.dim, marginTop: 10, lineHeight: 1.45, display: "flex", gap: 8, alignItems: "flex-start" }}><Ico n="moon" size={18} color={C.sky} style={{ flexShrink: 0, marginTop: 1 }} /><span><b style={{ color: C.chalk }}>{T("plRestDay")}</b> · {T("plRestInfo2")}</span></div>}
+      {weekOn ? (
         <div role="radiogroup" aria-label={T("pickDay")} data-day-picker="plan" style={{ display: "flex", gap: 4, marginTop: 14 }}>
           {PLN.WEEKDAYS.map(d => {
-            const on = d === wdSel, tr = !PLN.isRest(own, d), dn = doneWds.has(d);
+            const on = d === wdSel, tr = !PLN.isRest(P, d), dn = week[d - 1].on;
             return <button key={d} role="radio" aria-checked={on} data-home-wd={d} data-done={dn ? 1 : 0} data-train={tr ? 1 : 0} onClick={() => { sfxTap(); setWdSel(d); }} aria-label={`${wdLong(d)}${dn ? " ✓" : ""}`}
               style={{ ...btnBase, flex: 1, minWidth: 0, padding: "9px 0 6px", borderRadius: 11, fontSize: 12, display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
                 ...(on ? { background: C.chalk, color: C.ink, border: `1px solid ${C.chalk}` } : dn ? { background: C.mint, color: C.ink, border: `1px solid ${C.mint}` } : { ...SUNK(), color: tr ? C.chalk : C.dim }) }}>
@@ -3978,6 +3978,7 @@ function TrainTab({ history, onStart, onStartPlan, onStartFree, onFreeze, ui, se
           })}
         </div>
       ) : dayPicker({ marginTop: 14 })}
+      {(weekOn || hasOwn) && !active && <button data-home-other onClick={() => { sfxTap(); setPicker(true); }} style={{ ...btnBase, background: "transparent", color: C.sky, padding: "12px 0 0", fontSize: 13.5, display: "inline-flex", alignItems: "center", gap: 6 }}><Ico n="repeat" size={16} />{T("plOther")}</button>}
     </Sect>
   );
 
@@ -3985,15 +3986,15 @@ function TrainTab({ history, onStart, onStartPlan, onStartFree, onFreeze, ui, se
   // frame; tapping a day you trained opens it in History. Under it one row says what's next and opens the workout.
   const pickWeekDay = w => {
     if (w.on) { onGo && onGo("history", { edit: w.k }); return; }
-    if (own && w.k >= today) { sfxTap(); setWdSel(w.wd); return; }
+    if (weekOn && w.k >= today) { sfxTap(); setWdSel(w.wd); return; }
     onGo && onGo("history", null);
   };
   const nextRow = (
     <button data-home-next onClick={() => { sfxTap(); pg.goPage(homeIdx("ex")); }} style={{ ...btnBase, width: "100%", marginTop: 14, padding: "11px 12px", borderRadius: 14, ...SUNK(), color: C.chalk, display: "flex", alignItems: "center", gap: 12, textAlign: "left" }}>
-      <span style={{ width: 40, height: 40, borderRadius: 11, background: `${C.signal}22`, color: C.signal, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: DISPLAY, fontWeight: 900, fontSize: 22, flexShrink: 0 }}>{own ? <Ico n={planItems.length ? "dumbbell" : "moon"} size={20} /> : day.id}</span>
+      <span style={{ width: 40, height: 40, borderRadius: 11, background: `${C.signal}22`, color: C.signal, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: DISPLAY, fontWeight: 900, fontSize: 22, flexShrink: 0 }}>{weekOn ? <Ico n={own ? "dumbbell" : "moon"} size={20} /> : day.id}</span>
       <span style={{ flex: 1, minWidth: 0 }}>
-        <span style={{ display: "block", fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: C.dim }}>{doneToday && !own ? T("nextWorkout") : own && wdSel !== todayWd ? T("homePicked") : T("homeToday")}</span>
-        <span style={{ display: "block", fontSize: 14.5, fontWeight: 700, marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{own ? (planItems.length ? `${planTitle(own)} · ${TP("exN", planItems.length)}` : T("plRestDay")) : `${T("dayN", { d: day.id })} · ${TP("exN", day.ids.length)}`}</span>
+        <span style={{ display: "block", fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: C.dim }}>{doneToday && !weekOn ? T("nextWorkout") : weekOn && wdSel !== todayWd ? T("homePicked") : T("homeToday")}</span>
+        <span style={{ display: "block", fontSize: 14.5, fontWeight: 700, marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{weekOn ? (own ? `${planTitle(own)} · ${TP("exN", planItems.length)}` : T("plRestDay")) : `${T("dayN", { d: day.id })} · ${TP("exN", day.ids.length)}`}</span>
       </span>
       <Arrow />
     </button>
@@ -4010,13 +4011,13 @@ function TrainTab({ history, onStart, onStartPlan, onStartFree, onFreeze, ui, se
       </div>
       <div style={{ display: "flex", gap: 6 }} aria-label={T("weekLine", { count: TP("workouts", weekCount) })}>
         {week.map((w, i) => {
-          const wd = i + 1, pick = own && wd === wdSel && !w.on, planDay = own && !PLN.isRest(own, wd);
+          const wd = i + 1, pick = weekOn && wd === wdSel && !w.on, planDay = weekOn && !PLN.isRest(P, wd);
           return (
             <button key={w.k} data-week-day={w.k} data-week-kc={w.kc || "none"} data-week-pick={pick ? 1 : 0} onClick={() => pickWeekDay({ ...w, wd })} aria-label={`${w.lb} ${fmtDate(w.k)}${w.on ? " ✓" : ""}`}
               style={{ ...btnBase, flex: 1, textAlign: "center", background: "transparent", padding: 0, color: "inherit" }}>
               <div style={{ fontSize: 11, color: w.isToday ? C.chalk : C.dim, fontWeight: w.isToday ? 800 : 500, marginBottom: 5 }}>{w.lb}</div>
               <div style={{ height: 26, borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 900,
-                background: w.on ? C.mint : pick ? `${C.signal}26` : "transparent", color: C.ink, border: `1.5px solid ${w.on ? C.mint : pick ? C.signal : w.isToday && !own ? C.chalk : C.line}` }}>
+                background: w.on ? C.mint : pick ? `${C.signal}26` : "transparent", color: C.ink, border: `1.5px solid ${w.on ? C.mint : pick ? C.signal : w.isToday && !weekOn ? C.chalk : C.line}` }}>
                 {w.on ? "✓" : planDay ? <span style={{ width: 5, height: 5, borderRadius: 99, background: pick ? C.signal : `${C.chalk}66` }} /> : ""}
               </div>
               <div style={{ height: 5, borderRadius: 99, marginTop: 4, background: w.kc === "hit" ? KC_HIT : w.kc === "log" ? KC_LOG : `${C.chalk}12` }} />
@@ -4116,10 +4117,10 @@ function TrainTab({ history, onStart, onStartPlan, onStartFree, onFreeze, ui, se
         ) : (
         <div key="ex" {...pg.pageProps(homeIdx("ex"))} data-home-pagename="ex">
           {hero}
-          {own && (
+          {weekOn && (
             <Sect title={T("secExercises")} data-home-plan-ex accent={C.sky} titlePad="0 15px" style={LOOK === "flat" ? {} : { padding: "12px 0 4px" }}>
               <div style={LOOK === "flat" ? { ...card } : { borderTop: `1px solid ${C.line}` }}>
-                {!planItems.length && <div style={{ padding: "14px 16px", color: C.dim, fontSize: 14 }}>{T("plRestInfo")}</div>}
+                {!planItems.length && <div style={{ padding: "14px 16px", color: C.dim, fontSize: 14 }}>{T("plRestInfo2")}</div>}
                 {planItems.map((x, i) => {
                   const ex = EX[x.id]; if (!ex) return null;
                   const l = lastFor(history, x.id), b = bestFor(history, x.id);
@@ -4140,7 +4141,7 @@ function TrainTab({ history, onStart, onStartPlan, onStartFree, onFreeze, ui, se
               </div>
             </Sect>
           )}
-          {!own && <Sect title={T("secExercises")} accent={C.sky} titlePad="0 15px" style={LOOK === "flat" ? {} : { padding: "12px 0 4px" }}>
+          {!weekOn && <Sect title={T("secExercises")} accent={C.sky} titlePad="0 15px" style={LOOK === "flat" ? {} : { padding: "12px 0 4px" }}>
           <div style={LOOK === "flat" ? { ...card } : { borderTop: `1px solid ${C.line}` }}>
             {day.ids.map((slot, i) => {
               const id = effId(slot);
@@ -4189,9 +4190,11 @@ function TrainTab({ history, onStart, onStartPlan, onStartFree, onFreeze, ui, se
         </div>
         ))}
       </div>
-      {!active && !own && <FloatStart show tabs={pg.tabItems(homeTabL, swapHome)} day={day.id} rounds={rounds} setRounds={setRounds} onStart={() => { unlockAudio(); onStart(day.id, rounds); }} />}
-      {!active && own && <FloatStart show tabs={pg.tabItems(homeTabL, swapHome)} plan={planItems.length ? { mins: planMinutes(planItems), label: wdSel === todayWd ? T("start") : T("startWd", { d: wdLong(wdSel) }), sub: planTitle(own) } : { mins: "–", label: T("freeWorkout"), sub: T("freePick") }}
-        onStart={() => { unlockAudio(); if (planItems.length) onStartPlan(own, wdSel); else { sfxTap(); setFreePick([]); } }} />}
+      {!active && !weekOn && !hasOwn && <FloatStart show tabs={pg.tabItems(homeTabL, swapHome)} day={day.id} rounds={rounds} setRounds={setRounds} onStart={() => { unlockAudio(); onStart(day.id, rounds); }} />}
+      {!active && (weekOn || hasOwn) && <FloatStart show tabs={pg.tabItems(homeTabL, swapHome)} plan={own ? { mins: planMinutes(planItems), label: wdSel === todayWd ? T("start") : T("startWd", { d: wdLong(wdSel) }), sub: planTitle(own) } : { mins: "–", label: T("start"), sub: T("plPickSub") }}
+        onStart={() => { unlockAudio(); if (own) onStartPlan(own, wdSel); else { sfxTap(); setPicker(true); } }} />}
+      {picker && <StartPicker P={P} history={history} recDay={day} onClose={() => setPicker(false)}
+        onRec={r => { setPicker(false); unlockAudio(); onStart(day.id, r); }} onPlan={pl => { setPicker(false); unlockAudio(); onStartPlan(pl, PLN.weekdayOf(today)); }} onFree={() => { setPicker(false); setFreePick([]); }} />}
       {freePick && (
         <Sheet title={T("freeWorkout")} onClose={() => setFreePick(null)}>
           <ExLibrary picked={freePick} onPick={id => setFreePick(f => (f.includes(id) ? f.filter(x => x !== id) : [...f, id]))} />
@@ -9606,6 +9609,10 @@ const SCR_STYLE = { padding: "16px 18px 124px", maxWidth: "var(--colMax)", margi
 // per weekday (Mon … Sun; an empty weekday is a rest day), in groups, sorted by date or name. Logic in src/plans.js.
 const fmtHold = v => (v >= 60 ? `${Math.floor(v / 60)}:${String(v % 60).padStart(2, "0")} min` : `${v} s`);
 const planTitle = p => (p && (p.name || T("planDefault", { n: p.n }))) || "";
+// 1.9.2: plans are read through the upgrade (1.9.0/1.9.1 week plans → single workouts); a week plan with different
+// days becomes one workout per day list, named after its days ("Push day · Mon, Thu")
+const splitLabel = (p, wds) => `${planTitle(p)} · ${wds.map(wd => weekdaysShort()[wd - 1]).join(", ")}`;
+const plansOfP = profile => PLN.plansOf(profile, splitLabel);
 const groupName = (P, id) => ((P.groups || []).find(g => g.id === id) || {}).name || "";
 const TYPE_ICON = { push: "tPush", pull: "tPull", legs: "tLegs", core: "tCore" };
 // The four "what this day trains" marks: bright = the day trains it, faint = it doesn't.
@@ -9650,55 +9657,159 @@ function TypeChips({ items }) {
   );
 }
 function hintText(h, wdNames) {
-  const fam = h.fam ? T("fam_" + h.fam) : "";
-  if (h.kind === "missDay") return T("hintMissDay", { day: wdNames[h.wd - 1], types: h.types.map(t => T("grp_" + t).toLowerCase()).join(", ") });
+  const fam = h.fam ? T("fam_" + h.fam) : "", types = h.types ? h.types.map(t => T("grp_" + t).toLowerCase()).join(", ") : "";
+  if (h.kind === "missPlan") return T("hintMissPlan", { types });
+  if (h.kind === "missDay") return T("hintMissDay", { day: wdNames[h.wd - 1], types });
   if (h.kind === "none") return T("hintNone", { fam });
   if (h.kind === "fewDays") return TP("hintFewDays", h.days, { fam });
   if (h.kind === "fewSets") return T("hintFewSets", { fam, n: h.sets });
   if (h.kind === "rest") return T("hintRest", { n: h.run });
   return "";
 }
-function PlanHintsSheet({ plan, onClose }) {
-  const wd = weekdaysShort(), hs = PLN.planHints(plan, LIB);
+// 1.9.2: tips for one workout (what it leaves out) and for the week (muscles, rest days in a row)
+function PlanHintsSheet({ plan, P, onClose }) {
+  const wd = weekdaysShort(), hs = [...(plan ? PLN.planHints(plan, LIB) : []), ...PLN.weekHints(P, LIB)], week = PLN.hasWeek(P);
   return (
     <Sheet title={T("plTips")} onClose={onClose} short>
       <div data-plan-hints style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        {!hs.filter(h => h.kind !== "fewSets").length && !hs.length && <div style={{ display: "flex", gap: 8, alignItems: "flex-start" }}><Ico n="check" size={18} color={C.mint} style={{ marginTop: 2 }} />{T("hintOk")}</div>}
-        {hs.map((h, i) => <div key={i} data-hint={h.kind} style={{ display: "flex", gap: 8, alignItems: "flex-start", fontSize: 14.5 }}><Ico n={h.kind === "rest" ? "snow" : h.kind === "missDay" ? "alert" : "bulb"} size={17} color={h.kind === "rest" ? C.sky : C.signal} style={{ marginTop: 3, flexShrink: 0 }} /><span>{hintText(h, wd)}</span></div>)}
+        {!hs.length && week && <div style={{ display: "flex", gap: 8, alignItems: "flex-start" }}><Ico n="check" size={18} color={C.mint} style={{ marginTop: 2 }} />{T("hintOk")}</div>}
+        {hs.map((h, i) => <div key={i} data-hint={h.kind} style={{ display: "flex", gap: 8, alignItems: "flex-start", fontSize: 14.5 }}><Ico n={h.kind === "rest" ? "snow" : h.kind === "missDay" || h.kind === "missPlan" ? "alert" : "bulb"} size={17} color={h.kind === "rest" ? C.sky : C.signal} style={{ marginTop: 3, flexShrink: 0 }} /><span>{hintText(h, wd)}</span></div>)}
+        {!week && <div data-hint="noweek" style={{ display: "flex", gap: 8, alignItems: "flex-start", fontSize: 14.5 }}><Ico n="calendar" size={17} color={C.sky} style={{ marginTop: 3, flexShrink: 0 }} /><span>{T("plTipsNoWeek")}</span></div>}
         <div style={{ fontSize: 12.5, color: C.dim, marginTop: 6, lineHeight: 1.5 }}>{T("hintWhy")}</div>
       </div>
     </Sheet>
   );
 }
+const wdLongName = k => capFirst(new Intl.DateTimeFormat(LANG, { weekday: "long" }).format(new Date(2024, 0, k))); // Jan 1, 2024 = Monday
+
+// 1.9.2 (Michael, Nov 8: "no days set? tap Start, pick the plan; the one I did yesterday is green"): what to train
+// now. The recommended plan (its A/B/C day, 19 or 13 min), your plans (today's first) and a free workout; the workout
+// done last is green with its day.
+function StartPicker({ P, history, recDay, onRec, onPlan, onFree, onClose }) {
+  const today = dateKey(), yday = addDays(today, -1), todayPl = PLN.planOn(P, PLN.weekdayOf(today));
+  const ld = PLN.lastDone(history), recLast = ["A", "B", "C"].map(d => ld["rec:" + d] || "").sort().pop() || "";
+  const plans = PLN.sortPlans(P.list.filter(p => p.items.length), P.sort, P.dir, planTitle).sort((a, b) => (b === todayPl) - (a === todayPl));
+  const lastKey = [["rec", recLast], ...plans.map(p => [p.id, ld[p.id] || ""])].filter(x => x[1]).sort((a, b) => (a[1] < b[1] ? 1 : -1))[0];
+  const rel = d => capFirst(d === today ? T("today") : d === yday ? T("yesterday") : fmtDate(d));
+  const lastChip = (key, d) => lastKey && lastKey[0] === key ? <span data-pick-last style={{ display: "inline-flex", alignItems: "center", gap: 4, flexShrink: 0, padding: "4px 8px", borderRadius: 99, background: `${C.mint}22`, color: C.mint, fontSize: 11.5, fontWeight: 800 }}><Ico n="check" size={13} sw={2.6} />{rel(d)}</span> : null;
+  const rowS = key => ({ ...btnBase, fontWeight: 400, width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "12px 12px", borderRadius: 14, textAlign: "left", color: C.chalk, background: C.panelHi, border: `1.5px solid ${lastKey && lastKey[0] === key ? C.mint : "transparent"}` });
+  const sub = { display: "block", fontSize: 12.5, color: C.dim, marginTop: 2 };
+  return (
+    <Sheet title={T("plPick")} onClose={onClose}>
+      <div data-start-picker style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+        {plans.map(p => (
+          <button key={p.id} data-pick-plan={p.id} data-pick-today={p === todayPl ? 1 : 0} onClick={() => { sfxTap(); onPlan(p); }} style={rowS(p.id)}>
+            <span style={{ flex: 1, minWidth: 0 }}>
+              <span style={{ display: "block", fontSize: 15.5, fontWeight: 800, overflowWrap: "anywhere" }}>{planTitle(p)}</span>
+              <span style={sub}>{[p === todayPl ? T("homeToday") : "", TP("exN", p.items.length), `~${planMinutes(p.items)} min`, groupName(P, p.grp)].filter(Boolean).join(" · ")}</span>
+            </span>
+            {lastChip(p.id, ld[p.id])}
+            <TypeMarks items={p.items} size={15} />
+          </button>
+        ))}
+        <div data-pick-rec style={{ ...rowS("rec"), cursor: "default" }}>
+          <span style={{ flex: 1, minWidth: 0 }}>
+            <span style={{ display: "block", fontSize: 15.5, fontWeight: 800 }}>{T("plRecTitle")}</span>
+            <span style={sub}>{`${T("dayN", { d: recDay.id })} · ${TP("exN", recDay.ids.length)}`}</span>
+          </span>
+          {lastChip("rec", recLast)}
+          {[3, 2].map(n => <button key={n} data-pick-rec-rounds={n} onClick={() => { sfxTap(); onRec(n); }} aria-label={T("roundsBtn", { n, m: n === 2 ? 13 : 19 })} style={{ ...btnBase, width: 46, flexShrink: 0, padding: "8px 0", borderRadius: 12, background: n === 3 ? C.signal : C.ink, color: n === 3 ? C.signalInk : C.chalk, display: "flex", flexDirection: "column", alignItems: "center", lineHeight: 1 }}><span style={{ fontFamily: DISPLAY, fontSize: 19, fontWeight: 900 }}>{n === 2 ? 13 : 19}</span><span style={{ fontSize: 9.5, fontWeight: 800, marginTop: 2 }}>min</span></button>)}
+        </div>
+        <button data-pick-free onClick={() => { sfxTap(); onFree(); }} style={{ ...rowS("free"), background: "transparent", border: `1.5px dashed ${C.line}` }}>
+          <Ico n="plus" size={18} color={C.sky} /><span style={{ flex: 1, fontSize: 15, fontWeight: 800 }}>{T("freeWorkout")}</span><span style={{ fontSize: 12.5, color: C.dim }}>{T("freePick")}</span>
+        </button>
+      </div>
+    </Sheet>
+  );
+}
+
+// 1.9.2 (Michael, Nov 8: "each day I pick one of the workout plans I made"): the week. Every weekday is one row; a
+// tap picks one of your plans for it or a rest day. Under it: how many rest days in a row (the streak allows 1).
+function WeekCard({ P, setP, onTips }) {
+  const [day, setDay] = useState(null), [clear, setClear] = useState(false);
+  const wdNames = weekdaysShort(), todayWd = PLN.weekdayOf(dateKey());
+  const on = PLN.hasWeek(P), run = PLN.maxRestRun(P);
+  const opts = PLN.sortPlans(P.list.filter(p => p.items.length), P.sort, P.dir, planTitle);
+  const iconBtn = { ...btnBase, width: 34, height: 34, padding: 0, borderRadius: 11, ...SUNK(), display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 };
+  return (
+    <Sect title={T("plWeek")} data-plan-week data-week-on={on ? 1 : 0} style={{ marginTop: 0 }} accent={C.mint}
+      meta={<span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+        <InfoQ id="week2" title={T("plWeek")} text={[T("plWeekD")]} />
+        {on && <button data-week-tips onClick={() => { sfxTap(); onTips(); }} aria-label={T("plTips")} style={iconBtn}><Ico n="bulb" size={17} color={run > PLN.REST_IN_A_ROW ? C.signal : C.dim} /></button>}
+        {on && <button data-week-clear onClick={() => { sfxTap(); setClear(true); }} aria-label={T("plWeekClear")} style={iconBtn}><Ico n="trash" size={16} color={C.dim} /></button>}
+      </span>}>
+      {!opts.length && <div data-week-none style={{ fontSize: 13.5, color: C.dim, lineHeight: 1.45, marginBottom: 10 }}>{T("plWeekNone")}</div>}
+      <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+        {PLN.WEEKDAYS.map(wd => {
+          const pl = PLN.planOn(P, wd);
+          return (
+            <button key={wd} data-week-row={wd} data-week-plan={pl ? pl.id : ""} disabled={!opts.length} onClick={() => { sfxTap(); setDay(wd); }}
+              style={{ ...btnBase, fontWeight: 400, display: "flex", alignItems: "center", gap: 10, padding: "8px 10px 8px 12px", borderRadius: 12, textAlign: "left", color: C.chalk, minHeight: 42,
+                ...(pl ? { background: C.panelHi, border: "1px solid transparent" } : { background: "transparent", border: `1px dashed ${C.line}` }), opacity: opts.length ? 1 : 0.55 }}>
+              <span style={{ width: 30, flexShrink: 0, fontSize: 12.5, fontWeight: 800, color: wd === todayWd ? C.signal : C.dim }}>{wdNames[wd - 1]}</span>
+              {pl ? <>
+                <span style={{ flex: 1, minWidth: 0, fontSize: 14.5, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{planTitle(pl)}</span>
+                <TypeMarks items={pl.items} size={15} />
+              </> : <span style={{ flex: 1, minWidth: 0, fontSize: 14, color: C.dim, display: "inline-flex", alignItems: "center", gap: 7 }}><Ico n="moon" size={15} color={C.sky} />{T("plRest")}</span>}
+              {opts.length > 0 && <Arrow size={16} />}
+            </button>
+          );
+        })}
+      </div>
+      {on && run > PLN.REST_IN_A_ROW && <div data-week-rest={run} style={{ display: "flex", gap: 8, alignItems: "flex-start", fontSize: 13, color: C.dim, lineHeight: 1.45, marginTop: 10 }}><Ico n="snow" size={16} color={C.sky} style={{ flexShrink: 0, marginTop: 1 }} /><span>{T("hintRest", { n: run })}</span></div>}
+      {day && (
+        <Sheet title={wdLongName(day)} onClose={() => setDay(null)} short>
+          <div data-week-sheet={day} style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            {opts.map(p => {
+              const sel = P.week[day] === p.id;
+              return (
+                <button key={p.id} data-week-pick={p.id} aria-pressed={sel} onClick={() => { sfxCheck(); setP(cur => PLN.setWeekDay(cur, day, p.id)); setDay(null); }}
+                  style={{ ...btnBase, fontWeight: 400, display: "flex", alignItems: "center", gap: 10, padding: "11px 12px", borderRadius: 13, textAlign: "left", color: C.chalk, ...(sel ? { background: `${C.signal}1c`, border: `1.5px solid ${C.signal}` } : { background: C.panelHi, border: "1.5px solid transparent" }) }}>
+                  <span style={{ flex: 1, minWidth: 0 }}>
+                    <span style={{ display: "block", fontSize: 15, fontWeight: 800, overflowWrap: "anywhere" }}>{planTitle(p)}</span>
+                    <span style={{ display: "block", fontSize: 12.5, color: C.dim, marginTop: 2 }}>{[TP("exN", p.items.length), `~${planMinutes(p.items)} min`, groupName(P, p.grp)].filter(Boolean).join(" · ")}</span>
+                  </span>
+                  <TypeMarks items={p.items} size={15} />
+                  {sel && <Ico n="check" size={18} color={C.signal} />}
+                </button>
+              );
+            })}
+            <button data-week-pick="" aria-pressed={!PLN.planOn(P, day)} onClick={() => { sfxCheck(); setP(cur => PLN.setWeekDay(cur, day, "")); setDay(null); }}
+              style={{ ...btnBase, fontWeight: 400, display: "flex", alignItems: "center", gap: 10, padding: "11px 12px", borderRadius: 13, textAlign: "left", color: C.chalk, ...(!PLN.planOn(P, day) ? { background: `${C.sky}1c`, border: `1.5px solid ${C.sky}` } : { background: "transparent", border: `1.5px dashed ${C.line}` }) }}>
+              <Ico n="moon" size={17} color={C.sky} /><span style={{ flex: 1, fontSize: 15, fontWeight: 800 }}>{T("plRestDay")}</span>
+            </button>
+          </div>
+        </Sheet>
+      )}
+      {clear && <ConfirmBox icon="trash" title={T("plWeekClearQ")} text={T("plWeekClearD")} yes={T("plWeekClear")} yesData={{ "data-week-clear-yes": true }} onNo={() => setClear(false)} onYes={() => { setClear(false); setP(cur => PLN.clearWeek(cur)); }} />}
+    </Sect>
+  );
+}
 
 function PlansTab({ profile, setProfile, history, open, onOpened }) {
-  const P = PLN.plansOf(profile);
+  const P = plansOfP(profile), weekOn = PLN.hasWeek(P);
   // 1.9.0 (Michael, Nov 7): Recommended | My plans are swipe pages like Home
-  const pg = usePager("plans", 2, null, false, P.active ? 1 : 0);
+  const pg = usePager("plans", 2, null, false, weekOn || P.list.length ? 1 : 0);
   const tab = pg.page ? "mine" : "rec";
   const [edit, setEdit] = useState(null); // plan id being edited
   const [grp, setGrp] = useState("");      // group filter ("" = all, "-" = no group)
-  const [newGrp, setNewGrp] = useState(null), [delG, setDelG] = useState(null);
+  const [newGrp, setNewGrp] = useState(null), [delG, setDelG] = useState(null), [tips, setTips] = useState(false);
   const profRef = useRef(profile); profRef.current = profile;
-  const setP = fn => { const cur = PLN.plansOf(profRef.current), next = fn(cur), p = { ...profRef.current, plans: next }; profRef.current = p; setProfile(p); };
+  // every change also refreshes the plans' `days` mirror for phones still on 1.9.x
+  const setP = fn => { const cur = plansOfP(profRef.current), next = PLN.mirror(fn(cur), Date.now()), p = { ...profRef.current, plans: next }; profRef.current = p; setProfile(p); };
   useEffect(() => { if (open && open.plan) { pg.jumpPage(1); setEdit(open.plan); onOpened && onOpened(); } }, [open]);
   const editing = edit && P.list.find(p => p.id === edit);
   if (editing) return <PlanEditor plan={editing} P={P} setP={setP} onBack={() => { sfxTap(); setEdit(null); window.scrollTo(0, 0); }} />;
-  const seg = (on, onClick, label, data) => (
-    <button data-plans-seg={data} aria-pressed={on} onClick={() => { sfxTap(); onClick(); }}
-      style={{ ...btnBase, flex: 1, minWidth: 0, padding: "9px 4px", fontSize: 14, borderRadius: 11, background: on ? C.chalk : "transparent", color: on ? C.ink : C.dim, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{label}</button>
-  );
   const chipS = on => ({ ...btnBase, padding: "6px 11px", fontSize: 12.5, borderRadius: 99, whiteSpace: "nowrap", flexShrink: 0, ...(on ? { background: `${C.signal}22`, border: `1px solid ${C.signal}66`, color: C.signal } : { ...SUNK(), color: C.dim }) });
   const wd = weekdaysShort();
   const newPlan = () => { sfxTap(); let id; setP(cur => { const r = PLN.addPlan(cur); id = r.plan.id; const g = grp && grp !== "-" ? grp : null; return g ? PLN.updatePlan(r.P, id, { grp: g }) : r.P; }); setEdit(id); window.scrollTo(0, 0); };
   const list = PLN.sortPlans(P.list.filter(p => !grp || (grp === "-" ? !p.grp : p.grp === grp)), P.sort, P.dir, planTitle);
-  const useRec = () => { sfxTap(); setP(cur => ({ ...cur, active: "" })); };
   return (
     <div className="scr" style={SCR_STYLE} data-plans>
       {pg.tabs([{ label: T("plRec"), icon: "star", data: "rec", attrs: { "data-plans-seg": "rec", "aria-pressed": tab === "rec" } }, { label: T("plMine"), icon: "checklist", data: "mine", attrs: { "data-plans-seg": "mine", "aria-pressed": tab === "mine" } }])}
       <div style={{ margin: "0 -18px" }}><div {...pg.pagerProps}><div {...pg.pageProps(0)}>
       {(
-        <Sect title={T("plRecTitle")} data-plan-rec meta={!P.active ? <span data-plan-inuse style={{ fontSize: 12, fontWeight: 800, color: C.mint }}>{T("plInUse")}</span> : null}>
+        <Sect title={T("plRecTitle")} data-plan-rec meta={!weekOn ? <span data-plan-inuse style={{ fontSize: 12, fontWeight: 800, color: C.mint }}>{T("plInUse")}</span> : null}>
           <div style={{ fontSize: 14.5, color: C.chalk, lineHeight: 1.5 }}>{T("plRecD")}</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 12 }}>
             {DAYS.map(d => (
@@ -9710,7 +9821,7 @@ function PlansTab({ profile, setProfile, history, open, onOpened }) {
             ))}
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12.5, color: C.dim, marginTop: 10 }}><TypeMarks items={[{ id: "k1" }, { id: "row1" }, { id: "n1" }, { id: "b5" }]} size={14} />{T("plTypesT")}<InfoQ id="types" title={T("plTypesT")} text={T("plTypesD")} /></div>
-          {P.active && <button data-plan-use-rec onClick={useRec} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 14, padding: 14, fontSize: 15 }}>{T("plUse")}</button>}
+          {weekOn && <div data-plan-rec-week style={{ display: "flex", gap: 8, alignItems: "flex-start", fontSize: 13, color: C.dim, lineHeight: 1.45, marginTop: 12 }}><Ico n="calendar" size={16} color={C.sky} style={{ flexShrink: 0, marginTop: 1 }} /><span>{T("plRecWeekOn")}</span></div>}
           {/* 1.9.0 (Michael, Nov 7: "add the icon so nobody has to guess which one"): the tip names My plans with the
               same icon as its tab, and a tap takes you there */}
           <button type="button" data-plan-gym onClick={() => pg.goPage(1)} style={{ ...btnBase, fontWeight: 400, width: "100%", textAlign: "left", display: "flex", gap: 10, alignItems: "center", marginTop: 14, padding: "10px 12px", borderRadius: 14, background: SOFT(), fontSize: 13.5, lineHeight: 1.4, color: C.chalk }}>
@@ -9723,7 +9834,8 @@ function PlansTab({ profile, setProfile, history, open, onOpened }) {
       </div><div {...pg.pageProps(1)}>
       {(
         <>
-          <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 0, flexWrap: "wrap" }}>
+          <WeekCard P={P} setP={setP} onTips={() => setTips(true)} />
+          <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 18, flexWrap: "wrap" }}>
             <div className="noBar" style={{ display: "flex", gap: 6, overflowX: "auto", flex: 1, minWidth: 0 }}>
               <button data-plan-grp="" aria-pressed={!grp} onClick={() => { sfxTap(); setGrp(""); }} style={chipS(!grp)}>{T("plAllGroups")}</button>
               {P.groups.map(g => <button key={g.id} data-plan-grp={g.id} aria-pressed={grp === g.id} onClick={() => { sfxTap(); setGrp(grp === g.id ? "" : g.id); }} onContextMenu={e => { e.preventDefault(); setDelG(g); }} style={chipS(grp === g.id)}>{g.name}</button>)}
@@ -9738,18 +9850,20 @@ function PlansTab({ profile, setProfile, history, open, onOpened }) {
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 12 }}>
             {list.map(p => {
-              const td = PLN.trainDays(p);
+              const days = PLN.daysOf(P, p.id);
               return (
-                <button key={p.id} data-plan-card={p.id} onClick={() => { sfxTap(); setEdit(p.id); window.scrollTo(0, 0); }} style={{ ...btnBase, ...card, textAlign: "left", padding: "14px 16px", display: "flex", flexDirection: "column", gap: 8, color: C.chalk }}>
+                <button key={p.id} data-plan-card={p.id} onClick={() => { sfxTap(); setEdit(p.id); window.scrollTo(0, 0); }} style={{ ...btnBase, ...card, fontWeight: 400, textAlign: "left", padding: "14px 16px", display: "flex", flexDirection: "column", gap: 8, color: C.chalk }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, width: "100%" }}>
                     <span style={{ fontFamily: DISPLAY, fontSize: 21, fontWeight: 800, lineHeight: 1.1, flex: 1, minWidth: 0, overflowWrap: "anywhere" }}>{planTitle(p)}</span>
-                    {P.active === p.id && <span data-plan-inuse style={{ fontSize: 12, fontWeight: 800, color: C.mint, flexShrink: 0 }}>{T("plInUse")}</span>}
                     <Arrow />
                   </div>
-                  <div style={{ display: "flex", gap: 4 }}>
-                    {PLN.WEEKDAYS.map(d => <span key={d} data-plan-wd={d} data-train={td.includes(d) ? 1 : 0} style={{ flex: 1, textAlign: "center", fontSize: 11, fontWeight: 800, padding: "5px 0", borderRadius: 8, ...(td.includes(d) ? { background: `${C.signal}26`, color: C.signal } : { color: C.dim, ...SUNK() }) }}>{wd[d - 1]}</span>)}
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, width: "100%" }}>
+                    <span data-plan-sub style={{ flex: 1, minWidth: 0, fontSize: 13, color: C.dim }}>{p.items.length ? [TP("exN", p.items.length), `~${planMinutes(p.items)} min`, groupName(P, p.grp)].filter(Boolean).join(" · ") : [T("plNoEx"), groupName(P, p.grp)].filter(Boolean).join(" · ")}</span>
+                    {p.items.length > 0 && <TypeMarks items={p.items} size={15} />}
                   </div>
-                  {p.grp && groupName(P, p.grp) && <span style={{ fontSize: 12, color: C.dim }}>{groupName(P, p.grp)}</span>}
+                  {days.length > 0 && <div data-plan-days={days.join(",")} style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+                    {days.map(d => <span key={d} data-plan-wd={d} style={{ fontSize: 11, fontWeight: 800, padding: "4px 8px", borderRadius: 8, background: `${C.signal}26`, color: C.signal }}>{wd[d - 1]}</span>)}
+                  </div>}
                 </button>
               );
             })}
@@ -9762,55 +9876,59 @@ function PlansTab({ profile, setProfile, history, open, onOpened }) {
       {newGrp !== null && (
         <Sheet title={T("plNewGroup")} onClose={() => setNewGrp(null)} short>
           <input data-plan-grp-input autoFocus value={newGrp} maxLength={40} onChange={e => setNewGrp(e.target.value)} placeholder={T("plGroupName")} aria-label={T("plGroupName")}
-            onKeyDown={e => { if (e.key === "Enter" && newGrp.trim()) e.currentTarget.form; }}
             style={{ fontFamily: BODY, fontSize: 16, fontWeight: 700, padding: "11px 12px", borderRadius: 12, border: `1.5px solid ${C.line}`, background: C.ink, color: C.chalk, outline: "none", boxSizing: "border-box", width: "100%" }} />
           <button data-plan-grp-save disabled={!newGrp.trim()} onClick={() => { sfxTap(); let gid; setP(cur => { const r = PLN.addGroup(cur, newGrp); gid = r.group.id; return r.P; }); setGrp(gid); setNewGrp(null); }} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 12, padding: 13, fontSize: 15, opacity: newGrp.trim() ? 1 : 0.5 }}>{T("plSave")}</button>
         </Sheet>
       )}
       {delG && <ConfirmBox icon="trash" danger title={T("plDelGroupQ", { name: delG.name })} text={T("plDelGroupD")} yes={T("plDelGroup")} yesData={{ "data-plan-delgrp-yes": true }} onNo={() => setDelG(null)} onYes={() => { setP(cur => PLN.delGroup(cur, delG.id)); if (grp === delG.id) setGrp(""); setDelG(null); }} />}
+      {tips && <PlanHintsSheet P={P} onClose={() => setTips(false)} />}
     </div>
   );
 }
 
+// 1.9.2: a plan is one workout: its name, group, exercises, and (Michael: "pick for Mon, Wed, Fri") the weekdays it is
+// in your week. A day that had another plan takes this one instead.
 function PlanEditor({ plan, P, setP, onBack }) {
   const wdNames = weekdaysShort();
-  const [wd, setWd] = useState(() => PLN.trainDays(plan)[0] || 1);
-  const [adding, setAdding] = useState(false), [hints, setHints] = useState(false), [del, setDel] = useState(false), [copy, setCopy] = useState(false);
+  const [adding, setAdding] = useState(false), [hints, setHints] = useState(false), [del, setDel] = useState(false);
   const [name, setName] = useState(plan.name || "");
   useBack(onBack);
   const upd = fn => setP(cur => PLN.updatePlan(cur, plan.id, fn(cur.list.find(p => p.id === plan.id) || plan)));
-  const items = (plan.days && plan.days[wd]) || [];
-  const hs = PLN.planHints(plan, LIB);
-  const warn = hs.some(h => h.kind === "rest" || h.kind === "missDay");
+  const items = plan.items || [];
+  const warn = PLN.planHints(plan, LIB).length > 0 || PLN.weekHints(P, LIB).some(h => h.kind === "rest");
   const chipS = on => ({ ...btnBase, padding: "6px 11px", fontSize: 12.5, borderRadius: 99, whiteSpace: "nowrap", flexShrink: 0, ...(on ? { background: `${C.signal}22`, border: `1px solid ${C.signal}66`, color: C.signal } : { ...SUNK(), color: C.dim }) });
   const step = (on, label, data) => <button data-step={data} onClick={e => { e.stopPropagation(); sfxTap(); on(); }} aria-label={label} style={{ ...btnBase, width: 30, height: 30, padding: 0, borderRadius: 9, ...SUNK(), color: C.chalk, fontSize: 17, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>{data.endsWith("-") ? "−" : "+"}</button>;
   return (
     <div className="scr" style={SCR_STYLE} data-plan-editor={plan.id}>
       <button data-plan-back onClick={onBack} style={{ ...btnBase, background: "transparent", color: C.sky, padding: "4px 0", fontSize: 14, display: "inline-flex", alignItems: "center", gap: 4 }}><Arrow dir="‹" />{T("plBack")}</button>
-      <input data-plan-name value={name} maxLength={40} placeholder={T("planDefault", { n: plan.n })} aria-label={T("plName")}
-        onChange={e => setName(e.target.value)} onBlur={() => { const v = name.trim(); if (v !== (plan.name || "")) upd(() => ({ name: v })); }}
-        style={{ fontFamily: DISPLAY, fontSize: 28, fontWeight: 800, padding: "8px 2px", border: "none", borderBottom: `1.5px solid ${C.line}`, background: "transparent", color: C.chalk, outline: "none", width: "100%", boxSizing: "border-box", marginTop: 6 }} />
+      <div style={{ display: "flex", alignItems: "flex-end", gap: 8, marginTop: 6 }}>
+        <input data-plan-name value={name} maxLength={40} placeholder={T("planDefault", { n: plan.n })} aria-label={T("plName")}
+          onChange={e => setName(e.target.value)} onBlur={() => { const v = name.trim(); if (v !== (plan.name || "")) upd(() => ({ name: v })); }}
+          style={{ fontFamily: DISPLAY, fontSize: 28, fontWeight: 800, padding: "8px 2px", border: "none", borderBottom: `1.5px solid ${C.line}`, background: "transparent", color: C.chalk, outline: "none", flex: 1, minWidth: 0, boxSizing: "border-box" }} />
+        <button data-plan-tips onClick={() => { sfxTap(); setHints(true); }} aria-label={T("plTips")} style={{ ...btnBase, width: 44, height: 44, flexShrink: 0, borderRadius: 13, ...SUNK(), display: "inline-flex", alignItems: "center", justifyContent: "center", position: "relative" }}><Ico n="bulb" size={20} color={warn ? C.signal : C.dim} />{warn && <span data-plan-warn style={{ position: "absolute", top: 6, right: 7, width: 8, height: 8, borderRadius: 99, background: C.signal }} />}</button>
+        <button data-plan-del onClick={() => { sfxTap(); setDel(true); }} aria-label={T("plDelete")} style={{ ...btnBase, width: 44, height: 44, flexShrink: 0, borderRadius: 13, ...SUNK(), display: "inline-flex", alignItems: "center", justifyContent: "center" }}><Ico n="trash" size={19} color={C.dim} /></button>
+      </div>
       <div className="noBar" style={{ display: "flex", gap: 6, overflowX: "auto", marginTop: 12 }} role="group" aria-label={T("plGroup")}>
         <button data-plan-setgrp="" aria-pressed={!plan.grp} onClick={() => { sfxTap(); upd(() => ({ grp: null })); }} style={chipS(!plan.grp)}>{T("plNoGroup")}</button>
         {P.groups.map(g => <button key={g.id} data-plan-setgrp={g.id} aria-pressed={plan.grp === g.id} onClick={() => { sfxTap(); upd(() => ({ grp: g.id })); }} style={chipS(plan.grp === g.id)}>{g.name}</button>)}
       </div>
-      <div style={{ display: "flex", gap: 8, marginTop: 14 }}>
-        {P.active === plan.id
-          ? <div data-plan-inuse style={{ flex: 1, padding: 12, borderRadius: 14, textAlign: "center", fontWeight: 800, color: C.mint, ...SUNK() }}>{T("plInUse")}</div>
-          : <button data-plan-use onClick={() => { sfxTap(); setP(cur => ({ ...cur, active: plan.id })); }} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), flex: 1, padding: 12, fontSize: 15 }}>{T("plUse")}</button>}
-        <button data-plan-tips onClick={() => { sfxTap(); setHints(true); }} aria-label={T("plTips")} style={{ ...btnBase, width: 48, flexShrink: 0, borderRadius: 14, ...SUNK(), display: "inline-flex", alignItems: "center", justifyContent: "center", position: "relative" }}><Ico n="bulb" size={21} color={warn ? C.signal : C.dim} />{warn && <span data-plan-warn style={{ position: "absolute", top: 7, right: 8, width: 8, height: 8, borderRadius: 99, background: C.signal }} />}</button>
-        <button data-plan-del onClick={() => { sfxTap(); setDel(true); }} aria-label={T("plDelete")} style={{ ...btnBase, width: 48, flexShrink: 0, borderRadius: 14, ...SUNK(), display: "inline-flex", alignItems: "center", justifyContent: "center" }}><Ico n="trash" size={20} color={C.dim} /></button>
-      </div>
-      <div style={{ display: "flex", gap: 4, marginTop: 18 }} role="tablist">
-        {PLN.WEEKDAYS.map(d => {
-          const on = d === wd, tr = !PLN.isRest(plan, d);
-          return <button key={d} role="tab" aria-selected={on} data-plan-day={d} data-train={tr ? 1 : 0} onClick={() => { sfxTap(); setWd(d); }} style={{ ...btnBase, flex: 1, minWidth: 0, padding: "9px 0 7px", borderRadius: 11, fontSize: 12, display: "flex", flexDirection: "column", alignItems: "center", gap: 4, ...(on ? { background: C.chalk, color: C.ink } : tr ? { background: `${C.signal}22`, color: C.signal } : { ...SUNK(), color: C.dim }) }}>
-            {wdNames[d - 1]}<span style={{ width: 5, height: 5, borderRadius: 99, background: tr ? (on ? C.ink : C.signal) : "transparent" }} />
-          </button>;
-        })}
-      </div>
-      <Sect title={wdNames[wd - 1]} data-plan-dayview={wd} meta={items.length ? <TypeMarks items={items} data="day" onTap={() => setHints(true)} /> : null}>
-        {!items.length && <div data-plan-rest style={{ display: "flex", gap: 10, alignItems: "flex-start", color: C.dim, fontSize: 14 }}><Ico n="moon" size={20} color={C.sky} style={{ flexShrink: 0, marginTop: 1 }} /><span><b style={{ color: C.chalk }}>{T("plRestDay")}</b><br />{T("plRestInfo")}</span></div>}
+      {/* the weekdays this plan is in your week (lit), another plan's day (dot), a rest day (empty) */}
+      <Sect title={T("plDaysT")} data-plan-days-set style={{ marginTop: 16 }} meta={<InfoQ id="pldays" title={T("plDaysT")} text={[T("plDaysD")]} />}>
+        <div style={{ display: "flex", gap: 4 }}>
+          {PLN.WEEKDAYS.map(d => {
+            const mine = P.week[d] === plan.id, other = !mine && !!PLN.planOn(P, d);
+            const otherName = other ? planTitle(PLN.planOn(P, d)) : "";
+            return <button key={d} data-plan-day={d} data-on={mine ? 1 : 0} data-other={other ? 1 : 0} aria-pressed={mine} disabled={!items.length} aria-label={`${wdLongName(d)}${other ? ` · ${otherName}` : ""}`}
+              onClick={() => { sfxTap(); setP(cur => PLN.setWeekDay(cur, d, mine ? "" : plan.id)); }}
+              style={{ ...btnBase, flex: 1, minWidth: 0, padding: "9px 0 7px", borderRadius: 11, fontSize: 12, display: "flex", flexDirection: "column", alignItems: "center", gap: 4, opacity: items.length ? 1 : 0.45,
+                ...(mine ? { background: C.signal, color: C.signalInk } : { ...SUNK(), color: other ? C.chalk : C.dim }) }}>
+              {wdNames[d - 1]}<span style={{ width: 5, height: 5, borderRadius: 99, background: mine ? C.signalInk : other ? `${C.chalk}88` : "transparent" }} />
+            </button>;
+          })}
+        </div>
+        {!items.length && <div style={{ fontSize: 12.5, color: C.dim, marginTop: 8 }}>{T("plDaysEmpty")}</div>}
+      </Sect>
+      <Sect title={T("secExercises")} data-plan-dayview meta={items.length ? <TypeMarks items={items} data="day" onTap={() => setHints(true)} /> : null}>
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
           {items.map((x, i) => {
             const ex = EX[x.id]; if (!ex) return null;
@@ -9819,45 +9937,35 @@ function PlanEditor({ plan, P, setP, onBack }) {
               <div key={x.id} data-plan-item={x.id} style={{ display: "flex", flexDirection: "column", gap: 8, padding: "10px 12px", borderRadius: 13, background: C.panelHi }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                   <span style={{ flex: 1, minWidth: 0, fontSize: 15, fontWeight: 700, color: C.chalk }}>{ex.name}<ExQ id={x.id} /></span>
-                  <button data-plan-up={x.id} disabled={!i} aria-label={T("plUp")} onClick={() => { sfxTap(); upd(p => ({ days: PLN.moveItem(p, wd, i, i - 1).days })); }} style={{ ...btnBase, background: "transparent", color: C.dim, padding: 4, opacity: i ? 1 : 0.3, display: "inline-flex" }}><Ico n="arrowUp" size={17} /></button>
-                  <button data-plan-down={x.id} disabled={i === items.length - 1} aria-label={T("plDown")} onClick={() => { sfxTap(); upd(p => ({ days: PLN.moveItem(p, wd, i, i + 1).days })); }} style={{ ...btnBase, background: "transparent", color: C.dim, padding: 4, opacity: i < items.length - 1 ? 1 : 0.3, display: "inline-flex" }}><Ico n="arrowDown" size={17} /></button>
-                  <button data-plan-rm={x.id} aria-label={T("plRemove")} onClick={() => { sfxTap(); upd(p => ({ days: PLN.removeItem(p, wd, x.id).days })); }} style={{ ...btnBase, background: "transparent", color: C.dim, padding: 4, display: "inline-flex" }}><Ico n="x" size={17} /></button>
+                  <button data-plan-up={x.id} disabled={!i} aria-label={T("plUp")} onClick={() => { sfxTap(); upd(p => ({ items: PLN.moveItem(p, i, i - 1).items })); }} style={{ ...btnBase, background: "transparent", color: C.dim, padding: 4, opacity: i ? 1 : 0.3, display: "inline-flex" }}><Ico n="arrowUp" size={17} /></button>
+                  <button data-plan-down={x.id} disabled={i === items.length - 1} aria-label={T("plDown")} onClick={() => { sfxTap(); upd(p => ({ items: PLN.moveItem(p, i, i + 1).items })); }} style={{ ...btnBase, background: "transparent", color: C.dim, padding: 4, opacity: i < items.length - 1 ? 1 : 0.3, display: "inline-flex" }}><Ico n="arrowDown" size={17} /></button>
+                  <button data-plan-rm={x.id} aria-label={T("plRemove")} onClick={() => { sfxTap(); upd(p => ({ items: PLN.removeItem(p, x.id).items })); }} style={{ ...btnBase, background: "transparent", color: C.dim, padding: 4, display: "inline-flex" }}><Ico n="x" size={17} /></button>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                   <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-                    {step(() => upd(p => ({ days: PLN.patchItem(p, wd, x.id, { sets: (x.sets || PLN.DEFAULT_SETS) - 1 }).days })), T("plSets") + " −", "sets-")}
+                    {step(() => upd(p => ({ items: PLN.patchItem(p, x.id, { sets: (x.sets || PLN.DEFAULT_SETS) - 1 }).items })), T("plSets") + " −", "sets-")}
                     <span data-plan-sets={x.sets} style={{ minWidth: 52, textAlign: "center", fontSize: 13.5, color: C.chalk, fontWeight: 700 }}>{x.sets} {T("plSets")}</span>
-                    {step(() => upd(p => ({ days: PLN.patchItem(p, wd, x.id, { sets: (x.sets || PLN.DEFAULT_SETS) + 1 }).days })), T("plSets") + " +", "sets+")}
+                    {step(() => upd(p => ({ items: PLN.patchItem(p, x.id, { sets: (x.sets || PLN.DEFAULT_SETS) + 1 }).items })), T("plSets") + " +", "sets+")}
                   </span>
                   {timed && <span style={{ display: "inline-flex", alignItems: "center", gap: 6, marginLeft: "auto" }}>
-                    {step(() => upd(p => ({ days: PLN.patchItem(p, wd, x.id, { dur: Math.max(5, dur - 5) }).days })), "−5 s", "dur-")}
+                    {step(() => upd(p => ({ items: PLN.patchItem(p, x.id, { dur: Math.max(5, dur - 5) }).items })), "−5 s", "dur-")}
                     <span data-plan-dur={dur} data-own={x.dur ? 1 : 0} style={{ minWidth: 54, textAlign: "center", fontSize: 13.5, fontWeight: 700, color: x.dur ? C.signal : C.chalk, lineHeight: 1.1 }}>{fmtHold(dur)}<br /><span style={{ fontSize: 10.5, fontWeight: 600, color: C.dim }}>{T(x.dur ? "plTimeOwn" : "plTimeApp")}</span></span>
-                    {step(() => upd(p => ({ days: PLN.patchItem(p, wd, x.id, { dur: Math.min(1800, dur + 5) }).days })), "+5 s", "dur+")}
-                    {x.dur && <button data-plan-dur-reset onClick={() => { sfxTap(); upd(p => ({ days: PLN.patchItem(p, wd, x.id, { dur: null }).days })); }} aria-label={T("plTimeReset")} style={{ ...btnBase, background: "transparent", color: C.dim, padding: 4, display: "inline-flex" }}><Ico n="undo" size={16} /></button>}
+                    {step(() => upd(p => ({ items: PLN.patchItem(p, x.id, { dur: Math.min(1800, dur + 5) }).items })), "+5 s", "dur+")}
+                    {x.dur && <button data-plan-dur-reset onClick={() => { sfxTap(); upd(p => ({ items: PLN.patchItem(p, x.id, { dur: null }).items })); }} aria-label={T("plTimeReset")} style={{ ...btnBase, background: "transparent", color: C.dim, padding: 4, display: "inline-flex" }}><Ico n="undo" size={16} /></button>}
                   </span>}
                 </div>
               </div>
             );
           })}
         </div>
-        <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
-          <button data-plan-add onClick={() => { sfxTap(); setAdding(true); }} disabled={items.length >= PLN.MAX_ITEMS} style={{ ...btnBase, flex: 1, padding: "11px 12px", borderRadius: 12, border: `1.5px dashed ${C.line}`, background: "transparent", color: C.sky, fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}><Ico n="plus" size={17} sw={2.4} />{T("plAddEx")}</button>
-          {items.length > 0 && <button data-plan-copy onClick={() => { sfxTap(); setCopy(true); }} aria-label={T("plCopyTo")} style={{ ...btnBase, width: 46, borderRadius: 12, ...SUNK(), display: "inline-flex", alignItems: "center", justifyContent: "center" }}><Ico n="copy" size={18} color={C.dim} /></button>}
-        </div>
+        <button data-plan-add onClick={() => { sfxTap(); setAdding(true); }} disabled={items.length >= PLN.MAX_ITEMS} style={{ ...btnBase, width: "100%", marginTop: items.length ? 10 : 0, padding: "11px 12px", borderRadius: 12, border: `1.5px dashed ${C.line}`, background: "transparent", color: C.sky, fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}><Ico n="plus" size={17} sw={2.4} />{T("plAddEx")}</button>
       </Sect>
       {adding && (
         <Sheet title={T("plAddEx")} onClose={() => setAdding(false)}>
-          <ExLibrary picked={items.map(x => x.id)} onPick={id => upd(p => ({ days: (items.some(x => x.id === id) ? PLN.removeItem(p, wd, id) : PLN.addItem(p, wd, id)).days }))} />
+          <ExLibrary picked={items.map(x => x.id)} onPick={id => upd(p => ({ items: (items.some(x => x.id === id) ? PLN.removeItem(p, id) : PLN.addItem(p, id)).items }))} />
         </Sheet>
       )}
-      {copy && (
-        <Sheet title={T("plCopyTo")} onClose={() => setCopy(false)} short>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
-            {PLN.WEEKDAYS.filter(d => d !== wd).map(d => <button key={d} data-plan-copy-to={d} onClick={() => { sfxTap(); upd(p => ({ days: PLN.copyDay(p, wd, d).days })); setCopy(false); setWd(d); }} style={{ ...btnBase, padding: "12px 0", borderRadius: 12, ...SUNK(), color: C.chalk, fontSize: 14 }}>{wdNames[d - 1]}</button>)}
-          </div>
-        </Sheet>
-      )}
-      {hints && <PlanHintsSheet plan={plan} onClose={() => setHints(false)} />}
+      {hints && <PlanHintsSheet plan={plan} P={P} onClose={() => setHints(false)} />}
       {del && <ConfirmBox icon="trash" danger title={T("plDeleteQ", { name: planTitle(plan) })} text={T("plDeleteD")} yes={T("plDelete")} yesData={{ "data-plan-del-yes": true }} onNo={() => setDel(false)} onYes={() => { setDel(false); setP(cur => PLN.delPlan(cur, plan.id)); onBack(); }} />}
     </div>
   );
@@ -10831,7 +10939,7 @@ function tourSteps(ch, x) {
     s('[data-plans-seg="rec"]', 0, { tap: true, opt: true, prep: screen("plans"), t: tt(0, "plRec") }),
     s("[data-plan-rec]", 1, { opt: true, wait: 400 }),
     s('[data-plans-seg="mine"]', 2, { tap: true, opt: true, t: tt(2, "plMine") }),
-    s("[data-plan-new]", 3, { opt: true, wait: 400 }),
+    s("[data-plan-week]", 3, { opt: true, wait: 400 }), // 1.9.2: My week
     { done: true, t: X[4] },
   ];
   if (ch === 9) return [ // Shop
@@ -12576,9 +12684,10 @@ export default function App() {
     setSession({ day: dayId, rounds, base: Object.fromEntries(day.ids.map(slot => [slot, effId(slot)])), phase: "warmup", pos: 0, warm: WARMUP.map(() => false), results: {}, rest: null, startTs: Date.now() });
     setSessionOpen(true);
   };
-  // 1.9.0: an own plan's day (a copy of its exercises, name and group, so editing the plan mid-workout changes nothing)
+  // 1.9.0: an own plan (1.9.2: a single workout; wd = the weekday it is done on) as a copy of its exercises, name and
+  // group, so editing the plan mid-workout changes nothing
   const startPlan = (plan, wd) => {
-    const P = PLN.plansOf(profile), items = ((plan.days && plan.days[wd]) || []).filter(x => EX[x.id]).map(x => ({ ...x }));
+    const P = plansOfP(profile), items = (plan.items || []).filter(x => EX[x.id]).map(x => ({ ...x }));
     if (!items.length) return;
     setSession({ plan: { id: plan.id, name: planTitle(plan), gname: groupName(P, plan.grp) || "", wd, items }, phase: "warmup", pos: 0, warm: WARMUP.map(() => false), results: {}, rest: null, startTs: Date.now() });
     setSessionOpen(true);

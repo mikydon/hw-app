@@ -22,6 +22,25 @@ export default {
     restRowD: "Zeigt die Pausenzeit auf dem Sperrbildschirm und piept bei 3, 2, 1 und 0, auch wenn das Handy gesperrt ist. Android nennt diese Berechtigung „Körperliche Aktivität“; die App liest damit keine Aktivitätsdaten.",
     restRowOpen: "In Android blockiert: erlaube „Körperliche Aktivität“ in den Einstellungen der App",
     restRowBlocked: "In Android blockiert: Einstellungen → Apps → HW App → Berechtigungen → Körperliche Aktivität",
+    // 1.9.2: plans = single workouts + My week
+    plWeek: "Meine Woche",
+    plWeekD: "Wähl für jeden Tag einen deiner Pläne. Ein Tag ohne Plan ist ein Ruhetag; trainieren kannst du trotzdem: Mit Start wählst du einen beliebigen Plan.",
+    plRest: "Ruhe",
+    plWeekNone: "Erstell zuerst einen Plan und leg ihn dann auf deine Tage.",
+    plWeekClear: "Woche leeren",
+    plWeekClearQ: "Woche leeren?",
+    plWeekClearD: "Jeder Tag wird ein Ruhetag und Start zeigt wieder den empfohlenen Plan. Deine Pläne bleiben.",
+    plTipsNoWeek: "Leg in Meine Woche Pläne auf deine Tage, dann siehst du, was deine Woche trainiert.",
+    hintMissPlan: "Diesem Training fehlt: {types}. Ein Ganzkörpertraining trainiert Drücken, Ziehen, Beine und Rumpf.",
+    plRecWeekOn: "Deine Woche nutzt deine eigenen Pläne. Leere sie in Meine Pläne, um wieder diesen zu trainieren.",
+    plNoEx: "Noch keine Übungen",
+    plDaysT: "Tage in meiner Woche",
+    plDaysD: "Tipp die Tage an, an denen du diesen Plan trainierst. Ein Tag mit einem anderen Plan bekommt stattdessen diesen; Tage ohne Plan sind Ruhetage.",
+    plDaysEmpty: "Füg zuerst Übungen hinzu.",
+    plPick: "Was trainierst du heute?",
+    plPickSub: "Plan wählen",
+    plOther: "Etwas anderes trainieren",
+    plRestInfo2: "Heute kein Plan. Trotzdem trainieren? Tipp auf Start und wähl einen.",
     addExtra: "Übung hinzufügen",
     addExtraD: "Noch nicht müde? Hinzugefügte Übungen zählen für heute, und ein besseres Ergebnis ist ein Rekord.",
     bg_arms: "Arme", bg_back: "Rücken", bg_calves: "Waden", bg_chest: "Brust", bg_core: "Rumpf", bg_glutes: "Po", bg_legs: "Beine", bg_shoulders: "Schultern",
@@ -274,13 +293,7 @@ export default {
   },
   tour: {
     ch: ["Start", "Abzeichen", "Training", "Profil", "Verlauf", "Kalorien", "Freunde", "Muscle Deck", "Shop", "Trainingspläne"],
-    c10: [
-      "Tippe auf {t}.",
-      "Der empfohlene Plan: Tage A, B und C jeden zweiten Tag, Drücken, Ziehen, Beine und Rumpf, ohne Geräte.",
-      "Tippe auf {t}, um deinen eigenen zu bauen.",
-      "Stell einen Plan aus den Übungen der App zusammen, auch mit Kurzhanteln und Maschinen. Wähle Übungen für jeden Wochentag; leere Tage sind Ruhetage.",
-      "Tippe auf Diesen Plan nutzen, dann zeigt Start die Woche dieses Plans, erledigte Tage in Grün.",
-    ],
+    c10: ["Tippe auf {t}.", "Der empfohlene Plan: Tage A, B und C jeden zweiten Tag, Drücken, Ziehen, Beine und Rumpf, ohne Geräte.", "Tippe auf {t}, um deinen eigenen zu bauen.", "Stell aus den Übungen der App ein Training zusammen, auch mit Kurzhanteln und Geräten. Wähl dann in Meine Woche, welchen Plan du an welchem Tag trainierst; Tage ohne Plan sind Ruhetage.", "Start zeigt dann den heutigen Plan und die trainierten Tage in Grün. Keine Woche eingestellt? Mit Start wählst du einen Plan."],
   },
   news19: [
     ["Trainingspläne", "Ein Plan für alle: Tage A, B und C.", "Stell eigene Pläne aus den Übungen der App zusammen: Wähle Übungen und Sätze für jeden Wochentag (leere Tage sind Ruhetage), sortiere Pläne in Gruppen und nutze einen. Start zeigt dann die Woche dieses Plans, erledigte Tage in Grün. Kleine Symbole zeigen, was jeder Tag trainiert, und Tipps sagen, wenn ein Muskel wenig Arbeit bekommt. Der empfohlene Plan A, B, C ist weiterhin da."],
@@ -414,6 +427,11 @@ export default {
     mx_wide_grip_lat_pulldown: { muscles: "Rücken (Latissimus), oberer Rücken", how: "Setz dich mit den Oberschenkeln unter das Polster und greif die Stange weit (etwa 1,5-fache Schulterbreite). Zieh sie zur oberen Brust, Ellbogen nach unten und außen, dann lass sie langsam hoch.", tip: "Zieh sie nicht hinter den Nacken." },
   },
   // 1.9.1
+  news192: [
+    "Trainingspläne sind jetzt einzelne Trainings, und Meine Woche legt einen davon auf jeden Tag (zum Beispiel Plan A auf Mo, Mi und Fr, Plan B auf Di und Do). Vorher war ein Plan eine ganze Woche und nur einer konnte aktiv sein. Deine Pläne wurden von selbst umgestellt: Ein Plan mit verschiedenen Tagen wurde zu einem Training pro Übungsliste.",
+    "Keine Woche eingestellt oder Ruhetag? Mit Start wählst du, was du trainierst: deine Pläne, das empfohlene A/B/C oder ein freies Training, und das zuletzt gemachte ist grün.",
+    "Koreanisch: Wörter brechen am Zeilenende nicht mehr in der Mitte um, und lange Joker-Namen in Muscle Deck werden nie mitten im Wort getrennt.",
+  ],
   news191: [
     "Die Anmeldung auf einem Handy, dessen Trainings zu keinem Konto gehören, fragt jetzt zuerst: die Daten des Kontos verwenden oder die Trainings des Handys zum Konto hinzufügen. Vorher wurden sie ohne Nachfrage zusammengeführt, und der Platzhaltername „User“ des Handys konnte deinen Namen und dein Foto ersetzen.",
     "Fehlen auf einem Handy einmal Name oder Foto, holt die App sie aus dem Profil deines Kontos zurück und entfernt dein Foto für Freunde nie.",
