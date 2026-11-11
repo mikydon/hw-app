@@ -1254,7 +1254,7 @@ function Sheet({ title, onClose, children, short, sysEmo }) {
   return createPortal(
     <div ref={wrap} className="sheetWrap" onClick={close} style={{ position: "fixed", inset: 0, zIndex: 100, display: "flex", alignItems: "flex-end", justifyContent: "center", padding: "calc(12px + var(--sat)) 12px calc(12px + var(--sab))" }}>
       <div className="sheetDim" aria-hidden="true" style={{ position: "absolute", inset: 0, background: LOOK === "liquid" ? "rgba(5,10,24,0.66)" : "rgba(5,10,24,0.82)" }} />
-      <div onClick={e => e.stopPropagation()} className="sheetBox" style={{ position: "relative", ...(short ? { maxHeight: "70dvh" } : {}), background: C.panel, borderRadius: 22, padding: "22px 20px 26px", width: "100%", maxWidth: 460, border: `1px solid ${C.line}`, overflowY: "auto", overscrollBehavior: "contain", fontFamily: BODY, ...(LOOK === "liquid" ? { background: `${C.panel}f2`, border: "1px solid rgba(255,255,255,.16)", borderRadius: 26, boxShadow: "inset 0 1px 0 rgba(255,255,255,.14), 0 20px 50px rgba(0,0,0,.4)" } : {}) }}>
+      <div onClick={e => e.stopPropagation()} className="sheetBox" style={{ position: "relative", ...(short ? { maxHeight: "70dvh" } : {}), background: C.panel, borderRadius: 20, padding: "22px 20px 26px", width: "100%", maxWidth: 460, border: `1px solid ${C.line}`, overflowY: "auto", overscrollBehavior: "contain", fontFamily: BODY, ...(LOOK === "liquid" ? { background: `${C.panel}f2`, border: "1px solid rgba(255,255,255,.16)", borderRadius: 24, boxShadow: "inset 0 1px 0 rgba(255,255,255,.14), 0 20px 50px rgba(0,0,0,.4)" } : {}) }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, marginBottom: 14 }}>
           <div style={{ fontFamily: DISPLAY, fontSize: 30, fontWeight: 800, lineHeight: 1, color: C.chalk }}>{title}</div>
           <button onClick={close} aria-label={T("close")} style={{ ...btnBase, background: C.panelHi, color: C.dim, padding: "7px 12px", fontSize: 14 }}>✕</button>
@@ -1367,13 +1367,13 @@ function ExLibrary({ onPick, picked = [], exclude = [], autoFocus }) {
   const row = m => {
     const id = m.id, on = picked.includes(id);
     return (
-      <div key={id} data-lib-row={id} onClick={() => { sfxTap(); if (openHowToGlobal) openHowToGlobal(id); }} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 13, background: C.panelHi, cursor: "pointer" }}>
+      <div key={id} data-lib-row={id} onClick={() => { sfxTap(); if (openHowToGlobal) openHowToGlobal(id); }} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 12, background: C.panelHi, cursor: "pointer" }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 15, fontWeight: 700, color: C.chalk, lineHeight: 1.25 }}>{EX[id].name}</div>
           {m.aka && <div data-lib-aka style={{ fontSize: 12, color: C.dim, marginTop: 2 }}>{T("exAka", { name: m.aka })}</div>}
           <div style={{ display: "flex", gap: 6, alignItems: "center", marginTop: 5, flexWrap: "wrap" }}><DiffChip id={id} pad="0 7px" />{LIB[id].eq !== "none" && <span style={{ fontSize: 11, color: C.dim }}>{T("eq_" + LIB[id].eq)}</span>}</div>
         </div>
-        {onPick && <button data-lib-pick={id} aria-pressed={on} onClick={e => { e.stopPropagation(); sfxTap(); onPick(id); }} style={{ ...btnBase, flexShrink: 0, padding: "8px 12px", fontSize: 13, borderRadius: 11, display: "inline-flex", alignItems: "center", gap: 5, ...(on ? { background: `${C.mint}22`, color: C.mint, border: `1px solid ${C.mint}66` } : { background: C.signal, color: C.signalInk || C.ink }) }}><Ico n={on ? "check" : "plus"} size={15} sw={2.4} />{T(on ? "exAdded" : "exAdd")}</button>}
+        {onPick && <button data-lib-pick={id} aria-pressed={on} onClick={e => { e.stopPropagation(); sfxTap(); onPick(id); }} style={{ ...btnBase, flexShrink: 0, padding: "8px 12px", fontSize: 13, borderRadius: 12, display: "inline-flex", alignItems: "center", gap: 5, ...(on ? { background: `${C.mint}22`, color: C.mint, border: `1px solid ${C.mint}66` } : { background: C.signal, color: C.signalInk || C.ink }) }}><Ico n={on ? "check" : "plus"} size={15} sw={2.4} />{T(on ? "exAdded" : "exAdd")}</button>}
       </div>
     );
   };
@@ -1383,7 +1383,7 @@ function ExLibrary({ onPick, picked = [], exclude = [], autoFocus }) {
       <div style={{ position: "relative" }}>
         <Ico n="search" size={18} color={C.dim} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
         <input data-lib-search value={q} autoFocus={autoFocus} onChange={e => setQ(e.target.value)} placeholder={T("exSearch")} aria-label={T("exSearch")}
-          style={{ fontFamily: BODY, fontSize: 16, fontWeight: 600, padding: "11px 38px 11px 38px", borderRadius: 13, border: `1.5px solid ${C.line}`, background: C.ink, color: C.chalk, outline: "none", boxSizing: "border-box", width: "100%" }} />
+          style={{ fontFamily: BODY, fontSize: 16, fontWeight: 600, padding: "11px 38px 11px 38px", borderRadius: 12, border: `1.5px solid ${C.line}`, background: C.ink, color: C.chalk, outline: "none", boxSizing: "border-box", width: "100%" }} />
         {q && <button data-lib-clear aria-label={T("close")} onClick={() => setQ("")} style={{ ...btnBase, position: "absolute", right: 6, top: "50%", transform: "translateY(-50%)", background: "transparent", color: C.dim, padding: "6px 8px", fontSize: 14 }}>✕</button>}
       </div>
       <div role="group" aria-label={T("eqHint")} style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
@@ -1764,7 +1764,7 @@ const SUNK = () => ({ background: "rgba(0,0,0,.24)", border: "1px solid rgba(0,0
 // costs raster time while scrolling); painted once, nothing runs per frame.
 const GLASS_SHEEN = "linear-gradient(130deg, rgba(255,255,255,.2) 0%, rgba(255,255,255,.07) 28%, rgba(255,255,255,0) 50%, rgba(255,255,255,0) 61%, rgba(255,255,255,.075) 68%, rgba(255,255,255,0) 76%)";
 const GLASS_EDGE = "inset 0 1px 0 rgba(255,255,255,.38), inset 0 -1px 0 rgba(255,255,255,.14), inset 0 0 0 1px rgba(255,255,255,.06)";
-const LIQUID = () => ({ background: `${GLASS_SHEEN}, rgba(255,255,255,.07)`, border: "1px solid rgba(255,255,255,.27)", backgroundClip: "padding-box", borderRadius: 26, boxShadow: GLASS_EDGE });
+const LIQUID = () => ({ background: `${GLASS_SHEEN}, rgba(255,255,255,.07)`, border: "1px solid rgba(255,255,255,.27)", backgroundClip: "padding-box", borderRadius: 24, boxShadow: GLASS_EDGE });
 // The same glass for the bars and floating panels (top bar, floating start, mini player, menu, sheets; Michael, Oct 10:
 // "tam sa to applajnut musí tiež"), and small glass pills for the chips and buttons on them.
 // A dark layer under the white tint keeps text readable when something bright (a white button) passes behind.
@@ -2037,7 +2037,7 @@ function ExitPrompt({ onStay, onLeave, history, session }) {
   const [on, setOn] = useState(false);
   useEffect(() => { const r = requestAnimationFrame(() => setOn(true)); return () => cancelAnimationFrame(r); }, []);
   // the same box as the day card on Home (opaque in every look, so nothing shows through)
-  const box = LOOK === "glass" ? GLASS() : LOOK === "liquid" ? { ...LIQUID_FLOAT(), borderRadius: 26 } : LOOK === "tiles" ? { ...card, borderRadius: 20, boxShadow: "0 22px 50px rgba(0,0,0,.5)" } : { background: C.panel, border: `1px solid ${C.line}`, borderRadius: 20, boxShadow: "0 22px 50px rgba(0,0,0,.5)" };
+  const box = LOOK === "glass" ? GLASS() : LOOK === "liquid" ? { ...LIQUID_FLOAT(), borderRadius: 24 } : LOOK === "tiles" ? { ...card, borderRadius: 20, boxShadow: "0 22px 50px rgba(0,0,0,.5)" } : { background: C.panel, border: `1px solid ${C.line}`, borderRadius: 20, boxShadow: "0 22px 50px rgba(0,0,0,.5)" };
   const title = T("exitAskTitle");
   return createPortal(
     <div data-exit-back onClick={onStay} style={{ position: "fixed", inset: 0, zIndex: 90, display: "flex", alignItems: "center", justifyContent: "center", padding: "calc(16px + var(--sat)) 16px calc(16px + var(--sab))", background: on ? "rgba(0,0,0,.55)" : "rgba(0,0,0,0)", transition: "background .25s", fontFamily: BODY }}>
@@ -2096,11 +2096,11 @@ function MenuButton({ open, onClick, btnRef, label, badge }) {
   const bar = (y, rot) => ({ position: "absolute", left: 11, width: 20, height: 2.6, borderRadius: 2, background: C.chalk, top: open ? 20 : y, transform: open ? `rotate(${rot}deg)` : "none", transition: `top ${MO.t1} ${MO.ease}, transform ${MO.t1} ${MO.ease}, opacity ${MO.t1}` });
   return (
     <button ref={btnRef} onClick={onClick} aria-label={label || (open ? T("menuClose") : T("menuOpen"))} aria-expanded={open} data-menu-btn
-      style={{ ...btnBase, position: "relative", width: 42, height: 42, padding: 0, borderRadius: 13, background: open ? C.panelHi : C.panel, border: `1.5px solid ${C.line}`, flexShrink: 0, ...(LOOK === "liquid" ? { ...LIQUID_PILL(), background: open ? "rgba(255,255,255,.16)" : "rgba(255,255,255,.09)" } : {}) }}>
+      style={{ ...btnBase, position: "relative", width: 42, height: 42, padding: 0, borderRadius: 12, background: open ? C.panelHi : C.panel, border: `1.5px solid ${C.line}`, flexShrink: 0, ...(LOOK === "liquid" ? { ...LIQUID_PILL(), background: open ? "rgba(255,255,255,.16)" : "rgba(255,255,255,.09)" } : {}) }}>
       <span style={bar(13, 45)} />
       <span style={{ ...bar(20, 0), opacity: open ? 0 : 1 }} />
       <span style={bar(27, -45)} />
-      {badge > 0 && !open && <span data-menu-badge={badge} aria-hidden="true" style={{ position: "absolute", top: -4, right: -4, minWidth: 17, height: 17, borderRadius: 9, padding: "0 4px", boxSizing: "border-box", background: "#ff5a5a", color: "#fff", fontSize: 10.5, fontWeight: 800, lineHeight: "17px", fontFamily: BODY, border: `2px solid ${C.ink}` }}>{badge > 9 ? "9+" : badge}</span>}
+      {badge > 0 && !open && <span data-menu-badge={badge} aria-hidden="true" style={{ position: "absolute", top: -4, right: -4, minWidth: 17, height: 17, borderRadius: 8, padding: "0 4px", boxSizing: "border-box", background: "#ff5a5a", color: "#fff", fontSize: 10.5, fontWeight: 800, lineHeight: "17px", fontFamily: BODY, border: `2px solid ${C.ink}` }}>{badge > 9 ? "9+" : badge}</span>}
     </button>
   );
 }
@@ -2851,7 +2851,7 @@ function ChallengeRows({ history }) {
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         {list.map(c => (
           <div key={c.id} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div className={c.done ? "pop" : ""} style={{ width: 36, height: 36, borderRadius: 11, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: c.done ? C.mint : `${C.sky}1f`, color: c.done ? C.ink : C.sky }}><Ico n={c.done ? "check" : c.icon} size={20} sw={c.done ? 2.4 : 2} /></div>
+            <div className={c.done ? "pop" : ""} style={{ width: 36, height: 36, borderRadius: 12, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: c.done ? C.mint : `${C.sky}1f`, color: c.done ? C.ink : C.sky }}><Ico n={c.done ? "check" : c.icon} size={20} sw={c.done ? 2.4 : 2} /></div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
                 <span style={{ fontSize: 14, fontWeight: 600, color: c.done ? C.mint : C.chalk }}>{L.ch[c.id]}</span>
@@ -2880,7 +2880,7 @@ function ChallengesCard({ history }) {
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         {list.map(c => (
           <div key={c.id} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div className={c.done ? "pop" : ""} style={{ width: 36, height: 36, borderRadius: 11, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: c.done ? C.mint : `${C.sky}1f`, color: c.done ? C.ink : C.sky }}><Ico n={c.done ? "check" : c.icon} size={20} sw={c.done ? 2.4 : 2} /></div>
+            <div className={c.done ? "pop" : ""} style={{ width: 36, height: 36, borderRadius: 12, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: c.done ? C.mint : `${C.sky}1f`, color: c.done ? C.ink : C.sky }}><Ico n={c.done ? "check" : c.icon} size={20} sw={c.done ? 2.4 : 2} /></div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
                 <span style={{ fontSize: 14, fontWeight: 600, color: c.done ? C.mint : C.chalk }}>{L.ch[c.id]}</span>
@@ -3304,16 +3304,16 @@ function FloatStart({ show, day, rounds, setRounds, onStart, plan, tabs }) {
       style={{ position: "fixed", left: "var(--side, 0px)", right: 0, bottom: "calc(var(--sab, 0px) + 12px)", zIndex: 40, display: "flex", justifyContent: "center", padding: "0 12px", pointerEvents: show ? "auto" : "none" }}>
       {/* the page fades out under the bar instead of being cut by it */}
       <div aria-hidden="true" data-fstart-fade style={{ position: "fixed", left: "var(--side, 0px)", right: 0, bottom: 0, height: `calc(var(--sab, 0px) + var(--fsH, ${FS_H}px) + 22px)`, background: `linear-gradient(180deg, ${C.ink}00, ${C.ink}d9 45%, ${C.ink})`, pointerEvents: "none", zIndex: -1 }} />
-      <div ref={boxRef} data-fstart-box data-rounds-row style={{ display: "flex", gap: 6, width: "100%", maxWidth: 436, padding: 6, borderRadius: 24, boxSizing: "border-box", background: `${C.ink}f5`, border: `1px solid ${C.line}`, boxShadow: "0 12px 34px rgba(0,0,0,.5)", ...(LOOK === "liquid" ? { ...LIQUID_FLOAT(), borderRadius: 26 } : LOOK === "glass" ? { ...GLASS(), borderRadius: 26 } : {}) }}>
+      <div ref={boxRef} data-fstart-box data-rounds-row style={{ display: "flex", gap: 6, width: "100%", maxWidth: 436, padding: 6, borderRadius: 24, boxSizing: "border-box", background: `${C.ink}f5`, border: `1px solid ${C.line}`, boxShadow: "0 12px 34px rgba(0,0,0,.5)", ...(LOOK === "liquid" ? { ...LIQUID_FLOAT(), borderRadius: 24 } : LOOK === "glass" ? { ...GLASS(), borderRadius: 24 } : {}) }}>
         {tabs && (
           <div role="tablist" {...{ [`data-${tabs.name}-tabs`]: 1 }} style={{ display: "flex", padding: 3, borderRadius: 18, ...SUNK(), flexShrink: 0 }}>
             <div style={{ position: "relative", display: "flex" }}>
               {/* 1.9.0 (Michael, Nov 7: "the bar doesn't keep up"): the lit pill slides with the pages */}
-              <span ref={tabs.knob} data-ftabs-knob aria-hidden="true" style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: `${100 / tabs.items.length}%`, borderRadius: 15, background: `${C.signal}26`, willChange: "transform" }} />
+              <span ref={tabs.knob} data-ftabs-knob aria-hidden="true" style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: `${100 / tabs.items.length}%`, borderRadius: 16, background: `${C.signal}26`, willChange: "transform" }} />
               {tabs.items.map((it, i) => { const on = tabs.active === i; return (
                 <button key={i} type="button" role="tab" tabIndex={show ? 0 : -1} aria-selected={on} aria-label={it.label} title={it.label} {...{ [`data-${tabs.name}-tab`]: i }} {...tabs.extra.btn(i)}
                   onClick={() => { if (tabs.extra.cancel()) return; sfxTap(); tabs.onPick(i); }}
-                  style={{ ...btnBase, position: "relative", width: 42, borderRadius: 15, display: "flex", alignItems: "center", justifyContent: "center", background: "transparent", color: on ? C.signal : C.dim, transition: `color ${MO.t2}` }}>
+                  style={{ ...btnBase, position: "relative", width: 42, borderRadius: 16, display: "flex", alignItems: "center", justifyContent: "center", background: "transparent", color: on ? C.signal : C.dim, transition: `color ${MO.t2}` }}>
                   <Ico n={it.icon} size={21} sw={on ? 2.3 : 2} />
                 </button>
               ); })}
@@ -3573,7 +3573,7 @@ function Onboarding({ start = 0, profile, setProfile, kcal, setKcal, onDone, acc
           ) : <>
             <button data-ob-age role="checkbox" aria-checked={age16} onClick={() => { sfxTap(); setAge16(v => !v); }}
               style={{ ...btnBase, width: "100%", display: "flex", alignItems: "flex-start", gap: 12, padding: "6px 4px", background: "transparent", color: C.chalk, textAlign: "left", fontSize: 14, fontWeight: 600, lineHeight: 1.45 }}>
-              <span aria-hidden="true" style={{ width: 22, height: 22, borderRadius: 7, flexShrink: 0, border: `2px solid ${age16 ? C.mint : C.line}`, background: age16 ? C.mint : "transparent", color: C.ink, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 900 }}>{age16 ? "✓" : ""}</span>
+              <span aria-hidden="true" style={{ width: 22, height: 22, borderRadius: 8, flexShrink: 0, border: `2px solid ${age16 ? C.mint : C.line}`, background: age16 ? C.mint : "transparent", color: C.ink, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 900 }}>{age16 ? "✓" : ""}</span>
               <span>{T("frAge", { n: ACCOUNT_AGE })}</span>
             </button>
             <button onClick={() => { sfxTap(); openExternal(PRIVACY_URL); }} style={{ ...btnBase, background: "transparent", color: C.sky, fontSize: 13, padding: "4px 4px 0 38px" }}>{T("privacyLink")} <Arrow size="1.25em" style={{ verticalAlign: "-0.08em" }} /></button>
@@ -3987,7 +3987,7 @@ function TrainTab({ history, onStart, onStartPlan, onStartFree, onFreeze, ui, se
           {PLN.WEEKDAYS.map(d => {
             const on = d === wdSel, tr = !PLN.isRest(P, d), dn = week[d - 1].on;
             return <button key={d} role="radio" aria-checked={on} data-home-wd={d} data-done={dn ? 1 : 0} data-train={tr ? 1 : 0} onClick={() => { sfxTap(); setWdSel(d); }} aria-label={`${wdLong(d)}${dn ? " ✓" : ""}`}
-              style={{ ...btnBase, flex: 1, minWidth: 0, padding: "9px 0 6px", borderRadius: 11, fontSize: 12, display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
+              style={{ ...btnBase, flex: 1, minWidth: 0, padding: "9px 0 6px", borderRadius: 12, fontSize: 12, display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
                 ...(on ? { background: C.chalk, color: C.ink, border: `1px solid ${C.chalk}` } : dn ? { background: C.mint, color: C.ink, border: `1px solid ${C.mint}` } : { ...SUNK(), color: tr ? C.chalk : C.dim }) }}>
               {wdNames[d - 1]}<span style={{ width: 5, height: 5, borderRadius: 99, background: d === todayWd ? (on || dn ? C.ink : C.signal) : "transparent" }} />
             </button>;
@@ -4007,7 +4007,7 @@ function TrainTab({ history, onStart, onStartPlan, onStartFree, onFreeze, ui, se
   };
   const nextRow = (
     <button data-home-next onClick={() => { sfxTap(); pg.goPage(homeIdx("ex")); }} style={{ ...btnBase, width: "100%", marginTop: 14, padding: "11px 12px", borderRadius: 14, ...SUNK(), color: C.chalk, display: "flex", alignItems: "center", gap: 12, textAlign: "left" }}>
-      <span style={{ width: 40, height: 40, borderRadius: 11, background: `${C.signal}22`, color: C.signal, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: DISPLAY, fontWeight: 900, fontSize: 22, flexShrink: 0 }}>{weekOn ? <Ico n={own ? "dumbbell" : "moon"} size={20} /> : day.id}</span>
+      <span style={{ width: 40, height: 40, borderRadius: 12, background: `${C.signal}22`, color: C.signal, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: DISPLAY, fontWeight: 900, fontSize: 22, flexShrink: 0 }}>{weekOn ? <Ico n={own ? "dumbbell" : "moon"} size={20} /> : day.id}</span>
       <span style={{ flex: 1, minWidth: 0 }}>
         <span style={{ display: "block", fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: C.dim }}>{doneToday && !weekOn ? T("nextWorkout") : weekOn && wdSel !== todayWd ? T("homePicked") : T("homeToday")}</span>
         <span style={{ display: "block", fontSize: 14.5, fontWeight: 700, marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{weekOn ? (own ? `${planTitle(own)} · ${TP("exN", planItems.length)}` : T("plRestDay")) : `${T("dayN", { d: day.id })} · ${TP("exN", day.ids.length)}`}</span>
@@ -4032,7 +4032,7 @@ function TrainTab({ history, onStart, onStartPlan, onStartFree, onFreeze, ui, se
             <button key={w.k} data-week-day={w.k} data-week-kc={w.kc || "none"} data-week-pick={pick ? 1 : 0} onClick={() => pickWeekDay({ ...w, wd })} aria-label={`${w.lb} ${fmtDate(w.k)}${w.on ? " ✓" : ""}`}
               style={{ ...btnBase, flex: 1, textAlign: "center", background: "transparent", padding: 0, color: "inherit" }}>
               <div style={{ fontSize: 11, color: w.isToday ? C.chalk : C.dim, fontWeight: w.isToday ? 800 : 500, marginBottom: 5 }}>{w.lb}</div>
-              <div style={{ height: 26, borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 900,
+              <div style={{ height: 26, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 900,
                 background: w.on ? C.mint : pick ? `${C.signal}26` : "transparent", color: C.ink, border: `1.5px solid ${w.on ? C.mint : pick ? C.signal : w.isToday && !weekOn ? C.chalk : C.line}` }}>
                 {w.on ? "✓" : planDay ? <span style={{ width: 5, height: 5, borderRadius: 99, background: pick ? C.signal : `${C.chalk}66` }} /> : ""}
               </div>
@@ -4461,7 +4461,7 @@ function KcalWeekDots({ history, full }) {
         return (
           <div key={w.k} style={{ flex: 1, textAlign: "center" }} title={fmtDate(w.k)}>
             <div style={{ fontSize: 11, color: isT ? C.chalk : C.dim, fontWeight: isT ? 700 : 500, marginBottom: 4 }}>{wd[(d.getDay() + 6) % 7]}</div>
-            <div data-kc-day={w.kind || "none"} style={{ height: 30, borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 900, color: C.ink, background: w.kind === "hit" ? KC_HIT : w.kind === "log" ? KC_LOG : "transparent", border: `1.5px solid ${w.kind === "hit" ? KC_HIT : w.kind === "log" ? KC_LOG : isT ? C.chalk : C.line}` }}>{w.kind === "hit" ? "✓" : ""}</div>
+            <div data-kc-day={w.kind || "none"} style={{ height: 30, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 900, color: C.ink, background: w.kind === "hit" ? KC_HIT : w.kind === "log" ? KC_LOG : "transparent", border: `1.5px solid ${w.kind === "hit" ? KC_HIT : w.kind === "log" ? KC_LOG : isT ? C.chalk : C.line}` }}>{w.kind === "hit" ? "✓" : ""}</div>
           </div>
         );
       })}
@@ -4978,7 +4978,7 @@ function KcTodayRing({ kcal, age, history, today, target, eaten, left, pct, over
                 <div style={{ fontSize: 12, color: C.dim, marginTop: 6, lineHeight: 1.45 }}>{goalName}</div>
                 {wk > 0 && <div style={{ fontSize: 12, color: C.sky, marginTop: 3, fontWeight: 700 }}>{T("kcWorkoutToday", { n: nf(wk) })}</div>}
                 {stepsKcal(kcal, today) > 0 && <div data-steps-kcal style={{ fontSize: 12, color: C.sky, marginTop: 3, fontWeight: 700 }}>{T("hcStepsKcal", { n: nf(stepsKcal(kcal, today)) })}</div>}
-                <button data-kc-how onClick={() => { sfxTap(); setHow(h => !h); }} aria-expanded={how} style={{ ...btnBase, display: "inline-flex", alignItems: "center", gap: 5, background: "transparent", color: C.sky, fontSize: 12, padding: "6px 0 0" }}>{T("kcHowTitle")}<Chevron open={how} color={C.sky} size={12} /></button>
+                <button data-kc-how onClick={() => { sfxTap(); setHow(h => !h); }} aria-expanded={how} style={{ ...btnBase, display: "inline-flex", alignItems: "center", gap: 5, background: "transparent", color: C.sky, fontSize: 12, padding: "6px 0 0", textAlign: "left", textWrap: "wrap" }}><span style={{ minWidth: 0 }}>{T("kcHowTitle")}</span><Chevron open={how} color={C.sky} size={12} /></button>
               </div>
             </div>
             <Expand open={how}><div style={{ paddingTop: 10 }}><TargetBreakdown kcal={kcal} age={age} history={history} day={today} target={target} /></div></Expand>
@@ -5040,6 +5040,19 @@ function KcalCalendar({ history, kcal, sel, onSel }) {
 }
 
 // ─── TAB 2: HISTORY ────────────────────────────────────────────────────────
+// 1.10.0 (Michael, Nov 11: "all elements should look the same, not messy"): ONE segmented switch for choosing one of a
+// few options (a sunk track, the chosen option as a light pill). Before: four hand-made copies with different radii,
+// paddings and font sizes, and Volume as three separate outlined buttons. items: [id, text, extra attributes].
+function Seg({ label, items, value, onPick, big, disabled, style }) {
+  return (
+    <div role="radiogroup" aria-label={label} data-segm style={{ display: "flex", gap: 4, padding: 4, borderRadius: 14, ...SUNK(), ...style }}>
+      {items.map(([id, text, extra]) => { const on = value === id; return (
+        <button key={id} type="button" role="radio" aria-checked={on} disabled={disabled} {...(extra || {})} onClick={() => onPick(id, on)}
+          style={{ ...btnBase, flex: 1, minWidth: 0, padding: big ? "11px 4px" : "8px 4px", fontSize: big ? 14 : 13, borderRadius: 10, background: on ? C.chalk : "transparent", color: on ? C.ink : C.dim, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", opacity: disabled ? 0.5 : 1, transition: `background ${MO.t1}, color ${MO.t1}` }}>{text}</button>
+      ); })}
+    </div>
+  );
+}
 // 1.10.0 (Michael, Nov 7: History "looks old and illogical, not minimal, not modern"): the calendar is the way in.
 // A workout day is a filled square (like the week strip on Home), calories are a dot under the number, a tap picks
 // the day: its workout opens below, an empty day offers to add one. No letters or triangles in the cells.
@@ -5235,7 +5248,7 @@ function EntryEditor({ entry, nextDay, onSave, onDelete, onClose, date: date0 })
     onSave({ ...base, date, ts, ...(free ? {} : { day, rounds }), items, mts: Date.now() }); // mts: when it was last changed (sync, 1.7.0)
   };
 
-  const field = { fontFamily: BODY, fontSize: 16, fontWeight: 700, padding: "9px 10px", borderRadius: 11, border: `1.5px solid ${C.line}`, background: C.ink, color: C.chalk, outline: "none", boxSizing: "border-box" };
+  const field = { fontFamily: BODY, fontSize: 16, fontWeight: 700, padding: "9px 10px", borderRadius: 12, border: `1.5px solid ${C.line}`, background: C.ink, color: C.chalk, outline: "none", boxSizing: "border-box" };
   const label = { fontSize: 12, color: C.dim, fontWeight: 600, marginBottom: 6 };
   const pill = on => ({ ...btnBase, flex: 1, padding: "9px 0", fontSize: 15, background: on ? C.chalk : "transparent", color: on ? C.ink : C.dim, border: `1.5px solid ${on ? C.chalk : C.line}` });
   const mini = { ...btnBase, width: 28, height: 28, padding: 0, borderRadius: 8, ...SUNK(), color: C.chalk, fontSize: 16, display: "inline-flex", alignItems: "center", justifyContent: "center" };
@@ -5292,7 +5305,7 @@ function EntryEditor({ entry, nextDay, onSave, onDelete, onClose, date: date0 })
             );
           })}
         </div>
-        <button onClick={() => { sfxTap(); setPicking(true); }} data-add-ex style={{ ...btnBase, width: "100%", padding: "11px 12px", borderRadius: 11, border: `1.5px dashed ${C.line}`, background: "transparent", color: C.sky, fontSize: 15, fontWeight: 700, textAlign: "left" }}>{emo(T("addEx"))}</button>
+        <button onClick={() => { sfxTap(); setPicking(true); }} data-add-ex style={{ ...btnBase, width: "100%", padding: "11px 12px", borderRadius: 12, border: `1.5px dashed ${C.line}`, background: "transparent", color: C.sky, fontSize: 15, fontWeight: 700, textAlign: "left" }}>{emo(T("addEx"))}</button>
         {picking && (
           <Sheet title={T("plAddEx")} onClose={() => setPicking(false)}>
             <div data-add-ex-sheet><ExLibrary picked={used} onPick={toggleRow} /></div>
@@ -5396,7 +5409,7 @@ function HistoryTab({ history, onDelete, onSaveEntry, editDate, onEditOpened }) 
                 <div key={`${s.date}-${idx}`} data-workout-row data-date={s.date} className="hsRow" style={{ padding: "11px 14px", borderTop: ri ? `1px solid ${C.line}` : "none", animationDelay: `${Math.min(ri, 8) * 28}ms`, scrollMarginTop: 96, scrollMarginBottom: 150, background: sel === s.date ? `${C.signal}0d` : "transparent", transition: `background ${MO.t2}` }}>
                   <button data-workout-head onClick={() => { sfxTap(); setOpen(isOpen ? null : idx); }} aria-expanded={isOpen}
                     style={{ ...btnBase, width: "100%", background: "transparent", color: C.chalk, padding: 0, textAlign: "left", display: "flex", alignItems: "center", gap: 11, borderRadius: 0 }}>
-                    <div aria-hidden="true" style={{ width: 44, height: 46, borderRadius: 13, background: s.date === today ? C.mint : SOFT(), color: s.date === today ? C.ink : C.chalk, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2, flexShrink: 0 }}>
+                    <div aria-hidden="true" style={{ width: 44, height: 46, borderRadius: 12, background: s.date === today ? C.mint : SOFT(), color: s.date === today ? C.ink : C.chalk, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2, flexShrink: 0 }}>
                       <span style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: ".06em", textTransform: "uppercase", opacity: 0.72, lineHeight: 1 }}>{wds[(d.getDay() + 6) % 7]}</span>
                       <span style={{ fontFamily: DISPLAY, fontSize: 21, fontWeight: 900, lineHeight: 0.95 }}>{d.getDate()}</span>
                     </div>
@@ -5806,7 +5819,7 @@ function RanksList({ m, onPick, focus, claim }) {
             <button type="button" key={id} data-rank-row={id} data-rank={ri} onClick={() => { sfxTap(); setOpen(id); }} className={[rr.cls, focus && focus.k === id && "achFlash"].filter(Boolean).join(" ")}
               style={{ ...btnBase, fontWeight: 400, textAlign: "left", width: "100%", color: C.chalk, ...rr.style, padding: "11px 12px", display: "block" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <span aria-hidden="true" title={g ? T("grp_" + g) : undefined} style={{ width: 30, height: 30, borderRadius: 9, background: SOFT(), display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{g ? <SuitIcon s={g} size={15} /> : null}</span>
+                <span aria-hidden="true" title={g ? T("grp_" + g) : undefined} style={{ width: 30, height: 30, borderRadius: 8, background: SOFT(), display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{g ? <SuitIcon s={g} size={15} /> : null}</span>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 14, fontWeight: 800, lineHeight: 1.2 }}>{EX[id].name}</div>
                   <div style={{ marginTop: 3 }}><RankTag r={ri} size={15} /></div>
@@ -5929,10 +5942,7 @@ function StWeeks({ days, today }) {
   const lx = Math.max(40, Math.min(w - 40, X(sel)));
   return (
     <StatCard data="weeks" title={T("stPerWeek")} meta={avg > 0 ? <span data-st-avg>{T("stAvg", { v: mt === "min" ? fmtMins(avg) : nf(avg) })}</span> : null}>
-      <div role="radiogroup" aria-label={T("stPerWeek")} style={{ display: "flex", gap: 3, padding: 3, borderRadius: 12, ...SUNK(), marginBottom: 6 }}>
-        {ST_METRIC.map(k => <button key={k} type="button" role="radio" aria-checked={mt === k} data-st-metric={k} onClick={() => { if (mt === k) return; sfxTap(); setMt(k); }}
-          style={{ ...btnBase, flex: 1, minWidth: 0, padding: "7px 4px", fontSize: 12.5, borderRadius: 9, background: mt === k ? C.chalk : "transparent", color: mt === k ? C.ink : C.dim, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", transition: `background ${MO.t1}, color ${MO.t1}` }}>{T("stM_" + k)}</button>)}
-      </div>
+      <Seg label={T("stPerWeek")} value={mt} style={{ marginBottom: 6 }} items={ST_METRIC.map(k => [k, T("stM_" + k), { "data-st-metric": k }])} onPick={(k, on) => { if (on) return; sfxTap(); setMt(k); }} />
       <div ref={ref} style={{ position: "relative" }}>
         <svg data-st-weeks={mt} width={w} height={h} viewBox={`0 0 ${w} ${h}`} style={{ display: "block", overflow: "visible", touchAction: "pan-y" }}
           onPointerDown={e => { const r = e.currentTarget.getBoundingClientRect(); const i = Math.max(0, Math.min(ST_WEEKS - 1, Math.round((e.clientX - r.left - 8) / step))); if (i !== sel) { sfxTap(); setSel(i); } }}>
@@ -6070,7 +6080,7 @@ function HeroBadges({ list, onAll, still }) {
   const P = pop && pop.a;
   return (
     <>
-      <div ref={boxRef} style={{ width: "100%", pointerEvents: still ? "none" : undefined }}><div data-hero-badges={list.length} style={{ display: "inline-flex", alignItems: "center", gap: 3, marginTop: 7, padding: 3, borderRadius: 11, background: `${C.ink}66`, border: `1px solid ${C.line}`, maxWidth: "100%" }}>
+      <div ref={boxRef} style={{ width: "100%", pointerEvents: still ? "none" : undefined }}><div data-hero-badges={list.length} style={{ display: "inline-flex", alignItems: "center", gap: 3, marginTop: 7, padding: 3, borderRadius: 12, background: `${C.ink}66`, border: `1px solid ${C.line}`, maxWidth: "100%" }}>
         {show.map(a => (
           <button key={a.k} type="button" data-hero-badge={a.k} aria-label={a.name} onClick={e => open(a, e)} style={{ ...btnBase, padding: 0, background: "transparent", borderRadius: 8, display: "flex" }}>
             <BadgeIco n={a.icon} col={col(a)} size={26} />
@@ -6213,7 +6223,7 @@ function BodyRanks({ m, onPick }) {
       <div data-body-all style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 6, marginTop: 12 }}>
         {PLN.FAMILIES.map(k => { const r = br.fam[k].r, c = r === null ? null : RANKS[r].color; return (
           <button key={k} type="button" data-body-fam={k} data-rank={r === null ? -1 : r} onClick={() => { sfxTap(); setOpen(k); }}
-            style={{ ...btnBase, fontWeight: 400, position: "relative", display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 4, padding: "8px 8px 7px", borderRadius: 13, textAlign: "left", color: C.chalk, background: c ? `linear-gradient(160deg, ${c}26, ${c}08 70%), ${SOFT()}` : SOFT(), border: `1px solid ${c ? c + "44" : "transparent"}`, minWidth: 0 }}>
+            style={{ ...btnBase, fontWeight: 400, position: "relative", display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 4, padding: "8px 8px 7px", borderRadius: 12, textAlign: "left", color: C.chalk, background: c ? `linear-gradient(160deg, ${c}26, ${c}08 70%), ${SOFT()}` : SOFT(), border: `1px solid ${c ? c + "44" : "transparent"}`, minWidth: 0 }}>
             <span style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
               <BodyIco spec={BD.FAMILY_ICON[k]} size={28} hi={c || C.dim} />
               {r === null ? <span style={{ fontSize: 13, color: C.dim, fontWeight: 800, paddingRight: 3 }}>–</span> : <RankIcon r={r} size={20} />}
@@ -6339,7 +6349,7 @@ function SlotSheet({ m, i, cur, onSave, onClose }) {
                 style={{ ...btnBase, fontWeight: 400, display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", borderRadius: 12, textAlign: "left", color: C.chalk, background: on ? `${C.signal}22` : SOFT(), border: `1.5px solid ${on ? C.signal : "transparent"}` }}>
                 <span aria-hidden="true" style={{ fontSize: 22, lineHeight: 1, width: 30, display: "flex", justifyContent: "center", flexShrink: 0 }}>{typeof icon === "string" && ICONS[icon] ? <Ico n={icon} size={22} color={STAT_COL()[id]} /> : icon}</span>
                 <span style={{ flex: 1, minWidth: 0 }}><span style={{ display: "block", fontSize: 14, fontWeight: 800 }}>{name}</span><span style={{ display: "block", fontSize: 12, color: C.dim, marginTop: 2 }}>{sub}</span></span>
-                {multi ? <span aria-hidden="true" style={{ width: 22, height: 22, borderRadius: 7, border: `2px solid ${on ? C.signal : C.line}`, background: on ? C.signal : "transparent", color: C.signalInk, fontSize: 13, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{on ? sel.indexOf(id) + 1 : ""}</span> : <Arrow />}
+                {multi ? <span aria-hidden="true" style={{ width: 22, height: 22, borderRadius: 8, border: `2px solid ${on ? C.signal : C.line}`, background: on ? C.signal : "transparent", color: C.signalInk, fontSize: 13, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{on ? sel.indexOf(id) + 1 : ""}</span> : <Arrow />}
               </button>
             ); })}
           </div>
@@ -6401,12 +6411,7 @@ function ProfileEditSheet({ profile, setProfile, acct, vis, onVis, onFriends, on
         <div style={{ ...label, marginTop: 24 }}>{T("pvWho")}</div>
         {signed ? (
           <div data-pv-who>
-            <div role="radiogroup" aria-label={T("pvWho")} style={{ display: "flex", gap: 4, padding: 4, borderRadius: 16, ...SUNK() }}>
-              {CARD_VIS.map(x => { const on = (v || "friends") === x; return (
-                <button key={x} type="button" role="radio" aria-checked={on} data-vis={x} data-on={on ? 1 : 0} disabled={v === undefined} onClick={() => { if (on) return; sfxTap(); setErr(""); setV(x); }}
-                  style={{ ...btnBase, flex: 1, minWidth: 0, padding: "12px 4px", fontSize: 14, borderRadius: 12, background: on ? C.chalk : "transparent", color: on ? C.ink : C.dim, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", opacity: v === undefined ? 0.5 : 1, transition: `background ${MO.t1}, color ${MO.t1}` }}>{T("pvVis_" + x)}</button>
-              ); })}
-            </div>
+            <Seg big label={T("pvWho")} value={v || "friends"} disabled={v === undefined} items={CARD_VIS.map(x => [x, T("pvVis_" + x), { "data-vis": x, "data-on": (v || "friends") === x ? 1 : 0 }])} onPick={(x, on) => { if (on) return; sfxTap(); setErr(""); setV(x); }} />
             <div data-pv-vis-desc style={{ fontSize: 13, color: C.dim, lineHeight: 1.5, margin: "10px 2px 0" }}>{v === undefined ? T("frLoading") : T("pvVisD_" + v)} {T("pvPrivate")}</div>
           </div>
         ) : (
@@ -7001,7 +7006,7 @@ function FriendsTab({ acct, history, profile, social, chatWith, setChatWith, onB
           <>
             <button data-fr-age role="checkbox" aria-checked={age16} onClick={() => { sfxTap(); setAge16(v => !v); }}
               style={{ ...btnBase, width: "100%", display: "flex", alignItems: "flex-start", gap: 12, marginTop: 14, padding: "6px 4px", background: "transparent", color: C.chalk, textAlign: "left", fontSize: 14, fontWeight: 600, lineHeight: 1.45 }}>
-              <span aria-hidden="true" style={{ width: 22, height: 22, borderRadius: 7, flexShrink: 0, border: `2px solid ${age16 ? C.mint : C.line}`, background: age16 ? C.mint : "transparent", color: C.ink, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 900 }}>{age16 ? "✓" : ""}</span>
+              <span aria-hidden="true" style={{ width: 22, height: 22, borderRadius: 8, flexShrink: 0, border: `2px solid ${age16 ? C.mint : C.line}`, background: age16 ? C.mint : "transparent", color: C.ink, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 900 }}>{age16 ? "✓" : ""}</span>
               <span>{T("frAge", { n: ACCOUNT_AGE })}</span>
             </button>
             <button data-privacy onClick={() => { sfxTap(); openExternal(PRIVACY_URL); }} style={{ ...btnBase, background: "transparent", color: C.sky, fontSize: 13, padding: "4px 4px 0 38px" }}>{T("privacyLink")} <Arrow size="1.25em" style={{ verticalAlign: "-0.08em" }} /></button>
@@ -7123,9 +7128,9 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
   const copy = () => { sfxTap(); copyText(fmtCode(me.code)).then(() => { setShareMsg(T("copied")); setTimeout(() => setShareMsg(""), 2500); }); };
   const seg = (on, onClick, label, data, badge) => (
     <button data-seg={data} aria-pressed={on} onClick={() => { sfxTap(); onClick(); }}
-      style={{ ...btnBase, flex: 1, minWidth: 0, padding: "9px 4px", fontSize: 14, borderRadius: 11, background: on ? C.chalk : "transparent", color: on ? C.ink : C.dim, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, whiteSpace: "nowrap" }}>
+      style={{ ...btnBase, flex: 1, minWidth: 0, padding: "9px 4px", fontSize: 14, borderRadius: 12, background: on ? C.chalk : "transparent", color: on ? C.ink : C.dim, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, whiteSpace: "nowrap" }}>
       <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{label}</span>
-      {badge > 0 && <span data-badge={badge} style={{ minWidth: 18, height: 18, borderRadius: 9, padding: "0 5px", background: "#ff5a5a", color: "#fff", fontSize: 11, fontWeight: 800, lineHeight: "18px", boxSizing: "border-box", flexShrink: 0 }}>{badge}</span>}
+      {badge > 0 && <span data-badge={badge} style={{ minWidth: 18, height: 18, borderRadius: 8, padding: "0 5px", background: "#ff5a5a", color: "#fff", fontSize: 11, fontWeight: 800, lineHeight: "18px", boxSizing: "border-box", flexShrink: 0 }}>{badge}</span>}
     </button>
   );
   const segBox = { display: "flex", gap: 4, padding: 4, borderRadius: 14, ...SUNK(), marginTop: 14 };
@@ -7718,7 +7723,7 @@ function ChatView({ me, other, canWrite, onBack, onOpen, onMenu, onReport, onBlo
               ↓ {T("chNewMsgs")}
             </button>
           )}
-          <div className="sysEmo" style={{ padding: 6, borderRadius: 22, ...card }}>
+          <div className="sysEmo" style={{ padding: 6, borderRadius: 20, ...card }}>
             {bar && (
               <div data-chat-bar={editing ? "edit" : "reply"} style={{ display: "flex", alignItems: "center", gap: 10, padding: "6px 6px 8px 10px", margin: "0 0 4px", borderBottom: `1px solid ${C.line}` }}>
                 <MsgIcon d={editing ? ICON_EDIT : ICON_REPLY} c={C.signal} />
@@ -8269,10 +8274,10 @@ function SettingsTab({ initPage, ret, settings, setSettings, history, profile, s
           <button key={id} onClick={() => { sfxTap(); set("theme", id); }} aria-pressed={settings.theme === id}
             style={{ ...btnBase, background: t.ink, border: `2px solid ${settings.theme === id ? C.signal : t.line}`, padding: 10, textAlign: "left", color: t.chalk }}>
             <div style={{ display: "flex", gap: 5, marginBottom: 8 }}>
-              <span style={{ width: 22, height: 22, borderRadius: 7, background: t.panel, border: `1px solid ${t.line}` }} />
-              <span style={{ width: 22, height: 22, borderRadius: 7, background: C.signal }} />
-              <span style={{ width: 22, height: 22, borderRadius: 7, background: C.mint }} />
-              <span style={{ width: 22, height: 22, borderRadius: 7, background: C.sky }} />
+              <span style={{ width: 22, height: 22, borderRadius: 8, background: t.panel, border: `1px solid ${t.line}` }} />
+              <span style={{ width: 22, height: 22, borderRadius: 8, background: C.signal }} />
+              <span style={{ width: 22, height: 22, borderRadius: 8, background: C.mint }} />
+              <span style={{ width: 22, height: 22, borderRadius: 8, background: C.sky }} />
             </div>
             <div style={{ fontSize: 14, fontWeight: 700 }}>{L.themes[id]}{settings.theme === id ? " ✓" : ""}</div>
           </button>
@@ -8292,7 +8297,7 @@ function SettingsTab({ initPage, ret, settings, setSettings, history, profile, s
       <div role="radiogroup" aria-label={T("lookTitle")} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
         {["liquid", "cards", "tiles", "glass", "accent", "flat"].map(id => {
           const on = (settings.look || "cards") === id;
-          const box = id === "liquid" ? { background: "rgba(255,255,255,.14)", border: "1px solid rgba(255,255,255,.28)", borderRadius: 9 } : id === "cards" ? { background: C.panel, border: `1px solid ${C.line}`, borderRadius: 6 } : id === "tiles" ? { background: C.panelHi, borderRadius: 5 } : id === "glass" ? { background: `linear-gradient(160deg, ${C.panelHi}, ${C.panel})`, borderRadius: 8, boxShadow: "0 3px 8px rgba(0,0,0,.3)" } : id === "accent" ? { background: C.panel, borderLeft: `3px solid ${C.signal}`, borderRadius: 4 } : { borderBottom: `1px solid ${C.line}` };
+          const box = id === "liquid" ? { background: "rgba(255,255,255,.14)", border: "1px solid rgba(255,255,255,.28)", borderRadius: 8 } : id === "cards" ? { background: C.panel, border: `1px solid ${C.line}`, borderRadius: 6 } : id === "tiles" ? { background: C.panelHi, borderRadius: 5 } : id === "glass" ? { background: `linear-gradient(160deg, ${C.panelHi}, ${C.panel})`, borderRadius: 8, boxShadow: "0 3px 8px rgba(0,0,0,.3)" } : id === "accent" ? { background: C.panel, borderLeft: `3px solid ${C.signal}`, borderRadius: 4 } : { borderBottom: `1px solid ${C.line}` };
           return (
             <button key={id} role="radio" aria-checked={on} data-look={id} onClick={() => { sfxTap(); set("look", id); }}
               style={{ ...btnBase, background: id === "liquid" ? `radial-gradient(70% 60% at 20% 15%, ${C.sky}66, transparent), radial-gradient(70% 60% at 85% 85%, ${C.signal}55, transparent), ${C.ink}` : C.ink, border: `2px solid ${on ? C.signal : C.line}`, padding: 9, color: C.chalk, textAlign: "left" }}>
@@ -8306,9 +8311,7 @@ function SettingsTab({ initPage, ret, settings, setSettings, history, profile, s
       </div>
       {/* 1.9.0 (Michael, Nov 6): which Home page comes first (also: hold a tab on Home) */}
       <div style={{ fontSize: 13, color: C.chalk, fontWeight: 800, margin: "14px 0 8px" }}>{T("homeOrderT")}</div>
-      <div role="radiogroup" aria-label={T("homeOrderT")} style={{ display: "flex", gap: 4, padding: 4, borderRadius: 14, ...SUNK() }}>
-        {[["today", "homeOrderToday"], ["ex", "homeOrderEx"]].map(([id, k]) => { const on = (settings.homeOrder === "ex" ? "ex" : "today") === id; return <button key={id} role="radio" aria-checked={on} data-home-order={id} onClick={() => { sfxTap(); set("homeOrder", id); }} style={{ ...btnBase, flex: 1, padding: "9px 4px", fontSize: 13.5, borderRadius: 11, background: on ? C.chalk : "transparent", color: on ? C.ink : C.dim }}>{T(k)}</button>; })}
-      </div>
+      <Seg label={T("homeOrderT")} value={settings.homeOrder === "ex" ? "ex" : "today"} items={[["today", T("homeOrderToday"), { "data-home-order": "today" }], ["ex", T("homeOrderEx"), { "data-home-order": "ex" }]]} onPick={id => { sfxTap(); set("homeOrder", id); }} />
       {hzSupported() && <div style={{ marginTop: 12, borderRadius: 14, background: SOFT(), overflow: "hidden" }}><HzRow settings={settings} set={set} first /></div>}
       </Sect>
       </>} right={<>
@@ -8318,12 +8321,7 @@ function SettingsTab({ initPage, ret, settings, setSettings, history, profile, s
         <SettingRow title={T("sndTimer")} info={T("sndTimerD")} on={settings.sndTimer} onClick={() => flip("sndTimer")} />
         <div style={{ padding: "13px 16px", borderTop: `1px solid ${C.line}` }}>
           <div style={{ fontSize: 15, fontWeight: 700, color: C.chalk }}>{T("volume")}<InfoQ title={T("volume")} text={T("volHint")} /></div>
-          <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
-            {[["low", T("volLow")], ["mid", T("volMid")], ["high", T("volHigh")]].map(([id, l]) => (
-              <button key={id} onClick={() => { unlockAudio(); set("volume", id); sfxCheck(); }} aria-pressed={settings.volume === id}
-                style={{ ...btnBase, flex: 1, padding: "9px 4px", fontSize: 13, background: settings.volume === id ? C.chalk : "transparent", color: settings.volume === id ? C.ink : C.dim, border: `1.5px solid ${settings.volume === id ? C.chalk : C.line}` }}>{l}</button>
-            ))}
-          </div>
+          <Seg label={T("volume")} value={settings.volume} style={{ marginTop: 8 }} items={[["low", T("volLow")], ["mid", T("volMid")], ["high", T("volHigh")]].map(([id, l]) => [id, l, { "data-vol": id, "aria-pressed": settings.volume === id }])} onPick={id => { unlockAudio(); set("volume", id); sfxCheck(); }} />
         </div>
       </ListSect>
 
@@ -9225,7 +9223,7 @@ function JokerInspect({ g, i, canSell, ask, onSell, onClose }) {
           <div className={step === "sold" ? "gmSold" : "gmLift"}><JokerCard id={j.id} w={132} still /></div>
           {step === "sold" && <span data-gm-sold-coins aria-hidden="true" className="gmCoinUp" style={{ position: "absolute", left: "50%", top: "40%", transform: "translateX(-50%)", fontFamily: DISPLAY, fontSize: 34, fontWeight: 900, color: C.signal, whiteSpace: "nowrap", textShadow: "0 2px 12px rgba(0,0,0,.6)" }}>+<KSign />{price}</span>}
         </div>
-        <div data-gm-inspect-box style={{ width: "100%", boxSizing: "border-box", marginTop: -34, padding: "46px 16px 16px", borderRadius: 22, background: `linear-gradient(180deg, ${hexMix(C.panel, col, 0.1)}, ${C.panel})`, border: `1px solid ${col}44`, boxShadow: "0 22px 50px rgba(0,0,0,.5)", display: "flex", flexDirection: "column", alignItems: "center" }}>
+        <div data-gm-inspect-box style={{ width: "100%", boxSizing: "border-box", marginTop: -34, padding: "46px 16px 16px", borderRadius: 20, background: `linear-gradient(180deg, ${hexMix(C.panel, col, 0.1)}, ${C.panel})`, border: `1px solid ${col}44`, boxShadow: "0 22px 50px rgba(0,0,0,.5)", display: "flex", flexDirection: "column", alignItems: "center" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
           <span style={{ fontFamily: DISPLAY, fontSize: 28, fontWeight: 900, lineHeight: 1.05 }}>{jName(j.id)}</span>
           <span data-rar-chip={r} style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: 0.4, textTransform: "uppercase", color: col, border: `1px solid ${col}88`, borderRadius: 99, padding: "1px 8px" }}>{T("gmRar" + r)}</span>
@@ -9499,12 +9497,12 @@ function LookCard({ id, right, onOpen, extra = {} }) {
   const r = lookRar(id), col = RAR_COL()[r];
   return (
     <button ref={ref} type="button" onClick={onOpen} data-look-on={on ? 1 : 0} className={(r === 3 ? "foil" : "") + (on ? "" : " lkOff")} {...extra}
-      style={{ ...btnBase, display: "block", padding: 8, borderRadius: 22, background: SOFT(), border: `1.5px solid ${col}55`, color: C.chalk, textAlign: "left", fontWeight: 400, width: "100%", boxShadow: r >= 2 ? `0 0 18px ${col}1f` : "none" }}>
+      style={{ ...btnBase, display: "block", padding: 8, borderRadius: 20, background: SOFT(), border: `1.5px solid ${col}55`, color: C.chalk, textAlign: "left", fontWeight: 400, width: "100%", boxShadow: r >= 2 ? `0 0 18px ${col}1f` : "none" }}>
       <LookDemo id={id} on={on} />
       <span style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 6px 4px" }}>
         <span style={{ flex: 1, minWidth: 0 }}>
           <LookName id={id} />
-          <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, marginTop: 4 }}><span data-rar-chip={r} style={{ color: col, fontWeight: 800, textTransform: "uppercase", letterSpacing: 0.5, fontSize: 10 }}>{T("gmRar" + r)}</span><span aria-hidden="true" style={{ width: 3, height: 3, borderRadius: 9, background: C.dim }} /><span style={{ color: C.dim }}>{T("lookKind_" + EC.LOOKS[id].kind)}</span></span>
+          <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, marginTop: 4 }}><span data-rar-chip={r} style={{ color: col, fontWeight: 800, textTransform: "uppercase", letterSpacing: 0.5, fontSize: 10 }}>{T("gmRar" + r)}</span><span aria-hidden="true" style={{ width: 3, height: 3, borderRadius: 8, background: C.dim }} /><span style={{ color: C.dim }}>{T("lookKind_" + EC.LOOKS[id].kind)}</span></span>
         </span>
         {right}
       </span>
@@ -9839,7 +9837,7 @@ function WeekCard({ P, setP, onTips }) {
   const wdNames = weekdaysShort(), todayWd = PLN.weekdayOf(dateKey());
   const on = PLN.hasWeek(P), run = PLN.maxRestRun(P);
   const opts = PLN.sortPlans(P.list.filter(p => p.items.length), P.sort, P.dir, planTitle);
-  const iconBtn = { ...btnBase, width: 34, height: 34, padding: 0, borderRadius: 11, ...SUNK(), display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 };
+  const iconBtn = { ...btnBase, width: 34, height: 34, padding: 0, borderRadius: 12, ...SUNK(), display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 };
   return (
     <Sect title={T("plWeek")} data-plan-week data-week-on={on ? 1 : 0} style={{ marginTop: 0 }} accent={C.mint}
       meta={<span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
@@ -9873,7 +9871,7 @@ function WeekCard({ P, setP, onTips }) {
               const sel = P.week[day] === p.id;
               return (
                 <button key={p.id} data-week-pick={p.id} aria-pressed={sel} onClick={() => { sfxCheck(); setP(cur => PLN.setWeekDay(cur, day, p.id)); setDay(null); }}
-                  style={{ ...btnBase, fontWeight: 400, display: "flex", alignItems: "center", gap: 10, padding: "11px 12px", borderRadius: 13, textAlign: "left", color: C.chalk, ...(sel ? { background: `${C.signal}1c`, border: `1.5px solid ${C.signal}` } : { background: C.panelHi, border: "1.5px solid transparent" }) }}>
+                  style={{ ...btnBase, fontWeight: 400, display: "flex", alignItems: "center", gap: 10, padding: "11px 12px", borderRadius: 12, textAlign: "left", color: C.chalk, ...(sel ? { background: `${C.signal}1c`, border: `1.5px solid ${C.signal}` } : { background: C.panelHi, border: "1.5px solid transparent" }) }}>
                   <span style={{ flex: 1, minWidth: 0 }}>
                     <span style={{ display: "block", fontSize: 15, fontWeight: 800, overflowWrap: "anywhere" }}>{planTitle(p)}</span>
                     <span style={{ display: "block", fontSize: 12.5, color: C.dim, marginTop: 2 }}>{[TP("exN", p.items.length), `~${planMinutes(p.items)} min`, groupName(P, p.grp)].filter(Boolean).join(" · ")}</span>
@@ -9884,7 +9882,7 @@ function WeekCard({ P, setP, onTips }) {
               );
             })}
             <button data-week-pick="" aria-pressed={!PLN.planOn(P, day)} onClick={() => { sfxCheck(); setP(cur => PLN.setWeekDay(cur, day, "")); setDay(null); }}
-              style={{ ...btnBase, fontWeight: 400, display: "flex", alignItems: "center", gap: 10, padding: "11px 12px", borderRadius: 13, textAlign: "left", color: C.chalk, ...(!PLN.planOn(P, day) ? { background: `${C.sky}1c`, border: `1.5px solid ${C.sky}` } : { background: "transparent", border: `1.5px dashed ${C.line}` }) }}>
+              style={{ ...btnBase, fontWeight: 400, display: "flex", alignItems: "center", gap: 10, padding: "11px 12px", borderRadius: 12, textAlign: "left", color: C.chalk, ...(!PLN.planOn(P, day) ? { background: `${C.sky}1c`, border: `1.5px solid ${C.sky}` } : { background: "transparent", border: `1.5px dashed ${C.line}` }) }}>
               <Ico n="moon" size={17} color={C.sky} /><span style={{ flex: 1, fontSize: 15, fontWeight: 800 }}>{T("plRestDay")}</span>
             </button>
           </div>
@@ -9936,7 +9934,7 @@ function PlansTab({ profile, setProfile, history, open, onOpened }) {
           <button type="button" data-plan-gym onClick={() => pg.goPage(1)} style={{ ...btnBase, fontWeight: 400, width: "100%", textAlign: "left", display: "flex", gap: 10, alignItems: "center", marginTop: 14, padding: "10px 12px", borderRadius: 14, background: SOFT(), fontSize: 13.5, lineHeight: 1.4, color: C.chalk }}>
             <Ico n="bulb" size={18} color={C.signal} style={{ flexShrink: 0 }} />
             <span style={{ flex: 1, minWidth: 0 }}>{T("plGymHint2")}</span>
-            <span data-plan-gym-go style={{ display: "inline-flex", alignItems: "center", gap: 5, flexShrink: 0, padding: "6px 9px", borderRadius: 11, background: `${C.signal}22`, color: C.signal, fontSize: 12.5, fontWeight: 800 }}><Ico n="checklist" size={17} sw={2.2} />{T("plMine")}</span>
+            <span data-plan-gym-go style={{ display: "inline-flex", alignItems: "center", gap: 5, flexShrink: 0, padding: "6px 9px", borderRadius: 12, background: `${C.signal}22`, color: C.signal, fontSize: 12.5, fontWeight: 800 }}><Ico n="checklist" size={17} sw={2.2} />{T("plMine")}</span>
           </button>
         </Sect>
       )}
@@ -10006,7 +10004,7 @@ function PlanEditor({ plan, P, setP, onBack }) {
   const items = plan.items || [];
   const warn = PLN.planHints(plan, LIB).length > 0 || PLN.weekHints(P, LIB).some(h => h.kind === "rest");
   const chipS = on => ({ ...btnBase, padding: "6px 11px", fontSize: 12.5, borderRadius: 99, whiteSpace: "nowrap", flexShrink: 0, ...(on ? { background: `${C.signal}22`, border: `1px solid ${C.signal}66`, color: C.signal } : { ...SUNK(), color: C.dim }) });
-  const step = (on, label, data) => <button data-step={data} onClick={e => { e.stopPropagation(); sfxTap(); on(); }} aria-label={label} style={{ ...btnBase, width: 30, height: 30, padding: 0, borderRadius: 9, ...SUNK(), color: C.chalk, fontSize: 17, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>{data.endsWith("-") ? "−" : "+"}</button>;
+  const step = (on, label, data) => <button data-step={data} onClick={e => { e.stopPropagation(); sfxTap(); on(); }} aria-label={label} style={{ ...btnBase, width: 30, height: 30, padding: 0, borderRadius: 8, ...SUNK(), color: C.chalk, fontSize: 17, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>{data.endsWith("-") ? "−" : "+"}</button>;
   return (
     <div className="scr" style={SCR_STYLE} data-plan-editor={plan.id}>
       <button data-plan-back onClick={onBack} style={{ ...btnBase, background: "transparent", color: C.sky, padding: "4px 0", fontSize: 14, display: "inline-flex", alignItems: "center", gap: 4 }}><Arrow dir="‹" />{T("plBack")}</button>
@@ -10014,8 +10012,8 @@ function PlanEditor({ plan, P, setP, onBack }) {
         <input data-plan-name value={name} maxLength={40} placeholder={T("planDefault", { n: plan.n })} aria-label={T("plName")}
           onChange={e => setName(e.target.value)} onBlur={() => { const v = name.trim(); if (v !== (plan.name || "")) upd(() => ({ name: v })); }}
           style={{ fontFamily: DISPLAY, fontSize: 28, fontWeight: 800, padding: "8px 2px", border: "none", borderBottom: `1.5px solid ${C.line}`, background: "transparent", color: C.chalk, outline: "none", flex: 1, minWidth: 0, boxSizing: "border-box" }} />
-        <button data-plan-tips onClick={() => { sfxTap(); setHints(true); }} aria-label={T("plTips")} style={{ ...btnBase, width: 44, height: 44, flexShrink: 0, borderRadius: 13, ...SUNK(), display: "inline-flex", alignItems: "center", justifyContent: "center", position: "relative" }}><Ico n="bulb" size={20} color={warn ? C.signal : C.dim} />{warn && <span data-plan-warn style={{ position: "absolute", top: 6, right: 7, width: 8, height: 8, borderRadius: 99, background: C.signal }} />}</button>
-        <button data-plan-del onClick={() => { sfxTap(); setDel(true); }} aria-label={T("plDelete")} style={{ ...btnBase, width: 44, height: 44, flexShrink: 0, borderRadius: 13, ...SUNK(), display: "inline-flex", alignItems: "center", justifyContent: "center" }}><Ico n="trash" size={19} color={C.dim} /></button>
+        <button data-plan-tips onClick={() => { sfxTap(); setHints(true); }} aria-label={T("plTips")} style={{ ...btnBase, width: 44, height: 44, flexShrink: 0, borderRadius: 12, ...SUNK(), display: "inline-flex", alignItems: "center", justifyContent: "center", position: "relative" }}><Ico n="bulb" size={20} color={warn ? C.signal : C.dim} />{warn && <span data-plan-warn style={{ position: "absolute", top: 6, right: 7, width: 8, height: 8, borderRadius: 99, background: C.signal }} />}</button>
+        <button data-plan-del onClick={() => { sfxTap(); setDel(true); }} aria-label={T("plDelete")} style={{ ...btnBase, width: 44, height: 44, flexShrink: 0, borderRadius: 12, ...SUNK(), display: "inline-flex", alignItems: "center", justifyContent: "center" }}><Ico n="trash" size={19} color={C.dim} /></button>
       </div>
       <div className="noBar" style={{ display: "flex", gap: 6, overflowX: "auto", marginTop: 12 }} role="group" aria-label={T("plGroup")}>
         <button data-plan-setgrp="" aria-pressed={!plan.grp} onClick={() => { sfxTap(); upd(() => ({ grp: null })); }} style={chipS(!plan.grp)}>{T("plNoGroup")}</button>
@@ -10029,7 +10027,7 @@ function PlanEditor({ plan, P, setP, onBack }) {
             const otherName = other ? planTitle(PLN.planOn(P, d)) : "";
             return <button key={d} data-plan-day={d} data-on={mine ? 1 : 0} data-other={other ? 1 : 0} aria-pressed={mine} disabled={!items.length} aria-label={`${wdLongName(d)}${other ? ` · ${otherName}` : ""}`}
               onClick={() => { sfxTap(); setP(cur => PLN.setWeekDay(cur, d, mine ? "" : plan.id)); }}
-              style={{ ...btnBase, flex: 1, minWidth: 0, padding: "9px 0 7px", borderRadius: 11, fontSize: 12, display: "flex", flexDirection: "column", alignItems: "center", gap: 4, opacity: items.length ? 1 : 0.45,
+              style={{ ...btnBase, flex: 1, minWidth: 0, padding: "9px 0 7px", borderRadius: 12, fontSize: 12, display: "flex", flexDirection: "column", alignItems: "center", gap: 4, opacity: items.length ? 1 : 0.45,
                 ...(mine ? { background: C.signal, color: C.signalInk } : { ...SUNK(), color: other ? C.chalk : C.dim }) }}>
               {wdNames[d - 1]}<span style={{ width: 5, height: 5, borderRadius: 99, background: mine ? C.signalInk : other ? `${C.chalk}88` : "transparent" }} />
             </button>;
@@ -10043,7 +10041,7 @@ function PlanEditor({ plan, P, setP, onBack }) {
             const ex = EX[x.id]; if (!ex) return null;
             const timed = ex.type === "time" || ex.type === "carry", dur = x.dur || ex.dur;
             return (
-              <div key={x.id} data-plan-item={x.id} style={{ display: "flex", flexDirection: "column", gap: 8, padding: "10px 12px", borderRadius: 13, background: C.panelHi }}>
+              <div key={x.id} data-plan-item={x.id} style={{ display: "flex", flexDirection: "column", gap: 8, padding: "10px 12px", borderRadius: 12, background: C.panelHi }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                   <span style={{ flex: 1, minWidth: 0, fontSize: 15, fontWeight: 700, color: C.chalk }}>{ex.name}<ExQ id={x.id} /></span>
                   <button data-plan-up={x.id} disabled={!i} aria-label={T("plUp")} onClick={() => { sfxTap(); upd(p => ({ items: PLN.moveItem(p, i, i - 1).items })); }} style={{ ...btnBase, background: "transparent", color: C.dim, padding: 4, opacity: i ? 1 : 0.3, display: "inline-flex" }}><Ico n="arrowUp" size={17} /></button>
@@ -10529,7 +10527,7 @@ function TutCoach({ step, ready, onNext }) {
       <Ico n="cap" size={24} color={C.signal} style={{ marginTop: 1 }} />
       <div style={{ flex: 1, minWidth: 0 }}>
         <div data-gm-tut-text style={{ fontSize: 14, lineHeight: 1.5, color: C.chalk }}>{withK(T(key))}</div>
-        {!step.t && <button type="button" data-gm-tut-next onClick={() => { sfxTap(); onNext(); }} style={{ ...btnBase, marginTop: 8, padding: "8px 16px", borderRadius: 11, background: C.signal, color: C.signalInk, fontSize: 14 }}>{T(step.last ? "gmTutFinish" : "gmTutNext")}</button>}
+        {!step.t && <button type="button" data-gm-tut-next onClick={() => { sfxTap(); onNext(); }} style={{ ...btnBase, marginTop: 8, padding: "8px 16px", borderRadius: 12, background: C.signal, color: C.signalInk, fontSize: 14 }}>{T(step.last ? "gmTutFinish" : "gmTutNext")}</button>}
       </div>
     </div>
   );
@@ -10795,7 +10793,7 @@ function ScoreMeter({ chips, mult, total, idle }) {
   const num = { fontFamily: DISPLAY, fontSize: 38, fontWeight: 900, lineHeight: 1, fontVariantNumeric: "tabular-nums", position: "relative" };
   return (
     <div data-gm-meter data-idle={idle ? 1 : 0} className={total !== null && total !== undefined ? "gmMeterHit" : undefined} style={{ position: "relative", width: "min(100%, 320px)" }}>
-      <div data-gm-score style={{ display: "flex", height: 66, borderRadius: 22, overflow: "hidden", boxShadow: idle ? `0 0 0 1px ${C.line} inset` : `0 10px 30px ${C.signal}33, 0 0 0 1px ${C.chalk}22 inset` }}>
+      <div data-gm-score style={{ display: "flex", height: 66, borderRadius: 20, overflow: "hidden", boxShadow: idle ? `0 0 0 1px ${C.line} inset` : `0 10px 30px ${C.signal}33, 0 0 0 1px ${C.chalk}22 inset` }}>
         <div style={half(C.sky, "l")}>{!idle && <span key={"c" + chips} className="gmFlash" aria-hidden="true" style={{ position: "absolute", inset: 0, background: "#ffffff" }} />}<span style={num}>{idle ? "–" : nf(tc)}</span></div>
         <div style={half(C.signal, "r")}>{!idle && <span key={"m" + mult} className="gmFlash" aria-hidden="true" style={{ position: "absolute", inset: 0, background: "#ffffff" }} />}<span style={num}>{idle ? "–" : Number.isInteger(mult) ? Math.round(tm) : tm.toFixed(1)}</span></div>
       </div>
@@ -10913,7 +10911,7 @@ function GameShop({ g, tut, W = 412, onMove, onMoves, onTap, onSell, onHands, on
               return (
                 <button key={j.id} type="button" data-gm-swap-out={ji} disabled={!ok} onClick={() => { const i = swap; setSwap(null); onMoves([{ t: "sell", i: ji }, { t: "buy", i }]); }}
                   style={{ ...btnBase, ...card, ...tileR(), display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", textAlign: "left", color: C.chalk, fontWeight: 400, opacity: ok ? 1 : 0.45 }}>
-                  <span aria-hidden="true" style={{ width: 40, height: 40, flexShrink: 0, borderRadius: 11, background: C.panelHi, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}><JkIco id={j.id} size={22} /></span>
+                  <span aria-hidden="true" style={{ width: 40, height: 40, flexShrink: 0, borderRadius: 12, background: C.panelHi, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}><JkIco id={j.id} size={22} /></span>
                   <span style={{ flex: 1, minWidth: 0 }}><span style={{ display: "block", fontWeight: 800, fontSize: 15 }}>{jName(j.id)}</span><span style={{ display: "block", fontSize: 12.5, color: C.dim, lineHeight: 1.35 }}>{withK(jDesc(j.id))}</span></span>
                   <span style={{ fontWeight: 800, color: C.signal, whiteSpace: "nowrap" }}>+<KSign />{sellOf(j)}</span>
                 </button>
@@ -10927,7 +10925,7 @@ function GameShop({ g, tut, W = 412, onMove, onMoves, onTap, onSell, onHands, on
       {!tut && (
         <div data-gm-shopbar style={{ position: "sticky", bottom: "calc(var(--sab, 0px) + 12px)", marginTop: "auto", zIndex: 5, paddingTop: 18 }}>
           <div aria-hidden="true" style={{ position: "absolute", left: -14, right: -14, top: 0, bottom: "calc(-1 * (var(--sab, 0px) + 12px))", background: `linear-gradient(180deg, ${C.ink}00, ${C.ink}e6 38%, ${C.ink})`, pointerEvents: "none" }} />
-          <div style={{ position: "relative", display: "flex", gap: 6, padding: 6, borderRadius: 24, background: `${C.ink}f5`, border: `1px solid ${C.line}`, boxShadow: "0 12px 34px rgba(0,0,0,.5)", ...(LOOK === "liquid" ? { ...LIQUID_FLOAT(), borderRadius: 26 } : LOOK === "glass" ? { ...GLASS(), borderRadius: 26 } : {}) }}>
+          <div style={{ position: "relative", display: "flex", gap: 6, padding: 6, borderRadius: 24, background: `${C.ink}f5`, border: `1px solid ${C.line}`, boxShadow: "0 12px 34px rgba(0,0,0,.5)", ...(LOOK === "liquid" ? { ...LIQUID_FLOAT(), borderRadius: 24 } : LOOK === "glass" ? { ...GLASS(), borderRadius: 24 } : {}) }}>
             {onQuit && <button type="button" data-gm-save-quit onClick={() => { sfxTap(); onQuit(); }} style={{ ...btnBase, flex: 1, minWidth: 0, padding: "12px 10px", borderRadius: 18, ...SUNK(), color: C.chalk, fontSize: 13.5, lineHeight: 1.2, display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}><Ico n="logout" size={17} color={C.dim} /><span style={{ minWidth: 0 }}>{T("gmSaveQuit")}</span></button>}
             <button type="button" data-gm-next onClick={() => onMove({ t: "next" })} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), width: "auto", flex: 1.5, minWidth: 0, padding: "15px 12px", borderRadius: 18, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>{T("gmNext")}<Arrow style={{ color: C.signalInk }} /></button>
           </div>
@@ -11348,7 +11346,7 @@ function TourAsk({ onGo, onNo }) {
   const [on, setOn] = useState(false);
   useEffect(() => { const r = requestAnimationFrame(() => setOn(true)); return () => cancelAnimationFrame(r); }, []);
   useBack(onNo, true);
-  const box = LOOK === "glass" ? GLASS() : LOOK === "liquid" ? { ...LIQUID_FLOAT(), borderRadius: 26 } : LOOK === "tiles" ? { ...card, borderRadius: 20, boxShadow: "0 22px 50px rgba(0,0,0,.5)" } : { background: C.panel, border: `1px solid ${C.line}`, borderRadius: 20, boxShadow: "0 22px 50px rgba(0,0,0,.5)" };
+  const box = LOOK === "glass" ? GLASS() : LOOK === "liquid" ? { ...LIQUID_FLOAT(), borderRadius: 24 } : LOOK === "tiles" ? { ...card, borderRadius: 20, boxShadow: "0 22px 50px rgba(0,0,0,.5)" } : { background: C.panel, border: `1px solid ${C.line}`, borderRadius: 20, boxShadow: "0 22px 50px rgba(0,0,0,.5)" };
   const title = T("tourAskT");
   return createPortal(
     <div data-tour-ask-back style={{ position: "fixed", inset: 0, zIndex: 105, display: "flex", alignItems: "center", justifyContent: "center", padding: "calc(16px + var(--sat)) 16px calc(16px + var(--sab))", background: on ? "rgba(0,0,0,.6)" : "rgba(0,0,0,0)", transition: "background .25s", fontFamily: BODY }}>
@@ -11377,7 +11375,7 @@ function ConfirmBox({ icon, title, text, yes, no, danger, onYes, onNo, onDismiss
   useEffect(() => { const r = requestAnimationFrame(() => setOn(true)); return () => cancelAnimationFrame(r); }, []);
   useBack(dismiss, true);
   const col = danger ? "#ff6b6b" : C.signal;
-  const box = LOOK === "glass" ? GLASS() : LOOK === "liquid" ? { ...LIQUID_FLOAT(), borderRadius: 26 } : LOOK === "tiles" ? { ...card, borderRadius: 20, boxShadow: "0 22px 50px rgba(0,0,0,.5)" } : { background: C.panel, border: `1px solid ${C.line}`, borderRadius: 20, boxShadow: "0 22px 50px rgba(0,0,0,.5)" };
+  const box = LOOK === "glass" ? GLASS() : LOOK === "liquid" ? { ...LIQUID_FLOAT(), borderRadius: 24 } : LOOK === "tiles" ? { ...card, borderRadius: 20, boxShadow: "0 22px 50px rgba(0,0,0,.5)" } : { background: C.panel, border: `1px solid ${C.line}`, borderRadius: 20, boxShadow: "0 22px 50px rgba(0,0,0,.5)" };
   return createPortal(
     <div data-confirm-back onClick={e => { if (e.target === e.currentTarget) { sfxTap(); dismiss(); } }} style={{ position: "fixed", inset: 0, zIndex: 106, display: "flex", alignItems: "center", justifyContent: "center", padding: "calc(16px + var(--sat)) 16px calc(16px + var(--sab))", background: on ? "rgba(0,0,0,.6)" : "rgba(0,0,0,0)", transition: "background .25s", fontFamily: BODY }}>
       <div data-confirm role="alertdialog" aria-modal="true" aria-label={title}
@@ -11449,7 +11447,7 @@ function ClaimRow({ it, onOpen }) {
   return (
     <button type="button" data-claim-row={claimKey(it)} data-rarity={it.r} onClick={() => onOpen(it)} className={it.r >= 3 ? "foil" : undefined}
       style={{ ...btnBase, fontWeight: 400, textAlign: "left", width: "100%", color: C.chalk, ...card, ...tileR(), padding: "11px 12px", display: "flex", alignItems: "center", gap: 12, border: `1.5px solid ${col}99`, boxShadow: `0 0 ${10 + it.r * 3}px ${col}44` }}>
-      <span aria-hidden="true" className="claimBack" style={{ "--wob": `${2 + it.r * 0.6}deg`, width: 34, height: 44, flexShrink: 0, borderRadius: 7, border: `1.5px solid ${col}`, background: `radial-gradient(90% 70% at 50% 40%, ${col}66, transparent 75%), repeating-linear-gradient(45deg, ${col}1a 0 5px, transparent 5px 10px), ${C.ink}`, boxShadow: `0 0 ${8 + it.r * 2}px ${col}88`, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: DISPLAY, fontSize: 22, fontWeight: 900, color: col, textShadow: `0 0 8px ${col}` }}>?</span>
+      <span aria-hidden="true" className="claimBack" style={{ "--wob": `${2 + it.r * 0.6}deg`, width: 34, height: 44, flexShrink: 0, borderRadius: 8, border: `1.5px solid ${col}`, background: `radial-gradient(90% 70% at 50% 40%, ${col}66, transparent 75%), repeating-linear-gradient(45deg, ${col}1a 0 5px, transparent 5px 10px), ${C.ink}`, boxShadow: `0 0 ${8 + it.r * 2}px ${col}88`, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: DISPLAY, fontSize: 22, fontWeight: 900, color: col, textShadow: `0 0 8px ${col}` }}>?</span>
       <span style={{ flex: 1, minWidth: 0 }}>
         <span style={{ display: "block", fontSize: 14, fontWeight: 800, lineHeight: 1.2 }}>{it.kind === "ach" ? it.name : EX[it.k] ? EX[it.k].name : it.name}</span>
         <span className="revTap" style={{ display: "block", fontSize: 12, fontWeight: 800, color: col, marginTop: 3 }}>{T("claimTap")}</span>
@@ -11824,7 +11822,7 @@ function NoteBox({ notes, targets, onChange }) {
             {targets.map(t => <button key={t.key} data-note-target={t.key} aria-pressed={key === t.key} onClick={() => { sfxTap(); setKey(t.key); }} style={{ ...btnBase, padding: "5px 10px", fontSize: 12, borderRadius: 99, whiteSpace: "nowrap", flexShrink: 0, ...(key === t.key ? { background: `${C.signal}22`, border: `1px solid ${C.signal}66`, color: C.signal } : { ...SUNK(), color: C.dim }) }}>{t.label}</button>)}
           </div>}
           <textarea data-note-text value={notes[key] || ""} maxLength={300} rows={2} placeholder={T("notePh")} aria-label={T("noteAdd")} onChange={e => onChange(key, e.target.value)}
-            style={{ width: "100%", boxSizing: "border-box", resize: "vertical", fontFamily: BODY, fontSize: 15, padding: "9px 10px", borderRadius: 11, border: `1.5px solid ${C.line}`, background: C.ink, color: C.chalk, outline: "none" }} />
+            style={{ width: "100%", boxSizing: "border-box", resize: "vertical", fontFamily: BODY, fontSize: 15, padding: "9px 10px", borderRadius: 12, border: `1.5px solid ${C.line}`, background: C.ink, color: C.chalk, outline: "none" }} />
           <button data-note-close onClick={() => { sfxTap(); setOpen(false); }} style={{ ...btnBase, background: "transparent", color: C.sky, fontSize: 13, padding: "6px 2px 0" }}>{T("noteDone")}</button>
         </div>
       )}
