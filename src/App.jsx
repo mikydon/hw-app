@@ -1309,7 +1309,7 @@ function InfoSheet({ info, onClose }) {
   const paras = Array.isArray(info.text) ? info.text : [info.text];
   return (
     <Sheet title={info.title} onClose={onClose} short>
-      <div data-info-sheet style={{ fontSize: 14.5, lineHeight: 1.55, color: C.chalk }}>
+      <div data-info-sheet style={{ fontSize: 15, lineHeight: 1.55, color: C.chalk }}>
         {paras.filter(Boolean).map((t, i) => <p key={i} style={{ margin: i ? "10px 0 0" : 0 }}>{emo(t)}</p>)}
       </div>
     </Sheet>
@@ -1363,7 +1363,7 @@ function ExLibrary({ onPick, picked = [], exclude = [], autoFocus }) {
   const order = id => GROUPS_ORDER.indexOf(LIB[id].g) * 1000 + EQUIP_ORDER.indexOf(LIB[id].eq) * 100 + ({ easy: 0, mid: 1, hard: 2 }[LIB[id].d] || 1);
   shown.sort((a, b) => order(a.id) - order(b.id) || EX[a.id].name.localeCompare(EX[b.id].name, LANG));
   const toggleEq = k => { sfxTap(); const v = eq.includes(k) ? eq.filter(x => x !== k) : EQUIP_ORDER.filter(x => x === k || eq.includes(x)); const nv = v.length ? v : [k]; setEq(nv); exEqSave(nv); };
-  const chipS = on => ({ ...btnBase, padding: "6px 11px", fontSize: 12.5, borderRadius: 99, whiteSpace: "nowrap", flexShrink: 0, ...(on ? { background: `${C.signal}22`, border: `1px solid ${C.signal}66`, color: C.signal } : { ...SUNK(), color: C.dim }) });
+  const chipS = on => ({ ...btnBase, padding: "6px 11px", fontSize: 13, borderRadius: 99, whiteSpace: "nowrap", flexShrink: 0, ...(on ? { background: `${C.signal}22`, border: `1px solid ${C.signal}66`, color: C.signal } : { ...SUNK(), color: C.dim }) });
   const row = m => {
     const id = m.id, on = picked.includes(id);
     return (
@@ -2052,7 +2052,7 @@ function ExitPrompt({ onStay, onLeave, history, session }) {
             <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14L4 9l5-5M4 9h10.5a5.5 5.5 0 010 11H11" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round" /></svg>
             <span style={{ fontSize: 11, fontWeight: 800, lineHeight: 1.1, maxWidth: "100%", overflowWrap: "anywhere" }}>{T("exitStay")}</span>
           </button>
-          <button data-exit-yes onClick={onLeave} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), flex: 1, minWidth: 0, fontSize: 17, padding: "10px 10px", borderRadius: 14 }}>
+          <button data-exit-yes onClick={onLeave} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), flex: 1, minWidth: 0, fontSize: 16, padding: "10px 10px", borderRadius: 14 }}>
             {T("exitYes")}
             <span style={{ display: "block", fontSize: 11, fontWeight: 700, opacity: 0.75, marginTop: 2 }}>{T("exitAgain")}</span>
           </button>
@@ -2081,7 +2081,7 @@ function StatTile({ label, value, icon, icoCol, color, sub, children, data, comp
       </div>
       <div style={{ fontFamily: DISPLAY, fontSize: compact ? 30 : 36, fontWeight: 900, color: color || C.chalk, lineHeight: 1, marginTop: sub || children ? 8 : "auto", paddingTop: sub || children ? 0 : 8, fontVariantNumeric: "tabular-nums" }}>{value}</div>
       {children}
-      {sub && <div style={{ fontSize: 11.5, color: C.dim, marginTop: "auto", paddingTop: 7, lineHeight: 1.35 }}>{sub}</div>}
+      {sub && <div style={{ fontSize: 12, color: C.dim, marginTop: "auto", paddingTop: 7, lineHeight: 1.35 }}>{sub}</div>}
     </div>
   );
 }
@@ -2100,7 +2100,7 @@ function MenuButton({ open, onClick, btnRef, label, badge }) {
       <span style={bar(13, 45)} />
       <span style={{ ...bar(20, 0), opacity: open ? 0 : 1 }} />
       <span style={bar(27, -45)} />
-      {badge > 0 && !open && <span data-menu-badge={badge} aria-hidden="true" style={{ position: "absolute", top: -4, right: -4, minWidth: 17, height: 17, borderRadius: 8, padding: "0 4px", boxSizing: "border-box", background: "#ff5a5a", color: "#fff", fontSize: 10.5, fontWeight: 800, lineHeight: "17px", fontFamily: BODY, border: `2px solid ${C.ink}` }}>{badge > 9 ? "9+" : badge}</span>}
+      {badge > 0 && !open && <span data-menu-badge={badge} aria-hidden="true" style={{ position: "absolute", top: -4, right: -4, minWidth: 17, height: 17, borderRadius: 8, padding: "0 4px", boxSizing: "border-box", background: "#ff5a5a", color: "#fff", fontSize: 11, fontWeight: 800, lineHeight: "17px", fontFamily: BODY, border: `2px solid ${C.ink}` }}>{badge > 9 ? "9+" : badge}</span>}
     </button>
   );
 }
@@ -2340,7 +2340,7 @@ function TopBar({ screen, history, menuOpen, onMenu, onGo, dlPct, badge, head, s
           </div>
         </div>
         <button onClick={() => onGo && onGo("profile")} data-chip="streak" style={{ ...btnBase, ...chip(st.n ? "#ffa94d" : C.dim), ...pill }} aria-label={T("streakAria", { n: st.n })}><span className={st.n ? "wiggle" : ""}><IcoI n="flame" /></span>{st.n}</button>
-        <button onClick={() => onGo && onGo("profile")} data-chip="level" style={{ ...btnBase, ...chip(C.sky), ...pill, position: "relative" }} aria-label={T("levelAria", { n: lv.lvl })}><IcoI n="bolt" />{lv.lvl}{EC.boostUntil(META.boosts) > Date.now() && <span data-chip-boost aria-hidden="true" style={{ position: "absolute", top: -6, right: -6, fontFamily: BODY, fontSize: 9.5, fontWeight: 900, lineHeight: 1, color: C.signalInk, background: C.signal, borderRadius: 99, padding: "2px 4px" }}>2×</span>}</button>
+        <button onClick={() => onGo && onGo("profile")} data-chip="level" style={{ ...btnBase, ...chip(C.sky), ...pill, position: "relative" }} aria-label={T("levelAria", { n: lv.lvl })}><IcoI n="bolt" />{lv.lvl}{EC.boostUntil(META.boosts) > Date.now() && <span data-chip-boost aria-hidden="true" style={{ position: "absolute", top: -6, right: -6, fontFamily: BODY, fontSize: 10, fontWeight: 900, lineHeight: 1, color: C.signalInk, background: C.signal, borderRadius: 99, padding: "2px 4px" }}>2×</span>}</button>
         {!side && <MenuButton open={menuOpen} onClick={onMenu} badge={badge} />}
         </>}
         {typeof prog === "number" && <div data-top-prog={Math.round(prog)} role="progressbar" aria-valuenow={Math.round(prog)} aria-valuemin={0} aria-valuemax={100} style={{ position: "absolute", left: 18, bottom: 4, height: 3, width: `calc((100% - 36px) * ${Math.max(2, Math.min(100, prog)) / 100})`, background: C.sky, borderRadius: 3, transition: "width .3s", boxShadow: `0 0 8px ${C.sky}` }} />}
@@ -2652,8 +2652,8 @@ function NavRows({ items, screen, onGo }) {
               style={{ ...btnBase, "--i": i + 2, width: "100%", display: "flex", alignItems: "center", gap: 14, padding: "10px 10px", margin: "2px 0", borderRadius: 14, background: dragging ? C.panelHi : on && !edit ? `${C.signal}1a` : "transparent", color: on && !edit ? C.signal : C.chalk, textAlign: "left", boxShadow: dragging ? "0 10px 26px rgba(0,0,0,.45)" : "none" }}>
               <span style={{ width: 40, height: 40, borderRadius: 12, background: on && !edit ? `${C.signal}26` : LOOK === "liquid" ? "rgba(255,255,255,.08)" : C.panelHi, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><TabIcon name={it.id} active={on && !edit} /></span>
               <span style={{ minWidth: 0, fontSize: 16, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{it.label}</span>
-              {edit && i === 0 && <span data-nav-start style={{ fontSize: 10.5, fontWeight: 800, color: C.mint, border: `1px solid ${C.mint}66`, borderRadius: 99, padding: "1px 7px", flexShrink: 0 }}>{T("menuStart")}</span>}
-              {!edit && it.badge > 0 && <span style={{ marginLeft: "auto", minWidth: 20, height: 20, borderRadius: 10, padding: "0 6px", boxSizing: "border-box", background: "#ff5a5a", color: "#fff", fontSize: 11.5, fontWeight: 800, lineHeight: "20px", textAlign: "center" }}>{it.badge}</span>}
+              {edit && i === 0 && <span data-nav-start style={{ fontSize: 11, fontWeight: 800, color: C.mint, border: `1px solid ${C.mint}66`, borderRadius: 99, padding: "1px 7px", flexShrink: 0 }}>{T("menuStart")}</span>}
+              {!edit && it.badge > 0 && <span style={{ marginLeft: "auto", minWidth: 20, height: 20, borderRadius: 10, padding: "0 6px", boxSizing: "border-box", background: "#ff5a5a", color: "#fff", fontSize: 12, fontWeight: 800, lineHeight: "20px", textAlign: "center" }}>{it.badge}</span>}
             </button>
             {edit && <span data-nav-handle={it.id} role="button" aria-label={T("plMove")} onPointerDown={e => startDrag(e, i)}
               style={{ position: "absolute", right: 4, top: "50%", transform: "translateY(-50%)", width: 44, height: 44, display: "flex", alignItems: "center", justifyContent: "center", color: C.dim, touchAction: "none", cursor: "grab" }}>
@@ -2790,7 +2790,7 @@ function HomeTiles({ history, onCalories, onHistory }) {
           {s ? <>
             <span style={{ display: "flex", alignItems: "baseline", gap: 6, marginTop: 5 }}>
               <span data-home-kcal-eaten style={{ fontFamily: DISPLAY, fontSize: 32, fontWeight: 900, lineHeight: 1, color: C.chalk }}>{nf(s.eaten)}</span>
-              <span style={{ fontSize: 12.5, color: C.dim, whiteSpace: "nowrap" }}>/ {nf(s.target)} kcal</span>
+              <span style={{ fontSize: 13, color: C.dim, whiteSpace: "nowrap" }}>/ {nf(s.target)} kcal</span>
             </span>
             {bar(pct, kcol)}
           </> : <span style={{ display: "block", fontSize: 15, fontWeight: 800, color: C.chalk, marginTop: 5, lineHeight: 1.3 }}>{T("kcHomeSetup")}</span>}
@@ -2805,7 +2805,7 @@ function HomeTiles({ history, onCalories, onHistory }) {
             {label(T("chTile"))}
             <span style={{ display: "flex", alignItems: "baseline", gap: 6, marginTop: 5 }}>
               <span style={{ fontFamily: DISPLAY, fontSize: 32, fontWeight: 900, lineHeight: 1, color: doneN === 3 ? C.mint : C.chalk }}>{doneN}/3</span>
-              <span style={{ fontSize: 12.5, color: C.dim, whiteSpace: "nowrap" }}>· {TP("days", left)}</span>
+              <span style={{ fontSize: 13, color: C.dim, whiteSpace: "nowrap" }}>· {TP("days", left)}</span>
             </span>
           </span>
           <Arrow />
@@ -2820,7 +2820,7 @@ function HomeTiles({ history, onCalories, onHistory }) {
                   <Ico n={c.done ? "tick" : c.icon} size={20} sw={c.done ? 2.8 : 2} />
                 </button>
                 <span style={{ flex: 1, height: 6, borderRadius: 99, background: `${C.chalk}14`, overflow: "hidden" }}><span style={{ display: "block", height: "100%", width: `${Math.min(1, c.v / c.goal) * 100}%`, background: col, borderRadius: 99, transition: `width ${MO.fill} ${MO.ease}` }} /></span>
-                <span data-home-ch-val style={{ minWidth: 52, whiteSpace: "nowrap", textAlign: "right", fontSize: 12.5, fontWeight: 800, color: c.done ? C.mint : C.dim, fontVariantNumeric: "tabular-nums", flexShrink: 0 }}>{Math.min(c.v, c.goal)}/{c.goal}</span>
+                <span data-home-ch-val style={{ minWidth: 52, whiteSpace: "nowrap", textAlign: "right", fontSize: 13, fontWeight: 800, color: c.done ? C.mint : C.dim, fontVariantNumeric: "tabular-nums", flexShrink: 0 }}>{Math.min(c.v, c.goal)}/{c.goal}</span>
               </div>
             );
           })}
@@ -2835,7 +2835,7 @@ function HomeTiles({ history, onCalories, onHistory }) {
             {label(T("tabHistory"))}
             <span style={{ display: "flex", alignItems: "baseline", gap: 6, marginTop: 5, minWidth: 0 }}>
               <span style={{ fontFamily: DISPLAY, fontSize: 32, fontWeight: 900, lineHeight: 1, color: C.chalk }}>{history.length}</span>
-              {lastE && <span data-home-hist-last style={{ fontSize: 12.5, color: C.dim, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>· {fmtShortDM(parseKey(lastE.date))} {entryMark(lastE).length <= 2 && lastE.day ? T("dayN", { d: lastE.day }) : entryTitle(lastE)}</span>}
+              {lastE && <span data-home-hist-last style={{ fontSize: 13, color: C.dim, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>· {fmtShortDM(parseKey(lastE.date))} {entryMark(lastE).length <= 2 && lastE.day ? T("dayN", { d: lastE.day }) : entryTitle(lastE)}</span>}
             </span>
           </span>
           <Arrow />
@@ -3270,7 +3270,7 @@ function FloatTabs({ name, items, active, onPick, knob, extra = {} }) {
               onClick={e => { if (extra.cancel && extra.cancel()) return; sfxTap(); onPick(i, e); }}
               style={{ ...btnBase, position: "relative", minWidth: 0, width: "100%", boxSizing: "border-box", height: 46, padding: "0 2px", borderRadius: 16, background: "transparent", color: on ? C.signal : C.dim, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2, transition: `color ${MO.t2}` }}>
               <span style={{ position: "relative", display: "flex" }}><Ico n={it.icon} size={20} sw={on ? 2.3 : 2} />
-                {it.badge > 0 && <span data-badge={it.badge} aria-hidden="true" style={{ position: "absolute", top: -5, right: -8, minWidth: 15, height: 15, borderRadius: 8, padding: "0 4px", boxSizing: "border-box", background: "#ff5a5a", color: "#fff", fontSize: 9.5, fontWeight: 800, lineHeight: "15px", textAlign: "center", border: `2px solid ${C.ink}` }}>{it.badge > 9 ? "9+" : it.badge}</span>}
+                {it.badge > 0 && <span data-badge={it.badge} aria-hidden="true" style={{ position: "absolute", top: -5, right: -8, minWidth: 15, height: 15, borderRadius: 8, padding: "0 4px", boxSizing: "border-box", background: "#ff5a5a", color: "#fff", fontSize: 10, fontWeight: 800, lineHeight: "15px", textAlign: "center", border: `2px solid ${C.ink}` }}>{it.badge > 9 ? "9+" : it.badge}</span>}
               </span>
               <span aria-hidden="true" data-ftabs-label style={{ display: "block", maxWidth: "100%", minWidth: n > 3 ? 60 : 66, padding: "0 4px", boxSizing: "border-box", textAlign: "center", fontSize: 10, fontWeight: 800, lineHeight: 1.1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{it.label}</span>
             </button>
@@ -3322,20 +3322,20 @@ function FloatStart({ show, day, rounds, setRounds, onStart, plan, tabs }) {
         )}
         {plan && (
           <div data-fstart-mins={plan.mins} className="fsq" style={{ fontFamily: BODY, width: 54, flexShrink: 0, borderRadius: 16, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", ...SUNK(), color: C.chalk }}>
-            <span style={{ fontFamily: DISPLAY, fontSize: 23, fontWeight: 900, lineHeight: 1 }}>{plan.mins}</span>
+            <span style={{ fontFamily: DISPLAY, fontSize: 22, fontWeight: 900, lineHeight: 1 }}>{plan.mins}</span>
             <span style={{ fontSize: 10, fontWeight: 800, marginTop: 2, color: C.dim }}>min</span>
           </div>
         )}
         {!plan && [3, 2].map((n, i) => (
           <button key={n} tabIndex={show ? 0 : -1} data-fround={n} data-rounds={n} aria-pressed={rounds === n} aria-label={T("roundsBtn", { n, m: n === 2 ? 13 : 19 })} onClick={() => { sfxTap(); setRounds(n); }} className="fsq" style={{ ...btnBase, position: "relative", "--d": `${60 + i * 50}ms`, width: 52, flexShrink: 0, borderRadius: 16, padding: "9px 0", ...(rounds === n ? { background: C.chalk, border: `1px solid ${C.chalk}` } : SUNK()), color: rounds === n ? C.ink : C.dim, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", lineHeight: 1 }}>
             {n === 3 && <span data-rec title={T("roundsRec")} aria-label={T("roundsRec")} style={{ position: "absolute", top: 4, right: 4, width: 7, height: 7, borderRadius: 99, background: C.mint }} />}
-            <span style={{ fontFamily: DISPLAY, fontSize: 23, fontWeight: 900 }}>{n === 2 ? 13 : 19}</span>
+            <span style={{ fontFamily: DISPLAY, fontSize: 22, fontWeight: 900 }}>{n === 2 ? 13 : 19}</span>
             <span style={{ fontSize: 10, fontWeight: 800, marginTop: 2 }}>min</span>
           </button>
         ))}
         <button tabIndex={show ? 0 : -1} data-fstart-go data-start onClick={onStart} className="b3d fsq" style={{ ...bigBtn(C.signal, C.signalInk), "--d": "160ms", flex: 1, minWidth: 0, padding: "8px 10px", fontSize: plan ? 18 : 17, lineHeight: 1.1, borderRadius: 16, textWrap: "balance", overflow: "hidden", textOverflow: "ellipsis", ...(plan ? { whiteSpace: "nowrap" } : {}) }}>
           {plan ? plan.label : T("startDay", { d: day })}
-          {plan ? <span data-fstart-plan style={{ display: "block", fontSize: 11.5, fontWeight: 700, opacity: 0.75, marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{plan.sub}</span> : <span data-fstart-rounds data-start-rounds style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0 0 0 0)" }}>{T("roundsBtn", { n: rounds, m: rounds === 2 ? 13 : 19 })}</span>}
+          {plan ? <span data-fstart-plan style={{ display: "block", fontSize: 12, fontWeight: 700, opacity: 0.75, marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{plan.sub}</span> : <span data-fstart-rounds data-start-rounds style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0 0 0 0)" }}>{T("roundsBtn", { n: rounds, m: rounds === 2 ? 13 : 19 })}</span>}
         </button>
       </div>
     </div>,
@@ -3611,7 +3611,7 @@ function Onboarding({ start = 0, profile, setProfile, kcal, setKcal, onDone, acc
               <button key={v} role="radio" aria-checked={sex === v} data-ob-sex={v} onClick={() => { sfxTap(); setSex(v); }}
                 style={{ ...btnBase, flex: 1, padding: "22px 0 18px", borderRadius: 18, display: "flex", flexDirection: "column", alignItems: "center", gap: 6, ...(sex === v ? { background: C.signal, border: `1px solid ${C.signal}` } : SUNK()), color: sex === v ? C.signalInk : C.chalk, transition: "background .2s, color .2s, box-shadow .2s" }}>
                 <span aria-hidden="true" style={{ fontSize: 34, lineHeight: 1 }}>{ic}</span>
-                <span style={{ fontSize: 17, fontWeight: 800 }}>{T(k)}</span>
+                <span style={{ fontSize: 16, fontWeight: 800 }}>{T(k)}</span>
               </button>
             ))}
           </div>
@@ -3957,7 +3957,7 @@ function TrainTab({ history, onStart, onStartPlan, onStartFree, onFreeze, ui, se
   const hType = weekOn ? planItems : day.ids.map(id => ({ id: effId(id) }));
   const todayBits = (
     <>
-      {last && !doneToday && gap === 2 && st.n > 0 && <div data-day-status style={{ fontSize: 13.5, color: C.signal, marginTop: 10, lineHeight: 1.45 }}>{emo(status)}</div>}
+      {last && !doneToday && gap === 2 && st.n > 0 && <div data-day-status style={{ fontSize: 14, color: C.signal, marginTop: 10, lineHeight: 1.45 }}>{emo(status)}</div>}
       {!doneToday && st.gap === 2 && st.n > 0 && !st.frozenToday && !(META.skips || {})[dateKey()] && (
         <button data-skip-btn onClick={onFreeze} style={{ ...ghostBtn, marginTop: 10, color: C.sky, borderColor: C.sky }}><IcoI n="ice" /> {noEmo(T("skipBtn"))}</button>
       )}
@@ -3981,7 +3981,7 @@ function TrainTab({ history, onStart, onStartPlan, onStartFree, onFreeze, ui, se
       ) : <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: C.dim }}>{T("plRecTitle")}</div>}
       {!weekOn && <div data-day-title style={{ fontFamily: DISPLAY, fontWeight: 900, fontSize: fitFont(dayTitle, 52, 10), lineHeight: 0.92, paddingBottom: "0.08em", letterSpacing: -0.5, color: C.chalk, marginTop: 6 }}>{dayTitle}</div>}
       {hType.length > 0 && <div style={{ marginTop: weekOn ? 10 : 8 }}><TypeChips items={hType} /></div>}
-      {weekOn && !own && <div data-plan-rest-home style={{ fontSize: 13.5, color: C.dim, marginTop: 10, lineHeight: 1.45, display: "flex", gap: 8, alignItems: "flex-start" }}><Ico n="moon" size={18} color={C.sky} style={{ flexShrink: 0, marginTop: 1 }} /><span><b style={{ color: C.chalk }}>{T("plRestDay")}</b> · {T("plRestInfo2")}</span></div>}
+      {weekOn && !own && <div data-plan-rest-home style={{ fontSize: 14, color: C.dim, marginTop: 10, lineHeight: 1.45, display: "flex", gap: 8, alignItems: "flex-start" }}><Ico n="moon" size={18} color={C.sky} style={{ flexShrink: 0, marginTop: 1 }} /><span><b style={{ color: C.chalk }}>{T("plRestDay")}</b> · {T("plRestInfo2")}</span></div>}
       {weekOn ? (
         <div role="radiogroup" aria-label={T("pickDay")} data-day-picker="plan" style={{ display: "flex", gap: 4, marginTop: 14 }}>
           {PLN.WEEKDAYS.map(d => {
@@ -3994,7 +3994,7 @@ function TrainTab({ history, onStart, onStartPlan, onStartFree, onFreeze, ui, se
           })}
         </div>
       ) : dayPicker({ marginTop: 14 })}
-      {(weekOn || hasOwn) && !active && <button data-home-other onClick={() => { sfxTap(); setPicker(true); }} style={{ ...btnBase, background: "transparent", color: C.sky, padding: "12px 0 0", fontSize: 13.5, display: "inline-flex", alignItems: "center", gap: 6 }}><Ico n="repeat" size={16} />{T("plOther")}</button>}
+      {(weekOn || hasOwn) && !active && <button data-home-other onClick={() => { sfxTap(); setPicker(true); }} style={{ ...btnBase, background: "transparent", color: C.sky, padding: "12px 0 0", fontSize: 14, display: "inline-flex", alignItems: "center", gap: 6 }}><Ico n="repeat" size={16} />{T("plOther")}</button>}
     </Sect>
   );
 
@@ -4010,7 +4010,7 @@ function TrainTab({ history, onStart, onStartPlan, onStartFree, onFreeze, ui, se
       <span style={{ width: 40, height: 40, borderRadius: 12, background: `${C.signal}22`, color: C.signal, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: DISPLAY, fontWeight: 900, fontSize: 22, flexShrink: 0 }}>{weekOn ? <Ico n={own ? "dumbbell" : "moon"} size={20} /> : day.id}</span>
       <span style={{ flex: 1, minWidth: 0 }}>
         <span style={{ display: "block", fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: C.dim }}>{doneToday && !weekOn ? T("nextWorkout") : weekOn && wdSel !== todayWd ? T("homePicked") : T("homeToday")}</span>
-        <span style={{ display: "block", fontSize: 14.5, fontWeight: 700, marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{weekOn ? (own ? `${planTitle(own)} · ${TP("exN", planItems.length)}` : T("plRestDay")) : `${T("dayN", { d: day.id })} · ${TP("exN", day.ids.length)}`}</span>
+        <span style={{ display: "block", fontSize: 15, fontWeight: 700, marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{weekOn ? (own ? `${planTitle(own)} · ${TP("exN", planItems.length)}` : T("plRestDay")) : `${T("dayN", { d: day.id })} · ${TP("exN", day.ids.length)}`}</span>
       </span>
       <Arrow />
     </button>
@@ -4116,7 +4116,7 @@ function TrainTab({ history, onStart, onStartPlan, onStartFree, onFreeze, ui, se
         </div>
       </>, () => setUi({ ...ui, hintHidden: today }), { "data-hint": hint.k })}
       {notice === "daily" && ntBox("daily", C.signal, (
-        <div style={{ borderLeft: `3px solid ${C.signal}`, paddingLeft: 11, fontFamily: DISPLAY, fontSize: 19, fontWeight: 800, lineHeight: 1.15, color: C.chalk }}>{emo(dailyText)}</div>
+        <div style={{ borderLeft: `3px solid ${C.signal}`, paddingLeft: 11, fontFamily: DISPLAY, fontSize: 18, fontWeight: 800, lineHeight: 1.15, color: C.chalk }}>{emo(dailyText)}</div>
       ), () => setUi({ ...ui, dailyHidden: today }), { "data-daily": 1 })}
       </div>
 
@@ -4148,7 +4148,7 @@ function TrainTab({ history, onStart, onStartPlan, onStartFree, onFreeze, ui, se
                         {rankAt(x.id) && <div style={{ marginTop: 5 }}><RankBadge id={x.id} best={b} small /></div>}
                       </div>
                       <div style={{ textAlign: "right", flexShrink: 0, maxWidth: "45%" }}>
-                        <div style={{ fontFamily: DISPLAY, fontSize: 17, fontWeight: 800, color: l ? C.chalk : C.dim, overflowWrap: "anywhere" }}>{l ? l.res.map((r, k) => fmtSet(x.id, r, l.kg && l.kg[k], "")).join(" / ") : T("newEx")}</div>
+                        <div style={{ fontFamily: DISPLAY, fontSize: 16, fontWeight: 800, color: l ? C.chalk : C.dim, overflowWrap: "anywhere" }}>{l ? l.res.map((r, k) => fmtSet(x.id, r, l.kg && l.kg[k], "")).join(" / ") : T("newEx")}</div>
                         <div style={{ fontSize: 11, color: C.dim, fontWeight: 500 }}>{l ? T("lastTime") : T("tapInfo")}</div>
                       </div>
                     </button>
@@ -4473,9 +4473,9 @@ function KcalWeekDots({ history, full }) {
         const d = parseKey(w.k), isT = w.k === today;
         return (
           <span key={w.k} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, minWidth: 18 }}>
-            <span data-kc-day={w.kind || "none"} title={fmtDate(w.k)} style={{ width: 14, height: 14, borderRadius: 99, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 900, color: C.ink, background: w.kind === "hit" ? KC_HIT : w.kind === "log" ? KC_LOG : "transparent", border: `1.5px solid ${w.kind ? KC_HIT : isT ? C.chalk : C.line}` }}>{w.kind === "hit" ? "✓" : ""}</span>
-            <span style={{ fontSize: 9, lineHeight: 1, fontWeight: isT ? 900 : 600, color: isT ? C.chalk : C.dim }}>{wd[(d.getDay() + 6) % 7]}</span>
-            {isT && <span data-kc-today style={{ fontSize: 9, lineHeight: 1, fontWeight: 700, color: C.chalk, whiteSpace: "nowrap" }}>{fmtShortDM(d)}</span>}
+            <span data-kc-day={w.kind || "none"} title={fmtDate(w.k)} style={{ width: 14, height: 14, borderRadius: 99, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 900, color: C.ink, background: w.kind === "hit" ? KC_HIT : w.kind === "log" ? KC_LOG : "transparent", border: `1.5px solid ${w.kind ? KC_HIT : isT ? C.chalk : C.line}` }}>{w.kind === "hit" ? "✓" : ""}</span>
+            <span style={{ fontSize: 10, lineHeight: 1, fontWeight: isT ? 900 : 600, color: isT ? C.chalk : C.dim }}>{wd[(d.getDay() + 6) % 7]}</span>
+            {isT && <span data-kc-today style={{ fontSize: 10, lineHeight: 1, fontWeight: 700, color: C.chalk, whiteSpace: "nowrap" }}>{fmtShortDM(d)}</span>}
           </span>
         );
       })}
@@ -4571,11 +4571,11 @@ function HcGuide({ st, onClose, onCheck, onConnect }) {
       <span style={{ width: 28, height: 28, borderRadius: 99, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 14, background: done ? C.mint : C.panelHi, color: done ? C.ink : C.chalk }}>{done ? <Ico n="check" size={16} sw={2.6} /> : n}</span>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontSize: 15, fontWeight: 800, color: C.chalk, lineHeight: 1.3 }}>{title}</div>
-        <div style={{ fontSize: 13.5, color: C.dim, lineHeight: 1.5, marginTop: 4 }}>{kids}</div>
+        <div style={{ fontSize: 14, color: C.dim, lineHeight: 1.5, marginTop: 4 }}>{kids}</div>
       </div>
     </div>
   );
-  const link = (url, label) => <button onClick={() => { sfxTap(); openExternal(url); }} style={{ ...btnBase, background: "transparent", color: C.sky, padding: "4px 0", fontSize: 13.5, display: "inline-flex", alignItems: "center", gap: 4 }}>{label}<Arrow size={14} /></button>;
+  const link = (url, label) => <button onClick={() => { sfxTap(); openExternal(url); }} style={{ ...btnBase, background: "transparent", color: C.sky, padding: "4px 0", fontSize: 14, display: "inline-flex", alignItems: "center", gap: 4 }}>{label}<Arrow size={14} /></button>;
   const has = !!(st && st.available), upd = st && /update/i.test(st.reason || "");
   return (
     <Sheet title={T("hcGuideT")} onClose={onClose}>
@@ -4583,8 +4583,8 @@ function HcGuide({ st, onClose, onCheck, onConnect }) {
         {step(1, has, T("hcG1"), <>
           {has ? T("hcG1ok") : upd ? T("hcG1upd") : T("hcG1no")}
           {!has && <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 8 }}>
-            <button data-hc-install onClick={() => { sfxTap(); openExternal(HC_PLAY); }} className="b3d" style={{ ...btnBase, background: C.signal, color: C.signalInk, padding: "9px 14px", fontSize: 13.5 }}>{T(upd ? "hcUpdateBtn" : "hcInstallBtn")}</button>
-            <button data-hc-recheck onClick={() => chk.run(onCheck)} style={{ ...btnBase, ...SUNK(), color: C.chalk, padding: "9px 14px", fontSize: 13.5, display: "inline-flex", alignItems: "center" }}>{chk.icon}{T("hcRecheck")}</button>
+            <button data-hc-install onClick={() => { sfxTap(); openExternal(HC_PLAY); }} className="b3d" style={{ ...btnBase, background: C.signal, color: C.signalInk, padding: "9px 14px", fontSize: 14 }}>{T(upd ? "hcUpdateBtn" : "hcInstallBtn")}</button>
+            <button data-hc-recheck onClick={() => chk.run(onCheck)} style={{ ...btnBase, ...SUNK(), color: C.chalk, padding: "9px 14px", fontSize: 14, display: "inline-flex", alignItems: "center" }}>{chk.icon}{T("hcRecheck")}</button>
           </div>}
         </>)}
         {step(2, false, T("hcG2"), <>
@@ -4592,8 +4592,8 @@ function HcGuide({ st, onClose, onCheck, onConnect }) {
           <div style={{ display: "flex", flexDirection: "column", marginTop: 6 }}>
             {HC_SOURCES.map(([name, url, key]) => (
               <div key={name} data-hc-src={name} style={{ padding: "6px 0", borderTop: `1px solid ${C.line}` }}>
-                <div style={{ fontSize: 13.5, fontWeight: 700, color: C.chalk }}>{name}</div>
-                {key ? <div style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.45 }}>{T(key)}</div> : link(url, T("hcHowLink"))}
+                <div style={{ fontSize: 14, fontWeight: 700, color: C.chalk }}>{name}</div>
+                {key ? <div style={{ fontSize: 13, color: C.dim, lineHeight: 1.45 }}>{T(key)}</div> : link(url, T("hcHowLink"))}
               </div>
             ))}
             <div style={{ paddingTop: 6, borderTop: `1px solid ${C.line}` }}>{link(HC_HELP, T("hcOtherApps"))}</div>
@@ -4601,7 +4601,7 @@ function HcGuide({ st, onClose, onCheck, onConnect }) {
         </>)}
         {step(3, !!(st && st.granted), T("hcG3"), <>
           {T("hcG3d")}
-          {has && !(st && st.granted) && <button data-hc-guide-connect onClick={() => { sfxTap(); onClose(); onConnect(); }} className="b3d" style={{ ...btnBase, display: "block", marginTop: 8, background: C.signal, color: C.signalInk, padding: "9px 14px", fontSize: 13.5 }}>{T("hcConnect")}</button>}
+          {has && !(st && st.granted) && <button data-hc-guide-connect onClick={() => { sfxTap(); onClose(); onConnect(); }} className="b3d" style={{ ...btnBase, display: "block", marginTop: 8, background: C.signal, color: C.signalInk, padding: "9px 14px", fontSize: 14 }}>{T("hcConnect")}</button>}
         </>)}
       </div>
     </Sheet>
@@ -4656,7 +4656,7 @@ function HealthCard({ kcal, setKcal, defOpen, onToggle }) {
     <>
       <div data-hc="unavailable" style={{ fontSize: 13, color: C.chalk, lineHeight: 1.5 }}>{T("hcNotInstalled")}</div>
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10 }}>
-        <button data-hc-guide-open onClick={() => { sfxTap(); setGuide(true); }} className="b3d" style={{ ...btnBase, background: C.signal, color: C.signalInk, padding: "9px 14px", fontSize: 13.5 }}>{T("hcGuideBtn")}</button>
+        <button data-hc-guide-open onClick={() => { sfxTap(); setGuide(true); }} className="b3d" style={{ ...btnBase, background: C.signal, color: C.signalInk, padding: "9px 14px", fontSize: 14 }}>{T("hcGuideBtn")}</button>
         <button data-hc-retry onClick={() => syncAct.run(refresh)} style={{ ...ghostBtn, display: "inline-flex", alignItems: "center" }}>{syncAct.icon}{T("hcRetry")}</button>
       </div>
     </>
@@ -4803,7 +4803,7 @@ function TargetBreakdown({ kcal, age, history, day, target }) {
             <span style={{ display: "block", fontSize: 13, color: C.chalk }}>{label}</span>
             {sub && <span style={{ display: "block", fontSize: 11, color: C.dim, lineHeight: 1.4, marginTop: 1 }}>{sub}</span>}
           </span>
-          <span style={{ fontFamily: DISPLAY, fontSize: 19, fontWeight: 800, color: k === "base" ? C.chalk : C.sky, whiteSpace: "nowrap" }}>{v}</span>
+          <span style={{ fontFamily: DISPLAY, fontSize: 18, fontWeight: 800, color: k === "base" ? C.chalk : C.sky, whiteSpace: "nowrap" }}>{v}</span>
         </div>
       ))}
       <div data-kc-b="total" style={{ display: "flex", alignItems: "baseline", gap: 10, paddingTop: 8 }}>
@@ -5026,7 +5026,7 @@ function KcalCalendar({ history, kcal, sel, onSel }) {
               style={{ ...btnBase, position: "relative", aspectRatio: "1", minWidth: 0, padding: 0, borderRadius: 10, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 1, background: bg, color: x ? C.ink : fut ? `${C.dim}66` : C.chalk,
                 border: `1.5px solid ${on ? C.chalk : x ? bg : isT ? C.dim : "transparent"}`, boxShadow: on ? `0 0 0 2px ${C.chalk}` : "none", transition: `box-shadow ${MO.t1}, border-color ${MO.t1}`, cursor: fut ? "default" : "pointer" }}>
               <span style={{ fontSize: 13, fontWeight: x || isT ? 800 : 500, lineHeight: 1 }}>{d}</span>
-              {x && <span style={{ fontSize: 9, fontWeight: 800, lineHeight: 1, opacity: 0.8 }}>{x.kind === "hit" ? "✓" : short(x.tot)}</span>}
+              {x && <span style={{ fontSize: 10, fontWeight: 800, lineHeight: 1, opacity: 0.8 }}>{x.kind === "hit" ? "✓" : short(x.tot)}</span>}
             </button>
           );
         })}
@@ -5092,14 +5092,14 @@ function MonthCalendar({ history, ym, setYm, sel, onPick }) {
         {nav(-1, T("prevMonth"))}
         <div style={{ textAlign: "center", minWidth: 0 }}>
           <div data-cal-title style={{ fontFamily: DISPLAY, fontSize: 22, fontWeight: 900, color: C.chalk, lineHeight: 1.1, display: "inline-flex", alignItems: "center", gap: 2 }}>{capFirst(fmtMonthYear(first))}<InfoQ id="histcal" title={T("kcTabCal")} text={<CalLegend />} /></div>
-          <div data-cal-month-sum aria-label={`${TP("workouts", n)}, ${TP("sets", sets)}`} style={{ display: "flex", justifyContent: "center", gap: 12, marginTop: 5, fontSize: 12.5, fontWeight: 700, color: n ? C.chalk : C.dim, fontVariantNumeric: "tabular-nums" }}>
+          <div data-cal-month-sum aria-label={`${TP("workouts", n)}, ${TP("sets", sets)}`} style={{ display: "flex", justifyContent: "center", gap: 12, marginTop: 5, fontSize: 13, fontWeight: 700, color: n ? C.chalk : C.dim, fontVariantNumeric: "tabular-nums" }}>
             {stat("dumbbell", n, C.signal)}{n > 0 && stat("layers", sets, C.sky)}{secs >= 60 && stat("timer", fmtMins(Math.floor(secs / 60)), "#ffa94d")}
           </div>
         </div>
         {nav(1, T("nextMonth"))}
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 5, marginBottom: 5 }}>
-        {weekdaysShort().map(d => <div key={d} style={{ fontSize: 10.5, color: C.dim, textAlign: "center", fontWeight: 700, letterSpacing: ".04em", textTransform: "uppercase" }}>{d}</div>)}
+        {weekdaysShort().map(d => <div key={d} style={{ fontSize: 11, color: C.dim, textAlign: "center", fontWeight: 700, letterSpacing: ".04em", textTransform: "uppercase" }}>{d}</div>)}
       </div>
       <div key={pre} className={dir.current < 0 ? "hsInL" : "hsInR"} style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 5 }}>
         {cells.map((d, i) => {
@@ -5111,7 +5111,7 @@ function MonthCalendar({ history, ym, setYm, sel, onPick }) {
           const kind = kc && kc.hit ? "hit" : kc && kc.logged ? "log" : null;
           const label = [capFirst(fmtDate(k, true)), on ? T("calLegTrain") : null, sk ? T("skip_" + sk.r) : fz ? T("shFreeze") : null, kind ? T(kind === "hit" ? "calKcalHit" : "calKcalLog") : null].filter(Boolean).join(", ");
           const ring = picked ? `0 0 0 2px ${C.ink}, 0 0 0 4px ${C.signal}` : isToday ? `inset 0 0 0 1.5px ${on ? C.ink : C.chalk}` : "none";
-          const st = { ...btnBase, position: "relative", aspectRatio: "1", minWidth: 0, padding: 0, borderRadius: 12, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 1, fontFamily: BODY, fontSize: 13.5, lineHeight: 1, fontVariantNumeric: "tabular-nums", boxShadow: ring, transition: `box-shadow ${MO.t1} ${MO.ease}, transform ${MO.t1} ${MO.ease}`, transform: picked ? "scale(.94)" : "none",
+          const st = { ...btnBase, position: "relative", aspectRatio: "1", minWidth: 0, padding: 0, borderRadius: 12, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 1, fontFamily: BODY, fontSize: 14, lineHeight: 1, fontVariantNumeric: "tabular-nums", boxShadow: ring, transition: `box-shadow ${MO.t1} ${MO.ease}, transform ${MO.t1} ${MO.ease}`, transform: picked ? "scale(.94)" : "none",
             background: on ? C.mint : sk || fz ? `${C.sky}2e` : "transparent", color: on ? C.ink : sk || fz ? C.sky : future ? `${C.dim}77` : C.chalk, fontWeight: on || sk || fz || isToday ? 800 : 500, cursor: future ? "default" : "pointer" };
           const attrs = sk || fz ? { "data-cal-skip": k } : { "data-cal-day": k, "data-cal-train": on ? 1 : 0, "data-cal-kcal": kind || "none" };
           return (
@@ -5164,7 +5164,7 @@ function ProgressChart({ history }) {
     <StatCard data="progress" title={<>{T("progress")}{isW(sel) && <InfoQ id="strength" title={T("wScoreT")} text={T("wScoreD")} />}</>} meta={delta ? <span data-pc-delta style={{ color: delta > 0 ? C.mint : C.dim, fontWeight: 800 }}>{delta > 0 ? "+" : "−"}{dTxt}</span> : null}>
       <div data-progress style={{ display: "flex", gap: 6, overflowX: "auto", margin: "0 -15px 10px", padding: "0 15px 2px", scrollbarWidth: "none" }}>
         {withData.map(id => (
-          <button key={id} data-pc-ex={id} aria-pressed={sel === id} onClick={() => { sfxTap(); setSelId(id); setTip(null); }} style={{ ...btnBase, flexShrink: 0, padding: "7px 12px", fontSize: 12.5, borderRadius: 999, whiteSpace: "nowrap", ...(sel === id ? { background: C.chalk, color: C.ink } : { ...SUNK(), color: C.dim }), transition: `background ${MO.t1}, color ${MO.t1}` }}>{EX[id].name}</button>
+          <button key={id} data-pc-ex={id} aria-pressed={sel === id} onClick={() => { sfxTap(); setSelId(id); setTip(null); }} style={{ ...btnBase, flexShrink: 0, padding: "7px 12px", fontSize: 13, borderRadius: 999, whiteSpace: "nowrap", ...(sel === id ? { background: C.chalk, color: C.ink } : { ...SUNK(), color: C.dim }), transition: `background ${MO.t1}, color ${MO.t1}` }}>{EX[id].name}</button>
         ))}
       </div>
       <div ref={ref} style={{ position: "relative" }}>
@@ -5393,11 +5393,11 @@ function HistoryTab({ history, onDelete, onSaveEntry, editDate, onEditOpened }) 
             <div data-day-empty={sel} className="hsRow" style={{ ...card, ...tileR(), display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", marginTop: 10 }}>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 15, fontWeight: 700, color: C.chalk }}>{capFirst(fmtDate(sel, true))}</div>
-                <div style={{ fontSize: 12.5, color: selSkip || selFz ? C.sky : C.dim, marginTop: 2, display: "flex", alignItems: "center", gap: 5 }}>
+                <div style={{ fontSize: 13, color: selSkip || selFz ? C.sky : C.dim, marginTop: 2, display: "flex", alignItems: "center", gap: 5 }}>
                   {selSkip ? <><Ico n={skipIcon(selSkip.r)} size={13} sw={2.3} />{T("skip_" + selSkip.r)}{selSkip.note ? `: ${selSkip.note}` : ""}</> : selFz ? <><Ico n="ice" size={13} sw={2.3} />{T("shFreeze")}</> : T("hsNoWorkout")}
                 </div>
               </div>
-              <button data-day-add onClick={() => { sfxTap(); setNewDate(sel); setEditing("new"); }} style={{ ...btnBase, padding: "9px 14px", fontSize: 13.5, background: `${C.sky}22`, color: C.sky, display: "inline-flex", alignItems: "center", gap: 6, flexShrink: 0 }}><Ico n="plus" size={15} sw={2.6} />{T("hsAdd")}</button>
+              <button data-day-add onClick={() => { sfxTap(); setNewDate(sel); setEditing("new"); }} style={{ ...btnBase, padding: "9px 14px", fontSize: 14, background: `${C.sky}22`, color: C.sky, display: "inline-flex", alignItems: "center", gap: 6, flexShrink: 0 }}><Ico n="plus" size={15} sw={2.6} />{T("hsAdd")}</button>
             </div>
           )}
           <ListSect title={T("workoutsTitle")} meta={addBtn} data-workouts style={{ marginTop: 10 }}>
@@ -5410,12 +5410,12 @@ function HistoryTab({ history, onDelete, onSaveEntry, editDate, onEditOpened }) 
                   <button data-workout-head onClick={() => { sfxTap(); setOpen(isOpen ? null : idx); }} aria-expanded={isOpen}
                     style={{ ...btnBase, width: "100%", background: "transparent", color: C.chalk, padding: 0, textAlign: "left", display: "flex", alignItems: "center", gap: 11, borderRadius: 0 }}>
                     <div aria-hidden="true" style={{ width: 44, height: 46, borderRadius: 12, background: s.date === today ? C.mint : SOFT(), color: s.date === today ? C.ink : C.chalk, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2, flexShrink: 0 }}>
-                      <span style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: ".06em", textTransform: "uppercase", opacity: 0.72, lineHeight: 1 }}>{wds[(d.getDay() + 6) % 7]}</span>
-                      <span style={{ fontFamily: DISPLAY, fontSize: 21, fontWeight: 900, lineHeight: 0.95 }}>{d.getDate()}</span>
+                      <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: ".06em", textTransform: "uppercase", opacity: 0.72, lineHeight: 1 }}>{wds[(d.getDay() + 6) % 7]}</span>
+                      <span style={{ fontFamily: DISPLAY, fontSize: 20, fontWeight: 900, lineHeight: 0.95 }}>{d.getDate()}</span>
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div {...(s.day ? {} : { "data-hist-plan": true })} data-hist-title aria-label={entryTitle(s, true)} style={{ fontSize: 15, fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{entryTitle(s)}</div>
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: "2px 11px", marginTop: 3, fontSize: 12.5, fontWeight: 600, color: C.dim, fontVariantNumeric: "tabular-nums" }}>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: "2px 11px", marginTop: 3, fontSize: 13, fontWeight: 600, color: C.dim, fontVariantNumeric: "tabular-nums" }}>
                         {mins > 0 && meta("timer", fmtMins(mins), "#ffa94d")}
                         {meta("layers", setsIn(s), C.sky, { "aria-label": TP("sets", setsIn(s)) })}
                         {nPr > 0 && meta("trophy", nPr, C.signal, { "aria-label": `${T("tilePRs")}: ${nPr}` })}
@@ -5445,12 +5445,12 @@ function HistoryTab({ history, onDelete, onSaveEntry, editDate, onEditOpened }) 
                                 {!isW(it.id) && unitStr(it.unit) && <span style={{ fontSize: 11, color: C.dim, fontWeight: 700 }}>{unitStr(it.unit)}</span>}
                               </div>
                             </div>
-                            {(it.note || (it.rn || []).some(Boolean)) && <div data-hist-note style={{ fontSize: 12.5, color: C.dim, marginTop: 5, lineHeight: 1.4, whiteSpace: "pre-wrap" }}>{it.note ? <div><Ico n="pencil" size={12} style={{ verticalAlign: "-1px", marginRight: 4 }} />{it.note}</div> : null}{(it.rn || []).map((t, k) => (t ? <div key={k}><Ico n="timer" size={12} style={{ verticalAlign: "-1px", marginRight: 4 }} />{t}</div> : null))}</div>}
+                            {(it.note || (it.rn || []).some(Boolean)) && <div data-hist-note style={{ fontSize: 13, color: C.dim, marginTop: 5, lineHeight: 1.4, whiteSpace: "pre-wrap" }}>{it.note ? <div><Ico n="pencil" size={12} style={{ verticalAlign: "-1px", marginRight: 4 }} />{it.note}</div> : null}{(it.rn || []).map((t, k) => (t ? <div key={k}><Ico n="timer" size={12} style={{ verticalAlign: "-1px", marginRight: 4 }} />{t}</div> : null))}</div>}
                           </div>
                         );
                       })}
                       <div style={{ display: "flex", gap: 8, marginTop: 4, paddingTop: 10, borderTop: `1px solid ${C.line}` }}>
-                        <button data-hist-edit onClick={() => { sfxTap(); setConfirmDel(null); setEditing(idx); }} style={{ ...btnBase, flex: 1, background: `${C.sky}1f`, color: C.sky, fontSize: 13.5, padding: "9px 12px", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7 }}><Ico n="pencil" size={15} />{noEmo(T("editWorkout"))}</button>
+                        <button data-hist-edit onClick={() => { sfxTap(); setConfirmDel(null); setEditing(idx); }} style={{ ...btnBase, flex: 1, background: `${C.sky}1f`, color: C.sky, fontSize: 14, padding: "9px 12px", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7 }}><Ico n="pencil" size={15} />{noEmo(T("editWorkout"))}</button>
                         <button data-hist-delete onClick={() => { sfxTap(); setConfirmDel(idx); }} aria-label={T("deleteWorkout")} title={T("deleteWorkout")}
                           style={{ ...btnBase, width: 44, padding: 0, ...SUNK(), color: C.dim, display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Ico n="trash" size={16} /></button>
                       </div>
@@ -5561,7 +5561,7 @@ const rankUnit = id => (EX[id].type === "time" ? " s" : "");
 function SlotTile({ sl, m, i, onTap, own, cols = 2 }) {
   const wide = sl && sl.kind.endsWith("3");
   const base = { ...btnBase, fontWeight: 400, textAlign: "left", color: C.chalk, borderRadius: 16, padding: "12px 13px", minHeight: 76, position: "relative", overflow: "hidden", gridColumn: wide && cols > 1 ? "span 2" : undefined, overflowWrap: "break-word", animationDelay: `${120 + i * 60}ms`, display: "flex", flexDirection: "column" };
-  if (!sl) return <div className="cardIn" style={{ ...base, background: SOFT(), border: `1px dashed ${C.line}`, justifyContent: "center", alignItems: "center", color: C.dim, fontSize: 12.5 }}>{T("pfSlotEmpty")}</div>;
+  if (!sl) return <div className="cardIn" style={{ ...base, background: SOFT(), border: `1px dashed ${C.line}`, justifyContent: "center", alignItems: "center", color: C.dim, fontSize: 13 }}>{T("pfSlotEmpty")}</div>;
   const glow = col => ({ background: `radial-gradient(120% 90% at 100% 0%, ${col}33, transparent 60%), ${SOFT()}`, border: `1px solid ${col}40` });
   const pen = own && <span aria-hidden="true" style={{ position: "absolute", right: 9, top: 8, opacity: 0.55, color: C.dim }}><Ico n="pencil" size={13} /></span>;
   const mini = (icon, name, sub, col, k) => (
@@ -5577,16 +5577,16 @@ function SlotTile({ sl, m, i, onTap, own, cols = 2 }) {
     rar = Math.max(...sl.ids.map(id => rankIdx(id, m.rk[id])));
     style = glow(items[0].r.color);
     body = sl.kind === "rk" ? (() => { const { id, r } = items[0]; return (<>
-      <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: 0.8, textTransform: "uppercase", color: C.dim }}>{T("pfT_rk")}</div>
+      <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.8, textTransform: "uppercase", color: C.dim }}>{T("pfT_rk")}</div>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 8 }}>
         <RankIcon r={RANKS.indexOf(r)} size={44} />
         <span style={{ minWidth: 0 }}>
           <span style={{ display: "block", fontSize: 16, fontWeight: 800, lineHeight: 1.2 }}>{EX[id].name}</span>
-          <span style={{ display: "block", fontSize: 12.5, fontWeight: 800, color: r.color, marginTop: 3 }}>{r.name} · {m.rk[id]}{rankUnit(id)}</span>
+          <span style={{ display: "block", fontSize: 13, fontWeight: 800, color: r.color, marginTop: 3 }}>{r.name} · {m.rk[id]}{rankUnit(id)}</span>
         </span>
       </div>
     </>); })() : (<>
-      <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: 0.8, textTransform: "uppercase", color: C.dim }}>{T("pfT_rk3")}</div>
+      <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.8, textTransform: "uppercase", color: C.dim }}>{T("pfT_rk3")}</div>
       <div style={{ display: "flex", gap: 8, marginTop: 10 }}>{items.map(({ id, r }) => mini(RANKS.indexOf(r), EX[id].name, `${r.name} · ${m.rk[id]}${rankUnit(id)}`, r.color, id))}</div>
     </>);
   } else if (sl.kind === "ach" || sl.kind === "ach3") {
@@ -5594,7 +5594,7 @@ function SlotTile({ sl, m, i, onTap, own, cols = 2 }) {
     rar = Math.max(...items.map(a => a.tier - 1));
     style = glow(RANKS[items[0].tier - 1].color);
     body = sl.kind === "ach" ? (() => { const a = items[0], r = RANKS[a.tier - 1]; return (<>
-      <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: 0.8, textTransform: "uppercase", color: C.dim }}>{T("pfT_ach")}</div>
+      <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.8, textTransform: "uppercase", color: C.dim }}>{T("pfT_ach")}</div>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 8 }}>
         <BadgeIco n={a.icon} col={r.color} size={46} />
         <span style={{ minWidth: 0 }}>
@@ -5603,7 +5603,7 @@ function SlotTile({ sl, m, i, onTap, own, cols = 2 }) {
         </span>
       </div>
     </>); })() : (<>
-      <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: 0.8, textTransform: "uppercase", color: C.dim }}>{T("pfT_ach3")}</div>
+      <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.8, textTransform: "uppercase", color: C.dim }}>{T("pfT_ach3")}</div>
       <div style={{ display: "flex", gap: 8, marginTop: 10 }}>{items.map(a => { const r = RANKS[a.tier - 1]; return mini(a.icon, a.name, <RankTag r={a.tier - 1} size={13} fs={11} />, r.color, a.k); })}</div>
     </>);
   } else {
@@ -5611,7 +5611,7 @@ function SlotTile({ sl, m, i, onTap, own, cols = 2 }) {
     style = glow(k === "best" ? "#ffa94d" : k === "xp" ? C.sky : C.signal);
     body = (<>
       <div style={{ display: "flex", justifyContent: "space-between", gap: 6 }}>
-        <span style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: 0.8, textTransform: "uppercase", color: C.dim }}>{T(lab)}</span>
+        <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.8, textTransform: "uppercase", color: C.dim }}>{T(lab)}</span>
         <span style={{ marginRight: own ? 14 : 0 }}><Ico n={icon} size={18} color={STAT_COL()[k]} /></span>
       </div>
       <div style={{ fontFamily: DISPLAY, fontSize: k === "since" ? 22 : 34, fontWeight: 900, lineHeight: 1, marginTop: "auto", paddingTop: 10, fontVariantNumeric: "tabular-nums" }}>{fmtStat(m, k)}</div>
@@ -5668,7 +5668,7 @@ function BadgesList({ m, focus, claim }) {
   return (
     <div data-pf-badges>
       {openA && <BadgeSheet a={openA} onClose={() => setOpen(null)} />}
-      <div style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.5, margin: "0 2px 10px" }}>{T("achCount", { n: won, max: all.length })} · {T("achTiers", { n: ach.reduce((x, a) => x + (hid(a) ? 0 : a.step), 0), max: all.reduce((x, a) => x + a.at.length, 0) })}</div>
+      <div style={{ fontSize: 13, color: C.dim, lineHeight: 1.5, margin: "0 2px 10px" }}>{T("achCount", { n: won, max: all.length })} · {T("achTiers", { n: ach.reduce((x, a) => x + (hid(a) ? 0 : a.step), 0), max: all.reduce((x, a) => x + a.at.length, 0) })}</div>
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {list.map((a, k) => {
           if (hid(a)) return <ClaimRow key={a.k} it={claim.items.get("ach:" + a.k)} onOpen={claim.open} />;
@@ -5684,14 +5684,14 @@ function BadgesList({ m, focus, claim }) {
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <BadgeIco n={a.icon} col={r ? RANKS[a.tier - 1].color : null} size={38} well />
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 14, fontWeight: 800, color: C.chalk, lineHeight: 1.2 }}>{a.name}{m.own && CARD_HIDE.includes(a.k) && <span data-only-you style={{ fontSize: 10.5, fontWeight: 700, color: C.dim, marginLeft: 6, whiteSpace: "nowrap" }}>· {T("pfOnlyYou")}</span>}</div>
+                  <div style={{ fontSize: 14, fontWeight: 800, color: C.chalk, lineHeight: 1.2 }}>{a.name}{m.own && CARD_HIDE.includes(a.k) && <span data-only-you style={{ fontSize: 11, fontWeight: 700, color: C.dim, marginLeft: 6, whiteSpace: "nowrap" }}>· {T("pfOnlyYou")}</span>}</div>
                   <div style={{ marginTop: 3 }}>{label}</div>
                 </div>
                 {!a.single && (
                   <div data-ach-num style={{ textAlign: "right", flexShrink: 0 }}>
                     <div style={{ fontFamily: DISPLAY, fontSize: 18, fontWeight: 900, color: C.chalk, lineHeight: 1, whiteSpace: "nowrap" }}>{a.next === null ? "✓" : `${val(a, a.v)} / ${val(a, a.next)}`}</div>
                     {a.next !== null && (inTier(a) >= 0.8
-                      ? <div data-near className="nearPulse" style={{ fontSize: 11.5, fontWeight: 900, color: nr.color, marginTop: 3, whiteSpace: "nowrap" }}>{T("achLeft", { n: val(a, a.next - a.v) })}!</div>
+                      ? <div data-near className="nearPulse" style={{ fontSize: 12, fontWeight: 900, color: nr.color, marginTop: 3, whiteSpace: "nowrap" }}>{T("achLeft", { n: val(a, a.next - a.v) })}!</div>
                       : <div style={{ fontSize: 11, color: C.dim, marginTop: 3, whiteSpace: "nowrap" }}>{T("achLeft", { n: val(a, a.next - a.v) })}</div>)}
                   </div>
                 )}
@@ -5705,7 +5705,7 @@ function BadgesList({ m, focus, claim }) {
         {secretLeft > 0 && (
           <div data-secret-left={secretLeft} style={{ ...card, ...tileR(), padding: "12px", display: "flex", alignItems: "center", gap: 10, borderStyle: "dashed", background: "transparent" }}>
             <IcoBox n="help" color={C.dim} size={34} />
-            <div style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.45 }}>{TP("secretLeft", secretLeft)}</div>
+            <div style={{ fontSize: 13, color: C.dim, lineHeight: 1.45 }}>{TP("secretLeft", secretLeft)}</div>
           </div>
         )}
       </div>
@@ -5745,12 +5745,12 @@ function BadgeSheet({ a, onClose }) {
                 <div key={i} data-badge-level={i} data-done={done ? 1 : 0} style={{ display: "flex", alignItems: "center", gap: 11, padding: "9px 11px", borderRadius: 14, background: now ? `${rk.color}18` : SOFT(), border: `1.5px solid ${now ? rk.color + "88" : done ? rk.color + "44" : "transparent"}`, opacity: done || now ? 1 : 0.55 }}>
                   <RankIcon r={ri} size={30} style={{ filter: done || now ? "none" : "grayscale(.8)" }} />
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 13.5, fontWeight: 900, color: rk.color }}>{rk.name}</div>
-                    <div style={{ fontSize: 12.5, color: C.chalk, lineHeight: 1.35, marginTop: 1 }}>{achLevelText(a, goal)}</div>
+                    <div style={{ fontSize: 14, fontWeight: 900, color: rk.color }}>{rk.name}</div>
+                    <div style={{ fontSize: 13, color: C.chalk, lineHeight: 1.35, marginTop: 1 }}>{achLevelText(a, goal)}</div>
                     {now && <div style={{ height: 5, borderRadius: 3, background: C.line, marginTop: 6, overflow: "hidden" }}><div style={{ width: `${Math.round(p * 100)}%`, height: "100%", background: rk.color }} /></div>}
                   </div>
                   {done ? <span style={{ color: C.mint, flexShrink: 0 }}><Ico n="check" size={18} sw={2.8} /></span>
-                    : now ? <span style={{ fontSize: 11.5, fontWeight: 800, color: rk.color, flexShrink: 0, whiteSpace: "nowrap" }}>{T("achLeft", { n: val(goal - a.v) })}</span> : null}
+                    : now ? <span style={{ fontSize: 12, fontWeight: 800, color: rk.color, flexShrink: 0, whiteSpace: "nowrap" }}>{T("achLeft", { n: val(goal - a.v) })}</span> : null}
                 </div>
               );
             })}
@@ -5770,10 +5770,10 @@ function RankSheet({ id, best, onClose, onHowTo }) {
       <div data-rank-sheet={id}>
         <SheetHero col={rk.color} icon={<RankIcon r={ri} size={80} />}>
           <div style={{ fontFamily: DISPLAY, fontSize: 30, fontWeight: 900, color: rk.color, marginTop: 10, lineHeight: 1, letterSpacing: 0.5 }}>{rk.name}</div>
-          <div style={{ fontSize: 13.5, color: C.dim, marginTop: 6 }}>{best != null ? T("bestSet", { v: rankVal(id, best) }) : T("bestSetNone")}</div>
+          <div style={{ fontSize: 14, color: C.dim, marginTop: 6 }}>{best != null ? T("bestSet", { v: rankVal(id, best) }) : T("bestSetNone")}</div>
           {next !== null && <div style={{ width: "min(260px, 80%)", marginTop: 10 }}>
             <div style={{ height: 6, borderRadius: 3, background: C.line, overflow: "hidden" }}><div style={{ width: `${Math.round(p * 100)}%`, height: "100%", background: `linear-gradient(90deg, ${rk.color}, ${RANKS[ri + 1].color})` }} /></div>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11.5, fontWeight: 800, marginTop: 5 }}><span style={{ color: C.dim }}>{T("achLeft", { n: `${next - (best || 0)}${rankUnit(id)}` })}</span><RankTag r={ri + 1} size={13} fs={11.5} /></div>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, fontWeight: 800, marginTop: 5 }}><span style={{ color: C.dim }}>{T("achLeft", { n: `${next - (best || 0)}${rankUnit(id)}` })}</span><RankTag r={ri + 1} size={13} fs={11.5} /></div>
           </div>}
           {next === null && <div style={{ fontSize: 13, color: rk.color, fontWeight: 800, marginTop: 6 }}>{T("topRank")}</div>}
         </SheetHero>
@@ -5783,7 +5783,7 @@ function RankSheet({ id, best, onClose, onHowTo }) {
             return (
               <div key={i} data-rank-level={i} data-done={done ? 1 : 0} style={{ display: "flex", alignItems: "center", gap: 11, padding: "8px 11px", borderRadius: 14, background: i === ri ? `${r.color}1c` : SOFT(), border: `1.5px solid ${i === ri ? r.color + "99" : now ? r.color + "55" : "transparent"}`, opacity: done || now ? 1 : 0.55 }}>
                 <RankIcon r={i} size={28} style={{ filter: done || now ? "none" : "grayscale(.8)" }} />
-                <span style={{ flex: 1, minWidth: 0, fontSize: 13.5, fontWeight: 900, color: r.color }}>{r.name}{i === R_OBSIDIAN && <span style={{ fontSize: 11, fontWeight: 800, color: C.dim, marginLeft: 6 }}>{T("rankChallenge")}</span>}</span>
+                <span style={{ flex: 1, minWidth: 0, fontSize: 14, fontWeight: 900, color: r.color }}>{r.name}{i === R_OBSIDIAN && <span style={{ fontSize: 11, fontWeight: 800, color: C.dim, marginLeft: 6 }}>{T("rankChallenge")}</span>}</span>
                 <span style={{ fontFamily: DISPLAY, fontSize: 16, fontWeight: 900, color: C.chalk, whiteSpace: "nowrap" }}>{i === 0 ? T("rankStart") : `${rankVal(id, at[i - 1])}+`}</span>
                 {done && <span style={{ color: C.mint, flexShrink: 0, display: "flex" }}><Ico n="check" size={16} sw={2.8} /></span>}
               </div>
@@ -5807,7 +5807,7 @@ function RanksList({ m, onPick, focus, claim }) {
   return (
     <div data-pf-ranks>
       {open && <RankSheet id={open} best={m.rk[open]} onClose={() => setOpen(null)} onHowTo={onPick ? id => { setOpen(null); onPick(id); } : null} />}
-      <div style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.5, margin: "0 2px 10px" }}>{T("achTiers", { n: lv, max: RANKED_IDS.filter(id => rankAt(id)).length * RANKS.length })}</div>
+      <div style={{ fontSize: 13, color: C.dim, lineHeight: 1.5, margin: "0 2px 10px" }}>{T("achTiers", { n: lv, max: RANKED_IDS.filter(id => rankAt(id)).length * RANKS.length })}</div>
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {ids.map((id, k) => {
           if (hid(id)) return <ClaimRow key={id} it={claim.items.get("rank:" + id)} onOpen={claim.open} />;
@@ -5827,7 +5827,7 @@ function RanksList({ m, onPick, focus, claim }) {
                 <div style={{ textAlign: "right", flexShrink: 0 }}>
                   <div style={{ fontFamily: DISPLAY, fontSize: 18, fontWeight: 900, lineHeight: 1, whiteSpace: "nowrap" }}>{next === null ? `${rankVal(id, b)} ✓` : `${b || 0} / ${rankVal(id, next)}`}</div>
                   {next !== null && (inR >= 0.8
-                    ? <div data-near className="nearPulse" style={{ fontSize: 11.5, fontWeight: 900, color: RANKS[ri + 1].color, marginTop: 3, whiteSpace: "nowrap" }}>{T("achLeft", { n: `${next - (b || 0)}${rankUnit(id)}` })}!</div>
+                    ? <div data-near className="nearPulse" style={{ fontSize: 12, fontWeight: 900, color: RANKS[ri + 1].color, marginTop: 3, whiteSpace: "nowrap" }}>{T("achLeft", { n: `${next - (b || 0)}${rankUnit(id)}` })}!</div>
                     : <div style={{ fontSize: 11, color: C.dim, marginTop: 3, whiteSpace: "nowrap" }}>{T("achLeft", { n: `${next - (b || 0)}${rankUnit(id)}` })}</div>)}
                 </div>
               </div>
@@ -5838,7 +5838,7 @@ function RanksList({ m, onPick, focus, claim }) {
         {m.own && left > 0 && (
           <div data-ranks-left={left} style={{ ...card, ...tileR(), padding: "12px", display: "flex", alignItems: "center", gap: 10, borderStyle: "dashed", background: "transparent" }}>
             <IcoBox n="help" color={C.dim} size={34} />
-            <div style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.45 }}>{TP("ranksLeft", left)}</div>
+            <div style={{ fontSize: 13, color: C.dim, lineHeight: 1.45 }}>{TP("ranksLeft", left)}</div>
           </div>
         )}
         {!ids.length && !m.own && <div style={{ fontSize: 13, color: C.dim }}>{T("pfNoResult")}</div>}
@@ -5874,7 +5874,7 @@ function StatCard({ title, meta, children, data }) {
   return (
     <div data-st-card={data} style={{ ...card, ...tileR(), borderRadius: 20, padding: "15px 15px 13px", marginBottom: 10, minWidth: 0 }}>
       <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 10, marginBottom: 12 }}>
-        <span style={{ fontSize: 11.5, fontWeight: 800, letterSpacing: ".08em", textTransform: "uppercase", color: C.dim }}>{title}</span>
+        <span style={{ fontSize: 12, fontWeight: 800, letterSpacing: ".08em", textTransform: "uppercase", color: C.dim }}>{title}</span>
         {meta && <span style={{ fontSize: 12, color: C.dim, fontWeight: 600, textAlign: "right" }}>{meta}</span>}
       </div>
       {children}
@@ -5896,7 +5896,7 @@ function StHeat({ days, today }) {
   return (
     <StatCard data="heat" title={T("stActivity")} meta={TP("stInWeeks", n, { w: ST_WEEKS })}>
       <div style={{ display: "flex", gap: 6 }}>
-        <div aria-hidden="true" style={{ display: "grid", gridTemplateRows: "repeat(7, 1fr)", gap: 3, fontSize: 9, fontWeight: 700, color: C.dim, lineHeight: 1 }}>
+        <div aria-hidden="true" style={{ display: "grid", gridTemplateRows: "repeat(7, 1fr)", gap: 3, fontSize: 10, fontWeight: 700, color: C.dim, lineHeight: 1 }}>
           {wd.map((w, i) => <span key={i} style={{ display: "flex", alignItems: "center", opacity: i % 2 ? 0 : 1 }}>{w.slice(0, 2)}</span>)}
         </div>
         <div data-st-heat style={{ flex: 1, display: "grid", gridTemplateColumns: `repeat(${ST_WEEKS}, 1fr)`, gap: 3 }}>
@@ -5910,7 +5910,7 @@ function StHeat({ days, today }) {
         </div>
       </div>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginTop: 10, minHeight: 18 }}>
-        <span data-st-heat-sel style={{ fontSize: 12.5, color: s ? C.chalk : C.dim, fontWeight: s ? 700 : 500, minWidth: 0 }}>
+        <span data-st-heat-sel style={{ fontSize: 13, color: s ? C.chalk : C.dim, fontWeight: s ? 700 : 500, minWidth: 0 }}>
           {sel ? `${capFirst(fmtDate(sel))} · ${s ? `${TP("stRepsN", s.reps)}${s.min ? " · " + fmtMins(s.min) : ""}` : T("stRest")}` : T("stTapDay")}
         </span>
         <span aria-hidden="true" style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 10, color: C.dim, flexShrink: 0 }}>
@@ -5968,12 +5968,12 @@ function StRhythm({ history }) {
     <StatCard data="rhythm" title={T("stRhythm")} meta={c[top] ? capFirst(wd[top]) : null}>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 8, alignItems: "end", height: 86 }}>
         {c.map((v, i) => <div key={i} data-st-wd={i} data-n={v} title={`${wd[i]}: ${v}`} style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", gap: 5, height: "100%" }}>
-          <span style={{ fontSize: 10.5, fontWeight: 800, color: v ? C.chalk : C.dim, fontVariantNumeric: "tabular-nums" }}>{v || ""}</span>
+          <span style={{ fontSize: 11, fontWeight: 800, color: v ? C.chalk : C.dim, fontVariantNumeric: "tabular-nums" }}>{v || ""}</span>
           <span className="stGrow" style={{ width: "100%", maxWidth: 22, height: `${Math.max(4, (v / max) * 52)}px`, borderRadius: "6px 6px 3px 3px", background: i === top && v ? C.signal : v ? `${C.chalk}30` : `${C.chalk}12`, animationDelay: `${i * 40}ms` }} />
         </div>)}
       </div>
       <div aria-hidden="true" style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 8, marginTop: 6 }}>
-        {wd.map((w, i) => <span key={i} style={{ textAlign: "center", fontSize: 10.5, fontWeight: 700, color: i === top && c[i] ? C.chalk : C.dim }}>{w.slice(0, 2)}</span>)}
+        {wd.map((w, i) => <span key={i} style={{ textAlign: "center", fontSize: 11, fontWeight: 700, color: i === top && c[i] ? C.chalk : C.dim }}>{w.slice(0, 2)}</span>)}
       </div>
     </StatCard>
   );
@@ -5986,8 +5986,8 @@ function StKcal({ history, onKcal }) {
     <StatCard data="kcal" title={T("stKcal")}>
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
         <span aria-hidden="true" style={{ width: 44, height: 44, borderRadius: 14, background: `${KC_HIT}22`, color: KC_HIT, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Ico n="plate" size={22} /></span>
-        <span style={{ flex: 1, fontSize: 13.5, color: C.dim, lineHeight: 1.45 }}>{T("stKcalSetup")}</span>
-        {onKcal && <button type="button" data-st-kcal-go onClick={() => { sfxTap(); onKcal(); }} style={{ ...btnBase, background: C.signal, color: C.signalInk, padding: "9px 13px", fontSize: 13.5, borderRadius: 12, flexShrink: 0 }}>{T("stKcalGo")}</button>}
+        <span style={{ flex: 1, fontSize: 14, color: C.dim, lineHeight: 1.45 }}>{T("stKcalSetup")}</span>
+        {onKcal && <button type="button" data-st-kcal-go onClick={() => { sfxTap(); onKcal(); }} style={{ ...btnBase, background: C.signal, color: C.signalInk, padding: "9px 13px", fontSize: 14, borderRadius: 12, flexShrink: 0 }}>{T("stKcalGo")}</button>}
       </div>
     </StatCard>
   );
@@ -6008,12 +6008,12 @@ function StKcal({ history, onKcal }) {
           </svg>
           <span style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", lineHeight: 1 }}>
             <span style={{ fontFamily: DISPLAY, fontSize: 26, fontWeight: 900, color: C.chalk }}><CountUp n={hits} /></span>
-            <span style={{ fontSize: 9.5, fontWeight: 800, color: C.dim, marginTop: 3 }}>/ 30</span>
+            <span style={{ fontSize: 10, fontWeight: 800, color: C.dim, marginTop: 3 }}>/ 30</span>
           </span>
         </div>
         <div style={{ flex: 1, minWidth: 0, display: "grid", gap: 7 }}>
           {[["stKcalHit", hits ? <span style={{ color: KC_HIT }}>{TP("stDaysN", hits)}</span> : TP("stDaysN", 0)], ["stKcalLogged", TP("stDaysN", logged.length)], ["stKcalAvg", avg ? `${nf(avg)} kcal` : "–"], ["stKcalStreak", TP("stDaysN", streak)]].map(([k, v]) => (
-            <div key={k} data-st-kcal={k} style={{ display: "flex", justifyContent: "space-between", gap: 8, fontSize: 12.5 }}>
+            <div key={k} data-st-kcal={k} style={{ display: "flex", justifyContent: "space-between", gap: 8, fontSize: 13 }}>
               <span style={{ color: C.dim, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{T(k)}</span>
               <span style={{ fontWeight: 800, color: C.chalk, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>{v}</span>
             </div>))}
@@ -6031,7 +6031,7 @@ function StKcal({ history, onKcal }) {
         <span data-st-kcal-sel style={{ color: cur ? C.chalk : C.dim, fontWeight: cur ? 700 : 500, minWidth: 0 }}>
           {cur ? `${capFirst(fmtDate(cur.k))} · ${cur.s && cur.s.eaten ? `${nf(cur.s.eaten)} / ${nf(cur.s.target)} kcal` : T("stKcalNone")}` : T("stLast14")}
         </span>
-        <span aria-hidden="true" style={{ display: "flex", alignItems: "center", gap: 5, color: C.dim, fontSize: 10.5, flexShrink: 0 }}><span style={{ width: 12, borderTop: `1.5px dashed ${C.chalk}77` }} />{T("stTarget")}</span>
+        <span aria-hidden="true" style={{ display: "flex", alignItems: "center", gap: 5, color: C.dim, fontSize: 11, flexShrink: 0 }}><span style={{ width: 12, borderTop: `1.5px dashed ${C.chalk}77` }} />{T("stTarget")}</span>
       </div>
     </StatCard>
   );
@@ -6095,9 +6095,9 @@ function HeroBadges({ list, onAll, still }) {
             style={{ ...btnBase, fontWeight: 400, position: "fixed", zIndex: 89, width: 214, left: Math.max(10, Math.min(window.innerWidth - 224, pop.x - 107)), ...(pop.up ? { bottom: window.innerHeight - pop.y + 10 } : { top: pop.b + 10 }), padding: "14px 14px 12px", borderRadius: 18, background: C.panel, border: `1px solid ${C.line}`, boxShadow: "0 14px 40px rgba(0,0,0,.55)", color: C.chalk, display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", fontFamily: BODY }}>
             <BadgeIco n={P.icon} col={col(P)} size={58} well />
             <span style={{ fontSize: 12, color: C.dim, fontWeight: 700, marginTop: 9 }}>{P.name}</span>
-            <span style={{ fontFamily: DISPLAY, fontSize: 21, fontWeight: 900, letterSpacing: ".04em", textTransform: "uppercase", color: col(P), lineHeight: 1.1, marginTop: 2 }}>{P.single ? rarityName(P) : RANKS[P.tier - 1].name}</span>
+            <span style={{ fontFamily: DISPLAY, fontSize: 20, fontWeight: 900, letterSpacing: ".04em", textTransform: "uppercase", color: col(P), lineHeight: 1.1, marginTop: 2 }}>{P.single ? rarityName(P) : RANKS[P.tier - 1].name}</span>
             <span style={{ fontSize: 12, color: C.dim, lineHeight: 1.4, marginTop: 4 }}>{P.single ? P.desc : achLevelText(P, P.v)}</span>
-            <span style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 11.5, fontWeight: 800, color: C.signal, marginTop: 8 }}>{T("heroBadgeMore")}<Arrow size={14} /></span>
+            <span style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 12, fontWeight: 800, color: C.signal, marginTop: 8 }}>{T("heroBadgeMore")}<Arrow size={14} /></span>
           </button>
         </>, document.body)}
       {sheet && <BadgeSheet a={sheet} onClose={() => setSheet(null)} />}
@@ -6122,9 +6122,9 @@ function ProfileHero({ m, own, onPhoto, onEditProfile, onLooks, onStreak, extra,
             <div style={{ flex: 1, minWidth: 0 }}>
               <div data-pf-name data-name-fx={lk.name || ""} style={{ fontFamily: DISPLAY, fontSize: 30, fontWeight: 900, lineHeight: 1, color: C.chalk, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" , ...INK, ...nameFx(lk.name), ...(lk.name ? FX_ROOM : {}) }}>{m.nick}</div>
               {lk.title && <div style={{ marginTop: 6 }}><LookTitle id={lk.title} /></div>}
-              {own && bdayToday() ? <div style={{ fontSize: 12.5, color: C.signal, fontWeight: 800, marginTop: 4 }}>{emo(T("bdayHero"))}</div>
+              {own && bdayToday() ? <div style={{ fontSize: 13, color: C.signal, fontWeight: 800, marginTop: 4 }}>{emo(T("bdayHero"))}</div>
                 : badges && badges.length ? <HeroBadges list={badges} onAll={onAllBadges} still={preview} />
-                : !m.since ? <div style={{ fontSize: 12.5, color: C.dim, marginTop: 4 }}>{T("newMember")}</div> : null /* 1.9.0 (Michael, Nov 7): no "Training since" line any more, the badges say it */}
+                : !m.since ? <div style={{ fontSize: 13, color: C.dim, marginTop: 4 }}>{T("newMember")}</div> : null /* 1.9.0 (Michael, Nov 7): no "Training since" line any more, the badges say it */}
             </div>
             {own && !preview && <span style={{ alignSelf: "flex-start", display: "flex", flexDirection: "column", gap: 6, flexShrink: 0 }}>
               <button type="button" data-pf-edit onClick={() => { sfxTap(); onEditProfile(); }} aria-label={T("pfEdit")} style={{ ...btnBase, background: SOFT(), color: C.chalk, width: 38, height: 38, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center" }}><Ico n="pencil" size={18} /></button>
@@ -6165,7 +6165,7 @@ function LastWorkLine({ lw }) {
   return (
     <div style={{ position: "relative", marginTop: 10 }}>
       <button type="button" data-pf-last data-sets={lw.s} data-reps={lw.r} data-min={lw.m || 0} data-hand={lw.h || 0} aria-expanded={open} aria-label={full} onClick={() => { sfxTap(); setOpen(o => !o); }}
-        style={{ ...btnBase, width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "7px 10px", borderRadius: 12, background: "transparent", border: `1px solid ${C.line}`, color: C.chalk, fontSize: 12.5, fontWeight: 700, textAlign: "left", minWidth: 0 }}>
+        style={{ ...btnBase, width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "7px 10px", borderRadius: 12, background: "transparent", border: `1px solid ${C.line}`, color: C.chalk, fontSize: 13, fontWeight: 700, textAlign: "left", minWidth: 0 }}>
         <Ico n="dumbbell" size={16} color={C.signal} />
         <span style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", flex: 1, minWidth: 0 }}>
           <span data-lw="day">{day}</span>
@@ -6229,7 +6229,7 @@ function BodyRanks({ m, onPick }) {
               {r === null ? <span style={{ fontSize: 13, color: C.dim, fontWeight: 800, paddingRight: 3 }}>–</span> : <RankIcon r={r} size={20} />}
             </span>
             <span style={{ fontSize: 12, fontWeight: 800, lineHeight: 1.15, color: r === null ? C.dim : C.chalk, width: "100%", overflowWrap: "anywhere", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{T("fam_" + k)}</span>
-            <span style={{ fontSize: 10.5, fontWeight: 800, color: c || C.dim, opacity: c ? 1 : 0.7 }}>{r === null ? T("bodyNoneShort") : RANKS[r].name}</span>
+            <span style={{ fontSize: 11, fontWeight: 800, color: c || C.dim, opacity: c ? 1 : 0.7 }}>{r === null ? T("bodyNoneShort") : RANKS[r].name}</span>
           </button>
         ); })}
       </div>
@@ -6239,7 +6239,7 @@ function BodyRanks({ m, onPick }) {
             <BodyIco spec={BD.FAMILY_ICON[open]} size={64} hi={f.r === null ? C.dim : RANKS[f.r].color} />
             <div style={{ flex: 1, minWidth: 0 }}>
               {f.r === null ? <div style={{ fontSize: 14, color: C.dim, lineHeight: 1.5 }}>{T("bodyNone")}</div>
-                : <><RankTag r={f.r} size={20} fs={17} /><div style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.45, marginTop: 6 }}>{T("bodyHow")}</div></>}
+                : <><RankTag r={f.r} size={20} fs={17} /><div style={{ fontSize: 13, color: C.dim, lineHeight: 1.45, marginTop: 6 }}>{T("bodyHow")}</div></>}
             </div>
           </div>
           {f.ids.length > 0 && <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 14 }}>
@@ -6286,7 +6286,7 @@ function ProfilePage({ m, own, onEditProfile, onEditSlot, onStreak, onPhoto, onP
             style={{ ...btnBase, width: "100%", display: "flex", alignItems: "center", gap: 12, textAlign: "left", padding: "13px 14px", marginBottom: 12, borderRadius: 18, color: C.chalk, background: `radial-gradient(120% 140% at 0% 0%, ${claim.top}55, transparent 60%), ${C.panel}`, border: `1.5px solid ${claim.top}`, boxShadow: `0 0 18px ${claim.top}55` }}>
             <span aria-hidden="true" className="claimGift" style={{ display: "flex", flexShrink: 0, color: C.signal }}><Ico n="gift" size={30} /></span>
             <span style={{ flex: 1, minWidth: 0 }}>
-              <span style={{ display: "block", fontFamily: DISPLAY, fontSize: 21, fontWeight: 900, lineHeight: 1.05 }}>{TP("claimN", claim.items.size)}</span>
+              <span style={{ display: "block", fontFamily: DISPLAY, fontSize: 20, fontWeight: 900, lineHeight: 1.05 }}>{TP("claimN", claim.items.size)}</span>
               <span style={{ display: "block", fontSize: 12, color: C.dim, marginTop: 3, lineHeight: 1.35 }}>{T("claimD")}</span>
             </span>
             <span style={{ flexShrink: 0, fontSize: 14, fontWeight: 900, color: C.signalInk, background: C.signal, borderRadius: 12, padding: "9px 13px" }}>{T("claimOpen")}</span>
@@ -6310,7 +6310,7 @@ function ProfilePage({ m, own, onEditProfile, onEditSlot, onStreak, onPhoto, onP
         {/* on a wide screen there are no tabs: each column gets its title */}
         <div {...pg.pageProps(1)}>{pg.wide && <div data-pf-col-title style={{ ...sectionTitle, marginTop: 0 }}>{T("badgesTitle")}</div>}<BadgesList m={m} focus={focus} claim={claim} /></div>
         <div {...pg.pageProps(2)}>{pg.wide && <div data-pf-col-title style={{ ...sectionTitle, marginTop: 0 }}>{T("ranksTitle")}</div>}<RanksList m={m} focus={focus} onPick={onPickRank} claim={claim} /></div>
-        <div {...pg.pageProps(3)}>{pg.wide && <div data-pf-col-title style={{ ...sectionTitle, marginTop: 14 }}>{T("pfStats")}</div>}{stats}{stats && <div data-st-all style={{ fontSize: 11.5, fontWeight: 800, letterSpacing: ".08em", textTransform: "uppercase", color: C.dim, margin: "16px 2px 9px" }}>{T("stAllTime")}</div>}<StatsGrid m={m} /></div>
+        <div {...pg.pageProps(3)}>{pg.wide && <div data-pf-col-title style={{ ...sectionTitle, marginTop: 14 }}>{T("pfStats")}</div>}{stats}{stats && <div data-st-all style={{ fontSize: 12, fontWeight: 800, letterSpacing: ".08em", textTransform: "uppercase", color: C.dim, margin: "16px 2px 9px" }}>{T("stAllTime")}</div>}<StatsGrid m={m} /></div>
       </div>
     </>
   );
@@ -6336,13 +6336,13 @@ function SlotSheet({ m, i, cur, onSave, onClose }) {
       </div>
       {kind === "auto" ? (
         <div style={{ marginTop: 14 }}>
-          <div style={{ fontSize: 13.5, color: C.dim, lineHeight: 1.5 }}>{T("pfAutoD")}</div>
+          <div style={{ fontSize: 14, color: C.dim, lineHeight: 1.5 }}>{T("pfAutoD")}</div>
           <button type="button" data-slot-save onClick={() => onSave("")} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 14, fontSize: 15, padding: 14 }}>{T("save")}</button>
         </div>
       ) : (
         <div style={{ marginTop: 12 }}>
-          {multi && <div style={{ fontSize: 12.5, color: C.dim, marginBottom: 8 }}>{T("pfPick3", { n: sel.length })}</div>}
-          {!opts.length && <div style={{ fontSize: 13.5, color: C.dim, lineHeight: 1.5 }}>{T("pfNothingYet")}</div>}
+          {multi && <div style={{ fontSize: 13, color: C.dim, marginBottom: 8 }}>{T("pfPick3", { n: sel.length })}</div>}
+          {!opts.length && <div style={{ fontSize: 14, color: C.dim, lineHeight: 1.5 }}>{T("pfNothingYet")}</div>}
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
             {opts.map(([id, icon, name, sub]) => { const on = sel.includes(id); return (
               <button key={id} type="button" data-slot-opt={id} aria-pressed={on} onClick={() => pickOne(id)}
@@ -6386,7 +6386,7 @@ function ProfileEditSheet({ profile, setProfile, acct, vis, onVis, onFriends, on
     setProfile({ ...profile, name: nm, pfp, ...(auto ? { show: [] } : {}) }); sfxCheck(); vibrate([15]);
     setBusy(false); onClose();
   };
-  const label = { fontSize: 11.5, fontWeight: 800, letterSpacing: ".08em", textTransform: "uppercase", color: C.dim, margin: "0 2px 8px" };
+  const label = { fontSize: 12, fontWeight: 800, letterSpacing: ".08em", textTransform: "uppercase", color: C.dim, margin: "0 2px 8px" };
   return (
     <Sheet title={T("pfEdit")} onClose={onClose}>
       <div data-pf-edit-sheet data-changed={changed ? 1 : 0}>
@@ -6404,7 +6404,7 @@ function ProfileEditSheet({ profile, setProfile, acct, vis, onVis, onFriends, on
         <div style={label}>{T("nameLabel")}</div>
         <div style={{ position: "relative" }}>
           <input data-name-input value={name} placeholder={T("defaultName")} onChange={e => setName(e.target.value.slice(0, 24))} aria-label={T("nameLabel")} className="obf"
-            style={{ fontFamily: BODY, fontSize: 19, fontWeight: 700, padding: "15px 58px 15px 16px", borderRadius: 16, border: `1.5px solid ${C.line}`, background: C.ink, color: C.chalk, width: "100%", boxSizing: "border-box", outline: "none" }} />
+            style={{ fontFamily: BODY, fontSize: 18, fontWeight: 700, padding: "15px 58px 15px 16px", borderRadius: 16, border: `1.5px solid ${C.line}`, background: C.ink, color: C.chalk, width: "100%", boxSizing: "border-box", outline: "none" }} />
           <span aria-hidden="true" style={{ position: "absolute", right: 16, top: "50%", transform: "translateY(-50%)", fontSize: 12, fontWeight: 700, color: C.dim }}>{name.length}/24</span>
         </div>
         {/* who sees it */}
@@ -6416,13 +6416,13 @@ function ProfileEditSheet({ profile, setProfile, acct, vis, onVis, onFriends, on
           </div>
         ) : (
           <div data-pv-who style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", borderRadius: 16, background: SOFT() }}>
-            <div style={{ flex: 1, fontSize: 13.5, color: C.dim, lineHeight: 1.5 }}>{T("pvSignIn")}</div>
-            <button type="button" data-pv-signin onClick={() => { sfxTap(); onClose(); onFriends && onFriends(); }} style={{ ...btnBase, background: C.signal, color: C.signalInk, padding: "10px 14px", fontSize: 13.5, borderRadius: 12, flexShrink: 0 }}>{T("pvSignInBtn")}</button>
+            <div style={{ flex: 1, fontSize: 14, color: C.dim, lineHeight: 1.5 }}>{T("pvSignIn")}</div>
+            <button type="button" data-pv-signin onClick={() => { sfxTap(); onClose(); onFriends && onFriends(); }} style={{ ...btnBase, background: C.signal, color: C.signalInk, padding: "10px 14px", fontSize: 14, borderRadius: 12, flexShrink: 0 }}>{T("pvSignInBtn")}</button>
           </div>
         )}
         {(profile.show || []).some(Boolean) && (
           <button type="button" data-pf-auto-all aria-pressed={auto} onClick={() => { sfxTap(); setAuto(a => !a); }}
-            style={{ ...btnBase, fontWeight: 400, width: "100%", marginTop: 24, padding: "14px 16px", borderRadius: 16, background: auto ? `${C.signal}1c` : SOFT(), border: `1px solid ${auto ? C.signal + "66" : "transparent"}`, color: C.chalk, fontSize: 14.5, display: "flex", alignItems: "center", gap: 12, textAlign: "left" }}>
+            style={{ ...btnBase, fontWeight: 400, width: "100%", marginTop: 24, padding: "14px 16px", borderRadius: 16, background: auto ? `${C.signal}1c` : SOFT(), border: `1px solid ${auto ? C.signal + "66" : "transparent"}`, color: C.chalk, fontSize: 15, display: "flex", alignItems: "center", gap: 12, textAlign: "left" }}>
             <Ico n="undo" size={19} color={auto ? C.signal : C.dim} />
             <span style={{ flex: 1, minWidth: 0, fontWeight: 700 }}>{T("pfAutoAll")}</span>
             {auto && <Ico n="check" size={18} sw={2.6} color={C.signal} />}
@@ -6473,14 +6473,14 @@ function ProfileTab({ history, profile, setProfile, onFreeze, kcal, acct, vis, o
           <div data-freeze-card style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 15, fontWeight: 700, color: C.chalk }}>{T("freezeTitle", { n: fz, max: META.giftThisYear ? 3 : 2 })}</div>
-              <div style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.45, marginTop: 2 }}>{T("freezeDesc")}</div>
+              <div style={{ fontSize: 13, color: C.dim, lineHeight: 1.45, marginTop: 2 }}>{T("freezeDesc")}</div>
             </div>
             <button disabled={!fz || st.frozenToday || (history.length && history[history.length - 1].date === today)} onClick={() => { onFreeze(); setSheet(null); }}
               style={{ ...btnBase, background: fz && !st.frozenToday ? C.sky : C.panelHi, color: fz && !st.frozenToday ? C.ink : C.dim, padding: "10px 13px", fontSize: 13, opacity: !fz || st.frozenToday ? 0.6 : 1, flexShrink: 0 }}>
               {st.frozenToday ? T("freezeToday") : T("freezeUse")}
             </button>
           </div>
-          <div style={{ fontSize: 12.5, color: st.gap === 2 ? C.signal : C.dim, marginTop: 12 }}>{st.gap === 2 ? T("streakRisk") : T("streakHold")}</div>
+          <div style={{ fontSize: 13, color: st.gap === 2 ? C.signal : C.dim, marginTop: 12 }}>{st.gap === 2 ? T("streakRisk") : T("streakHold")}</div>
         </Sheet>
       )}
       {sheet === "edit" && <ProfileEditSheet profile={profile} setProfile={setProfile} acct={acct} vis={vis} onVis={onVis} onFriends={onFriends} onClose={() => setSheet(null)} />}
@@ -6521,7 +6521,7 @@ function OtherProfile({ p, isFriend, onBack, setTopHead }) {
             <Avatar profile={{ name: p.nick || "?", pfp: isFriend ? p.pfp || null : null }} size={64} />
             <div style={{ minWidth: 0 }}>
               <div style={{ fontFamily: DISPLAY, fontSize: 26, fontWeight: 900, color: C.chalk }}>{p.nick}</div>
-              <div style={{ fontSize: 12.5, color: C.dim, marginTop: 3 }}><IcoI n="bolt" />{p.lvl || 1} · <IcoI n="flame" /> {p.streak || 0}</div>
+              <div style={{ fontSize: 13, color: C.dim, marginTop: 3 }}><IcoI n="bolt" />{p.lvl || 1} · <IcoI n="flame" /> {p.streak || 0}</div>
             </div>
           </Sect>
           {st.loading && <div style={{ fontSize: 13, color: C.dim, textAlign: "center", marginTop: 18 }}>{T("frLoading")}</div>}
@@ -6816,16 +6816,16 @@ function EmailSignIn({ ok, busy, onGo, google }) {
       <input data-email-input type="email" inputMode="email" autoComplete={isNew ? "email" : "username"} autoCapitalize="off" spellCheck={false} value={email} onChange={e => setEmail(e.target.value)} placeholder={T("acEmailPh")} aria-label={T("acEmailPh")} style={pwField} />
       <PwInput data-pw-input autoComplete={isNew ? "new-password" : "current-password"} value={pw} onChange={e => setPw(e.target.value)} onKeyDown={e => { if (e.key === "Enter" && !isNew) go(); }} placeholder={isNew ? T("acPwNewPh", { n: PW_MIN }) : T("acPwPh")} aria-label={T("acPwPh")} style={pwField} />
       {isNew && <PwInput data-pw2-input autoComplete="new-password" value={pw2} onChange={e => setPw2(e.target.value)} onKeyDown={e => { if (e.key === "Enter") go(); }} placeholder={T("acPwAgainPh")} aria-label={T("acPwAgainPh")} style={pwField} />}
-      {isNew && pw2 && pw !== pw2 && <div data-pw-mismatch style={{ fontSize: 12.5, color: "#ff8a80", marginTop: 6 }}>{T("acPwMismatch")}</div>}
+      {isNew && pw2 && pw !== pw2 && <div data-pw-mismatch style={{ fontSize: 13, color: "#ff8a80", marginTop: 6 }}>{T("acPwMismatch")}</div>}
       {!isNew && <div style={{ textAlign: "right" }}><button type="button" data-pw-forgot onClick={forgot} disabled={sending} style={{ ...link, padding: "8px 2px 0" }}>{sending ? "…" : T("acForgot")}</button></div>}
       <button type="button" data-email-signin onClick={go} disabled={!can} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 12, opacity: can ? 1 : 0.45 }}>{busy ? T("frSigning") : isNew ? T("acNewGo") : T("acEmailGo")}</button>
       {note && <div role="status" data-email-note={note.ok ? "ok" : "err"} style={{ fontSize: 13, lineHeight: 1.45, color: note.ok ? C.mint : "#ff8a80", marginTop: 8 }}>{note.t}</div>}
       <div style={{ textAlign: "center", marginTop: 6 }}>
-        <span style={{ fontSize: 13.5, color: C.dim }}>{isNew ? T("acHaveAcctQ") : T("acNoAcctQ")} </span>
-        <button type="button" data-email-mode onClick={() => { sfxTap(); setMode(isNew ? "in" : "new"); setNote(null); setPw2(""); }} style={{ ...link, color: C.signal, textDecoration: "none", padding: "8px 2px", fontSize: 13.5 }}>{isNew ? T("acEmailGo") : T("acNewGo")}</button>
+        <span style={{ fontSize: 14, color: C.dim }}>{isNew ? T("acHaveAcctQ") : T("acNoAcctQ")} </span>
+        <button type="button" data-email-mode onClick={() => { sfxTap(); setMode(isNew ? "in" : "new"); setNote(null); setPw2(""); }} style={{ ...link, color: C.signal, textDecoration: "none", padding: "8px 2px", fontSize: 14 }}>{isNew ? T("acEmailGo") : T("acNewGo")}</button>
       </div>
       {google && <>
-        <div aria-hidden="true" style={{ display: "flex", alignItems: "center", gap: 12, margin: "10px 0 12px", color: C.dim, fontSize: 12.5, fontWeight: 700 }}>
+        <div aria-hidden="true" style={{ display: "flex", alignItems: "center", gap: 12, margin: "10px 0 12px", color: C.dim, fontSize: 13, fontWeight: 700 }}>
           <span style={{ flex: 1, height: 1, background: C.line }} />{T("acOr")}<span style={{ flex: 1, height: 1, background: C.line }} />
         </div>
         {google}
@@ -6850,18 +6850,18 @@ function PwSheet({ onClose }) {
       .catch(e => setNote({ ok: false, t: cloudErr(e) })).finally(() => setBusy(""));
   };
   const mail = (k, fn, okText) => { sfxTap(); setBusy(k); setNote(null); fn().then(() => setNote({ ok: true, t: okText })).catch(e => setNote({ ok: false, t: cloudErr(e) })).finally(() => setBusy("")); };
-  const link = { ...btnBase, background: "transparent", color: C.sky, fontSize: 13.5, fontWeight: 700, padding: "8px 0" };
+  const link = { ...btnBase, background: "transparent", color: C.sky, fontSize: 14, fontWeight: 700, padding: "8px 0" };
   return (
     <Sheet title={has ? T("acPwChange") : T("acPwAdd")} onClose={onClose}>
       <div data-pw-sheet={has ? "change" : "add"}>
-        <div style={{ fontSize: 13.5, color: C.dim, lineHeight: 1.5 }}>{has ? T("acPwChangeD", { email: info.email }) : T("acPwAddD", { email: info.email })}</div>
+        <div style={{ fontSize: 14, color: C.dim, lineHeight: 1.5 }}>{has ? T("acPwChangeD", { email: info.email }) : T("acPwAddD", { email: info.email })}</div>
         {has && <PwInput data-pw-old autoComplete="current-password" value={old} onChange={e => setOld(e.target.value)} placeholder={T("acPwOldPh")} aria-label={T("acPwOldPh")} style={pwField} />}
         <PwInput data-pw-new autoComplete="new-password" value={pw} onChange={e => setPw(e.target.value)} placeholder={T("acPwNewPh", { n: PW_MIN })} aria-label={T("acPwNewPh", { n: PW_MIN })} style={pwField} />
         <PwInput data-pw-new2 autoComplete="new-password" value={pw2} onChange={e => setPw2(e.target.value)} onKeyDown={e => { if (e.key === "Enter") save(); }} placeholder={T("acPwAgainPh")} aria-label={T("acPwAgainPh")} style={pwField} />
-        {pw2 && pw !== pw2 && <div data-pw-mismatch style={{ fontSize: 12.5, color: "#ff8a80", marginTop: 6 }}>{T("acPwMismatch")}</div>}
+        {pw2 && pw !== pw2 && <div data-pw-mismatch style={{ fontSize: 13, color: "#ff8a80", marginTop: 6 }}>{T("acPwMismatch")}</div>}
         <button type="button" data-pw-save onClick={save} disabled={!can} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 12, opacity: can ? 1 : 0.45 }}>{busy === "save" ? "…" : T("acPwSave")}</button>
         {has && <button type="button" data-pw-forgot onClick={() => mail("reset", () => cloud().resetPw(info.email, LANG), T("acResetSent", { email: info.email }))} disabled={!!busy} style={link}>{busy === "reset" ? "…" : T("acForgot")}</button>}
-        {has && !info.verified && <div style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.45, marginTop: 4 }}>{T("acNotVerified")} <button type="button" data-pw-verify onClick={() => mail("ver", () => cloud().resendVerify(LANG), T("acVerifySent", { email: info.email }))} disabled={!!busy} style={{ ...link, padding: 0, fontSize: 12.5 }}>{T("acVerifyAgain")}</button></div>}
+        {has && !info.verified && <div style={{ fontSize: 13, color: C.dim, lineHeight: 1.45, marginTop: 4 }}>{T("acNotVerified")} <button type="button" data-pw-verify onClick={() => mail("ver", () => cloud().resendVerify(LANG), T("acVerifySent", { email: info.email }))} disabled={!!busy} style={{ ...link, padding: 0, fontSize: 13 }}>{T("acVerifyAgain")}</button></div>}
         {note && <div role="status" data-pw-note={note.ok ? "ok" : "err"} style={{ fontSize: 13, lineHeight: 1.45, color: note.ok ? C.mint : "#ff8a80", marginTop: 8 }}>{note.t}</div>}
       </div>
     </Sheet>
@@ -6934,7 +6934,7 @@ function PersonSheet({ p, isFriend, onAdd, onChat, onRemove, onBlock, onReport, 
               ))}
             </span>
           </span>
-          {onProfile && <span style={{ position: "relative", display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 2, marginTop: 10, fontSize: 12.5, fontWeight: 800, color: C.signal }}>{T("pvOpen")}<Arrow size={18} /></span>}
+          {onProfile && <span style={{ position: "relative", display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 2, marginTop: 10, fontSize: 13, fontWeight: 800, color: C.signal }}>{T("pvOpen")}<Arrow size={18} /></span>}
         </>;
         const box = { ...btnBase, position: "relative", overflow: "hidden", display: "block", width: "100%", textAlign: "left", padding: "14px 14px 12px", borderRadius: 20, background: SOFT(), color: C.chalk, fontWeight: 400, boxShadow: `inset 0 0 0 1px ${C.line}` };
         return onProfile ? <button type="button" data-ps-profile onClick={() => { sfxTap(); onProfile(p); }} style={box}>{inner}</button> : <div style={box}>{inner}</div>;
@@ -6950,7 +6950,7 @@ function PersonSheet({ p, isFriend, onAdd, onChat, onRemove, onBlock, onReport, 
               background: `linear-gradient(110deg, ${col}2e, ${col}0a 75%)`, boxShadow: `inset 0 0 0 1.5px ${col}55` }}>
             <BadgeIco n={on ? "duo" : "flame"} col={col} size={42} />
             <span style={{ flex: 1, minWidth: 0 }}>
-              <span style={{ display: "block", fontSize: 15.5, fontWeight: 800, color: can || on ? "#ffc58a" : C.dim }}>{noEmo(T(on ? "fsHave" : fsState === "sent" ? "fsSent" : fsState === "full" ? "fsFull" : "fsInvite"))}</span>
+              <span style={{ display: "block", fontSize: 16, fontWeight: 800, color: can || on ? "#ffc58a" : C.dim }}>{noEmo(T(on ? "fsHave" : fsState === "sent" ? "fsSent" : fsState === "full" ? "fsFull" : "fsInvite"))}</span>
             </span>
             {can ? <span aria-hidden="true" style={{ width: 34, height: 34, borderRadius: 99, background: "#ffa94d", color: "#2a1300", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 0 16px #ffa94d66" }}><Ico n="plus" size={18} sw={2.8} /></span>
               : on ? <Ico n="tick" size={22} color="#ffa94d" sw={2.6} /> : null}
@@ -7136,7 +7136,7 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
   const segBox = { display: "flex", gap: 4, padding: 4, borderRadius: 14, ...SUNK(), marginTop: 14 };
   const chipSeg = (on, onClick, label, data) => (
     <button data-seg={data} aria-pressed={on} onClick={() => { sfxTap(); onClick(); }}
-      style={{ ...btnBase, padding: "6px 12px", fontSize: 12.5, borderRadius: 99, ...(on ? { background: `${C.signal}22`, border: `1px solid ${C.signal}66` } : SUNK()), color: on ? C.signal : C.dim, whiteSpace: "nowrap", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis" }}>{label}</button>
+      style={{ ...btnBase, padding: "6px 12px", fontSize: 13, borderRadius: 99, ...(on ? { background: `${C.signal}22`, border: `1px solid ${C.signal}66` } : SUNK()), color: on ? C.signal : C.dim, whiteSpace: "nowrap", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis" }}>{label}</button>
   );
   const board = scope === "friends"
     ? (friends ? [me, ...friends].sort((a, b) => (b.xp || 0) - (a.xp || 0)) : null)
@@ -7204,14 +7204,14 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
             modHidden ? (
               <div data-fr-hidden style={{ ...card, ...tileR(), marginTop: 10, padding: "13px 16px" }}>
                 <div style={{ fontSize: 15, fontWeight: 700, color: C.chalk }}>{T("frHiddenT")}</div>
-                <div style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.5, marginTop: 3 }}>{T("frHiddenD")}</div>
+                <div style={{ fontSize: 13, color: C.dim, lineHeight: 1.5, marginTop: 3 }}>{T("frHiddenD")}</div>
               </div>
             ) :
             <div style={{ ...card, ...tileR(), marginTop: 10, overflow: "hidden" }}>
               <SettingRow first title={T("frWorldJoin")} desc={`${T("frWorldJoinD")} ${T("frFairD")}`} on={!!acct.prof.global} onClick={() => { sfxTap(); onSetGlobal(!acct.prof.global).then(() => setTimeout(loadWorld, 1200)).catch(e => setErr(cloudErr(e))); }} />
               {/* 1.8.0: what the server counted for the world list, and why a place may wait for a check */}
               {acct.prof.global && fx.fair && typeof fx.fair.n === "number" && (
-                <div data-fr-fair={fx.fair.wait ? "wait" : "ok"} style={{ padding: "0 16px 13px", fontSize: 12.5, color: C.dim, lineHeight: 1.5 }}>
+                <div data-fr-fair={fx.fair.wait ? "wait" : "ok"} style={{ padding: "0 16px 13px", fontSize: 13, color: C.dim, lineHeight: 1.5 }}>
                   <div>{emo(T("frFairLine", { n: fx.fair.n, s: fx.fair.streak || 0 }))}</div>
                   {fx.fair.wait && <div data-fr-fair-wait style={{ color: C.signal, fontWeight: 700, marginTop: 4 }}>{T("frFairWait")}</div>}
                   {(fx.fair.flags || []).length > 0 && <div data-fr-fair-flags style={{ marginTop: 4 }}>{T("frFairWhy")} {fx.fair.flags.filter(f => FAIR_FLAGS.includes(f)).map(f => T("frFlag_" + f)).join(" · ")}</div>}
@@ -7223,8 +7223,8 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
             <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "0 12px 10px" }}>
               {chipSeg(scope === "friends", () => setScope("friends"), T("frBoardFriends"), "scope-friends")}
               {WORLD_ON ? chipSeg(scope === "world", () => setScope("world"), T("frBoardWorld"), "scope-world")
-                : <span data-seg="scope-world" data-locked aria-disabled="true" style={{ ...btnBase, padding: "6px 12px", fontSize: 12.5, borderRadius: 99, ...SUNK(), color: C.dim, opacity: 0.7, display: "inline-flex", alignItems: "center", gap: 5, whiteSpace: "nowrap" }}><Ico n="lock" size={13} />{T("frBoardWorld")} · {T("soon")}</span>}
-              {scope === "world" && <button data-fr-refresh onClick={() => { sfxTap(); loadWorld(); }} aria-label={T("frRefresh")} style={{ ...btnBase, background: "transparent", color: C.dim, padding: "4px 6px", fontSize: 17, marginLeft: "auto", flexShrink: 0 }}>↻</button>}
+                : <span data-seg="scope-world" data-locked aria-disabled="true" style={{ ...btnBase, padding: "6px 12px", fontSize: 13, borderRadius: 99, ...SUNK(), color: C.dim, opacity: 0.7, display: "inline-flex", alignItems: "center", gap: 5, whiteSpace: "nowrap" }}><Ico n="lock" size={13} />{T("frBoardWorld")} · {T("soon")}</span>}
+              {scope === "world" && <button data-fr-refresh onClick={() => { sfxTap(); loadWorld(); }} aria-label={T("frRefresh")} style={{ ...btnBase, background: "transparent", color: C.dim, padding: "4px 6px", fontSize: 16, marginLeft: "auto", flexShrink: 0 }}>↻</button>}
             </div>
             {board === null ? <div style={{ padding: "6px 16px 12px", color: C.dim, fontSize: 14 }}>{T("frLoading")}</div>
               : scope === "world" && !board.length ? <div style={{ padding: "6px 16px 12px", color: C.dim, fontSize: 14 }}>{T(modHidden ? "frWorldNone" : "frWorldEmpty")}</div>
@@ -7400,7 +7400,7 @@ function EmojiSheet({ onPick, onClose }) {
       <div data-emoji-tabs style={{ display: "flex", gap: 2, overflowX: "auto", scrollbarWidth: "none", margin: "-4px -4px 8px", paddingBottom: 6, borderBottom: `1px solid ${C.line}` }}>
         {cats.map(([k, ic], i) => (
           <button key={k} onClick={() => { sfxTap(); jump(i); }} aria-label={names[k]} aria-pressed={cat === i}
-            style={{ ...btnBase, flex: "0 0 auto", width: 40, height: 38, borderRadius: 12, fontSize: 21, background: cat === i ? `${C.chalk}1a` : "transparent", transition: "background .2s" }}>{ic}</button>
+            style={{ ...btnBase, flex: "0 0 auto", width: 40, height: 38, borderRadius: 12, fontSize: 20, background: cat === i ? `${C.chalk}1a` : "transparent", transition: "background .2s" }}>{ic}</button>
         ))}
       </div>
       <div ref={box} onScroll={onScroll} data-emoji-grid style={{ maxHeight: "46dvh", overflowY: "auto", margin: "0 -6px", padding: "0 6px" }}>
@@ -7408,7 +7408,7 @@ function EmojiSheet({ onPick, onClose }) {
           <div key={k} ref={el => (secs.current[i] = el)}>
             <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: C.dim, margin: "10px 2px 6px" }}>{names[k]}</div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(42px, 1fr))", gap: 2 }}>
-              {list.map((e, j) => <button key={e + j} data-emoji={e} onClick={() => onPick(e)} style={{ ...btnBase, height: 44, borderRadius: 12, fontSize: 27, background: "transparent", lineHeight: 1 }}>{e}</button>)}
+              {list.map((e, j) => <button key={e + j} data-emoji={e} onClick={() => onPick(e)} style={{ ...btnBase, height: 44, borderRadius: 12, fontSize: 28, background: "transparent", lineHeight: 1 }}>{e}</button>)}
             </div>
           </div>
         ))}
@@ -7507,17 +7507,17 @@ function MsgBubble({ m, mine, me, other, onQuote, lifted, th, burst }) {
   return (
     <div data-msg-bubble style={{ position: "relative", padding: "8px 12px 6px", borderRadius: 18, borderBottomRightRadius: mine ? 6 : 18, borderBottomLeftRadius: mine ? 18 : 6, background: mine ? tc.bg : LOOK === "liquid" ? "rgba(255,255,255,.14)" : C.panelHi, color: mine ? tc.ink : C.chalk, fontWeight: 500, fontSize: 15, lineHeight: 1.4, whiteSpace: "pre-wrap", overflowWrap: "anywhere", opacity: m.pending ? 0.7 : 1, boxShadow: lifted ? "0 14px 34px rgba(0,0,0,.45)" : "none", fontFamily: BODY }}>
       {m.re && (
-        <button data-msg-quote onClick={e => { e.stopPropagation(); onQuote && onQuote(m.re.id); }} style={{ ...btnBase, display: "flex", alignItems: "stretch", gap: 8, width: "100%", textAlign: "left", margin: "0 0 6px", padding: "6px 10px 6px 7px", borderRadius: 12, background: mine ? "rgba(0,0,0,.1)" : "rgba(255,255,255,.07)", color: "inherit", fontSize: 12.5, lineHeight: 1.35, fontWeight: 500 }}>
+        <button data-msg-quote onClick={e => { e.stopPropagation(); onQuote && onQuote(m.re.id); }} style={{ ...btnBase, display: "flex", alignItems: "stretch", gap: 8, width: "100%", textAlign: "left", margin: "0 0 6px", padding: "6px 10px 6px 7px", borderRadius: 12, background: mine ? "rgba(0,0,0,.1)" : "rgba(255,255,255,.07)", color: "inherit", fontSize: 13, lineHeight: 1.35, fontWeight: 500 }}>
           <span aria-hidden="true" style={{ width: 3, borderRadius: 3, flexShrink: 0, background: mine ? "currentColor" : C.signal, opacity: mine ? 0.45 : 1 }} />
           <span style={{ minWidth: 0 }}>
-            <span style={{ display: "block", fontWeight: 800, fontSize: 11.5, opacity: 0.8 }}>{who(m.re)}</span>
+            <span style={{ display: "block", fontWeight: 800, fontSize: 12, opacity: 0.8 }}>{who(m.re)}</span>
             <span style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", opacity: 0.85 }}>{m.re.text}</span>
           </span>
         </button>
       )}
       <span>{linkify(m.text, mine ? tc.ink : C.sky)}</span>
       {burst && <span aria-hidden="true" className="rxBurst">❤️</span>}
-      <span style={{ display: "block", fontSize: 10.5, opacity: 0.65, textAlign: "right", marginTop: 2 }}>{m.ed ? `${T("chEdited")} · ` : ""}{new Date(m.ts).toLocaleTimeString(LANG, { hour: "2-digit", minute: "2-digit" })}</span>
+      <span style={{ display: "block", fontSize: 11, opacity: 0.65, textAlign: "right", marginTop: 2 }}>{m.ed ? `${T("chEdited")} · ` : ""}{new Date(m.ts).toLocaleTimeString(LANG, { hour: "2-digit", minute: "2-digit" })}</span>
     </div>
   );
 }
@@ -7552,7 +7552,7 @@ function MsgMenu({ at, m, mine, me, other, th, onClose, onReply, onCopy, onEdit,
       <div data-rx-bar onClick={e => e.stopPropagation()} style={{ position: "absolute", top: stackTop, ...side, display: "flex", alignItems: "center", gap: 2, padding: "6px 6px", borderRadius: 99, background: C.panelHi, border: `1px solid ${C.line}`, boxShadow: "0 14px 34px rgba(0,0,0,.45)", opacity: on ? 1 : 0, transform: on ? "translateY(0) scale(1)" : "translateY(8px) scale(.9)", transformOrigin: mine ? "100% 100%" : "0 100%", transition: "opacity .2s, transform .3s cubic-bezier(.34,1.56,.64,1)" }}>
         {EMO_QUICK.map((e, i) => (
           <button key={e} data-rx-quick={e} onClick={() => onReact(myRx === e ? null : e)} aria-pressed={myRx === e}
-            style={{ ...btnBase, width: 40, height: 40, borderRadius: 99, fontSize: 25, lineHeight: 1, background: myRx === e ? `${C.chalk}24` : "transparent", transform: on ? "scale(1)" : "scale(.4)", transition: `transform .35s cubic-bezier(.34,1.56,.64,1) ${40 + i * 30}ms` }}>{e}</button>
+            style={{ ...btnBase, width: 40, height: 40, borderRadius: 99, fontSize: 24, lineHeight: 1, background: myRx === e ? `${C.chalk}24` : "transparent", transform: on ? "scale(1)" : "scale(.4)", transition: `transform .35s cubic-bezier(.34,1.56,.64,1) ${40 + i * 30}ms` }}>{e}</button>
         ))}
         <button data-rx-more onClick={onMore} aria-label={T("chMoreEmoji")} style={{ ...btnBase, width: 40, height: 40, borderRadius: 99, background: `${C.chalk}14`, color: C.chalk, display: "flex", alignItems: "center", justifyContent: "center" }}>
           <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
@@ -7669,7 +7669,7 @@ function ChatView({ me, other, canWrite, onBack, onOpen, onMenu, onReport, onBlo
         style={{ ...btnBase, background: "transparent", color: C.chalk, padding: 0, display: "flex", alignItems: "center", gap: 10, minWidth: 0, flex: 1, textAlign: "left", WebkitTouchCallout: "none", userSelect: "none" }}>
         <PersonAvatar p={other} size={38} />
         <span style={{ minWidth: 0 }}>
-          <span style={{ display: "block", fontSize: 17, fontWeight: 900, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{other.nick}</span>
+          <span style={{ display: "block", fontSize: 16, fontWeight: 900, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{other.nick}</span>
           <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: C.dim }}><span style={{ color: C.sky, fontWeight: 800 }}><IcoI n="bolt" />{other.lvl || 1}</span>{fs && <FsChip st={fs} uid={other.uid} size={12} />}{fs && <InfoQ title={T("fsTitle")} text={T("fsHow")} style={{ marginLeft: 0 }} />}</span>
         </span>
       </button>
@@ -7854,7 +7854,7 @@ function PointsSheet({ onRestore, onClose }) {
   const go = pt => { setAsk(null); setBusy(true); setMsg(""); onRestore(pt).then(m => { setMsg(m || ""); sfxCheck(); }).catch(e => setMsg(cloudErr(e))).finally(() => setBusy(false)); };
   return (
     <Sheet title={T("rpTitle")} onClose={onClose} short>
-      <div data-rp-sheet style={{ fontSize: 13.5, color: C.dim, lineHeight: 1.5, marginBottom: 12 }}>{T("rpD")}</div>
+      <div data-rp-sheet style={{ fontSize: 14, color: C.dim, lineHeight: 1.5, marginBottom: 12 }}>{T("rpD")}</div>
       {list === null ? <div style={{ color: C.dim, padding: "10px 0" }}>…</div>
         : list === "err" ? <div data-rp-err style={{ color: "#ff8a80", padding: "10px 0" }}>{T("rpErr")}</div>
         : !list.length ? <div data-rp-none style={{ background: SOFT(), borderRadius: 14, padding: "14px 16px", color: C.dim, fontSize: 14, lineHeight: 1.45 }}>{T("rpNone")}</div>
@@ -7864,7 +7864,7 @@ function PointsSheet({ onRestore, onClose }) {
               <Ico n="history" size={20} color={C.signal} style={{ flexShrink: 0 }} />
               <span style={{ flex: 1, minWidth: 0 }}>
                 <span style={{ display: "block", fontWeight: 800, color: C.chalk, fontSize: 15 }}>{capFirst(fmtDate(pt.day, true))}</span>
-                <span style={{ display: "block", fontSize: 12.5, color: C.dim, marginTop: 2 }}>{T("rpN", { n: pt.n })}</span>
+                <span style={{ display: "block", fontSize: 13, color: C.dim, marginTop: 2 }}>{T("rpN", { n: pt.n })}</span>
               </span>
               <button data-rp-go={pt.day} disabled={busy} onClick={() => { sfxTap(); setAsk(pt); }} style={{ ...btnBase, background: C.panelHi, color: C.chalk, border: `1px solid ${C.line}`, padding: "8px 14px", fontSize: 13, borderRadius: 99, flexShrink: 0 }}>{T("rpGo")}</button>
             </div>
@@ -8001,7 +8001,7 @@ function RestPermRow() {
 function NotifBlocked({ data }) {
   const [failed, setFailed] = useState(false);
   return (
-    <div {...{ [`data-${data}-denied`]: "" }} style={{ fontSize: 12.5, color: C.signal, lineHeight: 1.45, padding: "0 4px" }}>
+    <div {...{ [`data-${data}-denied`]: "" }} style={{ fontSize: 13, color: C.signal, lineHeight: 1.45, padding: "0 4px" }}>
       {T("pushDenied")}
       {isNative && !failed && <div style={{ marginTop: 10 }}><button type="button" data-notif-settings onClick={async () => { sfxTap(); if (!(await openNotifSettings())) setFailed(true); }}
         style={{ ...ghostBtn, padding: "10px 14px", color: C.chalk }}>{T("pushOpenSettings")} <Arrow /></button></div>}
@@ -8495,7 +8495,7 @@ function LevelBar({ id, kg, reps, from }) {
         <div aria-hidden="true" style={{ position: "absolute", top: 0, bottom: 0, left: `${(lo / (hi + 1)) * 100}%`, width: 2, background: `${C.chalk}55` }} />
       </div>
       {pop && <Confetti count={40} />}
-      <div data-level-line className={pop ? "pop" : ""} style={{ fontSize: 12.5, marginTop: 6, lineHeight: 1.4, color: st === "up" ? C.mint : st === "low" ? "#ffa94d" : C.dim, fontWeight: st === "in" ? 500 : 700 }}>
+      <div data-level-line className={pop ? "pop" : ""} style={{ fontSize: 13, marginTop: 6, lineHeight: 1.4, color: st === "up" ? C.mint : st === "low" ? "#ffa94d" : C.dim, fontWeight: st === "in" ? 500 : 700 }}>
         {st === "up" ? T("lvlUp", { kg: fmtKg(heavierKg(id, kg)) }) : st === "low" ? T("lvlLow", { a: lo }) : T("lvlIn", { n: hi + 1 - reps })}
       </div>
     </div>
@@ -8630,7 +8630,7 @@ function Work({ item, rounds, history, sessionResults, sessionKg, onRecord, onSw
       {how && <HowTo id={item.id} history={history} onClose={() => setHow(false)} onSwap={onSwap && ph === "ready" ? () => { sfxTap(); setHow(false); setSwap(true); } : null} />}
       {fast && (
         <Sheet short title={T("fastT")} onClose={() => setFast(null)}>
-          <div data-fast style={{ fontSize: 14.5, color: C.chalk, lineHeight: 1.5 }}>{T("fastD", { n: fast.n, s: fast.secs })}</div>
+          <div data-fast style={{ fontSize: 15, color: C.chalk, lineHeight: 1.5 }}>{T("fastD", { n: fast.n, s: fast.secs })}</div>
           <button type="button" data-fast-fix onClick={() => { sfxTap(); const n = fast.cap; setFast(null); setReps(n); onRecord(n); }} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 14 }}>{T("fastFix", { n: fast.cap })}</button>
           <button type="button" data-fast-back onClick={() => { sfxTap(); setFast(null); }} style={{ ...ghostBtn, width: "100%", marginTop: 8, padding: "13px 14px", fontSize: 15, color: C.chalk }}>{T("fastBack")}</button>
         </Sheet>
@@ -8882,7 +8882,7 @@ function RestPermCard({ perm, onPerm }) {
   return (
     <div data-rest-perm style={{ ...card, marginTop: 14, padding: "12px 14px", display: "flex", gap: 11, alignItems: "center", textAlign: "left", borderColor: `${C.sky}66` }}>
       <Ico n="timer" size={24} color={C.sky} style={{ flexShrink: 0 }} />
-      <div style={{ flex: 1, minWidth: 0, fontSize: 13.5, color: C.chalk, lineHeight: 1.45 }}>{T("restPermD")}</div>
+      <div style={{ flex: 1, minWidth: 0, fontSize: 14, color: C.chalk, lineHeight: 1.45 }}>{T("restPermD")}</div>
       <div style={{ display: "flex", flexDirection: "column", gap: 6, flexShrink: 0 }}>
         <button data-rest-perm-yes onClick={() => { sfxTap(); restPermission(true).then(v => { done(v); onPerm(v); }); }} style={{ ...btnBase, background: C.signal, color: C.signalInk, padding: "8px 12px", fontSize: 13 }}>{T("restPermYes")}</button>
         <button data-rest-perm-no onClick={() => { sfxTap(); done("no"); }} style={{ ...btnBase, background: "transparent", color: C.dim, padding: "4px 6px", fontSize: 12 }}>{T("restPermNo")}</button>
@@ -8924,7 +8924,7 @@ function Rest({ rest, nextItem, rounds, onEnd, onAdd, perm, onPerm }) {
         <div style={{ fontSize: 12, color: C.dim, fontWeight: 700 }}>{EX[rest.lvl.id].name}</div>
         <LevelBar id={rest.lvl.id} kg={rest.lvl.kg} reps={rest.lvl.to} from={rest.lvl.from} />
       </div>}
-      <div data-rest-line style={{ fontSize: 12.5, color: C.dim, marginTop: 10, lineHeight: 1.45 }}>{T("restLine")}</div>
+      <div data-rest-line style={{ fontSize: 13, color: C.dim, marginTop: 10, lineHeight: 1.45 }}>{T("restLine")}</div>
       {!restSupported() && <div data-rest-web style={{ fontSize: 12, color: C.dim, marginTop: 4, lineHeight: 1.45 }}>{T(isNative ? "restOldApk" : "restWebOnly")}</div>}
       {onPerm && <RestPermCard perm={perm} onPerm={onPerm} />}
       <div style={{ marginTop: 18, fontSize: 13, color: C.dim }}>{T("next")}</div>
@@ -9132,7 +9132,7 @@ function ScoreWhy({ g, cards, bests, onClose }) {
                 : <span aria-hidden="true" style={{ fontSize: 22 }}>🂠</span>}
             </span>
             <span style={{ flex: 1, minWidth: 0 }}>
-              <span style={{ display: "block", fontWeight: 800, fontSize: 14.5 }}>{r.name}</span>
+              <span style={{ display: "block", fontWeight: 800, fontSize: 15 }}>{r.name}</span>
               <span style={{ display: "block", fontSize: 12, color: C.dim, lineHeight: 1.35 }}>{r.d}</span>
             </span>
             <span style={{ fontFamily: DISPLAY, fontWeight: 900, fontSize: 16, color: r.k === "dead" ? C.dim : C.chalk, textAlign: "right", maxWidth: "42%" }}>{r.plus}</span>
@@ -9148,7 +9148,7 @@ function ScoreWhy({ g, cards, bests, onClose }) {
         <div data-why-total style={{ marginTop: 6, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, flexWrap: "wrap" }}>
           <ScoreBox chips={sc.chips} mult={sc.mult} total={sc.score} />
         </div>
-        <div style={{ fontSize: 12.5, color: C.dim, textAlign: "center", lineHeight: 1.4 }}>{T("gmWhyTotal")}</div>
+        <div style={{ fontSize: 13, color: C.dim, textAlign: "center", lineHeight: 1.4 }}>{T("gmWhyTotal")}</div>
       </div>
     </Sheet>
   );
@@ -9213,7 +9213,7 @@ function JokerInspect({ g, i, canSell, ask, onSell, onClose }) {
   if (!j) return null;
   const r = GM.JOKERS[j.id] ? GM.JOKERS[j.id].r : 0, col = RAR_COL()[r], price = Math.max(1, Math.floor(j.cost / 2));
   const sell = () => { sfxTap(); setStep("sold"); gmSfx.buy(); vibrate([25, 40, 25]); setTimeout(() => onSell(i), 620); };
-  const btn = { ...btnBase, flex: 1, minWidth: 0, padding: "12px 12px", borderRadius: 14, fontSize: 14.5, fontWeight: 800 };
+  const btn = { ...btnBase, flex: 1, minWidth: 0, padding: "12px 12px", borderRadius: 14, fontSize: 15, fontWeight: 800 };
   return createPortal(
     <div data-gm-inspect={j.id} data-state={step} onClick={e => { if (e.target === e.currentTarget) { sfxTap(); close(); } }}
       style={{ position: "fixed", inset: 0, zIndex: 106, display: "flex", alignItems: "center", justifyContent: "center", padding: "calc(16px + var(--sat, 0px)) 16px calc(16px + var(--sab, 0px))", background: on ? "rgba(3,6,14,.88)" : "rgba(3,6,14,0)", transition: `background ${MO.t2}`, fontFamily: BODY, color: C.chalk }}>
@@ -9226,15 +9226,15 @@ function JokerInspect({ g, i, canSell, ask, onSell, onClose }) {
         <div data-gm-inspect-box style={{ width: "100%", boxSizing: "border-box", marginTop: -34, padding: "46px 16px 16px", borderRadius: 20, background: `linear-gradient(180deg, ${hexMix(C.panel, col, 0.1)}, ${C.panel})`, border: `1px solid ${col}44`, boxShadow: "0 22px 50px rgba(0,0,0,.5)", display: "flex", flexDirection: "column", alignItems: "center" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
           <span style={{ fontFamily: DISPLAY, fontSize: 28, fontWeight: 900, lineHeight: 1.05 }}>{jName(j.id)}</span>
-          <span data-rar-chip={r} style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: 0.4, textTransform: "uppercase", color: col, border: `1px solid ${col}88`, borderRadius: 99, padding: "1px 8px" }}>{T("gmRar" + r)}</span>
+          <span data-rar-chip={r} style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.4, textTransform: "uppercase", color: col, border: `1px solid ${col}88`, borderRadius: 99, padding: "1px 8px" }}>{T("gmRar" + r)}</span>
         </div>
         {step === "ask" ? (
           <div data-gm-sell-ask style={{ marginTop: 10, fontSize: 15, lineHeight: 1.45 }}>
             <div style={{ fontWeight: 800 }}>{T("gmSellT", { name: jName(j.id) })}</div>
-            <div style={{ color: C.dim, fontSize: 13.5, marginTop: 4 }}>{withK(T("gmSellD", { n: price }))}</div>
+            <div style={{ color: C.dim, fontSize: 14, marginTop: 4 }}>{withK(T("gmSellD", { n: price }))}</div>
           </div>
         ) : (
-          <div data-gm-joker-info style={{ marginTop: 10, fontSize: 14.5, lineHeight: 1.45, color: C.chalk, maxWidth: 300 }}>
+          <div data-gm-joker-info style={{ marginTop: 10, fontSize: 15, lineHeight: 1.45, color: C.chalk, maxWidth: 300 }}>
             {withK(jDesc(j.id))}
             {j.v ? <div style={{ marginTop: 6, fontWeight: 800, color: C.signal }}>{T("gmNowMult", { n: j.v })}</div> : null}
           </div>
@@ -9242,7 +9242,7 @@ function JokerInspect({ g, i, canSell, ask, onSell, onClose }) {
         <div style={{ display: "flex", gap: 8, width: "100%", marginTop: 18, visibility: step === "sold" ? "hidden" : "visible" }}>
           {step === "ask" ? <>
             <button type="button" data-confirm-no onClick={() => { sfxTap(); if (ask) onClose(); else setStep("view"); }} style={{ ...btn, ...SUNK(), color: C.chalk }}>{T("cancel")}</button>
-            <button type="button" data-gm-sell-yes onClick={sell} className="b3d" style={{ ...btn, ...bigBtn("#d64545", "#fff"), "--e": "#8a1f1f", width: "auto", fontSize: 14.5, padding: "12px 12px" }}>{T("gmSellYes")} +<KSign />{price}</button>
+            <button type="button" data-gm-sell-yes onClick={sell} className="b3d" style={{ ...btn, ...bigBtn("#d64545", "#fff"), "--e": "#8a1f1f", width: "auto", fontSize: 15, padding: "12px 12px" }}>{T("gmSellYes")} +<KSign />{price}</button>
           </> : <>
             <button type="button" data-gm-inspect-close onClick={() => { sfxTap(); close(); }} style={{ ...btn, ...SUNK(), color: C.chalk }}>{T("close")}</button>
             {canSell && <button type="button" data-gm-joker-sell={i} onClick={() => { sfxTap(); setStep("ask"); }} style={{ ...btn, background: `${C.signal}1f`, border: `1.5px solid ${C.signal}`, color: C.signal, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}><Ico n="coins" size={17} color={C.signal} /><span>{withK(T("gmSell", { n: price }))}</span></button>}
@@ -9586,8 +9586,8 @@ function ChestOpen({ res, onClose, onEquip }) {
         <div data-chest-res={res.kind} className="gmFlipIn" style={{ ...card, ...tileR(), position: "relative", display: "flex", alignItems: "center", gap: 14, padding: "14px 16px", border: `2px solid ${col}`, minWidth: 240, maxWidth: 380 }}>
           {res.kind === "look" ? <LookThumb id={res.id} size={58} /> : <IcoBox n={res.kind === "dia" ? "diamond" : "boost"} color={res.kind === "dia" ? C.sky : C.signal} size={58} />}
           <span style={{ flex: 1, minWidth: 0 }}>
-            <span style={{ display: "block", fontWeight: 900, fontSize: 17 }}>{res.kind === "dia" ? <DiaNum n={res.n} size={17} /> : res.kind === "boost" ? T("shBoost") : lookName(res.id)}</span>
-            <span style={{ display: "block", fontSize: 12.5, color: C.dim, marginTop: 3, lineHeight: 1.35 }}>{res.kind === "dia" ? T("shGotDiaD") : res.kind === "boost" ? T("shBoostD") : <span style={{ color: col, fontWeight: 800 }}>{T("gmRar" + lookRar(res.id))}</span>}</span>
+            <span style={{ display: "block", fontWeight: 900, fontSize: 16 }}>{res.kind === "dia" ? <DiaNum n={res.n} size={17} /> : res.kind === "boost" ? T("shBoost") : lookName(res.id)}</span>
+            <span style={{ display: "block", fontSize: 13, color: C.dim, marginTop: 3, lineHeight: 1.35 }}>{res.kind === "dia" ? T("shGotDiaD") : res.kind === "boost" ? T("shBoostD") : <span style={{ color: col, fontWeight: 800 }}>{T("gmRar" + lookRar(res.id))}</span>}</span>
           </span>
         </div>
       ) : <div style={{ fontSize: 14, color: C.dim }}>{T("shChestTap")}</div>}
@@ -9602,7 +9602,7 @@ function BuyBtn({ k, price, bal, sure, setSure, onBuy, label }) {
   const poor = bal < price, on = sure === k;
   return (
     <button type="button" data-shop-buy={k} data-sure={on ? 1 : 0} disabled={poor} onClick={() => { if (on) { setSure(null); onBuy(); } else { sfxTap(); setSure(k); } }}
-      style={{ ...btnBase, flexShrink: 0, padding: "9px 12px", fontSize: 13.5, borderRadius: 12, background: poor ? SOFT() : on ? C.mint : C.signal, color: poor ? C.dim : on ? C.ink : C.signalInk, display: "inline-flex", alignItems: "center", gap: 5, opacity: poor ? 0.7 : 1, minWidth: 76, justifyContent: "center" }}>
+      style={{ ...btnBase, flexShrink: 0, padding: "9px 12px", fontSize: 14, borderRadius: 12, background: poor ? SOFT() : on ? C.mint : C.signal, color: poor ? C.dim : on ? C.ink : C.signalInk, display: "inline-flex", alignItems: "center", gap: 5, opacity: poor ? 0.7 : 1, minWidth: 76, justifyContent: "center" }}>
       {on ? T("shSure") : <>{label || null}<Ico n="diamond" size={14} sw={2.4} />{nf(price)}</>}
     </button>
   );
@@ -9620,26 +9620,26 @@ function LookShopSheet({ id, profile, history, own, bal, onBuy, onEquip, onGo, o
           <span style={{ width: 44, height: 44, borderRadius: 99, background: C.mint, color: C.ink, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Ico n="check" size={24} sw={3} /></span>
           <span style={{ minWidth: 0 }}>
             <span style={{ display: "block", fontFamily: DISPLAY, fontSize: 26, fontWeight: 900, lineHeight: 1 }}>{st === "equipped" ? T("shEquipped") : T("shGotIt")}</span>
-            <span style={{ display: "block", fontSize: 12.5, color: C.dim, marginTop: 4, lineHeight: 1.4 }}>{st === "equipped" ? T("shEquippedD") : T("shGotItD")}</span>
+            <span style={{ display: "block", fontSize: 13, color: C.dim, marginTop: 4, lineHeight: 1.4 }}>{st === "equipped" ? T("shEquippedD") : T("shGotItD")}</span>
           </span>
         </div>}
         <LookPreview profile={profile} look={look} history={history} />
         <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginTop: 12 }}>
-          <span data-rar-chip={L0.r} style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: 0.4, textTransform: "uppercase", color: col, border: `1px solid ${col}88`, borderRadius: 99, padding: "2px 8px" }}>{T("gmRar" + L0.r)}</span>
-          <span style={{ fontSize: 12.5, color: C.dim }}>{T("lookKind_" + kind)}</span>
+          <span data-rar-chip={L0.r} style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.4, textTransform: "uppercase", color: col, border: `1px solid ${col}88`, borderRadius: 99, padding: "2px 8px" }}>{T("gmRar" + L0.r)}</span>
+          <span style={{ fontSize: 13, color: C.dim }}>{T("lookKind_" + kind)}</span>
         </div>
-        {L0.won && !has && <div data-look-hint style={{ display: "flex", gap: 10, alignItems: "flex-start", marginTop: 12, fontSize: 13.5, color: C.chalk, lineHeight: 1.45 }}><Ico n="lock" size={18} color={C.dim} style={{ marginTop: 1 }} /><span>{T("shHint_" + L0.won)}</span></div>}
+        {L0.won && !has && <div data-look-hint style={{ display: "flex", gap: 10, alignItems: "flex-start", marginTop: 12, fontSize: 14, color: C.chalk, lineHeight: 1.45 }}><Ico n="lock" size={18} color={C.dim} style={{ marginTop: 1 }} /><span>{T("shHint_" + L0.won)}</span></div>}
         <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 16 }}>
           {st === "view" && !has && price !== null && (bal >= price
             ? <button type="button" data-look-buy onClick={() => { if (onBuy(id)) setSt("bought"); }} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>{T("shBuy")}<Ico n="diamond" size={18} sw={2.4} />{nf(price)}</button>
             : <button type="button" data-look-buy disabled style={{ ...bigBtn(C.panelHi, C.dim), display: "flex", alignItems: "center", justifyContent: "center", gap: 8, opacity: 0.8 }}>{T("shNotEnough")}<Ico n="diamond" size={16} sw={2.4} />{nf(price)}</button>)}
           {st === "bought" && <>
             <button type="button" data-look-equip onClick={() => { onEquip(kind, id); setSt("equipped"); }} className="b3d" style={bigBtn(C.signal, C.signalInk)}>{T("shEquipNow")}</button>
-            <button type="button" data-look-later onClick={() => { sfxTap(); onClose(); }} style={{ ...ghostBtn, padding: "13px 14px", fontSize: 14.5 }}>{T("shLater")}</button>
+            <button type="button" data-look-later onClick={() => { sfxTap(); onClose(); }} style={{ ...ghostBtn, padding: "13px 14px", fontSize: 15 }}>{T("shLater")}</button>
           </>}
           {(st === "equipped" || (st === "view" && has)) && <>
-            {st === "view" && <div data-look-owned style={{ fontSize: 13.5, color: C.mint, fontWeight: 700 }}>{worn ? T("shEquippedD") : T("shUnlockedD")}</div>}
-            <button type="button" data-look-profile onClick={() => { sfxTap(); onClose(); onGo("profile"); }} style={{ ...ghostBtn, padding: "13px 14px", fontSize: 14.5, color: C.chalk }}>{st === "equipped" ? T("shSeeProfile") : T("shOpenProfile")}</button>
+            {st === "view" && <div data-look-owned style={{ fontSize: 14, color: C.mint, fontWeight: 700 }}>{worn ? T("shEquippedD") : T("shUnlockedD")}</div>}
+            <button type="button" data-look-profile onClick={() => { sfxTap(); onClose(); onGo("profile"); }} style={{ ...ghostBtn, padding: "13px 14px", fontSize: 15, color: C.chalk }}>{st === "equipped" ? T("shSeeProfile") : T("shOpenProfile")}</button>
           </>}
         </div>
       </div>
@@ -9690,7 +9690,7 @@ function LooksSheet({ profile, setProfile, history, own, onShop, onClose }) {
             <button key={id} type="button" data-look-own={id} onClick={() => pick(on ? null : id)} aria-pressed={on} style={tile(on)}>
               <LookThumb id={id} size={56} />
               <span style={nameS}>{lookName(id)}</span>
-              <span style={{ fontSize: 9.5, marginTop: -3, color: RAR_COL()[r], fontWeight: 800, textTransform: "uppercase", letterSpacing: 0.4 }}>{T("gmRar" + r)}</span>
+              <span style={{ fontSize: 10, marginTop: -3, color: RAR_COL()[r], fontWeight: 800, textTransform: "uppercase", letterSpacing: 0.4 }}>{T("gmRar" + r)}</span>
               {on && tick}
             </button>); })}
           <button type="button" data-looks-shop onClick={() => { sfxTap(); onClose(); onShop(); }} style={{ ...tile(false), border: `1.5px dashed ${C.line}`, background: "transparent" }}>
@@ -9756,7 +9756,7 @@ function TypeChips({ items }) {
   return (
     <span data-type-chips role="button" tabIndex={0} onClick={() => { sfxTap(); openInfoGlobal && openInfoGlobal({ title: T("plTypesT"), text: [T("plTypesD")] }); }} style={{ display: "inline-flex", gap: 5, flexWrap: "wrap", cursor: "pointer" }}>
       {PLN.TYPES.map(t => { const on = has.includes(t); return (
-        <span key={t} data-type={t} data-on={on ? 1 : 0} style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 8px 3px 6px", borderRadius: 99, fontSize: 11.5, fontWeight: 800, ...(on ? { background: `${C.signal}1f`, color: C.signal, border: `1px solid ${C.signal}55` } : { color: C.dim, border: `1px dashed ${C.line}`, opacity: 0.75 }) }}>
+        <span key={t} data-type={t} data-on={on ? 1 : 0} style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 8px 3px 6px", borderRadius: 99, fontSize: 12, fontWeight: 800, ...(on ? { background: `${C.signal}1f`, color: C.signal, border: `1px solid ${C.signal}55` } : { color: C.dim, border: `1px dashed ${C.line}`, opacity: 0.75 }) }}>
           <BodyIco spec={BD.TYPE_ICON[t]} size={18} hi={on ? C.signal : C.dim} style={{ margin: "-2px 0" }} />{T("grp_" + t)}
         </span>
       ); })}
@@ -9780,9 +9780,9 @@ function PlanHintsSheet({ plan, P, onClose }) {
     <Sheet title={T("plTips")} onClose={onClose} short>
       <div data-plan-hints style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {!hs.length && week && <div style={{ display: "flex", gap: 8, alignItems: "flex-start" }}><Ico n="check" size={18} color={C.mint} style={{ marginTop: 2 }} />{T("hintOk")}</div>}
-        {hs.map((h, i) => <div key={i} data-hint={h.kind} style={{ display: "flex", gap: 8, alignItems: "flex-start", fontSize: 14.5 }}><Ico n={h.kind === "rest" ? "snow" : h.kind === "missDay" || h.kind === "missPlan" ? "alert" : "bulb"} size={17} color={h.kind === "rest" ? C.sky : C.signal} style={{ marginTop: 3, flexShrink: 0 }} /><span>{hintText(h, wd)}</span></div>)}
-        {!week && <div data-hint="noweek" style={{ display: "flex", gap: 8, alignItems: "flex-start", fontSize: 14.5 }}><Ico n="calendar" size={17} color={C.sky} style={{ marginTop: 3, flexShrink: 0 }} /><span>{T("plTipsNoWeek")}</span></div>}
-        <div style={{ fontSize: 12.5, color: C.dim, marginTop: 6, lineHeight: 1.5 }}>{T("hintWhy")}</div>
+        {hs.map((h, i) => <div key={i} data-hint={h.kind} style={{ display: "flex", gap: 8, alignItems: "flex-start", fontSize: 15 }}><Ico n={h.kind === "rest" ? "snow" : h.kind === "missDay" || h.kind === "missPlan" ? "alert" : "bulb"} size={17} color={h.kind === "rest" ? C.sky : C.signal} style={{ marginTop: 3, flexShrink: 0 }} /><span>{hintText(h, wd)}</span></div>)}
+        {!week && <div data-hint="noweek" style={{ display: "flex", gap: 8, alignItems: "flex-start", fontSize: 15 }}><Ico n="calendar" size={17} color={C.sky} style={{ marginTop: 3, flexShrink: 0 }} /><span>{T("plTipsNoWeek")}</span></div>}
+        <div style={{ fontSize: 13, color: C.dim, marginTop: 6, lineHeight: 1.5 }}>{T("hintWhy")}</div>
       </div>
     </Sheet>
   );
@@ -9798,16 +9798,16 @@ function StartPicker({ P, history, recDay, onRec, onPlan, onFree, onClose }) {
   const plans = PLN.sortPlans(P.list.filter(p => p.items.length), P.sort, P.dir, planTitle).sort((a, b) => (b === todayPl) - (a === todayPl));
   const lastKey = [["rec", recLast], ...plans.map(p => [p.id, ld[p.id] || ""])].filter(x => x[1]).sort((a, b) => (a[1] < b[1] ? 1 : -1))[0];
   const rel = d => capFirst(d === today ? T("today") : d === yday ? T("yesterday") : fmtDate(d));
-  const lastChip = (key, d) => lastKey && lastKey[0] === key ? <span data-pick-last style={{ display: "inline-flex", alignItems: "center", gap: 4, flexShrink: 0, padding: "4px 8px", borderRadius: 99, background: `${C.mint}22`, color: C.mint, fontSize: 11.5, fontWeight: 800 }}><Ico n="check" size={13} sw={2.6} />{rel(d)}</span> : null;
+  const lastChip = (key, d) => lastKey && lastKey[0] === key ? <span data-pick-last style={{ display: "inline-flex", alignItems: "center", gap: 4, flexShrink: 0, padding: "4px 8px", borderRadius: 99, background: `${C.mint}22`, color: C.mint, fontSize: 12, fontWeight: 800 }}><Ico n="check" size={13} sw={2.6} />{rel(d)}</span> : null;
   const rowS = key => ({ ...btnBase, fontWeight: 400, width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "12px 12px", borderRadius: 14, textAlign: "left", color: C.chalk, background: C.panelHi, border: `1.5px solid ${lastKey && lastKey[0] === key ? C.mint : "transparent"}` });
-  const sub = { display: "block", fontSize: 12.5, color: C.dim, marginTop: 2 };
+  const sub = { display: "block", fontSize: 13, color: C.dim, marginTop: 2 };
   return (
     <Sheet title={T("plPick")} onClose={onClose}>
       <div data-start-picker style={{ display: "flex", flexDirection: "column", gap: 7 }}>
         {plans.map(p => (
           <button key={p.id} data-pick-plan={p.id} data-pick-today={p === todayPl ? 1 : 0} onClick={() => { sfxTap(); onPlan(p); }} style={rowS(p.id)}>
             <span style={{ flex: 1, minWidth: 0 }}>
-              <span style={{ display: "block", fontSize: 15.5, fontWeight: 800, overflowWrap: "anywhere" }}>{planTitle(p)}</span>
+              <span style={{ display: "block", fontSize: 16, fontWeight: 800, overflowWrap: "anywhere" }}>{planTitle(p)}</span>
               <span style={sub}>{[p === todayPl ? T("homeToday") : "", TP("exN", p.items.length), `~${planMinutes(p.items)} min`, groupName(P, p.grp)].filter(Boolean).join(" · ")}</span>
             </span>
             {lastChip(p.id, ld[p.id])}
@@ -9816,14 +9816,14 @@ function StartPicker({ P, history, recDay, onRec, onPlan, onFree, onClose }) {
         ))}
         <div data-pick-rec style={{ ...rowS("rec"), cursor: "default" }}>
           <span style={{ flex: 1, minWidth: 0 }}>
-            <span style={{ display: "block", fontSize: 15.5, fontWeight: 800 }}>{T("plRecTitle")}</span>
+            <span style={{ display: "block", fontSize: 16, fontWeight: 800 }}>{T("plRecTitle")}</span>
             <span style={sub}>{`${T("dayN", { d: recDay.id })} · ${TP("exN", recDay.ids.length)}`}</span>
           </span>
           {lastChip("rec", recLast)}
-          {[3, 2].map(n => <button key={n} data-pick-rec-rounds={n} onClick={() => { sfxTap(); onRec(n); }} aria-label={T("roundsBtn", { n, m: n === 2 ? 13 : 19 })} style={{ ...btnBase, width: 46, flexShrink: 0, padding: "8px 0", borderRadius: 12, background: n === 3 ? C.signal : C.ink, color: n === 3 ? C.signalInk : C.chalk, display: "flex", flexDirection: "column", alignItems: "center", lineHeight: 1 }}><span style={{ fontFamily: DISPLAY, fontSize: 19, fontWeight: 900 }}>{n === 2 ? 13 : 19}</span><span style={{ fontSize: 9.5, fontWeight: 800, marginTop: 2 }}>min</span></button>)}
+          {[3, 2].map(n => <button key={n} data-pick-rec-rounds={n} onClick={() => { sfxTap(); onRec(n); }} aria-label={T("roundsBtn", { n, m: n === 2 ? 13 : 19 })} style={{ ...btnBase, width: 46, flexShrink: 0, padding: "8px 0", borderRadius: 12, background: n === 3 ? C.signal : C.ink, color: n === 3 ? C.signalInk : C.chalk, display: "flex", flexDirection: "column", alignItems: "center", lineHeight: 1 }}><span style={{ fontFamily: DISPLAY, fontSize: 18, fontWeight: 900 }}>{n === 2 ? 13 : 19}</span><span style={{ fontSize: 10, fontWeight: 800, marginTop: 2 }}>min</span></button>)}
         </div>
         <button data-pick-free onClick={() => { sfxTap(); onFree(); }} style={{ ...rowS("free"), background: "transparent", border: `1.5px dashed ${C.line}` }}>
-          <Ico n="plus" size={18} color={C.sky} /><span style={{ flex: 1, fontSize: 15, fontWeight: 800 }}>{T("freeWorkout")}</span><span style={{ fontSize: 12.5, color: C.dim }}>{T("freePick")}</span>
+          <Ico n="plus" size={18} color={C.sky} /><span style={{ flex: 1, fontSize: 15, fontWeight: 800 }}>{T("freeWorkout")}</span><span style={{ fontSize: 13, color: C.dim }}>{T("freePick")}</span>
         </button>
       </div>
     </Sheet>
@@ -9845,7 +9845,7 @@ function WeekCard({ P, setP, onTips }) {
         {on && <button data-week-tips onClick={() => { sfxTap(); onTips(); }} aria-label={T("plTips")} style={iconBtn}><Ico n="bulb" size={17} color={run > PLN.REST_IN_A_ROW ? C.signal : C.dim} /></button>}
         {on && <button data-week-clear onClick={() => { sfxTap(); setClear(true); }} aria-label={T("plWeekClear")} style={iconBtn}><Ico n="trash" size={16} color={C.dim} /></button>}
       </span>}>
-      {!opts.length && <div data-week-none style={{ fontSize: 13.5, color: C.dim, lineHeight: 1.45, marginBottom: 10 }}>{T("plWeekNone")}</div>}
+      {!opts.length && <div data-week-none style={{ fontSize: 14, color: C.dim, lineHeight: 1.45, marginBottom: 10 }}>{T("plWeekNone")}</div>}
       <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
         {PLN.WEEKDAYS.map(wd => {
           const pl = PLN.planOn(P, wd);
@@ -9853,9 +9853,9 @@ function WeekCard({ P, setP, onTips }) {
             <button key={wd} data-week-row={wd} data-week-plan={pl ? pl.id : ""} disabled={!opts.length} onClick={() => { sfxTap(); setDay(wd); }}
               style={{ ...btnBase, fontWeight: 400, display: "flex", alignItems: "center", gap: 10, padding: "8px 10px 8px 12px", borderRadius: 12, textAlign: "left", color: C.chalk, minHeight: 42,
                 ...(pl ? { background: C.panelHi, border: "1px solid transparent" } : { background: "transparent", border: `1px dashed ${C.line}` }), opacity: opts.length ? 1 : 0.55 }}>
-              <span style={{ width: 30, flexShrink: 0, fontSize: 12.5, fontWeight: 800, color: wd === todayWd ? C.signal : C.dim }}>{wdNames[wd - 1]}</span>
+              <span style={{ width: 30, flexShrink: 0, fontSize: 13, fontWeight: 800, color: wd === todayWd ? C.signal : C.dim }}>{wdNames[wd - 1]}</span>
               {pl ? <>
-                <span style={{ flex: 1, minWidth: 0, fontSize: 14.5, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{planTitle(pl)}</span>
+                <span style={{ flex: 1, minWidth: 0, fontSize: 15, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{planTitle(pl)}</span>
                 <TypeMarks items={pl.items} size={15} />
               </> : <span style={{ flex: 1, minWidth: 0, fontSize: 14, color: C.dim, display: "inline-flex", alignItems: "center", gap: 7 }}><Ico n="moon" size={15} color={C.sky} />{T("plRest")}</span>}
               {opts.length > 0 && <Arrow size={16} />}
@@ -9874,7 +9874,7 @@ function WeekCard({ P, setP, onTips }) {
                   style={{ ...btnBase, fontWeight: 400, display: "flex", alignItems: "center", gap: 10, padding: "11px 12px", borderRadius: 12, textAlign: "left", color: C.chalk, ...(sel ? { background: `${C.signal}1c`, border: `1.5px solid ${C.signal}` } : { background: C.panelHi, border: "1.5px solid transparent" }) }}>
                   <span style={{ flex: 1, minWidth: 0 }}>
                     <span style={{ display: "block", fontSize: 15, fontWeight: 800, overflowWrap: "anywhere" }}>{planTitle(p)}</span>
-                    <span style={{ display: "block", fontSize: 12.5, color: C.dim, marginTop: 2 }}>{[TP("exN", p.items.length), `~${planMinutes(p.items)} min`, groupName(P, p.grp)].filter(Boolean).join(" · ")}</span>
+                    <span style={{ display: "block", fontSize: 13, color: C.dim, marginTop: 2 }}>{[TP("exN", p.items.length), `~${planMinutes(p.items)} min`, groupName(P, p.grp)].filter(Boolean).join(" · ")}</span>
                   </span>
                   <TypeMarks items={p.items} size={15} />
                   {sel && <Ico n="check" size={18} color={C.signal} />}
@@ -9907,7 +9907,7 @@ function PlansTab({ profile, setProfile, history, open, onOpened }) {
   useEffect(() => { if (open && open.plan) { pg.jumpPage(1); setEdit(open.plan); onOpened && onOpened(); } }, [open]);
   const editing = edit && P.list.find(p => p.id === edit);
   if (editing) return <PlanEditor plan={editing} P={P} setP={setP} onBack={() => { sfxTap(); setEdit(null); window.scrollTo(0, 0); }} />;
-  const chipS = on => ({ ...btnBase, padding: "6px 11px", fontSize: 12.5, borderRadius: 99, whiteSpace: "nowrap", flexShrink: 0, ...(on ? { background: `${C.signal}22`, border: `1px solid ${C.signal}66`, color: C.signal } : { ...SUNK(), color: C.dim }) });
+  const chipS = on => ({ ...btnBase, padding: "6px 11px", fontSize: 13, borderRadius: 99, whiteSpace: "nowrap", flexShrink: 0, ...(on ? { background: `${C.signal}22`, border: `1px solid ${C.signal}66`, color: C.signal } : { ...SUNK(), color: C.dim }) });
   const wd = weekdaysShort();
   const newPlan = () => { sfxTap(); let id; setP(cur => { const r = PLN.addPlan(cur); id = r.plan.id; const g = grp && grp !== "-" ? grp : null; return g ? PLN.updatePlan(r.P, id, { grp: g }) : r.P; }); setEdit(id); window.scrollTo(0, 0); };
   const list = PLN.sortPlans(P.list.filter(p => !grp || (grp === "-" ? !p.grp : p.grp === grp)), P.sort, P.dir, planTitle);
@@ -9917,7 +9917,7 @@ function PlansTab({ profile, setProfile, history, open, onOpened }) {
       <div style={{ margin: "0 -18px" }}><div {...pg.pagerProps}><div {...pg.pageProps(0)}>
       {(
         <Sect title={T("plRecTitle")} data-plan-rec meta={!weekOn ? <span data-plan-inuse style={{ fontSize: 12, fontWeight: 800, color: C.mint }}>{T("plInUse")}</span> : null}>
-          <div style={{ fontSize: 14.5, color: C.chalk, lineHeight: 1.5 }}>{T("plRecD")}</div>
+          <div style={{ fontSize: 15, color: C.chalk, lineHeight: 1.5 }}>{T("plRecD")}</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 12 }}>
             {DAYS.map(d => (
               <div key={d.id} data-rec-day={d.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 12, background: C.panelHi }}>
@@ -9927,14 +9927,14 @@ function PlansTab({ profile, setProfile, history, open, onOpened }) {
               </div>
             ))}
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12.5, color: C.dim, marginTop: 10 }}><TypeMarks items={[{ id: "k1" }, { id: "row1" }, { id: "n1" }, { id: "b5" }]} size={14} />{T("plTypesT")}<InfoQ id="types" title={T("plTypesT")} text={T("plTypesD")} /></div>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: C.dim, marginTop: 10 }}><TypeMarks items={[{ id: "k1" }, { id: "row1" }, { id: "n1" }, { id: "b5" }]} size={14} />{T("plTypesT")}<InfoQ id="types" title={T("plTypesT")} text={T("plTypesD")} /></div>
           {weekOn && <div data-plan-rec-week style={{ display: "flex", gap: 8, alignItems: "flex-start", fontSize: 13, color: C.dim, lineHeight: 1.45, marginTop: 12 }}><Ico n="calendar" size={16} color={C.sky} style={{ flexShrink: 0, marginTop: 1 }} /><span>{T("plRecWeekOn")}</span></div>}
           {/* 1.9.0 (Michael, Nov 7: "add the icon so nobody has to guess which one"): the tip names My plans with the
               same icon as its tab, and a tap takes you there */}
-          <button type="button" data-plan-gym onClick={() => pg.goPage(1)} style={{ ...btnBase, fontWeight: 400, width: "100%", textAlign: "left", display: "flex", gap: 10, alignItems: "center", marginTop: 14, padding: "10px 12px", borderRadius: 14, background: SOFT(), fontSize: 13.5, lineHeight: 1.4, color: C.chalk }}>
+          <button type="button" data-plan-gym onClick={() => pg.goPage(1)} style={{ ...btnBase, fontWeight: 400, width: "100%", textAlign: "left", display: "flex", gap: 10, alignItems: "center", marginTop: 14, padding: "10px 12px", borderRadius: 14, background: SOFT(), fontSize: 14, lineHeight: 1.4, color: C.chalk }}>
             <Ico n="bulb" size={18} color={C.signal} style={{ flexShrink: 0 }} />
             <span style={{ flex: 1, minWidth: 0 }}>{T("plGymHint2")}</span>
-            <span data-plan-gym-go style={{ display: "inline-flex", alignItems: "center", gap: 5, flexShrink: 0, padding: "6px 9px", borderRadius: 12, background: `${C.signal}22`, color: C.signal, fontSize: 12.5, fontWeight: 800 }}><Ico n="checklist" size={17} sw={2.2} />{T("plMine")}</span>
+            <span data-plan-gym-go style={{ display: "inline-flex", alignItems: "center", gap: 5, flexShrink: 0, padding: "6px 9px", borderRadius: 12, background: `${C.signal}22`, color: C.signal, fontSize: 13, fontWeight: 800 }}><Ico n="checklist" size={17} sw={2.2} />{T("plMine")}</span>
           </button>
         </Sect>
       )}
@@ -9961,7 +9961,7 @@ function PlansTab({ profile, setProfile, history, open, onOpened }) {
               return (
                 <button key={p.id} data-plan-card={p.id} onClick={() => { sfxTap(); setEdit(p.id); window.scrollTo(0, 0); }} style={{ ...btnBase, ...card, fontWeight: 400, textAlign: "left", padding: "14px 16px", display: "flex", flexDirection: "column", gap: 8, color: C.chalk }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, width: "100%" }}>
-                    <span style={{ fontFamily: DISPLAY, fontSize: 21, fontWeight: 800, lineHeight: 1.1, flex: 1, minWidth: 0, overflowWrap: "anywhere" }}>{planTitle(p)}</span>
+                    <span style={{ fontFamily: DISPLAY, fontSize: 20, fontWeight: 800, lineHeight: 1.1, flex: 1, minWidth: 0, overflowWrap: "anywhere" }}>{planTitle(p)}</span>
                     <Arrow />
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, width: "100%" }}>
@@ -10003,8 +10003,8 @@ function PlanEditor({ plan, P, setP, onBack }) {
   const upd = fn => setP(cur => PLN.updatePlan(cur, plan.id, fn(cur.list.find(p => p.id === plan.id) || plan)));
   const items = plan.items || [];
   const warn = PLN.planHints(plan, LIB).length > 0 || PLN.weekHints(P, LIB).some(h => h.kind === "rest");
-  const chipS = on => ({ ...btnBase, padding: "6px 11px", fontSize: 12.5, borderRadius: 99, whiteSpace: "nowrap", flexShrink: 0, ...(on ? { background: `${C.signal}22`, border: `1px solid ${C.signal}66`, color: C.signal } : { ...SUNK(), color: C.dim }) });
-  const step = (on, label, data) => <button data-step={data} onClick={e => { e.stopPropagation(); sfxTap(); on(); }} aria-label={label} style={{ ...btnBase, width: 30, height: 30, padding: 0, borderRadius: 8, ...SUNK(), color: C.chalk, fontSize: 17, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>{data.endsWith("-") ? "−" : "+"}</button>;
+  const chipS = on => ({ ...btnBase, padding: "6px 11px", fontSize: 13, borderRadius: 99, whiteSpace: "nowrap", flexShrink: 0, ...(on ? { background: `${C.signal}22`, border: `1px solid ${C.signal}66`, color: C.signal } : { ...SUNK(), color: C.dim }) });
+  const step = (on, label, data) => <button data-step={data} onClick={e => { e.stopPropagation(); sfxTap(); on(); }} aria-label={label} style={{ ...btnBase, width: 30, height: 30, padding: 0, borderRadius: 8, ...SUNK(), color: C.chalk, fontSize: 16, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>{data.endsWith("-") ? "−" : "+"}</button>;
   return (
     <div className="scr" style={SCR_STYLE} data-plan-editor={plan.id}>
       <button data-plan-back onClick={onBack} style={{ ...btnBase, background: "transparent", color: C.sky, padding: "4px 0", fontSize: 14, display: "inline-flex", alignItems: "center", gap: 4 }}><Arrow dir="‹" />{T("plBack")}</button>
@@ -10033,7 +10033,7 @@ function PlanEditor({ plan, P, setP, onBack }) {
             </button>;
           })}
         </div>
-        {!items.length && <div style={{ fontSize: 12.5, color: C.dim, marginTop: 8 }}>{T("plDaysEmpty")}</div>}
+        {!items.length && <div style={{ fontSize: 13, color: C.dim, marginTop: 8 }}>{T("plDaysEmpty")}</div>}
       </Sect>
       <Sect title={T("secExercises")} data-plan-dayview meta={items.length ? <TypeMarks items={items} data="day" onTap={() => setHints(true)} /> : null}>
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -10051,12 +10051,12 @@ function PlanEditor({ plan, P, setP, onBack }) {
                 <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                   <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
                     {step(() => upd(p => ({ items: PLN.patchItem(p, x.id, { sets: (x.sets || PLN.DEFAULT_SETS) - 1 }).items })), T("plSets") + " −", "sets-")}
-                    <span data-plan-sets={x.sets} style={{ minWidth: 52, textAlign: "center", fontSize: 13.5, color: C.chalk, fontWeight: 700 }}>{x.sets} {T("plSets")}</span>
+                    <span data-plan-sets={x.sets} style={{ minWidth: 52, textAlign: "center", fontSize: 14, color: C.chalk, fontWeight: 700 }}>{x.sets} {T("plSets")}</span>
                     {step(() => upd(p => ({ items: PLN.patchItem(p, x.id, { sets: (x.sets || PLN.DEFAULT_SETS) + 1 }).items })), T("plSets") + " +", "sets+")}
                   </span>
                   {timed && <span style={{ display: "inline-flex", alignItems: "center", gap: 6, marginLeft: "auto" }}>
                     {step(() => upd(p => ({ items: PLN.patchItem(p, x.id, { dur: Math.max(5, dur - 5) }).items })), "−5 s", "dur-")}
-                    <span data-plan-dur={dur} data-own={x.dur ? 1 : 0} style={{ minWidth: 54, textAlign: "center", fontSize: 13.5, fontWeight: 700, color: x.dur ? C.signal : C.chalk, lineHeight: 1.1 }}>{fmtHold(dur)}<br /><span style={{ fontSize: 10.5, fontWeight: 600, color: C.dim }}>{T(x.dur ? "plTimeOwn" : "plTimeApp")}</span></span>
+                    <span data-plan-dur={dur} data-own={x.dur ? 1 : 0} style={{ minWidth: 54, textAlign: "center", fontSize: 14, fontWeight: 700, color: x.dur ? C.signal : C.chalk, lineHeight: 1.1 }}>{fmtHold(dur)}<br /><span style={{ fontSize: 11, fontWeight: 600, color: C.dim }}>{T(x.dur ? "plTimeOwn" : "plTimeApp")}</span></span>
                     {step(() => upd(p => ({ items: PLN.patchItem(p, x.id, { dur: Math.min(1800, dur + 5) }).items })), "+5 s", "dur+")}
                     {x.dur && <button data-plan-dur-reset onClick={() => { sfxTap(); upd(p => ({ items: PLN.patchItem(p, x.id, { dur: null }).items })); }} aria-label={T("plTimeReset")} style={{ ...btnBase, background: "transparent", color: C.dim, padding: 4, display: "inline-flex" }}><Ico n="undo" size={16} /></button>}
                   </span>}
@@ -10155,7 +10155,7 @@ function ShopTab({ history, profile, setProfile, onGo }) {
   // Shop (chest, freezes and boosts, what is coming, codes) | Looks (this week's) | Earned (looks from badges).
   const pg = usePager("shop", 3);
   const soon = T("gmSoon").replace(/[.。]\s*$/, "");
-  const soonChip = <span data-soon style={{ flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11.5, fontWeight: 800, color: C.dim, ...SUNK(), borderRadius: 999, padding: "5px 10px", whiteSpace: "nowrap" }}><Ico n="lock" size={12} sw={2.4} />{soon}</span>;
+  const soonChip = <span data-soon style={{ flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 5, fontSize: 12, fontWeight: 800, color: C.dim, ...SUNK(), borderRadius: 999, padding: "5px 10px", whiteSpace: "nowrap" }}><Ico n="lock" size={12} sw={2.4} />{soon}</span>;
   const soonRow = (k, ic, col, title, first) => (
     <div key={k} data-shop-soon={k} aria-disabled="true" style={{ ...row, borderTop: first ? "none" : `1px solid ${C.line}` }}>
       <span style={{ opacity: 0.6, display: "flex" }}><IcoBox n={ic} color={col} /></span>
@@ -10176,7 +10176,7 @@ function ShopTab({ history, profile, setProfile, onGo }) {
             <div style={{ fontSize: 12, color: C.dim, fontWeight: 700 }}>{T("shDia")}</div>
             <div data-shop-num style={{ fontFamily: DISPLAY, fontSize: 40, fontWeight: 900, lineHeight: 1, color: C.chalk, fontVariantNumeric: "tabular-nums" }}>{nf(Math.round(balT))}</div>
           </div>
-          <button type="button" data-shop-how onClick={() => { sfxTap(); setHowOpen(o => !o); }} aria-expanded={howOpen} style={{ ...btnBase, background: SOFT(), color: C.chalk, padding: "8px 11px", fontSize: 12.5, borderRadius: 12, display: "inline-flex", alignItems: "center", gap: 6 }}>{T("shHow")}<Chevron open={howOpen} /></button>
+          <button type="button" data-shop-how onClick={() => { sfxTap(); setHowOpen(o => !o); }} aria-expanded={howOpen} style={{ ...btnBase, background: SOFT(), color: C.chalk, padding: "8px 11px", fontSize: 13, borderRadius: 12, display: "inline-flex", alignItems: "center", gap: 6 }}>{T("shHow")}<Chevron open={howOpen} /></button>
         </div>
         <Expand open={howOpen}>
           <div data-shop-parts style={{ position: "relative", marginTop: 12, display: "flex", flexDirection: "column", gap: 2 }}>
@@ -10222,7 +10222,7 @@ function ShopTab({ history, profile, setProfile, onGo }) {
       </ListSect>
           {/* 1.10.0 (Michael, Nov 11: "battle pass and such: prepared, but only as coming soon"): shown, locked, no dates or prices */}
           <Sect data-shop-pass aria-disabled="true" title={T("shPassT")} meta={soonChip}>
-            <div style={{ fontSize: 13.5, color: C.dim, lineHeight: 1.45 }}>{T("shPassD")}</div>
+            <div style={{ fontSize: 14, color: C.dim, lineHeight: 1.45 }}>{T("shPassD")}</div>
             <div aria-hidden="true" data-pass-track style={{ position: "relative", display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 14 }}>
               <span style={{ position: "absolute", left: 18, right: 18, top: "50%", height: 4, marginTop: -2, borderRadius: 2, background: C.line }} />
               <span className="passGlow" style={{ position: "absolute", left: 18, top: "50%", height: 4, marginTop: -2, borderRadius: 2, width: "22%", background: `linear-gradient(90deg, ${C.signal}, ${C.signal}00)` }} />
@@ -10249,7 +10249,7 @@ function ShopTab({ history, profile, setProfile, onGo }) {
       <Sect data-shop-today style={{ marginTop: 0 }} title={T("shToday")} meta={T("shTodayMeta")}>
         {daily.length ? <div style={lookGrid}>
           {daily.map(id => lookRow(id, own.includes(id)
-            ? <span data-owned style={{ flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 4, fontWeight: 800, fontSize: 12.5, color: C.mint, padding: "6px 4px" }}><Ico n="check" size={15} sw={2.6} />{T("shOwned")}</span>
+            ? <span data-owned style={{ flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 4, fontWeight: 800, fontSize: 13, color: C.mint, padding: "6px 4px" }}><Ico n="check" size={15} sw={2.6} />{T("shOwned")}</span>
             : <span style={{ flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 4, fontWeight: 900, fontSize: 14, color: bal >= EC.lookPrice(id) ? C.chalk : C.dim, background: SOFT(), borderRadius: 10, padding: "6px 9px" }}><Ico n="diamond" size={14} color={C.sky} sw={2.4} />{nf(EC.lookPrice(id))}</span>, { "data-shop-look": id, "data-has": own.includes(id) ? 1 : 0 }))}
         </div> : <div style={{ fontSize: 13, color: C.dim }}>{T("shAllOwned")}</div>}
       </Sect>
@@ -10295,13 +10295,13 @@ function GameTab({ history, profile, setProfile, acct, onPlay }) {
       {!gp.tut && !saved && (
         <div data-gm-tut className="cardIn" style={{ ...card, ...tileR(), padding: "14px 16px", marginBottom: 12, border: `1.5px solid ${C.signal}`, display: "flex", alignItems: "center", gap: 12 }}>
           <IcoBox n="cap" size={46} />
-          <span style={{ flex: 1, minWidth: 0, fontWeight: 800, fontSize: 15.5, lineHeight: 1.3 }}>{T("gmTutT")}</span>
+          <span style={{ flex: 1, minWidth: 0, fontWeight: 800, fontSize: 16, lineHeight: 1.3 }}>{T("gmTutT")}</span>
           <button type="button" data-gm-tut-go onClick={() => { sfxTap(); startTut(); }} style={{ ...btnBase, padding: "10px 14px", borderRadius: 12, background: C.signal, color: C.signalInk, fontSize: 14, flexShrink: 0 }}>{T("gmTutGo")}</button>
         </div>
       )}
       <Sect data-gm-level title={<>{T("gmLevelT")}<InfoQ title={T("gmLevelT")} text={T("gmLevelD", { a: nf(gl.into), b: nf(gl.need) })} /></>} meta={<span style={{ fontFamily: DISPLAY, fontSize: 20, fontWeight: 900, color: C.signal }}>{T("gmLevel", { n: gl.lvl })}</span>}>
         <div style={{ height: 8, borderRadius: 99, background: C.panelHi, overflow: "hidden" }}><div style={{ width: `${Math.round((gl.into / gl.need) * 100)}%`, height: "100%", background: C.signal, borderRadius: 99 }} /></div>
-        <div data-gm-xp-line style={{ fontSize: 12.5, color: C.dim, marginTop: 7, fontVariantNumeric: "tabular-nums" }}>{nf(gl.into)} / {nf(gl.need)} XP</div>
+        <div data-gm-xp-line style={{ fontSize: 13, color: C.dim, marginTop: 7, fontVariantNumeric: "tabular-nums" }}>{nf(gl.into)} / {nf(gl.need)} XP</div>
       </Sect>
       {saved && (
         <button type="button" data-gm-continue onClick={() => { sfxTap(); onPlay(saved); }} style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 12 }} className="b3d">{T("gmContinue")}</button>
@@ -10313,7 +10313,7 @@ function GameTab({ history, profile, setProfile, acct, onPlay }) {
             {m.soon ? <IcoBox n="lock" color={C.dim} size={44} /> : ICONS[m.icon] ? <IcoBox n={m.icon} color={C.signal} size={44} /> : <span aria-hidden="true" style={{ fontSize: 30, lineHeight: 1 }}>{m.icon}</span>}
             <span style={{ flex: 1, minWidth: 0 }}>
               <span style={{ display: "block", fontFamily: DISPLAY, fontSize: 22, fontWeight: 900, lineHeight: 1.1 }}>{m.name}</span>
-              {m.desc && <span style={{ display: "block", fontSize: 12.5, color: C.dim, marginTop: 3, lineHeight: 1.4 }}>{m.desc}</span>}
+              {m.desc && <span style={{ display: "block", fontSize: 13, color: C.dim, marginTop: 3, lineHeight: 1.4 }}>{m.desc}</span>}
             </span>
             {!m.off && !saved && <Arrow />}
           </button>
@@ -10324,8 +10324,8 @@ function GameTab({ history, profile, setProfile, acct, onPlay }) {
             <div key={m.id} data-gm-mode={m.id} data-soon={1} aria-disabled="true" style={{ ...card, ...tileR(), padding: "12px 12px", display: "flex", alignItems: "center", gap: 10, opacity: 0.6, minWidth: 0 }}>
               <IcoBox n={m.icon} color={C.dim} size={38} />
               <span style={{ minWidth: 0 }}>
-                <span style={{ display: "block", fontFamily: DISPLAY, fontSize: 17, fontWeight: 900, lineHeight: 1.1, color: C.chalk }}>{m.name}</span>
-                <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11.5, fontWeight: 800, color: C.dim, marginTop: 3 }}><IcoI n="lock" />{T("gmSoon").replace(/[.…]+$/, "")}</span>
+                <span style={{ display: "block", fontFamily: DISPLAY, fontSize: 16, fontWeight: 900, lineHeight: 1.1, color: C.chalk }}>{m.name}</span>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, fontWeight: 800, color: C.dim, marginTop: 3 }}><IcoI n="lock" />{T("gmSoon").replace(/[.…]+$/, "")}</span>
               </span>
             </div>
           ))}
@@ -10337,7 +10337,7 @@ function GameTab({ history, profile, setProfile, acct, onPlay }) {
             <div key={s} data-gm-suit={s} data-lv={v} style={{ background: SOFT(), borderRadius: 14, padding: "10px 10px", display: "flex", alignItems: "center", gap: 9, minWidth: 0 }}>
               <SuitIcon s={s} size={22} />
               <span style={{ minWidth: 0 }}>
-                <span style={{ display: "block", fontSize: 13.5, fontWeight: 800, color: C.chalk }}>{T("grp_" + s)}</span>
+                <span style={{ display: "block", fontSize: 14, fontWeight: 800, color: C.chalk }}>{T("grp_" + s)}</span>
                 <span style={{ display: "block", fontSize: 12, fontWeight: 700, color: C.dim }}>{rk ? <RankTag r={v} size={13} text={`${rk.name} · +${2 * v}`} /> : T("gmSuitNone")}</span>
               </span>
             </div>); })}
@@ -10400,7 +10400,7 @@ function PerkSheet({ lo, mode, stakeMax = 0, onClose, onGo }) {
   const [k, setK] = useState(stakeMax);
   return (
     <Sheet title={T("gmPerkT")} onClose={onClose}>
-      <div style={{ fontSize: 13.5, color: C.dim, lineHeight: 1.5, marginBottom: 12 }}>{T("gmPerkD")}</div>
+      <div style={{ fontSize: 14, color: C.dim, lineHeight: 1.5, marginBottom: 12 }}>{T("gmPerkD")}</div>
       <div data-gm-perks style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {[null, ...GM.PERK_IDS].map(id => {
           const have = id === null || lo.perks.includes(id), on = p === id, t = id ? L.gm.perk[id] : [T("gmPerkNone"), T("gmPerkNoneD"), ""];
@@ -10409,8 +10409,8 @@ function PerkSheet({ lo, mode, stakeMax = 0, onClose, onGo }) {
               style={{ ...btnBase, textAlign: "left", fontWeight: 400, color: C.chalk, padding: "11px 12px", borderRadius: 14, display: "flex", gap: 10, alignItems: "center", background: on ? `${C.signal}22` : SOFT(), border: `1.5px solid ${on ? C.signal : C.line}`, opacity: have ? 1 : 0.5 }}>
               <span aria-hidden="true" style={{ width: 26, display: "flex", justifyContent: "center" }}>{id ? <Ico n={PERK_ICON[id]} size={22} color={C.signal} /> : "–"}</span>
               <span style={{ flex: 1, minWidth: 0 }}>
-                <span style={{ display: "block", fontWeight: 800, fontSize: 14.5 }}>{t[0]}</span>
-                <span style={{ display: "block", fontSize: 12.5, color: C.dim, marginTop: 2, lineHeight: 1.4 }}>{have ? withK(t[1]) : <span style={{ display: "inline-flex", gap: 5, alignItems: "center" }}><Ico n="lock" size={13} />{t[2]}</span>}</span>
+                <span style={{ display: "block", fontWeight: 800, fontSize: 15 }}>{t[0]}</span>
+                <span style={{ display: "block", fontSize: 13, color: C.dim, marginTop: 2, lineHeight: 1.4 }}>{have ? withK(t[1]) : <span style={{ display: "inline-flex", gap: 5, alignItems: "center" }}><Ico n="lock" size={13} />{t[2]}</span>}</span>
               </span>
             </button>
           );
@@ -10425,11 +10425,11 @@ function PerkSheet({ lo, mode, stakeMax = 0, onClose, onGo }) {
                 style={{ ...btnBase, flex: 1, height: 42, borderRadius: 12, background: STAKE_COL[i], border: `2.5px solid ${k === i ? C.signal : "rgba(255,255,255,.18)"}`, boxShadow: k === i ? `0 0 0 2px ${C.signal}55` : "none", opacity: i > stakeMax ? 0.35 : 1, color: i === 0 || i === 4 ? "#222" : "#fff", fontSize: 15 }}>{i > stakeMax ? <span style={{ display: "inline-flex" }}><Ico n="lock" size={16} /></span> : ""}</button>
             ))}
           </div>
-          <div data-gm-stake-d style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.45, marginTop: 8 }}><b style={{ color: C.chalk }}>{L.gm.stake[k][0]}</b> · {L.gm.stake[k][1]}{k ? ` · ${T("gmStakeXp", { n: Math.round((stakeXp(k) - 1) * 100) })}` : ""}</div>
+          <div data-gm-stake-d style={{ fontSize: 13, color: C.dim, lineHeight: 1.45, marginTop: 8 }}><b style={{ color: C.chalk }}>{L.gm.stake[k][0]}</b> · {L.gm.stake[k][1]}{k ? ` · ${T("gmStakeXp", { n: Math.round((stakeXp(k) - 1) * 100) })}` : ""}</div>
           {stakeMax < GM.STAKES.length - 1 && <div style={{ fontSize: 12, color: C.dim, marginTop: 4 }}><IcoI n="lock" /> {T("gmStakeNext", { s: L.gm.stake[stakeMax][0] })}</div>}
         </div>
       )}
-      {mode === "ranked" && <div style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.5, marginTop: 12 }}>{T("gmRankedNote")}</div>}
+      {mode === "ranked" && <div style={{ fontSize: 13, color: C.dim, lineHeight: 1.5, marginTop: 12 }}>{T("gmRankedNote")}</div>}
       <button type="button" data-gm-go onClick={() => { sfxTap(); onGo(p, mode === "ranked" ? 0 : k); }} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 14 }}>{T("gmGo")}</button>
     </Sheet>
   );
@@ -10442,7 +10442,7 @@ function GuideSect({ n, title, children }) {
     <section data-gm-guide-sect={n} style={{ ...card, ...tileR(), padding: "14px 14px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
         <span style={{ width: 26, height: 26, borderRadius: 99, background: C.signal, color: C.signalInk, fontWeight: 900, fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{n}</span>
-        <span style={{ fontFamily: DISPLAY, fontSize: 21, fontWeight: 900 }}>{title}</span>
+        <span style={{ fontFamily: DISPLAY, fontSize: 20, fontWeight: 900 }}>{title}</span>
       </div>
       {children}
     </section>
@@ -10472,10 +10472,10 @@ function GameRules({ onClose, lo, onTutorial }) {
           {GM.HANDS.map((h, i) => { const ex = GM_EX[h], sc = GM.handOf(ex).scored; return (
             <div key={h} data-gm-guide-hand={h} style={{ padding: "10px 10px 11px", borderRadius: 12, background: SOFT() }}>
               <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-                <span style={{ fontWeight: 900, fontSize: 15.5, flex: 1 }}>{handName(h)}</span>
+                <span style={{ fontWeight: 900, fontSize: 16, flex: 1 }}>{handName(h)}</span>
                 <span style={{ fontFamily: DISPLAY, fontWeight: 900, fontSize: 16 }}><span style={{ color: C.sky }}>{GM.HAND_BASE[h][0]}</span> <span style={{ color: C.dim }}>×</span> <span style={{ color: C.signal }}>{GM.HAND_BASE[h][1]}</span></span>
               </div>
-              <div style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.4, margin: "2px 0 8px" }}>{(L.gm.hd || [])[i]}</div>
+              <div style={{ fontSize: 13, color: C.dim, lineHeight: 1.4, margin: "2px 0 8px" }}>{(L.gm.hd || [])[i]}</div>
               <div style={{ display: "flex", gap: 5 }}>{ex.map(c => <PlayCard key={c} c={c} w={40} still out={!sc.includes(c)} />)}</div>
             </div>); })}
           <p style={{ ...gP, color: C.dim, fontSize: 13 }}>{T("gmG2Note")}</p>
@@ -10483,7 +10483,7 @@ function GameRules({ onClose, lo, onTutorial }) {
         <GuideSect n={3} title={T("gmG3T")}>
           <p style={gP}>{T("gmG3D")}</p>
           <div style={{ display: "flex", gap: 6, justifyContent: "center" }}>{exPair.map(c => <PlayCard key={c} c={c} w={46} still out={!GM.handOf(exPair).scored.includes(c)} />)}</div>
-          <div style={{ fontSize: 13.5, lineHeight: 1.7, padding: "8px 10px", borderRadius: 12, background: SOFT() }}>
+          <div style={{ fontSize: 14, lineHeight: 1.7, padding: "8px 10px", borderRadius: 12, background: SOFT() }}>
             <div>{handName("pair")}: <b style={{ color: C.sky }}>10</b> × <b style={{ color: C.signal }}>2</b></div>
             <div>K + K: <b style={{ color: C.sky }}>+10 +10</b> {T("gmG3Kick")}</div>
             <div>= <b style={{ color: C.sky }}>30</b> × <b style={{ color: C.signal }}>2</b> = <b>60</b></div>
@@ -10494,7 +10494,7 @@ function GameRules({ onClose, lo, onTutorial }) {
         </GuideSect>
         <GuideSect n={4} title={T("gmG4T")}>
           <div style={{ display: "flex", gap: 6, alignItems: "stretch" }}>
-            {[T("gmSmall"), T("gmBig"), T("gmBoss")].map((b, i) => <div key={i} style={{ flex: 1, textAlign: "center", padding: "8px 4px", borderRadius: 10, background: SOFT(), fontSize: 12.5, fontWeight: 800, color: i === 2 ? "#ff7a7a" : C.chalk }}>{b}<span style={{ display: "block", fontWeight: 400, color: C.dim, fontSize: 11.5 }}>× {[1, 1.5, 2][i]}</span></div>)}
+            {[T("gmSmall"), T("gmBig"), T("gmBoss")].map((b, i) => <div key={i} style={{ flex: 1, textAlign: "center", padding: "8px 4px", borderRadius: 10, background: SOFT(), fontSize: 13, fontWeight: 800, color: i === 2 ? "#ff7a7a" : C.chalk }}>{b}<span style={{ display: "block", fontWeight: 400, color: C.dim, fontSize: 12 }}>× {[1, 1.5, 2][i]}</span></div>)}
           </div>
           <p style={gP}>{withK(T("gmG4D"))}</p>
           <p style={gP}>{withK(T("gmG4Shop"))}</p>
@@ -10563,8 +10563,8 @@ function PackOpen({ g, onMove, onSell }) {
             style={{ ...btnBase, ...card, ...tileR(), position: "relative", overflow: "hidden", display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", textAlign: "left", color: C.chalk, fontWeight: 400, border: `2px solid ${col}`, animationDelay: `${0.15 + i * 0.16}s`, opacity: full ? 0.5 : 1 }}>
             {jp ? <span aria-hidden="true" style={{ flexShrink: 0 }}><JokerCard id={o} w={46} still /></span> : <span aria-hidden="true" style={{ width: 48, height: 48, flexShrink: 0, borderRadius: 12, background: `linear-gradient(160deg, ${col}44, ${C.panelHi})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26 }}><Ico n="dumbbell" size={26} color={col} /></span>}
             <span style={{ flex: 1, minWidth: 0 }}>
-              <span style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", fontWeight: 800, fontSize: 15.5 }}>{jp ? jName(o) : T("gmDrill", { h: handName(o) })}{jp && <span style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: 0.4, textTransform: "uppercase", color: col, border: `1px solid ${col}88`, borderRadius: 99, padding: "1px 7px" }}>{T("gmRar" + r)}</span>}</span>
-              <span style={{ display: "block", fontSize: 12.5, color: C.dim, lineHeight: 1.35, marginTop: 2 }}>{jp ? withK(jDesc(o)) : T("gmPackLv", { hand: handName(o), c: GM.HAND_UP[o][0], m: GM.HAND_UP[o][1] })}</span>
+              <span style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", fontWeight: 800, fontSize: 16 }}>{jp ? jName(o) : T("gmDrill", { h: handName(o) })}{jp && <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.4, textTransform: "uppercase", color: col, border: `1px solid ${col}88`, borderRadius: 99, padding: "1px 7px" }}>{T("gmRar" + r)}</span>}</span>
+              <span style={{ display: "block", fontSize: 13, color: C.dim, lineHeight: 1.35, marginTop: 2 }}>{jp ? withK(jDesc(o)) : T("gmPackLv", { hand: handName(o), c: GM.HAND_UP[o][0], m: GM.HAND_UP[o][1] })}</span>
             </span>
           </button>); })}
       </div>
@@ -10660,7 +10660,7 @@ function GameTable({ saved, history, onEnd, onQuit, onTutDone }) {
         <div data-gm-blind={g.blind} style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", borderRadius: 16, background: `linear-gradient(135deg, ${bcol}22, ${C.panel} 60%)`, border: `1px solid ${bcol}55` }}>
           <span aria-hidden="true" className={g.blind === 2 ? "gmBossPulse" : undefined} style={{ width: 40, height: 40, flexShrink: 0, borderRadius: 99, display: "flex", alignItems: "center", justifyContent: "center", background: `radial-gradient(circle at 35% 30%, ${bcol}, ${hexMix(bcol, "#000000", 0.5)})`, boxShadow: `0 0 0 3px ${bcol}33, 0 0 16px ${bcol}55` }}><Ico n={g.blind === 2 ? "alert" : g.blind === 1 ? "medal" : "target"} size={20} color="#0b0f1c" sw={2.4} /></span>
           <span style={{ minWidth: 0, flex: 1 }}>
-            <span style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 10.5, fontWeight: 800, letterSpacing: 0.7, textTransform: "uppercase", color: bcol, whiteSpace: "nowrap", overflow: "hidden" }}>{g.stake > 0 && <span data-gm-stake-chip={g.stake} title={L.gm.stake[g.stake][0]} style={{ width: 9, height: 9, borderRadius: 3, background: STAKE_COL[g.stake], border: "1px solid rgba(255,255,255,.4)", flexShrink: 0 }} />}<span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{blindName}</span><span style={{ color: C.dim, marginLeft: "auto", fontVariantNumeric: "tabular-nums" }}>{g.ante + 1}/{g.antes}</span></span>
+            <span style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 800, letterSpacing: 0.7, textTransform: "uppercase", color: bcol, whiteSpace: "nowrap", overflow: "hidden" }}>{g.stake > 0 && <span data-gm-stake-chip={g.stake} title={L.gm.stake[g.stake][0]} style={{ width: 9, height: 9, borderRadius: 3, background: STAKE_COL[g.stake], border: "1px solid rgba(255,255,255,.4)", flexShrink: 0 }} />}<span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{blindName}</span><span style={{ color: C.dim, marginLeft: "auto", fontVariantNumeric: "tabular-nums" }}>{g.ante + 1}/{g.antes}</span></span>
             <span data-gm-target style={{ display: "block", fontFamily: DISPLAY, fontSize: 22, fontWeight: 900, lineHeight: 1.05, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>{nf(shownT)} <span style={{ color: C.dim, fontSize: 15 }}>/ {nf(g.target)}</span></span>
           </span>
         </div>
@@ -10670,7 +10670,7 @@ function GameTable({ saved, history, onEnd, onQuit, onTutDone }) {
       <div data-gm-stats style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 8 }}>
         <span data-gm-hands={g.handsLeft} title={T("gmPlay")} style={{ ...gmPill, color: C.sky, borderColor: `${C.sky}55` }}><Ico n="hand" size={15} color={C.sky} />{g.handsLeft}</span>
         <span data-gm-discards={g.discardsLeft} title={T("gmDiscard")} style={{ ...gmPill, color: "#ff8a65", borderColor: "#ff8a6555" }}><Ico n="eraser" size={15} color="#ff8a65" />{g.discardsLeft}</span>
-        {bossTxt && g.phase === "blind" && <span data-gm-boss={g.boss} style={{ ...gmPill, color: "#ff9a9a", borderColor: "#ff6b6b55", flex: 1, minWidth: 0, fontSize: 11.5, fontWeight: 700, fontFamily: BODY, justifyContent: "flex-start" }}><Ico n="alert" size={14} color="#ff9a9a" /><span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{bossTxt[1]}</span></span>}
+        {bossTxt && g.phase === "blind" && <span data-gm-boss={g.boss} style={{ ...gmPill, color: "#ff9a9a", borderColor: "#ff6b6b55", flex: 1, minWidth: 0, fontSize: 12, fontWeight: 700, fontFamily: BODY, justifyContent: "flex-start" }}><Ico n="alert" size={14} color="#ff9a9a" /><span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{bossTxt[1]}</span></span>}
         {g.perk && <span data-gm-perk-chip={g.perk} title={L.gm.perk[g.perk][0] + ": " + L.gm.perk[g.perk][1].replace(/\$(\d+)/g, "$1 " + COIN)} style={{ ...gmPill, marginLeft: "auto", color: C.signal, borderColor: `${C.signal}44` }}><Ico n={PERK_ICON[g.perk]} size={15} color={C.signal} /></span>}
       </div>
       {/* jokers (also in the shop, so they show once: the shop draws its own row) */}
@@ -10694,7 +10694,7 @@ function GameTable({ saved, history, onEnd, onQuit, onTutDone }) {
               <>
                 <div key={"h" + preview.hand} data-gm-hand-name className="gmPop" style={{ fontFamily: DISPLAY, fontSize: 32, fontWeight: 900, lineHeight: 1.05, textAlign: "center" }}>{handName(preview.hand)}{(g.levels || {})[preview.hand] ? <span style={{ fontSize: 14, color: C.dim }}> · {T("gmLv", { n: (g.levels[preview.hand] || 0) + 1 })}</span> : null}</div>
                 <ScoreMeter chips={preview.chips} mult={preview.mult} />
-                <button type="button" data-gm-why onClick={() => { sfxTap(); setWhy(true); }} style={{ ...btnBase, background: "transparent", color: C.signal, fontSize: 13.5, padding: "4px 10px", display: "flex", alignItems: "center", gap: 4 }}>
+                <button type="button" data-gm-why onClick={() => { sfxTap(); setWhy(true); }} style={{ ...btnBase, background: "transparent", color: C.signal, fontSize: 14, padding: "4px 10px", display: "flex", alignItems: "center", gap: 4 }}>
                   {preview.scored.length < sel.length ? T("gmCounts", { n: preview.scored.length, m: sel.length }) + " · " : ""}{T("gmWhy")}<Arrow />
                 </button>
               </>
@@ -10735,7 +10735,7 @@ function GameTable({ saved, history, onEnd, onQuit, onTutDone }) {
       {quit && !noSave && (saved.mode === "run" || saved.mode === "duel" ? (
         <ConfirmBox icon="cards" title={T("gmQuitT")} text={T("gmSaveQuitD")} yes={T("gmSaveQuit")} no={T("gmStay")} yesData={{ "data-gm-quit-yes": true }}
           onYes={() => { setQuit(false); onQuit({ ...saved, moves }, false); }} onNo={() => setQuit(false)}>
-          <button type="button" data-gm-quit-nosave onClick={() => { sfxTap(); setNoSave(true); }} style={{ ...btnBase, background: "transparent", color: "#ff7a7a", fontSize: 13.5, fontWeight: 800, marginTop: 14, padding: "6px 10px" }}>{T("gmQuitNoSave")}</button>
+          <button type="button" data-gm-quit-nosave onClick={() => { sfxTap(); setNoSave(true); }} style={{ ...btnBase, background: "transparent", color: "#ff7a7a", fontSize: 14, fontWeight: 800, marginTop: 14, padding: "6px 10px" }}>{T("gmQuitNoSave")}</button>
         </ConfirmBox>
       ) : (
         <ConfirmBox icon="cards" danger title={T("gmQuitT")} text={T(saved.mode === "ranked" ? "gmQuitRankedD" : "gmQuitD")} yes={T("gmQuit")} no={T("gmStay")} yesData={{ "data-gm-quit-yes": true }}
@@ -10762,8 +10762,8 @@ function DrillRow({ g, onOpen }) {
         <Ico n="dumbbell" size={14} color={C.dim} />{T("gmDrillsT")}<span style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 2, color: n ? C.signal : C.dim }}>{T("gmHandsT")}<Arrow size={15} style={{ color: n ? C.signal : C.dim }} /></span>
       </span>
       <span data-gm-drills style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-        {up.length ? up.map(h => <span key={h} data-gm-drill-chip={h} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 10px", borderRadius: 99, background: `${C.signal}18`, border: `1px solid ${C.signal}66`, fontSize: 12.5, fontWeight: 800 }}>{handName(h)}<span style={{ fontSize: 10.5, fontWeight: 900, padding: "1px 6px", borderRadius: 99, background: C.signal, color: C.signalInk }}>{T("gmLv", { n: g.levels[h] + 1 })}</span></span>)
-          : <span data-gm-drill-chip="" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 12px", borderRadius: 99, border: `1.5px dashed ${C.chalk}2e`, color: C.dim, fontSize: 12.5, fontWeight: 700 }}><Ico n="dumbbell" size={14} color={C.dim} />0</span>}
+        {up.length ? up.map(h => <span key={h} data-gm-drill-chip={h} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 10px", borderRadius: 99, background: `${C.signal}18`, border: `1px solid ${C.signal}66`, fontSize: 13, fontWeight: 800 }}>{handName(h)}<span style={{ fontSize: 11, fontWeight: 900, padding: "1px 6px", borderRadius: 99, background: C.signal, color: C.signalInk }}>{T("gmLv", { n: g.levels[h] + 1 })}</span></span>)
+          : <span data-gm-drill-chip="" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 12px", borderRadius: 99, border: `1.5px dashed ${C.chalk}2e`, color: C.dim, fontSize: 13, fontWeight: 700 }}><Ico n="dumbbell" size={14} color={C.dim} />0</span>}
       </span>
     </button>
   );
@@ -10772,10 +10772,10 @@ function HandsSheet({ g, onClose }) {
   return (
     <Sheet short title={T("gmHandsT")} onClose={onClose}>
       <div data-gm-hands-sheet style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12.5, color: C.dim, lineHeight: 1.4, marginBottom: 4 }}><Ico n="dumbbell" size={16} color={C.signal} />{T("gmHandsD")}</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: C.dim, lineHeight: 1.4, marginBottom: 4 }}><Ico n="dumbbell" size={16} color={C.signal} />{T("gmHandsD")}</div>
         {GM.HANDS.slice().reverse().map(h => { const [c, m, lv] = handVal(g, h); return (
           <div key={h} data-gm-hand-row={h} data-lv={lv + 1} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", borderRadius: 12, background: lv ? `${C.signal}14` : SOFT(), border: `1px solid ${lv ? C.signal + "66" : "transparent"}` }}>
-            <span style={{ flex: 1, minWidth: 0, fontWeight: 800, fontSize: 14.5, color: lv ? C.chalk : C.dim }}>{handName(h)}</span>
+            <span style={{ flex: 1, minWidth: 0, fontWeight: 800, fontSize: 15, color: lv ? C.chalk : C.dim }}>{handName(h)}</span>
             <span style={{ fontSize: 11, fontWeight: 900, letterSpacing: 0.4, textTransform: "uppercase", padding: "2px 8px", borderRadius: 99, color: lv ? C.signalInk : C.dim, background: lv ? C.signal : "transparent", border: lv ? "none" : `1px solid ${C.line}` }}>{T("gmLv", { n: lv + 1 })}</span>
             <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontFamily: DISPLAY, fontWeight: 900, fontSize: 15, fontVariantNumeric: "tabular-nums", minWidth: 86, justifyContent: "flex-end" }}><span style={{ color: C.sky }}>{c}</span><span style={{ color: C.dim, fontSize: 12 }}>×</span><span style={{ color: C.signal }}>{m}</span></span>
           </div>); })}
@@ -10872,10 +10872,10 @@ function GameShop({ g, tut, W = 412, onMove, onMoves, onTap, onSell, onHands, on
               <span style={{ position: "absolute", right: 8, top: 8, padding: "2px 8px", borderRadius: 99, background: it.sold ? "transparent" : "rgba(0,0,0,.45)", color: C.signal, fontFamily: DISPLAY, fontSize: 15, fontWeight: 900, lineHeight: 1.3 }}>{it.sold ? null : <><KSign />{it.cost}</>}</span>
               {pfull && <span data-gm-full title={T("gmFull")} style={{ position: "absolute", left: 8, top: 8, width: 24, height: 24, borderRadius: 99, display: "flex", alignItems: "center", justifyContent: "center", background: "#ff6b6b26", border: "1px solid #ff9a9a88" }}><Ico n="lock" size={13} color="#ff9a9a" sw={2.4} /></span>}
               <button type="button" onClick={() => { sfxTap(); setOpen(isOpen ? null : i); }} style={{ ...btnBase, background: "transparent", padding: 0, color: C.chalk, textAlign: "center", width: "100%", fontWeight: 400 }}>
-                <span style={{ display: "block", fontWeight: 800, fontSize: 13.5, lineHeight: 1.2 }}>{name}</span>
-                {jk && <span data-rar-chip={r} style={{ display: "inline-block", marginTop: 3, fontSize: 9.5, fontWeight: 800, letterSpacing: 0.4, textTransform: "uppercase", color: col }}>{T("gmRar" + r)}</span>}
-                {pfull && <span style={{ display: "block", marginTop: 3, fontSize: 10.5, fontWeight: 800, textTransform: "uppercase", letterSpacing: 0.4, color: "#ff9a9a" }}>{T("gmFull")}</span>}
-                <span data-gm-item-desc style={{ display: isOpen ? "block" : "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", marginTop: 4, fontSize: 11.5, color: C.dim, lineHeight: 1.35 }}>{desc}</span>
+                <span style={{ display: "block", fontWeight: 800, fontSize: 14, lineHeight: 1.2 }}>{name}</span>
+                {jk && <span data-rar-chip={r} style={{ display: "inline-block", marginTop: 3, fontSize: 10, fontWeight: 800, letterSpacing: 0.4, textTransform: "uppercase", color: col }}>{T("gmRar" + r)}</span>}
+                {pfull && <span style={{ display: "block", marginTop: 3, fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: 0.4, color: "#ff9a9a" }}>{T("gmFull")}</span>}
+                <span data-gm-item-desc style={{ display: isOpen ? "block" : "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", marginTop: 4, fontSize: 12, color: C.dim, lineHeight: 1.35 }}>{desc}</span>
               </button>
               <button type="button" data-gm-buy={i} data-gm-swap={sw ? 1 : undefined} disabled={off} onClick={() => (sw ? (sfxTap(), setSwap(i)) : onMove({ t: "buy", i }))} className={off ? undefined : "b3d"}
                 style={{ ...btnBase, marginTop: "auto", width: "100%", display: "flex", alignItems: "center", justifyContent: "center", padding: "9px 8px", borderRadius: 12, background: it.sold ? "transparent" : off ? `${C.chalk}10` : C.signal, color: it.sold || off ? C.dim : C.signalInk, fontSize: 14, fontWeight: 900 }}>
@@ -10890,12 +10890,12 @@ function GameShop({ g, tut, W = 412, onMove, onMoves, onTap, onSell, onHands, on
         <div key={"v" + i} data-gm-voucher={it.id} className="cardIn" style={{ position: "relative", padding: "12px 14px", borderRadius: 16, border: "2px dashed #ffb02e", background: "linear-gradient(135deg, #ffb02e22, transparent 60%)", display: "flex", alignItems: "center", gap: 12, opacity: it.sold ? 0.45 : 1 }}>
           <span aria-hidden="true" style={{ display: "flex" }}><Ico n={VOUCHER_ICON[it.id] || "ticket"} size={30} color="#ffb02e" /></span>
           <span style={{ flex: 1, minWidth: 0 }}>
-            <span style={{ display: "block", fontSize: 10.5, fontWeight: 800, letterSpacing: 0.8, textTransform: "uppercase", color: "#ffb02e" }}>{T("gmVoucher")}</span>
+            <span style={{ display: "block", fontSize: 11, fontWeight: 800, letterSpacing: 0.8, textTransform: "uppercase", color: "#ffb02e" }}>{T("gmVoucher")}</span>
             <span style={{ display: "block", fontWeight: 800, fontSize: 15 }}>{v[0]}</span>
-            <span style={{ display: "block", fontSize: 12.5, color: C.dim, lineHeight: 1.35 }}>{withK(v[1])}</span>
+            <span style={{ display: "block", fontSize: 13, color: C.dim, lineHeight: 1.35 }}>{withK(v[1])}</span>
           </span>
           <button type="button" data-gm-buy={i} disabled={it.sold || g.money < it.cost} onClick={() => onMove({ t: "buy", i })} style={{ ...btnBase, flexShrink: 0, minWidth: 64, padding: "8px 10px", borderRadius: 12, background: it.sold ? "transparent" : "#ffb02e", color: it.sold ? C.dim : "#1b1405", fontSize: 13, lineHeight: 1.15, opacity: !it.sold && g.money < it.cost ? 0.4 : 1 }}>
-            {it.sold ? <Ico n="check" size={16} color={C.mint} /> : <><span style={{ display: "block", fontFamily: DISPLAY, fontSize: 17, fontWeight: 900 }}><KSign />{it.cost}</span>{T("gmBuy")}</>}
+            {it.sold ? <Ico n="check" size={16} color={C.mint} /> : <><span style={{ display: "block", fontFamily: DISPLAY, fontSize: 16, fontWeight: 900 }}><KSign />{it.cost}</span>{T("gmBuy")}</>}
           </button>
         </div>); })}
       {g.vouchers && g.vouchers.length > 0 && <div data-gm-vouchers style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>{g.vouchers.map(v => <span key={v} title={((L.gm.v || {})[v] || [v])[0] + ": " + ((L.gm.v || {})[v] || ["", ""])[1]} style={{ display: "inline-flex", padding: 6, borderRadius: 10, border: "1px dashed #ffb02e88" }}><Ico n={VOUCHER_ICON[v] || "ticket"} size={16} color="#ffb02e" /></span>)}</div>}
@@ -10912,7 +10912,7 @@ function GameShop({ g, tut, W = 412, onMove, onMoves, onTap, onSell, onHands, on
                 <button key={j.id} type="button" data-gm-swap-out={ji} disabled={!ok} onClick={() => { const i = swap; setSwap(null); onMoves([{ t: "sell", i: ji }, { t: "buy", i }]); }}
                   style={{ ...btnBase, ...card, ...tileR(), display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", textAlign: "left", color: C.chalk, fontWeight: 400, opacity: ok ? 1 : 0.45 }}>
                   <span aria-hidden="true" style={{ width: 40, height: 40, flexShrink: 0, borderRadius: 12, background: C.panelHi, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}><JkIco id={j.id} size={22} /></span>
-                  <span style={{ flex: 1, minWidth: 0 }}><span style={{ display: "block", fontWeight: 800, fontSize: 15 }}>{jName(j.id)}</span><span style={{ display: "block", fontSize: 12.5, color: C.dim, lineHeight: 1.35 }}>{withK(jDesc(j.id))}</span></span>
+                  <span style={{ flex: 1, minWidth: 0 }}><span style={{ display: "block", fontWeight: 800, fontSize: 15 }}>{jName(j.id)}</span><span style={{ display: "block", fontSize: 13, color: C.dim, lineHeight: 1.35 }}>{withK(jDesc(j.id))}</span></span>
                   <span style={{ fontWeight: 800, color: C.signal, whiteSpace: "nowrap" }}>+<KSign />{sellOf(j)}</span>
                 </button>
               );
@@ -10926,7 +10926,7 @@ function GameShop({ g, tut, W = 412, onMove, onMoves, onTap, onSell, onHands, on
         <div data-gm-shopbar style={{ position: "sticky", bottom: "calc(var(--sab, 0px) + 12px)", marginTop: "auto", zIndex: 5, paddingTop: 18 }}>
           <div aria-hidden="true" style={{ position: "absolute", left: -14, right: -14, top: 0, bottom: "calc(-1 * (var(--sab, 0px) + 12px))", background: `linear-gradient(180deg, ${C.ink}00, ${C.ink}e6 38%, ${C.ink})`, pointerEvents: "none" }} />
           <div style={{ position: "relative", display: "flex", gap: 6, padding: 6, borderRadius: 24, background: `${C.ink}f5`, border: `1px solid ${C.line}`, boxShadow: "0 12px 34px rgba(0,0,0,.5)", ...(LOOK === "liquid" ? { ...LIQUID_FLOAT(), borderRadius: 24 } : LOOK === "glass" ? { ...GLASS(), borderRadius: 24 } : {}) }}>
-            {onQuit && <button type="button" data-gm-save-quit onClick={() => { sfxTap(); onQuit(); }} style={{ ...btnBase, flex: 1, minWidth: 0, padding: "12px 10px", borderRadius: 18, ...SUNK(), color: C.chalk, fontSize: 13.5, lineHeight: 1.2, display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}><Ico n="logout" size={17} color={C.dim} /><span style={{ minWidth: 0 }}>{T("gmSaveQuit")}</span></button>}
+            {onQuit && <button type="button" data-gm-save-quit onClick={() => { sfxTap(); onQuit(); }} style={{ ...btnBase, flex: 1, minWidth: 0, padding: "12px 10px", borderRadius: 18, ...SUNK(), color: C.chalk, fontSize: 14, lineHeight: 1.2, display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}><Ico n="logout" size={17} color={C.dim} /><span style={{ minWidth: 0 }}>{T("gmSaveQuit")}</span></button>}
             <button type="button" data-gm-next onClick={() => onMove({ t: "next" })} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), width: "auto", flex: 1.5, minWidth: 0, padding: "15px 12px", borderRadius: 18, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>{T("gmNext")}<Arrow style={{ color: C.signalInk }} /></button>
           </div>
         </div>
@@ -10946,9 +10946,9 @@ function GameEnd({ res, onClose, onAgain }) {
       <div aria-hidden="true" style={{ display: "flex", justifyContent: "center", color: won ? C.signal : C.chalk }} className="gmPop"><Ico n={won ? "trophy" : draw ? "duo" : won === null ? "hourglass" : "bicep"} size={76} sw={1.6} /></div>
       <div style={{ fontFamily: DISPLAY, fontSize: 38, fontWeight: 900, lineHeight: 1 }}>{won === null ? T("gmWaitServer") : won ? (saved.mode === "run" ? T("gmWon") : T("gmWin")) : draw ? T("gmDraw") : saved.mode === "run" ? T("gmOver") : T("gmLose")}</div>
       <div style={{ fontSize: 15, color: C.dim }}>{T("gmResult", { n: me.cleared, t: nf(me.total) })}</div>
-      {opp && <div data-gm-opp style={{ fontSize: 14.5, color: C.dim }}>{saved.mode === "duel" ? T("gmBotRes", { n: opp.lvl }) : opp.bot ? T("gmBotRes", { n: opp.bot }) : opp.nick}: {T("gmResult", { n: opp.cleared, t: nf(opp.total) })}</div>}
+      {opp && <div data-gm-opp style={{ fontSize: 15, color: C.dim }}>{saved.mode === "duel" ? T("gmBotRes", { n: opp.lvl }) : opp.bot ? T("gmBotRes", { n: opp.bot }) : opp.nick}: {T("gmResult", { n: opp.cleared, t: nf(opp.total) })}</div>}
       {rk && <div data-gm-rating style={{ fontFamily: DISPLAY, fontSize: 26, fontWeight: 900, color: rk.dr >= 0 ? C.mint : "#ff8a80" }}>{T("gmRating", { r: rk.r })} ({rk.dr >= 0 ? "+" : ""}{rk.dr})</div>}
-      {rkErr && <div role="alert" style={{ fontSize: 13.5, color: "#ff8a80", maxWidth: 340 }}>{T("gmErrEnd")}</div>}
+      {rkErr && <div role="alert" style={{ fontSize: 14, color: "#ff8a80", maxWidth: 340 }}>{T("gmErrEnd")}</div>}
       {xp > 0 && <div data-gm-xp style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, color: C.signal }}>+{nf(xp)} {T("gmXp")}</div>}
       {stakeUp > 0 && <div data-gm-stakeup={stakeUp} className="gmPop" style={{ fontSize: 15, fontWeight: 800, color: C.chalk, display: "flex", alignItems: "center", gap: 8 }}><span style={{ width: 14, height: 14, borderRadius: 4, background: STAKE_COL[stakeUp] }} />{T("gmStakeOpen", { s: L.gm.stake[stakeUp][0] })}</div>}
       {lvlUp && <div data-gm-levelup className="gmPop" style={{ fontSize: 16, fontWeight: 800, color: C.chalk }}>{T("gmLevelUp", { n: lvlUp })}</div>}
@@ -11384,8 +11384,8 @@ function ConfirmBox({ icon, title, text, yes, no, danger, onYes, onNo, onDismiss
         <div data-confirm-title style={{ fontFamily: DISPLAY, fontWeight: 900, fontSize: CJK.test(title) ? 24 : 28, lineHeight: 1.05, color: C.chalk, marginTop: 14, overflowWrap: "anywhere" }}>{title}</div>
         {text && <div data-confirm-text style={{ fontSize: 14, color: C.dim, marginTop: 10, lineHeight: 1.5 }}>{emo(text)}</div>}
         <div style={{ display: "flex", gap: 8, alignItems: "stretch", marginTop: 18 }}>
-          <button type="button" data-confirm-no onClick={() => { sfxTap(); onNo(); }} style={{ ...btnBase, flex: 1, padding: "12px 12px", borderRadius: 14, ...SUNK(), color: C.chalk, fontSize: 14.5, fontWeight: 800 }}>{no || T("cancel")}</button>
-          <button type="button" data-confirm-yes {...(yesData || {})} onClick={() => { sfxTap(); onYes(); }} className="b3d" style={{ ...(danger ? bigBtn("#d64545", "#fff") : bigBtn(C.signal, C.signalInk)), ...(danger ? { "--e": "#8a1f1f" } : {}), flex: 1, minWidth: 0, fontSize: 14.5, padding: "12px 10px", borderRadius: 14 }}>{yes}</button>
+          <button type="button" data-confirm-no onClick={() => { sfxTap(); onNo(); }} style={{ ...btnBase, flex: 1, padding: "12px 12px", borderRadius: 14, ...SUNK(), color: C.chalk, fontSize: 15, fontWeight: 800 }}>{no || T("cancel")}</button>
+          <button type="button" data-confirm-yes {...(yesData || {})} onClick={() => { sfxTap(); onYes(); }} className="b3d" style={{ ...(danger ? bigBtn("#d64545", "#fff") : bigBtn(C.signal, C.signalInk)), ...(danger ? { "--e": "#8a1f1f" } : {}), flex: 1, minWidth: 0, fontSize: 15, padding: "12px 10px", borderRadius: 14 }}>{yes}</button>
         </div>
         {children}
       </div>
@@ -11523,7 +11523,7 @@ function RewardReveal({ items, onDone }) {
             <span style={{ fontFamily: DISPLAY, fontSize: 96, fontWeight: 900, color: col, textShadow: `0 0 ${12 + r * 5}px ${col}`, lineHeight: 1 }}>?</span>
           </div>
           <div className={"revFace" + (r >= 3 ? " foil" : "")} style={{ background: `radial-gradient(100% 70% at 50% 30%, ${col}55, transparent 80%), ${C.ink}`, border: `2px solid ${col}`, boxShadow: `0 0 ${24 + r * 12}px ${col}aa` }}>
-            <div style={{ fontSize: 11.5, fontWeight: 900, letterSpacing: 1.6, textTransform: "uppercase", color: col }}>{kindLabel}</div>
+            <div style={{ fontSize: 12, fontWeight: 900, letterSpacing: 1.6, textTransform: "uppercase", color: col }}>{kindLabel}</div>
             <div aria-hidden="true" className={open ? "revIcon" : undefined} style={{ fontSize: 84, lineHeight: 1, margin: "18px 0 14px", filter: `drop-shadow(0 0 ${10 + r * 4}px ${col})` }}>{it.kind === "rank" ? <RankIcon r={it.r} size={88} /> : ICONS[it.icon] ? <span style={{ display: "inline-flex", color: col }}><Ico n={it.icon} size={84} sw={1.6} /></span> : it.icon}</div>
             <div style={{ fontFamily: DISPLAY, fontSize: it.name.length > 18 ? 24 : 30, fontWeight: 900, lineHeight: 1.05, textAlign: "center" }}>{it.name}</div>
             {it.rank && <div data-reveal-rank className={open ? "revStamp" : undefined} style={{ marginTop: 12, fontFamily: DISPLAY, fontSize: 26 + r * 2, fontWeight: 900, letterSpacing: 1, color: col, textTransform: "uppercase", textShadow: `0 0 ${8 + r * 4}px ${col}` }}>{it.rank.name}</div>}
@@ -11596,7 +11596,7 @@ function StreakCelebration({ n, history, entry, onDone }) {
           {days.map((d, i) => trained.has(d) && i <= toIdx ? <span key={d} aria-hidden="true" style={{ position: "absolute", left: `calc(${seg(i)}% - 5px)`, top: 12, width: 10, height: 10, borderRadius: 99, background: "#fff7d6", opacity: 0.9 }} /> : null)}
           <span className={step >= 2 ? "celHead" : undefined} aria-hidden="true" style={{ position: "absolute", left: `calc(${step >= 2 ? end : prevEnd}% - 15px)`, top: 2, width: 30, height: 30, borderRadius: 99, background: "radial-gradient(circle, #fffbe6 0 22%, #ffd23f88 40%, transparent 70%)", transition: `left .8s ${MO.ease}` }} />
         </div>
-        <div style={{ borderTop: `1px solid ${C.line}`, padding: "10px 12px", fontSize: 14.5, fontWeight: 700 }}>{line}</div>
+        <div style={{ borderTop: `1px solid ${C.line}`, padding: "10px 12px", fontSize: 15, fontWeight: 700 }}>{line}</div>
       </div>
       <button type="button" data-celeb-next onClick={e => { e.stopPropagation(); sfxTap(); onDone(); }} className="b3d cardIn" style={{ ...bigBtn(C.signal, C.signalInk), maxWidth: 360, marginTop: 22, animationDelay: "1.4s" }}>{T("revNext")}</button>
     </div>,
@@ -11685,7 +11685,7 @@ function Summary({ entry, xpBefore = 0, xpGained, newCh = [], newAch = [], histo
         </div>
         <div className="sumIn" style={{ ...d(), fontFamily: DISPLAY, fontSize: 44, fontWeight: 900, lineHeight: 1, color: C.chalk, marginTop: 14 }}>{T("great")}</div>
         <div className="sumIn" style={{ ...d(), fontSize: 15, color: C.dim, marginTop: 8, fontWeight: 600, lineHeight: 1.45, maxWidth: 340 }}>{emo(finishLine)}</div>
-        <div className="sumIn" style={{ ...d(), fontSize: 12.5, color: C.dim, marginTop: 6, opacity: 0.85 }}>{entryTitle(entry, true)}</div>
+        <div className="sumIn" style={{ ...d(), fontSize: 13, color: C.dim, marginTop: 6, opacity: 0.85 }}>{entryTitle(entry, true)}</div>
       </div>
       {/* three numbers */}
       <div className="sumIn" data-sum-stats style={{ ...d(), display: "grid", gridTemplateColumns: `repeat(${entry.dur > 0 ? 3 : 2}, 1fr)`, gap: 8, marginTop: 18 }}>
@@ -11699,11 +11699,11 @@ function Summary({ entry, xpBefore = 0, xpGained, newCh = [], newAch = [], histo
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
             <span style={{ fontFamily: DISPLAY, fontSize: 34, fontWeight: 900, lineHeight: 1, color: C.sky, fontVariantNumeric: "tabular-nums" }}>+{shown} XP</span>
-            {EC.boosted(entry.ts, META.boosts) && <span data-sum-boost className="pop" style={{ display: "inline-flex", alignItems: "center", gap: 3, fontFamily: BODY, fontSize: 12.5, fontWeight: 900, color: C.signalInk, background: C.signal, borderRadius: 99, padding: "3px 9px 3px 6px" }}><Ico n="boost" size={14} sw={2.4} />2×</span>}
+            {EC.boosted(entry.ts, META.boosts) && <span data-sum-boost className="pop" style={{ display: "inline-flex", alignItems: "center", gap: 3, fontFamily: BODY, fontSize: 13, fontWeight: 900, color: C.signalInk, background: C.signal, borderRadius: 99, padding: "3px 9px 3px 6px" }}><Ico n="boost" size={14} sw={2.4} />2×</span>}
           </div>
           <span data-sum-streak title={T("streak")} style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "6px 11px", borderRadius: 99, background: "#ffa94d1f", color: "#ffa94d", fontFamily: DISPLAY, fontSize: 20, fontWeight: 800, lineHeight: 1 }}><Ico n="flame" size={17} sw={2.3} />{st.n}</span>
         </div>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginTop: 14, fontSize: 12.5, fontWeight: 700 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginTop: 14, fontSize: 13, fontWeight: 700 }}>
           <span style={{ color: C.chalk }}>{T("level")} {lvNow.lvl}</span>
           <span style={{ color: C.dim, fontVariantNumeric: "tabular-nums" }}>{lvNow.into} / {lvNow.need} XP</span>
         </div>
@@ -11723,7 +11723,7 @@ function Summary({ entry, xpBefore = 0, xpGained, newCh = [], newAch = [], histo
               <div key={x.key} data-sum-earned={x.kind} className="sumIn" style={{ animationDelay: `${0.12 + 0.09 * k + 0.06 * i}s`, ...card, padding: "11px 12px", display: "flex", alignItems: "center", gap: 10, minWidth: 0, borderColor: `${x.col}55`, background: `linear-gradient(135deg, ${x.col}14, transparent 70%), ${C.panel}` }}>
                 {x.ico}
                 <div style={{ minWidth: 0 }}>
-                  <div style={{ fontSize: 13.5, fontWeight: 800, color: C.chalk, lineHeight: 1.25, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", overflowWrap: "anywhere" }}>{x.name}</div>
+                  <div style={{ fontSize: 14, fontWeight: 800, color: C.chalk, lineHeight: 1.25, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", overflowWrap: "anywhere" }}>{x.name}</div>
                   <div style={{ fontSize: 12, fontWeight: 800, color: x.col, marginTop: 3, lineHeight: 1.2 }}>{x.sub}</div>
                 </div>
               </div>
@@ -11740,7 +11740,7 @@ function Summary({ entry, xpBefore = 0, xpGained, newCh = [], newAch = [], histo
             const pr = entry.prs && entry.prs.includes(it.id);
             return (
               <div key={it.id} data-sum-row={it.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, padding: "12px 14px", borderTop: i ? `1px solid ${C.line}` : "none" }}>
-                <div style={{ fontSize: 14.5, fontWeight: 700, color: C.chalk, minWidth: 0, display: "flex", alignItems: "center", gap: 6 }}>
+                <div style={{ fontSize: 15, fontWeight: 700, color: C.chalk, minWidth: 0, display: "flex", alignItems: "center", gap: 6 }}>
                   {pr && <Ico n="trophy" size={15} color={C.signal} sw={2.4} />}
                   <span style={{ minWidth: 0, overflowWrap: "anywhere" }}>{exName(it)}</span>{EX[it.id] && <ExQ id={it.id} />}
                 </div>
@@ -11781,7 +11781,7 @@ function Summary({ entry, xpBefore = 0, xpGained, newCh = [], newAch = [], histo
       {(kc || kcalSkipped(entry) || entry.day) && (
         <div className="sumIn" style={{ ...d(), marginTop: 16, display: "flex", flexDirection: "column", gap: 8 }}>
           {kc && <div data-sum-kcal style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, fontWeight: 700, color: kc.hit ? KC_HIT : C.chalk }}><Ico n="plate" size={16} color={kc.hit ? KC_HIT : C.dim} />{kc.left > 0 ? T("kcAfterWorkout", { n: nf(kc.left) }) : T("kcAfterWorkoutDone")}</div>}
-          {kcalSkipped(entry) && <div data-sum-kcal-skip style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.45 }}>{T("kcSkipLong")}</div>}
+          {kcalSkipped(entry) && <div data-sum-kcal-skip style={{ fontSize: 13, color: C.dim, lineHeight: 1.45 }}>{T("kcSkipLong")}</div>}
           {entry.day && <div data-sum-next style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, fontWeight: 600, color: C.dim }}><Ico n="calendar" size={16} color={C.dim} />{T("nextLine", { d: DAYS[(DAYS.findIndex(x => x.id === entry.day) + 1) % DAYS.length].id, date: fmtDate(addDays(entry.date, 2)) })}</div>}
         </div>
       )}
@@ -11798,7 +11798,7 @@ function SumStat({ ico, val, label, data }) {
     <div data-sum-stat={data} style={{ ...card, ...tileR(), padding: "12px 10px 11px", display: "flex", flexDirection: "column", alignItems: "center", gap: 6, minWidth: 0 }}>
       <Ico n={ico} size={18} color={C.dim} />
       <div style={{ fontFamily: DISPLAY, fontSize: 26, fontWeight: 900, lineHeight: 1, color: C.chalk, fontVariantNumeric: "tabular-nums" }}>{val}</div>
-      <div style={{ fontSize: 11.5, fontWeight: 700, color: C.dim, textAlign: "center", lineHeight: 1.2 }}>{label}</div>
+      <div style={{ fontSize: 12, fontWeight: 700, color: C.dim, textAlign: "center", lineHeight: 1.2 }}>{label}</div>
     </div>
   );
 }
@@ -11815,7 +11815,7 @@ function NoteBox({ notes, targets, onChange }) {
   return (
     <div data-note style={{ marginTop: 16 }}>
       {!open ? (
-        <button data-note-open onClick={() => { sfxTap(); setOpen(true); }} style={{ ...btnBase, background: "transparent", color: has ? C.signal : C.dim, fontSize: 13.5, padding: "6px 2px", display: "inline-flex", alignItems: "center", gap: 6 }}><Ico n="pencil" size={15} />{has ? T("noteEdit") : T("noteAdd")}</button>
+        <button data-note-open onClick={() => { sfxTap(); setOpen(true); }} style={{ ...btnBase, background: "transparent", color: has ? C.signal : C.dim, fontSize: 14, padding: "6px 2px", display: "inline-flex", alignItems: "center", gap: 6 }}><Ico n="pencil" size={15} />{has ? T("noteEdit") : T("noteAdd")}</button>
       ) : (
         <div style={{ ...card, padding: 12 }}>
           {targets.length > 1 && <div className="noBar" style={{ display: "flex", gap: 6, overflowX: "auto", marginBottom: 8 }}>
@@ -12030,7 +12030,7 @@ function Session({ session, setSession, history, onSave, onClose, onMinimize, on
         return <NoteBox notes={session.notes || {}} targets={targets} onChange={(k, v) => setSession(s => ({ ...s, notes: { ...(s.notes || {}), [k]: v.slice(0, 300) } }))} />;
       })()}
       {(inFlow || session.phase === "cool") && (
-        <button data-add-extra onClick={() => { sfxTap(); setAdding(true); }} style={{ ...btnBase, marginTop: 6, padding: "6px 2px", background: "transparent", color: C.dim, fontSize: 13.5, display: "inline-flex", alignItems: "center", gap: 6 }}><Ico n="plus" size={15} sw={2.2} />{T("addExtra")}</button>
+        <button data-add-extra onClick={() => { sfxTap(); setAdding(true); }} style={{ ...btnBase, marginTop: 6, padding: "6px 2px", background: "transparent", color: C.dim, fontSize: 14, display: "inline-flex", alignItems: "center", gap: 6 }}><Ico n="plus" size={15} sw={2.2} />{T("addExtra")}</button>
       )}
       {adding && (
         <Sheet title={T("addExtra")} onClose={() => setAdding(false)}>
