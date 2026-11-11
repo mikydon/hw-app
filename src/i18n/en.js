@@ -1196,6 +1196,16 @@ const en = {
     hsAdd: "Add",
     hsNoMonth: "No workouts this month.",
     hsByHand: "Added by hand",
+    shTabLooks: "Looks",
+    shTabWon: "Earned",
+    shPassT: "Season pass",
+    shPassD: "Eight weeks of rewards for training: diamonds, XP boosts and looks.",
+    shMoreT: "More diamonds",
+    shAdT: "Watch an ad",
+    shBuyT: "Buy diamonds",
+    shSuggestT: "Suggest a look",
+    tourShSoon: "Locked things are on the way: a season pass and more ways to get diamonds.",
+    tourShWon: "These looks can't be bought. You earn them with badges.",
     tourHsProg: "Progress: your best set in every workout, exercise by exercise. Tap the line to see a day. The dashed line is your next rank.",
     addWorkoutD: "For a workout you did without the app, or forgot to save.",
     fDate: "Date",
@@ -1778,6 +1788,8 @@ const en = {
   // 1.10: keys with "_" from here on (news1_10, news1_10_1), see newsKey in App.jsx
   news1_10: [
     ["History", "A long list of every workout, a calendar you couldn't tap, and the numbers on top.", "The calendar leads: tap a day to open its workout, tap an empty day to add one. The list follows the month, and a new Progress page holds the numbers and a smoother chart."],
+    ["Shop", "One page, ten screens long.", "Your diamonds stay on top and three pages swipe under them: Shop, Looks and Earned. A season pass and more ways to get diamonds are shown as coming soon."],
+    ["Muscle Deck", "In the shop, Next blind sat at the very end and leaving was a small ✕ on top.", "The shop ends with a floating bar: Save and quit and Next blind, always on screen. The flexed-arm icon was redrawn."],
     ["Faster start", "All 15 languages were loaded at every start.", "Only your language loads: the app opens faster and uses less memory."],
   ],
   news19: [

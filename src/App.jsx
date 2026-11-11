@@ -2447,7 +2447,9 @@ const ICONS = {
   jcard: '<rect x="5" y="3" width="14" height="18" rx="2.5"/><path d="M12 7.8l1.25 2.55 2.8.4-2.03 1.98.48 2.8L12 14.2l-2.5 1.33.48-2.8-2.03-1.98 2.8-.4z"/>',
   cards3: '<rect x="2.5" y="5.5" width="5.4" height="13" rx="1.6"/><rect x="9.3" y="5.5" width="5.4" height="13" rx="1.6"/><rect x="16.1" y="5.5" width="5.4" height="13" rx="1.6"/>',
   ladder: '<path d="M7.5 3v18M16.5 3v18M7.5 7h9M7.5 11.5h9M7.5 16h9"/>',
-  bicep: '<path d="M4 20v-4.5C4 12.5 6 10.6 8.6 10.6L8 6.8 9.4 3.5h3.6l.6 2.7-2.2 1.3.6 3.2c1.6-2 6.5-2.5 8.1 1.4 1.6 4-.9 7.9-5.4 7.9z"/>',
+  playbox: '<rect x="3.5" y="5" width="17" height="14" rx="3"/><path d="M10.2 9v6l5-3z"/>',
+  // 1.10.0 (Michael, Nov 1: "what is this supposed to be?"): redrawn as open strokes: forearm with a fist, the biceps, the arm's underside
+  bicep: '<path d="M3.5 18.2C3.3 12.5 4.8 3.8 10.3 3.5a2.400 2.400 0 0 1 2.500 2.400c0 1.200-.9 2.100-2.100 2.100-.8 0-1.400-.3-1.800-.8"/><path d="M10.200 8c-1.200 1.400-.2 4.200-1.300 6.300"/><path d="M11.800 12.800a4.700 4.700 0 0 1 9.200 1.400c0 3.600-3.700 6.300-8.500 6.300-3.600 0-7-.7-9-2.300"/><path d="M14.800 14.300a4.300 4.300 0 0 0-6.300 1.500"/>',
   pig: '<path d="M5 12c0-3.4 3.2-5.8 7.3-5.8 1.7 0 3.2.4 4.4 1.1L19 5.8v3.4c.8.7 1.3 1.6 1.5 2.6h1v3.2h-1.2a6 6 0 0 1-2.3 2.6V20h-2.6v-1.7c-1 .2-2 .3-3.1.3s-2.1-.1-3.1-.4V20H6.6v-3c-1-1.2-1.6-3-1.6-5z"/><path d="M10 9.4h3.6"/><path d="M5 12.3c-1.3-.1-2-.8-2-2"/>',
   orbit: '<circle cx="12" cy="12" r="7.2"/><circle cx="12" cy="4.8" r="1.9"/><circle cx="19.2" cy="12" r="1.9"/><circle cx="12" cy="19.2" r="1.9"/><circle cx="4.8" cy="12" r="1.9"/>',
   hourglass: '<path d="M6.5 3h11M6.5 21h11M7.5 3c0 4.2 4.5 5.6 4.5 9s-4.5 4.8-4.5 9M16.5 3c0 4.2-4.5 5.6-4.5 9s4.5 4.8 4.5 9"/><path d="M9.6 18.5 12 16.6l2.4 1.9"/>',
@@ -10138,8 +10140,22 @@ function ShopTab({ history, profile, setProfile, onGo }) {
       </span>
     </button>); };
   const lookGrid = { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(290px, 100%), 1fr))", gap: 10 };
+  // 1.10.0: the Shop was one page ten screens long. Now the diamonds stay on top and three pages swipe under them:
+  // Shop (chest, freezes and boosts, what is coming, codes) | Looks (this week's) | Earned (looks from badges).
+  const pg = usePager("shop", 3);
+  const soon = T("gmSoon").replace(/[.。]\s*$/, "");
+  const soonChip = <span data-soon style={{ flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11.5, fontWeight: 800, color: C.dim, ...SUNK(), borderRadius: 999, padding: "5px 10px", whiteSpace: "nowrap" }}><Ico n="lock" size={12} sw={2.4} />{soon}</span>;
+  const soonRow = (k, ic, col, title, first) => (
+    <div key={k} data-shop-soon={k} aria-disabled="true" style={{ ...row, borderTop: first ? "none" : `1px solid ${C.line}` }}>
+      <span style={{ opacity: 0.6, display: "flex" }}><IcoBox n={ic} color={col} /></span>
+      <div style={{ flex: 1, minWidth: 0, fontWeight: 800, fontSize: 15, color: C.dim }}>{title}</div>
+      {soonChip}
+    </div>
+  );
+  const PASS_ICO = ["diamond", "boost", "sparkle", "diamond", "snow", "crown"];
   return (
-    <div className="scr" data-shop style={SCR_STYLE}>
+    <div className="scr" data-shop style={{ padding: "16px 0 124px", maxWidth: "var(--colMax)", margin: "0 auto" }}>
+      <div style={{ padding: "0 18px 10px" }}>
       {/* balance */}
       <Sect data-shop-bal={bal} style={{ marginTop: 0, position: "relative", overflow: "hidden" }}>
         <div aria-hidden="true" style={{ position: "absolute", inset: 0, background: `radial-gradient(90% 120% at 100% 0%, ${C.sky}2e, transparent 60%)`, pointerEvents: "none" }} />
@@ -10158,8 +10174,12 @@ function ShopTab({ history, profile, setProfile, onGo }) {
           </div>
         </Expand>
       </Sect>
+        {pg.tabs([[T("tabShop"), "bag"], [T("shTabLooks"), "sparkle"], [T("shTabWon"), "medal"]])}
+      </div>
+      <div {...pg.pagerProps}>
+        <div {...pg.pageProps(0)}>
       {/* the weekly chest */}
-      <Sect data-shop-chest={chests.length} title={T("shChest")} meta={chests.length > 1 ? TP("shChestN", chests.length) : null}>
+      <Sect data-shop-chest={chests.length} style={{ marginTop: 0 }} title={T("shChest")} meta={chests.length > 1 ? TP("shChestN", chests.length) : null}>
         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
           <span className={chests.length ? "chBob" : ""} style={{ flexShrink: 0, opacity: chests.length ? 1 : 0.55 }}><ChestArt size={64} /></span>
           <div style={{ flex: 1, minWidth: 0 }}>
@@ -10189,26 +10209,49 @@ function ShopTab({ history, profile, setProfile, onGo }) {
           <BuyBtn k="boost" price={EC.PRICE.boost} bal={bal} sure={sure} setSure={setSure} onBuy={() => buy("boost")} />
         </div>
       </ListSect>
+          {/* 1.10.0 (Michael, Nov 11: "battle pass and such: prepared, but only as coming soon"): shown, locked, no dates or prices */}
+          <Sect data-shop-pass aria-disabled="true" title={T("shPassT")} meta={soonChip}>
+            <div style={{ fontSize: 13.5, color: C.dim, lineHeight: 1.45 }}>{T("shPassD")}</div>
+            <div aria-hidden="true" data-pass-track style={{ position: "relative", display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 14 }}>
+              <span style={{ position: "absolute", left: 18, right: 18, top: "50%", height: 4, marginTop: -2, borderRadius: 2, background: C.line }} />
+              <span className="passGlow" style={{ position: "absolute", left: 18, top: "50%", height: 4, marginTop: -2, borderRadius: 2, width: "22%", background: `linear-gradient(90deg, ${C.signal}, ${C.signal}00)` }} />
+              {PASS_ICO.map((ic, i) => <span key={i} style={{ position: "relative", width: 38, height: 38, borderRadius: 12, background: i === 0 ? `${C.signal}26` : C.panelHi, border: `1.5px solid ${i === 0 ? C.signal : C.line}`, color: i === 0 ? C.signal : C.dim, display: "flex", alignItems: "center", justifyContent: "center" }}><Ico n={ic} size={18} /></span>)}
+            </div>
+            <style>{`.passGlow{animation:passGlow 2.6s ${MO.ease} infinite alternate}@keyframes passGlow{from{opacity:.35;width:8%}to{opacity:1;width:30%}}@media (prefers-reduced-motion:reduce){.passGlow{animation:none}}`}</style>
+          </Sect>
+          <ListSect data-shop-more title={T("shMoreT")}>
+            {soonRow("ad", "playbox", C.mint, T("shAdT"), true)}
+            {soonRow("buy", "cart", C.sky, T("shBuyT"))}
+            {/* 1.9.0: a code from Michael (Firestore promo/{CODE}) gives diamonds, no app update needed */}
+            <button type="button" data-shop-code onClick={() => { sfxTap(); setCodeOpen(true); }} style={{ ...btnBase, fontWeight: 400, background: "transparent", borderRadius: 0, width: "100%", ...row, borderTop: `1px solid ${C.line}`, textAlign: "left", color: C.chalk }}>
+              <IcoBox n="gift" color={C.sky} />
+              <span style={{ flex: 1, minWidth: 0, fontSize: 15, fontWeight: 800 }}>{T("codeTitle")}</span>
+              <Arrow />
+            </button>
+          </ListSect>
+          <ListSect data-shop-ideas title={T("shTabLooks")}>
+            {soonRow("suggest", "bulb", C.signal, T("shSuggestT"), true)}
+          </ListSect>
+        </div>
+        <div {...pg.pageProps(1)}>
       {/* today's looks: tap = see it on your profile */}
-      <Sect data-shop-today title={T("shToday")} meta={T("shTodayMeta")}>
+      <Sect data-shop-today style={{ marginTop: 0 }} title={T("shToday")} meta={T("shTodayMeta")}>
         {daily.length ? <div style={lookGrid}>
           {daily.map(id => lookRow(id, own.includes(id)
             ? <span data-owned style={{ flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 4, fontWeight: 800, fontSize: 12.5, color: C.mint, padding: "6px 4px" }}><Ico n="check" size={15} sw={2.6} />{T("shOwned")}</span>
             : <span style={{ flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 4, fontWeight: 900, fontSize: 14, color: bal >= EC.lookPrice(id) ? C.chalk : C.dim, background: SOFT(), borderRadius: 10, padding: "6px 9px" }}><Ico n="diamond" size={14} color={C.sky} sw={2.4} />{nf(EC.lookPrice(id))}</span>, { "data-shop-look": id, "data-has": own.includes(id) ? 1 : 0 }))}
         </div> : <div style={{ fontSize: 13, color: C.dim }}>{T("shAllOwned")}</div>}
       </Sect>
+        </div>
+        <div {...pg.pageProps(2)}>
       {/* looks you can only win */}
-      <Sect data-shop-won title={T("shWonT")} meta={T("shWonMeta")}>
+      <Sect data-shop-won style={{ marginTop: 0 }} title={T("shWonT")} meta={T("shWonMeta")}>
         <div style={lookGrid}>
           {wonList.map(id => lookRow(id, own.includes(id) ? <Ico n="check" size={18} color={C.mint} /> : <Ico n="lock" size={17} color={C.dim} />, { "data-shop-wonlook": id, "data-has": own.includes(id) ? 1 : 0 }))}
         </div>
       </Sect>
-      {/* 1.9.0: a code from Michael (Firestore promo/{CODE}) gives diamonds, no app update needed */}
-      <button type="button" data-shop-code onClick={() => { sfxTap(); setCodeOpen(true); }} style={{ ...btnBase, fontWeight: 400, ...card, width: "100%", marginTop: 16, display: "flex", alignItems: "center", gap: 12, padding: "13px 16px", textAlign: "left", color: C.chalk }}>
-        <IcoBox n="gift" color={C.sky} size={38} />
-        <span style={{ flex: 1, minWidth: 0, fontSize: 15, fontWeight: 800 }}>{T("codeTitle")}</span>
-        <Arrow />
-      </button>
+        </div>
+      </div>
       {codeOpen && <CodeSheet profile={profile} onDone={shop => { const p = profRef.current, next = { ...p, shop }; profRef.current = next; setProfile(next); }} onClose={() => setCodeOpen(false)} />}
       {/* money and ads: later (1.8.2: no "coming soon" box until it is there) */}
       {peek && <LookShopSheet key={peek} id={peek} profile={profile} history={history} own={own} bal={bal} onBuy={buy} onEquip={equip} onGo={onGo} onClose={() => setPeek(null)} />}
@@ -10591,6 +10634,8 @@ function GameTable({ saved, history, onEnd, onQuit, onTutDone }) {
   const bossTxt = g.boss && g.blind === 2 && L.gm.boss[g.boss];
   const blindName = [T("gmSmall"), T("gmBig"), bossTxt ? bossTxt[0] : T("gmBoss")][g.blind];
   const pct = Math.min(100, (shown / g.target) * 100);
+  // 1.10.0: in the shop of a Run or a Duel, leaving is the bar's "Save and quit" (no ✕ on top)
+  const barQuit = g.phase === "shop" && !tut && (saved.mode === "run" || saved.mode === "duel");
   const bcol = [C.sky, C.signal, "#ff6b6b"][g.blind];
   const gmPill = { display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 5, padding: "4px 10px", borderRadius: 99, border: "1px solid", background: `${C.chalk}08`, fontFamily: DISPLAY, fontSize: 16, fontWeight: 900, lineHeight: 1.1, flexShrink: 0 };
   return createPortal(
@@ -10600,7 +10645,7 @@ function GameTable({ saved, history, onEnd, onQuit, onTutDone }) {
       {/* 1.9.0 (Michael, Nov 7: "nicer, more icons, less text"): one HUD: the blind as a medallion with its target, your
           money, the score bar, hands and discards as icon counters, then your jokers as cards with their empty slots */}
       <div data-gm-hud style={{ display: "flex", alignItems: "stretch", gap: 8, position: "relative" }}>
-        <button type="button" data-gm-quit onClick={() => { sfxTap(); setQuit(true); }} aria-label={T("gmQuit")} style={{ ...btnBase, width: 40, borderRadius: 14, ...SUNK(), color: C.dim, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}><Ico n="x" size={18} color={C.dim} /></button>
+        {!barQuit && <button type="button" data-gm-quit onClick={() => { sfxTap(); setQuit(true); }} aria-label={T("gmQuit")} style={{ ...btnBase, width: 40, borderRadius: 14, ...SUNK(), color: C.dim, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}><Ico n="x" size={18} color={C.dim} /></button>}
         <div data-gm-blind={g.blind} style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", borderRadius: 16, background: `linear-gradient(135deg, ${bcol}22, ${C.panel} 60%)`, border: `1px solid ${bcol}55` }}>
           <span aria-hidden="true" className={g.blind === 2 ? "gmBossPulse" : undefined} style={{ width: 40, height: 40, flexShrink: 0, borderRadius: 99, display: "flex", alignItems: "center", justifyContent: "center", background: `radial-gradient(circle at 35% 30%, ${bcol}, ${hexMix(bcol, "#000000", 0.5)})`, boxShadow: `0 0 0 3px ${bcol}33, 0 0 16px ${bcol}55` }}><Ico n={g.blind === 2 ? "alert" : g.blind === 1 ? "medal" : "target"} size={20} color="#0b0f1c" sw={2.4} /></span>
           <span style={{ minWidth: 0, flex: 1 }}>
@@ -10665,7 +10710,7 @@ function GameTable({ saved, history, onEnd, onQuit, onTutDone }) {
           </div>
         </>
       ) : g.phase === "shop" ? (
-        <GameShop g={g} tut={tut} W={W} onMove={shopMove} onMoves={shopMoves} onTap={k => setInsp({ i: k })} onSell={canSell ? k => setInsp({ i: k, ask: true }) : null} onHands={() => setHands(true)} />
+        <GameShop g={g} tut={tut} W={W} onMove={shopMove} onMoves={shopMoves} onTap={k => setInsp({ i: k })} onSell={canSell ? k => setInsp({ i: k, ask: true }) : null} onHands={() => setHands(true)} onQuit={barQuit ? () => setQuit(true) : null} />
       ) : <div style={{ flex: 1 }} />}
       {fx === "win" && <Confetti count={45} />}
       {why && sel.length > 0 && <ScoreWhy g={g} cards={sel.map(i => g.hand[i])} bests={bests} onClose={() => setWhy(false)} />}
@@ -10777,7 +10822,7 @@ function ShopArt({ it, w, g }) {
     </span>
   );
 }
-function GameShop({ g, tut, W = 412, onMove, onMoves, onTap, onSell, onHands }) {
+function GameShop({ g, tut, W = 412, onMove, onMoves, onTap, onSell, onHands, onQuit }) {
   const sh = g.shop, pay = sh.pay ?? ((g.last && g.last.pay) || 0);
   // 1.8.0 (Michael, Oct 25: "let me swap them if I like another one more"): with all joker slots taken, Buy becomes
   // Swap: pick one of yours, it is sold and the new one bought in one go
@@ -10864,7 +10909,17 @@ function GameShop({ g, tut, W = 412, onMove, onMoves, onTap, onSell, onHands }) 
           </div>
         </Sheet>
       )}
-      {!tut && <button type="button" data-gm-next onClick={() => onMove({ t: "next" })} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: "auto", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>{T("gmNext")}<Arrow style={{ color: C.signalInk }} /></button>}
+      {/* 1.10.0 (Michael, Nov 1): the shop ends with a floating bar like Start on Home: Save and quit + Next blind.
+          It replaces the ✕ on top in the shop (the ✕ stays while cards are played). Sticky: always on screen. */}
+      {!tut && (
+        <div data-gm-shopbar style={{ position: "sticky", bottom: "calc(var(--sab, 0px) + 12px)", marginTop: "auto", zIndex: 5, paddingTop: 18 }}>
+          <div aria-hidden="true" style={{ position: "absolute", left: -14, right: -14, top: 0, bottom: "calc(-1 * (var(--sab, 0px) + 12px))", background: `linear-gradient(180deg, ${C.ink}00, ${C.ink}e6 38%, ${C.ink})`, pointerEvents: "none" }} />
+          <div style={{ position: "relative", display: "flex", gap: 6, padding: 6, borderRadius: 24, background: `${C.ink}f5`, border: `1px solid ${C.line}`, boxShadow: "0 12px 34px rgba(0,0,0,.5)", ...(LOOK === "liquid" ? { ...LIQUID_FLOAT(), borderRadius: 26 } : LOOK === "glass" ? { ...GLASS(), borderRadius: 26 } : {}) }}>
+            {onQuit && <button type="button" data-gm-save-quit onClick={() => { sfxTap(); onQuit(); }} style={{ ...btnBase, flex: 1, minWidth: 0, padding: "12px 10px", borderRadius: 18, ...SUNK(), color: C.chalk, fontSize: 13.5, lineHeight: 1.2, display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}><Ico n="logout" size={17} color={C.dim} /><span style={{ minWidth: 0 }}>{T("gmSaveQuit")}</span></button>}
+            <button type="button" data-gm-next onClick={() => onMove({ t: "next" })} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), width: "auto", flex: 1.5, minWidth: 0, padding: "15px 12px", borderRadius: 18, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>{T("gmNext")}<Arrow style={{ color: C.signalInk }} /></button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -11041,12 +11096,17 @@ function tourSteps(ch, x) {
     { done: true, t: X[4] },
   ];
   if (ch === 9) return [ // Shop
-    s("[data-shop-bal]", 0, { prep: screen("shop") }),
+    s("[data-shop-bal]", 0, { prep: screen("shop", ["shop", 0]) }),
     s("[data-shop-chest]", 1, { opt: true }),
     s("[data-shop-items]", 2, { opt: true }), // 1.8.1 (Michael): the whole box, freezes and XP boosts
-    s("[data-shop-today] [data-shop-look]", 3, { opt: true }), // 1.8.2: the cards are big now: light the first one ("tap one")
+    s("[data-shop-pass]", 5, { opt: true, t: T("tourShSoon") }), // 1.10.0: what is coming (locked)
     s("[data-shop-code]", 5, { opt: true }), // 1.9.0: diamond codes
-    { done: true, t: X[4] },
+    // 1.10.0: looks live on their own pages
+    s('[data-shop-tab="1"]', 3, { tap: true, opt: true, wait: 400, t: fmt(L.tour.c6[6] || "", { t: T("shTabLooks") }) }),
+    s("[data-shop-today] [data-shop-look]", 3, { opt: true, wait: 800 }), // 1.8.2: the cards are big now: light the first one ("tap one")
+    s('[data-shop-tab="2"]', 3, { tap: true, opt: true, wait: 400, t: fmt(L.tour.c6[6] || "", { t: T("shTabWon") }) }),
+    s("[data-shop-won] [data-shop-wonlook]", 3, { opt: true, wait: 800, t: T("tourShWon") }),
+    { done: true, t: X[4], prep: async () => { await tourTab("shop", 0); } },
   ];
   if (ch === 7) return [ // friends
     s("[data-fr-signin]", 0, { opt: true, wait: 1500, skipIf: "[data-fr-code], [data-fr-main]", prep: screen("friends") }),

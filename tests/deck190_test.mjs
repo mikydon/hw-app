@@ -159,4 +159,30 @@ const open = async (h, extra) => {
   T.eq(h.errors, [], "no page errors");
   await h.close();
 }
+// 1.10.0: the shop ends with a floating bar: Save and quit + Next blind; the ✕ on top is gone in the shop only
+{
+  const h = await start({ seed: { extra: { [GAME_KEY]: { mode: "run", opts: F.opts, moves: F.moves, at: 1 } } } });
+  const p = h.page; await open(h);
+  T.eq(await p.getAttribute("[data-game]", "data-game"), "shop", "in the shop");
+  T.eq(await p.locator("[data-gm-quit]").count(), 0, "no ✕ on top in the shop");
+  T.ok(await p.isVisible("[data-gm-shopbar] [data-gm-save-quit]") && await p.isVisible("[data-gm-shopbar] [data-gm-next]"), "the bar: Save and quit + Next blind");
+  const bar = await p.locator("[data-gm-shopbar]").boundingBox(), vh = p.viewportSize().height;
+  T.ok(bar.y + bar.height <= vh + 1 && bar.y > vh * 0.6, "the bar sits at the bottom of the screen");
+  await p.evaluate(() => document.querySelector("[data-game]").scrollTo(0, 0)); await p.waitForTimeout(200);
+  const bar2 = await p.locator("[data-gm-shopbar]").boundingBox();
+  T.ok(bar2.y + bar2.height <= vh + 1, "and stays there when the shop is scrolled to the top");
+  await shot(p, "deck110_bar");
+  await p.click("[data-gm-save-quit]"); await p.waitForSelector("[data-confirm]");
+  T.ok(await p.isVisible("[data-gm-quit-yes]") && await p.isVisible("[data-gm-quit-nosave]"), "Save and quit asks first, with both choices");
+  await p.click("[data-confirm-no]"); await p.waitForTimeout(300);
+  T.eq(await p.getAttribute("[data-game]", "data-game"), "shop", "Stay keeps the shop open");
+  await p.click("[data-gm-next]"); await p.waitForTimeout(600);
+  T.eq(await p.getAttribute("[data-game]", "data-game"), "blind", "Next blind starts the blind");
+  T.eq(await p.locator("[data-gm-quit]").count(), 1, "the ✕ is back while cards are played");
+  T.eq(await p.locator("[data-gm-shopbar]").count(), 0, "and the bar is gone");
+  await p.click("[data-gm-quit]"); await p.waitForSelector("[data-confirm]"); await p.click("[data-gm-quit-yes]"); await p.waitForTimeout(400);
+  T.ok(await p.isVisible("[data-gm-continue]"), "saved: the Run waits under Continue");
+  T.eq(h.errors, [], "no page errors (bar)");
+  await h.close();
+}
 T.done();

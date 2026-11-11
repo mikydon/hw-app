@@ -6,6 +6,16 @@
     "ui.hsNoMonth",
     "ui.hsByHand",
     "ui.tourHsProg",
-    "news1_10"
+    "news1_10",
+    "ui.shTabLooks",
+    "ui.shTabWon",
+    "ui.shPassT",
+    "ui.shPassD",
+    "ui.shMoreT",
+    "ui.shAdT",
+    "ui.shBuyT",
+    "ui.shSuggestT",
+    "ui.tourShSoon",
+    "ui.tourShWon"
   ]
 }
