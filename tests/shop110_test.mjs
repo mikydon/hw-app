@@ -19,12 +19,19 @@ const openShop = async p => { await p.click("[data-menu-btn]"); await p.click('[
   T.eq(await p.evaluate(() => localStorage.getItem("domaci-trening-v1-profile")), before, "tapping them changes nothing");
   T.eq(await p.locator(".sheetBox").count(), 0, "and opens nothing");
   T.ok(!/patreon|paypal|ko-fi/i.test(await p.locator("[data-shop]").innerText()), "no other payment names anywhere in the Shop");
+  // 1.10.0 speed: look effects stand still unless their card is mostly on screen (before: ~100 animations always ran)
+  const anim = () => p.evaluate(() => document.getAnimations().filter(a => a.playState === "running" && a.effect && a.effect.target && a.effect.target.closest("[data-shop-look], [data-shop-wonlook]")).length);
+  T.eq(await p.locator('[data-look-on="1"]').count(), 0, "on the Shop page no look card is switched on");
+  T.eq(await anim(), 0, "and none of their animations run");
   await shot(p, "shop110_a");
   await p.click("[data-shop-code]"); await p.waitForTimeout(400);
   T.ok(await p.locator(".sheetBox").isVisible(), "codes still open their sheet");
   await p.locator(".sheetBox button[aria-label]").first().click(); await p.waitForTimeout(500);
   await p.click('[data-shop-tab="1"]'); await p.waitForTimeout(700);
   T.ok(await p.locator("[data-shop-today] [data-shop-look]").first().isVisible(), "Looks page: this week's looks");
+  const onN = await p.locator('[data-shop-today] [data-look-on="1"]').count(), allN = await p.locator("[data-shop-today] [data-shop-look]").count();
+  T.ok(onN >= 1 && onN < allN, `only the cards on screen are switched on (${onN} of ${allN})`);
+  T.eq(await p.locator('[data-shop-won] [data-look-on="1"]').count(), 0, "cards of the page next door stay off");
   await p.locator("[data-shop-today] [data-shop-look]").first().click(); await p.waitForTimeout(500);
   T.ok(await p.locator("[data-look-sheet]").isVisible(), "a look opens on your profile");
   await p.locator(".sheetBox button[aria-label]").first().click(); await p.waitForTimeout(500);

@@ -1141,7 +1141,7 @@ const ACCENTS = {
   coral:  { c: ["#ff6b6b", "#2b0707", "#c43c3c"], kc: ["#ffc53d", "#ffe9a8"] },
 };
 function applyTheme(id, accent) {
-  const t = THEMES[id] || THEMES.navy;
+  const t = THEMES[id] || THEMES.black;
   Object.keys(t).forEach(k => { if (k !== "edge") C[k] = t[k]; });
   const a = ACCENTS[accent] || ACCENTS.yellow, m = a.mint || ["#5fe3a1", "#2b9e66"], k = a.kc || ["#ff8c1a", "#ffd98a"];
   C.signal = a.c[0]; C.signalInk = a.c[1]; EDGE[a.c[0]] = a.c[2];
@@ -1470,7 +1470,9 @@ const syncTomb = (kind, key) => { const m = syncMem(); setSyncMem({ [kind]: { ..
 const AUTOBK_KEY = "domaci-trening-v1-autobk";
 const autoBkInfo = () => { try { return JSON.parse(localStorage.getItem(AUTOBK_KEY) || "null"); } catch (_) { return null; } };
 const stamp = d => `${dateKey(d)}-${String(d.getHours()).padStart(2, "0")}${String(d.getMinutes()).padStart(2, "0")}`;
-const DEFAULT_SETTINGS = { theme: "navy", sndTap: true, sndFx: true, sndTimer: true, volume: "mid", vibrate: true, keepAwake: true, aiCopy: false, exOff: [] };
+// 1.10.0 (Michael, Nov 11: "the main theme should be the universal black, OLED"): new installs start in Black;
+// everyone who already has saved settings keeps the theme stored there (Navy was always saved explicitly).
+const DEFAULT_SETTINGS = { theme: "black", sndTap: true, sndFx: true, sndTimer: true, volume: "mid", vibrate: true, keepAwake: true, aiCopy: false, exOff: [] };
 async function loadSettings() { try { const v = await store.get(SETTINGS_KEY); if (v) return JSON.parse(v); } catch (_) {} return null; }
 async function saveSettings(st) { await store.set(SETTINGS_KEY, JSON.stringify(st)); }
 async function loadProfile() { try { const v = await store.get(PROFILE_KEY); if (v) return JSON.parse(v); } catch (_) {} return null; }
@@ -2818,7 +2820,7 @@ function HomeTiles({ history, onCalories, onHistory }) {
                   <Ico n={c.done ? "tick" : c.icon} size={20} sw={c.done ? 2.8 : 2} />
                 </button>
                 <span style={{ flex: 1, height: 6, borderRadius: 99, background: `${C.chalk}14`, overflow: "hidden" }}><span style={{ display: "block", height: "100%", width: `${Math.min(1, c.v / c.goal) * 100}%`, background: col, borderRadius: 99, transition: `width ${MO.fill} ${MO.ease}` }} /></span>
-                <span style={{ width: 52, textAlign: "right", fontSize: 12.5, fontWeight: 800, color: c.done ? C.mint : C.dim, fontVariantNumeric: "tabular-nums", flexShrink: 0 }}>{Math.min(c.v, c.goal)}/{c.goal}</span>
+                <span data-home-ch-val style={{ minWidth: 52, whiteSpace: "nowrap", textAlign: "right", fontSize: 12.5, fontWeight: 800, color: c.done ? C.mint : C.dim, fontVariantNumeric: "tabular-nums", flexShrink: 0 }}>{Math.min(c.v, c.goal)}/{c.goal}</span>
               </div>
             );
           })}
@@ -9477,18 +9479,40 @@ function LookThumb({ id, size = 56 }) {
 }
 // 1.8.2 (Michael: "show how it would look on a profile that isn't the user's, greyed"): a small sample profile in grey
 // with only this one look on it, in colour. Effects run only while the card is on screen.
-function useOnScreen(ref) {
+// 1.10.0 (Michael, Nov 11: "if all the shop effects run at once it will stutter"; measured: 101 endless animations ran
+// in the Shop with 2 on screen): `part` = how much of the box must be on screen (0 = any of it, with 80 px of room
+// above and below; never to the sides, or the next swipe page would count as on screen).
+function useOnScreen(ref, part = 0) {
   const [on, setOn] = useState(false);
   useEffect(() => {
     const el = ref.current; if (!el) return;
     if (typeof IntersectionObserver === "undefined") { setOn(true); return; }
-    const io = new IntersectionObserver(es => setOn(es[es.length - 1].isIntersecting), { rootMargin: "80px" });
+    const io = new IntersectionObserver(es => { const e = es[es.length - 1]; setOn(e.isIntersecting && e.intersectionRatio >= part); }, part ? { threshold: [0, part] } : { rootMargin: "80px 0px" });
     io.observe(el); return () => io.disconnect();
   }, []);
   return on;
 }
-function LookDemo({ id, h = 124 }) {
-  const ref = useRef(null), seen = useOnScreen(ref);
+// A look card of the Shop: its animations (twinkles, foil, glows) play only while most of the card is on screen;
+// everywhere else they stand still (`.lkOff` pauses every animation inside, see the global CSS).
+function LookCard({ id, right, onOpen, extra = {} }) {
+  const ref = useRef(null), on = useOnScreen(ref, 0.45);
+  const r = lookRar(id), col = RAR_COL()[r];
+  return (
+    <button ref={ref} type="button" onClick={onOpen} data-look-on={on ? 1 : 0} className={(r === 3 ? "foil" : "") + (on ? "" : " lkOff")} {...extra}
+      style={{ ...btnBase, display: "block", padding: 8, borderRadius: 22, background: SOFT(), border: `1.5px solid ${col}55`, color: C.chalk, textAlign: "left", fontWeight: 400, width: "100%", boxShadow: r >= 2 ? `0 0 18px ${col}1f` : "none" }}>
+      <LookDemo id={id} on={on} />
+      <span style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 6px 4px" }}>
+        <span style={{ flex: 1, minWidth: 0 }}>
+          <LookName id={id} />
+          <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, marginTop: 4 }}><span data-rar-chip={r} style={{ color: col, fontWeight: 800, textTransform: "uppercase", letterSpacing: 0.5, fontSize: 10 }}>{T("gmRar" + r)}</span><span aria-hidden="true" style={{ width: 3, height: 3, borderRadius: 9, background: C.dim }} /><span style={{ color: C.dim }}>{T("lookKind_" + EC.LOOKS[id].kind)}</span></span>
+        </span>
+        {right}
+      </span>
+    </button>
+  );
+}
+function LookDemo({ id, h = 124, on }) {
+  const ref = useRef(null), own = useOnScreen(ref), seen = on === undefined ? own : on;
   const kind = EC.LOOKS[id] && EC.LOOKS[id].kind, grey = `${C.chalk}17`, av = 58, fr = Math.round(av * 116 / 84);
   const bar = (w, ht, extra) => <span style={{ display: "block", width: w, height: ht, borderRadius: 99, background: grey, ...extra }} />;
   return (
@@ -10127,18 +10151,7 @@ function ShopTab({ history, profile, setProfile, onGo }) {
   const [codeOpen, setCodeOpen] = useState(false);
   const row = { display: "flex", alignItems: "center", gap: 12, padding: "12px 16px" };
   // 1.8.2 (Michael): bigger cards that show the look on a grey sample profile, with an artistic name
-  const lookRow = (id, right, extra = {}) => { const r = lookRar(id), col = RAR_COL()[r]; return (
-    <button key={id} type="button" onClick={() => { sfxTap(); setPeek(id); }} className={r === 3 ? "foil" : ""} {...extra}
-      style={{ ...btnBase, display: "block", padding: 8, borderRadius: 22, background: SOFT(), border: `1.5px solid ${col}55`, color: C.chalk, textAlign: "left", fontWeight: 400, width: "100%", boxShadow: r >= 2 ? `0 0 18px ${col}1f` : "none" }}>
-      <LookDemo id={id} />
-      <span style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 6px 4px" }}>
-        <span style={{ flex: 1, minWidth: 0 }}>
-          <LookName id={id} />
-          <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, marginTop: 4 }}><span data-rar-chip={r} style={{ color: col, fontWeight: 800, textTransform: "uppercase", letterSpacing: 0.5, fontSize: 10 }}>{T("gmRar" + r)}</span><span aria-hidden="true" style={{ width: 3, height: 3, borderRadius: 9, background: C.dim }} /><span style={{ color: C.dim }}>{T("lookKind_" + EC.LOOKS[id].kind)}</span></span>
-        </span>
-        {right}
-      </span>
-    </button>); };
+  const lookRow = (id, right, extra = {}) => <LookCard key={id} id={id} right={right} extra={extra} onOpen={() => { sfxTap(); setPeek(id); }} />;
   const lookGrid = { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(290px, 100%), 1fr))", gap: 10 };
   // 1.10.0: the Shop was one page ten screens long. Now the diamonds stay on top and three pages swipe under them:
   // Shop (chest, freezes and boosts, what is coming, codes) | Looks (this week's) | Earned (looks from badges).
@@ -12994,6 +13007,7 @@ export default function App() {
         .lkPulse{animation:lkPulse 1.8s ease-in-out infinite}@keyframes lkPulse{0%,100%{opacity:.55}50%{opacity:1}}
         .lkSpin{transform-box:view-box;transform-origin:58px 58px;animation:lkSpin 6s linear infinite}@keyframes lkSpin{to{transform:rotate(360deg)}}
         .lkFlick{transform-box:view-box;transform-origin:58px 58px;animation:lkFlick 1.1s ease-in-out infinite}@keyframes lkFlick{0%,100%{transform:scale(1)}50%{transform:scale(1.035,.975)}}
+        .lkOff,.lkOff *,.lkOff::before,.lkOff::after,.lkOff *::before,.lkOff *::after{animation-play-state:paused!important}
         .lkTw{animation:lkTw 2s ease-in-out infinite}@keyframes lkTw{0%,100%{opacity:.2}50%{opacity:1}}
         .lkAur{animation:lkAur 9s ease-in-out infinite}.lkAur2{animation-duration:13s;animation-direction:reverse}@keyframes lkAur{0%,100%{transform:translateX(-10%) skewX(-8deg)}50%{transform:translateX(10%) skewX(8deg)}}
         @keyframes lkFoil{from{background-position:120% 0}to{background-position:-120% 0}}

@@ -17,7 +17,7 @@
         <item name="colorAccent">#FFD23F</item>
         <item name="colorControlActivated">#FFD23F</item>
         <item name="android:textColorHighlight">#66FFD23F</item>
-        <item name="android:windowBackground">@color/ic_launcher_background</item>
+        <item name="android:windowBackground">@color/hw_window_bg</item>
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="android:background">@null</item>
@@ -27,7 +27,7 @@
     <!-- Launch screen: Android 12+ shows the icon on the app colour; older versions show drawable/splash. -->
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
         <item name="android:background">@drawable/splash</item>
-        <item name="windowSplashScreenBackground">@color/ic_launcher_background</item>
+        <item name="windowSplashScreenBackground">@color/hw_window_bg</item>
         <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_foreground</item>
         <item name="postSplashScreenTheme">@style/AppTheme.NoActionBar</item>
     </style>

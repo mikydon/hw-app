@@ -2,4 +2,7 @@
 <resources>
     <!-- 1.6.0: accent of phone notifications (the app's yellow) -->
     <color name="hw_notify">#FFD23F</color>
+    <!-- 1.10.0: the launch screen and the window behind the app are black (the default theme, right on any theme);
+         the launcher icon keeps its navy background (ic_launcher_background) -->
+    <color name="hw_window_bg">#000000</color>
 </resources>

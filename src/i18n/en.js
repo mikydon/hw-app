@@ -1790,7 +1790,8 @@ const en = {
     ["History", "A long list of every workout, a calendar you couldn't tap, and the numbers on top.", "The calendar leads: tap a day to open its workout, tap an empty day to add one. The list follows the month, and a new Progress page holds the numbers and a smoother chart."],
     ["Shop", "One page, ten screens long.", "Your diamonds stay on top and three pages swipe under them: Shop, Looks and Earned. A season pass and more ways to get diamonds are shown as coming soon."],
     ["Muscle Deck", "In the shop, Next blind sat at the very end and leaving was a small ✕ on top.", "The shop ends with a floating bar: Save and quit and Next blind, always on screen. The flexed-arm icon was redrawn."],
-    ["Faster start", "All 15 languages were loaded at every start.", "Only your language loads: the app opens faster and uses less memory."],
+    ["Faster start", "All 15 languages were loaded at every start, and every look in the Shop animated all the time.", "Only your language loads: the app opens faster and uses less memory. Looks in the Shop move only while you look at them, so the Shop scrolls smoothly."],
+    ["Black by default", "New installs started in Navy.", "New installs start in Black (true black, easy on OLED screens). Your own theme stays as you set it; all eight are still in Settings."],
   ],
   news19: [
     ["Workout plans", "One plan for everyone: days A, B and C.", "Build your own plans from the app's exercises: pick exercises and sets for every weekday (empty days are rest days), sort plans into groups and use one. Home then shows that plan's week, with the days you've done in green. Small icons show what each day trains, and tips say when a muscle gets little work. The recommended A, B, C plan is still there."],

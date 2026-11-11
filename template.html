@@ -7,14 +7,16 @@
 <meta name="description" content="HW App: home workout with no equipment. About 19 minutes (13 when short on time), days A/B/C, ranks, weekly challenges and streaks.">
 <meta name="application-name" content="HW App">
 <meta name="apple-mobile-web-app-title" content="HW App">
-<meta name="theme-color" content="#0e1b36">
+<meta name="theme-color" content="#000000">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/svg+xml" href="icon.svg">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<style>html,body{margin:0;background:#0e1b36;color:#eef2ff;-webkit-tap-highlight-color:transparent}</style>
+<style>html,body{margin:0;background:#000;color:#eef2ff;-webkit-tap-highlight-color:transparent}</style>
+<script>/* first paint in the saved theme's colour (no flash of another colour before the app runs); table from THEMES in App.jsx via build.mjs */
+try{var I=/*INKS*/{},s=JSON.parse(localStorage.getItem("domaci-trening-v1-settings")||"{}"),c=I[s.theme]||I[/*DEFTHEME*/""];if(c){document.documentElement.style.background=c;var m=document.querySelector('meta[name="theme-color"]');m&&m.setAttribute("content",c)}}catch(e){}</script>
 <style>
 /*FONTS*/</style>
 </head>

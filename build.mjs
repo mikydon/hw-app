@@ -80,7 +80,12 @@ const cloudOut = await build({
   target: "es2020", define: { "process.env.NODE_ENV": '"production"' }, plugins: [capShim],
 });
 const cloudJs = cloudOut.outputFiles[0].text.replace(/<\/script/gi, "<\\/script");
-const html = readFileSync("template.html", "utf8").replace("/*FONTS*/", () => fontCss).replace("/*APP*/", () => js).replace("/*CLOUD*/", () => cloudJs).replace("<!--LANGS-->", () => langBlocks);
+// The page's first paint uses the saved theme's background (template.html): the table comes from THEMES in App.jsx.
+const appSrc = readFileSync("src/App.jsx", "utf8");
+const inks = Object.fromEntries([...appSrc.slice(appSrc.indexOf("const THEMES = {"), appSrc.indexOf("const APP_VERSION")).matchAll(/^\s*(\w+):\s*\{\s*ink:\s*"(#[0-9a-fA-F]{6})"/gm)].map(m => [m[1], m[2]]));
+const defTheme = (appSrc.match(/const DEFAULT_SETTINGS = \{ theme: "(\w+)"/) || [])[1];
+if (Object.keys(inks).length < 8 || !inks[defTheme]) throw new Error("build: could not read THEMES / the default theme from App.jsx");
+const html = readFileSync("template.html", "utf8").replace("/*INKS*/{}", () => JSON.stringify(inks)).replace('/*DEFTHEME*/""', () => JSON.stringify(defTheme)).replace("/*FONTS*/", () => fontCss).replace("/*APP*/", () => js).replace("/*CLOUD*/", () => cloudJs).replace("<!--LANGS-->", () => langBlocks);
 writeFileSync("index.html", html);
 
 // Android app / live-update bundle
