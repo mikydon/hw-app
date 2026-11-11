@@ -434,6 +434,9 @@ export default {
     mx_wide_grip_lat_pulldown: { muscles: "Hát (széles hátizom), felső hát", how: "Ülj le, combod a párna alatt, és fogd meg szélesen a rudat (kb. másfélszeres vállszélesség). Húzd a mellkasod felső részéhez, könyök lefelé és kifelé, aztán lassan engedd fel.", tip: "Ne húzd a tarkód mögé." },
   },
   // 1.9.1
+  news194: [
+    "Karbantartó frissítés: egy apró változás az app Google Play-verziójában.",
+  ],
   news193: [
     "Útmutató: az Edzéstervek fejezet most végigvezet az új terveken: A hetem, Új terv, és egy terven belül a heted napjai, a gyakorlatok és a tippek. Ha már láttad, a következő alkalommal, amikor megnyitod a Terveket, még egyszer megjelenik.",
     "Útmutató: az Edzés fejezet most a kg-mezőt, a jegyzeteket és egy gyakorlat hozzáadását is elmagyarázza, a Kezdőlap fejezet pedig megmutatja a menü sorrendjét módosító ceruzát.",

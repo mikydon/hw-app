@@ -434,6 +434,9 @@ export default {
     mx_wide_grip_lat_pulldown: { muscles: "Chrbát (široký sval), horný chrbát", how: "Sadni si so stehnami pod podložkou a chyť tyč široko (asi 1,5× šírka ramien). Stiahni ju k hornej časti hrudníka, lakte dole a von, potom ju pomaly pusti hore.", tip: "Neťahaj ju za krk." },
   },
   // 1.9.1
+  news194: [
+    "Údržbová aktualizácia: malá zmena pre verziu appky z Google Play.",
+  ],
   news193: [
     "Sprievodca: kapitola Tréningové plány teraz prejde nové plány: Môj týždeň, Nový plán a v pláne dni v tvojom týždni, cviky a tipy. Ak si ju už videl, ukáže sa ešte raz, keď nabudúce otvoríš Plány.",
     "Sprievodca: kapitola Tréning teraz vysvetlí aj kilá pri činkách, poznámky a pridanie cviku, a kapitola Domov ukáže ceruzku, ktorá mení poradie v menu.",

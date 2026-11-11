@@ -434,6 +434,9 @@ export default {
     mx_wide_grip_lat_pulldown: { muscles: "Espalda (dorsal), espalda alta", how: "Siéntate con los muslos bajo la almohadilla y coge la barra ancha (unas 1,5 veces el ancho de hombros). Llévala al pecho alto, codos hacia abajo y hacia fuera, y deja que suba despacio.", tip: "No la bajes por detrás de la nuca." },
   },
   // 1.9.1
+  news194: [
+    "Actualización de mantenimiento: un pequeño cambio para la versión de Google Play de la app.",
+  ],
   news193: [
     "Guía: el capítulo Planes de entreno ahora recorre los planes nuevos: Mi semana, Nuevo plan y, dentro de un plan, los días de tu semana, los ejercicios y los consejos. Si ya lo viste, aparece una vez más la próxima vez que abras Planes.",
     "Guía: el capítulo Entreno ahora también explica el campo de kg, las notas y añadir un ejercicio, y el capítulo Inicio muestra el lápiz que reordena el menú.",

@@ -434,6 +434,9 @@ export default {
     mx_wide_grip_lat_pulldown: { muscles: "Costas (dorsal), parte alta das costas", how: "Sente com as coxas sob a almofada e segure a barra aberta (cerca de 1,5 vez a largura dos ombros). Puxe até a parte alta do peito, cotovelos para baixo e para fora, depois deixe subir devagar.", tip: "Não puxe atrás da nuca." },
   },
   // 1.9.1
+  news194: [
+    "Atualização de manutenção: uma pequena mudança para a versão do app no Google Play.",
+  ],
   news193: [
     "Guia: o capítulo Planos de treino agora mostra os planos novos: Minha semana, Novo plano e, dentro de um plano, os dias da sua semana, os exercícios e as dicas. Se você já viu, ele aparece mais uma vez na próxima vez que abrir Planos.",
     "Guia: o capítulo Treino agora também explica o campo de kg, as notas e como adicionar um exercício, e o capítulo Início mostra o lápis que reordena o menu.",

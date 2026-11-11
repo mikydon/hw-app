@@ -202,7 +202,8 @@ const errMsg = e => String((e && (e.message || e.errorMessage)) || e || "?").sli
 // Which build this is (1.6.1): "web", "direct" (the APK from GitHub) or "play" (Google Play). The Play build never
 // updates itself (Play policy: only Play updates an app from Play): no update.json, no web bundles, no APKs.
 const HwBuild = registerPlugin("HwBuild");
-let store = isNative ? null : "web";
+let store = (typeof window !== "undefined" && window.__hwStore) || (isNative ? null : "web"); // __hwStore: tests only
+export const storeNow = () => store; // null = the Android app has not answered yet
 export async function buildStore() {
   if (store) return store;
   if (!Capacitor.isPluginAvailable("HwBuild")) return (store = "direct"); // APKs before 1.6.1

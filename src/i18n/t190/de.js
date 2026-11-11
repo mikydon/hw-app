@@ -434,6 +434,9 @@ export default {
     mx_wide_grip_lat_pulldown: { muscles: "Rücken (Latissimus), oberer Rücken", how: "Setz dich mit den Oberschenkeln unter das Polster und greif die Stange weit (etwa 1,5-fache Schulterbreite). Zieh sie zur oberen Brust, Ellbogen nach unten und außen, dann lass sie langsam hoch.", tip: "Zieh sie nicht hinter den Nacken." },
   },
   // 1.9.1
+  news194: [
+    "Wartungsupdate: eine kleine Änderung für die Google-Play-Version der App.",
+  ],
   news193: [
     "Anleitung: Das Kapitel Trainingspläne zeigt jetzt die neuen Pläne: Meine Woche, Neuer Plan und in einem Plan die Tage in deiner Woche, die Übungen und die Tipps. Hast du es schon gesehen, kommt es beim nächsten Öffnen der Pläne noch einmal.",
     "Anleitung: Das Kapitel Training erklärt jetzt auch das kg-Feld, Notizen und das Hinzufügen einer Übung, und das Kapitel Start zeigt den Stift, der das Menü umsortiert.",

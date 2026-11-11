@@ -434,6 +434,9 @@ export default {
     mx_wide_grip_lat_pulldown: { muscles: "Záda (široký sval), horní záda", how: "Sedni si se stehny pod opěrkou a chyť tyč široko (asi 1,5× šířka ramen). Stáhni ji k horní části hrudníku, lokty dolů a ven, pak ji pomalu pusť nahoru.", tip: "Netahej ji za krk." },
   },
   // 1.9.1
+  news194: [
+    "Údržbová aktualizace: malá změna pro verzi aplikace z Google Play.",
+  ],
   news193: [
     "Průvodce: kapitola Tréninkové plány teď projde nové plány: Můj týden, Nový plán a v plánu dny v tvém týdnu, cviky a tipy. Pokud jsi ji už viděl, ukáže se ještě jednou, až příště otevřeš Plány.",
     "Průvodce: kapitola Trénink teď vysvětlí i kila u činek, poznámky a přidání cviku, a kapitola Úvod ukáže tužku, která mění pořadí v menu.",

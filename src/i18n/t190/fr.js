@@ -434,6 +434,9 @@ export default {
     mx_wide_grip_lat_pulldown: { muscles: "Dos (grand dorsal), haut du dos", how: "Assieds-toi cuisses sous le coussin et prends la barre large (environ 1,5 fois la largeur des épaules). Tire-la vers le haut de la poitrine, coudes vers le bas et l'extérieur, puis laisse-la remonter lentement.", tip: "Ne la tire pas derrière la nuque." },
   },
   // 1.9.1
+  news194: [
+    "Mise à jour de maintenance : un petit changement pour la version Google Play de l'appli.",
+  ],
   news193: [
     "Guide : le chapitre Programmes présente maintenant les nouveaux programmes : Ma semaine, Nouveau programme et, dans un programme, les jours de ta semaine, les exercices et les conseils. Si tu l'as déjà vu, il revient une fois la prochaine fois que tu ouvres Programmes.",
     "Guide : le chapitre Séance explique aussi le champ kg, les notes et l'ajout d'un exercice, et le chapitre Accueil montre le crayon qui réordonne le menu.",

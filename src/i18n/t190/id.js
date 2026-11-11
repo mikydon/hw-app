@@ -434,6 +434,9 @@ export default {
     mx_wide_grip_lat_pulldown: { muscles: "Punggung (lat), punggung atas", how: "Duduk dengan paha di bawah bantalan dan pegang batang lebar (sekitar 1,5× lebar bahu). Tarik ke dada atas, siku turun dan keluar, lalu biarkan naik perlahan.", tip: "Jangan menariknya ke belakang leher." },
   },
   // 1.9.1
+  news194: [
+    "Pembaruan pemeliharaan: perubahan kecil untuk versi Google Play aplikasi ini.",
+  ],
   news193: [
     "Panduan: bab Rencana latihan sekarang menunjukkan rencana baru: Mingguku, Rencana baru, dan di dalam rencana hari di minggumu, latihan, serta tips. Jika sudah pernah melihatnya, bab ini muncul sekali lagi saat kamu membuka Rencana berikutnya.",
     "Panduan: bab Latihan kini juga menjelaskan kolom kg, catatan, dan menambah latihan, dan bab Beranda menunjukkan pensil untuk mengubah urutan menu.",

@@ -10,6 +10,12 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 
 <!-- New version: add a "## x.y.z (date)" section on top (web-only history uses "## Browser beta x.y.z (date)"). On a push to main, .github/workflows/build.yml builds everything and .github/scripts/releases.sh creates/updates the releases (commit = the push, or the one in a commit comment). -->
 
+## 1.9.4 (2026-11-11)
+
+A small update: it arrives in the app by itself, no new APK needed.
+
+- **Google Play version:** the "Support the app" row in Settings (a link to Patreon) is no longer shown there. Google Play's Payments policy does not let an app lead people to another way to pay, and a donation link to the developer is not clearly covered by its exceptions. The website and the APK from GitHub keep the row; nothing else changes.
+
 ## 1.9.3 (2026-11-08)
 
 A small update: it arrives in the app by itself, no new APK needed.

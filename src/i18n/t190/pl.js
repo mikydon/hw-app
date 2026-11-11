@@ -434,6 +434,9 @@ export default {
     mx_wide_grip_lat_pulldown: { muscles: "Plecy (najszerszy), górna część pleców", how: "Usiądź z udami pod poduszką i chwyć drążek szeroko (około 1,5× szerokość barków). Ściągnij go do górnej części klatki, łokcie w dół i na zewnątrz, potem pozwól mu powoli wrócić.", tip: "Nie ściągaj go za kark." },
   },
   // 1.9.1
+  news194: [
+    "Aktualizacja porządkowa: drobna zmiana w wersji aplikacji z Google Play.",
+  ],
   news193: [
     "Przewodnik: rozdział Plany treningowe pokazuje teraz nowe plany: Mój tydzień, Nowy plan, a w planie dni w twoim tygodniu, ćwiczenia i wskazówki. Jeśli już go widziałeś, pojawi się jeszcze raz, gdy następnym razem otworzysz Plany.",
     "Przewodnik: rozdział Trening objaśnia teraz też pole kg, notatki i dodawanie ćwiczenia, a rozdział Start pokazuje ołówek do zmiany kolejności menu.",

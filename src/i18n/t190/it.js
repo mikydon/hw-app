@@ -434,6 +434,9 @@ export default {
     mx_wide_grip_lat_pulldown: { muscles: "Schiena (dorsali), parte alta della schiena", how: "Siediti con le cosce sotto il cuscino e afferra la barra larga (circa 1,5 volte la larghezza delle spalle). Tirala alla parte alta del petto, gomiti giù e in fuori, poi lasciala risalire lentamente.", tip: "Non tirarla dietro la nuca." },
   },
   // 1.9.1
+  news194: [
+    "Aggiornamento di manutenzione: una piccola modifica per la versione Google Play dell'app.",
+  ],
   news193: [
     "Guida: il capitolo Schede ora mostra le nuove schede: La mia settimana, Nuova scheda e, dentro una scheda, i giorni della tua settimana, gli esercizi e i consigli. Se l'hai già visto, compare ancora una volta la prossima volta che apri Schede.",
     "Guida: il capitolo Allenamento ora spiega anche il campo kg, le note e come aggiungere un esercizio, e il capitolo Home mostra la matita che riordina il menu.",

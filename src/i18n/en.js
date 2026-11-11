@@ -1811,6 +1811,9 @@ const en = {
     ["Indonesian","14 languages.","15: the app now speaks Indonesian too."],
     ["Small fixes","The bottoms of letters like g, y and j were cut off in some titles and names; Leaderboard, Friends and Messages switched without any motion.","Letters show in full, and the page slides in from the side of the tab you tapped."],
   ],
+  news194: [
+    "Maintenance update: a small change for the Google Play version of the app.",
+  ],
   news193: [
     "Guide: the Workout plans chapter now walks through the new plans: My week, New plan, and inside a plan the days in your week, the exercises and the tips. If you already saw it, it shows once more the next time you open Workout plans.",
     "Guide: the workout chapter now also explains the kg field, notes and adding an exercise, and the Home chapter shows the pencil that reorders the menu.",
