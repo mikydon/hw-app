@@ -42,7 +42,7 @@ const THEMES = {
   slate:  { ink: "#15181d", panel: "#1f242b", panelHi: "#2a313a", line: "#3a434f", chalk: "#f1f4f8", dim: "#9aa6b4", edge: "#0e1115" },
   coffee: { ink: "#1c140f", panel: "#2a1f17", panelHi: "#382a20", line: "#4d3a2c", chalk: "#fbf3ec", dim: "#b8a291", edge: "#130d09" },
 };
-const APP_VERSION = "1.9.4";
+const APP_VERSION = "1.10.0";
 // Big Shoulders has no Cyrillic, so Oswald (also condensed) covers Ukrainian. The browser only
 // downloads the Oswald unicode ranges a page actually uses.
 // 1.7.0: 'HW Emoji' = the app's own emoji (Fluent 3D, fonts/hw-emoji.ttf) for the emoji the app shows; BODY_SYS
@@ -409,7 +409,12 @@ const REST_ROUND = 60;     // after a full round
 // ─── HELPERS ────────────────────────────────────────────────────────────────
 const pad = n => String(n).padStart(2, "0");
 function dateKey(d = new Date()) { return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; }
-function parseKey(k) { const [y, m, d] = k.split("-").map(Number); return new Date(y, m - 1, d); }
+// 1.10.0: called thousands of times at start (streak, badges, challenges over the whole history); the usual
+// "YYYY-MM-DD" is read by position, anything else the old way. Always a NEW Date: callers change it.
+function parseKey(k) {
+  if (k.length === 10 && k.charCodeAt(4) === 45 && k.charCodeAt(7) === 45) return new Date(+k.slice(0, 4), +k.slice(5, 7) - 1, +k.slice(8));
+  const [y, m, d] = k.split("-").map(Number); return new Date(y, m - 1, d);
+}
 function fmtDate(k, withYear) { return fmtLong(parseKey(k), withYear); }
 function daysBetween(a, b) { return Math.round((parseKey(b) - parseKey(a)) / 86400000); }
 // 1.9.0: one logged set as text: "12", "45 s", "20 kg × 8", "24 kg · 40 s"
@@ -521,7 +526,12 @@ function streakInfo(history, today) {
 // ─── WEEKLY CHALLENGES ──────────────────────────────────────────────────────
 // Each week (Mon–Sun) has 3 challenges: "3 trainings" + 2 rotating ones.
 // Completing all 3 also earns a 🧊 streak freeze. XP is derived from history.
-function weekKey(k) { const d = parseKey(k); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return dateKey(d); }
+const WEEK_KEYS = new Map(); // day → its Monday; a pure calendar answer, so it can be remembered
+function weekKey(k) {
+  let w = WEEK_KEYS.get(k);
+  if (w === undefined) { const d = parseKey(k); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); w = dateKey(d); if (WEEK_KEYS.size > 5000) WEEK_KEYS.clear(); WEEK_KEYS.set(k, w); }
+  return w;
+}
 function sumReps(w, ids) { return w.reduce((a, e) => a + e.items.filter(it => !ids || ids.includes(it.id)).reduce((b, it) => b + it.res.reduce((c, v) => c + (typeof v === "number" ? v : 0), 0), 0), 0); }
 const PUSH_REPS = Object.keys(LIB).filter(id => LIB[id].t === "push" && ["r", "w", "a"].includes(LIB[id].k));
 const LEGS_REPS = Object.keys(LIB).filter(id => LIB[id].t === "legs" && ["r", "w", "a"].includes(LIB[id].k));
@@ -2903,7 +2913,9 @@ const verCmp = (a, b) => {
   for (let i = 0; i < Math.max(x.length, y.length); i++) { const d = (x[i] || 0) - (y[i] || 0); if (d) return d < 0 ? -1 : 1; }
   return 0;
 };
-const newsKey = v => "news" + v.replace(/\./g, "");
+// Keys: news14, news141, news1491 … for second numbers 0–9; from 1.10 on the numbers are joined with "_"
+// (news1_10, news1_10_1), because "news111" would be both 1.1.1 and 1.11.
+const newsKey = v => { const p = String(v).split("."); return "news" + p.join(Number(p[1]) >= 10 ? "_" : ""); };
 // Small-update lines that make no sense any more once the next big update is out (index in that version's list).
 const NEWS_OBSOLETE = { "1.0.3": [0] }; // "if you have 1.0.0, install the 1.0.3 APK"
 function newsPages() {
@@ -5024,130 +5036,139 @@ function KcalCalendar({ history, kcal, sel, onSel }) {
 }
 
 // ─── TAB 2: HISTORY ────────────────────────────────────────────────────────
+// 1.10.0 (Michael, Nov 7: History "looks old and illogical, not minimal, not modern"): the calendar is the way in.
+// A workout day is a filled square (like the week strip on Home), calories are a dot under the number, a tap picks
+// the day: its workout opens below, an empty day offers to add one. No letters or triangles in the cells.
 function CalLegend() {
-  const sw = (bg, label) => <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}><span style={{ width: 14, height: 14, borderRadius: 4, border: `1px solid ${C.line}`, background: bg }} />{label}</span>;
+  const sw = (el, label) => <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>{el}{label}</span>;
+  const dot = c => <span style={{ width: 7, height: 7, borderRadius: 4, background: c }} />;
   return (
-    <div data-cal-legend style={{ display: "flex", flexWrap: "wrap", gap: "6px 14px", fontSize: 11, color: C.dim, marginTop: 10 }}>
-      {sw(`linear-gradient(135deg, ${C.mint} 0 45%, transparent 45%)`, T("calLegTrain"))}
-      {sw(`linear-gradient(315deg, ${KC_LOG} 0 45%, transparent 45%)`, T("calLegLog"))}
-      {sw(`linear-gradient(315deg, ${KC_HIT} 0 45%, transparent 45%)`, T("calLegHit"))}
+    <div data-cal-legend style={{ display: "flex", flexWrap: "wrap", gap: "10px 16px", fontSize: 14, color: C.chalk }}>
+      {sw(<span style={{ width: 16, height: 16, borderRadius: 6, background: C.mint }} />, T("calLegTrain"))}
+      {sw(dot(KC_LOG), T("calLegLog"))}
+      {sw(dot(KC_HIT), T("calLegHit"))}
+      {sw(<span style={{ width: 16, height: 16, borderRadius: 6, background: `${C.sky}2e`, color: C.sky, display: "inline-flex", alignItems: "center", justifyContent: "center" }}><Ico n="ice" size={10} sw={2.4} /></span>, T("shFreeze"))}
     </div>
   );
 }
-function MonthCalendar({ history }) {
+function MonthCalendar({ history, ym, setYm, sel, onPick }) {
   const today = dateKey();
-  const t = parseKey(today);
-  const [ym, setYm] = useState([t.getFullYear(), t.getMonth()]);
   const [y, m] = ym;
+  const dir = useRef(1);
   const first = new Date(y, m, 1);
   const days = new Date(y, m + 1, 0).getDate();
   const lead = (first.getDay() + 6) % 7;
+  const pre = `${y}-${pad(m + 1)}`;
   const byDate = {};
-  history.forEach(e => { byDate[e.date] = entryMark(e); });
+  let n = 0, secs = 0, sets = 0;
+  history.forEach(e => { byDate[e.date] = entryMark(e); if (e.date.startsWith(pre)) { n++; secs += e.dur || 0; sets += setsIn(e); } });
   const cells = [];
   for (let i = 0; i < lead; i++) cells.push(null);
   for (let d = 1; d <= days; d++) cells.push(d);
-  const count = Object.keys(byDate).filter(k => k.startsWith(`${y}-${pad(m + 1)}`)).length;
-  const shift = n => { sfxTap(); const d = new Date(y, m + n, 1); setYm([d.getFullYear(), d.getMonth()]); };
+  const tNow = parseKey(today), atNow = y === tNow.getFullYear() && m === tNow.getMonth();
+  const shift = k => { if (k > 0 && atNow) return; sfxTap(); dir.current = k; const d = new Date(y, m + k, 1); setYm([d.getFullYear(), d.getMonth()]); };
+  const nav = (k, label) => <button onClick={() => shift(k)} aria-label={label} disabled={k > 0 && atNow} data-cal-nav={k} style={{ ...btnBase, width: 38, height: 38, borderRadius: 12, padding: 0, display: "inline-flex", alignItems: "center", justifyContent: "center", ...SUNK(), opacity: k > 0 && atNow ? 0.35 : 1 }}><Arrow dir={k < 0 ? "‹" : "›"} size={20} /></button>;
+  const stat = (ic, v, col) => <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}><Ico n={ic} size={13} color={col} sw={2.3} />{v}</span>;
   return (
-    <Sect data-month-cal style={{ padding: "14px 14px 12px", marginTop: 0 }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-        <button onClick={() => shift(-1)} aria-label={T("prevMonth")} style={{ ...ghostBtn, color: C.signal, padding: "4px 12px", fontSize: 16 }}>‹</button>
-        <div style={{ textAlign: "center" }}>
-          <div style={{ fontFamily: DISPLAY, fontSize: 22, fontWeight: 900, color: C.chalk }}>{capFirst(fmtMonthYear(first))}</div>
-          <div style={{ fontSize: 12, color: C.dim }}>{TP("workouts", count)}</div>
+    <Sect data-month-cal style={{ padding: "14px 14px 14px", marginTop: 0 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 12 }}>
+        {nav(-1, T("prevMonth"))}
+        <div style={{ textAlign: "center", minWidth: 0 }}>
+          <div data-cal-title style={{ fontFamily: DISPLAY, fontSize: 22, fontWeight: 900, color: C.chalk, lineHeight: 1.1, display: "inline-flex", alignItems: "center", gap: 2 }}>{capFirst(fmtMonthYear(first))}<InfoQ id="histcal" title={T("kcTabCal")} text={<CalLegend />} /></div>
+          <div data-cal-month-sum aria-label={`${TP("workouts", n)}, ${TP("sets", sets)}`} style={{ display: "flex", justifyContent: "center", gap: 12, marginTop: 5, fontSize: 12.5, fontWeight: 700, color: n ? C.chalk : C.dim, fontVariantNumeric: "tabular-nums" }}>
+            {stat("dumbbell", n, C.signal)}{n > 0 && stat("layers", sets, C.sky)}{secs >= 60 && stat("timer", fmtMins(Math.floor(secs / 60)), "#ffa94d")}
+          </div>
         </div>
-        <button onClick={() => shift(1)} aria-label={T("nextMonth")} style={{ ...ghostBtn, color: C.signal, padding: "4px 12px", fontSize: 16 }}>›</button>
+        {nav(1, T("nextMonth"))}
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 5 }}>
-        {weekdaysShort().map(d => <div key={d} style={{ fontSize: 11, color: C.dim, textAlign: "center", fontWeight: 600 }}>{d}</div>)}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 5, marginBottom: 5 }}>
+        {weekdaysShort().map(d => <div key={d} style={{ fontSize: 10.5, color: C.dim, textAlign: "center", fontWeight: 700, letterSpacing: ".04em", textTransform: "uppercase" }}>{d}</div>)}
+      </div>
+      <div key={pre} className={dir.current < 0 ? "hsInL" : "hsInR"} style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 5 }}>
         {cells.map((d, i) => {
           if (!d) return <div key={i} />;
-          const k = `${y}-${pad(m + 1)}-${pad(d)}`;
-          const on = byDate[k];
-          const isToday = k === today;
+          const k = `${pre}-${pad(d)}`;
+          const on = byDate[k], isToday = k === today, future = k > today, picked = sel === k;
           const sk = !on && (META.skips || {})[k], fz = !on && (META.freezeDays || []).includes(k);
-          if (sk || fz) return (
-            <div key={i} data-cal-skip={k} title={sk ? `${T("skip_" + sk.r)}${sk.note ? `: ${sk.note}` : ""}` : T("shFreeze")} style={{ aspectRatio: "1", borderRadius: 9, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: `${C.sky}22`, color: C.sky, border: `1.5px solid ${isToday ? C.chalk : `${C.sky}66`}`, fontSize: 13, fontWeight: 700 }}>
-              {d}<Ico n={sk ? skipIcon(sk.r) : "ice"} size={11} sw={2.2} />
-            </div>
-          );
-          const kc = kcalNow(history, k);
+          const kc = future ? null : kcalNow(history, k);
           const kind = kc && kc.hit ? "hit" : kc && kc.logged ? "log" : null;
-          const bgs = [];
-          if (on) bgs.push(`linear-gradient(135deg, ${C.mint} 0 34%, transparent 34%)`);
-          if (kind) bgs.push(`linear-gradient(315deg, ${kind === "hit" ? KC_HIT : KC_LOG} 0 34%, transparent 34%)`);
+          const label = [capFirst(fmtDate(k, true)), on ? T("calLegTrain") : null, sk ? T("skip_" + sk.r) : fz ? T("shFreeze") : null, kind ? T(kind === "hit" ? "calKcalHit" : "calKcalLog") : null].filter(Boolean).join(", ");
+          const ring = picked ? `0 0 0 2px ${C.ink}, 0 0 0 4px ${C.signal}` : isToday ? `inset 0 0 0 1.5px ${on ? C.ink : C.chalk}` : "none";
+          const st = { ...btnBase, position: "relative", aspectRatio: "1", minWidth: 0, padding: 0, borderRadius: 12, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 1, fontFamily: BODY, fontSize: 13.5, lineHeight: 1, fontVariantNumeric: "tabular-nums", boxShadow: ring, transition: `box-shadow ${MO.t1} ${MO.ease}, transform ${MO.t1} ${MO.ease}`, transform: picked ? "scale(.94)" : "none",
+            background: on ? C.mint : sk || fz ? `${C.sky}2e` : "transparent", color: on ? C.ink : sk || fz ? C.sky : future ? `${C.dim}77` : C.chalk, fontWeight: on || sk || fz || isToday ? 800 : 500, cursor: future ? "default" : "pointer" };
+          const attrs = sk || fz ? { "data-cal-skip": k } : { "data-cal-day": k, "data-cal-train": on ? 1 : 0, "data-cal-kcal": kind || "none" };
           return (
-            <div key={i} data-cal-day={k} data-cal-train={on ? 1 : 0} data-cal-kcal={kind || "none"} title={[on ? T("dayN", { d: on }) : null, kind ? T(kind === "hit" ? "calKcalHit" : "calKcalLog") : null].filter(Boolean).join(" · ") || undefined}
-              style={{ position: "relative", aspectRatio: "1", borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden",
-                background: bgs.length ? bgs.join(", ") : "transparent", color: k > today ? "#4d5f8a" : C.chalk, border: `1.5px solid ${isToday ? C.chalk : on || kind ? C.line : "transparent"}`, fontSize: 13, fontWeight: on || kind ? 800 : 500 }}>
-              {on && <span style={{ position: "absolute", top: 2, left: 4, fontSize: 9, fontWeight: 900, color: C.ink, lineHeight: 1 }}>{on}</span>}
+            <button key={i} type="button" {...attrs} data-cal-cell={k} aria-label={label} aria-pressed={picked} disabled={future} onClick={() => { sfxTap(); onPick(picked ? null : k); }} style={st}>
               {d}
-              {kind === "hit" && <span style={{ position: "absolute", bottom: 1, right: 3, fontSize: 9, fontWeight: 900, color: C.ink, lineHeight: 1 }}>✓</span>}
-            </div>
+              {(sk || fz) && <Ico n={sk ? skipIcon(sk.r) : "ice"} size={10} sw={2.4} />}
+              {kind && <span aria-hidden="true" style={{ position: "absolute", bottom: 4, width: kind === "hit" ? 6 : 5, height: kind === "hit" ? 6 : 5, borderRadius: 3, background: kind === "hit" ? KC_HIT : KC_LOG, boxShadow: on ? `0 0 0 1.5px ${C.mint}` : "none" }} />}
+            </button>
           );
         })}
       </div>
-      <CalLegend />
     </Sect>
   );
 }
-
-// History re-renders when a workout opens or closes; the calendar and chart only change with the history (1.5.6).
 const MonthCalendarM = memo(MonthCalendar);
 const ProgressChartM = memo(props => <ProgressChart {...props} />);
+// Best set per workout of one exercise, the newest 30: a smooth line that draws itself, a tap picks a workout.
+const PC_MAX = 30;
 function ProgressChart({ history }) {
-  const withData = Object.keys(EX).filter(id => history.some(e => e.items.some(it => it.id === id)));
-  const [sel, setSel] = useState(withData.includes("k1") ? "k1" : withData[0]);
+  const used = {};
+  history.forEach((e, i) => e.items.forEach(it => { if (EX[it.id]) used[it.id] = (used[it.id] || 0) + 1 + i / 1e4; }));
+  const withData = Object.keys(used).sort((a, b) => used[b] - used[a]);
+  const [selId, setSelId] = useState(null);
+  const sel = selId && used[selId] ? selId : withData[0];
   const [tip, setTip] = useState(null);
+  const ref = useRef(null), w = useWidth(ref) || 300, h = 168, padT = 34, padB = 22, padL = 6, padR = 10;
   if (!withData.length) return null;
   const pts = history.map(e => {
     const it = e.items.find(x => x.id === sel);
     if (!it) return null;
     const v = itemTop(it);
     return isFinite(v) ? { date: e.date, v: Math.round(v * 10) / 10 } : null;
-  }).filter(Boolean);
-  const W = 320, H = 150, P = { l: 30, r: 14, t: 16, b: 26 };
-  const vals = pts.map(p => p.v);
-  const at = rankAt(sel) || [];
-  const maxV = Math.max(...vals, 5);
-  const top = Math.ceil((maxV * 1.15) / 5) * 5;
-  const x = i => P.l + (pts.length === 1 ? (W - P.l - P.r) / 2 : (i * (W - P.l - P.r)) / (pts.length - 1));
-  const yv = v => P.t + (1 - v / top) * (H - P.t - P.b);
+  }).filter(Boolean).slice(-PC_MAX);
+  const vals = pts.map(p => p.v), at = rankAt(sel) || [];
+  const best = Math.max(...vals, 0), nextAt = at.find(v => v > best), ri = nextAt ? at.indexOf(nextAt) + 1 : -1;
+  const top = Math.max(5, best * 1.12, nextAt && nextAt <= best * 1.6 ? nextAt * 1.06 : 0);
+  const step = pts.length > 1 ? (w - padL - padR) / (pts.length - 1) : 0;
+  const X = i => (pts.length === 1 ? w / 2 : padL + i * step), Y = v => padT + (h - padT - padB) * (1 - v / top);
+  const xy = pts.map((p, i) => [X(i), Y(p.v)]);
+  const line = xy.reduce((d, [x, y], i) => (i ? `${d} C${xy[i - 1][0] + step / 2},${xy[i - 1][1]} ${x - step / 2},${y} ${x},${y}` : `M${x},${y}`), "");
+  const area = pts.length > 1 ? `${line} L${X(pts.length - 1)},${h - padB} L${X(0)},${h - padB} Z` : "";
   const unit = EX[sel].type === "time" ? " s" : "";
-  const nextAt = at.find(v => v > Math.max(...vals));
+  const cur = tip !== null && tip < pts.length ? tip : pts.length - 1, cp = pts[cur];
+  const lx = Math.max(54, Math.min(w - 54, X(cur)));
+  const labels = pts.length < 3 ? pts.map((_, i) => i) : [0, Math.floor((pts.length - 1) / 2), pts.length - 1];
+  // first → last point; weights are scores (kg × reps as one number), shown back as kg at 10 reps like the labels
+  const dRaw = pts.length > 1 ? pts[pts.length - 1].v - pts[0].v : 0, wKg = isW(sel) && EX[sel].type !== "carry";
+  const delta = Math.round((wKg ? dRaw / (1 + 10 / 30) : dRaw) * 10) / 10, dTxt = isW(sel) ? `${fmtKg(Math.abs(delta))} kg` : `${nf(Math.abs(delta))}${unit}`;
   return (
-    <Sect title={T("progress")} flatTitle data-progress style={{ padding: "14px 14px 10px" }} titlePad="0 2px">
-      <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 8, marginBottom: 6 }}>
+    <StatCard data="progress" title={<>{T("progress")}{isW(sel) && <InfoQ id="strength" title={T("wScoreT")} text={T("wScoreD")} />}</>} meta={delta ? <span data-pc-delta style={{ color: delta > 0 ? C.mint : C.dim, fontWeight: 800 }}>{delta > 0 ? "+" : "−"}{dTxt}</span> : null}>
+      <div data-progress style={{ display: "flex", gap: 6, overflowX: "auto", margin: "0 -15px 10px", padding: "0 15px 2px", scrollbarWidth: "none" }}>
         {withData.map(id => (
-          <button key={id} onClick={() => { sfxTap(); setSel(id); setTip(null); }} style={{ ...btnBase, flexShrink: 0, padding: "6px 11px", fontSize: 12, background: sel === id ? C.chalk : "transparent", color: sel === id ? C.ink : C.dim, border: `1.5px solid ${sel === id ? C.chalk : C.line}` }}>{EX[id].name}</button>
+          <button key={id} data-pc-ex={id} aria-pressed={sel === id} onClick={() => { sfxTap(); setSelId(id); setTip(null); }} style={{ ...btnBase, flexShrink: 0, padding: "7px 12px", fontSize: 12.5, borderRadius: 999, whiteSpace: "nowrap", ...(sel === id ? { background: C.chalk, color: C.ink } : { ...SUNK(), color: C.dim }), transition: `background ${MO.t1}, color ${MO.t1}` }}>{EX[id].name}</button>
         ))}
       </div>
-      <div style={{ fontSize: 13, color: C.chalk, fontWeight: 700 }}>{T("chartTitle", { name: EX[sel].name })}{unit ? T("chartSeconds") : ""}{isW(sel) && <InfoQ id="strength" title={T("wScoreT")} text={T("wScoreD")} />}</div>
-      <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: "auto", display: "block", marginTop: 6 }} onClick={() => setTip(null)}>
-        {[0, top / 2, top].map(g => (
-          <g key={g}>
-            <line x1={P.l} x2={W - P.r} y1={yv(g)} y2={yv(g)} stroke={C.line} strokeWidth="1" />
-            <text x={P.l - 6} y={yv(g) + 4} textAnchor="end" fontSize="10" fill={C.dim}>{Math.round(g)}</text>
-          </g>
-        ))}
-        {nextAt && nextAt <= top && (
-          <g>
-            <line x1={P.l} x2={W - P.r} y1={yv(nextAt)} y2={yv(nextAt)} stroke={RANKS[at.indexOf(nextAt) + 1].color} strokeWidth="1.5" strokeDasharray="4 4" />
-            <text x={W - P.r} y={yv(nextAt) - 4} textAnchor="end" fontSize="10" fill={RANKS[at.indexOf(nextAt) + 1].color}>{RANKS[at.indexOf(nextAt) + 1].name} {nextAt}{unit}</text>
-          </g>
-        )}
-        {pts.length > 1 && <polyline points={pts.map((p, i) => `${x(i)},${yv(p.v)}`).join(" ")} fill="none" stroke={C.sky} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />}
-        {pts.map((p, i) => (
-          <g key={i} onClick={ev => { ev.stopPropagation(); sfxTap(); setTip(i); }} style={{ cursor: "pointer" }}>
-            <circle cx={x(i)} cy={yv(p.v)} r="14" fill="transparent" />
-            <circle cx={x(i)} cy={yv(p.v)} r="5" fill={C.sky} stroke={C.panel} strokeWidth="2" />
-            {(i === pts.length - 1 || tip === i) && <text x={x(i)} y={yv(p.v) - 10} textAnchor="middle" fontSize="12" fontWeight="800" fill={C.chalk}>{p.v}{unit}</text>}
-            <text x={x(i)} y={H - 8} textAnchor="middle" fontSize="10" fill={tip === i ? C.chalk : C.dim}>{fmtShortDM(parseKey(p.date))}</text>
-          </g>
-        ))}
-      </svg>
-    </Sect>
+      <div ref={ref} style={{ position: "relative" }}>
+        <svg data-pc-chart={sel} width={w} height={h} viewBox={`0 0 ${w} ${h}`} role="img" aria-label={T("chartTitle", { name: EX[sel].name })} style={{ display: "block", overflow: "visible", touchAction: "pan-y" }}
+          onPointerDown={e => { if (pts.length < 2) return; const r = e.currentTarget.getBoundingClientRect(); const i = Math.max(0, Math.min(pts.length - 1, Math.round((e.clientX - r.left - padL) / step))); if (i !== cur) { sfxTap(); setTip(i); } }}>
+          <defs><linearGradient id="pcg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor={C.sky} stopOpacity=".24" /><stop offset=".9" stopColor={C.sky} stopOpacity="0" /></linearGradient></defs>
+          <line x1={0} x2={w} y1={h - padB} y2={h - padB} stroke={C.line} strokeWidth="1" />
+          {ri > 0 && nextAt <= top && <g data-pc-next>
+            <line x1={0} x2={w} y1={Y(nextAt)} y2={Y(nextAt)} stroke={RANKS[ri].color} strokeWidth="1.25" strokeDasharray="3 5" opacity=".9" />
+            <text x={w} y={Y(nextAt) - 5} textAnchor="end" fontSize="10.5" fontWeight="700" fill={RANKS[ri].color} style={{ fontFamily: BODY }}>{RANKS[ri].name} {rankVal(sel, nextAt)}</text>
+          </g>}
+          {area && <path key={"a" + sel} className="stFade" d={area} fill="url(#pcg)" />}
+          {pts.length > 1 && <path key={"l" + sel} className="stDraw" d={line} pathLength="1" fill="none" stroke={C.sky} strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round" />}
+          {pts.length <= 14 && xy.map(([x, y], i) => i !== cur && <circle key={i} cx={x} cy={y} r="2.6" fill={C.sky} />)}
+          <line x1={X(cur)} x2={X(cur)} y1={Y(cp.v)} y2={h - padB} stroke={C.sky} strokeWidth="1" strokeDasharray="3 3" opacity=".7" />
+          <circle cx={X(cur)} cy={Y(cp.v)} r="5" fill={C.sky} stroke={C.panel} strokeWidth="2.5" />
+          {labels.map((i, n) => <text key={i} x={X(i)} y={h - 5} textAnchor={pts.length === 1 ? "middle" : n === 0 ? "start" : n === labels.length - 1 ? "end" : "middle"} fontSize="10" fontWeight="600" fill={C.dim} style={{ fontFamily: BODY }}>{fmtShortDM(parseKey(pts[i].date))}</text>)}
+        </svg>
+        <div data-pc-val aria-live="polite" style={{ position: "absolute", top: 0, left: lx, transform: "translateX(-50%)", padding: "3px 9px", borderRadius: 8, background: C.panelHi, border: `1px solid ${C.line}`, fontSize: 12, fontWeight: 800, color: C.chalk, whiteSpace: "nowrap", pointerEvents: "none", transition: `left ${MO.t1} ${MO.ease}` }}>{isW(sel) || rankAt(sel) ? rankVal(sel, cp.v) : `${nf(cp.v)}${unit}`}<span style={{ color: C.dim, fontWeight: 600 }}> · {fmtShortDM(parseKey(cp.date))}</span></div>
+      </div>
+    </StatCard>
   );
 }
 
@@ -5164,12 +5185,12 @@ const exType = id => (EX[id] ? EX[id].type : "reps");
 // the plan's name stays as saved) and weights (a kg box under every set).
 const toKg = v => (typeof v === "number" ? String(v) : "");
 function kgFromField(sv) { const n = parseFloat(String(sv).replace(",", ".")); return isNaN(n) || n < 0 ? null : Math.min(999, Math.round(n * 4) / 4); }
-function EntryEditor({ entry, nextDay, onSave, onDelete, onClose }) {
+function EntryEditor({ entry, nextDay, onSave, onDelete, onClose, date: date0 }) {
   const today = dateKey();
   const isNew = !entry;
   const free = !!entry && !entry.day; // a plan or free workout: sets per exercise
   const rowsFor = (dayId, rounds) => DAYS.find(d => d.id === dayId).ids.map(slot => ({ id: effId(slot), vals: Array(rounds).fill(""), kgs: Array(rounds).fill("") }));
-  const [date, setDate] = useState(entry ? entry.date : today);
+  const [date, setDate] = useState(entry ? entry.date : date0 || today); // 1.10.0: date0 = the day picked in the calendar
   const [day, setDay] = useState(entry ? entry.day : nextDay);
   const [rounds, setRounds] = useState(entry ? Math.max(1, entry.rounds || 2) : 3);
   const [rows, setRows] = useState(() => entry
@@ -5288,91 +5309,149 @@ function EntryEditor({ entry, nextDay, onSave, onDelete, onClose }) {
 }
 
 function HistoryTab({ history, onDelete, onSaveEntry, editDate, onEditOpened }) {
+  const today = dateKey();
   const [confirmDel, setConfirmDel] = useState(null);
-  const [open, setOpen] = useState(null);
   const [editing, setEditing] = useState(null); // index, "new" or null
+  const [newDate, setNewDate] = useState(null); // "new" for a day picked in the calendar
+  const [ym, setYm] = useState(() => { const t = parseKey(today); return [t.getFullYear(), t.getMonth()]; });
+  const [sel, setSel] = useState(null); // the day picked in the calendar
+  const pre = `${ym[0]}-${pad(ym[1] + 1)}`;
+  // this month's workouts, newest first, with their place in the whole history
+  const month = [];
+  history.forEach((e, i) => { if (e.date.startsWith(pre)) month.push(i); });
+  month.reverse();
+  // open: the row the user opened; undefined = nothing chosen yet (the newest of the month is open), null = all closed
+  const [open, setOpen] = useState(undefined);
+  const openIdx = open === undefined ? (month.length ? month[0] : null) : open;
+  const pg = usePager("hist", 2);
   // opened from a green day in the week strip on Home: straight into that day's workout
   useEffect(() => {
     if (!editDate) return;
     let idx = -1;
     history.forEach((e, i) => { if (e.date === editDate) idx = i; });
-    if (idx >= 0) setEditing(idx);
+    if (idx >= 0) { const d = parseKey(editDate); setYm([d.getFullYear(), d.getMonth()]); setEditing(idx); }
     onEditOpened && onEditOpened();
   }, [editDate]);
+  const setMonth = v => { setYm(v); setSel(null); setOpen(undefined); };
+  const pick = k => {
+    setSel(k);
+    if (!k) return;
+    let idx = -1;
+    history.forEach((e, i) => { if (e.date === k) idx = i; });
+    if (idx < 0) return;
+    setOpen(idx);
+    setTimeout(() => { const el = document.querySelector(`[data-workout-row][data-date="${k}"]`); if (el && el.scrollIntoView) el.scrollIntoView({ block: "nearest", behavior: reducedMotion() ? "auto" : "smooth" }); }, 60);
+  };
   const sets = history.reduce((a, e) => a + setsIn(e), 0);
   const prs = history.reduce((a, e) => a + ((e.prs && e.prs.length) || 0), 0);
   const xps = xpList(history);
   const tiles = [[T("tileTrainings"), history.length, "dumbbell", C.signal], [T("tileSets"), sets, "repeat", C.sky], [T("tilePRs"), prs, "trophy", C.mint]];
+  const wds = weekdaysShort();
+  const selHas = sel && history.some(e => e.date === sel);
+  const selSkip = sel && !selHas ? (META.skips || {})[sel] : null, selFz = sel && !selHas && (META.freezeDays || []).includes(sel);
+  const addBtn = (
+    <button data-add-workout aria-label={T("addWorkout")} title={T("addWorkout")} onClick={() => { sfxTap(); setNewDate(null); setEditing("new"); }}
+      style={{ ...btnBase, width: 30, height: 30, borderRadius: 10, padding: 0, display: "inline-flex", alignItems: "center", justifyContent: "center", background: `${C.sky}22`, color: C.sky }}><Ico n="plus" size={17} sw={2.6} /></button>
+  );
+  const meta = (ic, v, col, data) => <span {...(data || {})} style={{ display: "inline-flex", alignItems: "center", gap: 4 }}><Ico n={ic} size={12.5} color={col} sw={2.3} />{v}</span>;
   return (
-    <div className="scr" style={{ padding: "16px 18px 124px", maxWidth: "var(--colMax)", margin: "0 auto" }}>
+    <div className="scr" style={{ padding: "16px 0 124px", maxWidth: "var(--colMax)", margin: "0 auto" }}>
+      <style>{`.hsInR{animation:hsInR ${MO.t2} ${MO.ease} both}.hsInL{animation:hsInL ${MO.t2} ${MO.ease} both}@keyframes hsInR{from{opacity:0;transform:translateX(14px)}}@keyframes hsInL{from{opacity:0;transform:translateX(-14px)}}
+.hsRow{animation:hsRow ${MO.t2} ${MO.ease} both}@keyframes hsRow{from{opacity:0;transform:translateY(8px)}}
+.stDraw{stroke-dasharray:1;stroke-dashoffset:0;animation:stDraw .9s ${MO.ease} both}.stFade{animation:stFade .9s ease both}@keyframes stDraw{from{stroke-dashoffset:1}}@keyframes stFade{from{opacity:0}}
+@media (prefers-reduced-motion:reduce){.hsInR,.hsInL,.hsRow,.stDraw,.stFade{animation:none}}`}</style>
       {confirmDel !== null && <ConfirmBox icon="trash" danger title={T("cfDelWorkoutT")} text={T("cfDelWorkoutD")} yes={T("deleteWorkout")} yesData={{ "data-del-workout-yes": true }} onNo={() => setConfirmDel(null)} onYes={() => { const i = confirmDel; setConfirmDel(null); onDelete(i); }} />}
       {editing !== null && (
-        <EntryEditor key={String(editing)} entry={editing === "new" ? null : history[editing]} nextDay={DAYS[nextDayIdx(history)].id}
+        <EntryEditor key={String(editing) + (newDate || "")} entry={editing === "new" ? null : history[editing]} date={editing === "new" ? newDate : null} nextDay={DAYS[nextDayIdx(history)].id}
           onClose={() => setEditing(null)}
-          onSave={e => { onSaveEntry(editing === "new" ? null : editing, e); setEditing(null); setOpen(null); }}
-          onDelete={() => { onDelete(editing); setEditing(null); setOpen(null); }} />
+          onSave={e => { onSaveEntry(editing === "new" ? null : editing, e); setEditing(null); setOpen(undefined); const d = parseKey(e.date); setYm([d.getFullYear(), d.getMonth()]); setSel(e.date); }}
+          onDelete={() => { onDelete(editing); setEditing(null); setOpen(undefined); }} />
       )}
-      {/* 1.7.0: on a wide screen the numbers, calendar and chart on the left, the workouts on the right */}
-      <Cols left={<>
-      <div data-stat-grid style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 8 }}>
-        {tiles.map(([l, v, ic, ico]) => <StatTile key={l} label={l} icon={ic} icoCol={ico} value={v} compact />)}
-      </div>
-      <MonthCalendarM history={history} />
-      <ProgressChartM history={history} />
-      </>} right={<>
-      {/* 1.7.0: the workouts are rows in one box (like the friends list), the newest open */}
-      <ListSect title={T("workoutsTitle")} meta={history.length ? String(history.length) : ""} data-workouts>
-        <button data-add-workout onClick={() => { sfxTap(); setEditing("new"); }} style={{ ...btnBase, width: "100%", padding: "11px 16px 13px", fontSize: 15, color: C.chalk, background: "transparent", borderRadius: 0, textAlign: "left", display: "flex", alignItems: "center", gap: 10 }}>
-          <span style={{ flex: 1, minWidth: 0 }}>{T("addWorkout").replace(/^➕\s*/, "")}</span>
-          <span aria-hidden="true" style={{ fontSize: 22, color: C.sky, lineHeight: 1, flexShrink: 0 }}>+</span>
-        </button>
-        {history.length === 0 && <div style={{ color: C.dim, fontSize: 14, padding: "12px 16px", borderTop: `1px solid ${C.line}` }}>{T("noHistory")}</div>}
-        {history.slice().reverse().map((s, ri) => {
-          const idx = history.length - 1 - ri;
-          const isOpen = open === idx || ri === 0;
-          return (
-            <div key={`${s.date}-${idx}`} data-workout-row style={{ padding: "12px 16px", borderTop: `1px solid ${C.line}` }}>
-              <button onClick={() => { sfxTap(); setOpen(open === idx ? null : idx); }} aria-expanded={isOpen}
-                style={{ ...btnBase, width: "100%", background: "transparent", color: C.chalk, padding: 0, textAlign: "left", display: "flex", alignItems: "center", gap: 10, borderRadius: 0 }}>
-                <div style={{ width: 40, height: 40, borderRadius: 12, background: SOFT(), display: "flex", alignItems: "center", justifyContent: "center", fontFamily: DISPLAY, fontSize: entryMark(s).length > 1 ? 18 : 24, fontWeight: 900, flexShrink: 0 }}>{entryMark(s)}</div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 15, fontWeight: 700 }}>{capFirst(fmtDate(s.date, true))}</div>
-                  {!s.day && <div data-hist-plan style={{ fontSize: 12.5, color: C.chalk, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{entryTitle(s)}</div>}
-                  <div style={{ fontSize: 12, color: C.dim }}>{s.day ? <>{TP("rounds", s.rounds || 2)}, </> : null}{TP("sets", setsIn(s))}{s.prs && s.prs.length ? <>, <IcoI n="trophy" color={C.signal} /> {s.prs.length}</> : ""}</div>
+      <div style={{ padding: "0 18px" }}>{pg.tabs([[T("kcTabCal"), "calendar"], [T("progress"), "trend"]])}</div>
+      <div {...pg.pagerProps}>
+        <div {...pg.pageProps(0)}>
+          <MonthCalendarM history={history} ym={ym} setYm={setMonth} sel={sel} onPick={pick} />
+          {/* a picked day without a workout: what happened, and a way to add one */}
+          {sel && !selHas && (
+            <div data-day-empty={sel} className="hsRow" style={{ ...card, ...tileR(), display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", marginTop: 10 }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 15, fontWeight: 700, color: C.chalk }}>{capFirst(fmtDate(sel, true))}</div>
+                <div style={{ fontSize: 12.5, color: selSkip || selFz ? C.sky : C.dim, marginTop: 2, display: "flex", alignItems: "center", gap: 5 }}>
+                  {selSkip ? <><Ico n={skipIcon(selSkip.r)} size={13} sw={2.3} />{T("skip_" + selSkip.r)}{selSkip.note ? `: ${selSkip.note}` : ""}</> : selFz ? <><Ico n="ice" size={13} sw={2.3} />{T("shFreeze")}</> : T("hsNoWorkout")}
                 </div>
-                <div style={{ fontFamily: DISPLAY, fontSize: 20, fontWeight: 800, color: C.sky, flexShrink: 0 }}>+{xps[idx]} XP</div>
-                <Chevron open={isOpen} />
-              </button>
-              <Expand open={isOpen}>
-                <div style={{ paddingTop: 10 }}>
-                  {s.items.map(it => {
-                    const b = EX[it.id] ? bestUntil(history, it.id, idx) : null;
-                    const r = RANKS[EX[it.id] ? rankIdx(it.id, b) : 0];
-                    return (
-                      <div key={it.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderTop: `1px solid ${C.line}` }}>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          {/* 1.8.2 (Michael: "these texts are useless"): the rank at the time is only its emblem in front of the name */}
-                          <div data-hist-ex={it.id} style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 14, fontWeight: 600, color: C.chalk }}>{rankAt(it.id) && <span title={T("rankThen", { rank: r.name })} style={{ display: "inline-flex" }}><RankIcon r={RANKS.indexOf(r)} size={16} /></span>}<span style={{ minWidth: 0 }}>{s.prs && s.prs.includes(it.id) ? <><IcoI n="trophy" color={C.signal} /> </> : ""}{exName(it)}{EX[it.id] && <ExQ id={it.id} />}</span></div>
-                          {(it.note || (it.rn || []).some(Boolean)) && <div data-hist-note style={{ fontSize: 12.5, color: C.dim, marginTop: 3, lineHeight: 1.4, whiteSpace: "pre-wrap" }}>{it.note ? <div><Ico n="pencil" size={12} style={{ verticalAlign: "-1px", marginRight: 4 }} />{it.note}</div> : null}{(it.rn || []).map((t, k) => (t ? <div key={k}><Ico n="timer" size={12} style={{ verticalAlign: "-1px", marginRight: 4 }} />{T("noteRestAfter", { r: k + 1 })}: {t}</div> : null))}</div>}
-                        </div>
-                        <div style={{ fontFamily: DISPLAY, fontSize: isW(it.id) ? 15 : 20, fontWeight: 800, color: C.chalk, whiteSpace: isW(it.id) ? "normal" : "nowrap", textAlign: "right" }}>{it.res.map((v, k) => (isW(it.id) ? fmtSet(it.id, v, (it.kg || [])[k], "") : fmtRes(v, ""))).join(" / ")}{!isW(it.id) && <span style={{ fontFamily: BODY, fontSize: 11, color: C.dim, marginLeft: 3 }}>{unitStr(it.unit)}</span>}</div>
-                      </div>
-                    );
-                  })}
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 6 }}>
-                    <button onClick={() => { sfxTap(); setConfirmDel(null); setEditing(idx); }} style={{ ...btnBase, background: "transparent", color: C.sky, fontSize: 13, padding: "4px 6px", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 6 }}><Ico n="pencil" size={15} />{noEmo(T("editWorkout"))}</button>
-                    <button data-hist-delete onClick={() => { sfxTap(); setConfirmDel(idx); }} aria-label={T("deleteWorkout")}
-                      style={{ ...btnBase, background: "transparent", color: C.dim, fontSize: 12, padding: "4px 6px", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 5 }}>
-                      <Ico n="trash" size={14} />{T("deleteWorkout")}
-                    </button>
-                  </div>
-                </div>
-              </Expand>
+              </div>
+              <button data-day-add onClick={() => { sfxTap(); setNewDate(sel); setEditing("new"); }} style={{ ...btnBase, padding: "9px 14px", fontSize: 13.5, background: `${C.sky}22`, color: C.sky, display: "inline-flex", alignItems: "center", gap: 6, flexShrink: 0 }}><Ico n="plus" size={15} sw={2.6} />{T("hsAdd")}</button>
             </div>
-          );
-        })}
-      </ListSect>
-      </>} />
+          )}
+          <ListSect title={T("workoutsTitle")} meta={addBtn} data-workouts style={{ marginTop: 10 }}>
+            {month.length === 0 && <div data-hist-none style={{ color: C.dim, fontSize: 14, padding: "14px 16px", lineHeight: 1.45 }}>{history.length === 0 ? T("noHistory") : T("hsNoMonth")}</div>}
+            {month.map((idx, ri) => {
+              const s = history[idx], isOpen = openIdx === idx, d = parseKey(s.date);
+              const mins = s.dur ? Math.max(1, Math.round(s.dur / 60)) : 0, nPr = (s.prs && s.prs.length) || 0;
+              return (
+                <div key={`${s.date}-${idx}`} data-workout-row data-date={s.date} className="hsRow" style={{ padding: "11px 14px", borderTop: ri ? `1px solid ${C.line}` : "none", animationDelay: `${Math.min(ri, 8) * 28}ms`, scrollMarginTop: 96, scrollMarginBottom: 150, background: sel === s.date ? `${C.signal}0d` : "transparent", transition: `background ${MO.t2}` }}>
+                  <button data-workout-head onClick={() => { sfxTap(); setOpen(isOpen ? null : idx); }} aria-expanded={isOpen}
+                    style={{ ...btnBase, width: "100%", background: "transparent", color: C.chalk, padding: 0, textAlign: "left", display: "flex", alignItems: "center", gap: 11, borderRadius: 0 }}>
+                    <div aria-hidden="true" style={{ width: 44, height: 46, borderRadius: 13, background: s.date === today ? C.mint : SOFT(), color: s.date === today ? C.ink : C.chalk, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2, flexShrink: 0 }}>
+                      <span style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: ".06em", textTransform: "uppercase", opacity: 0.72, lineHeight: 1 }}>{wds[(d.getDay() + 6) % 7]}</span>
+                      <span style={{ fontFamily: DISPLAY, fontSize: 21, fontWeight: 900, lineHeight: 0.95 }}>{d.getDate()}</span>
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div {...(s.day ? {} : { "data-hist-plan": true })} data-hist-title aria-label={entryTitle(s, true)} style={{ fontSize: 15, fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{entryTitle(s)}</div>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: "2px 11px", marginTop: 3, fontSize: 12.5, fontWeight: 600, color: C.dim, fontVariantNumeric: "tabular-nums" }}>
+                        {mins > 0 && meta("timer", fmtMins(mins), "#ffa94d")}
+                        {meta("layers", setsIn(s), C.sky, { "aria-label": TP("sets", setsIn(s)) })}
+                        {nPr > 0 && meta("trophy", nPr, C.signal, { "aria-label": `${T("tilePRs")}: ${nPr}` })}
+                        {s.manual && meta("pencil", "", C.dim, { "aria-label": T("hsByHand"), title: T("hsByHand") })}
+                      </div>
+                    </div>
+                    <div data-hist-xp style={{ fontFamily: DISPLAY, fontSize: 16, fontWeight: 800, color: C.sky, flexShrink: 0, whiteSpace: "nowrap" }}>+{xps[idx]} XP</div>
+                    <Chevron open={isOpen} />
+                  </button>
+                  <Expand open={isOpen}>
+                    <div style={{ paddingTop: 10 }}>
+                      {s.items.map(it => {
+                        const b = EX[it.id] ? bestUntil(history, it.id, idx) : null;
+                        const r = RANKS[EX[it.id] ? rankIdx(it.id, b) : 0];
+                        const done = it.res.map((v, k) => [v, k]).filter(([v]) => v !== null && v !== undefined);
+                        const pr = s.prs && s.prs.includes(it.id);
+                        return (
+                          <div key={it.id} style={{ padding: "9px 0", borderTop: `1px solid ${C.line}` }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                              <div data-hist-ex={it.id} style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center", gap: 7, fontSize: 14, fontWeight: 600, color: C.chalk }}>
+                                {rankAt(it.id) && <span title={T("rankThen", { rank: r.name })} style={{ display: "inline-flex" }}><RankIcon r={RANKS.indexOf(r)} size={16} /></span>}
+                                {pr && <Ico n="trophy" size={14} color={C.signal} sw={2.4} />}
+                                <span style={{ minWidth: 0, overflowWrap: "anywhere" }}>{exName(it)}</span>{EX[it.id] && <ExQ id={it.id} />}
+                              </div>
+                              <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "flex-end", alignItems: "center", gap: 4, flexShrink: 0, maxWidth: "58%" }}>
+                                {done.map(([v, k]) => <span key={k} data-hist-set style={{ fontFamily: DISPLAY, fontSize: 15, fontWeight: 800, lineHeight: 1, color: C.chalk, background: C.panelHi, borderRadius: 8, padding: "5px 8px", fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{isW(it.id) ? fmtSet(it.id, v, (it.kg || [])[k], "") : fmtRes(v, "")}</span>)}
+                                {!isW(it.id) && unitStr(it.unit) && <span style={{ fontSize: 11, color: C.dim, fontWeight: 700 }}>{unitStr(it.unit)}</span>}
+                              </div>
+                            </div>
+                            {(it.note || (it.rn || []).some(Boolean)) && <div data-hist-note style={{ fontSize: 12.5, color: C.dim, marginTop: 5, lineHeight: 1.4, whiteSpace: "pre-wrap" }}>{it.note ? <div><Ico n="pencil" size={12} style={{ verticalAlign: "-1px", marginRight: 4 }} />{it.note}</div> : null}{(it.rn || []).map((t, k) => (t ? <div key={k}><Ico n="timer" size={12} style={{ verticalAlign: "-1px", marginRight: 4 }} />{t}</div> : null))}</div>}
+                          </div>
+                        );
+                      })}
+                      <div style={{ display: "flex", gap: 8, marginTop: 4, paddingTop: 10, borderTop: `1px solid ${C.line}` }}>
+                        <button data-hist-edit onClick={() => { sfxTap(); setConfirmDel(null); setEditing(idx); }} style={{ ...btnBase, flex: 1, background: `${C.sky}1f`, color: C.sky, fontSize: 13.5, padding: "9px 12px", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7 }}><Ico n="pencil" size={15} />{noEmo(T("editWorkout"))}</button>
+                        <button data-hist-delete onClick={() => { sfxTap(); setConfirmDel(idx); }} aria-label={T("deleteWorkout")} title={T("deleteWorkout")}
+                          style={{ ...btnBase, width: 44, padding: 0, ...SUNK(), color: C.dim, display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Ico n="trash" size={16} /></button>
+                      </div>
+                    </div>
+                  </Expand>
+                </div>
+              );
+            })}
+          </ListSect>
+        </div>
+        <div {...pg.pageProps(1)}>
+          <div data-stat-grid style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 10 }}>
+            {tiles.map(([l, v, ic, ico]) => <StatTile key={l} label={l} icon={ic} icoCol={ico} value={<CountUp n={v} />} compact />)}
+          </div>
+          <ProgressChartM history={history} />
+          {history.length === 0 && <div style={{ ...card, ...tileR(), padding: "14px 16px", color: C.dim, fontSize: 14, lineHeight: 1.45 }}>{T("noHistory")}</div>}
+        </div>
+      </div>
     </div>
   );
 }
@@ -10919,10 +10998,13 @@ function tourSteps(ch, x) {
     { done: true, t: X[7], prep: async () => { await tourTab("pf", 0); } },
   ];
   if (ch === 5) return [
-    s("[data-month-cal]", 0, { prep: screen("history") }),
+    s("[data-month-cal]", 0, { prep: screen("history", ["hist", 0]) }),
     s("[data-add-workout]", 1, { opt: true }),
     s("[data-workout-row]", 2, { opt: true }),
-    { done: true, t: X[3] },
+    // 1.10.0: the Progress page (chart per exercise, all-time numbers)
+    s('[data-hist-tab="1"]', 3, { tap: true, opt: true, wait: 400, t: fmt(L.tour.c6[6] || "", { t: T("progress") }) }),
+    s('[data-st-card="progress"]', 3, { opt: true, wait: 800, t: T("tourHsProg") }),
+    { done: true, t: X[3], prep: async () => { await tourTab("hist", 0); } },
   ];
   // 1.8.0 (Michael: "let them tap so the screen slides, then explain what they see, not the buttons on top")
   if (ch === 6) return [

@@ -47,8 +47,18 @@ for (const [pkg, f] of fontFiles) copyFileSync(`node_modules/@fontsource/${pkg}/
   fontCss += `@font-face { font-family: 'HW Emoji'; font-style: normal; font-display: swap; font-weight: 100 900; src:url(fonts/hw-emoji.ttf) format('truetype'); unicode-range: ${cps.join(",")}; }\n`;
 }
 
+// Languages (1.10.0): English is in the bundle; the other 14 are JSON text blocks in index.html
+// (<script type="application/json" id="hw-l-sk">), parsed only when that language is used. Before, all 15 ran at start.
+const { CODES: LANG_CODES, source: langSource } = await import("./src/i18n/all.js");
+const langBlocks = LANG_CODES.map(c => `<script type="application/json" id="hw-l-${c}">${JSON.stringify(langSource(c)).replace(/</g, "\\u003c")}</script>`).join("\n");
+const langLazy = { name: "lang-lazy", setup(b) {
+  b.onLoad({ filter: /[\\/]src[\\/]i18n[\\/]all\.js$/ }, () => ({ loader: "js", contents:
+    `export const CODES = ${JSON.stringify(LANG_CODES)};
+     export const source = code => { try { const el = document.getElementById("hw-l-" + code); return el ? JSON.parse(el.textContent) : null; } catch (e) { return null; } };` }));
+} };
 const out = await build({
   entryPoints: ["src/main.jsx"],
+  plugins: [langLazy],
   bundle: true,
   minify: !process.env.HW_DEBUG, // HW_DEBUG=1 npm run build: readable names in errors (tests only, never committed)
   write: false,
@@ -70,7 +80,7 @@ const cloudOut = await build({
   target: "es2020", define: { "process.env.NODE_ENV": '"production"' }, plugins: [capShim],
 });
 const cloudJs = cloudOut.outputFiles[0].text.replace(/<\/script/gi, "<\\/script");
-const html = readFileSync("template.html", "utf8").replace("/*FONTS*/", () => fontCss).replace("/*APP*/", () => js).replace("/*CLOUD*/", () => cloudJs);
+const html = readFileSync("template.html", "utf8").replace("/*FONTS*/", () => fontCss).replace("/*APP*/", () => js).replace("/*CLOUD*/", () => cloudJs).replace("<!--LANGS-->", () => langBlocks);
 writeFileSync("index.html", html);
 
 // Android app / live-update bundle

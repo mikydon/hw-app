@@ -27,7 +27,7 @@ await p.click("[data-del-workout-yes]"); await p.waitForTimeout(400);
 T.eq(await p.locator("[data-workout-row]").count(), n0 - 1, "Yes deletes the workout");
 T.eq((await p.evaluate(() => JSON.parse(localStorage.getItem("domaci-trening-v1")).history.length)), 2, "and it is gone from the saved data");
 // the editor sheet's delete button asks the same way
-await p.locator("[data-workout-row] button[aria-expanded]").first().click(); await p.waitForTimeout(200);
+{ const hd = p.locator("[data-workout-row] button[aria-expanded]").first(); if ((await hd.getAttribute("aria-expanded")) !== "true") await hd.click(); await p.waitForTimeout(300); } // 1.10.0: the newest row starts open and a tap closes it
 const edit = p.locator("[data-workout-row] button:has-text('Edit')").first();
 if (await edit.count()) {
   await edit.click(); await p.waitForTimeout(500);

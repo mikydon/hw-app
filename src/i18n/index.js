@@ -2,20 +2,7 @@
 // The current language is a module-level variable (like the theme colours), set by
 // setLang() before each render, so plain helper functions can translate too.
 import en from "./en.js";
-import sk from "./sk.js";
-import cs from "./cs.js";
-import pl from "./pl.js";
-import hu from "./hu.js";
-import uk from "./uk.js";
-import de from "./de.js";
-import es from "./es.js";
-import fr from "./fr.js";
-import it from "./it.js";
-import pt from "./pt.js";
-import zh from "./zh.js";
-import ja from "./ja.js";
-import ko from "./ko.js";
-import id from "./id.js";
+import { CODES, source } from "./all.js";
 
 // Native names, so people find their language even if the UI is in another one.
 export const LANGS = [
@@ -35,7 +22,7 @@ export const LANGS = [
   { code: "ko", name: "한국어", flag: "🇰🇷" },
   { code: "id", name: "Bahasa Indonesia", flag: "🇮🇩" },
 ];
-const SOURCES = { en, sk, cs, pl, hu, uk, de, es, fr, it, pt, zh, ja, ko, id };
+const SOURCES = Object.fromEntries(["en", ...CODES].map(c => [c, true])); // which codes exist; the texts come from source()
 
 // Objects merge key by key; strings and arrays are taken whole from the locale.
 function merge(base, over) {
@@ -49,7 +36,7 @@ function merge(base, over) {
 const cache = {};
 export function locale(code) {
   if (!SOURCES[code]) code = "en";
-  if (!cache[code]) cache[code] = code === "en" ? en : merge(en, SOURCES[code]);
+  if (!cache[code]) cache[code] = code === "en" ? en : merge(en, source(code));
   return cache[code];
 }
 

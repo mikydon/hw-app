@@ -1192,6 +1192,11 @@ const en = {
     editTitle: "Edit workout",
     addTitle: "Add a workout",
     addWorkout: "Add a workout manually",
+    hsNoWorkout: "No workout",
+    hsAdd: "Add",
+    hsNoMonth: "No workouts this month.",
+    hsByHand: "Added by hand",
+    tourHsProg: "Progress: your best set in every workout, exercise by exercise. Tap the line to see a day. The dashed line is your next rank.",
     addWorkoutD: "For a workout you did without the app, or forgot to save.",
     fDate: "Date",
     fDay: "Day",
@@ -1574,7 +1579,7 @@ const en = {
       "Your last workout: the day, minutes, sets and reps. Tap it for the details. Friends see it too.",
     ],
     c5: [
-      "Calendar: the green corner is a workout, the other corner is calories. Tap a day to see what you did that day.",
+      "Calendar: a green day is a workout, the dot under a number is calories. Tap a day to see what you did; tap an empty day to add a workout.",
       "Forgot to log a workout? Add it here.",
       "You can open, edit or delete any workout here. Records are recalculated by themselves.",
       "Everything is saved on your phone, and in the cloud too once you sign in.",
@@ -1770,6 +1775,11 @@ const en = {
       "Run: 8 antes. A higher intensity makes it harder and gives more game XP. Duel and Ranked (coming soon): 3 antes on the same cards for both players; the one who beats more blinds wins, a tie goes to the higher total score.",
     ],
   },
+  // 1.10: keys with "_" from here on (news1_10, news1_10_1), see newsKey in App.jsx
+  news1_10: [
+    ["History", "A long list of every workout, a calendar you couldn't tap, and the numbers on top.", "The calendar leads: tap a day to open its workout, tap an empty day to add one. The list follows the month, and a new Progress page holds the numbers and a smoother chart."],
+    ["Faster start", "All 15 languages were loaded at every start.", "Only your language loads: the app opens faster and uses less memory."],
+  ],
   news19: [
     ["Workout plans", "One plan for everyone: days A, B and C.", "Build your own plans from the app's exercises: pick exercises and sets for every weekday (empty days are rest days), sort plans into groups and use one. Home then shows that plan's week, with the days you've done in green. Small icons show what each day trains, and tips say when a muscle gets little work. The recommended A, B, C plan is still there."],
     ["134 exercises", "27 bodyweight exercises.", "134: new bodyweight ones plus dumbbells, kettlebells, bands, a pull-up bar and gym machines, sorted by body part with an equipment filter. The search also knows other names: press-up finds Push-up."],
