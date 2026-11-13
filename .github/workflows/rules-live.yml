@@ -1,0 +1,20 @@
+name: Live Firestore rules
+# Compares the rules that are live in Firebase with firestore.rules in this repo (read only) and reports the
+# result as an annotation, so a forgotten "Publish" in the Firebase console is noticed.
+on:
+  push:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: Compare
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: node .github/scripts/rules-live.mjs
