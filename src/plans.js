@@ -35,6 +35,15 @@ export function daysSig(days) {
   WEEKDAYS.forEach(wd => { const l = days && days[wd]; if (l && l.length) o[wd] = clean(l); });
   return JSON.stringify(o);
 }
+// 1.10.0: when a plan's CONTENT (exercises, name, group) last changed, apart from `mts`, which also moves when only
+// its weekdays change (the `days` mirror). Without it a phone that had not yet received an edit and only moved the
+// plan to another weekday sent its old exercises back as the "newest" plan (found Nov 13 by the two-device test in
+// tools/plans_test.mjs). `cs` = a short signature of the content `its` belongs to: an app older than 1.10 edits the
+// content without touching `its`, and then the signature no longer fits, so the content's time is `mts`.
+const fnv = t => { let h = 0x811c9dc5; for (let i = 0; i < t.length; i++) { h ^= t.charCodeAt(i); h = Math.imul(h, 0x01000193); } return (h >>> 0).toString(36); };
+export const contentSig = p => fnv(JSON.stringify([p.name || "", p.grp || null, clean(p.items)]));
+export const contentTime = p => (p.cs && p.cs === contentSig(p) ? p.its || 0 : p.mts || 0);
+const stamp = (p, now) => ({ ...p, mts: now, its: now, cs: contentSig(p) });
 const defLabel = (p, wds) => `${p.name || "Workout Plan " + p.n} · ${wds.join(", ")}`;
 
 // 1.9.0/1.9.1 week plans → single workouts. Deterministic (same input = same ids, names and times on every device),
@@ -89,11 +98,11 @@ const rid = (p, now) => p + now.toString(36) + Math.random().toString(36).slice(
 
 export function addPlan(P, now = Date.now()) {
   const n = P.list.length ? (P.seq || 0) + 1 : 1;
-  const plan = { id: rid("p", now), n, name: "", grp: null, ts: now, mts: now, items: [], days: {}, ds: "{}" };
+  const plan = stamp({ id: rid("p", now), n, name: "", grp: null, ts: now, items: [], days: {}, ds: "{}" }, now);
   return { P: { ...P, list: [...P.list, plan], seq: n }, plan };
 }
 export function updatePlan(P, id, patch, now = Date.now()) {
-  return { ...P, list: P.list.map(p => (p.id === id ? { ...p, ...patch, mts: now } : p)) };
+  return { ...P, list: P.list.map(p => (p.id === id ? stamp({ ...p, ...patch }, now) : p)) };
 }
 export function delPlan(P, id, now = Date.now()) {
   const list = P.list.filter(p => p.id !== id);
@@ -110,7 +119,7 @@ export function renameGroup(P, id, name, now = Date.now()) {
 }
 // Deleting a group keeps its plans (they become ungrouped).
 export function delGroup(P, id, now = Date.now()) {
-  return { ...P, groups: P.groups.filter(g => g.id !== id), list: P.list.map(p => (p.grp === id ? { ...p, grp: null, mts: now } : p)), del: { ...P.del, [id]: now } };
+  return { ...P, groups: P.groups.filter(g => g.id !== id), list: P.list.map(p => (p.grp === id ? stamp({ ...p, grp: null }, now) : p)), del: { ...P.del, [id]: now } };
 }
 
 // A plan's exercises: add / remove / move, sets and own hold times. They return the changed plan's patch-able fields.
@@ -189,12 +198,28 @@ export function sortPlans(list, sort = "date", dir = "desc", nameOf = p => p.nam
 export function mergePlans(a, b) {
   if (!a) return b; if (!b) return a;
   const del = { ...(a.del || {}) }; Object.entries(b.del || {}).forEach(([k, v]) => { del[k] = Math.max(del[k] || 0, v); });
-  const byId = (x, y) => {
-    const m = new Map();
-    [...(x || []), ...(y || [])].forEach(p => { const c = m.get(p.id); if (!c || (p.mts || 0) > (c.mts || 0)) m.set(p.id, p); });
-    return [...m.values()].filter(p => !(del[p.id] >= (p.mts || 0))).sort((p, q) => p.ts - q.ts);
+  // the same plan on both sides: the one changed last is the base (a tie is settled by its text, the same way on every
+  // device), but the exercises, name and group come from the side whose CONTENT changed last (see contentTime)
+  const text = v => (v === null || typeof v !== "object" ? JSON.stringify(v === undefined ? null : v) : Array.isArray(v) ? "[" + v.map(text).join(",") + "]"
+    : "{" + Object.keys(v).sort().map(k => JSON.stringify(k) + ":" + text(v[k])).join(",") + "}");
+  const join = (c, p, plans) => {
+    const pm = p.mts || 0, cm = c.mts || 0;
+    const [n, o] = pm > cm || (pm === cm && text(p) > text(c)) ? [p, c] : [c, p];
+    if (!plans) return n;
+    const tn = contentTime(n), to = contentTime(o);
+    if (!(to > tn) || contentSig(o) === contentSig(n)) return n;
+    const r = { ...n, items: o.items, its: to, cs: contentSig(o) };
+    ["name", "grp"].forEach(k => { if (o[k] === undefined) delete r[k]; else r[k] = o[k]; });
+    return r;
   };
-  const list = byId(a.list, b.list), groups = byId(a.groups, b.groups);
+  const byId = (x, y, plans) => {
+    const m = new Map();
+    [...(x || []), ...(y || [])].forEach(p => { const c = m.get(p.id); m.set(p.id, c ? join(c, p, plans) : p); });
+    // a deletion removes the plan unless its content was changed after it (moving a not-yet-deleted copy to another
+    // weekday on a second device is not such a change)
+    return [...m.values()].filter(p => !(del[p.id] >= contentTime(p))).sort((p, q) => p.ts - q.ts || (p.id < q.id ? -1 : 1));
+  };
+  const list = byId(a.list, b.list, true), groups = byId(a.groups, b.groups);
   const gids = new Set(groups.map(g => g.id));
   const out = { ...b, ...a, list: list.map(p => (p.grp && !gids.has(p.grp) ? { ...p, grp: null } : p)), groups, del };
   out.seq = list.length ? Math.max(a.seq || 0, b.seq || 0, ...list.map(p => p.n || 0)) : 0;

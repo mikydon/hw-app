@@ -21,7 +21,7 @@ const T = {
   id: ["Latihan di rumah 19 menit", "Rencana sendiri dengan beban, rank, runtutan, kalori, dan teman."],
 };
 const LANGS = process.env.LANGS ? process.env.LANGS.split(",") : Object.keys(T);
-const mark = fs.readFileSync("/home/claude/hw-app/assets/mark.svg", "utf8").replace(/<rect width="512" height="512" rx="116" fill="#0e1b36"\/>/, "");
+const mark = fs.readFileSync("/home/claude/hw-app/assets/mark.svg", "utf8").replace(/<rect width="512" height="512" rx="116" fill="#[0-9a-f]{6}"\/>/, "");
 const ff = (fam, file, w) => `@font-face{font-family:'${fam}';font-weight:${w};src:url(data:font/woff2;base64,${fs.readFileSync(F + file).toString("base64")}) format('woff2')}`;
 const fonts = [
   ff("Big Shoulders Display", "big-shoulders-display-latin-900-normal.woff2", 900), ff("Big Shoulders Display", "big-shoulders-display-latin-ext-900-normal.woff2", 900),

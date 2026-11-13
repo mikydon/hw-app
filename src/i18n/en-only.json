@@ -16,6 +16,11 @@
     "ui.shBuyT",
     "ui.shSuggestT",
     "ui.tourShSoon",
-    "ui.tourShWon"
+    "ui.tourShWon",
+    "looks.fx_rain",
+    "looks.fx_bubbles",
+    "looks.fx_hearts",
+    "looks.fx_fireflies",
+    "looks.fx_stars"
   ]
 }

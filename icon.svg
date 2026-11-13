@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <!-- HW App mark: a house roof over a dumbbell = home workout. -->
-  <rect width="512" height="512" rx="116" fill="#0e1b36"/>
+  <rect width="512" height="512" rx="116" fill="#000000"/>
   <path d="M120 248 L256 130 L392 248" fill="none" stroke="#ffd23f" stroke-width="44" stroke-linecap="round" stroke-linejoin="round"/>
   <g fill="#eef2ff">
     <rect x="172" y="324" width="168" height="30" rx="15"/>

@@ -1,37 +1,37 @@
 HW App: Home Workout
 Home workouts in 19 min, your own plans with weights, ranks and streaks.
-HW App is a workout plan that grows with you. Train at home with your own body weight and no equipment, or build your own plans with dumbbells and gym machines.
+💪 HW App is a workout plan that grows with you. Train at home with your own body weight and no equipment, or build your own plans with dumbbells and gym machines.
 
-THE PLAN
+📋 THE PLAN
 • Recommended: three workout days (A, B, C), trained every other day. Each one trains push, pull, legs and core in ~19 min (3 rounds) or ~13 min (2 rounds).
 • My plans: build your own from 134 exercises (57 without equipment, 22 with free weights, 55 on machines and cables), set them to weekdays and sort them into groups.
 • The last round goes to technical failure: as many clean reps as you can, stopping before your form breaks.
 • The app shows what you did last time and a +1 goal, for reps and for weights, so you keep progressing.
 
-DURING THE WORKOUT
+⏱️ DURING THE WORKOUT
 • A rest timer with +15, +30 and +60 s that keeps counting on the lock screen, with a beep and vibration.
 • Notes, extra exercises when you still have energy, and a tempo guide.
 • A how-to for every exercise, and easier or harder versions to swap in.
 • A warm-up before and an optional cool-down after.
 
-PROGRESS AND MOTIVATION
+🏆 PROGRESS AND MOTIVATION
 • 9 ranks for every exercise, from Iron to Obsidian, and a body map that ranks 9 body parts.
 • 47 badges, XP and levels, a streak with freeze days and weekly challenges.
 • Stats with an activity map and weekly charts, and a history you can edit.
 • Diamonds you earn by training, for streak freezes, XP boosts and profile looks.
-• Muscle Deck: a card game where your training is your strength.
+• 🃏 Muscle Deck: a card game where your training is your strength.
 
-CALORIES
+🍎 CALORIES
 • A calorie calculator (Mifflin-St Jeor) with goals to lose, keep or gain weight.
 • A daily calorie log with a calendar; your workouts are added to the day's target.
 • Optional Health Connect: steps, food from other apps, weight and height. This data never leaves your phone.
 
-FRIENDS (OPTIONAL, 16+)
+👥 FRIENDS (OPTIONAL, 16+)
 • Sign in with Google or with an e-mail and password, then add friends by code or nickname.
 • Profiles with badges and ranks, a friends leaderboard, messages and friend streaks.
 • Notifications, a cloud backup with restore points, and sync between your devices.
 
-ALSO
+✨ ALSO
 • 15 languages, 8 colour themes, 6 main colours and 6 looks.
 • No ads and no tracking. Without an account, everything stays on your phone.
 

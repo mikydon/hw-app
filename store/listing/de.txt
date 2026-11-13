@@ -1,37 +1,37 @@
 HW App: Workout zu Hause
 Workout zu Hause in 19 Min., eigene Pläne mit Gewichten, Ränge und Serien.
-HW App ist ein Trainingsplan, der mit dir wächst. Trainiere zu Hause mit deinem Körpergewicht ohne Geräte, oder erstelle eigene Pläne mit Kurzhanteln und Geräten im Fitnessstudio.
+💪 HW App ist ein Trainingsplan, der mit dir wächst. Trainiere zu Hause mit deinem Körpergewicht ohne Geräte, oder erstelle eigene Pläne mit Kurzhanteln und Geräten im Fitnessstudio.
 
-DER PLAN
+📋 DER PLAN
 • Empfohlen: drei Trainingstage (A, B, C), jeden zweiten Tag. Jeder trainiert Drücken, Ziehen, Beine und Rumpf in ~19 Min. (3 Runden) oder ~13 Min. (2 Runden).
 • Meine Pläne: erstelle eigene aus 134 Übungen (57 ohne Geräte, 22 mit freien Gewichten, 55 an Maschinen und Kabelzügen), lege sie auf Wochentage und sortiere sie in Gruppen.
 • Die letzte Runde geht bis zum technischen Versagen: so viele saubere Wiederholungen wie möglich, und du hörst auf, bevor die Technik leidet.
 • Die App zeigt, was du letztes Mal geschafft hast, und ein +1-Ziel für Wiederholungen und Gewichte, damit du ständig Fortschritte machst.
 
-WÄHREND DES TRAININGS
+⏱️ WÄHREND DES TRAININGS
 • Ein Pausentimer mit +15, +30 und +60 s, der auch auf dem Sperrbildschirm weiterzählt, mit Signalton und Vibration.
 • Notizen, zusätzliche Übungen, wenn du noch Kraft hast, und eine Tempo-Anleitung.
 • Eine Anleitung für jede Übung und leichtere oder schwerere Varianten zum Tauschen.
 • Aufwärmen vorher und optionales Dehnen danach.
 
-FORTSCHRITT UND MOTIVATION
+🏆 FORTSCHRITT UND MOTIVATION
 • 9 Ränge für jede Übung, von Eisen bis Obsidian, und eine Körperkarte mit Rängen für 9 Körperbereiche.
 • 47 Abzeichen, XP und Level, eine Serie mit Serienschutz und wöchentliche Challenges.
 • Statistiken mit Aktivitätskarte und Wochendiagrammen, und ein Verlauf, den du bearbeiten kannst.
 • Diamanten, die du durch Training verdienst, für Serienschutz, XP-Boosts und Profil-Looks.
-• Muscle Deck: ein Kartenspiel, in dem dein Training deine Stärke ist.
+• 🃏 Muscle Deck: ein Kartenspiel, in dem dein Training deine Stärke ist.
 
-KALORIEN
+🍎 KALORIEN
 • Ein Kalorienrechner (Mifflin-St Jeor) mit dem Ziel abzunehmen, das Gewicht zu halten oder zuzunehmen.
 • Ein tägliches Kalorienprotokoll mit Kalender; deine Workouts werden zum Tagesziel addiert.
 • Optional Health Connect: Schritte, Essen aus anderen Apps, Gewicht und Größe. Diese Daten verlassen nie dein Handy.
 
-FREUNDE (OPTIONAL, AB 16)
+👥 FREUNDE (OPTIONAL, AB 16)
 • Melde dich mit Google oder mit E-Mail und Passwort an und füge Freunde per Code oder Nickname hinzu.
 • Profile mit Abzeichen und Rängen, eine Freunde-Bestenliste, Nachrichten und gemeinsame Serien mit Freunden.
 • Benachrichtigungen, ein Cloud-Backup mit Wiederherstellungspunkten und Synchronisierung zwischen deinen Geräten.
 
-AUSSERDEM
+✨ AUSSERDEM
 • 15 Sprachen, 8 Farbthemen, 6 Hauptfarben und 6 Looks.
 • Keine Werbung und kein Tracking. Ohne Konto bleibt alles auf deinem Handy.
 

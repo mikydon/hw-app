@@ -1,37 +1,37 @@
 HW App: Domáci tréning
 Domáci tréning za 19 minút, vlastné plány s váhami, ranky a séria.
-HW App je tréningový plán, ktorý rastie s tebou. Cvič doma s vlastnou váhou bez náradia, alebo si zostav vlastné plány s činkami a strojmi v posilňovni.
+💪 HW App je tréningový plán, ktorý rastie s tebou. Cvič doma s vlastnou váhou bez náradia, alebo si zostav vlastné plány s činkami a strojmi v posilňovni.
 
-PLÁN
+📋 PLÁN
 • Odporúčaný: tri tréningové dni (A, B, C), cvičené každý druhý deň. Každý precvičí tlak, ťah, nohy a stred tela za ~19 min (3 kolá) alebo ~13 min (2 kolá).
 • Moje plány: zostav si vlastné zo 134 cvikov (57 bez náradia, 22 s voľnými váhami, 55 na strojoch a kladkách), priraď ich k dňom v týždni a rozdeľ do skupín.
 • Posledné kolo ide do technického zlyhania: toľko čistých opakovaní, koľko zvládneš, a skončíš skôr, než sa pokazí technika.
 • Apka ukáže, koľko si spravil minule, a cieľ +1 pri opakovaniach aj váhach, aby si stále napredoval.
 
-POČAS TRÉNINGU
+⏱️ POČAS TRÉNINGU
 • Časovač pauzy s +15, +30 a +60 s, ktorý ide ďalej aj na uzamknutej obrazovke, s pípnutím a vibráciou.
 • Poznámky, cviky navyše, keď ešte máš silu, a sprievodca tempom.
 • Návod ku každému cviku a ľahšie či ťažšie verzie na výmenu.
 • Zahriatie pred tréningom a strečing po ňom (nepovinný).
 
-POKROK A MOTIVÁCIA
+🏆 POKROK A MOTIVÁCIA
 • 9 rankov pre každý cvik, od Železa po Obsidián, a telo, ktoré hodnotí 9 častí tela.
 • 47 odznakov, XP a levely, séria so zamrazením a týždenné výzvy.
 • Štatistiky s mapou aktivity a týždennými grafmi, a história, ktorú môžeš upraviť.
 • Diamanty, ktoré získaš tréningom, na zamrazenia série, XP boosty a vzhľad profilu.
-• Muscle Deck: kartová hra, v ktorej je tvoj tréning tvoja sila.
+• 🃏 Muscle Deck: kartová hra, v ktorej je tvoj tréning tvoja sila.
 
-KALÓRIE
+🍎 KALÓRIE
 • Kalkulačka kalórií (Mifflin-St Jeor) s cieľom schudnúť, udržať alebo pribrať.
 • Denný záznam kalórií s kalendárom; tvoje tréningy sa pripočítajú k dennému cieľu.
 • Nepovinne Health Connect: kroky, jedlo z iných apiek, váha a výška. Tieto údaje nikdy neopustia tvoj telefón.
 
-PRIATELIA (NEPOVINNÉ, 16+)
+👥 PRIATELIA (NEPOVINNÉ, 16+)
 • Prihlás sa cez Google alebo e-mailom a heslom a pridaj si priateľov cez kód alebo prezývku.
 • Profily s odznakmi a rankmi, rebríček priateľov, správy a spoločné série s priateľmi.
 • Upozornenia, záloha v cloude s bodmi obnovenia a synchronizácia medzi tvojimi zariadeniami.
 
-ĎALEJ
+✨ ĎALEJ
 • 15 jazykov, 8 farebných tém, 6 hlavných farieb a 6 vzhľadov.
 • Žiadne reklamy a žiadne sledovanie. Bez účtu všetko ostáva v tvojom telefóne.
 

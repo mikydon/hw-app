@@ -1,37 +1,37 @@
 HW App : Sport à la maison
 Sport à la maison en 19 min, tes programmes avec poids, rangs et flammes.
-HW App est un programme d'entraînement qui progresse avec toi. Entraîne-toi à la maison au poids du corps, sans matériel, ou crée tes propres programmes avec haltères et machines de salle.
+💪 HW App est un programme d'entraînement qui progresse avec toi. Entraîne-toi à la maison au poids du corps, sans matériel, ou crée tes propres programmes avec haltères et machines de salle.
 
-LE PROGRAMME
+📋 LE PROGRAMME
 • Recommandé : trois jours d'entraînement (A, B, C), un jour sur deux. Chacun travaille la poussée, le tirage, les jambes et le gainage en ~19 min (3 tours) ou ~13 min (2 tours).
 • Mes programmes : crée les tiens parmi 134 exercices (57 sans matériel, 22 avec poids libres, 55 sur machines et poulies), place-les sur les jours de la semaine et range-les en groupes.
 • Le dernier tour va jusqu'à l'échec technique : autant de répétitions propres que possible, et tu t'arrêtes avant que la technique ne se dégrade.
 • L'appli montre ce que tu as fait la dernière fois et un objectif +1, en répétitions comme en poids, pour que tu continues à progresser.
 
-PENDANT LA SÉANCE
+⏱️ PENDANT LA SÉANCE
 • Un minuteur de repos avec +15, +30 et +60 s qui continue sur l'écran de verrouillage, avec bip et vibration.
 • Des notes, des exercices en plus quand il te reste de l'énergie, et un guide de tempo.
 • Des explications pour chaque exercice et des versions plus faciles ou plus dures à échanger.
 • Un échauffement avant et des étirements facultatifs après.
 
-PROGRÈS ET MOTIVATION
+🏆 PROGRÈS ET MOTIVATION
 • 9 rangs pour chaque exercice, de Fer à Obsidienne, et une carte du corps qui classe 9 zones.
 • 47 badges, de l'XP et des niveaux, une flamme avec des gels et des défis chaque semaine.
 • Des statistiques avec carte d'activité et graphiques hebdomadaires, et un historique modifiable.
 • Des diamants gagnés en t'entraînant, pour des gels de flamme, des boosts d'XP et des looks de profil.
-• Muscle Deck : un jeu de cartes où ton entraînement fait ta force.
+• 🃏 Muscle Deck : un jeu de cartes où ton entraînement fait ta force.
 
-CALORIES
+🍎 CALORIES
 • Un calculateur de calories (Mifflin-St Jeor) avec un objectif : perdre, maintenir ou prendre du poids.
 • Un journal de calories quotidien avec calendrier ; tes séances s'ajoutent à l'objectif du jour.
 • Health Connect en option : pas, repas d'autres applis, poids et taille. Ces données ne quittent jamais ton téléphone.
 
-AMIS (FACULTATIF, 16 ANS ET +)
+👥 AMIS (FACULTATIF, 16 ANS ET +)
 • Connecte-toi avec Google ou avec un e-mail et un mot de passe, puis ajoute des amis par code ou pseudo.
 • Des profils avec badges et rangs, un classement entre amis, des messages et des flammes entre amis.
 • Notifications, sauvegarde dans le cloud avec points de restauration et synchronisation entre tes appareils.
 
-AUSSI
+✨ AUSSI
 • 15 langues, 8 thèmes de couleur, 6 couleurs principales et 6 styles.
 • Pas de pub et pas de pistage. Sans compte, tout reste sur ton téléphone.
 

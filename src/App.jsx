@@ -1421,29 +1421,48 @@ function Ring({ value, total, size, color, children }) {
   );
 }
 
+// 1.10.0 (Michael, Nov 12: "confetti sometimes makes the phone lag"): one canvas instead of 70–90 animated elements
+// (each of those was its own compositor layer and a style recalculation per frame). The canvas is drawn at no more
+// than 1.5× (pieces don't need to be sharp), only while pieces are in the air, and is removed after the last one.
+// Same look as before: pieces fall from above the top edge with a sideways drift and a spin, easing out.
 function Confetti({ count = 70 }) {
-  const [pieces] = useState(() => Array.from({ length: count }, (_, i) => ({
-    left: Math.random() * 100,
-    dx: `${Math.round((Math.random() * 2 - 1) * 120)}px`,
-    rot: `${Math.round(Math.random() * 720 - 360)}deg`,
-    dur: `${(1.8 + Math.random() * 1.6).toFixed(2)}s`,
-    delay: `${(Math.random() * 0.5).toFixed(2)}s`,
-    color: [C.signal, C.mint, C.sky, "#ff7ab6", C.chalk][i % 5],
-    round: i % 3 === 0,
-  })));
-  const [show, setShow] = useState(true);
-  useEffect(() => { const t = setTimeout(() => setShow(false), 4200); return () => clearTimeout(t); }, []);
+  const ref = useRef(null);
+  const [show, setShow] = useState(() => !reducedMotion());
+  useEffect(() => {
+    const cv = ref.current; if (!cv) return;
+    const ctx = cv.getContext("2d"); if (!ctx) { setShow(false); return; }
+    const k = Math.min(window.devicePixelRatio || 1, 1.5), W = window.innerWidth, H = window.innerHeight;
+    cv.width = Math.round(W * k); cv.height = Math.round(H * k);
+    const cols = [C.signal, C.mint, C.sky, "#ff7ab6", C.chalk];
+    const ps = Array.from({ length: count }, (_, i) => ({
+      x: Math.random() * W, dx: (Math.random() * 2 - 1) * 120, rot: (Math.random() * 4 - 2) * Math.PI,
+      dur: 1800 + Math.random() * 1600, delay: Math.random() * 500, col: cols[i % 5], round: i % 3 === 0,
+      fl: 2 + Math.random() * 3, ph: Math.random() * 6.28, // flutter: the piece turns its face as it falls
+    }));
+    const end = Math.max(...ps.map(q => q.delay + q.dur));
+    let raf = 0, t0 = 0;
+    const draw = now => {
+      if (!t0) t0 = now;
+      const t = now - t0;
+      ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, cv.width, cv.height);
+      for (const q of ps) {
+        const u = (t - q.delay) / q.dur; if (u <= 0 || u >= 1) continue;
+        const e = 1 - Math.pow(1 - u, 1.9), y = (-0.1 + 1.2 * e) * H, x = q.x + q.dx * e, a = q.rot * e;
+        const ca = Math.cos(a) * k, sa = Math.sin(a) * k, f = q.round ? 1 : 0.35 + 0.65 * Math.abs(Math.cos(q.ph + q.fl * u * 6.28));
+        ctx.setTransform(ca, sa, -sa * f, ca * f, x * k, y * k);
+        ctx.fillStyle = q.col;
+        if (q.round) { ctx.beginPath(); ctx.arc(0, 0, 5, 0, 6.2832); ctx.fill(); } else ctx.fillRect(-4.5, -7, 9, 14);
+      }
+      if (t < end) raf = requestAnimationFrame(draw); else setShow(false);
+    };
+    raf = requestAnimationFrame(draw);
+    const stop = setTimeout(() => setShow(false), end + 1500); // a hidden page gets no frames: don't stay forever
+    return () => { cancelAnimationFrame(raf); clearTimeout(stop); };
+  }, []);
   if (!show) return null;
   // Portal into <body> for the same reason as Sheet: inside an animated screen, "fixed" would be
   // relative to that screen, so on a short screen (workout ended early) the confetti got cut off.
-  return createPortal(
-    <div aria-hidden="true" style={{ position: "fixed", inset: 0, pointerEvents: "none", overflow: "hidden", zIndex: 90 }}>
-      {pieces.map((p, i) => (
-        <span key={i} className="conf" style={{ left: `${p.left}%`, background: p.color, borderRadius: p.round ? 99 : 2, "--dx": p.dx, "--rot": p.rot, "--dur": p.dur, "--delay": p.delay }} />
-      ))}
-    </div>,
-    document.body
-  );
+  return createPortal(<canvas ref={ref} data-confetti={count} aria-hidden="true" style={{ position: "fixed", inset: 0, width: "100%", height: "100%", pointerEvents: "none", zIndex: 90 }} />, document.body);
 }
 
 const chip = color => ({ display: "flex", alignItems: "center", gap: 4, fontFamily: DISPLAY, fontWeight: 800, fontSize: 20, color, padding: "2px 10px", border: `1.5px solid ${C.line}`, borderRadius: 99 });
@@ -9426,12 +9445,17 @@ function fwPlace(el, rnd = Math.random) {
   el.style.setProperty("--r", `${Math.round(r)}px`);
   const cs = FW_COLS(); el.style.setProperty("--c", cs[Math.floor(rnd() * cs.length)]);
 }
+// 1.10.0 (Michael, Nov 12: "sometimes one only shows for a moment, doesn't burst, and another appears instead"): the
+// burst moves to its next spot when a round starts, but that event can arrive late (a busy app), and the sparks were
+// already visible 5 % into the round, so they flashed at the old spot and jumped. Now every round starts with a
+// hidden sixth (about 0.4 s of slack), in which a small rocket rises to the spot before it bursts.
 function FwBurst({ k, rs }) {
   const ref = useRef(null);
   useLayoutEffect(() => { let i = 0; fwPlace(ref.current, () => rs[(k * 7 + i++) % rs.length]); }, []);
-  const dur = 2.4 + k * 0.35, delay = k * 0.9 + rs[k + 9] * 0.5;
+  const dur = 2.4 + k * 0.35, delay = k * 0.9 + rs[k + 9] * 0.5, time = { animationDelay: `${delay.toFixed(2)}s`, animationDuration: `${dur.toFixed(2)}s` };
   return <span ref={ref} data-fw-burst={k} onAnimationIteration={e => { if (e.target.dataset.i === "0") fwPlace(ref.current); }} style={{ position: "absolute", left: "50%", top: "50%", width: 0, height: 0, "--c": C.signal, "--r": "24px" }}>
-    {Array.from({ length: 12 }, (_, i) => <span key={i} data-i={i} className="lkBurst" style={{ "--a": `${i * 30 + k * 10}deg`, position: "absolute", width: 4, height: 4, marginLeft: -2, marginTop: -2, borderRadius: 99, background: "var(--c)", boxShadow: "0 0 6px var(--c)", animationDelay: `${delay.toFixed(2)}s`, animationDuration: `${dur.toFixed(2)}s` }} />)}
+    <span className="lkRocket" style={{ position: "absolute", width: 2, height: 9, marginLeft: -1, borderRadius: 2, background: "linear-gradient(var(--c), transparent)", ...time }} />
+    {Array.from({ length: 12 }, (_, i) => <span key={i} data-i={i} className="lkBurst" style={{ "--a": `${i * 30 + k * 10}deg`, position: "absolute", width: 4, height: 4, marginLeft: -2, marginTop: -2, borderRadius: 99, background: "var(--c)", boxShadow: "0 0 6px var(--c)", ...time }} />)}
   </span>;
 }
 // 1.8.2 (Michael: "the frost in the corners looks squeezed"): one frost piece per corner, drawn in a square so it keeps
@@ -9464,6 +9488,15 @@ function LookFx({ id, thumb }) {
       {!thumb && n(8, (i, a, b, c) => <Fragment key={i}>{col(a, 9 + b * 5, c * 12, <svg viewBox="-6 -6 12 12" width={9 + Math.round(b * 6)} height={9 + Math.round(b * 6)} style={{ display: "block", overflow: "visible" }}><path d="M0 -5.5V5.5M-4.8 -2.75L4.8 2.75M-4.8 2.75L4.8 -2.75" stroke="#e6f7ff" strokeWidth="1.2" strokeLinecap="round" /></svg>)}</Fragment>)}</>;
   }
   if (id === "fx_fireworks") body = [0, 1, 2].map(k => <FwBurst key={k} k={k} rs={rs} />);
+  // 1.10.0: five more
+  if (id === "fx_rain") body = n(18, (i, a, b, c) => <Fragment key={i}>{col(a, 0.9 + b * 0.8, c * 2, <span style={{ display: "block", width: 1.5, height: 10 + Math.round(b * 8), borderRadius: 2, background: "linear-gradient(transparent, #9fd3ff)", opacity: 0.45 + b * 0.4, transform: "rotate(10deg)" }} />)}</Fragment>);
+  if (id === "fx_bubbles") body = n(12, (i, a, b, c) => <Fragment key={i}>{col(a, 6 + b * 6, c * 12, <span className="lkBob" style={{ display: "block", width: 6 + Math.round(b * 9), height: 6 + Math.round(b * 9), marginLeft: -6, borderRadius: 99, border: "1.5px solid rgba(255,255,255,.7)", background: "radial-gradient(circle at 32% 28%, rgba(255,255,255,.5), rgba(255,255,255,.06) 55%)", boxSizing: "border-box", animationDelay: `${(-c * 2).toFixed(1)}s`, animationDuration: `${(1.8 + b).toFixed(1)}s` }} />, "lkUp")}</Fragment>);
+  if (id === "fx_hearts") body = n(10, (i, a, b, c) => <Fragment key={i}>{col(a, 5 + b * 4, c * 9, <svg viewBox="0 0 24 24" width={9 + Math.round(b * 7)} height={9 + Math.round(b * 7)} className="lkBob" style={{ display: "block", marginLeft: -7, animationDelay: `${(-c * 2).toFixed(1)}s` }}><path d="M12 21C5 15 2.5 11.5 2.5 8A5 5 0 0 1 12 6a5 5 0 0 1 9.5 2c0 3.5-2.5 7-9.5 13Z" fill={i % 3 ? LK_PINK : "#ff4d6d"} /></svg>, "lkUp lkFade")}</Fragment>);
+  if (id === "fx_fireflies") body = n(12, (i, a, b, c) => <span key={i} className="lkFly" onAnimationIteration={lkReXY} style={{ position: "absolute", left: lkIn(a, 12), top: lkIn(c, 12), width: 4, height: 4, borderRadius: 99, background: "#efffa8", boxShadow: "0 0 8px 2px #c8f542", "--fx": `${Math.round((a - 0.5) * 28)}px`, "--fy": `${Math.round((b - 0.5) * 22)}px`, animationDelay: `${(b * 4).toFixed(2)}s`, animationDuration: `${(3 + c * 2.5).toFixed(1)}s` }} />);
+  if (id === "fx_stars") body = <>
+    {n(7, (i, a, b, c) => <span key={i} className="lkTwk" style={{ position: "absolute", left: lkIn(a, 4), top: lkIn(c * 0.7, 4), width: 2 + Math.round(b * 2), height: 2 + Math.round(b * 2), borderRadius: 99, background: "#fff", animationDelay: `${(b * 3).toFixed(2)}s`, animationDuration: `${(2.4 + c * 2).toFixed(1)}s` }} />)}
+    {[0, 1, 2].map(k => <span key={"s" + k} className="lkShoot" onAnimationIteration={e => { e.currentTarget.style.left = lkPct(40, 96); e.currentTarget.style.top = lkPct(0, 42); }} style={{ position: "absolute", left: `${45 + rs[k] * 50}%`, top: `${rs[k + 3] * 40}%`, width: 38, height: 1.5, borderRadius: 2, transformOrigin: "left center", background: "linear-gradient(90deg, #fff, rgba(255,255,255,0))", animationDuration: `${(3.6 + k * 1.3).toFixed(1)}s`, animationDelay: `${(-k * 1.7 - rs[k + 6]).toFixed(1)}s` }} />)}
+  </>;
   return <div data-look-fx={id} aria-hidden="true" style={{ position: "absolute", inset: 0, pointerEvents: "none", overflow: "hidden", zIndex: 3, borderRadius: "inherit" }}>{body}</div>;
 }
 // A look as a small picture for the shop and the list.
@@ -13019,11 +13052,16 @@ export default function App() {
         .lkSpinC{animation:lkSpinC 1s linear infinite}@keyframes lkSpinC{to{transform:rotate(360deg) rotateX(180deg)}}
         .lkFlash{opacity:0;animation:lkFlash 5s linear infinite}@keyframes lkFlash{0%,88%,100%{opacity:0}89%{opacity:.32}90%{opacity:0}91.5%{opacity:.22}93%{opacity:0}}
         .lkBolt{opacity:0;animation:lkBoltK 5s linear infinite}.lkBolt2{animation-delay:.12s}@keyframes lkBoltK{0%,88%,96%,100%{opacity:0}89%,94%{opacity:1}}
-        .lkBurst{opacity:0;animation:lkBurst 2.7s ease-out infinite}@keyframes lkBurst{0%{transform:rotate(var(--a)) translateX(0) scale(1);opacity:0}5%{opacity:1}55%{transform:rotate(var(--a)) translateX(var(--r,30px)) scale(.8);opacity:1}75%,100%{transform:rotate(var(--a)) translateX(calc(var(--r,30px) + 6px)) scale(.3);opacity:0}}
+        .lkBurst{opacity:0;animation:lkBurst 2.7s ease-out infinite}@keyframes lkBurst{0%,16%{transform:rotate(var(--a)) translateX(0) scale(1);opacity:0}20%{opacity:1}64%{transform:rotate(var(--a)) translateX(var(--r,30px)) scale(.8);opacity:1}82%,100%{transform:rotate(var(--a)) translateX(calc(var(--r,30px) + 6px)) scale(.3);opacity:0}}
+        .lkRocket{opacity:0;animation:lkRocket 2.7s ease-out infinite}@keyframes lkRocket{0%,6%{transform:translateY(calc(var(--r,30px) * 1.7));opacity:0}8%{opacity:.9}16%{transform:translateY(0);opacity:.9}18%,100%{transform:translateY(0);opacity:0}}
+        .lkBob{animation:lkBob 2.2s ease-in-out infinite alternate}@keyframes lkBob{from{transform:translateX(-5px)}to{transform:translateX(5px)}}
+        .lkFly{opacity:0;animation:lkFly 4s ease-in-out infinite}@keyframes lkFly{0%,100%{opacity:0;transform:translate(0,0)}25%,70%{opacity:1}55%{transform:translate(var(--fx,10px),var(--fy,-8px))}}
+        .lkShoot{opacity:0;animation:lkShoot 5s linear infinite}@keyframes lkShoot{0%,70%{opacity:0;transform:rotate(-27deg) translateX(0)}73%{opacity:1}92%,100%{opacity:0;transform:rotate(-27deg) translateX(-110px)}}
+        [data-look-fx]{transition:opacity .3s}.lkOff [data-look-fx]{opacity:0}
         .lkFlickI{animation:lkFlickI 1s ease-in-out infinite alternate}@keyframes lkFlickI{from{transform:scale(1)}to{transform:scale(1.15,.9)}}
         @keyframes lkFireT{from{background-position:0 0}to{background-position:0 100%}}
         .shRcpt{animation:shRcpt .5s ${MO.spring} both}@keyframes shRcpt{from{transform:scale(.4);opacity:0}}
-        @media (prefers-reduced-motion: reduce){.lkPulse,.lkSpin,.lkSpinSlow,.lkNeb,.lkFlick,.lkTw,.lkAur,.lkDown,.lkUp,.lkSway,.lkTwk,.lkSpinC,.lkFlash,.lkBolt,.lkBurst,.lkFlickI{animation:none}}
+        @media (prefers-reduced-motion: reduce){.lkPulse,.lkSpin,.lkSpinSlow,.lkNeb,.lkFlick,.lkTw,.lkAur,.lkDown,.lkUp,.lkSway,.lkTwk,.lkSpinC,.lkFlash,.lkBolt,.lkBurst,.lkRocket,.lkBob,.lkFly,.lkShoot,.lkFlickI{animation:none}}
         .nearPulse{animation:nearPulse 1.2s ease-in-out infinite alternate}
         @keyframes nearPulse{from{opacity:.65}to{opacity:1}}
         .pop{animation:pop ${MO.t3} ${MO.spring} both}
@@ -13033,8 +13071,6 @@ export default function App() {
         .pulse{animation:pulse .5s ease-in-out infinite}
         @keyframes wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-14deg)}75%{transform:rotate(14deg)}}
         .wiggle{display:inline-block;animation:wiggle .5s ease-in-out 2}
-        @keyframes fall{0%{transform:translate3d(0,-10vh,0) rotate(0)}100%{transform:translate3d(var(--dx),110vh,0) rotate(var(--rot))}}
-        .conf{position:absolute;top:0;width:9px;height:14px;animation:fall var(--dur) cubic-bezier(.25,.6,.4,1) var(--delay) forwards}
         @keyframes dFadeIn{from{opacity:0}to{opacity:1}} @keyframes dFadeOut{from{opacity:1}to{opacity:0}}
         @keyframes dIn{from{transform:translateX(104%)}to{transform:none}} @keyframes dOut{from{transform:none}to{transform:translateX(104%)}}
         @keyframes dItem{from{opacity:0;transform:translateX(26px)}to{opacity:1;transform:none}}
@@ -13063,7 +13099,7 @@ export default function App() {
         .tourIn{animation:dFadeIn ${MO.t2} ease both}
         .tourRing{animation:tourPulse 1.6s ease-in-out infinite}
         @keyframes tourPulse{50%{opacity:.55}}
-        @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}.conf,.revBit,.revFlash,.revTw{display:none}}
+        @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}.revBit,.revFlash,.revTw{display:none}}
       `}</style>
       {!loaded ? (
         <div style={{ padding: 40, display: "flex", flexDirection: "column", alignItems: "center", gap: 12, color: C.dim }}><Logo size={64} />{T("loading")}</div>

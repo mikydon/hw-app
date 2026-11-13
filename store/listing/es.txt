@@ -1,37 +1,37 @@
 HW App: Ejercicio en casa
 Ejercicio en casa en 19 min, tus propios planes con pesas, rangos y rachas.
-HW App es un plan de entrenamiento que crece contigo. Entrena en casa con tu propio peso y sin material, o crea tus propios planes con mancuernas y máquinas de gimnasio.
+💪 HW App es un plan de entrenamiento que crece contigo. Entrena en casa con tu propio peso y sin material, o crea tus propios planes con mancuernas y máquinas de gimnasio.
 
-EL PLAN
+📋 EL PLAN
 • Recomendado: tres días de entrenamiento (A, B, C), en días alternos. Cada uno trabaja empuje, tirón, piernas y core en ~19 min (3 rondas) o ~13 min (2 rondas).
 • Mis planes: crea los tuyos con 134 ejercicios (57 sin material, 22 con peso libre, 55 en máquinas y poleas), asígnalos a días de la semana y ordénalos en grupos.
 • La última ronda llega al fallo técnico: tantas repeticiones limpias como puedas, y paras antes de que se rompa la técnica.
 • La app te muestra lo que hiciste la última vez y un objetivo de +1 en repeticiones y en peso, para que sigas progresando.
 
-DURANTE EL ENTRENAMIENTO
+⏱️ DURANTE EL ENTRENAMIENTO
 • Un temporizador de descanso con +15, +30 y +60 s que sigue contando en la pantalla de bloqueo, con pitido y vibración.
 • Notas, ejercicios extra cuando aún te quedan fuerzas y una guía de ritmo.
 • Instrucciones para cada ejercicio y versiones más fáciles o más difíciles para cambiar.
 • Calentamiento antes y estiramientos opcionales después.
 
-PROGRESO Y MOTIVACIÓN
+🏆 PROGRESO Y MOTIVACIÓN
 • 9 rangos para cada ejercicio, de Hierro a Obsidiana, y un mapa del cuerpo con rangos para 9 zonas.
 • 47 insignias, XP y niveles, una racha con protectores y retos semanales.
 • Estadísticas con mapa de actividad y gráficos semanales, y un historial que puedes editar.
 • Diamantes que ganas entrenando, para protectores de racha, boosts de XP y estilos de perfil.
-• Muscle Deck: un juego de cartas en el que tu entrenamiento es tu fuerza.
+• 🃏 Muscle Deck: un juego de cartas en el que tu entrenamiento es tu fuerza.
 
-CALORÍAS
+🍎 CALORÍAS
 • Una calculadora de calorías (Mifflin-St Jeor) con objetivos para perder, mantener o ganar peso.
 • Un registro diario de calorías con calendario; tus entrenamientos se suman al objetivo del día.
 • Health Connect opcional: pasos, comida de otras apps, peso y altura. Estos datos nunca salen de tu teléfono.
 
-AMIGOS (OPCIONAL, 16+)
+👥 AMIGOS (OPCIONAL, 16+)
 • Inicia sesión con Google o con correo y contraseña, y añade amigos por código o apodo.
 • Perfiles con insignias y rangos, clasificación de amigos, mensajes y rachas con amigos.
 • Notificaciones, copia de seguridad en la nube con puntos de restauración y sincronización entre tus dispositivos.
 
-ADEMÁS
+✨ ADEMÁS
 • 15 idiomas, 8 temas de color, 6 colores principales y 6 estilos.
 • Sin anuncios y sin rastreo. Sin cuenta, todo se queda en tu teléfono.
 

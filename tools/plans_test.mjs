@@ -108,4 +108,53 @@ const cov = P.weekCoverage(rec, LIB);
 eq(cov.chest.days, 2, "chest is a main muscle on Mon (push-up) and Fri (diamond push-up)");
 eq(cov.chest.sets, 6, "chest sets: push-up 3 + diamond push-up 3");
 eq(P.weekHints(P.emptyPlans(), LIB), [], "no week, no week hints");
+
+// ─── 1.10.0: two devices through the real sync (found Nov 13: a phone that had not yet received an edit and only
+// moved the plan to another weekday sent its old exercises back as the newest plan). Random edits on two devices
+// with syncs in between, a fixed seed: after everything is synced both devices hold the same plans, no plan is
+// lost, and every plan has the exercises of its LAST content edit, whichever device made it.
+{
+  const { mergeAll, stable } = await import("../src/sync.js");
+  let now = 1000, s = 12345;
+  const rnd = () => (s = (s * 1664525 + 1013904223) >>> 0) / 2 ** 32;
+  const mk = () => ({ history: [], profile: { name: "M", pfp: null, freezeDays: [] }, settings: {}, kcal: null, sync: { acct: "me", del: {}, kdel: {}, mod: {} } });
+  const EXS = ["k1", "k2", "n1", "b5", "r1", "p1"];
+  let diverged = 0, lost = 0, stale = 0, zombie = 0, runs = 0;
+  for (let run = 0; run < 300; run++, runs++) {
+    const dev = [mk(), mk()]; let cloud = null; const truth = new Map();
+    const setP = (d, fn) => { now += 1 + Math.floor(rnd() * 3); const next = P.mirror(fn(P.plansOf(d.profile)), now); d.profile = { ...d.profile, plans: next }; d.sync.mod = { ...d.sync.mod, profile: now }; };
+    const up = d => { cloud = JSON.parse(JSON.stringify({ history: d.history, profile: d.profile, settings: d.settings, kcal: d.kcal, sync: d.sync })); };
+    const down = d => { if (!cloud) return; const M = mergeAll(d, JSON.parse(JSON.stringify(cloud)), false); d.profile = M.profile; d.sync = { ...d.sync, ...M.sync }; };
+    for (let step = 0; step < 40; step++) {
+      const d = dev[rnd() < 0.5 ? 0 : 1], r = rnd(), L = P.plansOf(d.profile).list, pick = () => L[Math.floor(rnd() * L.length)];
+      if (r < 0.2) { let id; setP(d, c => { const x = P.addPlan(c, now); id = x.plan.id; return x.P; }); truth.set(id, { items: "[]" }); }
+      else if (r < 0.45 && L.length) { const p = pick(), ex = EXS[Math.floor(rnd() * EXS.length)]; setP(d, c => P.updatePlan(c, p.id, P.addItem(c.list.find(x => x.id === p.id), ex), now)); truth.set(p.id, { items: JSON.stringify(P.plansOf(d.profile).list.find(x => x.id === p.id).items) }); }
+      else if (r < 0.5 && L.length) { const p = pick(); setP(d, c => P.updatePlan(c, p.id, { name: "N" + now }, now)); truth.set(p.id, { items: JSON.stringify(p.items), name: "N" + now }); }
+      else if (r < 0.64 && L.length) { const p = pick(); setP(d, c => P.setWeekDay(c, 1 + Math.floor(rnd() * 7), rnd() < 0.8 ? p.id : "", now)); }
+      else if (r < 0.68 && L.length) { const p = pick(); setP(d, c => P.delPlan(c, p.id, now)); truth.set(p.id, { deleted: now }); }
+      else if (r < 0.85) { down(d); up(d); }
+      else down(d);
+    }
+    for (let k = 0; k < 3; k++) dev.forEach(d => { down(d); up(d); });
+    const A = P.plansOf(dev[0].profile), B = P.plansOf(dev[1].profile);
+    if (stable(A) !== stable(B)) { diverged++; continue; }
+    for (const [id, t] of truth) {
+      const p = A.list.find(x => x.id === id);
+      if (t.deleted) { if (p && (p.its || 0) < t.deleted) zombie++; continue; } // only a content edit made after the deletion may bring it back
+      if (!p) { lost++; continue; }
+      if (JSON.stringify(p.items) !== t.items || (t.name && p.name !== t.name)) stale++;
+    }
+  }
+  eq([diverged, lost, stale, zombie], [0, 0, 0, 0], `two devices, ${runs} random runs: [diverged, lost plans, stale content, deleted plans back]`);
+  // an app older than 1.10 changes the exercises (no `its` there): its newer edit still wins
+  const base = P.addPlan(P.emptyPlans(), 10), id = base.plan.id;
+  const withK1 = P.updatePlan(base.P, id, P.addItem(base.plan, "k1"), 20);
+  const old194 = { ...withK1, list: withK1.list.map(p => ({ ...p, items: [...p.items, { id: "n1", sets: 3 }], mts: 30 })) }; // 1.9.4 edit: mts only
+  eq(P.mergePlans(withK1, old194).list[0].items.map(x => x.id), ["k1", "n1"], "an edit made by 1.9.4 (newer mts, old its) wins");
+  // … and its weekday change (mts only, content untouched) no longer brings old exercises back
+  const moved194 = { ...base.P, list: base.P.list.map(p => ({ ...p, mts: 40 })), week: { 1: id }, wmts: 40 };
+  const M3 = P.mergePlans(withK1, moved194);
+  eq([M3.list[0].items.map(x => x.id), M3.week], [["k1"], { 1: id }], "an old copy moved to Monday keeps the newer exercises and the new weekday");
+  eq(P.mergePlans(moved194, withK1).list[0], M3.list[0], "the same result from both sides");
+}
 console.log(`${pass} passed, ${fail} failed`); process.exit(fail ? 1 : 0);

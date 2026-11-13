@@ -3,7 +3,7 @@
   "appName": "HW App",
   "webDir": "www",
   "android": {
-    "backgroundColor": "#0e1b36"
+    "backgroundColor": "#000000"
   },
   "plugins": {
     "CapacitorUpdater": {

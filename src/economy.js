@@ -31,6 +31,7 @@ export const LOOKS = {
   n_gold: { kind: "name", r: 2, won: "triple" },
   fx_snow: { kind: "fx", r: 1 }, fx_sparkle: { kind: "fx", r: 1 }, fx_petals: { kind: "fx", r: 1 }, fx_embers: { kind: "fx", r: 2 },
   fx_lightning: { kind: "fx", r: 3 },
+  fx_rain: { kind: "fx", r: 1 }, fx_bubbles: { kind: "fx", r: 1 }, fx_hearts: { kind: "fx", r: 1 }, fx_fireflies: { kind: "fx", r: 2 }, fx_stars: { kind: "fx", r: 2 }, // 1.10.0
   fx_frost: { kind: "fx", r: 2, won: "frozen" }, fx_confetti: { kind: "fx", r: 2, won: "bdayW" }, fx_fireworks: { kind: "fx", r: 3, won: "newyear" },
 };
 export const LOOK_IDS = Object.keys(LOOKS);

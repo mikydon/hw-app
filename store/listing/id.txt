@@ -1,37 +1,37 @@
 HW App: Latihan di Rumah
 Latihan di rumah 19 menit, rencana sendiri dengan beban, rank, dan runtutan.
-HW App adalah rencana latihan yang tumbuh bersamamu. Latihan di rumah dengan berat badan sendiri tanpa alat, atau susun rencanamu sendiri dengan dumbel dan mesin gym.
+💪 HW App adalah rencana latihan yang tumbuh bersamamu. Latihan di rumah dengan berat badan sendiri tanpa alat, atau susun rencanamu sendiri dengan dumbel dan mesin gym.
 
-RENCANA
+📋 RENCANA
 • Disarankan: tiga hari latihan (A, B, C), selang sehari. Setiap hari melatih dorong, tarik, kaki, dan inti tubuh dalam ~19 menit (3 putaran) atau ~13 menit (2 putaran).
 • Rencanaku: susun sendiri dari 134 latihan (57 tanpa alat, 22 dengan beban bebas, 55 di mesin dan kabel), atur ke hari dalam seminggu, dan kelompokkan.
 • Putaran terakhir sampai gagal teknik: repetisi bersih sebanyak yang kamu bisa, lalu berhenti sebelum teknikmu rusak.
 • Aplikasi menunjukkan hasilmu terakhir kali dan target +1, untuk repetisi dan beban, agar kamu terus berkembang.
 
-SAAT LATIHAN
+⏱️ SAAT LATIHAN
 • Timer istirahat dengan +15, +30, dan +60 dtk yang tetap berjalan di layar kunci, dengan bunyi dan getar.
 • Catatan, latihan tambahan saat tenagamu masih ada, dan panduan tempo.
 • Cara melakukan setiap latihan, serta versi lebih mudah atau lebih sulit untuk ditukar.
 • Pemanasan sebelum dan pendinginan opsional sesudahnya.
 
-KEMAJUAN DAN MOTIVASI
+🏆 KEMAJUAN DAN MOTIVASI
 • 9 rank untuk setiap latihan, dari Besi sampai Obsidian, dan peta tubuh yang memberi rank untuk 9 bagian tubuh.
 • 47 lencana, XP dan level, runtutan dengan pembeku, dan tantangan mingguan.
 • Statistik dengan peta aktivitas dan grafik mingguan, serta riwayat yang bisa kamu ubah.
 • Berlian yang kamu dapat dari latihan, untuk pembeku runtutan, boost XP, dan tampilan profil.
-• Muscle Deck: permainan kartu yang kekuatannya berasal dari latihanmu.
+• 🃏 Muscle Deck: permainan kartu yang kekuatannya berasal dari latihanmu.
 
-KALORI
+🍎 KALORI
 • Kalkulator kalori (Mifflin-St Jeor) dengan target menurunkan, menjaga, atau menaikkan berat badan.
 • Catatan kalori harian dengan kalender; latihanmu ditambahkan ke target hari itu.
 • Health Connect opsional: langkah, makanan dari aplikasi lain, berat dan tinggi badan. Data ini tidak pernah keluar dari ponselmu.
 
-TEMAN (OPSIONAL, 16+)
+👥 TEMAN (OPSIONAL, 16+)
 • Masuk dengan Google atau dengan e-mail dan kata sandi, lalu tambahkan teman lewat kode atau nama panggilan.
 • Profil dengan lencana dan rank, papan peringkat teman, pesan, dan runtutan bersama teman.
 • Notifikasi, cadangan cloud dengan titik pemulihan, dan sinkronisasi antar perangkatmu.
 
-LAINNYA
+✨ LAINNYA
 • 15 bahasa, 8 tema warna, 6 warna utama, dan 6 tampilan.
 • Tanpa iklan dan tanpa pelacakan. Tanpa akun, semuanya tetap di ponselmu.
 
