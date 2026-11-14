@@ -1,6 +1,7 @@
 // Spanish: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    frNickReserved: "Ese nombre está reservado. Prueba otro.",
     plOfficial: "De HW App",
     plDef_a: "Cuerpo completo en casa A",
     plDef_b: "Cuerpo completo en casa B",

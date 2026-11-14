@@ -1,6 +1,7 @@
 // Indonesian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    frNickReserved: "Nama itu dicadangkan. Coba yang lain.",
     plOfficial: "Dari HW App",
     plDef_a: "Seluruh tubuh di rumah A",
     plDef_b: "Seluruh tubuh di rumah B",

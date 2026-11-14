@@ -2,6 +2,7 @@ import { useState, useEffect, useLayoutEffect, useRef, useMemo, useId, memo, Fra
 import { createPortal } from "react-dom";
 import { shareImage, askReview, restSupported, restPermission, restStart, restStop, restNativeBeeps, restOpenSettings, isNative, pushBack, setRootBack, exitApp, vibratePattern, keepScreenOn, openExternal, saveBackupFile, bkSupported, bkWrite, bkWriteAuto, bkList, bkRead, bkDelete, bkShare, BK_DIR, bkAutoFile, checkForUpdate, lastUpdate, lastGh, applyUpdateNow, latestApk, isTestBuild, apkState, onApk, apkSupported, apkRestore, apkDownload, apkCanInstall, apkAllow, apkInstall, onAppResume, healthState, healthConnect, healthSettings, healthSteps, healthFoodItems, healthBody, shareText, copyText, pushSupported, pushPermission, pushChannel, pushToken, pushTokenWhy, pushDeleteToken, onPushTap, onPushToken, onPushReceived, hzSupported, hzInfo, hzSet, isPlay, playCheck, playOpenStore, playUpdate, PLAY_STORE_LINK, updTopic, onAppUrl, installCheck, openNotifSettings, showNotif, setNativeBg, backIsTop, backTopRun } from "./native.js";
 import { cloud, NICK_RE, SHARE_BASE, cleanCode, fmtCode } from "./cloud-lazy.js";
+import { nickReserved } from "./cloud-shared.js";
 import { QUICK as EMO_QUICK, EMOJI } from "./emoji.js";
 import { mergeAll, restoreFrom, syncKey, withIds, entryId, stable, SYNC_SETTINGS, kcalShared } from "./sync.js";
 import { RANK_AT, EX_GROUPS } from "./ranks.js";
@@ -3581,6 +3582,7 @@ function Onboarding({ start = 0, profile, setProfile, kcal, setKcal, onDone, acc
       // signed in without a cloud profile yet: the name becomes the nickname for friends (must be free)
       const nick = nickFrom(name.trim());
       if (!NICK_RE.test(nick)) { setErr(T("frNickBad")); return; }
+      if (nickReserved(nick)) { setErr(T("frNickReserved")); return; }
       setBusy(true); setErr("");
       onCreate(nick).then(() => { setProfile({ ...profile, name: name.trim() }); sfxCheck(); goTo(step + 1); }).catch(e => setErr(cloudErr(e))).finally(() => setBusy(false));
       return;
@@ -7454,6 +7456,7 @@ function NickSetup({ initial, onSave, onCancel, title }) {
   const ok = NICK_RE.test(nick);
   const save = () => {
     if (!ok) { setErr(T("frNickBad")); return; }
+    if (nickReserved(nick) && nick.toLowerCase() !== String(initial || "").toLowerCase()) { setErr(T("frNickReserved")); return; }
     setBusy(true); setErr("");
     onSave(nick).catch(e => setErr(cloudErr(e))).finally(() => setBusy(false));
   };

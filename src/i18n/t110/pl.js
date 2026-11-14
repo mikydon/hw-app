@@ -1,6 +1,7 @@
 // Polish: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    frNickReserved: "Ta nazwa jest zastrzeżona. Spróbuj innej.",
     plOfficial: "Od HW App",
     plDef_a: "Całe ciało w domu A",
     plDef_b: "Całe ciało w domu B",

@@ -1,6 +1,7 @@
 // Chinese (Simplified): texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    frNickReserved: "这个名字已被保留，请换一个。",
     plOfficial: "HW App 出品",
     plDef_a: "居家全身 A",
     plDef_b: "居家全身 B",

@@ -1,6 +1,7 @@
 // Hungarian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    frNickReserved: "Ez a név foglalt. Próbálj másikat.",
     plOfficial: "A HW App-tól",
     plDef_a: "Egész test otthon A",
     plDef_b: "Egész test otthon B",

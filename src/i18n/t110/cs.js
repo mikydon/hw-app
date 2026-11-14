@@ -1,6 +1,7 @@
 // Czech: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    frNickReserved: "Tohle jméno je vyhrazené. Zkus jiné.",
     plOfficial: "Od HW App",
     plDef_a: "Celé tělo doma A",
     plDef_b: "Celé tělo doma B",

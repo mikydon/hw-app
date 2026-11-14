@@ -10,6 +10,8 @@ service cloud.firestore {
     function nowTs() { return data().ts == request.time; }
     function intIn(v, lo, hi) { return v is int && v >= lo && v <= hi; }
     function nickOk(n) { return n is string && n.matches('^[\\p{L}\\p{N}_.-]{3,20}$'); }
+    // 1.10.0: reserved names (src/cloud-shared.js nickReserved), only for a NEW nickname
+    function nickFree(n) { return !n.lower().replace('[ _.-]', '').matches('.*hwapp.*') && !n.lower().replace('[ _.-]', '').matches('^(official|admin|support|moderator|staff|hwteam|hwsupport).*'); }
     function pfpOk(p) { return p == null || (p is string && p.size() < 24000 && p.matches('^data:image/jpeg;base64,[A-Za-z0-9+/=]+$')); }
     function statsOk() {
       return nickOk(data().nick) && pfpOk(data().get('pfp', null))
@@ -130,7 +132,7 @@ service cloud.firestore {
     // so deleting an account still works when this phone remembers an old nickname).
     match /nicks/{nick} {
       allow get: if signedIn();
-      allow create: if signedIn() && only(['uid']) && data().uid == request.auth.uid && nickOk(nick) && nick == nick.lower();
+      allow create: if signedIn() && only(['uid']) && data().uid == request.auth.uid && nickOk(nick) && nick == nick.lower() && nickFree(nick);
       allow delete: if signedIn() && (resource == null || resource.data.uid == request.auth.uid);
     }
     match /codes/{code} {
@@ -292,7 +294,7 @@ service cloud.firestore {
     }
     function pubOk() {
       return data().o == request.auth.uid && data().name is string && data().name.size() <= 40 && data().nl is string && data().nl.size() <= 40
-        && data().nick is string && data().nick.size() <= 24 && data().items is list && data().items.size() >= 1 && data().items.size() <= 12
+        && data().nick is string && data().nick.size() <= 24 && nickFree(data().nick) && data().items is list && data().items.size() >= 1 && data().items.size() <= 12
         && data().fam is list && data().fam.size() <= 9 && data().eq in ['none', 'free', 'machine'] && data().n is int;
     }
     // 1.10.0: invite rewards, written only by the server
