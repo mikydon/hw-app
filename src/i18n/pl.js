@@ -1,6 +1,8 @@
 // Polish (polski).
 import { with190 } from "./t190/merge.js";
 import T190 from "./t190/pl.js";
+import { with110 } from "./t110/merge.js";
+import T110 from "./t110/pl.js";
 const L = {
   ui: {
     searchWeb: "🔎 Szukaj w internecie",
@@ -2066,4 +2068,4 @@ const L = {
   ],
   looks: {"f_iron":"Żelazny pierścień","f_dots":"Kropkowany pierścień","f_pixel":"Piksel","f_hex":"Heks","f_wave":"Fala","f_pulse":"Puls","f_flame":"Płomień","f_laurel":"Laur","f_neon":"Neon","f_bolt":"Grom","f_crown":"Korona","f_obsidian":"Odłamek obsydianu","f_diamond":"Diamentowy pierścień","b_glow":"Blask motywu","b_grid":"Podłoga siłowni","b_sunset":"Zachód słońca","b_topo":"Poziomice","b_stars":"Nocne niebo","b_waves":"Fale","b_bubbles":"Bąbelki","b_ridge":"Grań o świcie","b_city":"Światła miasta","b_galaxy":"Galaktyka","b_aurora":"Zorza","t_iron":"Żelazna wola","t_rookie":"Nowicjusz","t_grind":"Codzienny grind","t_zen":"Zen","t_beast":"Beast mode","t_legend":"Żywa legenda","t_bird":"Ranny ptaszek","t_owl":"Nocny marek","t_comeback":"Mistrz powrotów","t_marathon":"Maratończyk","t_shark":"Karciany rekin","t_streak":"Strażnik passy","t_midnight":"Bohater północy","t_obsidian":"Obsydian","n_outline":"Kontur","n_grad":"Gradient","n_shadow":"Retro cień","n_ice":"Lód","n_glow":"Blask","n_fire":"Ogień","n_foil":"Połysk folii","n_rainbow":"Tęcza","n_gold":"Czyste złoto","fx_snow":"Śnieżyca","fx_sparkle":"Iskierki","fx_petals":"Płatki","fx_embers":"Żarzące się iskry","fx_lightning":"Burza","fx_frost":"Szron","fx_confetti":"Impreza","fx_fireworks":"Fajerwerki"},
 };
-export default with190(L, T190);
+export default with110(with190(L, T190), T110);
