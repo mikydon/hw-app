@@ -28,7 +28,7 @@
 // 1.10.0 Friends together (Michael, Nov 14: "the server checks everything, so nobody can cheat"):
 //   "vday" {to?}: vdays/{uid} = the checked training days of you (or of a friend: friends only) from the cloud backup
 //     (src/fair.js: real workouts, one a day, not added by hand), the sets of each and the days with calories logged
-//     in the app. Only the server writes it; friends read it for shared streaks, the weekly goal and the duel.
+//     in the app, plus the freeze days. Only the server writes it; friends read it for shared streaks, the weekly goal and the duel.
 //   "nudge" {to, today}: a notification to a friend who has not trained today, at most once a day per pair.
 //   "inv": the invite reward. inv/{uid} = {by} is written by a new account that came through a friend's link; once
 //     that account has INV_NEED checked workouts on different days after joining, rew/{uid}.by and rew/{inviter}.i
@@ -210,7 +210,9 @@ export async function checkVdays({ uid, to, today, sa, fetchFn = fetch, now = Da
   const d = c.st.dates.slice(-120), s = Object.fromEntries(Object.entries(c.st.sets).filter(([k]) => k >= from));
   const log = (c.data.kcal && c.data.kcal.log) || {};
   const k = Object.keys(log).filter(x => x >= from && x <= day && Array.isArray(log[x]) && log[x].reduce((a, y) => a + (+(y && y.kcal) || 0), 0) > 0).sort();
-  await patchDoc(`vdays/${who}`, { d, s, k, ts: new Date(now).toISOString() }, tok, fetchFn);
+  // freeze days keep a shared streak alive like they keep your own
+  const fz = ((c.data.profile && c.data.profile.freezeDays) || []).filter(x => typeof x === "string" && /^\d{4}-\d{2}-\d{2}$/.test(x) && x >= from && x <= day).sort().slice(-30);
+  await patchDoc(`vdays/${who}`, { d, s, k, f: fz, ts: new Date(now).toISOString() }, tok, fetchFn);
   return { why: "ok", n: d.length };
 }
 // A push to all phones of `to`; drops tokens of phones that no longer have the app.

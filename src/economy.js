@@ -9,7 +9,7 @@ export const PRICE = { freeze: 60, boost: 40 };
 export const LOOK_PRICE = [80, 150, 300, 600]; // common, uncommon, rare, legendary
 export const BOOST_MS = 24 * 3600 * 1000; // an XP boost: 2× XP for the workouts of the next 24 hours
 // What earns diamonds (the numbers on the plan page).
-export const EARN = { day: 5, streak7: 15, achLevel: 3, single: { 4: 15, 6: 30, 8: 60 }, run: 20 };
+export const EARN = { day: 5, streak7: 15, achLevel: 3, single: { 4: 15, 6: 30, 8: 60 }, run: 20, inv: 100 };
 
 // Profile looks. kind: frame | bg | title | name | fx (a profile effect drawn over the whole profile card, like Discord's).
 // r = rarity 0–3. won = only won (a badge / the season pass), never sold; the key names what wins it (lookGot in App.jsx).
@@ -81,6 +81,7 @@ export function earned(inp) {
     chests: (inp.chests || []).reduce((a, n) => a + (n || 0), 0),
     codes: (inp.codes || []).reduce((a, n) => a + (n || 0), 0), // 1.9.0: diamonds from codes (redeemCode)
     gift: Math.max(0, Math.floor(inp.gift || 0)), // 1.9.0: diamonds Michael set for this account (Firestore gift/{uid})
+    inv: Math.max(0, Math.min(INV_N_MAX, Math.floor(inp.inv || 0))) * EARN.inv, // 1.10.0: invite rewards the server paid (rew/{uid})
   };
   return { total: Object.values(parts).reduce((a, n) => a + n, 0), parts };
 }
@@ -88,12 +89,13 @@ export function earned(inp) {
 // id, so two devices that bought something while offline both keep their purchases when they sync (mergeShop: union).
 // Everything else (spent, freezes, boosts, owned looks) is derived from those entries.
 // 1.9.0: codes = {CODE: {d, ts}} = codes this account redeemed (each once; the diamonds count like earned ones)
-const raw = profile => { const s = (profile && profile.shop) || {}; const obj = x => (x && typeof x === "object" && !Array.isArray(x) ? x : {}); return { buys: Array.isArray(s.buys) ? s.buys : [], chest: obj(s.chest), codes: obj(s.codes), gift: s.gift && typeof s.gift === "object" ? s.gift : null }; };
+const raw = profile => { const s = (profile && profile.shop) || {}; const obj = x => (x && typeof x === "object" && !Array.isArray(x) ? x : {}); return { buys: Array.isArray(s.buys) ? s.buys : [], chest: obj(s.chest), codes: obj(s.codes), gift: s.gift && typeof s.gift === "object" ? s.gift : null, inv: s.inv && typeof s.inv === "object" ? s.inv : null }; };
 export function shopOf(profile) {
-  const { buys, chest, codes, gift } = raw(profile);
+  const { buys, chest, codes, gift, inv } = raw(profile);
   const chests = Object.values(chest).filter(Boolean);
   return {
     buys, chest, codes, gift: gift ? Math.max(0, Math.min(GIFT_MAX, Math.floor(gift.d) || 0)) : 0,
+    inv: inv ? Math.max(0, Math.min(INV_N_MAX, Math.floor(inv.n) || 0)) : 0,
     spent: buys.reduce((a, b) => a + (b.p || 0), 0),
     fz: buys.filter(b => b.w === "freeze").length,
     boosts: [...buys.filter(b => b.w === "boost"), ...chests.filter(c => c.kind === "boost")].filter(b => b.from && b.to).map(b => ({ from: b.from, to: b.to })),
@@ -112,6 +114,8 @@ export function mergeShop(a, b) {
   if (Object.keys(codes).length) out.codes = codes; else delete out.codes;
   const ga = ra.gift, gb = rb.gift, g = ga && gb ? ((ga.ts || 0) >= (gb.ts || 0) ? ga : gb) : ga || gb; // the newest reading of the server wins
   if (g) out.gift = g; else delete out.gift;
+  const ia = ra.inv, ib = rb.inv, iv = ia && ib ? ((ia.ts || 0) >= (ib.ts || 0) ? ia : ib) : ia || ib;
+  if (iv) out.inv = iv; else delete out.inv;
   return out;
 }
 export const balance = (inp, profile) => earned(inp).total - shopOf(profile).spent;
@@ -187,6 +191,17 @@ export function withGift(profile, d, now = Date.now()) {
   if (!v && !cur) return null;              // nothing given, nothing stored
   if (cur && cur.d === v) return null;       // no change
   return { ...sh, gift: { d: v, ts: now } };
+}
+// 1.10.0 invite rewards: the server writes rew/{uid} {by: the friend who invited me (once), i: {uid: time} the friends I
+// invited who trained 3 times}; the app keeps the newest count in profile.shop.inv {n, ts}. 100 diamonds each.
+export const INV_N_MAX = 11; // invited once + at most 10 friends (worker INV_MAX)
+export const invCount = rew => (rew ? (rew.by ? 1 : 0) + Object.keys(rew.i || {}).length : 0);
+export function withInv(profile, n, now = Date.now()) {
+  const sh = (profile && profile.shop) || {}, v = Math.max(0, Math.min(INV_N_MAX, Math.floor(Number(n) || 0)));
+  const cur = sh.inv && typeof sh.inv === "object" ? sh.inv : null;
+  if (!v && !cur) return null;
+  if (cur && cur.n === v) return null;
+  return { ...sh, inv: { n: v, ts: now } };
 }
 export const codeDiamonds = profile => Object.values(shopOf(profile).codes).map(c => (c && c.d > 0 ? Math.min(CODE_MAX_D, Math.floor(c.d)) : 0));
 export const chestDiamonds = profile => Object.values(shopOf(profile).chest).map(c => (c && c.kind === "dia" ? c.n : 0));

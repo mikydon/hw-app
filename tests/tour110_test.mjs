@@ -13,7 +13,7 @@ const skip = async p => { await p.click("[data-tour-skip], [data-tour-bubble] bu
   await p.waitForTimeout(800);
   const u = await ui(p);
   T.ok(u.tour110 === 1 && u.tourPl3 === 1, "both one-time marks set");
-  T.ok(Array.isArray(u.tourAuto) && ![5, 9, 10].some(c => u.tourAuto.includes(c)) && u.tourAuto.includes(4), "chapters 5, 9 and 10 marked to show again, the others not");
+  T.ok(Array.isArray(u.tourAuto) && ![5, 7, 9, 10].some(c => u.tourAuto.includes(c)) && u.tourAuto.includes(4), "chapters 5, 7, 9 and 10 marked to show again, the others not");
   await go(p, "history");
   T.ok((await bubble(p)).includes("a green day is a workout"), "visiting History starts the new chapter 5");
   await skip(p);
@@ -31,7 +31,7 @@ const skip = async p => { await p.click("[data-tour-skip], [data-tour-bubble] bu
   await p.waitForTimeout(800);
   const u = await ui(p);
   T.ok(u.tour110 === 1, "1.10 mark set");
-  T.ok(!u.tourAuto.includes(5) && !u.tourAuto.includes(9) && u.tourAuto.includes(10) && u.tourAuto.includes(8), "only 5 and 9 dropped; 10 stays seen");
+  T.ok(!u.tourAuto.includes(5) && !u.tourAuto.includes(7) && !u.tourAuto.includes(9) && u.tourAuto.includes(10) && u.tourAuto.includes(8), "only 5, 7 and 9 dropped; 10 stays seen");
   await go(p, "shop");
   T.ok((await bubble(p)).includes("Diamonds: you earn them"), "visiting the Shop starts the new chapter 9");
   await skip(p);

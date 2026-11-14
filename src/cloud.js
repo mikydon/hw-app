@@ -324,7 +324,7 @@ export const impl = {
   vday(to, today) { return impl.rk("vday", to ? { to, today } : { today }); },
   nudge(to, today) { return impl.rk("nudge", { to, today }); },
   checkInv() { return impl.rk("inv", {}); },
-  async getVdays(u) { const s = await getDoc(d("vdays", u)); if (!s.exists()) return null; const v = s.data(); return { d: v.d || [], s: v.s || {}, k: v.k || [] }; },
+  async getVdays(u) { const s = await getDoc(d("vdays", u)); if (!s.exists()) return null; const v = s.data(); return { d: v.d || [], s: v.s || {}, k: v.k || [], f: v.f || [] }; },
   // who invited this account: written once, right after the account was made (the server checks that it is new)
   async saveInv(by) { if (!by || by === uid()) return; await setDoc(d("inv", uid()), { by, ts: serverTimestamp() }); },
   async getRew() { const s = await getDoc(d("rew", uid())); if (!s.exists()) return null; const v = s.data(); return { by: v.by || null, i: v.i || {} }; },

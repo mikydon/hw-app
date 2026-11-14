@@ -590,13 +590,31 @@ function autoFreezeDays(history, today) {
 // 1.8.0 friend streaks (Michael: "like Duolingo"): the shared streak counts the days on which both of you are on a
 // streak (each trained or used a freeze within the last 2 days, the every-other-day plan), back from today to the day
 // it was accepted; a day where one of you isn't breaks it (it starts again when both train). dates = "YYYY-MM-DD".
-const FS_MAX = 5;
+const FS_MAX = 30; // 1.10.0 (Michael, Nov 14: "remove the limits that aren't needed"): was 5
 function friendStreak(mine, theirs, start, today) {
   const on = (list, d) => list.some(x => x <= d && daysBetween(x, d) <= 2);
   let n = 0, d = today;
   while (d >= start && on(mine, d) && on(theirs, d) && n < 3660) { n++; d = addDays(d, -1); }
   const me = mine.filter(x => x <= today).sort().pop(), they = theirs.filter(x => x <= today).sort().pop();
   return { n, meToday: me === today, theyToday: they === today, meLast: me ? daysBetween(me, today) : 99, theyLast: they ? daysBetween(they, today) : 99 };
+}
+// 1.10.0 Friends together. Calories: both logged food in the app on the same day, every day (today counts once both
+// have; until then the streak runs to yesterday and is at risk).
+function dailyStreak(mine, theirs, start, today) {
+  const a = new Set(mine), b = new Set(theirs), both = d => a.has(d) && b.has(d);
+  let n = 0, d = both(today) ? today : addDays(today, -1);
+  while (d >= start && both(d) && n < 3660) { n++; d = addDays(d, -1); }
+  return { n, meToday: a.has(today), theyToday: b.has(today), meLast: a.has(today) ? 0 : 2, theyLast: b.has(today) ? 0 : 2 };
+}
+// One duo: the shared streak of its kind (f.k "w" workouts | "k" calories), this week's workouts of both (the goal f.g
+// counts both together) and the sets duel. mine = {d, s, k, f} counted the way the server counts (src/fair.js);
+// v = the friend's vdays from the server (or, from an older app, only their days list in d).
+function duoState(f, mine, v, today) {
+  const kind = f.k === "k" ? "k" : "w", th = v || { d: [], s: {}, k: [], f: [] };
+  const st = kind === "k" ? dailyStreak(mine.k, th.k || [], f.start, today) : friendStreak([...mine.d, ...mine.f], [...(th.d || []), ...(th.f || [])], f.start, today);
+  const mon = weekStart(today), inWk = x => x >= mon && x <= today;
+  const wk = list => new Set((list || []).filter(inWk)).size, sets = o => Object.entries(o || {}).filter(([d]) => inWk(d)).reduce((a, [, n]) => a + (+n || 0), 0);
+  return { ...st, kind, week: { me: wk(mine.d), they: wk(th.d), goal: f.g || 0 }, duel: { me: sets(mine.s), they: sets(th.s), old: !!th.old } };
 }
 const myDays = (history, profile) => [...new Set([...history.map(e => e.date), ...((profile && profile.freezeDays) || [])])].sort().slice(-60);
 // Motivation (texts in the locale).
@@ -1579,6 +1597,7 @@ const ACH = [
   { k: "health", icon: "heart", at: [1], rk: [4], single: true, v: c => (c.hc ? 1 : 0) },
   // 1.8.0 Muscle Deck: Runs won (any intensity), and one legendary badge for a win on the top intensity
   { k: "deck", icon: "cards", at: [1, 2, 3, 5, 8, 12, 20, 30, 50], pl: "runs", v: c => c.deckWins },
+  { k: "duo", icon: "duo", at: [3, 7, 14, 30, 60, 100, 150, 250, 365], pl: "days", v: c => c.duoBest }, // 1.10.0: the longest streak kept with a friend
   { k: "deckBeast", icon: "crown", at: [1], rk: [8], single: true, v: c => c.deckBeast },
   { k: "allex", icon: "checklist", at: [1], rk: [6], single: true, v: c => c.allex },
   { k: "allDiamond", icon: "diamond", at: [1], rk: [8], single: true, v: c => c.allDiamond },
@@ -1638,6 +1657,7 @@ function achCounts(history, extra = {}) {
     hc: extra.hc || 0,
     guide: extra.guide || 0,
     deckWins: extra.deckWins || 0,
+    duoBest: extra.duoBest || 0,
     deckBeast: extra.deckBeast || 0,
     ...singleCounts(history, extra),
   };
@@ -1727,6 +1747,7 @@ function achExtra(profile, kcal, history) {
     guide: tourDoneSet(profile).size,
     // 1.8.0 Muscle Deck (Michael, Oct 25: "unranked just gives you a badge"): Runs won, and a win on Beast mode
     deckWins: (profile && profile.game && profile.game.rw) || 0,
+    duoBest: (profile && profile.duoBest) || 0,
     deckBeast: profile && profile.game && profile.game.topWin >= 4 ? 1 : 0,
     bmd: profile && profile.birth && profile.birth.m && profile.birth.d ? `${String(profile.birth.m).padStart(2, "0")}-${String(profile.birth.d).padStart(2, "0")}` : null,
     frozen: ((profile && profile.freezeDays) || []).length > 0,
@@ -6656,6 +6677,11 @@ function SettingRow({ title, desc, info, on, onClick, first, icon }) {
 
 // ─── ACCOUNT, FRIENDS, LEADERBOARD (1.5.0) ──────────────────────────────────
 // A friend's link: …/hw-app/add/?c=CODE (1.6.5) or the older …/hw-app/?add=CODE → the formatted code, else "".
+// 1.10.0: the code of the friend link this phone was opened with, kept until an account is made (only a NEW account
+// says who invited it; the server checks that too). 14 days at most.
+const INV_KEY = "domaci-trening-v1-inv";
+function invNote(code) { try { if (code) localStorage.setItem(INV_KEY, JSON.stringify({ c: code, ts: Date.now() })); else localStorage.removeItem(INV_KEY); } catch (_) {} }
+function invPending() { try { const v = JSON.parse(localStorage.getItem(INV_KEY) || "null"); return v && v.c && Date.now() - v.ts < 14 * 864e5 ? v.c : null; } catch (_) { return null; } }
 function addFromUrl(u) {
   try {
     const x = new URL(u);
@@ -6931,6 +6957,86 @@ function FsChip({ st, uid, size = 15 }) {
     </span>
   );
 }
+// 1.10.0 Friends together: what a duo keeps up (a small icon chip), one duo, and the sheet that starts or changes one
+function DuoKind({ k }) {
+  const kc = k === "k";
+  return <span data-duo-kind={kc ? "k" : "w"} aria-label={T(kc ? "tgKindK" : "tgKindW")} title={T(kc ? "tgKindK" : "tgKindW")} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 22, height: 22, borderRadius: 8, flexShrink: 0, background: `${kc ? KC_HIT : C.mint}22`, color: kc ? KC_HIT : C.mint }}><Ico n={kc ? "plate" : "dumbbell"} size={14} /></span>;
+}
+function DuoCard({ f, p, st, me, first, nudged, onOpen, onNudge, msg }) {
+  const w = st.week, d = st.duel, tot = w.me + w.they, lead = d.me === d.they ? 0 : d.me > d.they ? 1 : -1;
+  const [busy, setBusy] = useState(false);
+  const canNudge = !st.theyToday && !nudged && !msg;
+  return (
+    <div data-tg-duo={f.other} data-tg-n={st.n} style={{ padding: "12px 16px", borderTop: first ? "none" : `1px solid ${C.line}` }}>
+      <button type="button" data-tg-duo-open onClick={onOpen} style={{ ...btnBase, width: "100%", display: "flex", alignItems: "center", gap: 10, background: "transparent", color: C.chalk, padding: 0, textAlign: "left", borderRadius: 0 }}>
+        <span style={{ position: "relative", width: 54, height: 40, flexShrink: 0 }}>
+          <span style={{ position: "absolute", left: 0, top: 0 }}><PersonAvatar p={me} size={36} /></span>
+          <span style={{ position: "absolute", left: 18, top: 4, borderRadius: 99, boxShadow: `0 0 0 2px ${C.panel}` }}><PersonAvatar p={p} size={36} /></span>
+        </span>
+        <span style={{ flex: 1, minWidth: 0 }}>
+          <span style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0 }}><span style={{ fontWeight: 800, fontSize: 15, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", ...INK }}>{p.nick}</span><DuoKind k={st.kind} /></span>
+          <span style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: C.dim, marginTop: 2 }}>
+            {[[st.meToday, st.meLast, T("fsYou")], [st.theyToday, st.theyLast, p.nick]].map(([td, last, who], i) => <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: 3, minWidth: 0 }}>{td ? <IcoI n="tick" color={C.mint} /> : last >= 2 && st.n > 0 ? <IcoI n="alert" color="#ff9a9a" /> : <span aria-hidden="true" style={{ width: 6, height: 6, borderRadius: 99, background: C.line, margin: "0 3px" }} />}<span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 110 }}>{who}</span></span>)}
+          </span>
+        </span>
+        <span data-fs-count style={{ fontFamily: DISPLAY, fontSize: 26, fontWeight: 900, color: st.n ? "#ffa94d" : C.dim, whiteSpace: "nowrap", flexShrink: 0 }}><IcoI n="flame" />{st.n}</span>
+      </button>
+      <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+        <div data-tg-week={tot} data-tg-goal={w.goal} style={{ flex: 1, minWidth: 0, padding: "8px 10px", borderRadius: 12, ...SUNK() }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6, fontSize: 12, color: C.dim }}><span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}><Ico n="target" size={13} />{T("tgWeek")}</span><b style={{ color: w.goal && tot >= w.goal ? C.mint : C.chalk, fontSize: 13 }}>{w.goal ? `${tot}/${w.goal}` : tot}</b></div>
+          {w.goal > 0 && <div style={{ height: 6, borderRadius: 99, background: C.line, marginTop: 6, overflow: "hidden", display: "flex" }}>
+            <span style={{ width: `${Math.min(100, (w.me / w.goal) * 100)}%`, background: C.signal }} /><span style={{ width: `${Math.max(0, Math.min(100 - (w.me / w.goal) * 100, (w.they / w.goal) * 100))}%`, background: C.sky, marginLeft: w.me ? 2 : 0 }} />
+          </div>}
+        </div>
+        <div data-tg-duel={`${d.me}:${d.they}`} style={{ flex: 1, minWidth: 0, padding: "8px 10px", borderRadius: 12, ...SUNK() }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: C.dim }}><Ico n="layers" size={13} />{T("tgDuel")}</div>
+          <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 4, marginTop: 2, fontFamily: DISPLAY, fontWeight: 900, fontSize: 18 }}>
+            <span style={{ color: lead > 0 ? C.signal : C.chalk }}>{d.me}</span><span style={{ fontSize: 11, color: C.dim, fontFamily: BODY }}>{T("tgVs")}</span><span style={{ color: lead < 0 ? C.sky : C.chalk }}>{d.old ? "–" : d.they}</span>
+          </div>
+        </div>
+      </div>
+      {(canNudge || nudged || msg) && st.kind === "w" && (
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
+          {canNudge ? <button type="button" data-tg-nudge={f.other} disabled={busy} onClick={() => { setBusy(true); sfxTap(); Promise.resolve(onNudge()).finally(() => setBusy(false)); }} style={{ ...btnBase, padding: "8px 12px", borderRadius: 10, background: `${C.sky}22`, color: C.sky, fontSize: 13, display: "inline-flex", alignItems: "center", gap: 6 }}><Ico n="hand" size={15} />{busy ? "…" : T("tgNudge")}</button>
+            : <span data-tg-nudged={msg || "ok"} role="status" style={{ fontSize: 12, color: msg === "trained" ? C.mint : msg === "err" ? "#ff9a9a" : C.dim, display: "inline-flex", alignItems: "center", gap: 5 }}><IcoI n={msg === "err" ? "alert" : "tick"} />{msg === "trained" ? T("tgNudgeTrained", { nick: p.nick }) : msg === "err" ? T("frErr") : T("tgNudged")}</span>}
+        </div>
+      )}
+    </div>
+  );
+}
+function DuoSheet({ nick, friends, init, cur, onClose, onSave, onEnd }) {
+  const [v, setV] = useState(init), [busy, setBusy] = useState(false), [err, setErr] = useState("");
+  const kindChanged = cur && v.k !== (cur.k || "w");
+  const save = () => { if (!v.uid || busy) return; setBusy(true); setErr(""); onSave(v).catch(e => { setErr(cloudErr(e) || T("frErr")); setBusy(false); }); };
+  const step = n => setV(x => ({ ...x, g: Math.max(0, Math.min(14, (x.g || 0) + n)) }));
+  return (
+    <Sheet title={nick ? T("tgSetT", { nick }) : T("tgNew")} onClose={onClose} short>
+      <div data-tg-sheet={cur ? "set" : "new"}>
+        {friends && (
+          <>
+            <div style={{ ...sectionTitle, margin: "2px 2px 8px" }}>{T("tgWho")}</div>
+            <div role="radiogroup" style={{ ...card, ...tileR(), overflow: "hidden", maxHeight: 220, overflowY: "auto" }}>
+              {friends.map((p, i) => <PersonRow key={p.uid} p={p} first={i === 0} onClick={() => { sfxTap(); setV(x => ({ ...x, uid: p.uid })); }} right={<span data-tg-pick={p.uid} data-on={v.uid === p.uid ? 1 : 0} aria-hidden="true" style={{ width: 22, height: 22, borderRadius: 99, flexShrink: 0, border: `2px solid ${v.uid === p.uid ? C.signal : C.line}`, background: v.uid === p.uid ? C.signal : "transparent", display: "flex", alignItems: "center", justifyContent: "center", color: C.signalInk }}>{v.uid === p.uid ? <Ico n="tick" size={14} sw={3} /> : null}</span>} />)}
+            </div>
+          </>
+        )}
+        <div style={{ ...sectionTitle, margin: "16px 2px 8px" }}>{T("tgKeep")}</div>
+        <Seg label={T("tgKeep")} big value={v.k} onPick={k => { sfxTap(); setV(x => ({ ...x, k })); }} items={[["w", T("tgKindW"), { "data-tg-kind": "w" }], ["k", T("tgKindK"), { "data-tg-kind": "k" }]]} />
+        <div data-tg-kind-d style={{ fontSize: 12, color: kindChanged ? "#ffa94d" : C.dim, lineHeight: 1.45, margin: "6px 2px 0" }}>{kindChanged ? T("tgKindChange") : T(v.k === "k" ? "tgKindKD" : "tgKindWD")}</div>
+        <div style={{ ...sectionTitle, margin: "16px 2px 8px" }}>{T("tgGoalT")}</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <button type="button" data-tg-goal-minus aria-label="−" disabled={!v.g} onClick={() => { sfxTap(); step(-1); }} style={{ ...btnBase, width: 44, height: 44, borderRadius: 12, ...SUNK(), color: C.chalk, fontSize: 22, opacity: v.g ? 1 : 0.5 }}>−</button>
+          <div data-tg-goal-v={v.g || 0} style={{ flex: 1, textAlign: "center", fontFamily: DISPLAY, fontSize: 22, fontWeight: 900, color: v.g ? C.chalk : C.dim }}>{v.g ? T("tgGoalV", { n: v.g }) : T("tgGoalOff")}</div>
+          <button type="button" data-tg-goal-plus aria-label="+" disabled={v.g >= 14} onClick={() => { sfxTap(); step(1); }} style={{ ...btnBase, width: 44, height: 44, borderRadius: 12, ...SUNK(), color: C.chalk, fontSize: 22 }}>+</button>
+        </div>
+        <div style={{ fontSize: 12, color: C.dim, lineHeight: 1.45, margin: "6px 2px 0" }}>{T("tgGoalD")}</div>
+        {err && <div role="alert" style={{ fontSize: 13, color: "#ff8a80", marginTop: 10 }}>{err}</div>}
+        <button type="button" data-tg-save disabled={!v.uid || busy} onClick={save} style={{ ...btnBase, width: "100%", marginTop: 16, padding: "14px", borderRadius: 14, background: C.signal, color: C.signalInk, fontSize: 15, opacity: v.uid ? 1 : 0.5 }}>{busy ? "…" : T(cur ? "tgSave" : "tgSend")}</button>
+        {onEnd && <button type="button" data-tg-end onClick={() => { sfxTap(); onEnd(); }} style={{ ...btnBase, width: "100%", marginTop: 8, padding: "12px", borderRadius: 14, background: "transparent", color: "#ff9a9a", fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}><Ico n="flameOff" size={16} />{T("fsEnd")}</button>}
+      </div>
+    </Sheet>
+  );
+}
 function PersonRow({ p, rank, me, onClick, right, first }) {
   return (
     <button data-person={p.uid} data-me={me ? 1 : 0} onClick={onClick} disabled={!onClick}
@@ -7000,7 +7106,7 @@ function PersonSheet({ p, isFriend, onAdd, onChat, onRemove, onBlock, onReport, 
               background: `linear-gradient(110deg, ${col}2e, ${col}0a 75%)`, boxShadow: `inset 0 0 0 1.5px ${col}55` }}>
             <BadgeIco n={on ? "duo" : "flame"} col={col} size={42} />
             <span style={{ flex: 1, minWidth: 0 }}>
-              <span style={{ display: "block", fontSize: 16, fontWeight: 800, color: can || on ? "#ffc58a" : C.dim }}>{noEmo(T(on ? "fsHave" : fsState === "sent" ? "fsSent" : fsState === "full" ? "fsFull" : "fsInvite"))}</span>
+              <span style={{ display: "block", fontSize: 16, fontWeight: 800, color: can || on ? "#ffc58a" : C.dim }}>{noEmo(on ? T("fsHave") : fsState === "sent" ? T("fsSent") : fsState === "full" ? T("fsFull", { n: FS_MAX }) : T("fsInvite"))}</span>
             </span>
             {can ? <span aria-hidden="true" style={{ width: 34, height: 34, borderRadius: 99, background: "#ffa94d", color: "#2a1300", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 0 16px #ffa94d66" }}><Ico n="plus" size={18} sw={2.8} /></span>
               : on ? <Ico n="tick" size={22} color="#ffa94d" sw={2.6} /> : null}
@@ -7109,7 +7215,7 @@ function FriendsMain({ acct, history, profile, social, onRename, chatWith, setCh
   // 1.8.2: friends and chats are one list, shown first. 1.9.0 (Michael, Nov 7: "in Friends I can't swipe with the
   // finger, only tap below"): the two views are swipe pages like Home
   const pg = usePager("fr", 2);
-  const tab = pg.page ? "board" : "friends";
+  const tab = pg.page ? "together" : "friends";
   const blocked = social.blocked || [];
   const friends = social.friends ? social.friends.filter(f => !blocked.includes(f.uid)) : null;
   const reqs = social.reqs;
@@ -7133,9 +7239,10 @@ function FriendsMain({ acct, history, profile, social, onRename, chatWith, setCh
   const fsStateOf = u => { const f = fsList.find(x => x.other === u); return f ? (f.ok ? "on" : f.by === acct.uid ? "sent" : "asked") : fsList.filter(x => x.ok || x.by === acct.uid).length >= FS_MAX ? "full" : null; };
   const fsPending = fsList.filter(f => !f.ok);
   // 1.8.2: the running friend streak with someone (null = none): days, and whether each of you is safe today
-  const fsOf = u => { const f = fsList.find(x => x.other === u && x.ok); return f ? friendStreak(fs.mine, fs.days[u] || [], f.start, dateKey()) : null; };
+  const fsOf = u => { const f = fsList.find(x => x.other === u && x.ok); return f ? duoState(f, fs.mine, fs.days[u], dateKey()) : null; };
   const fsInvite = p => fs.invite(p.uid).then(() => { sfxCheck(); return "✓ " + T("fsSentMsg", { nick: p.nick }); }).catch(e => cloudErr(e) || T("frErr"));
   const [fsEnd, setFsEnd] = useState(null);
+  const [duoNew, setDuoNew] = useState(null), [duoSet, setDuoSet] = useState(null), [nudgeMsg, setNudgeMsg] = useState(null);
   const sendTo = async (uid, nick) => {
     if (uid === acct.uid) return T("frSelf");
     if (friendIds.includes(uid)) return T("frAlready");
@@ -7238,30 +7345,40 @@ function FriendsMain({ acct, history, profile, social, onRename, chatWith, setCh
       </Sect>
         );
         const boardView = (
-        <>
-          <Sect style={{ padding: "12px 0 4px" }}>
+          <Sect data-fr-view="board" title={T("frBoard")} style={{ padding: "16px 0 4px" }} titlePad="0 16px">
             {board === null ? <div style={{ padding: "6px 16px 12px", color: C.dim, fontSize: 14 }}>{T("frLoading")}</div>
-              : board.map((p, i) => <PersonRow key={p.uid} p={p} rank={i + 1} me={p.uid === acct.uid} onClick={p.uid === acct.uid ? null : () => { sfxTap(); setSheet(p); }} />)}
+              : board.map((p, i) => <PersonRow key={p.uid} p={p} rank={i + 1} first={i === 0} me={p.uid === acct.uid} onClick={p.uid === acct.uid ? null : () => { sfxTap(); setSheet(p); }} />)}
             {friends && !friends.length && <div style={{ padding: "10px 16px 12px", color: C.dim, fontSize: 13, lineHeight: 1.5, borderTop: `1px solid ${C.line}` }}>{T("frNoFriends")}</div>}
           </Sect>
-        </>
         );
-        const friendsView = (
+        // 1.10.0 Friends together (Michael, Nov 14): invite a friend (100 diamonds each after their 3rd workout), keep a
+        // streak with a friend (workouts or calories, the friend agrees), a weekly goal of both together, a sets duel
+        // and a nudge. Everything a friend sees about you is counted by the server from your backup (vdays).
+        const today = dateKey(), nudged = cloudMem().nudged || {};
+        const duos = fsList.filter(f => f.ok).map(f => ({ f, p: people[f.other] || { uid: f.other, nick: "…" }, st: duoState(f, fs.mine, fs.days[f.other], today) })).sort((a, b) => b.st.n - a.st.n);
+        const free = (friends || []).filter(x => !fsList.some(f => f.other === x.uid));
+        const invN = EC.invCount(fx.rew);
+        const togetherView = (
         <>
-          <Sect title={T("frAdd")}>
-            <div style={{ display: "flex", gap: 8 }}>
-              <input data-fr-add value={add} onChange={e => { setAdd(e.target.value); setAddMsg(""); }} onKeyDown={e => { if (e.key === "Enter") addFriend(); }} placeholder={T("frAddPh")} aria-label={T("frAddPh")}
-                style={{ fontFamily: BODY, fontSize: 16, fontWeight: 700, padding: "12px 12px", borderRadius: 12, border: `1.5px solid ${C.line}`, background: C.ink, color: C.chalk, outline: "none", boxSizing: "border-box", minWidth: 0, flex: 1 }} />
-              <button data-fr-add-go onClick={addFriend} disabled={busy || !add.trim()} style={{ ...btnBase, padding: "0 14px", borderRadius: 12, background: C.signal, color: C.signalInk, fontSize: 14, opacity: add.trim() ? 1 : 0.5, flexShrink: 0 }}>{busy ? "…" : T("frAddGo")}</button>
-            </div>
-            {addMsg && <div role="status" data-fr-add-msg style={{ fontSize: 13, color: addMsg.startsWith("✓") ? C.mint : C.dim, marginTop: 8 }}>{emo(addMsg)}</div>}
+          {/* the code card above already has Share; this row says what a shared link earns and shares it too */}
+          <Sect data-tg-invite style={{ padding: 0, overflow: "hidden" }}>
+            <button type="button" data-tg-invite-share onClick={share} style={{ ...btnBase, width: "100%", display: "flex", alignItems: "center", gap: 12, padding: ROW_I, background: "transparent", color: C.chalk, textAlign: "left", borderRadius: 0 }}>
+              <RowIco n="gift" color={C.signal} />
+              <span style={{ flex: 1, minWidth: 0 }}>
+                <span style={{ display: "block", fontSize: 15, fontWeight: 800 }}>{T("tgInvT")}</span>
+                <span style={{ display: "block", fontSize: 12, color: C.dim, lineHeight: 1.45, marginTop: 2, fontWeight: 500 }}>{emo(T("tgInvD", { n: EC.EARN.inv }))}</span>
+              </span>
+              {invN > 0 && <span data-tg-invite-n={invN} aria-label={T("tgInvPaid", { n: invN })} style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "5px 9px", borderRadius: 99, ...SUNK(), fontSize: 13, fontWeight: 800, color: C.chalk, whiteSpace: "nowrap", flexShrink: 0 }}><Ico n="duo" size={14} color={C.dim} />{invN}</span>}
+              <Ico n="upload" size={20} color={C.signal} />
+            </button>
+            {shareMsg && <div role="status" style={{ fontSize: 12, color: C.mint, padding: "0 16px 10px" }}>{shareMsg}</div>}
           </Sect>
           {/* 1.8.2 (Michael): a running friend streak shows on the friend's row and in the chat; this box only lists invitations */}
           {fsPending.length > 0 && (
-            <Sect data-fs-box title={T("fsTitle")} meta={`${fsList.filter(f => f.ok).length}/${FS_MAX}`} style={{ padding: "16px 0 4px" }} titlePad="0 16px">
+            <Sect data-fs-box title={T("tgInvites")} meta={String(fsPending.length)} style={{ padding: "16px 0 4px" }} titlePad="0 16px">
               {fsPending.map((f, i) => {
                 const p = people[f.other] || { uid: f.other, nick: "…" };
-                const st = f.ok ? friendStreak(fs.mine, fs.days[f.other] || [], f.start, dateKey()) : null;
+                const st = f.ok ? duoState(f, fs.mine, fs.days[f.other], dateKey()) : null;
                 return (
                   <div key={f.id} data-fs-row={f.other} data-fs-n={st ? st.n : -1} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 16px", borderTop: i ? `1px solid ${C.line}` : "none" }}>
                     <span style={{ position: "relative", width: 54, height: 40, flexShrink: 0 }}>
@@ -7269,7 +7386,7 @@ function FriendsMain({ acct, history, profile, social, onRename, chatWith, setCh
                       <span style={{ position: "absolute", left: 18, top: 4, borderRadius: 99, boxShadow: `0 0 0 2px ${C.panel}` }}><PersonAvatar p={p} size={36} /></span>
                     </span>
                     <span style={{ flex: 1, minWidth: 0 }}>
-                      <span style={{ display: "block", fontWeight: 800, color: C.chalk, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", ...INK }}>{p.nick}</span>
+                      <span style={{ display: "flex", alignItems: "center", gap: 6, fontWeight: 800, color: C.chalk, minWidth: 0 }}><span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", ...INK }}>{p.nick}</span><DuoKind k={f.k} /></span>
                       <span style={{ display: "block", fontSize: 12, color: C.dim, lineHeight: 1.4 }}>
                         {!f.ok ? (f.by === acct.uid ? T("fsWaiting") : T("fsAsks"))
                           : st.n === 0 ? T("fsBroken")
@@ -7282,9 +7399,36 @@ function FriendsMain({ acct, history, profile, social, onRename, chatWith, setCh
                   </div>
                 );
               })}
-              <div style={{ fontSize: 12, color: C.dim, lineHeight: 1.45, padding: "6px 16px 10px" }}>{emo(T("fsHow"))}</div>
             </Sect>
           )}
+          <Sect data-tg-duos title={<>{T("tgDuos")}<InfoQ id="tgduos" title={T("tgDuos")} text={T("tgHow")} /></>} meta={duos.length ? String(duos.length) : null} style={{ padding: "16px 0 8px" }} titlePad="0 16px">
+            {duos.length === 0 && <div data-tg-empty style={{ padding: "2px 16px 10px", fontSize: 13, color: C.dim, lineHeight: 1.5 }}>{T("tgEmpty")}</div>}
+            {duos.map(({ f, p, st }, i) => <DuoCard key={f.id} f={f} p={p} st={st} me={{ nick: acct.prof.nick, pfp: profile.pfp }} first={i === 0} nudged={nudged[f.other] === today}
+              onOpen={() => { sfxTap(); setDuoSet(f.other); }} onNudge={() => fs.nudge(f.other).then(r => { sfxCheck(); setNudgeMsg({ u: f.other, why: (r && r.why) || "err" }); }).catch(() => setNudgeMsg({ u: f.other, why: "err" }))} msg={nudgeMsg && nudgeMsg.u === f.other ? nudgeMsg.why : null} />)}
+            <div style={{ padding: "8px 16px 6px" }}>
+              <button data-tg-new disabled={!free.length} onClick={() => { sfxTap(); setDuoNew({ uid: free.length === 1 ? free[0].uid : null, k: "w", g: 0 }); }}
+                style={{ ...btnBase, width: "100%", padding: "11px 12px", borderRadius: 12, ...SUNK(), color: free.length ? C.chalk : C.dim, fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, opacity: free.length ? 1 : 0.6 }}><Ico n="plus" size={16} />{T("tgNew")}</button>
+              {!free.length && friends && <div style={{ fontSize: 12, color: C.dim, textAlign: "center", marginTop: 6 }}>{T(friends.length ? "tgAllPaired" : "frNoFriends")}</div>}
+            </div>
+          </Sect>
+          {boardView}
+          {duoNew && <DuoSheet nick={null} friends={free} init={duoNew} onClose={() => setDuoNew(null)} onSave={v => fs.invite(v.uid, v.k, v.g).then(() => { sfxCheck(); setDuoNew(null); })} />}
+          {duoSet && (() => { const f = fsList.find(x => x.other === duoSet); if (!f) return null; const p = people[f.other] || { nick: "…" };
+            return <DuoSheet nick={p.nick} init={{ uid: f.other, k: f.k || "w", g: f.g || 0 }} cur={f} onClose={() => setDuoSet(null)}
+              onSave={v => fs.set(f.other, { ...(v.k !== (f.k || "w") ? { k: v.k } : {}), g: v.g || null }).then(() => { sfxCheck(); setDuoSet(null); })}
+              onEnd={() => { setDuoSet(null); setFsEnd(f.other); }} />; })()}
+        </>
+        );
+        const friendsView = (
+        <>
+          <Sect title={T("frAdd")}>
+            <div style={{ display: "flex", gap: 8 }}>
+              <input data-fr-add value={add} onChange={e => { setAdd(e.target.value); setAddMsg(""); }} onKeyDown={e => { if (e.key === "Enter") addFriend(); }} placeholder={T("frAddPh")} aria-label={T("frAddPh")}
+                style={{ fontFamily: BODY, fontSize: 16, fontWeight: 700, padding: "12px 12px", borderRadius: 12, border: `1.5px solid ${C.line}`, background: C.ink, color: C.chalk, outline: "none", boxSizing: "border-box", minWidth: 0, flex: 1 }} />
+              <button data-fr-add-go onClick={addFriend} disabled={busy || !add.trim()} style={{ ...btnBase, padding: "0 14px", borderRadius: 12, background: C.signal, color: C.signalInk, fontSize: 14, opacity: add.trim() ? 1 : 0.5, flexShrink: 0 }}>{busy ? "…" : T("frAddGo")}</button>
+            </div>
+            {addMsg && <div role="status" data-fr-add-msg style={{ fontSize: 13, color: addMsg.startsWith("✓") ? C.mint : C.dim, marginTop: 8 }}>{emo(addMsg)}</div>}
+          </Sect>
           {fsEnd && <ConfirmBox icon="flameOff" danger title={T("fsEnd")} text={T("fsEndD", { nick: (people[fsEnd] || {}).nick || "…" })} yes={T("fsEnd")} yesData={{ "data-fs-end-yes": true }} onYes={() => { const u = fsEnd; setFsEnd(null); act(() => fs.end(u)); }} onNo={() => setFsEnd(null)} />}
           {reqs && reqs.length > 0 && (
             <Sect title={T("frRequests")} meta={String(reqs.length)} style={{ padding: "16px 0 4px" }} titlePad="0 16px">
@@ -7341,9 +7485,10 @@ function FriendsMain({ acct, history, profile, social, onRename, chatWith, setCh
         const nReq = reqs ? reqs.length : 0, nChat = chats.filter(unread).length;
         const view = (id, v) => <div data-fr-view={id}>{v}</div>;
         const errLine = err && <div role="alert" style={{ fontSize: 13, color: "#ff8a80", marginTop: 10 }}>{err}</div>;
-        if (!wide) return <>{idCard}{tabs([["friends", T("frFriends"), nReq + nChat, "team"], ["board", T("frBoard"), 0, "trophy"]])}{errLine}
-          <div style={{ margin: "0 -18px" }}><div {...pg.pagerProps}><div {...pg.pageProps(0)}>{view("friends", friendsView)}</div><div {...pg.pageProps(1)}>{view("board", boardView)}</div></div></div></>;
-        return <Cols left={<>{idCard}<div data-fr-view="friends">{friendsView}</div></>} right={<>{errLine}<div style={{ ...sectionTitle, margin: "16px 4px 0" }}>{T("frBoard")}</div><div data-fr-view="board">{boardView}</div></>} />;
+        const nTg = fsPending.filter(f => f.by !== acct.uid).length;
+        if (!wide) return <>{idCard}{tabs([["friends", T("frFriends"), nReq + nChat, "team"], ["together", T("frTogether"), nTg, "duo"]])}{errLine}
+          <div style={{ margin: "0 -18px" }}><div {...pg.pagerProps}><div {...pg.pageProps(0)}>{view("friends", friendsView)}</div><div {...pg.pageProps(1)}>{view("together", togetherView)}</div></div></div></>;
+        return <Cols left={<>{idCard}<div data-fr-view="friends">{friendsView}</div></>} right={<>{errLine}<div style={{ ...sectionTitle, margin: "16px 4px 0" }}>{T("frTogether")}</div><div data-fr-view="together">{togetherView}</div></>} />;
       })()}
     </div>
   );
@@ -9316,7 +9461,7 @@ function econInput(history, profile) {
   const ach = achievements(h, achExtra(profile, null, h)).filter(a => !CARD_HIDE.includes(a.k));
   const ranks = {};
   Object.keys(RANK_AT).forEach(id => { const b = bestFor(h, id); if (typeof b === "number" && isFinite(b)) ranks[id] = rankIdx(id, b); });
-  return { dates: h.map(e => e.date), freezeDays: profile.freezeDays || [], ach, ranks, runsWon: (profile.game && profile.game.rw) || 0, chests: EC.chestDiamonds(profile), codes: EC.codeDiamonds(profile), gift: EC.shopOf(profile).gift };
+  return { dates: h.map(e => e.date), freezeDays: profile.freezeDays || [], ach, ranks, runsWon: (profile.game && profile.game.rw) || 0, chests: EC.chestDiamonds(profile), codes: EC.codeDiamonds(profile), gift: EC.shopOf(profile).gift, inv: EC.shopOf(profile).inv };
 }
 // Looks you own: bought or from a chest, plus the ones won by playing.
 function lookGot(inp) {
@@ -10284,7 +10429,7 @@ function ShopTab({ history, profile, setProfile, onGo }) {
   const fzHave = freezesAvailable(history), fzMax = 2 + (META.giftThisYear ? 1 : 0), boostTo = EC.boostUntil(sh.boosts, now);
   const wkNow = weekKey(today), chNow = challengeStatus(history, wkNow), chDone = chNow.filter(c => c.done).length, gotNow = !!sh.chest[wkNow];
   const timeStr = ts => { const d = new Date(ts); return (dateKey(d) === today ? "" : fmtDate(dateKey(d), false) + " ") + d.toLocaleTimeString(LANG, { hour: "2-digit", minute: "2-digit" }); };
-  const parts = [["workouts", { n: EC.EARN.day }], ["streak", { n: EC.EARN.streak7 }], ["badges", {}], ["ranks", {}], ["deck", { n: EC.EARN.run }], ["chests", {}], ...(earned.parts.codes ? [["codes", {}]] : []), ...(earned.parts.gift ? [["gift", {}]] : [])];
+  const parts = [["workouts", { n: EC.EARN.day }], ["streak", { n: EC.EARN.streak7 }], ["badges", {}], ["ranks", {}], ["deck", { n: EC.EARN.run }], ["chests", {}], ...(earned.parts.codes ? [["codes", {}]] : []), ...(earned.parts.gift ? [["gift", {}]] : []), ...(earned.parts.inv ? [["inv", { n: EC.EARN.inv }]] : [])];
   const [codeOpen, setCodeOpen] = useState(false);
   const row = { display: "flex", alignItems: "center", gap: 12, padding: "12px 16px" };
   // 1.8.2 (Michael): bigger cards that show the look on a grey sample profile, with an artistic name
@@ -11282,8 +11427,11 @@ function tourSteps(ch, x) {
     s("[data-fr-code]", 1, { opt: true, wait: 1500, late: true, skipIf: "[data-fr-signin]" }),
     s('[data-seg="friends"]', 2, { tap: true, opt: true, wait: 400, t: tt(2, "frFriends") }),
     s('[data-fr-view="friends"]', 3, { opt: true, wait: 600 }),
-    s('[data-seg="board"]', 4, { tap: true, opt: true, wait: 400, t: tt(4, "frBoard") }),
-    s('[data-fr-view="board"]', 5, { opt: true, wait: 600 }),
+    // 1.10.0 Together: invite, duos, the friends leaderboard
+    s('[data-seg="together"]', 4, { tap: true, opt: true, wait: 400, t: tt(4, "frTogether") }),
+    s("[data-tg-invite]", 5, { opt: true, wait: 600 }),
+    s("[data-tg-duos]", 5, { opt: true, wait: 400, t: T("tourTgDuos") }),
+    s('[data-fr-view="board"]', 5, { opt: true, wait: 400, t: T("tourTgBoard") }),
     { done: true, t: X[6] }, // 1.8.2: messages are in the friends list now
   ];
   return [];
@@ -12212,7 +12360,7 @@ export default function App() {
   const [screen, setScreen] = useState(() => {
     try {
       const add = new URLSearchParams(location.search).get("add");
-      if (add) { sessionStorage.setItem("hw-add", fmtCode(cleanCode(add).slice(0, 6))); sessionStorage.setItem("hw-link-add", cleanCode(add).slice(0, 6)); history_replace(); return "friends"; }
+      if (add) { sessionStorage.setItem("hw-add", fmtCode(cleanCode(add).slice(0, 6))); sessionStorage.setItem("hw-link-add", cleanCode(add).slice(0, 6)); invNote(cleanCode(add).slice(0, 6)); history_replace(); return "friends"; }
     } catch (_) {}
     return "train";
   });
@@ -12426,7 +12574,12 @@ export default function App() {
     if (got && got.restored && onboard !== null) { setOnboard(null); setSettings({ ...stRef.current.settings, onboarded: true }); window.scrollTo(0, 0); }
     return { uid: u.uid, name: u.name || "", prof: p, got };
   };
-  const createProfile = async nick => { const p = await cloud().createProfile({ nick, global: false, pfp: await smallPfp(profile.pfp), ...cloudStats(history) }); setProf(p); sfxCheck(); };
+  const createProfile = async nick => {
+    const p = await cloud().createProfile({ nick, global: false, pfp: await smallPfp(profile.pfp), ...cloudStats(history) }); setProf(p); sfxCheck();
+    // 1.10.0: a new account that came through a friend's link says who invited it (the server pays both later)
+    const code = invPending();
+    if (code) { invNote(null); cloud().findCode(code).then(by => by && by !== acct.uid && cloud().saveInv(by)).then(() => setCloudMem({ invDone: false })).catch(() => {}); }
+  };
   const renameNick = async nick => { await cloud().renameNick(acct.prof.nick, nick); const p = { ...acct.prof, nick }; await cloud().saveProfile({ ...p, pfp: await smallPfp(profile.pfp), ...cloudStats(history) }); setProf(p); sfxCheck(); };
   // 1.10.0 Friends together: after a backup upload the server counts my checked training days again (vdays/{uid},
   // what friends see for shared streaks, the weekly goal and the duel); it answers "recent" within 5 minutes.
@@ -12446,11 +12599,33 @@ export default function App() {
     return cloud().watchFStreaks(setFstreaks, () => {});
   }, [acct.st, acct.uid, !!acct.prof]);
   const fsIds = fstreaks.map(f => f.other).sort().join(",");
-  const loadFsDays = () => { fstreaks.forEach(f => cloud().getDays(f.other).then(d => setFsDays(m => ({ ...m, [f.other]: d || [] }))).catch(() => {})); };
+  // 1.10.0: a friend's days are the ones the server checked (vdays); the app asks the server to count them again at
+  // most every 10 minutes per friend. A friend whose server copy is missing still shows their own days list.
+  const loadFsDays = () => {
+    const today = dateKey();
+    fstreaks.forEach(f => {
+      const u = f.other, at = (cloudMem().vdAt || {})[u] || 0;
+      const ask = Date.now() - at > 10 * 60 * 1000 ? cloud().vday(u, today).catch(() => null).then(() => setCloudMem({ vdAt: { ...(cloudMem().vdAt || {}), [u]: Date.now() } })) : Promise.resolve();
+      ask.then(() => cloud().getVdays(u).catch(() => null)).then(v => (v ? v : cloud().getDays(u).then(d => ({ d: d || [], s: {}, k: [], f: [], old: true })))).then(v => setFsDays(m => ({ ...m, [u]: v }))).catch(() => {});
+    });
+  };
   useEffect(() => { if (fsIds) loadFsDays(); }, [fsIds]);
   useEffect(() => { if (screen === "friends" && fsIds) loadFsDays(); }, [screen]);
-  const friendsFx = { vdaySeq, fs: { list: fstreaks, days: fsDays, mine: daysKey ? daysKey.split(",") : [],
-    invite: uid => cloud().fsInvite(uid), accept: uid => cloud().fsAccept(uid, dateKey()), end: uid => cloud().fsEnd(uid) } };
+  // 1.10.0 invite rewards (rew/{uid}, written by the server): read after signing in and when Friends or the Shop opens
+  const [rew, setRew] = useState(() => cloudMem().rew || null);
+  // my side, counted like the server counts it (no workouts added by hand, one a day), so both phones agree
+  const duoMine = useMemo(() => {
+    const st = fairStats(history, { freezeDays: profile.freezeDays, today: dateKey() }), log = (kcal && kcal.log) || {};
+    return { d: st.dates, s: st.sets, f: (profile.freezeDays || []).slice(-30), k: Object.keys(log).filter(d => (log[d] || []).reduce((a, x) => a + (+(x && x.kcal) || 0), 0) > 0).sort() };
+  }, [history, profile.freezeDays, kcal && kcal.log]);
+  // the longest shared streak (duo badge) only grows
+  const duoNow = fstreaks.filter(f => f.ok).map(f => duoState(f, duoMine, fsDays[f.other], dateKey()).n);
+  const duoTop = Math.max(0, ...duoNow);
+  useEffect(() => { const p = profRef.current; if (profLoaded && p && duoTop > (p.duoBest || 0)) setProfile({ ...p, duoBest: duoTop }); }, [duoTop, profLoaded]);
+  const friendsFx = { vdaySeq, rew, fs: { list: fstreaks, days: fsDays, mine: duoMine,
+    invite: (uid, k, g) => cloud().fsInvite(uid, k, g), accept: uid => cloud().fsAccept(uid, dateKey()), end: uid => cloud().fsEnd(uid),
+    set: (uid, ch) => cloud().fsSet(uid, ch.k ? { ...ch, start: dateKey() } : ch),
+    nudge: uid => cloud().nudge(uid, dateKey()).then(r => { if (r && (r.why === "ok" || r.why === "dup" || r.why === "no-phone" || r.why === "off")) setCloudMem({ nudged: { ...(cloudMem().nudged || {}), [uid]: dateKey() } }); return r; }) } };
   // 1.8.0 card game: the game being played (full screen) and its end screen
   const [gamePlay, setGamePlay] = useState(null), [gameEnd, setGameEnd] = useState(null);
   const endGame = async (saved, g) => {
@@ -12707,6 +12882,17 @@ export default function App() {
     cloud().getCard(u).then(c => putVis(u, c && CARD_VIS.includes(c.vis) ? c.vis : (cloudMem().cardVis || {})[u] || "friends")).catch(() => { visRead.current = ""; });
     cloud().getMod().then(m => setModHidden(!!m.hidden)).catch(() => {});
   }, [acct.st, acct.prof && acct.prof.code]);
+  useEffect(() => {
+    if (acct.st !== "in" || !acct.uid) return;
+    let live = true;
+    cloud().getRew().then(r => { if (!live) return; setRew(r); setCloudMem({ rew: r }); const p = profRef.current, shop = EC.withInv(p, EC.invCount(r)); if (shop) setProfile({ ...p, shop }); }).catch(() => {});
+    return () => { live = false; };
+  }, [acct.st, acct.uid, screen === "shop", screen === "friends", vdaySeq]);
+  // the invited one's phone asks the server to pay once its checked workouts are enough (after each new count)
+  useEffect(() => {
+    if (acct.st !== "in" || !acct.prof || !vdaySeq || cloudMem().invDone) return;
+    cloud().checkInv().then(r => { if (r && ["ok", "done", "none", "old", "no-profile"].includes(r.why)) setCloudMem({ invDone: true }); if (r && r.why === "ok") cloud().getRew().then(x => { setRew(x); setCloudMem({ rew: x }); const p = profRef.current, shop = EC.withInv(p, EC.invCount(x)); if (shop) setProfile({ ...p, shop }); }).catch(() => {}); }).catch(() => {});
+  }, [vdaySeq]);
   // 1.9.0: diamonds given to this account in the console (gift/{uid}); read after signing in and whenever the Shop opens
   useEffect(() => {
     if (acct.st !== "in" || !acct.uid) return;
@@ -12998,7 +13184,7 @@ export default function App() {
     if (!profLoaded || (u.tourPl3 && u.tour110)) return;
     const seen = tourSeen(), drop = [];
     if (!u.tourPl3 && seen.has(10)) drop.push(10);
-    if (!u.tour110) for (const c of [5, 9]) if (seen.has(c)) drop.push(c);
+    if (!u.tour110) for (const c of [5, 7, 9]) if (seen.has(c)) drop.push(c); // 1.10.0: History, Friends (Together), Shop
     setUi({ ...u, tourPl3: 1, tour110: 1, ...(drop.length ? { tourAuto: [...seen].filter(c => !drop.includes(c)) } : {}) });
   }, [profLoaded]);
   const tourAskNo = () => { setTourAsk(false); setTourAskDue(false); setUi({ ...uiRef.current, tourAskV: APP_VERSION }); };
@@ -13010,6 +13196,7 @@ export default function App() {
     if (!c) return;
     setTourRun(null);
     try { sessionStorage.setItem("hw-add", c); } catch (_) {}
+    invNote(cleanCode(c));
     setMenuOpen(false); setSessionOpen(false); setScreen("friends"); setAddSeq(n => n + 1);
   }), []);
 

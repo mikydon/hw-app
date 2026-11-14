@@ -87,6 +87,8 @@ export function mergeProfile(lp, rp, ml, mr, first) {
   // 1.9.1 (Michael, Nov 7: Muscle Deck level and games were gone after a phone with no games won the profile):
   // its counters only grow, so both sides' highest values count (the chosen intensity: the newer side's)
   if (lp.game || rp.game) out.game = mergeGame(lp.game, rp.game, first ? rp.game : (order(lp, rp, ml, mr)[0] === lp ? lp.game : rp.game));
+  // 1.10.0 Friends together: the longest shared streak only grows (duo badge)
+  if (typeof lp.duoBest === "number" || typeof rp.duoBest === "number") out.duoBest = Math.max(lp.duoBest || 0, rp.duoBest || 0);
   if (!out.name) out.name = lp.name || rp.name || "User";
   return out;
 }

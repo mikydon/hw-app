@@ -1,7 +1,7 @@
 // 1.10.0 Friends together, server side (worker/index.js): checked days (vdays), nudges, invite rewards.
 // Runs the real Worker functions against an in-memory Firestore + FCM (real RSA signing for the access token).
 // node tools/worker_together_test.mjs
-import { checkVdays, nudge, checkInvite, VDAY_EVERY_MS, INV_NEED, INV_MAX } from "../worker/index.js";
+import { checkVdays, nudge, checkInvite, notify, VDAY_EVERY_MS, INV_NEED, INV_MAX } from "../worker/index.js";
 
 let pass = 0, fail = 0;
 const ok = (c, m) => { if (c) pass++; else { fail++; console.log("FAIL", m); } };
@@ -63,7 +63,7 @@ const backup = (history, kcal) => ({ json: JSON.stringify({ app: "hw-app", histo
 const A = "aliceAAAAAAAA", B = "9bobBBBBBBBBB", C = "carolCCCCCCCC";
 const friends = (x, y) => { put(`friends/${x}/list/${y}`, { ts: 1 }); put(`friends/${y}/list/${x}`, { ts: 1 }); };
 friends(A, B);
-put(`backups/${A}`, backup([wk(3), wk(2), wk(1), wk(1, clock - 864e5 + 600000), wk(0, undefined, { manual: true })], { log: { [day(0)]: [{ ts: clock, kcal: 800 }], [day(1)]: [{ ts: 1, kcal: 0 }] } }));
+put(`backups/${A}`, { json: JSON.stringify({ app: "hw-app", history: [wk(3), wk(2), wk(1), wk(1, clock - 864e5 + 600000), wk(0, undefined, { manual: true })], profile: { freezeDays: [day(5), "bad", day(400)] }, kcal: { log: { [day(0)]: [{ ts: clock, kcal: 800 }], [day(1)]: [{ ts: 1, kcal: 0 }] } } }) });
 put(`backups/${B}`, backup([wk(0)]));
 
 // ── vdays ──
@@ -74,6 +74,7 @@ put(`backups/${B}`, backup([wk(0)]));
   eq(v.d, [day(3), day(2), day(1)], "the checked dates");
   ok(v.s[day(1)] === 3 && v.s[day(3)] === 3, "sets per day");
   eq(v.k, [day(0)], "calorie days: only days with food logged in the app");
+  eq(v.f, [day(5)], "freeze days of the last 60 days (bad and old ones dropped)");
   ok(doc(`fair/${A}`) && doc(`fair/${A}`).seen, "fair seen map kept up to date");
   eq((await call(checkVdays, { uid: A, today: day(0) })).why, "recent", "again within 5 minutes: not recounted");
   clock += VDAY_EVERY_MS + 1000;
@@ -105,6 +106,19 @@ put(`backups/${B}`, backup([wk(0)]));
   eq((await call(nudge, { from: A, to: A, today: day(0) })).why, "bad", "no nudging yourself");
   put(`push/${B}`, { t: ["tokB"], lang: "sk", blk: [A] });
   eq((await call(nudge, { from: A, to: B, today: day(-1) })).why, "off", "blocked sender: no push");
+}
+
+// ── the old kinds still send (notify now shares sendPush) ──
+{
+  put(`push/${B}`, { t: ["tokB", "dead"], lang: "en" });
+  const [a, b] = [A, B].sort();
+  put(`chats/${a}_${b}`, { last: { from: A, ts: clock, text: "hi there" } });
+  const n0 = pushes.length;
+  const r = await call(notify, { kind: "msg", from: A, to: B });
+  ok(r.why === "ok" && r.sent === 1, "a chat message still sends: " + JSON.stringify(r));
+  const m = pushes[pushes.length - 1];
+  ok(pushes.length - n0 === 2 && m.notification.body === "hi there" && m.android.notification.tag === `${a}_${b}`, "text and tag as before");
+  eq(doc(`push/${B}`).t, ["tokB"], "dead token dropped there too");
 }
 
 // ── invite ──

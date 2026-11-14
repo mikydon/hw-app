@@ -8,7 +8,7 @@ const fr = [
 const h = await start({ viewport: { width: 380, height: 780 }, cloud: { friends: fr } });
 const p = h.page;
 await p.click("[data-menu-btn]"); await p.waitForTimeout(350); await p.click('[data-nav-box] [data-screen="friends"]'); await p.waitForTimeout(900);
-await p.click('[data-seg="board"]');
+await p.click('[data-seg="together"]');
 await p.waitForTimeout(800);
 const html = await p.evaluate(() => document.querySelector("[data-fr-view=board]").closest(".scr").innerHTML);
 T.ok(!/scope-world|data-locked|data-fr-fair|World top 50|hwapp\.support/.test(html), "no world list, lock, check line or support e-mail");

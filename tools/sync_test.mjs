@@ -119,5 +119,7 @@ console.log("1.9.1: Muscle Deck progress only grows (a phone with fewer games ne
   ok(stable(mergeProfile(fresh, mine, 9, 1, false).game) === stable(mergeProfile(mine, fresh, 1, 9, false).game), "the same both ways");
   ok(mergeProfile({ name: "A" }, mine, 9, 1, false).game.xp === 5200, "a side without games keeps the other's");
 }
+// 1.10.0: the longest shared streak (duo badge) only grows
+ok(mergeProfile({ name: "A", duoBest: 12 }, { name: "A", duoBest: 30 }, 9, 1, false).duoBest === 30 && mergeProfile({ name: "A", duoBest: 30 }, { name: "A" }, 1, 9, false).duoBest === 30, "duoBest: the higher one, from either side");
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

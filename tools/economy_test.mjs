@@ -85,6 +85,13 @@ const ca = { buys: [], chest: {}, codes: { JOZO: { d: 200, ts: 5 } } }, cb = { b
 const cm = E.mergeShop(ca, cb);
 ok(Object.keys(cm.codes).sort().join() === "JOZO,MAX" && cm.codes.JOZO.ts === 3, "sync: codes from both phones, the first redemption counts");
 ok(!("codes" in E.mergeShop({ buys: [], chest: {} }, { buys: [], chest: {} })), "no codes: no empty field");
+// 1.10.0 invite rewards (rew/{uid}, written by the server)
+ok(E.invCount(null) === 0 && E.invCount({ by: { u: "x" }, i: { a: 1, b: 2 } }) === 3, "invited once + two friends = 3 rewards");
+const iv1 = E.withInv({}, 3, 10);
+ok(iv1 && E.shopOf({ shop: iv1 }).inv === 3 && E.earned({ inv: 3 }).parts.inv === 300, "three rewards = 300 diamonds");
+ok(E.withInv({ shop: iv1 }, 3, 20) === null, "same count: nothing to save");
+ok(E.earned({ inv: 99 }).parts.inv === E.INV_N_MAX * 100, "capped");
+ok(E.mergeShop({ inv: { n: 2, ts: 5 } }, { inv: { n: 3, ts: 9 } }).inv.n === 3, "sync: the newest reading wins");
 // 1.9.0 gifts (gift/{uid} in the console)
 ok(E.withGift({}, 0) === null, "no gift on the server, none stored: nothing to save");
 const g1 = E.withGift({ shop: { buys: [], chest: {} } }, 1e6, 10);
