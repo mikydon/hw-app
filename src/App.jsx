@@ -2490,6 +2490,13 @@ const ICONS = {
   zz: '<path d="M3.5 11h6l-6 8h6M13.5 4.5h7l-7 8h7"/>',
   scissors: '<circle cx="6.5" cy="17.5" r="2.8"/><circle cx="17.5" cy="17.5" r="2.8"/><path d="M8.4 15.4 18.5 3.5M15.6 15.4 5.5 3.5"/>',
   eye: '<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/>',
+  // 1.10.0 (design pass): Settings rows get a leading icon each
+  palette: '<path d="M12 3.5a8.5 8.5 0 1 0 0 17c1.2 0 1.8-.8 1.8-1.7 0-.6-.3-1-.6-1.3-.3-.4-.5-.8-.5-1.3 0-1 .8-1.7 1.8-1.7h2a4.5 4.5 0 0 0 4.5-4.5c0-3.7-3.8-6.5-9-6.5z"/><circle cx="7.6" cy="11.2" r="1"/><circle cx="9.8" cy="7.4" r="1"/><circle cx="14.4" cy="7.4" r="1"/>',
+  speaker: '<path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/>',
+  vibrate: '<rect x="8" y="4" width="8" height="16" rx="2"/><path d="M4.5 9v6M19.5 9v6M2 11v2M22 11v2"/>',
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/>',
+  upload: '<path d="M12 15V4M7.5 8.5 12 4l4.5 4.5M5 19.5h14"/>',
+  folder: '<path d="M3.5 7a2 2 0 0 1 2-2h4l2 2.5h7a2 2 0 0 1 2 2V17a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z"/>',
   sprout: '<path d="M12 21v-9"/><path d="M12 12c0-4 2.5-6.5 7-7 0 4.5-2.5 7-7 7zM12 14.5c-.3-3.2-2.4-5.2-6.5-5.5.2 3.6 2.3 5.5 6.5 5.5z"/>',
   eraser: '<path d="M8.5 20 3.6 15.1a2 2 0 0 1 0-2.8L12.3 3.6a2 2 0 0 1 2.8 0l5.3 5.3a2 2 0 0 1 0 2.8L11 20z"/><path d="M8.5 20H21M8.6 8.4l7 7"/>',
   cardPlus: '<rect x="3" y="4" width="11" height="16" rx="2.2"/><path d="M18.5 9v6M15.5 12h6"/>',
@@ -3156,7 +3163,7 @@ function ApkUpdateCard({ info, busy, onClose, inMenu }) {
 // Helper hints: now and then (every other day) one short "did you know" card on Home, each pointing
 // to a feature, with a button that opens it. Seen hints are skipped until all were shown.
 const HINTS = [
-  { k: "themes", go: "settings" }, { k: "exercises", go: "settings" }, { k: "calories", go: "calories" },
+  { k: "themes", go: "settings", page: "look" }, { k: "exercises", go: "settings", page: "exercises" }, { k: "calories", go: "calories" },
   { k: "minimize", go: null }, { k: "backup", go: "settings" }, { k: "history", go: "history" },
   { k: "howto", go: null }, { k: "freeze", go: "profile" }, { k: "profile", go: "profile" }, { k: "language", go: "settings" }, { k: "birthday", go: "calories" },
 ];
@@ -3172,7 +3179,7 @@ function HintCard({ ui, setUi, onGo }) {
       <div style={{ minWidth: 0 }}>
         <div style={{ fontSize: 12, fontWeight: 800, color: C.sky }}>{T("hintTitle")}</div>
         <div style={{ fontSize: 14, color: C.chalk, lineHeight: 1.45, marginTop: 2 }}>{emo(T("hint_" + h.k))}</div>
-        {h.go && <button onClick={() => { setUi({ ...ui, hintHidden: today }); onGo(h.go); }} style={{ ...btnBase, background: "transparent", color: C.sky, padding: "6px 0 0", fontSize: 13 }}>{T("hintGo")} <Arrow size="1.25em" style={{ verticalAlign: "-0.08em" }} /></button>}
+        {h.go && <button onClick={() => { setUi({ ...ui, hintHidden: today }); onGo(h.go, h.page ? { page: h.page } : undefined); }} style={{ ...btnBase, background: "transparent", color: C.sky, padding: "6px 0 0", fontSize: 13 }}>{T("hintGo")} <Arrow size="1.25em" style={{ verticalAlign: "-0.08em" }} /></button>}
       </div>
     </div>
   );
@@ -4217,13 +4224,14 @@ function TrainTab({ history, onStart, onStartPlan, onStartFree, onFreeze, ui, se
           {settings && setSettings && (
             <Sect data-wset title={T("wsTitle")} accent={C.sky} titlePad="0 15px" style={LOOK === "flat" ? {} : { padding: "12px 0 0" }}>
               <div style={LOOK === "flat" ? { ...card } : { borderTop: `1px solid ${C.line}` }}>
-                <button data-wset-ex onClick={() => onGo && onGo("settings", { page: "exercises", ret: { screen: "train", pager: "home", page: homeIdx("ex") } })} style={{ ...btnBase, width: "100%", background: "transparent", color: C.chalk, padding: "14px 16px", textAlign: "left", borderRadius: 0, display: "flex", alignItems: "center", gap: 10, fontSize: 15 }}>
+                <button data-wset-ex onClick={() => onGo && onGo("settings", { page: "exercises", ret: { screen: "train", pager: "home", page: homeIdx("ex") } })} style={{ ...btnBase, width: "100%", background: "transparent", color: C.chalk, padding: ROW_I, gap: 12, textAlign: "left", borderRadius: 0, display: "flex", alignItems: "center", gap: 10, fontSize: 15 }}>
+                  <RowIco n="dumbbell" />
                   <span style={{ flex: 1, minWidth: 0, fontWeight: 700 }}>{noEmo(T("exMenu"))}</span>
                   <Arrow />
                 </button>
-                <SettingRow title={T("sndTimer")} info={T("sndTimerD")} on={settings.sndTimer} onClick={() => { unlockAudio(); const v = !settings.sndTimer; setS("sndTimer", v); if (v) soundExercise(); }} />
-                <SettingRow title={T("vibrate")} info={[T("vibrateD"), T("vibrateHint")]} on={settings.vibrate} onClick={() => { const v = !settings.vibrate; setS("vibrate", v); if (v) vibratePattern([160]); }} />
-                <SettingRow title={T("keepAwake")} on={settings.keepAwake} onClick={() => setS("keepAwake", !settings.keepAwake)} />
+                <SettingRow icon="timer" title={T("sndTimer")} info={T("sndTimerD")} on={settings.sndTimer} onClick={() => { unlockAudio(); const v = !settings.sndTimer; setS("sndTimer", v); if (v) soundExercise(); }} />
+                <SettingRow icon="vibrate" title={T("vibrate")} info={[T("vibrateD"), T("vibrateHint")]} on={settings.vibrate} onClick={() => { const v = !settings.vibrate; setS("vibrate", v); if (v) vibratePattern([160]); }} />
+                <SettingRow icon="sun" title={T("keepAwake")} on={settings.keepAwake} onClick={() => setS("keepAwake", !settings.keepAwake)} />
               </div>
             </Sect>
           )}
@@ -6626,10 +6634,16 @@ function BackupsSheet({ onClose, onRestore, autoOn, myId }) {
 // 1.9.1 (Michael, Nov 7: after a reinstall the Samsung Health calories of past days were missing): Health Connect
 // lets a newly connected app read the last 30 days, so until the phone has more than a week of it, read 30 days
 const hcDays = k => (Object.keys((k && k.food) || {}).length + Object.keys((k && k.steps) || {}).length < 16 ? 30 : 7);
-function SettingRow({ title, desc, info, on, onClick, first }) {
+// 1.10.0 (design pass): the quiet icon tile at the start of a Settings row
+function RowIco({ n, color = C.signal, children }) {
+  return <span data-row-ico={n || "x"} aria-hidden="true" style={{ width: 32, height: 32, borderRadius: 10, flexShrink: 0, display: "inline-flex", alignItems: "center", justifyContent: "center", background: `${color}17` }}>{children || <Ico n={n} size={18} color={color} />}</span>;
+}
+const ROW_I = "12px 16px 12px 14px"; // the padding of a row with a RowIco
+function SettingRow({ title, desc, info, on, onClick, first, icon }) {
   return (
     <button role="switch" aria-checked={!!on} onClick={onClick}
-      style={{ ...btnBase, width: "100%", background: "transparent", color: C.chalk, padding: "14px 16px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, textAlign: "left", borderRadius: 0, borderTop: first ? "none" : `1px solid ${C.line}` }}>
+      style={{ ...btnBase, width: "100%", background: "transparent", color: C.chalk, padding: icon ? ROW_I : "14px 16px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, textAlign: "left", borderRadius: 0, borderTop: first ? "none" : `1px solid ${C.line}` }}>
+      {icon && <RowIco n={icon} />}
       <span style={{ flex: 1 }}>
         <span style={{ display: "block", fontSize: 15, fontWeight: 700 }}>{title}{info && <InfoQ title={title} text={info} />}</span>
         {desc && <span style={{ display: "block", fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2, lineHeight: 1.4 }}>{desc}</span>}
@@ -7822,12 +7836,13 @@ function AccountBox({ acct, cloudBk, onOpen, onRestore, onRestorePoint, onBackup
   const [soSure, setSoSure] = useState(false);
   const [busy, setBusy] = useState("");
   const [msg, setMsg] = useState("");
-  const rowBtn = first => ({ ...btnBase, width: "100%", background: "transparent", color: C.chalk, padding: "14px 16px", textAlign: "left", borderRadius: 0, borderTop: first ? "none" : `1px solid ${C.line}`, fontSize: 15, display: "flex", alignItems: "center", gap: 10 });
+  const rowBtn = first => ({ ...btnBase, width: "100%", background: "transparent", color: C.chalk, padding: ROW_I, textAlign: "left", borderRadius: 0, borderTop: first ? "none" : `1px solid ${C.line}`, fontSize: 15, display: "flex", alignItems: "center", gap: 12 });
   const sub = t => <span style={{ display: "block", fontSize: 12, color: C.dim, fontWeight: 500, marginTop: 2 }}>{t}</span>;
   const run = (k, fn) => { setBusy(k); setMsg(""); fn().then(m => m && setMsg(m)).catch(e => { if (e && e.code === "need-pw") setAskPw(true); setMsg(cloudErr(e)); }).finally(() => setBusy("")); };
   if (acct.st !== "in") return (
     <ListSect title={T("acTitle")}>
       <button data-acct-signin onClick={() => { sfxTap(); onOpen(); }} style={rowBtn(true)}>
+        <RowIco n="idcard" />
         <span style={{ flex: 1 }}>{T("acSignIn")}</span>
         <Arrow />
       </button>
@@ -7837,31 +7852,37 @@ function AccountBox({ acct, cloudBk, onOpen, onRestore, onRestorePoint, onBackup
     <>
       <ListSect title={T("acTitle")} data-acct>
         <button onClick={() => { sfxTap(); onOpen(); }} style={rowBtn(true)}>
+          <RowIco n="idcard" />
           <span style={{ flex: 1, minWidth: 0 }}>{acct.prof ? T("acSignedIn", { nick: acct.prof.nick }) : T("acSignedInNoNick")}{sub(acct.prof ? fmtCode(acct.prof.code) : T("frNickTitle"))}</span>
           <Arrow />
         </button>
-        <div style={{ ...rowBtn(false), display: "block", cursor: "default", boxSizing: "border-box" }}>
+        <div style={{ ...rowBtn(false), alignItems: "flex-start", cursor: "default", boxSizing: "border-box" }}>
+          <RowIco n="upload" />
+          <div style={{ flex: 1, minWidth: 0, paddingTop: 6 }}>
           {T("acBackup")}<InfoQ title={T("acBackup")} text={T("acBackupD")} />
           <span data-cloud-bk={cloudBk ? (cloudBk.ok ? "ok" : "err") : "none"} style={{ display: "block", fontSize: 12, marginTop: 4, color: cloudBk && !cloudBk.ok ? "#ff8a80" : cloudBk ? C.mint : C.dim }}>{!cloudBk ? T("acBkNone") : cloudBk.ok ? T("acBkLast", { time: fmtWhen(cloudBk.ts) }) : T("acBkErr", { e: cloudBk.err || "?" })}</span>
           {onBackupNow && <button data-cloud-bk-now onClick={() => { sfxTap(); run("bk", onBackupNow); }} disabled={busy === "bk"}
             style={{ ...btnBase, marginTop: 10, padding: "8px 14px", borderRadius: 99, fontSize: 13, background: C.panelHi, color: C.chalk, border: `1px solid ${C.line}` }}>{busy === "bk" ? T("acBkNowBusy") : T("acBkNow")}</button>}
+          </div>
         </div>
         <button data-acct-pw onClick={() => { sfxTap(); setPwOpen(true); }} style={rowBtn(false)}>
+          <RowIco n="lock" />
           <span style={{ flex: 1, minWidth: 0 }}>{T("acPwRow")}</span>
           <Arrow />
         </button>
         <button data-acct-restore onClick={() => run("rs", onRestore)} style={rowBtn(false)}>
+          <RowIco n="download" />
           <span style={{ flex: 1 }}>{busy === "rs" ? "…" : T("acRestore")}<InfoQ title={T("acRestore")} text={T("acRestoreD")} /></span>
         </button>
         {onRestorePoint && <button data-acct-points onClick={() => { sfxTap(); setRpOpen(true); }} style={rowBtn(false)}>
-          <Ico n="history" size={17} color={C.dim} /><span style={{ flex: 1, minWidth: 0 }}>{T("rpRow")}</span>
+          <RowIco n="history" /><span style={{ flex: 1, minWidth: 0 }}>{T("rpRow")}</span>
           <Arrow />
         </button>}
         <button data-acct-signout onClick={() => { sfxTap(); setSoSure(true); }} style={{ ...rowBtn(false), color: C.chalk }}>
-          <Ico n="logout" size={17} color={C.dim} /><span style={{ flex: 1 }}>{busy === "so" ? "…" : T("acSignOut")}</span>
+          <RowIco n="logout" /><span style={{ flex: 1 }}>{busy === "so" ? "…" : T("acSignOut")}</span>
         </button>
         <button data-acct-delete onClick={() => { sfxTap(); setSure(true); }} style={{ ...rowBtn(false), color: "#ff8a80" }}>
-          <Ico n="trash" size={17} /><span style={{ flex: 1 }}>{busy === "del" ? "…" : T("acDelete")}</span>
+          <RowIco n="trash" color="#ff8a80" /><span style={{ flex: 1 }}>{busy === "del" ? "…" : T("acDelete")}</span>
         </button>
         {askPw && <div style={{ padding: "0 16px 14px" }}>
           <PwInput data-del-pw autoComplete="current-password" value={delPw} onChange={e => setDelPw(e.target.value)} placeholder={T("acPwPh")} aria-label={T("acPwPh")}
@@ -7952,7 +7973,8 @@ function NotifRow({ settings, set, acct, onAcctOpen }) {
   const on = ok && (upd || msg);
   return (
     <>
-      <button type="button" data-notif-open data-notif-on={on ? 1 : 0} onClick={() => { sfxTap(); setOpen(true); }} style={{ ...btnBase, width: "100%", background: "transparent", color: C.chalk, padding: "14px 16px", display: "flex", alignItems: "center", gap: 12, textAlign: "left", borderRadius: 0, borderTop: `1px solid ${C.line}`, fontWeight: 400 }}>
+      <button type="button" data-notif-open data-notif-on={on ? 1 : 0} onClick={() => { sfxTap(); setOpen(true); }} style={{ ...btnBase, width: "100%", background: "transparent", color: C.chalk, padding: ROW_I, display: "flex", alignItems: "center", gap: 12, textAlign: "left", borderRadius: 0, borderTop: `1px solid ${C.line}`, fontWeight: 400 }}>
+        <RowIco n="megaphone" />
         <span style={{ flex: 1, minWidth: 0 }}>
           <span style={{ display: "block", fontSize: 15, fontWeight: 700 }}>{T("notifTitle")}</span>
           <span data-notif-sum style={{ display: "block", fontSize: 12, color: on ? C.dim : perm === "denied" ? C.signal : C.dim, fontWeight: 500, marginTop: 2, lineHeight: 1.4 }}>{sum}</span>
@@ -8023,7 +8045,8 @@ function RestPermRow() {
   };
   return (<>
     <button role="switch" aria-checked={on} data-rest-row={perm || ""} onClick={tap}
-      style={{ ...btnBase, width: "100%", background: "transparent", color: C.chalk, padding: "14px 16px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, textAlign: "left", borderRadius: 0, borderTop: `1px solid ${C.line}` }}>
+      style={{ ...btnBase, width: "100%", background: "transparent", color: C.chalk, padding: ROW_I, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, textAlign: "left", borderRadius: 0, borderTop: `1px solid ${C.line}` }}>
+      <RowIco n="clock" />
       <span style={{ flex: 1 }}>
         <span style={{ display: "block", fontSize: 15, fontWeight: 700 }}>{T("restRow")}<InfoQ title={T("restRow")} text={T("restRowD")} /></span>
         {perm === "denied" && <span data-rest-row-blocked style={{ display: "block", fontSize: 12, color: C.signal, fontWeight: 600, marginTop: 3, lineHeight: 1.4 }}>{failed ? T("restRowBlocked") : <>{T("restRowOpen")} <Arrow /></>}</span>}
@@ -8136,6 +8159,13 @@ function SwitchAccountSheet({ fresh, onFresh, onKeep, onCancel }) {
 // ─── SETTINGS → EXERCISES ───────────────────────────────────────────────────
 // Every exercise by type, with its how-to, and a switch for "I can do this one". At least one
 // exercise of each type stays on, otherwise that muscle group would drop out of the plan.
+// 1.10.0 (Michael: "one kind of thing always opens the same way"): the header of every Settings sub-page
+function SubHead({ title, backLabel, onBack }) {
+  return <>
+    <button data-sub-back onClick={() => { sfxTap(); onBack(); }} style={{ ...ghostBtn, marginTop: 10, padding: "8px 12px" }}><Arrow dir="‹" size="1.25em" style={{ verticalAlign: "-0.08em", marginRight: 6 }} />{backLabel || T("tabSettings")}</button>
+    <div data-sub-title style={{ fontFamily: DISPLAY, fontSize: 28, fontWeight: 900, color: C.chalk, margin: "14px 0 10px" }}>{title}</div>
+  </>;
+}
 function ExercisesPage({ settings, set, history, onBack, backLabel }) {
   const [howEx, setHowEx] = useState(null);
   const [warn, setWarn] = useState(null); // group index whose last exercise you tried to turn off
@@ -8153,8 +8183,7 @@ function ExercisesPage({ settings, set, history, onBack, backLabel }) {
   return (
     <div>
       {howEx && <HowTo id={howEx} history={history} onClose={() => setHowEx(null)} />}
-      <button onClick={() => { sfxTap(); onBack(); }} style={{ ...ghostBtn, marginTop: 10, padding: "8px 12px" }}><Arrow dir="‹" size="1.25em" style={{ verticalAlign: "-0.08em", marginRight: 6 }} />{backLabel || T("tabSettings")}</button>
-      <div style={{ fontFamily: DISPLAY, fontSize: 28, fontWeight: 900, color: C.chalk, margin: "14px 0 10px" }}>{T("exTitle")}</div>
+      <SubHead title={T("exTitle")} backLabel={backLabel} onBack={onBack} />
       <div style={{ fontSize: 13, color: C.dim, lineHeight: 1.55 }}>{T("exIntro")}</div>
       {ALT_GROUPS.map((g, gi) => {
         const onN = g.filter(x => !off.has(x)).length;
@@ -8202,12 +8231,12 @@ function ExercisesPage({ settings, set, history, onBack, backLabel }) {
 }
 
 function SettingsTab({ initPage, ret, settings, setSettings, history, profile, setProfile, onImport, kcal, autoBk, onAutoBackup, acct, cloudBk, onAcctOpen, onCloudRestore, onCloudPoint, onCloudBackupNow, onSignOut, onDeleteAccount }) {
-  const [page, setPage] = useState(initPage || null); // null | "exercises"
+  const [page, setPage] = useState(initPage || null); // null | "exercises" | "look" (1.10.0: Appearance has its own page)
   // 1.10.0 (Michael, Nov 13): no "Support the app" row in any build (hidden on Google Play since 1.9.4): every build
   // is the same. Never add a Patreon / PayPal / Ko-fi link or "support us" wording back.
   // opened from somewhere else (Home → Exercises → workout settings): back goes back there, not to Settings
-  const back = () => (ret && initPage === "exercises" ? ret.go() : setPage(null));
-  useBack(back, page === "exercises");
+  const back = () => (ret && initPage === page ? ret.go() : setPage(null));
+  useBack(back, page === "exercises" || page === "look");
   const [langOpen, setLangOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [msg, setMsg] = useState("");
@@ -8255,52 +8284,11 @@ function SettingsTab({ initPage, ret, settings, setSettings, history, profile, s
   const rowBtn = (first) => ({ ...btnBase, width: "100%", background: "transparent", color: C.chalk, padding: "14px 16px", textAlign: "left", borderRadius: 0, borderTop: first ? "none" : `1px solid ${C.line}`, fontSize: 15 });
   const openPage = pg => { sfxTap(); setPage(pg); try { window.scrollTo(0, 0); } catch (_) {} };
 
-  if (page === "exercises") {
+  if (page === "look") {
     return (
-      <div className="scr" key="ex" style={{ padding: "6px 18px 124px", maxWidth: 460, margin: "0 auto" }}>
-        <ExercisesPage settings={settings} set={set} history={history} backLabel={ret && initPage === "exercises" ? ret.label : null} onBack={() => (ret && initPage === "exercises" ? ret.go() : openPage(null))} />
-      </div>
-    );
-  }
-
-  return (
-    <div className="scr" key="main" style={{ padding: "6px 18px 124px", maxWidth: "var(--colMax)", margin: "0 auto" }}>
-      <input ref={fileRef} type="file" accept="application/json,.json" onChange={readBackup} style={{ display: "none" }} />
-      {bkOpen && <BackupsSheet onClose={() => setBkOpen(false)} onRestore={txt => { if (loadBackupText(txt)) setBkOpen(false); }} autoOn={!!settings.autoBackup} myId={String(cloudMem().owner || (acct.st === "in" ? acct.uid : "")).replace(/[^A-Za-z0-9]/g, "").slice(0, 8)} />}
-
-      {/* 1.7.0: on a wide screen language + appearance on the left, the rest on the right */}
-      <Cols left={<>
-      {/* One row with the current language; the full list opens in a scrollable sheet, so more languages fit later. */}
-      {(() => { const cur = LANGS.find(l => l.code === curLang) || LANGS[0]; return (
-        <ListSect title={T("language")} data-set-lang style={{ padding: "14px 0 0" }}>
-          <button onClick={() => { sfxTap(); setLangOpen(true); }} aria-haspopup="dialog" aria-label={`${T("language")}: ${cur.name}`}
-            style={{ ...btnBase, width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "8px 16px 14px", textAlign: "left", fontSize: 16, color: C.chalk, background: "transparent", borderRadius: 0 }}>
-            <span aria-hidden="true" style={{ fontSize: 22 }}>{cur.flag}</span>
-            <span style={{ flex: 1 }}>{cur.name}</span>
-            <Arrow />
-          </button>
-        </ListSect>
-      ); })()}
-      {langOpen && (
-        <Sheet title={T("language")} onClose={() => setLangOpen(false)}>
-          <div role="listbox" aria-label={T("language")} style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            {LANGS.map(l => {
-              const on = curLang === l.code;
-              return (
-                <button key={l.code} lang={l.code} role="option" aria-selected={on} onClick={() => { sfxTap(); set("lang", l.code); setLangOpen(false); }}
-                  style={{ ...btnBase, display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", textAlign: "left", fontSize: 16, background: on ? C.panelHi : "transparent", color: on ? C.chalk : "#cdd6f0", border: `1.5px solid ${on ? C.signal : C.line}` }}>
-                  <span aria-hidden="true" style={{ fontSize: 22 }}>{l.flag}</span>
-                  <span style={{ flex: 1 }}>{l.name}</span>
-                  {on && <span style={{ color: C.signal }}>✓</span>}
-                </button>
-              );
-            })}
-          </div>
-          <button data-translate-help onClick={() => { sfxTap(); openExternal(TRANSLATE_URL); }} style={{ ...btnBase, background: "transparent", color: C.sky, fontSize: 13, padding: "14px 2px 2px", textAlign: "left", lineHeight: 1.45 }}>{T("translateHelp")} <Arrow size="1.25em" style={{ verticalAlign: "-0.08em" }} /></button>
-        </Sheet>
-      )}
-
-      <Sect title={T("appearance")} flatTitle data-set-look>
+      <div className="scr" key="look" style={{ padding: "6px 18px 124px", maxWidth: 460, margin: "0 auto" }}>
+        <SubHead title={T("appearance")} backLabel={ret && initPage === "look" ? ret.label : null} onBack={() => (ret && initPage === "look" ? ret.go() : openPage(null))} />
+      <Sect data-set-look-page style={{ marginTop: 4 }}>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
         {Object.entries(THEMES).map(([id, t]) => (
           <button key={id} onClick={() => { sfxTap(); set("theme", id); }} aria-pressed={settings.theme === id}
@@ -8346,25 +8334,89 @@ function SettingsTab({ initPage, ret, settings, setSettings, history, profile, s
       <Seg label={T("homeOrderT")} value={settings.homeOrder === "ex" ? "ex" : "today"} items={[["today", T("homeOrderToday"), { "data-home-order": "today" }], ["ex", T("homeOrderEx"), { "data-home-order": "ex" }]]} onPick={id => { sfxTap(); set("homeOrder", id); }} />
       {hzSupported() && <div style={{ marginTop: 12, borderRadius: 14, background: SOFT(), overflow: "hidden" }}><HzRow settings={settings} set={set} first /></div>}
       </Sect>
+      </div>
+    );
+  }
+  if (page === "exercises") {
+    return (
+      <div className="scr" key="ex" style={{ padding: "6px 18px 124px", maxWidth: 460, margin: "0 auto" }}>
+        <ExercisesPage settings={settings} set={set} history={history} backLabel={ret && initPage === "exercises" ? ret.label : null} onBack={() => (ret && initPage === "exercises" ? ret.go() : openPage(null))} />
+      </div>
+    );
+  }
+
+  return (
+    <div className="scr" key="main" style={{ padding: "6px 18px 124px", maxWidth: "var(--colMax)", margin: "0 auto" }}>
+      <input ref={fileRef} type="file" accept="application/json,.json" onChange={readBackup} style={{ display: "none" }} />
+      {bkOpen && <BackupsSheet onClose={() => setBkOpen(false)} onRestore={txt => { if (loadBackupText(txt)) setBkOpen(false); }} autoOn={!!settings.autoBackup} myId={String(cloudMem().owner || (acct.st === "in" ? acct.uid : "")).replace(/[^A-Za-z0-9]/g, "").slice(0, 8)} />}
+
+      {/* 1.7.0: on a wide screen language + appearance on the left, the rest on the right */}
+      <Cols left={<>
+      {/* One row with the current language; the full list opens in a scrollable sheet, so more languages fit later. */}
+      {(() => { const cur = LANGS.find(l => l.code === curLang) || LANGS[0]; return (
+        <ListSect title={T("language")} data-set-lang>
+          <button onClick={() => { sfxTap(); setLangOpen(true); }} aria-haspopup="dialog" aria-label={`${T("language")}: ${cur.name}`}
+            style={{ ...btnBase, width: "100%", display: "flex", alignItems: "center", gap: 12, padding: ROW_I, textAlign: "left", fontSize: 15, color: C.chalk, background: "transparent", borderRadius: 0 }}>
+            <RowIco n="lang"><span style={{ fontSize: 19, lineHeight: 1 }}>{cur.flag}</span></RowIco>
+            <span style={{ flex: 1, fontWeight: 700 }}>{cur.name}</span>
+            <Arrow />
+          </button>
+        </ListSect>
+      ); })()}
+      {langOpen && (
+        <Sheet title={T("language")} onClose={() => setLangOpen(false)}>
+          <div role="listbox" aria-label={T("language")} style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            {LANGS.map(l => {
+              const on = curLang === l.code;
+              return (
+                <button key={l.code} lang={l.code} role="option" aria-selected={on} onClick={() => { sfxTap(); set("lang", l.code); setLangOpen(false); }}
+                  style={{ ...btnBase, display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", textAlign: "left", fontSize: 16, background: on ? C.panelHi : "transparent", color: on ? C.chalk : "#cdd6f0", border: `1.5px solid ${on ? C.signal : C.line}` }}>
+                  <span aria-hidden="true" style={{ fontSize: 22 }}>{l.flag}</span>
+                  <span style={{ flex: 1 }}>{l.name}</span>
+                  {on && <span style={{ color: C.signal }}>✓</span>}
+                </button>
+              );
+            })}
+          </div>
+          <button data-translate-help onClick={() => { sfxTap(); openExternal(TRANSLATE_URL); }} style={{ ...btnBase, background: "transparent", color: C.sky, fontSize: 13, padding: "14px 2px 2px", textAlign: "left", lineHeight: 1.45 }}>{T("translateHelp")} <Arrow size="1.25em" style={{ verticalAlign: "-0.08em" }} /></button>
+        </Sheet>
+      )}
+
+      {/* 1.10.0 (Michael: "make it one row"): Appearance is one row with a small preview; its own page holds the
+          themes, main colour, layout and Home pages (a group of many settings = a sub-page, like Exercises) */}
+      <ListSect title={T("appearance")} data-set-look>
+        <button data-set-look-open onClick={() => openPage("look")} aria-label={`${T("appearance")}: ${L.themes[settings.theme] || ""}, ${T("accent_" + (ACCENTS[settings.accent] ? settings.accent : "yellow"))}, ${T("look_" + (settings.look || "cards"))}`}
+          style={{ ...rowBtn(true), display: "flex", alignItems: "center", gap: 12, padding: ROW_I }}>
+          <span aria-hidden="true" style={{ width: 32, height: 32, borderRadius: 10, flexShrink: 0, background: (THEMES[settings.theme] || THEMES.black).ink, border: `1.5px solid ${(THEMES[settings.theme] || THEMES.black).line}`, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+            <span style={{ width: 13, height: 13, borderRadius: 99, background: C.signal }} />
+          </span>
+          <span style={{ flex: 1, minWidth: 0 }}>
+            <span style={{ display: "block", fontSize: 15, fontWeight: 700 }}>{L.themes[settings.theme] || ""}</span>
+            <span style={{ display: "block", fontSize: 12, color: C.dim, marginTop: 2 }}>{T("accent_" + (ACCENTS[settings.accent] ? settings.accent : "yellow"))} · {T("look_" + (settings.look || "cards"))}</span>
+          </span>
+          <Arrow />
+        </button>
+      </ListSect>
       </>} right={<>
       <ListSect title={T("sounds")}>
-        <SettingRow first title={T("sndTap")} on={settings.sndTap} onClick={() => flip("sndTap")} />
-        <SettingRow title={T("sndFx")} info={T("sndFxD")} on={settings.sndFx} onClick={() => flip("sndFx")} />
-        <SettingRow title={T("sndTimer")} info={T("sndTimerD")} on={settings.sndTimer} onClick={() => flip("sndTimer")} />
-        <div style={{ padding: "14px 16px", borderTop: `1px solid ${C.line}` }}>
-          <div style={{ fontSize: 15, fontWeight: 700, color: C.chalk }}>{T("volume")}<InfoQ title={T("volume")} text={T("volHint")} /></div>
+        <SettingRow first icon="hand" title={T("sndTap")} on={settings.sndTap} onClick={() => flip("sndTap")} />
+        <SettingRow icon="sparkle" title={T("sndFx")} info={T("sndFxD")} on={settings.sndFx} onClick={() => flip("sndFx")} />
+        <SettingRow icon="timer" title={T("sndTimer")} info={T("sndTimerD")} on={settings.sndTimer} onClick={() => flip("sndTimer")} />
+        <div style={{ padding: "12px 16px 14px 14px", borderTop: `1px solid ${C.line}` }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 15, fontWeight: 700, color: C.chalk }}><RowIco n="speaker" /><span>{T("volume")}<InfoQ title={T("volume")} text={T("volHint")} /></span></div>
           <Seg label={T("volume")} value={settings.volume} style={{ marginTop: 8 }} items={[["low", T("volLow")], ["mid", T("volMid")], ["high", T("volHigh")]].map(([id, l]) => [id, l, { "data-vol": id, "aria-pressed": settings.volume === id }])} onPick={id => { unlockAudio(); set("volume", id); sfxCheck(); }} />
         </div>
       </ListSect>
 
       <ListSect title={T("trainingSettings")}>
-        <button onClick={() => openPage("exercises")} style={{ ...rowBtn(true), display: "flex", alignItems: "center", gap: 10 }}>
+        <button onClick={() => openPage("exercises")} style={{ ...rowBtn(true), display: "flex", alignItems: "center", gap: 12, padding: ROW_I }}>
+          <RowIco n="dumbbell" />
           <span style={{ flex: 1 }}>{noEmo(T("exMenu"))}</span>
           <Arrow />
         </button>
-        <SettingRow title={T("vibrate")} info={[T("vibrateD"), T("vibrateHint")]} on={settings.vibrate} onClick={() => { set("vibrate", !settings.vibrate); if (!settings.vibrate) vibratePattern([160]); }} />
-        <SettingRow title={T("keepAwake")} on={settings.keepAwake} onClick={() => set("keepAwake", !settings.keepAwake)} />
-        <SettingRow title={T("aiCopy")} info={T("aiCopyD")} on={settings.aiCopy} onClick={() => set("aiCopy", !settings.aiCopy)} />
+        <SettingRow icon="vibrate" title={T("vibrate")} info={[T("vibrateD"), T("vibrateHint")]} on={settings.vibrate} onClick={() => { set("vibrate", !settings.vibrate); if (!settings.vibrate) vibratePattern([160]); }} />
+        <SettingRow icon="sun" title={T("keepAwake")} on={settings.keepAwake} onClick={() => set("keepAwake", !settings.keepAwake)} />
+        <SettingRow icon="robot" title={T("aiCopy")} info={T("aiCopyD")} on={settings.aiCopy} onClick={() => set("aiCopy", !settings.aiCopy)} />
         {pushSupported() && <NotifRow settings={settings} set={set} acct={acct} onAcctOpen={onAcctOpen} />}
         {restSupported() && <RestPermRow />}
       </ListSect>
@@ -8372,25 +8424,26 @@ function SettingsTab({ initPage, ret, settings, setSettings, history, profile, s
       <AccountBox acct={acct || { st: "out" }} cloudBk={cloudBk} onOpen={onAcctOpen} onRestore={onCloudRestore} onRestorePoint={onCloudPoint} onBackupNow={onCloudBackupNow} onSignOut={onSignOut} onDelete={onDeleteAccount} settings={settings} set={set} />
 
       <ListSect title={T("dataBackup")}>
-        <button onClick={exportBackup} style={rowBtn(true)}>
-          {noEmo(T("backupSave"))}<InfoQ title={noEmo(T("backupSave"))} text={isNative ? T("backupSaveDApp", { dir: `Documents/${BK_DIR}` }) : T("backupSaveD")} />
+        <button onClick={exportBackup} style={{ ...rowBtn(true), display: "flex", alignItems: "center", gap: 12, padding: ROW_I }}>
+          <RowIco n="download" /><span>{noEmo(T("backupSave"))}<InfoQ title={noEmo(T("backupSave"))} text={isNative ? T("backupSaveDApp", { dir: `Documents/${BK_DIR}` }) : T("backupSaveD")} /></span>
         </button>
         {bkSupported() && (
           <>
-            <SettingRow title={noEmo(T("autoBk"))} info={T("autoBkD", { dir: `Documents/${BK_DIR}` })} desc={<><span data-autobk-status={autoBk ? (autoBk.ok ? "ok" : "err") : "none"} style={{ display: "block", color: autoBk && !autoBk.ok ? "#ff8a80" : autoBk ? C.mint : C.dim }}>{!settings.autoBackup ? null : !autoBk ? T("autoBkNone") : autoBk.ok ? T("autoBkLast", { time: fmtWhen(autoBk.ts) }) : T("autoBkErr", { e: autoBk.err || "?" })}</span></>}
+            <SettingRow icon="history" title={noEmo(T("autoBk"))} info={T("autoBkD", { dir: `Documents/${BK_DIR}` })} desc={<><span data-autobk-status={autoBk ? (autoBk.ok ? "ok" : "err") : "none"} style={{ display: "block", color: autoBk && !autoBk.ok ? "#ff8a80" : autoBk ? C.mint : C.dim }}>{!settings.autoBackup ? null : !autoBk ? T("autoBkNone") : autoBk.ok ? T("autoBkLast", { time: fmtWhen(autoBk.ts) }) : T("autoBkErr", { e: autoBk.err || "?" })}</span></>}
               on={settings.autoBackup} onClick={() => { const v = !settings.autoBackup; set("autoBackup", v); sfxTap(); if (v) onAutoBackup(true); }} />
-            <button data-bk-open onClick={() => { sfxTap(); setBkOpen(true); }} style={{ ...rowBtn(false), display: "flex", alignItems: "center", gap: 10 }}>
+            <button data-bk-open onClick={() => { sfxTap(); setBkOpen(true); }} style={{ ...rowBtn(false), display: "flex", alignItems: "center", gap: 12, padding: ROW_I }}>
+              <RowIco n="folder" />
               <span style={{ flex: 1 }}>{noEmo(T("bkFolder"))}</span>
               <Arrow />
             </button>
           </>
         )}
-        <button onClick={() => fileRef.current && fileRef.current.click()} style={rowBtn(false)}>
-          {noEmo(T("backupLoad"))}<InfoQ title={noEmo(T("backupLoad"))} text={T("backupLoadD")} />
+        <button onClick={() => fileRef.current && fileRef.current.click()} style={{ ...rowBtn(false), display: "flex", alignItems: "center", gap: 12, padding: ROW_I }}>
+          <RowIco n="upload" /><span>{noEmo(T("backupLoad"))}<InfoQ title={noEmo(T("backupLoad"))} text={T("backupLoadD")} /></span>
         </button>
         {pending && <ConfirmBox icon="download" title={T("cfRestoreT")} text={`${pending.exportedAt ? fmtDate(dateKey(new Date(pending.exportedAt)), true) : T("unknownDate")} · ${TP("workouts", pending.history.length)}. ${T("cfRestoreD")}`} yes={T("yesRestore")} yesData={{ "data-restore-yes": true }} onNo={() => setPending(null)} onYes={() => { onImport(pending); setPending(null); setMsg(T("msgRestored")); sfxCheck(); }} />}
         {settings.aiCopy && (
-          <button onClick={copyAll} style={rowBtn(false)}>{copied ? T("copied") : emo(T("copyAllAI"))}</button>
+          <button onClick={copyAll} style={{ ...rowBtn(false), display: "flex", alignItems: "center", gap: 12, padding: ROW_I }}><RowIco n="copy" /><span>{copied ? T("copied") : emo(T("copyAllAI"))}</span></button>
         )}
       </ListSect>
       {msg && <div role="status" style={{ fontSize: 13, color: msg.startsWith("✓") ? C.mint : C.dim, marginTop: 8 }}>{msg}</div>}

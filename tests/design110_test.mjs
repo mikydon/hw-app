@@ -42,4 +42,23 @@ const kcal = { sex: "m", height: 180, weight: 78, activity: 1.375, goal: { type:
   T.eq(h.errors, [], "no page errors (plans)");
   await h.close();
 }
+// Settings: Appearance is one row that opens its own page (the same header as Exercises); every row has an icon
+{
+  const h = await start({ clock: now.getTime() });
+  const p = h.page;
+  await p.click("[data-menu-btn]"); await p.waitForTimeout(350); await p.click('[data-nav-box] [data-screen="settings"]'); await p.waitForTimeout(700);
+  T.eq(await p.locator("[data-look]").count(), 0, "the main Settings page has no theme or layout grid");
+  T.ok(await p.locator("[data-row-ico]").count() >= 11, "rows carry an icon tile");
+  await p.click("[data-set-look-open]"); await p.waitForTimeout(600);
+  T.eq(await p.locator("[data-sub-title]").innerText(), "Appearance", "Appearance page with the shared header");
+  T.eq(await p.locator("[data-look]").count(), 6, "the six layouts are there");
+  await p.click('[data-look="flat"]'); await p.waitForTimeout(300);
+  await p.click("[data-sub-back]"); await p.waitForTimeout(600);
+  T.ok(await p.locator("[data-set-look-open]").isVisible(), "back returns to Settings");
+  T.ok((await p.locator("[data-set-look-open]").innerText()).includes("Open"), "the row shows the chosen layout");
+  await p.click("[data-set-lang] button"); await p.waitForTimeout(500);
+  T.ok(await p.locator('[role="listbox"]').isVisible(), "language still opens as a sheet (pick one from a list)");
+  T.eq(h.errors, [], "no page errors (settings)");
+  await h.close();
+}
 T.done();
