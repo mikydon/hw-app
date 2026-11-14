@@ -13,7 +13,7 @@ const skip = async p => { await p.click("[data-tour-skip], [data-tour-bubble] bu
   await p.waitForTimeout(800);
   const u = await ui(p);
   T.ok(u.tour110 === 1 && u.tourPl3 === 1, "both one-time marks set");
-  T.ok(Array.isArray(u.tourAuto) && ![5, 7, 9, 10].some(c => u.tourAuto.includes(c)) && u.tourAuto.includes(4), "chapters 5, 7, 9 and 10 marked to show again, the others not");
+  T.ok(Array.isArray(u.tourAuto) && ![4, 5, 7, 9, 10].some(c => u.tourAuto.includes(c)) && u.tourAuto.includes(6), "chapters 4, 5, 7, 9 and 10 marked to show again, the others not");
   await go(p, "history");
   T.ok((await bubble(p)).includes("a green day is a workout"), "visiting History starts the new chapter 5");
   await skip(p);
@@ -24,19 +24,19 @@ const skip = async p => { await p.click("[data-tour-skip], [data-tour-bubble] bu
   await h.close();
 }
 
-// ─── a 1.9.3+ user (tourPl3 already set, saw everything): only 5 and 9 come back, 10 does not ───
+// ─── a 1.9.3+ user (tourPl3 already set, saw everything): the chapters changed in 1.10 come back, Muscle Deck not ───
 {
   const h = await start({ seed: { tour: true, profile: { tourDone: [1, 2, 4, 5, 6, 7, 8, 9, 10] }, ui: { tourPl3: 1, tourAuto: [1, 2, 4, 5, 6, 7, 8, 9, 10] } } });
   const p = h.page;
   await p.waitForTimeout(800);
   const u = await ui(p);
   T.ok(u.tour110 === 1, "1.10 mark set");
-  T.ok(!u.tourAuto.includes(5) && !u.tourAuto.includes(7) && !u.tourAuto.includes(9) && u.tourAuto.includes(10) && u.tourAuto.includes(8), "only 5, 7 and 9 dropped; 10 stays seen");
+  T.ok([4, 5, 7, 9, 10].every(c => !u.tourAuto.includes(c)) && u.tourAuto.includes(8) && u.tourAuto.includes(6), "4, 5, 7, 9 and 10 dropped (changed in 1.10); 6 and 8 stay seen");
   await go(p, "shop");
   T.ok((await bubble(p)).includes("Diamonds: you earn them"), "visiting the Shop starts the new chapter 9");
   await skip(p);
-  await go(p, "plans"); await p.waitForTimeout(1500);
-  T.eq(await p.locator("[data-tour-bubble]").count(), 0, "Workout plans does not start chapter 10 again");
+  await go(p, "game"); await p.waitForTimeout(1500);
+  T.eq(await p.locator("[data-tour-bubble]").count(), 0, "Muscle Deck (unchanged) does not start chapter 8 again");
   T.eq(h.errors, [], "no page errors (1.9.3+ user)");
   await h.close();
 }

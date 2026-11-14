@@ -1,6 +1,22 @@
 // Indonesian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    plShare: "Tampilkan di profilku",
+    plShareD: "Teman bisa melihat rencana ini dan menyimpan salinannya. Bebanmu tetap milikmu.",
+    plSharedD: "Sudah ada di profilmu. Perubahan di sini juga sampai ke sana.",
+    plShareFull: "Kamu bisa menampilkan paling banyak {n} rencana.",
+    plShareSignIn: "Masuk untuk menampilkan rencana di profilmu.",
+    pfPlans: "Rencana",
+    pfPlansD: "Rencana yang kamu tampilkan di profil. Siapa yang bisa melihatnya mengikuti siapa yang bisa melihat profilmu. Orang lain bisa menyimpan salinan: latihan, set, dan waktu tahan, tidak pernah bebanmu.",
+    pfPlansNone: "Belum ada rencana di sini. Buka rencana di Rencana dan nyalakan Tampilkan di profilku.",
+    plBy: "Dari {nick}",
+    plCopy: "Simpan ke rencanaku",
+    plCopyD: "Salinan khusus untukmu: ubah sesukamu.",
+    plSavedCopy: "Tersimpan di rencanamu",
+    plReport: "Laporkan rencana ini",
+    plReportD: "Namanya menyinggung atau spam? Kami memeriksa laporan secara manual.",
+    tourPfPlans: "Rencana yang kamu tampilkan di profil. Teman bisa membuka satu dan menyimpan salinannya.",
+    tourPlShare: "Nyalakan ini dan rencana muncul di profilmu: teman bisa menyimpan salinan (tidak pernah bebanmu).",
     frTogether: "Bersama",
     tgInvT: "Undang teman",
     tgInvD: "Saat teman bergabung lewat tautanmu dan latihan 3 kali, kalian berdua dapat {n} 💎.",
@@ -110,6 +126,7 @@ export default {
   },
   news1_10: [
     ["Teman bersama", "Teman dan papan peringkat; streak dengan teman hanya menghitung latihan, dan papan peringkat dunia terkunci.", "Halaman Bersama yang baru: undang teman dengan tautanmu (100 💎 untuk masing-masing setelah latihan ke-3 dia), jaga duo (latihan atau kalori), target mingguan berdua, duel set, dan colekan untuk teman yang belum latihan. Hari dihitung oleh server, jadi duo tak bisa dipalsukan. Papan peringkat hanya teman-temanmu; papan dunia yang terkunci sudah dihapus. Lencana baru: Lebih baik berdua."],
+    ["Pustaka rencana", "Sebuah rencana hanya terlihat oleh pembuatnya.", "Tampilkan rencana di profilmu: teman membukanya dan dengan sekali ketuk menyimpan salinan sendiri (latihan, set, waktu tahan, tidak pernah bebanmu). Salinan menunjukkan dari siapa asalnya, dan perubahanmu juga sampai ke rencana di profil."],
     ["Riwayat", "Daftar panjang semua latihan, kalender yang tidak bisa diketuk, dan angka di atas.", "Kalender jadi yang utama: ketuk satu hari untuk membuka latihannya, ketuk hari kosong untuk menambah latihan. Daftarnya mengikuti bulan, dan halaman Kemajuan yang baru berisi angka dan grafik yang lebih halus."],
     ["Toko", "Satu halaman, sepanjang sepuluh layar.", "Berlianmu tetap di atas dan tiga halaman bisa digeser di bawahnya: Toko, Tampilan, dan Didapat. Season pass dan cara lain untuk dapat berlian ditampilkan sebagai “segera hadir”."],
     ["Muscle Deck", "Di toko, Blind berikutnya ada di paling bawah dan keluar cuma ✕ kecil di atas.", "Toko diakhiri bilah melayang: Simpan dan keluar serta Blind berikutnya, selalu di layar. Ikon lengan yang dikencangkan digambar ulang."],

@@ -157,4 +157,17 @@ eq(P.weekHints(P.emptyPlans(), LIB), [], "no week, no week hints");
   eq([M3.list[0].items.map(x => x.id), M3.week], [["k1"], { 1: id }], "an old copy moved to Monday keeps the newer exercises and the new weekday");
   eq(P.mergePlans(moved194, withK1).list[0], M3.list[0], "the same result from both sides");
 }
+// ── 1.10.0 plan library: share = name, exercises, sets, holds only; a copy is your own plan with the author's name ──
+{
+  const src = { id: "pX", n: 4, name: "Push day", grp: "g1", items: [{ id: "k1", sets: 4, kg: 40 }, { id: "b5", sets: 2, dur: 60 }], ts: 1, mts: 1, days: {}, ds: "{}" };
+  const sh = P.sharedOf(src);
+  eq(sh, { id: "pX", name: "Push day", n: 4, items: [{ id: "k1", sets: 4 }, { id: "b5", sets: 2, dur: 60 }] }, "shared copy: no group, no kg, no week");
+  const mine = P.addPlan(P.emptyPlans(), 100).P;
+  const { P: P2, plan } = P.copyPlan(mine, { ...sh, items: [...sh.items, { id: "k3", sets: 99 }, { id: 7 }] }, "Zuzka", 200);
+  ok(plan.id !== "pX" && plan.n === 2 && plan.name === "Push day" && plan.by === "Zuzka", "a copy gets a new id and number and remembers its author");
+  eq(plan.items, [{ id: "k1", sets: 4 }, { id: "b5", sets: 2, dur: 60 }, { id: "k3", sets: P.MAX_SETS }], "sets are capped, broken items dropped");
+  ok(!plan.grp && P2.list.length === 2 && !Object.keys(P2.week).length, "no group, not in the week");
+  const merged = P.mergePlans(P2, mine);
+  ok(merged.list.some(p => p.id === plan.id && p.by === "Zuzka"), "the author survives a sync merge");
+}
 console.log(`${pass} passed, ${fail} failed`); process.exit(fail ? 1 : 0);

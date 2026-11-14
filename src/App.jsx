@@ -1315,6 +1315,8 @@ function ExQ({ id, onOpen, style }) {
 // 1.8.2 (a tester: "a lot of texts, make it understood by visuals"): explanations live behind a small "?" next to a
 // title instead of a line under it. Tap = a short sheet with the text (one sheet for the whole app, opened from here).
 let openInfoGlobal = null;
+// 1.10.0 plan library: saves a plan someone shared as your own copy (set by App); returns the new plan
+let copyPlanGlobal = null;
 function InfoQ({ title, text, id, style }) {
   const go = e => { e.stopPropagation(); e.preventDefault(); sfxTap(); if (openInfoGlobal) openInfoGlobal({ title, text }); };
   return (
@@ -6321,7 +6323,7 @@ function BodyRanks({ m, onPick }) {
     </Sect>
   );
 }
-function ProfilePage({ m, own, onEditProfile, onEditSlot, onStreak, onPhoto, onPickRank, onLooks, extra, top, claim, stats }) {
+function ProfilePage({ m, own, onEditProfile, onEditSlot, onStreak, onPhoto, onPickRank, onLooks, extra, top, claim, stats, plansEl }) {
   const pg = usePager("pf", 4, PF_LAY);
   const [focus, setFocus] = useState(null);
   const lv = levelInfo(m.xp), lr = RANKS[lvRank(m.lvl)], lk = m.look || {};
@@ -6370,6 +6372,7 @@ function ProfilePage({ m, own, onEditProfile, onEditSlot, onStreak, onPhoto, onP
             </div>}
           </div>
         </Sect>
+        {plansEl}
         </div>
         {/* on a wide screen there are no tabs: each column gets its title */}
         <div {...pg.pageProps(1)}>{pg.wide && <div data-pf-col-title style={{ ...sectionTitle, marginTop: 0 }}>{T("badgesTitle")}</div>}<BadgesList m={m} focus={focus} claim={claim} /></div>
@@ -6501,7 +6504,7 @@ function ProfileEditSheet({ profile, setProfile, acct, vis, onVis, onFriends, on
     </Sheet>
   );
 }
-function ProfileTab({ history, profile, setProfile, onFreeze, kcal, acct, vis, onVis, onFriends, onShop, onKcal }) {
+function ProfileTab({ history, profile, setProfile, onFreeze, kcal, acct, vis, onVis, onFriends, onShop, onKcal, plans, onPlans }) {
   const fz = freezesAvailable(history);
   const [howEx, setHowEx] = useState(null);
   const [err, setErr] = useState("");
@@ -6527,7 +6530,7 @@ function ProfileTab({ history, profile, setProfile, onFreeze, kcal, acct, vis, o
       {howEx && <HowTo id={howEx} history={history} onClose={() => setHowEx(null)} />}
       {rev && <RewardReveal items={rev} onDone={() => { setProfile({ ...profile, claim2: withClaims(claimOf(profile), rev) }); setRev(null); setParty(Date.now()); }} />}
       {party > 0 && <Confetti key={party} />}
-      <ProfilePage m={m} own claim={claim} extra={{ fz }} stats={<OwnStats history={history} onKcal={onKcal} />} onPhoto={() => { sfxTap(); setSheet("edit"); }} onEditProfile={() => setSheet("edit")}
+      <ProfilePage m={m} own claim={claim} plansEl={acct && acct.st === "in" ? <ProfilePlans own plans={plans || []} onOpen={x => onPlans(x.id)} onMore={() => onPlans(null)} /> : null} extra={{ fz }} stats={<OwnStats history={history} onKcal={onKcal} />} onPhoto={() => { sfxTap(); setSheet("edit"); }} onEditProfile={() => setSheet("edit")}
         onStreak={() => setSheet("freeze")} onEditSlot={i => setSheet({ slot: i })} onPickRank={setHowEx} onLooks={() => setSheet("looks")}
         top={err ? <div role="alert" style={{ fontSize: 13, color: "#ff8a80", marginBottom: 10 }}>{err}</div> : null} />
       {sheet && sheet.slot !== undefined && <SlotSheet m={sm} i={sheet.slot} cur={(showcase(sm)[sheet.slot] || {}).set ? slotStr(showcase(sm)[sheet.slot]) : ""} onSave={v => saveSlot(sheet.slot, v)} onClose={() => setSheet(null)} />}
@@ -6554,8 +6557,68 @@ function ProfileTab({ history, profile, setProfile, onFreeze, kcal, acct, vis, o
 
 // Someone else's profile (1.7.0): the same page as your own, from their card in the cloud. The rules decide whether
 // we may open it (friends only / everyone / only them, blocked). Opens in Friends with a back button in the top bar.
+// 1.10.0 plan library. What another phone wrote is checked before it is shown: known exercises only, numbers in range.
+function cleanShared(x) {
+  if (!x || typeof x.id !== "string" || !Array.isArray(x.items)) return null;
+  const items = x.items.filter(i => i && EX[i.id]).slice(0, PLN.MAX_ITEMS).map(i => ({ id: i.id, sets: Math.max(1, Math.min(PLN.MAX_SETS, Math.floor(+i.sets) || PLN.DEFAULT_SETS)), ...(+i.dur > 0 ? { dur: Math.min(1800, Math.floor(+i.dur)) } : {}) }));
+  return items.length ? { id: x.id.slice(0, 40), name: String(x.name || "").slice(0, 40), n: Math.max(1, Math.floor(+x.n) || 1), items } : null;
+}
+function ProfilePlans({ plans, own, onOpen, onMore }) {
+  return (
+    <Sect data-pf-plans title={own ? <>{T("pfPlans")}<InfoQ id="pfplans" title={T("pfPlans")} text={T("pfPlansD")} /></> : T("pfPlans")} meta={plans.length ? String(plans.length) : null} style={{ padding: "16px 0 6px" }} titlePad="0 16px">
+      {plans.map((x, i) => (
+        <button key={x.id} type="button" data-pf-plan={x.id} onClick={() => { sfxTap(); onOpen(x); }} style={{ ...btnBase, width: "100%", display: "flex", alignItems: "center", gap: 12, padding: ROW_I, background: "transparent", color: C.chalk, textAlign: "left", borderRadius: 0, borderTop: i ? `1px solid ${C.line}` : "none" }}>
+          <RowIco n="checklist" />
+          <span style={{ flex: 1, minWidth: 0 }}>
+            <span style={{ display: "block", fontSize: 15, fontWeight: 800, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", ...INK }}>{x.name || T("planDefault", { n: x.n })}</span>
+            <span style={{ display: "block", fontSize: 12, color: C.dim, marginTop: 2, fontWeight: 500 }}>{TP("sets", x.items.reduce((a, i) => a + i.sets, 0))}</span>
+          </span>
+          <TypeMarks items={x.items} size={16} />
+          <Arrow />
+        </button>
+      ))}
+      {own && !plans.length && (
+        <button type="button" data-pf-plans-empty onClick={() => { sfxTap(); onMore(); }} style={{ ...btnBase, width: "100%", display: "flex", alignItems: "center", gap: 12, padding: ROW_I, background: "transparent", color: C.dim, textAlign: "left", borderRadius: 0, fontSize: 13, fontWeight: 500, lineHeight: 1.45 }}>
+          <RowIco n="checklist" color={C.dim} /><span style={{ flex: 1 }}>{T("pfPlansNone")}</span><Arrow />
+        </button>
+      )}
+    </Sect>
+  );
+}
+// A shared plan: its exercises and sets; someone else's can be saved as your own copy (or reported)
+function PlanPeek({ plan, by, uid, onClose }) {
+  const [saved, setSaved] = useState(null), [rep, setRep] = useState(false), [repDone, setRepDone] = useState(false);
+  return (
+    <Sheet title={plan.name || T("planDefault", { n: plan.n })} onClose={onClose}>
+      <div data-plan-peek={plan.id}>
+        {by && <div style={{ fontSize: 13, color: C.dim, margin: "-4px 2px 12px", display: "flex", alignItems: "center", gap: 6 }}><Ico n="duo" size={15} />{T("plBy", { nick: by })}</div>}
+        <div style={{ ...card, ...tileR(), overflow: "hidden" }}>
+          {plan.items.map((x, i) => { const ex = EX[x.id]; const timed = ex.type === "time" || ex.type === "carry";
+            return <div key={x.id} data-plan-peek-item={x.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", borderTop: i ? `1px solid ${C.line}` : "none" }}>
+              <span style={{ flex: 1, minWidth: 0, fontSize: 15, fontWeight: 700, color: C.chalk }}>{ex.name}<ExQ id={x.id} /></span>
+              <MuscleIcons id={x.id} size={18} />
+              <span style={{ fontSize: 13, color: C.dim, whiteSpace: "nowrap", fontWeight: 700 }}>{TP("sets", x.sets)}{timed ? ` · ${fmtHold(x.dur || ex.dur)}` : ""}</span>
+            </div>; })}
+        </div>
+        {uid && (saved ? (
+          <div data-plan-saved role="status" style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 14, padding: "12px 14px", borderRadius: 14, background: `${C.mint}1f`, color: C.mint, fontSize: 14, fontWeight: 700 }}><Ico n="tick" size={18} />{T("plSavedCopy")}</div>
+        ) : (
+          <button type="button" data-plan-copy onClick={() => { const pl = copyPlanGlobal && copyPlanGlobal(plan, by); if (pl) setSaved(pl.id); }} style={{ ...btnBase, width: "100%", marginTop: 14, padding: "14px", borderRadius: 14, background: C.signal, color: C.signalInk, fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}><Ico n="plus" size={18} />{T("plCopy")}</button>
+        ))}
+        {uid && <div style={{ fontSize: 12, color: C.dim, textAlign: "center", lineHeight: 1.45, marginTop: 8 }}>{T("plCopyD")}</div>}
+        {uid && (repDone ? <div role="status" style={{ fontSize: 12, color: C.dim, textAlign: "center", marginTop: 12 }}>{T("frReported")}</div>
+          : <button type="button" data-plan-report onClick={() => { sfxTap(); setRep(true); }} style={{ ...btnBase, display: "flex", alignItems: "center", gap: 6, margin: "12px auto 0", background: "transparent", color: C.dim, fontSize: 12, padding: "6px 10px" }}><Ico n="flag" size={14} />{T("plReport")}</button>)}
+        {rep && <ConfirmBox icon="flag" danger title={T("plReport")} text={T("plReportD")} yes={T("frReport")} yesData={{ "data-plan-report-yes": true }} onNo={() => setRep(false)}
+          onYes={() => { setRep(false); cloud().report(uid, "plan: " + (plan.name || "")).then(() => setRepDone(true)).catch(() => setRepDone(true)); }} />}
+      </div>
+    </Sheet>
+  );
+}
 function OtherProfile({ p, isFriend, onBack, setTopHead }) {
   const [st, setSt] = useState({ loading: true });
+  const [plib, setPlib] = useState(null), [peek, setPeek] = useState(null);
+  // 1.10.0 plan library: the plans this person shares (read with the same rule as the card; none = no box)
+  useEffect(() => { let dead = false; cloud().getPlib(p.uid).then(v => { if (!dead && v) setPlib(v.plans.map(cleanShared).filter(Boolean)); }).catch(() => {}); return () => { dead = true; }; }, [p.uid]);
   const [howEx, setHowEx] = useState(null);
   useEffect(() => {
     let dead = false;
@@ -6579,7 +6642,8 @@ function OtherProfile({ p, isFriend, onBack, setTopHead }) {
   return (
     <div className="scr" data-pv={p.uid} data-pv-state={st.loading ? "loading" : st.hidden ? "hidden" : st.err ? "err" : "ok"} style={{ padding: "6px 0 124px", maxWidth: "var(--colMax)", margin: "0 auto" }}>
       {howEx && <HowTo id={howEx} history={[]} onClose={() => setHowEx(null)} />}
-      {m ? <ProfilePage m={m} onPickRank={setHowEx} /> : (
+      {peek && <PlanPeek plan={peek} by={p.nick} uid={p.uid} onClose={() => setPeek(null)} />}
+      {m ? <ProfilePage m={m} onPickRank={setHowEx} plansEl={plib && plib.length ? <ProfilePlans plans={plib} onOpen={setPeek} /> : null} /> : (
         <div style={{ padding: "0 18px" }}>
           <Sect style={{ marginTop: 0, display: "flex", alignItems: "center", gap: 14 }}>
             <Avatar profile={{ name: p.nick || "?", pfp: isFriend ? p.pfp || null : null }} size={64} />
@@ -10166,7 +10230,7 @@ function WeekCard({ P, setP, onTips }) {
   );
 }
 
-function PlansTab({ profile, setProfile, history, open, onOpened }) {
+function PlansTab({ profile, setProfile, history, open, onOpened, shared = [], onShare }) {
   const P = plansOfP(profile), weekOn = PLN.hasWeek(P);
   // 1.9.0 (Michael, Nov 7): Recommended | My plans are swipe pages like Home
   const pg = usePager("plans", 2, null, false, weekOn || P.list.length ? 1 : 0);
@@ -10177,9 +10241,9 @@ function PlansTab({ profile, setProfile, history, open, onOpened }) {
   const profRef = useRef(profile); profRef.current = profile;
   // every change also refreshes the plans' `days` mirror for phones still on 1.9.x
   const setP = fn => { const cur = plansOfP(profRef.current), next = PLN.mirror(fn(cur), Date.now()), p = { ...profRef.current, plans: next }; profRef.current = p; setProfile(p); };
-  useEffect(() => { if (open && open.plan) { pg.jumpPage(1); setEdit(open.plan); onOpened && onOpened(); } }, [open]);
+  useEffect(() => { if (open && (open.plan || open.mine)) { pg.jumpPage(1); if (open.plan) setEdit(open.plan); onOpened && onOpened(); } }, [open]);
   const editing = edit && P.list.find(p => p.id === edit);
-  if (editing) return <PlanEditor plan={editing} P={P} setP={setP} onBack={() => { sfxTap(); setEdit(null); window.scrollTo(0, 0); }} />;
+  if (editing) return <PlanEditor plan={editing} P={P} setP={setP} shared={shared.includes(editing.id)} nShared={shared.length} onShare={onShare} onBack={() => { sfxTap(); setEdit(null); window.scrollTo(0, 0); }} />;
   const chipS = on => ({ ...btnBase, padding: "6px 12px", fontSize: 13, borderRadius: 99, whiteSpace: "nowrap", flexShrink: 0, ...(on ? { background: `${C.signal}22`, border: `1px solid ${C.signal}66`, color: C.signal } : { ...SUNK(), color: C.dim }) });
   const wd = weekdaysShort();
   const newPlan = () => { sfxTap(); let id; setP(cur => { const r = PLN.addPlan(cur); id = r.plan.id; const g = grp && grp !== "-" ? grp : null; return g ? PLN.updatePlan(r.P, id, { grp: g }) : r.P; }); setEdit(id); window.scrollTo(0, 0); };
@@ -10279,7 +10343,10 @@ function PlansTab({ profile, setProfile, history, open, onOpened }) {
 
 // 1.9.2: a plan is one workout: its name, group, exercises, and (Michael: "pick for Mon, Wed, Fri") the weekdays it is
 // in your week. A day that had another plan takes this one instead.
-function PlanEditor({ plan, P, setP, onBack }) {
+function PlanEditor({ plan, P, setP, onBack, shared, nShared = 0, onShare }) {
+  const [shBusy, setShBusy] = useState(false), [shErr, setShErr] = useState("");
+  const toggleShare = () => { if (!onShare || shBusy || !(plan.items || []).length) return; sfxTap(); setShBusy(true); setShErr("");
+    onShare(plan, !shared).then(() => sfxCheck()).catch(e => setShErr(e && e.message === "full" ? T("plShareFull", { n: PLN.SHARE_MAX }) : cloudErr(e) || T("frErr"))).finally(() => setShBusy(false)); };
   const wdNames = weekdaysShort();
   const [adding, setAdding] = useState(false), [hints, setHints] = useState(false), [del, setDel] = useState(false);
   const [name, setName] = useState(plan.name || "");
@@ -10350,6 +10417,11 @@ function PlanEditor({ plan, P, setP, onBack }) {
           })}
         </div>
         <button data-plan-add onClick={() => { sfxTap(); setAdding(true); }} disabled={items.length >= PLN.MAX_ITEMS} style={{ ...btnBase, width: "100%", marginTop: items.length ? 10 : 0, padding: "12px 12px", borderRadius: 12, border: `1.5px dashed ${C.line}`, background: "transparent", color: C.sky, fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}><Ico n="plus" size={17} sw={2.4} />{T("plAddEx")}</button>
+      </Sect>
+      {/* 1.10.0 plan library: show this plan on your profile, so friends can save a copy (never your weights) */}
+      <Sect data-plan-share-box style={{ padding: 0, overflow: "hidden" }}>
+        {onShare ? <SettingRow first icon="duo" title={T("plShare")} desc={shErr || (shared ? T("plSharedD") : T("plShareD"))} on={!!shared} onClick={toggleShare} />
+          : <div data-plan-share-off style={{ display: "flex", alignItems: "center", gap: 12, padding: ROW_I, color: C.dim, fontSize: 13, lineHeight: 1.45 }}><RowIco n="duo" color={C.dim} /><span>{T("plShareSignIn")}</span></div>}
       </Sect>
       {adding && (
         <Sheet title={T("plAddEx")} onClose={() => setAdding(false)}>
@@ -11360,6 +11432,7 @@ function tourSteps(ch, x) {
     s("[data-pf-looks]", 8, { opt: true }), // 1.8.2: profile looks (frames, banners, titles, effects)
     s("[data-body-ranks]", 9, { opt: true }), // 1.9.0: body ranks
     s("[data-pf-showcase]", 2, { opt: true }),
+    s("[data-pf-plans]", 2, { opt: true, t: T("tourPfPlans") }), // 1.10.0: plans shown on the profile (signed in)
     s('[data-pf-tab="2"]', 3, { tap: true, opt: true }),
     s("[data-pf-ranks]", 4, { opt: true }),
     s('[data-pf-tab="3"]', 5, { tap: true, opt: true }),
@@ -11407,6 +11480,7 @@ function tourSteps(ch, x) {
     s("[data-plan-days-set]", 7, { opt: true, wait: 450 }),
     s("[data-plan-dayview]", 8, { opt: true }),
     s("[data-plan-tips]", 9, { opt: true }),
+    s("[data-plan-share-box]", 9, { opt: true, t: T("tourPlShare") }), // 1.10.0: show the plan on your profile
     { done: true, t: X[4] },
   ];
   if (ch === 9) return [ // Shop
@@ -12611,6 +12685,27 @@ export default function App() {
   };
   useEffect(() => { if (fsIds) loadFsDays(); }, [fsIds]);
   useEffect(() => { if (screen === "friends" && fsIds) loadFsDays(); }, [screen]);
+  // 1.10.0 plan library (Michael, Nov 8): the plans you share on your profile live in plib/{uid}; read after signing in
+  const [plib, setPlib] = useState(() => cloudMem().plib || null);
+  useEffect(() => { if (acct.st !== "in" || !acct.uid) { if (acct.st === "out") setPlib(null); return; } cloud().getPlib().then(v => { setPlib(v); setCloudMem({ plib: v }); }).catch(() => {}); }, [acct.st, acct.uid]);
+  const putPlib = list => { const v = { vis: (acct.uid && cardVis[acct.uid]) || "friends", plans: list }; setPlib(v); setCloudMem({ plib: v }); return cloud().savePlib(v.vis, list); };
+  const sharePlan = acct.st === "in" && acct.prof ? (plan, on) => {
+    const rest = ((plib && plib.plans) || []).filter(x => x.id !== plan.id);
+    if (on && rest.length >= PLN.SHARE_MAX) return Promise.reject(new Error("full"));
+    return putPlib(on ? [...rest, PLN.sharedOf(plan)] : rest);
+  } : null;
+  // a shared plan follows its edits (on any device); a plan deleted for good leaves the profile too. A plan this
+  // phone doesn't know (yet) is left as it is, so a phone that hasn't synced never removes it.
+  useEffect(() => {
+    if (!plib || !plib.plans.length || acct.st !== "in") return;
+    const t = setTimeout(() => {
+      const P = plansOfP(profile);
+      const next = plib.plans.map(x => { const pl = P.list.find(y => y.id === x.id); return pl ? PLN.sharedOf(pl) : P.del && P.del[x.id] ? null : x; }).filter(Boolean);
+      if (JSON.stringify(next) !== JSON.stringify(plib.plans)) putPlib(next).catch(() => {});
+    }, 1500);
+    return () => clearTimeout(t);
+  }, [profile.plans, plib, acct.st]);
+  copyPlanGlobal = (src, by) => { const p = profRef.current, r = PLN.copyPlan(plansOfP(p), src, by); setProfile({ ...p, plans: PLN.mirror(r.P, Date.now()) }); sfxCheck(); return r.plan; };
   // 1.10.0 invite rewards (rew/{uid}, written by the server): read after signing in and when Friends or the Shop opens
   const [rew, setRew] = useState(() => cloudMem().rew || null);
   // my side, counted like the server counts it (no workouts added by hand, one a day), so both phones agree
@@ -13065,7 +13160,7 @@ export default function App() {
   const [setRet, setSetRet] = useState(null); // 1.8.1: where that page goes back to ({screen, pager, page})
   const [histEdit, setHistEdit] = useState(null); // date whose workout opens in the History editor
   const [plansOpen, setPlansOpen] = useState(null); // 1.9.0: {plan: id} opens that plan in the editor
-  const go = (id, opt) => { if (id !== screen) sfxTap(); setScreen(id); setMenuOpen(false); if (session) setSessionOpen(false); setHistEdit(opt && opt.edit ? opt.edit : null); setPlansOpen(opt && opt.plan ? { plan: opt.plan } : null); setSetPage(opt && opt.page ? opt.page : null); setSetRet(opt && opt.ret ? opt.ret : null); setChatWith(null); };
+  const go = (id, opt) => { if (id !== screen) sfxTap(); setScreen(id); setMenuOpen(false); if (session) setSessionOpen(false); setHistEdit(opt && opt.edit ? opt.edit : null); setPlansOpen(opt && opt.plan ? { plan: opt.plan } : opt && opt.mine ? { mine: true } : null); setSetPage(opt && opt.page ? opt.page : null); setSetRet(opt && opt.ret ? opt.ret : null); setChatWith(null); };
   const [howId, setHowId] = useState(null);
   openHowToGlobal = setHowId;
   const [info, setInfo] = useState(null); // 1.8.2: the "?" explanation sheet
@@ -13184,7 +13279,7 @@ export default function App() {
     if (!profLoaded || (u.tourPl3 && u.tour110)) return;
     const seen = tourSeen(), drop = [];
     if (!u.tourPl3 && seen.has(10)) drop.push(10);
-    if (!u.tour110) for (const c of [5, 7, 9]) if (seen.has(c)) drop.push(c); // 1.10.0: History, Friends (Together), Shop
+    if (!u.tour110) for (const c of [4, 5, 7, 9, 10]) if (seen.has(c)) drop.push(c); // 1.10.0: Profile (plans), History, Friends (Together), Shop, Workout plans (share)
     setUi({ ...u, tourPl3: 1, tour110: 1, ...(drop.length ? { tourAuto: [...seen].filter(c => !drop.includes(c)) } : {}) });
   }, [profLoaded]);
   const tourAskNo = () => { setTourAsk(false); setTourAskDue(false); setUi({ ...uiRef.current, tourAskV: APP_VERSION }); };
@@ -13446,12 +13541,12 @@ export default function App() {
                 {screen === "history" && <HistoryTab history={history} editDate={histEdit} onEditOpened={() => setHistEdit(null)}
                   onDelete={idx => { const e = history[idx]; if (e) syncTomb("del", entryId(e)); editHistory(h => h.filter((_, i) => i !== idx)); }}
                   onSaveEntry={(idx, entry) => editHistory(h => (idx === null ? [...h, entry] : h.map((e, i) => (i === idx ? entry : e))))} />}
-                {screen === "profile" && <ProfileTab history={history} profile={profile} setProfile={setProfile} onFreeze={applyFreeze} kcal={kcal} acct={acct} vis={myVis} onVis={setVis} onFriends={() => go("friends")} onShop={() => go("shop")} onKcal={() => go("calories")} />}
+                {screen === "profile" && <ProfileTab history={history} profile={profile} setProfile={setProfile} onFreeze={applyFreeze} kcal={kcal} acct={acct} vis={myVis} onVis={setVis} onFriends={() => go("friends")} onShop={() => go("shop")} onKcal={() => go("calories")} plans={plib ? plib.plans : null} onPlans={pid => go("plans", pid ? { plan: pid } : { mine: true })} />}
                 {screen === "calories" && <Calories history={history} profile={profile} setProfile={setProfile} kcal={kcal} setKcal={setKcal} />}
                 {screen === "settings" && <SettingsTab initPage={setPage0} ret={setRet ? { label: T(SCREEN_TITLE[setRet.screen]), go: () => { if (setRet.pager) PAGER_START[setRet.pager] = setRet.page; go(setRet.screen); } } : null} settings={settings} setSettings={setSettings} history={history} profile={profile} setProfile={setProfile}
                   kcal={kcal} autoBk={autoBk} onAutoBackup={runAutoBackup}
                   onImport={importAll} acct={acct} cloudBk={cloudBk} onAcctOpen={() => go("friends")} onCloudRestore={restoreFromCloud} onCloudPoint={restorePoint} onCloudBackupNow={cloudBackupNow} onSignOut={signOut} onDeleteAccount={deleteAccount} />}
-                {screen === "plans" && <PlansTab profile={profile} setProfile={setProfile} history={history} open={plansOpen} onOpened={() => setPlansOpen(null)} />}
+                {screen === "plans" && <PlansTab profile={profile} setProfile={setProfile} history={history} open={plansOpen} onOpened={() => setPlansOpen(null)} shared={plib ? plib.plans.map(x => x.id) : []} onShare={sharePlan} />}
                 {screen === "shop" && <ShopTab history={history} profile={profile} setProfile={setProfile} onGo={go} />}
                 {screen === "game" && <GameTab history={history} profile={profile} setProfile={setProfile} acct={acct} onPlay={sv => { if (sv.mode !== "tut") gameSave(sv); setGamePlay(sv); }} />}
                 {screen === "friends" && <OpenInApp />}

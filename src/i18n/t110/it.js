@@ -1,6 +1,22 @@
 // Italian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    plShare: "Mostra sul mio profilo",
+    plShareD: "I tuoi amici vedono questa scheda e possono salvarne una copia. I tuoi pesi restano tuoi.",
+    plSharedD: "È sul tuo profilo. Le modifiche che fai qui arrivano anche lì.",
+    plShareFull: "Puoi mostrare al massimo {n} schede.",
+    plShareSignIn: "Accedi per mostrare le schede sul tuo profilo.",
+    pfPlans: "Schede",
+    pfPlansD: "Le schede che mostri sul tuo profilo. Chi le vede dipende da chi vede il tuo profilo. Gli altri possono salvarne una copia: esercizi, serie e tempi di tenuta, mai i tuoi pesi.",
+    pfPlansNone: "Ancora nessuna scheda qui. Apri una scheda in Schede e attiva Mostra sul mio profilo.",
+    plBy: "Di {nick}",
+    plCopy: "Salva nelle mie schede",
+    plCopyD: "Una copia solo per te: modificala come vuoi.",
+    plSavedCopy: "Salvata nelle tue schede",
+    plReport: "Segnala questa scheda",
+    plReportD: "Ha un nome offensivo o è spam? Controlliamo le segnalazioni a mano.",
+    tourPfPlans: "Le schede che mostri sul tuo profilo. Gli amici possono aprirne una e salvarne una copia.",
+    tourPlShare: "Attivalo e la scheda compare sul tuo profilo: gli amici possono salvarne una copia (mai i tuoi pesi).",
     frTogether: "Insieme",
     tgInvT: "Invita un amico",
     tgInvD: "Quando un amico si unisce con il tuo link e fa 3 allenamenti, ricevete entrambi {n} 💎.",
@@ -110,6 +126,7 @@ export default {
   },
   news1_10: [
     ["Amici insieme", "Amici e una classifica; una serie con un amico contava solo gli allenamenti e la classifica mondiale era bloccata.", "Una nuova pagina Insieme: invita un amico con il tuo link (100 💎 a testa dopo il suo 3° allenamento), tenete un duo (allenamenti o calorie), un obiettivo settimanale di tutti e due, un duello di serie e una spinta per l'amico che non si è ancora allenato. I giorni li conta il server, quindi un duo non si può falsare. La classifica è solo dei tuoi amici; quella mondiale bloccata non c'è più. Nuovo badge: Meglio in due."],
+    ["Libreria delle schede", "Una scheda la vedeva solo chi l'aveva creata.", "Mostra una scheda sul tuo profilo: gli amici la aprono e con un tocco salvano la loro copia (esercizi, serie, tempi di tenuta, mai i tuoi pesi). La copia dice di chi è, e le tue modifiche arrivano anche alla scheda sul profilo."],
     ["Storico", "Una lunga lista di tutti gli allenamenti, un calendario che non si poteva toccare e i numeri in alto.", "Il calendario va in testa: tocca un giorno per aprire il suo allenamento, tocca un giorno vuoto per aggiungerne uno. La lista segue il mese, e una nuova pagina Progressi raccoglie i numeri e un grafico più morbido."],
     ["Negozio", "Una sola pagina, lunga dieci schermate.", "I tuoi diamanti restano in alto e sotto scorrono tre pagine: Negozio, Look e Guadagnati. Un pass stagionale e altri modi per avere diamanti sono mostrati come «in arrivo»."],
     ["Muscle Deck", "Nel negozio, Buio successivo era in fondo e uscire era una piccola ✕ in alto.", "Il negozio finisce con una barra fluttuante: Salva ed esci e Buio successivo, sempre sullo schermo. L'icona del braccio contratto è stata ridisegnata."],

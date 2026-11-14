@@ -1,6 +1,22 @@
 // German: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    plShare: "Auf meinem Profil zeigen",
+    plShareD: "Freunde sehen diesen Plan und können eine Kopie speichern. Deine Gewichte bleiben deine.",
+    plSharedD: "Er ist auf deinem Profil. Was du hier änderst, kommt auch dort an.",
+    plShareFull: "Du kannst höchstens {n} Pläne zeigen.",
+    plShareSignIn: "Melde dich an, um Pläne auf deinem Profil zu zeigen.",
+    pfPlans: "Pläne",
+    pfPlansD: "Pläne, die du auf deinem Profil zeigst. Wer sie sieht, richtet sich danach, wer dein Profil sieht. Andere können eine Kopie speichern: Übungen, Sätze und Haltezeiten, nie deine Gewichte.",
+    pfPlansNone: "Noch keine Pläne hier. Öffne einen Plan unter Pläne und schalte Auf meinem Profil zeigen ein.",
+    plBy: "Von {nick}",
+    plCopy: "In meine Pläne speichern",
+    plCopyD: "Eine Kopie nur für dich: ändere sie, wie du willst.",
+    plSavedCopy: "In deinen Plänen gespeichert",
+    plReport: "Diesen Plan melden",
+    plReportD: "Beleidigender Name oder Spam? Meldungen prüfen wir von Hand.",
+    tourPfPlans: "Pläne, die du auf deinem Profil zeigst. Freunde können einen öffnen und eine Kopie speichern.",
+    tourPlShare: "Schalte das ein, und der Plan erscheint auf deinem Profil: Freunde können eine Kopie speichern (nie deine Gewichte).",
     frTogether: "Zusammen",
     tgInvT: "Lade einen Freund ein",
     tgInvD: "Wenn ein Freund über deinen Link beitritt und 3 Trainings macht, bekommt ihr beide {n} 💎.",
@@ -110,6 +126,7 @@ export default {
   },
   news1_10: [
     ["Freunde zusammen", "Freunde und eine Rangliste; eine gemeinsame Serie zählte nur Trainings, und die Weltrangliste war gesperrt.", "Eine neue Seite Zusammen: Lade einen Freund mit deinem Link ein (100 💎 für jeden nach seinem 3. Training), haltet ein Duo (Trainings oder Kalorien), ein gemeinsames Wochenziel, ein Satz-Duell und ein Stups für einen Freund, der noch nicht trainiert hat. Die Tage zählt der Server, ein Duo lässt sich also nicht fälschen. Die Rangliste zeigt nur deine Freunde, die gesperrte Weltrangliste ist weg. Neues Abzeichen: Gemeinsam stärker."],
+    ["Planbibliothek", "Einen Plan sah nur, wer ihn erstellt hatte.", "Zeig einen Plan auf deinem Profil: Freunde öffnen ihn und speichern mit einem Tippen ihre eigene Kopie (Übungen, Sätze, Haltezeiten, nie deine Gewichte). Die Kopie zeigt, von wem sie ist, und deine Änderungen kommen auch im Plan auf deinem Profil an."],
     ["Verlauf", "Eine lange Liste aller Trainings, ein Kalender, den man nicht antippen konnte, und die Zahlen oben.", "Der Kalender führt: Tippe auf einen Tag, um sein Training zu öffnen, tippe auf einen leeren Tag, um eins hinzuzufügen. Die Liste folgt dem Monat, und eine neue Seite Fortschritt hat die Zahlen und ein ruhigeres Diagramm."],
     ["Shop", "Eine Seite, zehn Bildschirme lang.", "Deine Diamanten bleiben oben, darunter wischst du durch drei Seiten: Shop, Looks und Verdient. Ein Season Pass und mehr Wege zu Diamanten sind als „kommt bald“ zu sehen."],
     ["Muscle Deck", "Im Shop stand Nächster Blind ganz am Ende, und Verlassen war ein kleines ✕ oben.", "Der Shop endet mit einer schwebenden Leiste: Speichern und beenden und Nächster Blind, immer im Bild. Das Symbol mit dem angespannten Arm wurde neu gezeichnet."],

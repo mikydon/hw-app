@@ -308,7 +308,12 @@ export const impl = {
   // history goes away here too; plain merge would keep old keys inside the maps), vis stays as it is (it may have been
   // set on another phone).
   async saveCard(c) { const v = { ...pick(c, CARD_KEYS), ts: serverTimestamp() }; await setDoc(d("cards", uid()), v, { mergeFields: Object.keys(v) }); },
-  async setCardVis(vis) { await setDoc(d("cards", uid()), { vis, ts: serverTimestamp() }, { merge: true }); },
+  async setCardVis(vis) {
+    await setDoc(d("cards", uid()), { vis, ts: serverTimestamp() }, { merge: true });
+    // the shared plans follow who sees the profile (1.10.0)
+    const pl = await getDoc(d("plib", uid())).catch(() => null);
+    if (pl && pl.exists()) await setDoc(d("plib", uid()), { vis, ts: serverTimestamp() }, { merge: true });
+  },
   async saveBlocks(list) { await setDoc(d("blocks", uid()), { b: (list || []).slice(-500), ts: serverTimestamp() }); },
   // 1.8.0 ranked card games: the push server picks the opponent and replays the game (src/game/engine.js).
   async rk(kind, body) {
@@ -327,6 +332,10 @@ export const impl = {
   async getVdays(u) { const s = await getDoc(d("vdays", u)); if (!s.exists()) return null; const v = s.data(); return { d: v.d || [], s: v.s || {}, k: v.k || [], f: v.f || [] }; },
   // who invited this account: written once, right after the account was made (the server checks that it is new)
   async saveInv(by) { if (!by || by === uid()) return; await setDoc(d("inv", uid()), { by, ts: serverTimestamp() }); },
+  // 1.10.0 plan library: plib/{uid} {vis (a copy of the profile's who-sees), plans: [{id, name, n, items}] ≤ 10}; who
+  // may read it follows the profile card's rule (friends / everyone signed in / nobody)
+  async getPlib(u) { const s = await getDoc(d("plib", u || uid())); if (!s.exists()) return null; const v = s.data(); return { vis: v.vis || "friends", plans: Array.isArray(v.plans) ? v.plans : [] }; },
+  async savePlib(vis, plans) { if (!plans.length) { await deleteDoc(d("plib", uid())); return; } await setDoc(d("plib", uid()), { vis, plans, ts: serverTimestamp() }); },
   async getRew() { const s = await getDoc(d("rew", uid())); if (!s.exists()) return null; const v = s.data(); return { by: v.by || null, i: v.i || {} }; },
   rkEnd(moves, give) { return impl.rk("rk-end", give ? { give: true } : { moves }); },
   async myRanked() { const s = await getDoc(d("ranked", uid())); return s.exists() ? s.data() : null; },
@@ -401,7 +410,7 @@ export const impl = {
     fs.docs.forEach(c => b.delete(c.ref)); // 1.8.0 friend streaks
     old.docs.forEach(c => b.delete(c.ref));
     b.delete(d("days", me));
-    ["vdays", "inv", "rew"].forEach(c => b.delete(d(c, me))); // 1.10.0 Friends together
+    ["vdays", "inv", "rew", "plib"].forEach(c => b.delete(d(c, me))); // 1.10.0 Friends together, plan library
     fr.docs.forEach(x => { b.delete(d("friends", me, "list", x.id)); b.delete(d("friends", x.id, "list", me)); });
     inbox.docs.forEach(x => b.delete(d("inbox", me, "from", x.id)));
     (p && p.sent || []).forEach(t => b.delete(d("inbox", t, "from", me)));

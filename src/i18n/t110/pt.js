@@ -1,6 +1,22 @@
 // Portuguese (Brazil): texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    plShare: "Mostrar no meu perfil",
+    plShareD: "Seus amigos veem este plano e podem salvar uma cópia. Seus pesos continuam seus.",
+    plSharedD: "Está no seu perfil. As mudanças que você faz aqui chegam lá também.",
+    plShareFull: "Você pode mostrar no máximo {n} planos.",
+    plShareSignIn: "Entre na sua conta para mostrar planos no seu perfil.",
+    pfPlans: "Planos",
+    pfPlansD: "Planos que você mostra no seu perfil. Quem os vê depende de quem vê seu perfil. Outras pessoas podem salvar uma cópia: exercícios, séries e tempos, nunca seus pesos.",
+    pfPlansNone: "Ainda não há planos aqui. Abra um plano em Planos e ative Mostrar no meu perfil.",
+    plBy: "De {nick}",
+    plCopy: "Salvar nos meus planos",
+    plCopyD: "Uma cópia só sua: mude como quiser.",
+    plSavedCopy: "Salvo nos seus planos",
+    plReport: "Denunciar este plano",
+    plReportD: "Tem um nome ofensivo ou é spam? Verificamos as denúncias manualmente.",
+    tourPfPlans: "Planos que você mostra no seu perfil. Seus amigos podem abrir um e salvar uma cópia.",
+    tourPlShare: "Ative isto e o plano aparece no seu perfil: seus amigos podem salvar uma cópia (nunca seus pesos).",
     frTogether: "Juntos",
     tgInvT: "Convide um amigo",
     tgInvD: "Quando um amigo entrar pelo seu link e fizer 3 treinos, vocês dois ganham {n} 💎.",
@@ -110,6 +126,7 @@ export default {
   },
   news1_10: [
     ["Amigos juntos", "Amigos e um ranking; a sequência com um amigo só contava treinos, e o ranking mundial estava bloqueado.", "Uma nova página Juntos: convide um amigo com seu link (100 💎 para cada um depois do 3º treino dele), mantenham uma dupla (treinos ou calorias), uma meta semanal dos dois, um duelo de séries e uma cutucada para o amigo que ainda não treinou. Os dias são contados pelo servidor, então ninguém falsifica uma dupla. O ranking é só dos seus amigos; o mundial bloqueado saiu. Nova insígnia: Melhor em dupla."],
+    ["Biblioteca de planos", "Só quem criou um plano podia vê-lo.", "Mostre um plano no seu perfil: seus amigos abrem e salvam a própria cópia com um toque (exercícios, séries, tempos, nunca seus pesos). A cópia mostra de quem é, e suas mudanças chegam também ao plano do perfil."],
     ["Histórico", "Uma lista longa de todos os treinos, um calendário em que não dava para tocar e os números no topo.", "O calendário vem primeiro: toque em um dia para abrir o treino dele, toque em um dia vazio para adicionar um. A lista acompanha o mês, e uma nova página Progresso reúne os números e um gráfico mais suave."],
     ["Loja", "Uma página só, com dez telas de comprimento.", "Seus diamantes ficam no topo e embaixo passam três páginas: Loja, Visuais e Conquistados. Um passe de temporada e mais formas de ganhar diamantes aparecem como “em breve”."],
     ["Muscle Deck", "Na loja, Próximo blind ficava lá no fim e sair era um ✕ pequeno no topo.", "A loja termina com uma barra flutuante: Salvar e sair e Próximo blind, sempre na tela. O ícone do braço flexionado foi redesenhado."],

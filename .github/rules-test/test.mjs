@@ -329,6 +329,20 @@ await t("hank reads his rewards", true, () => getDoc(doc(as("hank"), "rew", "han
 await t("gina can't read hank's rewards", false, () => getDoc(doc(as("gina"), "rew", "hank")));
 await t("hank can't give himself rewards", false, () => setDoc(doc(as("hank"), "rew", "hank"), { i: { a: 1, b: 2, c: 3 } }));
 await t("hank deletes his rewards (account deletion)", true, () => deleteDoc(doc(as("hank"), "rew", "hank")));
+console.log("1.10.0 plan library");
+const pl = (vis, n = 1) => ({ vis, plans: Array.from({ length: n }, (_, i) => ({ id: "p" + i, name: "Push", n: 1, items: [{ id: "k1", sets: 3 }] })), ts: serverTimestamp() });
+await t("gina shares a plan for friends", true, () => setDoc(doc(as("gina"), "plib", "gina"), pl("friends")));
+await t("hank (her friend) reads it", true, () => getDoc(doc(as("hank"), "plib", "gina")));
+await t("ivan (not a friend) can't", false, () => getDoc(doc(as("ivan"), "plib", "gina")));
+await t("gina opens it to everyone", true, () => setDoc(doc(as("gina"), "plib", "gina"), pl("all")));
+await t("now ivan reads it", true, () => getDoc(doc(as("ivan"), "plib", "gina")));
+await t("gina hides it", true, () => setDoc(doc(as("gina"), "plib", "gina"), pl("none")));
+await t("hank can't read a hidden one", false, () => getDoc(doc(as("hank"), "plib", "gina")));
+await t("more than 10 plans are refused", false, () => setDoc(doc(as("gina"), "plib", "gina"), pl("all", 11)));
+await t("an unknown visibility is refused", false, () => setDoc(doc(as("gina"), "plib", "gina"), pl("public")));
+await t("extra fields are refused", false, () => setDoc(doc(as("gina"), "plib", "gina"), { ...pl("all"), kg: 1 }));
+await t("hank can't write gina's", false, () => setDoc(doc(as("hank"), "plib", "gina"), pl("all")));
+await t("gina deletes hers", true, () => deleteDoc(doc(as("gina"), "plib", "gina")));
 
 console.log("1.9.0 diamond codes");
 await env.withSecurityRulesDisabled(async c => { await setDoc(doc(c.firestore(), "promo", "JOZO"), { d: 200 }); });

@@ -1,6 +1,22 @@
 // Czech: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    plShare: "Ukázat na mém profilu",
+    plShareD: "Kamarádi uvidí tento plán a můžou si uložit kopii. Tvoje váhy zůstávají tvoje.",
+    plSharedD: "Je na tvém profilu. Změny, které tu uděláš, se přenesou i tam.",
+    plShareFull: "Ukázat můžeš nejvýš {n} plánů.",
+    plShareSignIn: "Přihlas se a můžeš ukazovat plány na profilu.",
+    pfPlans: "Plány",
+    pfPlansD: "Plány, které ukazuješ na profilu. Kdo je vidí, se řídí tím, kdo vidí tvůj profil. Ostatní si můžou uložit kopii: cviky, série a časy výdrže, nikdy tvoje váhy.",
+    pfPlansNone: "Zatím tu nejsou žádné plány. Otevři plán v Plánech a zapni Ukázat na mém profilu.",
+    plBy: "Od {nick}",
+    plCopy: "Uložit do mých plánů",
+    plCopyD: "Kopie jen pro tebe: uprav si ji, jak chceš.",
+    plSavedCopy: "Uloženo do tvých plánů",
+    plReport: "Nahlásit tento plán",
+    plReportD: "Má urážlivý název nebo je to spam? Nahlášení kontrolujeme ručně.",
+    tourPfPlans: "Plány, které ukazuješ na profilu. Kamarádi si můžou jeden otevřít a uložit kopii.",
+    tourPlShare: "Zapni tohle a plán se ukáže na tvém profilu: kamarádi si můžou uložit kopii (nikdy ne tvoje váhy).",
     frTogether: "Spolu",
     tgInvT: "Pozvi kamaráda",
     tgInvD: "Když se kamarád přidá přes tvůj odkaz a odcvičí 3 tréninky, oba dostanete {n} 💎.",
@@ -110,6 +126,7 @@ export default {
   },
   news1_10: [
     ["Kamarádi spolu", "Kamarádi a žebříček; společná série počítala jen tréninky a světový žebříček byl zamčený.", "Nová stránka Spolu: pozvi kamaráda svým odkazem (100 💎 pro každého po jeho 3. tréninku), držte duo (tréninky nebo kalorie), společný týdenní cíl, souboj v sériích a šťouchnutí pro kamaráda, který ještě necvičil. Dny počítá server, takže duo nejde nafejkovat. Žebříček je jen tvých kamarádů, zamčený světový zmizel. Nový odznak: Ve dvou se to lépe táhne."],
+    ["Knihovna plánů", "Plány viděl jen ten, kdo je vytvořil.", "Ukaž plán na svém profilu: kamarádi si ho otevřou a jedním ťuknutím uloží vlastní kopii (cviky, série, časy výdrže, nikdy tvoje váhy). U kopie je napsáno, od koho je, a tvoje úpravy se přenesou i do plánu na profilu."],
     ["Historie", "Dlouhý seznam všech tréninků, kalendář, na který se nedalo ťuknout, a čísla nahoře.", "Hlavní je kalendář: ťukni na den a otevře se jeho trénink, ťukni na prázdný den a přidáš ho. Seznam ukazuje vybraný měsíc a nová stránka Pokrok má čísla a plynulejší graf."],
     ["Obchod", "Jedna stránka dlouhá na deset obrazovek.", "Diamanty zůstávají nahoře a pod nimi se posouvají tři stránky: Obchod, Vzhledy a Získané. Sezónní pass a další způsoby, jak získat diamanty, jsou ukázané jako „brzy“."],
     ["Muscle Deck", "V obchodě byl Další blind až úplně na konci a odchod byl malý ✕ nahoře.", "Obchod končí plovoucí lištou: Uložit a odejít a Další blind, vždy na obrazovce. Ikona zatnutého bicepsu je nakreslená znovu."],

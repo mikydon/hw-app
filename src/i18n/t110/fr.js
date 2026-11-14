@@ -1,6 +1,22 @@
 // French: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    plShare: "Afficher sur mon profil",
+    plShareD: "Tes amis voient ce programme et peuvent en enregistrer une copie. Tes charges restent les tiennes.",
+    plSharedD: "Il est sur ton profil. Ce que tu modifies ici y arrive aussi.",
+    plShareFull: "Tu peux afficher {n} programmes au maximum.",
+    plShareSignIn: "Connecte-toi pour afficher des programmes sur ton profil.",
+    pfPlans: "Programmes",
+    pfPlansD: "Les programmes que tu affiches sur ton profil. Qui les voit dépend de qui voit ton profil. Les autres peuvent en enregistrer une copie : exercices, séries et temps de gainage, jamais tes charges.",
+    pfPlansNone: "Pas encore de programme ici. Ouvre un programme dans Programmes et active Afficher sur mon profil.",
+    plBy: "De {nick}",
+    plCopy: "Enregistrer dans mes programmes",
+    plCopyD: "Une copie rien que pour toi : modifie-la comme tu veux.",
+    plSavedCopy: "Enregistré dans tes programmes",
+    plReport: "Signaler ce programme",
+    plReportD: "Nom insultant ou spam ? Nous vérifions les signalements à la main.",
+    tourPfPlans: "Les programmes que tu affiches sur ton profil. Tes amis peuvent en ouvrir un et en enregistrer une copie.",
+    tourPlShare: "Active ceci et le programme apparaît sur ton profil : tes amis peuvent en enregistrer une copie (jamais tes charges).",
     frTogether: "Ensemble",
     tgInvT: "Invite un ami",
     tgInvD: "Quand un ami rejoint avec ton lien et fait 3 séances, vous recevez tous les deux {n} 💎.",
@@ -110,6 +126,7 @@ export default {
   },
   news1_10: [
     ["Amis ensemble", "Des amis et un classement ; une série entre amis ne comptait que les séances, et le classement mondial était verrouillé.", "Une nouvelle page Ensemble : invite un ami avec ton lien (100 💎 chacun après sa 3e séance), tenez un duo (séances ou calories), un objectif de la semaine à deux, un duel de séries et une relance pour l'ami qui ne s'est pas encore entraîné. Le serveur compte les jours, donc impossible de truquer un duo. Le classement ne montre que tes amis ; le classement mondial verrouillé a disparu. Nouveau badge : Plus forts à deux."],
+    ["Bibliothèque de programmes", "Seul son créateur voyait un programme.", "Affiche un programme sur ton profil : tes amis l'ouvrent et enregistrent leur propre copie d'un toucher (exercices, séries, temps de gainage, jamais tes charges). La copie indique de qui elle vient, et tes modifications arrivent aussi dans le programme de ton profil."],
     ["Historique", "Une longue liste de toutes les séances, un calendrier qu'on ne pouvait pas toucher et les chiffres en haut.", "Le calendrier passe devant : touche un jour pour ouvrir sa séance, touche un jour vide pour en ajouter une. La liste suit le mois, et une nouvelle page Progression réunit les chiffres et un graphique plus fluide."],
     ["Boutique", "Une seule page, longue de dix écrans.", "Tes diamants restent en haut et trois pages défilent dessous : Boutique, Looks et Gagnés. Une passe de saison et d'autres façons d'obtenir des diamants sont affichées comme « bientôt »."],
     ["Muscle Deck", "Dans la boutique, Blind suivante était tout en bas et quitter, un petit ✕ en haut.", "La boutique se termine par une barre flottante : Sauvegarder et quitter et Blind suivante, toujours à l'écran. L'icône du bras contracté a été redessinée."],

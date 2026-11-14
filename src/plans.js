@@ -101,6 +101,20 @@ export function addPlan(P, now = Date.now()) {
   const plan = stamp({ id: rid("p", now), n, name: "", grp: null, ts: now, items: [], days: {}, ds: "{}" }, now);
   return { P: { ...P, list: [...P.list, plan], seq: n }, plan };
 }
+// 1.10.0 plan library (Michael, Nov 8): a plan someone shared on their profile, saved as YOUR copy: a new id and
+// number, the same name, exercises, sets and hold times (never anyone's kg: those come from your own history), plus
+// who made it (`by`, shown under the name; their later edits don't change your copy).
+export const SHARE_MAX = 10;
+export function sharedOf(plan) {
+  return { id: plan.id, name: String(plan.name || "").slice(0, 40), n: plan.n || 1, items: clean(plan.items).slice(0, MAX_ITEMS) };
+}
+export function copyPlan(P, src, by, now = Date.now()) {
+  const { P: P2, plan } = addPlan(P, now);
+  const items = clean(src.items).filter(x => x && typeof x.id === "string").slice(0, MAX_ITEMS).map(x => ({ id: x.id, sets: Math.max(1, Math.min(MAX_SETS, Math.floor(+x.sets) || DEFAULT_SETS)), ...(x.dur ? { dur: Math.max(5, Math.min(1800, Math.floor(+x.dur) || 0)) } : {}) }));
+  const name = String(src.name || "").slice(0, 40);
+  const out = updatePlan(P2, plan.id, { name, items, by: String(by || "").slice(0, 24) || null }, now);
+  return { P: out, plan: out.list.find(p => p.id === plan.id) };
+}
 export function updatePlan(P, id, patch, now = Date.now()) {
   return { ...P, list: P.list.map(p => (p.id === id ? stamp({ ...p, ...patch }, now) : p)) };
 }

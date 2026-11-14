@@ -1,6 +1,22 @@
 // Polish: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    plShare: "Pokaż na moim profilu",
+    plShareD: "Znajomi zobaczą ten plan i mogą zapisać kopię. Twoje ciężary zostają twoje.",
+    plSharedD: "Jest na twoim profilu. Zmiany, które tu zrobisz, trafią też tam.",
+    plShareFull: "Możesz pokazać najwyżej {n} planów.",
+    plShareSignIn: "Zaloguj się, aby pokazywać plany na profilu.",
+    pfPlans: "Plany",
+    pfPlansD: "Plany, które pokazujesz na profilu. Kto je widzi, zależy od tego, kto widzi twój profil. Inni mogą zapisać kopię: ćwiczenia, serie i czasy utrzymania, nigdy twoje ciężary.",
+    pfPlansNone: "Nie ma tu jeszcze planów. Otwórz plan w Planach i włącz Pokaż na moim profilu.",
+    plBy: "Od {nick}",
+    plCopy: "Zapisz w moich planach",
+    plCopyD: "Kopia tylko dla ciebie: zmieniaj ją, jak chcesz.",
+    plSavedCopy: "Zapisano w twoich planach",
+    plReport: "Zgłoś ten plan",
+    plReportD: "Ma obraźliwą nazwę albo to spam? Zgłoszenia sprawdzamy ręcznie.",
+    tourPfPlans: "Plany, które pokazujesz na profilu. Znajomi mogą otworzyć jeden i zapisać kopię.",
+    tourPlShare: "Włącz to, a plan pojawi się na twoim profilu: znajomi mogą zapisać kopię (nigdy twoich ciężarów).",
     frTogether: "Razem",
     tgInvT: "Zaproś znajomego",
     tgInvD: "Gdy znajomy dołączy przez twój link i zrobi 3 treningi, oboje dostaniecie {n} 💎.",
@@ -110,6 +126,7 @@ export default {
   },
   news1_10: [
     ["Znajomi razem", "Znajomi i ranking; wspólna seria liczyła tylko treningi, a światowy ranking był zablokowany.", "Nowa strona Razem: zaproś znajomego swoim linkiem (100 💎 dla każdego po jego 3. treningu), trzymajcie duet (treningi albo kalorie), wspólny cel tygodniowy, pojedynek w seriach i szturchnięcie dla znajomego, który jeszcze nie ćwiczył. Dni liczy serwer, więc duetu nie da się podrobić. Ranking to tylko twoi znajomi, zablokowany światowy zniknął. Nowa odznaka: Razem raźniej."],
+    ["Biblioteka planów", "Plan widział tylko ten, kto go stworzył.", "Pokaż plan na swoim profilu: znajomi go otworzą i jednym dotknięciem zapiszą własną kopię (ćwiczenia, serie, czasy utrzymania, nigdy twoje ciężary). Przy kopii widać, od kogo jest, a twoje zmiany trafiają też do planu na profilu."],
     ["Historia", "Długa lista wszystkich treningów, kalendarz, którego nie dało się stuknąć, i liczby na górze.", "Najważniejszy jest kalendarz: stuknij dzień, aby otworzyć jego trening, stuknij pusty dzień, aby go dodać. Lista pokazuje wybrany miesiąc, a nowa strona Postępy ma liczby i płynniejszy wykres."],
     ["Sklep", "Jedna strona długa na dziesięć ekranów.", "Diamenty zostają na górze, a pod nimi przesuwają się trzy strony: Sklep, Wyglądy i Zdobyte. Karnet sezonowy i więcej sposobów na diamenty są pokazane jako „wkrótce”."],
     ["Muscle Deck", "W sklepie Następny blind był na samym końcu, a wyjście to mały ✕ na górze.", "Sklep kończy się pływającym paskiem: Zapisz i wyjdź oraz Następny blind, zawsze na ekranie. Ikona napiętego bicepsa jest narysowana od nowa."],
