@@ -49,6 +49,11 @@ const SHOTS = [
     for (const c of pair.slice(0, 2)) await p.click(`[data-gm-hand] [data-card="${c}"]`);
     await p.waitForTimeout(1000);
   }],
+  // README only (MORE=1): History and Shop are not among the 8 store screenshots
+  ...(process.env.MORE ? [
+    ["09_history", async p => { await menu(p, "history"); await p.evaluate(() => scrollTo(0, 0)); await p.waitForTimeout(900); }],
+    ["10_shop", async p => { await menu(p, "shop"); await p.click('[data-shop-tab="1"]', { timeout: 1500 }).catch(() => {}); await p.waitForTimeout(1600); await p.evaluate(() => scrollTo(0, 0)); await p.waitForTimeout(600); }],
+  ] : []),
 ];
 const VIEW = { width: +(process.env.W || 412), height: +(process.env.H || 733) }, DPR = +(process.env.DPR || 1080 / 412);
 for (const lang of LANGS) {

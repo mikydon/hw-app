@@ -16,7 +16,7 @@ Otthoni edzés 19 perc alatt, saját tervek súlyokkal, rangok és széria.
 
 🏆 FEJLŐDÉS ÉS MOTIVÁCIÓ
 • 9 rang minden gyakorlathoz, Vastól Obszidiánig, és egy testtérkép, amely 9 testrészt rangsorol.
-• 47 jelvény, XP és szintek, széria szériavédőkkel és heti kihívások.
+• 49 jelvény, XP és szintek, széria szériavédőkkel és heti kihívások.
 • Statisztikák aktivitástérképpel és heti grafikonokkal, és szerkeszthető előzmények.
 • Edzéssel szerzett gyémántok szériavédőkre, XP-boostokra és profilkinézetekre.
 • 🃏 Muscle Deck: kártyajáték, amelyben az edzésed az erőd.
