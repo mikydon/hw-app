@@ -6662,7 +6662,7 @@ function PlanStore({ on, signedIn, P, history }) {
           <Ico n="search" size={18} color={C.dim} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
           <input data-store-q value={q} onChange={e => setQ(e.target.value)} placeholder={T("plStoreSearch")} aria-label={T("plStoreSearch")} style={{ ...pwField(), width: "100%", paddingLeft: 38 }} />
         </div>
-        <button type="button" data-store-filter={nActive} aria-label={T("plStoreFilter")} onClick={() => { sfxTap(); setFOpen(true); }} style={{ ...btnBase, position: "relative", width: 50, flexShrink: 0, borderRadius: 14, ...SUNK(), color: nActive ? C.signal : C.chalk, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <button type="button" data-store-filter={nActive} aria-label={T("plStoreFilter")} onClick={() => { sfxTap(); setFOpen(true); }} style={{ ...pwField(), ...btnBase, position: "relative", width: 50, padding: 0, flexShrink: 0, color: nActive ? C.signal : C.chalk, display: "flex", alignItems: "center", justifyContent: "center" }}>
           <Ico n="sliders" size={20} />
           {nActive > 0 && <span style={{ position: "absolute", top: 6, right: 6, minWidth: 16, height: 16, borderRadius: 99, background: C.signal, color: C.signalInk, fontSize: 10, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center" }}>{nActive}</span>}
         </button>
