@@ -6656,6 +6656,49 @@ function FilterBar({ q, setQ, placeholder, n, onOpen, data, autoFocus, noSearch,
 // do next with ONE button (clear the filters, add a workout, add a friend…)
 // 1.10.0 (idea 5): while a list loads, grey outlines of its rows instead of the word "Loading…" (the word stays for
 // screen readers). avatar = a round photo place; lines = how many text lines a row has.
+// 1.10.0 (idea 6, Michael approved Nov 14): pull a list down from the very top = load it again (touch only; a mouse
+// has the screen's own refresh). A circle comes out under the top bar; past 64 px it turns and a release refreshes.
+// Ignored while a sheet is open, when the page is scrolled, or when the finger moves sideways (pager swipes).
+const PULL_AT = 64;
+function PullRefresh({ on = true, onRefresh }) {
+  const [d, setD] = useState(0), [busy, setBusy] = useState(false);
+  const st = useRef(null), dRef = useRef(0), busyRef = useRef(false), fn = useRef(onRefresh);
+  fn.current = onRefresh;
+  useEffect(() => {
+    if (!on) return;
+    const set = v => { dRef.current = v; setD(v); };
+    const start = e => {
+      if (busyRef.current || e.touches.length !== 1 || window.scrollY > 2 || document.querySelector(".sheetWrap, [data-tour], [data-confirm]")) { st.current = null; return; }
+      st.current = { x: e.touches[0].clientX, y: e.touches[0].clientY, pull: false };
+    };
+    const move = e => {
+      const s0 = st.current; if (!s0) return;
+      const dx = e.touches[0].clientX - s0.x, dy = e.touches[0].clientY - s0.y;
+      if (!s0.pull) { if (Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy)) { st.current = null; return; } if (dy < -4 || window.scrollY > 2) { st.current = null; return; } if (dy > 10) s0.pull = true; else return; }
+      set(Math.max(0, Math.min(96, (dy - 10) * 0.55)));
+    };
+    const end = () => {
+      const s0 = st.current; st.current = null;
+      if (!s0 || !s0.pull) return;
+      if (dRef.current >= PULL_AT) {
+        busyRef.current = true; setBusy(true); set(PULL_AT); buzz(10);
+        const t0 = Date.now();
+        Promise.resolve().then(() => fn.current && fn.current()).catch(() => {}).then(() => new Promise(r => setTimeout(r, Math.max(0, 650 - (Date.now() - t0))))).then(() => { busyRef.current = false; setBusy(false); set(0); });
+      } else set(0);
+    };
+    window.addEventListener("touchstart", start, { passive: true }); window.addEventListener("touchmove", move, { passive: true });
+    window.addEventListener("touchend", end); window.addEventListener("touchcancel", end);
+    return () => { window.removeEventListener("touchstart", start); window.removeEventListener("touchmove", move); window.removeEventListener("touchend", end); window.removeEventListener("touchcancel", end); };
+  }, [on]);
+  if (!d && !busy) return null;
+  const p = Math.min(1, d / PULL_AT);
+  return createPortal(
+    <div data-pull={busy ? "busy" : p >= 1 ? "ready" : "pull"} aria-hidden="true" style={{ position: "fixed", left: "calc(var(--side, 0px) + 50%)", top: "calc(var(--sat, 0px) + 64px)", zIndex: 60, pointerEvents: "none",
+      transform: `translate(-50%, ${d - 40}px) scale(${0.6 + 0.4 * p})`, opacity: Math.min(1, p * 1.4), transition: st.current ? "none" : `transform ${MO.t2}s ${MO.ease}, opacity ${MO.t2}s`,
+      width: 40, height: 40, borderRadius: 20, background: C.panel, boxShadow: "0 6px 18px rgba(0,0,0,.35)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <span className={busy ? "pullSpin" : undefined} style={{ display: "flex", transform: busy ? undefined : `rotate(${p * 300}deg)` }}><Ico n="repeat" size={20} color={p >= 1 || busy ? C.signal : C.dim} /></span>
+    </div>, document.body);
+}
 function SkelRows({ n = 3, avatar = false, lines = 2, pad = "12px 16px", gap = 0, divide = true, h }) {
   const sk = { "--sk1": `${C.chalk}0d`, "--sk2": `${C.chalk}1f`, borderRadius: 8 };
   return (
@@ -6726,8 +6769,8 @@ function PlanStore({ on, signedIn, P, history }) {
   const [list, setList] = useState(STORE_CACHE ? STORE_CACHE.list : null), [err, setErr] = useState("");
   const [q, setQ] = useState(""), [grp, setGrp] = useFltMem("store", "grp", null), [eq, setEq] = useFltMem("store", "eq", ["none", "free", "machine"]), [sort, setSort] = useFltMem("store", "sort", "sv");
   const [peek, setPeek] = useState(null), [fOpen, setFOpen] = useState(false);
-  const load = force => { if (!signedIn) return; if (!force && STORE_CACHE && Date.now() - STORE_CACHE.ts < 5 * 60 * 1000) { setList(STORE_CACHE.list); return; } setErr("");
-    cloud().pubList().then(l => { const c = l.map(x => ({ ...x, items: (x.items || []).filter(i => i && EX[i.id]) })).filter(x => x.items.length); STORE_CACHE = { ts: Date.now(), list: c }; setList(c); }).catch(e => setErr(cloudErr(e) || T("frOffline"))); };
+  const load = force => { if (!signedIn) return Promise.resolve(); if (!force && STORE_CACHE && Date.now() - STORE_CACHE.ts < 5 * 60 * 1000) { setList(STORE_CACHE.list); return Promise.resolve(); } setErr("");
+    return cloud().pubList().then(l => { const c = l.map(x => ({ ...x, items: (x.items || []).filter(i => i && EX[i.id]) })).filter(x => x.items.length); STORE_CACHE = { ts: Date.now(), list: c }; setList(c); }).catch(e => setErr(cloudErr(e) || T("frOffline"))); };
   useEffect(() => { if (on) load(); }, [on, signedIn]);
   if (!signedIn) return (
     <Sect data-store-signin style={{ display: "flex", alignItems: "center", gap: 12 }}><IcoBox n="globe" /><span style={{ flex: 1, fontSize: 14, color: C.dim, lineHeight: 1.45 }}>{T("plStoreSignIn")}</span></Sect>
@@ -6759,6 +6802,7 @@ function PlanStore({ on, signedIn, P, history }) {
           [T("plStoreEq"), EQUIP_ORDER.map(k => [T("eq_" + k), eq.includes(k), () => toggleEq(k), { "data-store-eq": k }])],
         ]} />}
       {err && <div role="alert" style={{ fontSize: 13, color: "#ff8a80", marginTop: 10 }}>{err}</div>}
+      <PullRefresh on={on} onRefresh={() => load(true)} />
       <Sect data-store-list style={{ padding: "6px 0", marginTop: 12 }}>
         {list === null && !err ? <SkelRows n={4} pad={ROW_I} />
           : !shown.length ? <div data-store-none><EmptyAct data="store" text={T(list && list.length ? "plStoreNone" : "plStoreEmpty")} label={T("emClear")} icon="eraser" onAct={list && list.length && (q || nActive) ? () => { setQ(""); setGrp(null); setEq(ALL_EQ); } : null} /></div>
@@ -7620,6 +7664,7 @@ function FriendsMain({ acct, history, profile, social, onRename, chatWith, setCh
   }
   return (
     <div className="scr" data-fr-main style={{ padding: "6px 18px 124px", maxWidth: "var(--colMax)", margin: "0 auto" }}>
+      <PullRefresh onRefresh={() => (fx.fs && fx.fs.refresh ? fx.fs.refresh() : null)} />
       {sheet && <PersonSheet p={sheet} isFriend={friendIds.includes(sheet.uid)} fsState={fsStateOf(sheet.uid)} onFs={fsInvite} onClose={() => setSheet(null)} onChat={friendIds.includes(sheet.uid) ? x => { setSheet(null); setChatWith(x.uid); } : null}
         delChatOff={!chats.some(c => c.other === sheet.uid)} onDelChat={x => { const c = chats.find(cc => cc.other === x.uid); setSheet(null); if (c) deleteChat(c); }}
         onFsEnd={fsStateOf(sheet.uid) === "on" ? x => { setSheet(null); act(() => fs.end(x.uid)); } : null}
@@ -12999,11 +13044,11 @@ export default function App() {
   // most every 10 minutes per friend. A friend whose server copy is missing still shows their own days list.
   const loadFsDays = () => {
     const today = dateKey();
-    fstreaks.forEach(f => {
+    return Promise.all(fstreaks.map(f => {
       const u = f.other, at = (cloudMem().vdAt || {})[u] || 0;
       const ask = Date.now() - at > 10 * 60 * 1000 ? cloud().vday(u, today).catch(() => null).then(() => setCloudMem({ vdAt: { ...(cloudMem().vdAt || {}), [u]: Date.now() } })) : Promise.resolve();
-      ask.then(() => cloud().getVdays(u).catch(() => null)).then(v => (v ? v : cloud().getDays(u).then(d => ({ d: d || [], s: {}, k: [], f: [], old: true })))).then(v => setFsDays(m => ({ ...m, [u]: v }))).catch(() => {});
-    });
+      return ask.then(() => cloud().getVdays(u).catch(() => null)).then(v => (v ? v : cloud().getDays(u).then(d => ({ d: d || [], s: {}, k: [], f: [], old: true })))).then(v => setFsDays(m => ({ ...m, [u]: v }))).catch(() => {});
+    }));
   };
   useEffect(() => { if (fsIds) loadFsDays(); }, [fsIds]);
   useEffect(() => { if (screen === "friends" && fsIds) loadFsDays(); }, [screen]);
@@ -13064,7 +13109,7 @@ export default function App() {
   const duoNow = fstreaks.filter(f => f.ok).map(f => duoState(f, duoMine, fsDays[f.other], dateKey()).n);
   const duoTop = Math.max(0, ...duoNow);
   useEffect(() => { const p = profRef.current; if (profLoaded && p && duoTop > (p.duoBest || 0)) setProfile({ ...p, duoBest: duoTop }); }, [duoTop, profLoaded]);
-  const friendsFx = { vdaySeq, rew, fs: { list: fstreaks, days: fsDays, mine: duoMine,
+  const friendsFx = { vdaySeq, rew, fs: { list: fstreaks, days: fsDays, mine: duoMine, refresh: () => loadFsDays(),
     invite: (uid, k, g) => cloud().fsInvite(uid, k, g), accept: uid => cloud().fsAccept(uid, dateKey()), end: uid => cloud().fsEnd(uid),
     set: (uid, ch) => cloud().fsSet(uid, ch),
     nudge: uid => cloud().nudge(uid, dateKey()).then(r => { if (r && (r.why === "ok" || r.why === "dup" || r.why === "no-phone" || r.why === "off")) setCloudMem({ nudged: { ...(cloudMem().nudged || {}), [uid]: dateKey() } }); return r; }) } };
@@ -13766,6 +13811,7 @@ export default function App() {
         .gmAmb{animation:gmAmb 16s ease-in-out infinite alternate;will-change:transform}@keyframes gmAmb{from{transform:translate(-4%,-3%) rotate(0)}to{transform:translate(5%,4%) rotate(8deg)}}
         .gmHint{animation:gmHint 2.2s ease-in-out infinite}@keyframes gmHint{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
         .gmMeterHit{animation:gmMeterHit .5s ${MO.spring}}@keyframes gmMeterHit{40%{transform:scale(1.07)}100%{transform:none}}
+        .pullSpin{animation:pullSpin .8s linear infinite}@keyframes pullSpin{to{transform:rotate(360deg)}}
         .skel{background:linear-gradient(90deg,var(--sk1) 0%,var(--sk2) 45%,var(--sk1) 90%);background-size:250% 100%;animation:skel 1.3s ease-in-out infinite}@keyframes skel{0%{background-position:100% 0}100%{background-position:-60% 0}}@media (prefers-reduced-motion:reduce){.skel{animation:none}}
         .gmFlash{animation:gmFlash .45s ease-out forwards;opacity:0}@keyframes gmFlash{0%{opacity:.55}100%{opacity:0}}
         .gmRise{animation:gmRise 1s ${MO.pop} forwards}@keyframes gmRise{0%{opacity:0;transform:translate(-50%,-30px) scale(.5)}35%{opacity:1;transform:translate(-50%,4px) scale(1.18)}60%{transform:translate(-50%,0) scale(1)}100%{opacity:1;transform:translate(-50%,0) scale(1)}}

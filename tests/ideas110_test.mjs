@@ -64,4 +64,30 @@ const ids = p => p.$$eval("[data-store-plan]", e => e.map(x => x.getAttribute("d
   T.eq(h.errors, [], "no page errors (5)");
   await h.close();
 }
+// ─── 6: pull down from the top = load again ───
+{
+  const h = await start({ viewport: { width: 380, height: 820 }, cloud: { pub }, seed: { profile: { name: "Michael" } } });
+  const p = h.page, cdp = await p.context().newCDPSession(p);
+  await cdp.send("Emulation.setTouchEmulationEnabled", { enabled: true, maxTouchPoints: 1 });
+  await go(p, "plans"); await p.click('[data-plans-seg="store"]'); await p.waitForTimeout(900);
+  const calls = () => p.evaluate(() => window.__fakeLog.filter(x => x[0] === "pubList").length);
+  const before = await calls();
+  const touch = (type, y, x = 190) => cdp.send("Input.dispatchTouchEvent", { type, touchPoints: type === "touchEnd" ? [] : [{ x, y }] });
+  await touch("touchStart", 300);
+  for (let y = 310; y <= 300 + 160; y += 15) { await touch("touchMove", y); await p.waitForTimeout(16); }
+  T.eq(await p.getAttribute("[data-pull]", "data-pull"), "ready", "pulled far enough: the circle is ready");
+  await touch("touchEnd", 460); await p.waitForTimeout(100);
+  T.eq(await p.getAttribute("[data-pull]", "data-pull"), "busy", "released: it spins");
+  await p.waitForTimeout(1000);
+  T.eq(await calls(), before + 1, "the Library was loaded again");
+  T.eq(await p.locator("[data-pull]").count(), 0, "the circle is gone after loading");
+  // a short pull does nothing
+  await touch("touchStart", 300); await touch("touchMove", 330); await touch("touchMove", 350); await touch("touchEnd", 350); await p.waitForTimeout(500);
+  T.eq(await calls(), before + 1, "a short pull: no reload");
+  // sideways (pager swipe): no pull
+  await touch("touchStart", 300, 300); for (let i = 1; i <= 6; i++) await touch("touchMove", 300 + i * 6, 300 - i * 30); await touch("touchEnd", 336, 120); await p.waitForTimeout(400);
+  T.eq(await p.locator("[data-pull]").count(), 0, "a sideways swipe never pulls");
+  T.eq(h.errors, [], "no page errors (6)");
+  await h.close();
+}
 T.done();
