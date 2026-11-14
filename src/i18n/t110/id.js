@@ -1,6 +1,19 @@
 // Indonesian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    plOfficial: "Dari HW App",
+    plDef_a: "Seluruh tubuh di rumah A",
+    plDef_b: "Seluruh tubuh di rumah B",
+    plDef_c: "Seluruh tubuh di rumah C",
+    plDef_start: "Langkah pertama",
+    plDef_core: "Core 10 menit",
+    plDef_legs: "Kaki dan bokong di rumah",
+    plDef_db: "Seluruh tubuh dengan dumbel",
+    plDef_dbup: "Tubuh atas dengan dumbel",
+    plDef_bar: "Palang pull-up",
+    plDef_push: "Gym: dorong",
+    plDef_pull: "Gym: tarik",
+    plDef_glegs: "Gym: kaki",
     plSearch: "Cari di rencanaku",
     plSortNew: "Terbaru",
     plSortOld: "Terlama",
@@ -163,7 +176,7 @@ export default {
   },
   news1_10: [
     ["Teman bersama", "Teman dan papan peringkat; streak dengan teman hanya menghitung latihan, dan papan peringkat dunia terkunci.", "Halaman Bersama yang baru: undang teman dengan tautanmu (100 💎 untuk masing-masing setelah latihan ke-3 dia), jaga duo (latihan atau kalori), target mingguan berdua, duel set, dan colekan untuk teman yang belum latihan. Hari dihitung oleh server, jadi duo tak bisa dipalsukan. Papan peringkat hanya teman-temanmu; papan dunia yang terkunci sudah dihapus. Lencana baru: Lebih baik berdua."],
-    ["Pustaka rencana", "Sebuah rencana hanya terlihat oleh pembuatnya.", "Tampilkan rencana di profilmu: teman membukanya dan dengan sekali ketuk menyimpan salinan sendiri (latihan, set, waktu tahan, tidak pernah bebanmu). Salinan menunjukkan dari siapa asalnya, dan perubahanmu juga sampai ke rencana di profil. Atau terbitkan di Pustaka yang baru: semua orang bisa mencari berdasarkan nama, pembuat, atau latihan, menyaring menurut fokus dan peralatan, dan melihat bintang serta berapa orang yang menyimpannya (bintang hanya dari yang sudah berlatih dengannya)."],
+    ["Pustaka rencana", "Sebuah rencana hanya terlihat oleh pembuatnya.", "Tampilkan rencana di profilmu: teman membukanya dan dengan sekali ketuk menyimpan salinan sendiri (latihan, set, waktu tahan, tidak pernah bebanmu). Salinan menunjukkan dari siapa asalnya, dan perubahanmu juga sampai ke rencana di profil. Atau terbitkan di Pustaka yang baru: semua orang bisa mencari berdasarkan nama, pembuat, atau latihan, menyaring menurut fokus dan peralatan, dan melihat bintang serta berapa orang yang menyimpannya (bintang hanya dari yang sudah berlatih dengannya). Pustaka langsung berisi 12 rencana dari HW App: di rumah, dengan dumbel, di palang pull-up, dan di gym."],
     ["Bagikan dan nilai", "Latihan tak bisa ditunjukkan ke siapa pun.", "Bagikan di ringkasan latihan membuat gambar latihanmu (waktu, set, repetisi, streak, latihan) untuk Instagram, WhatsApp, atau ke mana saja. Versi Google Play sesekali bisa meminta penilaian setelah latihan; bisa dimatikan di Pengaturan."],
     ["Riwayat", "Daftar panjang semua latihan, kalender yang tidak bisa diketuk, dan angka di atas.", "Kalender jadi yang utama: ketuk satu hari untuk membuka latihannya, ketuk hari kosong untuk menambah latihan. Daftarnya mengikuti bulan, dan halaman Kemajuan yang baru berisi angka dan grafik yang lebih halus."],
     ["Toko", "Satu halaman, sepanjang sepuluh layar.", "Berlianmu tetap di atas dan tiga halaman bisa digeser di bawahnya: Toko, Tampilan, dan Didapat. Season pass dan cara lain untuk dapat berlian ditampilkan sebagai “segera hadir”."],

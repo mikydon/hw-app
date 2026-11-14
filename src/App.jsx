@@ -8,6 +8,7 @@ import { RANK_AT, EX_GROUPS } from "./ranks.js";
 import { LIB, W_RANK, wSetScore, wRankAt, REP_CAP, GROUPS_ORDER, EQUIP_ORDER } from "./exlib.js";
 import { EX_NAMES } from "./exnames.js";
 import * as PLN from "./plans.js";
+import { isDefOwner } from "./defplans.js";
 import { drawShareCard } from "./sharecard.js";
 import * as BD from "./body.js";
 import * as GM from "./game/engine.js";
@@ -6678,6 +6679,10 @@ function FilterSheet({ title, sections, onReset, resetOff, show, onClose, data }
 // "also how many people saved it"). One load of the most saved and the newest plans; search (name, author, exercise
 // names), focus, equipment and the order run on the phone. Saves and stars are counted by the server.
 let STORE_CACHE = null; // {ts, list} for 5 minutes
+// HW App's own plans (src/defplans.js) carry a key: their name in the user's language (plDef_<k>), else the English
+// name from the server (a plan added later than this app version)
+const pubName = x => { if (isDefOwner(x.o) && x.k) { const t = T("plDef_" + x.k); if (t !== "plDef_" + x.k) return t; } return x.name; };
+const OffBadge = () => <span data-store-official title={T("plOfficial")} aria-label={T("plOfficial")} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 14, height: 14, borderRadius: 7, background: C.signal, color: C.signalInk, flex: "none" }}><Ico n="check" size={10} /></span>;
 function PlanStore({ on, signedIn, P, history }) {
   const [list, setList] = useState(STORE_CACHE ? STORE_CACHE.list : null), [err, setErr] = useState("");
   const [q, setQ] = useState(""), [grp, setGrp] = useState(null), [eq, setEq] = useState(["none", "free", "machine"]), [sort, setSort] = useState("sv");
@@ -6689,9 +6694,9 @@ function PlanStore({ on, signedIn, P, history }) {
     <Sect data-store-signin style={{ display: "flex", alignItems: "center", gap: 12 }}><IcoBox n="globe" /><span style={{ flex: 1, fontSize: 14, color: C.dim, lineHeight: 1.45 }}>{T("plStoreSignIn")}</span></Sect>
   );
   const nq = normTxt(q);
-  const hit = x => !nq || [x.name, x.nick, ...x.items.map(i => EX[i.id] ? EX[i.id].name : "")].some(t => normTxt(t).includes(nq));
+  const hit = x => !nq || [pubName(x), x.nick, ...x.items.map(i => EX[i.id] ? EX[i.id].name : "")].some(t => normTxt(t).includes(nq));
   const shown = (list || []).filter(x => hit(x) && (!grp || (x.fam || []).includes(grp)) && eq.includes(x.eq || "none"))
-    .sort((a, b) => sort === "avg" ? (b.avg || 0) - (a.avg || 0) || (b.sn || 0) - (a.sn || 0) : sort === "ts" ? (b.ts || 0) - (a.ts || 0) : (b.sv || 0) - (a.sv || 0) || (b.ts || 0) - (a.ts || 0));
+    .sort((a, b) => sort === "avg" ? (b.avg || 0) - (a.avg || 0) || (b.sn || 0) - (a.sn || 0) : sort === "ts" ? (b.ts || 0) - (a.ts || 0) : (b.sv || 0) - (a.sv || 0) || isDefOwner(b.o) - isDefOwner(a.o) || (b.ts || 0) - (a.ts || 0));
   // 1.10.0 (Michael, Nov 14: "a filter system like apps have; all those buttons look messy"): search + one filter
   // button (a count of active filters on it); the filters and the order live in a sheet; active filters show as
   // small removable chips; the order is a quiet line above the list
@@ -6719,11 +6724,11 @@ function PlanStore({ on, signedIn, P, history }) {
         {list === null && !err ? <div style={{ padding: "10px 16px", color: C.dim, fontSize: 14 }}>{T("frLoading")}</div>
           : !shown.length ? <div data-store-none style={{ padding: "12px 16px", color: C.dim, fontSize: 14, lineHeight: 1.5 }}>{T(list && list.length ? "plStoreNone" : "plStoreEmpty")}</div>
           : shown.slice(0, 50).map((x, i) => (
-            <button key={x.pid} type="button" data-store-plan={x.pid} onClick={() => { sfxTap(); setPeek(x); }} style={{ ...btnBase, width: "100%", display: "flex", alignItems: "center", gap: 12, padding: ROW_I, background: "transparent", color: C.chalk, textAlign: "left", borderRadius: 0, borderTop: i ? `1px solid ${C.line}` : "none" }}>
+            <button key={x.pid} type="button" data-store-plan={x.pid} onClick={() => { sfxTap(); setPeek({ ...x, name: pubName(x) }); }} style={{ ...btnBase, width: "100%", display: "flex", alignItems: "center", gap: 12, padding: ROW_I, background: "transparent", color: C.chalk, textAlign: "left", borderRadius: 0, borderTop: i ? `1px solid ${C.line}` : "none" }}>
               <span style={{ flex: 1, minWidth: 0 }}>
-                <span style={{ display: "block", fontSize: 15, fontWeight: 800, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", ...INK }}>{x.name}</span>
+                <span style={{ display: "block", fontSize: 15, fontWeight: 800, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", ...INK }}>{pubName(x)}</span>
                 <span style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 12, color: C.dim, marginTop: 3, fontWeight: 600, flexWrap: "wrap" }}>
-                  <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 120 }}>{x.nick}</span>
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 4, minWidth: 0, maxWidth: 140 }}><span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{x.nick}</span>{isDefOwner(x.o) && <OffBadge />}</span>
                   <span data-store-avg={x.avg || 0} style={{ display: "inline-flex", alignItems: "center", gap: 3, color: x.sn ? C.signal : C.dim }}><IcoI n="star" />{x.sn ? `${(x.avg || 0).toLocaleString(LANG, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} (${nf(x.sn)})` : "–"}</span>
                   <span data-store-sv={x.sv || 0} style={{ display: "inline-flex", alignItems: "center", gap: 3 }}><IcoI n="download" />{nf(x.sv || 0)}</span>
                 </span>
@@ -6748,11 +6753,11 @@ function PlanPeek({ plan, by, uid, onClose, store, P, history, onStore }) {
   const [vote, setVote] = useState(null), [rateMsg, setRateMsg] = useState("");
   useEffect(() => { if (pid && copy) cloud().pubVote(pid).then(v => setVote(v && v.r ? v.r : 0)).catch(() => {}); }, [pid]);
   const rate = r => { sfxTap(); setVote(r); setRateMsg(""); cloud().pubRate(pid, r).then(x => { if (x && x.why === "ok") { sfxCheck(); onStore && onStore({ avg: x.avg, sn: x.sn }); } else setRateMsg(T(x && x.why === "not-trained" ? "plRateAfter" : "frErr")); }).catch(() => setRateMsg(T("frErr"))); };
-  const own = uid && uid === myUid;
+  const own = uid && uid === myUid, official = isDefOwner(uid);
   return (
     <Sheet title={plan.name || T("planDefault", { n: plan.n })} onClose={onClose}>
-      <div data-plan-peek={plan.id}>
-        {by && <div style={{ fontSize: 13, color: C.dim, margin: "-4px 2px 12px", display: "flex", alignItems: "center", gap: 6 }}><Ico n="duo" size={15} />{T("plBy", { nick: by })}</div>}
+      <div data-plan-peek={plan.id || plan.pid || ""}>
+        {by && <div style={{ fontSize: 13, color: C.dim, margin: "-4px 2px 12px", display: "flex", alignItems: "center", gap: 6 }}><Ico n="duo" size={15} />{T("plBy", { nick: by })}{official && <OffBadge />}</div>}
         <div style={{ ...card, ...tileR(), overflow: "hidden" }}>
           {plan.items.map((x, i) => { const ex = EX[x.id]; const timed = ex.type === "time" || ex.type === "carry";
             return <div key={x.id} data-plan-peek-item={x.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", borderTop: i ? `1px solid ${C.line}` : "none" }}>
@@ -6782,7 +6787,7 @@ function PlanPeek({ plan, by, uid, onClose, store, P, history, onStore }) {
           <button type="button" data-plan-copy onClick={() => { const pl = copyPlanGlobal && copyPlanGlobal(plan, by, pid); if (!pl) return; setSaved(pl.id); if (pid) cloud().pubSaved(pid, pl.id).then(x => { if (x && x.why === "ok" && onStore) onStore({ sv: x.sv }); }).catch(() => {}); }} style={{ ...btnBase, width: "100%", marginTop: 14, padding: "14px", borderRadius: 14, background: C.signal, color: C.signalInk, fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}><Ico n="plus" size={18} />{T("plCopy")}</button>
         ))}
         {uid && !own && !copy && <div style={{ fontSize: 12, color: C.dim, textAlign: "center", lineHeight: 1.45, marginTop: 8 }}>{T("plCopyD")}</div>}
-        {uid && !own && (repDone ? <div role="status" style={{ fontSize: 12, color: C.dim, textAlign: "center", marginTop: 12 }}>{T("frReported")}</div>
+        {uid && !own && !official && (repDone ? <div role="status" style={{ fontSize: 12, color: C.dim, textAlign: "center", marginTop: 12 }}>{T("frReported")}</div>
           : <button type="button" data-plan-report onClick={() => { sfxTap(); setRep(true); }} style={{ ...btnBase, display: "flex", alignItems: "center", gap: 6, margin: "12px auto 0", background: "transparent", color: C.dim, fontSize: 12, padding: "6px 10px" }}><Ico n="flag" size={14} />{T("plReport")}</button>)}
         {rep && <ConfirmBox icon="flag" danger title={T("plReport")} text={T("plReportD")} yes={T("frReport")} yesData={{ "data-plan-report-yes": true }} onNo={() => setRep(false)}
           onYes={() => { setRep(false); cloud().report(uid, "plan: " + (plan.name || "")).then(() => setRepDone(true)).catch(() => setRepDone(true)); }} />}

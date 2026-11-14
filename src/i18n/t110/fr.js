@@ -1,6 +1,19 @@
 // French: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    plOfficial: "Par HW App",
+    plDef_a: "Corps entier à la maison A",
+    plDef_b: "Corps entier à la maison B",
+    plDef_c: "Corps entier à la maison C",
+    plDef_start: "Premiers pas",
+    plDef_core: "Gainage en 10 minutes",
+    plDef_legs: "Jambes et fessiers à la maison",
+    plDef_db: "Corps entier aux haltères",
+    plDef_dbup: "Haut du corps aux haltères",
+    plDef_bar: "Barre de traction",
+    plDef_push: "Salle : poussée",
+    plDef_pull: "Salle : tirage",
+    plDef_glegs: "Salle : jambes",
     plSearch: "Rechercher dans mes programmes",
     plSortNew: "Plus récents",
     plSortOld: "Plus anciens",
@@ -163,7 +176,7 @@ export default {
   },
   news1_10: [
     ["Amis ensemble", "Des amis et un classement ; une série entre amis ne comptait que les séances, et le classement mondial était verrouillé.", "Une nouvelle page Ensemble : invite un ami avec ton lien (100 💎 chacun après sa 3e séance), tenez un duo (séances ou calories), un objectif de la semaine à deux, un duel de séries et une relance pour l'ami qui ne s'est pas encore entraîné. Le serveur compte les jours, donc impossible de truquer un duo. Le classement ne montre que tes amis ; le classement mondial verrouillé a disparu. Nouveau badge : Plus forts à deux."],
-    ["Bibliothèque de programmes", "Seul son créateur voyait un programme.", "Affiche un programme sur ton profil : tes amis l'ouvrent et enregistrent leur propre copie d'un toucher (exercices, séries, temps de gainage, jamais tes charges). La copie indique de qui elle vient, et tes modifications arrivent aussi dans le programme de ton profil. Ou publie-le dans la nouvelle Bibliothèque : chacun y cherche par nom, auteur ou exercice, filtre par ciblage et matériel, et voit les étoiles et combien l'ont enregistré (seuls ceux qui l'ont fait peuvent le noter)."],
+    ["Bibliothèque de programmes", "Seul son créateur voyait un programme.", "Affiche un programme sur ton profil : tes amis l'ouvrent et enregistrent leur propre copie d'un toucher (exercices, séries, temps de gainage, jamais tes charges). La copie indique de qui elle vient, et tes modifications arrivent aussi dans le programme de ton profil. Ou publie-le dans la nouvelle Bibliothèque : chacun y cherche par nom, auteur ou exercice, filtre par ciblage et matériel, et voit les étoiles et combien l'ont enregistré (seuls ceux qui l'ont fait peuvent le noter). La Bibliothèque démarre avec 12 programmes de HW App : à la maison, aux haltères, à la barre de traction et en salle."],
     ["Partager et noter", "Impossible de montrer une séance à qui que ce soit.", "Partager sur le résumé de séance crée une image de ta séance (temps, séries, répétitions, série de jours, exercices) pour Instagram, WhatsApp ou ailleurs. La version Google Play peut parfois demander une note après une séance ; les Réglages permettent de le désactiver."],
     ["Historique", "Une longue liste de toutes les séances, un calendrier qu'on ne pouvait pas toucher et les chiffres en haut.", "Le calendrier passe devant : touche un jour pour ouvrir sa séance, touche un jour vide pour en ajouter une. La liste suit le mois, et une nouvelle page Progression réunit les chiffres et un graphique plus fluide."],
     ["Boutique", "Une seule page, longue de dix écrans.", "Tes diamants restent en haut et trois pages défilent dessous : Boutique, Looks et Gagnés. Une passe de saison et d'autres façons d'obtenir des diamants sont affichées comme « bientôt »."],

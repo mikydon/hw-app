@@ -1,6 +1,19 @@
 // German: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    plOfficial: "Von HW App",
+    plDef_a: "Ganzkörper zu Hause A",
+    plDef_b: "Ganzkörper zu Hause B",
+    plDef_c: "Ganzkörper zu Hause C",
+    plDef_start: "Erste Schritte",
+    plDef_core: "Rumpf in 10 Minuten",
+    plDef_legs: "Beine und Po zu Hause",
+    plDef_db: "Ganzkörper mit Kurzhanteln",
+    plDef_dbup: "Oberkörper mit Kurzhanteln",
+    plDef_bar: "Klimmzugstange",
+    plDef_push: "Studio: Drücken",
+    plDef_pull: "Studio: Ziehen",
+    plDef_glegs: "Studio: Beine",
     plSearch: "Meine Pläne durchsuchen",
     plSortNew: "Neueste",
     plSortOld: "Älteste",
@@ -163,7 +176,7 @@ export default {
   },
   news1_10: [
     ["Freunde zusammen", "Freunde und eine Rangliste; eine gemeinsame Serie zählte nur Trainings, und die Weltrangliste war gesperrt.", "Eine neue Seite Zusammen: Lade einen Freund mit deinem Link ein (100 💎 für jeden nach seinem 3. Training), haltet ein Duo (Trainings oder Kalorien), ein gemeinsames Wochenziel, ein Satz-Duell und ein Stups für einen Freund, der noch nicht trainiert hat. Die Tage zählt der Server, ein Duo lässt sich also nicht fälschen. Die Rangliste zeigt nur deine Freunde, die gesperrte Weltrangliste ist weg. Neues Abzeichen: Gemeinsam stärker."],
-    ["Planbibliothek", "Einen Plan sah nur, wer ihn erstellt hatte.", "Zeig einen Plan auf deinem Profil: Freunde öffnen ihn und speichern mit einem Tippen ihre eigene Kopie (Übungen, Sätze, Haltezeiten, nie deine Gewichte). Die Kopie zeigt, von wem sie ist, und deine Änderungen kommen auch im Plan auf deinem Profil an. Oder veröffentliche ihn im neuen Bibliothek: Dort sucht jeder nach Name, Autor oder Übung, filtert nach Fokus und Ausrüstung und sieht die Sterne und wie viele ihn gespeichert haben (Sterne nur von Leuten, die ihn trainiert haben)."],
+    ["Planbibliothek", "Einen Plan sah nur, wer ihn erstellt hatte.", "Zeig einen Plan auf deinem Profil: Freunde öffnen ihn und speichern mit einem Tippen ihre eigene Kopie (Übungen, Sätze, Haltezeiten, nie deine Gewichte). Die Kopie zeigt, von wem sie ist, und deine Änderungen kommen auch im Plan auf deinem Profil an. Oder veröffentliche ihn im neuen Bibliothek: Dort sucht jeder nach Name, Autor oder Übung, filtert nach Fokus und Ausrüstung und sieht die Sterne und wie viele ihn gespeichert haben (Sterne nur von Leuten, die ihn trainiert haben). Die Bibliothek startet mit 12 Plänen von HW App: zu Hause, mit Kurzhanteln, an der Klimmzugstange und im Studio."],
     ["Teilen und bewerten", "Ein Training ließ sich niemandem zeigen.", "Teilen in der Trainingsübersicht macht ein Bild deines Trainings (Zeit, Sätze, Wiederholungen, Serie, Übungen) für Instagram, WhatsApp oder überallhin. Die Google-Play-Version fragt nach einem Training ab und zu nach einer Bewertung; in den Einstellungen lässt sich das ausschalten."],
     ["Verlauf", "Eine lange Liste aller Trainings, ein Kalender, den man nicht antippen konnte, und die Zahlen oben.", "Der Kalender führt: Tippe auf einen Tag, um sein Training zu öffnen, tippe auf einen leeren Tag, um eins hinzuzufügen. Die Liste folgt dem Monat, und eine neue Seite Fortschritt hat die Zahlen und ein ruhigeres Diagramm."],
     ["Shop", "Eine Seite, zehn Bildschirme lang.", "Deine Diamanten bleiben oben, darunter wischst du durch drei Seiten: Shop, Looks und Verdient. Ein Season Pass und mehr Wege zu Diamanten sind als „kommt bald“ zu sehen."],

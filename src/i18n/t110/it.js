@@ -1,6 +1,19 @@
 // Italian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    plOfficial: "Di HW App",
+    plDef_a: "Total body a casa A",
+    plDef_b: "Total body a casa B",
+    plDef_c: "Total body a casa C",
+    plDef_start: "Primi passi",
+    plDef_core: "Core in 10 minuti",
+    plDef_legs: "Gambe e glutei a casa",
+    plDef_db: "Total body con manubri",
+    plDef_dbup: "Parte alta con manubri",
+    plDef_bar: "Sbarra per trazioni",
+    plDef_push: "Palestra: spinta",
+    plDef_pull: "Palestra: tirata",
+    plDef_glegs: "Palestra: gambe",
     plSearch: "Cerca nelle mie schede",
     plSortNew: "Più recenti",
     plSortOld: "Meno recenti",
@@ -163,7 +176,7 @@ export default {
   },
   news1_10: [
     ["Amici insieme", "Amici e una classifica; una serie con un amico contava solo gli allenamenti e la classifica mondiale era bloccata.", "Una nuova pagina Insieme: invita un amico con il tuo link (100 💎 a testa dopo il suo 3° allenamento), tenete un duo (allenamenti o calorie), un obiettivo settimanale di tutti e due, un duello di serie e una spinta per l'amico che non si è ancora allenato. I giorni li conta il server, quindi un duo non si può falsare. La classifica è solo dei tuoi amici; quella mondiale bloccata non c'è più. Nuovo badge: Meglio in due."],
-    ["Libreria delle schede", "Una scheda la vedeva solo chi l'aveva creata.", "Mostra una scheda sul tuo profilo: gli amici la aprono e con un tocco salvano la loro copia (esercizi, serie, tempi di tenuta, mai i tuoi pesi). La copia dice di chi è, e le tue modifiche arrivano anche alla scheda sul profilo. Oppure pubblicala nel nuova Libreria: lì chiunque cerca per nome, autore o esercizio, filtra per focus e attrezzatura e vede le stelle e quante persone l'hanno salvata (votano solo quelli che l'hanno fatta)."],
+    ["Libreria delle schede", "Una scheda la vedeva solo chi l'aveva creata.", "Mostra una scheda sul tuo profilo: gli amici la aprono e con un tocco salvano la loro copia (esercizi, serie, tempi di tenuta, mai i tuoi pesi). La copia dice di chi è, e le tue modifiche arrivano anche alla scheda sul profilo. Oppure pubblicala nel nuova Libreria: lì chiunque cerca per nome, autore o esercizio, filtra per focus e attrezzatura e vede le stelle e quante persone l'hanno salvata (votano solo quelli che l'hanno fatta). La Libreria parte con 12 schede di HW App: a casa, con i manubri, alla sbarra e in palestra."],
     ["Condividi e valuta", "Non c'era modo di mostrare un allenamento.", "Condividi nel riepilogo dell'allenamento crea un'immagine dell'allenamento (tempo, serie, ripetizioni, serie di giorni, esercizi) per Instagram, WhatsApp o ovunque. La versione Google Play può chiedere ogni tanto una valutazione dopo l'allenamento; nelle Impostazioni si può disattivare."],
     ["Storico", "Una lunga lista di tutti gli allenamenti, un calendario che non si poteva toccare e i numeri in alto.", "Il calendario va in testa: tocca un giorno per aprire il suo allenamento, tocca un giorno vuoto per aggiungerne uno. La lista segue il mese, e una nuova pagina Progressi raccoglie i numeri e un grafico più morbido."],
     ["Negozio", "Una sola pagina, lunga dieci schermate.", "I tuoi diamanti restano in alto e sotto scorrono tre pagine: Negozio, Look e Guadagnati. Un pass stagionale e altri modi per avere diamanti sono mostrati come «in arrivo»."],

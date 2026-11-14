@@ -1,6 +1,19 @@
 // Polish: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    plOfficial: "Od HW App",
+    plDef_a: "Całe ciało w domu A",
+    plDef_b: "Całe ciało w domu B",
+    plDef_c: "Całe ciało w domu C",
+    plDef_start: "Pierwsze kroki",
+    plDef_core: "Brzuch w 10 minut",
+    plDef_legs: "Nogi i pośladki w domu",
+    plDef_db: "Całe ciało z hantlami",
+    plDef_dbup: "Góra ciała z hantlami",
+    plDef_bar: "Drążek",
+    plDef_push: "Siłownia: pchanie",
+    plDef_pull: "Siłownia: przyciąganie",
+    plDef_glegs: "Siłownia: nogi",
     plSearch: "Szukaj w moich planach",
     plSortNew: "Najnowsze",
     plSortOld: "Najstarsze",
@@ -163,7 +176,7 @@ export default {
   },
   news1_10: [
     ["Znajomi razem", "Znajomi i ranking; wspólna seria liczyła tylko treningi, a światowy ranking był zablokowany.", "Nowa strona Razem: zaproś znajomego swoim linkiem (100 💎 dla każdego po jego 3. treningu), trzymajcie duet (treningi albo kalorie), wspólny cel tygodniowy, pojedynek w seriach i szturchnięcie dla znajomego, który jeszcze nie ćwiczył. Dni liczy serwer, więc duetu nie da się podrobić. Ranking to tylko twoi znajomi, zablokowany światowy zniknął. Nowa odznaka: Razem raźniej."],
-    ["Biblioteka planów", "Plan widział tylko ten, kto go stworzył.", "Pokaż plan na swoim profilu: znajomi go otworzą i jednym dotknięciem zapiszą własną kopię (ćwiczenia, serie, czasy utrzymania, nigdy twoje ciężary). Przy kopii widać, od kogo jest, a twoje zmiany trafiają też do planu na profilu. Albo opublikuj go w nowej Bibliotece: każdy szuka tam planów po nazwie, autorze lub ćwiczeniu, filtruje po skupieniu i sprzęcie i widzi gwiazdki oraz ile osób zapisało plan (gwiazdki dają tylko ci, którzy go zrobili)."],
+    ["Biblioteka planów", "Plan widział tylko ten, kto go stworzył.", "Pokaż plan na swoim profilu: znajomi go otworzą i jednym dotknięciem zapiszą własną kopię (ćwiczenia, serie, czasy utrzymania, nigdy twoje ciężary). Przy kopii widać, od kogo jest, a twoje zmiany trafiają też do planu na profilu. Albo opublikuj go w nowej Bibliotece: każdy szuka tam planów po nazwie, autorze lub ćwiczeniu, filtruje po skupieniu i sprzęcie i widzi gwiazdki oraz ile osób zapisało plan (gwiazdki dają tylko ci, którzy go zrobili). Biblioteka startuje z 12 planami od HW App: w domu, z hantlami, na drążku i na siłowni."],
     ["Udostępnianie i ocena", "Treningu nie dało się nikomu pokazać.", "Udostępnij w podsumowaniu treningu tworzy obrazek treningu (czas, serie, powtórzenia, seria dni, ćwiczenia) na Instagram, WhatsApp czy gdziekolwiek. Wersja z Google Play może czasem po treningu poprosić o ocenę; w Ustawieniach można to wyłączyć."],
     ["Historia", "Długa lista wszystkich treningów, kalendarz, którego nie dało się stuknąć, i liczby na górze.", "Najważniejszy jest kalendarz: stuknij dzień, aby otworzyć jego trening, stuknij pusty dzień, aby go dodać. Lista pokazuje wybrany miesiąc, a nowa strona Postępy ma liczby i płynniejszy wykres."],
     ["Sklep", "Jedna strona długa na dziesięć ekranów.", "Diamenty zostają na górze, a pod nimi przesuwają się trzy strony: Sklep, Wyglądy i Zdobyte. Karnet sezonowy i więcej sposobów na diamenty są pokazane jako „wkrótce”."],

@@ -1,6 +1,19 @@
 // Czech: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    plOfficial: "Od HW App",
+    plDef_a: "Celé tělo doma A",
+    plDef_b: "Celé tělo doma B",
+    plDef_c: "Celé tělo doma C",
+    plDef_start: "První kroky",
+    plDef_core: "Břicho za 10 minut",
+    plDef_legs: "Nohy a hýždě doma",
+    plDef_db: "Celé tělo s jednoručkami",
+    plDef_dbup: "Horní část těla s jednoručkami",
+    plDef_bar: "Hrazda",
+    plDef_push: "Posilovna: tlaky",
+    plDef_pull: "Posilovna: tahy",
+    plDef_glegs: "Posilovna: nohy",
     plSearch: "Hledat v mých plánech",
     plSortNew: "Nejnovější",
     plSortOld: "Nejstarší",
@@ -163,7 +176,7 @@ export default {
   },
   news1_10: [
     ["Kamarádi spolu", "Kamarádi a žebříček; společná série počítala jen tréninky a světový žebříček byl zamčený.", "Nová stránka Spolu: pozvi kamaráda svým odkazem (100 💎 pro každého po jeho 3. tréninku), držte duo (tréninky nebo kalorie), společný týdenní cíl, souboj v sériích a šťouchnutí pro kamaráda, který ještě necvičil. Dny počítá server, takže duo nejde nafejkovat. Žebříček je jen tvých kamarádů, zamčený světový zmizel. Nový odznak: Ve dvou se to lépe táhne."],
-    ["Knihovna plánů", "Plány viděl jen ten, kdo je vytvořil.", "Ukaž plán na svém profilu: kamarádi si ho otevřou a jedním ťuknutím uloží vlastní kopii (cviky, série, časy výdrže, nikdy tvoje váhy). U kopie je napsáno, od koho je, a tvoje úpravy se přenesou i do plánu na profilu. Nebo ho zveřejni v nové Knihovně: každý tam hledá plány podle názvu, autora či cviku, filtruje podle zaměření a vybavení a vidí hvězdičky a kolik lidí si plán uložilo (hvězdičky dávají jen ti, kdo ho odcvičili)."],
+    ["Knihovna plánů", "Plány viděl jen ten, kdo je vytvořil.", "Ukaž plán na svém profilu: kamarádi si ho otevřou a jedním ťuknutím uloží vlastní kopii (cviky, série, časy výdrže, nikdy tvoje váhy). U kopie je napsáno, od koho je, a tvoje úpravy se přenesou i do plánu na profilu. Nebo ho zveřejni v nové Knihovně: každý tam hledá plány podle názvu, autora či cviku, filtruje podle zaměření a vybavení a vidí hvězdičky a kolik lidí si plán uložilo (hvězdičky dávají jen ti, kdo ho odcvičili). Knihovna začíná s 12 plány od HW App: doma, s jednoručkami, na hrazdě i v posilovně."],
     ["Sdílení a hodnocení", "Trénink nešlo nikomu ukázat.", "Sdílet na souhrnu tréninku udělá obrázek tréninku (čas, série, opakování, série dní, cviky) pro Instagram, WhatsApp nebo kamkoli. Verze z Google Play se po tréninku občas může zeptat na hodnocení; v Nastavení se to dá vypnout."],
     ["Historie", "Dlouhý seznam všech tréninků, kalendář, na který se nedalo ťuknout, a čísla nahoře.", "Hlavní je kalendář: ťukni na den a otevře se jeho trénink, ťukni na prázdný den a přidáš ho. Seznam ukazuje vybraný měsíc a nová stránka Pokrok má čísla a plynulejší graf."],
     ["Obchod", "Jedna stránka dlouhá na deset obrazovek.", "Diamanty zůstávají nahoře a pod nimi se posouvají tři stránky: Obchod, Vzhledy a Získané. Sezónní pass a další způsoby, jak získat diamanty, jsou ukázané jako „brzy“."],

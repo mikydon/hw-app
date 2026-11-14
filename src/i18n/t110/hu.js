@@ -1,6 +1,19 @@
 // Hungarian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    plOfficial: "A HW App-tól",
+    plDef_a: "Egész test otthon A",
+    plDef_b: "Egész test otthon B",
+    plDef_c: "Egész test otthon C",
+    plDef_start: "Első lépések",
+    plDef_core: "Törzs 10 perc alatt",
+    plDef_legs: "Láb és farizom otthon",
+    plDef_db: "Egész test kézisúlyzóval",
+    plDef_dbup: "Felsőtest kézisúlyzóval",
+    plDef_bar: "Húzódzkodó rúd",
+    plDef_push: "Edzőterem: nyomás",
+    plDef_pull: "Edzőterem: húzás",
+    plDef_glegs: "Edzőterem: láb",
     plSearch: "Keresés a saját tervekben",
     plSortNew: "Legújabb",
     plSortOld: "Legrégebbi",
@@ -163,7 +176,7 @@ export default {
   },
   news1_10: [
     ["Barátok együtt", "Barátok és ranglista; a közös sorozat csak edzéseket számolt, a világranglista pedig zárolva volt.", "Új Együtt oldal: hívj meg egy barátot a linkeddel (100 💎 mindkettőtöknek a 3. edzése után), tartsatok duót (edzések vagy kalóriák), közös heti célt, sorozatpárbajt, és bökd meg azt a barátodat, aki még nem edzett. A napokat a szerver számolja, így a duót nem lehet meghamisítani. A ranglista csak a barátaidé, a zárolt világranglista eltűnt. Új jelvény: Együtt jobb."],
-    ["Tervkönyvtár", "Egy tervet csak az látott, aki készítette.", "Mutass meg egy tervet a profilodon: a barátaid megnyitják, és egy koppintással elmentik a saját másolatukat (gyakorlatok, sorozatok, tartási idők, a súlyaid soha). A másolaton látszik, kitől van, és a módosításaid a profilon lévő tervbe is átkerülnek. Vagy tedd közzé az új Könyvtárban: ott bárki kereshet név, szerző vagy gyakorlat szerint, szűrhet fókuszra és felszerelésre, és látja a csillagokat és hogy hányan mentették el (csillagot csak az ad, aki edzett vele)."],
+    ["Tervkönyvtár", "Egy tervet csak az látott, aki készítette.", "Mutass meg egy tervet a profilodon: a barátaid megnyitják, és egy koppintással elmentik a saját másolatukat (gyakorlatok, sorozatok, tartási idők, a súlyaid soha). A másolaton látszik, kitől van, és a módosításaid a profilon lévő tervbe is átkerülnek. Vagy tedd közzé az új Könyvtárban: ott bárki kereshet név, szerző vagy gyakorlat szerint, szűrhet fókuszra és felszerelésre, és látja a csillagokat és hogy hányan mentették el (csillagot csak az ad, aki edzett vele). A Könyvtárban már az elején 12 terv vár a HW App-tól: otthonra, kézisúlyzóval, húzódzkodó rúdon és edzőterembe."],
     ["Megosztás és értékelés", "Az edzést senkinek nem lehetett megmutatni.", "Az edzés összegzőjén a Megosztás képet készít az edzésről (idő, sorozatok, ismétlések, napsorozat, gyakorlatok) Instagramra, WhatsAppra vagy bárhová. A Google Play-es verzió edzés után néha értékelést kérhet; a Beállításokban ez kikapcsolható."],
     ["Előzmények", "Hosszú lista minden edzésről, egy naptár, amire nem lehetett koppintani, és felül a számok.", "Elöl a naptár: koppints egy napra, és megnyílik az edzése, koppints egy üres napra, és hozzáadhatsz egyet. A lista a kiválasztott hónapot mutatja, az új Fejlődés oldalon pedig a számok és egy simább grafikon vannak."],
     ["Bolt", "Egyetlen oldal, tíz képernyő hosszú.", "A gyémántjaid felül maradnak, alattuk három oldal lapozható: Bolt, Kinézetek és Megszerzett. A szezonbérlet és a gyémántszerzés további módjai „hamarosan” jelzéssel látszanak."],

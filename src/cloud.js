@@ -346,8 +346,9 @@ export const impl = {
   async pubMine() { const r = await getDocs(query(collection(db, "pub"), where("o", "==", uid()))); return r.docs.map(x => ({ pid: x.id, ...x.data() })); },
   // the store: the most saved and the newest (one read each, no index needed); search and filters run on the phone
   async pubList() {
-    const [a, b] = await Promise.all([getDocs(query(collection(db, "pub"), orderBy("sv", "desc"), limit(60))), getDocs(query(collection(db, "pub"), orderBy("ts", "desc"), limit(40)))]);
-    const m = new Map(); [...a.docs, ...b.docs].forEach(x => { const v = x.data(); m.set(x.id, { pid: x.id, ...v, ts: v.ts && v.ts.toMillis ? v.ts.toMillis() : 0 }); });
+    // + HW App's own plans (owner "hwapp", src/defplans.js), always listed even before anyone saved them
+    const [a, b, c] = await Promise.all([getDocs(query(collection(db, "pub"), orderBy("sv", "desc"), limit(60))), getDocs(query(collection(db, "pub"), orderBy("ts", "desc"), limit(40))), getDocs(query(collection(db, "pub"), where("o", "==", "hwapp"), limit(30))).catch(() => ({ docs: [] }))]);
+    const m = new Map(); [...a.docs, ...b.docs, ...c.docs].forEach(x => { const v = x.data(); m.set(x.id, { pid: x.id, ...v, ts: v.ts && v.ts.toMillis ? v.ts.toMillis() : 0 }); });
     return [...m.values()];
   },
   async pubVote(pid) { const s = await getDoc(d("pub", pid, "u", uid())).catch(() => null); return s && s.exists() ? s.data() : null; },

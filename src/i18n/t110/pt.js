@@ -1,6 +1,19 @@
 // Portuguese (Brazil): texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    plOfficial: "Do HW App",
+    plDef_a: "Corpo inteiro em casa A",
+    plDef_b: "Corpo inteiro em casa B",
+    plDef_c: "Corpo inteiro em casa C",
+    plDef_start: "Primeiros passos",
+    plDef_core: "Core em 10 minutos",
+    plDef_legs: "Pernas e glúteos em casa",
+    plDef_db: "Corpo inteiro com halteres",
+    plDef_dbup: "Parte superior com halteres",
+    plDef_bar: "Barra fixa",
+    plDef_push: "Academia: empurrar",
+    plDef_pull: "Academia: puxar",
+    plDef_glegs: "Academia: pernas",
     plSearch: "Buscar nos meus planos",
     plSortNew: "Mais recentes",
     plSortOld: "Mais antigos",
@@ -163,7 +176,7 @@ export default {
   },
   news1_10: [
     ["Amigos juntos", "Amigos e um ranking; a sequência com um amigo só contava treinos, e o ranking mundial estava bloqueado.", "Uma nova página Juntos: convide um amigo com seu link (100 💎 para cada um depois do 3º treino dele), mantenham uma dupla (treinos ou calorias), uma meta semanal dos dois, um duelo de séries e uma cutucada para o amigo que ainda não treinou. Os dias são contados pelo servidor, então ninguém falsifica uma dupla. O ranking é só dos seus amigos; o mundial bloqueado saiu. Nova insígnia: Melhor em dupla."],
-    ["Biblioteca de planos", "Só quem criou um plano podia vê-lo.", "Mostre um plano no seu perfil: seus amigos abrem e salvam a própria cópia com um toque (exercícios, séries, tempos, nunca seus pesos). A cópia mostra de quem é, e suas mudanças chegam também ao plano do perfil. Ou publique na nova Biblioteca: lá qualquer pessoa busca por nome, autor ou exercício, filtra por foco e equipamento e vê as estrelas e quantos salvaram (só avalia quem treinou com ele)."],
+    ["Biblioteca de planos", "Só quem criou um plano podia vê-lo.", "Mostre um plano no seu perfil: seus amigos abrem e salvam a própria cópia com um toque (exercícios, séries, tempos, nunca seus pesos). A cópia mostra de quem é, e suas mudanças chegam também ao plano do perfil. Ou publique na nova Biblioteca: lá qualquer pessoa busca por nome, autor ou exercício, filtra por foco e equipamento e vê as estrelas e quantos salvaram (só avalia quem treinou com ele). A Biblioteca começa com 12 planos do HW App: em casa, com halteres, na barra fixa e na academia."],
     ["Compartilhar e avaliar", "Não dava para mostrar um treino a ninguém.", "Compartilhar no resumo do treino cria uma imagem do treino (tempo, séries, repetições, sequência, exercícios) para Instagram, WhatsApp ou onde quiser. A versão do Google Play pode pedir uma avaliação de vez em quando depois do treino; dá para desativar nas Configurações."],
     ["Histórico", "Uma lista longa de todos os treinos, um calendário em que não dava para tocar e os números no topo.", "O calendário vem primeiro: toque em um dia para abrir o treino dele, toque em um dia vazio para adicionar um. A lista acompanha o mês, e uma nova página Progresso reúne os números e um gráfico mais suave."],
     ["Loja", "Uma página só, com dez telas de comprimento.", "Seus diamantes ficam no topo e embaixo passam três páginas: Loja, Visuais e Conquistados. Um passe de temporada e mais formas de ganhar diamantes aparecem como “em breve”."],

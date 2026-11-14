@@ -1,0 +1,26 @@
+name: Library plans
+# Writes HW App's own plans (src/defplans.js) into the Library (Firestore pub/hwapp_<k>) whenever the list, the
+# exercise library or the script changes. Save and star counters are kept. Needs FIREBASE_SERVICE_ACCOUNT.
+on:
+  push:
+    paths: ["src/defplans.js", "src/exlib.js", "src/plans.js", ".github/scripts/seed-library.mjs", ".github/workflows/seed-library.yml"]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: seed-library
+  cancel-in-progress: false
+jobs:
+  seed:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: Check the plans
+        run: node .github/scripts/seed-library.mjs --dry
+      - name: Write them to the Library
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: node .github/scripts/seed-library.mjs
