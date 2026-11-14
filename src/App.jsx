@@ -12957,10 +12957,15 @@ export default function App() {
     const t = setTimeout(() => setTourAsk(true), 900);
     return () => clearTimeout(t);
   }, [tourAskDue, tourAsk, tourRun, newsOpen, onboard, profLoaded, session, sessionOpen]);
+  // One-time marks: a chapter whose screen changed shows once more to people who already saw it (on their next visit
+  // to that screen): 10 = Workout plans (1.9.3), 5 = History and 9 = Shop (1.10.0). One effect, so the marks never race.
   useEffect(() => {
-    if (!profLoaded || uiRef.current.tourPl3) return;
-    const seen = tourSeen();
-    setUi({ ...uiRef.current, tourPl3: 1, ...(seen.has(10) ? { tourAuto: [...seen].filter(c => c !== 10) } : {}) });
+    const u = uiRef.current;
+    if (!profLoaded || (u.tourPl3 && u.tour110)) return;
+    const seen = tourSeen(), drop = [];
+    if (!u.tourPl3 && seen.has(10)) drop.push(10);
+    if (!u.tour110) for (const c of [5, 9]) if (seen.has(c)) drop.push(c);
+    setUi({ ...u, tourPl3: 1, tour110: 1, ...(drop.length ? { tourAuto: [...seen].filter(c => !drop.includes(c)) } : {}) });
   }, [profLoaded]);
   const tourAskNo = () => { setTourAsk(false); setTourAskDue(false); setUi({ ...uiRef.current, tourAskV: APP_VERSION }); };
   // 1.6.5 (Michael, Oct 17: a friend's link opened the website): the app owns …/hw-app/add/ links (App Links,
