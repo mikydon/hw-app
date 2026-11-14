@@ -1836,7 +1836,8 @@ function Sect({ title, meta, children, style, titlePad, accent, flatTitle, onHea
     );
   };
   // flat = no boxes; flatTitle (1.7.0: History, Profile, Settings) keeps the title as a quiet label above the content
-  if (LOOK === "flat") return <div {...rest} style={{ marginTop: 18, ...style, ...(flatTitle ? { padding: 0 } : {}) }}>{(flatTitle || onHead) && head({ ...sectionTitle, margin: "4px 4px 8px", padding: 0 })}{children}</div>;
+  // 1.10.0 (design pass): every section with a title keeps it in flat too (Calories lost "This week" / "Eaten today")
+  if (LOOK === "flat") return <div {...rest} style={{ marginTop: 18, ...style, ...(flatTitle ? { padding: 0 } : {}) }}>{(title || meta || onHead) && head({ ...sectionTitle, margin: "4px 4px 8px", padding: 0 })}{children}</div>;
   if (LOOK === "liquid") return (
     <section {...rest} data-sect style={{ ...LIQUID(), padding: "16px 16px", marginTop: 12, ...style }}>
       {head({ fontSize: 11, fontWeight: 800, letterSpacing: 0.9, textTransform: "uppercase", color: C.chalk, opacity: 0.7, marginBottom: 10, padding: titlePad || 0 })}
@@ -6819,7 +6820,9 @@ function GLogo() { return <svg width="20" height="20" viewBox="0 0 48 48" aria-h
 // e-mail goes out) or "forgot password" (Firebase e-mails a link to set a new one). Passwords: at least 8 characters.
 const PW_MIN = 8;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const pwField = { display: "block", width: "100%", boxSizing: "border-box", fontFamily: BODY, fontSize: 16, padding: "12px 14px", borderRadius: 14, border: `1.5px solid ${C.line}`, background: C.panel, color: C.chalk, outline: "none", marginTop: 8 };
+// a function, not a constant: a constant would keep the colours of the theme that was on when the app loaded
+// (1.10.0: the sign-in fields stayed navy in every other theme)
+const pwField = () => ({ display: "block", width: "100%", boxSizing: "border-box", fontFamily: BODY, fontSize: 16, padding: "12px 14px", borderRadius: 14, border: `1.5px solid ${C.line}`, background: C.panel, color: C.chalk, outline: "none", marginTop: 8 });
 // 1.7.5 (tester feedback, Oct 21: "add a way to show the password, in case of typos"): every password field has an eye
 // button on the right that shows / hides what was typed (each field on its own). The button never takes the focus, so
 // the phone's keyboard stays open.
@@ -6861,9 +6864,9 @@ function EmailSignIn({ ok, busy, onGo, google }) {
   return (
     <div data-email-box={mode} style={{ marginTop: 6 }}>
       {isNew && <div style={{ fontSize: 12, color: C.dim, fontWeight: 800, textTransform: "uppercase", letterSpacing: ".04em", marginTop: 8 }}>{T("acNewTitle")}</div>}
-      <input data-email-input type="email" inputMode="email" autoComplete={isNew ? "email" : "username"} autoCapitalize="off" spellCheck={false} value={email} onChange={e => setEmail(e.target.value)} placeholder={T("acEmailPh")} aria-label={T("acEmailPh")} style={pwField} />
-      <PwInput data-pw-input autoComplete={isNew ? "new-password" : "current-password"} value={pw} onChange={e => setPw(e.target.value)} onKeyDown={e => { if (e.key === "Enter" && !isNew) go(); }} placeholder={isNew ? T("acPwNewPh", { n: PW_MIN }) : T("acPwPh")} aria-label={T("acPwPh")} style={pwField} />
-      {isNew && <PwInput data-pw2-input autoComplete="new-password" value={pw2} onChange={e => setPw2(e.target.value)} onKeyDown={e => { if (e.key === "Enter") go(); }} placeholder={T("acPwAgainPh")} aria-label={T("acPwAgainPh")} style={pwField} />}
+      <input data-email-input type="email" inputMode="email" autoComplete={isNew ? "email" : "username"} autoCapitalize="off" spellCheck={false} value={email} onChange={e => setEmail(e.target.value)} placeholder={T("acEmailPh")} aria-label={T("acEmailPh")} style={pwField()} />
+      <PwInput data-pw-input autoComplete={isNew ? "new-password" : "current-password"} value={pw} onChange={e => setPw(e.target.value)} onKeyDown={e => { if (e.key === "Enter" && !isNew) go(); }} placeholder={isNew ? T("acPwNewPh", { n: PW_MIN }) : T("acPwPh")} aria-label={T("acPwPh")} style={pwField()} />
+      {isNew && <PwInput data-pw2-input autoComplete="new-password" value={pw2} onChange={e => setPw2(e.target.value)} onKeyDown={e => { if (e.key === "Enter") go(); }} placeholder={T("acPwAgainPh")} aria-label={T("acPwAgainPh")} style={pwField()} />}
       {isNew && pw2 && pw !== pw2 && <div data-pw-mismatch style={{ fontSize: 13, color: "#ff8a80", marginTop: 6 }}>{T("acPwMismatch")}</div>}
       {!isNew && <div style={{ textAlign: "right" }}><button type="button" data-pw-forgot onClick={forgot} disabled={sending} style={{ ...link, padding: "8px 2px 0" }}>{sending ? "…" : T("acForgot")}</button></div>}
       <button type="button" data-email-signin onClick={go} disabled={!can} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 12, opacity: can ? 1 : 0.45 }}>{busy ? T("frSigning") : isNew ? T("acNewGo") : T("acEmailGo")}</button>
@@ -6903,9 +6906,9 @@ function PwSheet({ onClose }) {
     <Sheet title={has ? T("acPwChange") : T("acPwAdd")} onClose={onClose}>
       <div data-pw-sheet={has ? "change" : "add"}>
         <div style={{ fontSize: 14, color: C.dim, lineHeight: 1.5 }}>{has ? T("acPwChangeD", { email: info.email }) : T("acPwAddD", { email: info.email })}</div>
-        {has && <PwInput data-pw-old autoComplete="current-password" value={old} onChange={e => setOld(e.target.value)} placeholder={T("acPwOldPh")} aria-label={T("acPwOldPh")} style={pwField} />}
-        <PwInput data-pw-new autoComplete="new-password" value={pw} onChange={e => setPw(e.target.value)} placeholder={T("acPwNewPh", { n: PW_MIN })} aria-label={T("acPwNewPh", { n: PW_MIN })} style={pwField} />
-        <PwInput data-pw-new2 autoComplete="new-password" value={pw2} onChange={e => setPw2(e.target.value)} onKeyDown={e => { if (e.key === "Enter") save(); }} placeholder={T("acPwAgainPh")} aria-label={T("acPwAgainPh")} style={pwField} />
+        {has && <PwInput data-pw-old autoComplete="current-password" value={old} onChange={e => setOld(e.target.value)} placeholder={T("acPwOldPh")} aria-label={T("acPwOldPh")} style={pwField()} />}
+        <PwInput data-pw-new autoComplete="new-password" value={pw} onChange={e => setPw(e.target.value)} placeholder={T("acPwNewPh", { n: PW_MIN })} aria-label={T("acPwNewPh", { n: PW_MIN })} style={pwField()} />
+        <PwInput data-pw-new2 autoComplete="new-password" value={pw2} onChange={e => setPw2(e.target.value)} onKeyDown={e => { if (e.key === "Enter") save(); }} placeholder={T("acPwAgainPh")} aria-label={T("acPwAgainPh")} style={pwField()} />
         {pw2 && pw !== pw2 && <div data-pw-mismatch style={{ fontSize: 13, color: "#ff8a80", marginTop: 6 }}>{T("acPwMismatch")}</div>}
         <button type="button" data-pw-save onClick={save} disabled={!can} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 12, opacity: can ? 1 : 0.45 }}>{busy === "save" ? "…" : T("acPwSave")}</button>
         {has && <button type="button" data-pw-forgot onClick={() => mail("reset", () => cloud().resetPw(info.email, LANG), T("acResetSent", { email: info.email }))} disabled={!!busy} style={link}>{busy === "reset" ? "…" : T("acForgot")}</button>}
@@ -10622,7 +10625,7 @@ function GuideSect({ n, title, children }) {
     </section>
   );
 }
-const gP = { margin: 0, fontSize: 14, lineHeight: 1.55, color: C.chalk };
+const gP = () => ({ margin: 0, fontSize: 14, lineHeight: 1.55, color: C.chalk });
 function GameRules({ onClose, lo, onTutorial }) {
   const suit = (lo && lo.suit) || {};
   const exPair = [GM.SUITS.indexOf("push") * 13 + 11, GM.SUITS.indexOf("pull") * 13 + 11, 7, 30]; // K K 9 6
@@ -10632,17 +10635,17 @@ function GameRules({ onClose, lo, onTutorial }) {
         {onTutorial && <button type="button" data-gm-tut-open onClick={() => { sfxTap(); onTutorial(); }} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}><Ico n="cap" size={22} />{T("gmTutPlay")}</button>}
         <GuideSect n={1} title={T("gmG1T")}>
           <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>{GM.SUITS.map((s, i) => <PlayCard key={s} c={i * 13 + 12} w={52} still />)}</div>
-          <p style={gP}>{T("gmG1D")}</p>
+          <p style={gP()}>{T("gmG1D")}</p>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
             {GM.SUITS.map(s => { const v = suit[s] ?? -1, rk = v >= 0 ? RANKS[v] : null; return (
               <div key={s} style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", borderRadius: 10, background: SOFT(), fontSize: 13 }}>
                 <SuitIcon s={s} size={16} /><span style={{ flex: 1, minWidth: 0 }}><b>{T("grp_" + s)}</b><span style={{ display: "block", color: C.dim, fontSize: 12 }}>{rk ? <RankTag r={v} size={13} text={`${rk.name} → +${2 * v}`} /> : T("gmSuitNone")}</span></span>
               </div>); })}
           </div>
-          <p style={{ ...gP, color: C.dim, fontSize: 13 }}>{T("gmG1Rank")}</p>
+          <p style={{ ...gP(), color: C.dim, fontSize: 13 }}>{T("gmG1Rank")}</p>
         </GuideSect>
         <GuideSect n={2} title={T("gmG2T")}>
-          <p style={gP}>{T("gmG2D")}</p>
+          <p style={gP()}>{T("gmG2D")}</p>
           {GM.HANDS.map((h, i) => { const ex = GM_EX[h], sc = GM.handOf(ex).scored; return (
             <div key={h} data-gm-guide-hand={h} style={{ padding: "10px 10px 12px", borderRadius: 12, background: SOFT() }}>
               <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
@@ -10652,10 +10655,10 @@ function GameRules({ onClose, lo, onTutorial }) {
               <div style={{ fontSize: 13, color: C.dim, lineHeight: 1.4, margin: "2px 0 8px" }}>{(L.gm.hd || [])[i]}</div>
               <div style={{ display: "flex", gap: 5 }}>{ex.map(c => <PlayCard key={c} c={c} w={40} still out={!sc.includes(c)} />)}</div>
             </div>); })}
-          <p style={{ ...gP, color: C.dim, fontSize: 13 }}>{T("gmG2Note")}</p>
+          <p style={{ ...gP(), color: C.dim, fontSize: 13 }}>{T("gmG2Note")}</p>
         </GuideSect>
         <GuideSect n={3} title={T("gmG3T")}>
-          <p style={gP}>{T("gmG3D")}</p>
+          <p style={gP()}>{T("gmG3D")}</p>
           <div style={{ display: "flex", gap: 6, justifyContent: "center" }}>{exPair.map(c => <PlayCard key={c} c={c} w={46} still out={!GM.handOf(exPair).scored.includes(c)} />)}</div>
           <div style={{ fontSize: 14, lineHeight: 1.7, padding: "8px 10px", borderRadius: 12, background: SOFT() }}>
             <div>{handName("pair")}: <b style={{ color: C.sky }}>10</b> × <b style={{ color: C.signal }}>2</b></div>
@@ -10664,15 +10667,15 @@ function GameRules({ onClose, lo, onTutorial }) {
             <div style={{ marginTop: 6 }}>{jName("joker")} (+4): <b style={{ color: C.sky }}>30</b> × <b style={{ color: C.signal }}>6</b> = <b>180</b></div>
             <div>{jName("five")} (× 2): <b style={{ color: C.sky }}>30</b> × <b style={{ color: C.signal }}>12</b> = <b>360</b></div>
           </div>
-          <p style={{ ...gP, color: C.dim, fontSize: 13 }}>{T("gmG3Note")}</p>
+          <p style={{ ...gP(), color: C.dim, fontSize: 13 }}>{T("gmG3Note")}</p>
         </GuideSect>
         <GuideSect n={4} title={T("gmG4T")}>
           <div style={{ display: "flex", gap: 6, alignItems: "stretch" }}>
             {[T("gmSmall"), T("gmBig"), T("gmBoss")].map((b, i) => <div key={i} style={{ flex: 1, textAlign: "center", padding: "8px 4px", borderRadius: 10, background: SOFT(), fontSize: 13, fontWeight: 800, color: i === 2 ? "#ff7a7a" : C.chalk }}>{b}<span style={{ display: "block", fontWeight: 400, color: C.dim, fontSize: 12 }}>× {[1, 1.5, 2][i]}</span></div>)}
           </div>
-          <p style={gP}>{withK(T("gmG4D"))}</p>
-          <p style={gP}>{withK(T("gmG4Shop"))}</p>
-          <p style={{ ...gP, color: C.dim, fontSize: 13 }}>{T("gmG4Run")}</p>
+          <p style={gP()}>{withK(T("gmG4D"))}</p>
+          <p style={gP()}>{withK(T("gmG4Shop"))}</p>
+          <p style={{ ...gP(), color: C.dim, fontSize: 13 }}>{T("gmG4Run")}</p>
         </GuideSect>
       </div>
     </Sheet>

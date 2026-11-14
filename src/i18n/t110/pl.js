@@ -17,6 +17,8 @@ export default {
     tourShSoon: "Zablokowane rzeczy są w drodze: karnet sezonowy i więcej sposobów na diamenty.",
     tourShWon: "Tych wyglądów nie da się kupić. Zdobywasz je odznakami.",
     calLegOver: "Ponad cel",
+    frIntro: "Zaloguj się, żeby porównywać poziom i serię ze znajomymi, pisać z nimi i mieć kopię treningów w chmurze.",
+    pvVisD_all: "Może go otworzyć każdy zalogowany w HW App. Zdjęcie widzą tylko znajomi.",
     gmWhyDead: "Boss: ta karta nic nie daje",
   },
   tour: { c5: { 0: "Kalendarz: zielony dzień to trening, kropka pod liczbą to kalorie. Stuknij dzień, aby zobaczyć, co robiłeś; stuknij pusty dzień, aby dodać trening." } },

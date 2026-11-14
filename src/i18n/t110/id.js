@@ -17,6 +17,8 @@ export default {
     tourShSoon: "Yang terkunci sedang dalam perjalanan: season pass dan cara lain untuk dapat berlian.",
     tourShWon: "Tampilan ini tidak bisa dibeli. Kamu mendapatkannya lewat lencana.",
     calLegOver: "Melebihi target",
+    frIntro: "Masuk untuk membandingkan level dan runtutan dengan teman, mengirim pesan, dan menyimpan cadangan latihanmu di cloud.",
+    pvVisD_all: "Siapa pun yang masuk ke HW App bisa membukanya. Hanya teman yang melihat fotomu.",
     gmWhyDead: "Bosnya: kartu ini tidak dihitung",
   },
   tour: { c5: { 0: "Kalender: hari hijau berarti ada latihan, titik di bawah angka berarti kalori. Ketuk satu hari untuk melihat apa yang kamu lakukan; ketuk hari kosong untuk menambah latihan." } },

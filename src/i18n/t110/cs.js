@@ -17,6 +17,8 @@ export default {
     tourShSoon: "Zamčené věci jsou na cestě: sezónní pass a další způsoby, jak získat diamanty.",
     tourShWon: "Tyhle vzhledy se nedají koupit. Získáš je za odznaky.",
     calLegOver: "Nad cílem",
+    frIntro: "Přihlas se a porovnávej level a sérii s přáteli, piš si s nimi a měj zálohu tréninků v cloudu.",
+    pvVisD_all: "Otevřít ho může kdokoli přihlášený v HW App. Fotku vidí jen přátelé.",
     gmWhyDead: "Boss: tahle karta nedává nic",
   },
   tour: { c5: { 0: "Kalendář: zelený den je trénink, tečka pod číslem jsou kalorie. Ťukni na den a uvidíš, co jsi dělal; ťukni na prázdný den a přidáš trénink." } },

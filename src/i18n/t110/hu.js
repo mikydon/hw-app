@@ -17,6 +17,8 @@ export default {
     tourShSoon: "A zárolt dolgok úton vannak: szezonbérlet és több módja a gyémántszerzésnek.",
     tourShWon: "Ezeket a kinézeteket nem lehet megvenni. Jelvényekért kapod őket.",
     calLegOver: "Cél felett",
+    frIntro: "Jelentkezz be, hogy összehasonlítsd a szintedet és a sorozatodat a barátaiddal, üzenj nekik, és legyen mentésed az edzéseidről a felhőben.",
+    pvVisD_all: "Bárki megnyithatja, aki be van jelentkezve a HW Appba. A fotódat csak a barátok látják.",
     gmWhyDead: "A boss: ez a lap nem ér semmit",
   },
   tour: { c5: { 0: "Naptár: a zöld nap edzés, a szám alatti pötty kalória. Koppints egy napra, hogy lásd, mit csináltál; koppints egy üres napra, hogy edzést adj hozzá." } },

@@ -17,6 +17,8 @@ export default {
     tourShSoon: "O que está bloqueado está a caminho: um passe de temporada e mais formas de ganhar diamantes.",
     tourShWon: "Estes visuais não se compram. Você ganha com medalhas.",
     calLegOver: "Acima da meta",
+    frIntro: "Entre para comparar nível e sequência com os amigos, conversar com eles e ter um backup dos seus treinos na nuvem.",
+    pvVisD_all: "Qualquer pessoa conectada ao HW App pode abri-lo. Só os amigos veem sua foto.",
     gmWhyDead: "O chefe: esta carta não pontua",
   },
   tour: { c5: { 0: "Calendário: um dia verde é um treino, o ponto embaixo de um número são calorias. Toque em um dia para ver o que você fez; toque em um dia vazio para adicionar um treino." } },

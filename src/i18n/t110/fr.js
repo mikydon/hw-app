@@ -17,6 +17,8 @@ export default {
     tourShSoon: "Ce qui est verrouillé arrive bientôt : une passe de saison et d'autres façons d'obtenir des diamants.",
     tourShWon: "Ces looks ne s'achètent pas. Tu les gagnes avec des badges.",
     calLegOver: "Au-dessus de l'objectif",
+    frIntro: "Connecte-toi pour comparer ton niveau et ta série avec tes amis, leur écrire et garder une sauvegarde de tes entraînements dans le cloud.",
+    pvVisD_all: "Toute personne connectée à HW App peut l'ouvrir. Seuls tes amis voient ta photo.",
     gmWhyDead: "Le boss : cette carte ne compte pas",
   },
   tour: { c5: { 0: "Calendrier : un jour vert est une séance, le point sous un numéro, ce sont les calories. Touche un jour pour voir ce que tu as fait ; touche un jour vide pour ajouter une séance." } },

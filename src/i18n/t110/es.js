@@ -17,6 +17,8 @@ export default {
     tourShSoon: "Lo bloqueado está en camino: un pase de temporada y más formas de conseguir diamantes.",
     tourShWon: "Estos estilos no se pueden comprar. Los ganas con insignias.",
     calLegOver: "Por encima del objetivo",
+    frIntro: "Inicia sesión para comparar nivel y racha con tus amigos, escribirles y tener una copia de tus entrenamientos en la nube.",
+    pvVisD_all: "Cualquiera que haya iniciado sesión en HW App puede abrirlo. Solo tus amigos ven tu foto.",
     gmWhyDead: "El jefe: esta carta no puntúa",
   },
   tour: { c5: { 0: "Calendario: un día verde es un entrenamiento, el punto bajo un número son calorías. Toca un día para ver qué hiciste; toca un día vacío para añadir un entrenamiento." } },
