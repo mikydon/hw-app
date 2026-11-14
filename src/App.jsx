@@ -2513,6 +2513,7 @@ const ICONS = {
   repeat: '<path d="M4 12a6 6 0 0 1 6-6h9M16 3l3 3-3 3M20 12a6 6 0 0 1-6 6H5M8 21l-3-3 3-3"/>',
   up: '<path d="M12 19.5v-15M6 10.5l6-6 6 6"/>',
   search: '<circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.3 15.3 20.5 20.5"/>',
+  sliders: '<path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2.2"/><circle cx="9" cy="17" r="2.2"/>',
   globe: '<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.4 2.4 3.6 5.2 3.6 8.5S14.4 18.1 12 20.5M12 3.5C9.6 5.9 8.4 8.7 8.4 12s1.2 6.1 3.6 8.5"/>',
   robot: '<rect x="4.5" y="8" width="15" height="11.5" rx="3"/><path d="M12 4.5V8M2.5 12.5v3M21.5 12.5v3M9.5 16.5h5"/><circle cx="12" cy="4" r=".6"/><circle cx="9" cy="12.3" r="1.2"/><circle cx="15" cy="12.3" r="1.2"/>',
   // 1.8.2: Muscle Deck jokers, vouchers, packs and perks (no emoji)
@@ -5217,14 +5218,14 @@ const MonthCalendarM = memo(MonthCalendar);
 const ProgressChartM = memo(props => <ProgressChart {...props} />);
 // Best set per workout of one exercise, the newest 30: a smooth line that draws itself, a tap picks a workout.
 const PC_MAX = 30;
-function ProgressChart({ history }) {
+function ProgressChart({ history, h0 }) {
   const used = {};
   history.forEach((e, i) => e.items.forEach(it => { if (EX[it.id]) used[it.id] = (used[it.id] || 0) + 1 + i / 1e4; }));
   const withData = Object.keys(used).sort((a, b) => used[b] - used[a]);
   const [selId, setSelId] = useState(null);
   const sel = selId && used[selId] ? selId : withData[0];
   const [tip, setTip] = useState(null);
-  const ref = useRef(null), w = useWidth(ref) || 300, h = 168, padT = 34, padB = 22, padL = 6, padR = 10;
+  const ref = useRef(null), w = useWidth(ref) || 300, h = h0 || 168, padT = 34, padB = 22, padL = 6, padR = 10;
   if (!withData.length) return null;
   const pts = history.map(e => {
     const it = e.items.find(x => x.id === sel);
@@ -5428,6 +5429,21 @@ function HistoryTab({ history, onDelete, onSaveEntry, editDate, onEditOpened }) 
   const [open, setOpen] = useState(undefined);
   const openIdx = open === undefined ? (month.length ? month[0] : null) : open;
   const pg = usePager("hist", 2);
+  const rightRef = useRef(null), [chartH, setChartH] = useState(168);
+  useLayoutEffect(() => {
+    if (!pg.wide) return;
+    const fit = () => {
+      const r = rightRef.current; if (!r) return;
+      const left = r.parentNode && r.parentNode.firstElementChild, cardEl = r.querySelector('[data-st-card="progress"]'), stats = r.querySelector("[data-stat-grid]");
+      if (!left || !cardEl || !stats) return;
+      const leftH = [...left.children].reduce((a, c) => a + c.offsetHeight + (parseFloat(getComputedStyle(c).marginTop) || 0), 0);
+      setChartH(h => Math.max(168, Math.min(560, Math.round(leftH - stats.offsetHeight - 10 - (cardEl.offsetHeight - h)))));
+    };
+    fit();
+    const ro = new ResizeObserver(fit);
+    if (rightRef.current && rightRef.current.parentNode) ro.observe(rightRef.current.parentNode.firstElementChild);
+    return () => ro.disconnect();
+  }, [pg.wide]);
   // opened from a green day in the week strip on Home: straight into that day's workout
   useEffect(() => {
     if (!editDate) return;
@@ -5458,36 +5474,8 @@ function HistoryTab({ history, onDelete, onSaveEntry, editDate, onEditOpened }) 
       style={{ ...btnBase, width: 30, height: 30, borderRadius: 10, padding: 0, display: "inline-flex", alignItems: "center", justifyContent: "center", background: `${C.sky}22`, color: C.sky }}><Ico n="plus" size={17} sw={2.6} /></button>
   );
   const meta = (ic, v, col, data) => <span {...(data || {})} style={{ display: "inline-flex", alignItems: "center", gap: 4 }}><Ico n={ic} size={12.5} color={col} sw={2.3} />{v}</span>;
-  return (
-    <div className="scr" style={{ padding: "16px 0 124px", maxWidth: "var(--colMax)", margin: "0 auto" }}>
-      <style>{`.hsInR{animation:hsInR ${MO.t2} ${MO.ease} both}.hsInL{animation:hsInL ${MO.t2} ${MO.ease} both}@keyframes hsInR{from{opacity:0;transform:translateX(14px)}}@keyframes hsInL{from{opacity:0;transform:translateX(-14px)}}
-.hsRow{animation:hsRow ${MO.t2} ${MO.ease} both}@keyframes hsRow{from{opacity:0;transform:translateY(8px)}}
-.stDraw{stroke-dasharray:1;stroke-dashoffset:0;animation:stDraw .9s ${MO.ease} both}.stFade{animation:stFade .9s ease both}@keyframes stDraw{from{stroke-dashoffset:1}}@keyframes stFade{from{opacity:0}}
-@media (prefers-reduced-motion:reduce){.hsInR,.hsInL,.hsRow,.stDraw,.stFade{animation:none}}`}</style>
-      {confirmDel !== null && <ConfirmBox icon="trash" danger title={T("cfDelWorkoutT")} text={T("cfDelWorkoutD")} yes={T("deleteWorkout")} yesData={{ "data-del-workout-yes": true }} onNo={() => setConfirmDel(null)} onYes={() => { const i = confirmDel; setConfirmDel(null); onDelete(i); }} />}
-      {editing !== null && (
-        <EntryEditor key={String(editing) + (newDate || "")} entry={editing === "new" ? null : history[editing]} date={editing === "new" ? newDate : null} nextDay={DAYS[nextDayIdx(history)].id}
-          onClose={() => setEditing(null)}
-          onSave={e => { onSaveEntry(editing === "new" ? null : editing, e); setEditing(null); setOpen(undefined); const d = parseKey(e.date); setYm([d.getFullYear(), d.getMonth()]); setSel(e.date); }}
-          onDelete={() => { onDelete(editing); setEditing(null); setOpen(undefined); }} />
-      )}
-      <div style={{ padding: "0 18px" }}>{pg.tabs([[T("kcTabCal"), "calendar"], [T("progress"), "trend"]])}</div>
-      <div {...pg.pagerProps}>
-        <div {...pg.pageProps(0)}>
-          <MonthCalendarM history={history} ym={ym} setYm={setMonth} sel={sel} onPick={pick} />
-          {/* a picked day without a workout: what happened, and a way to add one */}
-          {sel && !selHas && (
-            <div data-day-empty={sel} className="hsRow" style={{ ...card, ...tileR(), display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", marginTop: 10 }}>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 15, fontWeight: 700, color: C.chalk }}>{capFirst(fmtDate(sel, true))}</div>
-                <div style={{ fontSize: 13, color: selSkip || selFz ? C.sky : C.dim, marginTop: 2, display: "flex", alignItems: "center", gap: 5 }}>
-                  {selSkip ? <><Ico n={skipIcon(selSkip.r)} size={13} sw={2.3} />{T("skip_" + selSkip.r)}{selSkip.note ? `: ${selSkip.note}` : ""}</> : selFz ? <><Ico n="ice" size={13} sw={2.3} />{T("shFreeze")}</> : T("hsNoWorkout")}
-                </div>
-              </div>
-              <button data-day-add onClick={() => { sfxTap(); setNewDate(sel); setEditing("new"); }} style={{ ...btnBase, padding: "10px 14px", fontSize: 14, background: `${C.sky}22`, color: C.sky, display: "inline-flex", alignItems: "center", gap: 6, flexShrink: 0 }}><Ico n="plus" size={15} sw={2.6} />{T("hsAdd")}</button>
-            </div>
-          )}
-          <ListSect title={T("workoutsTitle")} meta={addBtn} data-workouts style={{ marginTop: 10 }}>
+  const workoutList = (
+          <ListSect title={T("workoutsTitle")} meta={addBtn} data-workouts style={{ marginTop: pg.wide ? 0 : 10 }}>
             {month.length === 0 && <div data-hist-none style={{ color: C.dim, fontSize: 14, padding: "14px 16px", lineHeight: 1.45 }}>{history.length === 0 ? T("noHistory") : T("hsNoMonth")}</div>}
             {month.map((idx, ri) => {
               const s = history[idx], isOpen = openIdx === idx, d = parseKey(s.date);
@@ -5547,15 +5535,49 @@ function HistoryTab({ history, onDelete, onSaveEntry, editDate, onEditOpened }) 
               );
             })}
           </ListSect>
+  );
+  return (
+    <div className="scr" style={{ padding: "16px 0 124px", maxWidth: "var(--colMax)", margin: "0 auto" }}>
+      <style>{`.hsInR{animation:hsInR ${MO.t2} ${MO.ease} both}.hsInL{animation:hsInL ${MO.t2} ${MO.ease} both}@keyframes hsInR{from{opacity:0;transform:translateX(14px)}}@keyframes hsInL{from{opacity:0;transform:translateX(-14px)}}
+.hsRow{animation:hsRow ${MO.t2} ${MO.ease} both}@keyframes hsRow{from{opacity:0;transform:translateY(8px)}}
+.stDraw{stroke-dasharray:1;stroke-dashoffset:0;animation:stDraw .9s ${MO.ease} both}.stFade{animation:stFade .9s ease both}@keyframes stDraw{from{stroke-dashoffset:1}}@keyframes stFade{from{opacity:0}}
+@media (prefers-reduced-motion:reduce){.hsInR,.hsInL,.hsRow,.stDraw,.stFade{animation:none}}`}</style>
+      {confirmDel !== null && <ConfirmBox icon="trash" danger title={T("cfDelWorkoutT")} text={T("cfDelWorkoutD")} yes={T("deleteWorkout")} yesData={{ "data-del-workout-yes": true }} onNo={() => setConfirmDel(null)} onYes={() => { const i = confirmDel; setConfirmDel(null); onDelete(i); }} />}
+      {editing !== null && (
+        <EntryEditor key={String(editing) + (newDate || "")} entry={editing === "new" ? null : history[editing]} date={editing === "new" ? newDate : null} nextDay={DAYS[nextDayIdx(history)].id}
+          onClose={() => setEditing(null)}
+          onSave={e => { onSaveEntry(editing === "new" ? null : editing, e); setEditing(null); setOpen(undefined); const d = parseKey(e.date); setYm([d.getFullYear(), d.getMonth()]); setSel(e.date); }}
+          onDelete={() => { onDelete(editing); setEditing(null); setOpen(undefined); }} />
+      )}
+      <div style={{ padding: "0 18px" }}>{pg.tabs([[T("kcTabCal"), "calendar"], [T("progress"), "trend"]])}</div>
+      <div {...pg.pagerProps}>
+        <div {...pg.pageProps(0)}>
+          <MonthCalendarM history={history} ym={ym} setYm={setMonth} sel={sel} onPick={pick} />
+          {/* a picked day without a workout: what happened, and a way to add one */}
+          {sel && !selHas && (
+            <div data-day-empty={sel} className="hsRow" style={{ ...card, ...tileR(), display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", marginTop: 10 }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 15, fontWeight: 700, color: C.chalk }}>{capFirst(fmtDate(sel, true))}</div>
+                <div style={{ fontSize: 13, color: selSkip || selFz ? C.sky : C.dim, marginTop: 2, display: "flex", alignItems: "center", gap: 5 }}>
+                  {selSkip ? <><Ico n={skipIcon(selSkip.r)} size={13} sw={2.3} />{T("skip_" + selSkip.r)}{selSkip.note ? `: ${selSkip.note}` : ""}</> : selFz ? <><Ico n="ice" size={13} sw={2.3} />{T("shFreeze")}</> : T("hsNoWorkout")}
+                </div>
+              </div>
+              <button data-day-add onClick={() => { sfxTap(); setNewDate(sel); setEditing("new"); }} style={{ ...btnBase, padding: "10px 14px", fontSize: 14, background: `${C.sky}22`, color: C.sky, display: "inline-flex", alignItems: "center", gap: 6, flexShrink: 0 }}><Ico n="plus" size={15} sw={2.6} />{T("hsAdd")}</button>
+            </div>
+          )}
+          {!pg.wide && workoutList}
         </div>
-        <div {...pg.pageProps(1)}>
+        <div {...pg.pageProps(1)} ref={el => { pg.pageProps(1).ref(el); rightRef.current = el; }}>
           <div data-stat-grid style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 10 }}>
             {tiles.map(([l, v, ic, ico]) => <StatTile key={l} label={l} icon={ic} icoCol={ico} value={<CountUp n={v} />} compact />)}
           </div>
-          <ProgressChartM history={history} />
+          <ProgressChartM history={history} h0={pg.wide ? chartH : 0} />
           {history.length === 0 && <div style={{ ...card, ...tileR(), padding: "14px 16px", color: C.dim, fontSize: 14, lineHeight: 1.45 }}>{T("noHistory")}</div>}
         </div>
       </div>
+      {/* 1.10.0 (Michael's sketch, Nov 14): on a wide screen the calendar and the progress chart end at the same line
+          (the chart grows to fill), and the month's workouts run across the whole width under both */}
+      {pg.wide && <div data-hist-wide-list style={{ padding: "0 18px" }}>{workoutList}</div>}
     </div>
   );
 }
@@ -6613,7 +6635,7 @@ let STORE_CACHE = null; // {ts, list} for 5 minutes
 function PlanStore({ on, signedIn, P, history }) {
   const [list, setList] = useState(STORE_CACHE ? STORE_CACHE.list : null), [err, setErr] = useState("");
   const [q, setQ] = useState(""), [grp, setGrp] = useState(null), [eq, setEq] = useState(["none", "free", "machine"]), [sort, setSort] = useState("sv");
-  const [peek, setPeek] = useState(null);
+  const [peek, setPeek] = useState(null), [fOpen, setFOpen] = useState(false);
   const load = force => { if (!signedIn) return; if (!force && STORE_CACHE && Date.now() - STORE_CACHE.ts < 5 * 60 * 1000) { setList(STORE_CACHE.list); return; } setErr("");
     cloud().pubList().then(l => { const c = l.map(x => ({ ...x, items: (x.items || []).filter(i => i && EX[i.id]) })).filter(x => x.items.length); STORE_CACHE = { ts: Date.now(), list: c }; setList(c); }).catch(e => setErr(cloudErr(e) || T("frOffline"))); };
   useEffect(() => { if (on) load(); }, [on, signedIn]);
@@ -6624,22 +6646,54 @@ function PlanStore({ on, signedIn, P, history }) {
   const hit = x => !nq || [x.name, x.nick, ...x.items.map(i => EX[i.id] ? EX[i.id].name : "")].some(t => normTxt(t).includes(nq));
   const shown = (list || []).filter(x => hit(x) && (!grp || (x.fam || []).includes(grp)) && eq.includes(x.eq || "none"))
     .sort((a, b) => sort === "avg" ? (b.avg || 0) - (a.avg || 0) || (b.sn || 0) - (a.sn || 0) : sort === "ts" ? (b.ts || 0) - (a.ts || 0) : (b.sv || 0) - (a.sv || 0) || (b.ts || 0) - (a.ts || 0));
-  const chipS = on => ({ ...btnBase, padding: "6px 12px", fontSize: 13, borderRadius: 99, whiteSpace: "nowrap", flexShrink: 0, ...(on ? { background: `${C.signal}22`, border: `1px solid ${C.signal}66`, color: C.signal } : { ...SUNK(), color: C.dim }) });
+  // 1.10.0 (Michael, Nov 14: "a filter system like apps have; all those buttons look messy"): search + one filter
+  // button (a count of active filters on it); the filters and the order live in a sheet; active filters show as
+  // small removable chips; the order is a quiet line above the list
   const toggleEq = k => { sfxTap(); setEq(v => { const n = v.includes(k) ? v.filter(x => x !== k) : EQUIP_ORDER.filter(x => x === k || v.includes(x)); return n.length ? n : [k]; }); };
+  const ALL_EQ = ["none", "free", "machine"], eqOn = eq.length < ALL_EQ.length;
+  const nActive = (grp ? 1 : 0) + (eqOn ? 1 : 0);
+  const SORTS = [["sv", T("plStoreTop")], ["avg", T("plStoreStars")], ["ts", T("plStoreNew")]];
+  const pill = (on, onClick, label, data) => <button key={label} type="button" {...data} aria-pressed={on} onClick={onClick} style={{ ...btnBase, padding: "9px 14px", fontSize: 14, borderRadius: 12, ...(on ? { background: C.chalk, color: C.ink } : { ...SUNK(), color: C.chalk, fontWeight: 600 }) }}>{label}</button>;
+  const tag = (label, onX, data) => <span key={label} {...data} style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "5px 6px 5px 11px", borderRadius: 99, background: `${C.signal}1f`, color: C.signal, fontSize: 13, fontWeight: 700 }}>{label}<button type="button" aria-label={T("close")} onClick={() => { sfxTap(); onX(); }} style={{ ...btnBase, background: "transparent", color: C.signal, padding: 2, display: "flex" }}><Ico n="x" size={14} /></button></span>;
   return (
     <div data-store>
-      <div style={{ position: "relative" }}>
-        <Ico n="search" size={18} color={C.dim} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
-        <input data-store-q value={q} onChange={e => setQ(e.target.value)} placeholder={T("plStoreSearch")} aria-label={T("plStoreSearch")} style={{ ...pwField(), width: "100%", paddingLeft: 38 }} />
+      <div style={{ display: "flex", gap: 8 }}>
+        <div style={{ position: "relative", flex: 1, minWidth: 0 }}>
+          <Ico n="search" size={18} color={C.dim} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
+          <input data-store-q value={q} onChange={e => setQ(e.target.value)} placeholder={T("plStoreSearch")} aria-label={T("plStoreSearch")} style={{ ...pwField(), width: "100%", paddingLeft: 38 }} />
+        </div>
+        <button type="button" data-store-filter={nActive} aria-label={T("plStoreFilter")} onClick={() => { sfxTap(); setFOpen(true); }} style={{ ...btnBase, position: "relative", width: 50, flexShrink: 0, borderRadius: 14, ...SUNK(), color: nActive ? C.signal : C.chalk, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <Ico n="sliders" size={20} />
+          {nActive > 0 && <span style={{ position: "absolute", top: 6, right: 6, minWidth: 16, height: 16, borderRadius: 99, background: C.signal, color: C.signalInk, fontSize: 10, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center" }}>{nActive}</span>}
+        </button>
       </div>
-      <div className="noBar" style={{ display: "flex", gap: 6, overflowX: "auto", marginTop: 10 }} role="group" aria-label={T("plStoreFocus")}>
-        <button type="button" data-store-grp="" aria-pressed={!grp} onClick={() => { sfxTap(); setGrp(null); }} style={chipS(!grp)}>{T("plStoreAll")}</button>
-        {GROUPS_ORDER.map(g => <button key={g} type="button" data-store-grp={g} aria-pressed={grp === g} onClick={() => { sfxTap(); setGrp(grp === g ? null : g); }} style={chipS(grp === g)}>{T("bg_" + g)}</button>)}
+      {nActive > 0 && <div data-store-tags style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 10 }}>
+        {grp && tag(T("bg_" + grp), () => setGrp(null), { "data-store-tag": "grp" })}
+        {eqOn && tag(eq.map(k => T("eq_" + k)).join(" · "), () => setEq(ALL_EQ), { "data-store-tag": "eq" })}
+      </div>}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, margin: "12px 4px 0", fontSize: 13, color: C.dim }}>
+        <span data-store-count={shown.length}>{list ? T("plStoreN", { n: nf(shown.length) }) : ""}</span>
+        <button type="button" data-store-sort-open onClick={() => { sfxTap(); setFOpen(true); }} style={{ ...btnBase, background: "transparent", color: C.chalk, fontSize: 13, padding: "4px 2px", display: "inline-flex", alignItems: "center", gap: 6 }}><Ico n="sort" size={15} color={C.dim} />{SORTS.find(x => x[0] === sort)[1]}</button>
       </div>
-      <div className="noBar" style={{ display: "flex", gap: 6, overflowX: "auto", marginTop: 8 }} role="group" aria-label={T("plStoreEq")}>
-        {EQUIP_ORDER.map(k => <button key={k} type="button" data-store-eq={k} aria-pressed={eq.includes(k)} onClick={() => toggleEq(k)} style={chipS(eq.includes(k))}>{T("eq_" + k)}</button>)}
-      </div>
-      <Seg label={T("plStoreSort")} style={{ marginTop: 10 }} value={sort} onPick={v => { sfxTap(); setSort(v); }} items={[["sv", T("plStoreTop"), { "data-store-sort": "sv" }], ["avg", T("plStoreStars"), { "data-store-sort": "avg" }], ["ts", T("plStoreNew"), { "data-store-sort": "ts" }]]} />
+      {fOpen && (
+        <Sheet title={T("plStoreFilter")} onClose={() => setFOpen(false)}>
+          <div data-store-sheet>
+            <div style={{ ...sectionTitle, margin: "2px 2px 8px" }}>{T("plStoreSort")}</div>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>{SORTS.map(([k, l]) => pill(sort === k, () => { sfxTap(); setSort(k); }, l, { "data-store-sort": k }))}</div>
+            <div style={{ ...sectionTitle, margin: "18px 2px 8px" }}>{T("plStoreFocus")}</div>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              {pill(!grp, () => { sfxTap(); setGrp(null); }, T("plStoreAll"), { "data-store-grp": "" })}
+              {GROUPS_ORDER.map(g => pill(grp === g, () => { sfxTap(); setGrp(grp === g ? null : g); }, T("bg_" + g), { "data-store-grp": g }))}
+            </div>
+            <div style={{ ...sectionTitle, margin: "18px 2px 8px" }}>{T("plStoreEq")}</div>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>{EQUIP_ORDER.map(k => pill(eq.includes(k), () => toggleEq(k), T("eq_" + k), { "data-store-eq": k }))}</div>
+            <div style={{ display: "flex", gap: 8, marginTop: 22 }}>
+              <button type="button" data-store-reset disabled={!nActive && sort === "sv"} onClick={() => { sfxTap(); setGrp(null); setEq(ALL_EQ); setSort("sv"); }} style={{ ...btnBase, padding: "14px 18px", borderRadius: 14, ...SUNK(), color: C.chalk, fontSize: 15, opacity: !nActive && sort === "sv" ? 0.5 : 1 }}>{T("plStoreReset")}</button>
+              <button type="button" data-store-show onClick={() => { sfxTap(); setFOpen(false); }} style={{ ...btnBase, flex: 1, padding: "14px", borderRadius: 14, background: C.signal, color: C.signalInk, fontSize: 15 }}>{T("plStoreShow", { n: nf(shown.length) })}</button>
+            </div>
+          </div>
+        </Sheet>
+      )}
       {err && <div role="alert" style={{ fontSize: 13, color: "#ff8a80", marginTop: 10 }}>{err}</div>}
       <Sect data-store-list style={{ padding: "6px 0", marginTop: 12 }}>
         {list === null && !err ? <div style={{ padding: "10px 16px", color: C.dim, fontSize: 14 }}>{T("frLoading")}</div>
@@ -8530,6 +8584,7 @@ function ExercisesPage({ settings, set, history, onBack, backLabel }) {
 }
 
 function SettingsTab({ initPage, ret, settings, setSettings, history, profile, setProfile, onImport, kcal, autoBk, onAutoBackup, acct, cloudBk, onAcctOpen, onCloudRestore, onCloudPoint, onCloudBackupNow, onSignOut, onDeleteAccount }) {
+  const wideSet = useWide(); // 1.10.0: before any early return (hooks keep their order)
   const [page, setPage] = useState(initPage || null); // null | "exercises" | "look" (1.10.0: Appearance has its own page)
   // 1.10.0 (Michael, Nov 13): no "Support the app" row in any build (hidden on Google Play since 1.9.4): every build
   // is the same. Never add a Patreon / PayPal / Ko-fi link or "support us" wording back.
@@ -8644,6 +8699,37 @@ function SettingsTab({ initPage, ret, settings, setSettings, history, profile, s
     );
   }
 
+  // 1.10.0 (PC/tablet): on a wide screen Account and Data sit in the left column under Language and Appearance, so
+  // both columns are about as long; a phone keeps the old order
+  const acctData = (<>
+      <AccountBox acct={acct || { st: "out" }} cloudBk={cloudBk} onOpen={onAcctOpen} onRestore={onCloudRestore} onRestorePoint={onCloudPoint} onBackupNow={onCloudBackupNow} onSignOut={onSignOut} onDelete={onDeleteAccount} settings={settings} set={set} />
+
+      <ListSect title={T("dataBackup")}>
+        <button onClick={exportBackup} style={{ ...rowBtn(true), display: "flex", alignItems: "center", gap: 12, padding: ROW_I }}>
+          <RowIco n="download" /><span>{noEmo(T("backupSave"))}<InfoQ title={noEmo(T("backupSave"))} text={isNative ? T("backupSaveDApp", { dir: `Documents/${BK_DIR}` }) : T("backupSaveD")} /></span>
+        </button>
+        {bkSupported() && (
+          <>
+            <SettingRow icon="history" title={noEmo(T("autoBk"))} info={T("autoBkD", { dir: `Documents/${BK_DIR}` })} desc={<><span data-autobk-status={autoBk ? (autoBk.ok ? "ok" : "err") : "none"} style={{ display: "block", color: autoBk && !autoBk.ok ? "#ff8a80" : autoBk ? C.mint : C.dim }}>{!settings.autoBackup ? null : !autoBk ? T("autoBkNone") : autoBk.ok ? T("autoBkLast", { time: fmtWhen(autoBk.ts) }) : T("autoBkErr", { e: autoBk.err || "?" })}</span></>}
+              on={settings.autoBackup} onClick={() => { const v = !settings.autoBackup; set("autoBackup", v); sfxTap(); if (v) onAutoBackup(true); }} />
+            <button data-bk-open onClick={() => { sfxTap(); setBkOpen(true); }} style={{ ...rowBtn(false), display: "flex", alignItems: "center", gap: 12, padding: ROW_I }}>
+              <RowIco n="folder" />
+              <span style={{ flex: 1 }}>{noEmo(T("bkFolder"))}</span>
+              <Arrow />
+            </button>
+          </>
+        )}
+        <button onClick={() => fileRef.current && fileRef.current.click()} style={{ ...rowBtn(false), display: "flex", alignItems: "center", gap: 12, padding: ROW_I }}>
+          <RowIco n="upload" /><span>{noEmo(T("backupLoad"))}<InfoQ title={noEmo(T("backupLoad"))} text={T("backupLoadD")} /></span>
+        </button>
+        {pending && <ConfirmBox icon="download" title={T("cfRestoreT")} text={`${pending.exportedAt ? fmtDate(dateKey(new Date(pending.exportedAt)), true) : T("unknownDate")} · ${TP("workouts", pending.history.length)}. ${T("cfRestoreD")}`} yes={T("yesRestore")} yesData={{ "data-restore-yes": true }} onNo={() => setPending(null)} onYes={() => { onImport(pending); setPending(null); setMsg(T("msgRestored")); sfxCheck(); }} />}
+        {settings.aiCopy && (
+          <button onClick={copyAll} style={{ ...rowBtn(false), display: "flex", alignItems: "center", gap: 12, padding: ROW_I }}><RowIco n="copy" /><span>{copied ? T("copied") : emo(T("copyAllAI"))}</span></button>
+        )}
+      </ListSect>
+      {msg && <div role="status" style={{ fontSize: 13, color: msg.startsWith("✓") ? C.mint : C.dim, marginTop: 8 }}>{msg}</div>}
+
+  </>);
   return (
     <div className="scr" key="main" style={{ padding: "6px 18px 124px", maxWidth: "var(--colMax)", margin: "0 auto" }}>
       <input ref={fileRef} type="file" accept="application/json,.json" onChange={readBackup} style={{ display: "none" }} />
@@ -8696,6 +8782,7 @@ function SettingsTab({ initPage, ret, settings, setSettings, history, profile, s
           <Arrow />
         </button>
       </ListSect>
+      {wideSet && acctData}
       </>} right={<>
       <ListSect title={T("sounds")}>
         <SettingRow first icon="hand" title={T("sndTap")} on={settings.sndTap} onClick={() => flip("sndTap")} />
@@ -8721,33 +8808,7 @@ function SettingsTab({ initPage, ret, settings, setSettings, history, profile, s
         {restSupported() && <RestPermRow />}
       </ListSect>
 
-      <AccountBox acct={acct || { st: "out" }} cloudBk={cloudBk} onOpen={onAcctOpen} onRestore={onCloudRestore} onRestorePoint={onCloudPoint} onBackupNow={onCloudBackupNow} onSignOut={onSignOut} onDelete={onDeleteAccount} settings={settings} set={set} />
-
-      <ListSect title={T("dataBackup")}>
-        <button onClick={exportBackup} style={{ ...rowBtn(true), display: "flex", alignItems: "center", gap: 12, padding: ROW_I }}>
-          <RowIco n="download" /><span>{noEmo(T("backupSave"))}<InfoQ title={noEmo(T("backupSave"))} text={isNative ? T("backupSaveDApp", { dir: `Documents/${BK_DIR}` }) : T("backupSaveD")} /></span>
-        </button>
-        {bkSupported() && (
-          <>
-            <SettingRow icon="history" title={noEmo(T("autoBk"))} info={T("autoBkD", { dir: `Documents/${BK_DIR}` })} desc={<><span data-autobk-status={autoBk ? (autoBk.ok ? "ok" : "err") : "none"} style={{ display: "block", color: autoBk && !autoBk.ok ? "#ff8a80" : autoBk ? C.mint : C.dim }}>{!settings.autoBackup ? null : !autoBk ? T("autoBkNone") : autoBk.ok ? T("autoBkLast", { time: fmtWhen(autoBk.ts) }) : T("autoBkErr", { e: autoBk.err || "?" })}</span></>}
-              on={settings.autoBackup} onClick={() => { const v = !settings.autoBackup; set("autoBackup", v); sfxTap(); if (v) onAutoBackup(true); }} />
-            <button data-bk-open onClick={() => { sfxTap(); setBkOpen(true); }} style={{ ...rowBtn(false), display: "flex", alignItems: "center", gap: 12, padding: ROW_I }}>
-              <RowIco n="folder" />
-              <span style={{ flex: 1 }}>{noEmo(T("bkFolder"))}</span>
-              <Arrow />
-            </button>
-          </>
-        )}
-        <button onClick={() => fileRef.current && fileRef.current.click()} style={{ ...rowBtn(false), display: "flex", alignItems: "center", gap: 12, padding: ROW_I }}>
-          <RowIco n="upload" /><span>{noEmo(T("backupLoad"))}<InfoQ title={noEmo(T("backupLoad"))} text={T("backupLoadD")} /></span>
-        </button>
-        {pending && <ConfirmBox icon="download" title={T("cfRestoreT")} text={`${pending.exportedAt ? fmtDate(dateKey(new Date(pending.exportedAt)), true) : T("unknownDate")} · ${TP("workouts", pending.history.length)}. ${T("cfRestoreD")}`} yes={T("yesRestore")} yesData={{ "data-restore-yes": true }} onNo={() => setPending(null)} onYes={() => { onImport(pending); setPending(null); setMsg(T("msgRestored")); sfxCheck(); }} />}
-        {settings.aiCopy && (
-          <button onClick={copyAll} style={{ ...rowBtn(false), display: "flex", alignItems: "center", gap: 12, padding: ROW_I }}><RowIco n="copy" /><span>{copied ? T("copied") : emo(T("copyAllAI"))}</span></button>
-        )}
-      </ListSect>
-      {msg && <div role="status" style={{ fontSize: 13, color: msg.startsWith("✓") ? C.mint : C.dim, marginTop: 8 }}>{msg}</div>}
-
+      {!wideSet && acctData}
       </>} />
       <div style={{ fontSize: 12, color: C.dim, textAlign: "center", marginTop: 26, lineHeight: 1.6, display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
         <Logo size={44} />
