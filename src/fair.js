@@ -82,5 +82,7 @@ export function fairStats(history, { seen = {}, since = 0, freezeDays = [], toda
   const t = dayNo(today);
   if (all.length && Number.isFinite(t) && t - all[all.length - 1] <= 2) streak = run;
   const n = counted.length;
-  return { n, streak, best: bestStreak, xp, lvl: fairLevel(xp), pts: n * 1000 + Math.min(999, streak), flags: [...flags].sort(), drop, bests: best };
+  // 1.10.0 (Friends together): the checked days themselves and the sets of each, for the server's vdays/{uid}
+  const dates = counted.map(x => x.e.date), setsBy = Object.fromEntries(counted.map(x => [x.e.date, Math.min(x.s, 99)]));
+  return { n, streak, best: bestStreak, xp, lvl: fairLevel(xp), pts: n * 1000 + Math.min(999, streak), flags: [...flags].sort(), drop, bests: best, dates, sets: setsBy };
 }

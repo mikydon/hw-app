@@ -543,6 +543,8 @@ const L = {
     pushChannel: "Barátok és üzenetek",
     ntTest: "Próbaértesítés",
     ntTestD: "Működik! Így érkeznek majd az üzenetek és a barátkérések.",
+    ntNudge: "{nick} megbökött",
+    ntNudgeD: "A mai edzés még vár rád. Hajrá!",
     pushTest: "Próbaértesítés küldése",
     pushTestOk: "Elküldve, várom, hogy megérkezzen…",
     pushTestGot: "✓ Megérkezett a telefonra. Ha az app be van zárva, a képernyő tetején jelenik meg.",

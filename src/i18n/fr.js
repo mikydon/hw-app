@@ -543,6 +543,8 @@ const L = {
     pushChannel: "Amis et messages",
     ntTest: "Notification de test",
     ntTestD: "Ça marche ! Les messages et demandes d'ami arriveront comme ça.",
+    ntNudge: "{nick} t'a fait signe",
+    ntNudgeD: "L'entraînement du jour t'attend encore. On y va !",
     pushTest: "Envoyer une notification de test",
     pushTestOk: "Envoyée, en attente de réception…",
     pushTestGot: "✓ Elle est arrivée sur ce téléphone. Quand l'appli est fermée, elle s'affiche en haut de l'écran.",

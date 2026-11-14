@@ -6,7 +6,9 @@ export default {
   "ntAcc": "Ty a {nick} jste teď přátelé",
   "ntAccD": "Ťukni a napiš první zprávu",
   "ntTest": "Zkušební upozornění",
-  "ntTestD": "Funguje to! Takhle ti budou chodit zprávy a žádosti o přátelství."
+  "ntTestD": "Funguje to! Takhle ti budou chodit zprávy a žádosti o přátelství.",
+  "ntNudge": "{nick} tě šťouchl",
+  "ntNudgeD": "Dnešní trénink ještě čeká. Jdeme na to!"
  },
  "de": {
   "ntReq": "{nick} möchte befreundet sein",
@@ -14,7 +16,9 @@ export default {
   "ntAcc": "Du und {nick} seid jetzt befreundet",
   "ntAccD": "Tippe und schreib die erste Nachricht",
   "ntTest": "Testbenachrichtigung",
-  "ntTestD": "Es funktioniert! So kommen Nachrichten und Freundschaftsanfragen an."
+  "ntTestD": "Es funktioniert! So kommen Nachrichten und Freundschaftsanfragen an.",
+  "ntNudge": "{nick} hat dich angestupst",
+  "ntNudgeD": "Das heutige Training wartet noch. Los geht's!"
  },
  "en": {
   "ntReq": "{nick} wants to be friends",
@@ -22,7 +26,9 @@ export default {
   "ntAcc": "You and {nick} are friends now",
   "ntAccD": "Tap to write the first message",
   "ntTest": "Test notification",
-  "ntTestD": "It works! Messages and friend requests will arrive like this."
+  "ntTestD": "It works! Messages and friend requests will arrive like this.",
+  "ntNudge": "{nick} nudged you",
+  "ntNudgeD": "Today's workout is still waiting. Let's go!"
  },
  "es": {
   "ntReq": "{nick} quiere ser tu amigo",
@@ -30,7 +36,9 @@ export default {
   "ntAcc": "Tú y {nick} ya sois amigos",
   "ntAccD": "Toca y escribe el primer mensaje",
   "ntTest": "Notificación de prueba",
-  "ntTestD": "¡Funciona! Así llegarán los mensajes y las solicitudes de amistad."
+  "ntTestD": "¡Funciona! Así llegarán los mensajes y las solicitudes de amistad.",
+  "ntNudge": "{nick} te ha dado un toque",
+  "ntNudgeD": "El entrenamiento de hoy aún te espera. ¡Vamos!"
  },
  "fr": {
   "ntReq": "{nick} veut être ton ami",
@@ -38,7 +46,9 @@ export default {
   "ntAcc": "Toi et {nick} êtes maintenant amis",
   "ntAccD": "Touche pour écrire le premier message",
   "ntTest": "Notification de test",
-  "ntTestD": "Ça marche ! Les messages et demandes d'ami arriveront comme ça."
+  "ntTestD": "Ça marche ! Les messages et demandes d'ami arriveront comme ça.",
+  "ntNudge": "{nick} t'a fait signe",
+  "ntNudgeD": "L'entraînement du jour t'attend encore. On y va !"
  },
  "hu": {
   "ntReq": "{nick} barátod szeretne lenni",
@@ -46,7 +56,9 @@ export default {
   "ntAcc": "Te és {nick} mostantól barátok vagytok",
   "ntAccD": "Koppints, és írd meg az első üzenetet",
   "ntTest": "Próbaértesítés",
-  "ntTestD": "Működik! Így érkeznek majd az üzenetek és a barátkérések."
+  "ntTestD": "Működik! Így érkeznek majd az üzenetek és a barátkérések.",
+  "ntNudge": "{nick} megbökött",
+  "ntNudgeD": "A mai edzés még vár rád. Hajrá!"
  },
  "id": {
   "ntReq": "{nick} ingin berteman",
@@ -54,7 +66,9 @@ export default {
   "ntAcc": "Kamu dan {nick} sekarang berteman",
   "ntAccD": "Ketuk untuk menulis pesan pertama",
   "ntTest": "Notifikasi uji",
-  "ntTestD": "Berhasil! Pesan dan permintaan pertemanan akan datang seperti ini."
+  "ntTestD": "Berhasil! Pesan dan permintaan pertemanan akan datang seperti ini.",
+  "ntNudge": "{nick} mencolekmu",
+  "ntNudgeD": "Latihan hari ini masih menunggu. Ayo!"
  },
  "it": {
   "ntReq": "{nick} vuole essere tuo amico",
@@ -62,7 +76,9 @@ export default {
   "ntAcc": "Tu e {nick} ora siete amici",
   "ntAccD": "Tocca e scrivi il primo messaggio",
   "ntTest": "Notifica di prova",
-  "ntTestD": "Funziona! Messaggi e richieste di amicizia arriveranno così."
+  "ntTestD": "Funziona! Messaggi e richieste di amicizia arriveranno così.",
+  "ntNudge": "{nick} ti ha dato una spinta",
+  "ntNudgeD": "L'allenamento di oggi ti aspetta ancora. Forza!"
  },
  "ja": {
   "ntReq": "{nick} さんがフレンドになりたがっています",
@@ -70,7 +86,9 @@ export default {
   "ntAcc": "{nick}さんと友だちになりました",
   "ntAccD": "タップして最初のメッセージを送ろう",
   "ntTest": "テスト通知",
-  "ntTestD": "成功です！メッセージや友達リクエストはこのように届きます。"
+  "ntTestD": "成功です！メッセージや友達リクエストはこのように届きます。",
+  "ntNudge": "{nick}さんがあなたをつつきました",
+  "ntNudgeD": "今日のトレーニングがまだ待っています。始めましょう！"
  },
  "ko": {
   "ntReq": "{nick}님이 친구가 되고 싶어 합니다",
@@ -78,7 +96,9 @@ export default {
   "ntAcc": "이제 {nick}님과 친구예요",
   "ntAccD": "눌러서 첫 메시지를 보내 보세요",
   "ntTest": "테스트 알림",
-  "ntTestD": "잘 됩니다! 메시지와 친구 요청이 이렇게 도착해요."
+  "ntTestD": "잘 됩니다! 메시지와 친구 요청이 이렇게 도착해요.",
+  "ntNudge": "{nick}님이 콕 찔렀어요",
+  "ntNudgeD": "오늘의 운동이 아직 기다리고 있어요. 시작해요!"
  },
  "pl": {
   "ntReq": "{nick} chce być twoim znajomym",
@@ -86,7 +106,9 @@ export default {
   "ntAcc": "Ty i {nick} jesteście teraz znajomymi",
   "ntAccD": "Stuknij i napisz pierwszą wiadomość",
   "ntTest": "Powiadomienie testowe",
-  "ntTestD": "Działa! Tak będą przychodzić wiadomości i zaproszenia do znajomych."
+  "ntTestD": "Działa! Tak będą przychodzić wiadomości i zaproszenia do znajomych.",
+  "ntNudge": "{nick} cię szturchnął",
+  "ntNudgeD": "Dzisiejszy trening wciąż czeka. Do dzieła!"
  },
  "pt": {
   "ntReq": "{nick} quer ser teu amigo",
@@ -94,7 +116,9 @@ export default {
   "ntAcc": "Tu e {nick} agora são amigos",
   "ntAccD": "Toca e escreve a primeira mensagem",
   "ntTest": "Notificação de teste",
-  "ntTestD": "Funciona! É assim que vão chegar as mensagens e os pedidos de amizade."
+  "ntTestD": "Funciona! É assim que vão chegar as mensagens e os pedidos de amizade.",
+  "ntNudge": "{nick} te cutucou",
+  "ntNudgeD": "O treino de hoje ainda está esperando. Bora!"
  },
  "sk": {
   "ntReq": "{nick} chce byť tvoj priateľ",
@@ -102,7 +126,9 @@ export default {
   "ntAcc": "Ty a {nick} ste teraz priatelia",
   "ntAccD": "Ťukni a napíš prvú správu",
   "ntTest": "Skúšobné upozornenie",
-  "ntTestD": "Funguje to! Takto ti budú chodiť správy a žiadosti o priateľstvo."
+  "ntTestD": "Funguje to! Takto ti budú chodiť správy a žiadosti o priateľstvo.",
+  "ntNudge": "{nick} ťa štuchol",
+  "ntNudgeD": "Dnešný tréning ešte čaká. Poď na to!"
  },
  "uk": {
   "ntReq": "{nick} хоче дружити",
@@ -110,7 +136,9 @@ export default {
   "ntAcc": "Ти і {nick} тепер друзі",
   "ntAccD": "Торкнися й напиши перше повідомлення",
   "ntTest": "Тестове сповіщення",
-  "ntTestD": "Працює! Так надходитимуть повідомлення й запити в друзі."
+  "ntTestD": "Працює! Так надходитимуть повідомлення й запити в друзі.",
+  "ntNudge": "{nick} штурхнув тебе",
+  "ntNudgeD": "Сьогоднішнє тренування ще чекає. Уперед!"
  },
  "zh": {
   "ntReq": "{nick} 想加你为好友",
@@ -118,6 +146,8 @@ export default {
   "ntAcc": "你和 {nick} 现在是好友了",
   "ntAccD": "点一下发第一条消息",
   "ntTest": "测试通知",
-  "ntTestD": "成功了！消息和好友请求会这样送达。"
+  "ntTestD": "成功了！消息和好友请求会这样送达。",
+  "ntNudge": "{nick} 拍了拍你",
+  "ntNudgeD": "今天的训练还在等你。开始吧！"
  }
 };

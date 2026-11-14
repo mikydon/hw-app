@@ -543,6 +543,8 @@ const L = {
     pushChannel: "Priatelia a správy",
     ntTest: "Skúšobné upozornenie",
     ntTestD: "Funguje to! Takto ti budú chodiť správy a žiadosti o priateľstvo.",
+    ntNudge: "{nick} ťa štuchol",
+    ntNudgeD: "Dnešný tréning ešte čaká. Poď na to!",
     pushTest: "Poslať skúšobné upozornenie",
     pushTestOk: "Odoslané, čakám, či príde…",
     pushTestGot: "✓ Prišlo do mobilu. Keď je appka zatvorená, ukáže sa hore na obrazovke.",

@@ -543,6 +543,8 @@ const L = {
     pushChannel: "친구와 메시지",
     ntTest: "테스트 알림",
     ntTestD: "잘 됩니다! 메시지와 친구 요청이 이렇게 도착해요.",
+    ntNudge: "{nick}님이 콕 찔렀어요",
+    ntNudgeD: "오늘의 운동이 아직 기다리고 있어요. 시작해요!",
     pushTest: "테스트 알림 보내기",
     pushTestOk: "보냈어요. 도착하는지 기다리는 중…",
     pushTestGot: "✓ 이 휴대폰에 도착했어요. 앱이 닫혀 있으면 화면 위쪽에 표시돼요.",

@@ -543,6 +543,8 @@ const L = {
     pushChannel: "好友和消息",
     ntTest: "测试通知",
     ntTestD: "成功了！消息和好友请求会这样送达。",
+    ntNudge: "{nick} 拍了拍你",
+    ntNudgeD: "今天的训练还在等你。开始吧！",
     pushTest: "发送测试通知",
     pushTestOk: "已发送，正在等待送达…",
     pushTestGot: "✓ 已送达这部手机。应用关闭时，它会出现在屏幕顶部。",

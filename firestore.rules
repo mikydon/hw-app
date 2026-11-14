@@ -238,12 +238,37 @@ service cloud.firestore {
     match /fstreak/{pid} {
       allow get, delete: if inChat(pid);
       allow list: if signedIn() && request.auth.uid in resource.data.m;
-      allow create: if inChat(pid) && friendsWith(otherIn(pid)) && only(['m', 'by', 'ok', 'start', 'ts'])
+      // 1.10.0 (Friends together): optional k = what the pair keeps up ("w" workouts, "k" calories logged) and
+      // g = their shared weekly goal (workouts of both together); older apps never send them
+      allow create: if inChat(pid) && friendsWith(otherIn(pid)) && only(['m', 'by', 'ok', 'start', 'ts', 'k', 'g'])
         && data().m == members(pid) && members(pid)[0] < members(pid)[1]
-        && data().by == request.auth.uid && data().ok == false && data().start == null && nowTs();
-      allow update: if inChat(pid) && friendsWith(otherIn(pid)) && resource.data.ok == false && resource.data.by != request.auth.uid
-        && data().diff(resource.data).affectedKeys().hasOnly(['ok', 'start', 'ts'])
-        && data().ok == true && data().start is string && data().start.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$') && nowTs();
+        && data().by == request.auth.uid && data().ok == false && data().start == null && fsKG() && nowTs();
+      allow update: if inChat(pid) && friendsWith(otherIn(pid)) && (
+        (resource.data.ok == false && resource.data.by != request.auth.uid
+          && data().diff(resource.data).affectedKeys().hasOnly(['ok', 'start', 'ts'])
+          && data().ok == true && dayOk(data().start) && nowTs())
+        // a running one: either friend changes the goal, or the kind (which starts it again from a new day)
+        || (resource.data.ok == true && data().diff(resource.data).affectedKeys().hasOnly(['k', 'g', 'start', 'ts'])
+          && (!data().diff(resource.data).affectedKeys().hasAny(['k']) || (dayOk(data().start) && data().start != resource.data.start))
+          && (!data().diff(resource.data).affectedKeys().hasAny(['start']) || data().diff(resource.data).affectedKeys().hasAny(['k']))
+          && fsKG() && nowTs()));
+    }
+    function dayOk(d) { return d is string && d.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$'); }
+    function fsKG() { return data().get('k', 'w') in ['w', 'k'] && (data().get('g', null) == null || intIn(data().g, 1, 14)); }
+    // 1.10.0: the checked training days, written only by the server (Worker kind "vday"); friends read them
+    match /vdays/{uid} {
+      allow get: if isMe(uid) || (signedIn() && exists(/databases/$(database)/documents/friends/$(uid)/list/$(request.auth.uid)));
+      allow delete: if isMe(uid);
+    }
+    // 1.10.0: who invited this account (written once by the new account itself; the server checks and pays)
+    match /inv/{uid} {
+      allow get, delete: if isMe(uid);
+      allow create: if isMe(uid) && only(['by', 'ts']) && data().by is string && data().by != uid
+        && exists(/databases/$(database)/documents/profiles/$(data().by)) && nowTs();
+    }
+    // 1.10.0: invite rewards, written only by the server
+    match /rew/{uid} {
+      allow get, delete: if isMe(uid);
     }
     // Reports about a profile: anyone signed in can send one; only the developer reads them (console).
     match /reports/{id} {

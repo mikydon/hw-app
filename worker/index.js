@@ -25,6 +25,15 @@
 // (a move that isn't possible = a loss), compares with the opponent, changes your rating (Elo, K = 32) and keeps your
 // game in runs/ for others to play against. Starting a new game while one is open counts the open one as a loss.
 //
+// 1.10.0 Friends together (Michael, Nov 14: "the server checks everything, so nobody can cheat"):
+//   "vday" {to?}: vdays/{uid} = the checked training days of you (or of a friend: friends only) from the cloud backup
+//     (src/fair.js: real workouts, one a day, not added by hand), the sets of each and the days with calories logged
+//     in the app. Only the server writes it; friends read it for shared streaks, the weekly goal and the duel.
+//   "nudge" {to, today}: a notification to a friend who has not trained today, at most once a day per pair.
+//   "inv": the invite reward. inv/{uid} = {by} is written by a new account that came through a friend's link; once
+//     that account has INV_NEED checked workouts on different days after joining, rew/{uid}.by and rew/{inviter}.i
+//     get the reward (INV_D diamonds each in the app, the inviter at most INV_MAX times). Old accounts get nothing.
+//
 // Secret (Cloudflare): FIREBASE_SERVICE_ACCOUNT = the service account key JSON from the Firebase console.
 import TEXTS from "./texts.js";
 import { fairStats, fairEntryId } from "../src/fair.js";
@@ -168,6 +177,102 @@ export async function checkBoard({ uid, today, sa, fetchFn = fetch, now = Date.n
   return { ...last, why: wait ? "wait" : "ok" };
 }
 
+// ── Friends together (1.10.0) ──
+export const VDAY_EVERY_MS = 5 * 60 * 1000, INV_NEED = 3, INV_MAX = 10, INV_NEW_MS = 2 * 864e5;
+const isUid = u => typeof u === "string" && /^[A-Za-z0-9]{6,128}$/.test(u);
+// a field path segment that is not a plain name (a uid may start with a digit) must be in backticks
+const fp = k => (/^[A-Za-z_][A-Za-z0-9_]*$/.test(k) ? k : "`" + k + "`");
+const todayOk = (k, now) => (dayKeyOk(k, now) ? k : new Date(now).toISOString().slice(0, 10));
+async function backupOf(uid, tok, fetchFn) {
+  const bk = await getDoc(`backups/${uid}`, tok, fetchFn);
+  try { const d = bk && JSON.parse(bk.json); return d && Array.isArray(d.history) ? d : null; } catch (_) { return null; }
+}
+// the checked days of one person (also updates fair/{uid}.seen, like the world list did)
+async function checkedOf(uid, today, tok, fetchFn, now) {
+  const data = await backupOf(uid, tok, fetchFn);
+  if (!data) return null;
+  const fair = await getDoc(`fair/${uid}`, tok, fetchFn);
+  const since = (fair && fair.since) || now, old = (fair && fair.seen) || {}, seen = {};
+  data.history.slice(-3000).forEach(e => { if (e && typeof e === "object") { const id = fairEntryId(e); seen[id] = typeof old[id] === "number" ? old[id] : now; } });
+  await patchDoc(`fair/${uid}`, { since, seen }, tok, fetchFn, ["since", "seen"]);
+  return { data, st: fairStats(data.history, { seen, since, freezeDays: data.profile && data.profile.freezeDays, today }) };
+}
+export async function checkVdays({ uid, to, today, sa, fetchFn = fetch, now = Date.now() }) {
+  const who = to === undefined || to === null || to === uid ? uid : to;
+  if (!isUid(who)) return { why: "bad" };
+  const tok = await accessToken(sa, fetchFn, now);
+  if (who !== uid && !(await getDoc(`friends/${uid}/list/${who}`, tok, fetchFn))) return { why: "not-friends" };
+  const cur = await getDoc(`vdays/${who}`, tok, fetchFn);
+  if (cur && now - (cur._update || 0) < VDAY_EVERY_MS) return { why: "recent" };
+  const day = todayOk(today, now), c = await checkedOf(who, day, tok, fetchFn, now);
+  if (!c) return { why: "no-backup" };
+  const from = new Date(Date.parse(day + "T12:00:00Z") - 60 * 864e5).toISOString().slice(0, 10);
+  const d = c.st.dates.slice(-120), s = Object.fromEntries(Object.entries(c.st.sets).filter(([k]) => k >= from));
+  const log = (c.data.kcal && c.data.kcal.log) || {};
+  const k = Object.keys(log).filter(x => x >= from && x <= day && Array.isArray(log[x]) && log[x].reduce((a, y) => a + (+(y && y.kcal) || 0), 0) > 0).sort();
+  await patchDoc(`vdays/${who}`, { d, s, k, ts: new Date(now).toISOString() }, tok, fetchFn);
+  return { why: "ok", n: d.length };
+}
+// A push to all phones of `to`; drops tokens of phones that no longer have the app.
+async function sendPush({ to, push, title, body, data, tag, tok, fetchFn }) {
+  let sent = 0, err = "";
+  const keep = [];
+  for (const t of push.t.slice(0, 5)) {
+    const r = await fetchFn(`https://fcm.googleapis.com/v1/projects/${PROJECT}/messages:send`, {
+      method: "POST", headers: { authorization: "Bearer " + tok, "content-type": "application/json" },
+      body: JSON.stringify({ message: { token: t, notification: { title, body }, data,
+        android: { priority: "HIGH", notification: { channel_id: "social", tag, color: "#FFD23F", icon: "ic_stat_hw" } } } }),
+    });
+    if (r.ok) { sent++; keep.push(t); continue; }
+    const e = await r.json().catch(() => ({}));
+    const code = JSON.stringify(e);
+    const det = ((e.error && e.error.details) || []).map(x => x.errorCode).filter(Boolean)[0];
+    err = err || `${r.status} ${det || (e.error && e.error.status) || ""}`.trim();
+    if (r.status === 404 || code.includes("UNREGISTERED")) continue; // that phone no longer has the app: drop it
+    keep.push(t);
+  }
+  if (keep.length !== push.t.length) await setTokens(to, keep, tok, fetchFn).catch(() => {});
+  return { sent, err };
+}
+export async function nudge({ from, to, today, sa, fetchFn = fetch, now = Date.now() }) {
+  if (!isUid(to) || to === from) return { sent: 0, why: "bad" };
+  const tok = await accessToken(sa, fetchFn, now);
+  if (!(await getDoc(`friends/${to}/list/${from}`, tok, fetchFn))) return { sent: 0, why: "not-friends" };
+  const day = todayOk(today, now), pid = chatId(from, to);
+  const nz = await getDoc(`nudge/${pid}`, tok, fetchFn);
+  if (nz && nz[from] === day) return { sent: 0, why: "dup" };
+  const v = await getDoc(`vdays/${to}`, tok, fetchFn);
+  if (v && Array.isArray(v.d) && v.d.includes(day)) return { sent: 0, why: "trained" };
+  await patchDoc(`nudge/${pid}`, { [from]: day }, tok, fetchFn, [fp(from)]);
+  const push = await getDoc(`push/${to}`, tok, fetchFn);
+  if (!push || !Array.isArray(push.t) || !push.t.length) return { sent: 0, why: "no-phone" };
+  if (push.off === true || (Array.isArray(push.blk) && push.blk.includes(from))) return { sent: 0, why: "off" };
+  const prof = await getDoc(`profiles/${from}`, tok, fetchFn);
+  const nick = (prof && prof.nick) || "HW App", lang = typeof push.lang === "string" ? push.lang : "en";
+  const r = await sendPush({ to, push, title: lineOf(lang, "ntNudge", nick), body: lineOf(lang, "ntNudgeD", nick), data: { kind: "nudge", uid: from }, tag: "nudge_" + from, tok, fetchFn });
+  return r.sent ? { sent: r.sent, why: "ok" } : { sent: 0, why: "fcm", err: r.err };
+}
+export async function checkInvite({ uid, sa, fetchFn = fetch, now = Date.now() }) {
+  const tok = await accessToken(sa, fetchFn, now);
+  const inv = await getDoc(`inv/${uid}`, tok, fetchFn);
+  if (!inv || !isUid(inv.by) || inv.by === uid) return { why: "none" };
+  const mine = await getDoc(`rew/${uid}`, tok, fetchFn);
+  if (mine && mine.by) return { why: "done" };
+  const prof = await getDoc(`profiles/${uid}`, tok, fetchFn), them = await getDoc(`profiles/${inv.by}`, tok, fetchFn);
+  if (!prof || !them) return { why: "no-profile" };
+  // only a new account: its profile was made at most INV_NEW_MS before it said who invited it
+  if (inv._create - prof._create > INV_NEW_MS) return { why: "old" };
+  const c = await checkedOf(uid, new Date(now).toISOString().slice(0, 10), tok, fetchFn, now);
+  const joined = new Date(prof._create).toISOString().slice(0, 10);
+  const n = c ? c.st.dates.filter(x => x >= joined).length : 0;
+  if (n < INV_NEED) return { why: "wait", n };
+  const at = new Date(now).toISOString(), theirs = await getDoc(`rew/${inv.by}`, tok, fetchFn);
+  const count = theirs && theirs.i && typeof theirs.i === "object" ? Object.keys(theirs.i).length : 0;
+  await patchDoc(`rew/${uid}`, { by: { u: inv.by, ts: at } }, tok, fetchFn, ["by"]);
+  if (count < INV_MAX) await patchDoc(`rew/${inv.by}`, { i: { [uid]: at } }, tok, fetchFn, ["i." + fp(uid)]);
+  return { why: "ok", n, inviter: count < INV_MAX };
+}
+
 // ── Ranked card games (1.8.0) ──
 export const RK = { start: 1000, k: 32, botMin: 2, botMax: 10, maxMoves: 600, pick: 40 };
 const elo = (r, ro, score) => Math.round(RK.k * (score - 1 / (1 + Math.pow(10, (ro - r) / 400))));
@@ -275,23 +380,7 @@ export async function notify({ kind, to, from, sa, fetchFn = fetch, now = Date.n
   for (const [k, t] of seen) if (now - t > FRESH_MS) seen.delete(k);
   if (seen.has(key) && (kind !== "test" || now - seen.get(key) < 10000)) return { sent: 0, why: "dup" };
   seen.set(key, now);
-  let sent = 0, err = "";
-  const keep = [];
-  for (const t of push.t.slice(0, 5)) {
-    const r = await fetchFn(`https://fcm.googleapis.com/v1/projects/${PROJECT}/messages:send`, {
-      method: "POST", headers: { authorization: "Bearer " + tok, "content-type": "application/json" },
-      body: JSON.stringify({ message: { token: t, notification: { title, body }, data,
-        android: { priority: "HIGH", notification: { channel_id: "social", tag: data.cid || kind + "_" + from, color: "#FFD23F", icon: "ic_stat_hw" } } } }),
-    });
-    if (r.ok) { sent++; keep.push(t); continue; }
-    const e = await r.json().catch(() => ({}));
-    const code = JSON.stringify(e);
-    const det = ((e.error && e.error.details) || []).map(x => x.errorCode).filter(Boolean)[0];
-    err = err || `${r.status} ${det || (e.error && e.error.status) || ""}`.trim();
-    if (r.status === 404 || code.includes("UNREGISTERED")) continue; // that phone no longer has the app: drop it
-    keep.push(t);
-  }
-  if (keep.length !== push.t.length) await setTokens(to, keep, tok, fetchFn).catch(() => {});
+  const { sent, err } = await sendPush({ to, push, title, body, data, tag: data.cid || kind + "_" + from, tok, fetchFn });
   return sent ? { sent, why: "ok", phones: push.t.length } : { sent: 0, why: "fcm", err, phones: push.t.length };
 }
 
@@ -312,6 +401,8 @@ export default {
       const sa = JSON.parse(env.FIREBASE_SERVICE_ACCOUNT);
       const r = b.kind === "rep" ? await checkReports({ to: b.to, sa }) : b.kind === "board" ? await checkBoard({ uid: from, today: b.today, sa })
         : b.kind === "rk-start" ? await rankedStart({ uid: from, perk: b.perk, sa }) : b.kind === "rk-end" ? await rankedEnd({ uid: from, moves: b.moves, give: b.give === true, sa })
+        : b.kind === "vday" ? await checkVdays({ uid: from, to: b.to, today: b.today, sa }) : b.kind === "nudge" ? await nudge({ from, to: b.to, today: b.today, sa })
+        : b.kind === "inv" ? await checkInvite({ uid: from, sa })
         : await notify({ kind: b.kind, to: b.to, from, sa });
       console.log(JSON.stringify(String(b.kind).startsWith("rk") ? { kind: b.kind, why: r.why, sc: r.sc } : { kind: b.kind, ...r }));
       return json(r, 200, cors);

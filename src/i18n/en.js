@@ -598,6 +598,8 @@ const en = {
     pushChannel: "Friends and messages",
     ntTest: "Test notification",
     ntTestD: "It works! Messages and friend requests will arrive like this.",
+    ntNudge: "{nick} nudged you",
+    ntNudgeD: "Today's workout is still waiting. Let's go!",
     pushTest: "Send a test notification",
     pushTestOk: "Sent, waiting for it to arrive…",
     pushTestGot: "✓ It reached this phone. When the app is closed, it shows up at the top of the screen.",
