@@ -8123,14 +8123,12 @@ function HzRow({ settings, set, first }) {
   useEffect(() => { hzInfo().then(setInfo); }, []);
   const mode = settings.hz === "max" ? "max" : "60"; // 1.7.3 (Michael): 60 Hz by default, the highest is a choice
   const pick = m => { sfxTap(); set("hz", m); hzSet(m); };
-  const btn = on => ({ ...btnBase, flex: 1, minWidth: 0, padding: "10px 6px", fontSize: 13, ...(on ? { background: C.chalk, border: `1px solid ${C.chalk}`, color: C.ink } : { ...SUNK(), color: C.dim }) });
+  // 1.10.0 (design pass): one of two = the shared Seg, like Volume
   return (
     <div data-hz style={{ padding: "14px 16px", borderTop: first ? "none" : `1px solid ${C.line}` }}>
       <div style={{ fontSize: 15, fontWeight: 700, color: C.chalk }}>{T("hzTitle")}</div>
-      <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
-        <button data-hz-opt="60" aria-pressed={mode === "60"} onClick={() => pick("60")} style={btn(mode === "60")}>60 Hz</button>
-        <button data-hz-opt="max" aria-pressed={mode === "max"} onClick={() => pick("max")} style={btn(mode === "max")}>{info && info.max > 60 ? T("hzMax", { n: info.max }) : T("hzMaxNoN")}</button>
-      </div>
+      <Seg label={T("hzTitle")} value={mode} style={{ marginTop: 8 }} onPick={id => { if (id !== mode) pick(id); }}
+        items={[["60", "60 Hz", { "data-hz-opt": "60", "aria-pressed": mode === "60" }], ["max", info && info.max > 60 ? T("hzMax", { n: info.max }) : T("hzMaxNoN"), { "data-hz-opt": "max", "aria-pressed": mode === "max" }]]} />
       <div style={{ fontSize: 12, color: C.dim, marginTop: 6, lineHeight: 1.45 }}>{T("hzD")}</div>
     </div>
   );
@@ -8160,9 +8158,13 @@ function SwitchAccountSheet({ fresh, onFresh, onKeep, onCancel }) {
 // Every exercise by type, with its how-to, and a switch for "I can do this one". At least one
 // exercise of each type stays on, otherwise that muscle group would drop out of the plan.
 // 1.10.0 (Michael: "one kind of thing always opens the same way"): the header of every Settings sub-page
+// The ‹ back pill of every page opened inside a screen (Settings sub-pages, the plan editor)
+function BackPill({ label, onBack, style, ...rest }) {
+  return <button {...rest} onClick={() => { sfxTap(); onBack(); }} style={{ ...ghostBtn, padding: "8px 12px", ...style }}><Arrow dir="‹" size="1.25em" style={{ verticalAlign: "-0.08em", marginRight: 6 }} />{label}</button>;
+}
 function SubHead({ title, backLabel, onBack }) {
   return <>
-    <button data-sub-back onClick={() => { sfxTap(); onBack(); }} style={{ ...ghostBtn, marginTop: 10, padding: "8px 12px" }}><Arrow dir="‹" size="1.25em" style={{ verticalAlign: "-0.08em", marginRight: 6 }} />{backLabel || T("tabSettings")}</button>
+    <BackPill data-sub-back label={backLabel || T("tabSettings")} onBack={onBack} style={{ marginTop: 10 }} />
     <div data-sub-title style={{ fontFamily: DISPLAY, fontSize: 28, fontWeight: 900, color: C.chalk, margin: "14px 0 10px" }}>{title}</div>
   </>;
 }
@@ -10179,8 +10181,8 @@ function PlanEditor({ plan, P, setP, onBack }) {
   const step = (on, label, data) => <button data-step={data} onClick={e => { e.stopPropagation(); sfxTap(); on(); }} aria-label={label} style={{ ...btnBase, width: 30, height: 30, padding: 0, borderRadius: 8, ...SUNK(), color: C.chalk, fontSize: 16, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>{data.endsWith("-") ? "−" : "+"}</button>;
   return (
     <div className="scr" style={SCR_STYLE} data-plan-editor={plan.id}>
-      <button data-plan-back onClick={onBack} style={{ ...btnBase, background: "transparent", color: C.sky, padding: "4px 0", fontSize: 14, display: "inline-flex", alignItems: "center", gap: 4 }}><Arrow dir="‹" />{T("plBack")}</button>
-      <div style={{ display: "flex", alignItems: "flex-end", gap: 8, marginTop: 6 }}>
+      <BackPill data-plan-back label={T("plBack")} onBack={onBack} />
+      <div style={{ display: "flex", alignItems: "flex-end", gap: 8, marginTop: 10 }}>
         <input data-plan-name value={name} maxLength={40} placeholder={T("planDefault", { n: plan.n })} aria-label={T("plName")}
           onChange={e => setName(e.target.value)} onBlur={() => { const v = name.trim(); if (v !== (plan.name || "")) upd(() => ({ name: v })); }}
           style={{ fontFamily: DISPLAY, fontSize: 28, fontWeight: 800, padding: "8px 2px", border: "none", borderBottom: `1.5px solid ${C.line}`, background: "transparent", color: C.chalk, outline: "none", flex: 1, minWidth: 0, boxSizing: "border-box" }} />
