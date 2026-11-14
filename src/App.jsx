@@ -592,30 +592,48 @@ function autoFreezeDays(history, today) {
 // streak (each trained or used a freeze within the last 2 days, the every-other-day plan), back from today to the day
 // it was accepted; a day where one of you isn't breaks it (it starts again when both train). dates = "YYYY-MM-DD".
 const FS_MAX = 30; // 1.10.0 (Michael, Nov 14: "remove the limits that aren't needed"): was 5
+// 1.10.0 duo streaks (Michael, Nov 14: "several streaks at once, workouts and calories"; "a friend streak freeze").
+// One run from the duo's start day to today, the same on both phones (it only uses the server's counts):
+//   a kept day: workouts = both trained within the last 2 days (a personal freeze counts), calories = both logged
+//   food in the app that day; it grows the flame;
+//   every DUO_FZ_EVERY kept days earn a duo freeze (at most DUO_FZ_MAX kept);
+//   a missed day uses a duo freeze if there is one (the flame stays), else the duo starts again at 0;
+//   today is never missed yet (it can still be done today).
+const DUO_FZ_EVERY = 7, DUO_FZ_MAX = 2;
+function duoRun(ok, start, today) {
+  let n = 0, kept = 0, fz = 0, steps = 0; const used = [];
+  for (let d = start; d && d <= today && steps < 3700; d = addDays(d, 1), steps++) {
+    if (ok(d)) { n++; kept++; if (kept % DUO_FZ_EVERY === 0 && fz < DUO_FZ_MAX) fz++; }
+    else if (d === today) { /* still open */ }
+    else if (fz > 0) { fz--; used.push(d); }
+    else { n = 0; kept = 0; fz = 0; used.length = 0; }
+  }
+  return { n, fz, used };
+}
 function friendStreak(mine, theirs, start, today) {
   const on = (list, d) => list.some(x => x <= d && daysBetween(x, d) <= 2);
-  let n = 0, d = today;
-  while (d >= start && on(mine, d) && on(theirs, d) && n < 3660) { n++; d = addDays(d, -1); }
+  const r = duoRun(d => on(mine, d) && on(theirs, d), start, today);
   const me = mine.filter(x => x <= today).sort().pop(), they = theirs.filter(x => x <= today).sort().pop();
-  return { n, meToday: me === today, theyToday: they === today, meLast: me ? daysBetween(me, today) : 99, theyLast: they ? daysBetween(they, today) : 99 };
+  return { ...r, meToday: me === today, theyToday: they === today, meLast: me ? daysBetween(me, today) : 99, theyLast: they ? daysBetween(they, today) : 99 };
 }
-// 1.10.0 Friends together. Calories: both logged food in the app on the same day, every day (today counts once both
-// have; until then the streak runs to yesterday and is at risk).
+// calories: both logged food in the app on the same day, every day
 function dailyStreak(mine, theirs, start, today) {
-  const a = new Set(mine), b = new Set(theirs), both = d => a.has(d) && b.has(d);
-  let n = 0, d = both(today) ? today : addDays(today, -1);
-  while (d >= start && both(d) && n < 3660) { n++; d = addDays(d, -1); }
-  return { n, meToday: a.has(today), theyToday: b.has(today), meLast: a.has(today) ? 0 : 2, theyLast: b.has(today) ? 0 : 2 };
+  const a = new Set(mine), b = new Set(theirs);
+  const r = duoRun(d => a.has(d) && b.has(d), start, today);
+  return { ...r, meToday: a.has(today), theyToday: b.has(today), meLast: a.has(today) ? 0 : 2, theyLast: b.has(today) ? 0 : 2 };
 }
-// One duo: the shared streak of its kind (f.k "w" workouts | "k" calories), this week's workouts of both (the goal f.g
-// counts both together) and the sets duel. mine = {d, s, k, f} counted the way the server counts (src/fair.js);
-// v = the friend's vdays from the server (or, from an older app, only their days list in d).
+// what a duo keeps up: "w" workouts, "k" calories, "wk" both (missing = workouts, as before 1.10)
+const duoKinds = f => (f.k === "wk" ? ["w", "k"] : f.k === "k" ? ["k"] : ["w"]);
+// One duo: a streak per kind it keeps (workouts from f.start, calories from f.ks), this week's workouts of both (the
+// goal f.g counts both together) and the sets duel. mine = {d, s, k, f} counted the way the server counts
+// (src/fair.js); v = the friend's vdays from the server (or, from an older app, only their days list in d).
 function duoState(f, mine, v, today) {
-  const kind = f.k === "k" ? "k" : "w", th = v || { d: [], s: {}, k: [], f: [] };
-  const st = kind === "k" ? dailyStreak(mine.k, th.k || [], f.start, today) : friendStreak([...mine.d, ...mine.f], [...(th.d || []), ...(th.f || [])], f.start, today);
+  const th = v || { d: [], s: {}, k: [], f: [] };
+  const runs = duoKinds(f).map(kind => ({ kind, ...(kind === "k" ? dailyStreak(mine.k, th.k || [], f.ks || f.start, today) : friendStreak([...mine.d, ...mine.f], [...(th.d || []), ...(th.f || [])], f.start, today)) }));
+  const main = runs[0];
   const mon = weekStart(today), inWk = x => x >= mon && x <= today;
   const wk = list => new Set((list || []).filter(inWk)).size, sets = o => Object.entries(o || {}).filter(([d]) => inWk(d)).reduce((a, [, n]) => a + (+n || 0), 0);
-  return { ...st, kind, week: { me: wk(mine.d), they: wk(th.d), goal: f.g || 0 }, duel: { me: sets(mine.s), they: sets(th.s), old: !!th.old } };
+  return { ...main, n: Math.max(...runs.map(r => r.n)), runs, kind: main.kind, week: { me: wk(mine.d), they: wk(th.d), goal: f.g || 0 }, duel: { me: sets(mine.s), they: sets(th.s), old: !!th.old } };
 }
 const myDays = (history, profile) => [...new Set([...history.map(e => e.date), ...((profile && profile.freezeDays) || [])])].sort().slice(-60);
 // Motivation (texts in the locale).
@@ -7031,7 +7049,7 @@ function DuoKind({ k }) {
 function DuoCard({ f, p, st, me, first, nudged, onOpen, onNudge, msg }) {
   const w = st.week, d = st.duel, tot = w.me + w.they, lead = d.me === d.they ? 0 : d.me > d.they ? 1 : -1;
   const [busy, setBusy] = useState(false);
-  const canNudge = !st.theyToday && !nudged && !msg;
+  const wr = st.runs.find(r => r.kind === "w"), canNudge = !!wr && !wr.theyToday && !nudged && !msg;
   return (
     <div data-tg-duo={f.other} data-tg-n={st.n} style={{ padding: "12px 16px", borderTop: first ? "none" : `1px solid ${C.line}` }}>
       <button type="button" data-tg-duo-open onClick={onOpen} style={{ ...btnBase, width: "100%", display: "flex", alignItems: "center", gap: 10, background: "transparent", color: C.chalk, padding: 0, textAlign: "left", borderRadius: 0 }}>
@@ -7039,14 +7057,24 @@ function DuoCard({ f, p, st, me, first, nudged, onOpen, onNudge, msg }) {
           <span style={{ position: "absolute", left: 0, top: 0 }}><PersonAvatar p={me} size={36} /></span>
           <span style={{ position: "absolute", left: 18, top: 4, borderRadius: 99, boxShadow: `0 0 0 2px ${C.panel}` }}><PersonAvatar p={p} size={36} /></span>
         </span>
-        <span style={{ flex: 1, minWidth: 0 }}>
-          <span style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0 }}><span style={{ fontWeight: 800, fontSize: 15, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", ...INK }}>{p.nick}</span><DuoKind k={st.kind} /></span>
-          <span style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: C.dim, marginTop: 2 }}>
-            {[[st.meToday, st.meLast, T("fsYou")], [st.theyToday, st.theyLast, p.nick]].map(([td, last, who], i) => <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: 3, minWidth: 0 }}>{td ? <IcoI n="tick" color={C.mint} /> : last >= 2 && st.n > 0 ? <IcoI n="alert" color="#ff9a9a" /> : <span aria-hidden="true" style={{ width: 6, height: 6, borderRadius: 99, background: C.line, margin: "0 3px" }} />}<span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 110 }}>{who}</span></span>)}
-          </span>
-        </span>
-        <span data-fs-count style={{ fontFamily: DISPLAY, fontSize: 26, fontWeight: 900, color: st.n ? "#ffa94d" : C.dim, whiteSpace: "nowrap", flexShrink: 0 }}><IcoI n="flame" />{st.n}</span>
+        <span style={{ flex: 1, minWidth: 0, fontWeight: 800, fontSize: 16, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", ...INK }}>{p.nick}</span>
+        <span data-fs-count style={{ display: "none" }}>{st.n}</span>
+        <Arrow />
       </button>
+      {/* one row per streak the duo keeps: what, who did it today, duo freezes, the flame */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 10 }}>
+        {st.runs.map(r => (
+          <div key={r.kind} data-tg-run={r.kind} data-tg-run-n={r.n} data-tg-fz={r.fz} style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+            <DuoKind k={r.kind} />
+            <span style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: C.dim }}>
+              {[[r.meToday, r.meLast, T("fsYou")], [r.theyToday, r.theyLast, p.nick]].map(([td, last, who], i) => <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: 3, minWidth: 0 }}>{td ? <IcoI n="tick" color={C.mint} /> : last >= 2 && r.n > 0 ? <IcoI n="alert" color="#ff9a9a" /> : <span aria-hidden="true" style={{ width: 6, height: 6, borderRadius: 99, background: C.line, margin: "0 3px" }} />}<span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 100 }}>{who}</span></span>)}
+            </span>
+            {r.fz > 0 && <span data-tg-fz-chip aria-label={T("tgFz", { n: r.fz })} title={T("tgFz", { n: r.fz })} style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: 13, fontWeight: 800, color: "#8fd3ff", flexShrink: 0 }}><IcoI n="snow" />{r.fz}</span>}
+            <span style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, color: r.n ? "#ffa94d" : C.dim, whiteSpace: "nowrap", flexShrink: 0, minWidth: 44, textAlign: "right" }}><IcoI n="flame" />{r.n}</span>
+          </div>
+        ))}
+        {st.runs.some(r => r.used.includes(addDays(dateKey(), -1))) && <div data-tg-fz-used style={{ fontSize: 12, color: "#8fd3ff", display: "flex", alignItems: "center", gap: 5 }}><IcoI n="snow" />{T("tgFzUsed")}</div>}
+      </div>
       <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
         <div data-tg-week={tot} data-tg-goal={w.goal} style={{ flex: 1, minWidth: 0, padding: "8px 10px", borderRadius: 12, ...SUNK() }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6, fontSize: 12, color: C.dim }}><span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}><Ico n="target" size={13} />{T("tgWeek")}</span><b style={{ color: w.goal && tot >= w.goal ? C.mint : C.chalk, fontSize: 13 }}>{w.goal ? `${tot}/${w.goal}` : tot}</b></div>
@@ -7061,7 +7089,7 @@ function DuoCard({ f, p, st, me, first, nudged, onOpen, onNudge, msg }) {
           </div>
         </div>
       </div>
-      {(canNudge || nudged || msg) && st.kind === "w" && (
+      {(canNudge || nudged || msg) && st.runs.some(r => r.kind === "w") && (
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
           {canNudge ? <button type="button" data-tg-nudge={f.other} disabled={busy} onClick={() => { setBusy(true); sfxTap(); Promise.resolve(onNudge()).finally(() => setBusy(false)); }} style={{ ...btnBase, padding: "8px 12px", borderRadius: 10, background: `${C.sky}22`, color: C.sky, fontSize: 13, display: "inline-flex", alignItems: "center", gap: 6 }}><Ico n="hand" size={15} />{busy ? "…" : T("tgNudge")}</button>
             : <span data-tg-nudged={msg || "ok"} role="status" style={{ fontSize: 12, color: msg === "trained" ? C.mint : msg === "err" ? "#ff9a9a" : C.dim, display: "inline-flex", alignItems: "center", gap: 5 }}><IcoI n={msg === "err" ? "alert" : "tick"} />{msg === "trained" ? T("tgNudgeTrained", { nick: p.nick }) : msg === "err" ? T("frErr") : T("tgNudged")}</span>}
@@ -7072,7 +7100,10 @@ function DuoCard({ f, p, st, me, first, nudged, onOpen, onNudge, msg }) {
 }
 function DuoSheet({ nick, friends, init, cur, onClose, onSave, onEnd }) {
   const [v, setV] = useState(init), [busy, setBusy] = useState(false), [err, setErr] = useState("");
-  const kindChanged = cur && v.k !== (cur.k || "w");
+  const has = k => duoKinds({ k: v.k }).includes(k), curK = cur ? duoKinds(cur) : [];
+  const flip = k => { const set = new Set(duoKinds({ k: v.k })); if (set.has(k)) { if (set.size > 1) set.delete(k); } else set.add(k); setV(x => ({ ...x, k: set.has("w") && set.has("k") ? "wk" : set.has("k") ? "k" : "w" })); };
+  const added = cur ? duoKinds({ k: v.k }).filter(k => !curK.includes(k)) : [], removed = cur ? curK.filter(k => !has(k)) : [];
+  const kindChanged = added.length > 0 || removed.length > 0;
   const save = () => { if (!v.uid || busy) return; setBusy(true); setErr(""); onSave(v).catch(e => { setErr(cloudErr(e) || T("frErr")); setBusy(false); }); };
   const step = n => setV(x => ({ ...x, g: Math.max(0, Math.min(14, (x.g || 0) + n)) }));
   return (
@@ -7087,8 +7118,14 @@ function DuoSheet({ nick, friends, init, cur, onClose, onSave, onEnd }) {
           </>
         )}
         <div style={{ ...sectionTitle, margin: "16px 2px 8px" }}>{T("tgKeep")}</div>
-        <Seg label={T("tgKeep")} big value={v.k} onPick={k => { sfxTap(); setV(x => ({ ...x, k })); }} items={[["w", T("tgKindW"), { "data-tg-kind": "w" }], ["k", T("tgKindK"), { "data-tg-kind": "k" }]]} />
-        <div data-tg-kind-d style={{ fontSize: 12, color: kindChanged ? "#ffa94d" : C.dim, lineHeight: 1.45, margin: "6px 2px 0" }}>{kindChanged ? T("tgKindChange") : T(v.k === "k" ? "tgKindKD" : "tgKindWD")}</div>
+        {/* 1.10.0 (Michael): one or both at once; at least one stays on */}
+        <div role="group" aria-label={T("tgKeep")} style={{ display: "flex", gap: 8 }}>
+          {[["w", "tgKindW", "dumbbell", C.mint], ["k", "tgKindK", "plate", KC_HIT]].map(([k, label, ico, col]) => { const on = has(k); return (
+            <button key={k} type="button" data-tg-kind={k} aria-pressed={on} onClick={() => { sfxTap(); flip(k); }} style={{ ...btnBase, flex: 1, minWidth: 0, padding: "12px 8px", borderRadius: 14, fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, ...(on ? { background: `${col}22`, color: col, boxShadow: `inset 0 0 0 1.5px ${col}88` } : { ...SUNK(), color: C.dim }) }}>
+              <Ico n={on ? "tick" : ico} size={16} />{T(label)}
+            </button>); })}
+        </div>
+        <div data-tg-kind-d style={{ fontSize: 12, color: kindChanged ? "#ffa94d" : C.dim, lineHeight: 1.45, margin: "6px 2px 0" }}>{kindChanged ? T("tgKindChange") : [has("w") && T("tgKindWD"), has("k") && T("tgKindKD")].filter(Boolean).join(" ")}</div>
         <div style={{ ...sectionTitle, margin: "16px 2px 8px" }}>{T("tgGoalT")}</div>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <button type="button" data-tg-goal-minus aria-label="−" disabled={!v.g} onClick={() => { sfxTap(); step(-1); }} style={{ ...btnBase, width: 44, height: 44, borderRadius: 12, ...SUNK(), color: C.chalk, fontSize: 22, opacity: v.g ? 1 : 0.5 }}>−</button>
@@ -7452,7 +7489,7 @@ function FriendsMain({ acct, history, profile, social, onRename, chatWith, setCh
                       <span style={{ position: "absolute", left: 18, top: 4, borderRadius: 99, boxShadow: `0 0 0 2px ${C.panel}` }}><PersonAvatar p={p} size={36} /></span>
                     </span>
                     <span style={{ flex: 1, minWidth: 0 }}>
-                      <span style={{ display: "flex", alignItems: "center", gap: 6, fontWeight: 800, color: C.chalk, minWidth: 0 }}><span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", ...INK }}>{p.nick}</span><DuoKind k={f.k} /></span>
+                      <span style={{ display: "flex", alignItems: "center", gap: 6, fontWeight: 800, color: C.chalk, minWidth: 0 }}><span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", ...INK }}>{p.nick}</span>{duoKinds(f).map(k => <DuoKind key={k} k={k} />)}</span>
                       <span style={{ display: "block", fontSize: 12, color: C.dim, lineHeight: 1.4 }}>
                         {!f.ok ? (f.by === acct.uid ? T("fsWaiting") : T("fsAsks"))
                           : st.n === 0 ? T("fsBroken")
@@ -7481,7 +7518,9 @@ function FriendsMain({ acct, history, profile, social, onRename, chatWith, setCh
           {duoNew && <DuoSheet nick={null} friends={free} init={duoNew} onClose={() => setDuoNew(null)} onSave={v => fs.invite(v.uid, v.k, v.g).then(() => { sfxCheck(); setDuoNew(null); })} />}
           {duoSet && (() => { const f = fsList.find(x => x.other === duoSet); if (!f) return null; const p = people[f.other] || { nick: "…" };
             return <DuoSheet nick={p.nick} init={{ uid: f.other, k: f.k || "w", g: f.g || 0 }} cur={f} onClose={() => setDuoSet(null)}
-              onSave={v => fs.set(f.other, { ...(v.k !== (f.k || "w") ? { k: v.k } : {}), g: v.g || null }).then(() => { sfxCheck(); setDuoSet(null); })}
+              onSave={v => { const was = duoKinds(f), now = duoKinds({ k: v.k }), ch = { g: v.g || null };
+                if (v.k !== (f.k || "w")) { ch.k = v.k; if (now.includes("w") && !was.includes("w")) ch.start = dateKey(); if (now.includes("k") && !was.includes("k")) ch.ks = dateKey(); }
+                return fs.set(f.other, ch).then(() => { sfxCheck(); setDuoSet(null); }); }}
               onEnd={() => { setDuoSet(null); setFsEnd(f.other); }} />; })()}
         </>
         );
@@ -12764,7 +12803,7 @@ export default function App() {
   useEffect(() => { const p = profRef.current; if (profLoaded && p && duoTop > (p.duoBest || 0)) setProfile({ ...p, duoBest: duoTop }); }, [duoTop, profLoaded]);
   const friendsFx = { vdaySeq, rew, fs: { list: fstreaks, days: fsDays, mine: duoMine,
     invite: (uid, k, g) => cloud().fsInvite(uid, k, g), accept: uid => cloud().fsAccept(uid, dateKey()), end: uid => cloud().fsEnd(uid),
-    set: (uid, ch) => cloud().fsSet(uid, ch.k ? { ...ch, start: dateKey() } : ch),
+    set: (uid, ch) => cloud().fsSet(uid, ch),
     nudge: uid => cloud().nudge(uid, dateKey()).then(r => { if (r && (r.why === "ok" || r.why === "dup" || r.why === "no-phone" || r.why === "off")) setCloudMem({ nudged: { ...(cloudMem().nudged || {}), [uid]: dateKey() } }); return r; }) } };
   // 1.8.0 card game: the game being played (full screen) and its end screen
   const [gamePlay, setGamePlay] = useState(null), [gameEnd, setGameEnd] = useState(null);

@@ -305,9 +305,12 @@ await t("hank accepts it (the old way: ok + start)", true, () => updateDoc(doc(a
 await t("gina changes the weekly goal", true, () => updateDoc(doc(as("gina"), "fstreak", "gina_hank"), { g: 8, ts: serverTimestamp() }));
 await t("a goal over 14 is refused", false, () => updateDoc(doc(as("gina"), "fstreak", "gina_hank"), { g: 40, ts: serverTimestamp() }));
 await t("an unknown kind is refused", false, () => updateDoc(doc(as("gina"), "fstreak", "gina_hank"), { k: "x", start: "2026-11-15", ts: serverTimestamp() }));
-await t("changing the kind without a new start is refused", false, () => updateDoc(doc(as("hank"), "fstreak", "gina_hank"), { k: "w", ts: serverTimestamp() }));
-await t("hank changes the kind and it starts again", true, () => updateDoc(doc(as("hank"), "fstreak", "gina_hank"), { k: "w", start: "2026-11-15", ts: serverTimestamp() }));
+await t("hank adds workouts too (both streaks, the workout one starts today)", true, () => updateDoc(doc(as("hank"), "fstreak", "gina_hank"), { k: "wk", start: "2026-11-15", ts: serverTimestamp() }));
+await t("a bad calorie start day is refused", false, () => updateDoc(doc(as("gina"), "fstreak", "gina_hank"), { k: "w", ks: "soon", ts: serverTimestamp() }));
+await t("gina keeps only workouts", true, () => updateDoc(doc(as("gina"), "fstreak", "gina_hank"), { k: "w", ts: serverTimestamp() }));
+await t("gina adds calories back with their own start day", true, () => updateDoc(doc(as("gina"), "fstreak", "gina_hank"), { k: "wk", ks: "2026-11-16", ts: serverTimestamp() }));
 await t("moving the start back without changing the kind is refused", false, () => updateDoc(doc(as("gina"), "fstreak", "gina_hank"), { start: "2020-01-01", ts: serverTimestamp() }));
+await t("moving the calorie start back alone is refused", false, () => updateDoc(doc(as("gina"), "fstreak", "gina_hank"), { ks: "2020-01-01", ts: serverTimestamp() }));
 await t("the members can't be changed", false, () => updateDoc(doc(as("gina"), "fstreak", "gina_hank"), { m: ["gina", "ivan"], ts: serverTimestamp() }));
 await t("ivan can't change their goal", false, () => updateDoc(doc(as("ivan"), "fstreak", "gina_hank"), { g: 2, ts: serverTimestamp() }));
 await env.withSecurityRulesDisabled(async c => { const db = c.firestore(); await setDoc(doc(db, "vdays", "hank"), { d: ["2026-11-14"], s: {}, k: [] }); await setDoc(doc(db, "vdays", "ivan"), { d: [] }); await setDoc(doc(db, "rew", "hank"), { i: { gina: "x" } }); });

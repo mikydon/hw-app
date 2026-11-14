@@ -343,8 +343,8 @@ export const impl = {
   // 1.8.0 friend streaks: my last training days (friends read them) and the streaks (fstreak/{a_b}).
   async saveDays(list) { await setDoc(d("days", uid()), { d: list.slice(-60), ts: serverTimestamp() }); },
   async getDays(u) { const s = await getDoc(d("days", u)); return s.exists() ? s.data().d || [] : null; },
-  watchFStreaks(cb, onErr) { const me = uid(); return onSnapshot(query(collection(db, "fstreak"), where("m", "array-contains", me)), s => cb(s.docs.map(x => { const v = x.data(); return { id: x.id, other: v.m.find(u => u !== me), by: v.by, ok: v.ok === true, start: v.start || null, k: v.k === "k" ? "k" : "w", g: typeof v.g === "number" ? v.g : null }; })), onErr); },
-  async fsInvite(other, k, g) { const me = uid(), m = [me, other].sort(); await setDoc(d("fstreak", m.join("_")), { m, by: me, ok: false, start: null, ...(k === "k" ? { k } : {}), ...(g ? { g } : {}), ts: serverTimestamp() }); },
+  watchFStreaks(cb, onErr) { const me = uid(); return onSnapshot(query(collection(db, "fstreak"), where("m", "array-contains", me)), s => cb(s.docs.map(x => { const v = x.data(); return { id: x.id, other: v.m.find(u => u !== me), by: v.by, ok: v.ok === true, start: v.start || null, k: v.k === "k" || v.k === "wk" ? v.k : "w", ks: typeof v.ks === "string" ? v.ks : null, g: typeof v.g === "number" ? v.g : null }; })), onErr); },
+  async fsInvite(other, k, g) { const me = uid(), m = [me, other].sort(); await setDoc(d("fstreak", m.join("_")), { m, by: me, ok: false, start: null, ...(k === "k" || k === "wk" ? { k } : {}), ...(g ? { g } : {}), ts: serverTimestamp() }); },
   // 1.10.0: a running one: the weekly goal, or the kind (which starts it again from `start`)
   async fsSet(other, ch) { await updateDoc(d("fstreak", chatId(uid(), other)), { ...ch, ts: serverTimestamp() }); },
   async fsAccept(other, start) { await updateDoc(d("fstreak", chatId(uid(), other)), { ok: true, start, ts: serverTimestamp() }); },

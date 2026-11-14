@@ -48,17 +48,17 @@ await p.click('[data-tg-kind="k"]'); await p.click("[data-tg-goal-plus]"); await
 T.eq(await p.getAttribute("[data-tg-sheet] [data-tg-goal-v]", "data-tg-goal-v"), "2", "goal 2");
 await p.click("[data-tg-save]"); await p.waitForTimeout(500);
 const inv = await p.evaluate(() => window.__fakeLog.find(x => x[0] === "fsInvite"));
-T.eq(inv && inv.slice(1), ["f3", "k", 2], "invitation sent: Ivan, calories, goal 2");
+T.eq(inv && inv.slice(1), ["f3", "wk", 2], "invitation sent: Ivan, workouts and calories, goal 2");
 T.eq(await p.locator('[data-tg-sheet]').count(), 0, "sheet closed");
 // change the duo with Peter
 await p.click('[data-tg-duo="f2"] [data-tg-duo-open]'); await p.waitForTimeout(500);
 T.ok(await p.locator('[data-tg-sheet="set"]').isVisible(), "the duo's settings");
 T.eq(await p.locator('[data-tg-sheet="set"] [data-tg-pick]').count(), 0, "no friend list when changing one");
 await p.click('[data-tg-kind="k"]');
-T.ok((await p.textContent("[data-tg-kind-d]")).includes("starts the streak again"), "changing the kind warns that it starts again");
+T.ok((await p.textContent("[data-tg-kind-d]")).includes("starts today"), "adding a streak says it starts today");
 await p.click("[data-tg-goal-minus]"); await p.click("[data-tg-save]"); await p.waitForTimeout(500);
 const set = await p.evaluate(() => window.__fakeLog.find(x => x[0] === "fsSet"));
-T.ok(set && set[1] === "f2" && set[2].k === "k" && set[2].g === 5 && /^\d{4}-\d{2}-\d{2}$/.test(set[2].start), "saved: calories, goal 5, a new start day " + JSON.stringify(set));
+T.ok(set && set[1] === "f2" && set[2].k === "wk" && set[2].g === 5 && set[2].ks === day(0) && !set[2].start, "saved: both streaks, the calorie one from today, the workout one kept, goal 5 " + JSON.stringify(set));
 // the leaderboard is on this page now
 T.ok(await p.locator('[data-fr-view="board"] [data-person]').first().isVisible(), "leaderboard under the duos");
 // duo badge: the best shared streak is kept in the profile
@@ -66,6 +66,25 @@ const best = await p.evaluate(() => JSON.parse(localStorage.getItem("domaci-tren
 T.eq(best, n, "the longest duo streak is saved for the badge");
 T.eq(h.errors, [], "no page errors");
 await h.close();
+
+// ─── both streaks at once and a duo freeze ───
+{
+  const hist2 = [9, 7, 5, 3, 1].map(n => entry(day(n), "ABC"[n % 3], it([10, 10])));
+  const log = Object.fromEntries([5, 4, 3, 2, 1].map(n => [day(n), [{ ts: 1, kcal: 500, note: "" }]]));
+  const cl = { friends: [{ uid: "f4", nick: "Ema", xp: 10, lvl: 1 }], fstreaks: [{ id: "f4_me", other: "f4", by: "me", ok: true, start: day(20), k: "wk", ks: day(5), g: null }],
+    vdays: { f4: { d: [day(12), day(10), day(8), day(6), day(4)], s: {}, k: [5, 4, 3, 2, 1].map(day), f: [] } } };
+  const h = await start({ viewport: { width: 380, height: 800 }, clock: now.getTime(), cloud: cl, seed: { history: hist2, profile: { name: "Michael" }, kcal: { sex: "m", height: 180, weight: 78, activity: 1.375, goal: { type: "maintain", rate: 0 }, log } } });
+  const p = h.page;
+  await p.click("[data-menu-btn]"); await p.waitForTimeout(350); await p.click('[data-nav-box] [data-screen="friends"]'); await p.waitForTimeout(900);
+  await p.click('[data-seg="together"]'); await p.waitForTimeout(900);
+  const runs = await p.$$eval('[data-tg-duo="f4"] [data-tg-run]', e => e.map(x => [x.getAttribute("data-tg-run"), +x.getAttribute("data-tg-run-n"), +x.getAttribute("data-tg-fz")]));
+  // workouts: kept from the 9th day back to the 2nd (8 days, a freeze earned at 7), Ema's gap on yesterday used it
+  T.eq(runs, [["w", 8, 0], ["k", 5, 0]], "two streaks on one duo: workouts 8 (a duo freeze used), calories 5");
+  T.ok(await p.locator('[data-tg-duo="f4"] [data-tg-fz-used]').isVisible(), "the card says a duo freeze saved yesterday");
+  await shot(p, "together_two");
+  T.eq(h.errors, [], "no page errors (two streaks)");
+  await h.close();
+}
 
 // ─── the Friends guide (chapter 7) walks into Together: invite, duos, leaderboard ───
 {
