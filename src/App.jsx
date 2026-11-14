@@ -1338,6 +1338,7 @@ function ExQ({ id, onOpen, style }) {
 let openInfoGlobal = null;
 // 1.10.0 plan library: saves a plan someone shared as your own copy (set by App); returns the new plan
 let copyPlanGlobal = null;
+let goPlanGlobal = null; // 1.10.0: open My plans and flash one plan (after saving a copy)
 function InfoQ({ title, text, id, style }) {
   const go = e => { e.stopPropagation(); e.preventDefault(); sfxTap(); if (openInfoGlobal) openInfoGlobal({ title, text }); };
   return (
@@ -6786,7 +6787,7 @@ function PlanPeek({ plan, by, uid, onClose, store, P, history, onStore }) {
         {uid && !own && (saved || copy ? (
           <div data-plan-saved role="status" style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 14, padding: "12px 14px", borderRadius: 14, background: `${C.mint}1f`, color: C.mint, fontSize: 14, fontWeight: 700 }}><Ico n="tick" size={18} />{T("plSavedCopy")}</div>
         ) : (
-          <button type="button" data-plan-copy onClick={() => { const pl = copyPlanGlobal && copyPlanGlobal(plan, by, pid); if (!pl) return; setSaved(pl.id); if (pid) cloud().pubSaved(pid, pl.id).then(x => { if (x && x.why === "ok" && onStore) onStore({ sv: x.sv }); }).catch(() => {}); }} style={{ ...btnBase, width: "100%", marginTop: 14, padding: "14px", borderRadius: 14, background: C.signal, color: C.signalInk, fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}><Ico n="plus" size={18} />{T("plCopy")}</button>
+          <button type="button" data-plan-copy onClick={() => { const pl = copyPlanGlobal && copyPlanGlobal(plan, by, pid); if (!pl) return; setSaved(pl.id); if (goPlanGlobal) setTimeout(() => { onClose(); goPlanGlobal(pl.id); }, 650); if (pid) cloud().pubSaved(pid, pl.id).then(x => { if (x && x.why === "ok" && onStore) onStore({ sv: x.sv }); }).catch(() => {}); }} style={{ ...btnBase, width: "100%", marginTop: 14, padding: "14px", borderRadius: 14, background: C.signal, color: C.signalInk, fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}><Ico n="plus" size={18} />{T("plCopy")}</button>
         ))}
         {uid && !own && !copy && <div style={{ fontSize: 12, color: C.dim, textAlign: "center", lineHeight: 1.45, marginTop: 8 }}>{T("plCopyD")}</div>}
         {uid && !own && !official && (repDone ? <div role="status" style={{ fontSize: 12, color: C.dim, textAlign: "center", marginTop: 12 }}>{T("frReported")}</div>
@@ -10455,7 +10456,16 @@ function PlansTab({ profile, setProfile, history, open, onOpened, shared = [], o
   const profRef = useRef(profile); profRef.current = profile;
   // every change also refreshes the plans' `days` mirror for phones still on 1.9.x
   const setP = fn => { const cur = plansOfP(profRef.current), next = PLN.mirror(fn(cur), Date.now()), p = { ...profRef.current, plans: next }; profRef.current = p; setProfile(p); };
-  useEffect(() => { if (open && (open.plan || open.mine)) { pg.jumpPage(1); if (open.plan) setEdit(open.plan); onOpened && onOpened(); } }, [open]);
+  // 1.10.0 (idea 2, Michael approved Nov 14): after saving a copy (Library or someone's profile) My plans opens and the
+  // new plan flashes once, scrolled into view
+  const [flash, setFlash] = useState(null);
+  useEffect(() => { if (open && (open.plan || open.mine)) {
+    if (open.flash && pg.page !== 1) pg.goPage(1); else pg.jumpPage(1);
+    if (open.plan) setEdit(open.plan);
+    if (open.flash) { setGrp(""); setPq(""); setFlash(open.flash); const id = open.flash;
+      setTimeout(() => { const el = document.querySelector(`[data-plan-card="${id}"]`); if (el) try { el.scrollIntoView({ block: "center", behavior: "smooth" }); } catch (_) {} }, 480);
+      setTimeout(() => setFlash(f => (f === id ? null : f)), 2200); }
+    onOpened && onOpened(); } }, [open]);
   const editing = edit && P.list.find(p => p.id === edit);
   if (editing) return <PlanEditor plan={editing} P={P} setP={setP} shared={shared.includes(editing.id)} nShared={shared.length} onShare={onShare} pub={pub.includes(editing.id)} onPub={onPub} onBack={() => { sfxTap(); setEdit(null); window.scrollTo(0, 0); }} />;
   const chipS = on => ({ ...btnBase, padding: "6px 12px", fontSize: 13, borderRadius: 99, whiteSpace: "nowrap", flexShrink: 0, ...(on ? { background: `${C.signal}22`, border: `1px solid ${C.signal}66`, color: C.signal } : { ...SUNK(), color: C.dim }) });
@@ -10464,6 +10474,7 @@ function PlansTab({ profile, setProfile, history, open, onOpened, shared = [], o
   const list = PLN.sortPlans(P.list.filter(p => (!grp || (grp === "-" ? !p.grp : p.grp === grp)) && (!pq || normTxt(planTitle(p)).includes(normTxt(pq)))), P.sort, P.dir, planTitle);
   return (
     <div className="scr" style={SCR_STYLE} data-plans>
+      <style>{`@keyframes plFlash{0%,100%{box-shadow:0 0 0 0 transparent}20%,60%{box-shadow:0 0 0 2px ${C.signal}}} .plFlash{animation:plFlash 1.8s ease .35s}`}</style>
       {pg.tabs([{ label: T("plRec"), icon: "star", data: "rec", attrs: { "data-plans-seg": "rec", "aria-pressed": tab === "rec" } }, { label: T("plMine"), icon: "checklist", data: "mine", attrs: { "data-plans-seg": "mine", "aria-pressed": tab === "mine" } }, { label: T("plStore"), icon: "globe", data: "store", attrs: { "data-plans-seg": "store", "aria-pressed": tab === "store" } }])}
       <div style={{ margin: "0 -18px" }}><div {...pg.pagerProps}><div {...pg.pageProps(0)}>
       {(
@@ -10518,7 +10529,7 @@ function PlansTab({ profile, setProfile, history, open, onOpened, shared = [], o
             {list.map(p => {
               const days = PLN.daysOf(P, p.id);
               return (
-                <button key={p.id} data-plan-card={p.id} onClick={() => { sfxTap(); setEdit(p.id); window.scrollTo(0, 0); }} style={{ ...btnBase, ...card, fontWeight: 400, textAlign: "left", padding: "14px 16px", display: "flex", flexDirection: "column", gap: 8, color: C.chalk }}>
+                <button key={p.id} data-plan-card={p.id} data-flash={flash === p.id ? 1 : undefined} className={flash === p.id ? "plFlash" : undefined} onClick={() => { sfxTap(); setEdit(p.id); window.scrollTo(0, 0); }} style={{ ...btnBase, ...card, fontWeight: 400, textAlign: "left", padding: "14px 16px", display: "flex", flexDirection: "column", gap: 8, color: C.chalk }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, width: "100%" }}>
                     <span style={{ fontFamily: DISPLAY, fontSize: 20, fontWeight: 800, lineHeight: 1.1, flex: 1, minWidth: 0, overflowWrap: "anywhere" }}>{planTitle(p)}</span>
                     <Arrow />
@@ -12980,6 +12991,7 @@ export default function App() {
     }, 1500);
     return () => clearTimeout(t);
   }, [profile.plans, plib, acct.st]);
+  goPlanGlobal = id => go("plans", { mine: true, flash: id });
   copyPlanGlobal = (src, by, from) => { const p = profRef.current, r = PLN.copyPlan(plansOfP(p), src, by, Date.now(), from); setProfile({ ...p, plans: PLN.mirror(r.P, Date.now()) }); sfxCheck(); return r.plan; };
   // 1.10.0 plan store (Michael, Nov 14): plans published to everyone (pub/{uid_planId}); the list of my published ones
   // and what was last sent for each (so an edit is sent once, a deletion removes it)
@@ -13459,7 +13471,7 @@ export default function App() {
   const [setRet, setSetRet] = useState(null); // 1.8.1: where that page goes back to ({screen, pager, page})
   const [histEdit, setHistEdit] = useState(null); // date whose workout opens in the History editor
   const [plansOpen, setPlansOpen] = useState(null); // 1.9.0: {plan: id} opens that plan in the editor
-  const go = (id, opt) => { if (id !== screen) sfxTap(); setScreen(id); setMenuOpen(false); if (session) setSessionOpen(false); setHistEdit(opt && opt.edit ? opt.edit : null); setPlansOpen(opt && opt.plan ? { plan: opt.plan } : opt && opt.mine ? { mine: true } : null); setSetPage(opt && opt.page ? opt.page : null); setSetRet(opt && opt.ret ? opt.ret : null); setChatWith(null); };
+  const go = (id, opt) => { if (id !== screen) sfxTap(); setScreen(id); setMenuOpen(false); if (session) setSessionOpen(false); setHistEdit(opt && opt.edit ? opt.edit : null); setPlansOpen(opt && opt.plan ? { plan: opt.plan } : opt && opt.mine ? { mine: true, flash: opt.flash || null } : null); setSetPage(opt && opt.page ? opt.page : null); setSetRet(opt && opt.ret ? opt.ret : null); setChatWith(null); };
   const [howId, setHowId] = useState(null);
   openHowToGlobal = setHowId;
   const [info, setInfo] = useState(null); // 1.8.2: the "?" explanation sheet

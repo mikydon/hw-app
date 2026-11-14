@@ -45,15 +45,19 @@ const log = (p, k) => p.evaluate(k => window.__fakeLog.filter(x => x[0] === k), 
   T.eq(await p.locator("[data-plan-peek-item]").count(), 2, "an unknown exercise from another phone is left out");
   T.ok((await p.textContent("[data-plan-peek]")).includes("By Zuzka"), "it says who made it");
   await shot(p, "plib_peek");
+  await p.click("[data-plan-report]"); await p.waitForTimeout(300); await p.click("[data-plan-report-yes]"); await p.waitForTimeout(400);
+  const rp = (await log(p, "report")).pop();
+  T.ok(rp && rp[1] === "f1" && rp[2].includes("Legs with Zuzka"), "reported with the plan's name");
   await p.click("[data-plan-copy]"); await p.waitForTimeout(400);
   T.ok(await p.locator("[data-plan-saved]").isVisible(), "saved");
   const mine = await p.evaluate(() => JSON.parse(localStorage.getItem("domaci-trening-v1-profile")).plans.list);
   const cp = mine.find(x => x.by === "Zuzka");
   T.ok(cp && cp.name === "Legs with Zuzka" && cp.id !== "zz1" && cp.n === 2, "a copy in my plans with a new id and number: " + JSON.stringify(cp && { name: cp.name, n: cp.n }));
   T.eq(cp && cp.items, [{ id: "n1", sets: 3 }, { id: "b5", sets: 9, dur: 1800 }], "sets and hold times kept (capped), no weights");
-  await p.click("[data-plan-report]"); await p.waitForTimeout(300); await p.click("[data-plan-report-yes]"); await p.waitForTimeout(400);
-  const rp = (await log(p, "report")).pop();
-  T.ok(rp && rp[1] === "f1" && rp[2].includes("Legs with Zuzka"), "reported with the plan's name");
+  await p.waitForTimeout(900);
+  T.eq(await p.locator("[data-plan-peek]").count(), 0, "the plan closes by itself");
+  T.ok(await p.locator(`[data-plan-card="${cp.id}"][data-flash]`).isVisible(), "My plans opens and the new plan flashes");
+  T.eq(await p.getAttribute('[data-plans-seg="mine"]', "aria-pressed"), "true", "on the My plans page");
   T.eq(h.errors, [], "no page errors (friend)");
   await h.close();
 }

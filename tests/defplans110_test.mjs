@@ -36,6 +36,10 @@ const go = async (p, s) => { await p.click("[data-menu-btn]"); await p.waitForTi
   T.ok(cp && cp.name === "Brucho za 10 minút" && cp.by === "HW App" && cp.from === "hwapp_core", "saved copy: the shown name, by HW App: " + JSON.stringify(cp && { name: cp.name, by: cp.by, from: cp.from }));
   const sv = await p.evaluate(() => window.__fakeLog.find(x => x[0] === "pubSaved"));
   T.ok(sv && sv[1] === "hwapp_core", "the save is counted on the server");
+  await p.waitForTimeout(1000);
+  T.eq(await p.getAttribute('[data-plans-seg="mine"]', "aria-pressed"), "true", "from the Library straight to My plans");
+  T.ok(await p.locator(`[data-plan-card="${cp.id}"][data-flash]`).isVisible(), "the saved plan flashes");
+  await shot(p, "defplans_saved");
   T.eq(h.errors, [], "no page errors");
   await h.close();
 }
