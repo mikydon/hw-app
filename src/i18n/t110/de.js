@@ -1,6 +1,11 @@
 // German: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    plSearch: "Meine Pläne durchsuchen",
+    plSortNew: "Neueste",
+    plSortOld: "Älteste",
+    plSortAZ: "A–Z",
+    plSortZA: "Z–A",
     plStoreN: "Pläne: {n}",
     plStoreShow: "{n} anzeigen",
     plStoreReset: "Zurücksetzen",

@@ -1,6 +1,11 @@
 // Spanish: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    plSearch: "Buscar en mis planes",
+    plSortNew: "Más recientes",
+    plSortOld: "Más antiguos",
+    plSortAZ: "A–Z",
+    plSortZA: "Z–A",
     plStoreN: "Planes: {n}",
     plStoreShow: "Mostrar {n}",
     plStoreReset: "Restablecer",

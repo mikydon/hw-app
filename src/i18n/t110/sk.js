@@ -1,6 +1,11 @@
 // Slovak: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    plSearch: "Hľadať v mojich plánoch",
+    plSortNew: "Najnovšie",
+    plSortOld: "Najstaršie",
+    plSortAZ: "A–Z",
+    plSortZA: "Z–A",
     plStoreN: "Plány: {n}",
     plStoreShow: "Ukázať {n}",
     plStoreReset: "Zrušiť",

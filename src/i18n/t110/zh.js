@@ -1,6 +1,11 @@
 // Chinese (Simplified): texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    plSearch: "搜索我的计划",
+    plSortNew: "最新",
+    plSortOld: "最早",
+    plSortAZ: "A–Z",
+    plSortZA: "Z–A",
     plStoreN: "计划：{n}",
     plStoreShow: "显示 {n} 个",
     plStoreReset: "重置",

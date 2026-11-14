@@ -1,6 +1,11 @@
 // Italian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    plSearch: "Cerca nelle mie schede",
+    plSortNew: "Più recenti",
+    plSortOld: "Meno recenti",
+    plSortAZ: "A–Z",
+    plSortZA: "Z–A",
     plStoreN: "Schede: {n}",
     plStoreShow: "Mostra {n}",
     plStoreReset: "Azzera",

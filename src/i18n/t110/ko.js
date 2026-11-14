@@ -1,6 +1,11 @@
 // Korean: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    plSearch: "내 플랜 검색",
+    plSortNew: "최신순",
+    plSortOld: "오래된순",
+    plSortAZ: "가나다순",
+    plSortZA: "역순",
     plStoreN: "플랜: {n}",
     plStoreShow: "{n}개 보기",
     plStoreReset: "초기화",

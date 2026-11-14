@@ -1,6 +1,11 @@
 // Ukrainian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    plSearch: "Пошук у моїх планах",
+    plSortNew: "Найновіші",
+    plSortOld: "Найстаріші",
+    plSortAZ: "А–Я",
+    plSortZA: "Я–А",
     plStoreN: "Плани: {n}",
     plStoreShow: "Показати {n}",
     plStoreReset: "Скинути",

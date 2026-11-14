@@ -1,6 +1,11 @@
 // Portuguese (Brazil): texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    plSearch: "Buscar nos meus planos",
+    plSortNew: "Mais recentes",
+    plSortOld: "Mais antigos",
+    plSortAZ: "A–Z",
+    plSortZA: "Z–A",
     plStoreN: "Planos: {n}",
     plStoreShow: "Mostrar {n}",
     plStoreReset: "Limpar",

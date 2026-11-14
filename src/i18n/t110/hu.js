@@ -1,6 +1,11 @@
 // Hungarian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    plSearch: "Keresés a saját tervekben",
+    plSortNew: "Legújabb",
+    plSortOld: "Legrégebbi",
+    plSortAZ: "A–Z",
+    plSortZA: "Z–A",
     plStoreN: "Tervek: {n}",
     plStoreShow: "{n} mutatása",
     plStoreReset: "Törlés",

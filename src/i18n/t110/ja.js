@@ -1,6 +1,11 @@
 // Japanese: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    plSearch: "マイプランを検索",
+    plSortNew: "新しい順",
+    plSortOld: "古い順",
+    plSortAZ: "A–Z",
+    plSortZA: "Z–A",
     plStoreN: "プラン：{n}",
     plStoreShow: "{n}件を表示",
     plStoreReset: "リセット",

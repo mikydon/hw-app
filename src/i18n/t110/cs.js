@@ -1,6 +1,11 @@
 // Czech: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    plSearch: "Hledat v mých plánech",
+    plSortNew: "Nejnovější",
+    plSortOld: "Nejstarší",
+    plSortAZ: "A–Z",
+    plSortZA: "Z–A",
     plStoreN: "Plány: {n}",
     plStoreShow: "Ukázat {n}",
     plStoreReset: "Zrušit",

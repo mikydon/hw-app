@@ -1,6 +1,11 @@
 // Indonesian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    plSearch: "Cari di rencanaku",
+    plSortNew: "Terbaru",
+    plSortOld: "Terlama",
+    plSortAZ: "A–Z",
+    plSortZA: "Z–A",
     plStoreN: "Rencana: {n}",
     plStoreShow: "Tampilkan {n}",
     plStoreReset: "Atur ulang",

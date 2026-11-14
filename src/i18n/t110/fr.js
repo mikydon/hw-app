@@ -1,6 +1,11 @@
 // French: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    plSearch: "Rechercher dans mes programmes",
+    plSortNew: "Plus récents",
+    plSortOld: "Plus anciens",
+    plSortAZ: "A–Z",
+    plSortZA: "Z–A",
     plStoreN: "Programmes : {n}",
     plStoreShow: "Afficher {n}",
     plStoreReset: "Réinitialiser",
