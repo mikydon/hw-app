@@ -346,6 +346,26 @@ await t("an unknown visibility is refused", false, () => setDoc(doc(as("gina"), 
 await t("extra fields are refused", false, () => setDoc(doc(as("gina"), "plib", "gina"), { ...pl("all"), kg: 1 }));
 await t("hank can't write gina's", false, () => setDoc(doc(as("hank"), "plib", "gina"), pl("all")));
 await t("gina deletes hers", true, () => deleteDoc(doc(as("gina"), "plib", "gina")));
+console.log("1.10.0 plan store");
+const pp = (o, x = {}) => ({ o, nick: "Gina", name: "Legs day", nl: "legs day", items: [{ id: "n1", sets: 3 }], fam: ["quads"], eq: "none", n: 1, ts: serverTimestamp(), sv: 0, st: 0, sn: 0, avg: 0, ...x });
+await t("gina publishes a plan", true, () => setDoc(doc(as("gina"), "pub", "gina_p1"), pp("gina")));
+await t("ivan (anyone signed in) reads it", true, () => getDoc(doc(as("ivan"), "pub", "gina_p1")));
+await t("and lists the store", true, () => getDocs(query(collection(as("ivan"), "pub"), orderBy("sv", "desc"), limit(20))));
+await t("signed out can't", false, () => getDoc(doc(env.unauthenticatedContext().firestore(), "pub", "gina_p1")));
+await t("gina can't publish under another id", false, () => setDoc(doc(as("gina"), "pub", "hank_p1"), pp("gina")));
+await t("nor as someone else", false, () => setDoc(doc(as("gina"), "pub", "gina_p2"), pp("hank")));
+await t("nor with saves of her own", false, () => setDoc(doc(as("gina"), "pub", "gina_p3"), pp("gina", { sv: 999 })));
+await t("nor with 13 exercises", false, () => setDoc(doc(as("gina"), "pub", "gina_p4"), pp("gina", { items: Array(13).fill({ id: "k1", sets: 3 }) })));
+await t("gina renames it", true, () => updateDoc(doc(as("gina"), "pub", "gina_p1"), { name: "Leg day", nl: "leg day", ts: serverTimestamp() }));
+await env.withSecurityRulesDisabled(async c => { await setDoc(doc(c.firestore(), "pub", "gina_p1", "u", "ivan"), { copy: "x", r: 4 }); await updateDoc(doc(c.firestore(), "pub", "gina_p1"), { sv: 3, st: 4, sn: 1, avg: 4 }); });
+await t("gina can't change the saves", false, () => updateDoc(doc(as("gina"), "pub", "gina_p1"), { sv: 50, ts: serverTimestamp() }));
+await t("nor the stars", false, () => updateDoc(doc(as("gina"), "pub", "gina_p1"), { avg: 5, ts: serverTimestamp() }));
+await t("hank can't edit gina's plan", false, () => updateDoc(doc(as("hank"), "pub", "gina_p1"), { name: "x", nl: "x", ts: serverTimestamp() }));
+await t("hank can't delete it", false, () => deleteDoc(doc(as("hank"), "pub", "gina_p1")));
+await t("ivan reads his own save", true, () => getDoc(doc(as("ivan"), "pub", "gina_p1", "u", "ivan")));
+await t("hank can't read ivan's", false, () => getDoc(doc(as("hank"), "pub", "gina_p1", "u", "ivan")));
+await t("ivan can't write stars himself", false, () => setDoc(doc(as("ivan"), "pub", "gina_p1", "u", "ivan"), { copy: "x", r: 5 }));
+await t("gina deletes her plan", true, () => deleteDoc(doc(as("gina"), "pub", "gina_p1")));
 
 console.log("1.9.0 diamond codes");
 await env.withSecurityRulesDisabled(async c => { await setDoc(doc(c.firestore(), "promo", "JOZO"), { d: 200 }); });

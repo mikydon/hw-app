@@ -15,7 +15,7 @@ const log = (p, k) => p.evaluate(k => window.__fakeLog.filter(x => x[0] === k), 
   await p.click("[data-pf-plans-empty]"); await p.waitForTimeout(900);
   T.ok(await p.locator('[data-plan-card="pA"]').isVisible(), "it opens My plans");
   await p.click('[data-plan-card="pA"]'); await p.waitForTimeout(600);
-  const sw = p.locator('[data-plan-share-box] [role="switch"]');
+  const sw = p.locator('[data-plan-profile-box] [role="switch"]');
   T.eq(await sw.getAttribute("aria-checked"), "false", "not shared yet");
   await sw.click(); await p.waitForTimeout(500);
   T.eq(await sw.getAttribute("aria-checked"), "true", "shared");

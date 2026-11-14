@@ -170,4 +170,12 @@ eq(P.weekHints(P.emptyPlans(), LIB), [], "no week, no week hints");
   const merged = P.mergePlans(P2, mine);
   ok(merged.list.some(p => p.id === plan.id && p.by === "Zuzka"), "the author survives a sync merge");
 }
+// ── 1.10.0 plan store: focus groups and equipment of a public plan; a store copy remembers where it came from ──
+{
+  const lib = { a: { g: "chest", eq: "none" }, b: { g: "legs", eq: "free" }, c: { g: "core", eq: "none" } };
+  const st = P.storeOf({ items: [{ id: "a", sets: 6 }, { id: "b", sets: 3 }, { id: "c", sets: 1 }, { id: "zz", sets: 3 }] }, lib, "Mix");
+  eq([st.fam, st.eq, st.items.length], [["chest", "legs"], "free", 3], "focus = groups with a fifth of the sets; needs free weights; unknown exercise dropped");
+  const c = P.copyPlan(P.emptyPlans(), { name: "X", items: [{ id: "k1", sets: 3 }] }, "Ann", 5, "uid_p1").plan;
+  ok(c.from === "uid_p1" && c.by === "Ann", "a store copy keeps its store id");
+}
 console.log(`${pass} passed, ${fail} failed`); process.exit(fail ? 1 : 0);

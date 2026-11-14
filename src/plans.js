@@ -108,12 +108,21 @@ export const SHARE_MAX = 10;
 export function sharedOf(plan) {
   return { id: plan.id, name: String(plan.name || "").slice(0, 40), n: plan.n || 1, items: clean(plan.items).slice(0, MAX_ITEMS) };
 }
-export function copyPlan(P, src, by, now = Date.now()) {
+export function copyPlan(P, src, by, now = Date.now(), from = null) {
   const { P: P2, plan } = addPlan(P, now);
   const items = clean(src.items).filter(x => x && typeof x.id === "string").slice(0, MAX_ITEMS).map(x => ({ id: x.id, sets: Math.max(1, Math.min(MAX_SETS, Math.floor(+x.sets) || DEFAULT_SETS)), ...(x.dur ? { dur: Math.max(5, Math.min(1800, Math.floor(+x.dur) || 0)) } : {}) }));
   const name = String(src.name || "").slice(0, 40);
-  const out = updatePlan(P2, plan.id, { name, items, by: String(by || "").slice(0, 24) || null }, now);
+  const out = updatePlan(P2, plan.id, { name, items, by: String(by || "").slice(0, 24) || null, ...(from ? { from: String(from).slice(0, 200) } : {}) }, now);
   return { P: out, plan: out.list.find(p => p.id === plan.id) };
+}
+// 1.10.0 plan store: what a public plan says about itself. fam = the body groups that get at least a fifth of its sets
+// (most first), eq = the most equipment it needs (none < free weights < machines). lib = exlib's LIB.
+export function storeOf(plan, lib, name) {
+  const items = clean(plan.items).filter(x => lib[x.id]).slice(0, MAX_ITEMS), tot = items.reduce((a, x) => a + x.sets, 0) || 1, by = {};
+  items.forEach(x => { const g = lib[x.id].g; by[g] = (by[g] || 0) + x.sets; });
+  const fam = Object.keys(by).filter(g => by[g] / tot >= 0.2).sort((a, b) => by[b] - by[a]);
+  const lv = { none: 0, free: 1, machine: 2 }, eq = items.reduce((a, x) => (lv[lib[x.id].eq] > lv[a] ? lib[x.id].eq : a), "none");
+  return { id: plan.id, name: String(name || "").slice(0, 40), items, fam, eq };
 }
 export function updatePlan(P, id, patch, now = Date.now()) {
   return { ...P, list: P.list.map(p => (p.id === id ? stamp({ ...p, ...patch }, now) : p)) };

@@ -336,6 +336,23 @@ export const impl = {
   // may read it follows the profile card's rule (friends / everyone signed in / nobody)
   async getPlib(u) { const s = await getDoc(d("plib", u || uid())); if (!s.exists()) return null; const v = s.data(); return { vis: v.vis || "friends", plans: Array.isArray(v.plans) ? v.plans : [] }; },
   async savePlib(vis, plans) { if (!plans.length) { await deleteDoc(d("plib", uid())); return; } await setDoc(d("plib", uid()), { vis, plans, ts: serverTimestamp() }); },
+  // 1.10.0 plan store: pub/{uid_planId} {o, nick, name, nl, items, fam, eq, n, ts, sv, st, sn, avg}; counters by the server
+  async pubPut(p) {
+    const me = uid(), ref = d("pub", me + "_" + p.id), cur = await getDoc(ref);
+    const v = { o: me, nick: p.nick, name: p.name, nl: p.name.toLowerCase(), items: p.items, fam: p.fam, eq: p.eq, n: p.items.length, ts: serverTimestamp() };
+    if (cur.exists()) { const { o, ...rest } = v; await updateDoc(ref, rest); } else await setDoc(ref, { ...v, sv: 0, st: 0, sn: 0, avg: 0 });
+  },
+  async pubDel(planId) { await deleteDoc(d("pub", uid() + "_" + planId)); },
+  async pubMine() { const r = await getDocs(query(collection(db, "pub"), where("o", "==", uid()))); return r.docs.map(x => ({ pid: x.id, ...x.data() })); },
+  // the store: the most saved and the newest (one read each, no index needed); search and filters run on the phone
+  async pubList() {
+    const [a, b] = await Promise.all([getDocs(query(collection(db, "pub"), orderBy("sv", "desc"), limit(60))), getDocs(query(collection(db, "pub"), orderBy("ts", "desc"), limit(40)))]);
+    const m = new Map(); [...a.docs, ...b.docs].forEach(x => { const v = x.data(); m.set(x.id, { pid: x.id, ...v, ts: v.ts && v.ts.toMillis ? v.ts.toMillis() : 0 }); });
+    return [...m.values()];
+  },
+  async pubVote(pid) { const s = await getDoc(d("pub", pid, "u", uid())).catch(() => null); return s && s.exists() ? s.data() : null; },
+  pubSaved(pid, copy) { return impl.rk("psave", { pid, copy }); },
+  pubRate(pid, r) { return impl.rk("prate", { pid, r }); },
   async getRew() { const s = await getDoc(d("rew", uid())); if (!s.exists()) return null; const v = s.data(); return { by: v.by || null, i: v.i || {} }; },
   rkEnd(moves, give) { return impl.rk("rk-end", give ? { give: true } : { moves }); },
   async myRanked() { const s = await getDoc(d("ranked", uid())); return s.exists() ? s.data() : null; },
@@ -396,6 +413,7 @@ export const impl = {
     } else if (native()) await reauthenticateWithCredential(cu, await googleCredential());
     else await reauthenticateWithPopup(cu, new GoogleAuthProvider());
     const fr = await getDocs(collection(db, "friends", me, "list")).catch(() => ({ docs: [] }));
+    const pubs = await getDocs(query(collection(db, "pub"), where("o", "==", me))).catch(() => ({ docs: [] })); // 1.10.0 plan store
     const old = await getDocs(collection(db, "backups", me, "old")).catch(() => ({ docs: [] })); // 1.9.1 restore points
     const inbox = await getDocs(collection(db, "inbox", me, "from")).catch(() => ({ docs: [] }));
     // Chats: every message and the chat itself (members may delete; the other person loses the chat too).
@@ -411,6 +429,7 @@ export const impl = {
     old.docs.forEach(c => b.delete(c.ref));
     b.delete(d("days", me));
     ["vdays", "inv", "rew", "plib"].forEach(c => b.delete(d(c, me))); // 1.10.0 Friends together, plan library
+    pubs.docs.forEach(x => b.delete(x.ref));
     fr.docs.forEach(x => { b.delete(d("friends", me, "list", x.id)); b.delete(d("friends", x.id, "list", me)); });
     inbox.docs.forEach(x => b.delete(d("inbox", me, "from", x.id)));
     (p && p.sent || []).forEach(t => b.delete(d("inbox", t, "from", me)));

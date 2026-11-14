@@ -275,6 +275,26 @@ service cloud.firestore {
         && data().plans is list && data().plans.size() <= 10 && nowTs();
       allow delete: if isMe(uid);
     }
+    // 1.10.0 plan store: public plans (pub/{uid_planId}), searched by every signed-in person. The owner writes the
+    // plan; saves (sv) and stars (st, sn, avg) only the server. pub/{pid}/u/{uid} (who saved, their stars) is server-
+    // written; you read your own. A person hidden after reports loses their plans there (the server deletes them).
+    match /pub/{pid} {
+      allow get, list: if signedIn();
+      allow create: if signedIn() && pid.matches(request.auth.uid + '_[A-Za-z0-9~_-]{1,64}') && data().o == request.auth.uid
+        && only(['o', 'nick', 'name', 'nl', 'items', 'fam', 'eq', 'n', 'ts', 'sv', 'st', 'sn', 'avg']) && pubOk() && nowTs()
+        && data().sv == 0 && data().st == 0 && data().sn == 0 && data().avg == 0; // the counters start at 0 (orderBy needs them)
+      allow update: if signedIn() && resource.data.o == request.auth.uid
+        && data().diff(resource.data).affectedKeys().hasOnly(['nick', 'name', 'nl', 'items', 'fam', 'eq', 'n', 'ts']) && pubOk() && nowTs();
+      allow delete: if signedIn() && resource.data.o == request.auth.uid;
+      match /u/{uid} {
+        allow get: if isMe(uid);
+      }
+    }
+    function pubOk() {
+      return data().o == request.auth.uid && data().name is string && data().name.size() <= 40 && data().nl is string && data().nl.size() <= 40
+        && data().nick is string && data().nick.size() <= 24 && data().items is list && data().items.size() >= 1 && data().items.size() <= 12
+        && data().fam is list && data().fam.size() <= 9 && data().eq in ['none', 'free', 'machine'] && data().n is int;
+    }
     // 1.10.0: invite rewards, written only by the server
     match /rew/{uid} {
       allow get, delete: if isMe(uid);

@@ -1,7 +1,7 @@
 // 1.10.0 Friends together, server side (worker/index.js): checked days (vdays), nudges, invite rewards.
 // Runs the real Worker functions against an in-memory Firestore + FCM (real RSA signing for the access token).
 // node tools/worker_together_test.mjs
-import { checkVdays, nudge, checkInvite, notify, VDAY_EVERY_MS, INV_NEED, INV_MAX } from "../worker/index.js";
+import { checkVdays, nudge, checkInvite, notify, planSave, planRate, VDAY_EVERY_MS, INV_NEED, INV_MAX } from "../worker/index.js";
 
 let pass = 0, fail = 0;
 const ok = (c, m) => { if (c) pass++; else { fail++; console.log("FAIL", m); } };
@@ -155,6 +155,27 @@ put(`backups/${B}`, backup([wk(0)]));
   ok(r2.why === "ok" && r2.inviter === false && Object.keys(doc(`rew/${C}`).i).length === INV_MAX, "after INV_MAX invites the inviter gets no more (the new one still does)");
   put(`inv/${A}`, { by: A });
   eq((await call(checkInvite, { uid: A })).why, "none", "inviting yourself counts for nothing");
+}
+// ── plan store: saves count once per account, stars only after a workout from the copy ──
+{
+  const pid = `${C}_pX1`;
+  put(`pub/${pid}`, { o: C, nick: "Carol", name: "Legs", items: [{ id: "n1", sets: 3 }], sv: 0 });
+  eq((await call(planSave, { uid: C, pid, copy: "pZ" })).why, "own", "your own plan's saves don't count");
+  eq(await call(planSave, { uid: A, pid, copy: "pA1" }), { why: "ok", sv: 1 }, "a save counts");
+  eq(await call(planSave, { uid: A, pid, copy: "pA2" }), { why: "again", sv: 1 }, "saving again doesn't (the newest copy is remembered)");
+  eq(doc(`pub/${pid}/u/${A}`).copy, "pA2", "copy id updated");
+  eq((await call(planSave, { uid: B, pid: "bad/x", copy: "q" })).why, "bad", "bad plan id");
+  eq((await call(planSave, { uid: B, pid: `${C}_nope`, copy: "q" })).why, "gone", "a plan that is gone");
+  eq((await call(planRate, { uid: B, pid, r: 5 })).why, "not-saved", "no stars without saving");
+  eq((await call(planRate, { uid: A, pid, r: 5 })).why, "not-trained", "no stars before a workout from the copy");
+  put(`backups/${A}`, backup([{ ...wk(1), plan: { id: "pA2", name: "Legs" } }]));
+  eq((await call(planRate, { uid: A, pid, r: 6 })).why, "bad", "6 stars is refused");
+  eq(await call(planRate, { uid: A, pid, r: 4 }), { why: "ok", avg: 4, sn: 1 }, "4 stars after a workout");
+  eq(await call(planRate, { uid: A, pid, r: 2 }), { why: "ok", avg: 2, sn: 1 }, "changing the stars replaces them");
+  put(`backups/${A}`, backup([{ ...wk(1), plan: { id: "pA2", name: "Legs" }, manual: true }]));
+  put(`pub/${pid}/u/${B}`, { copy: "pB" });
+  put(`backups/${B}`, backup([{ ...wk(1), plan: { id: "pB", name: "Legs" }, manual: true }]));
+  eq((await call(planRate, { uid: B, pid, r: 5 })).why, "not-trained", "a workout added by hand doesn't count");
 }
 console.log(`${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

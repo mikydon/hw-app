@@ -129,6 +129,9 @@ export async function checkReports({ to, sa, fetchFn = fetch, now = Date.now() }
   const w = await fetchFn(`${FS}/mod/${to}`, { method: "PATCH", headers: h, body: JSON.stringify({ fields: { hidden: { booleanValue: true }, n: { integerValue: String(by.size) }, ts: { timestampValue: new Date(now).toISOString() } } }) });
   if (!w.ok) throw new Error("mod " + w.status);
   await fetchFn(`${FS}/board/${to}`, { method: "DELETE", headers: h });
+  // 1.10.0: a hidden person's plans leave the plan store too
+  const r = await fetchFn(`${FS}:runQuery`, { method: "POST", headers: h, body: JSON.stringify({ structuredQuery: { from: [{ collectionId: "pub" }], where: { fieldFilter: { field: { fieldPath: "o" }, op: "EQUAL", value: { stringValue: to } } }, limit: 50 } }) }).catch(() => null);
+  if (r && r.ok) for (const x of (await r.json()).filter(x => x.document)) await fetchFn(`https://firestore.googleapis.com/v1/${x.document.name}`, { method: "DELETE", headers: h }).catch(() => {});
   return { hidden: true, why: "hidden", n: by.size };
 }
 // ── World leaderboard check (1.8.0) ──
@@ -275,6 +278,44 @@ export async function checkInvite({ uid, sa, fetchFn = fetch, now = Date.now() }
   return { why: "ok", n, inviter: count < INV_MAX };
 }
 
+// ── Plan store (1.10.0, Michael, Nov 14: "people search plans by name, owner, focus, stars"; "how many saved it") ──
+// pub/{uid_planId} = a public plan (the owner writes name, exercises…); sv (saves), st/sn (stars sum / count) and avg
+// are written only here. pub/{pid}/u/{uid} = {copy: the saver's own plan id, r: stars} (one per account).
+//   "psave" {pid, copy}: the first save of a plan by an account counts once (not your own plan).
+//   "prate" {pid, r}: 1–5 stars, only from an account that saved it AND did a workout from its copy (checked in the
+//   cloud backup: a workout of that plan, not added by hand, with a real set); changing the stars replaces them.
+const pidOk = p => typeof p === "string" && /^[A-Za-z0-9]{6,128}_[A-Za-z0-9~_-]{1,64}$/.test(p);
+export async function planSave({ uid, pid, copy, sa, fetchFn = fetch, now = Date.now() }) {
+  if (!pidOk(pid) || typeof copy !== "string" || copy.length > 64) return { why: "bad" };
+  const tok = await accessToken(sa, fetchFn, now);
+  const pub = await getDoc(`pub/${pid}`, tok, fetchFn);
+  if (!pub) return { why: "gone" };
+  if (pub.o === uid) return { why: "own" };
+  const u = await getDoc(`pub/${pid}/u/${uid}`, tok, fetchFn);
+  if (u) { if (u.copy !== copy) await patchDoc(`pub/${pid}/u/${uid}`, { copy }, tok, fetchFn, ["copy"]); return { why: "again", sv: pub.sv || 0 }; }
+  await patchDoc(`pub/${pid}/u/${uid}`, { copy, ts: new Date(now).toISOString() }, tok, fetchFn);
+  const sv = (pub.sv || 0) + 1;
+  await patchDoc(`pub/${pid}`, { sv }, tok, fetchFn, ["sv"]);
+  return { why: "ok", sv };
+}
+export async function planRate({ uid, pid, r, sa, fetchFn = fetch, now = Date.now() }) {
+  if (!pidOk(pid) || !Number.isInteger(r) || r < 1 || r > 5) return { why: "bad" };
+  const tok = await accessToken(sa, fetchFn, now);
+  const pub = await getDoc(`pub/${pid}`, tok, fetchFn);
+  if (!pub) return { why: "gone" };
+  const u = await getDoc(`pub/${pid}/u/${uid}`, tok, fetchFn);
+  if (!u) return { why: "not-saved" };
+  const data = await backupOf(uid, tok, fetchFn);
+  const real = v => (typeof v === "number" ? v : parseInt(v, 10)) > 0;
+  const did = data && data.history.some(e => e && !e.manual && e.plan && e.plan.id === u.copy && Array.isArray(e.items) && e.items.some(it => Array.isArray(it.res) && it.res.some(real)));
+  if (!did) return { why: "not-trained" };
+  const old = Number.isInteger(u.r) ? u.r : 0;
+  await patchDoc(`pub/${pid}/u/${uid}`, { r }, tok, fetchFn, ["r"]);
+  const st = Math.max(0, (pub.st || 0) + r - old), sn = (pub.sn || 0) + (old ? 0 : 1), avg = sn ? Math.round((st / sn) * 10) / 10 : 0;
+  await patchDoc(`pub/${pid}`, { st, sn, avg }, tok, fetchFn, ["st", "sn", "avg"]);
+  return { why: "ok", avg, sn };
+}
+
 // ── Ranked card games (1.8.0) ──
 export const RK = { start: 1000, k: 32, botMin: 2, botMax: 10, maxMoves: 600, pick: 40 };
 const elo = (r, ro, score) => Math.round(RK.k * (score - 1 / (1 + Math.pow(10, (ro - r) / 400))));
@@ -405,6 +446,7 @@ export default {
         : b.kind === "rk-start" ? await rankedStart({ uid: from, perk: b.perk, sa }) : b.kind === "rk-end" ? await rankedEnd({ uid: from, moves: b.moves, give: b.give === true, sa })
         : b.kind === "vday" ? await checkVdays({ uid: from, to: b.to, today: b.today, sa }) : b.kind === "nudge" ? await nudge({ from, to: b.to, today: b.today, sa })
         : b.kind === "inv" ? await checkInvite({ uid: from, sa })
+        : b.kind === "psave" ? await planSave({ uid: from, pid: b.pid, copy: b.copy, sa }) : b.kind === "prate" ? await planRate({ uid: from, pid: b.pid, r: b.r, sa })
         : await notify({ kind: b.kind, to: b.to, from, sa });
       console.log(JSON.stringify(String(b.kind).startsWith("rk") ? { kind: b.kind, why: r.why, sc: r.sc } : { kind: b.kind, ...r }));
       return json(r, 200, cors);
