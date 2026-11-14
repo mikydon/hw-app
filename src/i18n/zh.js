@@ -101,8 +101,6 @@ const L = {
     welcomeMove: "以前在浏览器里用过 HW App？迁移数据：在浏览器中 设置 → 保存备份；然后在这里 设置 → 从备份恢复。",
     welcomeMoveBtn: "打开设置",
     getAndroid: "📱 Android 应用",
-    support: "支持这个应用",
-    supportDesc: "Patreon · 自愿，应用始终免费",
     upd_latest: "更新：已是最新版本（检查于 {time}）",
     upd_staged: "更新：{v} 已下载，下次启动时生效（检查于 {time}）",
     upd_waiting: "更新：{v} 会等你练完再生效（检查于 {time}）",

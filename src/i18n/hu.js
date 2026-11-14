@@ -101,8 +101,6 @@ const L = {
     welcomeMove: "Böngészőben használtad a HW Appot? Hozd át az adataidat: a böngészőben Beállítások → Biztonsági mentés, aztán itt Beállítások → Visszaállítás mentésből.",
     welcomeMoveBtn: "Beállítások megnyitása",
     getAndroid: "📱 Androidos app",
-    support: "Támogasd az appot",
-    supportDesc: "Patreon · önkéntes, az app ingyenes marad",
     upd_latest: "Frissítések: a legújabb verzió van fent (ellenőrizve {time})",
     upd_staged: "Frissítések: a(z) {v} letöltve, a következő indításkor bekapcsol (ellenőrizve {time})",
     upd_waiting: "Frissítések: a(z) {v} megvárja, amíg befejezed az edzést (ellenőrizve {time})",

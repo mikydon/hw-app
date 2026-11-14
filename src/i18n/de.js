@@ -101,8 +101,6 @@ const L = {
     welcomeMove: "Hast du HW App vorher im Browser benutzt? Nimm deine Daten mit: im Browser Einstellungen → Backup speichern, dann hier Einstellungen → Backup wiederherstellen.",
     welcomeMoveBtn: "Einstellungen öffnen",
     getAndroid: "📱 Android-App",
-    support: "App unterstützen",
-    supportDesc: "Patreon · freiwillig, die App bleibt kostenlos",
     upd_latest: "Updates: du hast die neueste Version (geprüft {time})",
     upd_staged: "Updates: {v} ist geladen und wird beim nächsten Start aktiv (geprüft {time})",
     upd_waiting: "Updates: {v} wartet, bis du das Training beendest (geprüft {time})",

@@ -69,6 +69,14 @@ await shot(p, "plans_week");
 await p.click("[data-plan-new]"); await p.click("[data-plan-back]");
 T.eq(await p.locator("[data-plan-card]").count(), 3, "3 plans");
 await p.locator("[data-plan-card]").filter({ hasText: "Workout Plan 3" }).click(); await p.click("[data-plan-del]"); await p.click("[data-plan-del-yes]");
+// 1.10.0: a plan that leaves the list is noted on the phone (who changed the profile, what is left) and the note
+// goes into backup files, so a lost plan can be explained afterwards
+{
+  await p.waitForTimeout(300);
+  const log = await p.evaluate(() => JSON.parse(localStorage.getItem("domaci-trening-v1-planlog") || "[]"));
+  const e = log[log.length - 1] || {};
+  T.ok(log.length >= 1 && e.by === "you" && (e.gone || []).join() === "Workout Plan 3" && typeof e.left === "number" && e.v, `the deleted plan is in the plan log (${JSON.stringify(e)})`);
+}
 T.eq(await p.locator("[data-plan-card]").count(), 2, "deleted one");
 await p.click("[data-plan-new]"); T.eq(await p.getAttribute("[data-plan-name]", "placeholder"), "Workout Plan 4", "numbers not reused: 4"); await p.click("[data-plan-back]");
 // groups + sorting

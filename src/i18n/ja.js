@@ -101,8 +101,6 @@ const L = {
     welcomeMove: "以前ブラウザで HW App を使っていましたか？データの移行：ブラウザで 設定 → バックアップを保存、次にここで 設定 → バックアップから復元。",
     welcomeMoveBtn: "設定を開く",
     getAndroid: "📱 Android アプリ",
-    support: "アプリを応援する",
-    supportDesc: "Patreon · 任意、アプリはずっと無料です",
     upd_latest: "アップデート：最新バージョンです（{time} に確認）",
     upd_staged: "アップデート：{v} をダウンロード済み、次回起動時に有効になります（{time} に確認）",
     upd_waiting: "アップデート：{v} はトレーニングが終わるまで待機中（{time} に確認）",

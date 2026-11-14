@@ -101,8 +101,6 @@ const L = {
     welcomeMove: "Pernah memakai HW App di browser? Pindahkan datamu: di browser, Pengaturan → Simpan cadangan; lalu di sini, Pengaturan → Pulihkan dari cadangan.",
     welcomeMoveBtn: "Buka Pengaturan",
     getAndroid: "📱 Aplikasi Android",
-    support: "Dukung aplikasi ini",
-    supportDesc: "Patreon · opsional, aplikasi tetap gratis",
     upd_latest: "Pembaruan: kamu memakai versi terbaru (dicek {time})",
     upd_staged: "Pembaruan: {v} sudah diunduh dan aktif saat aplikasi dibuka lagi (dicek {time})",
     upd_waiting: "Pembaruan: {v} menunggu sampai latihanmu selesai (dicek {time})",

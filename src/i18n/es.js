@@ -101,8 +101,6 @@ const L = {
     welcomeMove: "¿Usabas HW App en el navegador? Pasa tus datos: en el navegador Ajustes → Guardar copia de seguridad; luego aquí Ajustes → Restaurar copia de seguridad.",
     welcomeMoveBtn: "Abrir Ajustes",
     getAndroid: "📱 App para Android",
-    support: "Apoyar la app",
-    supportDesc: "Patreon · opcional, la app sigue siendo gratis",
     upd_latest: "Actualizaciones: tienes la versión más nueva (comprobado {time})",
     upd_staged: "Actualizaciones: {v} está descargada y se activa en el siguiente inicio (comprobado {time})",
     upd_waiting: "Actualizaciones: {v} espera a que termines el entrenamiento (comprobado {time})",

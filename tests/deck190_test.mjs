@@ -185,4 +185,34 @@ const open = async (h, extra) => {
   T.eq(h.errors, [], "no page errors (bar)");
   await h.close();
 }
+
+// 1.10.0 (Michael, Nov 13: "on a PC the big blind runs across the whole screen, a lot more could be there"): on a wide
+// screen the table has two columns: blind, money, counters, jokers, drills and the list of hands on the left, the
+// cards on the right. A phone is unchanged.
+for (const [name, vp, wide] of [["PC 1280×720", { width: 1280, height: 720 }, 1], ["tablet 1024×768", { width: 1024, height: 768 }, 1], ["phone", { width: 412, height: 800 }, 0]]) {
+  const h = await start({ viewport: vp, seed: { profile: { game: { xp: 50, games: 3, wins: 1 } }, extra: { [GAME_KEY]: { mode: "run", opts: F.opts, moves: F.moves.slice(0, 1), at: 1 } } } });
+  const p = h.page;
+  if (await p.locator("[data-menu-btn]").isVisible().catch(() => false)) await p.click("[data-menu-btn]"); // no ☰ beside the side menu
+  await p.locator('[data-screen="game"]').first().click(); await p.waitForTimeout(500);
+  await p.click("[data-gm-continue]"); await p.waitForSelector("[data-game]"); await p.waitForTimeout(400);
+  const m = await p.evaluate(() => {
+    const q = s => document.querySelector(s), r = el => { const b = el.getBoundingClientRect(); return { l: Math.round(b.left), r: Math.round(b.right), t: Math.round(b.top), b: Math.round(b.bottom), w: Math.round(b.width) }; };
+    const side = q("[data-gm-side]"), hud = r(q("[data-gm-hud]")), hand = r(q("[data-gm-hand]")), play = r(q("[data-gm-play]")), bar = r(q("[data-gm-bar]").parentElement);
+    return { wide: Number(q("[data-game]").dataset.gmWide), sideDisp: getComputedStyle(side).display, hud, hand, play, bar, rows: document.querySelectorAll("[data-gm-side-hands] [data-gm-hand-row]").length, W: innerWidth, H: innerHeight, sx: document.scrollingElement.scrollWidth, over: q("[data-game]").scrollWidth - q("[data-game]").clientWidth };
+  });
+  T.eq(m.wide, wide, `${name}: wide layout ${wide ? "on" : "off"}`);
+  if (wide) {
+    T.ok(m.hud.w <= 364 && m.bar.w <= 364, `${name}: the blind and its bar stay in the 360 px side column (${m.hud.w}, ${m.bar.w})`);
+    T.ok(m.hand.l >= m.hud.r + 20 && m.play.l >= m.hud.r + 20, `${name}: cards and buttons are right of the side column`);
+    T.eq(m.rows, G.HANDS.length, `${name}: the list of hands is on show (${m.rows})`);
+    T.ok(m.hand.r <= m.W && m.play.r <= m.W - 10 && m.play.b <= m.H && m.over <= 0, `${name}: everything fits the window`);
+  } else {
+    T.ok(m.sideDisp === "contents" && m.rows === 0 && m.hud.w > 370, `${name}: one column as before (${m.sideDisp}, ${m.rows}, ${m.hud.w})`);
+  }
+  // playing still works
+  await p.locator("[data-gm-hand] > div").first().click(); await p.waitForTimeout(150);
+  T.ok(await p.locator("[data-gm-play]").isEnabled(), `${name}: a picked card can be played`);
+  T.eq(h.errors, [], `${name}: no page errors`);
+  await h.close();
+}
 T.done();

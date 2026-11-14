@@ -1,11 +1,16 @@
 name: Live Firestore rules
-# Compares the rules that are live in Firebase with firestore.rules in this repo (read only) and reports the
-# result as an annotation, so a forgotten "Publish" in the Firebase console is noticed.
+# Every push: compares the rules that are live in Firebase with firestore.rules in this repo and reports the result
+# as an annotation (a forgotten "Publish" broke restore points for a week in November 2026).
+# On main only: when they differ, the rules tests run in the emulator and, if they pass, firestore.rules is published
+# (Michael, Nov 13, 2026). Other branches never publish.
 on:
   push:
   workflow_dispatch:
 permissions:
   contents: read
+concurrency:
+  group: rules-live-${{ github.ref }}
+  cancel-in-progress: false
 jobs:
   check:
     runs-on: ubuntu-24.04
@@ -15,6 +20,25 @@ jobs:
         with:
           node-version: 22
       - name: Compare
+        id: cmp
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
         run: node .github/scripts/rules-live.mjs
+      - uses: actions/setup-java@v6
+        if: github.ref == 'refs/heads/main' && steps.cmp.outputs.same == 'false'
+        with:
+          distribution: temurin
+          java-version: 21
+      - name: Rules tests in the emulator
+        if: github.ref == 'refs/heads/main' && steps.cmp.outputs.same == 'false'
+        working-directory: .github/rules-test
+        shell: bash
+        run: |
+          set -o pipefail
+          npm install --no-audit --no-fund
+          npm test 2>&1 | tee out.txt || { echo "::error title=Rules test log::$(tail -n 60 out.txt | sed -e 's/%/%25/g' | sed ':a;N;$!ba;s/\n/%0A/g')"; exit 1; }
+      - name: Publish
+        if: github.ref == 'refs/heads/main' && steps.cmp.outputs.same == 'false'
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: node .github/scripts/rules-live.mjs --publish

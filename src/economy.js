@@ -32,6 +32,15 @@ export const LOOKS = {
   fx_snow: { kind: "fx", r: 1 }, fx_sparkle: { kind: "fx", r: 1 }, fx_petals: { kind: "fx", r: 1 }, fx_embers: { kind: "fx", r: 2 },
   fx_lightning: { kind: "fx", r: 3 },
   fx_rain: { kind: "fx", r: 1 }, fx_bubbles: { kind: "fx", r: 1 }, fx_hearts: { kind: "fx", r: 1 }, fx_fireflies: { kind: "fx", r: 2 }, fx_stars: { kind: "fx", r: 2 }, // 1.10.0
+  // 1.10.0, Nov 13: 31 more
+  f_ring2: { kind: "frame", r: 0 }, f_dash: { kind: "frame", r: 0 }, f_gear: { kind: "frame", r: 1 }, f_petal: { kind: "frame", r: 1 }, f_ice: { kind: "frame", r: 2 },
+  f_orbit: { kind: "frame", r: 2 }, f_rainbow: { kind: "frame", r: 3 },
+  b_dusk: { kind: "bg", r: 0 }, b_stripes: { kind: "bg", r: 0 }, b_forest: { kind: "bg", r: 1 }, b_ocean: { kind: "bg", r: 1 }, b_circuit: { kind: "bg", r: 2 },
+  b_lava: { kind: "bg", r: 2 }, b_synth: { kind: "bg", r: 3 },
+  t_home: { kind: "title", r: 0 }, t_noexcuse: { kind: "title", r: 0 }, t_sweat: { kind: "title", r: 1 }, t_ice: { kind: "title", r: 1 }, t_machine: { kind: "title", r: 2 },
+  t_titan: { kind: "title", r: 2 }, t_champion: { kind: "title", r: 3 }, t_unbreak: { kind: "title", r: 3 },
+  n_mint: { kind: "name", r: 0 }, n_sky: { kind: "name", r: 0 }, n_sunset: { kind: "name", r: 1 }, n_chrome: { kind: "name", r: 2 }, n_neon: { kind: "name", r: 2 }, n_glitch: { kind: "name", r: 3 },
+  fx_leaves: { kind: "fx", r: 1 }, fx_code: { kind: "fx", r: 2 }, fx_aura: { kind: "fx", r: 3 },
   fx_frost: { kind: "fx", r: 2, won: "frozen" }, fx_confetti: { kind: "fx", r: 2, won: "bdayW" }, fx_fireworks: { kind: "fx", r: 3, won: "newyear" },
 };
 export const LOOK_IDS = Object.keys(LOOKS);

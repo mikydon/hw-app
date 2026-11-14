@@ -101,8 +101,6 @@ const L = {
     welcomeMove: "Tu utilisais HW App dans le navigateur ? Transfère tes données : dans le navigateur Réglages → Sauvegarder, puis ici Réglages → Restaurer une sauvegarde.",
     welcomeMoveBtn: "Ouvrir les réglages",
     getAndroid: "📱 Appli Android",
-    support: "Soutenir l'appli",
-    supportDesc: "Patreon · facultatif, l'appli reste gratuite",
     upd_latest: "Mises à jour : tu as la version la plus récente (vérifié à {time})",
     upd_staged: "Mises à jour : {v} est téléchargée et s'active au prochain lancement (vérifié à {time})",
     upd_waiting: "Mises à jour : {v} attend la fin de ta séance (vérifié à {time})",

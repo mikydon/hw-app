@@ -101,8 +101,6 @@ const L = {
     welcomeMove: "예전에 브라우저에서 HW App을 썼나요? 데이터 옮기기: 브라우저에서 설정 → 백업 저장, 그다음 여기서 설정 → 백업에서 복원.",
     welcomeMoveBtn: "설정 열기",
     getAndroid: "📱 Android 앱",
-    support: "앱 후원하기",
-    supportDesc: "Patreon · 선택 사항, 앱은 계속 무료예요",
     upd_latest: "업데이트: 최신 버전이에요 ({time} 확인)",
     upd_staged: "업데이트: {v} 다운로드 완료, 다음 실행 때 적용돼요 ({time} 확인)",
     upd_waiting: "업데이트: {v}은(는) 운동이 끝날 때까지 기다려요 ({time} 확인)",

@@ -1,6 +1,6 @@
 import { useState, useEffect, useLayoutEffect, useRef, useMemo, useId, memo, Fragment } from "react";
 import { createPortal } from "react-dom";
-import { restSupported, restPermission, restStart, restStop, restNativeBeeps, restOpenSettings, isNative, pushBack, setRootBack, exitApp, vibratePattern, keepScreenOn, openExternal, saveBackupFile, bkSupported, bkWrite, bkWriteAuto, bkList, bkRead, bkDelete, bkShare, BK_DIR, bkAutoFile, checkForUpdate, lastUpdate, lastGh, applyUpdateNow, latestApk, isTestBuild, apkState, onApk, apkSupported, apkRestore, apkDownload, apkCanInstall, apkAllow, apkInstall, onAppResume, healthState, healthConnect, healthSettings, healthSteps, healthFoodItems, healthBody, shareText, copyText, pushSupported, pushPermission, pushChannel, pushToken, pushTokenWhy, pushDeleteToken, onPushTap, onPushToken, onPushReceived, hzSupported, hzInfo, hzSet, isPlay, buildStore, storeNow, playCheck, playOpenStore, playUpdate, PLAY_STORE_LINK, updTopic, onAppUrl, installCheck, openNotifSettings, showNotif, setNativeBg, backIsTop, backTopRun } from "./native.js";
+import { restSupported, restPermission, restStart, restStop, restNativeBeeps, restOpenSettings, isNative, pushBack, setRootBack, exitApp, vibratePattern, keepScreenOn, openExternal, saveBackupFile, bkSupported, bkWrite, bkWriteAuto, bkList, bkRead, bkDelete, bkShare, BK_DIR, bkAutoFile, checkForUpdate, lastUpdate, lastGh, applyUpdateNow, latestApk, isTestBuild, apkState, onApk, apkSupported, apkRestore, apkDownload, apkCanInstall, apkAllow, apkInstall, onAppResume, healthState, healthConnect, healthSettings, healthSteps, healthFoodItems, healthBody, shareText, copyText, pushSupported, pushPermission, pushChannel, pushToken, pushTokenWhy, pushDeleteToken, onPushTap, onPushToken, onPushReceived, hzSupported, hzInfo, hzSet, isPlay, playCheck, playOpenStore, playUpdate, PLAY_STORE_LINK, updTopic, onAppUrl, installCheck, openNotifSettings, showNotif, setNativeBg, backIsTop, backTopRun } from "./native.js";
 import { cloud, NICK_RE, SHARE_BASE, cleanCode, fmtCode } from "./cloud-lazy.js";
 import { QUICK as EMO_QUICK, EMOJI } from "./emoji.js";
 import { mergeAll, restoreFrom, syncKey, withIds, entryId, stable, SYNC_SETTINGS, kcalShared } from "./sync.js";
@@ -1284,7 +1284,6 @@ function DiffChip({ id, pad = "1px 8px" }) {
 }
 
 // "?" next to an exercise name anywhere: opens its description sheet (one host in App).
-const SUPPORT_URL = "https://www.patreon.com/c/mikydon";
 const PRIVACY_URL = "https://mikydon.github.io/hw-app/privacy.html";
 const TRANSLATE_URL = "https://github.com/mikydon/hw-app/blob/main/TRANSLATING.md";
 let openHowToGlobal = null;
@@ -1474,9 +1473,16 @@ const SETTINGS_KEY = "domaci-trening-v1-settings";
 const BACKUP_ID = "hw-app";
 const BACKUP_IDS = [BACKUP_ID, "domaci-trening"];
 // The backup file: everything the app knows (manual, automatic and the one offered before a full reset).
-function backupJson(history, profile, settings, kcal) {
-  const sm = syncMem();
-  return JSON.stringify({ app: BACKUP_ID, version: 1, appVersion: APP_VERSION, exportedAt: new Date().toISOString(), history, profile, settings, kcal: kcal || null, sync: { del: sm.del || {}, kdel: sm.kdel || {}, mod: sm.mod || {} } });
+// 1.10.0 (Michael, Nov 13: two of his plans were gone and nobody could say what took them): whenever a plan leaves
+// the list, this phone notes when, how many are left and what changed the profile at that moment (you, the cloud
+// merge, a backup file, a restore point, switching accounts). Kept on the phone (the newest 20) and written into
+// backup FILES (never the cloud copy), so a saved backup shows what happened. Loading a backup ignores it.
+const PLANLOG_KEY = "domaci-trening-v1-planlog";
+const planLog = () => { try { return JSON.parse(window.localStorage.getItem(PLANLOG_KEY) || "[]"); } catch (_) { return []; } };
+const planLogAdd = e => { try { window.localStorage.setItem(PLANLOG_KEY, JSON.stringify([...planLog(), e].slice(-20))); } catch (_) {} };
+function backupJson(history, profile, settings, kcal, diag = true) {
+  const sm = syncMem(), log = diag ? planLog() : [];
+  return JSON.stringify({ app: BACKUP_ID, version: 1, appVersion: APP_VERSION, exportedAt: new Date().toISOString(), history, profile, settings, kcal: kcal || null, sync: { del: sm.del || {}, kdel: sm.kdel || {}, mod: sm.mod || {} }, ...(log.length ? { planLog: log } : {}) });
 }
 // Web ↔ phone sync (1.7.0, src/sync.js): {acct: the account this device last merged with, del: deleted workouts
 // {id: when}, kdel: deleted calorie entries {ts: when}, mod: {profile, settings, kcal: when changed here}}. Travels in
@@ -6686,7 +6692,7 @@ function cloudBackupJson(history, profile, settings, kcal) {
     if (k.wSrc === "hc") { delete k.weight; delete k.wTs; delete k.wSrc; }
     if (k.hSrc === "hc") { delete k.height; delete k.hTs; delete k.hSrc; }
   }
-  return backupJson(history, profile, settings, k);
+  return backupJson(history, profile, settings, k, false);
 }
 // A 96 px copy of the profile photo for the cloud profile (the rules allow under 24 000 characters).
 const pfpCache = {};
@@ -8188,10 +8194,8 @@ function ExercisesPage({ settings, set, history, onBack, backLabel }) {
 
 function SettingsTab({ initPage, ret, settings, setSettings, history, profile, setProfile, onImport, kcal, autoBk, onAutoBackup, acct, cloudBk, onAcctOpen, onCloudRestore, onCloudPoint, onCloudBackupNow, onSignOut, onDeleteAccount }) {
   const [page, setPage] = useState(initPage || null); // null | "exercises"
-  // 1.9.4: the Google Play build shows no "Support the app" row (Play's Payments policy: an app may not lead users to
-  // another way to pay; a Patreon link is a risk there). Hidden until the store is known, so it never flashes on Play.
-  const [bst, setBst] = useState(storeNow());
-  useEffect(() => { let on = true; buildStore().then(v => { if (on) setBst(v); }); return () => { on = false; }; }, []);
+  // 1.10.0 (Michael, Nov 13): no "Support the app" row in any build (hidden on Google Play since 1.9.4): every build
+  // is the same. Never add a Patreon / PayPal / Ko-fi link or "support us" wording back.
   // opened from somewhere else (Home → Exercises → workout settings): back goes back there, not to Settings
   const back = () => (ret && initPage === "exercises" ? ret.go() : setPage(null));
   useBack(back, page === "exercises");
@@ -8382,10 +8386,6 @@ function SettingsTab({ initPage, ret, settings, setSettings, history, profile, s
       </ListSect>
       {msg && <div role="status" style={{ fontSize: 13, color: msg.startsWith("✓") ? C.mint : C.dim, marginTop: 8 }}>{msg}</div>}
 
-      {bst && bst !== "play" && <button onClick={() => { sfxTap(); openExternal(SUPPORT_URL); }} data-support style={{ ...btnBase, ...card, ...tileR(), width: "100%", marginTop: 22, display: "flex", alignItems: "center", gap: 12, padding: "13px 15px", color: C.chalk, textAlign: "left" }}>
-        <span style={{ minWidth: 0, flex: 1, fontSize: 15, fontWeight: 800 }}>{T("support")}</span>
-        <Ico n="love" size={21} color={C.signal} />
-      </button>}
       </>} />
       <div style={{ fontSize: 12, color: C.dim, textAlign: "center", marginTop: 26, lineHeight: 1.6, display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
         <Logo size={44} />
@@ -9061,7 +9061,7 @@ const DUEL_ON = false, RANKED_ON = false;
 const STAKE_COL = ["#8fd3ff", "#3ddc84", "#ffd23f", "#ff8a3d", "#ff4d5e"];
 const stakeXp = k => 1 + 0.5 * k; // +50 % game XP per stake
 const SUIT_COL = { push: "#ff6b5b", pull: "#3d9bff", legs: "#21b36b", core: "#9a5cff" };
-const JOKER_ICON = { joker: "jcard", pairs: "duo", threes: "cards3", straights: "ladder", flushes: "bicep", chips: "pig", circuit: "orbit", warmup: "flame", faces: "crown", aces: "star", lastround: "hourglass", even: "scale", odd: "oddone", momentum: "rocket", bank: "coins", five: "hand", fullbody: "body", ironcore: "kettle", rest: "zz", short: "scissors", spotter: "eye", coupon: "ticket", fresh: "sprout", slate: "eraser", bighand: "cardPlus", compound: "percent", solo: "card1", wind: "wind", specialist: "target", overload: "dumbbell", double: "cards2x", pr: "trophy", hof: "temple", coach: "megaphone", reps: "repeat", tempo: "metronome", buddy: "link", heavy: "barbell", light: "feather", stride: "steps", pump: "heart", station: "pin", patience: "clock", tips: "kcoin", captain: "armband", vblock: "bars", pace: "gauge", sponsor: "rosette", gold: "medal", burner: "burst", fullx: "house", quads: "grid4", twin: "gemini", team: "team", ironpush: "pushup", ironpull: "pullup", ironlegs: "squat", goat: "laurel" };
+const JOKER_ICON = { middle: "scale", splitday: "grid4", form: "check", recycle: "bowl", isolation: "card1", resale: "tag", tripod: "cards3", twoplates: "plate", finisher: "flag", cardio: "runner", grinder: "gear", paycheck: "moneybag", streak: "flame", superset: "link", ladder: "ladder", dropset: "trendDown", investor: "trend", minimal: "feather", joker: "jcard", pairs: "duo", threes: "cards3", straights: "ladder", flushes: "bicep", chips: "pig", circuit: "orbit", warmup: "flame", faces: "crown", aces: "star", lastround: "hourglass", even: "scale", odd: "oddone", momentum: "rocket", bank: "coins", five: "hand", fullbody: "body", ironcore: "kettle", rest: "zz", short: "scissors", spotter: "eye", coupon: "ticket", fresh: "sprout", slate: "eraser", bighand: "cardPlus", compound: "percent", solo: "card1", wind: "wind", specialist: "target", overload: "dumbbell", double: "cards2x", pr: "trophy", hof: "temple", coach: "megaphone", reps: "repeat", tempo: "metronome", buddy: "link", heavy: "barbell", light: "feather", stride: "steps", pump: "heart", station: "pin", patience: "clock", tips: "kcoin", captain: "armband", vblock: "bars", pace: "gauge", sponsor: "rosette", gold: "medal", burner: "burst", fullx: "house", quads: "grid4", twin: "gemini", team: "team", ironpush: "pushup", ironpull: "pullup", ironlegs: "squat", goat: "laurel" };
 // Kapoke = Muscle Deck's money (Michael, Oct 25: "a special sign made only of K"; the name stays the same in every
 // language, like Muscle Deck). In the game texts "$" stands for it; withK() draws the sign in its place.
 const COIN = "Kapoke";
@@ -9076,9 +9076,9 @@ function KSign({ size = "0.86em" }) {
 const withK = str => { const parts = String(str).split("$"); return parts.length === 1 ? str : parts.flatMap((x, i) => (i ? [<KSign key={i} />, x] : [x])); };
 // joker rarity colours: common, uncommon, rare, legendary (gold, with the foil shine)
 const RAR_COL = () => [C.sky, C.mint, "#ff7ad9", "#ffb02e"];
-const VOUCHER_ICON = { membership: "idcard", extraset: "plusCircle", resttimer: "timer", discount: "tag", bigbag: "backpack", savings: "jar", restock: "cart", scout: "binoc", packplus: "boxPlus", rarehunt: "searchStar", drillmaster: "whistle", sponsorv: "contract", shelf: "shelf", bossscout: "shield", routine: "sunrise", deload: "trendDown" };
+const VOUCHER_ICON = { membership: "idcard", extraset: "plusCircle", resttimer: "timer", discount: "tag", bigbag: "backpack", savings: "jar", restock: "cart", scout: "binoc", packplus: "boxPlus", rarehunt: "searchStar", drillmaster: "whistle", sponsorv: "contract", shelf: "shelf", bossscout: "shield", routine: "sunrise", deload: "trendDown", headstart: "rocket", pocket: "coins", secondwind: "repeat" };
 const PACK_ICON = { jpack: "gift", dpack: "box", jmega: "cards", dmega: "blocks", rpack: "giftStar" };
-const PERK_ICON = { streak: "flame", volume: "moneybag", warmup: "runner", endurance: "battery", allround: "blocks", obsidian: "volcano" };
+const PERK_ICON = { streak: "flame", volume: "moneybag", warmup: "runner", endurance: "battery", allround: "blocks", obsidian: "volcano", veteran: "medal", iron: "calCheck" };
 const gameLoad = () => { try { return JSON.parse(localStorage.getItem(GAME_KEY) || "null"); } catch (_) { return null; } };
 const gameSave = g => { try { if (g) localStorage.setItem(GAME_KEY, JSON.stringify(g)); else localStorage.removeItem(GAME_KEY); } catch (_) {} };
 const cardVal = c => { const v = GM.valueOf(c); return v <= 10 ? String(v) : ["J", "Q", "K", "A"][v - 11]; };
@@ -9336,6 +9336,16 @@ Object.assign(LK_FRAME, {
   f_crown: u => `${LK_GOLD(u)}<circle cx="58" cy="58" r="49" fill="none" stroke="url(#gG${u})" stroke-width="4.5"/><circle cx="58" cy="58" r="44.5" fill="none" stroke="#a57e1c" stroke-width="1"/><path d="M40 16 L43 1 L51 9 L58 -3 L65 9 L73 1 L76 16 Z" fill="url(#gG${u})" stroke="#7a5a0c" stroke-width="1.2" stroke-linejoin="round"/><circle cx="58" cy="-3" r="2.4" fill="${LK_PINK}"/><circle cx="43" cy="1" r="2" fill="${C.sky}"/><circle cx="73" cy="1" r="2" fill="${C.sky}"/><circle cx="58" cy="11" r="2.2" fill="${C.mint}"/><circle cx="58" cy="108" r="3" fill="url(#gG${u})" stroke="#7a5a0c" stroke-width=".8"/>`,
   f_diamond: () => { let s = ""; for (let i = 0; i < 12; i++) { const a = (i / 12) * Math.PI * 2, x = 58 + Math.cos(a) * 50, y = 58 + Math.sin(a) * 50, deg = (i / 12) * 360 + 90; s += `<path d="M0 -7 L5 0 L0 7 L-5 0 Z" fill="#bfe8ff" stroke="#5aa9ff" stroke-width="1" transform="translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${deg.toFixed(0)})"/>`; } [[22, 18], [96, 24], [100, 92], [16, 90]].forEach(([x, y], i) => { s += `<path class="lkTw" style="animation-delay:${i * 0.5}s" d="M${x} ${y - 5} L${x + 1.3} ${y - 1.3} L${x + 5} ${y} L${x + 1.3} ${y + 1.3} L${x} ${y + 5} L${x - 1.3} ${y + 1.3} L${x - 5} ${y} L${x - 1.3} ${y - 1.3} Z" fill="#fff"/>`; }); return s; },
 });
+// 1.10.0 (Michael, Nov 13: "more effects, frames, banners, titles, name effects"): seven more frames
+Object.assign(LK_FRAME, {
+  f_ring2: () => `<circle cx="58" cy="58" r="51" fill="none" stroke="${C.signal}" stroke-width="2.4"/><circle cx="58" cy="58" r="46" fill="none" stroke="${C.chalk}" stroke-width="1.4" stroke-opacity=".7"/>`,
+  f_dash: () => `<circle class="lkSpinSlow" cx="58" cy="58" r="50" fill="none" stroke="${C.signal}" stroke-width="3.5" stroke-dasharray="13 7.94" stroke-linecap="round"/>`,
+  f_gear: u => { let s = `<defs><linearGradient id="gS${u}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e6ebf3"/><stop offset=".5" stop-color="#8f98a8"/><stop offset="1" stop-color="#d3d9e4"/></linearGradient></defs><g class="lkSpinSlow">`; for (let i = 0; i < 16; i++) s += `<rect x="54" y="1.5" width="8" height="9" rx="1.6" fill="url(#gS${u})" stroke="#4a5263" stroke-width=".8" transform="rotate(${i * 22.5} 58 58)"/>`; return s + `</g><circle cx="58" cy="58" r="47.5" fill="none" stroke="url(#gS${u})" stroke-width="5"/><circle cx="58" cy="58" r="44" fill="none" stroke="#4a5263" stroke-width="1"/>`; },
+  f_petal: () => { let s = ""; for (let i = 0; i < 14; i++) s += `<ellipse cx="58" cy="7" rx="6.2" ry="9.5" fill="${i % 2 ? "#ffb3d0" : LK_PINK}" stroke="#c2477c" stroke-width=".8" opacity=".95" transform="rotate(${(i * 360) / 14} 58 58)"/>`; return s + `<circle cx="58" cy="58" r="44.5" fill="none" stroke="#ffd9e8" stroke-width="1.6"/>`; },
+  f_ice: () => { let s = ""; for (let i = 0; i < 18; i++) { const h = i % 3 === 0 ? 15 : i % 3 === 1 ? 9 : 12; s += `<path d="M53.5 14 L58 ${14 - h} L62.5 14 Z" fill="${i % 2 ? "#dff4ff" : "#9fd8ff"}" stroke="#5aa9ff" stroke-width=".7" stroke-linejoin="round" transform="rotate(${i * 20} 58 58)"/>`; } [[18, 22], [98, 30], [94, 96]].forEach(([x, y], i) => { s += `<circle class="lkTw" style="animation-delay:${i * 0.6}s" cx="${x}" cy="${y}" r="1.8" fill="#fff"/>`; }); return s + `<circle cx="58" cy="58" r="44.5" fill="none" stroke="#bfe8ff" stroke-width="2"/>`; },
+  f_orbit: () => `<circle cx="58" cy="58" r="47" fill="none" stroke="${C.chalk}" stroke-opacity=".35" stroke-width="1.2"/><circle cx="58" cy="58" r="53" fill="none" stroke="${C.sky}" stroke-opacity=".3" stroke-width="1" stroke-dasharray="2 5"/><g class="lkSpin"><circle cx="58" cy="11" r="4.2" fill="${C.signal}"/><circle cx="58" cy="11" r="7" fill="${C.signal}" opacity=".25"/></g><g class="lkSpin" style="animation-duration:9s;animation-direction:reverse"><circle cx="58" cy="5" r="2.8" fill="${C.sky}"/></g><g class="lkSpin" style="animation-duration:14s"><circle cx="105" cy="58" r="2.2" fill="${LK_PINK}"/></g>`,
+  f_rainbow: () => { const cols = ["#ff6b6b", "#ffa94d", "#ffd76a", "#5fe3a1", "#7cc4ff", "#b388ff", "#ff7ab6"]; let s = `<g class="lkSpin" style="animation-duration:12s">`; const n = 28; for (let i = 0; i < n; i++) { const a1 = (i / n) * Math.PI * 2, a2 = ((i + 1) / n) * Math.PI * 2 + 0.02, p = a => `${(58 + Math.cos(a) * 50).toFixed(2)} ${(58 + Math.sin(a) * 50).toFixed(2)}`; s += `<path d="M${p(a1)} A50 50 0 0 1 ${p(a2)}" fill="none" stroke="${cols[i % 7]}" stroke-width="5"/>`; } return s + `</g><circle cx="58" cy="58" r="50" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="1" class="lkPulse"/>`; },
+});
 function LookFrame({ id, size, style }) {
   const u = useId().replace(/[^a-zA-Z0-9]/g, "");
   if (!LK_FRAME[id]) return null;
@@ -9372,6 +9382,34 @@ function LookBanner({ id }) {
     let st = ""; for (let i = 0; i < 60; i++) st += `<circle cx="${((i * 83.7) % 400).toFixed(1)}" cy="${((i * 41.3) % 148).toFixed(1)}" r="${i % 6 === 0 ? 1.4 : 0.7}" fill="#fff" class="lkTw" style="animation-duration:${(1.8 + (i % 5) * 0.6).toFixed(1)}s;animation-delay:${((i % 7) * 0.4).toFixed(1)}s"/>`;
     return <><div style={{ ...fill, background: "#070312" }} /><div className="lkNeb" style={{ position: "absolute", inset: "-40%", background: `radial-gradient(30% 25% at 40% 45%, ${LK_VIOLET}aa, transparent 70%), radial-gradient(25% 20% at 62% 55%, ${LK_PINK}88, transparent 70%), radial-gradient(18% 14% at 52% 48%, ${C.signal}88, transparent 70%)` }} /><svg viewBox="0 0 400 148" preserveAspectRatio="xMidYMid slice" style={{ ...fill, width: "100%", height: "100%" }} dangerouslySetInnerHTML={{ __html: st }} /></>;
   }
+  // 1.10.0: seven more banners
+  if (id === "b_dusk") return <div style={{ ...fill, background: `radial-gradient(70% 120% at 80% 110%, #ff8a5c66, transparent 60%), linear-gradient(160deg, #2b1b5a, #121836 60%, ${C.panel})` }} />;
+  if (id === "b_stripes") return <div style={{ ...fill, background: `repeating-linear-gradient(120deg, ${C.signal}2e 0 18px, transparent 18px 36px, ${C.sky}24 36px 54px, transparent 54px 72px), linear-gradient(160deg, ${C.panelHi}, ${C.panel})` }} />;
+  if (id === "b_forest") {
+    const row = (base, h, step, seed, col) => { let d = ""; for (let x = -10, k = 0; x < 410; x += step, k++) { const hh = h * (0.65 + lkRnd(seed + k) * 0.6), w = step * 0.62; d += `M${x} ${base} L${(x + w).toFixed(1)} ${(base - hh).toFixed(1)} L${(x + 2 * w).toFixed(1)} ${base} Z `; } return `<path d="${d}" fill="${col}"/><rect x="0" y="${base}" width="400" height="${148 - base}" fill="${col}"/>`; };
+    return <><div style={{ ...fill, background: "linear-gradient(180deg, #1d4a44 0%, #2f6b57 55%, #173a2e 100%)" }} /><svg viewBox="0 0 400 148" preserveAspectRatio="xMidYMax slice" style={{ ...fill, width: "100%", height: "100%" }} dangerouslySetInnerHTML={{ __html: `<circle cx="318" cy="36" r="13" fill="#fff8d6" opacity=".8"/>` + row(96, 44, 26, 3, "#245a47") + row(118, 52, 32, 40, "#163d30") + row(138, 46, 38, 90, "#0b2019") }} /></>;
+  }
+  if (id === "b_ocean") {
+    const wv = (y, a, ph) => { let d = `M0 ${y}`; for (let x = 0; x <= 400; x += 10) d += ` L${x} ${(y + Math.sin(x / 34 + ph) * a).toFixed(1)}`; return d + " V148 H0z"; };
+    return <><div style={{ ...fill, background: "linear-gradient(180deg, #1f7fd1 0%, #0f4f9e 45%, #041f47 100%)" }} /><svg viewBox="0 0 400 148" preserveAspectRatio="none" style={{ ...fill, width: "100%", height: "100%" }}><path d="M120 0 L60 148 H110 L150 0Z M250 0 L230 148 H290 L285 0Z" fill="#fff" opacity=".1" /><path d={wv(88, 6, 0)} fill="#0a3f85" opacity=".55" /><path d={wv(108, 7, 2.2)} fill="#062d63" opacity=".7" /><path d={wv(126, 6, 4.1)} fill="#041f47" /></svg></>;
+  }
+  if (id === "b_circuit") {
+    let w = "";
+    for (let k = 0; k < 16; k++) { const x0 = Math.round(lkRnd(k + 1) * 36) * 10 + 10, y0 = Math.round(lkRnd(k + 30) * 12) * 10 + 14, dx = (lkRnd(k + 60) > 0.5 ? 1 : -1) * (30 + Math.round(lkRnd(k + 70) * 5) * 10), dy = (lkRnd(k + 80) > 0.5 ? 1 : -1) * (20 + Math.round(lkRnd(k + 90) * 3) * 10); w += `<path d="M${x0} ${y0} h${dx} l${dy > 0 ? 10 : -10} ${dy > 0 ? 10 : -10} v${dy}" fill="none" stroke="${C.mint}" stroke-opacity=".45" stroke-width="1.4"/><circle cx="${x0}" cy="${y0}" r="2.6" fill="${C.mint}"${k % 3 === 0 ? ' class="lkTw" style="animation-delay:' + (k * 0.3).toFixed(1) + 's"' : ""}/>`; }
+    return <><div style={{ ...fill, background: `linear-gradient(160deg, #06141a, #0c2a2a)` }} /><svg viewBox="0 0 400 148" preserveAspectRatio="xMidYMid slice" style={{ ...fill, width: "100%", height: "100%" }} dangerouslySetInnerHTML={{ __html: w }} /></>;
+  }
+  if (id === "b_lava") {
+    let c = "";
+    for (let k = 0; k < 9; k++) { let d = `M${Math.round(lkRnd(k + 5) * 400)} 148`, x = lkRnd(k + 5) * 400, y = 148; for (let j = 0; j < 4; j++) { x += (lkRnd(k * 7 + j) - 0.5) * 56; y -= 10 + lkRnd(k * 11 + j) * 12; d += ` L${x.toFixed(0)} ${y.toFixed(0)}`; } c += `<path d="${d}" fill="none" stroke="#ffb347" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity=".75"/><path d="${d}" fill="none" stroke="#ff4d1a" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity=".22"/>`; }
+    return <><div style={{ ...fill, background: "linear-gradient(180deg, #120706, #2a0d08 60%, #5a1608)" }} /><div className="lkPulse" style={{ ...fill, animationDuration: "3.4s", background: "radial-gradient(60% 70% at 50% 120%, #ff5a1faa, transparent 70%)" }} /><svg viewBox="0 0 400 148" preserveAspectRatio="xMidYMax slice" style={{ ...fill, width: "100%", height: "100%" }} dangerouslySetInnerHTML={{ __html: c }} /></>;
+  }
+  if (id === "b_synth") {
+    let g = "";
+    for (let i = -12; i <= 12; i++) g += `<path d="M200 84 L${200 + i * 46} 148" stroke="${LK_PINK}" stroke-opacity=".7" stroke-width="1"/>`;
+    for (let j = 0; j < 7; j++) { const y = 84 + Math.pow(j / 6, 1.8) * 64; g += `<path d="M0 ${y.toFixed(1)} H400" stroke="${LK_PINK}" stroke-opacity=".7" stroke-width="1"/>`; }
+    let sun = `<defs><linearGradient id="gSy" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe066"/><stop offset=".55" stop-color="#ff7a59"/><stop offset="1" stop-color="#ff3d9a"/></linearGradient><clipPath id="cSy"><rect x="150" y="18" width="100" height="42"/><rect x="150" y="63" width="100" height="5"/><rect x="150" y="71" width="100" height="4"/><rect x="150" y="78" width="100" height="3"/></clipPath></defs><circle cx="200" cy="62" r="34" fill="url(#gSy)" clip-path="url(#cSy)"/>`;
+    return <><div style={{ ...fill, background: "linear-gradient(180deg, #14062e 0%, #3a0f5c 50%, #1a0730 57%, #0a0318 100%)" }} /><svg viewBox="0 0 400 148" preserveAspectRatio="xMidYMax slice" style={{ ...fill, width: "100%", height: "100%" }} dangerouslySetInnerHTML={{ __html: sun + g }} /></>;
+  }
   if (id === "b_aurora") return <><div style={{ ...fill, background: C.ink }} /><div style={{ ...fill, filter: "blur(18px)", opacity: 0.85, overflow: "hidden" }}><div className="lkAur" style={{ position: "absolute", inset: "-20% -10%", background: `linear-gradient(100deg, transparent 15%, ${C.mint}b3 30%, transparent 45%, ${C.signal}99 60%, transparent 75%)` }} /><div className="lkAur lkAur2" style={{ position: "absolute", inset: "-20% -10%", background: `linear-gradient(80deg, transparent 20%, ${LK_VIOLET}99 40%, transparent 55%)` }} /></div></>;
   return null;
 }
@@ -9388,6 +9426,13 @@ function nameFx(id) {
   if (id === "n_fire") return { background: "linear-gradient(0deg, #ff3d3d, #ff7a2f 40%, #ffd76a 80%)", backgroundSize: "100% 200%", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent", animation: "lkFireT 1.4s ease-in-out infinite alternate", filter: "drop-shadow(0 0 6px #ff7a2f88)" };
   if (id === "n_rainbow") return { background: "linear-gradient(90deg, #ff6b6b, #ffd76a, #5fe3a1, #7cc4ff, #b388ff, #ff7ab6, #ff6b6b)", backgroundSize: "300% 100%", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent", animation: "lkFoil 5s linear infinite" };
   if (id === "n_gold") return { background: "linear-gradient(100deg, #b8891a 20%, #ffd76a 40%, #fff3b8 50%, #ffd76a 60%, #b8891a 80%)", backgroundSize: "250% 100%", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent", animation: "lkFoil 3.5s linear infinite", filter: "drop-shadow(0 1px 0 #6b4f0a)" };
+  // 1.10.0: six more
+  if (id === "n_mint") return { color: C.mint };
+  if (id === "n_sky") return { color: C.sky };
+  if (id === "n_sunset") return { background: "linear-gradient(90deg, #ffb347, #ff6f61 50%, #d94fa0)", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent" };
+  if (id === "n_neon") return { color: "#ffe6f4", textShadow: `0 0 6px ${LK_PINK}, 0 0 14px ${LK_PINK}cc, 0 0 28px ${LK_PINK}88`, animation: "lkPulse 2.6s ease-in-out infinite" };
+  if (id === "n_chrome") return { background: "linear-gradient(180deg, #ffffff 0%, #c9d2e0 42%, #5c667a 50%, #aab4c6 58%, #f2f5fa 100%)", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent", filter: "drop-shadow(0 1px 0 #0008)" };
+  if (id === "n_glitch") return { color: C.chalk, animation: "lkGlitch 2.8s steps(1) infinite", textShadow: "2px 0 #ff3d6e, -2px 0 #3df2ff" };
   if (id === "n_foil") return { background: `linear-gradient(100deg, ${C.chalk} 30%, #fff 45%, ${C.signal} 50%, ${C.chalk} 60%)`, backgroundSize: "260% 100%", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent", animation: "lkFoil 3.2s linear infinite" };
   return {};
 }
@@ -9406,6 +9451,15 @@ const TITLE_ST = () => ({
   t_shark: { bg: "linear-gradient(90deg, #0f3b46, #145a6a)", fg: "#7ff0e0", bd: "#2fb8a8", rad: 8, it: true, ic: '<path d="M3 17c4 0 7-2 9-11 1 5 4 9 9 11z"/>' },
   t_streak: { bg: "linear-gradient(90deg, #2a1206, #4a1d06)", fg: "#ffc266", bd: "#ff7a1a", glow: "#ff7a1a", flick: true, ic: '<path d="M12 21c-4 0-6.5-2.7-6.5-6.3 0-3.2 2.2-5.4 3.6-7.6.6 1.6 1.4 2.6 2.5 3.1C12 7 13 4.7 14.6 3c.6 2.9 3.9 5.6 3.9 10.2 0 4.4-2.6 7.8-6.5 7.8z"/>' },
   t_midnight: { bg: "linear-gradient(90deg, #05070f, #1a2140)", fg: "#9fd3ff", bd: "#3d5a9a", glow: "#5aa9ff", ic: '<circle cx="11" cy="13" r="8"/><path d="M11 13V8.5M11 13l1.6-4.2"/><path d="M19.5 2.5l.6 1.4 1.4.6-1.4.6-.6 1.4-.6-1.4-1.4-.6 1.4-.6z"/>' },
+  // 1.10.0: eight more
+  t_home: { bg: `${C.signal}24`, fg: C.signal, bd: `${C.signal}99`, ic: '<path d="M4 11.5 12 4l8 7.5"/><path d="M6.5 10v9.5h11V10"/>' },
+  t_noexcuse: { bg: "#15171c", fg: "#f4f6ff", bd: "#f4f6ff", rad: 3, ic: '<path d="M6 6l12 12M18 6L6 18"/>' },
+  t_sweat: { bg: "linear-gradient(90deg, #0e3a5c, #1379b8)", fg: "#d6f1ff", bd: "#5cc4ff", ic: '<path d="M12 3.5c3 4 5.5 7 5.5 10.5a5.5 5.5 0 0 1-11 0C6.5 10.5 9 7.5 12 3.5z"/>' },
+  t_ice: { bg: "linear-gradient(180deg, #f2fbff, #bfe8ff)", fg: "#0b3a5c", bd: "#7cc4ff", rad: 6, ic: '<path d="M12 3v18M4.2 7.5l15.6 9M19.8 7.5l-15.6 9"/>' },
+  t_machine: { bg: "repeating-linear-gradient(90deg, #2b3038 0 3px, #353b45 3px 6px)", fg: "#9effc4", bd: "#4f5a68", rad: 4, glow: "#3dff8f", ic: '<rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9.5 3v3M14.5 3v3M9.5 18v3M14.5 18v3M3 9.5h3M3 14.5h3M18 9.5h3M18 14.5h3"/>' },
+  t_titan: { bg: "linear-gradient(90deg, #3a2a12, #6b4a1c)", fg: "#ffe2a8", bd: "#c99a3d", rad: 6, ic: '<path d="M4 20V9l8-5 8 5v11"/><path d="M9 20v-6h6v6"/>' },
+  t_champion: { bg: "linear-gradient(100deg, #5c0f1f, #c2283f 40%, #ff7a8a 50%, #c2283f 60%, #5c0f1f)", fg: "#fff1f3", bd: "#ff9aa8", foil: true, ic: '<path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4v1.5A3.5 3.5 0 0 0 7.5 11M17 6h3v1.5a3.5 3.5 0 0 1-3.5 3.5M12 14v4M8.5 20h7"/>' },
+  t_unbreak: { bg: "linear-gradient(135deg, #0d1b2a, #1f3a5c 50%, #0d1b2a)", fg: "#bfe1ff", bd: "#5aa9ff", foil: true, glow: "#5aa9ff", ic: '<path d="M12 3l7.5 3v5.5c0 4.5-3 7.8-7.5 9.5-4.5-1.7-7.5-5-7.5-9.5V6z"/>' },
   t_obsidian: { bg: "linear-gradient(135deg, #0b0814, #2a1f4a 50%, #0b0814)", fg: "#cbb8ff", bd: LK_VIOLET, foil: true, glow: LK_VIOLET, ic: '<path d="M12 2.5l6 7-6 12-6-12z"/><path d="M6 9.5h12"/>' },
 });
 function LookTitle({ id, small }) {
@@ -9492,6 +9546,12 @@ function LookFx({ id, thumb }) {
   if (id === "fx_rain") body = n(18, (i, a, b, c) => <Fragment key={i}>{col(a, 0.9 + b * 0.8, c * 2, <span style={{ display: "block", width: 1.5, height: 10 + Math.round(b * 8), borderRadius: 2, background: "linear-gradient(transparent, #9fd3ff)", opacity: 0.45 + b * 0.4, transform: "rotate(10deg)" }} />)}</Fragment>);
   if (id === "fx_bubbles") body = n(12, (i, a, b, c) => <Fragment key={i}>{col(a, 6 + b * 6, c * 12, <span className="lkBob" style={{ display: "block", width: 6 + Math.round(b * 9), height: 6 + Math.round(b * 9), marginLeft: -6, borderRadius: 99, border: "1.5px solid rgba(255,255,255,.7)", background: "radial-gradient(circle at 32% 28%, rgba(255,255,255,.5), rgba(255,255,255,.06) 55%)", boxSizing: "border-box", animationDelay: `${(-c * 2).toFixed(1)}s`, animationDuration: `${(1.8 + b).toFixed(1)}s` }} />, "lkUp")}</Fragment>);
   if (id === "fx_hearts") body = n(10, (i, a, b, c) => <Fragment key={i}>{col(a, 5 + b * 4, c * 9, <svg viewBox="0 0 24 24" width={9 + Math.round(b * 7)} height={9 + Math.round(b * 7)} className="lkBob" style={{ display: "block", marginLeft: -7, animationDelay: `${(-c * 2).toFixed(1)}s` }}><path d="M12 21C5 15 2.5 11.5 2.5 8A5 5 0 0 1 12 6a5 5 0 0 1 9.5 2c0 3.5-2.5 7-9.5 13Z" fill={i % 3 ? LK_PINK : "#ff4d6d"} /></svg>, "lkUp lkFade")}</Fragment>);
+  if (id === "fx_leaves") body = n(12, (i, a, b, c) => <Fragment key={i}>{col(a, 5 + b * 4, c * 9, <svg viewBox="0 0 24 24" width={10 + Math.round(b * 7)} height={10 + Math.round(b * 7)} className="lkLeaf" style={{ display: "block", marginLeft: -8, animationDelay: `${(-c * 3).toFixed(1)}s`, animationDuration: `${(2.4 + b * 1.6).toFixed(1)}s` }}><path d="M12 2C6 6 4 12 6 20c2-1 4-1 6 2 2-3 4-3 6-2 2-8 0-14-6-18Z" fill={["#ff9a3d", "#e8552d", "#ffd15c", "#c9732d"][i % 4]} /><path d="M12 5v15" stroke="#7a3a12" strokeWidth="1" strokeOpacity=".6" fill="none" /></svg>)}</Fragment>);
+  if (id === "fx_code") body = n(16, (i, a, b, c) => <Fragment key={i}>{col(a, 1.8 + b * 2.2, c * 4, <span style={{ display: "block", width: 2, height: 22 + Math.round(b * 26), marginLeft: -1, borderRadius: 2, background: "linear-gradient(transparent, #3dff8f)", opacity: 0.35 + b * 0.5, boxShadow: "0 8px 6px -4px #3dff8f" }} />)}</Fragment>);
+  if (id === "fx_aura") body = <>
+    <span className="lkAura" style={{ position: "absolute", inset: 0, borderRadius: "inherit", boxShadow: `inset 0 0 26px ${C.signal}aa, inset 0 0 60px ${C.signal}44` }} />
+    {n(12, (i, a, b, c) => <Fragment key={i}>{col(a, 3.5 + b * 3, c * 7, <span style={{ display: "block", width: 3 + Math.round(b * 2), height: 3 + Math.round(b * 2), borderRadius: 99, background: C.signal, boxShadow: `0 0 8px ${C.signal}` }} />, "lkUp lkFade")}</Fragment>)}
+  </>;
   if (id === "fx_fireflies") body = n(12, (i, a, b, c) => <span key={i} className="lkFly" onAnimationIteration={lkReXY} style={{ position: "absolute", left: lkIn(a, 12), top: lkIn(c, 12), width: 4, height: 4, borderRadius: 99, background: "#efffa8", boxShadow: "0 0 8px 2px #c8f542", "--fx": `${Math.round((a - 0.5) * 28)}px`, "--fy": `${Math.round((b - 0.5) * 22)}px`, animationDelay: `${(b * 4).toFixed(2)}s`, animationDuration: `${(3 + c * 2.5).toFixed(1)}s` }} />);
   if (id === "fx_stars") body = <>
     {n(7, (i, a, b, c) => <span key={i} className="lkTwk" style={{ position: "absolute", left: lkIn(a, 4), top: lkIn(c * 0.7, 4), width: 2 + Math.round(b * 2), height: 2 + Math.round(b * 2), borderRadius: 99, background: "#fff", animationDelay: `${(b * 3).toFixed(2)}s`, animationDuration: `${(2.4 + c * 2).toFixed(1)}s` }} />)}
@@ -10673,7 +10733,12 @@ function GameTable({ saved, history, onEnd, onQuit, onTutDone }) {
     if (up) { setLvPop({ h: up, lv: (next.levels[up] || 0) + 1, k: Date.now() }); timers.current.push(setTimeout(() => setLvPop(p => (p && Date.now() - p.k >= 1700 ? null : p)), 1800)); }
     if (m.t === "buy" && next.pack) gmSfx.pack(); else if (m.t === "buy") gmSfx.buy(); else if (m.t === "pick") gmSfx.reveal(next.jokers.length > g.jokers.length && GM.JOKERS[next.jokers[next.jokers.length - 1].id].r >= 2); else if (m.t === "skip") sfxTap(); else if (m.t === "sell") gmSfx.sell(); else if (m.t === "reroll") gmSfx.reroll(); else gmSfx.deal(8); if (m.t === "next") { setShown(0); setDealKey(k => k + 1); } } catch (_) {} };
   const toggle = i => { if (anim || (tut && !(tstep.cards && tstep.cards.includes(g.hand[i])))) return; gmSfx.pick(GM.valueOf(g.hand[i]), !sel.includes(i)); setSel(s => (s.includes(i) ? s.filter(x => x !== i) : s.length >= GM.RULES.maxPlay ? s : [...s, i])); };
-  const W = Math.min(innerWidth, 560), cw = Math.max(46, Math.min(78, Math.floor((W - 40) / 5.6))); // 1.9.0: bigger cards
+  // 1.10.0 (Michael, Nov 13: "the big blind runs across the whole screen on a PC, a lot more could be there"): on a
+  // tablet in landscape or a PC the table has two columns: the blind, money, counters, jokers, drills and the list of
+  // hands on the left, the cards on the right. On a phone the two wrappers are display: contents (nothing changes).
+  const big = useMQ("(min-width: 900px) and (min-height: 520px)");
+  const SIDE_W = 360;
+  const W = big ? Math.max(420, Math.min(innerWidth - SIDE_W - 28 - 28, 780)) : Math.min(innerWidth, 560), cw = Math.max(46, Math.min(big ? 92 : 78, Math.floor((W - 40) / 5.6))); // 1.9.0: bigger cards
   const step = Math.min(cw + 6, Math.floor((W - 60 - cw) / Math.max(1, g.hand.length - 1))); // 1.9.0: room for the fan's tilt
   const bossTxt = g.boss && g.blind === 2 && L.gm.boss[g.boss];
   const blindName = [T("gmSmall"), T("gmBig"), bossTxt ? bossTxt[0] : T("gmBoss")][g.blind];
@@ -10683,9 +10748,10 @@ function GameTable({ saved, history, onEnd, onQuit, onTutDone }) {
   const bcol = [C.sky, C.signal, "#ff6b6b"][g.blind];
   const gmPill = { display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 5, padding: "4px 10px", borderRadius: 99, border: "1px solid", background: `${C.chalk}08`, fontFamily: DISPLAY, fontSize: 16, fontWeight: 900, lineHeight: 1.1, flexShrink: 0 };
   return createPortal(
-    <div data-game={g.phase} data-gm-mode={saved.mode} className={"gmTable" + (fx ? " gmShake" : "")} style={{ position: "fixed", inset: 0, zIndex: 90, background: `radial-gradient(120% 60% at 50% 0%, ${hexMix(C.panelHi, C.signal, 0.06)}, transparent 70%), radial-gradient(90% 50% at 50% 100%, ${hexMix(C.panel, C.sky, 0.1)}, transparent 75%), repeating-linear-gradient(135deg, ${C.chalk}05 0 1px, transparent 1px 9px), ${C.ink}`, color: C.chalk, fontFamily: BODY, display: "flex", flexDirection: "column", padding: "calc(var(--sat, 0px) + 10px) 14px calc(var(--sab, 0px) + 12px)", boxSizing: "border-box", overflowY: "auto", overscrollBehavior: "contain" }}>
+    <div data-game={g.phase} data-gm-mode={saved.mode} className={"gmTable" + (fx ? " gmShake" : "")} style={{ position: "fixed", inset: 0, zIndex: 90, background: `radial-gradient(120% 60% at 50% 0%, ${hexMix(C.panelHi, C.signal, 0.06)}, transparent 70%), radial-gradient(90% 50% at 50% 100%, ${hexMix(C.panel, C.sky, 0.1)}, transparent 75%), repeating-linear-gradient(135deg, ${C.chalk}05 0 1px, transparent 1px 9px), ${C.ink}`, color: C.chalk, fontFamily: BODY, display: "flex", flexDirection: "column", padding: "calc(var(--sat, 0px) + 10px) 14px calc(var(--sab, 0px) + 12px)", boxSizing: "border-box", overflowY: "auto", overscrollBehavior: "contain", ...(big ? { display: "grid", gridTemplateColumns: `${SIDE_W}px minmax(0, 1fr)`, columnGap: 28, alignItems: "stretch" } : {}) }} data-gm-wide={big ? 1 : 0}>
       {/* a slow glow drifting over the table (Michael: "more dynamic"); behind everything, no taps */}
       <div aria-hidden="true" className="gmAmb" style={{ position: "fixed", inset: 0, zIndex: -1, pointerEvents: "none", background: `radial-gradient(30% 22% at 30% 35%, ${C.signal}14, transparent 70%), radial-gradient(28% 20% at 72% 62%, ${C.sky}16, transparent 70%)` }} />
+      <div data-gm-side style={big ? { display: "flex", flexDirection: "column", minWidth: 0, minHeight: 0 } : { display: "contents" }}>
       {/* 1.9.0 (Michael, Nov 7: "nicer, more icons, less text"): one HUD: the blind as a medallion with its target, your
           money, the score bar, hands and discards as icon counters, then your jokers as cards with their empty slots */}
       <div data-gm-hud style={{ display: "flex", alignItems: "stretch", gap: 8, position: "relative" }}>
@@ -10707,7 +10773,13 @@ function GameTable({ saved, history, onEnd, onQuit, onTutDone }) {
         {g.perk && <span data-gm-perk-chip={g.perk} title={L.gm.perk[g.perk][0] + ": " + L.gm.perk[g.perk][1].replace(/\$(\d+)/g, "$1 " + COIN)} style={{ ...gmPill, marginLeft: "auto", color: C.signal, borderColor: `${C.signal}44` }}><Ico n={PERK_ICON[g.perk]} size={15} color={C.signal} /></span>}
       </div>
       {/* jokers (also in the shop, so they show once: the shop draws its own row) */}
-      {g.phase !== "shop" && <div style={{ marginTop: 10 }}><JokerRow g={g} w={Math.min(62, Math.floor((W - 28 - 6 * 5) / 6))} hit={anim && anim.hit && anim.hit.j} hitTxt={anim && anim.hit && anim.hit.j ? hitTxt(anim.hit) : null} hitCol={anim && anim.hit && anim.hit.chips && !anim.hit.mult && !anim.hit.x ? C.sky : C.signal} hitK={anim ? anim.i : 0} onTap={k => setInsp({ i: k })} /><div style={{ marginTop: 8 }}><DrillRow g={g} onOpen={() => setHands(true)} /></div></div>}
+      {g.phase !== "shop" && <div style={{ marginTop: 10 }}><JokerRow g={g} w={Math.min(62, Math.floor(((big ? SIDE_W + 28 : W) - 28 - 6 * 5) / 6))} hit={anim && anim.hit && anim.hit.j} hitTxt={anim && anim.hit && anim.hit.j ? hitTxt(anim.hit) : null} hitCol={anim && anim.hit && anim.hit.chips && !anim.hit.mult && !anim.hit.x ? C.sky : C.signal} hitK={anim ? anim.i : 0} onTap={k => setInsp({ i: k })} /><div style={{ marginTop: 8 }}><DrillRow g={g} onOpen={() => setHands(true)} /></div></div>}
+      {big && <div data-gm-side-hands style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 4, minHeight: 0, overflowY: "auto" }}>
+        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.8, textTransform: "uppercase", color: C.dim, margin: "0 2px 2px" }}>{T("gmHandsT")}</div>
+        <HandsList g={g} small />
+      </div>}
+      </div>
+      <div data-gm-main style={big ? { display: "flex", flexDirection: "column", minWidth: 0, minHeight: 0, width: "100%", maxWidth: 800, margin: "0 auto" } : { display: "contents" }}>
       {tstep && !anim && <TutCoach key={ts} step={tstep} ready={tutSel() && sel.length > 0} onNext={nextTut} />}
       {g.phase === "blind" || anim ? (
         <>
@@ -10756,6 +10828,7 @@ function GameTable({ saved, history, onEnd, onQuit, onTutDone }) {
       ) : g.phase === "shop" ? (
         <GameShop g={g} tut={tut} W={W} onMove={shopMove} onMoves={shopMoves} onTap={k => setInsp({ i: k })} onSell={canSell ? k => setInsp({ i: k, ask: true }) : null} onHands={() => setHands(true)} onQuit={barQuit ? () => setQuit(true) : null} />
       ) : <div style={{ flex: 1 }} />}
+      </div>
       {fx === "win" && <Confetti count={45} />}
       {why && sel.length > 0 && <ScoreWhy g={g} cards={sel.map(i => g.hand[i])} bests={bests} onClose={() => setWhy(false)} />}
       {hands && <HandsSheet g={g} onClose={() => setHands(false)} />}
@@ -10801,17 +10874,23 @@ function DrillRow({ g, onOpen }) {
     </button>
   );
 }
+// The hand types with their levels and values: the Hands sheet, and on a wide screen always on show beside the table.
+function HandsList({ g, small }) {
+  return <>
+    {GM.HANDS.slice().reverse().map(h => { const [c, m, lv] = handVal(g, h); return (
+          <div key={h} data-gm-hand-row={h} data-lv={lv + 1} style={{ display: "flex", alignItems: "center", gap: 10, padding: small ? "5px 9px" : "8px 10px", borderRadius: 12, background: lv ? `${C.signal}14` : SOFT(), border: `1px solid ${lv ? C.signal + "66" : "transparent"}` }}>
+            <span style={{ flex: 1, minWidth: 0, fontWeight: 800, fontSize: small ? 13 : 15, color: lv ? C.chalk : C.dim }}>{handName(h)}</span>
+            <span style={{ fontSize: 11, fontWeight: 900, letterSpacing: 0.4, textTransform: "uppercase", padding: "2px 8px", borderRadius: 99, color: lv ? C.signalInk : C.dim, background: lv ? C.signal : "transparent", border: lv ? "none" : `1px solid ${C.line}` }}>{T("gmLv", { n: lv + 1 })}</span>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontFamily: DISPLAY, fontWeight: 900, fontSize: 15, fontVariantNumeric: "tabular-nums", minWidth: 86, justifyContent: "flex-end" }}><span style={{ color: C.sky }}>{c}</span><span style={{ color: C.dim, fontSize: 12 }}>×</span><span style={{ color: C.signal }}>{m}</span></span>
+          </div>); })}
+  </>;
+}
 function HandsSheet({ g, onClose }) {
   return (
     <Sheet short title={T("gmHandsT")} onClose={onClose}>
       <div data-gm-hands-sheet style={{ display: "flex", flexDirection: "column", gap: 6 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: C.dim, lineHeight: 1.4, marginBottom: 4 }}><Ico n="dumbbell" size={16} color={C.signal} />{T("gmHandsD")}</div>
-        {GM.HANDS.slice().reverse().map(h => { const [c, m, lv] = handVal(g, h); return (
-          <div key={h} data-gm-hand-row={h} data-lv={lv + 1} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", borderRadius: 12, background: lv ? `${C.signal}14` : SOFT(), border: `1px solid ${lv ? C.signal + "66" : "transparent"}` }}>
-            <span style={{ flex: 1, minWidth: 0, fontWeight: 800, fontSize: 15, color: lv ? C.chalk : C.dim }}>{handName(h)}</span>
-            <span style={{ fontSize: 11, fontWeight: 900, letterSpacing: 0.4, textTransform: "uppercase", padding: "2px 8px", borderRadius: 99, color: lv ? C.signalInk : C.dim, background: lv ? C.signal : "transparent", border: lv ? "none" : `1px solid ${C.line}` }}>{T("gmLv", { n: lv + 1 })}</span>
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontFamily: DISPLAY, fontWeight: 900, fontSize: 15, fontVariantNumeric: "tabular-nums", minWidth: 86, justifyContent: "flex-end" }}><span style={{ color: C.sky }}>{c}</span><span style={{ color: C.dim, fontSize: 12 }}>×</span><span style={{ color: C.signal }}>{m}</span></span>
-          </div>); })}
+        <HandsList g={g} />
       </div>
     </Sheet>
   );
@@ -12098,6 +12177,14 @@ export default function App() {
   const [live, setLive] = useState(null);
   const [newsOpen, setNewsOpen] = useState(false);
   const [profile, setProfileState] = useState({ name: "User", pfp: null, freezeDays: [], streakResetTs: 0 });
+  // what changed the profile last (see planLog): set right before a non-local change, back to "you" after it is noted
+  const planSrc = useRef("you"), planSeen = useRef(null);
+  useEffect(() => {
+    const now = PLN.plansOf(profile).list.map(p => [p.id, p.name || "Workout Plan " + p.n]), prev = planSeen.current;
+    planSeen.current = now;
+    if (prev) { const gone = prev.filter(([id]) => !now.some(x => x[0] === id)); if (gone.length) planLogAdd({ ts: Date.now(), by: planSrc.current, gone: gone.map(x => x[1]), left: now.length, v: APP_VERSION }); }
+    planSrc.current = "you";
+  }, [profile]);
   const [ui, setUiState] = useState({});
   const [kcal, setKcalState] = useState(null);
   const [kcalLoaded, setKcalLoaded] = useState(false);
@@ -12209,7 +12296,7 @@ export default function App() {
     return () => clearTimeout(t);
   }, [history, profile, kcal, settings, loaded, settingsLoaded, profLoaded, kcalLoaded]);
   // A backup (file or cloud) replaces this phone's data. Health Connect data that the cloud copy leaves out stays.
-  const importAll = d => { setHistory(d.history); if (d.profile) setProfile({ ...profile, ...d.profile }); if (d.settings) setSettings({ ...DEFAULT_SETTINGS, ...d.settings }); if (d.kcal) setKcal(d.kcal); };
+  const importAll = d => { planSrc.current = "file"; setHistory(d.history); if (d.profile) setProfile({ ...profile, ...d.profile }); if (d.settings) setSettings({ ...DEFAULT_SETTINGS, ...d.settings }); if (d.kcal) setKcal(d.kcal); };
   // ─── Account & cloud (1.5.0) ───
   // Firebase starts only for someone who signed in before (cloudMem().uid); everyone else makes no cloud calls.
   const [acct, setAcct] = useState(() => (cloudMem().uid ? { st: "loading", uid: cloudMem().uid, prof: cloudMem().prof || null } : { st: "out" }));
@@ -12240,7 +12327,7 @@ export default function App() {
     const M = mergeAll(L, { ...d, sync: d.sync || {} }, first);
     lastRemoteKey.current = syncKey(d);
     if (histKey(M.history) !== histKey(L.history)) { const h = recomputeFlags(sortHistory(M.history)); stRef.current.history = h; setHistory(h); }
-    if (stable(M.profile) !== stable(L.profile)) { seenSync.current.profile = stable(M.profile); stRef.current.profile = M.profile; setProfile(M.profile); }
+    if (stable(M.profile) !== stable(L.profile)) { seenSync.current.profile = stable(M.profile); stRef.current.profile = M.profile; planSrc.current = "cloud"; setProfile(M.profile); }
     if (stable(pickSync(M.settings)) !== stable(pickSync(L.settings))) { seenSync.current.settings = stable(pickSync(M.settings)); stRef.current.settings = M.settings; setSettings(M.settings); }
     if (M.kcal && kcalKey(M.kcal) !== kcalKey(L.kcal)) { seenSync.current.kcal = stable(kcalShared(M.kcal)); stRef.current.kcal = M.kcal; setKcal(M.kcal); }
     setSyncMem({ acct: uid, del: M.sync.del, kdel: M.sync.kdel, mod: M.sync.mod });
@@ -12417,7 +12504,7 @@ export default function App() {
     let d = null; try { d = o.b && o.b.json ? JSON.parse(o.b.json) : null; } catch (_) {}
     if (d && !(BACKUP_IDS.includes(d.app) && Array.isArray(d.history))) d = null;
     setHistory(d ? d.history : []);
-    setProfile({ name: o.nick || "User", pfp: null, freezeDays: [], streakResetTs: 0, ...((d && d.profile) || {}) });
+    planSrc.current = "account"; setProfile({ name: o.nick || "User", pfp: null, freezeDays: [], streakResetTs: 0, ...((d && d.profile) || {}) });
     setSettings({ ...DEFAULT_SETTINGS, onboarded: true, seenVersion: settings.seenVersion, seenApp: true, ...((d && d.settings) || {}), ...(d && d.settings ? {} : { lang: settings.lang }) });
     setKcal(d && d.kcal ? d.kcal : null);
     // 1.7.0: this account's sync memory comes with its data (its deleted workouts stay deleted)
@@ -12451,7 +12538,7 @@ export default function App() {
     if (!d || !(BACKUP_IDS.includes(d.app) && Array.isArray(d.history))) throw new Error("bad backup");
     const R = restoreFrom({ ...stRef.current, sync: syncMem() }, { ...d, sync: d.sync || {} }, Date.now());
     const h = recomputeFlags(sortHistory(R.history)); stRef.current.history = h; setHistory(h);
-    stRef.current.profile = R.profile; setProfile(R.profile);
+    stRef.current.profile = R.profile; planSrc.current = "point"; setProfile(R.profile);
     stRef.current.settings = R.settings; setSettings(R.settings);
     if (R.kcal) { stRef.current.kcal = R.kcal; setKcal(R.kcal); }
     setSyncMem({ acct: acct.uid, del: R.sync.del, kdel: R.sync.kdel, mod: R.sync.mod });
@@ -13042,6 +13129,9 @@ export default function App() {
         .lkTw{animation:lkTw 2s ease-in-out infinite}@keyframes lkTw{0%,100%{opacity:.2}50%{opacity:1}}
         .lkAur{animation:lkAur 9s ease-in-out infinite}.lkAur2{animation-duration:13s;animation-direction:reverse}@keyframes lkAur{0%,100%{transform:translateX(-10%) skewX(-8deg)}50%{transform:translateX(10%) skewX(8deg)}}
         @keyframes lkFoil{from{background-position:120% 0}to{background-position:-120% 0}}
+        @keyframes lkGlitch{0%,86%,100%{text-shadow:2px 0 #ff3d6e,-2px 0 #3df2ff;transform:none}88%{text-shadow:-3px 0 #ff3d6e,3px 0 #3df2ff;transform:translateX(1px)}91%{text-shadow:3px 1px #ff3d6e,-3px -1px #3df2ff;transform:translateX(-1px) skewX(-6deg)}94%{text-shadow:-1px 0 #ff3d6e,1px 0 #3df2ff;transform:none}}
+        .lkLeaf{animation:lkLeaf 3s ease-in-out infinite alternate}@keyframes lkLeaf{from{transform:translateX(-9px) rotate(-50deg)}to{transform:translateX(9px) rotate(60deg)}}
+        .lkAura{animation:lkAura 3.2s ease-in-out infinite}@keyframes lkAura{0%,100%{opacity:.45}50%{opacity:1}}
         .lkSpinSlow{transform-box:view-box;transform-origin:58px 58px;animation:lkSpin 40s linear infinite}.lkNeb{animation:lkSpin 90s linear infinite}
         .lkCol{position:absolute;top:0;height:100%;width:0;display:block}
         .lkDown{animation:lkDown 8s linear infinite}@keyframes lkDown{from{transform:translateY(-12%)}to{transform:translateY(108%)}}
@@ -13061,7 +13151,7 @@ export default function App() {
         .lkFlickI{animation:lkFlickI 1s ease-in-out infinite alternate}@keyframes lkFlickI{from{transform:scale(1)}to{transform:scale(1.15,.9)}}
         @keyframes lkFireT{from{background-position:0 0}to{background-position:0 100%}}
         .shRcpt{animation:shRcpt .5s ${MO.spring} both}@keyframes shRcpt{from{transform:scale(.4);opacity:0}}
-        @media (prefers-reduced-motion: reduce){.lkPulse,.lkSpin,.lkSpinSlow,.lkNeb,.lkFlick,.lkTw,.lkAur,.lkDown,.lkUp,.lkSway,.lkTwk,.lkSpinC,.lkFlash,.lkBolt,.lkBurst,.lkRocket,.lkBob,.lkFly,.lkShoot,.lkFlickI{animation:none}}
+        @media (prefers-reduced-motion: reduce){.lkPulse,.lkSpin,.lkSpinSlow,.lkNeb,.lkFlick,.lkTw,.lkAur,.lkDown,.lkUp,.lkSway,.lkTwk,.lkSpinC,.lkFlash,.lkBolt,.lkBurst,.lkRocket,.lkBob,.lkFly,.lkShoot,.lkLeaf,.lkAura,.lkFlickI{animation:none}}
         .nearPulse{animation:nearPulse 1.2s ease-in-out infinite alternate}
         @keyframes nearPulse{from{opacity:.65}to{opacity:1}}
         .pop{animation:pop ${MO.t3} ${MO.spring} both}

@@ -101,8 +101,6 @@ const L = {
     welcomeMove: "Používal jsi HW App v prohlížeči? Přenes si data: v prohlížeči Nastavení → Uložit zálohu, pak tady Nastavení → Obnovit ze zálohy.",
     welcomeMoveBtn: "Otevřít Nastavení",
     getAndroid: "📱 Appka pro Android",
-    support: "Podpořit appku",
-    supportDesc: "Patreon · dobrovolně, appka zůstává zdarma",
     upd_latest: "Aktualizace: máš nejnovější verzi (kontrola {time})",
     upd_staged: "Aktualizace: {v} je stažená, zapne se při dalším spuštění (kontrola {time})",
     upd_waiting: "Aktualizace: {v} počká, až dokončíš trénink (kontrola {time})",

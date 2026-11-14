@@ -70,6 +70,36 @@ for (const fx of ["fx_rain", "fx_bubbles", "fx_hearts", "fx_fireflies", "fx_star
   await h.close();
 }
 
+// ── Nov 13: 31 more looks. Owning every look: each one has a name and is drawn on the profile when worn ──
+{
+  const EC = await import("../src/economy.js");
+  const ids = EC.LOOK_IDS, buys = ids.map((w, j) => ({ i: "lk" + j, w, p: 0, ts: j + 1 }));
+  T.eq(ids.length, 91, "91 looks in all");
+  const NEW = { frame: ["f_ring2", "f_dash", "f_gear", "f_petal", "f_ice", "f_orbit", "f_rainbow"], bg: ["b_dusk", "b_stripes", "b_forest", "b_ocean", "b_circuit", "b_lava", "b_synth"],
+    title: ["t_home", "t_noexcuse", "t_sweat", "t_ice", "t_machine", "t_titan", "t_champion", "t_unbreak"], name: ["n_mint", "n_sky", "n_sunset", "n_chrome", "n_neon", "n_glitch"], fx: ["fx_leaves", "fx_code", "fx_aura"] };
+  const errs = [];
+  for (let i = 0; i < 8; i++) {
+    const look = {}; for (const k in NEW) if (NEW[k][i]) look[k] = NEW[k][i];
+    const h = await start({ viewport: { width: 412, height: 800 }, seed: { history: hist, profile: { name: "Michael", shop: { buys }, look } } });
+    const p = h.page; p.on("pageerror", e => errs.push(String(e)));
+    await p.click("[data-menu-btn]"); await p.click('[data-screen="profile"]'); await p.waitForTimeout(700);
+    const got = await p.evaluate(() => { const q = s => document.querySelector("[data-pf-hero] " + s); const f = q("[data-look-frame]"), t = q("[data-look-title]"), b = document.querySelector("[data-pf-banner]"), x = q("[data-look-fx]"), n = document.querySelector("[data-pf-name]");
+      return { frame: f && f.children.length > 0 ? f.dataset.lookFrame : null, title: t && t.textContent.trim().length > 2 && !/^t_/.test(t.textContent.trim()) ? t.dataset.lookTitle : null, bg: b && b.children.length > 0 ? 1 : null, fx: x && x.children.length > 0 ? x.dataset.lookFx : null, name: n && n.dataset.nameFx ? n.dataset.nameFx + (n.getAttribute("style").length > 200 || /color/.test(n.getAttribute("style")) ? "" : "?") : null }; });
+    const want = { frame: look.frame || null, title: look.title || null, bg: look.bg ? 1 : null, fx: look.fx || null, name: look.name || null };
+    T.eq(got, want, `worn and drawn: ${Object.values(look).join(", ")}`);
+    if (i === 0) {
+      await p.click("[data-pf-looks]"); await p.waitForTimeout(400);
+      for (const k of ["frame", "bg", "title", "name", "fx"]) {
+        await p.click(`[data-look-kind="${k}"]`); await p.waitForTimeout(150);
+        const r = await p.evaluate(() => { const els = [...document.querySelectorAll("[data-look-own]")]; return { n: els.length, raw: els.filter(e => /\b[fbtn]x?_[a-z0-9]+/.test(e.innerText)).map(e => e.dataset.lookOwn) }; });
+        T.ok(r.n === ids.filter(x => EC.LOOKS[x].kind === k).length && !r.raw.length, `looks list, ${k}: ${r.n} owned, every one has a name ${r.raw.join(" ")}`);
+      }
+    }
+    await h.close();
+  }
+  T.eq(errs, [], "no errors while drawing them");
+}
+
 // ── a shop card that is not running hides its effect instead of freezing it ──
 {
   const h = await start({ viewport: { width: 412, height: 800 }, seed: { history: hist, profile: { name: "Michael" } } });

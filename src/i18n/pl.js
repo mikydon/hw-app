@@ -101,8 +101,6 @@ const L = {
     welcomeMove: "Używałeś HW App w przeglądarce? Przenieś dane: w przeglądarce Ustawienia → Zapisz kopię, potem tutaj Ustawienia → Przywróć z kopii.",
     welcomeMoveBtn: "Otwórz Ustawienia",
     getAndroid: "📱 Aplikacja na Androida",
-    support: "Wesprzyj aplikację",
-    supportDesc: "Patreon · dobrowolnie, aplikacja zostaje darmowa",
     upd_latest: "Aktualizacje: masz najnowszą wersję (sprawdzono {time})",
     upd_staged: "Aktualizacje: {v} jest pobrana i włączy się przy następnym uruchomieniu (sprawdzono {time})",
     upd_waiting: "Aktualizacje: {v} poczeka, aż skończysz trening (sprawdzono {time})",
