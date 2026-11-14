@@ -4225,7 +4225,7 @@ function TrainTab({ history, onStart, onStartPlan, onStartFree, onFreeze, ui, se
           {settings && setSettings && (
             <Sect data-wset title={T("wsTitle")} accent={C.sky} titlePad="0 15px" style={LOOK === "flat" ? {} : { padding: "12px 0 0" }}>
               <div style={LOOK === "flat" ? { ...card } : { borderTop: `1px solid ${C.line}` }}>
-                <button data-wset-ex onClick={() => onGo && onGo("settings", { page: "exercises", ret: { screen: "train", pager: "home", page: homeIdx("ex") } })} style={{ ...btnBase, width: "100%", background: "transparent", color: C.chalk, padding: ROW_I, gap: 12, textAlign: "left", borderRadius: 0, display: "flex", alignItems: "center", gap: 10, fontSize: 15 }}>
+                <button data-wset-ex onClick={() => onGo && onGo("settings", { page: "exercises", ret: { screen: "train", pager: "home", page: homeIdx("ex") } })} style={{ ...btnBase, width: "100%", background: "transparent", color: C.chalk, padding: ROW_I, gap: 12, textAlign: "left", borderRadius: 0, display: "flex", alignItems: "center", fontSize: 15 }}>
                   <RowIco n="dumbbell" />
                   <span style={{ flex: 1, minWidth: 0, fontWeight: 700 }}>{noEmo(T("exMenu"))}</span>
                   <Arrow />
@@ -6744,7 +6744,6 @@ function cloudStats(history) { const xp = totalXP(history); return { xp, lvl: le
 // open your profile. Only training: calorie, step and Health Connect badges never leave the phone for others, and there
 // is no photo in it (friends see the photo they already have from the friends list).
 const CARD_VIS = ["friends", "all", "none"];
-const FAIR_FLAGS = ["cap", "day", "jump", "fast", "late"]; // 1.8.0: reasons from the server's world-list check (src/fair.js)
 const CARD_HIDE = ["calories", "kcalHit", "steps", "health"];
 // 1.9.0 (Michael, Nov 7: "anyone can do the warm-up, stretching, quit and save, and get the streak; people should see
 // it and report him"): the last workout on the profile, small: day · minutes · sets · reps (· added by hand). A fake
@@ -7036,7 +7035,7 @@ function CountUp({ n, ms = 650 }) {
   return nf(v);
 }
 
-function FriendsTab({ acct, history, profile, social, chatWith, setChatWith, onBlocked, onSignIn, onCreate, onRename, onSetGlobal, setTopHead, modHidden, fx }) {
+function FriendsTab({ acct, history, profile, social, chatWith, setChatWith, onBlocked, onSignIn, onCreate, onRename, setTopHead, fx }) {
   const [age16, setAge16] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
@@ -7075,7 +7074,7 @@ function FriendsTab({ acct, history, profile, social, chatWith, setChatWith, onB
     );
   }
   if (!acct.prof) return <NickSetup initial={nickFrom(profile.name && profile.name !== "User" ? profile.name : "")} onSave={onCreate} />;
-  return <FriendsMain acct={acct} history={history} profile={profile} social={social} chatWith={chatWith} setChatWith={setChatWith} onBlocked={onBlocked} onRename={onRename} onSetGlobal={onSetGlobal} setTopHead={setTopHead} modHidden={modHidden} fx={fx || {}} />;
+  return <FriendsMain acct={acct} history={history} profile={profile} social={social} chatWith={chatWith} setChatWith={setChatWith} onBlocked={onBlocked} onRename={onRename} setTopHead={setTopHead} fx={fx || {}} />;
 }
 
 function NickSetup({ initial, onSave, onCancel, title }) {
@@ -7101,18 +7100,16 @@ function NickSetup({ initial, onSave, onCancel, title }) {
   return <div className="scr" data-fr-nicksetup style={{ padding: "6px 18px 124px", maxWidth: 460, margin: "0 auto" }}><Sect title={T("frNickTitle")}>{body}</Sect></div>;
 }
 
-// 1.9.0 (Michael, Nov 1, 21:49): the exercise world leaderboard is off for now, shown locked as "coming soon". The app
-// neither joins nor reads board/{uid}; old docs, the Worker's "board" kind and the rules stay for later.
-const WORLD_ON = false;
-function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, chatWith, setChatWith, onBlocked, setTopHead, modHidden, fx = {} }) {
+// 1.10.0 (Michael, Nov 14: "a global one would be hard to keep fair"; "remove the restrictions that aren't needed, the
+// photo or video for HW Support is nonsense"): the leaderboard is friends only. The world list, its join switch and
+// its check ("send a video of one set") are gone from the app; old board/{uid} docs and the Worker's kind stay unused.
+function FriendsMain({ acct, history, profile, social, onRename, chatWith, setChatWith, onBlocked, setTopHead, fx = {} }) {
   const wide = useWide();
   const me = { uid: acct.uid, ...acct.prof, ...cloudStats(history) };
   // 1.8.2: friends and chats are one list, shown first. 1.9.0 (Michael, Nov 7: "in Friends I can't swipe with the
   // finger, only tap below"): the two views are swipe pages like Home
   const pg = usePager("fr", 2);
   const tab = pg.page ? "board" : "friends";
-  const [scope, setScope] = useState("friends"); // board: friends | world
-  const [world, setWorld] = useState(null);
   const blocked = social.blocked || [];
   const friends = social.friends ? social.friends.filter(f => !blocked.includes(f.uid)) : null;
   const reqs = social.reqs;
@@ -7128,11 +7125,7 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
   const [rename, setRename] = useState(false);
   const [shareMsg, setShareMsg] = useState("");
   useEffect(() => { if (social.err) setErr(social.err); }, [social.err]);
-  const loadWorld = () => { if (!WORLD_ON) return; setErr(""); cloud().world(50).then(w => setWorld(w.map(x => ({ ...x, pfp: null })))).catch(e => { setWorld(w => w || []); setErr(cloudErr(e)); }); };
   useEffect(() => { try { sessionStorage.removeItem("hw-add"); } catch (_) {} }, []);
-  useEffect(() => { if (scope === "world" && world === null) loadWorld(); }, [scope]);
-  // 1.8.0: the server writes the world entry after its check, so a new result reloads the list (joining shows you at once)
-  useEffect(() => { if (world !== null && fx.fair) loadWorld(); }, [fx.fair]);
   const friendIds = (friends || []).map(f => f.uid);
   // 1.8.0 friend streaks
   const fs = fx.fs || { list: [], days: {}, mine: [] };
@@ -7185,14 +7178,9 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
     </button>
   );
   const segBox = { display: "flex", gap: 4, padding: 4, borderRadius: 14, ...SUNK(), marginTop: 14 };
-  const chipSeg = (on, onClick, label, data) => (
-    <button data-seg={data} aria-pressed={on} onClick={() => { sfxTap(); onClick(); }}
-      style={{ ...btnBase, padding: "6px 12px", fontSize: 13, borderRadius: 99, ...(on ? { background: `${C.signal}22`, border: `1px solid ${C.signal}66` } : SUNK()), color: on ? C.signal : C.dim, whiteSpace: "nowrap", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis" }}>{label}</button>
-  );
-  const board = scope === "friends"
-    ? (friends ? [me, ...friends].sort((a, b) => (b.xp || 0) - (a.xp || 0)) : null)
-    : (world ? world.filter(w => !blocked.includes(w.uid)).map(w => (w.uid === acct.uid ? { ...w, ...me } : w)) : null);
-  const people = Object.fromEntries([...(world || []), ...(reqs || []), ...(friends || [])].map(p => [p.uid, p]));
+
+  const board = friends ? [me, ...friends].sort((a, b) => (b.xp || 0) - (a.xp || 0)) : null;
+  const people = Object.fromEntries([...(reqs || []), ...(friends || [])].map(p => [p.uid, p]));
   const chats = (social.chats || []).filter(c => !blocked.includes(c.other) && c.last.ts > Math.max(0, clr[c.cid] || 0)).sort((a, b) => b.last.ts - a.last.ts);
   const unread = c => c.last.from !== acct.uid && c.last.ts > Math.max((social.read || {})[c.cid] || 0, clr[c.cid] || 0);
   // 1.8.2: one list of friends and chats: chats newest first, then friends without a chat (highest level first);
@@ -7251,36 +7239,10 @@ function FriendsMain({ acct, history, profile, social, onRename, onSetGlobal, ch
         );
         const boardView = (
         <>
-          {WORLD_ON && scope === "world" && (
-            modHidden ? (
-              <div data-fr-hidden style={{ ...card, ...tileR(), marginTop: 10, padding: "14px 16px" }}>
-                <div style={{ fontSize: 15, fontWeight: 700, color: C.chalk }}>{T("frHiddenT")}</div>
-                <div style={{ fontSize: 13, color: C.dim, lineHeight: 1.5, marginTop: 3 }}>{T("frHiddenD")}</div>
-              </div>
-            ) :
-            <div style={{ ...card, ...tileR(), marginTop: 10, overflow: "hidden" }}>
-              <SettingRow first title={T("frWorldJoin")} desc={`${T("frWorldJoinD")} ${T("frFairD")}`} on={!!acct.prof.global} onClick={() => { sfxTap(); onSetGlobal(!acct.prof.global).then(() => setTimeout(loadWorld, 1200)).catch(e => setErr(cloudErr(e))); }} />
-              {/* 1.8.0: what the server counted for the world list, and why a place may wait for a check */}
-              {acct.prof.global && fx.fair && typeof fx.fair.n === "number" && (
-                <div data-fr-fair={fx.fair.wait ? "wait" : "ok"} style={{ padding: "0 16px 14px", fontSize: 13, color: C.dim, lineHeight: 1.5 }}>
-                  <div>{emo(T("frFairLine", { n: fx.fair.n, s: fx.fair.streak || 0 }))}</div>
-                  {fx.fair.wait && <div data-fr-fair-wait style={{ color: C.signal, fontWeight: 700, marginTop: 4 }}>{T("frFairWait")}</div>}
-                  {(fx.fair.flags || []).length > 0 && <div data-fr-fair-flags style={{ marginTop: 4 }}>{T("frFairWhy")} {fx.fair.flags.filter(f => FAIR_FLAGS.includes(f)).map(f => T("frFlag_" + f)).join(" · ")}</div>}
-                </div>
-              )}
-            </div>
-          )}
           <Sect style={{ padding: "12px 0 4px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "0 12px 10px" }}>
-              {chipSeg(scope === "friends", () => setScope("friends"), T("frBoardFriends"), "scope-friends")}
-              {WORLD_ON ? chipSeg(scope === "world", () => setScope("world"), T("frBoardWorld"), "scope-world")
-                : <span data-seg="scope-world" data-locked aria-disabled="true" style={{ ...btnBase, padding: "6px 12px", fontSize: 13, borderRadius: 99, ...SUNK(), color: C.dim, opacity: 0.7, display: "inline-flex", alignItems: "center", gap: 5, whiteSpace: "nowrap" }}><Ico n="lock" size={13} />{T("frBoardWorld")} · {T("soon")}</span>}
-              {scope === "world" && <button data-fr-refresh onClick={() => { sfxTap(); loadWorld(); }} aria-label={T("frRefresh")} style={{ ...btnBase, background: "transparent", color: C.dim, padding: "4px 6px", fontSize: 16, marginLeft: "auto", flexShrink: 0 }}>↻</button>}
-            </div>
             {board === null ? <div style={{ padding: "6px 16px 12px", color: C.dim, fontSize: 14 }}>{T("frLoading")}</div>
-              : scope === "world" && !board.length ? <div style={{ padding: "6px 16px 12px", color: C.dim, fontSize: 14 }}>{T(modHidden ? "frWorldNone" : "frWorldEmpty")}</div>
               : board.map((p, i) => <PersonRow key={p.uid} p={p} rank={i + 1} me={p.uid === acct.uid} onClick={p.uid === acct.uid ? null : () => { sfxTap(); setSheet(p); }} />)}
-            {scope === "friends" && friends && !friends.length && <div style={{ padding: "10px 16px 12px", color: C.dim, fontSize: 13, lineHeight: 1.5, borderTop: `1px solid ${C.line}` }}>{T("frNoFriends")}</div>}
+            {friends && !friends.length && <div style={{ padding: "10px 16px 12px", color: C.dim, fontSize: 13, lineHeight: 1.5, borderTop: `1px solid ${C.line}` }}>{T("frNoFriends")}</div>}
           </Sect>
         </>
         );
@@ -12466,23 +12428,11 @@ export default function App() {
   };
   const createProfile = async nick => { const p = await cloud().createProfile({ nick, global: false, pfp: await smallPfp(profile.pfp), ...cloudStats(history) }); setProf(p); sfxCheck(); };
   const renameNick = async nick => { await cloud().renameNick(acct.prof.nick, nick); const p = { ...acct.prof, nick }; await cloud().saveProfile({ ...p, pfp: await smallPfp(profile.pfp), ...cloudStats(history) }); setProf(p); sfxCheck(); };
-  const setGlobal = async on => { const p = { ...acct.prof, global: on }; await cloud().saveProfile({ ...p, pfp: await smallPfp(profile.pfp), ...cloudStats(history) }); setProf(p); if (on) setTimeout(() => runBoard(true), 300); };
-  // 1.8.0: the world entry is written by the push server from the checked cloud backup (src/fair.js). The app asks for
-  // a check after each backup upload and when joining; the server answers at most once a minute (then "recent", and
-  // the app asks again a minute later). The answer (what counted, flags, waiting for a check) is shown in Friends.
-  const [fairRes, setFairRes] = useState(() => cloudMem().fair || null);
-  const boardRetry = useRef(0), boardFn = useRef(null);
-  boardFn.current = force => {
-    if (acct.st !== "in" || !acct.prof || (!acct.prof.global && !force)) return;
-    cloud().checkBoard(dateKey()).then(r => {
-      if (!r || r.why === "net") return;
-      if (r.why !== "recent" || !fairRes) { setFairRes(r); setCloudMem({ fair: r }); }
-      clearTimeout(boardRetry.current);
-      if (r.why === "recent") boardRetry.current = setTimeout(() => boardFn.current && boardFn.current(), 65000);
-    }).catch(() => {});
-  };
-  const runBoard = force => WORLD_ON && boardFn.current && boardFn.current(force);
-  useEffect(() => () => clearTimeout(boardRetry.current), []);
+  // 1.10.0 Friends together: after a backup upload the server counts my checked training days again (vdays/{uid},
+  // what friends see for shared streaks, the weekly goal and the duel); it answers "recent" within 5 minutes.
+  const vdayAt = useRef(0);
+  const runVday = () => { if (acct.st !== "in" || !acct.prof || Date.now() - vdayAt.current < 5 * 60 * 1000) return; vdayAt.current = Date.now(); Promise.resolve().then(() => cloud().vday(null, dateKey())).then(r => { if (r && r.why === "ok") setVdaySeq(n => n + 1); }).catch(() => {}); };
+  const [vdaySeq, setVdaySeq] = useState(0);
   // 1.8.0 friend streaks: my last training days go to days/{uid} (friends read them), the streaks are watched live
   const [fstreaks, setFstreaks] = useState([]), [fsDays, setFsDays] = useState({});
   const daysKey = acct.st === "in" ? myDays(history, profile).join(",") : "";
@@ -12499,7 +12449,7 @@ export default function App() {
   const loadFsDays = () => { fstreaks.forEach(f => cloud().getDays(f.other).then(d => setFsDays(m => ({ ...m, [f.other]: d || [] }))).catch(() => {})); };
   useEffect(() => { if (fsIds) loadFsDays(); }, [fsIds]);
   useEffect(() => { if (screen === "friends" && fsIds) loadFsDays(); }, [screen]);
-  const friendsFx = { fair: fairRes, fs: { list: fstreaks, days: fsDays, mine: daysKey ? daysKey.split(",") : [],
+  const friendsFx = { vdaySeq, fs: { list: fstreaks, days: fsDays, mine: daysKey ? daysKey.split(",") : [],
     invite: uid => cloud().fsInvite(uid), accept: uid => cloud().fsAccept(uid, dateKey()), end: uid => cloud().fsEnd(uid) } };
   // 1.8.0 card game: the game being played (full screen) and its end screen
   const [gamePlay, setGamePlay] = useState(null), [gameEnd, setGameEnd] = useState(null);
@@ -12530,8 +12480,8 @@ export default function App() {
     if (saved.mode === "ranked") { cloud().rkEnd(null, true).catch(() => {}); return; }
     const gp = profile.game || {}; setProfile({ ...profile, game: { ...gp, games: (gp.games || 0) + 1, quit: (gp.quit || 0) + 1 } });
   };
-  // once a few seconds after each start (also the first check for people who joined the world list before 1.8.0)
-  useEffect(() => { if (acct.st !== "in" || !acct.prof || !acct.prof.global) return; const t = setTimeout(() => runBoard(), 8000); return () => clearTimeout(t); }, [acct.st, acct.uid]);
+  // once a few seconds after each start
+  useEffect(() => { if (acct.st !== "in" || !acct.prof) return; const t = setTimeout(runVday, 8000); return () => clearTimeout(t); }, [acct.st, acct.uid]);
   // 1.6.2 (Michael): signing out returns the app to its very first start. Everything on this phone (workouts, profile,
   // settings, theme, calories, hints, the other account's chat/blocked lists) is cleared, so nothing from one account
   // can mix with the next. It stays in the account's cloud backup; the latest state is uploaded first, and if that
@@ -12854,7 +12804,7 @@ export default function App() {
       const save = bk => { setCloudMem({ bk }); setCloudBk(bk); };
       // 1.9.1: the first upload of a day keeps the last day's backup as a restore point first
       const today = dateKey(), snap = cloudMem().rpDay === today ? Promise.resolve() : cloud().snapshotBackup(today).then(() => setCloudMem({ rpDay: today }), () => {});
-      snap.then(() => cloud().saveBackup(json, history.length)).then(() => { lastUpKey.current = dk; lastCloud.current = key; setCloudMem({ bkHash: strHash(key) }); cloudN.current = history.length; save({ ts: Date.now(), ok: true }); runBoard(); })
+      snap.then(() => cloud().saveBackup(json, history.length)).then(() => { lastUpKey.current = dk; lastCloud.current = key; setCloudMem({ bkHash: strHash(key) }); cloudN.current = history.length; save({ ts: Date.now(), ok: true }); vdayAt.current = 0; runVday(); })
         .catch(e => save({ ts: Date.now(), ok: false, err: String((e && (e.code || e.message)) || e).slice(0, 120) }));
     }, 4000);
     return () => clearTimeout(t);
@@ -12869,7 +12819,7 @@ export default function App() {
     try { await cloud().saveBackup(json, history.length); }
     catch (e) { save({ ts: Date.now(), ok: false, err: String((e && (e.code || e.message)) || e).slice(0, 120) }); throw e; }
     lastUpKey.current = dk; lastCloud.current = key; setCloudMem({ bkHash: strHash(key) }); cloudN.current = history.length; save({ ts: Date.now(), ok: true });
-    runBoard();
+    vdayAt.current = 0; runVday();
     return "✓ " + T("acBkNowDone");
   };
   const [newsAt, setNewsAt] = useState(null);
@@ -13318,7 +13268,7 @@ export default function App() {
                 {screen === "shop" && <ShopTab history={history} profile={profile} setProfile={setProfile} onGo={go} />}
                 {screen === "game" && <GameTab history={history} profile={profile} setProfile={setProfile} acct={acct} onPlay={sv => { if (sv.mode !== "tut") gameSave(sv); setGamePlay(sv); }} />}
                 {screen === "friends" && <OpenInApp />}
-                {screen === "friends" && <FriendsTab key={"fr" + addSeq} modHidden={modHidden} setTopHead={setTopHead} acct={acct} history={history} profile={profile} social={social} chatWith={chatWith} setChatWith={setChatWith} onBlocked={setBlocked} onSignIn={signIn} onCreate={createProfile} onRename={renameNick} onSetGlobal={setGlobal} fx={friendsFx} />}
+                {screen === "friends" && <FriendsTab key={"fr" + addSeq} setTopHead={setTopHead} acct={acct} history={history} profile={profile} social={social} chatWith={chatWith} setChatWith={setChatWith} onBlocked={setBlocked} onSignIn={signIn} onCreate={createProfile} onRename={renameNick} fx={friendsFx} />}
               </div>
               {session && session.phase !== "summary" && <MiniPlayer session={session} live={live} onOpen={resume} />}
               {exitAsk && <ExitPrompt history={history} session={session} onStay={() => { sfxTap(); setExitAsk(false); }} onLeave={() => { setExitAsk(false); exitApp(); }} />}

@@ -172,10 +172,10 @@ export const impl = {
   // Stats and photo. 1.8.0: the world leaderboard entry is written by the push server from the checked cloud backup
   // (checkBoard); the app only removes it when "global" is off.
   async saveProfile(p) {
-    const me = uid(), data = { ...pick(p, PROFILE_KEYS), global: !!p.global, ts: serverTimestamp() };
+    const me = uid(), data = { ...pick(p, PROFILE_KEYS), global: false, ts: serverTimestamp() }; // 1.10.0: no world list any more
     const b = writeBatch(db);
     b.set(d("profiles", me), data);
-    if (!p.global) b.delete(d("board", me));
+    b.delete(d("board", me));
     await b.commit();
   },
   // 1.8.0: ask the push server to check the cloud backup and write (or hold back) the world entry. Resolves with its
@@ -319,14 +319,25 @@ export const impl = {
     return r.json();
   },
   rkStart(perk) { return impl.rk("rk-start", { perk }); },
+  // 1.10.0 Friends together: the server counts the checked training days (vdays/{uid}) of me or of a friend, sends a
+  // nudge, and pays the invite reward (see worker/index.js). Answers {why, …}; "recent" = counted in the last 5 min.
+  vday(to, today) { return impl.rk("vday", to ? { to, today } : { today }); },
+  nudge(to, today) { return impl.rk("nudge", { to, today }); },
+  checkInv() { return impl.rk("inv", {}); },
+  async getVdays(u) { const s = await getDoc(d("vdays", u)); if (!s.exists()) return null; const v = s.data(); return { d: v.d || [], s: v.s || {}, k: v.k || [] }; },
+  // who invited this account: written once, right after the account was made (the server checks that it is new)
+  async saveInv(by) { if (!by || by === uid()) return; await setDoc(d("inv", uid()), { by, ts: serverTimestamp() }); },
+  async getRew() { const s = await getDoc(d("rew", uid())); if (!s.exists()) return null; const v = s.data(); return { by: v.by || null, i: v.i || {} }; },
   rkEnd(moves, give) { return impl.rk("rk-end", give ? { give: true } : { moves }); },
   async myRanked() { const s = await getDoc(d("ranked", uid())); return s.exists() ? s.data() : null; },
   async rankedList(n = 50) { const s = await getDocs(query(collection(db, "ranked"), orderBy("r", "desc"), limit(n))); return s.docs.map(x => { const v = x.data(); return { uid: x.id, nick: v.nick, r: v.r, w: v.w || 0, l: v.l || 0, d: v.d || 0 }; }); },
   // 1.8.0 friend streaks: my last training days (friends read them) and the streaks (fstreak/{a_b}).
   async saveDays(list) { await setDoc(d("days", uid()), { d: list.slice(-60), ts: serverTimestamp() }); },
   async getDays(u) { const s = await getDoc(d("days", u)); return s.exists() ? s.data().d || [] : null; },
-  watchFStreaks(cb, onErr) { const me = uid(); return onSnapshot(query(collection(db, "fstreak"), where("m", "array-contains", me)), s => cb(s.docs.map(x => { const v = x.data(); return { id: x.id, other: v.m.find(u => u !== me), by: v.by, ok: v.ok === true, start: v.start || null }; })), onErr); },
-  async fsInvite(other) { const me = uid(), m = [me, other].sort(); await setDoc(d("fstreak", m.join("_")), { m, by: me, ok: false, start: null, ts: serverTimestamp() }); },
+  watchFStreaks(cb, onErr) { const me = uid(); return onSnapshot(query(collection(db, "fstreak"), where("m", "array-contains", me)), s => cb(s.docs.map(x => { const v = x.data(); return { id: x.id, other: v.m.find(u => u !== me), by: v.by, ok: v.ok === true, start: v.start || null, k: v.k === "k" ? "k" : "w", g: typeof v.g === "number" ? v.g : null }; })), onErr); },
+  async fsInvite(other, k, g) { const me = uid(), m = [me, other].sort(); await setDoc(d("fstreak", m.join("_")), { m, by: me, ok: false, start: null, ...(k === "k" ? { k } : {}), ...(g ? { g } : {}), ts: serverTimestamp() }); },
+  // 1.10.0: a running one: the weekly goal, or the kind (which starts it again from `start`)
+  async fsSet(other, ch) { await updateDoc(d("fstreak", chatId(uid(), other)), { ...ch, ts: serverTimestamp() }); },
   async fsAccept(other, start) { await updateDoc(d("fstreak", chatId(uid(), other)), { ok: true, start, ts: serverTimestamp() }); },
   async fsEnd(other) { await deleteDoc(d("fstreak", chatId(uid(), other))); },
   watchBlocks(cb, onErr) { return onSnapshot(d("blocks", uid()), s => cb(s.exists() ? { b: s.data().b || [], local: s.metadata.hasPendingWrites } : null), onErr); },
@@ -390,6 +401,7 @@ export const impl = {
     fs.docs.forEach(c => b.delete(c.ref)); // 1.8.0 friend streaks
     old.docs.forEach(c => b.delete(c.ref));
     b.delete(d("days", me));
+    ["vdays", "inv", "rew"].forEach(c => b.delete(d(c, me))); // 1.10.0 Friends together
     fr.docs.forEach(x => { b.delete(d("friends", me, "list", x.id)); b.delete(d("friends", x.id, "list", me)); });
     inbox.docs.forEach(x => b.delete(d("inbox", me, "from", x.id)));
     (p && p.sent || []).forEach(t => b.delete(d("inbox", t, "from", me)));
