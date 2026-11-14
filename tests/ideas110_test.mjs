@@ -50,4 +50,18 @@ const ids = p => p.$$eval("[data-store-plan]", e => e.map(x => x.getAttribute("d
   T.eq(h.errors, [], "no page errors (4b)");
   await h.close();
 }
+// ─── 5: grey outlines while a list loads ───
+{
+  const h = await start({ viewport: { width: 380, height: 820 }, cloud: { pub, pubDelay: 1500 }, seed: { profile: { name: "Michael" } } });
+  const p = h.page;
+  await go(p, "plans"); await p.click('[data-plans-seg="store"]'); await p.waitForTimeout(300);
+  T.ok(await p.locator("[data-store-list] [data-skel]").isVisible(), "the Library loads: grey rows");
+  T.eq(await p.getAttribute("[data-store-list] [data-skel]", "aria-busy"), "true", "marked busy for screen readers");
+  await shot(p, "ideas_skel");
+  await p.waitForTimeout(1600);
+  T.eq(await p.locator("[data-store-list] [data-skel]").count(), 0, "gone when the plans arrive");
+  T.eq((await ids(p)).length, 2, "the plans are there");
+  T.eq(h.errors, [], "no page errors (5)");
+  await h.close();
+}
 T.done();

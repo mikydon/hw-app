@@ -29,7 +29,7 @@
     checkInv: () => ok({ why: F.invWhy || "none" }),
     getCard: u => ok((F.cards || {})[u] || null),
     getPlib: u => ok((F.plib || {})[u || F.uid] || null),
-    pubList: () => ok(F.pub || []),
+    pubList: () => (F.pubDelay ? new Promise(r => setTimeout(() => r(F.pub || []), F.pubDelay)) : ok(F.pub || [])),
     pubMine: () => ok((F.pub || []).filter(x => x.o === F.uid)),
     pubSaved: (pid, copy) => ok({ why: "ok", sv: (((F.pub || []).find(x => x.pid === pid) || {}).sv || 0) + 1 }),
     pubVote: () => ok(F.vote || null),

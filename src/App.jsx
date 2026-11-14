@@ -6654,6 +6654,25 @@ function FilterBar({ q, setQ, placeholder, n, onOpen, data, autoFocus, noSearch,
 }
 // 1.10.0 (idea 4, Michael approved Nov 14: "also in other designs where it fits"): an empty list always says what to
 // do next with ONE button (clear the filters, add a workout, add a friend…)
+// 1.10.0 (idea 5): while a list loads, grey outlines of its rows instead of the word "Loading…" (the word stays for
+// screen readers). avatar = a round photo place; lines = how many text lines a row has.
+function SkelRows({ n = 3, avatar = false, lines = 2, pad = "12px 16px", gap = 0, divide = true, h }) {
+  const sk = { "--sk1": `${C.chalk}0d`, "--sk2": `${C.chalk}1f`, borderRadius: 8 };
+  return (
+    <div data-skel aria-busy="true" role="status">
+      <span style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0 0 0 0)" }}>{T("frLoading")}</span>
+      {Array.from({ length: n }, (_, i) => (
+        <div key={i} aria-hidden="true" style={{ display: "flex", alignItems: "center", gap: 12, padding: pad, marginTop: i ? gap : 0, borderTop: i && divide ? `1px solid ${C.line}` : "none", minHeight: h }}>
+          {avatar && <span className="skel" style={{ ...sk, width: 40, height: 40, borderRadius: 20, flex: "none" }} />}
+          <span style={{ flex: 1, display: "flex", flexDirection: "column", gap: 7 }}>
+            <span className="skel" style={{ ...sk, height: 13, width: `${[62, 48, 70, 55][i % 4]}%` }} />
+            {lines > 1 && <span className="skel" style={{ ...sk, height: 10, width: `${[38, 30, 44, 34][i % 4]}%` }} />}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
 function EmptyAct({ text, label, icon = "plus", onAct, data, pad = "12px 16px" }) {
   return (
     <div data-empty={data} style={{ padding: pad, display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 10 }}>
@@ -6741,7 +6760,7 @@ function PlanStore({ on, signedIn, P, history }) {
         ]} />}
       {err && <div role="alert" style={{ fontSize: 13, color: "#ff8a80", marginTop: 10 }}>{err}</div>}
       <Sect data-store-list style={{ padding: "6px 0", marginTop: 12 }}>
-        {list === null && !err ? <div style={{ padding: "10px 16px", color: C.dim, fontSize: 14 }}>{T("frLoading")}</div>
+        {list === null && !err ? <SkelRows n={4} pad={ROW_I} />
           : !shown.length ? <div data-store-none><EmptyAct data="store" text={T(list && list.length ? "plStoreNone" : "plStoreEmpty")} label={T("emClear")} icon="eraser" onAct={list && list.length && (q || nActive) ? () => { setQ(""); setGrp(null); setEq(ALL_EQ); } : null} /></div>
           : shown.slice(0, 50).map((x, i) => (
             <button key={x.pid} type="button" data-store-plan={x.pid} onClick={() => { sfxTap(); setPeek({ ...x, name: pubName(x) }); }} style={{ ...btnBase, width: "100%", display: "flex", alignItems: "center", gap: 12, padding: ROW_I, background: "transparent", color: C.chalk, textAlign: "left", borderRadius: 0, borderTop: i ? `1px solid ${C.line}` : "none" }}>
@@ -6853,7 +6872,7 @@ function OtherProfile({ p, isFriend, onBack, setTopHead }) {
               <div style={{ fontSize: 13, color: C.dim, marginTop: 3 }}><IcoI n="bolt" />{p.lvl || 1} · <IcoI n="flame" /> {p.streak || 0}</div>
             </div>
           </Sect>
-          {st.loading && <div style={{ fontSize: 13, color: C.dim, textAlign: "center", marginTop: 18 }}>{T("frLoading")}</div>}
+          {st.loading && <div style={{ marginTop: 14 }}><SkelRows n={3} avatar pad="12px 2px" /></div>}
           {st.hidden && (
             <div data-pv-hidden style={{ ...card, ...tileR(), marginTop: 12, padding: "14px 16px" }}>
               <div style={{ fontSize: 15, fontWeight: 800, color: C.chalk }}>{T("pvHidden", { nick: p.nick || "?" })}</div>
@@ -7631,7 +7650,7 @@ function FriendsMain({ acct, history, profile, social, onRename, chatWith, setCh
         );
         const boardView = (
           <Sect data-fr-view="board" title={T("frBoard")} style={{ padding: "16px 0 4px" }} titlePad="0 16px">
-            {board === null ? <div style={{ padding: "6px 16px 12px", color: C.dim, fontSize: 14 }}>{T("frLoading")}</div>
+            {board === null ? <SkelRows n={3} avatar pad="10px 16px" />
               : board.map((p, i) => <PersonRow key={p.uid} p={p} rank={i + 1} first={i === 0} me={p.uid === acct.uid} onClick={p.uid === acct.uid ? null : () => { sfxTap(); setSheet(p); }} />)}
             {friends && !friends.length && <div style={{ padding: "10px 16px 12px", color: C.dim, fontSize: 13, lineHeight: 1.5, borderTop: `1px solid ${C.line}` }}>{T("frNoFriends")}</div>}
           </Sect>
@@ -7732,7 +7751,7 @@ function FriendsMain({ acct, history, profile, social, onRename, chatWith, setCh
               chats first, unread ones marked); the photo opens the person's card (profile, remove, block). Chats with
               someone who is no longer a friend stay in the list (read-only). Hold a row with a chat to delete it for you. */}
           <Sect data-fr-list title={T("frFriends")} meta={friends ? String(friends.length) : ""} style={{ padding: "16px 0 4px" }} titlePad="0 16px">
-            {friends === null ? <div style={{ padding: "6px 16px 12px", color: C.dim, fontSize: 14 }}>{T("frLoading")}</div>
+            {friends === null ? <SkelRows n={3} avatar pad="10px 16px" />
               : !convo.length ? <div data-ch-empty><EmptyAct data="friends" pad="6px 16px 12px" text={T("frNoFriends")} label={T("frAdd")} icon="duo" onAct={() => { const el = document.querySelector("[data-fr-add]"); if (el) { try { el.scrollIntoView({ block: "center", behavior: "smooth" }); } catch (_) {} setTimeout(() => el.focus(), 350); } }} /></div>
               : convo.map(({ p, c }, i) => {
                 const u = c && unread(c), fsn = friendIds.includes(p.uid) ? fsOf(p.uid) : null;
@@ -8142,7 +8161,7 @@ function ChatView({ me, other, canWrite, onBack, onOpen, onMenu, onReport, onBlo
         onCopy={() => { copyText(menu.m.text); setMenu(null); setMsg(T("copied")); setTimeout(() => setMsg(""), 1800); }}
         onReport={() => { const m = menu.m; setMenu(null); onReport(m.text).then(r => { setMsg(r); setRepOffer(String(r).startsWith("✓")); }); }} />}
       <div data-chat-msgs className="sysEmo" style={{ display: "flex", flexDirection: "column", justifyContent: "flex-end", gap: 4, flex: 1 }}>
-        {msgs === null ? <div style={{ color: C.dim, fontSize: 14, textAlign: "center", padding: 20 }}>{T("frLoading")}</div>
+        {msgs === null ? <SkelRows n={4} lines={1} pad="10px 4px" divide={false} />
           : !msgs.length ? <div style={{ color: C.dim, fontSize: 13, textAlign: "center", padding: "24px 10px", lineHeight: 1.5 }}>{T("chStart", { nick: other.nick })}</div>
           : msgs.map(m => {
             const mine = m.from === me, day = dateKey(new Date(m.ts)), sep = day !== lastDay; lastDay = day;
@@ -10978,7 +10997,7 @@ function GameTab({ history, profile, setProfile, acct, onPlay }) {
       )}
       {signed && RANKED_ON && (
         <Sect data-gm-top title={T("gmTop")} style={{ marginTop: 12, padding: "16px 0 6px" }} titlePad="0 16px">
-          {top === null ? <div style={{ padding: "4px 16px 10px", color: C.dim, fontSize: 14 }}>{T("frLoading")}</div>
+          {top === null ? <SkelRows n={3} lines={1} pad="10px 16px" />
             : !top.length ? <div style={{ padding: "4px 16px 10px", color: C.dim, fontSize: 14 }}>{T("gmTopEmpty")}</div>
             : top.map((p, i) => (
               <div key={p.uid} data-gm-top-row={p.uid} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 16px", borderTop: i ? `1px solid ${C.line}` : "none", background: p.uid === acct.uid ? `${C.signal}14` : "transparent" }}>
@@ -13747,6 +13766,7 @@ export default function App() {
         .gmAmb{animation:gmAmb 16s ease-in-out infinite alternate;will-change:transform}@keyframes gmAmb{from{transform:translate(-4%,-3%) rotate(0)}to{transform:translate(5%,4%) rotate(8deg)}}
         .gmHint{animation:gmHint 2.2s ease-in-out infinite}@keyframes gmHint{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
         .gmMeterHit{animation:gmMeterHit .5s ${MO.spring}}@keyframes gmMeterHit{40%{transform:scale(1.07)}100%{transform:none}}
+        .skel{background:linear-gradient(90deg,var(--sk1) 0%,var(--sk2) 45%,var(--sk1) 90%);background-size:250% 100%;animation:skel 1.3s ease-in-out infinite}@keyframes skel{0%{background-position:100% 0}100%{background-position:-60% 0}}@media (prefers-reduced-motion:reduce){.skel{animation:none}}
         .gmFlash{animation:gmFlash .45s ease-out forwards;opacity:0}@keyframes gmFlash{0%{opacity:.55}100%{opacity:0}}
         .gmRise{animation:gmRise 1s ${MO.pop} forwards}@keyframes gmRise{0%{opacity:0;transform:translate(-50%,-30px) scale(.5)}35%{opacity:1;transform:translate(-50%,4px) scale(1.18)}60%{transform:translate(-50%,0) scale(1)}100%{opacity:1;transform:translate(-50%,0) scale(1)}}
         .gmBossPulse{animation:gmBossPulse 1.8s ease-in-out infinite}@keyframes gmBossPulse{50%{box-shadow:0 0 0 6px #ff6b6b22,0 0 24px #ff6b6baa}}
