@@ -1443,7 +1443,7 @@ function ExLibrary({ onPick, picked = [], exclude = [], autoFocus }) {
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>{list.map(row)}</div>
         </div>
       ))}
-      {!shown.length && <div data-lib-empty style={{ color: C.dim, fontSize: 14, padding: "8px 4px" }}>{T("exNone")}</div>}
+      {!shown.length && <div data-lib-empty><EmptyAct data="lib" pad="8px 4px" text={T("exNone")} label={T("emClear")} icon="eraser" onAct={(q || grp || eq.length < EQUIP_ORDER.length) ? () => { setQ(""); setGrp(null); setEq(EQUIP_ORDER); exEqSave(EQUIP_ORDER); } : null} /></div>}
       {hidden > 0 && <button data-lib-more onClick={() => { sfxTap(); setEq(EQUIP_ORDER); exEqSave(EQUIP_ORDER); }} style={{ ...ghostBtn, alignSelf: "flex-start" }}>{TP("exMoreEq", hidden)}</button>}
     </div>
   );
@@ -5476,7 +5476,7 @@ function HistoryTab({ history, onDelete, onSaveEntry, editDate, onEditOpened }) 
   const meta = (ic, v, col, data) => <span {...(data || {})} style={{ display: "inline-flex", alignItems: "center", gap: 4 }}><Ico n={ic} size={12.5} color={col} sw={2.3} />{v}</span>;
   const workoutList = (
           <ListSect title={T("workoutsTitle")} meta={addBtn} data-workouts style={{ marginTop: pg.wide ? 0 : 10 }}>
-            {month.length === 0 && <div data-hist-none style={{ color: C.dim, fontSize: 14, padding: "14px 16px", lineHeight: 1.45 }}>{history.length === 0 ? T("noHistory") : T("hsNoMonth")}</div>}
+            {month.length === 0 && <div data-hist-none><EmptyAct data="hist" pad="14px 16px" text={history.length === 0 ? T("noHistory") : T("hsNoMonth")} label={T("addTitle")} onAct={() => { setNewDate(null); setEditing("new"); }} /></div>}
             {month.map((idx, ri) => {
               const s = history[idx], isOpen = openIdx === idx, d = parseKey(s.date);
               const mins = s.dur ? Math.max(1, Math.round(s.dur / 60)) : 0, nPr = (s.prs && s.prs.length) || 0;
@@ -6652,6 +6652,16 @@ function FilterBar({ q, setQ, placeholder, n, onOpen, data, autoFocus, noSearch,
     </div>
   );
 }
+// 1.10.0 (idea 4, Michael approved Nov 14: "also in other designs where it fits"): an empty list always says what to
+// do next with ONE button (clear the filters, add a workout, add a friend…)
+function EmptyAct({ text, label, icon = "plus", onAct, data, pad = "12px 16px" }) {
+  return (
+    <div data-empty={data} style={{ padding: pad, display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 10 }}>
+      {text && <div style={{ color: C.dim, fontSize: 14, lineHeight: 1.5 }}>{text}</div>}
+      {onAct && <button type="button" data-empty-act={data} onClick={() => { sfxTap(); onAct(); }} style={{ ...btnBase, padding: "8px 14px", borderRadius: 99, fontSize: 14, ...SUNK(), color: C.chalk, display: "inline-flex", alignItems: "center", gap: 6 }}><Ico n={icon} size={15} color={C.signal} />{label}</button>}
+    </div>
+  );
+}
 function FilterTags({ tags }) {
   if (!tags.length) return null;
   return (
@@ -6732,7 +6742,7 @@ function PlanStore({ on, signedIn, P, history }) {
       {err && <div role="alert" style={{ fontSize: 13, color: "#ff8a80", marginTop: 10 }}>{err}</div>}
       <Sect data-store-list style={{ padding: "6px 0", marginTop: 12 }}>
         {list === null && !err ? <div style={{ padding: "10px 16px", color: C.dim, fontSize: 14 }}>{T("frLoading")}</div>
-          : !shown.length ? <div data-store-none style={{ padding: "12px 16px", color: C.dim, fontSize: 14, lineHeight: 1.5 }}>{T(list && list.length ? "plStoreNone" : "plStoreEmpty")}</div>
+          : !shown.length ? <div data-store-none><EmptyAct data="store" text={T(list && list.length ? "plStoreNone" : "plStoreEmpty")} label={T("emClear")} icon="eraser" onAct={list && list.length && (q || nActive) ? () => { setQ(""); setGrp(null); setEq(ALL_EQ); } : null} /></div>
           : shown.slice(0, 50).map((x, i) => (
             <button key={x.pid} type="button" data-store-plan={x.pid} onClick={() => { sfxTap(); setPeek({ ...x, name: pubName(x) }); }} style={{ ...btnBase, width: "100%", display: "flex", alignItems: "center", gap: 12, padding: ROW_I, background: "transparent", color: C.chalk, textAlign: "left", borderRadius: 0, borderTop: i ? `1px solid ${C.line}` : "none" }}>
               <span style={{ flex: 1, minWidth: 0 }}>
@@ -7723,7 +7733,7 @@ function FriendsMain({ acct, history, profile, social, onRename, chatWith, setCh
               someone who is no longer a friend stay in the list (read-only). Hold a row with a chat to delete it for you. */}
           <Sect data-fr-list title={T("frFriends")} meta={friends ? String(friends.length) : ""} style={{ padding: "16px 0 4px" }} titlePad="0 16px">
             {friends === null ? <div style={{ padding: "6px 16px 12px", color: C.dim, fontSize: 14 }}>{T("frLoading")}</div>
-              : !convo.length ? <div data-ch-empty style={{ padding: "6px 16px 12px", color: C.dim, fontSize: 13, lineHeight: 1.5 }}>{T("frNoFriends")}</div>
+              : !convo.length ? <div data-ch-empty><EmptyAct data="friends" pad="6px 16px 12px" text={T("frNoFriends")} label={T("frAdd")} icon="duo" onAct={() => { const el = document.querySelector("[data-fr-add]"); if (el) { try { el.scrollIntoView({ block: "center", behavior: "smooth" }); } catch (_) {} setTimeout(() => el.focus(), 350); } }} /></div>
               : convo.map(({ p, c }, i) => {
                 const u = c && unread(c), fsn = friendIds.includes(p.uid) ? fsOf(p.uid) : null;
                 // 1.8.2 (Michael): tap = the chat at once; the photo = their profile (or "private"); hold (or right-click) = the menu
@@ -10559,7 +10569,7 @@ function PlansTab({ profile, setProfile, history, open, onOpened, shared = [], o
                 <button data-plan-new onClick={newPlan} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), width: "100%", padding: 14, fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}><Ico n="plus" size={18} sw={2.6} />{T("plNew")}</button>
               </div>
             ) : <>
-              {!list.length && <div data-plans-empty style={{ color: C.dim, fontSize: 14, padding: "14px 4px" }}>{T("plEmpty")}</div>}
+              {!list.length && <div data-plans-empty><EmptyAct data="plans" pad="14px 4px" text={T("plEmpty")} label={T("emClear")} icon="eraser" onAct={grp || pq ? () => { setGrp(""); setPq(""); } : null} /></div>}
               <button data-plan-new onClick={newPlan} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), padding: 14, fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}><Ico n="plus" size={18} sw={2.6} />{T("plNew")}</button>
             </>}
           </div>

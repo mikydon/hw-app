@@ -1,6 +1,7 @@
 // Italian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    emClear: "Cancella ricerca e filtri",
     frNickReserved: "Questo nome è riservato. Provane un altro.",
     plOfficial: "Di HW App",
     plDef_a: "Total body a casa A",

@@ -1,6 +1,7 @@
 // Korean: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    emClear: "검색과 필터 지우기",
     frNickReserved: "예약된 이름이에요. 다른 이름을 써 주세요.",
     plOfficial: "HW App 공식",
     plDef_a: "홈 전신 A",

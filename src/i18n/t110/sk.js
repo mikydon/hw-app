@@ -1,6 +1,7 @@
 // Slovak: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    emClear: "Zrušiť hľadanie a filtre",
     frNickReserved: "Toto meno je vyhradené. Skús iné.",
     plOfficial: "Od HW App",
     plDef_a: "Celé telo doma A",

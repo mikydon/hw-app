@@ -789,6 +789,7 @@ const en = {
     plSortOld: "Oldest",
     plSortAZ: "A–Z",
     plSortZA: "Z–A",
+    emClear: "Clear search and filters",
     frNickReserved: "That name is reserved. Try another one.",
     plOfficial: "Made by HW App",
     plDef_a: "Home full body A",

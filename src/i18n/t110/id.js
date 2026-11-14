@@ -1,6 +1,7 @@
 // Indonesian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    emClear: "Hapus pencarian dan filter",
     frNickReserved: "Nama itu dicadangkan. Coba yang lain.",
     plOfficial: "Dari HW App",
     plDef_a: "Seluruh tubuh di rumah A",

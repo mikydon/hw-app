@@ -1,6 +1,7 @@
 // German: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    emClear: "Suche und Filter zurücksetzen",
     frNickReserved: "Dieser Name ist reserviert. Versuch einen anderen.",
     plOfficial: "Von HW App",
     plDef_a: "Ganzkörper zu Hause A",

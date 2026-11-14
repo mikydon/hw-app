@@ -1,6 +1,7 @@
 // Polish: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    emClear: "Wyczyść wyszukiwanie i filtry",
     frNickReserved: "Ta nazwa jest zastrzeżona. Spróbuj innej.",
     plOfficial: "Od HW App",
     plDef_a: "Całe ciało w domu A",

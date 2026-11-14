@@ -1,6 +1,7 @@
 // Japanese: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    emClear: "検索と絞り込みをクリア",
     frNickReserved: "この名前は予約されています。別の名前にしてください。",
     plOfficial: "HW App 公式",
     plDef_a: "自宅で全身 A",

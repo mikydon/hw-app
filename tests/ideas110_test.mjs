@@ -23,4 +23,31 @@ const ids = p => p.$$eval("[data-store-plan]", e => e.map(x => x.getAttribute("d
   T.eq(h.errors, [], "no page errors (3)");
   await h.close();
 }
+// ─── 4: an empty list says what to do with one button ───
+{
+  const h = await start({ viewport: { width: 380, height: 820 }, cloud: { pub }, seed: { profile: { name: "Michael" } } });
+  const p = h.page;
+  await go(p, "plans"); await p.click('[data-plans-seg="store"]'); await p.waitForTimeout(900);
+  await p.fill("[data-store-q]", "zzzz"); await p.waitForTimeout(300);
+  T.ok(await p.locator('[data-empty-act="store"]').isVisible(), "Library, nothing found: a clear button");
+  await p.click('[data-empty-act="store"]'); await p.waitForTimeout(300);
+  T.eq((await ids(p)).length, 2, "it clears the search");
+  T.eq(await p.inputValue("[data-store-q]"), "", "the field is empty again");
+  await go(p, "history");
+  T.ok(await p.locator('[data-empty-act="hist"]').isVisible(), "History, a month without workouts: Add a workout");
+  await p.click('[data-empty-act="hist"]'); await p.waitForSelector("[data-edit-row]", { timeout: 3000 });
+  T.ok(true, "it opens the workout editor");
+  T.eq(h.errors, [], "no page errors (4)");
+  await h.close();
+}
+{
+  const h = await start({ viewport: { width: 380, height: 820 }, cloud: {}, seed: { profile: { name: "Michael" } } });
+  const p = h.page;
+  await go(p, "friends"); await p.waitForTimeout(600);
+  T.ok(await p.locator('[data-empty-act="friends"]').isVisible(), "Friends, nobody yet: Add a friend");
+  await p.click('[data-empty-act="friends"]'); await p.waitForTimeout(700);
+  T.ok(await p.evaluate(() => document.activeElement && document.activeElement.hasAttribute("data-fr-add")), "it puts the cursor into the add field");
+  T.eq(h.errors, [], "no page errors (4b)");
+  await h.close();
+}
 T.done();

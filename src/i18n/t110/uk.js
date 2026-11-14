@@ -1,6 +1,7 @@
 // Ukrainian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    emClear: "Скинути пошук і фільтри",
     frNickReserved: "Це ім'я зарезервоване. Спробуй інше.",
     plOfficial: "Від HW App",
     plDef_a: "Усе тіло вдома A",

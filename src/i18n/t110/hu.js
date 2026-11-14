@@ -1,6 +1,7 @@
 // Hungarian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    emClear: "Keresés és szűrők törlése",
     frNickReserved: "Ez a név foglalt. Próbálj másikat.",
     plOfficial: "A HW App-tól",
     plDef_a: "Egész test otthon A",
