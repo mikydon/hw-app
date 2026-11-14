@@ -1972,7 +1972,8 @@ function useWidth(ref) {
   const [w, setW] = useState(0);
   useLayoutEffect(() => {
     const el = ref.current; if (!el) return;
-    const f = () => setW(Math.round(el.getBoundingClientRect().width));
+    // offsetWidth = the layout width: a transform running on a parent (a FLIP move, 1.10.0) doesn't change it
+    const f = () => setW(Math.round(el.offsetWidth || el.getBoundingClientRect().width));
     f();
     if (typeof ResizeObserver === "undefined") return;
     const ro = new ResizeObserver(f); ro.observe(el);
@@ -5426,17 +5427,46 @@ function HistoryTab({ history, onDelete, onSaveEntry, editDate, onEditOpened }) 
   history.forEach((e, i) => { if (e.date.startsWith(pre)) month.push(i); });
   month.reverse();
   // open: the row the user opened; undefined = nothing chosen yet (the newest of the month is open), null = all closed
-  const [open, setOpen] = useState(undefined);
-  const openIdx = open === undefined ? (month.length ? month[0] : null) : open;
+  const [open, setOpenRaw] = useState(undefined);
   const pg = usePager("hist", 2);
+  // a phone opens the month's newest workout; a wide screen starts with all closed (the overview below)
+  const openIdx = open === undefined ? (!pg.wide && month.length ? month[0] : null) : open;
+  // 1.10.0 (Michael, Nov 14: "when he opens a workout, the chart shrinks back into a square and the workouts slide out,
+  // animated, and the other way round"): on a wide screen two layouts.
+  //   overview (no workout open): calendar | stats + the month's workouts (scrolling inside, ending with the calendar),
+  //     the progress chart long across the full width under both;
+  //   detail (a workout open): calendar | stats + the chart as a square (as tall as the calendar), the workouts across
+  //     the full width under both.
+  // Switching moves both boxes to their new place with a FLIP animation (transform only, so it stays smooth).
+  const detail = pg.wide && openIdx !== null;
+  const rootRef = useRef(null), flipFrom = useRef(null);
+  const boxRects = () => { const r = rootRef.current; if (!r) return null; const g = sel => { const e = r.querySelector(sel); return e ? e.getBoundingClientRect() : null; }; return { chart: g('[data-st-card="progress"]'), list: g("[data-workouts]") }; };
+  const setOpen = v => { if (pg.wide && !reducedMotion()) flipFrom.current = boxRects(); setOpenRaw(v); };
   // 1.10.0 wide: the workout list next to the calendar ends where the calendar ends (it scrolls inside), so the long
   // progress chart under both is on screen without scrolling past a long month
-  const leftRef = useRef(null), statsRef = useRef(null), [listH, setListH] = useState(0);
+  const leftRef = useRef(null), statsRef = useRef(null), [listH, setListH] = useState(0), [chartH, setChartH] = useState(0);
   useLayoutEffect(() => {
     if (!pg.wide || !leftRef.current) return;
-    const fit = () => { const l = leftRef.current, st = statsRef.current; if (l && st) setListH(Math.max(320, Math.round(l.offsetHeight - st.offsetHeight - 10))); };
+    const fit = () => {
+      const l = leftRef.current, st = statsRef.current; if (!l || !st) return;
+      const room = Math.round(l.offsetHeight - st.offsetHeight - 10);
+      setListH(Math.max(320, room));
+      // the square chart: the card's own header and chips (card height minus the drawing) come off the room
+      const cardEl = rootRef.current && rootRef.current.querySelector('[data-st-card="progress"]'), svg = cardEl && cardEl.querySelector("[data-pc-chart]");
+      if (cardEl && svg) setChartH(Math.max(168, room - (cardEl.offsetHeight - svg.getBoundingClientRect().height)));
+    };
     fit(); const ro = new ResizeObserver(fit); ro.observe(leftRef.current); return () => ro.disconnect();
-  }, [pg.wide]);
+  }, [pg.wide, detail]);
+  useLayoutEffect(() => {
+    const from = flipFrom.current; flipFrom.current = null;
+    if (!from) return;
+    const to = boxRects(); if (!to) return;
+    ["chart", "list"].forEach(k => {
+      const a = from[k], b = to[k], el = rootRef.current.querySelector(k === "chart" ? '[data-st-card="progress"]' : "[data-workouts]");
+      if (!a || !b || !el || !el.animate) return;
+      el.animate([{ transformOrigin: "top left", transform: `translate(${a.left - b.left}px, ${a.top - b.top}px) scale(${a.width / b.width}, ${a.height / b.height})`, opacity: 0.6 }, { transformOrigin: "top left", transform: "none", opacity: 1 }], { duration: 420, easing: MO.ease });
+    });
+  }, [detail]);
   // opened from a green day in the week strip on Home: straight into that day's workout
   useEffect(() => {
     if (!editDate) return;
@@ -5530,7 +5560,7 @@ function HistoryTab({ history, onDelete, onSaveEntry, editDate, onEditOpened }) 
           </ListSect>
   );
   return (
-    <div className="scr" style={{ padding: "16px 0 124px", maxWidth: "var(--colMax)", margin: "0 auto" }}>
+    <div className="scr" ref={rootRef} style={{ padding: "16px 0 124px", maxWidth: "var(--colMax)", margin: "0 auto" }}>
       <style>{`.hsInR{animation:hsInR ${MO.t2} ${MO.ease} both}.hsInL{animation:hsInL ${MO.t2} ${MO.ease} both}@keyframes hsInR{from{opacity:0;transform:translateX(14px)}}@keyframes hsInL{from{opacity:0;transform:translateX(-14px)}}
 .hsRow{animation:hsRow ${MO.t2} ${MO.ease} both}@keyframes hsRow{from{opacity:0;transform:translateY(8px)}}
 .stDraw{stroke-dasharray:1;stroke-dashoffset:0;animation:stDraw .9s ${MO.ease} both}.stFade{animation:stFade .9s ease both}@keyframes stDraw{from{stroke-dashoffset:1}}@keyframes stFade{from{opacity:0}}
@@ -5566,14 +5596,17 @@ function HistoryTab({ history, onDelete, onSaveEntry, editDate, onEditOpened }) 
           <div ref={statsRef} data-stat-grid style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 10 }}>
             {tiles.map(([l, v, ic, ico]) => <StatTile key={l} label={l} icon={ic} icoCol={ico} value={<CountUp n={v} />} compact />)}
           </div>
-          {pg.wide ? <div data-hist-list-box style={{ maxHeight: listH || undefined, overflowY: "auto", borderRadius: 20, scrollbarWidth: "thin" }}>{workoutList}</div> : <ProgressChartM history={history} />}
+          {!pg.wide ? <ProgressChartM history={history} />
+            : detail ? <ProgressChartM history={history} h0={chartH || 168} />
+            : <div data-hist-list-box style={{ maxHeight: listH || undefined, overflowY: "auto", borderRadius: 20, scrollbarWidth: "thin" }}>{workoutList}</div>}
           {history.length === 0 && <div style={{ ...card, ...tileR(), padding: "14px 16px", color: C.dim, fontSize: 14, lineHeight: 1.45 }}>{T("noHistory")}</div>}
         </div>
       </div>
       {/* 1.10.0 (Michael, Nov 14: "make the chart longer, it has an advantage"): on a wide screen the month's workouts
           sit next to the calendar and the progress chart runs across the whole width under both, taller and with twice
           as many points */}
-      {pg.wide && <div data-hist-wide-chart style={{ padding: "0 18px" }}><ProgressChartM history={history} h0={260} max={PC_MAX * 2} /></div>}
+      {pg.wide && (detail ? <div data-hist-wide-list style={{ padding: "0 18px" }}>{workoutList}</div>
+        : <div data-hist-wide-chart style={{ padding: "0 18px" }}><ProgressChartM history={history} h0={260} max={PC_MAX * 2} /></div>)}
     </div>
   );
 }
