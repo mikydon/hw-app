@@ -43,13 +43,13 @@ T.eq(await p.getAttribute('[data-home-tab="0"]', "aria-selected"), "true", "Home
 // Friends: swipe with a finger
 await p.click("[data-menu-btn]"); await p.click('[data-screen="friends"]');
 await p.waitForSelector("[data-fr-pager]", { timeout: 8000 });
-T.ok(await p.locator('[data-fr-view="friends"]').count() === 1 && await p.locator('[data-fr-view="board"]').count() === 1, "Friends: both views are pages");
+T.ok(await p.locator('[data-fr-view="friends"]').count() === 1 && await p.locator('[data-fr-view="together"]').count() === 1, "Friends: both views are pages");
 const fb = await p.locator("[data-ftabs=fr] [role=tablist]").boundingBox();
 T.ok(fb.height <= 58 && fb.width <= 170, `Friends: small bar (${Math.round(fb.width)}×${Math.round(fb.height)})`);
 T.ok(await p.locator("[data-ftabs=fr] [data-ftabs-label]").count() === 2, "Friends: tiny names under the icons");
 await shot(p, "swipe_friends");
 await swipe("[data-fr-pager]", -300);
-T.eq(await p.getAttribute('[data-seg="board"]', "aria-selected"), "true", "Friends: a swipe opens the leaderboard");
+T.eq(await p.getAttribute('[data-seg="together"]', "aria-selected"), "true", "Friends: a swipe opens Together");
 T.ok(await knobX("fr") > 20, "Friends: the pill moved to the second tab");
 checkGlide(await glide("fr", 0), "Friends");
 T.eq(await p.getAttribute('[data-seg="friends"]', "aria-selected"), "true", "Friends: tap back to friends");
