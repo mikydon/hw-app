@@ -5218,7 +5218,7 @@ const MonthCalendarM = memo(MonthCalendar);
 const ProgressChartM = memo(props => <ProgressChart {...props} />);
 // Best set per workout of one exercise, the newest 30: a smooth line that draws itself, a tap picks a workout.
 const PC_MAX = 30;
-function ProgressChart({ history, h0 }) {
+function ProgressChart({ history, h0, max = PC_MAX }) {
   const used = {};
   history.forEach((e, i) => e.items.forEach(it => { if (EX[it.id]) used[it.id] = (used[it.id] || 0) + 1 + i / 1e4; }));
   const withData = Object.keys(used).sort((a, b) => used[b] - used[a]);
@@ -5232,7 +5232,7 @@ function ProgressChart({ history, h0 }) {
     if (!it) return null;
     const v = itemTop(it);
     return isFinite(v) ? { date: e.date, v: Math.round(v * 10) / 10 } : null;
-  }).filter(Boolean).slice(-PC_MAX);
+  }).filter(Boolean).slice(-max);
   const vals = pts.map(p => p.v), at = rankAt(sel) || [];
   const best = Math.max(...vals, 0), nextAt = at.find(v => v > best), ri = nextAt ? at.indexOf(nextAt) + 1 : -1;
   const top = Math.max(5, best * 1.12, nextAt && nextAt <= best * 1.6 ? nextAt * 1.06 : 0);
@@ -5429,20 +5429,13 @@ function HistoryTab({ history, onDelete, onSaveEntry, editDate, onEditOpened }) 
   const [open, setOpen] = useState(undefined);
   const openIdx = open === undefined ? (month.length ? month[0] : null) : open;
   const pg = usePager("hist", 2);
-  const rightRef = useRef(null), [chartH, setChartH] = useState(168);
+  // 1.10.0 wide: the workout list next to the calendar ends where the calendar ends (it scrolls inside), so the long
+  // progress chart under both is on screen without scrolling past a long month
+  const leftRef = useRef(null), statsRef = useRef(null), [listH, setListH] = useState(0);
   useLayoutEffect(() => {
-    if (!pg.wide) return;
-    const fit = () => {
-      const r = rightRef.current; if (!r) return;
-      const left = r.parentNode && r.parentNode.firstElementChild, cardEl = r.querySelector('[data-st-card="progress"]'), stats = r.querySelector("[data-stat-grid]");
-      if (!left || !cardEl || !stats) return;
-      const leftH = [...left.children].reduce((a, c) => a + c.offsetHeight + (parseFloat(getComputedStyle(c).marginTop) || 0), 0);
-      setChartH(h => Math.max(168, Math.min(560, Math.round(leftH - stats.offsetHeight - 10 - (cardEl.offsetHeight - h)))));
-    };
-    fit();
-    const ro = new ResizeObserver(fit);
-    if (rightRef.current && rightRef.current.parentNode) ro.observe(rightRef.current.parentNode.firstElementChild);
-    return () => ro.disconnect();
+    if (!pg.wide || !leftRef.current) return;
+    const fit = () => { const l = leftRef.current, st = statsRef.current; if (l && st) setListH(Math.max(320, Math.round(l.offsetHeight - st.offsetHeight - 10))); };
+    fit(); const ro = new ResizeObserver(fit); ro.observe(leftRef.current); return () => ro.disconnect();
   }, [pg.wide]);
   // opened from a green day in the week strip on Home: straight into that day's workout
   useEffect(() => {
@@ -5552,6 +5545,7 @@ function HistoryTab({ history, onDelete, onSaveEntry, editDate, onEditOpened }) 
       <div style={{ padding: "0 18px" }}>{pg.tabs([[T("kcTabCal"), "calendar"], [T("progress"), "trend"]])}</div>
       <div {...pg.pagerProps}>
         <div {...pg.pageProps(0)}>
+          <div ref={leftRef}>
           <MonthCalendarM history={history} ym={ym} setYm={setMonth} sel={sel} onPick={pick} />
           {/* a picked day without a workout: what happened, and a way to add one */}
           {sel && !selHas && (
@@ -5565,19 +5559,21 @@ function HistoryTab({ history, onDelete, onSaveEntry, editDate, onEditOpened }) 
               <button data-day-add onClick={() => { sfxTap(); setNewDate(sel); setEditing("new"); }} style={{ ...btnBase, padding: "10px 14px", fontSize: 14, background: `${C.sky}22`, color: C.sky, display: "inline-flex", alignItems: "center", gap: 6, flexShrink: 0 }}><Ico n="plus" size={15} sw={2.6} />{T("hsAdd")}</button>
             </div>
           )}
+          </div>
           {!pg.wide && workoutList}
         </div>
-        <div {...pg.pageProps(1)} ref={el => { pg.pageProps(1).ref(el); rightRef.current = el; }}>
-          <div data-stat-grid style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 10 }}>
+        <div {...pg.pageProps(1)}>
+          <div ref={statsRef} data-stat-grid style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 10 }}>
             {tiles.map(([l, v, ic, ico]) => <StatTile key={l} label={l} icon={ic} icoCol={ico} value={<CountUp n={v} />} compact />)}
           </div>
-          <ProgressChartM history={history} h0={pg.wide ? chartH : 0} />
+          {pg.wide ? <div data-hist-list-box style={{ maxHeight: listH || undefined, overflowY: "auto", borderRadius: 20, scrollbarWidth: "thin" }}>{workoutList}</div> : <ProgressChartM history={history} />}
           {history.length === 0 && <div style={{ ...card, ...tileR(), padding: "14px 16px", color: C.dim, fontSize: 14, lineHeight: 1.45 }}>{T("noHistory")}</div>}
         </div>
       </div>
-      {/* 1.10.0 (Michael's sketch, Nov 14): on a wide screen the calendar and the progress chart end at the same line
-          (the chart grows to fill), and the month's workouts run across the whole width under both */}
-      {pg.wide && <div data-hist-wide-list style={{ padding: "0 18px" }}>{workoutList}</div>}
+      {/* 1.10.0 (Michael, Nov 14: "make the chart longer, it has an advantage"): on a wide screen the month's workouts
+          sit next to the calendar and the progress chart runs across the whole width under both, taller and with twice
+          as many points */}
+      {pg.wide && <div data-hist-wide-chart style={{ padding: "0 18px" }}><ProgressChartM history={history} h0={260} max={PC_MAX * 2} /></div>}
     </div>
   );
 }
