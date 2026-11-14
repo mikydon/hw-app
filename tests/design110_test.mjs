@@ -35,10 +35,10 @@ const kcal = { sex: "m", height: 180, weight: 78, activity: 1.375, goal: { type:
   await p.click('[data-plans-seg="mine"]'); await p.waitForTimeout(700);
   T.ok(await p.locator("[data-week-compact]").isVisible(), "no plans: the week is one compact row");
   T.eq(await p.locator("[data-week-row]").count(), 7, "with the seven days");
-  T.eq(await p.locator("[data-plan-grp], [data-plan-sort], [data-plan-newgrp]").count(), 0, "no group or sort chips before the first plan");
+  T.eq(await p.locator("[data-plans-filter], [data-plan-sort]").count(), 0, "no search, filter or order before the first plan");
   T.ok(await p.locator("[data-plans-empty] [data-plan-new]").isVisible(), "the empty card holds the New plan button");
   await p.click("[data-plan-new]"); await p.waitForTimeout(500); await p.click("[data-plan-back]"); await p.waitForTimeout(500);
-  T.ok(await p.locator("[data-plan-sort]").isVisible(), "with a plan the sort chip is back");
+  T.ok(await p.locator("[data-plans-filter]").isVisible() && await p.locator("[data-plan-sort]").isVisible(), "with a plan the filter button and the order are there");
   T.eq(h.errors, [], "no page errors (plans)");
   await h.close();
 }

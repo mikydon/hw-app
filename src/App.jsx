@@ -1400,7 +1400,8 @@ function ExLibrary({ onPick, picked = [], exclude = [], autoFocus }) {
   const hidden = found.filter(m => !eq.includes(LIB[m.id].eq) && (!grp || LIB[m.id].g === grp)).length;
   const order = id => GROUPS_ORDER.indexOf(LIB[id].g) * 1000 + EQUIP_ORDER.indexOf(LIB[id].eq) * 100 + ({ easy: 0, mid: 1, hard: 2 }[LIB[id].d] || 1);
   shown.sort((a, b) => order(a.id) - order(b.id) || EX[a.id].name.localeCompare(EX[b.id].name, LANG));
-  const toggleEq = k => { sfxTap(); const v = eq.includes(k) ? eq.filter(x => x !== k) : EQUIP_ORDER.filter(x => x === k || eq.includes(x)); const nv = v.length ? v : [k]; setEq(nv); exEqSave(nv); };
+  const toggleEq = k => { const v = eq.includes(k) ? eq.filter(x => x !== k) : EQUIP_ORDER.filter(x => x === k || eq.includes(x)); const nv = v.length ? v : [k]; setEq(nv); exEqSave(nv); };
+  const [fOpen, setFOpen] = useState(false);
   const chipS = on => ({ ...btnBase, padding: "6px 12px", fontSize: 13, borderRadius: 99, whiteSpace: "nowrap", flexShrink: 0, ...(on ? { background: `${C.signal}22`, border: `1px solid ${C.signal}66`, color: C.signal } : { ...SUNK(), color: C.dim }) });
   const row = m => {
     const id = m.id, on = picked.includes(id);
@@ -1418,19 +1419,14 @@ function ExLibrary({ onPick, picked = [], exclude = [], autoFocus }) {
   const groups = nq ? [[null, shown]] : GROUPS_ORDER.map(g => [g, shown.filter(m => LIB[m.id].g === g)]).filter(x => x[1].length);
   return (
     <div data-exlib style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-      <div style={{ position: "relative" }}>
-        <Ico n="search" size={18} color={C.dim} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
-        <input data-lib-search value={q} autoFocus={autoFocus} onChange={e => setQ(e.target.value)} placeholder={T("exSearch")} aria-label={T("exSearch")}
-          style={{ fontFamily: BODY, fontSize: 16, fontWeight: 600, padding: "12px 38px 12px 38px", borderRadius: 12, border: `1.5px solid ${C.line}`, background: C.ink, color: C.chalk, outline: "none", boxSizing: "border-box", width: "100%" }} />
-        {q && <button data-lib-clear aria-label={T("close")} onClick={() => setQ("")} style={{ ...btnBase, position: "absolute", right: 6, top: "50%", transform: "translateY(-50%)", background: "transparent", color: C.dim, padding: "6px 8px", fontSize: 14 }}>✕</button>}
-      </div>
-      <div role="group" aria-label={T("eqHint")} style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-        {EQUIP_ORDER.map(k => <button key={k} data-lib-eq={k} aria-pressed={eq.includes(k)} onClick={() => toggleEq(k)} style={chipS(eq.includes(k))}>{T("eq_" + k)}</button>)}
-      </div>
-      <div className="noBar" style={{ display: "flex", gap: 6, overflowX: "auto", margin: "0 -2px", padding: "0 2px 2px" }}>
-        <button data-lib-grp="" aria-pressed={!grp} onClick={() => { sfxTap(); setGrp(null); }} style={chipS(!grp)}>{T("eqAll")}</button>
-        {GROUPS_ORDER.map(g => <button key={g} data-lib-grp={g} aria-pressed={grp === g} onClick={() => { sfxTap(); setGrp(grp === g ? null : g); }} style={chipS(grp === g)}>{T("bg_" + g)}</button>)}
-      </div>
+      <FilterBar data="lib" qData="data-lib-search" q={q} setQ={setQ} placeholder={T("exSearch")} autoFocus={autoFocus} n={(grp ? 1 : 0) + (eq.length < EQUIP_ORDER.length ? 1 : 0)} onOpen={() => setFOpen(true)} />
+      <FilterTags tags={[eq.length < EQUIP_ORDER.length && [eq.map(k => T("eq_" + k)).join(" · "), () => { setEq(EQUIP_ORDER); exEqSave(EQUIP_ORDER); }, { "data-lib-tag": "eq" }], grp && [T("bg_" + grp), () => setGrp(null), { "data-lib-tag": "grp" }]].filter(Boolean)} />
+      {fOpen && <FilterSheet data="lib" onClose={() => setFOpen(false)} show={T("plStoreShow", { n: nf(shown.length) })}
+        resetOff={!grp && eq.length === EQUIP_ORDER.length} onReset={() => { setGrp(null); setEq(EQUIP_ORDER); exEqSave(EQUIP_ORDER); }}
+        sections={[
+          [T("eqHint"), EQUIP_ORDER.map(k => [T("eq_" + k), eq.includes(k), () => toggleEq(k), { "data-lib-eq": k }])],
+          [T("plStoreFocus"), [[T("eqAll"), !grp, () => setGrp(null), { "data-lib-grp": "" }], ...GROUPS_ORDER.map(g => [T("bg_" + g), grp === g, () => setGrp(grp === g ? null : g), { "data-lib-grp": g }])]],
+        ]} />}
       {groups.map(([g, list]) => (
         <div key={g || "all"} data-lib-group={g || ""}>
           {g && <div style={{ ...sectionTitle, margin: "8px 4px 8px" }}>{T("bg_" + g)}</div>}
@@ -1972,8 +1968,7 @@ function useWidth(ref) {
   const [w, setW] = useState(0);
   useLayoutEffect(() => {
     const el = ref.current; if (!el) return;
-    // offsetWidth = the layout width: a transform running on a parent (a FLIP move, 1.10.0) doesn't change it
-    const f = () => setW(Math.round(el.offsetWidth || el.getBoundingClientRect().width));
+    const f = () => setW(Math.round(el.getBoundingClientRect().width));
     f();
     if (typeof ResizeObserver === "undefined") return;
     const ro = new ResizeObserver(f); ro.observe(el);
@@ -5427,46 +5422,17 @@ function HistoryTab({ history, onDelete, onSaveEntry, editDate, onEditOpened }) 
   history.forEach((e, i) => { if (e.date.startsWith(pre)) month.push(i); });
   month.reverse();
   // open: the row the user opened; undefined = nothing chosen yet (the newest of the month is open), null = all closed
-  const [open, setOpenRaw] = useState(undefined);
+  const [open, setOpen] = useState(undefined);
+  const openIdx = open === undefined ? (month.length ? month[0] : null) : open;
   const pg = usePager("hist", 2);
-  // a phone opens the month's newest workout; a wide screen starts with all closed (the overview below)
-  const openIdx = open === undefined ? (!pg.wide && month.length ? month[0] : null) : open;
-  // 1.10.0 (Michael, Nov 14: "when he opens a workout, the chart shrinks back into a square and the workouts slide out,
-  // animated, and the other way round"): on a wide screen two layouts.
-  //   overview (no workout open): calendar | stats + the month's workouts (scrolling inside, ending with the calendar),
-  //     the progress chart long across the full width under both;
-  //   detail (a workout open): calendar | stats + the chart as a square (as tall as the calendar), the workouts across
-  //     the full width under both.
-  // Switching moves both boxes to their new place with a FLIP animation (transform only, so it stays smooth).
-  const detail = pg.wide && openIdx !== null;
-  const rootRef = useRef(null), flipFrom = useRef(null);
-  const boxRects = () => { const r = rootRef.current; if (!r) return null; const g = sel => { const e = r.querySelector(sel); return e ? e.getBoundingClientRect() : null; }; return { chart: g('[data-st-card="progress"]'), list: g("[data-workouts]") }; };
-  const setOpen = v => { if (pg.wide && !reducedMotion()) flipFrom.current = boxRects(); setOpenRaw(v); };
   // 1.10.0 wide: the workout list next to the calendar ends where the calendar ends (it scrolls inside), so the long
   // progress chart under both is on screen without scrolling past a long month
-  const leftRef = useRef(null), statsRef = useRef(null), [listH, setListH] = useState(0), [chartH, setChartH] = useState(0);
+  const leftRef = useRef(null), statsRef = useRef(null), [listH, setListH] = useState(0);
   useLayoutEffect(() => {
     if (!pg.wide || !leftRef.current) return;
-    const fit = () => {
-      const l = leftRef.current, st = statsRef.current; if (!l || !st) return;
-      const room = Math.round(l.offsetHeight - st.offsetHeight - 10);
-      setListH(Math.max(320, room));
-      // the square chart: the card's own header and chips (card height minus the drawing) come off the room
-      const cardEl = rootRef.current && rootRef.current.querySelector('[data-st-card="progress"]'), svg = cardEl && cardEl.querySelector("[data-pc-chart]");
-      if (cardEl && svg) setChartH(Math.max(168, room - (cardEl.offsetHeight - svg.getBoundingClientRect().height)));
-    };
+    const fit = () => { const l = leftRef.current, st = statsRef.current; if (l && st) setListH(Math.max(320, Math.round(l.offsetHeight - st.offsetHeight - 10))); };
     fit(); const ro = new ResizeObserver(fit); ro.observe(leftRef.current); return () => ro.disconnect();
-  }, [pg.wide, detail]);
-  useLayoutEffect(() => {
-    const from = flipFrom.current; flipFrom.current = null;
-    if (!from) return;
-    const to = boxRects(); if (!to) return;
-    ["chart", "list"].forEach(k => {
-      const a = from[k], b = to[k], el = rootRef.current.querySelector(k === "chart" ? '[data-st-card="progress"]' : "[data-workouts]");
-      if (!a || !b || !el || !el.animate) return;
-      el.animate([{ transformOrigin: "top left", transform: `translate(${a.left - b.left}px, ${a.top - b.top}px) scale(${a.width / b.width}, ${a.height / b.height})`, opacity: 0.6 }, { transformOrigin: "top left", transform: "none", opacity: 1 }], { duration: 420, easing: MO.ease });
-    });
-  }, [detail]);
+  }, [pg.wide]);
   // opened from a green day in the week strip on Home: straight into that day's workout
   useEffect(() => {
     if (!editDate) return;
@@ -5560,7 +5526,7 @@ function HistoryTab({ history, onDelete, onSaveEntry, editDate, onEditOpened }) 
           </ListSect>
   );
   return (
-    <div className="scr" ref={rootRef} style={{ padding: "16px 0 124px", maxWidth: "var(--colMax)", margin: "0 auto" }}>
+    <div className="scr" style={{ padding: "16px 0 124px", maxWidth: "var(--colMax)", margin: "0 auto" }}>
       <style>{`.hsInR{animation:hsInR ${MO.t2} ${MO.ease} both}.hsInL{animation:hsInL ${MO.t2} ${MO.ease} both}@keyframes hsInR{from{opacity:0;transform:translateX(14px)}}@keyframes hsInL{from{opacity:0;transform:translateX(-14px)}}
 .hsRow{animation:hsRow ${MO.t2} ${MO.ease} both}@keyframes hsRow{from{opacity:0;transform:translateY(8px)}}
 .stDraw{stroke-dasharray:1;stroke-dashoffset:0;animation:stDraw .9s ${MO.ease} both}.stFade{animation:stFade .9s ease both}@keyframes stDraw{from{stroke-dashoffset:1}}@keyframes stFade{from{opacity:0}}
@@ -5596,17 +5562,14 @@ function HistoryTab({ history, onDelete, onSaveEntry, editDate, onEditOpened }) 
           <div ref={statsRef} data-stat-grid style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 10 }}>
             {tiles.map(([l, v, ic, ico]) => <StatTile key={l} label={l} icon={ic} icoCol={ico} value={<CountUp n={v} />} compact />)}
           </div>
-          {!pg.wide ? <ProgressChartM history={history} />
-            : detail ? <ProgressChartM history={history} h0={chartH || 168} />
-            : <div data-hist-list-box style={{ maxHeight: listH || undefined, overflowY: "auto", borderRadius: 20, scrollbarWidth: "thin" }}>{workoutList}</div>}
+          {pg.wide ? <div data-hist-list-box style={{ maxHeight: listH || undefined, overflowY: "auto", borderRadius: 20, scrollbarWidth: "thin" }}>{workoutList}</div> : <ProgressChartM history={history} />}
           {history.length === 0 && <div style={{ ...card, ...tileR(), padding: "14px 16px", color: C.dim, fontSize: 14, lineHeight: 1.45 }}>{T("noHistory")}</div>}
         </div>
       </div>
       {/* 1.10.0 (Michael, Nov 14: "make the chart longer, it has an advantage"): on a wide screen the month's workouts
           sit next to the calendar and the progress chart runs across the whole width under both, taller and with twice
           as many points */}
-      {pg.wide && (detail ? <div data-hist-wide-list style={{ padding: "0 18px" }}>{workoutList}</div>
-        : <div data-hist-wide-chart style={{ padding: "0 18px" }}><ProgressChartM history={history} h0={260} max={PC_MAX * 2} /></div>)}
+      {pg.wide && <div data-hist-wide-chart style={{ padding: "0 18px" }}><ProgressChartM history={history} h0={260} max={PC_MAX * 2} /></div>}
     </div>
   );
 }
@@ -6657,6 +6620,60 @@ function ProfilePlans({ plans, own, onOpen, onMore }) {
     </Sect>
   );
 }
+// 1.10.0 ONE way to filter a list (Michael, Nov 14: "a filter like apps have, the same everywhere there is a filter";
+// "all those buttons look messy"): a search field and a filter button with the number of active filters; the
+// filters live in a sheet (FilterSheet: sections of pills, Reset, "Show N"); active filters show as removable chips
+// (FilterTags). Used by the Library, the exercise list and My plans.
+function FilterBar({ q, setQ, placeholder, n, onOpen, data, autoFocus, noSearch, children, qData }) {
+  return (
+    <div style={{ display: "flex", gap: 8 }}>
+      {noSearch ? <div style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center" }}>{children}</div> : (
+        <div style={{ position: "relative", flex: 1, minWidth: 0 }}>
+          <Ico n="search" size={18} color={C.dim} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
+          <input {...{ [qData || `data-${data}-q`]: true }} value={q} autoFocus={autoFocus} onChange={e => setQ(e.target.value)} placeholder={placeholder} aria-label={placeholder} style={{ ...pwField(), width: "100%", paddingLeft: 38, paddingRight: q ? 38 : undefined }} />
+          {q && <button type="button" {...{ [`data-${data}-clear`]: true }} aria-label={T("close")} onClick={() => setQ("")} style={{ ...btnBase, position: "absolute", right: 6, top: "50%", transform: "translateY(-50%)", background: "transparent", color: C.dim, padding: 6, display: "flex" }}><Ico n="x" size={16} /></button>}
+        </div>
+      )}
+      <button type="button" {...{ [`data-${data}-filter`]: n }} aria-label={T("plStoreFilter")} onClick={() => { sfxTap(); onOpen(); }} style={{ ...pwField(), ...btnBase, position: "relative", width: 50, minHeight: 46, padding: 0, flexShrink: 0, color: n ? C.signal : C.chalk, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <Ico n="sliders" size={20} />
+        {n > 0 && <span style={{ position: "absolute", top: 6, right: 6, minWidth: 16, height: 16, borderRadius: 99, background: C.signal, color: C.signalInk, fontSize: 10, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center" }}>{n}</span>}
+      </button>
+    </div>
+  );
+}
+function FilterTags({ tags }) {
+  if (!tags.length) return null;
+  return (
+    <div data-flt-tags style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 10 }}>
+      {tags.map(([label, onX, attrs]) => (
+        <span key={label} {...(attrs || {})} style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "5px 6px 5px 11px", borderRadius: 99, background: `${C.signal}1f`, color: C.signal, fontSize: 13, fontWeight: 700 }}>{label}
+          <button type="button" aria-label={T("close")} onClick={() => { sfxTap(); onX(); }} style={{ ...btnBase, background: "transparent", color: C.signal, padding: 2, display: "flex" }}><Ico n="x" size={14} /></button>
+        </span>
+      ))}
+    </div>
+  );
+}
+// sections: [[title, [[label, on, onClick, attrs]], extra?]]
+function FilterSheet({ title, sections, onReset, resetOff, show, onClose, data }) {
+  const pill = ([label, on, onClick, attrs], i) => <button key={i} type="button" {...(attrs || {})} aria-pressed={on} onClick={() => { sfxTap(); onClick(); }} style={{ ...btnBase, padding: "9px 14px", fontSize: 14, borderRadius: 12, ...(on ? { background: C.chalk, color: C.ink } : { ...SUNK(), color: C.chalk, fontWeight: 600 }) }}>{label}</button>;
+  return (
+    <Sheet title={title || T("plStoreFilter")} onClose={onClose}>
+      <div {...{ [`data-${data}-sheet`]: true }}>
+        {sections.filter(Boolean).map(([t, items, extra], i) => (
+          <div key={i}>
+            <div style={{ ...sectionTitle, margin: `${i ? 18 : 2}px 2px 8px` }}>{t}</div>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>{items.map(pill)}</div>
+            {extra}
+          </div>
+        ))}
+        <div style={{ display: "flex", gap: 8, marginTop: 22 }}>
+          {onReset && <button type="button" {...{ [`data-${data}-reset`]: true }} disabled={resetOff} onClick={() => { sfxTap(); onReset(); }} style={{ ...btnBase, padding: "14px 18px", borderRadius: 14, ...SUNK(), color: C.chalk, fontSize: 15, opacity: resetOff ? 0.5 : 1 }}>{T("plStoreReset")}</button>}
+          <button type="button" {...{ [`data-${data}-show`]: true }} onClick={() => { sfxTap(); onClose(); }} style={{ ...btnBase, flex: 1, padding: "14px", borderRadius: 14, background: C.signal, color: C.signalInk, fontSize: 15 }}>{show}</button>
+        </div>
+      </div>
+    </Sheet>
+  );
+}
 // 1.10.0 plan store (Michael, Nov 14: "a workout plan store where people search plans by name, owner, focus, stars";
 // "also how many people saved it"). One load of the most saved and the newest plans; search (name, author, exercise
 // names), focus, equipment and the order run on the phone. Saves and stars are counted by the server.
@@ -6678,51 +6695,25 @@ function PlanStore({ on, signedIn, P, history }) {
   // 1.10.0 (Michael, Nov 14: "a filter system like apps have; all those buttons look messy"): search + one filter
   // button (a count of active filters on it); the filters and the order live in a sheet; active filters show as
   // small removable chips; the order is a quiet line above the list
-  const toggleEq = k => { sfxTap(); setEq(v => { const n = v.includes(k) ? v.filter(x => x !== k) : EQUIP_ORDER.filter(x => x === k || v.includes(x)); return n.length ? n : [k]; }); };
+  const toggleEq = k => setEq(v => { const n = v.includes(k) ? v.filter(x => x !== k) : EQUIP_ORDER.filter(x => x === k || v.includes(x)); return n.length ? n : [k]; });
   const ALL_EQ = ["none", "free", "machine"], eqOn = eq.length < ALL_EQ.length;
   const nActive = (grp ? 1 : 0) + (eqOn ? 1 : 0);
   const SORTS = [["sv", T("plStoreTop")], ["avg", T("plStoreStars")], ["ts", T("plStoreNew")]];
-  const pill = (on, onClick, label, data) => <button key={label} type="button" {...data} aria-pressed={on} onClick={onClick} style={{ ...btnBase, padding: "9px 14px", fontSize: 14, borderRadius: 12, ...(on ? { background: C.chalk, color: C.ink } : { ...SUNK(), color: C.chalk, fontWeight: 600 }) }}>{label}</button>;
-  const tag = (label, onX, data) => <span key={label} {...data} style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "5px 6px 5px 11px", borderRadius: 99, background: `${C.signal}1f`, color: C.signal, fontSize: 13, fontWeight: 700 }}>{label}<button type="button" aria-label={T("close")} onClick={() => { sfxTap(); onX(); }} style={{ ...btnBase, background: "transparent", color: C.signal, padding: 2, display: "flex" }}><Ico n="x" size={14} /></button></span>;
   return (
     <div data-store>
-      <div style={{ display: "flex", gap: 8 }}>
-        <div style={{ position: "relative", flex: 1, minWidth: 0 }}>
-          <Ico n="search" size={18} color={C.dim} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
-          <input data-store-q value={q} onChange={e => setQ(e.target.value)} placeholder={T("plStoreSearch")} aria-label={T("plStoreSearch")} style={{ ...pwField(), width: "100%", paddingLeft: 38 }} />
-        </div>
-        <button type="button" data-store-filter={nActive} aria-label={T("plStoreFilter")} onClick={() => { sfxTap(); setFOpen(true); }} style={{ ...pwField(), ...btnBase, position: "relative", width: 50, padding: 0, flexShrink: 0, color: nActive ? C.signal : C.chalk, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <Ico n="sliders" size={20} />
-          {nActive > 0 && <span style={{ position: "absolute", top: 6, right: 6, minWidth: 16, height: 16, borderRadius: 99, background: C.signal, color: C.signalInk, fontSize: 10, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center" }}>{nActive}</span>}
-        </button>
-      </div>
-      {nActive > 0 && <div data-store-tags style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 10 }}>
-        {grp && tag(T("bg_" + grp), () => setGrp(null), { "data-store-tag": "grp" })}
-        {eqOn && tag(eq.map(k => T("eq_" + k)).join(" · "), () => setEq(ALL_EQ), { "data-store-tag": "eq" })}
-      </div>}
+      <FilterBar data="store" q={q} setQ={setQ} placeholder={T("plStoreSearch")} n={nActive} onOpen={() => setFOpen(true)} />
+      <FilterTags tags={[grp && [T("bg_" + grp), () => setGrp(null), { "data-store-tag": "grp" }], eqOn && [eq.map(k => T("eq_" + k)).join(" · "), () => setEq(ALL_EQ), { "data-store-tag": "eq" }]].filter(Boolean)} />
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, margin: "12px 4px 0", fontSize: 13, color: C.dim }}>
         <span data-store-count={shown.length}>{list ? T("plStoreN", { n: nf(shown.length) }) : ""}</span>
         <button type="button" data-store-sort-open onClick={() => { sfxTap(); setFOpen(true); }} style={{ ...btnBase, background: "transparent", color: C.chalk, fontSize: 13, padding: "4px 2px", display: "inline-flex", alignItems: "center", gap: 6 }}><Ico n="sort" size={15} color={C.dim} />{SORTS.find(x => x[0] === sort)[1]}</button>
       </div>
-      {fOpen && (
-        <Sheet title={T("plStoreFilter")} onClose={() => setFOpen(false)}>
-          <div data-store-sheet>
-            <div style={{ ...sectionTitle, margin: "2px 2px 8px" }}>{T("plStoreSort")}</div>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>{SORTS.map(([k, l]) => pill(sort === k, () => { sfxTap(); setSort(k); }, l, { "data-store-sort": k }))}</div>
-            <div style={{ ...sectionTitle, margin: "18px 2px 8px" }}>{T("plStoreFocus")}</div>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              {pill(!grp, () => { sfxTap(); setGrp(null); }, T("plStoreAll"), { "data-store-grp": "" })}
-              {GROUPS_ORDER.map(g => pill(grp === g, () => { sfxTap(); setGrp(grp === g ? null : g); }, T("bg_" + g), { "data-store-grp": g }))}
-            </div>
-            <div style={{ ...sectionTitle, margin: "18px 2px 8px" }}>{T("plStoreEq")}</div>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>{EQUIP_ORDER.map(k => pill(eq.includes(k), () => toggleEq(k), T("eq_" + k), { "data-store-eq": k }))}</div>
-            <div style={{ display: "flex", gap: 8, marginTop: 22 }}>
-              <button type="button" data-store-reset disabled={!nActive && sort === "sv"} onClick={() => { sfxTap(); setGrp(null); setEq(ALL_EQ); setSort("sv"); }} style={{ ...btnBase, padding: "14px 18px", borderRadius: 14, ...SUNK(), color: C.chalk, fontSize: 15, opacity: !nActive && sort === "sv" ? 0.5 : 1 }}>{T("plStoreReset")}</button>
-              <button type="button" data-store-show onClick={() => { sfxTap(); setFOpen(false); }} style={{ ...btnBase, flex: 1, padding: "14px", borderRadius: 14, background: C.signal, color: C.signalInk, fontSize: 15 }}>{T("plStoreShow", { n: nf(shown.length) })}</button>
-            </div>
-          </div>
-        </Sheet>
-      )}
+      {fOpen && <FilterSheet data="store" onClose={() => setFOpen(false)} show={T("plStoreShow", { n: nf(shown.length) })}
+        resetOff={!nActive && sort === "sv"} onReset={() => { setGrp(null); setEq(ALL_EQ); setSort("sv"); }}
+        sections={[
+          [T("plStoreSort"), SORTS.map(([k, l]) => [l, sort === k, () => setSort(k), { "data-store-sort": k }])],
+          [T("plStoreFocus"), [[T("plStoreAll"), !grp, () => setGrp(null), { "data-store-grp": "" }], ...GROUPS_ORDER.map(g => [T("bg_" + g), grp === g, () => setGrp(grp === g ? null : g), { "data-store-grp": g }])]],
+          [T("plStoreEq"), EQUIP_ORDER.map(k => [T("eq_" + k), eq.includes(k), () => toggleEq(k), { "data-store-eq": k }])],
+        ]} />}
       {err && <div role="alert" style={{ fontSize: 13, color: "#ff8a80", marginTop: 10 }}>{err}</div>}
       <Sect data-store-list style={{ padding: "6px 0", marginTop: 12 }}>
         {list === null && !err ? <div style={{ padding: "10px 16px", color: C.dim, fontSize: 14 }}>{T("frLoading")}</div>
@@ -10452,6 +10443,7 @@ function PlansTab({ profile, setProfile, history, open, onOpened, shared = [], o
   const [edit, setEdit] = useState(null); // plan id being edited
   const [grp, setGrp] = useState("");      // group filter ("" = all, "-" = no group)
   const [newGrp, setNewGrp] = useState(null), [delG, setDelG] = useState(null), [tips, setTips] = useState(false);
+  const [pq, setPq] = useState(""), [pf, setPf] = useState(false); // 1.10.0: search + filter sheet
   const profRef = useRef(profile); profRef.current = profile;
   // every change also refreshes the plans' `days` mirror for phones still on 1.9.x
   const setP = fn => { const cur = plansOfP(profRef.current), next = PLN.mirror(fn(cur), Date.now()), p = { ...profRef.current, plans: next }; profRef.current = p; setProfile(p); };
@@ -10461,7 +10453,7 @@ function PlansTab({ profile, setProfile, history, open, onOpened, shared = [], o
   const chipS = on => ({ ...btnBase, padding: "6px 12px", fontSize: 13, borderRadius: 99, whiteSpace: "nowrap", flexShrink: 0, ...(on ? { background: `${C.signal}22`, border: `1px solid ${C.signal}66`, color: C.signal } : { ...SUNK(), color: C.dim }) });
   const wd = weekdaysShort();
   const newPlan = () => { sfxTap(); let id; setP(cur => { const r = PLN.addPlan(cur); id = r.plan.id; const g = grp && grp !== "-" ? grp : null; return g ? PLN.updatePlan(r.P, id, { grp: g }) : r.P; }); setEdit(id); window.scrollTo(0, 0); };
-  const list = PLN.sortPlans(P.list.filter(p => !grp || (grp === "-" ? !p.grp : p.grp === grp)), P.sort, P.dir, planTitle);
+  const list = PLN.sortPlans(P.list.filter(p => (!grp || (grp === "-" ? !p.grp : p.grp === grp)) && (!pq || normTxt(planTitle(p)).includes(normTxt(pq)))), P.sort, P.dir, planTitle);
   return (
     <div className="scr" style={SCR_STYLE} data-plans>
       {pg.tabs([{ label: T("plRec"), icon: "star", data: "rec", attrs: { "data-plans-seg": "rec", "aria-pressed": tab === "rec" } }, { label: T("plMine"), icon: "checklist", data: "mine", attrs: { "data-plans-seg": "mine", "aria-pressed": tab === "mine" } }, { label: T("plStore"), icon: "globe", data: "store", attrs: { "data-plans-seg": "store", "aria-pressed": tab === "store" } }])}
@@ -10494,19 +10486,25 @@ function PlansTab({ profile, setProfile, history, open, onOpened, shared = [], o
         <>
           <WeekCard P={P} setP={setP} onTips={() => setTips(true)} />
           {P.list.length > 0 && <>
-          <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 18, flexWrap: "wrap" }}>
-            <div className="noBar" style={{ display: "flex", gap: 6, overflowX: "auto", flex: 1, minWidth: 0 }}>
-              <button data-plan-grp="" aria-pressed={!grp} onClick={() => { sfxTap(); setGrp(""); }} style={chipS(!grp)}>{T("plAllGroups")}</button>
-              {P.groups.map(g => <button key={g.id} data-plan-grp={g.id} aria-pressed={grp === g.id} onClick={() => { sfxTap(); setGrp(grp === g.id ? "" : g.id); }} onContextMenu={e => { e.preventDefault(); setDelG(g); }} style={chipS(grp === g.id)}>{g.name}</button>)}
-              {P.groups.length > 0 && <button data-plan-grp="-" aria-pressed={grp === "-"} onClick={() => { sfxTap(); setGrp(grp === "-" ? "" : "-"); }} style={chipS(grp === "-")}>{T("plNoGroup")}</button>}
-              <button data-plan-newgrp onClick={() => { sfxTap(); setNewGrp(""); }} aria-label={T("plNewGroup")} style={{ ...chipS(false), display: "inline-flex", alignItems: "center", gap: 4 }}><Ico n="plus" size={14} sw={2.4} />{T("plNewGroup")}</button>
+          {/* 1.10.0: the same filter as the Library: search by name + one filter button (group, order) */}
+          <div style={{ marginTop: 18 }}>
+            <FilterBar data="plans" q={pq} setQ={setPq} placeholder={T("plSearch")} n={grp ? 1 : 0} onOpen={() => setPf(true)} />
+            <FilterTags tags={[grp && [grp === "-" ? T("plNoGroup") : ((P.groups.find(g => g.id === grp) || {}).name || ""), () => setGrp(""), { "data-plan-tag": "grp" }]].filter(Boolean)} />
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, margin: "12px 4px 0", fontSize: 13, color: C.dim }}>
+              <span data-plans-count={list.length}>{T("plStoreN", { n: nf(list.length) })}</span>
+              <button type="button" data-plan-sort={P.sort} data-plan-dir={P.dir} onClick={() => { sfxTap(); setPf(true); }} style={{ ...btnBase, background: "transparent", color: C.chalk, fontSize: 13, padding: "4px 2px", display: "inline-flex", alignItems: "center", gap: 6 }}><Ico n="sort" size={15} color={C.dim} />{T(P.sort === "name" ? (P.dir === "asc" ? "plSortAZ" : "plSortZA") : (P.dir === "asc" ? "plSortOld" : "plSortNew"))}</button>
             </div>
           </div>
-          <div style={{ display: "flex", gap: 6, alignItems: "center", marginTop: 10 }}>
-            <button data-plan-sort={P.sort} onClick={() => { sfxTap(); setP(cur => ({ ...cur, sort: cur.sort === "name" ? "date" : "name" })); }} style={{ ...chipS(false), display: "inline-flex", alignItems: "center", gap: 5 }}><Ico n="sort" size={14} />{T(P.sort === "name" ? "plSortName" : "plSortDate")}</button>
-            <button data-plan-dir={P.dir} aria-label={T(P.dir === "asc" ? "plAsc" : "plDesc")} onClick={() => { sfxTap(); setP(cur => ({ ...cur, dir: cur.dir === "asc" ? "desc" : "asc" })); }} style={{ ...chipS(false), padding: "6px 10px", display: "inline-flex" }}><Ico n={P.dir === "asc" ? "arrowUp" : "arrowDown"} size={14} sw={2.4} /></button>
-            {grp && grp !== "-" && <button data-plan-delgrp onClick={() => { sfxTap(); setDelG(P.groups.find(g => g.id === grp)); }} aria-label={T("plDelGroup")} style={{ ...chipS(false), marginLeft: "auto", padding: "6px 10px", display: "inline-flex" }}><Ico n="trash" size={14} /></button>}
-          </div>
+          {pf && <FilterSheet data="plans" onClose={() => setPf(false)} show={T("plStoreShow", { n: nf(list.length) })}
+            resetOff={!grp && P.sort === "date" && P.dir === "desc"} onReset={() => { setGrp(""); setP(cur => ({ ...cur, sort: "date", dir: "desc" })); }}
+            sections={[
+              [T("plStoreSort"), [["date", "desc", "plSortNew"], ["date", "asc", "plSortOld"], ["name", "asc", "plSortAZ"], ["name", "desc", "plSortZA"]].map(([so, di, k]) => [T(k), P.sort === so && P.dir === di, () => setP(cur => ({ ...cur, sort: so, dir: di })), { "data-plan-order": so + "-" + di }])],
+              [T("plGroup"), [[T("plAllGroups"), !grp, () => setGrp(""), { "data-plan-grp": "" }], ...P.groups.map(g => [g.name, grp === g.id, () => setGrp(grp === g.id ? "" : g.id), { "data-plan-grp": g.id }]), ...(P.groups.length ? [[T("plNoGroup"), grp === "-", () => setGrp(grp === "-" ? "" : "-"), { "data-plan-grp": "-" }]] : [])],
+                <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+                  <button type="button" data-plan-newgrp onClick={() => { sfxTap(); setPf(false); setNewGrp(""); }} style={{ ...btnBase, padding: "9px 14px", fontSize: 14, borderRadius: 12, background: "transparent", border: `1.5px dashed ${C.line}`, color: C.chalk, display: "inline-flex", alignItems: "center", gap: 6 }}><Ico n="plus" size={15} />{T("plNewGroup")}</button>
+                  {grp && grp !== "-" && <button type="button" data-plan-delgrp onClick={() => { sfxTap(); setPf(false); setDelG(P.groups.find(g => g.id === grp)); }} style={{ ...btnBase, padding: "9px 14px", fontSize: 14, borderRadius: 12, background: "transparent", color: "#ff9a9a", display: "inline-flex", alignItems: "center", gap: 6 }}><Ico n="trash" size={15} />{T("plDelGroup")}</button>}
+                </div>],
+            ]} />}
           </>}
           <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 12 }}>
             {list.map(p => {

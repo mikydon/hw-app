@@ -80,15 +80,15 @@ await p.locator("[data-plan-card]").filter({ hasText: "Workout Plan 3" }).click(
 T.eq(await p.locator("[data-plan-card]").count(), 2, "deleted one");
 await p.click("[data-plan-new]"); T.eq(await p.getAttribute("[data-plan-name]", "placeholder"), "Workout Plan 4", "numbers not reused: 4"); await p.click("[data-plan-back]");
 // groups + sorting
-await p.click("[data-plan-newgrp]"); await p.fill("[data-plan-grp-input]", "Gym"); await p.click("[data-plan-grp-save]");
-T.ok(await p.locator('[data-plan-grp][aria-pressed="true"]').innerText() === "Gym", "new group selected");
+await p.click("[data-plans-filter]"); await p.waitForTimeout(400);
+await p.click("[data-plan-newgrp]"); await p.fill("[data-plan-grp-input]", "Gym"); await p.click("[data-plan-grp-save]"); await p.waitForTimeout(300);
+T.ok((await p.textContent('[data-plan-tag="grp"]')).includes("Gym"), "new group selected (shown as a filter chip)");
 T.eq(await p.locator("[data-plan-card]").count(), 0, "no plan in Gym yet");
 await p.click("[data-plan-new]"); T.ok(await p.locator('[data-plan-setgrp][aria-pressed="true"]').innerText() === "Gym", "new plan made in the group"); await p.click("[data-plan-back]");
-await p.click('[data-plan-grp=""]');
-await p.click("[data-plan-sort]");
+await p.click('[data-plan-tag="grp"] button');
+await p.click("[data-plans-filter]"); await p.waitForTimeout(400); await p.click('[data-plan-order="name-desc"]'); await p.click("[data-plans-show]"); await p.waitForTimeout(300);
 const byName = await p.locator("[data-plan-card]").allInnerTexts();
 T.ok(byName[0].includes("Workout Plan 5"), "name desc: Workout Plan 5 first");
-await p.click('[data-plan-grp=""]');
 // stored: v2, week, and the mirror for 1.9.x phones (Push day on Monday only)
 const st = await p.evaluate(() => JSON.parse(localStorage.getItem("domaci-trening-v1-profile")).plans);
 const push = st.list.find(x => x.name === "Push day"), legs = st.list.find(x => x.name === "Legs");
