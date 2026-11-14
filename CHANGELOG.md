@@ -10,6 +10,27 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 
 <!-- New version: add a "## x.y.z (date)" section on top (web-only history uses "## Browser beta x.y.z (date)"). On a push to main, .github/workflows/build.yml builds everything and .github/scripts/releases.sh creates/updates the releases (commit = the push, or the one in a commit comment). -->
 
+## 1.10.0 (2026-11-14)
+
+**A big update: a new APK** (download it in the app and tap Install; your data stays). Compared with 1.9.4:
+
+| | Before (1.9.4) | Now (1.10.0) |
+|---|---|---|
+| History | a long list of every workout, a calendar you couldn't tap and the numbers on top | the calendar leads: a green day is a workout, a dot under the number is calories; tap a day to open its workout, tap an empty day to add one (or see why it was skipped). The list shows only the month on screen, each workout as a row with its plan, time, sets and the sets as chips. A second page, Progress, holds the numbers and a smoother chart per exercise with your next rank as a dashed line |
+| Shop | one page, ten screens long | your diamonds stay on top and three pages swipe under them: Shop (chest, freezes, XP boosts, diamond codes), Looks (this week's looks) and Earned (looks you win with badges). A season pass and more ways to get diamonds are shown as "coming soon" (nothing to buy yet) |
+| Profile looks | 55 looks; fireworks could flash in one spot and jump elsewhere without bursting | 91: 7 new frames, 7 banners, 8 titles, 6 name effects and 8 effects (Rain, Soda, Hearts, Fireflies, Shooting stars, Autumn leaves, Data rain, Aura). Every firework rises as a rocket and bursts where it lands; looks in the Shop move only while you look at them |
+| Muscle Deck: new cards | 62 jokers, 7 boss blinds, 16 vouchers, 6 perks; discarding only cost you, and Two pair, Three of a kind and a Straight had no multiplier joker | 80 jokers built around new ways to play: discard on purpose (Cardio, Drop set, Water break), play single cards (Isolation, Good form), sit on your money (Investor, First try), keep slots empty (Minimalist), sell at full price (Resale), and multipliers for Two pair, Three of a kind and a Straight. 3 new boss blinds (Small gym, Entry fee, No heavy plates), 3 vouchers (Head start, Deep pockets, One more rep) and 2 perks you earn by training (Veteran: 100 workouts, Iron habit: a 30-workout streak). A game saved before the update continues as far as its moves still fit |
+| Muscle Deck shop | Next blind sat at the very end of the shop and leaving was a small ✕ on top | the shop ends with a floating bar: Save and quit and Next blind, always on screen. The flexed-arm icon was redrawn |
+| Muscle Deck on a big screen | on a computer or tablet the table was one phone-wide column with the blind stretched across | two columns: your jokers, drills and every hand's level on the left, the score and your cards (bigger) on the right |
+| Faster start | all 15 languages were loaded at every start | only your language loads: the app opens faster and uses less memory |
+| Black by default | new installs started in Navy, and the app icon was navy | new installs start in Black (true black, easy on OLED screens); your own theme stays as you set it. The app icon and the start screen are black too *(the Android icon changes with this APK)* |
+| Confetti | 70 to 90 separately animated pieces, which could make the phone stutter | drawn in one layer: the same confetti, much lighter on the phone |
+| Plans on two devices | a phone that had not yet received an edit could send a plan's old exercises back when you only moved the plan to another weekday | a plan's exercises and its weekdays sync apart: the newest exercises always win, whichever device changed the weekday. Backup files also keep a short note whenever a plan leaves your list (and what removed it), so a lost plan can be traced |
+| Restore points | Settings → Account → Restore points stayed empty | fixed on the server on November 13 (the rules for them were missing there); from then on a restore point is saved before a device's first backup of a day |
+| Support the app | a "Support the app" row (Patreon) in Settings of the APK and the website | removed everywhere: HW App is free, with nothing to pay for |
+| Guide | the History and Shop chapters showed the old screens | they walk the new pages (Progress; Shop, Looks and Earned). If you saw them before, they show once more the next time you open History or the Shop |
+| Languages | | every new text in all 15 languages (AI-assisted for most; fixes welcome, see TRANSLATING.md) |
+
 ## 1.9.4 (2026-11-11)
 
 A small update: it arrives in the app by itself, no new APK needed.
