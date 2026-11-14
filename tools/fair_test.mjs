@@ -2,6 +2,7 @@
 import { fairStats, capOf, firstOf } from "../src/fair.js";
 let pass = 0, fail = 0;
 const ok = (c, m) => { if (c) { pass++; console.log("  ✓", m); } else { fail++; console.log("  ✗ FAIL:", m); } };
+const eq = (a, b, m) => ok(JSON.stringify(a) === JSON.stringify(b), `${m} (${JSON.stringify(a)})`);
 const day = (k, n) => { const d = new Date(k + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
 const ts = k => Date.parse(k + "T10:00:00Z");
 const W = (date, res = { k1: [20, 22], row1: [12, 12] }, x = {}) => ({ id: "t" + ts(date) + (x.k || ""), date, ts: ts(date), items: Object.entries(res).map(([id, r]) => ({ id, res: r })), warm: true, ...x });
@@ -48,5 +49,18 @@ r = fairStats([W(day(today, -6)), W(day(today, -2))], { today, freezeDays: [day(
 ok(r.streak === 2, "a freeze bridges the gap");
 r = fairStats([W(day(today, -12)), W(day(today, -2))], { today, freezeDays: [day(today, -10), day(today, -8), day(today, -6), day(today, -4)] });
 ok(r.streak === 1, "at most 3 freezes in 30 days");
+// 1.10.0: workouts from plans and free workouts count like the others: weights (kg), extra exercises, exercises
+// without ranks; a long hold of an unranked exercise no longer drops the workout, a silly number still does
+{
+  const w = (date, items, extra = {}) => ({ date, ts: Date.parse(date + "T18:00:00Z"), day: null, items, dur: 1500, plan: { id: "p1", name: "Gym" }, ...extra });
+  const h = [
+    w("2026-11-01", [{ id: "fw_dumbbell_bench_press", res: [10, 9, 8], kg: [30, 30, 30] }, { id: "k1", res: [15, 14], x: 1 }]),
+    w("2026-11-03", [{ id: "zz_unranked_hold", res: ["420s", "400s"] }]),
+    w("2026-11-05", [{ id: "zz_unranked_reps", res: [9999] }]),
+  ];
+  const st = fairStats(h, { today: "2026-11-05" });
+  eq(st.dates, ["2026-11-01", "2026-11-03"], "plan + weights + extra count; a 7-minute unranked hold counts; 9999 reps don't");
+  eq(st.sets["2026-11-01"], 5, "sets of a plan workout");
+}
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

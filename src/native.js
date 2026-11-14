@@ -87,6 +87,36 @@ export async function copyText(text) {
   t.remove();
 }
 
+// ─── Share a picture (1.10.0 workout card) ─────────────────────────────────
+// App: the PNG goes to the cache and Android's share sheet (Instagram, WhatsApp…). Website: the browser's share
+// sheet with the file if it can, otherwise a download. Resolves to "shared", "saved" or "cancelled".
+export async function shareImage(b64, name, text) {
+  const cancel = e => /cancel|abort/i.test(String(e && (e.name + " " + e.message)));
+  if (isNative) {
+    const res = await Filesystem.writeFile({ path: name, data: b64, directory: Directory.Cache });
+    try { await Share.share({ title: name, text, files: [res.uri] }); return "shared"; } catch (e) { if (cancel(e)) return "cancelled"; throw e; }
+  }
+  const bin = atob(b64), u8 = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+  const blob = new Blob([u8], { type: "image/png" });
+  try {
+    const f = new File([blob], name, { type: "image/png" });
+    if (navigator.canShare && navigator.canShare({ files: [f] })) { await navigator.share({ files: [f], text }); return "shared"; }
+  } catch (e) { if (cancel(e)) return "cancelled"; }
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  return "saved";
+}
+
+// ─── Google Play in-app review (1.10.0, Play build only) ───────────────────
+// Google decides whether the card really shows (it has its own quota) and never says whether someone rated, so the
+// app asks rarely, only after real use, never with a question before it and never behind a button (Play's rules).
+const HwReview = registerPlugin("HwReview");
+export async function askReview() {
+  if (!isNative || store !== "play" || !Capacitor.isPluginAvailable("HwReview")) return "skip";
+  try { const r = await HwReview.ask(); return r && r.done ? "done" : "fail"; } catch (_) { return "fail"; }
+}
+
 // ─── Backup file ───────────────────────────────────────────────────────────
 // Website: downloads the file. App: writes it to the app cache and opens Android's share sheet
 // (save to Files / Drive, or send it). Resolves to "saved", "shared" or "cancelled".

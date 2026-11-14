@@ -1,6 +1,13 @@
 // Spanish: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    sumShare: "Compartir",
+    shareStreak: "Racha",
+    shareFoot: "Entrenamientos en casa · gratis en Google Play",
+    shareText: "Mi entrenamiento en HW App 💪 https://play.google.com/store/apps/details?id=io.github.mikydon.hwapp",
+    shareSaved: "La imagen se ha guardado.",
+    setReview: "Pedirme que valore la app",
+    setReviewD: "De vez en cuando, tras un entrenamiento, Google Play puede mostrar una pequeña tarjeta para valorar HW App. Si lo desactivas, no aparecerá nunca.",
     plShare: "Mostrar en mi perfil",
     plShareD: "Tus amigos verán este plan y podrán guardar una copia. Tus pesos siguen siendo tuyos.",
     plSharedD: "Está en tu perfil. Los cambios que hagas aquí también llegan allí.",
@@ -127,6 +134,7 @@ export default {
   news1_10: [
     ["Amigos juntos", "Amigos y una clasificación; una racha con un amigo solo contaba entrenamientos y la clasificación mundial estaba bloqueada.", "Una nueva página Juntos: invita a un amigo con tu enlace (100 💎 para cada uno tras su 3.er entrenamiento), mantened un dúo (entrenamientos o calorías), un objetivo semanal de los dos, un duelo de series y un toque para el amigo que aún no ha entrenado. Los días los cuenta el servidor, así que un dúo no se puede falsear. La clasificación es solo de tus amigos; la mundial bloqueada ya no está. Nueva insignia: Mejor juntos."],
     ["Biblioteca de planes", "Un plan solo lo veía quien lo creó.", "Muestra un plan en tu perfil: tus amigos lo abren y con un toque guardan su propia copia (ejercicios, series, tiempos, nunca tus pesos). La copia dice de quién es, y tus cambios también llegan al plan de tu perfil."],
+    ["Compartir y valorar", "No había forma de enseñar un entrenamiento.", "Compartir en el resumen del entrenamiento crea una imagen del entrenamiento (tiempo, series, repeticiones, racha, ejercicios) para Instagram, WhatsApp o donde quieras. La versión de Google Play puede pedir una valoración de vez en cuando tras entrenar; en Ajustes se puede desactivar."],
     ["Historial", "Una lista larga de todos los entrenamientos, un calendario que no se podía tocar y los números arriba.", "Manda el calendario: toca un día para abrir su entrenamiento, toca un día vacío para añadir uno. La lista sigue al mes, y una nueva página de Progreso tiene los números y un gráfico más suave."],
     ["Tienda", "Una sola página, de diez pantallas de largo.", "Tus diamantes se quedan arriba y debajo pasas tres páginas: Tienda, Estilos y Ganados. Un pase de temporada y más formas de conseguir diamantes aparecen como «próximamente»."],
     ["Muscle Deck", "En la tienda, Siguiente ciega estaba al final del todo y salir era una ✕ pequeña arriba.", "La tienda termina con una barra flotante: Guardar y salir y Siguiente ciega, siempre en pantalla. El icono del brazo flexionado se redibujó."],

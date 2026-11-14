@@ -1,6 +1,13 @@
 // Hungarian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    sumShare: "Megosztás",
+    shareStreak: "Sorozat",
+    shareFoot: "Otthoni edzések · ingyen a Google Playen",
+    shareText: "Az edzésem a HW Appban 💪 https://play.google.com/store/apps/details?id=io.github.mikydon.hwapp",
+    shareSaved: "A kép elmentve.",
+    setReview: "Kérdezzen az app értékeléséről",
+    setReviewD: "Edzés után a Google Play néha megjeleníthet egy kis kártyát a HW App értékeléséhez. Ha kikapcsolod, többé nem jön.",
     plShare: "Mutasd a profilomon",
     plShareD: "A barátaid látják ezt a tervet, és elmenthetnek egy másolatot. A súlyaid a tieid maradnak.",
     plSharedD: "A profilodon van. Az itt végzett változtatások oda is átkerülnek.",
@@ -127,6 +134,7 @@ export default {
   news1_10: [
     ["Barátok együtt", "Barátok és ranglista; a közös sorozat csak edzéseket számolt, a világranglista pedig zárolva volt.", "Új Együtt oldal: hívj meg egy barátot a linkeddel (100 💎 mindkettőtöknek a 3. edzése után), tartsatok duót (edzések vagy kalóriák), közös heti célt, sorozatpárbajt, és bökd meg azt a barátodat, aki még nem edzett. A napokat a szerver számolja, így a duót nem lehet meghamisítani. A ranglista csak a barátaidé, a zárolt világranglista eltűnt. Új jelvény: Együtt jobb."],
     ["Tervkönyvtár", "Egy tervet csak az látott, aki készítette.", "Mutass meg egy tervet a profilodon: a barátaid megnyitják, és egy koppintással elmentik a saját másolatukat (gyakorlatok, sorozatok, tartási idők, a súlyaid soha). A másolaton látszik, kitől van, és a módosításaid a profilon lévő tervbe is átkerülnek."],
+    ["Megosztás és értékelés", "Az edzést senkinek nem lehetett megmutatni.", "Az edzés összegzőjén a Megosztás képet készít az edzésről (idő, sorozatok, ismétlések, napsorozat, gyakorlatok) Instagramra, WhatsAppra vagy bárhová. A Google Play-es verzió edzés után néha értékelést kérhet; a Beállításokban ez kikapcsolható."],
     ["Előzmények", "Hosszú lista minden edzésről, egy naptár, amire nem lehetett koppintani, és felül a számok.", "Elöl a naptár: koppints egy napra, és megnyílik az edzése, koppints egy üres napra, és hozzáadhatsz egyet. A lista a kiválasztott hónapot mutatja, az új Fejlődés oldalon pedig a számok és egy simább grafikon vannak."],
     ["Bolt", "Egyetlen oldal, tíz képernyő hosszú.", "A gyémántjaid felül maradnak, alattuk három oldal lapozható: Bolt, Kinézetek és Megszerzett. A szezonbérlet és a gyémántszerzés további módjai „hamarosan” jelzéssel látszanak."],
     ["Muscle Deck", "A boltban a Következő blind a legvégén volt, a kilépés pedig egy kis ✕ felül.", "A bolt egy lebegő sávval végződik: Mentés és kilépés és Következő blind, mindig a képernyőn. A behajlított kar ikonja új rajzot kapott."],

@@ -1,6 +1,13 @@
 // Czech: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    sumShare: "Sdílet",
+    shareStreak: "Série",
+    shareFoot: "Domácí tréninky · zdarma na Google Play",
+    shareText: "Můj trénink v HW App 💪 https://play.google.com/store/apps/details?id=io.github.mikydon.hwapp",
+    shareSaved: "Obrázek se uložil.",
+    setReview: "Ptát se na hodnocení aplikace",
+    setReviewD: "Občas po tréninku může Google Play ukázat malou kartu k ohodnocení HW App. Když to vypneš, už nepřijde.",
     plShare: "Ukázat na mém profilu",
     plShareD: "Kamarádi uvidí tento plán a můžou si uložit kopii. Tvoje váhy zůstávají tvoje.",
     plSharedD: "Je na tvém profilu. Změny, které tu uděláš, se přenesou i tam.",
@@ -127,6 +134,7 @@ export default {
   news1_10: [
     ["Kamarádi spolu", "Kamarádi a žebříček; společná série počítala jen tréninky a světový žebříček byl zamčený.", "Nová stránka Spolu: pozvi kamaráda svým odkazem (100 💎 pro každého po jeho 3. tréninku), držte duo (tréninky nebo kalorie), společný týdenní cíl, souboj v sériích a šťouchnutí pro kamaráda, který ještě necvičil. Dny počítá server, takže duo nejde nafejkovat. Žebříček je jen tvých kamarádů, zamčený světový zmizel. Nový odznak: Ve dvou se to lépe táhne."],
     ["Knihovna plánů", "Plány viděl jen ten, kdo je vytvořil.", "Ukaž plán na svém profilu: kamarádi si ho otevřou a jedním ťuknutím uloží vlastní kopii (cviky, série, časy výdrže, nikdy tvoje váhy). U kopie je napsáno, od koho je, a tvoje úpravy se přenesou i do plánu na profilu."],
+    ["Sdílení a hodnocení", "Trénink nešlo nikomu ukázat.", "Sdílet na souhrnu tréninku udělá obrázek tréninku (čas, série, opakování, série dní, cviky) pro Instagram, WhatsApp nebo kamkoli. Verze z Google Play se po tréninku občas může zeptat na hodnocení; v Nastavení se to dá vypnout."],
     ["Historie", "Dlouhý seznam všech tréninků, kalendář, na který se nedalo ťuknout, a čísla nahoře.", "Hlavní je kalendář: ťukni na den a otevře se jeho trénink, ťukni na prázdný den a přidáš ho. Seznam ukazuje vybraný měsíc a nová stránka Pokrok má čísla a plynulejší graf."],
     ["Obchod", "Jedna stránka dlouhá na deset obrazovek.", "Diamanty zůstávají nahoře a pod nimi se posouvají tři stránky: Obchod, Vzhledy a Získané. Sezónní pass a další způsoby, jak získat diamanty, jsou ukázané jako „brzy“."],
     ["Muscle Deck", "V obchodě byl Další blind až úplně na konci a odchod byl malý ✕ nahoře.", "Obchod končí plovoucí lištou: Uložit a odejít a Další blind, vždy na obrazovce. Ikona zatnutého bicepsu je nakreslená znovu."],

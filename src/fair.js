@@ -20,6 +20,11 @@ const num = v => (typeof v === "number" ? v : typeof v === "string" ? parseInt(v
 const dayNo = k => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(k || "")); return m ? Date.UTC(+m[1], +m[2] - 1, +m[3]) / 864e5 : NaN; };
 export const fairEntryId = e => e.id || "t" + (e.ts || String(e.date) + (e.day || ""));
 export const capOf = id => (RANK_AT[id] ? Math.round(RANK_AT[id][7] * FAIR.capMul) : 300);
+// 1.10.0: a hold is saved as "60s"; an exercise without ranks (many of the 134 since 1.9.0, from plans and free
+// workouts) has no Obsidian number, so its holds get an hour, not the 300 meant for reps (a 6-minute hold of an
+// unranked exercise used to drop the whole workout)
+const isSecs = v => typeof v === "string" && /^\s*\d+\s*s\s*$/.test(v);
+const capFor = (id, v) => (isSecs(v) && !RANK_AT[id] ? 3600 : capOf(id));
 export const firstOf = id => (RANK_AT[id] ? RANK_AT[id][4] : 60);
 export function fairLevel(xp) { let lvl = 1, need = 100, rest = xp; while (rest >= need) { rest -= need; lvl++; need += 50; } return lvl; }
 
@@ -36,7 +41,7 @@ export function fairStats(history, { seen = {}, since = 0, freezeDays = [], toda
   const ok = [];
   for (const e of list) {
     if (e.manual) { drop.manual++; continue; }
-    if (e.items.some(it => Array.isArray(it.res) && it.res.some(v => num(v) > capOf(it.id)))) { drop.cap++; flags.add("cap"); continue; }
+    if (e.items.some(it => Array.isArray(it.res) && it.res.some(v => num(v) > capFor(it.id, v)))) { drop.cap++; flags.add("cap"); continue; }
     const s = sets(e);
     if (!s) continue;
     if (typeof e.dur === "number" && e.dur > 0 && e.dur < FAIR.fastSecs && s >= 4) { drop.fast++; flags.add("fast"); continue; }

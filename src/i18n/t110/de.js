@@ -1,6 +1,13 @@
 // German: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    sumShare: "Teilen",
+    shareStreak: "Serie",
+    shareFoot: "Training zu Hause · kostenlos bei Google Play",
+    shareText: "Mein Training in HW App 💪 https://play.google.com/store/apps/details?id=io.github.mikydon.hwapp",
+    shareSaved: "Das Bild wurde gespeichert.",
+    setReview: "Nach einer Bewertung fragen",
+    setReviewD: "Ab und zu nach einem Training kann Google Play eine kleine Karte zum Bewerten von HW App zeigen. Schalte es aus, dann kommt sie nie.",
     plShare: "Auf meinem Profil zeigen",
     plShareD: "Freunde sehen diesen Plan und können eine Kopie speichern. Deine Gewichte bleiben deine.",
     plSharedD: "Er ist auf deinem Profil. Was du hier änderst, kommt auch dort an.",
@@ -127,6 +134,7 @@ export default {
   news1_10: [
     ["Freunde zusammen", "Freunde und eine Rangliste; eine gemeinsame Serie zählte nur Trainings, und die Weltrangliste war gesperrt.", "Eine neue Seite Zusammen: Lade einen Freund mit deinem Link ein (100 💎 für jeden nach seinem 3. Training), haltet ein Duo (Trainings oder Kalorien), ein gemeinsames Wochenziel, ein Satz-Duell und ein Stups für einen Freund, der noch nicht trainiert hat. Die Tage zählt der Server, ein Duo lässt sich also nicht fälschen. Die Rangliste zeigt nur deine Freunde, die gesperrte Weltrangliste ist weg. Neues Abzeichen: Gemeinsam stärker."],
     ["Planbibliothek", "Einen Plan sah nur, wer ihn erstellt hatte.", "Zeig einen Plan auf deinem Profil: Freunde öffnen ihn und speichern mit einem Tippen ihre eigene Kopie (Übungen, Sätze, Haltezeiten, nie deine Gewichte). Die Kopie zeigt, von wem sie ist, und deine Änderungen kommen auch im Plan auf deinem Profil an."],
+    ["Teilen und bewerten", "Ein Training ließ sich niemandem zeigen.", "Teilen in der Trainingsübersicht macht ein Bild deines Trainings (Zeit, Sätze, Wiederholungen, Serie, Übungen) für Instagram, WhatsApp oder überallhin. Die Google-Play-Version fragt nach einem Training ab und zu nach einer Bewertung; in den Einstellungen lässt sich das ausschalten."],
     ["Verlauf", "Eine lange Liste aller Trainings, ein Kalender, den man nicht antippen konnte, und die Zahlen oben.", "Der Kalender führt: Tippe auf einen Tag, um sein Training zu öffnen, tippe auf einen leeren Tag, um eins hinzuzufügen. Die Liste folgt dem Monat, und eine neue Seite Fortschritt hat die Zahlen und ein ruhigeres Diagramm."],
     ["Shop", "Eine Seite, zehn Bildschirme lang.", "Deine Diamanten bleiben oben, darunter wischst du durch drei Seiten: Shop, Looks und Verdient. Ein Season Pass und mehr Wege zu Diamanten sind als „kommt bald“ zu sehen."],
     ["Muscle Deck", "Im Shop stand Nächster Blind ganz am Ende, und Verlassen war ein kleines ✕ oben.", "Der Shop endet mit einer schwebenden Leiste: Speichern und beenden und Nächster Blind, immer im Bild. Das Symbol mit dem angespannten Arm wurde neu gezeichnet."],

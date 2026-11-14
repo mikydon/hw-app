@@ -1,6 +1,13 @@
 // Portuguese (Brazil): texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    sumShare: "Compartilhar",
+    shareStreak: "Sequência",
+    shareFoot: "Treinos em casa · grátis no Google Play",
+    shareText: "Meu treino no HW App 💪 https://play.google.com/store/apps/details?id=io.github.mikydon.hwapp",
+    shareSaved: "A imagem foi salva.",
+    setReview: "Pedir para avaliar o app",
+    setReviewD: "De vez em quando, depois de um treino, o Google Play pode mostrar um pequeno cartão para avaliar o HW App. Desative e ele não aparece mais.",
     plShare: "Mostrar no meu perfil",
     plShareD: "Seus amigos veem este plano e podem salvar uma cópia. Seus pesos continuam seus.",
     plSharedD: "Está no seu perfil. As mudanças que você faz aqui chegam lá também.",
@@ -127,6 +134,7 @@ export default {
   news1_10: [
     ["Amigos juntos", "Amigos e um ranking; a sequência com um amigo só contava treinos, e o ranking mundial estava bloqueado.", "Uma nova página Juntos: convide um amigo com seu link (100 💎 para cada um depois do 3º treino dele), mantenham uma dupla (treinos ou calorias), uma meta semanal dos dois, um duelo de séries e uma cutucada para o amigo que ainda não treinou. Os dias são contados pelo servidor, então ninguém falsifica uma dupla. O ranking é só dos seus amigos; o mundial bloqueado saiu. Nova insígnia: Melhor em dupla."],
     ["Biblioteca de planos", "Só quem criou um plano podia vê-lo.", "Mostre um plano no seu perfil: seus amigos abrem e salvam a própria cópia com um toque (exercícios, séries, tempos, nunca seus pesos). A cópia mostra de quem é, e suas mudanças chegam também ao plano do perfil."],
+    ["Compartilhar e avaliar", "Não dava para mostrar um treino a ninguém.", "Compartilhar no resumo do treino cria uma imagem do treino (tempo, séries, repetições, sequência, exercícios) para Instagram, WhatsApp ou onde quiser. A versão do Google Play pode pedir uma avaliação de vez em quando depois do treino; dá para desativar nas Configurações."],
     ["Histórico", "Uma lista longa de todos os treinos, um calendário em que não dava para tocar e os números no topo.", "O calendário vem primeiro: toque em um dia para abrir o treino dele, toque em um dia vazio para adicionar um. A lista acompanha o mês, e uma nova página Progresso reúne os números e um gráfico mais suave."],
     ["Loja", "Uma página só, com dez telas de comprimento.", "Seus diamantes ficam no topo e embaixo passam três páginas: Loja, Visuais e Conquistados. Um passe de temporada e mais formas de ganhar diamantes aparecem como “em breve”."],
     ["Muscle Deck", "Na loja, Próximo blind ficava lá no fim e sair era um ✕ pequeno no topo.", "A loja termina com uma barra flutuante: Salvar e sair e Próximo blind, sempre na tela. O ícone do braço flexionado foi redesenhado."],

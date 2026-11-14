@@ -13,6 +13,7 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(HwDisplayPlugin.class); // 1.6.0: refresh rate (highest the phone allows, or 60 Hz)
         registerPlugin(HwBuildPlugin.class); // 1.6.1: GitHub APK or Google Play build
         registerPlugin(HwRestPlugin.class); // 1.9.0: the rest timer with the screen off (RestService)
+        registerPlugin(HwReviewPlugin.class); // 1.10.0: Google Play in-app review (asked only in the Play build)
         super.onCreate(savedInstanceState);
         // the saved choice (default: 60 Hz since 1.7.5) before the first frame
         try { HwDisplayPlugin.apply(this, HwDisplayPlugin.saved(this)); } catch (Exception ignored) {}

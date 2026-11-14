@@ -1,6 +1,13 @@
 // Polish: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    sumShare: "Udostępnij",
+    shareStreak: "Seria",
+    shareFoot: "Treningi w domu · za darmo w Google Play",
+    shareText: "Mój trening w HW App 💪 https://play.google.com/store/apps/details?id=io.github.mikydon.hwapp",
+    shareSaved: "Obrazek został zapisany.",
+    setReview: "Pytaj o ocenę aplikacji",
+    setReviewD: "Czasem po treningu Google Play może pokazać małą kartę do oceny HW App. Gdy to wyłączysz, już się nie pojawi.",
     plShare: "Pokaż na moim profilu",
     plShareD: "Znajomi zobaczą ten plan i mogą zapisać kopię. Twoje ciężary zostają twoje.",
     plSharedD: "Jest na twoim profilu. Zmiany, które tu zrobisz, trafią też tam.",
@@ -127,6 +134,7 @@ export default {
   news1_10: [
     ["Znajomi razem", "Znajomi i ranking; wspólna seria liczyła tylko treningi, a światowy ranking był zablokowany.", "Nowa strona Razem: zaproś znajomego swoim linkiem (100 💎 dla każdego po jego 3. treningu), trzymajcie duet (treningi albo kalorie), wspólny cel tygodniowy, pojedynek w seriach i szturchnięcie dla znajomego, który jeszcze nie ćwiczył. Dni liczy serwer, więc duetu nie da się podrobić. Ranking to tylko twoi znajomi, zablokowany światowy zniknął. Nowa odznaka: Razem raźniej."],
     ["Biblioteka planów", "Plan widział tylko ten, kto go stworzył.", "Pokaż plan na swoim profilu: znajomi go otworzą i jednym dotknięciem zapiszą własną kopię (ćwiczenia, serie, czasy utrzymania, nigdy twoje ciężary). Przy kopii widać, od kogo jest, a twoje zmiany trafiają też do planu na profilu."],
+    ["Udostępnianie i ocena", "Treningu nie dało się nikomu pokazać.", "Udostępnij w podsumowaniu treningu tworzy obrazek treningu (czas, serie, powtórzenia, seria dni, ćwiczenia) na Instagram, WhatsApp czy gdziekolwiek. Wersja z Google Play może czasem po treningu poprosić o ocenę; w Ustawieniach można to wyłączyć."],
     ["Historia", "Długa lista wszystkich treningów, kalendarz, którego nie dało się stuknąć, i liczby na górze.", "Najważniejszy jest kalendarz: stuknij dzień, aby otworzyć jego trening, stuknij pusty dzień, aby go dodać. Lista pokazuje wybrany miesiąc, a nowa strona Postępy ma liczby i płynniejszy wykres."],
     ["Sklep", "Jedna strona długa na dziesięć ekranów.", "Diamenty zostają na górze, a pod nimi przesuwają się trzy strony: Sklep, Wyglądy i Zdobyte. Karnet sezonowy i więcej sposobów na diamenty są pokazane jako „wkrótce”."],
     ["Muscle Deck", "W sklepie Następny blind był na samym końcu, a wyjście to mały ✕ na górze.", "Sklep kończy się pływającym paskiem: Zapisz i wyjdź oraz Następny blind, zawsze na ekranie. Ikona napiętego bicepsa jest narysowana od nowa."],

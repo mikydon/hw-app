@@ -1,6 +1,13 @@
 // Italian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    sumShare: "Condividi",
+    shareStreak: "Serie",
+    shareFoot: "Allenamenti a casa · gratis su Google Play",
+    shareText: "Il mio allenamento su HW App 💪 https://play.google.com/store/apps/details?id=io.github.mikydon.hwapp",
+    shareSaved: "L'immagine è stata salvata.",
+    setReview: "Chiedimi di valutare l'app",
+    setReviewD: "Ogni tanto, dopo un allenamento, Google Play può mostrare una piccola scheda per valutare HW App. Se lo disattivi, non comparirà più.",
     plShare: "Mostra sul mio profilo",
     plShareD: "I tuoi amici vedono questa scheda e possono salvarne una copia. I tuoi pesi restano tuoi.",
     plSharedD: "È sul tuo profilo. Le modifiche che fai qui arrivano anche lì.",
@@ -127,6 +134,7 @@ export default {
   news1_10: [
     ["Amici insieme", "Amici e una classifica; una serie con un amico contava solo gli allenamenti e la classifica mondiale era bloccata.", "Una nuova pagina Insieme: invita un amico con il tuo link (100 💎 a testa dopo il suo 3° allenamento), tenete un duo (allenamenti o calorie), un obiettivo settimanale di tutti e due, un duello di serie e una spinta per l'amico che non si è ancora allenato. I giorni li conta il server, quindi un duo non si può falsare. La classifica è solo dei tuoi amici; quella mondiale bloccata non c'è più. Nuovo badge: Meglio in due."],
     ["Libreria delle schede", "Una scheda la vedeva solo chi l'aveva creata.", "Mostra una scheda sul tuo profilo: gli amici la aprono e con un tocco salvano la loro copia (esercizi, serie, tempi di tenuta, mai i tuoi pesi). La copia dice di chi è, e le tue modifiche arrivano anche alla scheda sul profilo."],
+    ["Condividi e valuta", "Non c'era modo di mostrare un allenamento.", "Condividi nel riepilogo dell'allenamento crea un'immagine dell'allenamento (tempo, serie, ripetizioni, serie di giorni, esercizi) per Instagram, WhatsApp o ovunque. La versione Google Play può chiedere ogni tanto una valutazione dopo l'allenamento; nelle Impostazioni si può disattivare."],
     ["Storico", "Una lunga lista di tutti gli allenamenti, un calendario che non si poteva toccare e i numeri in alto.", "Il calendario va in testa: tocca un giorno per aprire il suo allenamento, tocca un giorno vuoto per aggiungerne uno. La lista segue il mese, e una nuova pagina Progressi raccoglie i numeri e un grafico più morbido."],
     ["Negozio", "Una sola pagina, lunga dieci schermate.", "I tuoi diamanti restano in alto e sotto scorrono tre pagine: Negozio, Look e Guadagnati. Un pass stagionale e altri modi per avere diamanti sono mostrati come «in arrivo»."],
     ["Muscle Deck", "Nel negozio, Buio successivo era in fondo e uscire era una piccola ✕ in alto.", "Il negozio finisce con una barra fluttuante: Salva ed esci e Buio successivo, sempre sullo schermo. L'icona del braccio contratto è stata ridisegnata."],

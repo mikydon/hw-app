@@ -1,6 +1,6 @@
 import { useState, useEffect, useLayoutEffect, useRef, useMemo, useId, memo, Fragment } from "react";
 import { createPortal } from "react-dom";
-import { restSupported, restPermission, restStart, restStop, restNativeBeeps, restOpenSettings, isNative, pushBack, setRootBack, exitApp, vibratePattern, keepScreenOn, openExternal, saveBackupFile, bkSupported, bkWrite, bkWriteAuto, bkList, bkRead, bkDelete, bkShare, BK_DIR, bkAutoFile, checkForUpdate, lastUpdate, lastGh, applyUpdateNow, latestApk, isTestBuild, apkState, onApk, apkSupported, apkRestore, apkDownload, apkCanInstall, apkAllow, apkInstall, onAppResume, healthState, healthConnect, healthSettings, healthSteps, healthFoodItems, healthBody, shareText, copyText, pushSupported, pushPermission, pushChannel, pushToken, pushTokenWhy, pushDeleteToken, onPushTap, onPushToken, onPushReceived, hzSupported, hzInfo, hzSet, isPlay, playCheck, playOpenStore, playUpdate, PLAY_STORE_LINK, updTopic, onAppUrl, installCheck, openNotifSettings, showNotif, setNativeBg, backIsTop, backTopRun } from "./native.js";
+import { shareImage, askReview, restSupported, restPermission, restStart, restStop, restNativeBeeps, restOpenSettings, isNative, pushBack, setRootBack, exitApp, vibratePattern, keepScreenOn, openExternal, saveBackupFile, bkSupported, bkWrite, bkWriteAuto, bkList, bkRead, bkDelete, bkShare, BK_DIR, bkAutoFile, checkForUpdate, lastUpdate, lastGh, applyUpdateNow, latestApk, isTestBuild, apkState, onApk, apkSupported, apkRestore, apkDownload, apkCanInstall, apkAllow, apkInstall, onAppResume, healthState, healthConnect, healthSettings, healthSteps, healthFoodItems, healthBody, shareText, copyText, pushSupported, pushPermission, pushChannel, pushToken, pushTokenWhy, pushDeleteToken, onPushTap, onPushToken, onPushReceived, hzSupported, hzInfo, hzSet, isPlay, playCheck, playOpenStore, playUpdate, PLAY_STORE_LINK, updTopic, onAppUrl, installCheck, openNotifSettings, showNotif, setNativeBg, backIsTop, backTopRun } from "./native.js";
 import { cloud, NICK_RE, SHARE_BASE, cleanCode, fmtCode } from "./cloud-lazy.js";
 import { QUICK as EMO_QUICK, EMOJI } from "./emoji.js";
 import { mergeAll, restoreFrom, syncKey, withIds, entryId, stable, SYNC_SETTINGS, kcalShared } from "./sync.js";
@@ -8,6 +8,7 @@ import { RANK_AT, EX_GROUPS } from "./ranks.js";
 import { LIB, W_RANK, wSetScore, wRankAt, REP_CAP, GROUPS_ORDER, EQUIP_ORDER } from "./exlib.js";
 import { EX_NAMES } from "./exnames.js";
 import * as PLN from "./plans.js";
+import { drawShareCard } from "./sharecard.js";
 import * as BD from "./body.js";
 import * as GM from "./game/engine.js";
 import { fairStats } from "./fair.js";
@@ -1517,6 +1518,7 @@ const autoBkInfo = () => { try { return JSON.parse(localStorage.getItem(AUTOBK_K
 const stamp = d => `${dateKey(d)}-${String(d.getHours()).padStart(2, "0")}${String(d.getMinutes()).padStart(2, "0")}`;
 // 1.10.0 (Michael, Nov 11: "the main theme should be the universal black, OLED"): new installs start in Black;
 // everyone who already has saved settings keeps the theme stored there (Navy was always saved explicitly).
+const REVIEW_MIN = 6, REVIEW_DAYS = 10; // 1.10.0 Google Play rating: workouts and days of use before the first ask
 const DEFAULT_SETTINGS = { theme: "black", sndTap: true, sndFx: true, sndTimer: true, volume: "mid", vibrate: true, keepAwake: true, aiCopy: false, exOff: [] };
 async function loadSettings() { try { const v = await store.get(SETTINGS_KEY); if (v) return JSON.parse(v); } catch (_) {} return null; }
 async function saveSettings(st) { await store.set(SETTINGS_KEY, JSON.stringify(st)); }
@@ -8593,6 +8595,7 @@ function SettingsTab({ initPage, ret, settings, setSettings, history, profile, s
         <SettingRow icon="vibrate" title={T("vibrate")} info={[T("vibrateD"), T("vibrateHint")]} on={settings.vibrate} onClick={() => { set("vibrate", !settings.vibrate); if (!settings.vibrate) vibratePattern([160]); }} />
         <SettingRow icon="sun" title={T("keepAwake")} on={settings.keepAwake} onClick={() => set("keepAwake", !settings.keepAwake)} />
         <SettingRow icon="robot" title={T("aiCopy")} info={T("aiCopyD")} on={settings.aiCopy} onClick={() => set("aiCopy", !settings.aiCopy)} />
+        {isPlay() && <SettingRow icon="star" title={T("setReview")} info={T("setReviewD")} on={settings.review !== false} onClick={() => set("review", settings.review === false)} />}
         {pushSupported() && <NotifRow settings={settings} set={set} acct={acct} onAcctOpen={onAcctOpen} />}
         {restSupported() && <RestPermRow />}
       </ListSect>
@@ -12009,6 +12012,32 @@ function Summary({ entry, xpBefore = 0, xpGained, newCh = [], newAch = [], histo
   const [revOn, setRevOn] = useState(rev.length > 0);
   // the first workout of the day moves the streak: its own moment first (StreakCelebration), then the reward cards
   const [celeb, setCeleb] = useState(() => !window.__hwNoCeleb && !!entry && !history.some(e => e.date === entry.date && e.ts !== entry.ts) && streakInfo(history.some(e => e.ts === entry.ts) ? history : [...history, entry], entry.date).n > 0);
+  // 1.10.0 share card: a picture of this workout for Instagram, WhatsApp… (see src/sharecard.js)
+  const [shareSt, setShareSt] = useState("");
+  const shareCard = async () => {
+    if (!entry || shareSt === "busy") return;
+    sfxTap(); setShareSt("busy");
+    try {
+      try { await Promise.race([document.fonts.ready, new Promise(r => setTimeout(r, 1500))]); } catch (_) {}
+      const tm = id => EX[id] && (EX[id].type === "time" || EX[id].type === "carry");
+      const sets = setsIn(entry), reps = entry.items.reduce((a, it) => a + (tm(it.id) ? 0 : it.res.reduce((b, v) => b + (isNaN(numVal(v)) ? 0 : numVal(v)), 0)), 0);
+      const sn = streakInfo(history.some(e => e.ts === entry.ts) ? history : [...history, entry], entry.date).n;
+      const rows = entry.items.filter(it => it.res.some(v => !isNaN(numVal(v)) && numVal(v) > 0)).map(it => {
+        const vals = it.res.filter(v => !isNaN(numVal(v)) && numVal(v) > 0);
+        const top = it.kg ? Math.max(0, ...it.kg.map(k => (typeof k === "number" ? k : 0))) : 0;
+        const v = tm(it.id) ? fmtHold(Math.max(...vals.map(numVal))) : vals.slice(0, 4).map(numVal).join(" · ") + (vals.length > 4 ? " …" : "");
+        return [exName(it), top ? `${nf(top)} kg · ${v}` : v];
+      });
+      const cv = drawShareCard(document.createElement("canvas"), {
+        title: entryTitle(entry), date: fmtDate(entry.date), sub: noEmo(finishLine),
+        stats: [...(entry.dur > 0 ? [[fmtDur(entry.dur), T("stM_min")]] : []), [sets, T("sumSets")], [reps, T("stM_reps")]],
+        streak: sn, streakLabel: T("shareStreak"), rows, foot: T("shareFoot"),
+        c: { ink: C.ink, panel: C.panel, line: C.line, chalk: C.chalk, dim: C.dim, signal: C.signal }, font: { display: DISPLAY, body: BODY },
+      });
+      const r = await shareImage(cv.toDataURL("image/png").split(",")[1], `hw-app-${entry.date}.png`, T("shareText"));
+      setShareSt(r === "saved" ? "saved" : "");
+    } catch (_) { setShareSt("err"); }
+  };
   const copy = async () => {
     try { await navigator.clipboard.writeText(text); }
     catch (_) { const t = document.createElement("textarea"); t.value = text; document.body.appendChild(t); t.select(); try { document.execCommand("copy"); } catch (__) {} document.body.removeChild(t); }
@@ -12167,7 +12196,11 @@ function Summary({ entry, xpBefore = 0, xpGained, newCh = [], newAch = [], histo
       )}
       <div className="sumIn" style={{ ...d(), marginTop: 20 }}>
         {setting("aiCopy") && <button onClick={copy} className="b3d" style={{ ...bigBtn(copied ? C.mint : C.panelHi, copied ? C.ink : C.chalk), marginBottom: 8 }}>{copied ? T("copied") : T("copyAI")}</button>}
-        <button data-sum-home onClick={onClose} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), fontWeight: 900 }}>{T("home")}</button>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button data-sum-share data-state={shareSt || "idle"} onClick={shareCard} aria-label={T("sumShare")} className="b3d" style={{ ...bigBtn(C.panelHi, C.chalk), flex: "0 0 auto", width: "auto", padding: "0 18px", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8 }}><Ico n="upload" size={20} />{shareSt === "busy" ? "…" : T("sumShare")}</button>
+          <button data-sum-home onClick={onClose} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), fontWeight: 900, flex: 1 }}>{T("home")}</button>
+        </div>
+        {(shareSt === "saved" || shareSt === "err") && <div role="status" data-sum-share-msg style={{ fontSize: 12, color: shareSt === "err" ? "#ff8a80" : C.mint, textAlign: "center", marginTop: 8 }}>{T(shareSt === "err" ? "frErr" : "shareSaved")}</div>}
       </div>
     </div>
   );
@@ -12459,6 +12492,18 @@ export default function App() {
   const [autoBk, setAutoBk] = useState(() => autoBkInfo());
   const setKcal = k => { setKcalState(k); saveKcal(k); };
   const setUi = u => { setUiState(u); saveUi(u); };
+  // 1.10.0 Google Play rating (Play build only; Play's rules: after real use, rarely, no question or button before it,
+  // never during a workout or a game). Back on Home after a workout's summary, once the app has been used for at least
+  // REVIEW_DAYS with REVIEW_MIN workouts; at most 3 times, 120 days apart. Settings → Workout can switch it off.
+  const reviewCheck = () => {
+    if (!isPlay() || settings.review === false) return;
+    const real = history.filter(e => !e.manual && hasRealSet(e.items || [])), u = uiRef.current || {};
+    if (real.length < REVIEW_MIN || (u.revN || 0) >= 3 || (u.revAt && Date.now() - u.revAt < 120 * 864e5)) return;
+    const first = real.reduce((a, e) => (e.date < a ? e.date : a), real[0].date);
+    if (daysBetween(first, dateKey()) < REVIEW_DAYS) return;
+    setUi({ ...u, revAt: Date.now(), revN: (u.revN || 0) + 1 });
+    setTimeout(() => { askReview(); }, 1500);
+  };
   // Every change to past workouts keeps the history sorted and records/rank-ups correct.
   const editHistory = fn => setHistory(h => recomputeFlags(sortHistory(fn(h))));
   META = { kcal, skips: profile.skips || {}, freezeDays: profile.freezeDays || [], streakResetTs: profile.streakResetTs || 0, boosts: EC.shopOf(profile).boosts, bonusFreezes: (profile.bdayGifts || []).length + EC.shopOf(profile).fz, giftThisYear: (profile.bdayGifts || []).includes(parseKey(dateKey()).getFullYear()), birth: profile.birth || null };
@@ -13526,7 +13571,7 @@ export default function App() {
             <div style={{ display: sessionOpen ? "block" : "none" }} aria-hidden={!sessionOpen}>
               <Session session={session} setSession={setSession} history={history}
                 onSave={entry => setHistory(h => [...h, entry])}
-                onClose={() => { setSession(null); setSessionOpen(true); setLive(null); setScreen("train"); }}
+                onClose={() => { setSession(null); setSessionOpen(true); setLive(null); setScreen("train"); reviewCheck(); }}
                 onMinimize={() => { setSessionOpen(false); setMenuOpen(true); }}
                 onLive={setLive} onClaim={items => setProfile({ ...profile, claim2: withClaims(claimOf(profile), items) })} />
             </div>
