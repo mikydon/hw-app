@@ -10688,8 +10688,13 @@ function GameTab({ history, profile, setProfile, acct, onPlay }) {
     { id: "duel", icon: "robot", name: T("gmDuel"), desc: DUEL_ON ? T("gmDuelD", { n: Math.min(10, gl.lvl) }) : T("gmSoon"), off: !DUEL_ON, soon: !DUEL_ON },
     { id: "ranked", icon: "trophy", name: T("gmRanked"), desc: !RANKED_ON ? T("gmSoon") : signed ? T("gmRankedD", { r: rk && typeof rk.r === "number" ? rk.r : 1000 }) : T("gmRankedSign"), off: !RANKED_ON || !signed, soon: !RANKED_ON },
   ];
+  // 1.10.0 (Michael: "redesign PC and tablet"): on a wide screen two columns: play (level, modes, how to play) on the
+  // left, your deck and the leaderboard on the right; a phone keeps one column in the same order
+  const wide = useWide();
+  const rulesBtn = <button type="button" data-gm-rules onClick={() => { sfxTap(); setRules(true); }} style={{ ...ghostBtn, width: "100%", marginTop: 12, padding: "12px 14px", fontSize: 14, color: C.chalk }}>{T("gmRulesBtn")}</button>
   return (
     <div className="scr" data-game-tab style={SCR_STYLE}>
+      <Cols data-gm-cols left={<>
       {!gp.tut && !saved && (
         <div data-gm-tut className="cardIn" style={{ ...card, ...tileR(), padding: "14px 16px", marginBottom: 12, border: `1.5px solid ${C.signal}`, display: "flex", alignItems: "center", gap: 12 }}>
           <IcoBox n="cap" size={46} />
@@ -10729,7 +10734,9 @@ function GameTab({ history, profile, setProfile, acct, onPlay }) {
           ))}
         </div>}
       </div>
-      <Sect data-gm-deck title={<>{T("gmDeck")}<InfoQ title={T("gmDeck")} text={T("gmDeckD")} /></>} style={{ marginTop: 12 }}>
+      {wide && rulesBtn}
+      </>} right={<>
+      <Sect data-gm-deck title={<>{T("gmDeck")}<InfoQ title={T("gmDeck")} text={T("gmDeckD")} /></>} style={{ marginTop: wide ? 0 : 12 }}>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
           {GM.SUITS.map(s => { const v = lo.suit[s], rk = v >= 0 ? RANKS[v] : null; return (
             <div key={s} data-gm-suit={s} data-lv={v} style={{ background: SOFT(), borderRadius: 14, padding: "10px 10px", display: "flex", alignItems: "center", gap: 9, minWidth: 0 }}>
@@ -10749,7 +10756,7 @@ function GameTab({ history, profile, setProfile, acct, onPlay }) {
             </button>); })}
         </div>
       </Sect>
-      <button type="button" data-gm-rules onClick={() => { sfxTap(); setRules(true); }} style={{ ...ghostBtn, width: "100%", marginTop: 12, padding: "12px 14px", fontSize: 14, color: C.chalk }}>{T("gmRulesBtn")}</button>
+      {!wide && rulesBtn}
       {/* 1.8.0 (Michael, Oct 25, 02:31): the Ranked leaderboard shows, locked like Ranked, until Ranked opens */}
       {!RANKED_ON && (
         <Sect data-gm-top-locked title={<>{T("gmTop")}<InfoQ title={T("gmTop")} text={T("gmTopLocked")} /></>} style={{ marginTop: 12 }}>
@@ -10773,6 +10780,7 @@ function GameTab({ history, profile, setProfile, acct, onPlay }) {
             ))}
         </Sect>
       )}
+      </>} />
       {err && <div role="alert" style={{ fontSize: 13, color: "#ff8a80", marginTop: 10 }}>{err}</div>}
       {pick && <PerkSheet lo={lo} mode={pick} stakeMax={Math.min(GM.STAKES.length - 1, gp.stake || 0)} onClose={() => setPick(null)} onGo={async (perk, stake) => {
         setPick(null); setErr("");
