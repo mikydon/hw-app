@@ -11,6 +11,8 @@ service cloud.firestore {
     function intIn(v, lo, hi) { return v is int && v >= lo && v <= hi; }
     function nickOk(n) { return n is string && n.matches('^[\\p{L}\\p{N}_.-]{3,20}$'); }
     // 1.10.0: reserved names (src/cloud-shared.js nickReserved), only for a NEW nickname
+    // 1.10.0: known swear words (src/cloud-shared.js BAD_IN, kept equal by tests/nick110_test.mjs), only for a NEW nickname
+    function nickClean(n) { return !n.lower().replace("[ _.-]", "").replace("0", "o").replace("1", "i").replace("3", "e").replace("4", "a").replace("5", "s").replace("7", "t").matches(".*(fuck|shit|nigger|nigga|faggot|retard|whore|bitch|pussy|asshole|slut|hitler|porn|vagina|wank|dildo|motherf|kurva|kurve|kurwa|kokot|jebat|jebac|jeban|chuj|pizda|debil|zmrd|buzerant|hovno|prdel|curak|mrdat|spierdal|pierdol|dziwka|cwel|geci|picsa|bazdmeg|baszd|scheiss|scheis|fotze|hurensohn|arschloch|wichser|schwuchtel|nutte|pendejo|cabron|maricon|joder|culero|chinga|gilipollas|putain|connard|salope|encule|niquer|cazzo|stronzo|vaffanculo|puttana|minchia|frocio|coglion|caralho|buceta|cuzao|porra|блять|блядь|хуй|хуе|пизд|ебать|заеб|уеба|мудак|пидор|пидар|підар|гандон|залуп|курва|kontol|memek|ngentot|bangsat|jancok|bajingan).*"); }
     function nickFree(n) { return !n.lower().replace('[ _.-]', '').matches('.*hwapp.*') && !n.lower().replace('[ _.-]', '').matches('^(official|admin|support|moderator|staff|hwteam|hwsupport).*'); }
     function pfpOk(p) { return p == null || (p is string && p.size() < 24000 && p.matches('^data:image/jpeg;base64,[A-Za-z0-9+/=]+$')); }
     function statsOk() {
@@ -132,7 +134,7 @@ service cloud.firestore {
     // so deleting an account still works when this phone remembers an old nickname).
     match /nicks/{nick} {
       allow get: if signedIn();
-      allow create: if signedIn() && only(['uid']) && data().uid == request.auth.uid && nickOk(nick) && nick == nick.lower() && nickFree(nick);
+      allow create: if signedIn() && only(['uid']) && data().uid == request.auth.uid && nickOk(nick) && nick == nick.lower() && nickFree(nick) && nickClean(nick);
       allow delete: if signedIn() && (resource == null || resource.data.uid == request.auth.uid);
     }
     match /codes/{code} {

@@ -1,6 +1,8 @@
 // Hungarian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    frNickRude: "Ez a név itt nem engedélyezett. Próbálj másikat.",
+    plNameBad: "Előbb nevezd át a tervet: ezzel a névvel nem mutathatjuk meg másoknak.",
     emClear: "Keresés és szűrők törlése",
     frNickReserved: "Ez a név foglalt. Próbálj másikat.",
     plOfficial: "A HW App-tól",

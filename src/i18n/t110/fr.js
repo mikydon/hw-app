@@ -1,6 +1,8 @@
 // French: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    frNickRude: "Ce nom n'est pas autorisé ici. Essaie un autre.",
+    plNameBad: "Renomme d'abord le programme : avec ce nom, on ne peut pas le montrer aux autres.",
     emClear: "Effacer la recherche et les filtres",
     frNickReserved: "Ce nom est réservé. Essaie un autre.",
     plOfficial: "Par HW App",

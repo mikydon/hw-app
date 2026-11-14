@@ -1,6 +1,8 @@
 // Portuguese (Brazil): texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    frNickRude: "Esse nome não é permitido aqui. Tente outro.",
+    plNameBad: "Primeiro renomeie o plano: com esse nome não podemos mostrá-lo aos outros.",
     emClear: "Limpar busca e filtros",
     frNickReserved: "Esse nome é reservado. Tente outro.",
     plOfficial: "Do HW App",

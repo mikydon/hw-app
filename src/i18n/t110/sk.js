@@ -1,6 +1,8 @@
 // Slovak: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    frNickRude: "Takéto meno tu nie je dovolené. Skús iné.",
+    plNameBad: "Najprv plán premenuj: s týmto názvom ho nemôžeme ukázať ostatným.",
     emClear: "Zrušiť hľadanie a filtre",
     frNickReserved: "Toto meno je vyhradené. Skús iné.",
     plOfficial: "Od HW App",

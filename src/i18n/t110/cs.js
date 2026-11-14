@@ -1,6 +1,8 @@
 // Czech: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    frNickRude: "Takové jméno tu není povolené. Zkus jiné.",
+    plNameBad: "Nejdřív plán přejmenuj: s tímhle názvem ho nemůžeme ukázat ostatním.",
     emClear: "Zrušit hledání a filtry",
     frNickReserved: "Tohle jméno je vyhrazené. Zkus jiné.",
     plOfficial: "Od HW App",

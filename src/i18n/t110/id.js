@@ -1,6 +1,8 @@
 // Indonesian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    frNickRude: "Nama itu tidak diizinkan di sini. Coba yang lain.",
+    plNameBad: "Ganti dulu nama rencananya: nama ini tidak bisa ditampilkan ke orang lain.",
     emClear: "Hapus pencarian dan filter",
     frNickReserved: "Nama itu dicadangkan. Coba yang lain.",
     plOfficial: "Dari HW App",

@@ -789,6 +789,8 @@ const en = {
     plSortOld: "Oldest",
     plSortAZ: "A–Z",
     plSortZA: "Z–A",
+    frNickRude: "That name isn't allowed here. Try another one.",
+    plNameBad: "Rename the plan first: this name can't be shown to others.",
     emClear: "Clear search and filters",
     frNickReserved: "That name is reserved. Try another one.",
     plOfficial: "Made by HW App",

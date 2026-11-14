@@ -1,6 +1,8 @@
 // Chinese (Simplified): texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    frNickRude: "这里不允许使用这个名字，请换一个。",
+    plNameBad: "请先给计划改名：这个名字不能展示给别人。",
     emClear: "清除搜索和筛选",
     frNickReserved: "这个名字已被保留，请换一个。",
     plOfficial: "HW App 出品",

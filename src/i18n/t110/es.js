@@ -1,6 +1,8 @@
 // Spanish: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    frNickRude: "Ese nombre no está permitido aquí. Prueba otro.",
+    plNameBad: "Primero cambia el nombre del plan: con este nombre no podemos mostrarlo a otros.",
     emClear: "Borrar búsqueda y filtros",
     frNickReserved: "Ese nombre está reservado. Prueba otro.",
     plOfficial: "De HW App",

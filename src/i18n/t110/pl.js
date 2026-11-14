@@ -1,6 +1,8 @@
 // Polish: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    frNickRude: "Taka nazwa nie jest tu dozwolona. Spróbuj innej.",
+    plNameBad: "Najpierw zmień nazwę planu: z tą nazwą nie możemy go pokazać innym.",
     emClear: "Wyczyść wyszukiwanie i filtry",
     frNickReserved: "Ta nazwa jest zastrzeżona. Spróbuj innej.",
     plOfficial: "Od HW App",

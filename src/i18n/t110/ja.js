@@ -1,6 +1,8 @@
 // Japanese: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    frNickRude: "この名前は使えません。別の名前にしてください。",
+    plNameBad: "先にプラン名を変更してください：この名前は他の人に表示できません。",
     emClear: "検索と絞り込みをクリア",
     frNickReserved: "この名前は予約されています。別の名前にしてください。",
     plOfficial: "HW App 公式",

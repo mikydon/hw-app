@@ -1,6 +1,8 @@
 // Korean: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    frNickRude: "이 이름은 사용할 수 없어요. 다른 이름을 써 주세요.",
+    plNameBad: "먼저 플랜 이름을 바꿔 주세요: 이 이름으로는 다른 사람에게 보여줄 수 없어요.",
     emClear: "검색과 필터 지우기",
     frNickReserved: "예약된 이름이에요. 다른 이름을 써 주세요.",
     plOfficial: "HW App 공식",

@@ -1,6 +1,8 @@
 // Italian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    frNickRude: "Questo nome non è consentito. Provane un altro.",
+    plNameBad: "Prima rinomina la scheda: con questo nome non possiamo mostrarla agli altri.",
     emClear: "Cancella ricerca e filtri",
     frNickReserved: "Questo nome è riservato. Provane un altro.",
     plOfficial: "Di HW App",

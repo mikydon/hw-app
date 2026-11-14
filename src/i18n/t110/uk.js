@@ -1,6 +1,8 @@
 // Ukrainian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    frNickRude: "Таке ім'я тут не дозволене. Спробуй інше.",
+    plNameBad: "Спершу перейменуй план: з такою назвою ми не можемо показати його іншим.",
     emClear: "Скинути пошук і фільтри",
     frNickReserved: "Це ім'я зарезервоване. Спробуй інше.",
     plOfficial: "Від HW App",

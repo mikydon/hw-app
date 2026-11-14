@@ -2,7 +2,7 @@ import { useState, useEffect, useLayoutEffect, useRef, useMemo, useId, memo, Fra
 import { createPortal } from "react-dom";
 import { shareImage, askReview, restSupported, restPermission, restStart, restStop, restNativeBeeps, restOpenSettings, isNative, pushBack, setRootBack, exitApp, vibratePattern, keepScreenOn, openExternal, saveBackupFile, bkSupported, bkWrite, bkWriteAuto, bkList, bkRead, bkDelete, bkShare, BK_DIR, bkAutoFile, checkForUpdate, lastUpdate, lastGh, applyUpdateNow, latestApk, isTestBuild, apkState, onApk, apkSupported, apkRestore, apkDownload, apkCanInstall, apkAllow, apkInstall, onAppResume, healthState, healthConnect, healthSettings, healthSteps, healthFoodItems, healthBody, shareText, copyText, pushSupported, pushPermission, pushChannel, pushToken, pushTokenWhy, pushDeleteToken, onPushTap, onPushToken, onPushReceived, hzSupported, hzInfo, hzSet, isPlay, playCheck, playOpenStore, playUpdate, PLAY_STORE_LINK, updTopic, onAppUrl, installCheck, openNotifSettings, showNotif, setNativeBg, backIsTop, backTopRun } from "./native.js";
 import { cloud, NICK_RE, SHARE_BASE, cleanCode, fmtCode } from "./cloud-lazy.js";
-import { nickReserved } from "./cloud-shared.js";
+import { nickReserved, nickBad, textBad } from "./cloud-shared.js";
 import { QUICK as EMO_QUICK, EMOJI } from "./emoji.js";
 import { mergeAll, restoreFrom, syncKey, withIds, entryId, stable, SYNC_SETTINGS, kcalShared } from "./sync.js";
 import { RANK_AT, EX_GROUPS } from "./ranks.js";
@@ -3591,6 +3591,7 @@ function Onboarding({ start = 0, profile, setProfile, kcal, setKcal, onDone, acc
       const nick = nickFrom(name.trim());
       if (!NICK_RE.test(nick)) { setErr(T("frNickBad")); return; }
       if (nickReserved(nick)) { setErr(T("frNickReserved")); return; }
+      if (nickBad(nick)) { setErr(T("frNickRude")); return; }
       setBusy(true); setErr("");
       onCreate(nick).then(() => { setProfile({ ...profile, name: name.trim() }); sfxCheck(); goTo(step + 1); }).catch(e => setErr(cloudErr(e))).finally(() => setBusy(false));
       return;
@@ -6777,7 +6778,7 @@ function PlanStore({ on, signedIn, P, history }) {
   );
   const nq = normTxt(q);
   const hit = x => !nq || [pubName(x), x.nick, ...x.items.map(i => EX[i.id] ? EX[i.id].name : "")].some(t => normTxt(t).includes(nq));
-  const shown = (list || []).filter(x => hit(x) && (!grp || (x.fam || []).includes(grp)) && eq.includes(x.eq || "none"))
+  const shown = (list || []).filter(x => (isDefOwner(x.o) || (!textBad(x.name) && !nickBad(x.nick))) && hit(x) && (!grp || (x.fam || []).includes(grp)) && eq.includes(x.eq || "none"))
     .sort((a, b) => sort === "avg" ? (b.avg || 0) - (a.avg || 0) || (b.sn || 0) - (a.sn || 0) : sort === "ts" ? (b.ts || 0) - (a.ts || 0) : (b.sv || 0) - (a.sv || 0) || isDefOwner(b.o) - isDefOwner(a.o) || (b.ts || 0) - (a.ts || 0));
   // 1.10.0 (Michael, Nov 14: "a filter system like apps have; all those buttons look messy"): search + one filter
   // button (a count of active filters on it); the filters and the order live in a sheet; active filters show as
@@ -7537,7 +7538,10 @@ function NickSetup({ initial, onSave, onCancel, title }) {
   const ok = NICK_RE.test(nick);
   const save = () => {
     if (!ok) { setErr(T("frNickBad")); return; }
-    if (nickReserved(nick) && nick.toLowerCase() !== String(initial || "").toLowerCase()) { setErr(T("frNickReserved")); return; }
+    if (nick.toLowerCase() !== String(initial || "").toLowerCase()) {
+      if (nickReserved(nick)) { setErr(T("frNickReserved")); return; }
+      if (nickBad(nick)) { setErr(T("frNickRude")); return; }
+    }
     setBusy(true); setErr("");
     onSave(nick).catch(e => setErr(cloudErr(e))).finally(() => setBusy(false));
   };
@@ -10658,10 +10662,10 @@ function PlansTab({ profile, setProfile, history, open, onOpened, shared = [], o
 function PlanEditor({ plan, P, setP, onBack, shared, nShared = 0, onShare, pub, onPub }) {
   const [pbBusy, setPbBusy] = useState(false), [pbErr, setPbErr] = useState("");
   const togglePub = () => { if (!onPub || pbBusy || !(plan.items || []).length) return; sfxTap(); setPbBusy(true); setPbErr("");
-    onPub(plan, !pub).then(() => sfxCheck()).catch(e => setPbErr(cloudErr(e) || T("frErr"))).finally(() => setPbBusy(false)); };
+    onPub(plan, !pub).then(() => sfxCheck()).catch(e => setPbErr(e && e.message === "bad" ? T("plNameBad") : cloudErr(e) || T("frErr"))).finally(() => setPbBusy(false)); };
   const [shBusy, setShBusy] = useState(false), [shErr, setShErr] = useState("");
   const toggleShare = () => { if (!onShare || shBusy || !(plan.items || []).length) return; sfxTap(); setShBusy(true); setShErr("");
-    onShare(plan, !shared).then(() => sfxCheck()).catch(e => setShErr(e && e.message === "full" ? T("plShareFull", { n: PLN.SHARE_MAX }) : cloudErr(e) || T("frErr"))).finally(() => setShBusy(false)); };
+    onShare(plan, !shared).then(() => sfxCheck()).catch(e => setShErr(e && e.message === "full" ? T("plShareFull", { n: PLN.SHARE_MAX }) : e && e.message === "bad" ? T("plNameBad") : cloudErr(e) || T("frErr"))).finally(() => setShBusy(false)); };
   const wdNames = weekdaysShort();
   const [adding, setAdding] = useState(false), [hints, setHints] = useState(false), [del, setDel] = useState(false);
   const [name, setName] = useState(plan.name || "");
@@ -13059,6 +13063,7 @@ export default function App() {
   const sharePlan = acct.st === "in" && acct.prof ? (plan, on) => {
     const rest = ((plib && plib.plans) || []).filter(x => x.id !== plan.id);
     if (on && rest.length >= PLN.SHARE_MAX) return Promise.reject(new Error("full"));
+    if (on && textBad(planTitle(plan))) return Promise.reject(new Error("bad"));
     return putPlib(on ? [...rest, PLN.sharedOf(plan)] : rest);
   } : null;
   // a shared plan follows its edits (on any device); a plan deleted for good leaves the profile too. A plan this
@@ -13067,7 +13072,7 @@ export default function App() {
     if (!plib || !plib.plans.length || acct.st !== "in") return;
     const t = setTimeout(() => {
       const P = plansOfP(profile);
-      const next = plib.plans.map(x => { const pl = P.list.find(y => y.id === x.id); return pl ? PLN.sharedOf(pl) : P.del && P.del[x.id] ? null : x; }).filter(Boolean);
+      const next = plib.plans.map(x => { const pl = P.list.find(y => y.id === x.id); return pl ? (textBad(planTitle(pl)) ? null : PLN.sharedOf(pl)) : P.del && P.del[x.id] ? null : x; }).filter(Boolean);
       if (JSON.stringify(next) !== JSON.stringify(plib.plans)) putPlib(next).catch(() => {});
     }, 1500);
     return () => clearTimeout(t);
@@ -13083,6 +13088,7 @@ export default function App() {
   const pubSig = pl => JSON.stringify(pubOf(pl));
   const publishPlan = acct.st === "in" && acct.prof ? (plan, on) => {
     if (!on) return cloud().pubDel(plan.id).then(() => putPubIds(pubIds.filter(x => x !== plan.id)));
+    if (textBad(planTitle(plan))) return Promise.reject(new Error("bad"));
     return cloud().pubPut(pubOf(plan)).then(() => { putPubIds([...pubIds.filter(x => x !== plan.id), plan.id]); setCloudMem({ pubSig: { ...(cloudMem().pubSig || {}), [plan.id]: pubSig(plan) } }); });
   } : null;
   useEffect(() => {
@@ -13091,7 +13097,8 @@ export default function App() {
       const P = plansOfP(profile), sig = cloudMem().pubSig || {};
       pubIds.forEach(id => {
         const pl = P.list.find(x => x.id === id);
-        if (!pl) { if (P.del && P.del[id]) cloud().pubDel(id).then(() => putPubIds(pubIds.filter(x => x !== id))).catch(() => {}); return; }
+        // a deleted plan, or one renamed to a name that is not allowed (swear-word filter), leaves the Library
+        if (!pl || textBad(planTitle(pl))) { if (pl || (P.del && P.del[id])) cloud().pubDel(id).then(() => putPubIds(pubIds.filter(x => x !== id))).catch(() => {}); return; }
         const sg = pubSig(pl);
         if (sig[id] !== sg && pl.items && pl.items.length) cloud().pubPut(pubOf(pl)).then(() => setCloudMem({ pubSig: { ...(cloudMem().pubSig || {}), [id]: sg } })).catch(() => {});
       });
