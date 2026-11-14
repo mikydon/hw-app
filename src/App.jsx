@@ -1392,10 +1392,17 @@ function exMatch(id, q) {
   const e = en.find(x => normTxt(x).includes(q));
   return e ? { id, aka: e === ex.name ? null : e } : null;
 }
+// 1.10.0 (idea 3, Michael approved Nov 14): a list's filters and order stay as you left them until the app closes
+// (search text does not: an old word in the field would hide things). Module memory, per list.
+const FLT_MEM = {};
+function useFltMem(list, key, init) {
+  const k = list + "." + key, [v, setV] = useState(() => (k in FLT_MEM ? FLT_MEM[k] : typeof init === "function" ? init() : init));
+  return [v, x => setV(cur => { const n = typeof x === "function" ? x(cur) : x; FLT_MEM[k] = n; return n; })];
+}
 function ExLibrary({ onPick, picked = [], exclude = [], autoFocus }) {
   const [q, setQ] = useState("");
   const [eq, setEq] = useState(exEqLoad);
-  const [grp, setGrp] = useState(null);
+  const [grp, setGrp] = useFltMem("lib", "grp", null);
   const nq = normTxt(q);
   const ids = Object.keys(LIB).filter(id => !exclude.includes(id));
   const found = ids.map(id => exMatch(id, nq)).filter(Boolean);
@@ -6688,7 +6695,7 @@ const pubName = x => { if (isDefOwner(x.o) && x.k) { const t = T("plDef_" + x.k)
 const OffBadge = () => <span data-store-official title={T("plOfficial")} aria-label={T("plOfficial")} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 14, height: 14, borderRadius: 7, background: C.signal, color: C.signalInk, flex: "none" }}><Ico n="check" size={10} /></span>;
 function PlanStore({ on, signedIn, P, history }) {
   const [list, setList] = useState(STORE_CACHE ? STORE_CACHE.list : null), [err, setErr] = useState("");
-  const [q, setQ] = useState(""), [grp, setGrp] = useState(null), [eq, setEq] = useState(["none", "free", "machine"]), [sort, setSort] = useState("sv");
+  const [q, setQ] = useState(""), [grp, setGrp] = useFltMem("store", "grp", null), [eq, setEq] = useFltMem("store", "eq", ["none", "free", "machine"]), [sort, setSort] = useFltMem("store", "sort", "sv");
   const [peek, setPeek] = useState(null), [fOpen, setFOpen] = useState(false);
   const load = force => { if (!signedIn) return; if (!force && STORE_CACHE && Date.now() - STORE_CACHE.ts < 5 * 60 * 1000) { setList(STORE_CACHE.list); return; } setErr("");
     cloud().pubList().then(l => { const c = l.map(x => ({ ...x, items: (x.items || []).filter(i => i && EX[i.id]) })).filter(x => x.items.length); STORE_CACHE = { ts: Date.now(), list: c }; setList(c); }).catch(e => setErr(cloudErr(e) || T("frOffline"))); };
@@ -10450,7 +10457,7 @@ function PlansTab({ profile, setProfile, history, open, onOpened, shared = [], o
   const pg = usePager("plans", 3, null, false, weekOn || P.list.length ? 1 : 0);
   const tab = ["rec", "mine", "store"][pg.page] || "rec";
   const [edit, setEdit] = useState(null); // plan id being edited
-  const [grp, setGrp] = useState("");      // group filter ("" = all, "-" = no group)
+  const [grp, setGrp] = useFltMem("plans", "grp", "");      // group filter ("" = all, "-" = no group)
   const [newGrp, setNewGrp] = useState(null), [delG, setDelG] = useState(null), [tips, setTips] = useState(false);
   const [pq, setPq] = useState(""), [pf, setPf] = useState(false); // 1.10.0: search + filter sheet
   const profRef = useRef(profile); profRef.current = profile;
