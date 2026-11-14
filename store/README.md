@@ -5,4 +5,5 @@
 - Screenshots: `node tools/store/shots.mjs` (8 per language, 1080×1921 → crop to 1080×1920; `LANGS=sk,en`, `ONLY=01_home`), output in `store/out/shots/` (not committed).
 - Tablets / PC (English only): `W=960 H=540 DPR=2` (7-inch) and `W=1280 H=720 DPR=1.5` (10-inch, also used for PC/Chromebook) → 1920×1080; skip 06 (the wide Profile already shows the stats page).
 - Feature graphic 1024×500: `node tools/store/feature.mjs` (uses the cropped shots in `store/out/shots/<lang>/`), output `store/out/fg/`.
+- Headings in the full description: emoji + `<b>Sentence case</b>` (Play renders `<b>`, `<i>`, `<u>` in the full description only; Google's metadata policy: no emoji in the title, no ALL CAPS or special characters to game search, "improper formatting" can be a violation). After an upload, check the live store page once: if `<b>` ever shows as text, drop the tags.
 - Keep the texts true: when ads or purchases arrive, change "No ads" in every language; the world leaderboard is off, so it is not mentioned.
