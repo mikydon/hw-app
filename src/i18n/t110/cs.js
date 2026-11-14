@@ -16,6 +16,7 @@ export default {
     shSuggestT: "Navrhni vzhled",
     tourShSoon: "Zamčené věci jsou na cestě: sezónní pass a další způsoby, jak získat diamanty.",
     tourShWon: "Tyhle vzhledy se nedají koupit. Získáš je za odznaky.",
+    calLegOver: "Nad cílem",
     gmWhyDead: "Boss: tahle karta nedává nic",
   },
   tour: { c5: { 0: "Kalendář: zelený den je trénink, tečka pod číslem jsou kalorie. Ťukni na den a uvidíš, co jsi dělal; ťukni na prázdný den a přidáš trénink." } },

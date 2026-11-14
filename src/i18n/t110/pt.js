@@ -16,6 +16,7 @@ export default {
     shSuggestT: "Sugira um visual",
     tourShSoon: "O que está bloqueado está a caminho: um passe de temporada e mais formas de ganhar diamantes.",
     tourShWon: "Estes visuais não se compram. Você ganha com medalhas.",
+    calLegOver: "Acima da meta",
     gmWhyDead: "O chefe: esta carta não pontua",
   },
   tour: { c5: { 0: "Calendário: um dia verde é um treino, o ponto embaixo de um número são calorias. Toque em um dia para ver o que você fez; toque em um dia vazio para adicionar um treino." } },

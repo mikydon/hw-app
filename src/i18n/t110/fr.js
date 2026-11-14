@@ -16,6 +16,7 @@ export default {
     shSuggestT: "Proposer un look",
     tourShSoon: "Ce qui est verrouillé arrive bientôt : une passe de saison et d'autres façons d'obtenir des diamants.",
     tourShWon: "Ces looks ne s'achètent pas. Tu les gagnes avec des badges.",
+    calLegOver: "Au-dessus de l'objectif",
     gmWhyDead: "Le boss : cette carte ne compte pas",
   },
   tour: { c5: { 0: "Calendrier : un jour vert est une séance, le point sous un numéro, ce sont les calories. Touche un jour pour voir ce que tu as fait ; touche un jour vide pour ajouter une séance." } },

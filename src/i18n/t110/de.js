@@ -16,6 +16,7 @@ export default {
     shSuggestT: "Look vorschlagen",
     tourShSoon: "Gesperrtes ist unterwegs: ein Season Pass und mehr Wege zu Diamanten.",
     tourShWon: "Diese Looks kann man nicht kaufen. Du verdienst sie mit Abzeichen.",
+    calLegOver: "Über dem Ziel",
     gmWhyDead: "Der Boss: Diese Karte zählt nichts",
   },
   tour: { c5: { 0: "Kalender: Ein grüner Tag ist ein Training, der Punkt unter einer Zahl sind Kalorien. Tippe auf einen Tag, um zu sehen, was du gemacht hast; tippe auf einen leeren Tag, um ein Training hinzuzufügen." } },

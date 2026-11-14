@@ -16,6 +16,7 @@ export default {
     shSuggestT: "Sugiere un estilo",
     tourShSoon: "Lo bloqueado está en camino: un pase de temporada y más formas de conseguir diamantes.",
     tourShWon: "Estos estilos no se pueden comprar. Los ganas con insignias.",
+    calLegOver: "Por encima del objetivo",
     gmWhyDead: "El jefe: esta carta no puntúa",
   },
   tour: { c5: { 0: "Calendario: un día verde es un entrenamiento, el punto bajo un número son calorías. Toca un día para ver qué hiciste; toca un día vacío para añadir un entrenamiento." } },

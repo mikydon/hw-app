@@ -16,6 +16,7 @@ export default {
     shSuggestT: "Suggerisci un look",
     tourShSoon: "Le cose bloccate sono in arrivo: un pass stagionale e altri modi per avere diamanti.",
     tourShWon: "Questi look non si comprano. Li guadagni con le medaglie.",
+    calLegOver: "Sopra l'obiettivo",
     gmWhyDead: "Il boss: questa carta non conta",
   },
   tour: { c5: { 0: "Calendario: un giorno verde è un allenamento, il punto sotto un numero sono le calorie. Tocca un giorno per vedere cosa hai fatto; tocca un giorno vuoto per aggiungere un allenamento." } },

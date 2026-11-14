@@ -16,6 +16,7 @@ export default {
     shSuggestT: "Javasolj kinézetet",
     tourShSoon: "A zárolt dolgok úton vannak: szezonbérlet és több módja a gyémántszerzésnek.",
     tourShWon: "Ezeket a kinézeteket nem lehet megvenni. Jelvényekért kapod őket.",
+    calLegOver: "Cél felett",
     gmWhyDead: "A boss: ez a lap nem ér semmit",
   },
   tour: { c5: { 0: "Naptár: a zöld nap edzés, a szám alatti pötty kalória. Koppints egy napra, hogy lásd, mit csináltál; koppints egy üres napra, hogy edzést adj hozzá." } },

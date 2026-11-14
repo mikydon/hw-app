@@ -4456,7 +4456,7 @@ function kcalStreak(history) {
 // The last 7 days for the little dots: "hit" | "log" | null
 function kcalWeek(history) {
   const out = []; let d = addDays(dateKey(), -6);
-  for (let i = 0; i < 7; i++) { const s = kcalNow(history, d); out.push({ k: d, kind: s && s.hit ? "hit" : s && s.logged ? "log" : null }); d = addDays(d, 1); }
+  for (let i = 0; i < 7; i++) { const s = kcalNow(history, d); out.push({ k: d, kind: s && s.hit ? "hit" : s && s.logged ? "log" : null, pct: s && s.logged ? s.eaten / Math.max(1, s.target) : 0 }); d = addDays(d, 1); }
   return out;
 }
 // One short line for the day: changes with the time of day and how far along you are.
@@ -4478,15 +4478,23 @@ function KcalStreakChip({ history, small }) {
 // The last 7 days: a dot per day with its weekday under it; today also shows its date (Michael, Oct 10: plain dots made no sense).
 function KcalWeekDots({ history, full }) {
   const today = dateKey(), wd = weekdaysShort(); // Monday first
-  // full (Calories, 1.4.0): the same strip as the week on Home (day above, a rounded square below), in amber.
+  // full (Calories). 1.10.0 (design pass): seven pale blocks were heavy; now every day is a small ring that fills as
+  // far as that day's food went towards its target (red when over it, like the big ring), and a day on target is a
+  // solid ring with a ✓.
   if (full) return (
     <div data-kc-week style={{ display: "flex", gap: 6 }} aria-label={`${T("secWeek")}: ${T("calLegLog")}, ${T("calLegHit")}`}>
       {kcalWeek(history).map(w => {
-        const d = parseKey(w.k), isT = w.k === today;
+        const d = parseKey(w.k), isT = w.k === today, hit = w.kind === "hit", R = 11, CIRC = 2 * Math.PI * R, fill = hit ? 1 : Math.min(1, w.pct);
         return (
-          <div key={w.k} style={{ flex: 1, textAlign: "center" }} title={fmtDate(w.k)}>
-            <div style={{ fontSize: 11, color: isT ? C.chalk : C.dim, fontWeight: isT ? 700 : 500, marginBottom: 4 }}>{wd[(d.getDay() + 6) % 7]}</div>
-            <div data-kc-day={w.kind || "none"} style={{ height: 30, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 900, color: C.ink, background: w.kind === "hit" ? KC_HIT : w.kind === "log" ? KC_LOG : "transparent", border: `1.5px solid ${w.kind === "hit" ? KC_HIT : w.kind === "log" ? KC_LOG : isT ? C.chalk : C.line}` }}>{w.kind === "hit" ? "✓" : ""}</div>
+          <div key={w.k} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center" }} title={fmtDate(w.k)}>
+            <div style={{ fontSize: 11, color: isT ? C.chalk : C.dim, fontWeight: isT ? 800 : 500, marginBottom: 6 }}>{wd[(d.getDay() + 6) % 7]}</div>
+            <div data-kc-day={w.kind || "none"} data-kc-pct={Math.round(w.pct * 100)} style={{ position: "relative", width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true" style={{ position: "absolute", inset: 0, transform: "rotate(-90deg)" }}>
+                <circle cx="14" cy="14" r={R} fill={hit ? KC_HIT : "none"} stroke={hit ? KC_HIT : isT && !w.kind ? `${C.chalk}55` : C.line} strokeWidth="2.5" />
+                {!hit && fill > 0 && <circle cx="14" cy="14" r={R} fill="none" stroke={w.pct > 1 ? "#ff8a80" : KC_LOG} strokeWidth="2.5" strokeLinecap="round" strokeDasharray={`${Math.max(2, fill * CIRC)} ${CIRC}`} />}
+              </svg>
+              {hit && <span style={{ position: "relative", fontSize: 12, fontWeight: 900, color: C.ink }}>✓</span>}
+            </div>
           </div>
         );
       })}
@@ -4790,7 +4798,7 @@ function DayEntries({ kcal, day, onRemove, pad = "8px 0" }) {
       {rows.map((x, i) => (
         <div key={(x.hc ? "h" : "o") + x.ts + "-" + i} data-entry={x.hc ? "hc" : "own"} style={{ display: "flex", alignItems: "center", gap: 8, padding: pad, borderTop: `1px solid ${C.line}`, opacity: x.own && ign ? 0.5 : 1 }}>
           <span data-entry-time style={{ fontSize: 12, color: C.dim, minWidth: 44, flexShrink: 0, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>{time(x.ts)}</span>
-          <span style={{ flex: 1, fontSize: 14, color: C.chalk, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{x.hc ? <><span aria-hidden="true"><IcoI n="plate" color={KC_LOG} /> </span><span data-entry-app style={{ color: C.dim }}>{hcAppName(x)}</span></> : (x.note || "—")}</span>
+          <span style={{ flex: 1, fontSize: 14, color: C.chalk, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{x.hc ? <><span aria-hidden="true"><IcoI n="plate" color={KC_LOG} /> </span><span data-entry-app style={{ color: C.dim }}>{hcAppName(x)}</span></> : x.note}</span>
           <span style={{ fontFamily: DISPLAY, fontSize: 20, fontWeight: 800, color: x.hc ? KC_HIT : C.chalk, textDecoration: x.own && ign ? "line-through" : "none" }}>{nf(x.kcal)}</span>
           {x.own ? <button onClick={() => onRemove(day, x.ts)} aria-label={T("kcDelete")} style={{ ...btnBase, background: "transparent", color: C.dim, padding: "4px 8px", fontSize: 15 }}>✕</button> : <span style={{ width: 31, flexShrink: 0 }} />}
         </div>
@@ -4923,7 +4931,8 @@ function Calories({ history, profile, setProfile, kcal, setKcal }) {
     <div className="scr" style={{ padding: "16px 0 124px", maxWidth: "var(--colMax)", margin: "0 auto" }}>
       <div style={{ padding: "0 18px" }}>
         {/* 1.8.2 (less text): the colour legend moved behind the "?" (the calendar keeps its own legend) */}
-        <Sect data-kc-streak-card title={<>{T("secWeek")}<InfoQ id="kcweek" title={T("secWeek")} text={<div data-kc-legend style={{ display: "flex", flexWrap: "wrap", gap: "10px 16px", fontSize: 14, color: C.chalk }}>   {[[KC_LOG, T("calLegLog"), ""], [KC_HIT, `${T("calLegHit")} (±10 %)`, "✓"]].map(([bg, l, mark]) => <span key={l} style={{ display: "inline-flex", alignItems: "center", gap: 5 }}><span style={{ width: 14, height: 14, borderRadius: 4, background: bg, color: "#1a1206", fontSize: 10, fontWeight: 900, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>{mark}</span>{l}</span>)} </div>} /></>} meta={<KcalStreakChip history={history} small />} style={{ marginTop: 0, marginBottom: 12 }}>
+        <Sect data-kc-streak-card title={<>{T("secWeek")}<InfoQ id="kcweek" title={T("secWeek")} text={<div data-kc-legend style={{ display: "flex", flexWrap: "wrap", gap: "10px 16px", fontSize: 14, color: C.chalk }}>   {[[KC_LOG, T("calLegLog"), 0.6], ["#ff8a80", T("calLegOver"), 1], [KC_HIT, `${T("calLegHit")} (±10 %)`, 2]].map(([col, l, f]) => <span key={l} data-kc-leg={f} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+            <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" style={{ transform: "rotate(-90deg)", flexShrink: 0 }}><circle cx="8" cy="8" r="6" fill={f === 2 ? col : "none"} stroke={f === 2 ? col : C.line} strokeWidth="2" />{f < 2 && <circle cx="8" cy="8" r="6" fill="none" stroke={col} strokeWidth="2" strokeLinecap="round" strokeDasharray={`${f * 37.7} 37.7`} />}</svg>{l}</span>)} </div>} /></>} meta={<KcalStreakChip history={history} small />} style={{ marginTop: 0, marginBottom: 12 }}>
           <KcalWeekDots history={history} full />
         </Sect>
         {pg.tabs([[T("kcToday"), "plate"], [T("kcTabCal"), "calendar"], [T("kcTabMe"), "scale"]])}
@@ -9938,8 +9947,14 @@ function WeekCard({ P, setP, onTips }) {
         {on && <button data-week-tips onClick={() => { sfxTap(); onTips(); }} aria-label={T("plTips")} style={iconBtn}><Ico n="bulb" size={17} color={run > PLN.REST_IN_A_ROW ? C.signal : C.dim} /></button>}
         {on && <button data-week-clear onClick={() => { sfxTap(); setClear(true); }} aria-label={T("plWeekClear")} style={iconBtn}><Ico n="trash" size={16} color={C.dim} /></button>}
       </span>}>
-      {!opts.length && <div data-week-none style={{ fontSize: 14, color: C.dim, lineHeight: 1.45, marginBottom: 10 }}>{T("plWeekNone")}</div>}
-      <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+      {!opts.length && <div data-week-none style={{ fontSize: 14, color: C.dim, lineHeight: 1.45, marginBottom: 12 }}>{T("plWeekNone")}</div>}
+      {/* 1.10.0 (design pass): without plans the week is one quiet row of days (it was seven tall dashed "Rest" rows) */}
+      {!opts.length ? <div data-week-compact style={{ display: "flex", gap: 6 }} aria-hidden="true">
+        {PLN.WEEKDAYS.map(wd => <div key={wd} data-week-row={wd} style={{ flex: 1, textAlign: "center" }}>
+          <div style={{ fontSize: 11, fontWeight: wd === todayWd ? 800 : 500, color: wd === todayWd ? C.signal : C.dim, marginBottom: 5 }}>{wdNames[wd - 1]}</div>
+          <div style={{ height: 26, borderRadius: 8, border: `1.5px dashed ${C.line}`, display: "flex", alignItems: "center", justifyContent: "center" }}><Ico n="moon" size={13} color={`${C.sky}99`} /></div>
+        </div>)}
+      </div> : <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
         {PLN.WEEKDAYS.map(wd => {
           const pl = PLN.planOn(P, wd);
           return (
@@ -9955,7 +9970,7 @@ function WeekCard({ P, setP, onTips }) {
             </button>
           );
         })}
-      </div>
+      </div>}
       {on && run > PLN.REST_IN_A_ROW && <div data-week-rest={run} style={{ display: "flex", gap: 8, alignItems: "flex-start", fontSize: 13, color: C.dim, lineHeight: 1.45, marginTop: 10 }}><Ico n="snow" size={16} color={C.sky} style={{ flexShrink: 0, marginTop: 1 }} /><span>{T("hintRest", { n: run })}</span></div>}
       {day && (
         <Sheet title={wdLongName(day)} onClose={() => setDay(null)} short>
@@ -10035,6 +10050,7 @@ function PlansTab({ profile, setProfile, history, open, onOpened }) {
       {(
         <>
           <WeekCard P={P} setP={setP} onTips={() => setTips(true)} />
+          {P.list.length > 0 && <>
           <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 18, flexWrap: "wrap" }}>
             <div className="noBar" style={{ display: "flex", gap: 6, overflowX: "auto", flex: 1, minWidth: 0 }}>
               <button data-plan-grp="" aria-pressed={!grp} onClick={() => { sfxTap(); setGrp(""); }} style={chipS(!grp)}>{T("plAllGroups")}</button>
@@ -10048,6 +10064,7 @@ function PlansTab({ profile, setProfile, history, open, onOpened }) {
             <button data-plan-dir={P.dir} aria-label={T(P.dir === "asc" ? "plAsc" : "plDesc")} onClick={() => { sfxTap(); setP(cur => ({ ...cur, dir: cur.dir === "asc" ? "desc" : "asc" })); }} style={{ ...chipS(false), padding: "6px 9px", display: "inline-flex" }}><Ico n={P.dir === "asc" ? "arrowUp" : "arrowDown"} size={14} sw={2.4} /></button>
             {grp && grp !== "-" && <button data-plan-delgrp onClick={() => { sfxTap(); setDelG(P.groups.find(g => g.id === grp)); }} aria-label={T("plDelGroup")} style={{ ...chipS(false), marginLeft: "auto", padding: "6px 9px", display: "inline-flex" }}><Ico n="trash" size={14} /></button>}
           </div>
+          </>}
           <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 12 }}>
             {list.map(p => {
               const days = PLN.daysOf(P, p.id);
@@ -10067,8 +10084,17 @@ function PlansTab({ profile, setProfile, history, open, onOpened }) {
                 </button>
               );
             })}
-            {!list.length && <div data-plans-empty style={{ color: C.dim, fontSize: 14, padding: "14px 4px" }}>{T("plEmpty")}</div>}
-            <button data-plan-new onClick={newPlan} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), padding: 14, fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}><Ico n="plus" size={18} sw={2.6} />{T("plNew")}</button>
+            {!list.length && !P.list.length ? (
+              // 1.10.0 (design pass): no plans yet = one card that says it and holds the button (was a loose grey line)
+              <div data-plans-empty style={{ ...card, padding: "22px 18px 18px", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: 12 }}>
+                <IcoBox n="checklist" color={C.signal} />
+                <div style={{ fontSize: 14, color: C.dim, lineHeight: 1.45, maxWidth: 300 }}>{T("plEmpty")}</div>
+                <button data-plan-new onClick={newPlan} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), width: "100%", padding: 14, fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}><Ico n="plus" size={18} sw={2.6} />{T("plNew")}</button>
+              </div>
+            ) : <>
+              {!list.length && <div data-plans-empty style={{ color: C.dim, fontSize: 14, padding: "14px 4px" }}>{T("plEmpty")}</div>}
+              <button data-plan-new onClick={newPlan} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), padding: 14, fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}><Ico n="plus" size={18} sw={2.6} />{T("plNew")}</button>
+            </>}
           </div>
         </>
       )}

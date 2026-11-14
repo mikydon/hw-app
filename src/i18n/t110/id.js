@@ -16,6 +16,7 @@ export default {
     shSuggestT: "Usulkan tampilan",
     tourShSoon: "Yang terkunci sedang dalam perjalanan: season pass dan cara lain untuk dapat berlian.",
     tourShWon: "Tampilan ini tidak bisa dibeli. Kamu mendapatkannya lewat lencana.",
+    calLegOver: "Melebihi target",
     gmWhyDead: "Bosnya: kartu ini tidak dihitung",
   },
   tour: { c5: { 0: "Kalender: hari hijau berarti ada latihan, titik di bawah angka berarti kalori. Ketuk satu hari untuk melihat apa yang kamu lakukan; ketuk hari kosong untuk menambah latihan." } },

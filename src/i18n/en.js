@@ -148,6 +148,7 @@ const en = {
     calKcalLog: "Calories logged",
     calLegTrain: "Workout",
     calLegLog: "Calories logged",
+    calLegOver: "Over the target",
     calLegHit: "Calories: target hit",
     look_glass: "Glass",
     look_accent: "Accent",
