@@ -1,6 +1,13 @@
 // Spanish: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    remindT: "🔥 {n}: tu racha termina esta noche",
+    remindD: "Un entreno corto hoy la mantiene.",
+    remindFzD: "Un entreno corto hoy la mantiene; si no, se usa un protector de racha.",
+    remindChannel: "Recordatorio de racha",
+    remindRow: "Recordatorio de racha",
+    remindRowD: "Por la tarde, solo el día en que tu racha terminaría.",
+    notifSome: "{n} de {m} activadas",
     textSizeT: "Tamaño del texto",
     textSizeD: "Letras más grandes para leer mejor; las pantallas se adaptan.",
     tourGmRanked: "Ranked: la misma baraja para todos, contra jugadores de puntuación parecida. 2 partidas cada día que entrenas; tu rango sube y baja con tu puntuación.",
@@ -223,5 +230,6 @@ export default {
     ["Listas más fluidas", "Los filtros eran distintos en cada lista y se reiniciaban cada vez, y una lista cargando solo mostraba una palabra.", "Un botón de filtro en cada lista, y tus filtros se mantienen hasta que cierres la app. Contornos grises mientras carga, desliza hacia abajo para recargar, y una lista vacía ofrece el siguiente paso. Cambia el mes del calendario deslizando; en PC con ← → y / para buscar."],
     ["Nombres limpios", "Se podía coger cualquier apodo libre.", "Los nombres que parecen HW App o el equipo y las palabrotas conocidas se rechazan en apodos nuevos y en planes que ven otros."],
     ["📱 Tamaño del texto", "Las letras seguían el ajuste de fuente del móvil y con un tamaño grande los textos se cortaban.", "Ajustes → Apariencia → Tamaño del texto: 100, 115 o 130 %, y las pantallas dejan sitio a las letras más grandes."],
+    ["📱 Recordatorio de racha", "Nada te avisaba cuando tu racha iba a terminar.", "Una notificación por la tarde, solo el día en que tu racha terminaría (18–21 h, a tu elección). Ajustes → Notificaciones."],
   ],
 };

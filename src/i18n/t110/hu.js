@@ -1,6 +1,13 @@
 // Hungarian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    remindT: "🔥 {n}: ma este véget ér a szériád",
+    remindD: "Egy rövid edzés ma megtartja.",
+    remindFzD: "Egy rövid edzés ma megtartja, különben egy szériavédő fogy el.",
+    remindChannel: "Széria-emlékeztető",
+    remindRow: "Széria-emlékeztető",
+    remindRowD: "Este, csak azon a napon, amikor a szériád véget érne.",
+    notifSome: "{m}-ből {n} bekapcsolva",
     textSizeT: "Szövegméret",
     textSizeD: "Nagyobb betűk a könnyebb olvasásért; a képernyők alkalmazkodnak.",
     tourGmRanked: "Ranked: ugyanaz a pakli mindenkinek, hasonló pontszámú játékosok ellen. 2 játék minden edzésnapon; a rang a pontszámmal együtt nő és csökken.",
@@ -223,5 +230,6 @@ export default {
     ["Gördülékenyebb listák", "A szűrők minden listában másképp néztek ki és mindig nullázódtak, a betöltődő lista pedig csak egy szót mutatott.", "Egy szűrőgomb minden listában, és a szűrők megmaradnak, amíg be nem zárod az appot. Szürke körvonalak betöltés közben, húzd le a frissítéshez, és az üres lista felajánlja a következő lépést. A naptár hónapját húzással váltod; PC-n ← → és / a kereséshez."],
     ["Tiszta nevek", "Bármilyen szabad becenevet el lehetett venni.", "A HW App-nak vagy a csapatnak látszó nevek és az ismert csúnya szavak nem használhatók új becenévben és másoknak mutatott tervben."],
     ["📱 Szövegméret", "A betűk a telefon betűméretét követték, és nagy beállításnál a szövegek levágódtak.", "Beállítások → Megjelenés → Szövegméret: 100, 115 vagy 130 %, és a képernyők helyet adnak a nagyobb betűknek."],
+    ["📱 Széria-emlékeztető", "Semmi sem figyelmeztetett, amikor a szériád véget ért volna.", "Egy értesítés este, csak azon a napon, amikor a szériád véget érne (18–21 óra, te választod). Beállítások → Értesítések."],
   ],
 };

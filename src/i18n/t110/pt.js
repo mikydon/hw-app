@@ -1,6 +1,13 @@
 // Portuguese (Brazil): texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    remindT: "🔥 {n}: sua sequência termina hoje à noite",
+    remindD: "Um treino curto hoje a mantém.",
+    remindFzD: "Um treino curto hoje a mantém; senão, um congelamento de sequência é usado.",
+    remindChannel: "Lembrete de sequência",
+    remindRow: "Lembrete de sequência",
+    remindRowD: "À noite, só no dia em que sua sequência terminaria.",
+    notifSome: "{n} de {m} ativadas",
     textSizeT: "Tamanho do texto",
     textSizeD: "Letras maiores para ler melhor; as telas se ajustam.",
     tourGmRanked: "Ranked: o mesmo baralho para todos, contra jogadores de pontuação parecida. 2 partidas em cada dia de treino; seu rank sobe e desce com a pontuação.",
@@ -223,5 +230,6 @@ export default {
     ["Listas mais fluidas", "Os filtros eram diferentes em cada lista e zeravam toda vez, e uma lista carregando mostrava só uma palavra.", "Um botão de filtro em cada lista, e seus filtros ficam até você fechar o app. Contornos cinza enquanto carrega, puxe para baixo para recarregar, e uma lista vazia oferece o próximo passo. Mude o mês do calendário deslizando; no PC com ← → e / para buscar."],
     ["Nomes limpos", "Dava para pegar qualquer apelido livre.", "Nomes que parecem o HW App ou a equipe e palavrões conhecidos são recusados em apelidos novos e em planos mostrados aos outros."],
     ["📱 Tamanho do texto", "As letras seguiam o tamanho de fonte do celular e, com fonte grande, os textos eram cortados.", "Configurações → Aparência → Tamanho do texto: 100, 115 ou 130 %, e as telas abrem espaço para letras maiores."],
+    ["📱 Lembrete de sequência", "Nada avisava quando sua sequência ia terminar.", "Uma notificação à noite, só no dia em que sua sequência terminaria (18h–21h, você escolhe). Ajustes → Notificações."],
   ],
 };

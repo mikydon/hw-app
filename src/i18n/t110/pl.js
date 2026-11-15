@@ -1,6 +1,13 @@
 // Polish: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    remindT: "🔥 {n}: dziś wieczorem kończy się twoja passa",
+    remindD: "Krótki trening dziś ją utrzyma.",
+    remindFzD: "Krótki trening dziś ją utrzyma, inaczej zużyjesz zamrożenie passy.",
+    remindChannel: "Przypomnienie o passie",
+    remindRow: "Przypomnienie o passie",
+    remindRowD: "Wieczorem, tylko w dniu, w którym passa by się skończyła.",
+    notifSome: "Włączone {n} z {m}",
     textSizeT: "Rozmiar tekstu",
     textSizeD: "Większe litery dla łatwiejszego czytania; ekrany się dopasują.",
     tourGmRanked: "Ranked: ta sama talia dla wszystkich, przeciw graczom o podobnym rankingu. 2 gry w każdy dzień z treningiem; ranga rośnie i spada razem z rankingiem.",
@@ -223,5 +230,6 @@ export default {
     ["Płynniejsze listy", "Filtry wyglądały w każdej liście inaczej i za każdym razem się zerowały, a ładowana lista pokazywała tylko słowo.", "Jeden przycisk filtra w każdej liście, a filtry zostają, dopóki nie zamkniesz aplikacji. Szare kontury podczas ładowania, pociągnij w dół, by odświeżyć, a pusta lista proponuje następny krok. Miesiąc w kalendarzu zmienisz przesunięciem; na PC strzałkami ← → i / do wyszukiwania."],
     ["Czyste nazwy", "Można było zająć dowolną wolną nazwę.", "Nazwy udające HW App lub zespół oraz znane przekleństwa są odrzucane w nowych nazwach i w planach pokazywanych innym."],
     ["📱 Rozmiar tekstu", "Litery zależały od ustawienia czcionki w telefonie, a przy dużej czcionce teksty były ucinane.", "Ustawienia → Wygląd → Rozmiar tekstu: 100, 115 lub 130 %, a ekrany robią miejsce na większe litery."],
+    ["📱 Przypomnienie o passie", "Nic nie przypominało, gdy passa miała się skończyć.", "Jedno powiadomienie wieczorem, tylko w dniu, w którym passa by się skończyła (18–21, do wyboru). Ustawienia → Powiadomienia."],
   ],
 };

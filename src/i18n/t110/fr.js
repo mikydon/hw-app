@@ -1,6 +1,13 @@
 // French: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    remindT: "🔥 {n} : ta flamme s'éteint ce soir",
+    remindD: "Un petit entraînement aujourd'hui la garde allumée.",
+    remindFzD: "Un petit entraînement aujourd'hui la garde, sinon un gel de flamme est utilisé.",
+    remindChannel: "Rappel de flamme",
+    remindRow: "Rappel de flamme",
+    remindRowD: "Le soir, seulement le jour où ta flamme s'éteindrait.",
+    notifSome: "{n} sur {m} activées",
     textSizeT: "Taille du texte",
     textSizeD: "Des lettres plus grandes pour lire plus facilement ; les écrans s'adaptent.",
     tourGmRanked: "Ranked : le même jeu pour tous, contre des joueurs de niveau proche. 2 parties chaque jour d'entraînement ; ton rang monte et descend avec ton classement.",
@@ -223,5 +230,6 @@ export default {
     ["Listes plus fluides", "Les filtres changeaient d'une liste à l'autre et se réinitialisaient à chaque fois, et une liste en chargement n'affichait qu'un mot.", "Un bouton de filtre dans chaque liste, et tes filtres restent jusqu'à la fermeture de l'appli. Des contours gris pendant le chargement, tire vers le bas pour actualiser, et une liste vide propose l'étape suivante. Change le mois du calendrier en glissant ; sur PC avec ← → et / pour chercher."],
     ["Noms propres", "On pouvait prendre n'importe quel pseudo libre.", "Les noms qui ressemblent à HW App ou à l'équipe, et les gros mots connus, sont refusés pour les nouveaux pseudos et les programmes montrés aux autres."],
     ["📱 Taille du texte", "Les lettres suivaient la taille de police du téléphone, et une grande taille coupait des textes.", "Réglages → Apparence → Taille du texte : 100, 115 ou 130 %, et les écrans font de la place aux lettres plus grandes."],
+    ["📱 Rappel de flamme", "Rien ne te prévenait quand ta flamme allait s'éteindre.", "Une notification le soir, seulement le jour où ta flamme s'éteindrait (18 h–21 h, au choix). Réglages → Notifications."],
   ],
 };

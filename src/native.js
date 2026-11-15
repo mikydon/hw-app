@@ -502,18 +502,25 @@ export async function healthSteps(days = 7, type = "steps") {
 // Firebase Cloud Messaging through @capacitor-firebase/messaging (native side only: registered by name, so its web
 // part, which would pull Firebase into the main bundle, is never loaded). Older APKs (before 1.6.0) don't have it.
 const FcmPlugin = registerPlugin("FirebaseMessaging");
-export const pushSupported = () => isNative && Capacitor.isPluginAvailable("FirebaseMessaging");
+// tests: window.__hwNotifSim {perm, asked} stands in for Android's notification permission (the browser has none)
+const nSim = () => (typeof window !== "undefined" && window.__hwNotifSim) || null;
+export const pushSupported = () => !!nSim() || (isNative && Capacitor.isPluginAvailable("FirebaseMessaging"));
+// tests (window.__hwNotifSim): a quiet stand-in for the plugin, so nothing is sent to the missing web side
+const FCM_STUB = { createChannel: async () => {}, getToken: async () => ({ token: "" }), deleteToken: async () => {}, subscribeToTopic: async () => {}, unsubscribeFromTopic: async () => {}, addListener: () => ({ remove() {} }) };
+const fcm = () => (nSim() ? FCM_STUB : FcmPlugin);
 // "granted" | "denied" | "prompt" (Android 13+ asks; older Android always allows)
 // 1.7.4: one Android question at a time (the update topic and the account could ask together at a start; a second
 // request while the dialog is open could leave the first one without an answer).
 let permAsk = null;
 export async function pushPermission(ask) {
+  const sim = nSim();
+  if (sim) { if (ask) { sim.asked = (sim.asked || 0) + 1; if (sim.perm === "prompt") sim.perm = sim.answer || "granted"; } return sim.perm; }
   if (!pushSupported()) return "denied";
   if (ask) {
-    if (!permAsk) permAsk = FcmPlugin.requestPermissions().then(r => permOf(r.receive), () => "denied").finally(() => { permAsk = null; });
+    if (!permAsk) permAsk = fcm().requestPermissions().then(r => permOf(r.receive), () => "denied").finally(() => { permAsk = null; });
     return permAsk;
   }
-  try { const r = await FcmPlugin.checkPermissions(); return permOf(r.receive); } catch (_) { return "denied"; }
+  try { const r = await fcm().checkPermissions(); return permOf(r.receive); } catch (_) { return "denied"; }
 }
 // "prompt-with-rationale" (refused once, Android may still ask) counts as "prompt" (1.7.5)
 const permOf = x => (x === "granted" ? "granted" : x === "prompt" || x === "prompt-with-rationale" ? "prompt" : "denied");
@@ -562,31 +569,31 @@ export function installCheck() {
 // The "Friends and messages" channel (Android 8+); its name follows the app's language.
 export async function pushChannel(name) {
   if (!pushSupported()) return;
-  try { await FcmPlugin.createChannel({ id: "social", name, importance: 4, visibility: 1, vibration: true, lights: true, lightColor: "#FFD23F" }); } catch (_) {}
+  try { await fcm().createChannel({ id: "social", name, importance: 4, visibility: 1, vibration: true, lights: true, lightColor: "#FFD23F" }); } catch (_) {}
 }
-export async function pushToken() { if (!pushSupported()) return null; try { return (await FcmPlugin.getToken()).token || null; } catch (_) { return null; } }
+export async function pushToken() { if (!pushSupported()) return null; try { return (await fcm().getToken()).token || null; } catch (_) { return null; } }
 // The same, but says why it failed (for the test button): {token} | {err}
 export async function pushTokenWhy() {
   if (!pushSupported()) return { err: "no-plugin" };
-  try { const t = (await FcmPlugin.getToken()).token; return t ? { token: t } : { err: "no-token" }; } catch (e) { return { err: "token " + String((e && (e.code || e.message)) || e).slice(0, 60) }; }
+  try { const t = (await fcm().getToken()).token; return t ? { token: t } : { err: "no-token" }; } catch (e) { return { err: "token " + String((e && (e.code || e.message)) || e).slice(0, 60) }; }
 }
-export async function pushDeleteToken() { if (!pushSupported()) return; try { await FcmPlugin.deleteToken(); } catch (_) {} }
+export async function pushDeleteToken() { if (!pushSupported()) return; try { await fcm().deleteToken(); } catch (_) {} }
 // A tap on a notification (also when it started the app): fn({kind, uid, cid}) (uid = the sender; "from" is reserved by FCM)
 export function onPushTap(fn) {
   if (!pushSupported()) return () => {};
-  const h = FcmPlugin.addListener("notificationActionPerformed", e => { const d = (e && e.notification && e.notification.data) || {}; if (d.kind) fn(d); });
+  const h = fcm().addListener("notificationActionPerformed", e => { const d = (e && e.notification && e.notification.data) || {}; if (d.kind) fn(d); });
   return () => { Promise.resolve(h).then(x => x && x.remove && x.remove()).catch(() => {}); };
 }
 // A notification that arrived while the app is open (Android shows nothing then): fn({kind, uid, cid}, {title, body})
 export function onPushReceived(fn) {
   if (!pushSupported()) return () => {};
-  const h = FcmPlugin.addListener("notificationReceived", e => { const n = (e && e.notification) || {}; fn(n.data || {}, { title: n.title || "", body: n.body || "" }); });
+  const h = fcm().addListener("notificationReceived", e => { const n = (e && e.notification) || {}; fn(n.data || {}, { title: n.title || "", body: n.body || "" }); });
   return () => { Promise.resolve(h).then(x => x && x.remove && x.remove()).catch(() => {}); };
 }
 // A new token from Firebase (it can change now and then)
 export function onPushToken(fn) {
   if (!pushSupported()) return () => {};
-  const h = FcmPlugin.addListener("tokenReceived", e => e && e.token && fn(e.token));
+  const h = fcm().addListener("tokenReceived", e => e && e.token && fn(e.token));
   return () => { Promise.resolve(h).then(x => x && x.remove && x.remove()).catch(() => {}); };
 }
 
@@ -604,15 +611,15 @@ export async function updTopic({ on, lang, channelName, ask }) {
   const want = on ? `upd-${store}-${String(lang || "en").replace(/[^a-z]/g, "")}` : "";
   await installCheck();
   const m = updMem();
-  try { await FcmPlugin.createChannel({ id: "updates", name: channelName, importance: 3, visibility: 1 }); } catch (_) {}
+  try { await fcm().createChannel({ id: "updates", name: channelName, importance: 3, visibility: 1 }); } catch (_) {}
   // first start (Michael: ask right away): Android 13+ asks for notifications once
   if (on && ask && !m.asked) { setUpdMem({ asked: true }); await pushPermission(false).then(p => (p === "prompt" ? pushPermission(true) : p)); }
   // 1.7.4: subscribed again at every start (cheap, and harmless when already subscribed): a subscription belongs to
   // the phone's token, so one kept only in memory can be gone (new token, reinstall) without the app knowing.
-  if (m.topic === want) { if (want) FcmPlugin.subscribeToTopic({ topic: want }).catch(() => {}); return want; }
+  if (m.topic === want) { if (want) fcm().subscribeToTopic({ topic: want }).catch(() => {}); return want; }
   try {
-    if (m.topic) await FcmPlugin.unsubscribeFromTopic({ topic: m.topic });
-    if (want) await FcmPlugin.subscribeToTopic({ topic: want });
+    if (m.topic) await fcm().unsubscribeFromTopic({ topic: m.topic });
+    if (want) await fcm().subscribeToTopic({ topic: want });
     setUpdMem({ topic: want });
   } catch (_) {}
   return want;
@@ -653,3 +660,10 @@ export function restStart(o) {
   return r.start(o).then(x => { restRunning = true; restBeeps = !!(x && x.beeps); return true; }, () => false);
 }
 export function restStop() { const r = restImpl(); if (!r || !restRunning) return Promise.resolve(); restRunning = false; return r.stop().catch(() => {}); }
+// 1.10.0 (Michael, Nov 15): the evening streak reminder, one at a time, set by the app (HwRemindPlugin; test hook
+// window.__hwRemind {set, clear}). `at` = ms; at ≤ now or clear() = no reminder. App only (APK 1.10.0+).
+const HwRemind = registerPlugin("HwRemind");
+const rmImpl = () => (typeof window !== "undefined" && window.__hwRemind) || (isNative && Capacitor.isPluginAvailable("HwRemind") ? HwRemind : null);
+export const remindSupported = () => !!rmImpl();
+export async function remindSet(at, title, body, channelName) { const i = rmImpl(); if (!i) return; try { await i.set({ at, title, body, channelName }); } catch (_) {} }
+export async function remindClear() { const i = rmImpl(); if (!i) return; try { await i.clear(); } catch (_) {} }

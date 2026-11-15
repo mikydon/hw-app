@@ -1,6 +1,13 @@
 // German: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    remindT: "🔥 {n}: heute Abend endet deine Serie",
+    remindD: "Ein kurzes Training heute hält sie.",
+    remindFzD: "Ein kurzes Training heute hält sie, sonst wird ein Serienschutz verbraucht.",
+    remindChannel: "Serien-Erinnerung",
+    remindRow: "Serien-Erinnerung",
+    remindRowD: "Abends, nur an einem Tag, an dem deine Serie enden würde.",
+    notifSome: "{n} von {m} an",
     textSizeT: "Textgröße",
     textSizeD: "Größere Buchstaben zum leichteren Lesen; die Seiten passen sich an.",
     tourGmRanked: "Ranked: dasselbe Deck für alle, gegen Spieler mit ähnlicher Wertung. 2 Spiele an jedem Trainingstag; dein Rang steigt und fällt mit der Wertung.",
@@ -223,5 +230,6 @@ export default {
     ["Flüssigere Listen", "Filter sahen in jeder Liste anders aus und wurden jedes Mal zurückgesetzt, und eine ladende Liste zeigte nur ein Wort.", "Ein Filterknopf in jeder Liste, und deine Filter bleiben, bis du die App schließt. Graue Umrisse beim Laden, zum Aktualisieren nach unten ziehen, und eine leere Liste bietet den nächsten Schritt. Den Monat im Kalender wechselst du per Wischen; am PC mit ← → und / zum Suchen."],
     ["Saubere Namen", "Jeder freie Spitzname konnte vergeben werden.", "Namen, die wie HW App oder das Team aussehen, und bekannte Schimpfwörter werden bei neuen Spitznamen und bei Plänen für andere abgelehnt."],
     ["📱 Textgröße", "Die Schrift folgte der Schriftgröße des Handys, und bei großer Einstellung wurden Texte abgeschnitten.", "Einstellungen → Darstellung → Textgröße: 100, 115 oder 130 %, und die Bildschirme machen Platz für größere Buchstaben."],
+    ["📱 Serien-Erinnerung", "Nichts hat dich erinnert, wenn deine Serie enden würde.", "Eine Benachrichtigung am Abend, nur an dem Tag, an dem deine Serie enden würde (18–21 Uhr, nach Wahl). Einstellungen → Benachrichtigungen."],
   ],
 };

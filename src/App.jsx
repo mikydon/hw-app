@@ -1,6 +1,6 @@
 import { useState, useEffect, useLayoutEffect, useRef, useMemo, useId, useCallback, memo, Fragment } from "react";
 import { createPortal } from "react-dom";
-import { shareImage, askReview, restSupported, restPermission, restStart, restStop, restNativeBeeps, restOpenSettings, isNative, pushBack, setRootBack, exitApp, vibratePattern, keepScreenOn, openExternal, saveBackupFile, bkSupported, bkWrite, bkWriteAuto, bkList, bkRead, bkDelete, bkShare, BK_DIR, bkAutoFile, checkForUpdate, lastUpdate, lastGh, applyUpdateNow, latestApk, isTestBuild, apkState, onApk, apkSupported, apkRestore, apkDownload, apkCanInstall, apkAllow, apkInstall, onAppResume, healthState, healthConnect, healthSettings, healthSteps, healthFoodItems, healthBody, shareText, copyText, pushSupported, pushPermission, pushChannel, pushToken, pushTokenWhy, pushDeleteToken, onPushTap, onPushToken, onPushReceived, hzSupported, hzInfo, hzSet, textZoomSupported, setTextZoom, isPlay, playCheck, playOpenStore, playUpdate, PLAY_STORE_LINK, updTopic, onAppUrl, installCheck, openNotifSettings, showNotif, setNativeBg, backIsTop, backTopRun } from "./native.js";
+import { remindSupported, remindSet, remindClear, shareImage, askReview, restSupported, restPermission, restStart, restStop, restNativeBeeps, restOpenSettings, isNative, pushBack, setRootBack, exitApp, vibratePattern, keepScreenOn, openExternal, saveBackupFile, bkSupported, bkWrite, bkWriteAuto, bkList, bkRead, bkDelete, bkShare, BK_DIR, bkAutoFile, checkForUpdate, lastUpdate, lastGh, applyUpdateNow, latestApk, isTestBuild, apkState, onApk, apkSupported, apkRestore, apkDownload, apkCanInstall, apkAllow, apkInstall, onAppResume, healthState, healthConnect, healthSettings, healthSteps, healthFoodItems, healthBody, shareText, copyText, pushSupported, pushPermission, pushChannel, pushToken, pushTokenWhy, pushDeleteToken, onPushTap, onPushToken, onPushReceived, hzSupported, hzInfo, hzSet, textZoomSupported, setTextZoom, isPlay, playCheck, playOpenStore, playUpdate, PLAY_STORE_LINK, updTopic, onAppUrl, installCheck, openNotifSettings, showNotif, setNativeBg, backIsTop, backTopRun } from "./native.js";
 import { cloud, NICK_RE, SHARE_BASE, cleanCode, fmtCode } from "./cloud-lazy.js";
 import { nickReserved, nickBad, textBad } from "./cloud-shared.js";
 import { QUICK as EMO_QUICK, EMOJI } from "./emoji.js";
@@ -590,6 +590,20 @@ function autoFreezeDays(history, today) {
   if (!add.length || add.length > freezesAvailable(history)) return null;
   return add;
 }
+// 1.10.0 (Michael, Nov 15): the evening streak reminder. The streak ends when a day passes 2 days after the last
+// workout or freeze day without one, so that day's evening (`hour`) is when to remind; the app sends it again after
+// every change (a workout moves it 2 days on). null = no streak to keep. fz = a freeze would save it (other text).
+function remindPlan(history, today, hour) {
+  const st = streakInfo(history, today);
+  if (!st.n) return null;
+  const dates = [...new Set([...history.map(e => e.date), ...(META.freezeDays || [])])].filter(d => d <= today).sort();
+  const last = dates[dates.length - 1];
+  if (!last) return null;
+  const day = addDays(last, 2), d = parseKey(day);
+  d.setHours(hour, 0, 0, 0);
+  return { day, at: d.getTime(), n: st.n, fz: freezesAvailable(history) > 0 };
+}
+const REMIND_HOURS = [18, 19, 20, 21];
 // 1.8.0 friend streaks (Michael: "like Duolingo"): the shared streak counts the days on which both of you are on a
 // streak (each trained or used a freeze within the last 2 days, the every-other-day plan), back from today to the day
 // it was accepted; a day where one of you isn't breaks it (it starts again when both train). dates = "YYYY-MM-DD".
@@ -8513,9 +8527,13 @@ function NotifRow({ settings, set, acct, onAcctOpen }) {
   const [perm, setPerm] = useNotifPerm(); // shared with the sheet, so the summary follows what happens there
   const [open, setOpen] = useState(false);
   const signed = !!(acct && acct.st === "in"), upd = settings.updNotif !== false, msg = signed && settings.push !== false;
+  const rm = remindSupported() ? [settings.remind !== false] : []; // 1.10.0: the streak reminder (new APK)
   const ok = perm === null || perm === "granted";
-  const sum = perm === "denied" && settings.notifOff === "android" ? T("notifAndroidOff") : !ok || (!upd && !msg) ? T("notifNone") : upd && msg ? T("notifAll") : upd ? T("notifOnlyUpd") : T("notifOnlyMsg");
-  const on = ok && (upd || msg);
+  const kinds = [upd, ...(signed ? [msg] : []), ...rm], onN = kinds.filter(Boolean).length;
+  const sum = perm === "denied" && settings.notifOff === "android" ? T("notifAndroidOff") : !ok || !onN ? T("notifNone")
+    : !rm.length ? (upd && msg ? T("notifAll") : upd ? T("notifOnlyUpd") : T("notifOnlyMsg"))
+    : onN === kinds.length ? T("notifAll") : T("notifSome", { n: onN, m: kinds.length });
+  const on = ok && onN > 0;
   return (
     <>
       <button type="button" data-notif-open data-notif-on={on ? 1 : 0} onClick={() => { sfxTap(); setOpen(true); }} style={{ ...btnBase, width: "100%", background: "transparent", color: C.chalk, padding: ROW_I, display: "flex", alignItems: "center", gap: 12, textAlign: "left", borderRadius: 0, borderTop: `1px solid ${C.line}`, fontWeight: 400 }}>
@@ -8532,18 +8550,20 @@ function NotifRow({ settings, set, acct, onAcctOpen }) {
 }
 function NotifSheet({ settings, set, perm, setPerm, signed, onSignIn, onClose }) {
   const ok = perm === null || perm === "granted";
-  const upd = settings.updNotif !== false, msg = signed && settings.push !== false, all = ok && (upd || msg);
+  const rmOn = remindSupported() && settings.remind !== false;
+  const upd = settings.updNotif !== false, msg = signed && settings.push !== false, all = ok && (upd || msg || rmOn);
   const flipAll = async () => {
-    if (all) { set({ updNotif: false, push: false, notifOff: null }); return; }
-    set({ updNotif: true, push: true, notifOff: null });
+    if (all) { set({ updNotif: false, push: false, remind: false, notifOff: null }); return; }
+    set({ updNotif: true, push: true, remind: true, notifOff: null });
     const p = signed ? (await pushRegister({ on: true, ask: true })).perm : await pushPermission(true);
     setPerm(p);
-    if (p !== "granted") set({ updNotif: false, push: false, notifOff: "android" }); // refused: off again
+    if (p !== "granted") set({ updNotif: false, push: false, remind: false, notifOff: "android" }); // refused: off again
   };
   return (
     <Sheet title={T("notifTitle")} onClose={onClose}>
       <div data-notif-sheet style={{ borderRadius: 18, border: `1px solid ${C.line}`, overflow: "hidden", background: SOFT() }}>
         <div data-notif-all><SettingRow first title={T("notifMaster")} desc={T("notifMasterD")} on={all} onClick={flipAll} /></div>
+        {remindSupported() && <RemindRow settings={settings} set={set} perm={perm} setPerm={setPerm} />}
         <UpdNotifRow settings={settings} set={set} perm={perm} setPerm={setPerm} />
         {signed ? <PushRow settings={settings} set={set} perm={perm} setPerm={setPerm} />
           : <button type="button" data-notif-signin onClick={() => { sfxTap(); onSignIn(); }} style={{ ...btnBase, width: "100%", background: "transparent", color: C.chalk, padding: "14px 16px", display: "flex", alignItems: "center", gap: 12, textAlign: "left", borderRadius: 0, borderTop: `1px solid ${C.line}`, fontWeight: 400 }}>
@@ -8554,8 +8574,29 @@ function NotifSheet({ settings, set, perm, setPerm, signed, onSignIn, onClose })
               <Arrow />
             </button>}
       </div>
-      {perm === "denied" && (upd || msg || settings.notifOff === "android") && <div style={{ marginTop: 12 }}><NotifBlocked data="push" /></div>}
+      {perm === "denied" && (upd || msg || rmOn || settings.notifOff === "android") && <div style={{ marginTop: 12 }}><NotifBlocked data="push" /></div>}
     </Sheet>
+  );
+}
+// 1.10.0 (Michael, Nov 15): the evening streak reminder: on/off, and the hour (only while on)
+function RemindRow({ settings, set, perm, setPerm }) {
+  const want = settings.remind !== false, on = want && (perm === null || perm === "granted");
+  const hour = REMIND_HOURS.includes(settings.remindAt) ? settings.remindAt : 19;
+  const flip = async () => {
+    if (on) { set({ remind: false, notifOff: null }); return; }
+    set({ remind: true, notifOff: null });
+    const p = await pushPermission(true); setPerm(p);
+    if (p !== "granted") set({ remind: false, notifOff: "android" });
+  };
+  const hm = h => new Date(2026, 0, 1, h).toLocaleTimeString(LANG, { hour: "numeric", minute: "2-digit" });
+  return (
+    <div data-remind={on ? 1 : 0}>
+      <SettingRow title={T("remindRow")} desc={T("remindRowD")} on={on} onClick={flip} />
+      {on && <div style={{ padding: "0 16px 14px" }}>
+        <Seg label={T("remindRow")} value={hour} onPick={h => { if (h !== hour) { sfxTap(); set({ remindAt: h }); } }}
+          items={REMIND_HOURS.map(h => [h, hm(h), { "data-remind-at": h, "aria-pressed": h === hour }])} />
+      </div>}
+    </div>
   );
 }
 function UpdNotifRow({ settings, set, perm, setPerm }) {
@@ -13720,15 +13761,27 @@ export default function App() {
     const apply = o => { const n = { ...setRef.current, ...o }; window._wset = n; setSettings(n); };
     (async () => {
       await installCheck();
-      const s = setRef.current, want = (acctOn && s.push !== false) || s.updNotif !== false;
+      const s = setRef.current, want = (acctOn && s.push !== false) || s.updNotif !== false || (remindSupported() && s.remind !== false);
       let p = await pushPermission(false);
-      if (p === "granted") { if (s.notifOff === "android") apply({ push: true, updNotif: true, notifOff: null }); return; }
+      if (p === "granted") { if (s.notifOff === "android") apply({ push: true, updNotif: true, remind: true, notifOff: null }); return; }
       if (!want) return;
       if (p === "prompt") p = await pushPermission(true);
-      if (p !== "granted") apply({ push: false, updNotif: false, notifOff: "android" });
+      if (p !== "granted") apply({ push: false, updNotif: false, remind: false, notifOff: "android" });
       else setPermSeq(n => n + 1); // allowed now: register this phone
     })().catch(() => {});
   }, [loaded, settingsLoaded, obChecked, onboard, permSeq, acctOn]);
+  // 1.10.0 (Michael, Nov 15): the evening streak reminder, sent again after every change (a workout, a freeze, the
+  // setting, the language). Nothing is sent while the person is setting the app up.
+  useEffect(() => {
+    if (!remindSupported() || !loaded || !settingsLoaded || !obChecked || onboard !== null) return;
+    const t = setTimeout(() => {
+      const s = setRef.current;
+      const p = s.remind === false ? null : remindPlan(history, dateKey(), REMIND_HOURS.includes(s.remindAt) ? s.remindAt : 19);
+      if (!p || p.at <= Date.now()) { remindClear(); return; }
+      remindSet(p.at, T("remindT", { n: p.n }), T(p.fz ? "remindFzD" : "remindD"), T("remindChannel"));
+    }, 800);
+    return () => clearTimeout(t);
+  }, [loaded, settingsLoaded, obChecked, onboard, history, profile.freezeDays, settings.remind, settings.remindAt, settings.lang]);
   useEffect(() => {
     if (!loaded || !settingsLoaded || newsChecked) return;
     setNewsChecked(true);

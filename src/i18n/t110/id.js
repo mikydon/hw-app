@@ -1,6 +1,13 @@
 // Indonesian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    remindT: "🔥 {n}: runtutanmu berakhir malam ini",
+    remindD: "Latihan singkat hari ini menjaganya tetap jalan.",
+    remindFzD: "Latihan singkat hari ini menjaganya; kalau tidak, satu pembeku runtutan terpakai.",
+    remindChannel: "Pengingat runtutan",
+    remindRow: "Pengingat runtutan",
+    remindRowD: "Malam hari, hanya di hari runtutanmu akan berakhir.",
+    notifSome: "{n} dari {m} aktif",
     textSizeT: "Ukuran teks",
     textSizeD: "Huruf lebih besar agar mudah dibaca; layar ikut menyesuaikan.",
     tourGmRanked: "Ranked: dek yang sama untuk semua, melawan pemain berating mirip. 2 permainan di setiap hari kamu berlatih; rank naik turun sesuai rating.",
@@ -223,5 +230,6 @@ export default {
     ["Daftar lebih mulus", "Filter tampil beda di tiap daftar dan selalu direset, dan daftar yang dimuat hanya menampilkan satu kata.", "Satu tombol filter di tiap daftar, dan filtermu tetap sampai aplikasi ditutup. Garis abu-abu saat memuat, tarik ke bawah untuk memuat ulang, dan daftar kosong menawarkan langkah berikutnya. Geser kalender untuk ganti bulan; di PC pakai ← → dan / untuk mencari."],
     ["Nama yang bersih", "Nama panggilan apa pun yang kosong bisa diambil.", "Nama yang mirip HW App atau tim, dan kata kasar yang dikenal, ditolak untuk nama panggilan baru dan rencana yang ditampilkan ke orang lain."],
     ["📱 Ukuran teks", "Huruf mengikuti setelan font ponsel, dan setelan besar memotong teks.", "Pengaturan → Tampilan → Ukuran teks: 100, 115, atau 130 %, dan layar memberi ruang untuk huruf yang lebih besar."],
+    ["📱 Pengingat runtutan", "Tidak ada yang mengingatkan saat runtutanmu akan berakhir.", "Satu notifikasi di malam hari, hanya di hari runtutanmu akan berakhir (18–21, pilih sendiri). Pengaturan → Notifikasi."],
   ],
 };

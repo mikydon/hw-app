@@ -1,6 +1,13 @@
 // Slovak: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    remindT: "🔥 {n}: dnes večer ti skončí séria",
+    remindD: "Krátky tréning dnes ju udrží.",
+    remindFzD: "Krátky tréning dnes ju udrží, inak sa minie zamrazenie série.",
+    remindChannel: "Pripomienka série",
+    remindRow: "Pripomienka série",
+    remindRowD: "Večer, len v deň, keď by ti séria skončila.",
+    notifSome: "Zapnuté {n} z {m}",
     textSizeT: "Veľkosť textu",
     textSizeD: "Väčšie písmená pre ľahšie čítanie; obrazovky sa im prispôsobia.",
     tourGmRanked: "Ranked: rovnaký balíček pre všetkých, proti hráčom s podobným ratingom. 2 hry v každý deň, keď cvičíš; rank stúpa aj klesá s ratingom.",
@@ -223,5 +230,6 @@ export default {
     ["Plynulejšie zoznamy", "Filtre vyzerali v každom zozname inak a zakaždým sa zrušili, a načítavaný zoznam ukazoval len slovo.", "Jedno tlačidlo filtra v každom zozname a filtre ostanú, kým appku nezavrieš. Sivé obrysy počas načítania, potiahni nadol pre obnovenie a prázdny zoznam ponúkne ďalší krok. Mesiac v kalendári zmeníš potiahnutím; na PC šípkami ← → a / na hľadanie."],
     ["Slušné mená", "Dala sa zobrať akákoľvek voľná prezývka.", "Mená, ktoré vyzerajú ako HW App alebo tím, a známe nadávky sa nedajú použiť v nových prezývkach ani v plánoch, ktoré ukazuješ ostatným."],
     ["📱 Veľkosť textu", "Písmo sa riadilo nastavením telefónu a pri veľkom písme sa texty orezávali.", "Nastavenia → Vzhľad → Veľkosť textu: 100, 115 alebo 130 % a obrazovky sa väčším písmenám prispôsobia."],
+    ["📱 Pripomienka série", "Nič ťa neupozornilo, keď ti mala skončiť séria.", "Jedno upozornenie večer, len v deň, keď by ti séria skončila (18–21 h, podľa teba). Nastavenia → Upozornenia."],
   ],
 };

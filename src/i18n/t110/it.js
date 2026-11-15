@@ -1,6 +1,13 @@
 // Italian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    remindT: "🔥 {n}: la tua striscia finisce stasera",
+    remindD: "Un breve allenamento oggi la tiene viva.",
+    remindFzD: "Un breve allenamento oggi la tiene, altrimenti si usa un congelamento della striscia.",
+    remindChannel: "Promemoria striscia",
+    remindRow: "Promemoria striscia",
+    remindRowD: "La sera, solo nel giorno in cui la striscia finirebbe.",
+    notifSome: "{n} su {m} attive",
     textSizeT: "Dimensione del testo",
     textSizeD: "Lettere più grandi per leggere meglio; le schermate si adattano.",
     tourGmRanked: "Ranked: lo stesso mazzo per tutti, contro giocatori con punteggio simile. 2 partite ogni giorno in cui ti alleni; il grado sale e scende con il punteggio.",
@@ -223,5 +230,6 @@ export default {
     ["Liste più fluide", "I filtri erano diversi in ogni lista e si azzeravano ogni volta, e una lista in caricamento mostrava solo una parola.", "Un solo pulsante filtro in ogni lista, e i filtri restano finché non chiudi l'app. Contorni grigi durante il caricamento, trascina giù per aggiornare e una lista vuota propone il passo successivo. Cambia il mese del calendario con uno swipe; su PC con ← → e / per cercare."],
     ["Nomi puliti", "Si poteva prendere qualsiasi nickname libero.", "I nomi che sembrano HW App o lo staff e le parolacce note vengono rifiutati nei nuovi nickname e nelle schede mostrate agli altri."],
     ["📱 Dimensione del testo", "Le lettere seguivano l'impostazione del carattere del telefono e con un carattere grande i testi venivano tagliati.", "Impostazioni → Aspetto → Dimensione del testo: 100, 115 o 130 %, e le schermate fanno spazio alle lettere più grandi."],
+    ["📱 Promemoria striscia", "Niente ti avvisava quando la striscia stava per finire.", "Una notifica la sera, solo nel giorno in cui la striscia finirebbe (18–21, a scelta). Impostazioni → Notifiche."],
   ],
 };
