@@ -1,6 +1,8 @@
 // French: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    offT: "Hors ligne",
+    offD: "Pas d'internet pour l'instant. Séances, calories et tout le reste sont enregistrés sur le téléphone et partent dans le cloud dès que tu es de nouveau en ligne. Amis, Bibliothèque et Ranked ont besoin d'internet.",
     tourQuick5: "Pas le temps aujourd'hui ? Juste 5 minutes : un tour sans échauffement, et ta flamme continue.",
     quick5: "Juste 5 minutes",
     quick5D: "1 tour du jour {d}, sans échauffement. Ça compte quand même pour ta flamme.",
@@ -282,5 +284,6 @@ export default {
     ["Styles de cartes", "Les cartes de Muscle Deck avaient toujours le même look.", "Huit styles de cartes (Nuit, Menthe, Carbone, Marbre, Or, Néon, Hologramme, Obsidienne) dans les looks de la Boutique ; choisis-en un dans l'apparence du profil, retrouve-les tous dans ta collection de cartes, et en Ranked l'adversaire voit le tien."],
     ["Partage un badge", "Les badges ne se voyaient que dans l'app.", "Ouvre un badge gagné et touche Partager : une image du badge dans la couleur de son niveau, prête pour les stories et les discussions."],
     ["Juste 5 minutes", "Même une courte journée voulait dire tout l'échauffement et au moins 2 tours.", "L'Accueil propose Juste 5 minutes : un tour du jour sans échauffement. C'est une séance normale qui garde ta flamme."],
+    ["Hors ligne", "Sans internet, on ne le voyait qu'aux messages d'erreur.", "Une discrète icône de nuage dans la barre du haut montre que tu es hors ligne ; un toucher explique ce qui est gardé sur le téléphone et ce qui a besoin d'internet."],
   ],
 };

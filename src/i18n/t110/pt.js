@@ -1,6 +1,8 @@
 // Portuguese (Brazil): texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    offT: "Offline",
+    offD: "Sem internet agora. Treinos, calorias e todo o resto ficam salvos no celular e vão para a nuvem quando você voltar a ficar online. Amigos, Biblioteca e Ranked precisam de internet.",
     tourQuick5: "Sem tempo hoje? Só 5 minutos: uma rodada sem aquecimento e sua sequência continua.",
     quick5: "Só 5 minutos",
     quick5D: "1 rodada do dia {d}, sem aquecimento. Conta para sua sequência mesmo assim.",
@@ -282,5 +284,6 @@ export default {
     ["Estilos de cartas", "As cartas do Muscle Deck eram sempre iguais.", "Oito estilos de cartas (Noite, Menta, Carbono, Mármore, Ouro, Neon, Holograma, Obsidiana) nas aparências da Loja; use um na aparência do perfil, veja todos na sua coleção de cartas e, no Ranked, o rival vê o seu."],
     ["Compartilhe uma insígnia", "As insígnias só apareciam no app.", "Abra uma insígnia conquistada e toque em Compartilhar: uma imagem com a insígnia na cor do nível, pronta para stories e conversas."],
     ["Só 5 minutos", "Mesmo um dia curto significava o aquecimento todo e pelo menos 2 rodadas.", "O Início oferece Só 5 minutos: uma rodada do dia sem aquecimento. É um treino normal e mantém sua sequência."],
+    ["Offline", "Sem internet você só descobria por mensagens de erro.", "Um discreto ícone de nuvem na barra superior mostra que você está offline; um toque explica o que fica salvo no celular e o que precisa de internet."],
   ],
 };

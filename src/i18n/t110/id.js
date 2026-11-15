@@ -1,6 +1,8 @@
 // Indonesian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    offT: "Offline",
+    offD: "Sedang tidak ada internet. Latihan, kalori, dan lainnya tersimpan di ponsel dan naik ke cloud saat kamu online lagi. Teman, Pustaka, dan Ranked butuh internet.",
     tourQuick5: "Tidak sempat hari ini? Cuma 5 menit: satu putaran tanpa pemanasan, dan runtutanmu tetap jalan.",
     quick5: "Cuma 5 menit",
     quick5D: "1 putaran hari {d}, tanpa pemanasan. Tetap dihitung untuk runtutanmu.",
@@ -282,5 +284,6 @@ export default {
     ["Gaya kartu", "Kartu Muscle Deck selalu terlihat sama.", "Delapan gaya kartu (Malam, Mint, Karbon, Marmer, Emas, Neon, Hologram, Obsidian) di tampilan Toko; pakai satu di tampilan profil, lihat semuanya di koleksi kartu pada profil, dan di Ranked lawan melihat gayamu."],
     ["Bagikan lencana", "Lencana hanya bisa dilihat di aplikasi.", "Buka lencana yang kamu raih dan ketuk Bagikan: gambar lencana dalam warna levelnya, siap untuk story dan chat."],
     ["Cuma 5 menit", "Hari yang singkat pun berarti pemanasan penuh dan minimal 2 putaran.", "Beranda menawarkan Cuma 5 menit: satu putaran latihan hari ini tanpa pemanasan. Ini latihan biasa dan menjaga runtutanmu."],
+    ["Offline", "Tanpa internet kamu hanya tahu dari pesan error.", "Ikon awan kecil di bilah atas menunjukkan kamu offline; ketuk untuk melihat apa yang tersimpan di ponsel dan apa yang butuh internet."],
   ],
 };

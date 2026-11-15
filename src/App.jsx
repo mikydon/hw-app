@@ -2313,8 +2313,19 @@ function gooPath(p, W, H, S, ins) {
   }
   return parts.join("");
 }
+// 1.10.0 (Michael's idea 10): online or not (the browser's/WebView's own signal, events + a check on return)
+function useOnline() {
+  const [on, setOn] = useState(() => (typeof navigator === "undefined" ? true : navigator.onLine !== false));
+  useEffect(() => {
+    const f = () => setOn(navigator.onLine !== false);
+    window.addEventListener("online", f); window.addEventListener("offline", f); document.addEventListener("visibilitychange", f);
+    return () => { window.removeEventListener("online", f); window.removeEventListener("offline", f); document.removeEventListener("visibilitychange", f); };
+  }, []);
+  return on;
+}
 function TopBar({ screen, history, menuOpen, onMenu, onGo, dlPct, badge, head, side }) {
   const now = useClock();
+  const online = useOnline();
   const ap = useApk();
   const prog = ap.kind === "downloading" ? ap.pct || 0 : dlPct; // a download in progress: a thin line under the bar on every screen
   const today = dateKey();
@@ -2431,6 +2442,13 @@ function TopBar({ screen, history, menuOpen, onMenu, onGo, dlPct, badge, head, s
             <span data-clock style={{ flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>· {now.toLocaleTimeString(LANG, { hour: "2-digit", minute: "2-digit" })}</span>
           </div>
         </div>
+        {!online && (
+          // 1.10.0 (idea 10): one quiet icon instead of error lines: workouts are kept on the phone and sync later
+          <button type="button" data-offline onClick={() => { sfxTap(); openInfoGlobal && openInfoGlobal({ title: T("offT"), text: T("offD") }); }} aria-label={T("offT")}
+            style={{ ...btnBase, width: 34, height: 34, flexShrink: 0, borderRadius: 99, background: "transparent", border: `1.5px solid ${C.line}`, color: C.dim, display: "flex", alignItems: "center", justifyContent: "center", padding: 0 }}>
+            <Ico n="cloudOff" size={17} sw={2.2} />
+          </button>
+        )}
         <button onClick={() => onGo && onGo("profile")} data-chip="streak" style={{ ...btnBase, ...chip(st.n ? "#ffa94d" : C.dim), ...pill, fontSize: "calc(20px / var(--ts, 1))" }} aria-label={T("streakAria", { n: st.n })}><span className={st.n ? "wiggle" : ""}><IcoI n="flame" /></span>{st.n}</button>
         <button onClick={() => onGo && onGo("profile")} data-chip="level" style={{ ...btnBase, ...chip(C.sky), ...pill, position: "relative", fontSize: "calc(20px / var(--ts, 1))" }} aria-label={T("levelAria", { n: lv.lvl })}><IcoI n="bolt" />{lv.lvl}{EC.boostUntil(META.boosts) > Date.now() && <span data-chip-boost aria-hidden="true" style={{ position: "absolute", top: -6, right: -6, fontFamily: BODY, fontSize: 10, fontWeight: 900, lineHeight: 1, color: C.signalInk, background: C.signal, borderRadius: 99, padding: "2px 4px" }}>2×</span>}</button>
         {!side && <MenuButton open={menuOpen} onClick={onMenu} badge={badge} />}
@@ -2446,6 +2464,7 @@ function TopBar({ screen, history, menuOpen, onMenu, onGo, dlPct, badge, head, s
 // the menu icons' 24-point grid, 2-point round strokes, colour = currentColor (the theme's quiet colour, the main colour
 // when active). Rewards (badges, ranks, cards, the flame/bolt chips) keep their 3D emoji.
 const ICONS = {
+  cloudOff: '<path d="M7.5 18.5h9.8a3.9 3.9 0 0 0 .7-7.74A6 6 0 0 0 7.1 8.6"/><path d="M4.6 10.4A4.3 4.3 0 0 0 7.5 18.5"/><path d="M3.5 3.5l17 17"/>', // 1.10.0: offline
   camera: '<path d="M4 8.5h3.2l1.8-2.5h6l1.8 2.5H20V19H4z"/><circle cx="12" cy="13.2" r="3.4"/>',
   // 1.9.0: plans and the exercise list
   sort: '<path d="M4 7h16M7 12h10M10 17h4"/>',

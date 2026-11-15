@@ -1,6 +1,8 @@
 // Spanish: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    offT: "Sin conexión",
+    offD: "Ahora no hay internet. Los entrenos, las calorías y todo lo demás se guardan en el móvil y se suben a la nube cuando vuelvas a estar en línea. Amigos, la Biblioteca y Ranked necesitan internet.",
     tourQuick5: "¿Sin tiempo hoy? Solo 5 minutos: una ronda sin calentamiento y tu racha sigue.",
     quick5: "Solo 5 minutos",
     quick5D: "1 ronda del día {d}, sin calentamiento. Igual cuenta para tu racha.",
@@ -282,5 +284,6 @@ export default {
     ["Estilos de cartas", "Las cartas de Muscle Deck siempre se veían igual.", "Ocho estilos de cartas (Noche, Menta, Carbono, Mármol, Oro, Neón, Holograma, Obsidiana) en los aspectos de la Tienda; ponte uno en el aspecto del perfil, todos se ven en tu colección de cartas y en Ranked el rival ve el tuyo."],
     ["Comparte una insignia", "Las insignias solo se veían en la app.", "Abre una insignia que ganaste y toca Compartir: una imagen con la insignia en el color de su nivel, lista para historias y chats."],
     ["Solo 5 minutos", "Hasta un día corto significaba todo el calentamiento y al menos 2 rondas.", "Inicio ofrece Solo 5 minutos: una ronda del día de hoy sin calentamiento. Es un entreno normal y mantiene tu racha."],
+    ["Sin conexión", "Sin internet solo te enterabas por mensajes de error.", "Un discreto icono de nube en la barra superior indica que estás sin conexión; al tocarlo ves qué se guarda en el móvil y qué necesita internet."],
   ],
 };

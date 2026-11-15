@@ -1,6 +1,8 @@
 // Hungarian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    offT: "Offline",
+    offD: "Most nincs internet. Az edzések, kalóriák és minden más a telefonon mentődik, és a felhőbe kerül, ha újra online leszel. A barátokhoz, a Könyvtárhoz és a Rankedhez internet kell.",
     tourQuick5: "Ma nincs időd? Csak 5 perc: egy kör bemelegítés nélkül, és a széria megy tovább.",
     quick5: "Csak 5 perc",
     quick5D: "A(z) {d} nap 1 köre, bemelegítés nélkül. A szériába így is beszámít.",
@@ -282,5 +284,6 @@ export default {
     ["Kártyastílusok", "A Muscle Deck kártyái mindig ugyanúgy néztek ki.", "Nyolc kártyastílus (Éjszaka, Menta, Karbon, Márvány, Arany, Neon, Hologram, Obszidián) a Bolt kinézetei között; a profil kinézetében választhatsz, mindet látod a profilod kártyagyűjteményében, és a Rankedben az ellenfél is látja a tiédet."],
     ["Jelvény megosztása", "A jelvényeket csak az appban lehetett látni.", "Nyisd meg a megszerzett jelvényt, és koppints a Megosztásra: kép a jelvénnyel a szintje színében, sztorikhoz és chatekhez."],
     ["Csak 5 perc", "Egy rövid nap is a teljes bemelegítést és legalább 2 kört jelentette.", "A Kezdőlap felkínálja a Csak 5 percet: a mai nap egy köre bemelegítés nélkül. Rendes edzés, és megtartja a szériádat."],
+    ["Offline", "Internet nélkül csak hibaüzenetekből derült ki.", "Egy csendes felhő ikon a felső sávban jelzi, hogy offline vagy; koppintásra kiderül, mi mentődik a telefonon és mihez kell internet."],
   ],
 };

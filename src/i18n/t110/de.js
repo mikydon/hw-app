@@ -1,6 +1,8 @@
 // German: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    offT: "Offline",
+    offD: "Gerade kein Internet. Trainings, Kalorien und alles andere werden auf dem Handy gespeichert und gehen in die Cloud, sobald du wieder online bist. Freunde, Bibliothek und Ranked brauchen Internet.",
     tourQuick5: "Heute keine Zeit? Nur 5 Minuten: eine Runde ohne Aufwärmen, und deine Serie läuft weiter.",
     quick5: "Nur 5 Minuten",
     quick5D: "1 Runde von Tag {d}, ohne Aufwärmen. Zählt trotzdem für deine Serie.",
@@ -282,5 +284,6 @@ export default {
     ["Kartenstile", "Die Karten in Muscle Deck sahen immer gleich aus.", "Acht Kartenstile (Nacht, Minze, Carbon, Marmor, Gold, Neon, Hologramm, Obsidian) bei den Looks im Shop; leg einen im Profil-Look an, alle siehst du in der Kartensammlung im Profil, und in Ranked sieht der Gegner deinen."],
     ["Abzeichen teilen", "Abzeichen sah man nur in der App.", "Öffne ein verdientes Abzeichen und tippe auf Teilen: ein Bild mit dem Abzeichen in der Farbe seiner Stufe, bereit für Storys und Chats."],
     ["Nur 5 Minuten", "Auch ein kurzer Tag hieß ganzes Aufwärmen und mindestens 2 Runden.", "Start bietet Nur 5 Minuten: eine Runde des heutigen Tages ohne Aufwärmen. Ein normales Training, das deine Serie hält."],
+    ["Offline", "Ohne Internet merkte man es nur an Fehlermeldungen.", "Ein ruhiges Wolken-Symbol in der oberen Leiste zeigt, dass du offline bist; ein Tipp sagt, was auf dem Handy gespeichert wird und was Internet braucht."],
   ],
 };

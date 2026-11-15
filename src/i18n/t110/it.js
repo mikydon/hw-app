@@ -1,6 +1,8 @@
 // Italian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    offT: "Offline",
+    offD: "Ora niente internet. Allenamenti, calorie e tutto il resto vengono salvati sul telefono e vanno nel cloud quando torni online. Amici, Libreria e Ranked richiedono internet.",
     tourQuick5: "Niente tempo oggi? Solo 5 minuti: un giro senza riscaldamento e la striscia continua.",
     quick5: "Solo 5 minuti",
     quick5D: "1 giro del giorno {d}, senza riscaldamento. Conta comunque per la striscia.",
@@ -282,5 +284,6 @@ export default {
     ["Stili delle carte", "Le carte di Muscle Deck erano sempre uguali.", "Otto stili di carte (Notte, Menta, Carbonio, Marmo, Oro, Neon, Ologramma, Ossidiana) tra gli aspetti del Negozio; scegline uno nell'aspetto del profilo, li vedi tutti nella collezione di carte e in Ranked l'avversario vede il tuo."],
     ["Condividi un badge", "I badge si vedevano solo nell'app.", "Apri un badge che hai ottenuto e tocca Condividi: un'immagine con il badge nel colore del suo livello, pronta per storie e chat."],
     ["Solo 5 minuti", "Anche un giorno breve voleva dire tutto il riscaldamento e almeno 2 giri.", "La Home offre Solo 5 minuti: un giro del giorno senza riscaldamento. È un allenamento normale e mantiene la striscia."],
+    ["Offline", "Senza internet lo scoprivi solo dai messaggi di errore.", "Una discreta icona a nuvola nella barra in alto mostra che sei offline; un tocco spiega cosa si salva sul telefono e cosa richiede internet."],
   ],
 };

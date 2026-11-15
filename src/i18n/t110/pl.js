@@ -1,6 +1,8 @@
 // Polish: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    offT: "Offline",
+    offD: "Teraz nie masz internetu. Treningi, kalorie i wszystko inne zapisują się w telefonie i trafią do chmury, gdy wrócisz online. Znajomi, Biblioteka i Ranked potrzebują internetu.",
     tourQuick5: "Brak czasu? Tylko 5 minut: jedna runda bez rozgrzewki, a passa trwa dalej.",
     quick5: "Tylko 5 minut",
     quick5D: "1 runda dnia {d}, bez rozgrzewki. I tak liczy się do passy.",
@@ -282,5 +284,6 @@ export default {
     ["Style kart", "Karty w Muscle Deck zawsze wyglądały tak samo.", "Osiem stylów kart (Noc, Mięta, Karbon, Marmur, Złoto, Neon, Hologram, Obsydian) w wyglądach w Sklepie; załóż jeden w wyglądzie profilu, wszystkie zobaczysz w kolekcji kart na profilu, a w Ranked twój zobaczy też rywal."],
     ["Udostępnij odznakę", "Odznaki było widać tylko w aplikacji.", "Otwórz zdobytą odznakę i stuknij Udostępnij: obrazek z odznaką w kolorze jej poziomu, gotowy do relacji i czatów."],
     ["Tylko 5 minut", "Nawet krótki dzień oznaczał całą rozgrzewkę i co najmniej 2 rundy.", "Start proponuje Tylko 5 minut: jedną rundę dzisiejszego dnia bez rozgrzewki. To zwykły trening i utrzymuje passę."],
+    ["Offline", "Bez internetu dowiadywałeś się o tym tylko z komunikatów o błędach.", "Cicha ikona chmurki na górnym pasku pokazuje, że jesteś offline; stuknięcie mówi, co zapisuje się w telefonie, a co wymaga internetu."],
   ],
 };
