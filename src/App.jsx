@@ -5088,6 +5088,19 @@ function KcTodayRing({ kcal, age, history, today, target, eaten, left, pct, over
 const KC_FOLD = {};
 // Calories calendar (1.5.5): a month of days in amber: light = logged, solid with ✓ = target hit (±10 %), and the
 // day's total under its number. Tap a day to see what was eaten (the box under the calendar).
+// 1.10.0 (idea 9): a sideways swipe on a month grid changes the month (touch and pen; a mouse has the arrows). The grid
+// takes only vertical panning, so the screen's page swipe doesn't start there; a swipe never also taps a day.
+function useSwipeX(onPrev, onNext) {
+  const st = useRef(null), swiped = useRef(false);
+  return {
+    onPointerDown: e => { if (e.pointerType === "mouse") return; st.current = { x: e.clientX, y: e.clientY }; swiped.current = false; },
+    onPointerUp: e => { const s0 = st.current; st.current = null; if (!s0) return; const dx = e.clientX - s0.x, dy = e.clientY - s0.y;
+      if (Math.abs(dx) > 48 && Math.abs(dx) > Math.abs(dy) * 1.4) { swiped.current = true; (dx < 0 ? onNext : onPrev)(); } },
+    onPointerCancel: () => { st.current = null; },
+    onClickCapture: e => { if (swiped.current) { swiped.current = false; e.stopPropagation(); e.preventDefault(); } },
+    style: { touchAction: "pan-y" },
+  };
+}
 function KcalCalendar({ history, kcal, sel, onSel }) {
   const today = dateKey(), t = parseKey(sel || today);
   const [ym, setYm] = useState([t.getFullYear(), t.getMonth()]);
@@ -5095,6 +5108,7 @@ function KcalCalendar({ history, kcal, sel, onSel }) {
   const first = new Date(y, m, 1), days = new Date(y, m + 1, 0).getDate(), lead = (first.getDay() + 6) % 7;
   const td = parseKey(today), canNext = y < td.getFullYear() || (y === td.getFullYear() && m < td.getMonth());
   const shift = n => { sfxTap(); const d = new Date(y, m + n, 1); setYm([d.getFullYear(), d.getMonth()]); };
+  const swKc = useSwipeX(() => shift(-1), () => { if (canNext) shift(1); });
   const cells = [...Array(lead).fill(null), ...Array.from({ length: days }, (_, i) => i + 1)];
   let logged = 0, hits = 0;
   const info = {};
@@ -5114,7 +5128,7 @@ function KcalCalendar({ history, kcal, sel, onSel }) {
         </div>
         <button onClick={() => canNext && shift(1)} disabled={!canNext} aria-label={T("nextMonth")} style={{ ...ghostBtn, color: C.signal, padding: "4px 12px", fontSize: 16, opacity: canNext ? 1 : 0.3 }}>›</button>
       </div>
-      <div key={`${y}-${m}`} className="titleIn" style={{ display: "grid", gridTemplateColumns: "repeat(7, minmax(0, 1fr))", gap: 5 }}>
+      <div key={`${y}-${m}`} className="titleIn" data-cal-swipe {...swKc} style={{ ...swKc.style, display: "grid", gridTemplateColumns: "repeat(7, minmax(0, 1fr))", gap: 5 }}>
         {weekdaysShort().map(w => <div key={w} style={{ fontSize: 11, color: C.dim, textAlign: "center", fontWeight: 600 }}>{w}</div>)}
         {cells.map((d, i) => {
           if (!d) return <span key={"e" + i} />;
@@ -5183,6 +5197,7 @@ function MonthCalendar({ history, ym, setYm, sel, onPick }) {
   for (let d = 1; d <= days; d++) cells.push(d);
   const tNow = parseKey(today), atNow = y === tNow.getFullYear() && m === tNow.getMonth();
   const shift = k => { if (k > 0 && atNow) return; sfxTap(); dir.current = k; const d = new Date(y, m + k, 1); setYm([d.getFullYear(), d.getMonth()]); };
+  const sw = useSwipeX(() => shift(-1), () => shift(1));
   const nav = (k, label) => <button onClick={() => shift(k)} aria-label={label} disabled={k > 0 && atNow} data-cal-nav={k} style={{ ...btnBase, width: 38, height: 38, borderRadius: 12, padding: 0, display: "inline-flex", alignItems: "center", justifyContent: "center", ...SUNK(), opacity: k > 0 && atNow ? 0.35 : 1 }}><Arrow dir={k < 0 ? "‹" : "›"} size={20} /></button>;
   const stat = (ic, v, col) => <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}><Ico n={ic} size={13} color={col} sw={2.3} />{v}</span>;
   return (
@@ -5200,7 +5215,7 @@ function MonthCalendar({ history, ym, setYm, sel, onPick }) {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 5, marginBottom: 5 }}>
         {weekdaysShort().map(d => <div key={d} style={{ fontSize: 11, color: C.dim, textAlign: "center", fontWeight: 700, letterSpacing: ".04em", textTransform: "uppercase" }}>{d}</div>)}
       </div>
-      <div key={pre} className={dir.current < 0 ? "hsInL" : "hsInR"} style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 5 }}>
+      <div key={pre} className={dir.current < 0 ? "hsInL" : "hsInR"} data-cal-swipe {...sw} style={{ ...sw.style, display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 5 }}>
         {cells.map((d, i) => {
           if (!d) return <div key={i} />;
           const k = `${pre}-${pad(d)}`;

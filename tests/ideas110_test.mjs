@@ -143,4 +143,45 @@ const ids = p => p.$$eval("[data-store-plan]", e => e.map(x => x.getAttribute("d
   T.eq(h.errors, [], "no page errors (8)");
   await h.close();
 }
+// ─── 9: swipe the month on the calendar (phone) ───
+{
+  const h = await start({ clock: Date.UTC(2026, 10, 18, 12), viewport: { width: 380, height: 820 }, seed: { profile: { name: "Michael" } } });
+  const p = h.page, cdp = await p.context().newCDPSession(p);
+  await cdp.send("Emulation.setTouchEmulationEnabled", { enabled: true, maxTouchPoints: 1 });
+  await go(p, "history");
+  const title = () => p.textContent("[data-cal-title]");
+  const box = await p.locator("[data-month-cal] [data-cal-swipe]").boundingBox();
+  const y = box.y + box.height / 2;
+  const swipe = async (x0, x1) => { await cdp.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x: x0, y }] }); for (let i = 1; i <= 6; i++) await cdp.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: [{ x: x0 + ((x1 - x0) * i) / 6, y: y + i }] }); await cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] }); await p.waitForTimeout(450); };
+  const t0 = await title();
+  T.ok(t0.includes("November"), "starts on November: " + t0);
+  await swipe(box.x + 60, box.x + box.width - 40);
+  T.ok((await title()).includes("October"), "swipe right: the month before");
+  T.eq(await p.locator("[data-day-empty]").count(), 0, "the swipe didn't pick a day");
+  T.ok(Math.abs((await p.locator("[data-month-cal]").boundingBox()).x - box.x) < 30, "the screen's pages didn't move (still on Calendar)");
+  await swipe(box.x + box.width - 40, box.x + 60);
+  T.ok((await title()).includes("November"), "swipe left: back");
+  await swipe(box.x + box.width - 40, box.x + 60);
+  T.ok((await title()).includes("November"), "no future months");
+  T.eq(h.errors, [], "no page errors (9)");
+  await h.close();
+}
+// the Calories calendar swipes too
+{
+  const kcal = { sex: "m", weight: 80, height: 180, activity: "light", goal: { type: "maintain" }, log: {} };
+  const h = await start({ clock: Date.UTC(2026, 10, 18, 12), viewport: { width: 380, height: 820 }, seed: { profile: { name: "Michael", birth: { y: 1995, m: null, d: null } }, kcal } });
+  const p = h.page, cdp = await p.context().newCDPSession(p);
+  await cdp.send("Emulation.setTouchEmulationEnabled", { enabled: true, maxTouchPoints: 1 });
+  await go(p, "calories"); await p.click('[data-kc-tab="1"]'); await p.waitForTimeout(700);
+  const g = p.locator("[data-kc-cal] [data-cal-swipe]");
+  const txt = () => p.textContent("[data-kc-cal]");
+  const box = await g.boundingBox(), y = box.y + box.height / 2;
+  T.ok((await txt()).includes("November"), "Calories calendar on November");
+  await cdp.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x: box.x + 40, y }] });
+  for (let i = 1; i <= 6; i++) await cdp.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: [{ x: box.x + 40 + i * 40, y }] });
+  await cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] }); await p.waitForTimeout(450);
+  T.ok((await txt()).includes("October"), "swipe right: October");
+  T.eq(h.errors, [], "no page errors (9b)");
+  await h.close();
+}
 T.done();
