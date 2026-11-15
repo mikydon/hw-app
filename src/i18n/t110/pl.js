@@ -1,6 +1,8 @@
 // Polish: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    histOpenPlan: "Plan",
+    plStoreGone: "Tego planu nie ma już w Bibliotece.",
     tourPlFilter: "Tu szukasz w swoich planach. Przycisk filtra je sortuje i pokazuje jedną grupę; w każdej liście wygląda tak samo.",
     plStoreWeek: "Popularne w tym tygodniu",
     plStoreWeekN: "{n} w tym tygodniu",

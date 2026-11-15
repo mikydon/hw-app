@@ -209,4 +209,26 @@ const ids = p => p.$$eval("[data-store-plan]", e => e.map(x => x.getAttribute("d
   T.eq(h.errors, [], "no page errors (10)");
   await h.close();
 }
+// a trial workout is a normal workout: in History with its plan, in the streak; History opens the plan in the Library
+{
+  const setReps = async p => { if (await p.locator("[data-reps]").count()) { await p.click("[data-reps]"); await p.fill("[data-reps-input]", "10"); await p.keyboard.press("Enter"); await p.waitForTimeout(150); } };
+  const h = await start({ viewport: { width: 380, height: 820 }, cloud: { pub }, seed: { profile: { name: "Michael" } } });
+  const p = h.page;
+  await go(p, "plans"); await p.click('[data-plans-seg="store"]'); await p.waitForTimeout(900);
+  await p.click('[data-store-plan="u1_p1"]'); await p.waitForSelector("[data-plan-peek]");
+  await p.click("[data-plan-try]"); await p.waitForTimeout(600);
+  await p.click("[data-warmup-go]"); await p.waitForSelector("[data-done-btn]");
+  await setReps(p); await p.click("[data-done-btn]"); await p.waitForTimeout(300);
+  await p.click("[data-quit]"); await p.waitForTimeout(200); await p.click("[data-quit]");
+  await p.waitForSelector("[data-sum-home]"); await p.click("[data-sum-home]"); await p.waitForTimeout(700);
+  T.eq((await p.textContent('[data-chip="streak"]')).replace(/\D/g, ""), "1", "the trial counts for the streak");
+  await go(p, "history");
+  const row = p.locator("[data-workout-row]").first();
+  T.ok((await row.textContent()).includes("Legs every day"), "History shows the plan's name");
+  T.eq(await p.getAttribute("[data-hist-open-plan]", "data-hist-open-plan"), "pub", "the open row offers the plan in the Library");
+  await p.click("[data-hist-open-plan]"); await p.waitForSelector("[data-plan-peek]", { timeout: 5000 });
+  const pk = await p.evaluate(() => [...document.querySelectorAll(".sheetWrap")].map(x => x.textContent.slice(0, 120)).join(" || ")); T.ok(pk.includes("Legs every day"), "it opens that plan in the Library: " + pk);
+  T.eq(h.errors, [], "no page errors (history plan)");
+  await h.close();
+}
 T.done();

@@ -1,6 +1,8 @@
 // Czech: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    histOpenPlan: "Plán",
+    plStoreGone: "Tento plán už v Knihovně není.",
     tourPlFilter: "Tady hledáš ve svých plánech. Tlačítko filtru je seřadí a ukáže jednu skupinu; v každém seznamu vypadá stejně.",
     plStoreWeek: "Oblíbené tento týden",
     plStoreWeekN: "{n} tento týden",

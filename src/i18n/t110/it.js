@@ -1,6 +1,8 @@
 // Italian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    histOpenPlan: "Scheda",
+    plStoreGone: "Questa scheda non è più nella Libreria.",
     tourPlFilter: "Qui cerchi nelle tue schede. Il pulsante filtro le ordina e mostra un gruppo; è uguale in ogni lista.",
     plStoreWeek: "Popolari questa settimana",
     plStoreWeekN: "{n} questa settimana",

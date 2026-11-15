@@ -1,6 +1,8 @@
 // Indonesian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    histOpenPlan: "Rencana",
+    plStoreGone: "Rencana ini sudah tidak ada di Pustaka.",
     tourPlFilter: "Cari rencanamu di sini. Tombol filter mengurutkan dan menampilkan satu grup; sama di setiap daftar.",
     plStoreWeek: "Populer minggu ini",
     plStoreWeekN: "{n} minggu ini",

@@ -1339,7 +1339,8 @@ let openInfoGlobal = null;
 // 1.10.0 plan library: saves a plan someone shared as your own copy (set by App); returns the new plan
 let copyPlanGlobal = null;
 let goPlanGlobal = null;
-let tryPlanGlobal = null; // 1.10.0 (idea 7): a trial workout of someone's plan, nothing saved to My plans // 1.10.0: open My plans and flash one plan (after saving a copy)
+let tryPlanGlobal = null;
+let openPlanGlobal = null; // 1.10.0: History → the plan a workout came from // 1.10.0 (idea 7): a trial workout of someone's plan, nothing saved to My plans // 1.10.0: open My plans and flash one plan (after saving a copy)
 function InfoQ({ title, text, id, style }) {
   const go = e => { e.stopPropagation(); e.preventDefault(); sfxTap(); if (openInfoGlobal) openInfoGlobal({ title, text }); };
   return (
@@ -5447,7 +5448,7 @@ function EntryEditor({ entry, nextDay, onSave, onDelete, onClose, date: date0 })
   );
 }
 
-function HistoryTab({ history, onDelete, onSaveEntry, editDate, onEditOpened }) {
+function HistoryTab({ history, profile = {}, onDelete, onSaveEntry, editDate, onEditOpened }) {
   const today = dateKey();
   const [confirmDel, setConfirmDel] = useState(null);
   const [editing, setEditing] = useState(null); // index, "new" or null
@@ -5552,6 +5553,8 @@ function HistoryTab({ history, onDelete, onSaveEntry, editDate, onEditOpened }) 
                         );
                       })}
                       <div style={{ display: "flex", gap: 8, marginTop: 4, paddingTop: 10, borderTop: `1px solid ${C.line}` }}>
+                        {s.plan && (plansOfP(profile).list.some(x => x.id === s.plan.id) || (typeof s.plan.t === "string" && s.plan.t)) && <button data-hist-open-plan={s.plan.t ? "pub" : "own"} onClick={() => { sfxTap(); openPlanGlobal && openPlanGlobal(s.plan); }} aria-label={T("histOpenPlan")} title={T("histOpenPlan")}
+                          style={{ ...btnBase, padding: "0 14px", ...SUNK(), color: C.chalk, fontSize: 14, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, flexShrink: 0 }}><Ico n={s.plan.t ? "globe" : "checklist"} size={16} color={C.signal} />{T("histOpenPlan")}</button>}
                         <button data-hist-edit onClick={() => { sfxTap(); setConfirmDel(null); setEditing(idx); }} style={{ ...btnBase, flex: 1, background: `${C.sky}1f`, color: C.sky, fontSize: 14, padding: "10px 12px", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7 }}><Ico n="pencil" size={15} />{noEmo(T("editWorkout"))}</button>
                         <button data-hist-delete onClick={() => { sfxTap(); setConfirmDel(idx); }} aria-label={T("deleteWorkout")} title={T("deleteWorkout")}
                           style={{ ...btnBase, width: 44, padding: 0, ...SUNK(), color: C.dim, display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Ico n="trash" size={16} /></button>
@@ -5790,6 +5793,10 @@ function RankPips({ ranks, reached }) {
 }
 const fmtKg = v => { const r = Math.round(v * 2) / 2; return String(r).replace(".", LANG === "en" || LANG === "zh" || LANG === "ja" || LANG === "ko" ? "." : ","); };
 const rankVal = (id, v) => (isW(id) ? (EX[id].type === "carry" ? `${fmtKg(v)} kg · 30 s` : `${fmtKg(v / (1 + 10 / 30))} kg × 10`) : EX[id] && EX[id].type === "time" && v >= 120 ? `${Math.floor(v / 60)}:${String(v % 60).padStart(2, "0")} min` : `${v}${rankUnit(id)}`);
+// 1.10.0: what is left to the next rank, in the units the user sees ("1.9 kg", "5 s", "3"); weighted ranks are kept as a
+// score (e1RM) inside, so the gap is turned back into kg for 10 reps (it showed 1.8999999999986)
+const rankGap = (id, b, next) => { const d = next - (b || 0); if (isW(id)) return `${fmtKg(EX[id].type === "carry" ? d : d / (1 + 10 / 30))} kg`; return `${Math.round(d * 10) / 10}${rankUnit(id)}`; };
+const rankNow = (id, b) => (isW(id) ? fmtKg(EX[id].type === "carry" ? b || 0 : (b || 0) / (1 + 10 / 30)) : b || 0);
 
 // Badges page: all of them with the progress, closest to the next level first, finished last. 1.8.0: single badges
 // show their rarity; secret ones only once earned (the rest is one line at the end).
@@ -5912,7 +5919,7 @@ function RankSheet({ id, best, onClose, onHowTo }) {
           <div style={{ fontSize: 14, color: C.dim, marginTop: 6 }}>{best != null ? T("bestSet", { v: rankVal(id, best) }) : T("bestSetNone")}</div>
           {next !== null && <div style={{ width: "min(260px, 80%)", marginTop: 10 }}>
             <div style={{ height: 6, borderRadius: 3, background: C.line, overflow: "hidden" }}><div style={{ width: `${Math.round(p * 100)}%`, height: "100%", background: `linear-gradient(90deg, ${rk.color}, ${RANKS[ri + 1].color})` }} /></div>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, fontWeight: 800, marginTop: 5 }}><span style={{ color: C.dim }}>{T("achLeft", { n: `${next - (best || 0)}${rankUnit(id)}` })}</span><RankTag r={ri + 1} size={13} fs={11.5} /></div>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, fontWeight: 800, marginTop: 5 }}><span style={{ color: C.dim }}>{T("achLeft", { n: rankGap(id, best, next) })}</span><RankTag r={ri + 1} size={13} fs={11.5} /></div>
           </div>}
           {next === null && <div style={{ fontSize: 13, color: rk.color, fontWeight: 800, marginTop: 6 }}>{T("topRank")}</div>}
         </SheetHero>
@@ -5958,16 +5965,16 @@ function RanksList({ m, onPick, focus, claim }) {
             <button type="button" key={id} data-rank-row={id} data-rank={ri} onClick={() => { sfxTap(); setOpen(id); }} className={[rr.cls, focus && focus.k === id && "achFlash"].filter(Boolean).join(" ")}
               style={{ ...btnBase, fontWeight: 400, textAlign: "left", width: "100%", color: C.chalk, ...rr.style, padding: "12px 12px", display: "block" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <span aria-hidden="true" title={g ? T("grp_" + g) : undefined} style={{ width: 30, height: 30, borderRadius: 8, background: SOFT(), display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{g ? <SuitIcon s={g} size={15} /> : null}</span>
+                <span aria-hidden="true" title={g ? T("grp_" + g) : undefined} style={{ width: 30, height: 30, borderRadius: 8, background: SOFT(), display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{g ? <SuitIcon s={g} size={15} /> : (() => { const m0 = LIB[id] && (LIB[id].m || []).find(mm => BD.MUSCLE_ICON[mm]); return m0 ? <BodyIco spec={BD.MUSCLE_ICON[m0]} size={24} hi={RANKS[ri].color} /> : null; })()}</span>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 14, fontWeight: 800, lineHeight: 1.2 }}>{EX[id].name}</div>
                   <div style={{ marginTop: 3 }}><RankTag r={ri} size={15} /></div>
                 </div>
                 <div style={{ textAlign: "right", flexShrink: 0 }}>
-                  <div style={{ fontFamily: DISPLAY, fontSize: 18, fontWeight: 900, lineHeight: 1, whiteSpace: "nowrap" }}>{next === null ? `${rankVal(id, b)} ✓` : `${b || 0} / ${rankVal(id, next)}`}</div>
+                  <div style={{ fontFamily: DISPLAY, fontSize: 18, fontWeight: 900, lineHeight: 1, whiteSpace: "nowrap" }}>{next === null ? `${rankVal(id, b)} ✓` : `${rankNow(id, b)} / ${rankVal(id, next)}`}</div>
                   {next !== null && (inR >= 0.8
-                    ? <div data-near className="nearPulse" style={{ fontSize: 12, fontWeight: 900, color: RANKS[ri + 1].color, marginTop: 3, whiteSpace: "nowrap" }}>{T("achLeft", { n: `${next - (b || 0)}${rankUnit(id)}` })}!</div>
-                    : <div style={{ fontSize: 11, color: C.dim, marginTop: 3, whiteSpace: "nowrap" }}>{T("achLeft", { n: `${next - (b || 0)}${rankUnit(id)}` })}</div>)}
+                    ? <div data-near className="nearPulse" style={{ fontSize: 12, fontWeight: 900, color: RANKS[ri + 1].color, marginTop: 3, whiteSpace: "nowrap" }}>{T("achLeft", { n: rankGap(id, b, next) })}!</div>
+                    : <div style={{ fontSize: 11, color: C.dim, marginTop: 3, whiteSpace: "nowrap" }}>{T("achLeft", { n: rankGap(id, b, next) })}</div>)}
                 </div>
               </div>
               <RankPips ranks={RANKS.map((_, i) => i)} reached={ri + 1} />
@@ -6194,6 +6201,9 @@ function OwnStats({ history, onKcal }) {
 // 1.7.0 (Michael, Oct 18, 16:36: "nie že pôjdeš dole, ale že slidneš doprava na ďalšiu stranu"): four swipe pages like
 // Home: Profile (photo, level, streak, showcase) | Badges | Ranks | Stats. Wide screens: Profile + Stats on the left,
 // Badges and Ranks as long columns next to them.
+// 1.10.0 (PC/tablet): the Shop in two columns = Shop | this week's looks side by side, the long Earned list across both
+// below (its cards then stand three in a row), so neither column runs on alone
+const SHOP_LAY = { 2: { rows: "auto auto", at: [{ gridColumn: 1, gridRow: 1 }, { gridColumn: 2, gridRow: 1 }, { gridColumn: "1 / span 2", gridRow: 2 }] } };
 const PF_LAY = {
   // the long columns span one extra 1fr row, so their height never stretches the short rows on the left
   3: { rows: "auto auto 1fr", at: [{ gridColumn: 1, gridRow: 1 }, { gridColumn: 2, gridRow: "1 / span 3" }, { gridColumn: 3, gridRow: "1 / span 3" }, { gridColumn: 1, gridRow: 2 }] },
@@ -6819,10 +6829,19 @@ const weekScore = (x, now = Date.now()) => {
 };
 const pubName = x => { if (isDefOwner(x.o) && x.k) { const t = T("plDef_" + x.k); if (t !== "plDef_" + x.k) return t; } return x.name; };
 const OffBadge = () => <span data-store-official title={T("plOfficial")} aria-label={T("plOfficial")} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 14, height: 14, borderRadius: 7, background: C.signal, color: C.signalInk, flex: "none" }}><Ico n="check" size={10} /></span>;
-function PlanStore({ on, signedIn, P, history }) {
+function PlanStore({ on, signedIn, P, history, openPid }) {
   const [list, setList] = useState(STORE_CACHE ? STORE_CACHE.list : null), [err, setErr] = useState("");
   const [q, setQ] = useState(""), [grp, setGrp] = useFltMem("store", "grp", null), [eq, setEq] = useFltMem("store", "eq", ["none", "free", "machine"]), [sort, setSort] = useFltMem("store", "sort", "sv");
-  const [peek, setPeek] = useState(null), [fOpen, setFOpen] = useState(false);
+  const [peek, setPeek] = useState(null), [fOpen, setFOpen] = useState(false), [goneMsg, setGoneMsg] = useState(false);
+  // opened from History on one plan: show it when the list has it, else ask the server for that one plan
+  useEffect(() => {
+    if (!openPid || !signedIn) return;
+    const pid = openPid.pid, inList = (list || []).find(x => x.pid === pid);
+    if (inList) { setPeek({ ...inList, name: pubName(inList) }); return; }
+    if (list === null) return; // wait for the list
+    setGoneMsg(false);
+    cloud().pubGet(pid).then(x => { if (x && x.items) setPeek({ ...x, pid, name: pubName(x) }); else setGoneMsg(true); }).catch(() => setGoneMsg(true));
+  }, [openPid, list === null]);
   const load = force => { if (!signedIn) return Promise.resolve(); if (!force && STORE_CACHE && Date.now() - STORE_CACHE.ts < 5 * 60 * 1000) { setList(STORE_CACHE.list); return Promise.resolve(); } setErr("");
     return cloud().pubList().then(l => { const c = l.map(x => ({ ...x, items: (x.items || []).filter(i => i && EX[i.id]) })).filter(x => x.items.length); STORE_CACHE = { ts: Date.now(), list: c }; setList(c); }).catch(e => setErr(cloudErr(e) || T("frOffline"))); };
   useEffect(() => { if (on) load(); }, [on, signedIn]);
@@ -6857,6 +6876,7 @@ function PlanStore({ on, signedIn, P, history }) {
         ]} />}
       {err && <div role="alert" style={{ fontSize: 13, color: "#ff8a80", marginTop: 10 }}>{err}</div>}
       <PullRefresh on={on} onRefresh={() => load(true)} />
+      {goneMsg && <div role="status" data-store-gone style={{ ...card, marginTop: 12, padding: "12px 14px", fontSize: 14, color: C.dim, display: "flex", alignItems: "center", gap: 10 }}><Ico n="info" size={17} color={C.dim} /><span style={{ flex: 1 }}>{T("plStoreGone")}</span><button type="button" aria-label={T("close")} onClick={() => setGoneMsg(false)} style={{ ...btnBase, background: "transparent", color: C.dim, padding: 4 }}><Ico n="x" size={16} /></button></div>}
       <Sect data-store-list style={{ padding: "6px 0", marginTop: 12 }}>
         {list === null && !err ? <SkelRows n={4} pad={ROW_I} />
           : !shown.length ? <div data-store-none><EmptyAct data="store" text={T(list && list.length ? "plStoreNone" : "plStoreEmpty")} label={T("emClear")} icon="eraser" onAct={list && list.length && (q || nActive) ? () => { setQ(""); setGrp(null); setEq(ALL_EQ); } : null} /></div>
@@ -10602,6 +10622,8 @@ function PlansTab({ profile, setProfile, history, open, onOpened, shared = [], o
   // 1.10.0 (idea 2, Michael approved Nov 14): after saving a copy (Library or someone's profile) My plans opens and the
   // new plan flashes once, scrolled into view
   const [flash, setFlash] = useState(null);
+  const [storePid, setStorePid] = useState(null);
+  useEffect(() => { if (open && open.pub) { pg.jumpPage(2); setStorePid({ pid: open.pub, n: Date.now() }); onOpened && onOpened(); } }, [open]);
   useEffect(() => { if (open && (open.plan || open.mine)) {
     if (open.flash && pg.page !== 1) pg.goPage(1); else pg.jumpPage(1);
     if (open.plan) setEdit(open.plan);
@@ -10701,7 +10723,7 @@ function PlansTab({ profile, setProfile, history, open, onOpened, shared = [], o
           </div>
         </>
       )}
-      </div><div {...pg.pageProps(2)}><PlanStore on={tab === "store"} signedIn={signedIn} P={P} history={history} /></div></div></div>
+      </div><div {...pg.pageProps(2)}><PlanStore on={tab === "store"} signedIn={signedIn} P={P} history={history} openPid={storePid} /></div></div></div>
       {newGrp !== null && (
         <Sheet title={T("plNewGroup")} onClose={() => setNewGrp(null)} short>
           <input data-plan-grp-input autoFocus value={newGrp} maxLength={40} onChange={e => setNewGrp(e.target.value)} placeholder={T("plGroupName")} aria-label={T("plGroupName")}
@@ -10887,7 +10909,7 @@ function ShopTab({ history, profile, setProfile, onGo }) {
   const lookGrid = { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(290px, 100%), 1fr))", gap: 10 };
   // 1.10.0: the Shop was one page ten screens long. Now the diamonds stay on top and three pages swipe under them:
   // Shop (chest, freezes and boosts, what is coming, codes) | Looks (this week's) | Earned (looks from badges).
-  const pg = usePager("shop", 3);
+  const pg = usePager("shop", 3, SHOP_LAY);
   const soon = T("gmSoon").replace(/[.。]\s*$/, "");
   const soonChip = <span data-soon style={{ flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 5, fontSize: 12, fontWeight: 800, color: C.dim, ...SUNK(), borderRadius: 999, padding: "6px 10px", whiteSpace: "nowrap" }}><Ico n="lock" size={12} sw={2.4} />{soon}</span>;
   const soonRow = (k, ic, col, title, first) => (
@@ -13158,6 +13180,9 @@ export default function App() {
     return () => clearTimeout(t);
   }, [profile.plans, plib, acct.st]);
   goPlanGlobal = id => go("plans", { mine: true, flash: id });
+  // 1.10.0 (Michael, Nov 15: "from History, open the plan I trained, or the plan in the Library if it's still there"):
+  // my own plan → its editor; a trial of a Library plan (plan.t) → that plan in the Library
+  openPlanGlobal = pl => { if (!pl) return; const P = plansOfP(profRef.current); if (pl.id && P.list.some(x => x.id === pl.id)) go("plans", { plan: pl.id }); else if (pl.t && typeof pl.t === "string") go("plans", { pub: pl.t }); };
   copyPlanGlobal = (src, by, from) => { const p = profRef.current, r = PLN.copyPlan(plansOfP(p), src, by, Date.now(), from); setProfile({ ...p, plans: PLN.mirror(r.P, Date.now()) }); sfxCheck(); return r.plan; };
   // 1.10.0 plan store (Michael, Nov 14): plans published to everyone (pub/{uid_planId}); the list of my published ones
   // and what was last sent for each (so an edit is sent once, a deletion removes it)
@@ -13639,7 +13664,7 @@ export default function App() {
   const [setRet, setSetRet] = useState(null); // 1.8.1: where that page goes back to ({screen, pager, page})
   const [histEdit, setHistEdit] = useState(null); // date whose workout opens in the History editor
   const [plansOpen, setPlansOpen] = useState(null); // 1.9.0: {plan: id} opens that plan in the editor
-  const go = (id, opt) => { if (id !== screen) sfxTap(); setScreen(id); setMenuOpen(false); if (session) setSessionOpen(false); setHistEdit(opt && opt.edit ? opt.edit : null); setPlansOpen(opt && opt.plan ? { plan: opt.plan } : opt && opt.mine ? { mine: true, flash: opt.flash || null } : null); setSetPage(opt && opt.page ? opt.page : null); setSetRet(opt && opt.ret ? opt.ret : null); setChatWith(null); };
+  const go = (id, opt) => { if (id !== screen) sfxTap(); setScreen(id); setMenuOpen(false); if (session) setSessionOpen(false); setHistEdit(opt && opt.edit ? opt.edit : null); setPlansOpen(opt && opt.plan ? { plan: opt.plan } : opt && opt.mine ? { mine: true, flash: opt.flash || null } : opt && opt.pub ? { pub: opt.pub } : null); setSetPage(opt && opt.page ? opt.page : null); setSetRet(opt && opt.ret ? opt.ret : null); setChatWith(null); };
   const [howId, setHowId] = useState(null);
   openHowToGlobal = setHowId;
   const [info, setInfo] = useState(null); // 1.8.2: the "?" explanation sheet
@@ -14030,7 +14055,7 @@ export default function App() {
               <div key={screen} style={{ overflowY: "clip" }}>
                 {screen === "train" && <TrainTab tourOffer={tourOffer ? { start: () => startTour(1), close: () => setUi({ ...ui, tourOff: true }) } : null} settings={settings} setSettings={setSettings} onSetup={st => setOnboard(st)} dl={dlHidden ? null : dl} onDlClose={() => setDlHidden(true)} kcal={kcal} setKcal={setKcal} history={history} onStart={start} onStartPlan={startPlan} onStartFree={startFree} onFreeze={applyFreeze} ui={ui} setUi={setUi} active={session} onResume={resume} profile={profile} onGo={go} upd={updCard ? { open: () => { setUpdCard(false); setNewsAt(APP_VERSION); setNewsOpen(true); }, close: () => setUpdCard(false) } : null}
                   apk={apkUpd && !apkHidden ? { info: apkUpd, close: () => setApkHidden(true) } : null} />}
-                {screen === "history" && <HistoryTab history={history} editDate={histEdit} onEditOpened={() => setHistEdit(null)}
+                {screen === "history" && <HistoryTab history={history} profile={profile} editDate={histEdit} onEditOpened={() => setHistEdit(null)}
                   onDelete={idx => { const e = history[idx]; if (e) syncTomb("del", entryId(e)); editHistory(h => h.filter((_, i) => i !== idx)); }}
                   onSaveEntry={(idx, entry) => editHistory(h => (idx === null ? [...h, entry] : h.map((e, i) => (i === idx ? entry : e))))} />}
                 {screen === "profile" && <ProfileTab history={history} profile={profile} setProfile={setProfile} onFreeze={applyFreeze} kcal={kcal} acct={acct} vis={myVis} onVis={setVis} onFriends={() => go("friends")} onShop={() => go("shop")} onKcal={() => go("calories")} plans={plib ? plib.plans : null} onPlans={pid => go("plans", pid ? { plan: pid } : { mine: true })} />}

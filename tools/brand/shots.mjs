@@ -10,7 +10,7 @@ for (let i = 44; i >= 0; i -= 2) {
   if (n % 5 === 3) history.push(entry(dk(d), null, [{ id: "fw_dumbbell_bench_press", name: "x", unit: "", res: [10, 9, 8], kg: [20, 20, 22.5] }, { id: "fw_goblet_squat", name: "x", unit: "", res: [12, 12], kg: [16, 16], note: "left knee a bit stiff" }, { id: "b5", name: "x", unit: "s", res: ["45s", "60s"] }], { plan: { id: "p1", name: "Gym day", grp: "Gym", wd: 1 }, dur: 2400 + n * 30 }));
   else history.push(entry(dk(d), day, day === "A" ? [{ id: "k1", name: "x", unit: "", res: [12 + (n >> 2), 11, 14 + (n >> 2)] }, { id: "v1", name: "x", unit: "", res: [8, 8, 9] }, { id: "n1", name: "x", unit: "", res: [20, 20, 24] }, { id: "b5", name: "x", unit: "s", res: ["30s", "45s", "60s"] }] : [{ id: "k1", name: "x", unit: "", res: [10, 10] }, { id: "n1", name: "x", unit: "", res: [18, 20] }, { id: "b5", name: "x", unit: "s", res: ["30s", "30s"] }], { dur: 900 + n * 20, prs: n % 4 === 0 ? ["k1"] : [] }));
 }
-const kcal = { sex: "m", height: 180, weight: 78, activity: 1.375, goal: { type: "maintain", rate: 0 }, log: {} };
+const kcal = { sex: "m", height: 180, weight: 78, activity: "light", goal: { type: "maintain", rate: 0 }, log: {} };
 for (let i = 0; i < 12; i++) { const d = new Date(now); d.setDate(d.getDate() - i); kcal.log[dk(d)] = [{ ts: d.getTime(), kcal: i % 3 ? 2350 : 1700, note: "" }]; }
 if (import.meta.url === `file://${process.argv[1]}`) {
   const W = +(process.env.W || 412), H = +(process.env.H || 900);

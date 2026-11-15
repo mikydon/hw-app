@@ -1,6 +1,8 @@
 // Slovak: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    histOpenPlan: "Plán",
+    plStoreGone: "Tento plán už v Knižnici nie je.",
     tourPlFilter: "Tu hľadáš vo svojich plánoch. Tlačidlo filtra ich zoradí a ukáže jednu skupinu; v každom zozname vyzerá rovnako.",
     plStoreWeek: "Obľúbené tento týždeň",
     plStoreWeekN: "{n} tento týždeň",

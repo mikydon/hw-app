@@ -1,6 +1,8 @@
 // Hungarian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    histOpenPlan: "Terv",
+    plStoreGone: "Ez a terv már nincs a Könyvtárban.",
     tourPlFilter: "Itt keresel a terveid között. A szűrőgomb rendezi őket és egy csoportot mutat; minden listában ugyanígy néz ki.",
     plStoreWeek: "A hét kedvencei",
     plStoreWeekN: "{n} ezen a héten",

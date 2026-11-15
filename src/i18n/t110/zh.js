@@ -1,6 +1,8 @@
 // Chinese (Simplified): texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    histOpenPlan: "计划",
+    plStoreGone: "这个计划已不在计划库中。",
     tourPlFilter: "在这里搜索你的计划。筛选按钮可以排序并只显示一个分组；每个列表里都一样。",
     plStoreWeek: "本周热门",
     plStoreWeekN: "本周 {n}",

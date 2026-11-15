@@ -1,6 +1,8 @@
 // Japanese: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    histOpenPlan: "プラン",
+    plStoreGone: "このプランはもうライブラリにありません。",
     tourPlFilter: "ここでマイプランを検索。絞り込みボタンで並べ替えやグループの表示ができます。どのリストでも同じです。",
     plStoreWeek: "今週の人気",
     plStoreWeekN: "今週 {n}",

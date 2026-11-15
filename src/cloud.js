@@ -352,6 +352,7 @@ export const impl = {
     const m = new Map(); [...a.docs, ...b.docs, ...c.docs, ...e.docs].forEach(x => { const v = x.data(); m.set(x.id, { pid: x.id, ...v, ts: v.ts && v.ts.toMillis ? v.ts.toMillis() : 0 }); });
     return [...m.values()];
   },
+  async pubGet(pid) { const x = await getDoc(d("pub", pid)); return x.exists() ? { pid, ...x.data(), ts: x.data().ts && x.data().ts.toMillis ? x.data().ts.toMillis() : 0 } : null; },
   async pubVote(pid) { const s = await getDoc(d("pub", pid, "u", uid())).catch(() => null); return s && s.exists() ? s.data() : null; },
   pubSaved(pid, copy) { return impl.rk("psave", { pid, copy }); },
   pubRate(pid, r) { return impl.rk("prate", { pid, r }); },

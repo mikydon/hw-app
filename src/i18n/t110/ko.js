@@ -1,6 +1,8 @@
 // Korean: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    histOpenPlan: "플랜",
+    plStoreGone: "이 플랜은 더 이상 라이브러리에 없어요.",
     tourPlFilter: "여기서 내 플랜을 검색해요. 필터 버튼으로 정렬하고 한 그룹만 볼 수 있어요. 모든 목록에서 똑같아요.",
     plStoreWeek: "이번 주 인기",
     plStoreWeekN: "이번 주 {n}",

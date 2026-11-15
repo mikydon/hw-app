@@ -789,6 +789,8 @@ const en = {
     plSortOld: "Oldest",
     plSortAZ: "A–Z",
     plSortZA: "Z–A",
+    histOpenPlan: "Plan",
+    plStoreGone: "This plan is no longer in the Library.",
     tourPlFilter: "Search your plans here. The filter button sorts them and shows one group; it looks the same in every list.",
     plStoreWeek: "Popular this week",
     plStoreWeekN: "{n} this week",

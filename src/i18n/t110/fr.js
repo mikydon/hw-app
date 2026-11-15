@@ -1,6 +1,8 @@
 // French: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    histOpenPlan: "Programme",
+    plStoreGone: "Ce programme n'est plus dans la Bibliothèque.",
     tourPlFilter: "Ici, tu cherches dans tes programmes. Le bouton de filtre les trie et affiche un groupe ; il est pareil dans chaque liste.",
     plStoreWeek: "Populaires cette semaine",
     plStoreWeekN: "{n} cette semaine",

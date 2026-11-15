@@ -1,6 +1,8 @@
 // Ukrainian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    histOpenPlan: "План",
+    plStoreGone: "Цього плану вже немає в Бібліотеці.",
     tourPlFilter: "Тут шукаєш у своїх планах. Кнопка фільтра сортує їх і показує одну групу; у кожному списку вона однакова.",
     plStoreWeek: "Популярне цього тижня",
     plStoreWeekN: "{n} цього тижня",
