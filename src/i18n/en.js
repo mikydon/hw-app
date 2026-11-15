@@ -992,8 +992,6 @@ const en = {
     gmContinue: "Continue your game",
     gmRun: "Run",
     gmRunD: "8 antes. Offline. Earns game XP.",
-    gmDuel: "Duel vs bot",
-    gmDuelD: "3 antes on the same cards as the bot (level {n}). Offline.",
     gmRanked: "Ranked",
     gmRankedD: "3 antes against another player on the same cards. Rating {r}.",
     gmRankedSign: "Sign in (Friends) to play ranked.",
@@ -1969,7 +1967,7 @@ const en = {
       "Every blind has a score to reach. Pick up to 5 cards and play them as a hand (pair, straight, flush… and the Circuit: all four types). The hand gives chips and multiplier, every scored card adds its chips, and the score is chips × multiplier. You have 4 hands and 3 discards a blind.",
       "Your training is your strength: each card scores 2 extra chips for every rank level of your best exercise of its type (Iron +0 … Obsidian +16). Perks you unlock by training give one more bonus for a game.",
       "An ante has three blinds: small, big and a boss with a twist. After each one you get Kapoke ($), the game's money (more for hands you didn't need, plus interest) and visit the shop: jokers give lasting bonuses (up to 5), drills level up a hand.",
-      "Run: 8 antes. A higher intensity makes it harder and gives more game XP. Duel and Ranked (coming soon): 3 antes on the same cards for both players; the one who beats more blinds wins, a tie goes to the higher total score.",
+      "Run: 8 antes. A higher intensity makes it harder and gives more game XP. Ranked: you play the same deal another player already played, with the same cards for everyone (your ranks don't count here). A match is 2 antes (6 blinds): the one who beats more blinds wins, a tie goes to the higher total score.",
     ],
   },
   // 1.10: keys with "_" from here on (news1_10, news1_10_1), see newsKey in App.jsx
