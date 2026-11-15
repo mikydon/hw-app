@@ -1,6 +1,11 @@
 // Polish: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    tourPlTiles: "Sekcje pokazują najlepsze z każdego rodzaju: popularne w tym tygodniu, najwyżej oceniane, plany znajomych… Strzałka pokaże wszystkie w tej kolejności.",
+    plStoreFriends: "Plany znajomych",
+    plStoreOfficial: "Od HW App",
+    plStoreAllN: "Wszystkie plany ({n})",
+    plStoreSections: "Sekcje",
     ntPlanSave: "{nick} zapisał twój plan",
     ntPlanSaveD: "„{plan}” jest teraz w jego planach. Dzięki, że się dzielisz!",
     ntPlanRate: "{nick} ocenił twój plan na {r} ★",
@@ -254,5 +259,6 @@ export default {
     ["Twój tydzień", "Nic nie podsumowywało tygodnia, który się skończył.", "Od poniedziałku do środy ekran Start pokazuje zeszły tydzień: treningi, serie, czas, zmianę względem tygodnia wcześniej i dni z treningiem, z obrazkiem do udostępnienia."],
     ["Twój rok", "Nic nie podsumowywało całego roku.", "Od 15 grudnia do 10 stycznia ekran Start pokazuje twój rok: treningi, czas, najdłuższą passę, miesiące, ulubione ćwiczenia i obrazek do udostępnienia."],
     ["Biblioteka: ludzie", "Autor planu był tylko nazwą.", "Stuknij autora w Bibliotece, by zobaczyć jego profil i wysłać stamtąd zaproszenie do znajomych; autor dostaje powiadomienie, gdy ktoś zapisze lub oceni jego plan (najwyżej raz dziennie)."],
+    ["Biblioteka: sekcje", "Biblioteka była jedną długą listą.", "Otwiera się na sekcjach: popularne w tym tygodniu, najwyżej oceniane, plany znajomych, najczęściej zapisywane, od HW App, najnowsze; strzałka pokaże wszystkie w tej kolejności."],
   ],
 };

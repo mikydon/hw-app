@@ -1,6 +1,11 @@
 // Hungarian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    tourPlTiles: "A rovatok mindegyik fajtából a legjobbakat mutatják: népszerű a héten, legjobbra értékelt, barátok tervei… A nyíl mindet megmutatja ebben a sorrendben.",
+    plStoreFriends: "Barátok tervei",
+    plStoreOfficial: "A HW Apptól",
+    plStoreAllN: "Összes terv ({n})",
+    plStoreSections: "Rovatok",
     ntPlanSave: "{nick} elmentette az edzéstervedet",
     ntPlanSaveD: "A(z) „{plan}” most az ő tervei között van. Köszi, hogy megosztod!",
     ntPlanRate: "{nick} {r} ★-ot adott az edzéstervedre",
@@ -254,5 +259,6 @@ export default {
     ["A heted", "Semmi sem tekintett vissza a véget ért hétre.", "Hétfőtől szerdáig a Kezdőlap mutatja a múlt hetet: edzések, sorozatok, idő, a változás az előző héthez képest és az edzésnapok, megosztható képpel."],
     ["A te éved", "Semmi sem tekintett vissza az egész évre.", "December 15. és január 10. között a Kezdőlap megmutatja az évedet: edzések, idő, leghosszabb széria, hónapok, kedvenc gyakorlatok és egy megosztható kép."],
     ["Könyvtár: emberek", "Egy terv szerzője csak egy név volt.", "Koppints a szerzőre a Könyvtárban, hogy lásd a profilját, és onnan barátkérést küldj; a szerző értesítést kap, ha valaki elmenti vagy értékeli a tervét (naponta legfeljebb egyszer)."],
+    ["Könyvtár: rovatok", "A Könyvtár egyetlen hosszú lista volt.", "Rovatokkal nyílik: népszerű a héten, legjobbra értékelt, barátok tervei, legtöbbet mentett, a HW Apptól, legújabb; a nyíl mindet megmutatja ebben a sorrendben."],
   ],
 };

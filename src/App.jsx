@@ -7005,10 +7005,14 @@ const weekScore = (x, now = Date.now()) => {
 };
 const pubName = x => { if (isDefOwner(x.o) && x.k) { const t = T("plDef_" + x.k); if (t !== "plDef_" + x.k) return t; } return x.name; };
 const OffBadge = () => <span data-store-official title={T("plOfficial")} aria-label={T("plOfficial")} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 14, height: 14, borderRadius: 7, background: C.signal, color: C.signalInk, flex: "none" }}><Ico n="check" size={10} /></span>;
-function PlanStore({ on, signedIn, P, history, openPid }) {
+function PlanStore({ on, signedIn, P, history, openPid, friendIds = [] }) {
   const [list, setList] = useState(STORE_CACHE ? STORE_CACHE.list : null), [err, setErr] = useState("");
   const [q, setQ] = useState(""), [grp, setGrp] = useFltMem("store", "grp", null), [eq, setEq] = useFltMem("store", "eq", ["none", "free", "machine"]), [sort, setSort] = useFltMem("store", "sort", "sv");
   const [peek, setPeek] = useState(null), [fOpen, setFOpen] = useState(false), [goneMsg, setGoneMsg] = useState(false);
+  // 1.10.0 (Michael's idea 6, Nov 15: "tiles: your friends' plans, the most stars…; the arrow opens all of them in that
+  // order"): the Library opens on sections; a section's arrow (or "All plans") shows the whole list in its order (`who`
+  // = friends | hwapp narrows it); typing a search or setting a filter shows the list too; ‹ goes back to the sections
+  const [who, setWho] = useFltMem("store", "who", null), [lv, setLv] = useFltMem("store", "list", false);
   // opened from History on one plan: show it when the list has it, else ask the server for that one plan
   useEffect(() => {
     if (!openPid || !signedIn) return;
@@ -7026,7 +7030,9 @@ function PlanStore({ on, signedIn, P, history, openPid }) {
   );
   const nq = normTxt(q);
   const hit = x => !nq || [pubName(x), x.nick, ...x.items.map(i => EX[i.id] ? EX[i.id].name : "")].some(t => normTxt(t).includes(nq));
-  const shown = (list || []).filter(x => (isDefOwner(x.o) || (!textBad(x.name) && !nickBad(x.nick))) && hit(x) && (!grp || (x.fam || []).includes(grp)) && eq.includes(x.eq || "none"))
+  const okRow = x => isDefOwner(x.o) || (!textBad(x.name) && !nickBad(x.nick));
+  const whoOk = x => !who || (who === "hwapp" ? isDefOwner(x.o) : who === "friends" ? friendIds.includes(x.o) : true);
+  const shown = (list || []).filter(x => okRow(x) && whoOk(x) && hit(x) && (!grp || (x.fam || []).includes(grp)) && eq.includes(x.eq || "none"))
     .sort((a, b) => sort === "wk" ? weekScore(b) - weekScore(a) || (b.sv || 0) - (a.sv || 0) : sort === "avg" ? (b.avg || 0) - (a.avg || 0) || (b.sn || 0) - (a.sn || 0) : sort === "ts" ? (b.ts || 0) - (a.ts || 0) : (b.sv || 0) - (a.sv || 0) || isDefOwner(b.o) - isDefOwner(a.o) || (b.ts || 0) - (a.ts || 0));
   // 1.10.0 (Michael, Nov 14: "a filter system like apps have; all those buttons look messy"): search + one filter
   // button (a count of active filters on it); the filters and the order live in a sheet; active filters show as
@@ -7035,25 +7041,65 @@ function PlanStore({ on, signedIn, P, history, openPid }) {
   const ALL_EQ = ["none", "free", "machine"], eqOn = eq.length < ALL_EQ.length;
   const nActive = (grp ? 1 : 0) + (eqOn ? 1 : 0);
   const SORTS = [["sv", T("plStoreTop")], ["wk", T("plStoreWeek")], ["avg", T("plStoreStars")], ["ts", T("plStoreNew")]];
+  const tilesOn = !lv && !nq && !nActive && !who && !!list && list.length > 0;
+  const openList = (k, w = null) => { sfxTap(); setSort(k); setWho(w); setLv(true); };
+  const back = () => { setLv(false); setWho(null); setSort("sv"); setGrp(null); setEq(ALL_EQ); setQ(""); };
+  const sortBy = k => (a, b) => k === "wk" ? weekScore(b) - weekScore(a) || (b.sv || 0) - (a.sv || 0) : k === "avg" ? (b.avg || 0) - (a.avg || 0) || (b.sn || 0) - (a.sn || 0) : k === "ts" ? (b.ts || 0) - (a.ts || 0) : (b.sv || 0) - (a.sv || 0);
+  const base = (list || []).filter(okRow);
+  const TILES = [
+    ["wk", "flame", T("plStoreWeek"), base.filter(x => Math.round(weekScore(x)) > 0).sort(sortBy("wk")), x => <span style={{ color: "#ffa94d" }}><IcoI n="flame" color="#ffa94d" />{nf(Math.round(weekScore(x)))}</span>],
+    ["avg", "star", T("plStoreStars"), base.filter(x => x.sn > 0).sort(sortBy("avg")), x => <span style={{ color: C.signal }}><IcoI n="star" />{(x.avg || 0).toLocaleString(LANG, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</span>],
+    ["friends", "duo", T("plStoreFriends"), base.filter(x => friendIds.includes(x.o)).sort(sortBy("sv")), x => <span>{x.nick}</span>, "friends"],
+    ["sv", "download", T("plStoreTop"), base.slice().sort(sortBy("sv")), x => <span><IcoI n="download" />{nf(x.sv || 0)}</span>],
+    ["hwapp", "house", T("plStoreOfficial"), base.filter(x => isDefOwner(x.o)).sort(sortBy("sv")), () => <OffBadge />, "hwapp"],
+    ["ts", "sparkle", T("plStoreNew"), base.slice().sort(sortBy("ts")), x => <span>{x.nick}</span>],
+  ].filter(t => t[3].length);
+  const tiles = tilesOn && (
+    <div data-store-tiles style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(300px, 100%), 1fr))", gap: 12, marginTop: 12 }}>
+      {TILES.map(([k, ic, title, rows, meta, w]) => (
+        <Sect key={k} data-store-tile={k} style={{ margin: 0, padding: "12px 0 6px" }}>
+          <button type="button" data-store-tile-open={k} onClick={() => openList(w ? "sv" : k, w || null)} style={{ ...btnBase, width: "100%", background: "transparent", color: C.chalk, display: "flex", alignItems: "center", gap: 10, padding: "0 16px 8px", textAlign: "left" }}>
+            <Ico n={ic} size={18} color={C.signal} />
+            <span style={{ flex: 1, minWidth: 0, fontSize: 15, fontWeight: 800 }}>{title}</span>
+            <span style={{ fontSize: 13, color: C.dim, fontWeight: 600 }}>{nf(rows.length)}</span>
+            <Arrow />
+          </button>
+          {rows.slice(0, 3).map(x => (
+            <button key={x.pid} type="button" data-store-tile-plan={x.pid} onClick={() => { sfxTap(); setPeek({ ...x, name: pubName(x) }); }} style={{ ...btnBase, width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "9px 16px", background: "transparent", color: C.chalk, textAlign: "left", borderTop: `1px solid ${C.line}`, borderRadius: 0 }}>
+              <span style={{ flex: 1, minWidth: 0, fontSize: 14, fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", ...INK }}>{pubName(x)}</span>
+              <span style={{ fontSize: 12, fontWeight: 700, color: C.dim, display: "inline-flex", alignItems: "center", gap: 3, flexShrink: 0, maxWidth: 110, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{meta(x)}</span>
+            </button>
+          ))}
+        </Sect>
+      ))}
+      <button type="button" data-store-all onClick={() => openList("sv")} style={{ ...btnBase, ...card, display: "flex", alignItems: "center", gap: 10, padding: ROW_I, color: C.chalk, textAlign: "left" }}>
+        <RowIco n="grid4" /><span style={{ flex: 1, fontSize: 15, fontWeight: 800 }}>{T("plStoreAllN", { n: nf(base.length) })}</span><Arrow />
+      </button>
+    </div>
+  );
+  const whoName = who === "friends" ? T("plStoreFriends") : who === "hwapp" ? T("plStoreOfficial") : null;
   return (
-    <div data-store>
+    <div data-store data-store-mode={tilesOn ? "tiles" : "list"}>
       <FilterBar data="store" q={q} setQ={setQ} placeholder={T("plStoreSearch")} n={nActive} onOpen={() => setFOpen(true)} />
-      <FilterTags tags={[grp && [T("bg_" + grp), () => setGrp(null), { "data-store-tag": "grp" }], eqOn && [eq.map(k => T("eq_" + k)).join(" · "), () => setEq(ALL_EQ), { "data-store-tag": "eq" }]].filter(Boolean)} />
+      {!tilesOn && (lv || who) && !nq && <div style={{ marginTop: 10 }}><BackPill data-store-tiles-back label={T("plStoreSections")} onBack={back} /></div>}
+      <FilterTags tags={[whoName && [whoName, () => setWho(null), { "data-store-tag": "who" }], grp && [T("bg_" + grp), () => setGrp(null), { "data-store-tag": "grp" }], eqOn && [eq.map(k => T("eq_" + k)).join(" · "), () => setEq(ALL_EQ), { "data-store-tag": "eq" }]].filter(Boolean)} />
+      {tiles}
+      {!tilesOn && (
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, margin: "12px 4px 0", fontSize: 13, color: C.dim }}>
         <span data-store-count={shown.length}>{list ? T("plStoreN", { n: nf(shown.length) }) : ""}</span>
         <button type="button" data-store-sort-open onClick={() => { sfxTap(); setFOpen(true); }} style={{ ...btnBase, background: "transparent", color: C.chalk, fontSize: 13, padding: "4px 2px", display: "inline-flex", alignItems: "center", gap: 6 }}><Ico n="sort" size={15} color={C.dim} />{SORTS.find(x => x[0] === sort)[1]}</button>
-      </div>
+      </div>)}
       {fOpen && <FilterSheet data="store" onClose={() => setFOpen(false)} show={T("plStoreShow", { n: nf(shown.length) })}
         resetOff={!nActive && sort === "sv"} onReset={() => { setGrp(null); setEq(ALL_EQ); setSort("sv"); }}
         sections={[
-          [T("plStoreSort"), SORTS.map(([k, l]) => [l, sort === k, () => setSort(k), { "data-store-sort": k }])],
+          [T("plStoreSort"), SORTS.map(([k, l]) => [l, sort === k, () => { setSort(k); setLv(true); }, { "data-store-sort": k }])],
           [T("plStoreFocus"), [[T("plStoreAll"), !grp, () => setGrp(null), { "data-store-grp": "" }], ...GROUPS_ORDER.map(g => [T("bg_" + g), grp === g, () => setGrp(grp === g ? null : g), { "data-store-grp": g }])]],
           [T("plStoreEq"), EQUIP_ORDER.map(k => [T("eq_" + k), eq.includes(k), () => toggleEq(k), { "data-store-eq": k }])],
         ]} />}
       {err && <div role="alert" style={{ fontSize: 13, color: "#ff8a80", marginTop: 10 }}>{err}</div>}
       <PullRefresh on={on} onRefresh={() => load(true)} />
       {goneMsg && <div role="status" data-store-gone style={{ ...card, marginTop: 12, padding: "12px 14px", fontSize: 14, color: C.dim, display: "flex", alignItems: "center", gap: 10 }}><Ico n="info" size={17} color={C.dim} /><span style={{ flex: 1 }}>{T("plStoreGone")}</span><button type="button" aria-label={T("close")} onClick={() => setGoneMsg(false)} style={{ ...btnBase, background: "transparent", color: C.dim, padding: 4 }}><Ico n="x" size={16} /></button></div>}
-      <Sect data-store-list style={{ padding: "6px 0", marginTop: 12 }}>
+      {!tilesOn && <Sect data-store-list style={{ padding: "6px 0", marginTop: 12 }}>
         {list === null && !err ? <SkelRows n={4} pad={ROW_I} />
           : !shown.length ? <div data-store-none><EmptyAct data="store" text={T(list && list.length ? "plStoreNone" : "plStoreEmpty")} label={T("emClear")} icon="eraser" onAct={list && list.length && (q || nActive) ? () => { setQ(""); setGrp(null); setEq(ALL_EQ); } : null} /></div>
           : shown.slice(0, 50).map((x, i) => (
@@ -7071,7 +7117,7 @@ function PlanStore({ on, signedIn, P, history, openPid }) {
               <Arrow />
             </button>
           ))}
-      </Sect>
+      </Sect>}
       {peek && <PlanPeek plan={peek} by={peek.nick} uid={peek.o} store={peek} P={P} history={history} onClose={() => { setPeek(null); }} onStore={v => { setList(l => (l || []).map(x => (x.pid === peek.pid ? { ...x, ...v } : x))); if (STORE_CACHE) STORE_CACHE.list = STORE_CACHE.list.map(x => (x.pid === peek.pid ? { ...x, ...v } : x)); setPeek(p => ({ ...p, ...v })); }} />}
     </div>
   );
@@ -10853,7 +10899,7 @@ function WeekCard({ P, setP, onTips }) {
   );
 }
 
-function PlansTab({ profile, setProfile, history, open, onOpened, shared = [], onShare, pub = [], onPub, signedIn }) {
+function PlansTab({ profile, setProfile, history, open, onOpened, shared = [], onShare, pub = [], onPub, signedIn, friendIds = [] }) {
   const P = plansOfP(profile), weekOn = PLN.hasWeek(P);
   // 1.9.0 (Michael, Nov 7): Recommended | My plans are swipe pages like Home
   const pg = usePager("plans", 3, null, false, weekOn || P.list.length ? 1 : 0);
@@ -10969,7 +11015,7 @@ function PlansTab({ profile, setProfile, history, open, onOpened, shared = [], o
           </div>
         </>
       )}
-      </div><div {...pg.pageProps(2)}><PlanStore on={tab === "store"} signedIn={signedIn} P={P} history={history} openPid={storePid} /></div></div></div>
+      </div><div {...pg.pageProps(2)}><PlanStore on={tab === "store"} signedIn={signedIn} P={P} history={history} openPid={storePid} friendIds={friendIds} /></div></div></div>
       {newGrp !== null && (
         <Sheet title={T("plNewGroup")} onClose={() => setNewGrp(null)} short>
           <input data-plan-grp-input autoFocus value={newGrp} maxLength={40} onChange={e => setNewGrp(e.target.value)} placeholder={T("plGroupName")} aria-label={T("plGroupName")}
@@ -12200,6 +12246,7 @@ function tourSteps(ch, x) {
     s("[data-plan-tips]", 9, { opt: true }),
     s("[data-plan-share-box]", 9, { opt: true, t: T("tourPlShare") }), // 1.10.0: show the plan on your profile / in the store
     { prep: async () => { const b = document.querySelector("[data-plan-back]"); if (b) { b.click(); await new Promise(r => setTimeout(r, 450)); } } , sel: '[data-plans-seg="store"]', tap: true, opt: true, wait: 400, t: T("tourPlStore") },
+    { sel: "[data-store-tiles]", opt: true, wait: 600, t: T("tourPlTiles") }, // 1.10.0 (idea 6): the sections
     { done: true, t: X[4] },
   ];
   if (ch === 9) return [ // Shop
@@ -14388,7 +14435,7 @@ export default function App() {
                 {screen === "settings" && <SettingsTab initPage={setPage0} ret={setRet ? { label: T(SCREEN_TITLE[setRet.screen]), go: () => { if (setRet.pager) PAGER_START[setRet.pager] = setRet.page; go(setRet.screen); } } : null} settings={settings} setSettings={setSettings} history={history} profile={profile} setProfile={setProfile}
                   kcal={kcal} autoBk={autoBk} onAutoBackup={runAutoBackup}
                   onImport={importAll} acct={acct} cloudBk={cloudBk} onAcctOpen={() => go("friends")} onCloudRestore={restoreFromCloud} onCloudPoint={restorePoint} onCloudBackupNow={cloudBackupNow} onSignOut={signOut} onDeleteAccount={deleteAccount} />}
-                {screen === "plans" && <PlansTab profile={profile} setProfile={setProfile} history={history} open={plansOpen} onOpened={() => setPlansOpen(null)} shared={plib ? plib.plans.map(x => x.id) : []} onShare={sharePlan} pub={pubIds} onPub={publishPlan} signedIn={acct.st === "in" && !!acct.prof} />}
+                {screen === "plans" && <PlansTab friendIds={(social.friends || []).map(f => f.uid)} profile={profile} setProfile={setProfile} history={history} open={plansOpen} onOpened={() => setPlansOpen(null)} shared={plib ? plib.plans.map(x => x.id) : []} onShare={sharePlan} pub={pubIds} onPub={publishPlan} signedIn={acct.st === "in" && !!acct.prof} />}
                 {screen === "shop" && <ShopTab history={history} profile={profile} setProfile={setProfile} onGo={go} />}
                 {screen === "game" && <GameTab history={history} profile={profile} setProfile={setProfile} acct={acct} onPlay={sv => { if (sv.mode !== "tut") gameSave(sv); setGamePlay(sv); }} />}
                 {screen === "friends" && <OpenInApp />}

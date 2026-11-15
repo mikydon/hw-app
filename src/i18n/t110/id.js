@@ -1,6 +1,11 @@
 // Indonesian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    tourPlTiles: "Bagian-bagian menampilkan yang terbaik dari tiap jenis: populer minggu ini, nilai tertinggi, rencana teman… Panah menampilkan semuanya dalam urutan itu.",
+    plStoreFriends: "Rencana teman",
+    plStoreOfficial: "Dari HW App",
+    plStoreAllN: "Semua rencana ({n})",
+    plStoreSections: "Bagian",
     ntPlanSave: "{nick} menyimpan rencanamu",
     ntPlanSaveD: "“{plan}” sekarang ada di rencananya. Terima kasih sudah berbagi!",
     ntPlanRate: "{nick} memberi rencanamu {r} ★",
@@ -254,5 +259,6 @@ export default {
     ["Minggumu", "Tidak ada yang merangkum minggu yang baru berakhir.", "Senin sampai Rabu, Beranda menampilkan minggu lalu: latihan, set, waktu, perubahan dari minggu sebelumnya dan hari latihanmu, dengan gambar untuk dibagikan."],
     ["Tahunmu", "Tidak ada yang merangkum setahun penuh.", "Dari 15 Desember sampai 10 Januari, Beranda menampilkan tahunmu: latihan, waktu, runtutan terpanjang, bulan-bulan, latihan favorit, dan gambar untuk dibagikan."],
     ["Pustaka: orang", "Pembuat rencana hanya sebuah nama.", "Ketuk pembuatnya di Pustaka untuk melihat profilnya dan mengirim permintaan pertemanan dari sana; pembuat mendapat notifikasi saat seseorang menyimpan atau menilai rencananya (paling banyak sekali sehari)."],
+    ["Pustaka: bagian", "Pustaka hanya satu daftar panjang.", "Kini terbuka dengan bagian: populer minggu ini, nilai tertinggi, rencana teman, paling banyak disimpan, dari HW App, terbaru; panah menampilkan semuanya dalam urutan itu."],
   ],
 };

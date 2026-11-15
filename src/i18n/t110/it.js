@@ -1,6 +1,11 @@
 // Italian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    tourPlTiles: "Le sezioni mostrano il meglio di ogni tipo: popolari questa settimana, più votati, piani degli amici… La freccia li mostra tutti in quell'ordine.",
+    plStoreFriends: "Piani degli amici",
+    plStoreOfficial: "Da HW App",
+    plStoreAllN: "Tutti i piani ({n})",
+    plStoreSections: "Sezioni",
     ntPlanSave: "{nick} ha salvato il tuo piano",
     ntPlanSaveD: "“{plan}” ora è tra i suoi piani. Grazie per la condivisione!",
     ntPlanRate: "{nick} ha dato {r} ★ al tuo piano",
@@ -254,5 +259,6 @@ export default {
     ["La tua settimana", "Niente riassumeva la settimana appena finita.", "Dal lunedì al mercoledì la Home mostra la settimana scorsa: allenamenti, serie, tempo, la differenza con la settimana prima e i giorni di allenamento, con un'immagine da condividere."],
     ["Il tuo anno", "Niente riassumeva l'anno intero.", "Dal 15 dicembre al 10 gennaio la Home mostra il tuo anno: allenamenti, tempo, la striscia più lunga, i mesi, gli esercizi preferiti e un'immagine da condividere."],
     ["Libreria: persone", "L'autore di un piano era solo un nome.", "Tocca l'autore nella Libreria per vedere il suo profilo e inviargli una richiesta di amicizia da lì; gli autori ricevono una notifica quando qualcuno salva o valuta il loro piano (al massimo una volta al giorno)."],
+    ["Libreria: sezioni", "La Libreria era un unico lungo elenco.", "Si apre sulle sezioni: popolari questa settimana, più votati, piani degli amici, più salvati, da HW App, più recenti; la freccia li mostra tutti in quell'ordine."],
   ],
 };

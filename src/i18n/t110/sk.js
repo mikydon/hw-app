@@ -1,6 +1,11 @@
 // Slovak: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    tourPlTiles: "Sekcie ukazujú to najlepšie z každého druhu: populárne tento týždeň, najlepšie hodnotené, plány priateľov… Šípka ukáže všetky v tom poradí.",
+    plStoreFriends: "Plány priateľov",
+    plStoreOfficial: "Od HW App",
+    plStoreAllN: "Všetky plány ({n})",
+    plStoreSections: "Sekcie",
     ntPlanSave: "{nick} si uložil tvoj plán",
     ntPlanSaveD: "„{plan}“ má teraz medzi svojimi plánmi. Vďaka, že zdieľaš!",
     ntPlanRate: "{nick} dal tvojmu plánu {r} ★",
@@ -254,5 +259,6 @@ export default {
     ["Tvoj týždeň", "Nič sa neohliadlo za týždňom, ktorý skončil.", "Od pondelka do stredy ukáže Domov minulý týždeň: tréningy, série, čas, zmenu oproti týždňu predtým a dni, keď si cvičil, s obrázkom na zdieľanie."],
     ["Tvoj rok", "Nič sa neohliadlo za celým rokom.", "Od 15. decembra do 10. januára ukáže Domov tvoj rok: tréningy, čas, najdlhšiu sériu, mesiace, obľúbené cviky a obrázok na zdieľanie."],
     ["Knižnica: ľudia", "Autor plánu bol len meno.", "Ťukni na autora v Knižnici a uvidíš jeho profil, odkiaľ mu môžeš poslať žiadosť o priateľstvo; autor dostane upozornenie, keď si niekto jeho plán uloží alebo ohodnotí (najviac raz za deň)."],
+    ["Knižnica: sekcie", "Knižnica bola jeden dlhý zoznam.", "Otvorí sa na sekciách: populárne tento týždeň, najlepšie hodnotené, plány priateľov, najviac uložené, od HW App, najnovšie; šípka ukáže všetky v tom poradí."],
   ],
 };

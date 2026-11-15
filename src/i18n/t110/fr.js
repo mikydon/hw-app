@@ -1,6 +1,11 @@
 // French: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    tourPlTiles: "Les sections montrent le meilleur de chaque type : populaires cette semaine, les mieux notés, programmes d'amis… La flèche les montre tous dans cet ordre.",
+    plStoreFriends: "Programmes d'amis",
+    plStoreOfficial: "Par HW App",
+    plStoreAllN: "Tous les programmes ({n})",
+    plStoreSections: "Sections",
     ntPlanSave: "{nick} a enregistré ton programme",
     ntPlanSaveD: "« {plan} » est maintenant dans ses programmes. Merci de partager !",
     ntPlanRate: "{nick} a donné {r} ★ à ton programme",
@@ -254,5 +259,6 @@ export default {
     ["Ta semaine", "Rien ne revenait sur la semaine qui venait de se terminer.", "Du lundi au mercredi, l'Accueil montre la semaine dernière : séances, séries, temps, le changement par rapport à la semaine d'avant et les jours d'entraînement, avec une image à partager."],
     ["Ton année", "Rien ne revenait sur l'année entière.", "Du 15 décembre au 10 janvier, l'Accueil montre ton année : séances, temps, la plus longue flamme, les mois, tes exercices préférés et une image à partager."],
     ["Bibliothèque : les gens", "L'auteur d'un programme n'était qu'un nom.", "Touche l'auteur dans la Bibliothèque pour voir son profil et lui envoyer une demande d'ami ; les auteurs reçoivent une notification quand quelqu'un enregistre ou note leur programme (au plus une fois par jour)."],
+    ["Bibliothèque : sections", "La Bibliothèque était une longue liste.", "Elle s'ouvre sur des sections : populaires cette semaine, les mieux notés, programmes d'amis, les plus enregistrés, par HW App, les plus récents ; la flèche les montre tous dans cet ordre."],
   ],
 };

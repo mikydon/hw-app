@@ -1,6 +1,11 @@
 // Spanish: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    tourPlTiles: "Las secciones muestran lo mejor de cada tipo: popular esta semana, mejor valorados, planes de amigos… La flecha muestra todos en ese orden.",
+    plStoreFriends: "Planes de amigos",
+    plStoreOfficial: "De HW App",
+    plStoreAllN: "Todos los planes ({n})",
+    plStoreSections: "Secciones",
     ntPlanSave: "{nick} guardó tu plan",
     ntPlanSaveD: "“{plan}” ya está en sus planes. ¡Gracias por compartir!",
     ntPlanRate: "{nick} dio {r} ★ a tu plan",
@@ -254,5 +259,6 @@ export default {
     ["Tu semana", "Nada repasaba la semana que había terminado.", "De lunes a miércoles, Inicio muestra la semana pasada: entrenos, series, tiempo, el cambio frente a la semana anterior y los días que entrenaste, con una imagen para compartir."],
     ["Tu año", "Nada repasaba el año entero.", "Del 15 de diciembre al 10 de enero, Inicio muestra tu año: entrenos, tiempo, la racha más larga, los meses, tus ejercicios favoritos y una imagen para compartir."],
     ["Biblioteca: personas", "El autor de un plan era solo un nombre.", "Toca al autor en la Biblioteca para ver su perfil y enviarle una solicitud de amistad desde ahí; los autores reciben una notificación cuando alguien guarda o valora su plan (como mucho una vez al día)."],
+    ["Biblioteca: secciones", "La Biblioteca era una larga lista.", "Se abre en secciones: popular esta semana, mejor valorados, planes de amigos, más guardados, de HW App, más nuevos; la flecha muestra todos en ese orden."],
   ],
 };

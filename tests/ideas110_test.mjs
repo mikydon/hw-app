@@ -1,5 +1,6 @@
 // 1.10.0 small ideas Michael approved (Nov 14, 21:33): filters remembered until the app closes (3), ...
 import { start, T, shot } from "./harness.mjs";
+const allPlans = async p => { if (await p.locator("[data-store-all]").count()) { await p.click("[data-store-all]"); await p.waitForTimeout(300); } }; // 1.10.0: the Library opens on sections
 const pub = [
   { pid: "u1_p1", o: "u1", nick: "Zuzka", name: "Legs every day", items: [{ id: "n1", sets: 4 }], fam: ["legs"], eq: "none", n: 1, sv: 12, st: 0, sn: 0, avg: 0, ts: 3 },
   { pid: "u3_p2", o: "u3", nick: "Ema", name: "Core quickie", items: [{ id: "b5", sets: 3 }], fam: ["core"], eq: "none", n: 1, sv: 2, st: 0, sn: 0, avg: 0, ts: 9 },
@@ -10,15 +11,15 @@ const ids = p => p.$$eval("[data-store-plan]", e => e.map(x => x.getAttribute("d
 {
   const h = await start({ viewport: { width: 380, height: 820 }, cloud: { pub }, seed: { profile: { name: "Michael" } } });
   const p = h.page;
-  await go(p, "plans"); await p.click('[data-plans-seg="store"]'); await p.waitForTimeout(900);
+  await go(p, "plans"); await p.click('[data-plans-seg="store"]'); await p.waitForTimeout(900); await allPlans(p);
   await p.click("[data-store-filter]"); await p.waitForTimeout(400);
   await p.click('[data-store-grp="core"]'); await p.click('[data-store-sort="ts"]'); await p.click("[data-store-show]"); await p.waitForTimeout(400);
   T.eq(await ids(p), ["u3_p2"], "filtered to core");
-  await go(p, "history"); await go(p, "plans"); await p.click('[data-plans-seg="store"]'); await p.waitForTimeout(900);
+  await go(p, "history"); await go(p, "plans"); await p.click('[data-plans-seg="store"]'); await p.waitForTimeout(900); await allPlans(p);
   T.eq(await ids(p), ["u3_p2"], "back on the Library: the filter is still on");
   T.eq(await p.locator('[data-store-tag="grp"]').count(), 1, "its tag shows");
   await p.reload(); await p.waitForTimeout(1200);
-  await go(p, "plans"); await p.click('[data-plans-seg="store"]'); await p.waitForTimeout(900);
+  await go(p, "plans"); await p.click('[data-plans-seg="store"]'); await p.waitForTimeout(900); await allPlans(p);
   T.eq((await ids(p)).length, 2, "after the app restarts: no filter");
   T.eq(h.errors, [], "no page errors (3)");
   await h.close();
@@ -27,7 +28,7 @@ const ids = p => p.$$eval("[data-store-plan]", e => e.map(x => x.getAttribute("d
 {
   const h = await start({ viewport: { width: 380, height: 820 }, cloud: { pub }, seed: { profile: { name: "Michael" } } });
   const p = h.page;
-  await go(p, "plans"); await p.click('[data-plans-seg="store"]'); await p.waitForTimeout(900);
+  await go(p, "plans"); await p.click('[data-plans-seg="store"]'); await p.waitForTimeout(900); await allPlans(p);
   await p.fill("[data-store-q]", "zzzz"); await p.waitForTimeout(300);
   T.ok(await p.locator('[data-empty-act="store"]').isVisible(), "Library, nothing found: a clear button");
   await p.click('[data-empty-act="store"]'); await p.waitForTimeout(300);
@@ -54,12 +55,14 @@ const ids = p => p.$$eval("[data-store-plan]", e => e.map(x => x.getAttribute("d
 {
   const h = await start({ viewport: { width: 380, height: 820 }, cloud: { pub, pubDelay: 1500 }, seed: { profile: { name: "Michael" } } });
   const p = h.page;
-  await go(p, "plans"); await p.click('[data-plans-seg="store"]'); await p.waitForTimeout(300);
+  await go(p, "plans"); await p.click('[data-plans-seg="store"]'); await p.waitForTimeout(300); await allPlans(p);
   T.ok(await p.locator("[data-store-list] [data-skel]").isVisible(), "the Library loads: grey rows");
   T.eq(await p.getAttribute("[data-store-list] [data-skel]", "aria-busy"), "true", "marked busy for screen readers");
   await shot(p, "ideas_skel");
   await p.waitForTimeout(1600);
   T.eq(await p.locator("[data-store-list] [data-skel]").count(), 0, "gone when the plans arrive");
+  T.eq(await p.getAttribute("[data-store]", "data-store-mode"), "tiles", "then the sections");
+  await allPlans(p);
   T.eq((await ids(p)).length, 2, "the plans are there");
   T.eq(h.errors, [], "no page errors (5)");
   await h.close();
@@ -69,7 +72,7 @@ const ids = p => p.$$eval("[data-store-plan]", e => e.map(x => x.getAttribute("d
   const h = await start({ viewport: { width: 380, height: 820 }, cloud: { pub }, seed: { profile: { name: "Michael" } } });
   const p = h.page, cdp = await p.context().newCDPSession(p);
   await cdp.send("Emulation.setTouchEmulationEnabled", { enabled: true, maxTouchPoints: 1 });
-  await go(p, "plans"); await p.click('[data-plans-seg="store"]'); await p.waitForTimeout(900);
+  await go(p, "plans"); await p.click('[data-plans-seg="store"]'); await p.waitForTimeout(900); await allPlans(p);
   const calls = () => p.evaluate(() => window.__fakeLog.filter(x => x[0] === "pubList").length);
   const before = await calls();
   const touch = (type, y, x = 190) => cdp.send("Input.dispatchTouchEvent", { type, touchPoints: type === "touchEnd" ? [] : [{ x, y }] });
@@ -95,7 +98,7 @@ const ids = p => p.$$eval("[data-store-plan]", e => e.map(x => x.getAttribute("d
   const setReps = async p => { if (await p.locator("[data-reps]").count()) { await p.click("[data-reps]"); await p.fill("[data-reps-input]", "10"); await p.keyboard.press("Enter"); await p.waitForTimeout(150); } };
   const h = await start({ viewport: { width: 380, height: 820 }, cloud: { pub }, seed: { profile: { name: "Michael" } } });
   const p = h.page;
-  await go(p, "plans"); await p.click('[data-plans-seg="store"]'); await p.waitForTimeout(900);
+  await go(p, "plans"); await p.click('[data-plans-seg="store"]'); await p.waitForTimeout(900); await allPlans(p);
   await p.click('[data-store-plan="u1_p1"]'); await p.waitForSelector("[data-plan-peek]");
   T.ok((await p.textContent("[data-plan-try-d]")).includes("like a test"), "a line says what Try does");
   await p.click("[data-plan-try]"); await p.waitForTimeout(600);
@@ -117,7 +120,7 @@ const ids = p => p.$$eval("[data-store-plan]", e => e.map(x => x.getAttribute("d
   T.ok(await p.evaluate(() => window.__fakeLog.some(x => x[0] === "pubSaved" && x[1] === "u1_p1")), "the save is counted in the Library");
   // the plan can now be rated: the trial workout counts as trained
   await p.click("[data-sum-home]"); await p.waitForTimeout(600);
-  await go(p, "plans"); await p.click('[data-plans-seg="store"]'); await p.waitForTimeout(900);
+  await go(p, "plans"); await p.click('[data-plans-seg="store"]'); await p.waitForTimeout(900); await allPlans(p);
   await p.click('[data-store-plan="u1_p1"]'); await p.waitForSelector("[data-plan-peek]");
   T.eq(await p.getAttribute("[data-plan-rate]", "data-plan-rate"), "on", "stars open after the trial workout");
   T.eq(h.errors, [], "no page errors (7)");
@@ -133,7 +136,7 @@ const ids = p => p.$$eval("[data-store-plan]", e => e.map(x => x.getAttribute("d
   ];
   const h = await start({ clock: Date.UTC(2026, 10, 18, 12), viewport: { width: 380, height: 820 }, cloud: { pub: wpub }, seed: { profile: { name: "Michael" } } });
   const p = h.page;
-  await go(p, "plans"); await p.click('[data-plans-seg="store"]'); await p.waitForTimeout(900);
+  await go(p, "plans"); await p.click('[data-plans-seg="store"]'); await p.waitForTimeout(900); await allPlans(p);
   T.eq(await ids(p), ["a_1", "c_1", "b_1"], "default order: most saved");
   await p.click("[data-store-filter]"); await p.waitForTimeout(400);
   await p.click('[data-store-sort="wk"]'); await p.click("[data-store-show]"); await p.waitForTimeout(400);
@@ -188,7 +191,7 @@ const ids = p => p.$$eval("[data-store-plan]", e => e.map(x => x.getAttribute("d
 {
   const h = await start({ clock: Date.UTC(2026, 10, 18, 12), viewport: { width: 380, height: 820 }, cloud: { pub }, seed: { profile: { name: "Michael" } } });
   const p = h.page;
-  await go(p, "plans"); await p.click('[data-plans-seg="store"]'); await p.waitForTimeout(900);
+  await go(p, "plans"); await p.click('[data-plans-seg="store"]'); await p.waitForTimeout(900); await allPlans(p);
   await p.mouse.click(5, 400); await p.keyboard.press("/");
   T.ok(await p.evaluate(() => document.activeElement && document.activeElement.hasAttribute("data-store-q")), "/ puts the cursor into the Library search");
   await p.keyboard.type("core"); await p.waitForTimeout(200);
@@ -214,7 +217,7 @@ const ids = p => p.$$eval("[data-store-plan]", e => e.map(x => x.getAttribute("d
   const setReps = async p => { if (await p.locator("[data-reps]").count()) { await p.click("[data-reps]"); await p.fill("[data-reps-input]", "10"); await p.keyboard.press("Enter"); await p.waitForTimeout(150); } };
   const h = await start({ viewport: { width: 380, height: 820 }, cloud: { pub }, seed: { profile: { name: "Michael" } } });
   const p = h.page;
-  await go(p, "plans"); await p.click('[data-plans-seg="store"]'); await p.waitForTimeout(900);
+  await go(p, "plans"); await p.click('[data-plans-seg="store"]'); await p.waitForTimeout(900); await allPlans(p);
   await p.click('[data-store-plan="u1_p1"]'); await p.waitForSelector("[data-plan-peek]");
   await p.click("[data-plan-try]"); await p.waitForTimeout(600);
   await p.click("[data-warmup-go]"); await p.waitForSelector("[data-done-btn]");

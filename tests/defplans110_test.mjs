@@ -2,6 +2,7 @@
 // written by CI). They show in the user's language with an "official" mark, come first among plans saved equally
 // often, can be saved and starred like anyone's, and have no Report button.
 import { start, T, shot } from "./harness.mjs";
+const allPlans = async p => { if (await p.locator("[data-store-all]").count()) { await p.click("[data-store-all]"); await p.waitForTimeout(300); } }; // 1.10.0: the Library opens on sections
 import { DEF_PLANS } from "../src/defplans.js";
 import { LIB } from "../src/exlib.js";
 const core = DEF_PLANS.find(x => x.k === "core");
@@ -16,7 +17,7 @@ const go = async (p, s) => { await p.click("[data-menu-btn]"); await p.waitForTi
   const h = await start({ viewport: { width: 380, height: 820 }, cloud: { pub }, seed: { profile: { name: "Michael" }, settings: { lang: "sk" } } });
   const p = h.page;
   await go(p, "plans");
-  await p.click('[data-plans-seg="store"]'); await p.waitForTimeout(900);
+  await p.click('[data-plans-seg="store"]'); await p.waitForTimeout(900); await allPlans(p);
   const ids = await p.$$eval("[data-store-plan]", e => e.map(x => x.getAttribute("data-store-plan")));
   T.eq(ids[0], "hwapp_core", "equal saves: HW App's plan first");
   const row = p.locator('[data-store-plan="hwapp_core"]');

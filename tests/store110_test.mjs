@@ -3,6 +3,7 @@
 // your copy and counts the save on the server; stars only after a workout from the copy. Publishing is a switch in
 // the plan editor.
 import { start, T, shot, entry } from "./harness.mjs";
+const allPlans = async p => { if (await p.locator("[data-store-all]").count()) { await p.click("[data-store-all]"); await p.waitForTimeout(300); } }; // 1.10.0: the Library opens on sections
 const pub = [
   { pid: "u1_p1", o: "u1", nick: "Zuzka", name: "Legs every day", items: [{ id: "n1", sets: 4 }, { id: "b5", sets: 2, dur: 60 }], fam: ["legs"], eq: "none", n: 2, sv: 12, st: 9, sn: 2, avg: 4.5, ts: 3 },
   { pid: "u2_p9", o: "u2", nick: "Peter", name: "Gym push", items: [{ id: "fw_dumbbell_bench_press", sets: 4 }, { id: "k1", sets: 3 }], fam: ["chest"], eq: "free", n: 2, sv: 30, st: 0, sn: 0, avg: 0, ts: 1 },
@@ -14,7 +15,7 @@ const names = p => p.$$eval("[data-store-plan]", e => e.map(x => x.getAttribute(
   const h = await start({ viewport: { width: 380, height: 820 }, cloud: { pub }, seed: { profile: { name: "Michael" } } });
   const p = h.page;
   await go(p, "plans");
-  await p.click('[data-plans-seg="store"]'); await p.waitForTimeout(900);
+  await p.click('[data-plans-seg="store"]'); await p.waitForTimeout(900); await allPlans(p);
   T.eq(await names(p), ["u2_p9", "u1_p1", "u3_p2"], "most saved first");
   T.eq(await p.getAttribute("[data-store-filter]", "data-store-filter"), "0", "no filters on");
   T.eq(await p.locator("[data-store-grp], [data-store-eq], [data-store-sort]").count(), 0, "no chip rows on the page: filters live in a sheet");
@@ -60,7 +61,7 @@ const names = p => p.$$eval("[data-store-plan]", e => e.map(x => x.getAttribute(
   const h = await start({ viewport: { width: 380, height: 820 }, cloud: { pub }, seed: { history, profile: { name: "Michael", plans } } });
   const p = h.page;
   await go(p, "plans");
-  await p.click('[data-plans-seg="store"]'); await p.waitForTimeout(900);
+  await p.click('[data-plans-seg="store"]'); await p.waitForTimeout(900); await allPlans(p);
   await p.click('[data-store-plan="u1_p1"]'); await p.waitForTimeout(500);
   T.eq(await p.getAttribute("[data-plan-rate]", "data-plan-rate"), "on", "trained it: stars can be given");
   T.eq(await p.locator("[data-plan-copy]").count(), 0, "already saved: no second copy button");
