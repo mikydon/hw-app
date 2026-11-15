@@ -14,7 +14,8 @@ export default {
     ntPlanRate: "{nick} memberi rencanamu {r} ★",
     ntPlanRateD: "Dia berlatih “{plan}” dan menilainya.",
     pvReqSent: "Permintaan terkirim",
-    pvReqAccept: "Terima permintaan pertemanannya",
+    pvReqAccept: "Terima permintaan",
+    pvAdd: "Tambah teman",
     yearT: "Tahun {y}-mu",
     yearShareT: "Tahun {y}-ku",
     yearStreak: "Runtutan terpanjang",
@@ -264,5 +265,6 @@ export default {
     ["Pustaka: orang", "Pembuat rencana hanya sebuah nama.", "Ketuk pembuatnya di Pustaka untuk melihat profilnya dan mengirim permintaan pertemanan dari sana; pembuat mendapat notifikasi saat seseorang menyimpan atau menilai rencananya (paling banyak sekali sehari)."],
     ["Pustaka: bagian", "Pustaka hanya satu daftar panjang.", "Kini terbuka dengan bagian: populer minggu ini, nilai tertinggi, rencana teman, paling banyak disimpan, dari HW App, terbaru; panah menampilkan semuanya dalam urutan itu."],
     ["Tautan rencana", "Rencana hanya bisa ditampilkan di profil atau diterbitkan di Pustaka.", "Bagikan tautan dari editor rencana: siapa pun yang membukanya melihat rencana itu dan bisa menyimpan salinan atau mencobanya, bahkan tanpa akun. Bebanmu tidak pernah ikut."],
+    ["Rank tubuh", "Tubuh berwarna datar dengan sembilan ubin selalu di bawahnya.", "Otot berkilau seperti logam dan permata (besi, perunggu, perak, emas… obsidian); kotaknya hanya menampilkan tubuh, dan satu ketukan membuka sembilan bagian."],
   ],
 };

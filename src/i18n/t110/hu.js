@@ -14,7 +14,8 @@ export default {
     ntPlanRate: "{nick} {r} ★-ot adott az edzéstervedre",
     ntPlanRateD: "Végigedzette a(z) „{plan}” tervet, és értékelte.",
     pvReqSent: "Kérés elküldve",
-    pvReqAccept: "Barátkérés elfogadása",
+    pvReqAccept: "Kérés elfogadása",
+    pvAdd: "Barátnak jelölöm",
     yearT: "A te {y}-os éved",
     yearShareT: "Az én {y}-os évem",
     yearStreak: "Leghosszabb széria",
@@ -264,5 +265,6 @@ export default {
     ["Könyvtár: emberek", "Egy terv szerzője csak egy név volt.", "Koppints a szerzőre a Könyvtárban, hogy lásd a profilját, és onnan barátkérést küldj; a szerző értesítést kap, ha valaki elmenti vagy értékeli a tervét (naponta legfeljebb egyszer)."],
     ["Könyvtár: rovatok", "A Könyvtár egyetlen hosszú lista volt.", "Rovatokkal nyílik: népszerű a héten, legjobbra értékelt, barátok tervei, legtöbbet mentett, a HW Apptól, legújabb; a nyíl mindet megmutatja ebben a sorrendben."],
     ["Terv linkje", "Egy tervet csak a profilodon lehetett megmutatni vagy a Könyvtárban közzétenni.", "A tervszerkesztőből megoszthatsz egy linket: aki megnyitja, látja a tervet, és fiók nélkül is elmenthet egy másolatot vagy kipróbálhatja. A súlyaid sosem szerepelnek benne."],
+    ["Testrangok", "A test lapos színekkel jelent meg, alatta mindig kilenc csempével.", "Az izmok fémként és drágakőként csillognak (vas, bronz, ezüst, arany… obszidián); a doboz csak a testet mutatja, koppintásra legördül a kilenc testrész."],
   ],
 };

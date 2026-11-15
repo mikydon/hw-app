@@ -16,14 +16,16 @@ const go = async (p, s) => { await p.click("[data-menu-btn]"); await p.waitForTi
   await p.click('[data-plan-by="emaUUUUUU"]'); await p.waitForSelector('[data-pv="emaUUUUUU"]', { timeout: 6000 }); await p.waitForTimeout(800);
   T.eq(await p.getAttribute('[data-pv="emaUUUUUU"]', "data-pv-state"), "ok", "Ema's profile");
   T.ok((await p.textContent("[data-pv-head]")).includes("Ema"), "her name on top");
-  T.ok(await p.locator("[data-pv-add]").isVisible(), "a friend request button");
+  T.ok(await p.locator("[data-pv-add]").isVisible() && (await p.textContent("[data-pv-add]")).includes("Add friend"), "a friend request pill");
   await shot(p, "pv_from_library");
   await p.click("[data-pv-add]"); await p.waitForTimeout(500);
   const sent = await p.evaluate(() => window.__fakeLog.find(x => x[0] === "sendRequest"));
   T.eq(sent && sent[1], "emaUUUUUU", "the request goes to Ema");
   T.eq(await p.getAttribute("[data-pv-add]", "data-state"), "sent", "button: sent");
   T.ok(await p.locator("[data-pv-add]").isDisabled(), "and can't be sent twice");
-  T.ok((await p.textContent("[data-pv-add-msg]")).includes("Ema"), "a line says so");
+  T.ok((await p.textContent("[data-pv-add]")).includes("Request sent"), "and says so");
+  const bb = await p.locator("[data-pv-add]").boundingBox(), hb = await p.locator("[data-pv-head]").boundingBox();
+  T.ok(bb.height <= 40 && bb.y >= hb.y - 2 && bb.y + bb.height <= hb.y + hb.height + 2, "a small pill in the top bar, not a big button on the page");
   await p.click("[data-pv-back]"); await p.waitForTimeout(1200);
   T.ok(await p.locator('[data-plan-peek="emaUUUUUU_p2"]').isVisible(), "Back: the plan in the Library again");
   T.eq(h.errors, [], "no page errors");

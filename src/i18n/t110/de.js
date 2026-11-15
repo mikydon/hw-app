@@ -14,7 +14,8 @@ export default {
     ntPlanRate: "{nick} hat deinem Plan {r} ★ gegeben",
     ntPlanRateD: "Er hat „{plan}“ trainiert und bewertet.",
     pvReqSent: "Anfrage gesendet",
-    pvReqAccept: "Freundschaftsanfrage annehmen",
+    pvReqAccept: "Anfrage annehmen",
+    pvAdd: "Als Freund hinzufügen",
     yearT: "Dein {y}",
     yearShareT: "Mein {y}",
     yearStreak: "Längste Serie",
@@ -264,5 +265,6 @@ export default {
     ["Bibliothek: Menschen", "Der Autor eines Plans war nur ein Name.", "Tippe in der Bibliothek auf den Autor, um sein Profil zu sehen und von dort eine Freundschaftsanfrage zu senden; Autoren bekommen eine Benachrichtigung, wenn jemand ihren Plan speichert oder bewertet (höchstens einmal am Tag)."],
     ["Bibliothek: Bereiche", "Die Bibliothek war eine lange Liste.", "Sie öffnet mit Bereichen: beliebt diese Woche, am besten bewertet, Pläne von Freunden, am häufigsten gespeichert, von HW App, neueste; der Pfeil zeigt alle in dieser Reihenfolge."],
     ["Plan-Links", "Ein Plan ließ sich nur im Profil zeigen oder in der Bibliothek veröffentlichen.", "Teile im Plan-Editor einen Link: Wer ihn öffnet, sieht den Plan und kann eine Kopie speichern oder ihn ausprobieren, auch ohne Konto. Deine Gewichte sind nie darin."],
+    ["Körperränge", "Der Körper hatte flache Farben und immer neun Kacheln darunter.", "Die Muskeln glänzen wie Metalle und Edelsteine (Eisen, Bronze, Silber, Gold… Obsidian); die Box zeigt nur den Körper, ein Tipp klappt die neun Partien aus."],
   ],
 };

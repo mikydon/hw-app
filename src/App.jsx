@@ -6529,26 +6529,44 @@ function bodyRanks(m) {
   const sum = PLN.FAMILIES.reduce((a, f) => a + (out[f].r === null ? 0 : out[f].r + 1), 0);
   return { fam: out, all: Math.floor(sum / PLN.FAMILIES.length) - 1 };
 }
+// 1.10.0 (Michael, Nov 15: "the colours on the body are plain: make them realistic, like gold and silver"): every rank
+// is a metal or a gem on the body drawing: highlight, base (the rank colour), shade and a lit rim, per muscle plate
+// (gradient in the plate's own box, so each muscle has its own sheen). Obsidian = dark glass with its pink glint.
+const RK_METAL = [
+  ["#c9beb3", "#8c8279", "#4f4842", "#a39990"], ["#ffd0a3", "#e0955a", "#8f5222", "#f0b47f"], ["#ffffff", "#cfd8ea", "#8792a8", "#eef2fa"],
+  ["#fff6c2", "#ffd23f", "#b8860b", "#ffe98a"], ["#e9fffb", "#6fe3d8", "#2f9d95", "#b5f5ee"], ["#c9ffe0", "#3ddc84", "#128a4a", "#8df0b8"],
+  ["#f0dcff", "#b77bff", "#6a35b5", "#d9b6ff"], ["#ffffff", "#9fd8ff", "#4f9fd6", "#dff2ff"], ["#ff9db8", "#3a1f2c", "#120a10", "#ff5c8a"],
+];
+const RK_METAL_DEFS = "<defs>" + RK_METAL.map(([a, b, c, d], i) => `<linearGradient id="hwbm${i}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${a}"/><stop offset=".34" stop-color="${b}"/><stop offset=".72" stop-color="${c}"/><stop offset="1" stop-color="${d}"/></linearGradient>`).join("") + "</defs>";
+let BODY_OPEN = false; // the part tiles stay open until the app closes
 function BodyRanks({ m, onPick }) {
   const br = useMemo(() => bodyRanks(m), [m.rk, m.rr]);
   const [open, setOpen] = useState(null);
   const plate = hexMix(C.panelHi, C.chalk, 0.16), base = hexMix(C.panelHi, C.chalk, 0.08);
-  const col = p => { const r = br.fam[p.f].r; return r === null ? null : RANKS[r].color; };
+  const col = p => { const r = br.fam[p.f].r; return r === null ? null : `url(#hwbm${r})`; };
+  // 1.10.0 (Michael, Nov 15): only the body at first; a tap unrolls the nine parts under it (they fade in one by one)
+  const [more, setMoreS] = useState(BODY_OPEN), setMore = v => { BODY_OPEN = v; setMoreS(v); };
   // 1.9.0 (Michael, Nov 7: "I didn't know it can be tapped, and the list only came by tapping the middle"): every part
   // is a tile under the figures (its rank right there, tap = what counts for it); a muscle on the figure opens the same
-  const tap = e => { const el = e.target.closest && e.target.closest("[data-fam]"); if (!el) return; sfxTap(); setOpen(el.getAttribute("data-fam")); };
-  const fig = side => <svg data-body-side={side} viewBox={`-2 0 ${BD.BODY_W + 4} ${BD.BODY_H}`} onClick={tap} style={{ height: "100%", width: "auto", display: "block", overflow: "visible" }} dangerouslySetInnerHTML={{ __html: BD.bodySvg(side, { base, plate, gap: C.panel, col }) }} />;
+  const tap = e => { if (!more) { sfxTap(); setMore(true); return; } const el = e.target.closest && e.target.closest("[data-fam]"); if (!el) return; sfxTap(); setOpen(el.getAttribute("data-fam")); };
+  const fig = side => <svg data-body-side={side} viewBox={`-2 0 ${BD.BODY_W + 4} ${BD.BODY_H}`} onClick={tap} style={{ height: "100%", width: "auto", display: "block", overflow: "visible" }} dangerouslySetInnerHTML={{ __html: RK_METAL_DEFS + BD.bodySvg(side, { base, plate, gap: C.panel, col, pop: true }) }} />;
   const f = open && br.fam[open];
   // 1.10.0 (text size 130 %): the part names grow at most 12 %, so "Shoulders" never breaks inside the word in 3 columns
   const ts = useTextScale(), famFs = +(12 * Math.min(ts, 1.12) / ts).toFixed(2);
   return (
     <Sect data-body-ranks title={<>{T("bodyTitle")}<InfoQ title={T("bodyTitle")} text={T("bodyD")} /></>} meta={br.all >= 0 ? <RankTag r={br.all} size={15} /> : null} style={{ marginTop: 0, marginBottom: 14 }}>
-      <style>{`[data-body-ranks] [data-fam]{transition:filter ${MO.t1};cursor:pointer} [data-body-ranks] [data-fam]:hover{filter:brightness(1.18)}`}</style>
-      <div data-body-figs style={{ height: 200, display: "flex", justifyContent: "center", gap: 22 }}>{fig("front")}{fig("back")}</div>
-      <div data-body-all style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 6, marginTop: 12 }}>
-        {PLN.FAMILIES.map(k => { const r = br.fam[k].r, c = r === null ? null : RANKS[r].color; return (
-          <button key={k} type="button" data-body-fam={k} data-rank={r === null ? -1 : r} onClick={() => { sfxTap(); setOpen(k); }}
-            style={{ ...btnBase, fontWeight: 400, position: "relative", display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 4, padding: "8px 8px 8px", borderRadius: 12, textAlign: "left", color: C.chalk, background: c ? `linear-gradient(160deg, ${c}26, ${c}08 70%), ${SOFT()}` : SOFT(), border: `1px solid ${c ? c + "44" : "transparent"}`, minWidth: 0 }}>
+      <style>{`[data-body-ranks] [data-fam]{transition:filter ${MO.t1};cursor:pointer} [data-body-ranks] [data-fam]:hover{filter:brightness(1.18)}
+.bdFig{animation:bdFig .6s ${MO.ease} both}@keyframes bdFig{from{opacity:0;transform:translateY(10px) scale(.97)}to{opacity:1;transform:none}}
+.bdP{animation:bdPlate .7s ${MO.ease} both}@keyframes bdPlate{from{opacity:0;filter:brightness(2.4)}60%{opacity:1}to{opacity:1;filter:none}}
+.bdTile{animation:bdTile .42s ${MO.ease} both}@keyframes bdTile{from{opacity:0;transform:translateY(12px) scale(.96)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.bdFig,.bdP,.bdTile{animation:none}}`}</style>
+      <div data-body-figs className="bdFig" style={{ height: 200, display: "flex", justifyContent: "center", gap: 22 }}>{fig("front")}{fig("back")}</div>
+      <button type="button" data-body-toggle aria-expanded={more} aria-label={T("bodyTitle")} onClick={() => { sfxTap(); setMore(!more); }} style={{ ...btnBase, display: "flex", margin: "6px auto 0", padding: "6px 22px", background: "transparent", color: C.dim }}><Chevron open={more} size={18} /></button>
+      <Expand open={more}>
+      <div data-body-all style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 6, paddingTop: 6 }}>
+        {PLN.FAMILIES.map((k, i) => { const r = br.fam[k].r, c = r === null ? null : RANKS[r].color; return (
+          <button key={k} type="button" className="bdTile" data-body-fam={k} data-rank={r === null ? -1 : r} onClick={() => { sfxTap(); setOpen(k); }}
+            style={{ animationDelay: `${60 + i * 45}ms`, ...btnBase, fontWeight: 400, position: "relative", display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 4, padding: "8px 8px 8px", borderRadius: 12, textAlign: "left", color: C.chalk, background: c ? `linear-gradient(160deg, ${c}26, ${c}08 70%), ${SOFT()}` : SOFT(), border: `1px solid ${c ? c + "44" : "transparent"}`, minWidth: 0 }}>
             <span style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
               <BodyIco spec={BD.FAMILY_ICON[k]} size={28} hi={c || C.dim} />
               {r === null ? <span style={{ fontSize: 13, color: C.dim, fontWeight: 800, paddingRight: 4 }}>–</span> : <RankIcon r={r} size={20} />}
@@ -6558,6 +6576,7 @@ function BodyRanks({ m, onPick }) {
           </button>
         ); })}
       </div>
+      </Expand>
       {f && (
         <Sheet title={T("fam_" + open)} onClose={() => setOpen(null)} short>
           <div data-body-sheet={open} style={{ display: "flex", alignItems: "center", gap: 14 }}>
@@ -7194,38 +7213,38 @@ function OtherProfile({ p, isFriend, onBack, setTopHead, me, onAdd, reqIn }) {
       .catch(e => { if (dead) return; setSt(/permission/i.test(String((e && e.code) || (e && e.message) || "")) ? { hidden: true } : { err: cloudErr(e) || T("frOffline") }); });
     return () => { dead = true; };
   }, [p.uid]);
+  // 1.10.0 (Michael's idea 5): a friend request right from someone's profile
+  const [addSt, setAddSt] = useState(() => ((cloudMem().sent || []).includes(p.uid) ? "sent" : ""));
+  const canAdd = !!(onAdd && me && p.uid !== me && !isFriend);
+  const sendAdd = async () => {
+    sfxTap(); setAddSt("busy");
+    try { await onAdd(p.uid, p.nick); setAddSt("sent"); sfxCheck(); } catch (_) { setAddSt("err"); setTimeout(() => setAddSt(s => (s === "err" ? "" : s)), 2500); }
+  };
   useEffect(() => {
     setTopHead && setTopHead(
       <div data-pv-head style={{ display: "flex", alignItems: "center", gap: 10, flex: 1, minWidth: 0, pointerEvents: "auto" }}>
         <button data-pv-back onClick={() => { sfxTap(); onBack(); }} aria-label={T("back")} style={{ ...btnBase, background: SOFT(), color: C.chalk, width: 38, height: 38, borderRadius: 12, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
           <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
         </button>
-        <span style={{ fontFamily: DISPLAY, fontSize: 22, fontWeight: 900, color: C.chalk, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" , ...INK }}>{p.nick}</span>
+        <span style={{ flex: 1, minWidth: 0, fontFamily: DISPLAY, fontSize: 22, fontWeight: 900, color: C.chalk, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" , ...INK }}>{p.nick}</span>
+        {canAdd && (
+          // 1.10.0 (Michael, Nov 15: the big yellow button "looks terrible, make it minimal"): a small pill beside the name
+          <button type="button" data-pv-add data-state={addSt || "idle"} disabled={addSt === "sent" || addSt === "busy"} onClick={sendAdd}
+            style={{ ...btnBase, flexShrink: 0, height: 36, padding: "0 12px", borderRadius: 99, fontSize: 13, display: "inline-flex", alignItems: "center", gap: 6, whiteSpace: "nowrap",
+              background: addSt === "sent" ? "transparent" : `${C.signal}1f`, color: addSt === "sent" ? C.dim : addSt === "err" ? "#ff8a80" : C.signal, border: `1px solid ${addSt === "sent" ? C.line : addSt === "err" ? "#ff8a8066" : C.signal + "55"}` }}>
+            <Ico n={addSt === "sent" ? "tick" : "plus"} size={15} sw={2.4} />{addSt === "busy" ? "…" : addSt === "sent" ? T("pvReqSent") : addSt === "err" ? T("frErr") : reqIn ? T("pvReqAccept") : T("pvAdd")}
+          </button>
+        )}
       </div>
     );
-  }, [p.uid, p.nick]);
+  }, [p.uid, p.nick, addSt, canAdd, reqIn]);
   useEffect(() => () => { setTopHead && setTopHead(null); }, []);
   useBack(onBack);
   const m = st.card ? cardModel(st.card, { nick: p.nick, pfp: isFriend ? p.pfp : null }) : null;
-  // 1.10.0 (Michael, idea 5): a friend request right from someone's profile
-  const [addSt, setAddSt] = useState(() => ((cloudMem().sent || []).includes(p.uid) ? "sent" : "")), [addMsg, setAddMsg] = useState("");
-  const canAdd = onAdd && me && p.uid !== me && !isFriend;
-  const addRow = canAdd && (
-    <div data-pv-add-box style={{ padding: "0 18px", marginBottom: 12 }}>
-      <button type="button" data-pv-add data-state={addSt || "idle"} disabled={addSt === "sent" || addSt === "busy"} onClick={async () => {
-        sfxTap(); setAddSt("busy"); setAddMsg("");
-        try { const r = await onAdd(p.uid, p.nick); setAddMsg(r || ""); setAddSt("sent"); sfxCheck(); } catch (e) { setAddMsg(cloudErr(e) || T("frErr")); setAddSt(""); }
-      }} className="b3d" style={{ ...bigBtn(addSt === "sent" ? C.panelHi : C.signal, addSt === "sent" ? C.dim : C.signalInk), fontSize: 15, padding: 13, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-        <Ico n="duo" size={19} />{addSt === "busy" ? "…" : addSt === "sent" ? T("pvReqSent") : reqIn ? T("pvReqAccept") : T("frAddBtn")}
-      </button>
-      {addMsg && <div role="status" data-pv-add-msg style={{ fontSize: 13, color: C.dim, marginTop: 6, textAlign: "center" }}>{addMsg}</div>}
-    </div>
-  );
   return (
     <div className="scr" data-pv={p.uid} data-pv-state={st.loading ? "loading" : st.hidden ? "hidden" : st.err ? "err" : "ok"} style={{ padding: "6px 0 124px", maxWidth: "var(--colMax)", margin: "0 auto" }}>
       {howEx && <HowTo id={howEx} history={[]} onClose={() => setHowEx(null)} />}
       {peek && <PlanPeek plan={peek} by={p.nick} uid={p.uid} onClose={() => setPeek(null)} />}
-      {addRow}
       {m ? <ProfilePage m={m} onPickRank={setHowEx} plansEl={plib && plib.length ? <ProfilePlans plans={plib} onOpen={setPeek} /> : null} /> : (
         <div style={{ padding: "0 18px" }}>
           <Sect style={{ marginTop: 0, display: "flex", alignItems: "center", gap: 14 }}>

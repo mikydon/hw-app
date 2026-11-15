@@ -27,10 +27,12 @@ export const BACK = [
 ];
 export const SILHOUETTE = { head: HEAD, body: SIL };
 // The figure as an SVG string. col(f) = fill of a family's plates (null = the neutral plate colour).
-export function bodySvg(side, { base, plate, gap, col = () => null, clip, x = 0, only = false } = {}) {
+// pop (1.10.0): coloured plates get class "bdP" and a rising animation delay, so they light up one after another
+export function bodySvg(side, { base, plate, gap, col = () => null, clip, x = 0, only = false, pop = false } = {}) {
   const parts = (side === "back" ? BACK : FRONT).filter(p => !only || col(p));
   const half = `<path d="${HEAD} Z" /><path d="${SIL} Z" />`;
-  const plates = parts.map(p => `<path data-fam="${p.f}" data-m="${p.m}" d="${p.d}" fill="${col(p) || plate}" />`).join("");
+  let k = 0;
+  const plates = parts.map(p => { const c = col(p); return `<path data-fam="${p.f}" data-m="${p.m}" d="${p.d}" fill="${c || plate}"${pop && c ? ` class="bdP" style="animation-delay:${120 + 45 * k++}ms"` : ""} />`; }).join("");
   return `<g transform="translate(${x} 0)"><g fill="${base}" stroke="${base}" stroke-width="1.2" stroke-linejoin="round">${half}<g transform="translate(120 0) scale(-1 1)">${half}</g></g>`
     + `<g stroke="${gap}" stroke-width=".9" stroke-linejoin="round">${plates}<g transform="translate(120 0) scale(-1 1)">${plates}</g></g></g>`;
 }

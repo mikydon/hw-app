@@ -14,7 +14,8 @@ export default {
     ntPlanRate: "{nick} dio {r} ★ a tu plan",
     ntPlanRateD: "Entrenó “{plan}” y lo valoró.",
     pvReqSent: "Solicitud enviada",
-    pvReqAccept: "Aceptar su solicitud",
+    pvReqAccept: "Aceptar solicitud",
+    pvAdd: "Añadir amigo",
     yearT: "Tu {y}",
     yearShareT: "Mi {y}",
     yearStreak: "Racha más larga",
@@ -264,5 +265,6 @@ export default {
     ["Biblioteca: personas", "El autor de un plan era solo un nombre.", "Toca al autor en la Biblioteca para ver su perfil y enviarle una solicitud de amistad desde ahí; los autores reciben una notificación cuando alguien guarda o valora su plan (como mucho una vez al día)."],
     ["Biblioteca: secciones", "La Biblioteca era una larga lista.", "Se abre en secciones: popular esta semana, mejor valorados, planes de amigos, más guardados, de HW App, más nuevos; la flecha muestra todos en ese orden."],
     ["Enlaces de planes", "Un plan solo se podía mostrar en tu perfil o publicar en la Biblioteca.", "Comparte un enlace desde el editor del plan: quien lo abra ve el plan y puede guardar una copia o probarlo, incluso sin cuenta. Tus pesos nunca van en él."],
+    ["Rangos del cuerpo", "El cuerpo tenía colores planos y siempre nueve fichas debajo.", "Los músculos brillan como metales y gemas (hierro, bronce, plata, oro… obsidiana); el cuadro muestra solo el cuerpo y un toque despliega las nueve partes."],
   ],
 };

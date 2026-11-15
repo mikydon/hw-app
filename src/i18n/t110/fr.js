@@ -14,7 +14,8 @@ export default {
     ntPlanRate: "{nick} a donné {r} ★ à ton programme",
     ntPlanRateD: "Il s'est entraîné avec « {plan} » et l'a noté.",
     pvReqSent: "Demande envoyée",
-    pvReqAccept: "Accepter sa demande d'ami",
+    pvReqAccept: "Accepter la demande",
+    pvAdd: "Ajouter en ami",
     yearT: "Ton année {y}",
     yearShareT: "Mon année {y}",
     yearStreak: "Plus longue flamme",
@@ -264,5 +265,6 @@ export default {
     ["Bibliothèque : les gens", "L'auteur d'un programme n'était qu'un nom.", "Touche l'auteur dans la Bibliothèque pour voir son profil et lui envoyer une demande d'ami ; les auteurs reçoivent une notification quand quelqu'un enregistre ou note leur programme (au plus une fois par jour)."],
     ["Bibliothèque : sections", "La Bibliothèque était une longue liste.", "Elle s'ouvre sur des sections : populaires cette semaine, les mieux notés, programmes d'amis, les plus enregistrés, par HW App, les plus récents ; la flèche les montre tous dans cet ordre."],
     ["Liens de programmes", "Un programme pouvait seulement être montré sur ton profil ou publié dans la Bibliothèque.", "Partage un lien depuis l'éditeur : qui l'ouvre voit le programme et peut en enregistrer une copie ou l'essayer, même sans compte. Tes charges n'y figurent jamais."],
+    ["Rangs du corps", "Le corps avait des couleurs plates et toujours neuf tuiles en dessous.", "Les muscles brillent comme des métaux et des gemmes (fer, bronze, argent, or… obsidienne) ; le bloc ne montre que le corps et un toucher déroule les neuf parties."],
   ],
 };

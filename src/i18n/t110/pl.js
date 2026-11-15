@@ -15,6 +15,7 @@ export default {
     ntPlanRateD: "Przećwiczył „{plan}” i go ocenił.",
     pvReqSent: "Zaproszenie wysłane",
     pvReqAccept: "Przyjmij zaproszenie",
+    pvAdd: "Dodaj znajomego",
     yearT: "Twój rok {y}",
     yearShareT: "Mój rok {y}",
     yearStreak: "Najdłuższa passa",
@@ -264,5 +265,6 @@ export default {
     ["Biblioteka: ludzie", "Autor planu był tylko nazwą.", "Stuknij autora w Bibliotece, by zobaczyć jego profil i wysłać stamtąd zaproszenie do znajomych; autor dostaje powiadomienie, gdy ktoś zapisze lub oceni jego plan (najwyżej raz dziennie)."],
     ["Biblioteka: sekcje", "Biblioteka była jedną długą listą.", "Otwiera się na sekcjach: popularne w tym tygodniu, najwyżej oceniane, plany znajomych, najczęściej zapisywane, od HW App, najnowsze; strzałka pokaże wszystkie w tej kolejności."],
     ["Link do planu", "Plan można było tylko pokazać na profilu lub opublikować w Bibliotece.", "W edytorze planu udostępnij link: kto go otworzy, zobaczy plan i może zapisać kopię lub go wypróbować, nawet bez konta. Twoich ciężarów nigdy w nim nie ma."],
+    ["Rangi ciała", "Ciało miało płaskie kolory i zawsze dziewięć kafelków pod spodem.", "Mięśnie lśnią jak metale i klejnoty (żelazo, brąz, srebro, złoto… obsydian); pole pokazuje tylko ciało, a stuknięcie rozwija dziewięć partii."],
   ],
 };

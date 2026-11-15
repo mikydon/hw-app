@@ -32,7 +32,8 @@ const k2 = await p.getAttribute("[data-hero-pop]", "data-hero-pop");
 await p.click("[data-hero-pop]"); await p.waitForTimeout(500);
 T.ok(await p.locator(`[data-badge-sheet="${k2}"]`).isVisible(), "tap on the card opens the badge (" + k2 + ")");
 await p.keyboard.press("Escape"); await p.click('[aria-label="Close"] >> nth=-1').catch(() => {}); await p.waitForTimeout(500);
-// body tiles
+// body tiles (1.10.0: unrolled by the chevron under the body)
+await p.click("[data-body-toggle]"); await p.waitForTimeout(800);
 T.eq(await p.locator("[data-body-all] [data-body-fam]").count(), 9, "nine body part tiles under the figures");
 const chest = await p.getAttribute('[data-body-fam="chest"]', "data-rank");
 T.ok(Number(chest) >= 0, "chest has a rank on its tile");

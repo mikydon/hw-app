@@ -13,8 +13,13 @@ await p.waitForSelector("[data-body-ranks]");
 T.ok(await p.locator("[data-body-ranks] [data-body-side]").count() === 2, "front + back figures");
 const box = await p.locator("[data-body-ranks]").boundingBox(), hero = await p.locator("[data-body-ranks] ~ *").first().boundingBox();
 T.ok(box && hero && box.y < hero.y, "body ranks are the first box of the Profile page");
-// every part is a tile under the figures (always visible)
-await p.waitForSelector("[data-body-all]");
+// 1.10.0 (Michael, Nov 15): only the body at first; a tap on it unrolls the nine parts (metal colours on the drawing)
+T.eq(await p.locator("[data-body-all]").count(), 0, "only the body at first");
+T.ok((await p.locator('[data-body-side="front"] [data-fam="chest"]').first().getAttribute("fill")).startsWith("url(#hwbm"), "a ranked muscle is drawn as metal (gradient)");
+T.ok(await p.locator('[data-body-side="front"] linearGradient').count() >= 9, "nine rank metals");
+await p.locator('[data-body-side="front"]').click({ position: { x: 30, y: 60 } });
+await p.waitForSelector("[data-body-all]"); await p.waitForTimeout(900);
+T.eq(await p.getAttribute("[data-body-toggle]", "aria-expanded"), "true", "a tap on the body unrolls the parts");
 T.eq(await p.locator("[data-body-all] [data-body-fam]").count(), 9, "nine part tiles");
 T.eq(await p.getAttribute('[data-body-fam="back"]', "data-rank"), "-1", "back not trained = grey");
 const chest = Number(await p.getAttribute('[data-body-fam="chest"]', "data-rank"));

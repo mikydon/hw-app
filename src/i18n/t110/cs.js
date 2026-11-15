@@ -14,7 +14,8 @@ export default {
     ntPlanRate: "{nick} dal tvému plánu {r} ★",
     ntPlanRateD: "Odcvičil „{plan}“ a ohodnotil ho.",
     pvReqSent: "Žádost odeslána",
-    pvReqAccept: "Přijmout žádost o přátelství",
+    pvReqAccept: "Přijmout žádost",
+    pvAdd: "Přidat přítele",
     yearT: "Tvůj rok {y}",
     yearShareT: "Můj rok {y}",
     yearStreak: "Nejdelší šňůra",
@@ -264,5 +265,6 @@ export default {
     ["Knihovna: lidé", "Autor plánu byl jen jméno.", "Ťukni na autora v Knihovně a uvidíš jeho profil, odkud mu můžeš poslat žádost o přátelství; autor dostane upozornění, když si někdo jeho plán uloží nebo ohodnotí (nejvýš jednou denně)."],
     ["Knihovna: sekce", "Knihovna byla jeden dlouhý seznam.", "Otevře se na sekcích: oblíbené tento týden, nejlépe hodnocené, plány přátel, nejvíc uložené, od HW App, nejnovější; šipka ukáže všechny v tom pořadí."],
     ["Odkaz na plán", "Plán šlo jen ukázat na profilu nebo zveřejnit v Knihovně.", "V editoru plánu sdílej odkaz: kdo ho otevře, uvidí plán a může si uložit kopii nebo ho vyzkoušet, i bez účtu. Tvoje váhy v něm nikdy nejsou."],
+    ["Ranky těla", "Tělo mělo ploché barvy a pod ním vždy devět dlaždic.", "Svaly se lesknou jako kovy a drahokamy (železo, bronz, stříbro, zlato… obsidián); box ukazuje jen tělo a ťuknutím se rozbalí devět partií."],
   ],
 };
