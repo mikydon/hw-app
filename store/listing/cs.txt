@@ -1,38 +1,36 @@
 HW App: Domácí trénink
-Domácí trénink za 19 minut, vlastní plány s vahami, ranky a šňůra.
-💪 HW App je tréninkový plán, který roste s tebou. Cvič doma s vlastní vahou bez náčiní, nebo si sestav vlastní plány s činkami a stroji v posilovně.
+Domácí trénink za 19 minut, vlastní plány, ranky, série a přátelé.
+💪 HW App je tréninkový plán, který roste s tebou. Cvič doma s vlastní vahou bez nářadí, nebo si sestav vlastní plány s činkami a stroji v posilovně.
 
 📋 <b>Plán</b>
-• Doporučený: tři tréninkové dny (A, B, C), cvičené každý druhý den. Každý procvičí tlak, tah, nohy a střed těla za ~19 min (3 kola) nebo ~13 min (2 kola).
-• Moje plány: sestav si vlastní ze 134 cviků (57 bez náčiní, 22 s volnými vahami, 55 na strojích a kladkách), přiřaď je ke dnům v týdnu a rozděl do skupin.
-• Poslední kolo jde do technického selhání: tolik čistých opakování, kolik zvládneš, a skončíš dřív, než se pokazí technika.
-• Aplikace ukáže, kolik jsi udělal minule, a cíl +1 u opakování i vah, abys stále dělal pokroky.
+• Doporučený: tři tréninkové dny (A, B, C), každý druhý den. Každý procvičí tlak, tah, nohy a střed těla za ~19 min, ~13 min, nebo Jen 5 minut, když nemáš čas.
+• Moje plány: sestav si vlastní ze 134 cviků (s nářadím i bez), přiřaď je ke dnům v týdnu a rozděl do skupin.
+• Knihovna (s účtem): najdi plány od jiných lidí, vyzkoušej je dřív, než si je uložíš, a dej hvězdičky plánům, které jsi odcvičil.
+• Aplikace ukáže, kolik jsi udělal minule, a cíl +1 u opakování i vah, abys pořád postupoval.
 
 ⏱️ <b>Během tréninku</b>
 • Časovač pauzy s +15, +30 a +60 s, který běží dál i na zamčené obrazovce, s pípnutím a vibrací.
-• Poznámky, cviky navíc, když ještě máš sílu, a průvodce tempem.
-• Návod ke každému cviku a lehčí či těžší verze na výměnu.
-• Rozcvička před tréninkem a protažení po něm (nepovinné).
+• Poznámky, cviky navíc, průvodce tempem a návod ke každému cviku.
+• Zahřátí před tréninkem a protažení po něm (volitelné).
 
 🏆 <b>Pokrok a motivace</b>
 • 9 ranků pro každý cvik, od Železa po Obsidián, a tělo, které hodnotí 9 částí těla.
-• 49 odznaků, XP a levely, šňůra se zmrazením a týdenní výzvy.
-• Statistiky s mapou aktivity a týdenními grafy, a historie, kterou můžeš upravit.
-• Diamanty, které získáš tréninkem, na zmrazení šňůry, XP boosty a vzhled profilu.
-• 🃏 Muscle Deck: karetní hra, ve které je tvůj trénink tvoje síla.
+• 50 odznaků, XP a levely, série se zmrazením, týdenní výzvy a večerní připomínka, než ti série skončí.
+• Kalendář a grafy pokroku, k tomu shrnutí týdne a tvůj rok v číslech jako obrázky ke sdílení.
+• Diamanty, které získáš tréninkem, na zmrazení série, XP boosty, vzhled profilu a styly karet.
+• 🃏 Muscle Deck: karetní hra, ve které je tvůj trénink tvoje síla. Ranked: hraješ stejnou partii jako skutečný hráč a stoupáš od Železa po Obsidián.
 
 🍎 <b>Kalorie</b>
-• Kalkulačka kalorií (Mifflin-St Jeor) s cílem zhubnout, udržet nebo přibrat.
-• Denní záznam kalorií s kalendářem; tvoje tréninky se přičtou k dennímu cíli.
+• Kalkulačka kalorií s cílem zhubnout, udržet nebo přibrat a denní záznam s kalendářem.
 • Volitelně Health Connect: kroky, jídlo z jiných aplikací, váha a výška. Tyto údaje nikdy neopustí tvůj telefon.
 
 👥 <b>Přátelé (volitelné, 16+)</b>
-• Přihlas se přes Google nebo e-mailem a heslem a přidej si přátele přes kód nebo přezdívku.
-• Profily s odznaky a ranky, žebříček přátel, zprávy a společné šňůry s přáteli.
-• Upozornění, záloha v cloudu s body obnovení a synchronizace mezi tvými zařízeními.
+• Přihlas se přes Google nebo e-mailem a přidej si přátele přes kód, odkaz nebo přezdívku.
+• Spolu: držte s přítelem sérii v tréninku nebo kaloriích, nastavte si týdenní cíl a pošlete si šťouchnutí.
+• Profily, žebříček přátel, zprávy, upozornění, záloha v cloudu a synchronizace mezi tvými zařízeními.
 
 ✨ <b>Dále</b>
-• 15 jazyků, 8 barevných motivů, 6 hlavních barev a 6 vzhledů.
+• 15 jazyků, světlé, tmavé nebo automatické téma, 6 hlavních barev a větší písmo.
 • Žádné reklamy a žádné sledování. Bez účtu všechno zůstává v tvém telefonu.
 
 HW App dělá jeden vývojář. Nápady a chyby můžeš poslat na GitHubu: github.com/mikydon/hw-app

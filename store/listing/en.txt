@@ -1,38 +1,36 @@
 HW App: Home Workout
-Home workouts in 19 min, your own plans with weights, ranks and streaks.
+Home workouts in 19 min, your own plans, ranks, streaks and friends.
 💪 HW App is a workout plan that grows with you. Train at home with your own body weight and no equipment, or build your own plans with dumbbells and gym machines.
 
 📋 <b>The plan</b>
-• Recommended: three workout days (A, B, C), trained every other day. Each one trains push, pull, legs and core in ~19 min (3 rounds) or ~13 min (2 rounds).
-• My plans: build your own from 134 exercises (57 without equipment, 22 with free weights, 55 on machines and cables), set them to weekdays and sort them into groups.
-• The last round goes to technical failure: as many clean reps as you can, stopping before your form breaks.
+• Recommended: three workout days (A, B, C), every other day. Each one trains push, pull, legs and core in ~19 min, ~13 min, or Only 5 minutes on a busy day.
+• My plans: build your own from 134 exercises (with or without equipment), set them to weekdays and sort them into groups.
+• Library (with an account): find plans from other people, try one before you save it, and give stars to plans you trained.
 • The app shows what you did last time and a +1 goal, for reps and for weights, so you keep progressing.
 
 ⏱️ <b>During the workout</b>
 • A rest timer with +15, +30 and +60 s that keeps counting on the lock screen, with a beep and vibration.
-• Notes, extra exercises when you still have energy, and a tempo guide.
-• A how-to for every exercise, and easier or harder versions to swap in.
+• Notes, extra exercises, a tempo guide and a how-to for every exercise.
 • A warm-up before and an optional cool-down after.
 
 🏆 <b>Progress and motivation</b>
 • 9 ranks for every exercise, from Iron to Obsidian, and a body map that ranks 9 body parts.
-• 49 badges, XP and levels, a streak with freeze days and weekly challenges.
-• Stats with an activity map and weekly charts, and a history you can edit.
-• Diamonds you earn by training, for streak freezes, XP boosts and profile looks.
-• 🃏 Muscle Deck: a card game where your training is your strength.
+• 50 badges, XP and levels, a streak with freeze days, weekly challenges and an evening reminder before your streak ends.
+• A calendar and progress charts, plus a weekly recap and your year in numbers as pictures to share.
+• Diamonds you earn by training, for streak freezes, XP boosts, profile looks and card styles.
+• 🃏 Muscle Deck: a card game where your training is your strength. Ranked: play the same deal as a real player and climb from Iron to Obsidian.
 
 🍎 <b>Calories</b>
-• A calorie calculator (Mifflin-St Jeor) with goals to lose, keep or gain weight.
-• A daily calorie log with a calendar; your workouts are added to the day's target.
+• A calorie calculator with goals to lose, keep or gain weight, and a daily log with a calendar.
 • Optional Health Connect: steps, food from other apps, weight and height. This data never leaves your phone.
 
 👥 <b>Friends (optional, 16+)</b>
-• Sign in with Google or with an e-mail and password, then add friends by code or nickname.
-• Profiles with badges and ranks, a friends leaderboard, messages and friend streaks.
-• Notifications, a cloud backup with restore points, and sync between your devices.
+• Sign in with Google or e-mail, then add friends by code, link or nickname.
+• Together: keep a workout or calorie streak with a friend, set a weekly goal and nudge each other.
+• Profiles, a friends leaderboard, messages, notifications, a cloud backup and sync between your devices.
 
 ✨ <b>Also</b>
-• 15 languages, 8 colour themes, 6 main colours and 6 looks.
+• 15 languages, a light, dark or automatic theme, 6 main colours and a bigger text size.
 • No ads and no tracking. Without an account, everything stays on your phone.
 
 HW App is made by one developer. Ideas and bug reports are welcome on GitHub: github.com/mikydon/hw-app

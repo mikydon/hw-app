@@ -1,38 +1,36 @@
 HW App: Domáci tréning
-Domáci tréning za 19 minút, vlastné plány s váhami, ranky a séria.
+Domáci tréning za 19 minút, vlastné plány, ranky, séria a priatelia.
 💪 HW App je tréningový plán, ktorý rastie s tebou. Cvič doma s vlastnou váhou bez náradia, alebo si zostav vlastné plány s činkami a strojmi v posilňovni.
 
 📋 <b>Plán</b>
-• Odporúčaný: tri tréningové dni (A, B, C), cvičené každý druhý deň. Každý precvičí tlak, ťah, nohy a stred tela za ~19 min (3 kolá) alebo ~13 min (2 kolá).
-• Moje plány: zostav si vlastné zo 134 cvikov (57 bez náradia, 22 s voľnými váhami, 55 na strojoch a kladkách), priraď ich k dňom v týždni a rozdeľ do skupín.
-• Posledné kolo ide do technického zlyhania: toľko čistých opakovaní, koľko zvládneš, a skončíš skôr, než sa pokazí technika.
+• Odporúčaný: tri tréningové dni (A, B, C), každý druhý deň. Každý precvičí tlak, ťah, nohy a stred tela za ~19 min, ~13 min, alebo Len 5 minút, keď nemáš čas.
+• Moje plány: zostav si vlastné zo 134 cvikov (s náradím aj bez), priraď ich k dňom v týždni a rozdeľ do skupín.
+• Knižnica (s účtom): nájdi plány od iných ľudí, vyskúšaj ich skôr, než si ich uložíš, a daj hviezdičky plánom, ktoré si odcvičil.
 • Apka ukáže, koľko si spravil minule, a cieľ +1 pri opakovaniach aj váhach, aby si stále napredoval.
 
 ⏱️ <b>Počas tréningu</b>
 • Časovač pauzy s +15, +30 a +60 s, ktorý ide ďalej aj na uzamknutej obrazovke, s pípnutím a vibráciou.
-• Poznámky, cviky navyše, keď ešte máš silu, a sprievodca tempom.
-• Návod ku každému cviku a ľahšie či ťažšie verzie na výmenu.
+• Poznámky, cviky navyše, sprievodca tempom a návod ku každému cviku.
 • Zahriatie pred tréningom a strečing po ňom (nepovinný).
 
 🏆 <b>Pokrok a motivácia</b>
 • 9 rankov pre každý cvik, od Železa po Obsidián, a telo, ktoré hodnotí 9 častí tela.
-• 49 odznakov, XP a levely, séria so zamrazením a týždenné výzvy.
-• Štatistiky s mapou aktivity a týždennými grafmi, a história, ktorú môžeš upraviť.
-• Diamanty, ktoré získaš tréningom, na zamrazenia série, XP boosty a vzhľad profilu.
-• 🃏 Muscle Deck: kartová hra, v ktorej je tvoj tréning tvoja sila.
+• 50 odznakov, XP a levely, séria so zamrazením, týždenné výzvy a večerná pripomienka, kým ti séria neskončí.
+• Kalendár a grafy pokroku, k tomu zhrnutie týždňa a tvoj rok v číslach ako obrázky na zdieľanie.
+• Diamanty, ktoré získaš tréningom, na zamrazenia série, XP boosty, vzhľad profilu a štýly kariet.
+• 🃏 Muscle Deck: kartová hra, v ktorej je tvoj tréning tvoja sila. Ranked: hráš tú istú partiu ako skutočný hráč a stúpaš od Železa po Obsidián.
 
 🍎 <b>Kalórie</b>
-• Kalkulačka kalórií (Mifflin-St Jeor) s cieľom schudnúť, udržať alebo pribrať.
-• Denný záznam kalórií s kalendárom; tvoje tréningy sa pripočítajú k dennému cieľu.
+• Kalkulačka kalórií s cieľom schudnúť, udržať alebo pribrať a denný záznam s kalendárom.
 • Nepovinne Health Connect: kroky, jedlo z iných apiek, váha a výška. Tieto údaje nikdy neopustia tvoj telefón.
 
 👥 <b>Priatelia (nepovinné, 16+)</b>
-• Prihlás sa cez Google alebo e-mailom a heslom a pridaj si priateľov cez kód alebo prezývku.
-• Profily s odznakmi a rankmi, rebríček priateľov, správy a spoločné série s priateľmi.
-• Upozornenia, záloha v cloude s bodmi obnovenia a synchronizácia medzi tvojimi zariadeniami.
+• Prihlás sa cez Google alebo e-mailom a pridaj si priateľov cez kód, odkaz alebo prezývku.
+• Spolu: drž s priateľom sériu v tréningu alebo kalóriách, nastavte si týždenný cieľ a pošlite si šťuchnutie.
+• Profily, rebríček priateľov, správy, upozornenia, záloha v cloude a synchronizácia medzi tvojimi zariadeniami.
 
 ✨ <b>Ďalej</b>
-• 15 jazykov, 8 farebných tém, 6 hlavných farieb a 6 vzhľadov.
+• 15 jazykov, svetlá, tmavá alebo automatická téma, 6 hlavných farieb a väčšie písmo.
 • Žiadne reklamy a žiadne sledovanie. Bez účtu všetko ostáva v tvojom telefóne.
 
 HW App robí jeden vývojár. Nápady a chyby môžeš poslať na GitHube: github.com/mikydon/hw-app

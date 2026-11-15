@@ -1,38 +1,36 @@
 HW App: Ejercicio en casa
-Ejercicio en casa en 19 min, tus propios planes con pesas, rangos y rachas.
-💪 HW App es un plan de entrenamiento que crece contigo. Entrena en casa con tu propio peso y sin material, o crea tus propios planes con mancuernas y máquinas de gimnasio.
+Ejercicio en casa en 19 min, tus planes, rangos, rachas y amigos.
+💪 HW App es un plan de entrenamiento que crece contigo. Entrena en casa con tu propio peso y sin material, o crea tus propios planes con mancuernas y máquinas del gimnasio.
 
 📋 <b>El plan</b>
-• Recomendado: tres días de entrenamiento (A, B, C), en días alternos. Cada uno trabaja empuje, tirón, piernas y core en ~19 min (3 rondas) o ~13 min (2 rondas).
-• Mis planes: crea los tuyos con 134 ejercicios (57 sin material, 22 con peso libre, 55 en máquinas y poleas), asígnalos a días de la semana y ordénalos en grupos.
-• La última ronda llega al fallo técnico: tantas repeticiones limpias como puedas, y paras antes de que se rompa la técnica.
-• La app te muestra lo que hiciste la última vez y un objetivo de +1 en repeticiones y en peso, para que sigas progresando.
+• Recomendado: tres días de entrenamiento (A, B, C), en días alternos. Cada uno trabaja empuje, tirón, piernas y core en ~19 min, ~13 min o Solo 5 minutos cuando vas con prisa.
+• Mis planes: crea los tuyos con 134 ejercicios (con o sin material), asígnalos a días de la semana y ordénalos en grupos.
+• Biblioteca (con cuenta): encuentra planes de otras personas, pruébalos antes de guardarlos y da estrellas a los planes que hayas entrenado.
+• La app muestra lo que hiciste la última vez y un objetivo de +1 en repeticiones y en pesos, para que sigas progresando.
 
 ⏱️ <b>Durante el entrenamiento</b>
 • Un temporizador de descanso con +15, +30 y +60 s que sigue contando en la pantalla de bloqueo, con pitido y vibración.
-• Notas, ejercicios extra cuando aún te quedan fuerzas y una guía de ritmo.
-• Instrucciones para cada ejercicio y versiones más fáciles o más difíciles para cambiar.
-• Calentamiento antes y estiramientos opcionales después.
+• Notas, ejercicios extra, una guía de ritmo y una explicación de cada ejercicio.
+• Un calentamiento antes y estiramientos opcionales después.
 
 🏆 <b>Progreso y motivación</b>
 • 9 rangos para cada ejercicio, de Hierro a Obsidiana, y un mapa del cuerpo con rangos para 9 zonas.
-• 49 insignias, XP y niveles, una racha con protectores y retos semanales.
-• Estadísticas con mapa de actividad y gráficos semanales, y un historial que puedes editar.
-• Diamantes que ganas entrenando, para protectores de racha, boosts de XP y estilos de perfil.
-• 🃏 Muscle Deck: un juego de cartas en el que tu entrenamiento es tu fuerza.
+• 50 insignias, XP y niveles, una racha con protectores, retos semanales y un recordatorio por la tarde antes de que termine tu racha.
+• Un calendario y gráficos de progreso, además de un resumen semanal y tu año en cifras como imágenes para compartir.
+• Diamantes que ganas entrenando para protectores de racha, potenciadores de XP, estilos de perfil y estilos de cartas.
+• 🃏 Muscle Deck: un juego de cartas en el que tu entrenamiento es tu fuerza. Clasificatoria: juega la misma partida que un jugador real y sube de Hierro a Obsidiana.
 
 🍎 <b>Calorías</b>
-• Una calculadora de calorías (Mifflin-St Jeor) con objetivos para perder, mantener o ganar peso.
-• Un registro diario de calorías con calendario; tus entrenamientos se suman al objetivo del día.
+• Una calculadora de calorías con objetivos para bajar, mantener o subir de peso, y un registro diario con calendario.
 • Health Connect opcional: pasos, comida de otras apps, peso y altura. Estos datos nunca salen de tu teléfono.
 
 👥 <b>Amigos (opcional, 16+)</b>
-• Inicia sesión con Google o con correo y contraseña, y añade amigos por código o apodo.
-• Perfiles con insignias y rangos, clasificación de amigos, mensajes y rachas con amigos.
-• Notificaciones, copia de seguridad en la nube con puntos de restauración y sincronización entre tus dispositivos.
+• Inicia sesión con Google o con e-mail y añade amigos por código, enlace o apodo.
+• Juntos: mantened una racha de entrenamiento o de calorías, fijad un objetivo semanal y daos un toque.
+• Perfiles, clasificación de amigos, mensajes, notificaciones, copia de seguridad en la nube y sincronización entre tus dispositivos.
 
 ✨ <b>Además</b>
-• 15 idiomas, 8 temas de color, 6 colores principales y 6 estilos.
+• 15 idiomas, tema claro, oscuro o automático, 6 colores principales y un tamaño de letra más grande.
 • Sin anuncios y sin rastreo. Sin cuenta, todo se queda en tu teléfono.
 
 HW App lo hace un solo desarrollador. Las ideas y los errores son bienvenidos en GitHub: github.com/mikydon/hw-app

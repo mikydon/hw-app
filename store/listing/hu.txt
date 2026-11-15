@@ -1,38 +1,36 @@
 HW App: Otthoni edzés
-Otthoni edzés 19 perc alatt, saját tervek súlyokkal, rangok és széria.
-💪 A HW App egy edzésterv, amely veled együtt fejlődik. Eddz otthon a saját testsúlyoddal, eszközök nélkül, vagy állíts össze saját terveket kézisúlyzókkal és edzőtermi gépekkel.
+Otthoni edzés 19 perc alatt, saját tervek, rangok, sorozat és barátok.
+💪 A HW App egy edzésterv, amely veled együtt fejlődik. Eddz otthon saját testsúllyal, eszközök nélkül, vagy állíts össze saját terveket súlyzókkal és edzőtermi gépekkel.
 
 📋 <b>A terv</b>
-• Ajánlott: három edzésnap (A, B, C), minden második nap. Mindegyik edzi a nyomást, a húzást, a lábat és a törzset ~19 perc (3 kör) vagy ~13 perc (2 kör) alatt.
-• Saját tervek: állítsd össze 134 gyakorlatból (57 eszköz nélkül, 22 szabadsúllyal, 55 gépen és csigán), rendeld őket a hét napjaihoz, és rendezd csoportokba.
-• Az utolsó kör technikai bukásig megy: annyi tiszta ismétlés, amennyi megy, és abbahagyod, mielőtt a technika romlana.
-• Az app mutatja, mennyit csináltál legutóbb, és egy +1-es célt ismétlésekre és súlyokra is, így folyamatosan fejlődsz.
+• Ajánlott: három edzésnap (A, B, C), minden második nap. Mindegyik nyomó, húzó, láb és törzs gyakorlatokat ad ~19 vagy ~13 perc alatt, vagy Csak 5 perc, ha sietsz.
+• Saját terveim: állíts össze sajátot 134 gyakorlatból (eszközzel és anélkül), rendeld őket a hét napjaihoz és csoportosítsd.
+• Könyvtár (fiókkal): találj mások által készített terveket, próbáld ki, mielőtt elmented, és csillagozd azokat, amelyeket végigedzettél.
+• Az app mutatja, mennyit csináltál legutóbb, és egy +1 célt ismétlésekre és súlyokra is, hogy folyamatosan fejlődj.
 
 ⏱️ <b>Edzés közben</b>
 • Pihenőidőzítő +15, +30 és +60 mp-cel, amely a zárolt képernyőn is tovább számol, hangjelzéssel és rezgéssel.
-• Jegyzetek, extra gyakorlatok, ha még van erőd, és tempóvezető.
-• Leírás minden gyakorlathoz, és könnyebb vagy nehezebb változatok cserére.
+• Jegyzetek, extra gyakorlatok, tempóvezető és útmutató minden gyakorlathoz.
 • Bemelegítés előtte és opcionális nyújtás utána.
 
 🏆 <b>Fejlődés és motiváció</b>
 • 9 rang minden gyakorlathoz, Vastól Obszidiánig, és egy testtérkép, amely 9 testrészt rangsorol.
-• 49 jelvény, XP és szintek, széria szériavédőkkel és heti kihívások.
-• Statisztikák aktivitástérképpel és heti grafikonokkal, és szerkeszthető előzmények.
-• Edzéssel szerzett gyémántok szériavédőkre, XP-boostokra és profilkinézetekre.
-• 🃏 Muscle Deck: kártyajáték, amelyben az edzésed az erőd.
+• 50 jelvény, XP és szintek, sorozat fagyasztással, heti kihívások és esti emlékeztető, mielőtt a sorozatod véget érne.
+• Naptár és fejlődési grafikonok, valamint heti összefoglaló és az éved számokban, megosztható képként.
+• Edzéssel szerzett gyémántok sorozatfagyasztásra, XP-gyorsításra, profilkinézetekre és kártyastílusokra.
+• 🃏 Muscle Deck: kártyajáték, amelyben az edzésed az erőd. Rangsorolt: ugyanazt a leosztást játszod, mint egy valódi játékos, és Vastól Obszidiánig mászol.
 
 🍎 <b>Kalóriák</b>
-• Kalóriakalkulátor (Mifflin-St Jeor) fogyás, megtartás vagy hízás céllal.
-• Napi kalórianapló naptárral; az edzéseid hozzáadódnak a napi célhoz.
+• Kalóriakalkulátor fogyás, tartás vagy hízás céllal, és napi napló naptárral.
 • Opcionálisan Health Connect: lépések, étel más appokból, testsúly és magasság. Ezek az adatok soha nem hagyják el a telefonodat.
 
 👥 <b>Barátok (opcionális, 16+)</b>
-• Jelentkezz be Google-lel vagy e-maillel és jelszóval, majd adj hozzá barátokat kóddal vagy becenévvel.
-• Profilok jelvényekkel és rangokkal, baráti ranglista, üzenetek és közös baráti szériák.
-• Értesítések, felhőmentés visszaállítási pontokkal és szinkronizálás az eszközeid között.
+• Jelentkezz be Google-lel vagy e-maillel, és add hozzá a barátaidat kóddal, linkkel vagy becenévvel.
+• Együtt: tartsatok közös edzés- vagy kalóriasorozatot, tűzzetek ki heti célt, és bökjétek meg egymást.
+• Profilok, baráti ranglista, üzenetek, értesítések, felhőmentés és szinkron az eszközeid között.
 
 ✨ <b>Ezenkívül</b>
-• 15 nyelv, 8 színtéma, 6 fő szín és 6 megjelenés.
+• 15 nyelv, világos, sötét vagy automatikus téma, 6 fő szín és nagyobb betűméret.
 • Nincs reklám és nincs követés. Fiók nélkül minden a telefonodon marad.
 
 A HW App-ot egyetlen fejlesztő készíti. Ötleteket és hibákat a GitHubon küldhetsz: github.com/mikydon/hw-app

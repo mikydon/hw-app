@@ -1,38 +1,36 @@
 HW App: Workout zu Hause
-Workout zu Hause in 19 Min., eigene Pläne mit Gewichten, Ränge und Serien.
-💪 HW App ist ein Trainingsplan, der mit dir wächst. Trainiere zu Hause mit deinem Körpergewicht ohne Geräte, oder erstelle eigene Pläne mit Kurzhanteln und Geräten im Fitnessstudio.
+Workout zu Hause in 19 Min., eigene Pläne, Ränge, Serien und Freunde.
+💪 HW App ist ein Trainingsplan, der mit dir wächst. Trainiere zu Hause mit deinem eigenen Körpergewicht ohne Geräte oder stelle eigene Pläne mit Hanteln und Geräten im Fitnessstudio zusammen.
 
 📋 <b>Der Plan</b>
-• Empfohlen: drei Trainingstage (A, B, C), jeden zweiten Tag. Jeder trainiert Drücken, Ziehen, Beine und Rumpf in ~19 Min. (3 Runden) oder ~13 Min. (2 Runden).
-• Meine Pläne: erstelle eigene aus 134 Übungen (57 ohne Geräte, 22 mit freien Gewichten, 55 an Maschinen und Kabelzügen), lege sie auf Wochentage und sortiere sie in Gruppen.
-• Die letzte Runde geht bis zum technischen Versagen: so viele saubere Wiederholungen wie möglich, und du hörst auf, bevor die Technik leidet.
-• Die App zeigt, was du letztes Mal geschafft hast, und ein +1-Ziel für Wiederholungen und Gewichte, damit du ständig Fortschritte machst.
+• Empfohlen: drei Trainingstage (A, B, C), jeden zweiten Tag. Jeder trainiert Drücken, Ziehen, Beine und Rumpf in ~19 Min., ~13 Min. oder Nur 5 Minuten, wenn die Zeit knapp ist.
+• Meine Pläne: Stelle eigene aus 134 Übungen zusammen (mit und ohne Geräte), lege sie auf Wochentage und sortiere sie in Gruppen.
+• Bibliothek (mit Konto): Finde Pläne anderer Leute, probiere einen aus, bevor du ihn speicherst, und gib Sterne für Pläne, die du trainiert hast.
+• Die App zeigt, was du letztes Mal geschafft hast, und ein +1-Ziel für Wiederholungen und Gewichte, damit du weiter Fortschritte machst.
 
 ⏱️ <b>Während des Trainings</b>
-• Ein Pausentimer mit +15, +30 und +60 s, der auch auf dem Sperrbildschirm weiterzählt, mit Signalton und Vibration.
-• Notizen, zusätzliche Übungen, wenn du noch Kraft hast, und eine Tempo-Anleitung.
-• Eine Anleitung für jede Übung und leichtere oder schwerere Varianten zum Tauschen.
+• Ein Pausentimer mit +15, +30 und +60 s, der auch auf dem Sperrbildschirm weiterzählt, mit Piepton und Vibration.
+• Notizen, Extra-Übungen, ein Tempo-Guide und eine Anleitung zu jeder Übung.
 • Aufwärmen vorher und optionales Dehnen danach.
 
 🏆 <b>Fortschritt und Motivation</b>
 • 9 Ränge für jede Übung, von Eisen bis Obsidian, und eine Körperkarte mit Rängen für 9 Körperbereiche.
-• 49 Abzeichen, XP und Level, eine Serie mit Serienschutz und wöchentliche Challenges.
-• Statistiken mit Aktivitätskarte und Wochendiagrammen, und ein Verlauf, den du bearbeiten kannst.
-• Diamanten, die du durch Training verdienst, für Serienschutz, XP-Boosts und Profil-Looks.
-• 🃏 Muscle Deck: ein Kartenspiel, in dem dein Training deine Stärke ist.
+• 50 Abzeichen, XP und Level, eine Serie mit Serienschutz, Wochen-Challenges und eine Erinnerung am Abend, bevor deine Serie endet.
+• Ein Kalender und Fortschrittsgrafiken, dazu ein Wochenrückblick und dein Jahr in Zahlen als Bilder zum Teilen.
+• Diamanten, die du durch Training verdienst, für Serienschutz, XP-Boosts, Profil-Looks und Kartenstile.
+• 🃏 Muscle Deck: ein Kartenspiel, in dem dein Training deine Stärke ist. Ranked: Spiel dieselbe Runde wie ein echter Spieler und steig von Eisen bis Obsidian auf.
 
 🍎 <b>Kalorien</b>
-• Ein Kalorienrechner (Mifflin-St Jeor) mit dem Ziel abzunehmen, das Gewicht zu halten oder zuzunehmen.
-• Ein tägliches Kalorienprotokoll mit Kalender; deine Workouts werden zum Tagesziel addiert.
+• Ein Kalorienrechner mit Zielen zum Abnehmen, Halten oder Zunehmen und ein Tagesprotokoll mit Kalender.
 • Optional Health Connect: Schritte, Essen aus anderen Apps, Gewicht und Größe. Diese Daten verlassen nie dein Handy.
 
 👥 <b>Freunde (optional, ab 16)</b>
-• Melde dich mit Google oder mit E-Mail und Passwort an und füge Freunde per Code oder Nickname hinzu.
-• Profile mit Abzeichen und Rängen, eine Freunde-Bestenliste, Nachrichten und gemeinsame Serien mit Freunden.
-• Benachrichtigungen, ein Cloud-Backup mit Wiederherstellungspunkten und Synchronisierung zwischen deinen Geräten.
+• Melde dich mit Google oder per E-Mail an und füge Freunde per Code, Link oder Nickname hinzu.
+• Zusammen: Haltet mit einem Freund eine Trainings- oder Kalorienserie, setzt euch ein Wochenziel und stupst euch gegenseitig an.
+• Profile, eine Freundes-Rangliste, Nachrichten, Benachrichtigungen, ein Cloud-Backup und Sync zwischen deinen Geräten.
 
 ✨ <b>Außerdem</b>
-• 15 Sprachen, 8 Farbthemen, 6 Hauptfarben und 6 Looks.
+• 15 Sprachen, ein helles, dunkles oder automatisches Theme, 6 Hauptfarben und eine größere Schrift.
 • Keine Werbung und kein Tracking. Ohne Konto bleibt alles auf deinem Handy.
 
 HW App wird von einem einzigen Entwickler gemacht. Ideen und Fehlerberichte sind auf GitHub willkommen: github.com/mikydon/hw-app
