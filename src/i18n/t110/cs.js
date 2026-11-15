@@ -1,6 +1,8 @@
 // Czech: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    plStoreWeek: "Oblíbené tento týden",
+    plStoreWeekN: "{n} tento týden",
     plTry: "Vyzkoušet",
     plTryD: "Vyzkoušet = jeden trénink podle tohoto plánu, na zkoušku. Líbil se ti? Ulož si ho potom.",
     plTryBusy: "Nejdřív dokonči trénink, který právě běží.",

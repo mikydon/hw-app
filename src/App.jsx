@@ -6767,6 +6767,15 @@ function FilterSheet({ title, sections, onReset, resetOff, show, onClose, data }
 let STORE_CACHE = null; // {ts, list} for 5 minutes
 // HW App's own plans (src/defplans.js) carry a key: their name in the user's language (plDef_<k>), else the English
 // name from the server (a plan added later than this app version)
+// 1.10.0 (idea 8): "popular this week" = saves in about the last 7 days, from the Worker's two week counters
+// (ws = saves in the week of wk, its Monday in UTC; wp = the week before): this week + the part of last week still inside
+const weekOfUTC = t => { const d = new Date(t); d.setUTCHours(0, 0, 0, 0); d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7)); return d.toISOString().slice(0, 10); };
+const weekScore = (x, now = Date.now()) => {
+  const wk = weekOfUTC(now), left = 1 - (now - Date.parse(wk + "T00:00:00Z")) / (7 * 864e5);
+  if (x.wk === wk) return (x.ws || 0) + (x.wp || 0) * left;
+  if (x.wk === weekOfUTC(now - 7 * 864e5)) return (x.ws || 0) * left;
+  return 0;
+};
 const pubName = x => { if (isDefOwner(x.o) && x.k) { const t = T("plDef_" + x.k); if (t !== "plDef_" + x.k) return t; } return x.name; };
 const OffBadge = () => <span data-store-official title={T("plOfficial")} aria-label={T("plOfficial")} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 14, height: 14, borderRadius: 7, background: C.signal, color: C.signalInk, flex: "none" }}><Ico n="check" size={10} /></span>;
 function PlanStore({ on, signedIn, P, history }) {
@@ -6782,14 +6791,14 @@ function PlanStore({ on, signedIn, P, history }) {
   const nq = normTxt(q);
   const hit = x => !nq || [pubName(x), x.nick, ...x.items.map(i => EX[i.id] ? EX[i.id].name : "")].some(t => normTxt(t).includes(nq));
   const shown = (list || []).filter(x => (isDefOwner(x.o) || (!textBad(x.name) && !nickBad(x.nick))) && hit(x) && (!grp || (x.fam || []).includes(grp)) && eq.includes(x.eq || "none"))
-    .sort((a, b) => sort === "avg" ? (b.avg || 0) - (a.avg || 0) || (b.sn || 0) - (a.sn || 0) : sort === "ts" ? (b.ts || 0) - (a.ts || 0) : (b.sv || 0) - (a.sv || 0) || isDefOwner(b.o) - isDefOwner(a.o) || (b.ts || 0) - (a.ts || 0));
+    .sort((a, b) => sort === "wk" ? weekScore(b) - weekScore(a) || (b.sv || 0) - (a.sv || 0) : sort === "avg" ? (b.avg || 0) - (a.avg || 0) || (b.sn || 0) - (a.sn || 0) : sort === "ts" ? (b.ts || 0) - (a.ts || 0) : (b.sv || 0) - (a.sv || 0) || isDefOwner(b.o) - isDefOwner(a.o) || (b.ts || 0) - (a.ts || 0));
   // 1.10.0 (Michael, Nov 14: "a filter system like apps have; all those buttons look messy"): search + one filter
   // button (a count of active filters on it); the filters and the order live in a sheet; active filters show as
   // small removable chips; the order is a quiet line above the list
   const toggleEq = k => setEq(v => { const n = v.includes(k) ? v.filter(x => x !== k) : EQUIP_ORDER.filter(x => x === k || v.includes(x)); return n.length ? n : [k]; });
   const ALL_EQ = ["none", "free", "machine"], eqOn = eq.length < ALL_EQ.length;
   const nActive = (grp ? 1 : 0) + (eqOn ? 1 : 0);
-  const SORTS = [["sv", T("plStoreTop")], ["avg", T("plStoreStars")], ["ts", T("plStoreNew")]];
+  const SORTS = [["sv", T("plStoreTop")], ["wk", T("plStoreWeek")], ["avg", T("plStoreStars")], ["ts", T("plStoreNew")]];
   return (
     <div data-store>
       <FilterBar data="store" q={q} setQ={setQ} placeholder={T("plStoreSearch")} n={nActive} onOpen={() => setFOpen(true)} />
@@ -6818,6 +6827,7 @@ function PlanStore({ on, signedIn, P, history }) {
                   <span style={{ display: "inline-flex", alignItems: "center", gap: 4, minWidth: 0, maxWidth: 140 }}><span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{x.nick}</span>{isDefOwner(x.o) && <OffBadge />}</span>
                   <span data-store-avg={x.avg || 0} style={{ display: "inline-flex", alignItems: "center", gap: 3, color: x.sn ? C.signal : C.dim }}><IcoI n="star" />{x.sn ? `${(x.avg || 0).toLocaleString(LANG, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} (${nf(x.sn)})` : "–"}</span>
                   <span data-store-sv={x.sv || 0} style={{ display: "inline-flex", alignItems: "center", gap: 3 }}><IcoI n="download" />{nf(x.sv || 0)}</span>
+                  {sort === "wk" && Math.round(weekScore(x)) > 0 && <span data-store-wk={Math.round(weekScore(x))} style={{ display: "inline-flex", alignItems: "center", gap: 3, color: "#ffa94d" }}><IcoI n="flame" color="#ffa94d" />{T("plStoreWeekN", { n: nf(Math.round(weekScore(x))) })}</span>}
                 </span>
               </span>
               <TypeMarks items={x.items} size={16} />

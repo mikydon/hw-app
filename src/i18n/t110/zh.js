@@ -1,6 +1,8 @@
 // Chinese (Simplified): texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    plStoreWeek: "本周热门",
+    plStoreWeekN: "本周 {n}",
     plTry: "试练",
     plTryD: "试练 = 按这个计划练一次，先试试。喜欢的话，练完再保存。",
     plTryBusy: "请先完成正在进行的训练。",

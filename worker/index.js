@@ -295,9 +295,16 @@ export async function planSave({ uid, pid, copy, sa, fetchFn = fetch, now = Date
   if (u) { if (u.copy !== copy) await patchDoc(`pub/${pid}/u/${uid}`, { copy }, tok, fetchFn, ["copy"]); return { why: "again", sv: pub.sv || 0 }; }
   await patchDoc(`pub/${pid}/u/${uid}`, { copy, ts: new Date(now).toISOString() }, tok, fetchFn);
   const sv = (pub.sv || 0) + 1;
-  await patchDoc(`pub/${pid}`, { sv }, tok, fetchFn, ["sv"]);
+  // 1.10.0 (idea 8, "popular this week"): saves of this week (wk = its Monday, UTC) and of the week before, so the app
+  // can rank by about the last 7 days without reading who saved when
+  const wk = weekOf(now), prev = weekOf(now - 7 * 864e5);
+  const ws = pub.wk === wk ? (pub.ws || 0) + 1 : 1;
+  const wp = pub.wk === wk ? pub.wp || 0 : pub.wk === prev ? pub.ws || 0 : 0;
+  await patchDoc(`pub/${pid}`, { sv, wk, ws, wp }, tok, fetchFn, ["sv", "wk", "ws", "wp"]);
   return { why: "ok", sv };
 }
+// the Monday (UTC) of the week of a time, as "YYYY-MM-DD"
+export const weekOf = t => { const d = new Date(t); d.setUTCHours(0, 0, 0, 0); d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7)); return d.toISOString().slice(0, 10); };
 export async function planRate({ uid, pid, r, sa, fetchFn = fetch, now = Date.now() }) {
   if (!pidOk(pid) || !Number.isInteger(r) || r < 1 || r > 5) return { why: "bad" };
   const tok = await accessToken(sa, fetchFn, now);

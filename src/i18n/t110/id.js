@@ -1,6 +1,8 @@
 // Indonesian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    plStoreWeek: "Populer minggu ini",
+    plStoreWeekN: "{n} minggu ini",
     plTry: "Coba",
     plTryD: "Coba = satu latihan dari rencana ini, sebagai percobaan. Suka? Simpan setelahnya.",
     plTryBusy: "Selesaikan dulu latihan yang sedang berjalan.",

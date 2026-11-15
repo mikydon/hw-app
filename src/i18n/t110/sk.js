@@ -1,6 +1,8 @@
 // Slovak: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    plStoreWeek: "Obľúbené tento týždeň",
+    plStoreWeekN: "{n} tento týždeň",
     plTry: "Vyskúšať",
     plTryD: "Vyskúšať = jeden tréning podľa tohto plánu, na skúšku. Páčil sa ti? Ulož si ho potom.",
     plTryBusy: "Najprv dokonči tréning, ktorý práve beží.",

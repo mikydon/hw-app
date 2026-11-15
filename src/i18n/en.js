@@ -789,6 +789,8 @@ const en = {
     plSortOld: "Oldest",
     plSortAZ: "A–Z",
     plSortZA: "Z–A",
+    plStoreWeek: "Popular this week",
+    plStoreWeekN: "{n} this week",
     plTry: "Try it",
     plTryD: "Try = one workout of this plan, like a test. Liked it? Save it afterwards.",
     plTryBusy: "Finish the workout that's running first.",

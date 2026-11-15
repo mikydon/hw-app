@@ -1,6 +1,8 @@
 // Korean: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    plStoreWeek: "이번 주 인기",
+    plStoreWeekN: "이번 주 {n}",
     plTry: "체험하기",
     plTryD: "체험하기 = 이 플랜으로 한 번만 시험 운동. 마음에 들면 끝난 뒤 저장하세요.",
     plTryBusy: "먼저 진행 중인 운동을 끝내 주세요.",

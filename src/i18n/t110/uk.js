@@ -1,6 +1,8 @@
 // Ukrainian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    plStoreWeek: "Популярне цього тижня",
+    plStoreWeekN: "{n} цього тижня",
     plTry: "Спробувати",
     plTryD: "Спробувати = одне тренування за цим планом, на пробу. Сподобалося? Збережи його потім.",
     plTryBusy: "Спершу заверши тренування, яке зараз триває.",

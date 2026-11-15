@@ -1,6 +1,8 @@
 // Hungarian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    plStoreWeek: "A hét kedvencei",
+    plStoreWeekN: "{n} ezen a héten",
     plTry: "Kipróbálom",
     plTryD: "Kipróbálom = egy edzés ezzel a tervvel, próbaképp. Tetszett? Utána mentsd el.",
     plTryBusy: "Előbb fejezd be a folyamatban lévő edzést.",

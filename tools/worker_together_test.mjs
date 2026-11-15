@@ -1,7 +1,7 @@
 // 1.10.0 Friends together, server side (worker/index.js): checked days (vdays), nudges, invite rewards.
 // Runs the real Worker functions against an in-memory Firestore + FCM (real RSA signing for the access token).
 // node tools/worker_together_test.mjs
-import { checkVdays, nudge, checkInvite, notify, planSave, planRate, VDAY_EVERY_MS, INV_NEED, INV_MAX } from "../worker/index.js";
+import { checkVdays, nudge, checkInvite, notify, planSave, planRate, weekOf, VDAY_EVERY_MS, INV_NEED, INV_MAX } from "../worker/index.js";
 
 let pass = 0, fail = 0;
 const ok = (c, m) => { if (c) pass++; else { fail++; console.log("FAIL", m); } };
@@ -164,6 +164,17 @@ put(`backups/${B}`, backup([wk(0)]));
   eq(await call(planSave, { uid: A, pid, copy: "pA1" }), { why: "ok", sv: 1 }, "a save counts");
   eq(await call(planSave, { uid: A, pid, copy: "pA2" }), { why: "again", sv: 1 }, "saving again doesn't (the newest copy is remembered)");
   eq(doc(`pub/${pid}/u/${A}`).copy, "pA2", "copy id updated");
+  eq([doc(`pub/${pid}`).ws, doc(`pub/${pid}`).wp, doc(`pub/${pid}`).wk], [1, 0, weekOf(clock)], "a save this week: ws 1");
+  eq(weekOf(Date.UTC(2026, 10, 15, 12)), "2026-11-09", "the week of Sunday Nov 15 starts on Monday Nov 9");
+  {
+    const p2 = `${C}_pW`, NOW = Date.UTC(2026, 10, 18);
+    put(`pub/${p2}`, { o: C, nick: "Carol", name: "W", items: [{ id: "n1", sets: 3 }], sv: 5, wk: "2026-11-09", ws: 4, wp: 2 });
+    await call(planSave, { uid: A, pid: p2, copy: "c1", now: NOW });
+    eq([doc(`pub/${p2}`).wk, doc(`pub/${p2}`).ws, doc(`pub/${p2}`).wp], ["2026-11-16", 1, 4], "a new week: last week's saves move to wp");
+    put(`pub/${C}_pW2`, { o: C, nick: "Carol", name: "W2", items: [{ id: "n1", sets: 3 }], sv: 5, wk: "2026-10-26", ws: 9, wp: 3 });
+    await call(planSave, { uid: A, pid: `${C}_pW2`, copy: "c2", now: NOW });
+    eq([doc(`pub/${C}_pW2`).ws, doc(`pub/${C}_pW2`).wp], [1, 0], "weeks ago: both start again");
+  }
   eq((await call(planSave, { uid: B, pid: "bad/x", copy: "q" })).why, "bad", "bad plan id");
   eq((await call(planSave, { uid: B, pid: `${C}_nope`, copy: "q" })).why, "gone", "a plan that is gone");
   eq((await call(planRate, { uid: B, pid, r: 5 })).why, "not-saved", "no stars without saving");

@@ -1,6 +1,8 @@
 // Polish: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    plStoreWeek: "Popularne w tym tygodniu",
+    plStoreWeekN: "{n} w tym tygodniu",
     plTry: "Wypróbuj",
     plTryD: "Wypróbuj = jeden trening z tego planu, na próbę. Spodobał się? Zapisz go potem.",
     plTryBusy: "Najpierw skończ trwający trening.",

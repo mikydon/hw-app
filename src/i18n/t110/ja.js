@@ -1,6 +1,8 @@
 // Japanese: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    plStoreWeek: "今週の人気",
+    plStoreWeekN: "今週 {n}",
     plTry: "試す",
     plTryD: "試す = このプランで1回だけお試しトレーニング。気に入ったら終わってから保存できます。",
     plTryBusy: "先に進行中のトレーニングを終えてください。",

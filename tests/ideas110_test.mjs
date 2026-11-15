@@ -123,4 +123,24 @@ const ids = p => p.$$eval("[data-store-plan]", e => e.map(x => x.getAttribute("d
   T.eq(h.errors, [], "no page errors (7)");
   await h.close();
 }
+// ─── 8: popular this week ───
+{
+  const it = [{ id: "n1", sets: 3 }];
+  const wpub = [
+    { pid: "a_1", o: "a", nick: "Ann", name: "All-time hit", items: it, fam: ["legs"], eq: "none", n: 1, sv: 50, st: 0, sn: 0, avg: 0, ts: 1 },
+    { pid: "b_1", o: "b", nick: "Ben", name: "Hot now", items: it, fam: ["legs"], eq: "none", n: 1, sv: 2, wk: "2026-11-16", ws: 3, wp: 0, st: 0, sn: 0, avg: 0, ts: 2 },
+    { pid: "c_1", o: "c", nick: "Cid", name: "Last week", items: it, fam: ["legs"], eq: "none", n: 1, sv: 5, wk: "2026-11-09", ws: 4, wp: 1, st: 0, sn: 0, avg: 0, ts: 3 },
+  ];
+  const h = await start({ clock: Date.UTC(2026, 10, 18, 12), viewport: { width: 380, height: 820 }, cloud: { pub: wpub }, seed: { profile: { name: "Michael" } } });
+  const p = h.page;
+  await go(p, "plans"); await p.click('[data-plans-seg="store"]'); await p.waitForTimeout(900);
+  T.eq(await ids(p), ["a_1", "c_1", "b_1"], "default order: most saved");
+  await p.click("[data-store-filter]"); await p.waitForTimeout(400);
+  await p.click('[data-store-sort="wk"]'); await p.click("[data-store-show]"); await p.waitForTimeout(400);
+  T.eq(await ids(p), ["b_1", "c_1", "a_1"], "popular this week: this week's saves first, then what is left of last week's");
+  T.eq(await p.getAttribute('[data-store-plan="b_1"] [data-store-wk]', "data-store-wk"), "3", "the row says 3 this week");
+  T.eq(await p.locator('[data-store-plan="a_1"] [data-store-wk]').count(), 0, "nothing this week: no line");
+  T.eq(h.errors, [], "no page errors (8)");
+  await h.close();
+}
 T.done();

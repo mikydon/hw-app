@@ -1,6 +1,8 @@
 // German: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    plStoreWeek: "Beliebt diese Woche",
+    plStoreWeekN: "{n} diese Woche",
     plTry: "Ausprobieren",
     plTryD: "Ausprobieren = ein Training nach diesem Plan, zum Testen. Gefällt er dir? Speichere ihn danach.",
     plTryBusy: "Beende zuerst das laufende Training.",
