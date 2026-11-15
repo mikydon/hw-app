@@ -10091,7 +10091,7 @@ function revealList(entry, newAch, xpBefore, gained) {
 const GAME_KEY = "domaci-trening-v1-game";
 // 1.8.0 (Michael): the offline Run first; Duel and Ranked are shown locked ("coming soon") and switched on later
 // (the engine, the bot and the server's ranked check are already in place: worker/index.js rk-start / rk-end).
-const DUEL_ON = false, RANKED_ON = true; // 1.10.0: Ranked open (no bot: real players only, worker/index.js RK)
+const RANKED_ON = true; // 1.10.0: Ranked open (no bot: real players only, worker/index.js RK); the "Duel vs bot" tile was removed (Michael, Nov 15)
 // 1.10.0 Ranked: the same deck for everyone (worker/index.js rankedOpts), 2 antes = 6 blinds; 2 games a day with a
 // workout; a rank from the rating (Iron … Obsidian, it drops when the rating drops)
 const RK_TICKETS = 2;
@@ -11553,7 +11553,6 @@ function GameTab({ history, profile, setProfile, acct, onPlay }) {
   }, [signed]);
   const modes = [
     { id: "run", icon: "cards", name: T("gmRun"), desc: null }, // 1.8.2: the Run needs no line under it
-    { id: "duel", icon: "robot", name: T("gmDuel"), desc: DUEL_ON ? T("gmDuelD", { n: Math.min(10, gl.lvl) }) : T("gmSoon"), off: !DUEL_ON, soon: !DUEL_ON },
     { id: "ranked", icon: "trophy", name: T("gmRanked"), desc: !RANKED_ON ? T("gmSoon") : signed ? T("gmRkTile", { rank: RANKS[rkTier(rkR)].name, r: rkR, n: rkLeft }) : T("gmRankedSign"), off: !RANKED_ON || !signed, soon: !RANKED_ON },
   ];
   // 1.10.0 (Michael: "redesign PC and tablet"): on a wide screen two columns: play (level, modes, how to play) on the
