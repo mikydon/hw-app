@@ -1,6 +1,8 @@
 // Hungarian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    hint_themes: "Más megjelenést szeretnél? A Beállítások → Megjelenés alatt világos, sötét és automatikus témák és 6 fő szín vannak.",
+    themeAutoD: "Világos {a} és {b} között, éjjel {t}.",
     offT: "Offline",
     offD: "Most nincs internet. Az edzések, kalóriák és minden más a telefonon mentődik, és a felhőbe kerül, ha újra online leszel. A barátokhoz, a Könyvtárhoz és a Rankedhez internet kell.",
     tourQuick5: "Ma nincs időd? Csak 5 perc: egy kör bemelegítés nélkül, és a széria megy tovább.",
@@ -211,6 +213,7 @@ export default {
   },
   tour: { c5: { 0: "Naptár: a zöld nap edzés, a szám alatti pötty kalória. Koppints egy napra, hogy lásd, mit csináltál; koppints egy üres napra, hogy edzést adj hozzá." }, c7: { 3: "Itt adhatsz hozzá barátot kód vagy becenév alapján. Lent a barátok és a csevegések egy listában vannak: koppints egy barátra, hogy írj neki, koppints a fotóra a profiljáért. Tartsd lenyomva a barátot a kártyájáért: duó, csevegés törlése, letiltás.", 5: "Hívj meg egy barátot a linkeddel: ha elvégez 3 edzést, mindketten kaptok 100 💎-ot." } },
   ach: { duo: ["Együtt jobb", "{x} egy baráttal"] },
+  themes: { light: "Világos", auto: "Automatikus" },
   looks: {
     c_night: "Éjszaka", c_mint: "Menta", c_carbon: "Karbon", c_marble: "Márvány", c_gold: "Arany", c_neon: "Neon", c_holo: "Hologram", c_obsidian: "Obszidián",
     fx_rain: "Eső", fx_bubbles: "Szóda", fx_hearts: "Szívecskék", fx_fireflies: "Szentjánosbogarak", fx_stars: "Hullócsillagok",
@@ -285,5 +288,6 @@ export default {
     ["Jelvény megosztása", "A jelvényeket csak az appban lehetett látni.", "Nyisd meg a megszerzett jelvényt, és koppints a Megosztásra: kép a jelvénnyel a szintje színében, sztorikhoz és chatekhez."],
     ["Csak 5 perc", "Egy rövid nap is a teljes bemelegítést és legalább 2 kört jelentette.", "A Kezdőlap felkínálja a Csak 5 percet: a mai nap egy köre bemelegítés nélkül. Rendes edzés, és megtartja a szériádat."],
     ["Offline", "Internet nélkül csak hibaüzenetekből derült ki.", "Egy csendes felhő ikon a felső sávban jelzi, hogy offline vagy; koppintásra kiderül, mi mentődik a telefonon és mihez kell internet."],
+    ["Világos téma", "Az app csak sötét volt (8 sötét téma).", "A Beállítások → Megjelenés alatt már Világos és Automatikus is van: napközben (7:00–19:00) világos, éjjel a sötét témád, magától vált."],
   ],
 };

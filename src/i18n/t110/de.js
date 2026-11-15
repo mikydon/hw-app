@@ -1,6 +1,8 @@
 // German: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    hint_themes: "Lieber ein anderer Look? Unter Einstellungen → Darstellung gibt es helle, dunkle und automatische Themes und 6 Hauptfarben.",
+    themeAutoD: "Hell von {a} bis {b}, nachts {t}.",
     offT: "Offline",
     offD: "Gerade kein Internet. Trainings, Kalorien und alles andere werden auf dem Handy gespeichert und gehen in die Cloud, sobald du wieder online bist. Freunde, Bibliothek und Ranked brauchen Internet.",
     tourQuick5: "Heute keine Zeit? Nur 5 Minuten: eine Runde ohne Aufwärmen, und deine Serie läuft weiter.",
@@ -211,6 +213,7 @@ export default {
   },
   tour: { c5: { 0: "Kalender: Ein grüner Tag ist ein Training, der Punkt unter einer Zahl sind Kalorien. Tippe auf einen Tag, um zu sehen, was du gemacht hast; tippe auf einen leeren Tag, um ein Training hinzuzufügen." }, c7: { 3: "Hier fügst du Freunde per Code oder Nickname hinzu. Darunter sind Freunde und Chats eine Liste: Tippe auf einen Freund, um zu schreiben, tippe auf das Foto für sein Profil. Halte einen Freund gedrückt für seine Karte: Duo, Chat löschen, blockieren.", 5: "Lade einen Freund mit deinem Link ein: Wenn er 3 Trainings macht, bekommt ihr beide 100 💎." } },
   ach: { duo: ["Gemeinsam stärker", "{x} mit einem Freund"] },
+  themes: { light: "Hell", auto: "Automatisch" },
   looks: {
     c_night: "Nacht", c_mint: "Minze", c_carbon: "Carbon", c_marble: "Marmor", c_gold: "Gold", c_neon: "Neon", c_holo: "Hologramm", c_obsidian: "Obsidian",
     fx_rain: "Regen", fx_bubbles: "Limo", fx_hearts: "Herzen", fx_fireflies: "Glühwürmchen", fx_stars: "Sternschnuppen",
@@ -285,5 +288,6 @@ export default {
     ["Abzeichen teilen", "Abzeichen sah man nur in der App.", "Öffne ein verdientes Abzeichen und tippe auf Teilen: ein Bild mit dem Abzeichen in der Farbe seiner Stufe, bereit für Storys und Chats."],
     ["Nur 5 Minuten", "Auch ein kurzer Tag hieß ganzes Aufwärmen und mindestens 2 Runden.", "Start bietet Nur 5 Minuten: eine Runde des heutigen Tages ohne Aufwärmen. Ein normales Training, das deine Serie hält."],
     ["Offline", "Ohne Internet merkte man es nur an Fehlermeldungen.", "Ein ruhiges Wolken-Symbol in der oberen Leiste zeigt, dass du offline bist; ein Tipp sagt, was auf dem Handy gespeichert wird und was Internet braucht."],
+    ["Helles Theme", "Die App war nur dunkel (8 dunkle Themes).", "Einstellungen → Darstellung hat jetzt auch Hell und Automatisch: tagsüber (7:00–19:00) hell, nachts dein dunkles Theme, es wechselt von selbst."],
   ],
 };

@@ -1,6 +1,8 @@
 // Portuguese (Brazil): texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    hint_themes: "Quer outro visual? Em Ajustes → Aparência há temas claros, escuros e automático, e 6 cores principais.",
+    themeAutoD: "Claro das {a} às {b}, {t} à noite.",
     offT: "Offline",
     offD: "Sem internet agora. Treinos, calorias e todo o resto ficam salvos no celular e vão para a nuvem quando você voltar a ficar online. Amigos, Biblioteca e Ranked precisam de internet.",
     tourQuick5: "Sem tempo hoje? Só 5 minutos: uma rodada sem aquecimento e sua sequência continua.",
@@ -211,6 +213,7 @@ export default {
   },
   tour: { c5: { 0: "Calendário: um dia verde é um treino, o ponto embaixo de um número são calorias. Toque em um dia para ver o que você fez; toque em um dia vazio para adicionar um treino." }, c7: { 3: "Aqui você adiciona um amigo pelo código ou apelido. Abaixo, amigos e conversas são uma lista só: toque num amigo para escrever, toque na foto para ver o perfil. Segure um amigo para ver o cartão dele: dupla, apagar a conversa, bloquear.", 5: "Convide um amigo com seu link: quando ele fizer 3 treinos, vocês dois ganham 100 💎." } },
   ach: { duo: ["Melhor em dupla", "{x} com um amigo"] },
+  themes: { light: "Claro", auto: "Automático" },
   looks: {
     c_night: "Noite", c_mint: "Menta", c_carbon: "Carbono", c_marble: "Mármore", c_gold: "Ouro", c_neon: "Neon", c_holo: "Holograma", c_obsidian: "Obsidiana",
     fx_rain: "Chuva", fx_bubbles: "Refrigerante", fx_hearts: "Corações", fx_fireflies: "Vaga-lumes", fx_stars: "Estrelas cadentes",
@@ -285,5 +288,6 @@ export default {
     ["Compartilhe uma insígnia", "As insígnias só apareciam no app.", "Abra uma insígnia conquistada e toque em Compartilhar: uma imagem com a insígnia na cor do nível, pronta para stories e conversas."],
     ["Só 5 minutos", "Mesmo um dia curto significava o aquecimento todo e pelo menos 2 rodadas.", "O Início oferece Só 5 minutos: uma rodada do dia sem aquecimento. É um treino normal e mantém sua sequência."],
     ["Offline", "Sem internet você só descobria por mensagens de erro.", "Um discreto ícone de nuvem na barra superior mostra que você está offline; um toque explica o que fica salvo no celular e o que precisa de internet."],
+    ["Tema claro", "O app era só escuro (8 temas escuros).", "Ajustes → Aparência agora também tem Claro e Automático: claro durante o dia (7:00–19:00), seu tema escuro à noite, troca sozinho."],
   ],
 };

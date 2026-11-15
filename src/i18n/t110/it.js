@@ -1,6 +1,8 @@
 // Italian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    hint_themes: "Vuoi un altro aspetto? In Impostazioni → Aspetto ci sono temi chiari, scuri e automatico, e 6 colori principali.",
+    themeAutoD: "Chiaro dalle {a} alle {b}, {t} di notte.",
     offT: "Offline",
     offD: "Ora niente internet. Allenamenti, calorie e tutto il resto vengono salvati sul telefono e vanno nel cloud quando torni online. Amici, Libreria e Ranked richiedono internet.",
     tourQuick5: "Niente tempo oggi? Solo 5 minuti: un giro senza riscaldamento e la striscia continua.",
@@ -211,6 +213,7 @@ export default {
   },
   tour: { c5: { 0: "Calendario: un giorno verde è un allenamento, il punto sotto un numero sono le calorie. Tocca un giorno per vedere cosa hai fatto; tocca un giorno vuoto per aggiungere un allenamento." }, c7: { 3: "Qui aggiungi un amico con il codice o il nickname. Sotto, amici e chat sono un'unica lista: tocca un amico per scrivergli, tocca la foto per il suo profilo. Tieni premuto un amico per la sua scheda: duo, eliminare la chat, bloccare.", 5: "Invita un amico con il tuo link: quando fa 3 allenamenti, ricevete entrambi 100 💎." } },
   ach: { duo: ["Meglio in due", "{x} con un amico"] },
+  themes: { light: "Chiaro", auto: "Automatico" },
   looks: {
     c_night: "Notte", c_mint: "Menta", c_carbon: "Carbonio", c_marble: "Marmo", c_gold: "Oro", c_neon: "Neon", c_holo: "Ologramma", c_obsidian: "Ossidiana",
     fx_rain: "Pioggia", fx_bubbles: "Bibita", fx_hearts: "Cuori", fx_fireflies: "Lucciole", fx_stars: "Stelle cadenti",
@@ -285,5 +288,6 @@ export default {
     ["Condividi un badge", "I badge si vedevano solo nell'app.", "Apri un badge che hai ottenuto e tocca Condividi: un'immagine con il badge nel colore del suo livello, pronta per storie e chat."],
     ["Solo 5 minuti", "Anche un giorno breve voleva dire tutto il riscaldamento e almeno 2 giri.", "La Home offre Solo 5 minuti: un giro del giorno senza riscaldamento. È un allenamento normale e mantiene la striscia."],
     ["Offline", "Senza internet lo scoprivi solo dai messaggi di errore.", "Una discreta icona a nuvola nella barra in alto mostra che sei offline; un tocco spiega cosa si salva sul telefono e cosa richiede internet."],
+    ["Tema chiaro", "L'app era solo scura (8 temi scuri).", "Impostazioni → Aspetto ora ha anche Chiaro e Automatico: chiaro di giorno (7:00–19:00), il tuo tema scuro di notte, cambia da solo."],
   ],
 };

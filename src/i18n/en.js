@@ -115,7 +115,7 @@ const en = {
     upd_downloading: "Updates: downloading {v}…",
     hintTitle: "Did you know?",
     hintGo: "Show me",
-    hint_themes: "Want a different colour? Settings → Appearance has 8 themes and 6 main colours.",
+    hint_themes: "Want a different look? Settings → Appearance has light, dark and automatic themes and 6 main colours.",
     hint_profile: "Who can open your profile? Profile → ✏️ → Who sees your profile: friends, everyone or only you.",
     hint_exercises: "Can't do an exercise? Settings → Exercises: turn it off and the app picks a replacement.",
     hint_calories: "Tracking food? Menu → Calories works out your daily target and you log what you eat there.",
@@ -789,6 +789,7 @@ const en = {
     plSortOld: "Oldest",
     plSortAZ: "A–Z",
     plSortZA: "Z–A",
+    themeAutoD: "Light from {a} to {b}, {t} at night.",
     offT: "Offline",
     offD: "No internet right now. Workouts, calories and everything else are saved on this phone and go to the cloud when you're back online. Friends, the Library and Ranked need the internet.",
     tourQuick5: "No time today? Only 5 minutes: one round without the warm-up, and your streak keeps going.",
@@ -1432,7 +1433,7 @@ const en = {
 
   units: { arm: "/arm", leg: "/leg", side: "/side" },
   perUnit: { arm: "per arm", leg: "per leg", side: "per side" },
-  themes: { navy: "Navy", black: "Black", forest: "Forest", plum: "Plum", ocean: "Ocean", wine: "Wine", slate: "Slate", coffee: "Coffee" },
+  themes: { navy: "Navy", black: "Black", forest: "Forest", plum: "Plum", ocean: "Ocean", wine: "Wine", slate: "Slate", coffee: "Coffee", light: "Light", auto: "Automatic" },
   ranks: ["Iron","Bronze","Silver","Gold","Platinum","Emerald","Amethyst","Diamond","Obsidian"],
 
   ex: {
@@ -2001,6 +2002,7 @@ const en = {
     ["Share a badge", "Badges could only be seen in the app.", "Open a badge you earned and tap Share: a picture with the badge in its level's colour, ready for stories and chats."],
     ["Only 5 minutes", "A short day still meant the whole warm-up and at least 2 rounds.", "Home offers Only 5 minutes: one round of today's day without the warm-up. It is a normal workout and keeps your streak."],
     ["Offline", "Without internet you only found out from error lines.", "A quiet cloud icon in the top bar shows you're offline; a tap says what is saved on the phone and what needs the internet."],
+    ["Light theme", "The app was only dark (8 dark themes).", "Settings → Appearance also has Light and Automatic: light during the day (7:00–19:00), your dark theme at night, switching by itself."],
   ],
   news19: [
     ["Workout plans", "One plan for everyone: days A, B and C.", "Build your own plans from the app's exercises: pick exercises and sets for every weekday (empty days are rest days), sort plans into groups and use one. Home then shows that plan's week, with the days you've done in green. Small icons show what each day trains, and tips say when a muscle gets little work. The recommended A, B, C plan is still there."],

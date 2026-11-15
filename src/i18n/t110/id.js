@@ -1,6 +1,8 @@
 // Indonesian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    hint_themes: "Mau tampilan lain? Di Pengaturan → Tampilan ada tema terang, gelap dan otomatis, serta 6 warna utama.",
+    themeAutoD: "Terang pukul {a}–{b}, {t} di malam hari.",
     offT: "Offline",
     offD: "Sedang tidak ada internet. Latihan, kalori, dan lainnya tersimpan di ponsel dan naik ke cloud saat kamu online lagi. Teman, Pustaka, dan Ranked butuh internet.",
     tourQuick5: "Tidak sempat hari ini? Cuma 5 menit: satu putaran tanpa pemanasan, dan runtutanmu tetap jalan.",
@@ -211,6 +213,7 @@ export default {
   },
   tour: { c5: { 0: "Kalender: hari hijau berarti ada latihan, titik di bawah angka berarti kalori. Ketuk satu hari untuk melihat apa yang kamu lakukan; ketuk hari kosong untuk menambah latihan." }, c7: { 3: "Tambahkan teman di sini lewat kode atau nama panggilan. Di bawah, teman dan obrolan jadi satu daftar: ketuk teman untuk menulis, ketuk foto untuk profilnya. Tahan teman untuk kartunya: duo, hapus obrolan, blokir.", 5: "Undang teman dengan tautanmu: setelah dia latihan 3 kali, kalian berdua dapat 100 💎." } },
   ach: { duo: ["Lebih baik berdua", "{x} dengan teman"] },
+  themes: { light: "Terang", auto: "Otomatis" },
   looks: {
     c_night: "Malam", c_mint: "Mint", c_carbon: "Karbon", c_marble: "Marmer", c_gold: "Emas", c_neon: "Neon", c_holo: "Hologram", c_obsidian: "Obsidian",
     fx_rain: "Hujan", fx_bubbles: "Soda", fx_hearts: "Hati", fx_fireflies: "Kunang-kunang", fx_stars: "Bintang jatuh",
@@ -285,5 +288,6 @@ export default {
     ["Bagikan lencana", "Lencana hanya bisa dilihat di aplikasi.", "Buka lencana yang kamu raih dan ketuk Bagikan: gambar lencana dalam warna levelnya, siap untuk story dan chat."],
     ["Cuma 5 menit", "Hari yang singkat pun berarti pemanasan penuh dan minimal 2 putaran.", "Beranda menawarkan Cuma 5 menit: satu putaran latihan hari ini tanpa pemanasan. Ini latihan biasa dan menjaga runtutanmu."],
     ["Offline", "Tanpa internet kamu hanya tahu dari pesan error.", "Ikon awan kecil di bilah atas menunjukkan kamu offline; ketuk untuk melihat apa yang tersimpan di ponsel dan apa yang butuh internet."],
+    ["Tema terang", "Aplikasi hanya gelap (8 tema gelap).", "Pengaturan → Tampilan kini juga punya Terang dan Otomatis: terang di siang hari (7:00–19:00), tema gelapmu di malam hari, berganti sendiri."],
   ],
 };

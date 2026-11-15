@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <style>html,body{margin:0;background:#000;color:#eef2ff;-webkit-tap-highlight-color:transparent}</style>
 <script>/* first paint in the saved theme's colour (no flash of another colour before the app runs); table from THEMES in App.jsx via build.mjs */
-try{var I=/*INKS*/{},s=JSON.parse(localStorage.getItem("domaci-trening-v1-settings")||"{}"),c=I[s.theme]||I[/*DEFTHEME*/""];if(c){document.documentElement.style.background=c;var m=document.querySelector('meta[name="theme-color"]');m&&m.setAttribute("content",c)}}catch(e){}</script>
+try{var I=/*INKS*/{},s=JSON.parse(localStorage.getItem("domaci-trening-v1-settings")||"{}"),h=new Date().getHours(),L=s.theme==="light"||(s.theme==="auto"&&h>=7&&h<19),c=L?"#ffffff":I[s.theme==="auto"?s.darkTheme:s.theme]||I[/*DEFTHEME*/""];if(c){document.documentElement.style.background=c;var m=document.querySelector('meta[name="theme-color"]');m&&m.setAttribute("content",c)}}catch(e){}</script>
 <style>
 /*FONTS*/</style>
 </head>

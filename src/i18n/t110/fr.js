@@ -1,6 +1,8 @@
 // French: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    hint_themes: "Envie d'un autre look ? Dans Réglages → Apparence, il y a des thèmes clairs, sombres et automatique, et 6 couleurs principales.",
+    themeAutoD: "Clair de {a} à {b}, {t} la nuit.",
     offT: "Hors ligne",
     offD: "Pas d'internet pour l'instant. Séances, calories et tout le reste sont enregistrés sur le téléphone et partent dans le cloud dès que tu es de nouveau en ligne. Amis, Bibliothèque et Ranked ont besoin d'internet.",
     tourQuick5: "Pas le temps aujourd'hui ? Juste 5 minutes : un tour sans échauffement, et ta flamme continue.",
@@ -211,6 +213,7 @@ export default {
   },
   tour: { c5: { 0: "Calendrier : un jour vert est une séance, le point sous un numéro, ce sont les calories. Touche un jour pour voir ce que tu as fait ; touche un jour vide pour ajouter une séance." }, c7: { 3: "Ajoute ici un ami par code ou pseudo. En dessous, amis et discussions forment une seule liste : touche un ami pour lui écrire, touche la photo pour son profil. Garde le doigt sur un ami pour sa carte : duo, supprimer la discussion, bloquer.", 5: "Invite un ami avec ton lien : quand il fait 3 séances, vous recevez tous les deux 100 💎." } },
   ach: { duo: ["Plus forts à deux", "{x} avec un ami"] },
+  themes: { light: "Clair", auto: "Automatique" },
   looks: {
     c_night: "Nuit", c_mint: "Menthe", c_carbon: "Carbone", c_marble: "Marbre", c_gold: "Or", c_neon: "Néon", c_holo: "Hologramme", c_obsidian: "Obsidienne",
     fx_rain: "Pluie", fx_bubbles: "Soda", fx_hearts: "Cœurs", fx_fireflies: "Lucioles", fx_stars: "Étoiles filantes",
@@ -285,5 +288,6 @@ export default {
     ["Partage un badge", "Les badges ne se voyaient que dans l'app.", "Ouvre un badge gagné et touche Partager : une image du badge dans la couleur de son niveau, prête pour les stories et les discussions."],
     ["Juste 5 minutes", "Même une courte journée voulait dire tout l'échauffement et au moins 2 tours.", "L'Accueil propose Juste 5 minutes : un tour du jour sans échauffement. C'est une séance normale qui garde ta flamme."],
     ["Hors ligne", "Sans internet, on ne le voyait qu'aux messages d'erreur.", "Une discrète icône de nuage dans la barre du haut montre que tu es hors ligne ; un toucher explique ce qui est gardé sur le téléphone et ce qui a besoin d'internet."],
+    ["Thème clair", "L'app était seulement sombre (8 thèmes sombres).", "Réglages → Apparence propose aussi Clair et Automatique : clair en journée (7:00–19:00), ton thème sombre la nuit, il change tout seul."],
   ],
 };

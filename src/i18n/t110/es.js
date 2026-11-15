@@ -1,6 +1,8 @@
 // Spanish: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    hint_themes: "¿Quieres otro aspecto? En Ajustes → Apariencia hay temas claros, oscuros y automático, y 6 colores principales.",
+    themeAutoD: "Claro de {a} a {b}, {t} por la noche.",
     offT: "Sin conexión",
     offD: "Ahora no hay internet. Los entrenos, las calorías y todo lo demás se guardan en el móvil y se suben a la nube cuando vuelvas a estar en línea. Amigos, la Biblioteca y Ranked necesitan internet.",
     tourQuick5: "¿Sin tiempo hoy? Solo 5 minutos: una ronda sin calentamiento y tu racha sigue.",
@@ -211,6 +213,7 @@ export default {
   },
   tour: { c5: { 0: "Calendario: un día verde es un entrenamiento, el punto bajo un número son calorías. Toca un día para ver qué hiciste; toca un día vacío para añadir un entrenamiento." }, c7: { 3: "Aquí añades un amigo por código o apodo. Debajo, amigos y chats son una sola lista: toca a un amigo para escribirle, toca la foto para ver su perfil. Mantén pulsado a un amigo para ver su tarjeta: dúo, borrar el chat, bloquear.", 5: "Invita a un amigo con tu enlace: cuando haga 3 entrenamientos, los dos recibiréis 100 💎." } },
   ach: { duo: ["Mejor juntos", "{x} con un amigo"] },
+  themes: { light: "Claro", auto: "Automático" },
   looks: {
     c_night: "Noche", c_mint: "Menta", c_carbon: "Carbono", c_marble: "Mármol", c_gold: "Oro", c_neon: "Neón", c_holo: "Holograma", c_obsidian: "Obsidiana",
     fx_rain: "Lluvia", fx_bubbles: "Refresco", fx_hearts: "Corazones", fx_fireflies: "Luciérnagas", fx_stars: "Estrellas fugaces",
@@ -285,5 +288,6 @@ export default {
     ["Comparte una insignia", "Las insignias solo se veían en la app.", "Abre una insignia que ganaste y toca Compartir: una imagen con la insignia en el color de su nivel, lista para historias y chats."],
     ["Solo 5 minutos", "Hasta un día corto significaba todo el calentamiento y al menos 2 rondas.", "Inicio ofrece Solo 5 minutos: una ronda del día de hoy sin calentamiento. Es un entreno normal y mantiene tu racha."],
     ["Sin conexión", "Sin internet solo te enterabas por mensajes de error.", "Un discreto icono de nube en la barra superior indica que estás sin conexión; al tocarlo ves qué se guarda en el móvil y qué necesita internet."],
+    ["Tema claro", "La app solo era oscura (8 temas oscuros).", "Ajustes → Apariencia ahora también tiene Claro y Automático: claro de día (7:00–19:00), tu tema oscuro de noche, cambia solo."],
   ],
 };

@@ -1,6 +1,8 @@
 // Czech: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    hint_themes: "Chceš jiný vzhled? V Nastavení → Vzhled jsou světlá, tmavá i automatická témata a 6 hlavních barev.",
+    themeAutoD: "Světlý od {a} do {b}, v noci {t}.",
     offT: "Offline",
     offD: "Právě nemáš internet. Tréninky, kalorie a vše ostatní se ukládá v telefonu a do cloudu to půjde, až budeš znovu online. Přátelé, Knihovna a Ranked potřebují internet.",
     tourQuick5: "Dnes nemáš čas? Jen 5 minut: jedno kolo bez rozcvičky a šňůra jde dál.",
@@ -211,6 +213,7 @@ export default {
   },
   tour: { c5: { 0: "Kalendář: zelený den je trénink, tečka pod číslem jsou kalorie. Ťukni na den a uvidíš, co jsi dělal; ťukni na prázdný den a přidáš trénink." }, c7: { 3: "Tady přidáš kamaráda podle kódu nebo přezdívky. Níže jsou kamarádi a zprávy v jednom seznamu: ťukni na kamaráda a piš mu, ťukni na fotku a uvidíš profil. Podrž kamaráda pro jeho kartu: duo, smazání zpráv, blokování.", 5: "Pozvi kamaráda svým odkazem: když odcvičí 3 tréninky, oba dostanete 100 💎." } },
   ach: { duo: ["Ve dvou se to lépe táhne", "{x} s kamarádem"] },
+  themes: { light: "Světlý", auto: "Automatický" },
   looks: {
     c_night: "Noc", c_mint: "Máta", c_carbon: "Karbon", c_marble: "Mramor", c_gold: "Zlato", c_neon: "Neon", c_holo: "Hologram", c_obsidian: "Obsidián",
     fx_rain: "Déšť", fx_bubbles: "Limonáda", fx_hearts: "Srdíčka", fx_fireflies: "Světlušky", fx_stars: "Padající hvězdy",
@@ -285,5 +288,6 @@ export default {
     ["Sdílej odznak", "Odznaky šly vidět jen v aplikaci.", "Otevři odznak, který máš, a ťukni na Sdílet: obrázek s odznakem v barvě jeho úrovně, hotový do stories i chatu."],
     ["Jen 5 minut", "I krátký den znamenal celou rozcvičku a aspoň 2 kola.", "Úvod nabízí Jen 5 minut: jedno kolo dnešního dne bez rozcvičky. Je to normální trénink a udrží ti šňůru."],
     ["Offline", "Bez internetu ses to dozvěděl jen z chybových hlášek.", "Tichá ikonka obláčku v horní liště ukáže, že jsi offline; ťuknutím se dozvíš, co se ukládá v telefonu a co potřebuje internet."],
+    ["Světlé téma", "Appka byla jen tmavá (8 tmavých témat).", "Nastavení → Vzhled má i Světlý a Automatický: přes den (7:00–19:00) světlý, v noci tvoje tmavé téma, přepíná se samo."],
   ],
 };

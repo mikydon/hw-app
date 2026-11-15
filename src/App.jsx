@@ -1123,7 +1123,7 @@ ${e.m === "glow" ? `<path d="${p}" fill="none" stroke="${e.line}" stroke-width="
 function RankIcon({ r, size = 18, style }) {
   const uid = useId().replace(/[^a-zA-Z0-9]/g, "");
   if (r == null || r < 0 || !RK_EMB[r]) return null;
-  return <span aria-hidden="true" data-rank-icon={r} style={{ display: "inline-flex", width: size, height: size, flexShrink: 0, lineHeight: 0, ...style }} dangerouslySetInnerHTML={{ __html: emblemSvg(r, size, uid) }} />;
+  return <span aria-hidden="true" data-rank-icon={r} data-keep-color="" style={{ display: "inline-flex", width: size, height: size, flexShrink: 0, lineHeight: 0, ...style }} dangerouslySetInnerHTML={{ __html: emblemSvg(r, size, uid) }} />;
 }
 // The rank as a small label: emblem + name in the rank's colour (the same everywhere: badges, ranks, showcase…)
 function RankTag({ r, size = 15, fs = 12, text, style }) {
@@ -1193,6 +1193,29 @@ const ACCENTS = {
   orange: { c: ["#ff9f43", "#2a1300", "#c46a12"], kc: ["#ff5fa2", "#ffb8d6"] },
   coral:  { c: ["#ff6b6b", "#2b0707", "#c43c3c"], kc: ["#ffc53d", "#ffe9a8"] },
 };
+// 1.10.0 (Michael's idea 11, Nov 15: "a light theme and an automatic one, light and dark by the time, like other apps"):
+// Light = the Black theme turned light by inverting the page's lightness (`html[data-light]`: invert + hue-rotate keeps
+// every hue; on the root element the filter doesn't break position: fixed); photos, canvases, the system emoji and colours that mean something (rank emblems, the body's metals, cards, frames, titles, switch
+// knobs: `data-keep-color`) are turned back (twice through the filter loses some saturation, it is close enough). Shared pictures are
+// drawn from C, so they keep the dark look. Automatic = light from 7:00 to 19:00, the last dark theme you picked at
+// night (`settings.darkTheme`). themeNow → {id: the palette, light}.
+const LIGHT_FROM = 7, LIGHT_TO = 19;
+function themeNow(s, h = new Date().getHours()) {
+  const t = s && s.theme, dark = THEMES[s && s.darkTheme] ? s.darkTheme : "black";
+  if (t === "light") return { id: "black", light: true };
+  if (t === "auto") return h >= LIGHT_FROM && h < LIGHT_TO ? { id: "black", light: true } : { id: dark, light: false };
+  return { id: THEMES[t] ? t : "black", light: false };
+}
+let LIGHT = false;
+function setLightMode(on) {
+  LIGHT = !!on;
+  try {
+    const r = document.documentElement;
+    if (on) r.setAttribute("data-light", ""); else r.removeAttribute("data-light");
+    const m = document.querySelector('meta[name="theme-color"]');
+    if (m && on) m.setAttribute("content", "#ffffff");
+  } catch (_) {}
+}
 function applyTheme(id, accent) {
   const t = THEMES[id] || THEMES.black;
   Object.keys(t).forEach(k => { if (k !== "edge") C[k] = t[k]; });
@@ -1200,12 +1223,20 @@ function applyTheme(id, accent) {
   C.signal = a.c[0]; C.signalInk = a.c[1]; EDGE[a.c[0]] = a.c[2];
   C.mint = m[0]; EDGE[m[0]] = m[1];
   KC_HIT = k[0]; KC_LOG = k[1];
+  // Light: the page is inverted (setLightMode), so these are the colours that come out right after the inversion
+  // (measured in Chromium: the yellow comes out as a dark gold #af7600 instead of brown, the green as #1aae5c, the
+  // "logged" calorie colour as a soft orange). Other main colours already invert well.
+  if (LIGHT) {
+    if (!ACCENTS[accent] || accent === "yellow") { C.signal = "#bd8400"; EDGE[C.signal] = "#d9a21c"; }
+    if (!a.mint) { C.mint = "#089c4a"; EDGE[C.mint] = "#2fc070"; }
+    if (!a.kc) KC_LOG = "#844200";
+  }
   EDGE[C.panelHi] = t.edge;
   EDGE[C.chalk] = "#8e9cc2";
   try {
     document.body.style.background = C.ink;
     const m = document.querySelector('meta[name="theme-color"]');
-    if (m) m.setAttribute("content", C.ink);
+    if (m) m.setAttribute("content", LIGHT ? "#ffffff" : C.ink);
   } catch (_) {}
   // These shared styles are built from C, so rebuild them when the theme changes.
   ghostBtn = { ...btnBase, background: "transparent", color: C.dim, border: `1.5px solid ${C.line}`, padding: "10px 14px", fontSize: 13 };
@@ -2656,7 +2687,7 @@ function IcoI({ n, color, sw = 2.3, style }) {
 function BadgeIco({ n, col, size = 40, glow, well }) {
   if (well && ICONS[n]) {
     const c = col || C.dim, R = Math.round(size * 0.3);
-    return <span aria-hidden="true" data-badge-ico={n} data-well="1" style={{ width: size, height: size, borderRadius: R, flexShrink: 0, position: "relative", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", background: "radial-gradient(120% 90% at 50% 20%, #0b0f18 0%, #03050a 70%)", boxShadow: "inset 0 4px 7px rgba(0,0,0,.9), inset 0 -1px 1px rgba(255,255,255,.10), 0 1px 0 rgba(255,255,255,.06)" }}>
+    return <span aria-hidden="true" data-badge-ico={n} data-well="1" data-keep-color="" style={{ width: size, height: size, borderRadius: R, flexShrink: 0, position: "relative", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", background: "radial-gradient(120% 90% at 50% 20%, #0b0f18 0%, #03050a 70%)", boxShadow: "inset 0 4px 7px rgba(0,0,0,.9), inset 0 -1px 1px rgba(255,255,255,.10), 0 1px 0 rgba(255,255,255,.06)" }}>
       {col && <span style={{ position: "absolute", left: "8%", right: "8%", bottom: 0, height: "70%", background: `radial-gradient(60% 100% at 50% 100%, ${c}77, transparent 75%)`, pointerEvents: "none" }} />}
       {col && <span style={{ position: "absolute", left: "22%", right: "22%", bottom: 1, height: 2, borderRadius: 99, background: c, opacity: 0.9, boxShadow: `0 0 8px 1px ${c}`, pointerEvents: "none" }} />}
       <span style={{ position: "relative", display: "flex", filter: col ? `drop-shadow(0 0 3px ${c}) drop-shadow(0 2px 6px ${c}88)` : "none" }}><Ico n={n} size={Math.round(size * 0.55)} color={col ? `color-mix(in srgb, ${c} 50%, #fff)` : C.dim} sw={2} style={{ opacity: col ? 1 : 0.45 }} /></span>
@@ -6612,7 +6643,7 @@ function BodyRanks({ m, onPick }) {
 .bdP{animation:bdPlate .7s ${MO.ease} both}@keyframes bdPlate{from{opacity:0;filter:brightness(2.4)}60%{opacity:1}to{opacity:1;filter:none}}
 .bdTile{animation:bdTile .42s ${MO.ease} both}@keyframes bdTile{from{opacity:0;transform:translateY(12px) scale(.96)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){.bdFig,.bdP,.bdTile{animation:none}}`}</style>
-      <div data-body-figs className="bdFig" style={{ height: 200, display: "flex", justifyContent: "center", gap: 22 }}>{fig("front")}{fig("back")}</div>
+      <div data-body-figs data-keep-color="" className="bdFig" style={{ height: 200, display: "flex", justifyContent: "center", gap: 22 }}>{fig("front")}{fig("back")}</div>
       <button type="button" data-body-toggle aria-expanded={more} aria-label={T("bodyTitle")} onClick={() => { sfxTap(); setMore(!more); }} style={{ ...btnBase, display: "flex", margin: "6px auto 0", padding: "6px 22px", background: "transparent", color: C.dim }}><Chevron open={more} size={18} /></button>
       <Expand open={more}>
       <div data-body-all style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 6, paddingTop: 6 }}>
@@ -7326,7 +7357,7 @@ function OtherProfile({ p, isFriend, onBack, setTopHead, me, onAdd, reqIn }) {
 function Toggle({ on }) {
   return (
     <span aria-hidden="true" style={{ width: 50, height: 28, borderRadius: 99, background: on ? C.mint : C.panelHi, position: "relative", transition: "background .2s", flexShrink: 0, border: `1px solid ${C.line}` }}>
-      <span style={{ position: "absolute", top: 2, left: on ? 24 : 2, width: 22, height: 22, borderRadius: 99, background: C.chalk, transition: "left .2s" }} />
+      <span data-keep-color="" style={{ position: "absolute", top: 2, left: on ? 24 : 2, width: 22, height: 22, borderRadius: 99, background: C.chalk, transition: "left .2s" }} />
     </span>
   );
 }
@@ -9210,24 +9241,39 @@ function SettingsTab({ initPage, ret, settings, setSettings, history, profile, s
       <Sect data-set-look-page style={{ marginTop: 4 }}>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
         {Object.entries(THEMES).map(([id, t]) => (
-          <button key={id} onClick={() => { sfxTap(); set("theme", id); }} aria-pressed={settings.theme === id}
+          // In Light the dark tiles keep their real colours (data-keep-color); the main-colour dots are left out there
+          // (bright colours don't survive the page's inversion twice, and they are the same on every tile anyway).
+          <button key={id} data-theme-pick={id} data-keep-color={LIGHT ? "" : undefined} onClick={() => { sfxTap(); set({ theme: id, darkTheme: id }); }} aria-pressed={settings.theme === id}
             style={{ ...btnBase, background: t.ink, border: `2px solid ${settings.theme === id ? C.signal : t.line}`, padding: 10, textAlign: "left", color: t.chalk }}>
             <div style={{ display: "flex", gap: 5, marginBottom: 8 }}>
               <span style={{ width: 22, height: 22, borderRadius: 8, background: t.panel, border: `1px solid ${t.line}` }} />
-              <span style={{ width: 22, height: 22, borderRadius: 8, background: C.signal }} />
-              <span style={{ width: 22, height: 22, borderRadius: 8, background: C.mint }} />
-              <span style={{ width: 22, height: 22, borderRadius: 8, background: C.sky }} />
+              {!LIGHT && <span style={{ width: 22, height: 22, borderRadius: 8, background: C.signal }} />}
+              {!LIGHT && <span style={{ width: 22, height: 22, borderRadius: 8, background: C.mint }} />}
+              {!LIGHT && <span style={{ width: 22, height: 22, borderRadius: 8, background: C.sky }} />}
+              {LIGHT && <span style={{ width: 22, height: 22, borderRadius: 8, background: t.panelHi, border: `1px solid ${t.line}` }} />}
             </div>
             <div style={{ fontSize: 14, fontWeight: 700 }}>{L.themes[id]}{settings.theme === id ? " ✓" : ""}</div>
           </button>
         ))}
+        {/* 1.10.0: Light, and Automatic (light by day, your dark theme at night) */}
+        {["light", "auto"].map(id => { const on = settings.theme === id, dk = THEMES[settings.darkTheme] || THEMES.black; return (
+          <button key={id} data-theme-pick={id} data-keep-color onClick={() => { sfxTap(); set({ theme: id, ...(settings.theme !== "light" && settings.theme !== "auto" && THEMES[settings.theme] ? { darkTheme: settings.theme } : {}) }); }} aria-pressed={on}
+            style={{ ...btnBase, background: id === "light" ? "#ffffff" : `linear-gradient(115deg, #ffffff 50%, ${dk.ink} 50%)`, border: `2px solid ${on ? C.signal : "#d5d9e0"}`, padding: 10, textAlign: "left", color: "#15181d" }}>
+            <div style={{ display: "flex", gap: 5, marginBottom: 8 }}>
+              <span style={{ width: 22, height: 22, borderRadius: 8, background: "#eef0f3", border: "1px solid #d5d9e0" }} />
+              <span style={{ width: 22, height: 22, borderRadius: 8, background: id === "auto" ? dk.panel : "#1d2027" }} />
+              {id === "auto" && <span style={{ display: "flex", alignItems: "center", color: "#15181d" }}><Ico n="sun" size={18} /></span>}
+            </div>
+            <div style={{ fontSize: 14, fontWeight: 700 }}><span style={id === "auto" ? { background: "#ffffff", borderRadius: 6, padding: "0 4px", marginLeft: -4 } : undefined}>{L.themes[id] || id}{on ? " ✓" : ""}</span></div>
+          </button>); })}
       </div>
+      {settings.theme === "auto" && <div data-theme-auto-d style={{ fontSize: 12, color: C.dim, marginTop: 8, lineHeight: 1.45 }}>{T("themeAutoD", { a: `${LIGHT_FROM}:00`, b: `${LIGHT_TO}:00`, t: L.themes[THEMES[settings.darkTheme] ? settings.darkTheme : "black"] })}</div>}
       <div style={{ fontSize: 13, color: C.chalk, fontWeight: 800, margin: "14px 0 8px" }}>{T("accentTitle")}</div>
       <div role="radiogroup" aria-label={T("accentTitle")} data-accents style={{ display: "flex", justifyContent: "space-between", gap: 6 }}>
         {Object.entries(ACCENTS).map(([id, { c: [col, ink] }]) => { const on = (settings.accent || "yellow") === id; return (
           <button key={id} role="radio" aria-checked={on} aria-label={T("accent_" + id)} title={T("accent_" + id)} data-accent={id} onClick={() => { sfxTap(); set("accent", id); }}
             style={{ ...btnBase, width: 44, height: 44, borderRadius: 99, padding: 0, flexShrink: 0, background: "transparent", border: `2px solid ${on ? C.chalk : "transparent"}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <span aria-hidden="true" style={{ width: 32, height: 32, borderRadius: 99, background: col, display: "flex", alignItems: "center", justifyContent: "center", color: ink, fontSize: 16, fontWeight: 900 }}>{on ? "✓" : ""}</span>
+            <span aria-hidden="true" style={{ width: 32, height: 32, borderRadius: 99, background: LIGHT && id === "yellow" ? "#bd8400" : col, display: "flex", alignItems: "center", justifyContent: "center", color: ink, fontSize: 16, fontWeight: 900 }}>{on ? "✓" : ""}</span>
           </button>
         ); })}
       </div>
@@ -10100,12 +10146,13 @@ const CARD_SK = {
   c_mint: { bg: "linear-gradient(160deg, #f0fff8, #c4f0de)", fg: "#1f3b33", edge: "rgba(0,90,60,.25)" },
   c_carbon: { bg: "repeating-linear-gradient(45deg, #2b2f36 0 3px, #1d2025 3px 6px), #22252b", fg: "#eef1f6", edge: "rgba(255,255,255,.14)", dark: 1 },
   c_marble: { bg: "linear-gradient(118deg, transparent 38%, rgba(120,120,135,.28) 40%, transparent 43%), linear-gradient(64deg, transparent 58%, rgba(140,140,150,.22) 60%, transparent 62%), linear-gradient(160deg, #ffffff, #e9e7e2)", fg: "#2a2a35", edge: "rgba(0,0,0,.2)" },
-  c_gold: { bg: "linear-gradient(135deg, #fff4b8, #ffd23f 34%, #c8961a 70%, #ffe98a)", fg: "#3b2a06", edge: "#a87a10", shine: 1 },
+  c_gold: { bg: "linear-gradient(135deg, #fff4b8, #ffd23f 34%, #c8961a 70%, #ffe98a)", lbg: "linear-gradient(135deg, #ecd79a, #d8b03e 34%, #a8801c 70%, #e2c66c)", fg: "#3b2a06", edge: "#a87a10", shine: 1 },
   c_neon: { bg: "radial-gradient(120% 90% at 50% 0%, #1b1430, #07070d)", fg: "#f4f2ff", edge: "neon", dark: 1 },
   c_holo: { bg: "linear-gradient(120deg, #ffd6f3, #c9f0ff, #d9ffd0, #fff1c2, #ffd6f3)", fg: "#2a2a35", edge: "rgba(120,90,200,.35)", shine: 1, holo: 1 },
   c_obsidian: { bg: "linear-gradient(160deg, #3a2030, #0e080c 70%)", fg: "#ffb3c8", edge: "rgba(255,92,138,.55)", dark: 1, shine: 1, glow: "#ff5c8a" },
 };
-const skinOf = sk => CARD_SK[sk === undefined ? CARD_SKIN : sk] || null;
+// lbg: the colours used in Light (bright gold does not survive the page's inversion twice; these come out as gold)
+const skinOf = sk => { const S = CARD_SK[sk === undefined ? CARD_SKIN : sk] || null; return S && LIGHT && S.lbg ? { ...S, bg: S.lbg } : S; };
 // out = selected but not part of the hand (it adds nothing); still = a small picture in a guide or a breakdown
 // sk = a card style id (undefined = the one you wear, null = the classic card)
 function PlayCard({ c, sel, onClick, w = 64, bests, dead, pop, i = 0, deal, out, still, glow, sk }) {
@@ -10115,7 +10162,7 @@ function PlayCard({ c, sel, onClick, w = 64, bests, dead, pop, i = 0, deal, out,
   const ex = face ? GM.faceExercise(c, bests) : null;
   const Tag = still ? "span" : "button";
   return (
-    <Tag type={still ? undefined : "button"} data-card={still ? undefined : c} data-mini={still ? c : undefined} data-out={out ? 1 : undefined} data-glow={glow ? 1 : undefined} data-sel={still ? undefined : sel ? 1 : 0} onClick={onClick} className={(deal ? "gmDeal " : "") + (pop ? "gmPop" : "") + (glow ? " gmGlowCard" : "")} aria-pressed={still ? undefined : !!sel}
+    <Tag type={still ? undefined : "button"} data-card={still ? undefined : c} data-mini={still ? c : undefined} data-out={out ? 1 : undefined} data-glow={glow ? 1 : undefined} data-keep-color="" data-sel={still ? undefined : sel ? 1 : 0} onClick={onClick} className={(deal ? "gmDeal " : "") + (pop ? "gmPop" : "") + (glow ? " gmGlowCard" : "")} aria-pressed={still ? undefined : !!sel}
       aria-label={`${cardVal(c)} ${T("grp_" + s)}${ex ? " · " + EX[ex].name : ""}`} role={still ? "img" : undefined}
       style={{ ...btnBase, display: still ? "inline-block" : undefined, verticalAlign: "middle", position: "relative", width: w, height: Math.round(w * 1.4), flexShrink: 0, padding: 0, borderRadius: Math.round(w * 0.14), background: dead ? "#c9c3b5" : S ? S.bg : "#f7f3ea", backgroundSize: S && S.holo ? "300% 300%" : undefined, color: col, border: `2px solid ${sel ? C.signal : edge}`, boxShadow: (sel ? `0 0 0 2px ${C.signal}, 0 10px 22px rgba(0,0,0,.45)` : "0 4px 12px rgba(0,0,0,.35)") + lift, transform: sel ? "translateY(-14px)" : "none", transition: `transform ${MO.t1} ${MO.ease}, box-shadow ${MO.t1}`, overflow: "hidden", "--dl": `${i * 45}ms`, opacity: dead ? 0.7 : out ? 0.45 : 1, filter: out ? "saturate(.35)" : undefined }}>
       <span style={{ position: "absolute", left: 5, top: 3, fontFamily: DISPLAY, fontSize: Math.round(w * 0.3), fontWeight: 900, lineHeight: 1 }}>{cardVal(c)}</span>
@@ -10364,7 +10411,7 @@ Object.assign(LK_FRAME, {
 function LookFrame({ id, size, style }) {
   const u = useId().replace(/[^a-zA-Z0-9]/g, "");
   if (!LK_FRAME[id]) return null;
-  return <svg data-look-frame={id} viewBox="0 0 116 116" width={size} height={size} aria-hidden="true" style={{ position: "absolute", overflow: "visible", pointerEvents: "none", ...style }} dangerouslySetInnerHTML={{ __html: LK_FRAME[id](u) }} />;
+  return <svg data-look-frame={id} data-keep-color="" viewBox="0 0 116 116" width={size} height={size} aria-hidden="true" style={{ position: "absolute", overflow: "visible", pointerEvents: "none", ...style }} dangerouslySetInnerHTML={{ __html: LK_FRAME[id](u) }} />;
 }
 // Banners: drawn behind the profile's top part, in the theme's own colours.
 function LookBanner({ id }) {
@@ -10482,7 +10529,7 @@ function LookTitle({ id, small }) {
   if (!st) return null;
   const fs = small ? 10 : 11;
   return (
-    <span data-look-title={id} className={st.foil ? "foil" : ""} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: fs, fontWeight: 900, letterSpacing: st.low ? 2 : 0.9, textTransform: st.low ? "lowercase" : "uppercase", fontStyle: st.it ? "italic" : "normal",
+    <span data-look-title={id} data-keep-color="" className={st.foil ? "foil" : ""} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: fs, fontWeight: 900, letterSpacing: st.low ? 2 : 0.9, textTransform: st.low ? "lowercase" : "uppercase", fontStyle: st.it ? "italic" : "normal",
       padding: small ? "2px 8px 2px 6px" : "3px 11px 3px 8px", borderRadius: st.rad ?? 99, border: `1.5px ${st.dash ? "dashed" : "solid"} ${st.bd}`, color: st.fg, background: st.bg, whiteSpace: "nowrap", lineHeight: 1.3, textShadow: st.glow ? `0 0 8px ${st.glow}` : "none", boxShadow: st.glow ? `0 0 10px ${st.glow}44` : "none", ...(st.ex || {}) }}>
       <svg viewBox="0 0 24 24" width={fs + 2} height={fs + 2} aria-hidden="true" className={st.flick ? "lkFlickI" : ""} style={{ flexShrink: 0, fill: "none", stroke: "currentColor", strokeWidth: 2.4, strokeLinecap: "round", strokeLinejoin: "round" }} dangerouslySetInnerHTML={{ __html: st.ic }} />
       {lookName(id)}
@@ -13421,6 +13468,15 @@ export default function App() {
   const [session, setSession] = useState(null);
   const [loaded, setLoaded] = useState(false);
   const [settings, setSettingsState] = useState(DEFAULT_SETTINGS);
+  // 1.10.0: the Automatic theme follows the clock (checked every minute and when the app comes back)
+  const [themeHour, setThemeHour] = useState(() => new Date().getHours());
+  useEffect(() => {
+    if (settings.theme !== "auto") return;
+    const f = () => setThemeHour(new Date().getHours());
+    f();
+    const t = setInterval(f, 60000); document.addEventListener("visibilitychange", f);
+    return () => { clearInterval(t); document.removeEventListener("visibilitychange", f); };
+  }, [settings.theme]);
   // A friend's share link (…/hw-app/?add=CODE, 1.5.0) opens Friends with the code filled in.
   const [screen, setScreen] = useState(() => {
     try {
@@ -13469,7 +13525,9 @@ export default function App() {
   { const cs = profile.look && profile.look.card; CARD_SKIN = cs && EC.LOOKS[cs] && EC.LOOKS[cs].kind === "card" ? cs : null; } // 1.10.0 card style
   META = { kcal, skips: profile.skips || {}, freezeDays: profile.freezeDays || [], streakResetTs: profile.streakResetTs || 0, boosts: EC.shopOf(profile).boosts, bonusFreezes: (profile.bdayGifts || []).length + EC.shopOf(profile).fz, giftThisYear: (profile.bdayGifts || []).includes(parseKey(dateKey()).getFullYear()), birth: profile.birth || null };
   window._wset = settings;
-  applyTheme(settings.theme, settings.accent);
+  const thNow = themeNow(settings, themeHour);
+  setLightMode(thNow.light);
+  applyTheme(thNow.id, settings.accent);
   LOOK = settings.look || "cards";
   if (LOOK === "tiles") card = { background: C.panelHi, border: `1px solid ${C.panelHi}`, borderRadius: 16 };
   if (LOOK === "glass") card = GLASS();
@@ -13478,7 +13536,7 @@ export default function App() {
   if (LOOK === "liquid") sectionTitle = { ...sectionTitle, color: `${C.chalk}b3` };
   // The liquid background sits at z-index -1: it shows only when body has no background of its own (html keeps the colour).
   try { document.documentElement.style.background = C.ink; document.body.style.background = LOOK === "liquid" || LOOK === "glass" ? "transparent" : C.ink; } catch (_) {}
-  setNativeBg(C.ink);
+  setNativeBg(LIGHT ? "#ffffff" : C.ink); // 1.10.0: the light theme's window behind the page is white
   applyLang(settings.lang || detectLang());
   const setSettings = n => { setSettingsState(n); saveSettings(n); };
   MENU_ORDER = menuOrderOf(settings);
@@ -14477,6 +14535,9 @@ export default function App() {
         .gmGlow{animation:gmGlow .5s ease-out;box-shadow:0 0 18px var(--gc)}
         .gmShake{animation:gmShake .45s ease-out}@keyframes gmShake{0%,100%{transform:none}20%{transform:translate(-5px,2px) rotate(-.4deg)}40%{transform:translate(5px,-2px) rotate(.4deg)}60%{transform:translate(-3px,1px)}80%{transform:translate(2px,0)}}
         .gmMoneyUp{animation:gmMoneyUp .5s ease-out}@keyframes gmMoneyUp{40%{transform:scale(1.25)}}
+        html[data-light]{filter:invert(1) hue-rotate(180deg)}
+        html[data-light] img,html[data-light] video,html[data-light] canvas,html[data-light] .sysEmo,html[data-light] [data-keep-color]{filter:invert(1) hue-rotate(180deg)}
+        html[data-light] [data-keep-color] :is(img,video,canvas,.sysEmo,[data-keep-color]),html[data-light] .sysEmo img{filter:none}
         .cdShine{position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.55) 45%,transparent 60%);background-size:250% 100%;animation:cdShine 3.2s ease-in-out infinite;mix-blend-mode:soft-light}
         .cdHolo{background:linear-gradient(115deg,rgba(255,0,170,.18),rgba(0,200,255,.22),rgba(120,255,120,.18),rgba(255,220,0,.2));background-size:300% 300%;animation:cdHolo 4s linear infinite;mix-blend-mode:color-dodge}
         @keyframes cdShine{from{background-position:120% 0}to{background-position:-60% 0}}@keyframes cdHolo{from{background-position:0 50%}to{background-position:300% 50%}}

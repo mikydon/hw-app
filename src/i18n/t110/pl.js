@@ -1,6 +1,8 @@
 // Polish: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    hint_themes: "Chcesz inny wygląd? W Ustawieniach → Wygląd są motywy jasne, ciemne i automatyczny oraz 6 głównych kolorów.",
+    themeAutoD: "Jasny od {a} do {b}, nocą {t}.",
     offT: "Offline",
     offD: "Teraz nie masz internetu. Treningi, kalorie i wszystko inne zapisują się w telefonie i trafią do chmury, gdy wrócisz online. Znajomi, Biblioteka i Ranked potrzebują internetu.",
     tourQuick5: "Brak czasu? Tylko 5 minut: jedna runda bez rozgrzewki, a passa trwa dalej.",
@@ -211,6 +213,7 @@ export default {
   },
   tour: { c5: { 0: "Kalendarz: zielony dzień to trening, kropka pod liczbą to kalorie. Stuknij dzień, aby zobaczyć, co robiłeś; stuknij pusty dzień, aby dodać trening." }, c7: { 3: "Tu dodasz znajomego po kodzie albo nicku. Niżej znajomi i czaty to jedna lista: dotknij znajomego, aby pisać, dotknij zdjęcia, aby zobaczyć profil. Przytrzymaj znajomego, aby otworzyć jego kartę: duet, usunięcie czatu, blokada.", 5: "Zaproś znajomego swoim linkiem: gdy zrobi 3 treningi, oboje dostaniecie 100 💎." } },
   ach: { duo: ["Razem raźniej", "{x} ze znajomym"] },
+  themes: { light: "Jasny", auto: "Automatyczny" },
   looks: {
     c_night: "Noc", c_mint: "Mięta", c_carbon: "Karbon", c_marble: "Marmur", c_gold: "Złoto", c_neon: "Neon", c_holo: "Hologram", c_obsidian: "Obsydian",
     fx_rain: "Deszcz", fx_bubbles: "Oranżada", fx_hearts: "Serduszka", fx_fireflies: "Świetliki", fx_stars: "Spadające gwiazdy",
@@ -285,5 +288,6 @@ export default {
     ["Udostępnij odznakę", "Odznaki było widać tylko w aplikacji.", "Otwórz zdobytą odznakę i stuknij Udostępnij: obrazek z odznaką w kolorze jej poziomu, gotowy do relacji i czatów."],
     ["Tylko 5 minut", "Nawet krótki dzień oznaczał całą rozgrzewkę i co najmniej 2 rundy.", "Start proponuje Tylko 5 minut: jedną rundę dzisiejszego dnia bez rozgrzewki. To zwykły trening i utrzymuje passę."],
     ["Offline", "Bez internetu dowiadywałeś się o tym tylko z komunikatów o błędach.", "Cicha ikona chmurki na górnym pasku pokazuje, że jesteś offline; stuknięcie mówi, co zapisuje się w telefonie, a co wymaga internetu."],
+    ["Jasny motyw", "Aplikacja była tylko ciemna (8 ciemnych motywów).", "Ustawienia → Wygląd mają też Jasny i Automatyczny: w dzień (7:00–19:00) jasny, w nocy Twój ciemny motyw, przełącza się sam."],
   ],
 };
