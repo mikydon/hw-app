@@ -259,6 +259,9 @@ export default {
       secondwind: ["Még egy ismétlés", "Antenként egyszer: ha elfogynak a kezeid, kapsz még egyet."],
     },
   },
+  news1_10_1: [
+    "Útmutató: már nem tudja lezárni a képernyőt. Ha egy lépés elakad, néhány másodperc múlva megjelenik az Útmutató kihagyása, és a vissza gomb is működik; a képernyőn kívülre kerülő buborék lekerül az aljára.",
+  ],
   news1_10: [
     ["Barátok együtt", "Barátok és ranglista; a közös sorozat csak edzéseket számolt, a világranglista pedig zárolva volt.", "Új Együtt oldal: hívj meg egy barátot a linkeddel (100 💎 mindkettőtöknek a 3. edzése után), tartsatok duót (edzések vagy kalóriák), közös heti célt, sorozatpárbajt, és bökd meg azt a barátodat, aki még nem edzett. A napokat a szerver számolja, így a duót nem lehet meghamisítani. A ranglista csak a barátaidé, a zárolt világranglista eltűnt. Új jelvény: Együtt jobb."],
     ["Tervkönyvtár", "Egy tervet csak az látott, aki készítette.", "Mutass meg egy tervet a profilodon: a barátaid megnyitják, és egy koppintással elmentik a saját másolatukat (gyakorlatok, sorozatok, tartási idők, a súlyaid soha). A másolaton látszik, kitől van, és a módosításaid a profilon lévő tervbe is átkerülnek. Vagy tedd közzé az új Könyvtárban: ott bárki kereshet név, szerző vagy gyakorlat szerint, szűrhet fókuszra és felszerelésre, és látja a csillagokat és hogy hányan mentették el (csillagot csak az ad, aki edzett vele)."],

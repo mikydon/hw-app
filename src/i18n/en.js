@@ -1970,6 +1970,9 @@ const en = {
     ],
   },
   // 1.10: keys with "_" from here on (news1_10, news1_10_1), see newsKey in App.jsx
+  news1_10_1: [
+    "Guide: it can no longer lock the screen. If a step gets stuck, Skip the guide shows after a few seconds and the back button works too; a bubble that would land off the screen moves to the bottom.",
+  ],
   news1_10: [
     ["Friends together", "Friends and a leaderboard; a friend streak only counted workouts, and the world leaderboard was locked.", "A new Together page: invite a friend with your link (100 💎 each after their 3rd workout), keep a duo (workouts or calories), a weekly goal of both of you, a sets duel and a nudge for a friend who hasn't trained yet. The server counts the days, so nobody can fake a duo. The leaderboard is your friends only; the locked world list is gone. New badge: Better together."],
     ["Plan library", "Only the person who made a plan could see it.", "Show a plan on your profile: friends open it and save their own copy with one tap (exercises, sets, hold times, never your weights). The copy says who made it, and your edits reach the plan on your profile too. Or publish it in the new Library, where everyone searches plans by name, author or exercise, filters by focus and equipment, and sees the stars and how many saved each one (stars only from people who trained it)."],

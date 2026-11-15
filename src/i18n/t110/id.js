@@ -259,6 +259,9 @@ export default {
       secondwind: ["Satu repetisi lagi", "Sekali per ante: saat tanganmu habis, kamu dapat satu lagi."],
     },
   },
+  news1_10_1: [
+    "Panduan: tidak bisa lagi mengunci layar. Jika satu langkah macet, setelah beberapa detik muncul Lewati panduan dan tombol kembali juga berfungsi; gelembung yang akan berada di luar layar pindah ke bawah.",
+  ],
   news1_10: [
     ["Teman bersama", "Teman dan papan peringkat; streak dengan teman hanya menghitung latihan, dan papan peringkat dunia terkunci.", "Halaman Bersama yang baru: undang teman dengan tautanmu (100 💎 untuk masing-masing setelah latihan ke-3 dia), jaga duo (latihan atau kalori), target mingguan berdua, duel set, dan colekan untuk teman yang belum latihan. Hari dihitung oleh server, jadi duo tak bisa dipalsukan. Papan peringkat hanya teman-temanmu; papan dunia yang terkunci sudah dihapus. Lencana baru: Lebih baik berdua."],
     ["Pustaka rencana", "Sebuah rencana hanya terlihat oleh pembuatnya.", "Tampilkan rencana di profilmu: teman membukanya dan dengan sekali ketuk menyimpan salinan sendiri (latihan, set, waktu tahan, tidak pernah bebanmu). Salinan menunjukkan dari siapa asalnya, dan perubahanmu juga sampai ke rencana di profil. Atau terbitkan di Pustaka yang baru: semua orang bisa mencari berdasarkan nama, pembuat, atau latihan, menyaring menurut fokus dan peralatan, dan melihat bintang serta berapa orang yang menyimpannya (bintang hanya dari yang sudah berlatih dengannya)."],

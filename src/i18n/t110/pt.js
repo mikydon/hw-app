@@ -259,6 +259,9 @@ export default {
       secondwind: ["Mais uma repetição", "Uma vez por ante: quando suas mãos acabam, você ganha mais uma."],
     },
   },
+  news1_10_1: [
+    "Guia: não pode mais travar a tela. Se uma etapa travar, depois de alguns segundos aparece Saltar o guia e o botão voltar também funciona; um balão que ficaria fora da tela vai para baixo.",
+  ],
   news1_10: [
     ["Amigos juntos", "Amigos e um ranking; a sequência com um amigo só contava treinos, e o ranking mundial estava bloqueado.", "Uma nova página Juntos: convide um amigo com seu link (100 💎 para cada um depois do 3º treino dele), mantenham uma dupla (treinos ou calorias), uma meta semanal dos dois, um duelo de séries e uma cutucada para o amigo que ainda não treinou. Os dias são contados pelo servidor, então ninguém falsifica uma dupla. O ranking é só dos seus amigos; o mundial bloqueado saiu. Nova insígnia: Melhor em dupla."],
     ["Biblioteca de planos", "Só quem criou um plano podia vê-lo.", "Mostre um plano no seu perfil: seus amigos abrem e salvam a própria cópia com um toque (exercícios, séries, tempos, nunca seus pesos). A cópia mostra de quem é, e suas mudanças chegam também ao plano do perfil. Ou publique na nova Biblioteca: lá qualquer pessoa busca por nome, autor ou exercício, filtra por foco e equipamento e vê as estrelas e quantos salvaram (só avalia quem treinou com ele)."],

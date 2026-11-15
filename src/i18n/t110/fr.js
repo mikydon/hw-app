@@ -259,6 +259,9 @@ export default {
       secondwind: ["Encore une répétition", "Une fois par ante : quand tu n'as plus de mains, tu en reçois une de plus."],
     },
   },
+  news1_10_1: [
+    "Guide : il ne peut plus bloquer l'écran. Si une étape reste bloquée, Passer le guide apparaît après quelques secondes et le bouton retour fonctionne aussi ; une bulle qui serait hors de l'écran passe en bas.",
+  ],
   news1_10: [
     ["Amis ensemble", "Des amis et un classement ; une série entre amis ne comptait que les séances, et le classement mondial était verrouillé.", "Une nouvelle page Ensemble : invite un ami avec ton lien (100 💎 chacun après sa 3e séance), tenez un duo (séances ou calories), un objectif de la semaine à deux, un duel de séries et une relance pour l'ami qui ne s'est pas encore entraîné. Le serveur compte les jours, donc impossible de truquer un duo. Le classement ne montre que tes amis ; le classement mondial verrouillé a disparu. Nouveau badge : Plus forts à deux."],
     ["Bibliothèque de programmes", "Seul son créateur voyait un programme.", "Affiche un programme sur ton profil : tes amis l'ouvrent et enregistrent leur propre copie d'un toucher (exercices, séries, temps de gainage, jamais tes charges). La copie indique de qui elle vient, et tes modifications arrivent aussi dans le programme de ton profil. Ou publie-le dans la nouvelle Bibliothèque : chacun y cherche par nom, auteur ou exercice, filtre par ciblage et matériel, et voit les étoiles et combien l'ont enregistré (seuls ceux qui l'ont fait peuvent le noter)."],

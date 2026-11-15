@@ -45,7 +45,7 @@ const THEMES = {
   slate:  { ink: "#15181d", panel: "#1f242b", panelHi: "#2a313a", line: "#3a434f", chalk: "#f1f4f8", dim: "#9aa6b4", edge: "#0e1115" },
   coffee: { ink: "#1c140f", panel: "#2a1f17", panelHi: "#382a20", line: "#4d3a2c", chalk: "#fbf3ec", dim: "#b8a291", edge: "#130d09" },
 };
-const APP_VERSION = "1.10.0";
+const APP_VERSION = "1.10.1";
 // Big Shoulders has no Cyrillic, so Oswald (also condensed) covers Ukrainian. The browser only
 // downloads the Oswald unicode ranges a page actually uses.
 // 1.7.0: 'HW Emoji' = the app's own emoji (Fluent 3D, fonts/hw-emoji.ttf) for the emoji the app shows; BODY_SYS
@@ -12518,6 +12518,14 @@ function Tour({ run, x, done, onStep, onEnd, onChapterDone, onStart }) {
   const [rect, setRect] = useState(null);
   const [hold, setHold] = useState(false);
   const [doneNow, setDoneNow] = useState(null); // the badge level this chapter brought
+  // 1.10.1 (Michael, Nov 15: on Workout plans the guide only dimmed the screen and nothing could be tapped): it can never
+  // lock the app again: a step that throws or takes too long is skipped (watchdog), after 3 s between steps a Skip
+  // button shows on the dim layer (back works then too), and a bubble that would land off the screen floats at the bottom
+  const [slow, setSlow] = useState(false), [flt, setFlt] = useState(false);
+  const readyRef = useRef(false); readyRef.current = ready;
+  const slowRef = useRef(false); slowRef.current = slow;
+  const bubRef = useRef(null);
+  const phase = useRef(""); // where a step is being prepared (shown small under Skip when it takes long: a clue for a bug report)
   const live = useRef({ run, steps }); live.current = { run, steps };
   const shown = useRef(-1); // the last step whose target was really lit (a skipped tap step changed nothing)
   const next = () => onStep(run.i + 1 < steps.length ? run.i + 1 : null);
@@ -12530,6 +12538,7 @@ function Tour({ run, x, done, onStep, onEnd, onChapterDone, onStart }) {
   const trail = useRef([]); // the steps really shown, in order
   const [nudge, setNudge] = useState(0);
   const stepBack = () => {
+    if (!readyRef.current) { if (slowRef.current) endRef.current(true); return; } // stuck between steps: back = skip the guide
     const cur = live.current.run.i, t = trail.current.filter(i => i < cur);
     const prev = t.pop();
     if (prev !== undefined) { trail.current = t; sfxTap(); onStep(prev); } else setNudge(n => n + 1);
@@ -12559,16 +12568,25 @@ function Tour({ run, x, done, onStep, onEnd, onChapterDone, onStart }) {
   // prepare the step: run its prep, find what to light up (it may still be appearing), scroll it into view
   useEffect(() => {
     if (!step) return;
-    let dead = false;
-    setReady(false); setEl(null); setRect(null);
-    (async () => {
+    let dead = false, fin = false;
+    setReady(false); setEl(null); setRect(null); setSlow(false); setFlt(false);
+    const skip = () => { if (dead || fin) return; fin = true; if (step.opt) next(); else { setEl(null); setReady(true); } };
+    const dog = setTimeout(skip, 8000), slowT = setTimeout(() => { if (!dead && !fin) setSlow(true); }, 3000);
+    (async () => { try {
+      phase.current = "start";
+      if (window.__hwTourStall) await tourWait(window.__hwTourStall); // tests: a step that hangs
+      if (window.__hwTourThrow) throw new Error("test"); // tests: a step that breaks
+      phase.current = "prep";
       if (step.prep) { try { await step.prep(); } catch (_) {} }
+      phase.current = "menu";
       // 1.8.1 (Michael's screenshot: the ☰ menu was open over the lit badge): after any prep too, the menu is closed
       if (!step.keepMenu && x.menuOpen && x.menuOpen()) { x.menu(false); await tourWait(320); }
+      phase.current = "over";
       for (let k = 0; k < 8 && !dead && clearOver(); k++) await tourWait(200); // and any sheet opened over the guide
+      phase.current = "find";
       if (dead) return;
       if (step.done) { const n = onChapterDone(run.ch); setDoneNow(n); }
-      if (!step.sel) { setReady(true); return; }
+      if (!step.sel) { fin = true; setReady(true); return; }
       // 1.8.1 (Michael: "I tap Next and nothing happens for ~3 s"): a missing optional target was waited for every time.
       // Only right after something changed (the chapter's start, a prep, a tap) can a target still be on its way;
       // otherwise the screen is settled and a missing one is skipped at once. skipIf = proof it won't come.
@@ -12577,9 +12595,11 @@ function Tour({ run, x, done, onStep, onEnd, onChapterDone, onStart }) {
       const t0 = Date.now(); let e = null;
       for (let first = true; !dead && (first || Date.now() - t0 < lim); first = false) { e = tourFind(step.sel); if (e) break; if (step.skipIf && Date.now() - t0 > 120 && document.querySelector(step.skipIf)) break; await tourWait(40); }
       if (dead) return;
-      if (!e) { if (step.opt) next(); else setReady(true); return; }
+      if (!e) { fin = true; if (step.opt) next(); else setReady(true); return; }
+      phase.current = "page";
       const pg = tourPageOf(e);
       if (pg) { await tourTab(pg[0], pg[1]); if (dead) return; }
+      phase.current = "place";
       const r = e.getBoundingClientRect(), TB = tourTopGap(), bub = tourBubH(step.t, step.done), avail = innerHeight - TB - 12;
       let want = null;
       if (tourTall(r.height, bub)) want = TB + 4; // its top just under the top bar, lit on down
@@ -12591,10 +12611,19 @@ function Tour({ run, x, done, onStep, onEnd, onChapterDone, onStart }) {
       if (e.closest("[data-topbar], .drawerPanel, [data-side-nav]")) want = null; // fixed places: nothing to scroll
       if (want !== null && Math.abs(r.top - want) > 4) { window.scrollBy(0, r.top - want); await tourWait(60); }
       if (dead) return;
-      shown.current = run.i; if (trail.current[trail.current.length - 1] !== run.i) trail.current.push(run.i); setEl(e); setReady(true);
-    })();
-    return () => { dead = true; };
+      if (fin) return; // the watchdog moved on already
+      fin = true; shown.current = run.i; if (trail.current[trail.current.length - 1] !== run.i) trail.current.push(run.i); setEl(e); setReady(true);
+    } catch (err) { phase.current = "err " + String((err && err.message) || err).slice(0, 40); try { console.warn("tour step", run.ch, run.i, err); } catch (_) {} skip(); } })();
+    return () => { dead = true; clearTimeout(dog); clearTimeout(slowT); };
   }, [run.ch, run.i]);
+  // a step index past the end (can't happen, but would leave only the dim layer): end the guide
+  useEffect(() => { if (!step) endRef.current(false); }, [step]);
+  // the bubble must be on the screen: if it would land outside, it floats at the bottom
+  useLayoutEffect(() => {
+    const b = bubRef.current; if (!b || flt) return;
+    const r = b.getBoundingClientRect();
+    if (r.top < 0 || r.bottom > innerHeight || r.height === 0) setFlt(true);
+  });
   // follow it (scrolling, layout changes); if it goes away (the screen moved on by itself), go on with the guide
   useEffect(() => {
     if (!ready) return;
@@ -12629,7 +12658,10 @@ function Tour({ run, x, done, onStep, onEnd, onChapterDone, onStart }) {
   }, [ready, el, run.i]);
   if (hold) return null; // a reward card is open: it gets the taps
   // between steps (finding, scrolling, switching screens) nothing on the page can be tapped: one dim layer catches it
-  if (!step || !ready) return createPortal(<div data-tour-wait onClick={e => { e.stopPropagation(); e.preventDefault(); }} style={{ position: "fixed", inset: 0, zIndex: 110, background: "rgba(3,8,20,.72)", pointerEvents: "auto" }} />, document.body);
+  if (!step || !ready) return createPortal(<div data-tour-wait onClick={e => { e.stopPropagation(); e.preventDefault(); }} style={{ position: "fixed", inset: 0, zIndex: 110, background: "rgba(3,8,20,.72)", pointerEvents: "auto", fontFamily: BODY }}>
+    {slow && <button type="button" data-tour-skip data-tour-wait-skip onClick={e => { e.stopPropagation(); sfxTap(); onEnd(true); }} style={{ ...btnBase, position: "absolute", left: "50%", transform: "translateX(-50%)", bottom: "calc(24px + var(--sab, 0px))", background: C.panelHi, color: C.chalk, border: `1.5px solid ${C.signal}`, padding: "12px 20px", borderRadius: 999, fontSize: 14 }}>{T("tourSkip")}</button>}
+    {slow && <div data-tour-why style={{ position: "absolute", left: 0, right: 0, bottom: "calc(6px + var(--sab, 0px))", textAlign: "center", fontSize: 10, color: "rgba(255,255,255,.45)" }}>{run.ch}.{run.i} {step ? phase.current : "none"}</div>}
+  </div>, document.body);
   const tap = step.tap && el;
   const go = () => { sfxTap(); if (tap) el.click(); else next(); };
   const vw = innerWidth, vh = innerHeight, pad = 6;
@@ -12647,7 +12679,7 @@ function Tour({ run, x, done, onStep, onEnd, onChapterDone, onStart }) {
   const nxt = step.done && run.queue && run.queue.length ? run.queue.find(c => !done.has(c) && c !== run.ch) || null : null;
   const bw = Math.min(vw - 24, 400), bl = hole ? Math.max(12, Math.min(vw - bw - 12, (hole.l + hole.r) / 2 - bw / 2)) : (vw - bw) / 2;
   const arrowX = hole ? Math.max(18, Math.min(bw - 18, (hole.l + hole.r) / 2 - bl)) : null;
-  const bubblePos = !hole ? { top: "50%", transform: "translateY(-50%)" } : hole.open || float ? { bottom: "calc(16px + var(--sab, 0px))" } : below ? { top: hole.b + 14 } : { bottom: vh - hole.t + 14 };
+  const bubblePos = flt ? { bottom: "calc(16px + var(--sab, 0px))" } : !hole ? { top: "50%", transform: "translateY(-50%)" } : hole.open || float ? { bottom: "calc(16px + var(--sab, 0px))" } : below ? { top: hole.b + 14 } : { bottom: vh - hole.t + 14 };
   return createPortal(
     <div data-tour={run.ch} data-tour-step={run.i} data-tour-done={step.done ? 1 : 0} style={{ position: "fixed", inset: 0, zIndex: 110, fontFamily: BODY, pointerEvents: "none" }}>
       {hole ? <>
@@ -12658,8 +12690,8 @@ function Tour({ run, x, done, onStep, onEnd, onChapterDone, onStart }) {
         {!tap && <div onClick={block} data-tour-shield style={{ position: "absolute", left: hole.l, top: hole.t, width: hole.r - hole.l, height: hole.b - hole.t, pointerEvents: "auto" }} />}
         <div aria-hidden="true" className="tourRing" style={{ position: "absolute", left: hole.l, top: hole.t, width: hole.r - hole.l, height: hole.b - hole.t, borderRadius: 16, boxShadow: `0 0 0 2px ${C.signal}, 0 0 22px ${C.signal}88`, pointerEvents: "none" }} />
       </> : <div onClick={block} style={{ position: "absolute", inset: 0, background: dim, pointerEvents: "auto" }} />}
-      <div role="dialog" aria-live="polite" aria-label={title} data-tour-bubble className="tourIn" style={{ pointerEvents: "auto", position: "absolute", left: bl, width: bw, boxSizing: "border-box", ...bubblePos, background: C.panelHi, border: `1.5px solid ${C.signal}`, borderRadius: 18, padding: "14px 16px 12px", color: C.chalk, boxShadow: "0 18px 50px rgba(0,0,0,.55)" }}>
-        {hole && !hole.open && !float && <span aria-hidden="true" style={{ position: "absolute", left: arrowX - 8, [below ? "top" : "bottom"]: -9, width: 16, height: 16, background: C.panelHi, borderLeft: `1.5px solid ${C.signal}`, borderTop: `1.5px solid ${C.signal}`, transform: `rotate(${below ? 45 : 225}deg)` }} />}
+      <div ref={bubRef} role="dialog" aria-live="polite" aria-label={title} data-tour-bubble data-tour-flt={flt ? 1 : undefined} className="tourIn" style={{ pointerEvents: "auto", position: "absolute", left: bl, width: bw, boxSizing: "border-box", ...bubblePos, background: C.panelHi, border: `1.5px solid ${C.signal}`, borderRadius: 18, padding: "14px 16px 12px", color: C.chalk, boxShadow: "0 18px 50px rgba(0,0,0,.55)" }}>
+        {hole && !hole.open && !float && !flt && <span aria-hidden="true" style={{ position: "absolute", left: arrowX - 8, [below ? "top" : "bottom"]: -9, width: 16, height: 16, background: C.panelHi, borderLeft: `1.5px solid ${C.signal}`, borderTop: `1.5px solid ${C.signal}`, transform: `rotate(${below ? 45 : 225}deg)` }} />}
         <div style={{ display: "flex", alignItems: "baseline", gap: 8, fontSize: 11, fontWeight: 800, letterSpacing: 0.8, textTransform: "uppercase", color: C.signal }}>
           <span style={{ flex: 1, minWidth: 0 }}>{title}</span>
           {!step.done && <span data-tour-pos style={{ color: C.dim, flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>{pos} / {nSteps}</span>}

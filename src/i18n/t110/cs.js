@@ -259,6 +259,9 @@ export default {
       secondwind: ["Ještě jedno opakování", "Jednou za ante: když ti dojdou ruce, dostaneš ještě jednu."],
     },
   },
+  news1_10_1: [
+    "Návod: už nemůže zamknout obrazovku. Když se krok zasekne, po pár sekundách se ukáže Přeskočit návod a funguje i tlačítko zpět; bublina, která by byla mimo obrazovku, se přesune dolů.",
+  ],
   news1_10: [
     ["Kamarádi spolu", "Kamarádi a žebříček; společná série počítala jen tréninky a světový žebříček byl zamčený.", "Nová stránka Spolu: pozvi kamaráda svým odkazem (100 💎 pro každého po jeho 3. tréninku), držte duo (tréninky nebo kalorie), společný týdenní cíl, souboj v sériích a šťouchnutí pro kamaráda, který ještě necvičil. Dny počítá server, takže duo nejde nafejkovat. Žebříček je jen tvých kamarádů, zamčený světový zmizel. Nový odznak: Ve dvou se to lépe táhne."],
     ["Knihovna plánů", "Plány viděl jen ten, kdo je vytvořil.", "Ukaž plán na svém profilu: kamarádi si ho otevřou a jedním ťuknutím uloží vlastní kopii (cviky, série, časy výdrže, nikdy tvoje váhy). U kopie je napsáno, od koho je, a tvoje úpravy se přenesou i do plánu na profilu. Nebo ho zveřejni v nové Knihovně: každý tam hledá plány podle názvu, autora či cviku, filtruje podle zaměření a vybavení a vidí hvězdičky a kolik lidí si plán uložilo (hvězdičky dávají jen ti, kdo ho odcvičili)."],

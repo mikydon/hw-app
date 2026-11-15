@@ -259,6 +259,9 @@ export default {
       secondwind: ["Jeszcze jedno powtórzenie", "Raz na ante: gdy skończą ci się ręce, dostajesz jeszcze jedną."],
     },
   },
+  news1_10_1: [
+    "Przewodnik: nie może już zablokować ekranu. Jeśli krok się zatnie, po kilku sekundach pojawi się Pomiń przewodnik i działa też przycisk wstecz; dymek, który byłby poza ekranem, przesuwa się na dół.",
+  ],
   news1_10: [
     ["Znajomi razem", "Znajomi i ranking; wspólna seria liczyła tylko treningi, a światowy ranking był zablokowany.", "Nowa strona Razem: zaproś znajomego swoim linkiem (100 💎 dla każdego po jego 3. treningu), trzymajcie duet (treningi albo kalorie), wspólny cel tygodniowy, pojedynek w seriach i szturchnięcie dla znajomego, który jeszcze nie ćwiczył. Dni liczy serwer, więc duetu nie da się podrobić. Ranking to tylko twoi znajomi, zablokowany światowy zniknął. Nowa odznaka: Razem raźniej."],
     ["Biblioteka planów", "Plan widział tylko ten, kto go stworzył.", "Pokaż plan na swoim profilu: znajomi go otworzą i jednym dotknięciem zapiszą własną kopię (ćwiczenia, serie, czasy utrzymania, nigdy twoje ciężary). Przy kopii widać, od kogo jest, a twoje zmiany trafiają też do planu na profilu. Albo opublikuj go w nowej Bibliotece: każdy szuka tam planów po nazwie, autorze lub ćwiczeniu, filtruje po skupieniu i sprzęcie i widzi gwiazdki oraz ile osób zapisało plan (gwiazdki dają tylko ci, którzy go zrobili)."],

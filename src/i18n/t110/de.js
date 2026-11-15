@@ -259,6 +259,9 @@ export default {
       secondwind: ["Noch eine Wiederholung", "Einmal pro Ante: Wenn dir die Hände ausgehen, bekommst du noch eine."],
     },
   },
+  news1_10_1: [
+    "Anleitung: Sie kann den Bildschirm nicht mehr sperren. Hängt ein Schritt, erscheint nach ein paar Sekunden „Anleitung überspringen“ und auch die Zurück-Taste funktioniert; eine Sprechblase außerhalb des Bildschirms rutscht nach unten.",
+  ],
   news1_10: [
     ["Freunde zusammen", "Freunde und eine Rangliste; eine gemeinsame Serie zählte nur Trainings, und die Weltrangliste war gesperrt.", "Eine neue Seite Zusammen: Lade einen Freund mit deinem Link ein (100 💎 für jeden nach seinem 3. Training), haltet ein Duo (Trainings oder Kalorien), ein gemeinsames Wochenziel, ein Satz-Duell und ein Stups für einen Freund, der noch nicht trainiert hat. Die Tage zählt der Server, ein Duo lässt sich also nicht fälschen. Die Rangliste zeigt nur deine Freunde, die gesperrte Weltrangliste ist weg. Neues Abzeichen: Gemeinsam stärker."],
     ["Planbibliothek", "Einen Plan sah nur, wer ihn erstellt hatte.", "Zeig einen Plan auf deinem Profil: Freunde öffnen ihn und speichern mit einem Tippen ihre eigene Kopie (Übungen, Sätze, Haltezeiten, nie deine Gewichte). Die Kopie zeigt, von wem sie ist, und deine Änderungen kommen auch im Plan auf deinem Profil an. Oder veröffentliche ihn im neuen Bibliothek: Dort sucht jeder nach Name, Autor oder Übung, filtert nach Fokus und Ausrüstung und sieht die Sterne und wie viele ihn gespeichert haben (Sterne nur von Leuten, die ihn trainiert haben)."],

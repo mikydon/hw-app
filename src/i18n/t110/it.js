@@ -259,6 +259,9 @@ export default {
       secondwind: ["Un'altra ripetizione", "Una volta per ante: quando finisci le mani, ne ricevi un'altra."],
     },
   },
+  news1_10_1: [
+    "Guida: non può più bloccare lo schermo. Se un passaggio si blocca, dopo pochi secondi compare Salta la guida e funziona anche il tasto indietro; un fumetto che finirebbe fuori dallo schermo si sposta in basso.",
+  ],
   news1_10: [
     ["Amici insieme", "Amici e una classifica; una serie con un amico contava solo gli allenamenti e la classifica mondiale era bloccata.", "Una nuova pagina Insieme: invita un amico con il tuo link (100 💎 a testa dopo il suo 3° allenamento), tenete un duo (allenamenti o calorie), un obiettivo settimanale di tutti e due, un duello di serie e una spinta per l'amico che non si è ancora allenato. I giorni li conta il server, quindi un duo non si può falsare. La classifica è solo dei tuoi amici; quella mondiale bloccata non c'è più. Nuovo badge: Meglio in due."],
     ["Libreria delle schede", "Una scheda la vedeva solo chi l'aveva creata.", "Mostra una scheda sul tuo profilo: gli amici la aprono e con un tocco salvano la loro copia (esercizi, serie, tempi di tenuta, mai i tuoi pesi). La copia dice di chi è, e le tue modifiche arrivano anche alla scheda sul profilo. Oppure pubblicala nel nuova Libreria: lì chiunque cerca per nome, autore o esercizio, filtra per focus e attrezzatura e vede le stelle e quante persone l'hanno salvata (votano solo quelli che l'hanno fatta)."],
