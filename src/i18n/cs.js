@@ -681,7 +681,6 @@ const L = {
     gmRun: "Run",
     gmRunD: "8 ante. Offline. Dává herní XP.",
     gmRanked: "Ranked",
-    gmRankedD: "3 ante proti jinému hráči se stejnými kartami. Rating {r}.",
     gmRankedSign: "Na ranked se přihlas (Přátelé).",
     gmDeck: "Tvůj balíček",
     gmDeckD: "Každá karta dá svou hodnotu a navíc 2 žetony za každou úroveň ranku tvého nejlepšího cviku jejího typu. Trénuj a bude silnější.",

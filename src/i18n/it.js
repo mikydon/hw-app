@@ -681,7 +681,6 @@ const L = {
     gmRun: "Run",
     gmRunD: "8 ante. Offline. Dà XP di gioco.",
     gmRanked: "Classificata",
-    gmRankedD: "3 ante contro un altro giocatore con le stesse carte. Punteggio {r}.",
     gmRankedSign: "Accedi (Amici) per giocare in classificata.",
     gmDeck: "Il tuo mazzo",
     gmDeckD: "Ogni carta vale il suo valore più 2 fiches per ogni livello di grado del tuo miglior esercizio del suo tipo. Allenati e sarà più forte.",

@@ -23,7 +23,23 @@ const go = async p => { await p.click("[data-menu-btn]"); await p.waitForTimeout
   T.ok(await p.locator("[data-gm-rk-go]").isDisabled(), "Start waits for a workout today");
   T.ok((await p.textContent("[data-gm-rk-left]")).includes("Train today"), "and says so");
   await p.waitForTimeout(700); await shot(p, "ranked_sheet");
+  T.eq(await p.locator("[data-gm-rk-sheet] [data-rk-how]").count(), 4, "the sheet lists the 4 Ranked rules");
   T.eq(h.errors, [], "no page errors (no workout)");
+  await h.close();
+}
+// ─── How to play explains Ranked too (Michael, Nov 15: the guides must not miss it), in a long language ───
+for (const lang of ["en", "de", "hu"]) {
+  const h = await start({ clock: now.getTime(), viewport: { width: 360, height: 760 }, seed: { settings: { lang }, profile: { name: "Michael", game: { tut: 1 } } } });
+  const p = h.page;
+  await go(p);
+  await p.click("[data-gm-rules]"); await p.waitForSelector("[data-gm-guide-sect=\"5\"]");
+  T.eq(await p.locator("[data-gm-guide-ranked] [data-rk-how]").count(), 4, lang + ": How to play has a Ranked section with the 4 rules");
+  const txt = await p.textContent("[data-gm-rules-text]");
+  T.ok(!/Duel|Duell|Párbaj|coming soon|bald\)|hamarosan/.test(txt), lang + ": no Duel or 'coming soon' in How to play");
+  const over = await p.evaluate(() => [...document.querySelectorAll("[data-gm-guide-sect=\"5\"] *")].filter(e => e.scrollWidth > e.clientWidth + 1 && getComputedStyle(e).overflow !== "visible").length);
+  T.eq(over, 0, lang + ": nothing cut off at 360 px");
+  await p.locator("[data-gm-guide-sect=\"5\"]").scrollIntoViewIfNeeded(); await p.waitForTimeout(400); await shot(p, "ranked_howto_" + lang);
+  T.eq(h.errors, [], lang + ": no page errors (How to play)");
   await h.close();
 }
 // ─── trained today: start, then leave (a loss) ───

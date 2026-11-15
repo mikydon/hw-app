@@ -681,7 +681,6 @@ const L = {
     gmRun: "Run",
     gmRunD: "8 Antes. Offline. Bringt Spiel-XP.",
     gmRanked: "Ranked",
-    gmRankedD: "3 Antes gegen andere Spieler mit denselben Karten. Wertung {r}.",
     gmRankedSign: "Melde dich an (Freunde), um Ranked zu spielen.",
     gmDeck: "Dein Deck",
     gmDeckD: "Jede Karte zählt ihren Wert plus 2 Chips für jede Rangstufe deiner besten Übung ihres Typs. Trainiere, dann wird es stärker.",

@@ -681,7 +681,6 @@ const L = {
     gmRun: "Run",
     gmRunD: "8 antes. Hors ligne. Rapporte de l'XP de jeu.",
     gmRanked: "Classé",
-    gmRankedD: "3 antes contre un autre joueur avec les mêmes cartes. Classement {r}.",
     gmRankedSign: "Connecte-toi (Amis) pour jouer en classé.",
     gmDeck: "Ton paquet",
     gmDeckD: "Chaque carte rapporte sa valeur plus 2 jetons par niveau de rang de ton meilleur exercice de son type. Entraîne-toi pour le renforcer.",

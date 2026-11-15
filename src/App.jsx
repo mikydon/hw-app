@@ -11709,11 +11709,7 @@ function RankedSheet({ r, left, trained, w, l, d, onClose, onGo }) {
             {next && <div style={{ fontSize: 12, color: C.dim, marginTop: 3 }}>{T("gmRkNext", { rank: RANKS[tier + 1].name, n: next - r })}</div>}
           </div>
         </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          {[["cards", T("gmRkHow1")], ["duo", T("gmRkHow2")], ["dumbbell", T("gmRkHow3")], ["flag", T("gmRkHow4")]].map(([ic, t]) => (
-            <div key={ic} style={{ display: "flex", alignItems: "flex-start", gap: 10, fontSize: 14, color: C.chalk, lineHeight: 1.45 }}><span style={{ marginTop: 1, flexShrink: 0 }}><Ico n={ic} size={18} color={C.signal} /></span><span>{t}</span></div>
-          ))}
-        </div>
+        <RkHow />
         <div data-gm-rk-left={left} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, fontWeight: 800, color: can ? C.chalk : C.dim }}>
           <Ico n="ticket" size={18} color={can ? C.signal : C.dim} />{!trained ? T("gmRkNeedTrain") : left > 0 ? T("gmRkLeft", { n: left }) : T("gmRkNoTickets")}
         </div>
@@ -11765,6 +11761,16 @@ function PerkSheet({ lo, mode, stakeMax = 0, onClose, onGo }) {
 // 1.8.0 (Michael, Oct 25: "from the text I understood absolutely nothing"): How to play with pictures: the cards and
 // what training adds, every hand with an example (the cards that score are lit), a worked score, and a Run.
 const GM_EX = { high: [11, 20, 30, 28, 0], pair: [11, 24, 7, 30, 27], two: [6, 32, 15, 2, 38], circuit: [10, 18, 29, 39], three: [5, 18, 31, 11, 13], straight: [29, 4, 18, 45, 7], flush: [39, 43, 46, 48, 50], full: [7, 20, 33, 2, 15], four: [10, 23, 36, 49, 1], sflush: [30, 31, 32, 33, 34] };
+// The four Ranked rules (Ranked sheet + How to play)
+function RkHow() {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      {[["cards", T("gmRkHow1")], ["duo", T("gmRkHow2")], ["dumbbell", T("gmRkHow3")], ["flag", T("gmRkHow4")]].map(([ic, t]) => (
+        <div key={ic} data-rk-how={ic} style={{ display: "flex", alignItems: "flex-start", gap: 10, fontSize: 14, color: C.chalk, lineHeight: 1.45 }}><span style={{ marginTop: 1, flexShrink: 0 }}><Ico n={ic} size={18} color={C.signal} /></span><span>{t}</span></div>
+      ))}
+    </div>
+  );
+}
 function GuideSect({ n, title, children }) {
   return (
     <section data-gm-guide-sect={n} style={{ ...card, ...tileR(), padding: "14px 14px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
@@ -11828,6 +11834,11 @@ function GameRules({ onClose, lo, onTutorial }) {
           <p style={gP()}>{withK(T("gmG4Shop"))}</p>
           <p style={{ ...gP(), color: C.dim, fontSize: 13 }}>{T("gmG4Run")}</p>
         </GuideSect>
+        {/* 1.10.0 (Michael, Nov 15): How to play explains Ranked too, with the same lines as the Ranked sheet */}
+        {RANKED_ON && <GuideSect n={5} title={T("gmRanked")}>
+          <div data-gm-guide-ranked><RkHow /></div>
+          <p style={{ ...gP(), color: C.dim, fontSize: 13 }}>{T("gmRankedSign")}</p>
+        </GuideSect>}
       </div>
     </Sheet>
   );

@@ -681,7 +681,6 @@ const L = {
     gmRun: "Run",
     gmRunD: "8 antes. Sin conexión. Da XP de juego.",
     gmRanked: "Clasificatoria",
-    gmRankedD: "3 antes contra otro jugador con las mismas cartas. Puntuación {r}.",
     gmRankedSign: "Inicia sesión (Amigos) para jugar clasificatoria.",
     gmDeck: "Tu baraja",
     gmDeckD: "Cada carta puntúa su valor más 2 fichas por cada nivel de rango de tu mejor ejercicio de su tipo. Entrena y será más fuerte.",

@@ -681,7 +681,6 @@ const L = {
     gmRun: "Run",
     gmRunD: "8 antes. Offline. Dá XP de jogo.",
     gmRanked: "Ranqueado",
-    gmRankedD: "3 antes contra outro jogador com as mesmas cartas. Pontuação {r}.",
     gmRankedSign: "Entre na conta (Amigos) para jogar ranqueado.",
     gmDeck: "Seu baralho",
     gmDeckD: "Cada carta vale seu valor mais 2 fichas por nível do seu melhor exercício do mesmo tipo. Treine e ele fica mais forte.",

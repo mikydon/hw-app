@@ -681,7 +681,6 @@ const L = {
     gmRun: "Run",
     gmRunD: "8 ante. Offline. Memberi XP game.",
     gmRanked: "Peringkat",
-    gmRankedD: "3 ante melawan pemain lain dengan kartu yang sama. Rating {r}.",
     gmRankedSign: "Masuk (Teman) untuk main peringkat.",
     gmDeck: "Dek kamu",
     gmDeckD: "Setiap kartu bernilai angkanya ditambah 2 chip untuk setiap tingkat peringkat latihan terbaikmu dari jenis itu. Latihan, maka dek makin kuat.",

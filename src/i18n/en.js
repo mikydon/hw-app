@@ -993,7 +993,6 @@ const en = {
     gmRun: "Run",
     gmRunD: "8 antes. Offline. Earns game XP.",
     gmRanked: "Ranked",
-    gmRankedD: "3 antes against another player on the same cards. Rating {r}.",
     gmRankedSign: "Sign in (Friends) to play ranked.",
     gmDeck: "Your deck",
     gmDeckD: "Each card scores its value plus 2 chips for every rank level of your best exercise of its type. Train to make it stronger.",

@@ -681,7 +681,6 @@ const L = {
     gmRun: "Run",
     gmRunD: "8 ánte. Offline. Dáva herné XP.",
     gmRanked: "Ranked",
-    gmRankedD: "3 ante proti inému hráčovi s rovnakými kartami. Rating {r}.",
     gmRankedSign: "Na ranked sa prihlás (Priatelia).",
     gmDeck: "Tvoj balíček",
     gmDeckD: "Každá karta dá svoju hodnotu a navyše 2 čipy za každú úroveň ranku tvojho najlepšieho cviku jej typu. Trénuj a bude silnejší.",

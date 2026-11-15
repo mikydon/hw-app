@@ -681,7 +681,6 @@ const L = {
     gmRun: "Run",
     gmRunD: "8 ante. Offline. Daje XP gry.",
     gmRanked: "Rankingowa",
-    gmRankedD: "3 ante przeciw innemu graczowi na tych samych kartach. Ranking {r}.",
     gmRankedSign: "Zaloguj się (Znajomi), aby grać rankingowo.",
     gmDeck: "Twoja talia",
     gmDeckD: "Każda karta daje swoją wartość i 2 żetony za każdy poziom rangi twojego najlepszego ćwiczenia jej typu. Trenuj, a będzie silniejsza.",

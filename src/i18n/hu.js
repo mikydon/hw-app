@@ -681,7 +681,6 @@ const L = {
     gmRun: "Run",
     gmRunD: "8 ante. Offline. Játék-XP-t ad.",
     gmRanked: "Rangsorolt",
-    gmRankedD: "3 ante egy másik játékos ellen ugyanazokkal a lapokkal. Pontszám: {r}.",
     gmRankedSign: "A rangsorolt játékhoz jelentkezz be (Barátok).",
     gmDeck: "A paklid",
     gmDeckD: "Minden lap az értékét adja, plusz 2 zsetont a típusa legjobb gyakorlatában elért rangod minden szintjéért. Edzz, és erősebb lesz.",
