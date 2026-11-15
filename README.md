@@ -21,9 +21,9 @@
 <p align="center">
   <img src="docs/screens/home.png" width="16%" alt="Home: your week and today's workout">
   <img src="docs/screens/workout.png" width="16%" alt="A workout: last time and a +1 goal">
+  <img src="docs/screens/library.png" width="16%" alt="Library: plans from other people and from HW App">
   <img src="docs/screens/profile.png" width="16%" alt="Profile: body ranks">
-  <img src="docs/screens/history.png" width="16%" alt="History: a calendar of your workouts">
-  <img src="docs/screens/shop.png" width="16%" alt="Shop: profile looks for diamonds you earn">
+  <img src="docs/screens/together.png" width="16%" alt="Together: streaks you keep with a friend">
   <img src="docs/screens/deck.png" width="16%" alt="Muscle Deck: the card game">
 </p>
 
@@ -33,19 +33,20 @@
 
 | | What you get |
 |---|---|
-| 🗓️ **Plans** | A ready plan (days A, B, C every other day: push, pull, legs, core, ~19 min) or your own workouts, set to the days of your week. |
+| 🗓️ **Plans** | A ready plan (days A, B, C every other day: push, pull, legs, core, ~19 min), "Only 5 minutes" on a busy day, or your own workouts, set to the days of your week. |
+| 📚 **Library** | Plans from other people and from HW App: search, filter, try one before you save it, give stars to plans you trained, share your own or send one as a link. |
 | 💪 **134 exercises** | Bodyweight, dumbbells, kettlebells, bands, a pull-up bar, gym machines and cables, in body-part groups with a search that knows other names too. |
 | 📈 **Beat last time** | Every set starts at last time's number with a **+1 goal**. Weights log kg × reps and tell you when to go heavier. |
 | ⏱️ **Rest that waits** | +15 / +30 / +60 s, counts on after 0 and saves your real rest. In the app it runs on the lock screen and beeps with the screen off. |
-| 🏆 **Ranks and badges** | Every exercise ranks from Iron to Obsidian, 9 body parts get ranks on a drawing of your body, 49 badges (some secret 🤫). |
-| 🔥 **Streaks** | Train every other day to keep the streak; freezes save it when life happens. |
-| 📅 **History** | A month calendar of your workouts, every set you did, and a progress chart for each exercise. |
+| 🏆 **Ranks and badges** | Every exercise ranks from Iron to Obsidian, 9 body parts get ranks on a drawing of your body, 50 badges (some secret 🤫), each one shareable as a picture. |
+| 🔥 **Streaks** | Train every other day to keep the streak; freezes save it when life happens, and an evening reminder comes before it would end. |
+| 📅 **History** | A month calendar of your workouts, every set you did, a progress chart for each exercise, a weekly recap and your year in numbers. |
 | 📊 **Stats** | 12 weeks day by day, weekly charts, your best weekdays, calories at a glance. |
 | 🍎 **Calories** | Daily target (Mifflin-St Jeor) with your workouts added, a food log and Health Connect (steps, weight, food). |
-| 👥 **Friends** | An optional account: friends, messages, friend streaks, a leaderboard and a profile they can open, with your last workout. |
-| 🃏 **Muscle Deck** | A card game powered by your training: higher ranks, stronger cards. 80 jokers, bosses, vouchers, drills, a shop and a practice game. |
-| 💎 **Shop** | Diamonds you earn by training: streak freezes, XP boosts and 91 profile looks (frames, banners, titles, name effects, animated effects). |
-| 🎨 **Yours** | 8 dark themes (pure black by default), 6 main colours, 6 card styles, 15 languages and a guide that shows you around. |
+| 👥 **Friends** | An optional account: friends, messages, a friends leaderboard and a profile they can open. **Together**: keep a workout or calorie streak with a friend, a weekly goal and a nudge; invite a friend and you both get 100 💎. |
+| 🃏 **Muscle Deck** | A card game powered by your training: higher ranks, stronger cards. 80 jokers, bosses, vouchers, drills, a shop and a practice game. **Ranked**: the same deal and the same deck as a real player, a rating and a rank from Iron to Obsidian. |
+| 💎 **Shop** | Diamonds you earn by training: streak freezes, XP boosts, 91 profile looks (frames, banners, titles, name effects, animated effects) and 8 card styles. |
+| 🎨 **Yours** | 8 dark themes (pure black by default), a light theme and an automatic one, 6 main colours, 15 languages and a guide that shows you around. |
 
 ## 📲 Get the app (Android 8.0+)
 
@@ -76,14 +77,15 @@ Open **[mikydon.github.io/hw-app](https://mikydon.github.io/hw-app/)** and add i
 
 - the rest timer on the lock screen, with a beep and vibration while the screen is off
 - Health Connect (steps, weight, height, food from other apps)
-- notifications for messages, friend requests and new versions
+- notifications for messages, friend requests and new versions, and an evening streak reminder
+- a bigger text size
 - backups saved in a folder on your phone, also automatically
 - 120 Hz, the same text size for everyone, vibration that works with touch feedback off
 </details>
 
 ## 🔒 Privacy
 
-Without an account, everything stays on your device. An account (optional, 16+) adds friends, messages, a profile page (you choose who sees it) and a cloud backup on Google Firebase, with restore points. Health Connect data never leaves your phone. The lock-screen rest timer asks for *Physical activity* only because Android requires it for that kind of timer; the app reads no activity data with it. Full policy: [privacy.html](https://mikydon.github.io/hw-app/privacy.html) · [delete your account](https://mikydon.github.io/hw-app/delete-account.html).
+Without an account, everything stays on your device. An account (optional, 16+) adds friends, messages, a profile page (you choose who sees it), plans you choose to share or publish in the Library, Ranked games and a cloud backup on Google Firebase, with restore points. Health Connect data never leaves your phone. The lock-screen rest timer asks for *Physical activity* only because Android requires it for that kind of timer; the app reads no activity data with it. Full policy: [privacy.html](https://mikydon.github.io/hw-app/privacy.html) · [delete your account](https://mikydon.github.io/hw-app/delete-account.html).
 
 ## 🌍 Languages
 
