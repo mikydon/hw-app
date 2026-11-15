@@ -28,8 +28,10 @@ const intro = async p => {
   const p = h.page;
   await openCh10(p);
   await intro(p);
-  await p.click("[data-tour-next]");
-  T.ok((await bubble(p)).includes("No week set"), "no plans: straight to the last bubble");
+  await p.click("[data-tour-next]"); await p.waitForTimeout(700);
+  { const bt = await bubble(p); T.ok(bt.includes("The Library"), "no plans: the editor steps are skipped, then the Library (1.10.0): " + bt); }
+  await p.click("[data-tour-next]"); await p.waitForTimeout(700);
+  { const bt = await bubble(p); T.ok(bt.includes("No week set"), "then the last bubble: " + bt); }
   T.eq(await p.locator("[data-plan-card]").count(), 0, "the guide made no plan");
   await p.click("[data-tour-next]"); await p.waitForTimeout(600);
   const done = await p.evaluate(() => JSON.parse(localStorage.getItem("domaci-trening-v1-profile")).tourDone);
@@ -47,8 +49,10 @@ const plans = { v: 2, list: [plan], groups: [], seq: 1, del: {}, week: { 1: "pA"
   const before = await p.evaluate(() => JSON.stringify(JSON.parse(localStorage.getItem("domaci-trening-v1-profile")).plans.list));
   await openCh10(p);
   await intro(p);
-  await p.click("[data-tour-next]");
-  T.ok((await bubble(p)).includes("Tap a plan to open it"), "step 6: tap a plan");
+  await p.click("[data-tour-next]"); await p.waitForTimeout(500);
+  { const bt = await bubble(p); T.ok(bt.includes("Search your plans here"), "1.10.0: the filter bubble: " + bt); }
+  await p.click("[data-tour-next]"); await p.waitForTimeout(500);
+  { const bt = await bubble(p); T.ok(bt.includes("Tap a plan to open it"), "step 6: tap a plan: " + bt); }
   await p.click('[data-plan-card="pA"]', { force: true });
   T.ok((await bubble(p)).includes("Days in my week: tap the days you train this plan; they light up"), "step 7: days in my week");
   T.ok(await p.locator("[data-plan-editor]").count() === 1, "the editor is open");
@@ -58,7 +62,11 @@ const plans = { v: 2, list: [plan], groups: [], seq: 1, del: {}, week: { 1: "pA"
   await p.click("[data-tour-next]");
   T.ok((await bubble(p)).includes("The bulb gives tips"), "step 9: tips");
   await shot(p, "tour10_tips");
-  await p.click("[data-tour-next]");
+  await p.click("[data-tour-next]"); await p.waitForTimeout(500);
+  T.ok((await bubble(p)).includes("show the plan on your profile"), "1.10.0: share / publish");
+  await p.click("[data-tour-next]"); await p.waitForTimeout(800);
+  T.ok((await bubble(p)).includes("The Library"), "1.10.0: the Library");
+  await p.click("[data-tour-next]"); await p.waitForTimeout(700);
   T.ok((await bubble(p)).includes("No week set"), "last bubble");
   await p.click("[data-tour-next]"); await p.waitForTimeout(600);
   const after = await p.evaluate(() => JSON.stringify(JSON.parse(localStorage.getItem("domaci-trening-v1-profile")).plans.list.map(x => ({ ...x }))));
@@ -73,7 +81,8 @@ const plans = { v: 2, list: [plan], groups: [], seq: 1, del: {}, week: { 1: "pA"
   const p = h.page;
   await p.waitForTimeout(800);
   const ui = await p.evaluate(() => JSON.parse(localStorage.getItem("domaci-trening-v1-ui")));
-  T.ok(ui.tourPl3 === 1 && Array.isArray(ui.tourAuto) && !ui.tourAuto.includes(10) && ui.tourAuto.includes(4), "chapter 10 marked to show again, the others not");
+  // (1.10.0 marks 4, 5, 7, 9 and 10 to show again too: tour110_test; 2, 6 and 8 stay seen)
+  T.ok(ui.tourPl3 === 1 && Array.isArray(ui.tourAuto) && !ui.tourAuto.includes(10) && ui.tourAuto.includes(6), "chapter 10 marked to show again, unchanged ones not");
   await p.click("[data-menu-btn]"); await p.click('[data-nav-box] [data-screen="plans"]');
   T.ok((await bubble(p)).includes("Tap Recommended"), "visiting Plans starts the new chapter 10");
   await p.click("[data-tour-skip], [data-tour-bubble] button >> text=Skip the guide").catch(() => {});
