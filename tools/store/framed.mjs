@@ -47,6 +47,8 @@ p{margin-top:18px;font:600 38px/1.2 Fig,'Noto Sans','Noto Sans CJK SC',sans-seri
 <div class="scr"><img src="${img(S + "shots/" + l + "/" + SHOTS[i] + ".png")}"></div></html>`;
 // a piece of a screenshot as a card: [file, top, height] in screenshot pixels (1080 wide)
 const crop = (l, file, top, h, w, style) => `<div class="card" style="width:${w}px;height:${Math.round(h * w / 1000)}px;${style}"><img src="${img(S + "shots/" + l + "/" + file + ".png")}" style="width:${Math.round(1080 * w / 1000)}px;margin-left:-${Math.round(40 * w / 1000)}px;margin-top:-${Math.round(top * w / 1000)}px"></div>`;
+// a whole box of a screenshot as a card (1.10.0, Michael Nov 15: no cut-off pieces): [x, y, w, h] in screenshot px, shown w px wide
+const box = (l, file, [x, y, bw, bh], w, style) => { const k = w / bw; return `<div class="card" style="width:${w}px;height:${Math.round(bh * k)}px;${style}"><img src="${img(S + "shots/" + l + "/" + file + ".png")}" style="width:${Math.round(1080 * k)}px;margin-left:-${Math.round(x * k)}px;margin-top:-${Math.round(y * k)}px"></div>`; };
 const featurePage = l => `<!doctype html><html lang="${l}"><meta charset="utf-8"><style>${fonts}
 *{box-sizing:border-box;margin:0}body{width:1024px;height:500px;overflow:hidden;position:relative;background:linear-gradient(135deg,#ffdc5c 0%,#ffd23f 45%,#ffb62e 100%);font-family:Fig,sans-serif}
 .left{position:absolute;left:84px;top:0;bottom:0;width:480px;display:flex;flex-direction:column;justify-content:center}
@@ -56,9 +58,8 @@ h1{font:900 82px/0.94 BSD,Osw,'Noto Sans CJK SC',sans-serif;text-transform:upper
 p{margin-top:16px;font:700 23px/1.3 Fig,'Noto Sans',sans-serif;color:#3d3212}
 .card{position:absolute;border-radius:26px;overflow:hidden;background:#000;box-shadow:0 0 0 2px #1b1b1b,0 22px 50px #5a3d0066}.card img{display:block}
 </style><div class="left"><div class="brand">${mark}<div class="name">HW APP</div></div><h1>${CAPS[l][8][0]}</h1><p>${CAPS[l][8][1]}</p></div>
-${crop(l, "05_profile", 120, 700, 300, "left:690px;top:-40px;transform:rotate(7deg)")}
-${crop(l, "03_summary", 640, 560, 300, "left:560px;top:250px;transform:rotate(-5deg)")}
-${crop(l, "01_home", 225, 545, 330, "left:640px;top:96px;transform:rotate(-2deg)")}
+${box(l, "05_profile", [47, 249, 986, 735], 380, "left:604px;top:34px;transform:rotate(2deg)")}
+${box(l, "01_home", [47, 249, 986, 515], 400, "left:548px;top:250px;transform:rotate(-2deg)")}
 </html>`;
 const b = await chromium.launch();
 for (const l of LANGS) {
