@@ -307,7 +307,8 @@ export async function planRate({ uid, pid, r, sa, fetchFn = fetch, now = Date.no
   if (!u) return { why: "not-saved" };
   const data = await backupOf(uid, tok, fetchFn);
   const real = v => (typeof v === "number" ? v : parseInt(v, 10)) > 0;
-  const did = data && data.history.some(e => e && !e.manual && e.plan && e.plan.id === u.copy && Array.isArray(e.items) && e.items.some(it => Array.isArray(it.res) && it.res.some(real)));
+  // 1.10.0: a workout of the saved copy, or a trial workout of this plan (Try it in the Library), lets you rate
+  const did = data && data.history.some(e => e && !e.manual && e.plan && (e.plan.id === u.copy || e.plan.t === pid) && Array.isArray(e.items) && e.items.some(it => Array.isArray(it.res) && it.res.some(real)));
   if (!did) return { why: "not-trained" };
   const old = Number.isInteger(u.r) ? u.r : 0;
   await patchDoc(`pub/${pid}/u/${uid}`, { r }, tok, fetchFn, ["r"]);

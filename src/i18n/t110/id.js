@@ -1,6 +1,10 @@
 // Indonesian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    plTry: "Coba",
+    plTryD: "Coba = satu latihan dari rencana ini, sebagai percobaan. Suka? Simpan setelahnya.",
+    plTryBusy: "Selesaikan dulu latihan yang sedang berjalan.",
+    plTryLiked: "Suka? Simpan ke rencanamu.",
     frNickRude: "Nama itu tidak diizinkan di sini. Coba yang lain.",
     plNameBad: "Ganti dulu nama rencananya: nama ini tidak bisa ditampilkan ke orang lain.",
     emClear: "Hapus pencarian dan filter",
@@ -45,7 +49,7 @@ export default {
     plStoreSaves: "Disimpan",
     plRateT: "Bintangmu",
     plRateAfter: "Lakukan latihan dari salinanmu, lalu kamu bisa menilainya.",
-    tourPlStore: "Pustaka: rencana yang diterbitkan orang lain. Cari berdasarkan nama, pembuat, atau latihan, tombol filter mengatur fokus, peralatan, dan urutan, lalu simpan dengan sekali ketuk.",
+    tourPlStore: "Pustaka: rencana yang diterbitkan orang lain. Cari berdasarkan nama, pembuat, atau latihan, tombol filter mengatur fokus, peralatan, dan urutan, lalu simpan dengan sekali ketuk. Ragu? Coba dulu: satu latihan, tidak ada yang disimpan.",
     sumShare: "Bagikan",
     shareStreak: "Streak",
     shareFoot: "Latihan di rumah · gratis di Google Play",

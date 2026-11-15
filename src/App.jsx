@@ -1338,7 +1338,8 @@ function ExQ({ id, onOpen, style }) {
 let openInfoGlobal = null;
 // 1.10.0 plan library: saves a plan someone shared as your own copy (set by App); returns the new plan
 let copyPlanGlobal = null;
-let goPlanGlobal = null; // 1.10.0: open My plans and flash one plan (after saving a copy)
+let goPlanGlobal = null;
+let tryPlanGlobal = null; // 1.10.0 (idea 7): a trial workout of someone's plan, nothing saved to My plans // 1.10.0: open My plans and flash one plan (after saving a copy)
 function InfoQ({ title, text, id, style }) {
   const go = e => { e.stopPropagation(); e.preventDefault(); sfxTap(); if (openInfoGlobal) openInfoGlobal({ title, text }); };
   return (
@@ -1730,7 +1731,7 @@ function newCounts(history, dates, done, best) {
   const br = bodyRanks({ rk }), fams = PLN.FAMILIES.map(f => br.fam[f].r);
   const top = ids => Math.max(0, ...ids.map(id => best(id) || 0));
   return {
-    variety: done.size, sets, kg: Math.round(kg), plans: history.filter(e => e.plan && e.plan.id).length,
+    variety: done.size, sets, kg: Math.round(kg), plans: history.filter(e => e.plan && e.plan.id && !e.plan.t).length, // 1.10.0: a trial of someone else's plan is not one of mine
     squat: top(SQUAT_IDS), pull: top(PULL_IDS),
     allBody: fams.every(r => r !== null) ? 1 : 0, bodyGold: fams.every(r => r !== null && r >= 3) ? 1 : 0,
     ton, bigDay, notes,
@@ -2472,6 +2473,8 @@ const ICONS = {
   flag: '<path d="M5.5 21V4M5.5 4.5h11l-2.2 4 2.2 4h-11"/>',
   flameOff: '<path d="M12 21c-4 0-6.5-2.7-6.5-6.3 0-3.2 2.2-5.4 3.6-7.6.6 1.6 1.4 2.6 2.5 3.1C12 7 13 4.7 14.6 3c.6 2.9 3.9 5.6 3.9 10.2 0 4.4-2.6 7.8-6.5 7.8z"/><path d="M12 21c-1.8 0-3-1.2-3-3 0-1.6 1.2-2.6 2-3.8.6 1.2 1.6 1.7 2.3 1.2.6 1 .7 1.7.7 2.6 0 1.8-.9 3-2 3z"/><path d="M3.5 3.5l17 17"/>',
   plus: '<path d="M12 5v14M5 12h14"/>',
+  play: '<path d="M8 5.5v13l10.5-6.5z"/>', // 1.10.0 Try a plan
+  bookmark: '<path d="M6.5 4h11v16l-5.5-4-5.5 4z"/>',
   love: '<path d="M12 20s-7.5-4.6-7.5-10A4.3 4.3 0 0 1 12 7.3 4.3 4.3 0 0 1 19.5 10C19.5 15.4 12 20 12 20z"/>',
   checklist: '<path d="M4 6.5l1.6 1.6L8.5 5M4 12.5l1.6 1.6 2.9-3.1M4 18.5l1.6 1.6 2.9-3.1"/><path d="M11.5 7h8.5M11.5 13h8.5M11.5 19h8.5"/>',
   luggage: '<rect x="5.5" y="7" width="13" height="12.5" rx="2.5"/><path d="M9.5 7V4.8a1.3 1.3 0 0 1 1.3-1.3h2.4a1.3 1.3 0 0 1 1.3 1.3V7M9.5 10.5v5.5M14.5 10.5v5.5M8.5 19.5v1M15.5 19.5v1"/>',
@@ -6833,7 +6836,8 @@ function PlanPeek({ plan, by, uid, onClose, store, P, history, onStore }) {
   const [saved, setSaved] = useState(null), [rep, setRep] = useState(false), [repDone, setRepDone] = useState(false);
   const pid = store && store.pid, myUid = cloudMem().uid;
   const copy = pid && P ? P.list.find(x => x.from === pid) : null;
-  const trained = !!copy && (history || []).some(e => !e.manual && e.plan && e.plan.id === copy.id && hasRealSet(e.items));
+  const trained = !!copy && (history || []).some(e => !e.manual && e.plan && (e.plan.id === copy.id || (pid && e.plan.t === pid)) && hasRealSet(e.items));
+  const [tryMsg, setTryMsg] = useState("");
   const [vote, setVote] = useState(null), [rateMsg, setRateMsg] = useState("");
   useEffect(() => { if (pid && copy) cloud().pubVote(pid).then(v => setVote(v && v.r ? v.r : 0)).catch(() => {}); }, [pid]);
   const rate = r => { sfxTap(); setVote(r); setRateMsg(""); cloud().pubRate(pid, r).then(x => { if (x && x.why === "ok") { sfxCheck(); onStore && onStore({ avg: x.avg, sn: x.sn }); } else setRateMsg(T(x && x.why === "not-trained" ? "plRateAfter" : "frErr")); }).catch(() => setRateMsg(T("frErr"))); };
@@ -6868,9 +6872,12 @@ function PlanPeek({ plan, by, uid, onClose, store, P, history, onStore }) {
         {uid && !own && (saved || copy ? (
           <div data-plan-saved role="status" style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 14, padding: "12px 14px", borderRadius: 14, background: `${C.mint}1f`, color: C.mint, fontSize: 14, fontWeight: 700 }}><Ico n="tick" size={18} />{T("plSavedCopy")}</div>
         ) : (
-          <button type="button" data-plan-copy onClick={() => { const pl = copyPlanGlobal && copyPlanGlobal(plan, by, pid); if (!pl) return; setSaved(pl.id); if (goPlanGlobal) setTimeout(() => { onClose(); goPlanGlobal(pl.id); }, 650); if (pid) cloud().pubSaved(pid, pl.id).then(x => { if (x && x.why === "ok" && onStore) onStore({ sv: x.sv }); }).catch(() => {}); }} style={{ ...btnBase, width: "100%", marginTop: 14, padding: "14px", borderRadius: 14, background: C.signal, color: C.signalInk, fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}><Ico n="plus" size={18} />{T("plCopy")}</button>
+<div style={{ display: "flex", gap: 8, marginTop: 14 }}>
+            {tryPlanGlobal && <button type="button" data-plan-try onClick={() => { sfxTap(); if (tryPlanGlobal(plan, by, pid)) onClose(); else setTryMsg(T("plTryBusy")); }} style={{ ...btnBase, flex: "0 0 auto", padding: "14px 16px", borderRadius: 14, ...SUNK(), color: C.chalk, fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}><Ico n="play" size={17} color={C.signal} />{T("plTry")}</button>}
+                      <button type="button" data-plan-copy onClick={() => { const pl = copyPlanGlobal && copyPlanGlobal(plan, by, pid); if (!pl) return; setSaved(pl.id); if (goPlanGlobal) setTimeout(() => { onClose(); goPlanGlobal(pl.id); }, 650); if (pid) cloud().pubSaved(pid, pl.id).then(x => { if (x && x.why === "ok" && onStore) onStore({ sv: x.sv }); }).catch(() => {}); }} style={{ ...btnBase, flex: 1, minWidth: 0, padding: "14px", borderRadius: 14, background: C.signal, color: C.signalInk, fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}><Ico n="plus" size={18} />{T("plCopy")}</button>
+          </div>
         ))}
-        {uid && !own && !copy && <div style={{ fontSize: 12, color: C.dim, textAlign: "center", lineHeight: 1.45, marginTop: 8 }}>{T("plCopyD")}</div>}
+        {uid && !own && !copy && <div data-plan-try-d style={{ fontSize: 12, color: tryMsg ? "#ff8a80" : C.dim, textAlign: "center", lineHeight: 1.45, marginTop: 8 }}>{tryMsg || (tryPlanGlobal ? T("plTryD") : T("plCopyD"))}</div>}
         {uid && !own && !official && (repDone ? <div role="status" style={{ fontSize: 12, color: C.dim, textAlign: "center", marginTop: 12 }}>{T("frReported")}</div>
           : <button type="button" data-plan-report onClick={() => { sfxTap(); setRep(true); }} style={{ ...btnBase, display: "flex", alignItems: "center", gap: 6, margin: "12px auto 0", background: "transparent", color: C.dim, fontSize: 12, padding: "6px 10px" }}><Ico n="flag" size={14} />{T("plReport")}</button>)}
         {rep && <ConfirmBox icon="flag" danger title={T("plReport")} text={T("plReportD")} yes={T("frReport")} yesData={{ "data-plan-report-yes": true }} onNo={() => setRep(false)}
@@ -12312,7 +12319,27 @@ function StreakCelebration({ n, history, entry, onDone }) {
     document.body
   );
 }
-function Summary({ entry, xpBefore = 0, xpGained, newCh = [], newAch = [], history, onClose, onClaim }) {
+// 1.10.0 (idea 7): after a trial workout, "Liked it?" with one Save button (a copy in My plans, counted in the Library)
+function TrialSave({ trial }) {
+  const [saved, setSaved] = useState(false);
+  const save = () => {
+    const pl = copyPlanGlobal && copyPlanGlobal({ name: trial.name, items: trial.items }, trial.by, trial.pid);
+    if (!pl) return;
+    setSaved(true);
+    if (trial.pid) cloud().pubSaved(trial.pid, pl.id).then(x => { if (STORE_CACHE && x && x.why === "ok") STORE_CACHE = { ...STORE_CACHE, list: STORE_CACHE.list.map(y => (y.pid === trial.pid ? { ...y, sv: x.sv } : y)) }; }).catch(() => {});
+  };
+  return (
+    <div data-sum-trial data-state={saved ? "saved" : "ask"} className="sumIn" style={{ ...card, marginTop: 16, display: "flex", alignItems: "center", gap: 12, padding: "14px 16px" }}>
+      <IcoBox n={saved ? "tick" : "bookmark"} />
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 15, fontWeight: 800, color: C.chalk, ...INK, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{trial.name}</div>
+        <div style={{ fontSize: 13, color: saved ? C.mint : C.dim, marginTop: 2 }}>{saved ? T("plSavedCopy") : T("plTryLiked")}</div>
+      </div>
+      {!saved && <button type="button" data-sum-trial-save onClick={() => { sfxTap(); save(); }} className="b3d" style={{ ...btnBase, padding: "10px 14px", borderRadius: 12, background: C.signal, color: C.signalInk, fontSize: 14, fontWeight: 800, flexShrink: 0 }}>{T("plSave")}</button>}
+    </div>
+  );
+}
+function Summary({ entry, trial, xpBefore = 0, xpGained, newCh = [], newAch = [], history, onClose, onClaim }) {
   const [copied, setCopied] = useState(false);
   const gained = entry ? (xpGained ?? xpFor(entry)) : 0;
   const [shown, setShown] = useState(0);
@@ -12520,6 +12547,7 @@ function Summary({ entry, xpBefore = 0, xpGained, newCh = [], newAch = [], histo
           {entry.day && <div data-sum-next style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, fontWeight: 600, color: C.dim }}><Ico n="calendar" size={16} color={C.dim} />{T("nextLine", { d: DAYS[(DAYS.findIndex(x => x.id === entry.day) + 1) % DAYS.length].id, date: fmtDate(addDays(entry.date, 2)) })}</div>}
         </div>
       )}
+      {trial && entry && <TrialSave trial={trial} />}
       <div className="sumIn" style={{ ...d(), marginTop: 20 }}>
         {setting("aiCopy") && <button onClick={copy} className="b3d" style={{ ...bigBtn(copied ? C.mint : C.panelHi, copied ? C.ink : C.chalk), marginBottom: 8 }}>{copied ? T("copied") : T("copyAI")}</button>}
         <div style={{ display: "flex", gap: 8 }}>
@@ -12637,7 +12665,7 @@ function Session({ session, setSession, history, onSave, onClose, onMinimize, on
       return to > rankIdx(it.id, b) ? { id: it.id, to } : null;
     }).filter(Boolean);
     const secs = session.startTs ? Math.round((Date.now() - session.startTs) / 1000) : 0;
-    const pl = session.plan ? { plan: { id: session.plan.id, name: session.plan.name, ...(session.plan.gname ? { grp: session.plan.gname } : {}), wd: session.plan.wd } } : {};
+    const pl = session.plan ? { plan: { id: session.plan.id, name: session.plan.name, ...(session.plan.gname ? { grp: session.plan.gname } : {}), wd: session.plan.wd, ...(session.plan.trial ? { t: session.plan.trial.pid || 1 } : {}) } } : {};
     // 1.9.0 (Michael, Nov 7): at least one set above 0, else nothing is saved (no XP, no streak, no badge)
     const entry = hasRealSet(items) ? { date: dateKey(), ts: Date.now(), day: session.day || null, ...pl, ...(session.day ? { rounds: session.rounds } : {}), items, prs, rankUps, warm: session.warm.every(Boolean), cool: !!coolDone, ...(secs > 0 && secs < 4 * 3600 ? { dur: secs } : {}), ...(session.rests ? { rests: session.rests } : {}) } : null;
     const xpBefore = totalXP(history);
@@ -12777,7 +12805,7 @@ function Session({ session, setSession, history, onSave, onClose, onMinimize, on
           <ExLibrary picked={usedIds} onPick={id => { addExtra(id); }} />
         </Sheet>
       )}
-      {session.phase === "summary" && <Summary entry={session.entry} xpBefore={session.xpBefore || 0} xpGained={session.xpGained} newCh={session.newCh || []} newAch={session.newAch || []} history={history} onClose={onClose} onClaim={onClaim} />}
+      {session.phase === "summary" && <Summary entry={session.entry} trial={session.plan && session.plan.trial} xpBefore={session.xpBefore || 0} xpGained={session.xpGained} newCh={session.newCh || []} newAch={session.newAch || []} history={history} onClose={onClose} onClaim={onClaim} />}
       </div>
     </div>
   );
@@ -13707,6 +13735,17 @@ export default function App() {
     setSession({ plan: { id: plan.id, name: planTitle(plan), gname: groupName(P, plan.grp) || "", wd, items }, phase: "warmup", pos: 0, warm: WARMUP.map(() => false), results: {}, rest: null, startTs: Date.now() });
     setSessionOpen(true);
   };
+  // 1.10.0 (idea 7, Michael: "Try it, like a trial; if they like it, they save it"): one workout of someone's plan
+  // without saving it; the history entry keeps the plan's name and t = the Library id (so a later save lets them rate)
+  const startTrial = (src, by, pid) => {
+    if (session) return false;
+    const items = (src.items || []).filter(x => EX[x.id]).map(x => ({ id: x.id, sets: x.sets, ...(x.dur ? { dur: x.dur } : {}) }));
+    if (!items.length) return false;
+    setSession({ plan: { id: "try_" + (pid || src.id || "x"), name: src.name || "", gname: "", wd: PLN.weekdayOf(dateKey()), items, trial: { by: by || "", pid: pid || null, name: src.name || "", items } }, phase: "warmup", pos: 0, warm: WARMUP.map(() => false), results: {}, rest: null, startTs: Date.now() });
+    setSessionOpen(true);
+    return true;
+  };
+  tryPlanGlobal = startTrial;
   const startFree = ids => {
     if (!ids.length) return;
     setSession({ free: true, extra: ids.map(id => ({ id, sets: 3 })), phase: "warmup", pos: 0, warm: WARMUP.map(() => false), results: {}, rest: null, startTs: Date.now() });

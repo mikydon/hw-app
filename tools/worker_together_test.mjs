@@ -176,6 +176,11 @@ put(`backups/${B}`, backup([wk(0)]));
   put(`pub/${pid}/u/${B}`, { copy: "pB" });
   put(`backups/${B}`, backup([{ ...wk(1), plan: { id: "pB", name: "Legs" }, manual: true }]));
   eq((await call(planRate, { uid: B, pid, r: 5 })).why, "not-trained", "a workout added by hand doesn't count");
+  // 1.10.0: a trial workout of this plan (Try it) counts once the plan is saved
+  put(`backups/${B}`, backup([{ ...wk(1), plan: { id: "try_" + pid, name: "Legs", t: pid } }]));
+  eq((await call(planRate, { uid: B, pid, r: 5 })).why, "ok", "a trial workout of the plan counts after saving");
+  put(`backups/${B}`, backup([{ ...wk(1), plan: { id: "try_other", name: "Legs", t: "zz_other" } }]));
+  eq((await call(planRate, { uid: B, pid, r: 5 })).why, "not-trained", "a trial of another plan doesn't");
 }
 console.log(`${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

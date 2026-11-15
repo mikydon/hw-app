@@ -1,6 +1,10 @@
 // Czech: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    plTry: "Vyzkoušet",
+    plTryD: "Vyzkoušet = jeden trénink podle tohoto plánu, na zkoušku. Líbil se ti? Ulož si ho potom.",
+    plTryBusy: "Nejdřív dokonči trénink, který právě běží.",
+    plTryLiked: "Líbil se ti? Ulož si ho do plánů.",
     frNickRude: "Takové jméno tu není povolené. Zkus jiné.",
     plNameBad: "Nejdřív plán přejmenuj: s tímhle názvem ho nemůžeme ukázat ostatním.",
     emClear: "Zrušit hledání a filtry",
@@ -45,7 +49,7 @@ export default {
     plStoreSaves: "Uloženo",
     plRateT: "Tvoje hvězdičky",
     plRateAfter: "Odcvič trénink ze své kopie a pak ho můžeš ohodnotit.",
-    tourPlStore: "Knihovna: plány, které zveřejnili jiní. Hledej podle názvu, autora nebo cviku, tlačítko filtru nastaví zaměření, vybavení a pořadí, a jedním ťuknutím si plán ulož.",
+    tourPlStore: "Knihovna: plány, které zveřejnili jiní. Hledej podle názvu, autora nebo cviku, tlačítko filtru nastaví zaměření, vybavení a pořadí, a jedním ťuknutím si plán ulož. Nevíš? Nejdřív ho vyzkoušej: jeden trénink, nic se neuloží.",
     sumShare: "Sdílet",
     shareStreak: "Série",
     shareFoot: "Domácí tréninky · zdarma na Google Play",

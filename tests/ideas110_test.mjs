@@ -90,4 +90,37 @@ const ids = p => p.$$eval("[data-store-plan]", e => e.map(x => x.getAttribute("d
   T.eq(h.errors, [], "no page errors (6)");
   await h.close();
 }
+// ─── 7: Try a plan from the Library (a trial workout, nothing saved), then save it from the summary ───
+{
+  const setReps = async p => { if (await p.locator("[data-reps]").count()) { await p.click("[data-reps]"); await p.fill("[data-reps-input]", "10"); await p.keyboard.press("Enter"); await p.waitForTimeout(150); } };
+  const h = await start({ viewport: { width: 380, height: 820 }, cloud: { pub }, seed: { profile: { name: "Michael" } } });
+  const p = h.page;
+  await go(p, "plans"); await p.click('[data-plans-seg="store"]'); await p.waitForTimeout(900);
+  await p.click('[data-store-plan="u1_p1"]'); await p.waitForSelector("[data-plan-peek]");
+  T.ok((await p.textContent("[data-plan-try-d]")).includes("like a test"), "a line says what Try does");
+  await p.click("[data-plan-try]"); await p.waitForTimeout(600);
+  T.eq(await p.locator("[data-plan-peek]").count(), 0, "the plan sheet closes");
+  T.ok(await p.locator("[data-warmup-go]").isVisible(), "the workout starts (warm-up)");
+  const plansNow = await p.evaluate(() => { const pr = JSON.parse(localStorage.getItem("domaci-trening-v1-profile")); return pr.plans ? pr.plans.list.length : 0; });
+  T.eq(plansNow, 0, "nothing saved to My plans by trying");
+  await p.click("[data-warmup-go]"); await p.waitForSelector("[data-done-btn]");
+  await setReps(p); await p.click("[data-done-btn]"); await p.waitForTimeout(300);
+  await p.click("[data-quit]"); await p.waitForTimeout(200); await p.click("[data-quit]");
+  await p.waitForSelector("[data-sum-trial]", { timeout: 8000 });
+  const e = await p.evaluate(() => JSON.parse(localStorage.getItem("domaci-trening-v1")).history.pop());
+  T.eq(e.plan && [e.plan.name, e.plan.t], ["Legs every day", "u1_p1"], "the history keeps the plan's name and its Library id");
+  await p.waitForTimeout(2500); await p.evaluate(() => { const e = document.querySelector("[data-sum-trial]"); if (e) e.scrollIntoView({ block: "center" }); }); await p.waitForTimeout(400); await shot(p, "ideas_trial");
+  await p.click("[data-sum-trial-save]"); await p.waitForTimeout(300);
+  T.eq(await p.getAttribute("[data-sum-trial]", "data-state"), "saved", "saved from the summary");
+  const cp = await p.evaluate(() => JSON.parse(localStorage.getItem("domaci-trening-v1-profile")).plans.list[0]);
+  T.ok(cp && cp.name === "Legs every day" && cp.by === "Zuzka" && cp.from === "u1_p1", "a copy by Zuzka in My plans");
+  T.ok(await p.evaluate(() => window.__fakeLog.some(x => x[0] === "pubSaved" && x[1] === "u1_p1")), "the save is counted in the Library");
+  // the plan can now be rated: the trial workout counts as trained
+  await p.click("[data-sum-home]"); await p.waitForTimeout(600);
+  await go(p, "plans"); await p.click('[data-plans-seg="store"]'); await p.waitForTimeout(900);
+  await p.click('[data-store-plan="u1_p1"]'); await p.waitForSelector("[data-plan-peek]");
+  T.eq(await p.getAttribute("[data-plan-rate]", "data-plan-rate"), "on", "stars open after the trial workout");
+  T.eq(h.errors, [], "no page errors (7)");
+  await h.close();
+}
 T.done();

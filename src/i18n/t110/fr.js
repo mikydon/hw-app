@@ -1,6 +1,10 @@
 // French: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    plTry: "Essayer",
+    plTryD: "Essayer = une séance de ce programme, pour tester. Il t'a plu ? Enregistre-le ensuite.",
+    plTryBusy: "Termine d'abord la séance en cours.",
+    plTryLiked: "Il t'a plu ? Enregistre-le dans tes programmes.",
     frNickRude: "Ce nom n'est pas autorisé ici. Essaie un autre.",
     plNameBad: "Renomme d'abord le programme : avec ce nom, on ne peut pas le montrer aux autres.",
     emClear: "Effacer la recherche et les filtres",
@@ -45,7 +49,7 @@ export default {
     plStoreSaves: "Enregistré",
     plRateT: "Tes étoiles",
     plRateAfter: "Fais une séance avec ta copie, ensuite tu pourras le noter.",
-    tourPlStore: "La Bibliothèque : des programmes publiés par d'autres. Cherche par nom, auteur ou exercice, le bouton filtre règle le ciblage, le matériel et l'ordre, et enregistre-en un d'un toucher.",
+    tourPlStore: "La Bibliothèque : des programmes publiés par d'autres. Cherche par nom, auteur ou exercice, le bouton filtre règle le ciblage, le matériel et l'ordre, et enregistre-en un d'un toucher. Pas sûr ? Essaie-le d'abord : une séance, rien n'est enregistré.",
     sumShare: "Partager",
     shareStreak: "Série",
     shareFoot: "Entraînements à la maison · gratuit sur Google Play",

@@ -1,6 +1,10 @@
 // Korean: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    plTry: "체험하기",
+    plTryD: "체험하기 = 이 플랜으로 한 번만 시험 운동. 마음에 들면 끝난 뒤 저장하세요.",
+    plTryBusy: "먼저 진행 중인 운동을 끝내 주세요.",
+    plTryLiked: "마음에 들었나요? 내 플랜에 저장하세요.",
     frNickRude: "이 이름은 사용할 수 없어요. 다른 이름을 써 주세요.",
     plNameBad: "먼저 플랜 이름을 바꿔 주세요: 이 이름으로는 다른 사람에게 보여줄 수 없어요.",
     emClear: "검색과 필터 지우기",
@@ -45,7 +49,7 @@ export default {
     plStoreSaves: "저장됨",
     plRateT: "내 별점",
     plRateAfter: "복사본으로 운동을 한 번 하면 평가할 수 있어요.",
-    tourPlStore: "라이브러리: 다른 사람이 공개한 플랜이에요. 이름, 작성자, 운동으로 검색하고, 필터 버튼으로 부위·장비·정렬을 정하고, 탭 한 번으로 저장하세요.",
+    tourPlStore: "라이브러리: 다른 사람이 공개한 플랜이에요. 이름, 작성자, 운동으로 검색하고, 필터 버튼으로 부위·장비·정렬을 정하고, 탭 한 번으로 저장하세요. 고민되나요? 먼저 체험해 보세요: 한 번 운동하고, 아무것도 저장되지 않아요.",
     sumShare: "공유",
     shareStreak: "연속 기록",
     shareFoot: "홈 트레이닝 · Google Play에서 무료",

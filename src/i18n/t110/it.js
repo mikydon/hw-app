@@ -1,6 +1,10 @@
 // Italian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    plTry: "Prova",
+    plTryD: "Prova = un allenamento di questa scheda, come test. Ti è piaciuta? Salvala dopo.",
+    plTryBusy: "Prima finisci l'allenamento in corso.",
+    plTryLiked: "Ti è piaciuta? Salvala nelle tue schede.",
     frNickRude: "Questo nome non è consentito. Provane un altro.",
     plNameBad: "Prima rinomina la scheda: con questo nome non possiamo mostrarla agli altri.",
     emClear: "Cancella ricerca e filtri",
@@ -45,7 +49,7 @@ export default {
     plStoreSaves: "Salvata",
     plRateT: "Le tue stelle",
     plRateAfter: "Fai un allenamento dalla tua copia, poi potrai valutarla.",
-    tourPlStore: "La Libreria: schede pubblicate da altri. Cerca per nome, autore o esercizio, il pulsante filtro imposta focus, attrezzatura e ordine, e salvane una con un tocco.",
+    tourPlStore: "La Libreria: schede pubblicate da altri. Cerca per nome, autore o esercizio, il pulsante filtro imposta focus, attrezzatura e ordine, e salvane una con un tocco. Non sei sicuro? Provala prima: un allenamento, non si salva niente.",
     sumShare: "Condividi",
     shareStreak: "Serie",
     shareFoot: "Allenamenti a casa · gratis su Google Play",

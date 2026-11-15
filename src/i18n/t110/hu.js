@@ -1,6 +1,10 @@
 // Hungarian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    plTry: "Kipróbálom",
+    plTryD: "Kipróbálom = egy edzés ezzel a tervvel, próbaképp. Tetszett? Utána mentsd el.",
+    plTryBusy: "Előbb fejezd be a folyamatban lévő edzést.",
+    plTryLiked: "Tetszett? Mentsd el a tervek közé.",
     frNickRude: "Ez a név itt nem engedélyezett. Próbálj másikat.",
     plNameBad: "Előbb nevezd át a tervet: ezzel a névvel nem mutathatjuk meg másoknak.",
     emClear: "Keresés és szűrők törlése",
@@ -45,7 +49,7 @@ export default {
     plStoreSaves: "Mentve",
     plRateT: "A csillagaid",
     plRateAfter: "Végezz egy edzést a másolatodból, utána értékelheted.",
-    tourPlStore: "A Könyvtár: mások által közzétett tervek. Keress név, szerző vagy gyakorlat alapján, a szűrő gombbal állíts fókuszt, felszerelést és sorrendet, és egy koppintással mentsd el.",
+    tourPlStore: "A Könyvtár: mások által közzétett tervek. Keress név, szerző vagy gyakorlat alapján, a szűrő gombbal állíts fókuszt, felszerelést és sorrendet, és egy koppintással mentsd el. Nem vagy biztos benne? Előbb próbáld ki: egy edzés, semmi nem mentődik.",
     sumShare: "Megosztás",
     shareStreak: "Sorozat",
     shareFoot: "Otthoni edzések · ingyen a Google Playen",

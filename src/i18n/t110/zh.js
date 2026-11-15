@@ -1,6 +1,10 @@
 // Chinese (Simplified): texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    plTry: "试练",
+    plTryD: "试练 = 按这个计划练一次，先试试。喜欢的话，练完再保存。",
+    plTryBusy: "请先完成正在进行的训练。",
+    plTryLiked: "喜欢吗？保存到我的计划。",
     frNickRude: "这里不允许使用这个名字，请换一个。",
     plNameBad: "请先给计划改名：这个名字不能展示给别人。",
     emClear: "清除搜索和筛选",
@@ -45,7 +49,7 @@ export default {
     plStoreSaves: "已保存",
     plRateT: "你的星级",
     plRateAfter: "用你的副本完成一次训练后就能评分。",
-    tourPlStore: "计划库：其他人发布的计划。可按名称、作者或动作搜索，用筛选按钮设置侧重、器材和排序，一点即可保存。",
+    tourPlStore: "计划库：其他人发布的计划。可按名称、作者或动作搜索，用筛选按钮设置侧重、器材和排序，一点即可保存。拿不准？先试练一次：只练一次，不会保存。",
     sumShare: "分享",
     shareStreak: "连续",
     shareFoot: "居家训练 · Google Play 免费下载",

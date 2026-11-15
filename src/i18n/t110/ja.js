@@ -1,6 +1,10 @@
 // Japanese: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    plTry: "試す",
+    plTryD: "試す = このプランで1回だけお試しトレーニング。気に入ったら終わってから保存できます。",
+    plTryBusy: "先に進行中のトレーニングを終えてください。",
+    plTryLiked: "気に入った？マイプランに保存しよう。",
     frNickRude: "この名前は使えません。別の名前にしてください。",
     plNameBad: "先にプラン名を変更してください：この名前は他の人に表示できません。",
     emClear: "検索と絞り込みをクリア",
@@ -45,7 +49,7 @@ export default {
     plStoreSaves: "保存",
     plRateT: "あなたの評価",
     plRateAfter: "コピーでトレーニングをすると評価できます。",
-    tourPlStore: "ライブラリ：他の人が公開したプラン。名前、作者、種目で検索し、フィルターボタンで部位・器具・並び順を設定、ワンタップで保存できます。",
+    tourPlStore: "ライブラリ：他の人が公開したプラン。名前、作者、種目で検索し、フィルターボタンで部位・器具・並び順を設定、ワンタップで保存できます。 迷ったら、まず試してみよう：1回のトレーニングで、何も保存されません。",
     sumShare: "シェア",
     shareStreak: "連続記録",
     shareFoot: "自宅トレーニング · Google Play で無料",

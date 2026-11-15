@@ -1,6 +1,10 @@
 // German: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    plTry: "Ausprobieren",
+    plTryD: "Ausprobieren = ein Training nach diesem Plan, zum Testen. Gefällt er dir? Speichere ihn danach.",
+    plTryBusy: "Beende zuerst das laufende Training.",
+    plTryLiked: "Gefallen? Speichere ihn in deinen Plänen.",
     frNickRude: "Dieser Name ist hier nicht erlaubt. Versuch einen anderen.",
     plNameBad: "Benenne den Plan zuerst um: Mit diesem Namen können wir ihn anderen nicht zeigen.",
     emClear: "Suche und Filter zurücksetzen",
@@ -45,7 +49,7 @@ export default {
     plStoreSaves: "Gespeichert",
     plRateT: "Deine Sterne",
     plRateAfter: "Mach ein Training aus deiner Kopie, dann kannst du ihn bewerten.",
-    tourPlStore: "Die Bibliothek: Pläne, die andere veröffentlicht haben. Suche nach Name, Autor oder Übung, der Filterknopf stellt Fokus, Ausrüstung und Reihenfolge ein, und mit einem Tippen speicherst du einen.",
+    tourPlStore: "Die Bibliothek: Pläne, die andere veröffentlicht haben. Suche nach Name, Autor oder Übung, der Filterknopf stellt Fokus, Ausrüstung und Reihenfolge ein, und mit einem Tippen speicherst du einen. Unsicher? Probier ihn zuerst aus: ein Training, nichts wird gespeichert.",
     sumShare: "Teilen",
     shareStreak: "Serie",
     shareFoot: "Training zu Hause · kostenlos bei Google Play",

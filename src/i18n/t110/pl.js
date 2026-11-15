@@ -1,6 +1,10 @@
 // Polish: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    plTry: "Wypróbuj",
+    plTryD: "Wypróbuj = jeden trening z tego planu, na próbę. Spodobał się? Zapisz go potem.",
+    plTryBusy: "Najpierw skończ trwający trening.",
+    plTryLiked: "Spodobał się? Zapisz go w planach.",
     frNickRude: "Taka nazwa nie jest tu dozwolona. Spróbuj innej.",
     plNameBad: "Najpierw zmień nazwę planu: z tą nazwą nie możemy go pokazać innym.",
     emClear: "Wyczyść wyszukiwanie i filtry",
@@ -45,7 +49,7 @@ export default {
     plStoreSaves: "Zapisane",
     plRateT: "Twoje gwiazdki",
     plRateAfter: "Zrób trening ze swojej kopii, a potem możesz go ocenić.",
-    tourPlStore: "Biblioteka: plany, które opublikowali inni. Szukaj po nazwie, autorze lub ćwiczeniu, przycisk filtra ustawia skupienie, sprzęt i kolejność, a plan zapiszesz jednym dotknięciem.",
+    tourPlStore: "Biblioteka: plany, które opublikowali inni. Szukaj po nazwie, autorze lub ćwiczeniu, przycisk filtra ustawia skupienie, sprzęt i kolejność, a plan zapiszesz jednym dotknięciem. Nie wiesz? Najpierw go wypróbuj: jeden trening, nic się nie zapisze.",
     sumShare: "Udostępnij",
     shareStreak: "Seria",
     shareFoot: "Treningi w domu · za darmo w Google Play",

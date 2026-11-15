@@ -1,6 +1,10 @@
 // Spanish: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    plTry: "Probar",
+    plTryD: "Probar = un entrenamiento de este plan, de prueba. ¿Te gustó? Guárdalo después.",
+    plTryBusy: "Primero termina el entrenamiento en curso.",
+    plTryLiked: "¿Te gustó? Guárdalo en tus planes.",
     frNickRude: "Ese nombre no está permitido aquí. Prueba otro.",
     plNameBad: "Primero cambia el nombre del plan: con este nombre no podemos mostrarlo a otros.",
     emClear: "Borrar búsqueda y filtros",
@@ -45,7 +49,7 @@ export default {
     plStoreSaves: "Guardado",
     plRateT: "Tus estrellas",
     plRateAfter: "Haz un entrenamiento con tu copia y luego podrás valorarlo.",
-    tourPlStore: "La Biblioteca: planes que otras personas publicaron. Busca por nombre, autor o ejercicio, el botón de filtro ajusta el enfoque, el equipo y el orden, y guarda uno con un toque.",
+    tourPlStore: "La Biblioteca: planes que otras personas publicaron. Busca por nombre, autor o ejercicio, el botón de filtro ajusta el enfoque, el equipo y el orden, y guarda uno con un toque. ¿No lo tienes claro? Pruébalo primero: un entrenamiento, no se guarda nada.",
     sumShare: "Compartir",
     shareStreak: "Racha",
     shareFoot: "Entrenamientos en casa · gratis en Google Play",
