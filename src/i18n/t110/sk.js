@@ -1,6 +1,9 @@
 // Slovak: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    plLink: "Zdieľať odkaz",
+    plLinkD: "Každý s odkazom si môže uložiť kópiu alebo ho vyskúšať. Tvoje váhy v ňom nikdy nie sú.",
+    plLinkText: "{name}: tréningový plán v HW App 💪 {url}",
     tourPlTiles: "Sekcie ukazujú to najlepšie z každého druhu: populárne tento týždeň, najlepšie hodnotené, plány priateľov… Šípka ukáže všetky v tom poradí.",
     plStoreFriends: "Plány priateľov",
     plStoreOfficial: "Od HW App",
@@ -127,7 +130,7 @@ export default {
     plReport: "Nahlásiť tento plán",
     plReportD: "Má urážlivý názov alebo je to spam? Nahlásenia kontrolujeme ručne.",
     tourPfPlans: "Plány, ktoré ukazuješ na profile. Kamaráti si môžu jeden otvoriť a uložiť kópiu.",
-    tourPlShare: "Zapni toto a plán sa ukáže na tvojom profile: kamaráti si môžu uložiť kópiu (nikdy nie tvoje váhy).",
+    tourPlShare: "Zapni toto a plán sa ukáže na tvojom profile: kamaráti si môžu uložiť kópiu (nikdy nie tvoje váhy). Alebo zdieľaj odkaz: kto ho otvorí, môže si uložiť kópiu.",
     frTogether: "Spolu",
     tgInvT: "Pozvi kamaráta",
     tgInvD: "Keď sa kamarát pridá cez tvoj odkaz a odcvičí 3 tréningy, obaja dostanete {n} 💎.",
@@ -260,5 +263,6 @@ export default {
     ["Tvoj rok", "Nič sa neohliadlo za celým rokom.", "Od 15. decembra do 10. januára ukáže Domov tvoj rok: tréningy, čas, najdlhšiu sériu, mesiace, obľúbené cviky a obrázok na zdieľanie."],
     ["Knižnica: ľudia", "Autor plánu bol len meno.", "Ťukni na autora v Knižnici a uvidíš jeho profil, odkiaľ mu môžeš poslať žiadosť o priateľstvo; autor dostane upozornenie, keď si niekto jeho plán uloží alebo ohodnotí (najviac raz za deň)."],
     ["Knižnica: sekcie", "Knižnica bola jeden dlhý zoznam.", "Otvorí sa na sekciách: populárne tento týždeň, najlepšie hodnotené, plány priateľov, najviac uložené, od HW App, najnovšie; šípka ukáže všetky v tom poradí."],
+    ["Odkaz na plán", "Plán sa dal len ukázať na profile alebo zverejniť v Knižnici.", "V editore plánu zdieľaj odkaz: kto ho otvorí, uvidí plán a môže si uložiť kópiu alebo ho vyskúšať, aj bez účtu. Tvoje váhy v ňom nikdy nie sú."],
   ],
 };

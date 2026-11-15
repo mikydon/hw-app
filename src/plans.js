@@ -115,6 +115,28 @@ export function copyPlan(P, src, by, now = Date.now(), from = null) {
   const out = updatePlan(P2, plan.id, { name, items, by: String(by || "").slice(0, 24) || null, ...(from ? { from: String(from).slice(0, 200) } : {}) }, now);
   return { P: out, plan: out.list.find(p => p.id === plan.id) };
 }
+// 1.10.0 (idea 7): a share link of one plan carries the plan itself, so it needs no account and no server:
+// ?i=<id.sets[.hold seconds]>,…&n=<name>&by=<nick>. Never weights. planLink = that query; planFromLink reads it back
+// (null when nothing usable); the app still checks the exercises against its own list.
+export function planLink(plan, by) {
+  const q = new URLSearchParams();
+  q.set("i", clean(plan.items).slice(0, MAX_ITEMS).map(x => [x.id, x.sets, ...(x.dur ? [x.dur] : [])].join(".")).join(","));
+  if (plan.name) q.set("n", String(plan.name).slice(0, 40));
+  if (by) q.set("by", String(by).slice(0, 24));
+  return q.toString();
+}
+export function planFromLink(search) {
+  let q;
+  try { q = new URLSearchParams(search); } catch (_) { return null; }
+  const items = String(q.get("i") || "").slice(0, 1200).split(",").map(t => {
+    const [id, sets, dur] = t.split(".");
+    if (!/^[A-Za-z0-9_]{1,48}$/.test(id || "")) return null;
+    const d = Math.floor(+dur);
+    return { id, sets: Math.max(1, Math.min(MAX_SETS, Math.floor(+sets) || DEFAULT_SETS)), ...(d > 0 ? { dur: Math.min(1800, d) } : {}) };
+  }).filter(Boolean).slice(0, MAX_ITEMS);
+  if (!items.length) return null;
+  return { id: "link", n: 1, name: String(q.get("n") || "").slice(0, 40), by: String(q.get("by") || "").slice(0, 24), items };
+}
 // 1.10.0 plan store: what a public plan says about itself. fam = the body groups that get at least a fifth of its sets
 // (most first), eq = the most equipment it needs (none < free weights < machines). lib = exlib's LIB.
 export function storeOf(plan, lib, name) {

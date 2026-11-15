@@ -1,6 +1,9 @@
 // French: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    plLink: "Partager un lien",
+    plLinkD: "Toute personne ayant le lien peut enregistrer une copie ou l'essayer. Tes charges n'y figurent jamais.",
+    plLinkText: "{name} : un programme d'entraînement dans HW App 💪 {url}",
     tourPlTiles: "Les sections montrent le meilleur de chaque type : populaires cette semaine, les mieux notés, programmes d'amis… La flèche les montre tous dans cet ordre.",
     plStoreFriends: "Programmes d'amis",
     plStoreOfficial: "Par HW App",
@@ -127,7 +130,7 @@ export default {
     plReport: "Signaler ce programme",
     plReportD: "Nom insultant ou spam ? Nous vérifions les signalements à la main.",
     tourPfPlans: "Les programmes que tu affiches sur ton profil. Tes amis peuvent en ouvrir un et en enregistrer une copie.",
-    tourPlShare: "Active ceci et le programme apparaît sur ton profil : tes amis peuvent en enregistrer une copie (jamais tes charges).",
+    tourPlShare: "Active ceci et le programme apparaît sur ton profil : tes amis peuvent en enregistrer une copie (jamais tes charges). Ou partage un lien : qui l'ouvre peut enregistrer une copie.",
     frTogether: "Ensemble",
     tgInvT: "Invite un ami",
     tgInvD: "Quand un ami rejoint avec ton lien et fait 3 séances, vous recevez tous les deux {n} 💎.",
@@ -260,5 +263,6 @@ export default {
     ["Ton année", "Rien ne revenait sur l'année entière.", "Du 15 décembre au 10 janvier, l'Accueil montre ton année : séances, temps, la plus longue flamme, les mois, tes exercices préférés et une image à partager."],
     ["Bibliothèque : les gens", "L'auteur d'un programme n'était qu'un nom.", "Touche l'auteur dans la Bibliothèque pour voir son profil et lui envoyer une demande d'ami ; les auteurs reçoivent une notification quand quelqu'un enregistre ou note leur programme (au plus une fois par jour)."],
     ["Bibliothèque : sections", "La Bibliothèque était une longue liste.", "Elle s'ouvre sur des sections : populaires cette semaine, les mieux notés, programmes d'amis, les plus enregistrés, par HW App, les plus récents ; la flèche les montre tous dans cet ordre."],
+    ["Liens de programmes", "Un programme pouvait seulement être montré sur ton profil ou publié dans la Bibliothèque.", "Partage un lien depuis l'éditeur : qui l'ouvre voit le programme et peut en enregistrer une copie ou l'essayer, même sans compte. Tes charges n'y figurent jamais."],
   ],
 };

@@ -7125,7 +7125,7 @@ function PlanStore({ on, signedIn, P, history, openPid, friendIds = [] }) {
 // A shared plan: its exercises and sets; someone else's can be saved as your own copy (or reported). From the plan
 // store (store = the pub doc) it also shows its stars and saves, counts the save on the server, and lets someone who
 // saved it AND trained it give 1–5 stars.
-function PlanPeek({ plan, by, uid, onClose, store, P, history, onStore }) {
+function PlanPeek({ plan, by, uid, onClose, store, P, history, onStore, link }) {
   const [saved, setSaved] = useState(null), [rep, setRep] = useState(false), [repDone, setRepDone] = useState(false);
   const pid = store && store.pid, myUid = cloudMem().uid;
   const copy = pid && P ? P.list.find(x => x.from === pid) : null;
@@ -7137,7 +7137,7 @@ function PlanPeek({ plan, by, uid, onClose, store, P, history, onStore }) {
   const own = uid && uid === myUid, official = isDefOwner(uid);
   return (
     <Sheet title={plan.name || T("planDefault", { n: plan.n })} onClose={onClose}>
-      <div data-plan-peek={plan.id || plan.pid || ""}>
+      <div data-plan-peek={plan.id || plan.pid || ""} data-plan-link={link ? 1 : undefined}>
         {by && (store && uid && !own && !official && openProfileGlobal
           // 1.10.0 (Michael's idea 5): the author's name opens their profile (back comes here again)
           ? <button type="button" data-plan-by={uid} onClick={() => { sfxTap(); onClose(); openProfileGlobal(uid, by, pid); }} style={{ ...btnBase, background: "transparent", padding: 0, fontSize: 13, color: C.dim, fontWeight: 600, margin: "-4px 2px 12px", display: "flex", alignItems: "center", gap: 6 }}><Ico n="duo" size={15} />{T("plBy", { nick: by })}<Arrow /></button>
@@ -7165,7 +7165,7 @@ function PlanPeek({ plan, by, uid, onClose, store, P, history, onStore }) {
             {rateMsg && <div role="status" style={{ fontSize: 12, color: "#ff8a80", marginTop: 6 }}>{rateMsg}</div>}
           </div>
         )}
-        {uid && !own && (saved || copy ? (
+        {(uid || link) && !own && (saved || copy ? (
           <div data-plan-saved role="status" style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 14, padding: "12px 14px", borderRadius: 14, background: `${C.mint}1f`, color: C.mint, fontSize: 14, fontWeight: 700 }}><Ico n="tick" size={18} />{T("plSavedCopy")}</div>
         ) : (
 <div style={{ display: "flex", gap: 8, marginTop: 14 }}>
@@ -7173,7 +7173,7 @@ function PlanPeek({ plan, by, uid, onClose, store, P, history, onStore }) {
                       <button type="button" data-plan-copy onClick={() => { const pl = copyPlanGlobal && copyPlanGlobal(plan, by, pid); if (!pl) return; setSaved(pl.id); if (goPlanGlobal) setTimeout(() => { onClose(); goPlanGlobal(pl.id); }, 650); if (pid) cloud().pubSaved(pid, pl.id).then(x => { if (x && x.why === "ok" && onStore) onStore({ sv: x.sv }); }).catch(() => {}); }} style={{ ...btnBase, flex: 1, minWidth: 0, padding: "14px", borderRadius: 14, background: C.signal, color: C.signalInk, fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}><Ico n="plus" size={18} />{T("plCopy")}</button>
           </div>
         ))}
-        {uid && !own && !copy && <div data-plan-try-d style={{ fontSize: 12, color: tryMsg ? "#ff8a80" : C.dim, textAlign: "center", lineHeight: 1.45, marginTop: 8 }}>{tryMsg || (tryPlanGlobal ? T("plTryD") : T("plCopyD"))}</div>}
+        {(uid || link) && !own && !copy && <div data-plan-try-d style={{ fontSize: 12, color: tryMsg ? "#ff8a80" : C.dim, textAlign: "center", lineHeight: 1.45, marginTop: 8 }}>{tryMsg || (tryPlanGlobal ? T("plTryD") : T("plCopyD"))}</div>}
         {uid && !own && !official && (repDone ? <div role="status" style={{ fontSize: 12, color: C.dim, textAlign: "center", marginTop: 12 }}>{T("frReported")}</div>
           : <button type="button" data-plan-report onClick={() => { sfxTap(); setRep(true); }} style={{ ...btnBase, display: "flex", alignItems: "center", gap: 6, margin: "12px auto 0", background: "transparent", color: C.dim, fontSize: 12, padding: "6px 10px" }}><Ico n="flag" size={14} />{T("plReport")}</button>)}
         {rep && <ConfirmBox icon="flag" danger title={T("plReport")} text={T("plReportD")} yes={T("frReport")} yesData={{ "data-plan-report-yes": true }} onNo={() => setRep(false)}
@@ -7336,6 +7336,21 @@ function addFromUrl(u) {
     const c = cleanCode(x.searchParams.get("c") || x.searchParams.get("add") || "").slice(0, 6);
     return c ? fmtCode(c) : "";
   } catch (_) { return ""; }
+}
+// 1.10.0 (idea 7): a plan's share link (…/hw-app/plan/?i=…, or the website's …/hw-app/?plan=1&i=…) → the plan, checked:
+// only exercises this app knows, no rude name or nick. null = not a plan link.
+function planFromSearch(search) {
+  const pl = PLN.planFromLink(search);
+  if (!pl) return null;
+  const items = pl.items.filter(i => EX[i.id]);
+  return items.length ? { ...pl, items, name: textBad(pl.name) ? "" : pl.name, by: nickBad(pl.by) || nickReserved(pl.by) ? "" : pl.by } : null;
+}
+function planFromUrl(u) {
+  try {
+    const x = new URL(u);
+    if (x.hostname !== "mikydon.github.io" || !(x.pathname.startsWith("/hw-app/plan") || (x.pathname.startsWith("/hw-app") && x.searchParams.get("plan")))) return null;
+    return planFromSearch(x.search);
+  } catch (_) { return null; }
 }
 // Website on an Android phone, opened from a friend's link (the app wasn't opened: not installed, or the messenger
 // opened the link in its own browser): one card to open the same link in the app (Chrome's intent: link).
@@ -11041,6 +11056,7 @@ function PlanEditor({ plan, P, setP, onBack, shared, nShared = 0, onShare, pub, 
   const wdNames = weekdaysShort();
   const [adding, setAdding] = useState(false), [hints, setHints] = useState(false), [del, setDel] = useState(false);
   const [name, setName] = useState(plan.name || "");
+  const [linkMsg, setLinkMsg] = useState("");
   useBack(onBack);
   const upd = fn => setP(cur => PLN.updatePlan(cur, plan.id, fn(cur.list.find(p => p.id === plan.id) || plan)));
   const items = plan.items || [];
@@ -11114,6 +11130,19 @@ function PlanEditor({ plan, P, setP, onBack, shared, nShared = 0, onShare, pub, 
         {onShare && <div data-plan-pub-box><SettingRow first icon="globe" title={T("plPub")} desc={pbErr || (pub ? T("plPubOn") : T("plPubD"))} on={!!pub} onClick={togglePub} /></div>}
         {onShare ? <div data-plan-profile-box><SettingRow icon="duo" title={T("plShare")} desc={shErr || (shared ? T("plSharedD") : T("plShareD"))} on={!!shared} onClick={toggleShare} /></div>
           : <div data-plan-share-off style={{ display: "flex", alignItems: "center", gap: 12, padding: ROW_I, color: C.dim, fontSize: 13, lineHeight: 1.45 }}><RowIco n="duo" color={C.dim} /><span>{T("plShareSignIn")}</span></div>}
+        {/* 1.10.0 (idea 7): a link that carries this plan (exercises, sets, hold times; never weights); no account needed */}
+        {items.length > 0 && <button type="button" data-plan-link onClick={() => {
+          sfxTap();
+          const nick = (cloudMem().prof || {}).nick || "", url = `${SHARE_BASE}plan/?${PLN.planLink({ ...plan, name: planTitle(plan), items }, nick)}`;
+          shareText(T("plLinkText", { name: planTitle(plan), url })).then(r => { if (r === "copied") { setLinkMsg(T("copied")); setTimeout(() => setLinkMsg(""), 2500); } });
+        }} style={{ ...btnBase, width: "100%", background: "transparent", color: C.chalk, padding: ROW_I, display: "flex", alignItems: "center", gap: 12, textAlign: "left", borderRadius: 0, borderTop: `1px solid ${C.line}` }}>
+          <RowIco n="link" />
+          <span style={{ flex: 1, minWidth: 0 }}>
+            <span style={{ display: "block", fontSize: 15, fontWeight: 700 }}>{T("plLink")}</span>
+            <span data-plan-link-msg style={{ display: "block", fontSize: 12, color: linkMsg ? C.mint : C.dim, fontWeight: 500, marginTop: 2, lineHeight: 1.4 }}>{linkMsg || T("plLinkD")}</span>
+          </span>
+          <Arrow />
+        </button>}
       </Sect>
       {adding && (
         <Sheet title={T("plAddEx")} onClose={() => setAdding(false)}>
@@ -13252,6 +13281,8 @@ export default function App() {
     try {
       const add = new URLSearchParams(location.search).get("add");
       if (add) { sessionStorage.setItem("hw-add", fmtCode(cleanCode(add).slice(0, 6))); sessionStorage.setItem("hw-link-add", cleanCode(add).slice(0, 6)); invNote(cleanCode(add).slice(0, 6)); history_replace(); return "friends"; }
+      const q = new URLSearchParams(location.search);
+      if (q.get("plan") && q.get("i")) { sessionStorage.setItem("hw-plan", location.search); history_replace(); return "plans"; } // 1.10.0: a plan's share link
     } catch (_) {}
     return "train";
   });
@@ -14162,7 +14193,11 @@ export default function App() {
   // 1.6.5 (Michael, Oct 17: a friend's link opened the website): the app owns …/hw-app/add/ links (App Links,
   // assetlinks.json on mikydon.github.io), so a tapped link opens the app on Friends with the code filled in.
   const [addSeq, setAddSeq] = useState(0);
+  // 1.10.0 (idea 7): a plan opened from a share link: shown over whatever is open (save a copy or try it)
+  const [linkPlan, setLinkPlan] = useState(() => { try { const q = sessionStorage.getItem("hw-plan"); if (!q) return null; sessionStorage.removeItem("hw-plan"); return planFromSearch(q); } catch (_) { return null; } });
   useEffect(() => onAppUrl(u => {
+    const pl = planFromUrl(u);
+    if (pl) { setTourRun(null); setMenuOpen(false); setLinkPlan(pl); return; }
     const c = addFromUrl(u);
     if (!c) return;
     setTourRun(null);
@@ -14450,6 +14485,7 @@ export default function App() {
             onGo={go} onResume={resume} onNews={() => setNewsOpen(true)} />}
           <MenuDrawer onTour={() => { setMenuOpen(false); setTourSheet(true); }} tourN={tourDone.size} apk={apkUpd} busy={!!(session && session.phase !== "summary")} badge={socialCount} claimN={claimN} chestN={chestN} gh={gh} dl={dl} open={menuOpen} screen={screen} history={history} profile={profile} session={session && session.phase !== "summary" ? session : null}
             onGo={go} onResume={resume} onClose={() => setMenuOpen(false)} onNews={() => { setMenuOpen(false); setNewsOpen(true); }} />
+          {linkPlan && onboard === null && <PlanPeek plan={linkPlan} by={linkPlan.by || null} link onClose={() => setLinkPlan(null)} />}
           {notice && <LiveNotice n={notice} people={Object.fromEntries([...(social.friends || []), ...(social.reqs || [])].map(x => [x.uid, x]))} onClose={() => setNotice(null)}
             onOpen={n => { setNotice(null); go("friends"); setChatWith(n.kind === "msg" ? n.uid : null); }} />}
           {gamePlay && <GameTable key={gamePlay.at || 0} saved={gamePlay} history={history} onEnd={endGame} onQuit={quitGame} onTutDone={() => { setGamePlay(null); sfxFinish(); setProfile({ ...profile, game: { ...(profile.game || {}), tut: 1 } }); }} />}

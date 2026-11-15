@@ -1,6 +1,9 @@
 // German: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    plLink: "Link teilen",
+    plLinkD: "Jeder mit dem Link kann eine Kopie speichern oder ihn ausprobieren. Deine Gewichte sind nie darin.",
+    plLinkText: "{name}: ein Trainingsplan in HW App 💪 {url}",
     tourPlTiles: "Bereiche zeigen das Beste jeder Art: beliebt diese Woche, am besten bewertet, Pläne von Freunden… Der Pfeil zeigt alle in dieser Reihenfolge.",
     plStoreFriends: "Pläne von Freunden",
     plStoreOfficial: "Von HW App",
@@ -127,7 +130,7 @@ export default {
     plReport: "Diesen Plan melden",
     plReportD: "Beleidigender Name oder Spam? Meldungen prüfen wir von Hand.",
     tourPfPlans: "Pläne, die du auf deinem Profil zeigst. Freunde können einen öffnen und eine Kopie speichern.",
-    tourPlShare: "Schalte das ein, und der Plan erscheint auf deinem Profil: Freunde können eine Kopie speichern (nie deine Gewichte).",
+    tourPlShare: "Schalte das ein, und der Plan erscheint auf deinem Profil: Freunde können eine Kopie speichern (nie deine Gewichte). Oder teile einen Link: Wer ihn öffnet, kann eine Kopie speichern.",
     frTogether: "Zusammen",
     tgInvT: "Lade einen Freund ein",
     tgInvD: "Wenn ein Freund über deinen Link beitritt und 3 Trainings macht, bekommt ihr beide {n} 💎.",
@@ -260,5 +263,6 @@ export default {
     ["Dein Jahr", "Nichts hat auf das ganze Jahr zurückgeblickt.", "Vom 15. Dezember bis 10. Januar zeigt Start dein Jahr: Trainings, Zeit, die längste Serie, die Monate, deine Lieblingsübungen und ein Bild zum Teilen."],
     ["Bibliothek: Menschen", "Der Autor eines Plans war nur ein Name.", "Tippe in der Bibliothek auf den Autor, um sein Profil zu sehen und von dort eine Freundschaftsanfrage zu senden; Autoren bekommen eine Benachrichtigung, wenn jemand ihren Plan speichert oder bewertet (höchstens einmal am Tag)."],
     ["Bibliothek: Bereiche", "Die Bibliothek war eine lange Liste.", "Sie öffnet mit Bereichen: beliebt diese Woche, am besten bewertet, Pläne von Freunden, am häufigsten gespeichert, von HW App, neueste; der Pfeil zeigt alle in dieser Reihenfolge."],
+    ["Plan-Links", "Ein Plan ließ sich nur im Profil zeigen oder in der Bibliothek veröffentlichen.", "Teile im Plan-Editor einen Link: Wer ihn öffnet, sieht den Plan und kann eine Kopie speichern oder ihn ausprobieren, auch ohne Konto. Deine Gewichte sind nie darin."],
   ],
 };

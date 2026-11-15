@@ -1,6 +1,9 @@
 // Hungarian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    plLink: "Link megosztása",
+    plLinkD: "A link birtokában bárki elmenthet egy másolatot vagy kipróbálhatja. A súlyaid sosem szerepelnek benne.",
+    plLinkText: "{name}: edzésterv a HW Appban 💪 {url}",
     tourPlTiles: "A rovatok mindegyik fajtából a legjobbakat mutatják: népszerű a héten, legjobbra értékelt, barátok tervei… A nyíl mindet megmutatja ebben a sorrendben.",
     plStoreFriends: "Barátok tervei",
     plStoreOfficial: "A HW Apptól",
@@ -127,7 +130,7 @@ export default {
     plReport: "Terv jelentése",
     plReportD: "Sértő a neve, vagy spam? A jelentéseket kézzel ellenőrizzük.",
     tourPfPlans: "A tervek, amiket a profilodon mutatsz. A barátaid megnyithatnak egyet, és elmenthetnek egy másolatot.",
-    tourPlShare: "Kapcsold be, és a terv megjelenik a profilodon: a barátaid elmenthetnek egy másolatot (a súlyaidat soha).",
+    tourPlShare: "Kapcsold be, és a terv megjelenik a profilodon: a barátaid elmenthetnek egy másolatot (a súlyaidat soha). Vagy ossz meg egy linket: aki megnyitja, elmenthet egy másolatot.",
     frTogether: "Együtt",
     tgInvT: "Hívj meg egy barátot",
     tgInvD: "Ha egy barátod a linkeddel csatlakozik és elvégez 3 edzést, mindketten kaptok {n} 💎-ot.",
@@ -260,5 +263,6 @@ export default {
     ["A te éved", "Semmi sem tekintett vissza az egész évre.", "December 15. és január 10. között a Kezdőlap megmutatja az évedet: edzések, idő, leghosszabb széria, hónapok, kedvenc gyakorlatok és egy megosztható kép."],
     ["Könyvtár: emberek", "Egy terv szerzője csak egy név volt.", "Koppints a szerzőre a Könyvtárban, hogy lásd a profilját, és onnan barátkérést küldj; a szerző értesítést kap, ha valaki elmenti vagy értékeli a tervét (naponta legfeljebb egyszer)."],
     ["Könyvtár: rovatok", "A Könyvtár egyetlen hosszú lista volt.", "Rovatokkal nyílik: népszerű a héten, legjobbra értékelt, barátok tervei, legtöbbet mentett, a HW Apptól, legújabb; a nyíl mindet megmutatja ebben a sorrendben."],
+    ["Terv linkje", "Egy tervet csak a profilodon lehetett megmutatni vagy a Könyvtárban közzétenni.", "A tervszerkesztőből megoszthatsz egy linket: aki megnyitja, látja a tervet, és fiók nélkül is elmenthet egy másolatot vagy kipróbálhatja. A súlyaid sosem szerepelnek benne."],
   ],
 };

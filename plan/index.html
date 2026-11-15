@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>HW App · A workout plan</title>
+<!-- A plan's share link (app 1.10.0+): https://mikydon.github.io/hw-app/plan/?i=…&n=…&by=…. With HW App installed on
+     Android the link opens the app itself (App Links, /.well-known/assetlinks.json on mikydon.github.io); everywhere
+     else this page hands the plan to the website, which shows it (save a copy or try it). -->
+<script>
+  (function () {
+    var q = new URLSearchParams(location.search), o = new URLSearchParams();
+    var i = (q.get("i") || "").replace(/[^A-Za-z0-9_.,]/g, "").slice(0, 1200);
+    if (i) { o.set("plan", "1"); o.set("i", i); if (q.get("n")) o.set("n", q.get("n").slice(0, 40)); if (q.get("by")) o.set("by", q.get("by").slice(0, 24)); }
+    location.replace("../" + (i ? "?" + o.toString() : ""));
+  })();
+</script>
+<style>body{margin:0;background:#000;color:#f4f1ea;font:16px system-ui,sans-serif;display:flex;min-height:100vh;align-items:center;justify-content:center}a{color:#ffd23f}</style>
+</head>
+<body><p><a href="../">HW App</a></p></body>
+</html>

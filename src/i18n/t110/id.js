@@ -1,6 +1,9 @@
 // Indonesian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    plLink: "Bagikan tautan",
+    plLinkD: "Siapa pun yang punya tautan bisa menyimpan salinan atau mencobanya. Bebanmu tidak pernah ikut.",
+    plLinkText: "{name}: rencana latihan di HW App 💪 {url}",
     tourPlTiles: "Bagian-bagian menampilkan yang terbaik dari tiap jenis: populer minggu ini, nilai tertinggi, rencana teman… Panah menampilkan semuanya dalam urutan itu.",
     plStoreFriends: "Rencana teman",
     plStoreOfficial: "Dari HW App",
@@ -127,7 +130,7 @@ export default {
     plReport: "Laporkan rencana ini",
     plReportD: "Namanya menyinggung atau spam? Kami memeriksa laporan secara manual.",
     tourPfPlans: "Rencana yang kamu tampilkan di profil. Teman bisa membuka satu dan menyimpan salinannya.",
-    tourPlShare: "Nyalakan ini dan rencana muncul di profilmu: teman bisa menyimpan salinan (tidak pernah bebanmu).",
+    tourPlShare: "Nyalakan ini dan rencana muncul di profilmu: teman bisa menyimpan salinan (tidak pernah bebanmu). Atau bagikan tautan: siapa pun yang membukanya bisa menyimpan salinan.",
     frTogether: "Bersama",
     tgInvT: "Undang teman",
     tgInvD: "Saat teman bergabung lewat tautanmu dan latihan 3 kali, kalian berdua dapat {n} 💎.",
@@ -260,5 +263,6 @@ export default {
     ["Tahunmu", "Tidak ada yang merangkum setahun penuh.", "Dari 15 Desember sampai 10 Januari, Beranda menampilkan tahunmu: latihan, waktu, runtutan terpanjang, bulan-bulan, latihan favorit, dan gambar untuk dibagikan."],
     ["Pustaka: orang", "Pembuat rencana hanya sebuah nama.", "Ketuk pembuatnya di Pustaka untuk melihat profilnya dan mengirim permintaan pertemanan dari sana; pembuat mendapat notifikasi saat seseorang menyimpan atau menilai rencananya (paling banyak sekali sehari)."],
     ["Pustaka: bagian", "Pustaka hanya satu daftar panjang.", "Kini terbuka dengan bagian: populer minggu ini, nilai tertinggi, rencana teman, paling banyak disimpan, dari HW App, terbaru; panah menampilkan semuanya dalam urutan itu."],
+    ["Tautan rencana", "Rencana hanya bisa ditampilkan di profil atau diterbitkan di Pustaka.", "Bagikan tautan dari editor rencana: siapa pun yang membukanya melihat rencana itu dan bisa menyimpan salinan atau mencobanya, bahkan tanpa akun. Bebanmu tidak pernah ikut."],
   ],
 };

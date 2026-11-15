@@ -1,6 +1,9 @@
 // Polish: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    plLink: "Udostępnij link",
+    plLinkD: "Każdy z linkiem może zapisać kopię lub go wypróbować. Twoich ciężarów nigdy w nim nie ma.",
+    plLinkText: "{name}: plan treningowy w HW App 💪 {url}",
     tourPlTiles: "Sekcje pokazują najlepsze z każdego rodzaju: popularne w tym tygodniu, najwyżej oceniane, plany znajomych… Strzałka pokaże wszystkie w tej kolejności.",
     plStoreFriends: "Plany znajomych",
     plStoreOfficial: "Od HW App",
@@ -127,7 +130,7 @@ export default {
     plReport: "Zgłoś ten plan",
     plReportD: "Ma obraźliwą nazwę albo to spam? Zgłoszenia sprawdzamy ręcznie.",
     tourPfPlans: "Plany, które pokazujesz na profilu. Znajomi mogą otworzyć jeden i zapisać kopię.",
-    tourPlShare: "Włącz to, a plan pojawi się na twoim profilu: znajomi mogą zapisać kopię (nigdy twoich ciężarów).",
+    tourPlShare: "Włącz to, a plan pojawi się na twoim profilu: znajomi mogą zapisać kopię (nigdy twoich ciężarów). Albo udostępnij link: kto go otworzy, może zapisać kopię.",
     frTogether: "Razem",
     tgInvT: "Zaproś znajomego",
     tgInvD: "Gdy znajomy dołączy przez twój link i zrobi 3 treningi, oboje dostaniecie {n} 💎.",
@@ -260,5 +263,6 @@ export default {
     ["Twój rok", "Nic nie podsumowywało całego roku.", "Od 15 grudnia do 10 stycznia ekran Start pokazuje twój rok: treningi, czas, najdłuższą passę, miesiące, ulubione ćwiczenia i obrazek do udostępnienia."],
     ["Biblioteka: ludzie", "Autor planu był tylko nazwą.", "Stuknij autora w Bibliotece, by zobaczyć jego profil i wysłać stamtąd zaproszenie do znajomych; autor dostaje powiadomienie, gdy ktoś zapisze lub oceni jego plan (najwyżej raz dziennie)."],
     ["Biblioteka: sekcje", "Biblioteka była jedną długą listą.", "Otwiera się na sekcjach: popularne w tym tygodniu, najwyżej oceniane, plany znajomych, najczęściej zapisywane, od HW App, najnowsze; strzałka pokaże wszystkie w tej kolejności."],
+    ["Link do planu", "Plan można było tylko pokazać na profilu lub opublikować w Bibliotece.", "W edytorze planu udostępnij link: kto go otworzy, zobaczy plan i może zapisać kopię lub go wypróbować, nawet bez konta. Twoich ciężarów nigdy w nim nie ma."],
   ],
 };

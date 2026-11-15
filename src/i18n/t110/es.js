@@ -1,6 +1,9 @@
 // Spanish: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    plLink: "Compartir un enlace",
+    plLinkD: "Cualquiera con el enlace puede guardar una copia o probarlo. Tus pesos nunca van en él.",
+    plLinkText: "{name}: un plan de entrenamiento en HW App 💪 {url}",
     tourPlTiles: "Las secciones muestran lo mejor de cada tipo: popular esta semana, mejor valorados, planes de amigos… La flecha muestra todos en ese orden.",
     plStoreFriends: "Planes de amigos",
     plStoreOfficial: "De HW App",
@@ -127,7 +130,7 @@ export default {
     plReport: "Denunciar este plan",
     plReportD: "¿Tiene un nombre ofensivo o es spam? Revisamos las denuncias a mano.",
     tourPfPlans: "Planes que muestras en tu perfil. Tus amigos pueden abrir uno y guardar una copia.",
-    tourPlShare: "Actívalo y el plan aparece en tu perfil: tus amigos pueden guardar una copia (nunca tus pesos).",
+    tourPlShare: "Actívalo y el plan aparece en tu perfil: tus amigos pueden guardar una copia (nunca tus pesos). O comparte un enlace: quien lo abra puede guardar una copia.",
     frTogether: "Juntos",
     tgInvT: "Invita a un amigo",
     tgInvD: "Cuando un amigo se una con tu enlace y haga 3 entrenamientos, los dos recibiréis {n} 💎.",
@@ -260,5 +263,6 @@ export default {
     ["Tu año", "Nada repasaba el año entero.", "Del 15 de diciembre al 10 de enero, Inicio muestra tu año: entrenos, tiempo, la racha más larga, los meses, tus ejercicios favoritos y una imagen para compartir."],
     ["Biblioteca: personas", "El autor de un plan era solo un nombre.", "Toca al autor en la Biblioteca para ver su perfil y enviarle una solicitud de amistad desde ahí; los autores reciben una notificación cuando alguien guarda o valora su plan (como mucho una vez al día)."],
     ["Biblioteca: secciones", "La Biblioteca era una larga lista.", "Se abre en secciones: popular esta semana, mejor valorados, planes de amigos, más guardados, de HW App, más nuevos; la flecha muestra todos en ese orden."],
+    ["Enlaces de planes", "Un plan solo se podía mostrar en tu perfil o publicar en la Biblioteca.", "Comparte un enlace desde el editor del plan: quien lo abra ve el plan y puede guardar una copia o probarlo, incluso sin cuenta. Tus pesos nunca van en él."],
   ],
 };

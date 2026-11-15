@@ -1,6 +1,9 @@
 // Czech: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    plLink: "Sdílet odkaz",
+    plLinkD: "Každý s odkazem si může uložit kopii nebo ho vyzkoušet. Tvoje váhy v něm nikdy nejsou.",
+    plLinkText: "{name}: tréninkový plán v HW App 💪 {url}",
     tourPlTiles: "Sekce ukazují to nejlepší z každého druhu: oblíbené tento týden, nejlépe hodnocené, plány přátel… Šipka ukáže všechny v tom pořadí.",
     plStoreFriends: "Plány přátel",
     plStoreOfficial: "Od HW App",
@@ -127,7 +130,7 @@ export default {
     plReport: "Nahlásit tento plán",
     plReportD: "Má urážlivý název nebo je to spam? Nahlášení kontrolujeme ručně.",
     tourPfPlans: "Plány, které ukazuješ na profilu. Kamarádi si můžou jeden otevřít a uložit kopii.",
-    tourPlShare: "Zapni tohle a plán se ukáže na tvém profilu: kamarádi si můžou uložit kopii (nikdy ne tvoje váhy).",
+    tourPlShare: "Zapni tohle a plán se ukáže na tvém profilu: kamarádi si můžou uložit kopii (nikdy ne tvoje váhy). Nebo sdílej odkaz: kdo ho otevře, může si uložit kopii.",
     frTogether: "Spolu",
     tgInvT: "Pozvi kamaráda",
     tgInvD: "Když se kamarád přidá přes tvůj odkaz a odcvičí 3 tréninky, oba dostanete {n} 💎.",
@@ -260,5 +263,6 @@ export default {
     ["Tvůj rok", "Nic se neohlédlo za celým rokem.", "Od 15. prosince do 10. ledna ukáže Úvod tvůj rok: tréninky, čas, nejdelší šňůru, měsíce, oblíbené cviky a obrázek ke sdílení."],
     ["Knihovna: lidé", "Autor plánu byl jen jméno.", "Ťukni na autora v Knihovně a uvidíš jeho profil, odkud mu můžeš poslat žádost o přátelství; autor dostane upozornění, když si někdo jeho plán uloží nebo ohodnotí (nejvýš jednou denně)."],
     ["Knihovna: sekce", "Knihovna byla jeden dlouhý seznam.", "Otevře se na sekcích: oblíbené tento týden, nejlépe hodnocené, plány přátel, nejvíc uložené, od HW App, nejnovější; šipka ukáže všechny v tom pořadí."],
+    ["Odkaz na plán", "Plán šlo jen ukázat na profilu nebo zveřejnit v Knihovně.", "V editoru plánu sdílej odkaz: kdo ho otevře, uvidí plán a může si uložit kopii nebo ho vyzkoušet, i bez účtu. Tvoje váhy v něm nikdy nejsou."],
   ],
 };

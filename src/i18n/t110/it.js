@@ -1,6 +1,9 @@
 // Italian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    plLink: "Condividi un link",
+    plLinkD: "Chiunque abbia il link può salvarne una copia o provarlo. I tuoi pesi non ci sono mai.",
+    plLinkText: "{name}: un piano di allenamento in HW App 💪 {url}",
     tourPlTiles: "Le sezioni mostrano il meglio di ogni tipo: popolari questa settimana, più votati, piani degli amici… La freccia li mostra tutti in quell'ordine.",
     plStoreFriends: "Piani degli amici",
     plStoreOfficial: "Da HW App",
@@ -127,7 +130,7 @@ export default {
     plReport: "Segnala questa scheda",
     plReportD: "Ha un nome offensivo o è spam? Controlliamo le segnalazioni a mano.",
     tourPfPlans: "Le schede che mostri sul tuo profilo. Gli amici possono aprirne una e salvarne una copia.",
-    tourPlShare: "Attivalo e la scheda compare sul tuo profilo: gli amici possono salvarne una copia (mai i tuoi pesi).",
+    tourPlShare: "Attivalo e la scheda compare sul tuo profilo: gli amici possono salvarne una copia (mai i tuoi pesi). Oppure condividi un link: chi lo apre può salvarne una copia.",
     frTogether: "Insieme",
     tgInvT: "Invita un amico",
     tgInvD: "Quando un amico si unisce con il tuo link e fa 3 allenamenti, ricevete entrambi {n} 💎.",
@@ -260,5 +263,6 @@ export default {
     ["Il tuo anno", "Niente riassumeva l'anno intero.", "Dal 15 dicembre al 10 gennaio la Home mostra il tuo anno: allenamenti, tempo, la striscia più lunga, i mesi, gli esercizi preferiti e un'immagine da condividere."],
     ["Libreria: persone", "L'autore di un piano era solo un nome.", "Tocca l'autore nella Libreria per vedere il suo profilo e inviargli una richiesta di amicizia da lì; gli autori ricevono una notifica quando qualcuno salva o valuta il loro piano (al massimo una volta al giorno)."],
     ["Libreria: sezioni", "La Libreria era un unico lungo elenco.", "Si apre sulle sezioni: popolari questa settimana, più votati, piani degli amici, più salvati, da HW App, più recenti; la freccia li mostra tutti in quell'ordine."],
+    ["Link dei piani", "Un piano si poteva solo mostrare sul profilo o pubblicare nella Libreria.", "Condividi un link dall'editor del piano: chi lo apre vede il piano e può salvarne una copia o provarlo, anche senza account. I tuoi pesi non ci sono mai."],
   ],
 };

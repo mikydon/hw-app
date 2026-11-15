@@ -67,7 +67,7 @@ export async function start(o = {}) {
   page.on("pageerror", e => errors.push(String(e)));
   page.on("console", m => { if (m.type() === "error" && !/favicon|Failed to load resource/.test(m.text())) errors.push(m.text()); });
   if (o.clock) await page.clock.install({ time: o.clock });
-  await page.goto(`http://127.0.0.1:${port}/index.html`);
+  await page.goto(`http://127.0.0.1:${port}/index.html${o.query || ""}`); // o.query: a link the page is opened with ("?add=…")
   await page.waitForSelector("[data-topbar], [data-onboarding], [data-ob-step]", { timeout: 15000 }).catch(() => {});
   const close = async () => { await browser.close(); srv.close(); };
   return { page, ctx, browser, port, errors, close, url: `http://127.0.0.1:${port}/index.html` };

@@ -1,6 +1,9 @@
 // Portuguese (Brazil): texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    plLink: "Compartilhar um link",
+    plLinkD: "Qualquer pessoa com o link pode salvar uma cópia ou testar. Seus pesos nunca vão nele.",
+    plLinkText: "{name}: um plano de treino no HW App 💪 {url}",
     tourPlTiles: "As seções mostram o melhor de cada tipo: populares nesta semana, mais bem avaliados, planos de amigos… A seta mostra todos nessa ordem.",
     plStoreFriends: "Planos de amigos",
     plStoreOfficial: "Do HW App",
@@ -127,7 +130,7 @@ export default {
     plReport: "Denunciar este plano",
     plReportD: "Tem um nome ofensivo ou é spam? Verificamos as denúncias manualmente.",
     tourPfPlans: "Planos que você mostra no seu perfil. Seus amigos podem abrir um e salvar uma cópia.",
-    tourPlShare: "Ative isto e o plano aparece no seu perfil: seus amigos podem salvar uma cópia (nunca seus pesos).",
+    tourPlShare: "Ative isto e o plano aparece no seu perfil: seus amigos podem salvar uma cópia (nunca seus pesos). Ou compartilhe um link: quem abrir pode salvar uma cópia.",
     frTogether: "Juntos",
     tgInvT: "Convide um amigo",
     tgInvD: "Quando um amigo entrar pelo seu link e fizer 3 treinos, vocês dois ganham {n} 💎.",
@@ -260,5 +263,6 @@ export default {
     ["Seu ano", "Nada resumia o ano inteiro.", "De 15 de dezembro a 10 de janeiro, o Início mostra seu ano: treinos, tempo, a maior sequência, os meses, seus exercícios favoritos e uma imagem para compartilhar."],
     ["Biblioteca: pessoas", "O autor de um plano era só um nome.", "Toque no autor na Biblioteca para ver o perfil e mandar um pedido de amizade dali; os autores recebem uma notificação quando alguém salva ou avalia o plano (no máximo uma vez por dia)."],
     ["Biblioteca: seções", "A Biblioteca era uma lista longa.", "Ela abre em seções: populares nesta semana, mais bem avaliados, planos de amigos, mais salvos, do HW App, mais novos; a seta mostra todos nessa ordem."],
+    ["Links de planos", "Um plano só podia ser mostrado no perfil ou publicado na Biblioteca.", "Compartilhe um link pelo editor do plano: quem abrir vê o plano e pode salvar uma cópia ou testar, mesmo sem conta. Seus pesos nunca vão nele."],
   ],
 };

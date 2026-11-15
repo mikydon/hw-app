@@ -40,6 +40,13 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="https" android:host="mikydon.github.io" android:pathPrefix="/hw-app/add" />
             </intent-filter>
+            <!-- 1.10.0: a plan's share link (https://mikydon.github.io/hw-app/plan/?i=…) opens the plan in the app -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="mikydon.github.io" android:pathPrefix="/hw-app/plan" />
+            </intent-filter>
 
         </activity>
 
