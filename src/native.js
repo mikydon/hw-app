@@ -624,6 +624,11 @@ const HwDisplay = registerPlugin("HwDisplay");
 export const hzSupported = () => isNative && Capacitor.isPluginAvailable("HwDisplay");
 export async function hzInfo() { if (!hzSupported()) return null; try { return await HwDisplay.info(); } catch (_) { return null; } }
 export async function hzSet(mode) { if (!hzSupported()) return; try { await HwDisplay.set({ mode: mode === "60" ? "60" : "max" }); } catch (_) {} }
+// 1.10.0: the app's own text size (100 / 115 / 130 %) = the WebView's text zoom (HwBuild.setTextZoom, new APK);
+// tests put a fake on window.__hwTextZoom. The website has none (the browser zooms by itself).
+const tzImpl = () => (typeof window !== "undefined" && window.__hwTextZoom) || (isNative && Capacitor.isPluginAvailable("HwBuild") ? HwBuild : null);
+export const textZoomSupported = () => !!tzImpl();
+export async function setTextZoom(z) { const i = tzImpl(); if (!i) return; try { await i.setTextZoom({ z }); } catch (_) {} }
 
 // ─── 1.9.0: the rest timer with the screen off (android RestService via the app's own HwRest plugin) ───
 // Tests put a fake on window.__hwRest (the browser has no native side).

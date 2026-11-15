@@ -40,7 +40,10 @@ public class MainActivity extends BridgeActivity {
     private void fixedTextSize() {
         try {
             WebView w = getBridge() == null ? null : getBridge().getWebView();
-            if (w != null && w.getSettings().getTextZoom() != 100) w.getSettings().setTextZoom(100);
+            // 1.10.0: the size chosen in the app (Settings → Appearance → Text size), else 100 %
+            int z = getSharedPreferences("hw_text", MODE_PRIVATE).getInt("zoom", 100);
+            if (z != 100 && z != 115 && z != 130) z = 100;
+            if (w != null && w.getSettings().getTextZoom() != z) w.getSettings().setTextZoom(z);
         } catch (Exception ignored) {}
     }
 }

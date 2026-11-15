@@ -1,6 +1,8 @@
 // French: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    textSizeT: "Taille du texte",
+    textSizeD: "Des lettres plus grandes pour lire plus facilement ; les écrans s'adaptent.",
     tourGmRanked: "Ranked : le même jeu pour tous, contre des joueurs de niveau proche. 2 parties chaque jour d'entraînement ; ton rang monte et descend avec ton classement.",
     gmRkTile: "{rank} · classement {r} · encore {n} aujourd'hui",
     gmRkResT: "Tes parties en attente",
@@ -220,5 +222,6 @@ export default {
     ["Programmes sur deux appareils", "Un téléphone qui n'avait pas encore reçu une modification pouvait renvoyer les anciens exercices d'un programme quand tu le déplaçais seulement à un autre jour.", "Les exercices d'un programme et ses jours sont synchronisés à part : les exercices les plus récents gagnent toujours, quel que soit l'appareil qui a changé le jour."],
     ["Listes plus fluides", "Les filtres changeaient d'une liste à l'autre et se réinitialisaient à chaque fois, et une liste en chargement n'affichait qu'un mot.", "Un bouton de filtre dans chaque liste, et tes filtres restent jusqu'à la fermeture de l'appli. Des contours gris pendant le chargement, tire vers le bas pour actualiser, et une liste vide propose l'étape suivante. Change le mois du calendrier en glissant ; sur PC avec ← → et / pour chercher."],
     ["Noms propres", "On pouvait prendre n'importe quel pseudo libre.", "Les noms qui ressemblent à HW App ou à l'équipe, et les gros mots connus, sont refusés pour les nouveaux pseudos et les programmes montrés aux autres."],
+    ["📱 Taille du texte", "Les lettres suivaient la taille de police du téléphone, et une grande taille coupait des textes.", "Réglages → Apparence → Taille du texte : 100, 115 ou 130 %, et les écrans font de la place aux lettres plus grandes."],
   ],
 };

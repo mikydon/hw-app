@@ -51,6 +51,24 @@ public class HwBuildPlugin extends Plugin {
     }
 
     /**
+     * 1.10.0 (Michael, Nov 15: a text size inside the app): the WebView's text zoom, 100, 115 or 130 %, kept in
+     * SharedPreferences "hw_text" so MainActivity sets it again at every start and resume (the phone's own font size
+     * still never applies: the app's layout is checked at these three sizes).
+     */
+    @PluginMethod
+    public void setTextZoom(PluginCall call) {
+        int z = call.getInt("z", 100);
+        final int zoom = z == 115 || z == 130 ? z : 100;
+        getContext().getSharedPreferences("hw_text", Context.MODE_PRIVATE).edit().putInt("zoom", zoom).apply();
+        getActivity().runOnUiThread(() -> {
+            try {
+                if (getBridge() != null && getBridge().getWebView() != null) getBridge().getWebView().getSettings().setTextZoom(zoom);
+                JSObject r = new JSObject(); r.put("zoom", zoom); call.resolve(r);
+            } catch (Exception e) { call.reject("failed: " + e.getMessage()); }
+        });
+    }
+
+    /**
      * 1.7.5 (Michael, Oct 23): when Android won't ask for notifications any more (the person refused), the app sends
      * them straight to this app's notification settings (Android 8+), else to the app's info page.
      */

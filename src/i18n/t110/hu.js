@@ -1,6 +1,8 @@
 // Hungarian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    textSizeT: "Szövegméret",
+    textSizeD: "Nagyobb betűk a könnyebb olvasásért; a képernyők alkalmazkodnak.",
     tourGmRanked: "Ranked: ugyanaz a pakli mindenkinek, hasonló pontszámú játékosok ellen. 2 játék minden edzésnapon; a rang a pontszámmal együtt nő és csökken.",
     gmRkTile: "{rank} · pontszám {r} · ma még {n}",
     gmRkResT: "Várakozó játékaid",
@@ -220,5 +222,6 @@ export default {
     ["Tervek két eszközön", "Egy telefon, amely még nem kapta meg a módosítást, visszaküldhette egy terv régi gyakorlatait, ha csak áttetted egy másik napra.", "Egy terv gyakorlatai és napjai külön szinkronizálódnak: mindig a legújabb gyakorlatok nyernek, bármelyik eszköz változtatta is a napot."],
     ["Gördülékenyebb listák", "A szűrők minden listában másképp néztek ki és mindig nullázódtak, a betöltődő lista pedig csak egy szót mutatott.", "Egy szűrőgomb minden listában, és a szűrők megmaradnak, amíg be nem zárod az appot. Szürke körvonalak betöltés közben, húzd le a frissítéshez, és az üres lista felajánlja a következő lépést. A naptár hónapját húzással váltod; PC-n ← → és / a kereséshez."],
     ["Tiszta nevek", "Bármilyen szabad becenevet el lehetett venni.", "A HW App-nak vagy a csapatnak látszó nevek és az ismert csúnya szavak nem használhatók új becenévben és másoknak mutatott tervben."],
+    ["📱 Szövegméret", "A betűk a telefon betűméretét követték, és nagy beállításnál a szövegek levágódtak.", "Beállítások → Megjelenés → Szövegméret: 100, 115 vagy 130 %, és a képernyők helyet adnak a nagyobb betűknek."],
   ],
 };

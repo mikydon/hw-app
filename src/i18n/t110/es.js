@@ -1,6 +1,8 @@
 // Spanish: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    textSizeT: "Tamaño del texto",
+    textSizeD: "Letras más grandes para leer mejor; las pantallas se adaptan.",
     tourGmRanked: "Ranked: la misma baraja para todos, contra jugadores de puntuación parecida. 2 partidas cada día que entrenas; tu rango sube y baja con tu puntuación.",
     gmRkTile: "{rank} · puntuación {r} · hoy quedan {n}",
     gmRkResT: "Tus partidas en espera",
@@ -220,5 +222,6 @@ export default {
     ["Planes en dos dispositivos", "Un móvil que aún no había recibido un cambio podía devolver los ejercicios antiguos de un plan cuando solo lo movías a otro día de la semana.", "Los ejercicios de un plan y sus días de la semana se sincronizan por separado: siempre ganan los ejercicios más nuevos, sea cual sea el dispositivo que cambió el día."],
     ["Listas más fluidas", "Los filtros eran distintos en cada lista y se reiniciaban cada vez, y una lista cargando solo mostraba una palabra.", "Un botón de filtro en cada lista, y tus filtros se mantienen hasta que cierres la app. Contornos grises mientras carga, desliza hacia abajo para recargar, y una lista vacía ofrece el siguiente paso. Cambia el mes del calendario deslizando; en PC con ← → y / para buscar."],
     ["Nombres limpios", "Se podía coger cualquier apodo libre.", "Los nombres que parecen HW App o el equipo y las palabrotas conocidas se rechazan en apodos nuevos y en planes que ven otros."],
+    ["📱 Tamaño del texto", "Las letras seguían el ajuste de fuente del móvil y con un tamaño grande los textos se cortaban.", "Ajustes → Apariencia → Tamaño del texto: 100, 115 o 130 %, y las pantallas dejan sitio a las letras más grandes."],
   ],
 };

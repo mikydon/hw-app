@@ -1,6 +1,6 @@
 import { useState, useEffect, useLayoutEffect, useRef, useMemo, useId, useCallback, memo, Fragment } from "react";
 import { createPortal } from "react-dom";
-import { shareImage, askReview, restSupported, restPermission, restStart, restStop, restNativeBeeps, restOpenSettings, isNative, pushBack, setRootBack, exitApp, vibratePattern, keepScreenOn, openExternal, saveBackupFile, bkSupported, bkWrite, bkWriteAuto, bkList, bkRead, bkDelete, bkShare, BK_DIR, bkAutoFile, checkForUpdate, lastUpdate, lastGh, applyUpdateNow, latestApk, isTestBuild, apkState, onApk, apkSupported, apkRestore, apkDownload, apkCanInstall, apkAllow, apkInstall, onAppResume, healthState, healthConnect, healthSettings, healthSteps, healthFoodItems, healthBody, shareText, copyText, pushSupported, pushPermission, pushChannel, pushToken, pushTokenWhy, pushDeleteToken, onPushTap, onPushToken, onPushReceived, hzSupported, hzInfo, hzSet, isPlay, playCheck, playOpenStore, playUpdate, PLAY_STORE_LINK, updTopic, onAppUrl, installCheck, openNotifSettings, showNotif, setNativeBg, backIsTop, backTopRun } from "./native.js";
+import { shareImage, askReview, restSupported, restPermission, restStart, restStop, restNativeBeeps, restOpenSettings, isNative, pushBack, setRootBack, exitApp, vibratePattern, keepScreenOn, openExternal, saveBackupFile, bkSupported, bkWrite, bkWriteAuto, bkList, bkRead, bkDelete, bkShare, BK_DIR, bkAutoFile, checkForUpdate, lastUpdate, lastGh, applyUpdateNow, latestApk, isTestBuild, apkState, onApk, apkSupported, apkRestore, apkDownload, apkCanInstall, apkAllow, apkInstall, onAppResume, healthState, healthConnect, healthSettings, healthSteps, healthFoodItems, healthBody, shareText, copyText, pushSupported, pushPermission, pushChannel, pushToken, pushTokenWhy, pushDeleteToken, onPushTap, onPushToken, onPushReceived, hzSupported, hzInfo, hzSet, textZoomSupported, setTextZoom, isPlay, playCheck, playOpenStore, playUpdate, PLAY_STORE_LINK, updTopic, onAppUrl, installCheck, openNotifSettings, showNotif, setNativeBg, backIsTop, backTopRun } from "./native.js";
 import { cloud, NICK_RE, SHARE_BASE, cleanCode, fmtCode } from "./cloud-lazy.js";
 import { nickReserved, nickBad, textBad } from "./cloud-shared.js";
 import { QUICK as EMO_QUICK, EMOJI } from "./emoji.js";
@@ -2410,14 +2410,14 @@ function TopBar({ screen, history, menuOpen, onMenu, onGo, dlPct, badge, head, s
         <div data-topbar-box className="tbBox">
         {head ? head : <>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div key={screen} className="titleIn" style={{ fontFamily: DISPLAY, fontSize: CJK.test(T(SCREEN_TITLE[screen])) ? 21 : 24, fontWeight: 900, lineHeight: 1.05, color: C.chalk, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" , ...INK }}>{T(SCREEN_TITLE[screen])}</div>
-          <div style={{ display: "flex", gap: 5, fontSize: 12, color: bdayToday() ? C.signal : C.dim, fontWeight: bdayToday() ? 800 : 400, marginTop: 2, whiteSpace: "nowrap" }}>
+          <div key={screen} className="titleIn" style={{ fontFamily: DISPLAY, fontSize: `calc(${CJK.test(T(SCREEN_TITLE[screen])) ? 21 : 24}px / var(--ts, 1))`, fontWeight: 900, lineHeight: 1.05, color: C.chalk, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" , ...INK }}>{T(SCREEN_TITLE[screen])}</div>
+          <div style={{ display: "flex", gap: 5, fontSize: "calc(12px / var(--ts, 1))", color: bdayToday() ? C.signal : C.dim, fontWeight: bdayToday() ? 800 : 400, marginTop: 2, whiteSpace: "nowrap" }}>
             <span ref={dateRef} data-top-date={dl} style={{ overflow: "hidden", textOverflow: "ellipsis", minWidth: 0 }}>{bdayToday() ? emo(T("bdayTop")) : dateText}</span>
             <span data-clock style={{ flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>· {now.toLocaleTimeString(LANG, { hour: "2-digit", minute: "2-digit" })}</span>
           </div>
         </div>
-        <button onClick={() => onGo && onGo("profile")} data-chip="streak" style={{ ...btnBase, ...chip(st.n ? "#ffa94d" : C.dim), ...pill }} aria-label={T("streakAria", { n: st.n })}><span className={st.n ? "wiggle" : ""}><IcoI n="flame" /></span>{st.n}</button>
-        <button onClick={() => onGo && onGo("profile")} data-chip="level" style={{ ...btnBase, ...chip(C.sky), ...pill, position: "relative" }} aria-label={T("levelAria", { n: lv.lvl })}><IcoI n="bolt" />{lv.lvl}{EC.boostUntil(META.boosts) > Date.now() && <span data-chip-boost aria-hidden="true" style={{ position: "absolute", top: -6, right: -6, fontFamily: BODY, fontSize: 10, fontWeight: 900, lineHeight: 1, color: C.signalInk, background: C.signal, borderRadius: 99, padding: "2px 4px" }}>2×</span>}</button>
+        <button onClick={() => onGo && onGo("profile")} data-chip="streak" style={{ ...btnBase, ...chip(st.n ? "#ffa94d" : C.dim), ...pill, fontSize: "calc(20px / var(--ts, 1))" }} aria-label={T("streakAria", { n: st.n })}><span className={st.n ? "wiggle" : ""}><IcoI n="flame" /></span>{st.n}</button>
+        <button onClick={() => onGo && onGo("profile")} data-chip="level" style={{ ...btnBase, ...chip(C.sky), ...pill, position: "relative", fontSize: "calc(20px / var(--ts, 1))" }} aria-label={T("levelAria", { n: lv.lvl })}><IcoI n="bolt" />{lv.lvl}{EC.boostUntil(META.boosts) > Date.now() && <span data-chip-boost aria-hidden="true" style={{ position: "absolute", top: -6, right: -6, fontFamily: BODY, fontSize: 10, fontWeight: 900, lineHeight: 1, color: C.signalInk, background: C.signal, borderRadius: 99, padding: "2px 4px" }}>2×</span>}</button>
         {!side && <MenuButton open={menuOpen} onClick={onMenu} badge={badge} />}
         </>}
         {typeof prog === "number" && <div data-top-prog={Math.round(prog)} role="progressbar" aria-valuenow={Math.round(prog)} aria-valuemin={0} aria-valuemax={100} style={{ position: "absolute", left: 18, bottom: 4, height: 3, width: `calc((100% - 36px) * ${Math.max(2, Math.min(100, prog)) / 100})`, background: C.sky, borderRadius: 3, transition: "width .3s", boxShadow: `0 0 8px ${C.sky}` }} />}
@@ -5010,7 +5010,7 @@ function Calories({ history, profile, setProfile, kcal, setKcal }) {
           <FoldSect data-kc-log title={T("kcAddTitle")} defOpen={fold("log")} onToggle={v => (KC_FOLD.log = v)} style={{ marginTop: 10 }}>
             <div style={{ display: "flex", gap: 8 }}>
               <input value={amount} onChange={e => setAmount(e.target.value.replace(/[^0-9]/g, "").slice(0, 4))} onKeyDown={e => { if (e.key === "Enter") add(); }} inputMode="numeric" placeholder="kcal" aria-label={T("kcAmount")} style={{ ...field, flex: 1 }} />
-              <input value={note} onChange={e => setNote(e.target.value)} onKeyDown={e => { if (e.key === "Enter") add(); }} placeholder={T("kcNote")} aria-label={T("kcNote")} style={{ ...field, flex: 1.6 }} />
+              <input value={note} onChange={e => setNote(e.target.value)} onKeyDown={e => { if (e.key === "Enter") add(); }} placeholder={T("kcNote")} aria-label={T("kcNote")} style={{ ...field, flex: 1.6, minWidth: 0, textOverflow: "ellipsis" }} />
             </div>
             <button onClick={add} disabled={!Number(amount)} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 10, padding: 16, opacity: Number(amount) ? 1 : 0.5 }}>{Number(amount) ? T("kcAddBtn", { n: nf(Number(amount)) }) : T("kcAddBtn0")}</button>
           </FoldSect>
@@ -6365,6 +6365,8 @@ function BodyRanks({ m, onPick }) {
   const tap = e => { const el = e.target.closest && e.target.closest("[data-fam]"); if (!el) return; sfxTap(); setOpen(el.getAttribute("data-fam")); };
   const fig = side => <svg data-body-side={side} viewBox={`-2 0 ${BD.BODY_W + 4} ${BD.BODY_H}`} onClick={tap} style={{ height: "100%", width: "auto", display: "block", overflow: "visible" }} dangerouslySetInnerHTML={{ __html: BD.bodySvg(side, { base, plate, gap: C.panel, col }) }} />;
   const f = open && br.fam[open];
+  // 1.10.0 (text size 130 %): the part names grow at most 12 %, so "Shoulders" never breaks inside the word in 3 columns
+  const ts = useTextScale(), famFs = +(12 * Math.min(ts, 1.12) / ts).toFixed(2);
   return (
     <Sect data-body-ranks title={<>{T("bodyTitle")}<InfoQ title={T("bodyTitle")} text={T("bodyD")} /></>} meta={br.all >= 0 ? <RankTag r={br.all} size={15} /> : null} style={{ marginTop: 0, marginBottom: 14 }}>
       <style>{`[data-body-ranks] [data-fam]{transition:filter ${MO.t1};cursor:pointer} [data-body-ranks] [data-fam]:hover{filter:brightness(1.18)}`}</style>
@@ -6377,7 +6379,7 @@ function BodyRanks({ m, onPick }) {
               <BodyIco spec={BD.FAMILY_ICON[k]} size={28} hi={c || C.dim} />
               {r === null ? <span style={{ fontSize: 13, color: C.dim, fontWeight: 800, paddingRight: 4 }}>–</span> : <RankIcon r={r} size={20} />}
             </span>
-            <span style={{ fontSize: 12, fontWeight: 800, lineHeight: 1.15, color: r === null ? C.dim : C.chalk, width: "100%", overflowWrap: "anywhere", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{T("fam_" + k)}</span>
+            <span style={{ fontSize: famFs, fontWeight: 800, lineHeight: 1.15, color: r === null ? C.dim : C.chalk, width: "100%", overflowWrap: "break-word", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{T("fam_" + k)}</span>
             <span style={{ fontSize: 11, fontWeight: 800, color: c || C.dim, opacity: c ? 1 : 0.7 }}>{r === null ? T("bodyNoneShort") : RANKS[r].name}</span>
           </button>
         ); })}
@@ -8661,6 +8663,20 @@ function PushRow({ settings, set, perm, setPerm }) {
   );
 }
 // Screen refresh rate (1.6.0, Michael: "the highest the phone allows, or 60"): app only.
+// 1.10.0 (Michael approved, Nov 15): text size inside the app. The phone's own font size never applies (1.7.5: words
+// got cut), so people who need bigger letters choose here: 100 / 115 / 130 % (the layouts that adapt to bigger text,
+// TEXT_SCALE, take it from there). App only.
+function TextSizeRow({ settings, set, first }) {
+  const v = settings.textSize === 115 || settings.textSize === 130 ? settings.textSize : 100;
+  return (
+    <div data-text-size={v} style={{ padding: "14px 16px", borderTop: first ? "none" : `1px solid ${C.line}` }}>
+      <div style={{ fontSize: 15, fontWeight: 700, color: C.chalk }}>{T("textSizeT")}</div>
+      <Seg label={T("textSizeT")} value={v} style={{ marginTop: 8 }} onPick={z => { if (z === v) return; sfxTap(); set("textSize", z); setTextZoom(z).then(() => { setTimeout(readTextScale, 60); setTimeout(readTextScale, 400); }); }}
+        items={[[100, <span style={{ fontSize: 13 }}>A</span>, { "data-text-opt": "100", "aria-label": "100 %", "aria-pressed": v === 100 }], [115, <span style={{ fontSize: 16 }}>A</span>, { "data-text-opt": "115", "aria-label": "115 %", "aria-pressed": v === 115 }], [130, <span style={{ fontSize: 19 }}>A</span>, { "data-text-opt": "130", "aria-label": "130 %", "aria-pressed": v === 130 }]]} />
+      <div style={{ fontSize: 12, color: C.dim, marginTop: 6, lineHeight: 1.45 }}>{T("textSizeD")}</div>
+    </div>
+  );
+}
 function HzRow({ settings, set, first }) {
   const [info, setInfo] = useState(null);
   useEffect(() => { hzInfo().then(setInfo); }, []);
@@ -8878,6 +8894,7 @@ function SettingsTab({ initPage, ret, settings, setSettings, history, profile, s
       {/* 1.9.0 (Michael, Nov 6): which Home page comes first (also: hold a tab on Home) */}
       <div style={{ fontSize: 13, color: C.chalk, fontWeight: 800, margin: "14px 0 8px" }}>{T("homeOrderT")}</div>
       <Seg label={T("homeOrderT")} value={settings.homeOrder === "ex" ? "ex" : "today"} items={[["today", T("homeOrderToday"), { "data-home-order": "today" }], ["ex", T("homeOrderEx"), { "data-home-order": "ex" }]]} onPick={id => { sfxTap(); set("homeOrder", id); }} />
+      {textZoomSupported() && <div style={{ marginTop: 12, borderRadius: 14, background: SOFT(), overflow: "hidden" }}><TextSizeRow settings={settings} set={set} first /></div>}
       {hzSupported() && <div style={{ marginTop: 12, borderRadius: 14, background: SOFT(), overflow: "hidden" }}><HzRow settings={settings} set={set} first /></div>}
       </Sect>
       </div>
@@ -13511,6 +13528,7 @@ export default function App() {
   // Screen refresh rate (1.6.0): the saved choice (MainActivity applies it too, before the first frame)
   // 1.7.3: 60 Hz unless "the highest" was chosen; the APK applies the saved mode itself at the next start
   useEffect(() => { if (hzSupported() && loaded) hzSet(settings.hz === "max" ? "max" : "60"); }, [loaded]);
+  useEffect(() => { if (textZoomSupported() && loaded && settings.textSize) setTextZoom(settings.textSize); }, [loaded]); // 1.10.0: the native side keeps it too
   // 1.7.4: badges and ranks still face down (counted on ☰ and the Profile row of the menu)
   const claimN = useMemo(() => (profLoaded ? unclaimedFor(history, profile, kcal).length : 0), [history, profile, kcal, profLoaded]);
   const chestN = useMemo(() => (profLoaded ? readyChests(history, profile).length : 0), [history, profile, profLoaded]); // 1.9.0

@@ -61,6 +61,7 @@ export async function start(o = {}) {
   if (o.store) await ctx.addInitScript(v => { window.__hwStore = v; }, o.store); // "play" | "direct": which build the app thinks it is
   // o.cloud: signed in through tests/fakecloud.js (o.cloud = the starting server data, see that file)
   if (o.cloud) { await ctx.addInitScript(c => { window.__fake = c; }, o.cloud === true ? {} : o.cloud); await ctx.addInitScript({ path: path.join(ROOT, "tests", "fakecloud.js") }); }
+  if (o.init) await ctx.addInitScript(o.init); // o.init: a function run in the page before the app (fakes, hooks)
   const page = await ctx.newPage();
   const errors = [];
   page.on("pageerror", e => errors.push(String(e)));

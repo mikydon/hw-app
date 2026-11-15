@@ -1,6 +1,8 @@
 // Czech: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    textSizeT: "Velikost textu",
+    textSizeD: "Větší písmena pro snazší čtení; obrazovky se jim přizpůsobí.",
     tourGmRanked: "Ranked: stejný balíček pro všechny, proti hráčům s podobným ratingem. 2 hry v každý den, kdy cvičíš; rank stoupá i klesá s ratingem.",
     gmRkTile: "{rank} · rating {r} · dnes ještě {n}",
     gmRkResT: "Tvoje čekající hry",
@@ -220,5 +222,6 @@ export default {
     ["Plány na dvou zařízeních", "Telefon, který ještě nedostal úpravu, mohl poslat zpátky staré cviky plánu, když jsi ho jen přesunul na jiný den v týdnu.", "Cviky plánu a jeho dny v týdnu se synchronizují zvlášť: vždy vyhrají nejnovější cviky, ať den změnilo kterékoli zařízení."],
     ["Plynulejší seznamy", "Filtry vypadaly v každém seznamu jinak a pokaždé se zrušily a načítaný seznam ukazoval jen slovo.", "Jedno tlačítko filtru v každém seznamu a filtry zůstanou, dokud aplikaci nezavřeš. Šedé obrysy během načítání, potáhni dolů pro obnovení a prázdný seznam nabídne další krok. Měsíc v kalendáři změníš potažením; na PC šipkami ← → a / pro hledání."],
     ["Slušná jména", "Šla vzít jakákoli volná přezdívka.", "Jména, která vypadají jako HW App nebo tým, a známé nadávky nejdou použít v nových přezdívkách ani v plánech, které ukazuješ ostatním."],
+    ["📱 Velikost textu", "Písmo se řídilo nastavením telefonu a při velkém písmu se texty ořezávaly.", "Nastavení → Vzhled → Velikost textu: 100, 115 nebo 130 % a obrazovky se větším písmenům přizpůsobí."],
   ],
 };

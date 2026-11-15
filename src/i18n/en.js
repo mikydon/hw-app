@@ -789,6 +789,8 @@ const en = {
     plSortOld: "Oldest",
     plSortAZ: "A–Z",
     plSortZA: "Z–A",
+    textSizeT: "Text size",
+    textSizeD: "Bigger letters for easier reading; the screens adjust to them.",
     tourGmRanked: "Ranked: the same deck for everyone, against players near your rating. 2 games on each day you train; your rank goes up and down with your rating.",
     gmRkTile: "{rank} · rating {r} · {n} left today",
     gmRkResT: "Your waiting games",
@@ -1937,6 +1939,7 @@ const en = {
     ["Plans on two devices", "A phone that had not yet received an edit could send a plan's old exercises back when you only moved it to another weekday.", "A plan's exercises and its weekdays are synced apart: the newest exercises always win, whichever device changed the weekday."],
     ["Smoother lists", "Filters looked different on every list and reset each time, and a loading list showed only a word.", "One filter button on every list, and your filters stay until you close the app. Grey outlines while a list loads, pull down to reload, and an empty list offers the next step. Swipe the calendar to change the month; on a PC use ← → and / to search."],
     ["Clean names", "Any free nickname could be taken.", "Names that look like HW App or staff, and known swear words, are refused for new nicknames and for plans shown to others."],
+    ["📱 Text size", "Letters followed the phone's font setting, and a big setting cut texts off.", "Settings → Appearance → Text size: 100, 115 or 130 %, and the screens make room for the bigger letters."],
   ],
   news19: [
     ["Workout plans", "One plan for everyone: days A, B and C.", "Build your own plans from the app's exercises: pick exercises and sets for every weekday (empty days are rest days), sort plans into groups and use one. Home then shows that plan's week, with the days you've done in green. Small icons show what each day trains, and tips say when a muscle gets little work. The recommended A, B, C plan is still there."],

@@ -1,6 +1,8 @@
 // German: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    textSizeT: "Textgröße",
+    textSizeD: "Größere Buchstaben zum leichteren Lesen; die Seiten passen sich an.",
     tourGmRanked: "Ranked: dasselbe Deck für alle, gegen Spieler mit ähnlicher Wertung. 2 Spiele an jedem Trainingstag; dein Rang steigt und fällt mit der Wertung.",
     gmRkTile: "{rank} · Wertung {r} · heute noch {n}",
     gmRkResT: "Deine wartenden Spiele",
@@ -220,5 +222,6 @@ export default {
     ["Pläne auf zwei Geräten", "Ein Handy, das eine Änderung noch nicht bekommen hatte, konnte die alten Übungen eines Plans zurückschicken, wenn du ihn nur auf einen anderen Wochentag verschoben hast.", "Die Übungen eines Plans und seine Wochentage werden getrennt synchronisiert: Die neuesten Übungen gewinnen immer, egal welches Gerät den Wochentag geändert hat."],
     ["Flüssigere Listen", "Filter sahen in jeder Liste anders aus und wurden jedes Mal zurückgesetzt, und eine ladende Liste zeigte nur ein Wort.", "Ein Filterknopf in jeder Liste, und deine Filter bleiben, bis du die App schließt. Graue Umrisse beim Laden, zum Aktualisieren nach unten ziehen, und eine leere Liste bietet den nächsten Schritt. Den Monat im Kalender wechselst du per Wischen; am PC mit ← → und / zum Suchen."],
     ["Saubere Namen", "Jeder freie Spitzname konnte vergeben werden.", "Namen, die wie HW App oder das Team aussehen, und bekannte Schimpfwörter werden bei neuen Spitznamen und bei Plänen für andere abgelehnt."],
+    ["📱 Textgröße", "Die Schrift folgte der Schriftgröße des Handys, und bei großer Einstellung wurden Texte abgeschnitten.", "Einstellungen → Darstellung → Textgröße: 100, 115 oder 130 %, und die Bildschirme machen Platz für größere Buchstaben."],
   ],
 };

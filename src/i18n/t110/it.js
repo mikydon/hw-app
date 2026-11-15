@@ -1,6 +1,8 @@
 // Italian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    textSizeT: "Dimensione del testo",
+    textSizeD: "Lettere più grandi per leggere meglio; le schermate si adattano.",
     tourGmRanked: "Ranked: lo stesso mazzo per tutti, contro giocatori con punteggio simile. 2 partite ogni giorno in cui ti alleni; il grado sale e scende con il punteggio.",
     gmRkTile: "{rank} · punteggio {r} · oggi ancora {n}",
     gmRkResT: "Le tue partite in attesa",
@@ -220,5 +222,6 @@ export default {
     ["Schede su due dispositivi", "Un telefono che non aveva ancora ricevuto una modifica poteva rimandare indietro i vecchi esercizi di una scheda quando la spostavi solo a un altro giorno.", "Gli esercizi di una scheda e i suoi giorni si sincronizzano a parte: vincono sempre gli esercizi più recenti, qualunque dispositivo abbia cambiato il giorno."],
     ["Liste più fluide", "I filtri erano diversi in ogni lista e si azzeravano ogni volta, e una lista in caricamento mostrava solo una parola.", "Un solo pulsante filtro in ogni lista, e i filtri restano finché non chiudi l'app. Contorni grigi durante il caricamento, trascina giù per aggiornare e una lista vuota propone il passo successivo. Cambia il mese del calendario con uno swipe; su PC con ← → e / per cercare."],
     ["Nomi puliti", "Si poteva prendere qualsiasi nickname libero.", "I nomi che sembrano HW App o lo staff e le parolacce note vengono rifiutati nei nuovi nickname e nelle schede mostrate agli altri."],
+    ["📱 Dimensione del testo", "Le lettere seguivano l'impostazione del carattere del telefono e con un carattere grande i testi venivano tagliati.", "Impostazioni → Aspetto → Dimensione del testo: 100, 115 o 130 %, e le schermate fanno spazio alle lettere più grandi."],
   ],
 };

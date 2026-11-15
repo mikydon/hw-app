@@ -1,6 +1,8 @@
 // Polish: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    textSizeT: "Rozmiar tekstu",
+    textSizeD: "Większe litery dla łatwiejszego czytania; ekrany się dopasują.",
     tourGmRanked: "Ranked: ta sama talia dla wszystkich, przeciw graczom o podobnym rankingu. 2 gry w każdy dzień z treningiem; ranga rośnie i spada razem z rankingiem.",
     gmRkTile: "{rank} · ranking {r} · dziś jeszcze {n}",
     gmRkResT: "Twoje oczekujące gry",
@@ -220,5 +222,6 @@ export default {
     ["Plany na dwóch urządzeniach", "Telefon, który nie dostał jeszcze zmiany, mógł odesłać stare ćwiczenia planu, gdy tylko przeniosłeś go na inny dzień tygodnia.", "Ćwiczenia planu i jego dni tygodnia synchronizują się osobno: zawsze wygrywają najnowsze ćwiczenia, niezależnie od tego, które urządzenie zmieniło dzień."],
     ["Płynniejsze listy", "Filtry wyglądały w każdej liście inaczej i za każdym razem się zerowały, a ładowana lista pokazywała tylko słowo.", "Jeden przycisk filtra w każdej liście, a filtry zostają, dopóki nie zamkniesz aplikacji. Szare kontury podczas ładowania, pociągnij w dół, by odświeżyć, a pusta lista proponuje następny krok. Miesiąc w kalendarzu zmienisz przesunięciem; na PC strzałkami ← → i / do wyszukiwania."],
     ["Czyste nazwy", "Można było zająć dowolną wolną nazwę.", "Nazwy udające HW App lub zespół oraz znane przekleństwa są odrzucane w nowych nazwach i w planach pokazywanych innym."],
+    ["📱 Rozmiar tekstu", "Litery zależały od ustawienia czcionki w telefonie, a przy dużej czcionce teksty były ucinane.", "Ustawienia → Wygląd → Rozmiar tekstu: 100, 115 lub 130 %, a ekrany robią miejsce na większe litery."],
   ],
 };
