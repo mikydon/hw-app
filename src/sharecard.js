@@ -30,7 +30,7 @@ function ellipsis(g, text, max) {
   return t + "…";
 }
 
-// d = { title, date, stats: [[value, label]] (2–3), streak, streakLabel, days: [[letter, on]] × 7 (optional), rows: [[name, value]] (≤ 5), foot, sub,
+// d = { title, date, stats: [[value, label]] (2–3), streak, streakLabel, days: [[letter, on]] × 7 (optional), bars: [[label, value, best]] (optional), rows: [[name, value]] (≤ 5), foot, sub,
 //       c: {ink, panel, line, chalk, dim, signal, signalInk, mint}, font: {display, body} }
 export function drawShareCard(canvas, d) {
   canvas.width = CARD_W; canvas.height = CARD_H;
@@ -84,6 +84,16 @@ export function drawShareCard(canvas, d) {
       g.fillStyle = on ? (c.mint || c.signal) : c.panel; rr(g, x, y + 48, dw, 26, 13); g.fill();
     });
     y += 74 + 48;
+  }
+  // bars (year card): 12 months, the height = workouts, the best month in the main colour
+  if (d.bars && d.bars.length) {
+    const nb = d.bars.length, bg = 12, bw = (CARD_W - 2 * P - bg * (nb - 1)) / nb, bh = 150, mx = Math.max(1, ...d.bars.map(b => b[1]));
+    d.bars.forEach(([l, v, hi], i) => {
+      const x = P + i * (bw + bg), hgt = v ? Math.max(14, (v / mx) * bh) : 6;
+      g.fillStyle = v ? (hi ? c.signal : (c.mint || c.signal)) : c.panel; rr(g, x, y + bh - hgt, bw, hgt, Math.min(12, bw / 2)); g.fill();
+      g.textAlign = "center"; g.fillStyle = c.dim; g.font = `700 26px ${F.body}`; g.fillText(l, x + bw / 2, y + bh + 40);
+    });
+    y += bh + 40 + 48;
   }
   // exercises: up to five rows
   const rows = d.rows.slice(0, 5), rh = 76, box = rows.length * rh + 24;

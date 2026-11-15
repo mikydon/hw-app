@@ -1,6 +1,14 @@
 // Polish: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    yearT: "Twój rok {y}",
+    yearShareT: "Mój rok {y}",
+    yearStreak: "Najdłuższa passa",
+    yearBest: "Najlepszy miesiąc: {m}",
+    yearMore: "{d} z treningiem, razem {s}.",
+    yearOpen: "Zobacz swój rok",
+    yearLess: "Mniej",
+    yearShareText: "Mój rok {y} w HW App 💪 https://play.google.com/store/apps/details?id=io.github.mikydon.hwapp",
     recapT: "Zeszły tydzień",
     recapShareT: "Mój tydzień",
     recapUp: "O {d} więcej niż tydzień wcześniej",
@@ -238,5 +246,6 @@ export default {
     ["📱 Rozmiar tekstu", "Litery zależały od ustawienia czcionki w telefonie, a przy dużej czcionce teksty były ucinane.", "Ustawienia → Wygląd → Rozmiar tekstu: 100, 115 lub 130 %, a ekrany robią miejsce na większe litery."],
     ["📱 Przypomnienie o passie", "Nic nie przypominało, gdy passa miała się skończyć.", "Jedno powiadomienie wieczorem, tylko w dniu, w którym passa by się skończyła (18–21, do wyboru). Ustawienia → Powiadomienia."],
     ["Twój tydzień", "Nic nie podsumowywało tygodnia, który się skończył.", "Od poniedziałku do środy ekran Start pokazuje zeszły tydzień: treningi, serie, czas, zmianę względem tygodnia wcześniej i dni z treningiem, z obrazkiem do udostępnienia."],
+    ["Twój rok", "Nic nie podsumowywało całego roku.", "Od 15 grudnia do 10 stycznia ekran Start pokazuje twój rok: treningi, czas, najdłuższą passę, miesiące, ulubione ćwiczenia i obrazek do udostępnienia."],
   ],
 };

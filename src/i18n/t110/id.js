@@ -1,6 +1,14 @@
 // Indonesian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    yearT: "Tahun {y}-mu",
+    yearShareT: "Tahun {y}-ku",
+    yearStreak: "Runtutan terpanjang",
+    yearBest: "Bulan terbaik: {m}",
+    yearMore: "{d} dengan latihan, total {s}.",
+    yearOpen: "Lihat tahunmu",
+    yearLess: "Lebih sedikit",
+    yearShareText: "Tahun {y}-ku di HW App 💪 https://play.google.com/store/apps/details?id=io.github.mikydon.hwapp",
     recapT: "Minggu lalu",
     recapShareT: "Mingguku",
     recapUp: "{d} lebih banyak dari minggu sebelumnya",
@@ -238,5 +246,6 @@ export default {
     ["📱 Ukuran teks", "Huruf mengikuti setelan font ponsel, dan setelan besar memotong teks.", "Pengaturan → Tampilan → Ukuran teks: 100, 115, atau 130 %, dan layar memberi ruang untuk huruf yang lebih besar."],
     ["📱 Pengingat runtutan", "Tidak ada yang mengingatkan saat runtutanmu akan berakhir.", "Satu notifikasi di malam hari, hanya di hari runtutanmu akan berakhir (18–21, pilih sendiri). Pengaturan → Notifikasi."],
     ["Minggumu", "Tidak ada yang merangkum minggu yang baru berakhir.", "Senin sampai Rabu, Beranda menampilkan minggu lalu: latihan, set, waktu, perubahan dari minggu sebelumnya dan hari latihanmu, dengan gambar untuk dibagikan."],
+    ["Tahunmu", "Tidak ada yang merangkum setahun penuh.", "Dari 15 Desember sampai 10 Januari, Beranda menampilkan tahunmu: latihan, waktu, runtutan terpanjang, bulan-bulan, latihan favorit, dan gambar untuk dibagikan."],
   ],
 };

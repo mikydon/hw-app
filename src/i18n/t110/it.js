@@ -1,6 +1,14 @@
 // Italian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    yearT: "Il tuo {y}",
+    yearShareT: "Il mio {y}",
+    yearStreak: "Striscia più lunga",
+    yearBest: "Mese migliore: {m}",
+    yearMore: "{d} di allenamento, {s} in tutto.",
+    yearOpen: "Guarda il tuo anno",
+    yearLess: "Meno",
+    yearShareText: "Il mio {y} in HW App 💪 https://play.google.com/store/apps/details?id=io.github.mikydon.hwapp",
     recapT: "La settimana scorsa",
     recapShareT: "La mia settimana",
     recapUp: "{d} in più della settimana prima",
@@ -238,5 +246,6 @@ export default {
     ["📱 Dimensione del testo", "Le lettere seguivano l'impostazione del carattere del telefono e con un carattere grande i testi venivano tagliati.", "Impostazioni → Aspetto → Dimensione del testo: 100, 115 o 130 %, e le schermate fanno spazio alle lettere più grandi."],
     ["📱 Promemoria striscia", "Niente ti avvisava quando la striscia stava per finire.", "Una notifica la sera, solo nel giorno in cui la striscia finirebbe (18–21, a scelta). Impostazioni → Notifiche."],
     ["La tua settimana", "Niente riassumeva la settimana appena finita.", "Dal lunedì al mercoledì la Home mostra la settimana scorsa: allenamenti, serie, tempo, la differenza con la settimana prima e i giorni di allenamento, con un'immagine da condividere."],
+    ["Il tuo anno", "Niente riassumeva l'anno intero.", "Dal 15 dicembre al 10 gennaio la Home mostra il tuo anno: allenamenti, tempo, la striscia più lunga, i mesi, gli esercizi preferiti e un'immagine da condividere."],
   ],
 };

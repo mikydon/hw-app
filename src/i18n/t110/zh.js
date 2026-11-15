@@ -1,6 +1,14 @@
 // Chinese (Simplified): texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    yearT: "你的 {y} 年",
+    yearShareT: "我的 {y} 年",
+    yearStreak: "最长连胜",
+    yearBest: "最佳月份：{m}",
+    yearMore: "训练了 {d}，共 {s}。",
+    yearOpen: "查看全年",
+    yearLess: "收起",
+    yearShareText: "我在 HW App 的 {y} 年 💪 https://play.google.com/store/apps/details?id=io.github.mikydon.hwapp",
     recapT: "上周",
     recapShareT: "我的一周",
     recapUp: "比前一周多 {d}",
@@ -238,5 +246,6 @@ export default {
     ["📱 文字大小", "文字跟随手机的字体设置，字体调大时文字会被截断。", "设置 → 外观 → 文字大小：100、115 或 130 %，各个界面会为更大的文字留出空间。"],
     ["📱 连胜提醒", "连胜快要中断时，没有任何提醒。", "只在连胜将要中断的那天晚上提醒一次（18–21 点，可自选）。设置 → 通知。"],
     ["你的一周", "过去的一周没有任何回顾。", "周一到周三，主页会显示上周的训练次数、组数、时长、与前一周的变化以及训练的日子，还能生成图片分享。"],
+    ["你的一年", "没有任何对全年的回顾。", "12 月 15 日到 1 月 10 日，主页会展示你的一年：训练次数、时长、最长连胜、各个月份、最常做的动作，还能生成图片分享。"],
   ],
 };

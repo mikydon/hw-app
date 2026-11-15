@@ -1,6 +1,14 @@
 // French: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    yearT: "Ton année {y}",
+    yearShareT: "Mon année {y}",
+    yearStreak: "Plus longue flamme",
+    yearBest: "Meilleur mois : {m}",
+    yearMore: "{d} d'entraînement, {s} en tout.",
+    yearOpen: "Voir ton année",
+    yearLess: "Moins",
+    yearShareText: "Mon année {y} dans HW App 💪 https://play.google.com/store/apps/details?id=io.github.mikydon.hwapp",
     recapT: "La semaine dernière",
     recapShareT: "Ma semaine",
     recapUp: "{d} de plus que la semaine d'avant",
@@ -238,5 +246,6 @@ export default {
     ["📱 Taille du texte", "Les lettres suivaient la taille de police du téléphone, et une grande taille coupait des textes.", "Réglages → Apparence → Taille du texte : 100, 115 ou 130 %, et les écrans font de la place aux lettres plus grandes."],
     ["📱 Rappel de flamme", "Rien ne te prévenait quand ta flamme allait s'éteindre.", "Une notification le soir, seulement le jour où ta flamme s'éteindrait (18 h–21 h, au choix). Réglages → Notifications."],
     ["Ta semaine", "Rien ne revenait sur la semaine qui venait de se terminer.", "Du lundi au mercredi, l'Accueil montre la semaine dernière : séances, séries, temps, le changement par rapport à la semaine d'avant et les jours d'entraînement, avec une image à partager."],
+    ["Ton année", "Rien ne revenait sur l'année entière.", "Du 15 décembre au 10 janvier, l'Accueil montre ton année : séances, temps, la plus longue flamme, les mois, tes exercices préférés et une image à partager."],
   ],
 };

@@ -1,6 +1,14 @@
 // Czech: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    yearT: "Tvůj rok {y}",
+    yearShareT: "Můj rok {y}",
+    yearStreak: "Nejdelší šňůra",
+    yearBest: "Nejlepší měsíc: {m}",
+    yearMore: "{d} s tréninkem, celkem {s}.",
+    yearOpen: "Ukázat rok",
+    yearLess: "Méně",
+    yearShareText: "Můj rok {y} v HW App 💪 https://play.google.com/store/apps/details?id=io.github.mikydon.hwapp",
     recapT: "Minulý týden",
     recapShareT: "Můj týden",
     recapUp: "O {d} víc než týden předtím",
@@ -238,5 +246,6 @@ export default {
     ["📱 Velikost textu", "Písmo se řídilo nastavením telefonu a při velkém písmu se texty ořezávaly.", "Nastavení → Vzhled → Velikost textu: 100, 115 nebo 130 % a obrazovky se větším písmenům přizpůsobí."],
     ["📱 Připomínka šňůry", "Nic tě neupozornilo, když ti měla skončit šňůra.", "Jedno oznámení večer, jen v den, kdy by ti šňůra skončila (18–21 h, podle tebe). Nastavení → Upozornění."],
     ["Tvůj týden", "Nic se neohlédlo za týdnem, který skončil.", "Od pondělí do středy ukáže Úvod minulý týden: tréninky, série, čas, změnu oproti týdnu předtím a dny, kdy jsi cvičil, s obrázkem ke sdílení."],
+    ["Tvůj rok", "Nic se neohlédlo za celým rokem.", "Od 15. prosince do 10. ledna ukáže Úvod tvůj rok: tréninky, čas, nejdelší šňůru, měsíce, oblíbené cviky a obrázek ke sdílení."],
   ],
 };

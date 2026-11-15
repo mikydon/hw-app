@@ -1,6 +1,14 @@
 // Slovak: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    yearT: "Tvoj rok {y}",
+    yearShareT: "Môj rok {y}",
+    yearStreak: "Najdlhšia séria",
+    yearBest: "Najlepší mesiac: {m}",
+    yearMore: "{d} s tréningom, spolu {s}.",
+    yearOpen: "Pozri si rok",
+    yearLess: "Menej",
+    yearShareText: "Môj rok {y} v HW App 💪 https://play.google.com/store/apps/details?id=io.github.mikydon.hwapp",
     recapT: "Minulý týždeň",
     recapShareT: "Môj týždeň",
     recapUp: "O {d} viac ako týždeň predtým",
@@ -238,5 +246,6 @@ export default {
     ["📱 Veľkosť textu", "Písmo sa riadilo nastavením telefónu a pri veľkom písme sa texty orezávali.", "Nastavenia → Vzhľad → Veľkosť textu: 100, 115 alebo 130 % a obrazovky sa väčším písmenám prispôsobia."],
     ["📱 Pripomienka série", "Nič ťa neupozornilo, keď ti mala skončiť séria.", "Jedno upozornenie večer, len v deň, keď by ti séria skončila (18–21 h, podľa teba). Nastavenia → Upozornenia."],
     ["Tvoj týždeň", "Nič sa neohliadlo za týždňom, ktorý skončil.", "Od pondelka do stredy ukáže Domov minulý týždeň: tréningy, série, čas, zmenu oproti týždňu predtým a dni, keď si cvičil, s obrázkom na zdieľanie."],
+    ["Tvoj rok", "Nič sa neohliadlo za celým rokom.", "Od 15. decembra do 10. januára ukáže Domov tvoj rok: tréningy, čas, najdlhšiu sériu, mesiace, obľúbené cviky a obrázok na zdieľanie."],
   ],
 };

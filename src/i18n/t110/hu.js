@@ -1,6 +1,14 @@
 // Hungarian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    yearT: "A te {y}-os éved",
+    yearShareT: "Az én {y}-os évem",
+    yearStreak: "Leghosszabb széria",
+    yearBest: "Legjobb hónap: {m}",
+    yearMore: "Edzésnapok: {d}, összesen {s}.",
+    yearOpen: "Nézd meg az évet",
+    yearLess: "Kevesebb",
+    yearShareText: "Az én {y}-os évem a HW Appban 💪 https://play.google.com/store/apps/details?id=io.github.mikydon.hwapp",
     recapT: "Múlt hét",
     recapShareT: "Az én hetem",
     recapUp: "{d} több, mint az előző héten",
@@ -238,5 +246,6 @@ export default {
     ["📱 Szövegméret", "A betűk a telefon betűméretét követték, és nagy beállításnál a szövegek levágódtak.", "Beállítások → Megjelenés → Szövegméret: 100, 115 vagy 130 %, és a képernyők helyet adnak a nagyobb betűknek."],
     ["📱 Széria-emlékeztető", "Semmi sem figyelmeztetett, amikor a szériád véget ért volna.", "Egy értesítés este, csak azon a napon, amikor a szériád véget érne (18–21 óra, te választod). Beállítások → Értesítések."],
     ["A heted", "Semmi sem tekintett vissza a véget ért hétre.", "Hétfőtől szerdáig a Kezdőlap mutatja a múlt hetet: edzések, sorozatok, idő, a változás az előző héthez képest és az edzésnapok, megosztható képpel."],
+    ["A te éved", "Semmi sem tekintett vissza az egész évre.", "December 15. és január 10. között a Kezdőlap megmutatja az évedet: edzések, idő, leghosszabb széria, hónapok, kedvenc gyakorlatok és egy megosztható kép."],
   ],
 };

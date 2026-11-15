@@ -1,6 +1,14 @@
 // Portuguese (Brazil): texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    yearT: "Seu {y}",
+    yearShareT: "Meu {y}",
+    yearStreak: "Maior sequência",
+    yearBest: "Melhor mês: {m}",
+    yearMore: "{d} com treino, {s} no total.",
+    yearOpen: "Ver seu ano",
+    yearLess: "Menos",
+    yearShareText: "Meu {y} no HW App 💪 https://play.google.com/store/apps/details?id=io.github.mikydon.hwapp",
     recapT: "Semana passada",
     recapShareT: "Minha semana",
     recapUp: "{d} a mais que na semana anterior",
@@ -238,5 +246,6 @@ export default {
     ["📱 Tamanho do texto", "As letras seguiam o tamanho de fonte do celular e, com fonte grande, os textos eram cortados.", "Configurações → Aparência → Tamanho do texto: 100, 115 ou 130 %, e as telas abrem espaço para letras maiores."],
     ["📱 Lembrete de sequência", "Nada avisava quando sua sequência ia terminar.", "Uma notificação à noite, só no dia em que sua sequência terminaria (18h–21h, você escolhe). Ajustes → Notificações."],
     ["Sua semana", "Nada resumia a semana que terminou.", "De segunda a quarta, o Início mostra a semana passada: treinos, séries, tempo, a mudança em relação à semana anterior e os dias de treino, com uma imagem para compartilhar."],
+    ["Seu ano", "Nada resumia o ano inteiro.", "De 15 de dezembro a 10 de janeiro, o Início mostra seu ano: treinos, tempo, a maior sequência, os meses, seus exercícios favoritos e uma imagem para compartilhar."],
   ],
 };

@@ -1,6 +1,14 @@
 // German: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    yearT: "Dein {y}",
+    yearShareT: "Mein {y}",
+    yearStreak: "Längste Serie",
+    yearBest: "Bester Monat: {m}",
+    yearMore: "{d} mit Training, {s} insgesamt.",
+    yearOpen: "Dein Jahr ansehen",
+    yearLess: "Weniger",
+    yearShareText: "Mein {y} in HW App 💪 https://play.google.com/store/apps/details?id=io.github.mikydon.hwapp",
     recapT: "Letzte Woche",
     recapShareT: "Meine Woche",
     recapUp: "{d} mehr als die Woche davor",
@@ -238,5 +246,6 @@ export default {
     ["📱 Textgröße", "Die Schrift folgte der Schriftgröße des Handys, und bei großer Einstellung wurden Texte abgeschnitten.", "Einstellungen → Darstellung → Textgröße: 100, 115 oder 130 %, und die Bildschirme machen Platz für größere Buchstaben."],
     ["📱 Serien-Erinnerung", "Nichts hat dich erinnert, wenn deine Serie enden würde.", "Eine Benachrichtigung am Abend, nur an dem Tag, an dem deine Serie enden würde (18–21 Uhr, nach Wahl). Einstellungen → Benachrichtigungen."],
     ["Deine Woche", "Nichts hat auf die vergangene Woche zurückgeblickt.", "Von Montag bis Mittwoch zeigt Start die letzte Woche: Trainings, Sätze, Zeit, die Veränderung zur Woche davor und deine Trainingstage, mit einem Bild zum Teilen."],
+    ["Dein Jahr", "Nichts hat auf das ganze Jahr zurückgeblickt.", "Vom 15. Dezember bis 10. Januar zeigt Start dein Jahr: Trainings, Zeit, die längste Serie, die Monate, deine Lieblingsübungen und ein Bild zum Teilen."],
   ],
 };

@@ -3974,6 +3974,88 @@ function weekRecap(history, wk) {
 }
 const recapRange = wk => `${fmtShortDM(parseKey(wk))} – ${fmtShortDM(parseKey(addDays(wk, 6)))}`;
 const recapVs = r => { const d = r.cur.n - r.prev.n; return d > 0 ? T("recapUp", { d: TP("workouts", d) }) : d < 0 ? T("recapDown", { d: TP("workouts", -d) }) : T("recapSame"); };
+// 1.10.0 (Michael's idea 4, Nov 15): "Your 2026": from Dec 15 to Jan 10 Home offers the year in one card (until
+// closed): workouts, time, the longest streak, active days, workouts per month, favourite exercises, and a picture to
+// share. Only workouts with a real set count; at least 3 in the year.
+const yearOfRecap = today => { const [y, m, d] = today.split("-").map(Number); return m === 12 && d >= 15 ? y : m === 1 && d <= 10 ? y - 1 : null; };
+function yearRecap(history, y) {
+  const a = history.filter(e => e.date.startsWith(y + "-") && hasRealSet(e.items));
+  if (a.length < 3) return null;
+  const days = [...new Set(a.map(e => e.date))].sort();
+  const frozen = (META.freezeDays || []).filter(k => k.startsWith(y + "-"));
+  const all = [...new Set([...days, ...frozen])].sort(), trained = new Set(days);
+  let best = 0, run = 0, prev = null;
+  all.forEach(k => { run = prev && daysBetween(prev, k) <= 2 ? run + (trained.has(k) ? 1 : 0) : trained.has(k) ? 1 : 0; best = Math.max(best, run); prev = k; });
+  const months = Array.from({ length: 12 }, (_, i) => a.filter(e => +e.date.slice(5, 7) === i + 1).length);
+  const tm = id => EX[id] && (EX[id].type === "time" || EX[id].type === "carry");
+  const ex = {};
+  a.forEach(e => e.items.forEach(it => {
+    const vals = it.res.map(numVal).filter(v => !isNaN(v) && v > 0);
+    if (!vals.length) return;
+    const o = ex[it.id] || (ex[it.id] = { it, t: tm(it.id), sets: 0, reps: 0, hold: 0 });
+    o.sets += vals.length;
+    if (o.t) o.hold = Math.max(o.hold, ...vals); else o.reps += vals.reduce((p, q) => p + q, 0);
+  }));
+  const reps = Object.values(ex).reduce((x, o) => x + o.reps, 0);
+  return { y, n: a.length, days: days.length, sets: a.reduce((x, e) => x + setsIn(e), 0), reps, secs: a.reduce((x, e) => x + (e.dur > 0 ? e.dur : 0), 0), best, months, top: months.indexOf(Math.max(...months)), ex: Object.values(ex).sort((x, z) => z.sets - x.sets || z.reps - x.reps) };
+}
+function YearCard({ y: r, history, onClose }) {
+  const [open, setOpen] = useState(false), [st, setSt] = useState("");
+  const mon = i => new Intl.DateTimeFormat(LANG, { month: "narrow" }).format(new Date(r.y, i, 1));
+  const monLong = i => new Intl.DateTimeFormat(LANG, { month: "long" }).format(new Date(r.y, i, 1));
+  const stat = (ic, v, col) => <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}><Ico n={ic} size={15} color={col} sw={2.3} />{v}</span>;
+  const hours = Math.floor(r.secs / 60);
+  const share = async () => {
+    if (st === "busy") return;
+    sfxTap(); setSt("busy");
+    try {
+      try { await Promise.race([document.fonts.ready, new Promise(x => setTimeout(x, 1500))]); } catch (_) {}
+      const cv = drawShareCard(document.createElement("canvas"), {
+        title: T("yearShareT", { y: r.y }), date: String(r.y), sub: T("yearBest", { m: capFirst(monLong(r.top)) }),
+        stats: [[r.n, T("stM_n")], ...(hours >= 1 ? [[fmtMins(hours), T("stM_min")]] : [[r.sets, T("sumSets")]]), [r.best, T("yearStreak")]],
+        streak: 0, streakLabel: "", foot: T("shareFoot"),
+        bars: r.months.map((v, i) => [mon(i), v, i === r.top]),
+        rows: r.ex.slice(0, 3).map(o => [exName(o.it), `${TP("sets", o.sets)} · ${o.t ? fmtHold(o.hold) : nf(o.reps)}`]),
+        c: { ink: C.ink, panel: C.panel, line: C.line, chalk: C.chalk, dim: C.dim, signal: C.signal, mint: C.mint }, font: { display: DISPLAY, body: BODY },
+      });
+      const res = await shareImage(cv.toDataURL("image/png").split(",")[1], `hw-app-${r.y}.png`, T("yearShareText", { y: r.y }));
+      setSt(res === "saved" ? "saved" : "");
+    } catch (_) { setSt("err"); }
+  };
+  const mx = Math.max(1, ...r.months);
+  return (
+    <div data-year={r.y} className="cardIn" style={{ ...card, position: "relative", padding: "14px 16px", marginBottom: 12, borderColor: `${C.signal}66` }}>
+      <CloseX onClick={onClose} />
+      <div style={{ fontFamily: DISPLAY, fontSize: 26, fontWeight: 900, color: C.chalk, lineHeight: 1, paddingRight: 30 }}>{T("yearT", { y: r.y })}</div>
+      <div data-year-stats style={{ display: "flex", flexWrap: "wrap", gap: 14, marginTop: 10, fontSize: 16, fontWeight: 800, color: C.chalk }}>
+        {stat("dumbbell", r.n, C.signal)}{hours >= 1 && stat("timer", fmtMins(hours), "#ffa94d")}{stat("flame", r.best, "#ffa94d")}
+      </div>
+      <Expand open={open}>
+        <div data-year-more style={{ paddingTop: 12 }}>
+          <div data-year-months style={{ display: "grid", gridTemplateColumns: "repeat(12, 1fr)", gap: 4, alignItems: "end", height: 70 }}>
+            {r.months.map((v, i) => <div key={i} title={`${monLong(i)}: ${TP("workouts", v)}`} style={{ height: v ? Math.max(6, (v / mx) * 56) : 3, borderRadius: 4, background: v ? (i === r.top ? C.signal : C.mint) : `${C.chalk}14` }} />)}
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(12, 1fr)", gap: 4, marginTop: 4 }}>{r.months.map((_, i) => <div key={i} style={{ fontSize: 10, color: C.dim, textAlign: "center", fontWeight: 600 }}>{mon(i)}</div>)}</div>
+          <div style={{ fontSize: 13, color: C.chalk, fontWeight: 700, marginTop: 10 }}>{T("yearBest", { m: capFirst(monLong(r.top)) })}</div>
+          <div style={{ fontSize: 13, color: C.dim, marginTop: 4, lineHeight: 1.5 }}>{T("yearMore", { d: TP("days", r.days), s: TP("sets", r.sets) })}</div>
+          {r.ex.slice(0, 3).map(o => (
+            <div key={o.it.id} data-year-ex={o.it.id} style={{ display: "flex", justifyContent: "space-between", gap: 10, fontSize: 14, marginTop: 8, color: C.chalk, fontWeight: 700 }}>
+              <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{exName(o.it)}</span>
+              <span style={{ color: C.signal, flexShrink: 0 }}>{TP("sets", o.sets)}</span>
+            </div>
+          ))}
+        </div>
+      </Expand>
+      <div style={{ display: "flex", gap: 8, marginTop: 12, flexWrap: "wrap" }}>
+        <button type="button" data-year-open aria-expanded={open} onClick={() => { sfxTap(); setOpen(o => !o); }} style={{ ...btnBase, background: C.panelHi, color: C.chalk, padding: "10px 14px", fontSize: 14, display: "inline-flex", alignItems: "center", gap: 6 }}>{T(open ? "yearLess" : "yearOpen")}<Chevron open={open} /></button>
+        <button type="button" data-year-share data-state={st || "idle"} onClick={share} style={{ ...btnBase, background: C.signal, color: C.signalInk, padding: "10px 16px", fontSize: 14, display: "inline-flex", alignItems: "center", gap: 7 }}>
+          <Ico n="upload" size={16} color={C.signalInk} sw={2.3} />{st === "busy" ? "…" : T("sumShare")}
+        </button>
+      </div>
+      {(st === "saved" || st === "err") && <div role="status" data-year-share-msg style={{ fontSize: 12, color: st === "err" ? "#ff8a80" : C.mint, marginTop: 6 }}>{T(st === "err" ? "frErr" : "shareSaved")}</div>}
+    </div>
+  );
+}
 function RecapCard({ recap: r, history, onClose }) {
   const [st, setSt] = useState("");
   const wd = weekdaysShort();
@@ -4089,12 +4171,15 @@ function TrainTab({ history, onStart, onStartPlan, onStartFree, onFreeze, ui, se
   // APK always show (rare and important).
   const hint = ui.hint && ui.hint.date === today && ui.hintHidden !== today ? HINTS.find(x => x.k === ui.hint.k) : null;
   const recapWk = addDays(weekKey(today), -7);
+  const yr = yearOfRecap(today);
+  const yearR = useMemo(() => (yr && ui.yearHidden !== yr ? yearRecap(history, yr) : null), [history, yr, ui.yearHidden]);
   const recap = useMemo(() => (PLN.weekdayOf(today) <= 3 && ui.recapHidden !== recapWk ? weekRecap(history, recapWk) : null), [history, today, ui.recapHidden]);
   const notices = [
     profile && bdayToday() && ui.bdayHidden !== today && "bday",
     showDone && "done",
     upd && "upd",
     ui.autoFz && ui.autoFz.day === today && ui.autoFzHidden !== ui.autoFz.day && "autofz",
+    yearR && "year", // 1.10.0: the year in one card, Dec 15 to Jan 10
     recap && "recap", // 1.10.0: last week, Monday to Wednesday
     onGo && profile && ui.chestHidden !== weekKey(today) && readyChests(history, profile).length > 0 && "chest", // 1.9.0
     tourOffer && "tour",
@@ -4248,6 +4333,7 @@ function TrainTab({ history, onStart, onStartPlan, onStartFree, onFreeze, ui, se
           <div data-autofz-left={ui.autoFz.left} style={{ fontSize: 13, color: ui.autoFz.left ? C.dim : C.signal, fontWeight: ui.autoFz.left ? 400 : 700, lineHeight: 1.45, marginTop: 2 }}>{ui.autoFz.left ? TP("autoFzLeft", ui.autoFz.left) : T("autoFzNone")}</div>
         </div>
       </>, () => setUi({ ...ui, autoFzHidden: ui.autoFz.day }), { "data-autofz": ui.autoFz.used })}
+      {notice === "year" && <YearCard y={yearR} history={history} onClose={() => setUi({ ...ui, yearHidden: yearR.y })} />}
       {notice === "recap" && <RecapCard recap={recap} history={history} onClose={() => setUi({ ...ui, recapHidden: recap.wk })} />}
       {notice === "chest" && ntBox("chest", C.signal, <>
         <span className="chBob" style={{ flexShrink: 0 }}><ChestArt size={44} /></span>
