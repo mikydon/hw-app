@@ -13,16 +13,16 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../.."), S = path.join(ROOT, "store/out/"), F = path.join(ROOT, "fonts/");
-const SHOTS = ["01_home", "02_workout", "03_summary", "04_plans", "05_profile", "06_stats", "07_calories", "08_deck"];
+const SHOTS = ["01_home", "02_workout", "03_summary", "04_library", "05_profile", "06_together", "07_calories", "08_deck"];
 // [headline (<b> = the yellow part, <br> = line break), one line under it], in the order of SHOTS; last = feature graphic headline
 const CAPS = {
   en: [
     ["Train at home in<br><b>under 20 minutes</b>", "With or without equipment"],
     ["Beat your<br><b>last workout</b>", "The app shows what to aim for"],
     ["Earn XP, records<br>and <b>badges</b>", "After every workout"],
-    ["Build your<br><b>own plans</b>", "134 exercises for home and gym"],
+    ["Find a plan or<br><b>build your own</b>", "134 exercises for home and gym"],
     ["Level up<br><b>every muscle</b>", "9 ranks, from Iron to Obsidian"],
-    ["See your<br><b>progress</b>", "Every workout, week by week"],
+    ["Train with<br><b>a friend</b>", "Keep a streak together"],
     ["Hit your<br><b>calorie target</b>", "Your workouts are counted in"],
     ["Muscle Deck:<br><b>the card game</b>", "Your training makes your cards stronger"],
     ["Home workouts<br>in 19 minutes", "Plans, ranks, streaks and a card game"],
@@ -34,7 +34,7 @@ const fonts = ["latin", "latin-ext"].map(s => ff("BSD", `big-shoulders-display-$
   + ["latin", "latin-ext", "cyrillic"].map(s => ff("Osw", `oswald-${s}-700-normal.woff2`, 700)).join("");
 const img = p => "data:image/png;base64," + fs.readFileSync(p).toString("base64");
 const mark = fs.readFileSync(path.join(ROOT, "assets/mark.svg"), "utf8");
-const GLOW = ["#ffd23f", "#ffd23f", "#4ade80", "#ffd23f", "#74b9ff", "#ffd23f", "#4ade80", "#ffd23f"]; // a soft light behind the screen
+const GLOW = ["#ffd23f", "#ffd23f", "#4ade80", "#ffd23f", "#74b9ff", "#4ade80", "#4ade80", "#ffd23f"]; // a soft light behind the screen
 const shotPage = (l, i) => `<!doctype html><html lang="${l}"><meta charset="utf-8"><style>${fonts}
 *{box-sizing:border-box;margin:0}body{width:1080px;height:1920px;overflow:hidden;background:#000;position:relative;font-family:Fig,'Noto Sans','Noto Sans CJK SC',sans-serif}
 .glow{position:absolute;inset:0;background:radial-gradient(900px 620px at 50% 0%,${GLOW[i]}2e,transparent 70%),radial-gradient(800px 700px at 50% 62%,${GLOW[i]}14,transparent 70%)}
@@ -56,7 +56,7 @@ h1{font:900 82px/0.94 BSD,Osw,'Noto Sans CJK SC',sans-serif;text-transform:upper
 p{margin-top:16px;font:700 23px/1.3 Fig,'Noto Sans',sans-serif;color:#3d3212}
 .card{position:absolute;border-radius:26px;overflow:hidden;background:#000;box-shadow:0 0 0 2px #1b1b1b,0 22px 50px #5a3d0066}.card img{display:block}
 </style><div class="left"><div class="brand">${mark}<div class="name">HW APP</div></div><h1>${CAPS[l][8][0]}</h1><p>${CAPS[l][8][1]}</p></div>
-${crop(l, "05_profile", 236, 640, 300, "left:690px;top:-40px;transform:rotate(7deg)")}
+${crop(l, "05_profile", 120, 700, 300, "left:690px;top:-40px;transform:rotate(7deg)")}
 ${crop(l, "03_summary", 640, 560, 300, "left:560px;top:250px;transform:rotate(-5deg)")}
 ${crop(l, "01_home", 225, 545, 330, "left:640px;top:96px;transform:rotate(-2deg)")}
 </html>`;
