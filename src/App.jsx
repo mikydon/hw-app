@@ -1,4 +1,4 @@
-import { useState, useEffect, useLayoutEffect, useRef, useMemo, useId, memo, Fragment } from "react";
+import { useState, useEffect, useLayoutEffect, useRef, useMemo, useId, useCallback, memo, Fragment } from "react";
 import { createPortal } from "react-dom";
 import { shareImage, askReview, restSupported, restPermission, restStart, restStop, restNativeBeeps, restOpenSettings, isNative, pushBack, setRootBack, exitApp, vibratePattern, keepScreenOn, openExternal, saveBackupFile, bkSupported, bkWrite, bkWriteAuto, bkList, bkRead, bkDelete, bkShare, BK_DIR, bkAutoFile, checkForUpdate, lastUpdate, lastGh, applyUpdateNow, latestApk, isTestBuild, apkState, onApk, apkSupported, apkRestore, apkDownload, apkCanInstall, apkAllow, apkInstall, onAppResume, healthState, healthConnect, healthSettings, healthSteps, healthFoodItems, healthBody, shareText, copyText, pushSupported, pushPermission, pushChannel, pushToken, pushTokenWhy, pushDeleteToken, onPushTap, onPushToken, onPushReceived, hzSupported, hzInfo, hzSet, isPlay, playCheck, playOpenStore, playUpdate, PLAY_STORE_LINK, updTopic, onAppUrl, installCheck, openNotifSettings, showNotif, setNativeBg, backIsTop, backTopRun } from "./native.js";
 import { cloud, NICK_RE, SHARE_BASE, cleanCode, fmtCode } from "./cloud-lazy.js";
@@ -5091,8 +5091,16 @@ const KC_FOLD = {};
 // 1.10.0 (idea 9): a sideways swipe on a month grid changes the month (touch and pen; a mouse has the arrows). The grid
 // takes only vertical panning, so the screen's page swipe doesn't start there; a swipe never also taps a day.
 function useSwipeX(onPrev, onNext) {
-  const st = useRef(null), swiped = useRef(false);
+  const st = useRef(null), swiped = useRef(false), fns = useRef({ onPrev, onNext }), el = useRef(null);
+  fns.current = { onPrev, onNext };
+  useEffect(() => { startKeys(); }, []);
+  const ref = useCallback(node => {
+    if (el.current && el.current.__hwKey) el.current.removeEventListener("hw-cal-key", el.current.__hwKey);
+    el.current = node;
+    if (node) { node.__hwKey = e => (e.detail < 0 ? fns.current.onPrev : fns.current.onNext)(); node.addEventListener("hw-cal-key", node.__hwKey); }
+  }, []);
   return {
+    ref,
     onPointerDown: e => { if (e.pointerType === "mouse") return; st.current = { x: e.clientX, y: e.clientY }; swiped.current = false; },
     onPointerUp: e => { const s0 = st.current; st.current = null; if (!s0) return; const dx = e.clientX - s0.x, dy = e.clientY - s0.y;
       if (Math.abs(dx) > 48 && Math.abs(dx) > Math.abs(dy) * 1.4) { swiped.current = true; (dx < 0 ? onNext : onPrev)(); } },
@@ -6654,13 +6662,31 @@ function ProfilePlans({ plans, own, onOpen, onMore }) {
 // "all those buttons look messy"): a search field and a filter button with the number of active filters; the
 // filters live in a sheet (FilterSheet: sections of pills, Reset, "Show N"); active filters show as removable chips
 // (FilterTags). Used by the Library, the exercise list and My plans.
+// 1.10.0 (idea 10, PC): keys. "/" jumps into the search field of the list on screen; ← → change the month of the
+// calendar on screen. Never while typing, while a sheet / box / guide is open, or for a list on a hidden page.
+const typing = e => { const t = e.target; return !!(t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))); };
+const overlayOpen = () => !!document.querySelector(".sheetWrap, [data-confirm], [data-tour], [data-reveal], .drawerOn");
+const onScreen = el => { if (!el || !el.offsetParent) return false; const r = el.getBoundingClientRect(); return r.width > 0 && r.right > 0 && r.left < innerWidth && r.bottom > 0 && r.top < innerHeight; };
+let KEYS_ON = false;
+function startKeys() {
+  if (KEYS_ON) return; KEYS_ON = true;
+  window.addEventListener("keydown", e => {
+    if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey || typing(e) || overlayOpen()) return;
+    if (e.key === "/") { const f = [...document.querySelectorAll("[data-flt-q]")].find(onScreen); if (f) { e.preventDefault(); f.focus(); try { f.select(); } catch (_) {} } return; }
+    if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+      const g = [...document.querySelectorAll("[data-cal-swipe]")].find(onScreen);
+      if (g) { e.preventDefault(); g.dispatchEvent(new CustomEvent("hw-cal-key", { detail: e.key === "ArrowLeft" ? -1 : 1 })); }
+    }
+  });
+}
 function FilterBar({ q, setQ, placeholder, n, onOpen, data, autoFocus, noSearch, children, qData }) {
+  useEffect(startKeys, []);
   return (
     <div style={{ display: "flex", gap: 8 }}>
       {noSearch ? <div style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center" }}>{children}</div> : (
         <div style={{ position: "relative", flex: 1, minWidth: 0 }}>
           <Ico n="search" size={18} color={C.dim} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
-          <input {...{ [qData || `data-${data}-q`]: true }} value={q} autoFocus={autoFocus} onChange={e => setQ(e.target.value)} placeholder={placeholder} aria-label={placeholder} style={{ ...pwField(), width: "100%", paddingLeft: 38, paddingRight: q ? 38 : undefined }} />
+          <input {...{ [qData || `data-${data}-q`]: true }} data-flt-q value={q} autoFocus={autoFocus} onChange={e => setQ(e.target.value)} onKeyDown={e => { if (e.key === "Escape" && document.activeElement === e.target) { e.stopPropagation(); if (q) setQ(""); else e.target.blur(); } }} placeholder={placeholder} aria-label={placeholder} style={{ ...pwField(), width: "100%", paddingLeft: 38, paddingRight: q ? 38 : undefined }} />
           {q && <button type="button" {...{ [`data-${data}-clear`]: true }} aria-label={T("close")} onClick={() => setQ("")} style={{ ...btnBase, position: "absolute", right: 6, top: "50%", transform: "translateY(-50%)", background: "transparent", color: C.dim, padding: 6, display: "flex" }}><Ico n="x" size={16} /></button>}
         </div>
       )}
@@ -11836,6 +11862,7 @@ function tourSteps(ch, x) {
     // 1.9.3 (Michael: "does the new plans UI have a guide?"): new plan, then open a plan and walk the editor;
     // without plans the editor steps are skipped (opt), and nothing is created or changed by the guide
     s("[data-plan-new]", 5, { opt: true, t: tt(5, "plNew") }),
+    s("[data-plans-filter]", 5, { opt: true, t: T("tourPlFilter") }), // 1.10.0: the one filter pattern (search + filter button)
     s("[data-plan-card]", 6, { tap: true, opt: true }),
     s("[data-plan-days-set]", 7, { opt: true, wait: 450 }),
     s("[data-plan-dayview]", 8, { opt: true }),

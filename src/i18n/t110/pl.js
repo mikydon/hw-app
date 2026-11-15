@@ -1,6 +1,7 @@
 // Polish: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    tourPlFilter: "Tu szukasz w swoich planach. Przycisk filtra je sortuje i pokazuje jedną grupę; w każdej liście wygląda tak samo.",
     plStoreWeek: "Popularne w tym tygodniu",
     plStoreWeekN: "{n} w tym tygodniu",
     plTry: "Wypróbuj",
@@ -186,7 +187,8 @@ export default {
   },
   news1_10: [
     ["Znajomi razem", "Znajomi i ranking; wspólna seria liczyła tylko treningi, a światowy ranking był zablokowany.", "Nowa strona Razem: zaproś znajomego swoim linkiem (100 💎 dla każdego po jego 3. treningu), trzymajcie duet (treningi albo kalorie), wspólny cel tygodniowy, pojedynek w seriach i szturchnięcie dla znajomego, który jeszcze nie ćwiczył. Dni liczy serwer, więc duetu nie da się podrobić. Ranking to tylko twoi znajomi, zablokowany światowy zniknął. Nowa odznaka: Razem raźniej."],
-    ["Biblioteka planów", "Plan widział tylko ten, kto go stworzył.", "Pokaż plan na swoim profilu: znajomi go otworzą i jednym dotknięciem zapiszą własną kopię (ćwiczenia, serie, czasy utrzymania, nigdy twoje ciężary). Przy kopii widać, od kogo jest, a twoje zmiany trafiają też do planu na profilu. Albo opublikuj go w nowej Bibliotece: każdy szuka tam planów po nazwie, autorze lub ćwiczeniu, filtruje po skupieniu i sprzęcie i widzi gwiazdki oraz ile osób zapisało plan (gwiazdki dają tylko ci, którzy go zrobili). Biblioteka startuje z 12 planami od HW App: w domu, z hantlami, na drążku i na siłowni."],
+    ["Biblioteka planów", "Plan widział tylko ten, kto go stworzył.", "Pokaż plan na swoim profilu: znajomi go otworzą i jednym dotknięciem zapiszą własną kopię (ćwiczenia, serie, czasy utrzymania, nigdy twoje ciężary). Przy kopii widać, od kogo jest, a twoje zmiany trafiają też do planu na profilu. Albo opublikuj go w nowej Bibliotece: każdy szuka tam planów po nazwie, autorze lub ćwiczeniu, filtruje po skupieniu i sprzęcie i widzi gwiazdki oraz ile osób zapisało plan (gwiazdki dają tylko ci, którzy go zrobili)."],
+    ["Biblioteka: najpierw wypróbuj", "Biblioteka zaczynała pusta, a plan można było tylko zapisać.", "Na start 12 planów od HW App. Plan możesz najpierw wypróbować: jeden trening, nic się nie zapisuje, a jeśli się spodobał, zapiszesz go z podsumowania. Nowa kolejność Popularne w tym tygodniu. Po zapisaniu otwierają się Moje plany z podświetlonym planem."],
     ["Udostępnianie i ocena", "Treningu nie dało się nikomu pokazać.", "Udostępnij w podsumowaniu treningu tworzy obrazek treningu (czas, serie, powtórzenia, seria dni, ćwiczenia) na Instagram, WhatsApp czy gdziekolwiek. Wersja z Google Play może czasem po treningu poprosić o ocenę; w Ustawieniach można to wyłączyć."],
     ["Historia", "Długa lista wszystkich treningów, kalendarz, którego nie dało się stuknąć, i liczby na górze.", "Najważniejszy jest kalendarz: stuknij dzień, aby otworzyć jego trening, stuknij pusty dzień, aby go dodać. Lista pokazuje wybrany miesiąc, a nowa strona Postępy ma liczby i płynniejszy wykres."],
     ["Sklep", "Jedna strona długa na dziesięć ekranów.", "Diamenty zostają na górze, a pod nimi przesuwają się trzy strony: Sklep, Wyglądy i Zdobyte. Karnet sezonowy i więcej sposobów na diamenty są pokazane jako „wkrótce”."],
@@ -197,5 +199,7 @@ export default {
     ["Muscle Deck: nowe jokery, bossowie, bony", "62 jokery, 7 blindów z bossem, 16 bonów. Odrzucanie tylko kosztowało, a Dwie pary, Trójka i Strit nie miały jokera z mnożnikiem.", "80 jokerów i nowe sposoby gry: odrzucaj celowo (Cardio, Drop set, Przerwa na wodę), graj pojedyncze karty (Izolacja, Dobra technika), oszczędzaj pieniądze (Inwestor), zostawiaj puste miejsca (Minimalista), sprzedawaj za pełną cenę (Odsprzedaż) i mnożniki dla Dwóch par, Trójki i Strita. Do tego trzy nowe blindy z bossem (Mała siłownia, Wejściówka, Bez ciężkich talerzy), trzy bony (Fory, Głębokie kieszenie, Jeszcze jedno powtórzenie) i dwa perki za trening (Weteran: 100 treningów, Żelazny nawyk: passa 30 treningów). Gra zapisana przed aktualizacją toczy się dalej, dopóki jej ruchy jeszcze pasują."],
     ["Konfetti", "70 do 90 osobnych animowanych kawałków, które potrafiły spowolnić telefon.", "Rysowane w jednej warstwie: to samo konfetti, o wiele lżejsze dla telefonu."],
     ["Plany na dwóch urządzeniach", "Telefon, który nie dostał jeszcze zmiany, mógł odesłać stare ćwiczenia planu, gdy tylko przeniosłeś go na inny dzień tygodnia.", "Ćwiczenia planu i jego dni tygodnia synchronizują się osobno: zawsze wygrywają najnowsze ćwiczenia, niezależnie od tego, które urządzenie zmieniło dzień."],
+    ["Płynniejsze listy", "Filtry wyglądały w każdej liście inaczej i za każdym razem się zerowały, a ładowana lista pokazywała tylko słowo.", "Jeden przycisk filtra w każdej liście, a filtry zostają, dopóki nie zamkniesz aplikacji. Szare kontury podczas ładowania, pociągnij w dół, by odświeżyć, a pusta lista proponuje następny krok. Miesiąc w kalendarzu zmienisz przesunięciem; na PC strzałkami ← → i / do wyszukiwania."],
+    ["Czyste nazwy", "Można było zająć dowolną wolną nazwę.", "Nazwy udające HW App lub zespół oraz znane przekleństwa są odrzucane w nowych nazwach i w planach pokazywanych innym."],
   ],
 };

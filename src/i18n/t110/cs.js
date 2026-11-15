@@ -1,6 +1,7 @@
 // Czech: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    tourPlFilter: "Tady hledáš ve svých plánech. Tlačítko filtru je seřadí a ukáže jednu skupinu; v každém seznamu vypadá stejně.",
     plStoreWeek: "Oblíbené tento týden",
     plStoreWeekN: "{n} tento týden",
     plTry: "Vyzkoušet",
@@ -186,7 +187,8 @@ export default {
   },
   news1_10: [
     ["Kamarádi spolu", "Kamarádi a žebříček; společná série počítala jen tréninky a světový žebříček byl zamčený.", "Nová stránka Spolu: pozvi kamaráda svým odkazem (100 💎 pro každého po jeho 3. tréninku), držte duo (tréninky nebo kalorie), společný týdenní cíl, souboj v sériích a šťouchnutí pro kamaráda, který ještě necvičil. Dny počítá server, takže duo nejde nafejkovat. Žebříček je jen tvých kamarádů, zamčený světový zmizel. Nový odznak: Ve dvou se to lépe táhne."],
-    ["Knihovna plánů", "Plány viděl jen ten, kdo je vytvořil.", "Ukaž plán na svém profilu: kamarádi si ho otevřou a jedním ťuknutím uloží vlastní kopii (cviky, série, časy výdrže, nikdy tvoje váhy). U kopie je napsáno, od koho je, a tvoje úpravy se přenesou i do plánu na profilu. Nebo ho zveřejni v nové Knihovně: každý tam hledá plány podle názvu, autora či cviku, filtruje podle zaměření a vybavení a vidí hvězdičky a kolik lidí si plán uložilo (hvězdičky dávají jen ti, kdo ho odcvičili). Knihovna začíná s 12 plány od HW App: doma, s jednoručkami, na hrazdě i v posilovně."],
+    ["Knihovna plánů", "Plány viděl jen ten, kdo je vytvořil.", "Ukaž plán na svém profilu: kamarádi si ho otevřou a jedním ťuknutím uloží vlastní kopii (cviky, série, časy výdrže, nikdy tvoje váhy). U kopie je napsáno, od koho je, a tvoje úpravy se přenesou i do plánu na profilu. Nebo ho zveřejni v nové Knihovně: každý tam hledá plány podle názvu, autora či cviku, filtruje podle zaměření a vybavení a vidí hvězdičky a kolik lidí si plán uložilo (hvězdičky dávají jen ti, kdo ho odcvičili)."],
+    ["Knihovna: nejdřív vyzkoušej", "Knihovna začínala prázdná a plán šlo jen uložit.", "Na začátek 12 plánů od HW App. Plán můžeš nejdřív vyzkoušet: jeden trénink, nic se neuloží, a když se ti líbil, uložíš ho ze souhrnu. Nové řazení Oblíbené tento týden. Po uložení se otevřou Moje plány a plán se rozsvítí."],
     ["Sdílení a hodnocení", "Trénink nešlo nikomu ukázat.", "Sdílet na souhrnu tréninku udělá obrázek tréninku (čas, série, opakování, série dní, cviky) pro Instagram, WhatsApp nebo kamkoli. Verze z Google Play se po tréninku občas může zeptat na hodnocení; v Nastavení se to dá vypnout."],
     ["Historie", "Dlouhý seznam všech tréninků, kalendář, na který se nedalo ťuknout, a čísla nahoře.", "Hlavní je kalendář: ťukni na den a otevře se jeho trénink, ťukni na prázdný den a přidáš ho. Seznam ukazuje vybraný měsíc a nová stránka Pokrok má čísla a plynulejší graf."],
     ["Obchod", "Jedna stránka dlouhá na deset obrazovek.", "Diamanty zůstávají nahoře a pod nimi se posouvají tři stránky: Obchod, Vzhledy a Získané. Sezónní pass a další způsoby, jak získat diamanty, jsou ukázané jako „brzy“."],
@@ -197,5 +199,7 @@ export default {
     ["Muscle Deck: noví jokeři, bossové, poukázky", "62 jokerů, 7 boss blindů, 16 poukázek. Odhazování jen stálo a Dva páry, Trojice a Postupka neměly žádného jokera s násobičem.", "80 jokerů a nové způsoby hry: odhazuj schválně (Kardio, Drop set, Pauza na vodu), hraj jednotlivé karty (Izolace, Správná technika), šetři peníze (Investor), nech místa prázdná (Minimalista), prodávej za plnou cenu (Výkup) a násobiče pro Dva páry, Trojici a Postupku. K tomu tři nové boss blindy (Malá posilovna, Vstupné, Bez těžkých kotoučů), tři poukázky (Náskok, Hluboké kapsy, Ještě jedno opakování) a dva perky za trénink (Veterán: 100 tréninků, Železný zvyk: šňůra 30 tréninků). Hra uložená před aktualizací pokračuje, dokud její tahy ještě sedí."],
     ["Konfety", "70 až 90 samostatných animovaných kousků, které uměly telefon zpomalit.", "Kreslené v jedné vrstvě: stejné konfety, mnohem lehčí pro telefon."],
     ["Plány na dvou zařízeních", "Telefon, který ještě nedostal úpravu, mohl poslat zpátky staré cviky plánu, když jsi ho jen přesunul na jiný den v týdnu.", "Cviky plánu a jeho dny v týdnu se synchronizují zvlášť: vždy vyhrají nejnovější cviky, ať den změnilo kterékoli zařízení."],
+    ["Plynulejší seznamy", "Filtry vypadaly v každém seznamu jinak a pokaždé se zrušily a načítaný seznam ukazoval jen slovo.", "Jedno tlačítko filtru v každém seznamu a filtry zůstanou, dokud aplikaci nezavřeš. Šedé obrysy během načítání, potáhni dolů pro obnovení a prázdný seznam nabídne další krok. Měsíc v kalendáři změníš potažením; na PC šipkami ← → a / pro hledání."],
+    ["Slušná jména", "Šla vzít jakákoli volná přezdívka.", "Jména, která vypadají jako HW App nebo tým, a známé nadávky nejdou použít v nových přezdívkách ani v plánech, které ukazuješ ostatním."],
   ],
 };

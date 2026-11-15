@@ -184,4 +184,29 @@ const ids = p => p.$$eval("[data-store-plan]", e => e.map(x => x.getAttribute("d
   T.eq(h.errors, [], "no page errors (9b)");
   await h.close();
 }
+// ─── 10: keys on a PC: "/" = search, ← → = month ───
+{
+  const h = await start({ clock: Date.UTC(2026, 10, 18, 12), viewport: { width: 380, height: 820 }, cloud: { pub }, seed: { profile: { name: "Michael" } } });
+  const p = h.page;
+  await go(p, "plans"); await p.click('[data-plans-seg="store"]'); await p.waitForTimeout(900);
+  await p.mouse.click(5, 400); await p.keyboard.press("/");
+  T.ok(await p.evaluate(() => document.activeElement && document.activeElement.hasAttribute("data-store-q")), "/ puts the cursor into the Library search");
+  await p.keyboard.type("core"); await p.waitForTimeout(200);
+  T.eq(await ids(p), ["u3_p2"], "typing searches (the / itself was not typed)");
+  await p.keyboard.press("Escape"); await p.waitForTimeout(150);
+  T.eq(await p.inputValue("[data-store-q]"), "", "Esc clears the search");
+  await p.keyboard.press("Escape"); await p.waitForTimeout(150);
+  T.ok(await p.evaluate(() => !document.activeElement || !document.activeElement.hasAttribute("data-store-q")), "a second Esc leaves the field");
+  await go(p, "history");
+  const title = () => p.textContent("[data-cal-title]");
+  await p.keyboard.press("ArrowLeft"); await p.waitForTimeout(400);
+  T.ok((await title()).includes("October"), "← = the month before");
+  await p.keyboard.press("ArrowRight"); await p.waitForTimeout(400);
+  T.ok((await title()).includes("November"), "→ = back");
+  await p.click("[data-add-workout]"); await p.waitForTimeout(500);
+  await p.keyboard.press("ArrowLeft"); await p.waitForTimeout(300);
+  T.ok((await title()).includes("November"), "with the workout editor open, arrows don't move the month");
+  T.eq(h.errors, [], "no page errors (10)");
+  await h.close();
+}
 T.done();
