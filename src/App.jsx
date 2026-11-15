@@ -10,7 +10,7 @@ import { LIB, W_RANK, wSetScore, wRankAt, REP_CAP, GROUPS_ORDER, EQUIP_ORDER } f
 import { EX_NAMES } from "./exnames.js";
 import * as PLN from "./plans.js";
 import { isDefOwner } from "./defplans.js";
-import { drawShareCard } from "./sharecard.js";
+import { drawShareCard, drawBadgeCard } from "./sharecard.js";
 import * as BD from "./body.js";
 import * as GM from "./game/engine.js";
 import { fairStats } from "./fair.js";
@@ -5989,7 +5989,7 @@ function BadgesList({ m, focus, claim }) {
   const openA = open && ach.find(a => a.k === open);
   return (
     <div data-pf-badges>
-      {openA && <BadgeSheet a={openA} onClose={() => setOpen(null)} />}
+      {openA && <BadgeSheet a={openA} share={!!m.own} onClose={() => setOpen(null)} />}
       <div style={{ fontSize: 13, color: C.dim, lineHeight: 1.5, margin: "0 2px 10px" }}>{T("achCount", { n: won, max: all.length })} · {T("achTiers", { n: ach.reduce((x, a) => x + (hid(a) ? 0 : a.step), 0), max: all.reduce((x, a) => x + a.at.length, 0) })}</div>
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {list.map((a, k) => {
@@ -6045,9 +6045,25 @@ function SheetHero({ icon, col, children }) {
     </div>
   );
 }
-function BadgeSheet({ a, onClose }) {
+function BadgeSheet({ a, onClose, share }) {
   const val = x => (a.span ? spanText(x) : a.k === "plank" ? `${nf(x)} s` : nf(x));
   const cur = a.tier ? a.tier - 1 : -1, col = cur >= 0 ? RANKS[cur].color : a.single ? RANKS[a.rk[0]].color : C.dim;
+  // 1.10.0 (Michael's idea 8): your own earned badge as a picture to share (1080 × 1350, src/sharecard.js)
+  const [shSt, setShSt] = useState("");
+  const doShare = async () => {
+    if (shSt === "busy") return;
+    sfxTap(); setShSt("busy");
+    try {
+      try { await Promise.race([document.fonts.ready, new Promise(x => setTimeout(x, 1500))]); } catch (_) {}
+      const cv = await drawBadgeCard(document.createElement("canvas"), {
+        name: a.name, level: a.single ? rarityName(a) : RANKS[cur].name, levelColor: col, icon: ICONS[a.icon] || "",
+        line: a.single ? a.desc : achLevelText(a, a.at[Math.max(0, a.step - 1)]), date: fmtDate(dateKey()), foot: T("shareFoot"),
+        c: { ink: C.ink, panel: C.panel, chalk: C.chalk, dim: C.dim, signal: C.signal }, font: { display: DISPLAY, body: BODY },
+      });
+      const r = await shareImage(cv.toDataURL("image/png").split(",")[1], `hw-app-badge-${a.k}.png`, T("badgeShareText", { name: a.name }));
+      setShSt(r === "saved" ? "saved" : "");
+    } catch (_) { setShSt("err"); }
+  };
   return (
     <Sheet title={a.name} onClose={onClose} short>
       <div data-badge-sheet={a.k}>
@@ -6057,6 +6073,10 @@ function BadgeSheet({ a, onClose }) {
           {!a.single && a.next === null && <div style={{ fontSize: 13, color: col, fontWeight: 800, marginTop: 6 }}>{emo(T("achMax"))}</div>}
           {a.single && <div style={{ fontSize: 14, color: C.chalk, lineHeight: 1.45, marginTop: 8, maxWidth: 300 }}>{a.desc}</div>}
           {a.single && a.step > 0 && <div style={{ marginTop: 8, color: C.mint, display: "flex" }}><Ico n="check" size={22} sw={2.8} /></div>}
+          {share && a.step > 0 && <button type="button" data-badge-share data-state={shSt || "idle"} onClick={doShare} style={{ ...btnBase, marginTop: 12, padding: "9px 16px", borderRadius: 99, fontSize: 14, display: "inline-flex", alignItems: "center", gap: 7, background: `${col}22`, color: col, border: `1px solid ${col}66` }}>
+            <Ico n="upload" size={16} sw={2.3} />{shSt === "busy" ? "…" : T("sumShare")}
+          </button>}
+          {(shSt === "saved" || shSt === "err") && <div role="status" data-badge-share-msg style={{ fontSize: 12, color: shSt === "err" ? "#ff8a80" : C.mint, marginTop: 6 }}>{T(shSt === "err" ? "frErr" : "shareSaved")}</div>}
         </SheetHero>
         {!a.single && (
           <div data-badge-levels style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -6389,7 +6409,7 @@ const PF_LAY = {
 // the name ("Training for" first: it says how long you train). A tap shows a small card above the icon (the badge, its
 // level, how far you are); a tap on that card opens the badge with all its levels. More than fit: "+N" opens the Badges page.
 const HERO_BADGES = 5;
-function HeroBadges({ list, onAll, still }) {
+function HeroBadges({ list, onAll, still, own }) {
   const [pop, setPop] = useState(null); // {a, x, y, up}
   const [sheet, setSheet] = useState(null);
   useBack(() => setPop(null), !!pop);
@@ -6425,7 +6445,7 @@ function HeroBadges({ list, onAll, still }) {
             <span style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 12, fontWeight: 800, color: C.signal, marginTop: 8 }}>{T("heroBadgeMore")}<Arrow size={14} /></span>
           </button>
         </>, document.body)}
-      {sheet && <BadgeSheet a={sheet} onClose={() => setSheet(null)} />}
+      {sheet && <BadgeSheet a={sheet} share={!!own} onClose={() => setSheet(null)} />}
     </>
   );
 }
@@ -6448,7 +6468,7 @@ function ProfileHero({ m, own, onPhoto, onEditProfile, onLooks, onStreak, extra,
               <div data-pf-name data-name-fx={lk.name || ""} style={{ fontFamily: DISPLAY, fontSize: 30, fontWeight: 900, lineHeight: 1, color: C.chalk, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" , ...INK, ...nameFx(lk.name), ...(lk.name ? FX_ROOM : {}) }}>{m.nick}</div>
               {lk.title && <div style={{ marginTop: 6 }}><LookTitle id={lk.title} /></div>}
               {own && bdayToday() ? <div style={{ fontSize: 13, color: C.signal, fontWeight: 800, marginTop: 4 }}>{emo(T("bdayHero"))}</div>
-                : badges && badges.length ? <HeroBadges list={badges} onAll={onAllBadges} still={preview} />
+                : badges && badges.length ? <HeroBadges list={badges} onAll={onAllBadges} still={preview} own={own} />
                 : !m.since ? <div style={{ fontSize: 13, color: C.dim, marginTop: 4 }}>{T("newMember")}</div> : null /* 1.9.0 (Michael, Nov 7): no "Training since" line any more, the badges say it */}
             </div>
             {own && !preview && <span style={{ alignSelf: "flex-start", display: "flex", flexDirection: "column", gap: 6, flexShrink: 0 }}>

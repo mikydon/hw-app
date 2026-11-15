@@ -1,6 +1,7 @@
 // Hungarian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    badgeShareText: "Új jelvény a HW Appban: {name} 🏅 https://play.google.com/store/apps/details?id=io.github.mikydon.hwapp",
     tourPfCards: "A kártyagyűjteményed: Muscle Deck kártyastílusok. Válassz egyet a kinézetben; a Rankedben az ellenfél is látja.",
     lookKind_card: "Kártyák",
     pfCards: "Kártyagyűjtemény",
@@ -276,5 +277,6 @@ export default {
     ["Terv linkje", "Egy tervet csak a profilodon lehetett megmutatni vagy a Könyvtárban közzétenni.", "A tervszerkesztőből megoszthatsz egy linket: aki megnyitja, látja a tervet, és fiók nélkül is elmenthet egy másolatot vagy kipróbálhatja. A súlyaid sosem szerepelnek benne."],
     ["Testrangok", "A test lapos színekkel jelent meg, alatta mindig kilenc csempével.", "Az izmok fémként és drágakőként csillognak (vas, bronz, ezüst, arany… obszidián); a doboz csak a testet mutatja, koppintásra legördül a kilenc testrész."],
     ["Kártyastílusok", "A Muscle Deck kártyái mindig ugyanúgy néztek ki.", "Nyolc kártyastílus (Éjszaka, Menta, Karbon, Márvány, Arany, Neon, Hologram, Obszidián) a Bolt kinézetei között; a profil kinézetében választhatsz, mindet látod a profilod kártyagyűjteményében, és a Rankedben az ellenfél is látja a tiédet."],
+    ["Jelvény megosztása", "A jelvényeket csak az appban lehetett látni.", "Nyisd meg a megszerzett jelvényt, és koppints a Megosztásra: kép a jelvénnyel a szintje színében, sztorikhoz és chatekhez."],
   ],
 };

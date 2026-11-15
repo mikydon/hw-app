@@ -1,6 +1,7 @@
 // Portuguese (Brazil): texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    badgeShareText: "Nova insígnia no HW App: {name} 🏅 https://play.google.com/store/apps/details?id=io.github.mikydon.hwapp",
     tourPfCards: "Sua coleção de cartas: estilos de cartas do Muscle Deck. Use um na aparência; no Ranked o rival também vê.",
     lookKind_card: "Cartas",
     pfCards: "Coleção de cartas",
@@ -276,5 +277,6 @@ export default {
     ["Links de planos", "Um plano só podia ser mostrado no perfil ou publicado na Biblioteca.", "Compartilhe um link pelo editor do plano: quem abrir vê o plano e pode salvar uma cópia ou testar, mesmo sem conta. Seus pesos nunca vão nele."],
     ["Ranks do corpo", "O corpo tinha cores chapadas e sempre nove blocos embaixo.", "Os músculos brilham como metais e gemas (ferro, bronze, prata, ouro… obsidiana); o quadro mostra só o corpo e um toque abre as nove partes."],
     ["Estilos de cartas", "As cartas do Muscle Deck eram sempre iguais.", "Oito estilos de cartas (Noite, Menta, Carbono, Mármore, Ouro, Neon, Holograma, Obsidiana) nas aparências da Loja; use um na aparência do perfil, veja todos na sua coleção de cartas e, no Ranked, o rival vê o seu."],
+    ["Compartilhe uma insígnia", "As insígnias só apareciam no app.", "Abra uma insígnia conquistada e toque em Compartilhar: uma imagem com a insígnia na cor do nível, pronta para stories e conversas."],
   ],
 };

@@ -1,6 +1,7 @@
 // Slovak: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    badgeShareText: "Nový odznak v HW App: {name} 🏅 https://play.google.com/store/apps/details?id=io.github.mikydon.hwapp",
     tourPfCards: "Tvoja kolekcia kariet: štýly kariet pre Muscle Deck. Jeden si nasaď vo vzhľade; v Rankede ho uvidí aj súper.",
     lookKind_card: "Karty",
     pfCards: "Kolekcia kariet",
@@ -276,5 +277,6 @@ export default {
     ["Odkaz na plán", "Plán sa dal len ukázať na profile alebo zverejniť v Knižnici.", "V editore plánu zdieľaj odkaz: kto ho otvorí, uvidí plán a môže si uložiť kópiu alebo ho vyskúšať, aj bez účtu. Tvoje váhy v ňom nikdy nie sú."],
     ["Ranky tela", "Telo malo ploché farby a pod ním vždy deväť dlaždíc.", "Svaly sa lesknú ako kovy a drahokamy (železo, bronz, striebro, zlato… obsidián); box ukazuje len telo a ťuknutím sa rozroluje deväť partií."],
     ["Štýly kariet", "Karty v Muscle Decku vyzerali vždy rovnako.", "Osem štýlov kariet (Noc, Mäta, Karbón, Mramor, Zlato, Neón, Hologram, Obsidián) vo vzhľadoch v Obchode; nasadíš si ich vo vzhľade profilu, všetky uvidíš v kolekcii kariet na profile a v Rankede uvidí ten tvoj aj súper."],
+    ["Zdieľaj odznak", "Odznaky sa dali vidieť len v appke.", "Otvor odznak, ktorý máš, a ťukni na Zdieľať: obrázok s odznakom vo farbe jeho úrovne, hotový do stories aj chatu."],
   ],
 };

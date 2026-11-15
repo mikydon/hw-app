@@ -1,6 +1,7 @@
 // Indonesian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    badgeShareText: "Lencana baru di HW App: {name} 🏅 https://play.google.com/store/apps/details?id=io.github.mikydon.hwapp",
     tourPfCards: "Koleksi kartumu: gaya kartu Muscle Deck. Pakai satu di tampilanmu; di Ranked lawan juga melihatnya.",
     lookKind_card: "Kartu",
     pfCards: "Koleksi kartu",
@@ -276,5 +277,6 @@ export default {
     ["Tautan rencana", "Rencana hanya bisa ditampilkan di profil atau diterbitkan di Pustaka.", "Bagikan tautan dari editor rencana: siapa pun yang membukanya melihat rencana itu dan bisa menyimpan salinan atau mencobanya, bahkan tanpa akun. Bebanmu tidak pernah ikut."],
     ["Rank tubuh", "Tubuh berwarna datar dengan sembilan ubin selalu di bawahnya.", "Otot berkilau seperti logam dan permata (besi, perunggu, perak, emas… obsidian); kotaknya hanya menampilkan tubuh, dan satu ketukan membuka sembilan bagian."],
     ["Gaya kartu", "Kartu Muscle Deck selalu terlihat sama.", "Delapan gaya kartu (Malam, Mint, Karbon, Marmer, Emas, Neon, Hologram, Obsidian) di tampilan Toko; pakai satu di tampilan profil, lihat semuanya di koleksi kartu pada profil, dan di Ranked lawan melihat gayamu."],
+    ["Bagikan lencana", "Lencana hanya bisa dilihat di aplikasi.", "Buka lencana yang kamu raih dan ketuk Bagikan: gambar lencana dalam warna levelnya, siap untuk story dan chat."],
   ],
 };

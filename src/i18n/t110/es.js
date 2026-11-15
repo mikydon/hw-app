@@ -1,6 +1,7 @@
 // Spanish: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    badgeShareText: "Nueva insignia en HW App: {name} 🏅 https://play.google.com/store/apps/details?id=io.github.mikydon.hwapp",
     tourPfCards: "Tu colección de cartas: estilos de cartas de Muscle Deck. Ponte uno en tu aspecto; en Ranked también lo ve el rival.",
     lookKind_card: "Cartas",
     pfCards: "Colección de cartas",
@@ -276,5 +277,6 @@ export default {
     ["Enlaces de planes", "Un plan solo se podía mostrar en tu perfil o publicar en la Biblioteca.", "Comparte un enlace desde el editor del plan: quien lo abra ve el plan y puede guardar una copia o probarlo, incluso sin cuenta. Tus pesos nunca van en él."],
     ["Rangos del cuerpo", "El cuerpo tenía colores planos y siempre nueve fichas debajo.", "Los músculos brillan como metales y gemas (hierro, bronce, plata, oro… obsidiana); el cuadro muestra solo el cuerpo y un toque despliega las nueve partes."],
     ["Estilos de cartas", "Las cartas de Muscle Deck siempre se veían igual.", "Ocho estilos de cartas (Noche, Menta, Carbono, Mármol, Oro, Neón, Holograma, Obsidiana) en los aspectos de la Tienda; ponte uno en el aspecto del perfil, todos se ven en tu colección de cartas y en Ranked el rival ve el tuyo."],
+    ["Comparte una insignia", "Las insignias solo se veían en la app.", "Abre una insignia que ganaste y toca Compartir: una imagen con la insignia en el color de su nivel, lista para historias y chats."],
   ],
 };

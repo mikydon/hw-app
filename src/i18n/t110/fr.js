@@ -1,6 +1,7 @@
 // French: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    badgeShareText: "Nouveau badge dans HW App : {name} 🏅 https://play.google.com/store/apps/details?id=io.github.mikydon.hwapp",
     tourPfCards: "Ta collection de cartes : les styles de cartes de Muscle Deck. Choisis-en un dans ton apparence ; en Ranked, l'adversaire le voit aussi.",
     lookKind_card: "Cartes",
     pfCards: "Collection de cartes",
@@ -276,5 +277,6 @@ export default {
     ["Liens de programmes", "Un programme pouvait seulement être montré sur ton profil ou publié dans la Bibliothèque.", "Partage un lien depuis l'éditeur : qui l'ouvre voit le programme et peut en enregistrer une copie ou l'essayer, même sans compte. Tes charges n'y figurent jamais."],
     ["Rangs du corps", "Le corps avait des couleurs plates et toujours neuf tuiles en dessous.", "Les muscles brillent comme des métaux et des gemmes (fer, bronze, argent, or… obsidienne) ; le bloc ne montre que le corps et un toucher déroule les neuf parties."],
     ["Styles de cartes", "Les cartes de Muscle Deck avaient toujours le même look.", "Huit styles de cartes (Nuit, Menthe, Carbone, Marbre, Or, Néon, Hologramme, Obsidienne) dans les looks de la Boutique ; choisis-en un dans l'apparence du profil, retrouve-les tous dans ta collection de cartes, et en Ranked l'adversaire voit le tien."],
+    ["Partage un badge", "Les badges ne se voyaient que dans l'app.", "Ouvre un badge gagné et touche Partager : une image du badge dans la couleur de son niveau, prête pour les stories et les discussions."],
   ],
 };

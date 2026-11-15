@@ -1,6 +1,7 @@
 // Polish: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    badgeShareText: "Nowa odznaka w HW App: {name} 🏅 https://play.google.com/store/apps/details?id=io.github.mikydon.hwapp",
     tourPfCards: "Twoja kolekcja kart: style kart do Muscle Deck. Załóż jeden w wyglądzie; w Ranked zobaczy go też rywal.",
     lookKind_card: "Karty",
     pfCards: "Kolekcja kart",
@@ -276,5 +277,6 @@ export default {
     ["Link do planu", "Plan można było tylko pokazać na profilu lub opublikować w Bibliotece.", "W edytorze planu udostępnij link: kto go otworzy, zobaczy plan i może zapisać kopię lub go wypróbować, nawet bez konta. Twoich ciężarów nigdy w nim nie ma."],
     ["Rangi ciała", "Ciało miało płaskie kolory i zawsze dziewięć kafelków pod spodem.", "Mięśnie lśnią jak metale i klejnoty (żelazo, brąz, srebro, złoto… obsydian); pole pokazuje tylko ciało, a stuknięcie rozwija dziewięć partii."],
     ["Style kart", "Karty w Muscle Deck zawsze wyglądały tak samo.", "Osiem stylów kart (Noc, Mięta, Karbon, Marmur, Złoto, Neon, Hologram, Obsydian) w wyglądach w Sklepie; załóż jeden w wyglądzie profilu, wszystkie zobaczysz w kolekcji kart na profilu, a w Ranked twój zobaczy też rywal."],
+    ["Udostępnij odznakę", "Odznaki było widać tylko w aplikacji.", "Otwórz zdobytą odznakę i stuknij Udostępnij: obrazek z odznaką w kolorze jej poziomu, gotowy do relacji i czatów."],
   ],
 };

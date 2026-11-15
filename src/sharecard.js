@@ -114,3 +114,49 @@ export function drawShareCard(canvas, d) {
   g.fillStyle = c.dim; g.font = `600 28px ${F.body}`; g.fillText(d.foot, P, CARD_H - 50);
   return canvas;
 }
+
+// 1.10.0 (Michael's idea 8, Nov 15): a picture of one badge you earned (1080 × 1350): the badge icon big in a lit well
+// in its level's colour, the badge name, the level (or rarity), what it took, the date, and the footer. icon = the
+// icon's SVG inner markup (24 grid line art, from App.jsx ICONS), drawn through an SVG image (no network).
+// d = { name, level, levelColor, line, date, icon, foot, c: {ink, panel, chalk, dim, signal}, font: {display, body} }
+export async function drawBadgeCard(canvas, d) {
+  canvas.width = CARD_W; canvas.height = CARD_H;
+  const g = canvas.getContext("2d"), c = d.c, F = d.font, col = d.levelColor || c.signal, P = 80;
+  g.fillStyle = c.ink; g.fillRect(0, 0, CARD_W, CARD_H);
+  const glow = g.createRadialGradient(CARD_W / 2, 560, 40, CARD_W / 2, 560, 720);
+  glow.addColorStop(0, col + "55"); glow.addColorStop(1, col + "00");
+  g.fillStyle = glow; g.fillRect(0, 0, CARD_W, CARD_H);
+  mark(g, P - 14, 64, 120, c.signal, c.chalk);
+  g.fillStyle = c.dim; g.font = `600 30px ${F.body}`; g.textAlign = "right"; g.textBaseline = "middle"; g.fillText(d.date || "", CARD_W - P, 124);
+  // the well
+  const W = 400, x = (CARD_W - W) / 2, y = 290;
+  g.fillStyle = c.panel; rr(g, x, y, W, W, 110); g.fill();
+  const lit = g.createRadialGradient(CARD_W / 2, y + W, 10, CARD_W / 2, y + W, W * 0.8);
+  lit.addColorStop(0, col + "99"); lit.addColorStop(1, col + "00");
+  g.save(); rr(g, x, y, W, W, 110); g.clip(); g.fillStyle = lit; g.fillRect(x, y, W, W); g.restore();
+  g.fillStyle = col; rr(g, x + W * 0.22, y + W - 8, W * 0.56, 6, 3); g.fill();
+  g.strokeStyle = col + "aa"; g.lineWidth = 4; rr(g, x + 2, y + 2, W - 4, W - 4, 108); g.stroke();
+  if (d.icon) {
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="240" height="240" fill="none" stroke="${mix(col)}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${d.icon}</svg>`;
+    const img = await new Promise(res => { const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg); });
+    if (img) { g.save(); g.shadowColor = col; g.shadowBlur = 30; g.drawImage(img, CARD_W / 2 - 120, y + W / 2 - 120, 240, 240); g.restore(); }
+  }
+  // name, level, line
+  g.textAlign = "center"; g.textBaseline = "alphabetic"; g.fillStyle = c.chalk;
+  const ns = fit(g, d.name, CARD_W - 2 * P, 92, 900, F.display); g.font = `900 ${ns}px ${F.display}`; g.fillText(d.name, CARD_W / 2, y + W + 130);
+  if (d.level) {
+    g.font = `800 38px ${F.body}`; const lw = g.measureText(d.level).width + 64, ly = y + W + 175;
+    g.fillStyle = col + "26"; rr(g, (CARD_W - lw) / 2, ly, lw, 66, 33); g.fill();
+    g.fillStyle = col; g.textBaseline = "middle"; g.fillText(d.level, CARD_W / 2, ly + 35); g.textBaseline = "alphabetic";
+  }
+  if (d.line) { g.fillStyle = c.dim; g.font = `600 32px ${F.body}`; g.fillText(ellipsis(g, d.line, CARD_W - 2 * P), CARD_W / 2, y + W + 310); }
+  g.textAlign = "left"; g.fillStyle = c.chalk; g.font = `900 40px ${F.display}`; g.fillText("HW App", P, CARD_H - 92);
+  g.fillStyle = c.dim; g.font = `600 28px ${F.body}`; g.fillText(d.foot, P, CARD_H - 50);
+  return canvas;
+}
+// the icon a bit lighter than its level colour (like the badge wells in the app)
+function mix(hex) {
+  const m = /^#([0-9a-f]{6})$/i.exec(hex || ""); if (!m) return hex;
+  const n = parseInt(m[1], 16), r = (n >> 16) & 255, gg = (n >> 8) & 255, b = n & 255, k = 0.45;
+  return `rgb(${Math.round(r + (255 - r) * k)}, ${Math.round(gg + (255 - gg) * k)}, ${Math.round(b + (255 - b) * k)})`;
+}
