@@ -1,6 +1,12 @@
 // Polish: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    ntPlanSave: "{nick} zapisał twój plan",
+    ntPlanSaveD: "„{plan}” jest teraz w jego planach. Dzięki, że się dzielisz!",
+    ntPlanRate: "{nick} ocenił twój plan na {r} ★",
+    ntPlanRateD: "Przećwiczył „{plan}” i go ocenił.",
+    pvReqSent: "Zaproszenie wysłane",
+    pvReqAccept: "Przyjmij zaproszenie",
     yearT: "Twój rok {y}",
     yearShareT: "Mój rok {y}",
     yearStreak: "Najdłuższa passa",
@@ -247,5 +253,6 @@ export default {
     ["📱 Przypomnienie o passie", "Nic nie przypominało, gdy passa miała się skończyć.", "Jedno powiadomienie wieczorem, tylko w dniu, w którym passa by się skończyła (18–21, do wyboru). Ustawienia → Powiadomienia."],
     ["Twój tydzień", "Nic nie podsumowywało tygodnia, który się skończył.", "Od poniedziałku do środy ekran Start pokazuje zeszły tydzień: treningi, serie, czas, zmianę względem tygodnia wcześniej i dni z treningiem, z obrazkiem do udostępnienia."],
     ["Twój rok", "Nic nie podsumowywało całego roku.", "Od 15 grudnia do 10 stycznia ekran Start pokazuje twój rok: treningi, czas, najdłuższą passę, miesiące, ulubione ćwiczenia i obrazek do udostępnienia."],
+    ["Biblioteka: ludzie", "Autor planu był tylko nazwą.", "Stuknij autora w Bibliotece, by zobaczyć jego profil i wysłać stamtąd zaproszenie do znajomych; autor dostaje powiadomienie, gdy ktoś zapisze lub oceni jego plan (najwyżej raz dziennie)."],
   ],
 };

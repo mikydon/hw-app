@@ -2,7 +2,7 @@
 // speaks the same languages as the app. Run after changing them: node worker/gen-texts.mjs
 import fs from "fs";
 const dir = new URL("../src/i18n/", import.meta.url);
-const KEYS = ["ntReq", "ntReqD", "ntAcc", "ntAccD", "ntTest", "ntTestD", "ntNudge", "ntNudgeD"];
+const KEYS = ["ntReq", "ntReqD", "ntAcc", "ntAccD", "ntTest", "ntTestD", "ntNudge", "ntNudgeD", "ntPlanSave", "ntPlanSaveD", "ntPlanRate", "ntPlanRateD"];
 const out = {};
 for (const f of fs.readdirSync(dir).filter(f => /^[a-z]{2}\.js$/.test(f))) {
   const m = await import(new URL(f, dir));

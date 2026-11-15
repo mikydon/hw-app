@@ -432,7 +432,7 @@ export const impl = {
     fs.docs.forEach(c => b.delete(c.ref)); // 1.8.0 friend streaks
     old.docs.forEach(c => b.delete(c.ref));
     b.delete(d("days", me));
-    ["vdays", "inv", "rew", "plib", "ranked"].forEach(c => b.delete(d(c, me))); // 1.10.0 Friends together, plan library, Ranked
+    ["vdays", "inv", "rew", "plib", "ranked", "pnote"].forEach(c => b.delete(d(c, me))); // 1.10.0 Friends together, plan library, Ranked, plan notes
     runs.docs.slice(0, 300).forEach(x => b.delete(x.ref));
     pubs.docs.forEach(x => b.delete(x.ref));
     fr.docs.forEach(x => { b.delete(d("friends", me, "list", x.id)); b.delete(d("friends", x.id, "list", me)); });

@@ -1,6 +1,12 @@
 // Czech: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    ntPlanSave: "{nick} si uložil tvůj plán",
+    ntPlanSaveD: "„{plan}“ má teď mezi svými plány. Díky, že sdílíš!",
+    ntPlanRate: "{nick} dal tvému plánu {r} ★",
+    ntPlanRateD: "Odcvičil „{plan}“ a ohodnotil ho.",
+    pvReqSent: "Žádost odeslána",
+    pvReqAccept: "Přijmout žádost o přátelství",
     yearT: "Tvůj rok {y}",
     yearShareT: "Můj rok {y}",
     yearStreak: "Nejdelší šňůra",
@@ -247,5 +253,6 @@ export default {
     ["📱 Připomínka šňůry", "Nic tě neupozornilo, když ti měla skončit šňůra.", "Jedno oznámení večer, jen v den, kdy by ti šňůra skončila (18–21 h, podle tebe). Nastavení → Upozornění."],
     ["Tvůj týden", "Nic se neohlédlo za týdnem, který skončil.", "Od pondělí do středy ukáže Úvod minulý týden: tréninky, série, čas, změnu oproti týdnu předtím a dny, kdy jsi cvičil, s obrázkem ke sdílení."],
     ["Tvůj rok", "Nic se neohlédlo za celým rokem.", "Od 15. prosince do 10. ledna ukáže Úvod tvůj rok: tréninky, čas, nejdelší šňůru, měsíce, oblíbené cviky a obrázek ke sdílení."],
+    ["Knihovna: lidé", "Autor plánu byl jen jméno.", "Ťukni na autora v Knihovně a uvidíš jeho profil, odkud mu můžeš poslat žádost o přátelství; autor dostane upozornění, když si někdo jeho plán uloží nebo ohodnotí (nejvýš jednou denně)."],
   ],
 };

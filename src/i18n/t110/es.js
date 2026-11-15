@@ -1,6 +1,12 @@
 // Spanish: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    ntPlanSave: "{nick} guardó tu plan",
+    ntPlanSaveD: "“{plan}” ya está en sus planes. ¡Gracias por compartir!",
+    ntPlanRate: "{nick} dio {r} ★ a tu plan",
+    ntPlanRateD: "Entrenó “{plan}” y lo valoró.",
+    pvReqSent: "Solicitud enviada",
+    pvReqAccept: "Aceptar su solicitud",
     yearT: "Tu {y}",
     yearShareT: "Mi {y}",
     yearStreak: "Racha más larga",
@@ -247,5 +253,6 @@ export default {
     ["📱 Recordatorio de racha", "Nada te avisaba cuando tu racha iba a terminar.", "Una notificación por la tarde, solo el día en que tu racha terminaría (18–21 h, a tu elección). Ajustes → Notificaciones."],
     ["Tu semana", "Nada repasaba la semana que había terminado.", "De lunes a miércoles, Inicio muestra la semana pasada: entrenos, series, tiempo, el cambio frente a la semana anterior y los días que entrenaste, con una imagen para compartir."],
     ["Tu año", "Nada repasaba el año entero.", "Del 15 de diciembre al 10 de enero, Inicio muestra tu año: entrenos, tiempo, la racha más larga, los meses, tus ejercicios favoritos y una imagen para compartir."],
+    ["Biblioteca: personas", "El autor de un plan era solo un nombre.", "Toca al autor en la Biblioteca para ver su perfil y enviarle una solicitud de amistad desde ahí; los autores reciben una notificación cuando alguien guarda o valora su plan (como mucho una vez al día)."],
   ],
 };

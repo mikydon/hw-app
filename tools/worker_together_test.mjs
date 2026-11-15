@@ -161,7 +161,8 @@ put(`backups/${B}`, backup([wk(0)]));
   const pid = `${C}_pX1`;
   put(`pub/${pid}`, { o: C, nick: "Carol", name: "Legs", items: [{ id: "n1", sets: 3 }], sv: 0 });
   eq((await call(planSave, { uid: C, pid, copy: "pZ" })).why, "own", "your own plan's saves don't count");
-  eq(await call(planSave, { uid: A, pid, copy: "pA1" }), { why: "ok", sv: 1 }, "a save counts");
+  const s1 = await call(planSave, { uid: A, pid, copy: "pA1" });
+  eq([s1.why, s1.sv, s1.note], ["ok", 1, "no-phone"], "a save counts (the author has no phone here: no note)");
   eq(await call(planSave, { uid: A, pid, copy: "pA2" }), { why: "again", sv: 1 }, "saving again doesn't (the newest copy is remembered)");
   eq(doc(`pub/${pid}/u/${A}`).copy, "pA2", "copy id updated");
   eq([doc(`pub/${pid}`).ws, doc(`pub/${pid}`).wp, doc(`pub/${pid}`).wk], [1, 0, weekOf(clock)], "a save this week: ws 1");
@@ -181,8 +182,8 @@ put(`backups/${B}`, backup([wk(0)]));
   eq((await call(planRate, { uid: A, pid, r: 5 })).why, "not-trained", "no stars before a workout from the copy");
   put(`backups/${A}`, backup([{ ...wk(1), plan: { id: "pA2", name: "Legs" } }]));
   eq((await call(planRate, { uid: A, pid, r: 6 })).why, "bad", "6 stars is refused");
-  eq(await call(planRate, { uid: A, pid, r: 4 }), { why: "ok", avg: 4, sn: 1 }, "4 stars after a workout");
-  eq(await call(planRate, { uid: A, pid, r: 2 }), { why: "ok", avg: 2, sn: 1 }, "changing the stars replaces them");
+  { const x = await call(planRate, { uid: A, pid, r: 4 }); eq([x.why, x.avg, x.sn], ["ok", 4, 1], "4 stars after a workout"); }
+  { const x = await call(planRate, { uid: A, pid, r: 2 }); eq([x.why, x.avg, x.sn, x.note], ["ok", 2, 1, "changed"], "changing the stars replaces them (no second note)"); }
   put(`backups/${A}`, backup([{ ...wk(1), plan: { id: "pA2", name: "Legs" }, manual: true }]));
   put(`pub/${pid}/u/${B}`, { copy: "pB" });
   put(`backups/${B}`, backup([{ ...wk(1), plan: { id: "pB", name: "Legs" }, manual: true }]));
@@ -192,6 +193,35 @@ put(`backups/${B}`, backup([wk(0)]));
   eq((await call(planRate, { uid: B, pid, r: 5 })).why, "ok", "a trial workout of the plan counts after saving");
   put(`backups/${B}`, backup([{ ...wk(1), plan: { id: "try_other", name: "Legs", t: "zz_other" } }]));
   eq((await call(planRate, { uid: B, pid, r: 5 })).why, "not-trained", "a trial of another plan doesn't");
+}
+// ── 1.10.0 (idea 5): the author hears about a save or a rating, at most once a day ──
+{
+  const D = "daveDDDDDDDDD", pid = `${D}_pN`;
+  put(`profiles/${D}`, { nick: "Dave" }); put(`profiles/${A}`, { nick: "Alice" }); put(`push/${D}`, { t: ["tokD"], lang: "sk" });
+  put(`pub/${pid}`, { o: D, nick: "Dave", name: "Nohy", items: [{ id: "n1", sets: 3 }], sv: 0 });
+  const n0 = pushes.length;
+  const r1 = await call(planSave, { uid: A, pid, copy: "cN" });
+  eq(r1.note, "sent", "the author is told");
+  const m = pushes[pushes.length - 1];
+  ok(pushes.length === n0 + 1 && m.token === "tokD" && m.notification.title.includes("Alice") && m.notification.body.includes("Nohy") && m.data.kind === "plan" && m.data.pid === pid, "Slovak text with the nick and the plan, tap = the plan: " + JSON.stringify(m.notification));
+  put(`backups/${B}`, backup([{ ...wk(1), plan: { id: "cB", name: "Nohy" } }]));
+  await call(planSave, { uid: B, pid, copy: "cB" });
+  const r2 = await call(planRate, { uid: B, pid, r: 5 });
+  eq([r2.why, r2.note], ["ok", "today"], "a second one the same day: no second notification");
+  eq(pushes.length, n0 + 1, "still one");
+  clock += 864e5;
+  put(`push/${D}`, { t: ["tokD"], lang: "en", blk: [C] });
+  put(`backups/${C}`, backup([{ ...wk(1), plan: { id: "cC", name: "Nohy" } }]));
+  eq((await call(planSave, { uid: C, pid, copy: "cC" })).note, "off", "a blocked person: nothing");
+  put(`backups/${A}`, backup([{ ...wk(1), plan: { id: "cN", name: "Nohy" } }]));
+  const r4 = await call(planRate, { uid: A, pid, r: 4 });
+  eq(r4.note, "sent", "the next day a rating is told");
+  ok(pushes[pushes.length - 1].notification.title.includes("4"), "with the stars: " + pushes[pushes.length - 1].notification.title);
+  put(`pub/hwapp_core`, { o: "hwapp", nick: "HW App", name: "Core", items: [{ id: "b5", sets: 3 }], sv: 0 });
+  const h1 = await call(planSave, { uid: B, pid: "hwapp_core", copy: "cH" });
+  eq([h1.why, h1.sv, h1.note], ["ok", 1, "skip"], "HW App's own plans: the save counts (was refused as a bad id), nobody to tell");
+  put(`backups/${B}`, backup([{ ...wk(1), plan: { id: "cH", name: "Core" } }]));
+  eq((await call(planRate, { uid: B, pid: "hwapp_core", r: 5 })).why, "ok", "and they can be rated");
 }
 console.log(`${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

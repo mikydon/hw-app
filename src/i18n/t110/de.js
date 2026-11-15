@@ -1,6 +1,12 @@
 // German: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    ntPlanSave: "{nick} hat deinen Plan gespeichert",
+    ntPlanSaveD: "„{plan}“ ist jetzt in seinen Plänen. Danke fürs Teilen!",
+    ntPlanRate: "{nick} hat deinem Plan {r} ★ gegeben",
+    ntPlanRateD: "Er hat „{plan}“ trainiert und bewertet.",
+    pvReqSent: "Anfrage gesendet",
+    pvReqAccept: "Freundschaftsanfrage annehmen",
     yearT: "Dein {y}",
     yearShareT: "Mein {y}",
     yearStreak: "Längste Serie",
@@ -247,5 +253,6 @@ export default {
     ["📱 Serien-Erinnerung", "Nichts hat dich erinnert, wenn deine Serie enden würde.", "Eine Benachrichtigung am Abend, nur an dem Tag, an dem deine Serie enden würde (18–21 Uhr, nach Wahl). Einstellungen → Benachrichtigungen."],
     ["Deine Woche", "Nichts hat auf die vergangene Woche zurückgeblickt.", "Von Montag bis Mittwoch zeigt Start die letzte Woche: Trainings, Sätze, Zeit, die Veränderung zur Woche davor und deine Trainingstage, mit einem Bild zum Teilen."],
     ["Dein Jahr", "Nichts hat auf das ganze Jahr zurückgeblickt.", "Vom 15. Dezember bis 10. Januar zeigt Start dein Jahr: Trainings, Zeit, die längste Serie, die Monate, deine Lieblingsübungen und ein Bild zum Teilen."],
+    ["Bibliothek: Menschen", "Der Autor eines Plans war nur ein Name.", "Tippe in der Bibliothek auf den Autor, um sein Profil zu sehen und von dort eine Freundschaftsanfrage zu senden; Autoren bekommen eine Benachrichtigung, wenn jemand ihren Plan speichert oder bewertet (höchstens einmal am Tag)."],
   ],
 };

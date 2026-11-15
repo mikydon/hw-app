@@ -8,7 +8,11 @@ export default {
   "ntTest": "Zkušební upozornění",
   "ntTestD": "Funguje to! Takhle ti budou chodit zprávy a žádosti o přátelství.",
   "ntNudge": "{nick} tě šťouchl",
-  "ntNudgeD": "Dnešní trénink ještě čeká. Jdeme na to!"
+  "ntNudgeD": "Dnešní trénink ještě čeká. Jdeme na to!",
+  "ntPlanSave": "{nick} si uložil tvůj plán",
+  "ntPlanSaveD": "„{plan}“ má teď mezi svými plány. Díky, že sdílíš!",
+  "ntPlanRate": "{nick} dal tvému plánu {r} ★",
+  "ntPlanRateD": "Odcvičil „{plan}“ a ohodnotil ho."
  },
  "de": {
   "ntReq": "{nick} möchte befreundet sein",
@@ -18,7 +22,11 @@ export default {
   "ntTest": "Testbenachrichtigung",
   "ntTestD": "Es funktioniert! So kommen Nachrichten und Freundschaftsanfragen an.",
   "ntNudge": "{nick} hat dich angestupst",
-  "ntNudgeD": "Das heutige Training wartet noch. Los geht's!"
+  "ntNudgeD": "Das heutige Training wartet noch. Los geht's!",
+  "ntPlanSave": "{nick} hat deinen Plan gespeichert",
+  "ntPlanSaveD": "„{plan}“ ist jetzt in seinen Plänen. Danke fürs Teilen!",
+  "ntPlanRate": "{nick} hat deinem Plan {r} ★ gegeben",
+  "ntPlanRateD": "Er hat „{plan}“ trainiert und bewertet."
  },
  "en": {
   "ntReq": "{nick} wants to be friends",
@@ -28,7 +36,11 @@ export default {
   "ntTest": "Test notification",
   "ntTestD": "It works! Messages and friend requests will arrive like this.",
   "ntNudge": "{nick} nudged you",
-  "ntNudgeD": "Today's workout is still waiting. Let's go!"
+  "ntNudgeD": "Today's workout is still waiting. Let's go!",
+  "ntPlanSave": "{nick} saved your plan",
+  "ntPlanSaveD": "“{plan}” is in their plans now. Thanks for sharing!",
+  "ntPlanRate": "{nick} gave your plan {r} ★",
+  "ntPlanRateD": "They trained “{plan}” and rated it."
  },
  "es": {
   "ntReq": "{nick} quiere ser tu amigo",
@@ -38,7 +50,11 @@ export default {
   "ntTest": "Notificación de prueba",
   "ntTestD": "¡Funciona! Así llegarán los mensajes y las solicitudes de amistad.",
   "ntNudge": "{nick} te ha dado un toque",
-  "ntNudgeD": "El entrenamiento de hoy aún te espera. ¡Vamos!"
+  "ntNudgeD": "El entrenamiento de hoy aún te espera. ¡Vamos!",
+  "ntPlanSave": "{nick} guardó tu plan",
+  "ntPlanSaveD": "“{plan}” ya está en sus planes. ¡Gracias por compartir!",
+  "ntPlanRate": "{nick} dio {r} ★ a tu plan",
+  "ntPlanRateD": "Entrenó “{plan}” y lo valoró."
  },
  "fr": {
   "ntReq": "{nick} veut être ton ami",
@@ -48,7 +64,11 @@ export default {
   "ntTest": "Notification de test",
   "ntTestD": "Ça marche ! Les messages et demandes d'ami arriveront comme ça.",
   "ntNudge": "{nick} t'a fait signe",
-  "ntNudgeD": "L'entraînement du jour t'attend encore. On y va !"
+  "ntNudgeD": "L'entraînement du jour t'attend encore. On y va !",
+  "ntPlanSave": "{nick} a enregistré ton programme",
+  "ntPlanSaveD": "« {plan} » est maintenant dans ses programmes. Merci de partager !",
+  "ntPlanRate": "{nick} a donné {r} ★ à ton programme",
+  "ntPlanRateD": "Il s'est entraîné avec « {plan} » et l'a noté."
  },
  "hu": {
   "ntReq": "{nick} barátod szeretne lenni",
@@ -58,7 +78,11 @@ export default {
   "ntTest": "Próbaértesítés",
   "ntTestD": "Működik! Így érkeznek majd az üzenetek és a barátkérések.",
   "ntNudge": "{nick} megbökött",
-  "ntNudgeD": "A mai edzés még vár rád. Hajrá!"
+  "ntNudgeD": "A mai edzés még vár rád. Hajrá!",
+  "ntPlanSave": "{nick} elmentette az edzéstervedet",
+  "ntPlanSaveD": "A(z) „{plan}” most az ő tervei között van. Köszi, hogy megosztod!",
+  "ntPlanRate": "{nick} {r} ★-ot adott az edzéstervedre",
+  "ntPlanRateD": "Végigedzette a(z) „{plan}” tervet, és értékelte."
  },
  "id": {
   "ntReq": "{nick} ingin berteman",
@@ -68,7 +92,11 @@ export default {
   "ntTest": "Notifikasi uji",
   "ntTestD": "Berhasil! Pesan dan permintaan pertemanan akan datang seperti ini.",
   "ntNudge": "{nick} mencolekmu",
-  "ntNudgeD": "Latihan hari ini masih menunggu. Ayo!"
+  "ntNudgeD": "Latihan hari ini masih menunggu. Ayo!",
+  "ntPlanSave": "{nick} menyimpan rencanamu",
+  "ntPlanSaveD": "“{plan}” sekarang ada di rencananya. Terima kasih sudah berbagi!",
+  "ntPlanRate": "{nick} memberi rencanamu {r} ★",
+  "ntPlanRateD": "Dia berlatih “{plan}” dan menilainya."
  },
  "it": {
   "ntReq": "{nick} vuole essere tuo amico",
@@ -78,7 +106,11 @@ export default {
   "ntTest": "Notifica di prova",
   "ntTestD": "Funziona! Messaggi e richieste di amicizia arriveranno così.",
   "ntNudge": "{nick} ti ha dato una spinta",
-  "ntNudgeD": "L'allenamento di oggi ti aspetta ancora. Forza!"
+  "ntNudgeD": "L'allenamento di oggi ti aspetta ancora. Forza!",
+  "ntPlanSave": "{nick} ha salvato il tuo piano",
+  "ntPlanSaveD": "“{plan}” ora è tra i suoi piani. Grazie per la condivisione!",
+  "ntPlanRate": "{nick} ha dato {r} ★ al tuo piano",
+  "ntPlanRateD": "Si è allenato con “{plan}” e l'ha valutato."
  },
  "ja": {
   "ntReq": "{nick} さんがフレンドになりたがっています",
@@ -88,7 +120,11 @@ export default {
   "ntTest": "テスト通知",
   "ntTestD": "成功です！メッセージや友達リクエストはこのように届きます。",
   "ntNudge": "{nick}さんがあなたをつつきました",
-  "ntNudgeD": "今日のトレーニングがまだ待っています。始めましょう！"
+  "ntNudgeD": "今日のトレーニングがまだ待っています。始めましょう！",
+  "ntPlanSave": "{nick}さんがあなたのプランを保存しました",
+  "ntPlanSaveD": "「{plan}」が相手のプランに入りました。シェアしてくれてありがとう！",
+  "ntPlanRate": "{nick}さんがあなたのプランに★{r}をつけました",
+  "ntPlanRateD": "「{plan}」でトレーニングして評価してくれました。"
  },
  "ko": {
   "ntReq": "{nick}님이 친구가 되고 싶어 합니다",
@@ -98,7 +134,11 @@ export default {
   "ntTest": "테스트 알림",
   "ntTestD": "잘 됩니다! 메시지와 친구 요청이 이렇게 도착해요.",
   "ntNudge": "{nick}님이 콕 찔렀어요",
-  "ntNudgeD": "오늘의 운동이 아직 기다리고 있어요. 시작해요!"
+  "ntNudgeD": "오늘의 운동이 아직 기다리고 있어요. 시작해요!",
+  "ntPlanSave": "{nick}님이 내 플랜을 저장했어요",
+  "ntPlanSaveD": "“{plan}”이(가) 상대의 플랜에 들어갔어요. 공유해 줘서 고마워요!",
+  "ntPlanRate": "{nick}님이 내 플랜에 {r} ★를 줬어요",
+  "ntPlanRateD": "“{plan}”으로 운동하고 평가했어요."
  },
  "pl": {
   "ntReq": "{nick} chce być twoim znajomym",
@@ -108,7 +148,11 @@ export default {
   "ntTest": "Powiadomienie testowe",
   "ntTestD": "Działa! Tak będą przychodzić wiadomości i zaproszenia do znajomych.",
   "ntNudge": "{nick} cię szturchnął",
-  "ntNudgeD": "Dzisiejszy trening wciąż czeka. Do dzieła!"
+  "ntNudgeD": "Dzisiejszy trening wciąż czeka. Do dzieła!",
+  "ntPlanSave": "{nick} zapisał twój plan",
+  "ntPlanSaveD": "„{plan}” jest teraz w jego planach. Dzięki, że się dzielisz!",
+  "ntPlanRate": "{nick} ocenił twój plan na {r} ★",
+  "ntPlanRateD": "Przećwiczył „{plan}” i go ocenił."
  },
  "pt": {
   "ntReq": "{nick} quer ser teu amigo",
@@ -118,7 +162,11 @@ export default {
   "ntTest": "Notificação de teste",
   "ntTestD": "Funciona! É assim que vão chegar as mensagens e os pedidos de amizade.",
   "ntNudge": "{nick} te cutucou",
-  "ntNudgeD": "O treino de hoje ainda está esperando. Bora!"
+  "ntNudgeD": "O treino de hoje ainda está esperando. Bora!",
+  "ntPlanSave": "{nick} salvou seu plano",
+  "ntPlanSaveD": "“{plan}” agora está nos planos dessa pessoa. Obrigado por compartilhar!",
+  "ntPlanRate": "{nick} deu {r} ★ ao seu plano",
+  "ntPlanRateD": "Treinou “{plan}” e avaliou."
  },
  "sk": {
   "ntReq": "{nick} chce byť tvoj priateľ",
@@ -128,7 +176,11 @@ export default {
   "ntTest": "Skúšobné upozornenie",
   "ntTestD": "Funguje to! Takto ti budú chodiť správy a žiadosti o priateľstvo.",
   "ntNudge": "{nick} ťa štuchol",
-  "ntNudgeD": "Dnešný tréning ešte čaká. Poď na to!"
+  "ntNudgeD": "Dnešný tréning ešte čaká. Poď na to!",
+  "ntPlanSave": "{nick} si uložil tvoj plán",
+  "ntPlanSaveD": "„{plan}“ má teraz medzi svojimi plánmi. Vďaka, že zdieľaš!",
+  "ntPlanRate": "{nick} dal tvojmu plánu {r} ★",
+  "ntPlanRateD": "Odcvičil „{plan}“ a ohodnotil ho."
  },
  "uk": {
   "ntReq": "{nick} хоче дружити",
@@ -138,7 +190,11 @@ export default {
   "ntTest": "Тестове сповіщення",
   "ntTestD": "Працює! Так надходитимуть повідомлення й запити в друзі.",
   "ntNudge": "{nick} штурхнув тебе",
-  "ntNudgeD": "Сьогоднішнє тренування ще чекає. Уперед!"
+  "ntNudgeD": "Сьогоднішнє тренування ще чекає. Уперед!",
+  "ntPlanSave": "{nick} зберіг твій план",
+  "ntPlanSaveD": "«{plan}» тепер у його планах. Дякуємо, що ділишся!",
+  "ntPlanRate": "{nick} оцінив твій план на {r} ★",
+  "ntPlanRateD": "Потренувався за «{plan}» і оцінив його."
  },
  "zh": {
   "ntReq": "{nick} 想加你为好友",
@@ -148,6 +204,10 @@ export default {
   "ntTest": "测试通知",
   "ntTestD": "成功了！消息和好友请求会这样送达。",
   "ntNudge": "{nick} 拍了拍你",
-  "ntNudgeD": "今天的训练还在等你。开始吧！"
+  "ntNudgeD": "今天的训练还在等你。开始吧！",
+  "ntPlanSave": "{nick} 保存了你的计划",
+  "ntPlanSaveD": "“{plan}”已加入对方的计划。感谢分享！",
+  "ntPlanRate": "{nick} 给你的计划打了 {r} ★",
+  "ntPlanRateD": "对方练了“{plan}”并打了分。"
  }
 };

@@ -1354,6 +1354,7 @@ let openInfoGlobal = null;
 let copyPlanGlobal = null;
 let goPlanGlobal = null;
 let tryPlanGlobal = null;
+let openProfileGlobal = null; // 1.10.0 (idea 5): someone's profile from the Library (Friends screen page)
 let openPlanGlobal = null; // 1.10.0: History → the plan a workout came from // 1.10.0 (idea 7): a trial workout of someone's plan, nothing saved to My plans // 1.10.0: open My plans and flash one plan (after saving a copy)
 function InfoQ({ title, text, id, style }) {
   const go = e => { e.stopPropagation(); e.preventDefault(); sfxTap(); if (openInfoGlobal) openInfoGlobal({ title, text }); };
@@ -7091,7 +7092,10 @@ function PlanPeek({ plan, by, uid, onClose, store, P, history, onStore }) {
   return (
     <Sheet title={plan.name || T("planDefault", { n: plan.n })} onClose={onClose}>
       <div data-plan-peek={plan.id || plan.pid || ""}>
-        {by && <div style={{ fontSize: 13, color: C.dim, margin: "-4px 2px 12px", display: "flex", alignItems: "center", gap: 6 }}><Ico n="duo" size={15} />{T("plBy", { nick: by })}{official && <OffBadge />}</div>}
+        {by && (store && uid && !own && !official && openProfileGlobal
+          // 1.10.0 (Michael's idea 5): the author's name opens their profile (back comes here again)
+          ? <button type="button" data-plan-by={uid} onClick={() => { sfxTap(); onClose(); openProfileGlobal(uid, by, pid); }} style={{ ...btnBase, background: "transparent", padding: 0, fontSize: 13, color: C.dim, fontWeight: 600, margin: "-4px 2px 12px", display: "flex", alignItems: "center", gap: 6 }}><Ico n="duo" size={15} />{T("plBy", { nick: by })}<Arrow /></button>
+          : <div style={{ fontSize: 13, color: C.dim, margin: "-4px 2px 12px", display: "flex", alignItems: "center", gap: 6 }}><Ico n="duo" size={15} />{T("plBy", { nick: by })}{official && <OffBadge />}</div>)}
         <div style={{ ...card, ...tileR(), overflow: "hidden" }}>
           {plan.items.map((x, i) => { const ex = EX[x.id]; const timed = ex.type === "time" || ex.type === "carry";
             return <div key={x.id} data-plan-peek-item={x.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", borderTop: i ? `1px solid ${C.line}` : "none" }}>
@@ -7132,7 +7136,7 @@ function PlanPeek({ plan, by, uid, onClose, store, P, history, onStore }) {
     </Sheet>
   );
 }
-function OtherProfile({ p, isFriend, onBack, setTopHead }) {
+function OtherProfile({ p, isFriend, onBack, setTopHead, me, onAdd, reqIn }) {
   const [st, setSt] = useState({ loading: true });
   const [plib, setPlib] = useState(null), [peek, setPeek] = useState(null);
   // 1.10.0 plan library: the plans this person shares (read with the same rule as the card; none = no box)
@@ -7157,10 +7161,25 @@ function OtherProfile({ p, isFriend, onBack, setTopHead }) {
   useEffect(() => () => { setTopHead && setTopHead(null); }, []);
   useBack(onBack);
   const m = st.card ? cardModel(st.card, { nick: p.nick, pfp: isFriend ? p.pfp : null }) : null;
+  // 1.10.0 (Michael, idea 5): a friend request right from someone's profile
+  const [addSt, setAddSt] = useState(() => ((cloudMem().sent || []).includes(p.uid) ? "sent" : "")), [addMsg, setAddMsg] = useState("");
+  const canAdd = onAdd && me && p.uid !== me && !isFriend;
+  const addRow = canAdd && (
+    <div data-pv-add-box style={{ padding: "0 18px", marginBottom: 12 }}>
+      <button type="button" data-pv-add data-state={addSt || "idle"} disabled={addSt === "sent" || addSt === "busy"} onClick={async () => {
+        sfxTap(); setAddSt("busy"); setAddMsg("");
+        try { const r = await onAdd(p.uid, p.nick); setAddMsg(r || ""); setAddSt("sent"); sfxCheck(); } catch (e) { setAddMsg(cloudErr(e) || T("frErr")); setAddSt(""); }
+      }} className="b3d" style={{ ...bigBtn(addSt === "sent" ? C.panelHi : C.signal, addSt === "sent" ? C.dim : C.signalInk), fontSize: 15, padding: 13, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+        <Ico n="duo" size={19} />{addSt === "busy" ? "…" : addSt === "sent" ? T("pvReqSent") : reqIn ? T("pvReqAccept") : T("frAddBtn")}
+      </button>
+      {addMsg && <div role="status" data-pv-add-msg style={{ fontSize: 13, color: C.dim, marginTop: 6, textAlign: "center" }}>{addMsg}</div>}
+    </div>
+  );
   return (
     <div className="scr" data-pv={p.uid} data-pv-state={st.loading ? "loading" : st.hidden ? "hidden" : st.err ? "err" : "ok"} style={{ padding: "6px 0 124px", maxWidth: "var(--colMax)", margin: "0 auto" }}>
       {howEx && <HowTo id={howEx} history={[]} onClose={() => setHowEx(null)} />}
       {peek && <PlanPeek plan={peek} by={p.nick} uid={p.uid} onClose={() => setPeek(null)} />}
+      {addRow}
       {m ? <ProfilePage m={m} onPickRank={setHowEx} plansEl={plib && plib.length ? <ProfilePlans plans={plib} onOpen={setPeek} /> : null} /> : (
         <div style={{ padding: "0 18px" }}>
           <Sect style={{ marginTop: 0, display: "flex", alignItems: "center", gap: 14 }}>
@@ -7742,7 +7761,7 @@ function CountUp({ n, ms = 650 }) {
   return nf(v);
 }
 
-function FriendsTab({ acct, history, profile, social, chatWith, setChatWith, onBlocked, onSignIn, onCreate, onRename, setTopHead, fx }) {
+function FriendsTab({ acct, history, profile, social, chatWith, setChatWith, onBlocked, onSignIn, onCreate, onRename, setTopHead, fx, pvOpen, onPvUsed, onPvBack }) {
   const [age16, setAge16] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
@@ -7781,7 +7800,7 @@ function FriendsTab({ acct, history, profile, social, chatWith, setChatWith, onB
     );
   }
   if (!acct.prof) return <NickSetup initial={nickFrom(profile.name && profile.name !== "User" ? profile.name : "")} onSave={onCreate} />;
-  return <FriendsMain acct={acct} history={history} profile={profile} social={social} chatWith={chatWith} setChatWith={setChatWith} onBlocked={onBlocked} onRename={onRename} setTopHead={setTopHead} fx={fx || {}} />;
+  return <FriendsMain acct={acct} history={history} profile={profile} social={social} chatWith={chatWith} setChatWith={setChatWith} onBlocked={onBlocked} onRename={onRename} setTopHead={setTopHead} fx={fx || {}} pvOpen={pvOpen} onPvUsed={onPvUsed} onPvBack={onPvBack} />;
 }
 
 function NickSetup({ initial, onSave, onCancel, title }) {
@@ -7814,7 +7833,7 @@ function NickSetup({ initial, onSave, onCancel, title }) {
 // 1.10.0 (Michael, Nov 14: "a global one would be hard to keep fair"; "remove the restrictions that aren't needed, the
 // photo or video for HW Support is nonsense"): the leaderboard is friends only. The world list, its join switch and
 // its check ("send a video of one set") are gone from the app; old board/{uid} docs and the Worker's kind stay unused.
-function FriendsMain({ acct, history, profile, social, onRename, chatWith, setChatWith, onBlocked, setTopHead, fx = {} }) {
+function FriendsMain({ acct, history, profile, social, onRename, chatWith, setChatWith, onBlocked, setTopHead, fx = {}, pvOpen, onPvUsed, onPvBack }) {
   const wide = useWide();
   const me = { uid: acct.uid, ...acct.prof, ...cloudStats(history) };
   // 1.8.2: friends and chats are one list, shown first. 1.9.0 (Michael, Nov 7: "in Friends I can't swipe with the
@@ -7830,6 +7849,8 @@ function FriendsMain({ acct, history, profile, social, onRename, chatWith, setCh
   const [err, setErr] = useState(social.err || "");
   const [sheet, setSheet] = useState(null);
   const [view, setView] = useState(null); // 1.7.0: whose profile is open (on top of their sheet)
+  // 1.10.0 (idea 5): a profile opened from the Library: Back goes back to that plan
+  useEffect(() => { if (pvOpen) { setView({ uid: pvOpen.uid, nick: pvOpen.nick, backPid: pvOpen.pid }); onPvUsed && onPvUsed(); } }, [pvOpen]);
   const [clr, setClr] = useState(() => cloudMem().clr || {}); // 1.6.2: chats deleted for me: {chatId: time}; only newer messages show again
   const [delChat, setDelChat] = useState(null);
   const holdRef = useRef({ t: 0, fired: false });
@@ -7909,7 +7930,8 @@ function FriendsMain({ acct, history, profile, social, onRename, chatWith, setCh
   const holdStart = c => { holdRef.current.fired = false; clearTimeout(holdRef.current.t); holdRef.current.t = setTimeout(() => { holdRef.current.fired = true; vibrate([30]); setDelChat(c); }, 480); };
   const holdEnd = () => clearTimeout(holdRef.current.t);
   // 1.7.0: someone's profile is a page of its own (like a chat), the same page you see as your Profile
-  if (view) return <OtherProfile p={people[view.uid] ? { ...view, ...people[view.uid] } : view} isFriend={friendIds.includes(view.uid)} onBack={() => setView(null)} setTopHead={setTopHead} />;
+  if (view) return <OtherProfile p={people[view.uid] ? { ...view, ...people[view.uid] } : view} isFriend={friendIds.includes(view.uid)} me={acct.uid} onAdd={sendTo} reqIn={(reqs || []).some(r => r.uid === view.uid)}
+    onBack={() => { if (view.backPid && onPvBack) { setView(null); onPvBack(view.backPid); } else setView(null); }} setTopHead={setTopHead} />;
   if (chatWith) {
     const p = people[chatWith] || { uid: chatWith, nick: "…" };
     return <ChatView setTopHead={setTopHead} me={acct.uid} other={p} fs={friendIds.includes(chatWith) ? fsOf(chatWith) : null} th={((social.chats || []).find(c => c.other === chatWith) || {}).th} canWrite={friendIds.includes(chatWith)} onBack={() => setChatWith(null)} onOpen={() => { sfxTap(); setView(p); }} onMenu={() => setSheet(p)}
@@ -13469,6 +13491,7 @@ export default function App() {
   goPlanGlobal = id => go("plans", { mine: true, flash: id });
   // 1.10.0 (Michael, Nov 15: "from History, open the plan I trained, or the plan in the Library if it's still there"):
   // my own plan → its editor; a trial of a Library plan (plan.t) → that plan in the Library
+  openProfileGlobal = (uid, nick, pid) => { setChatWith(null); setPvOpen({ uid, nick, pid }); go("friends"); };
   openPlanGlobal = pl => { if (!pl) return; const P = plansOfP(profRef.current); if (pl.id && P.list.some(x => x.id === pl.id)) go("plans", { plan: pl.id }); else if (pl.t && typeof pl.t === "string") go("plans", { pub: pl.t }); };
   copyPlanGlobal = (src, by, from) => { const p = profRef.current, r = PLN.copyPlan(plansOfP(p), src, by, Date.now(), from); setProfile({ ...p, plans: PLN.mirror(r.P, Date.now()) }); sfxCheck(); return r.plan; };
   // 1.10.0 plan store (Michael, Nov 14): plans published to everyone (pub/{uid_planId}); the list of my published ones
@@ -13645,6 +13668,7 @@ export default function App() {
   // in-app notice (LiveNotice) unless that chat is open; the counts show on ☰, in the menu and on the Friends tabs.
   const [social, setSocial] = useState({ reqs: null, friends: null, chats: null, blocked: cloudMem().blocked || [], read: cloudMem().read || {} });
   const [chatWith, setChatWith] = useState(null);
+  const [pvOpen, setPvOpen] = useState(null); // 1.10.0 (idea 5): a profile to open on the Friends screen {uid, nick, pid}
   // 1.5.2 (Michael: the chat's back button scrolled away; like Instagram it must stay on top): an open chat puts its
   // header (back, friend, colour) into the top bar instead of the screen title.
   const [topHead, setTopHead] = useState(null);
@@ -13722,6 +13746,7 @@ export default function App() {
     setTourRun(null); // 1.8.1: a notification takes you somewhere else: the guide stops (it comes back on its own later)
     // 1.8.1 (Michael): "new version" opens Home with the update card (even if it was closed), Play asked again
     if (d.kind === "upd") { setScreen("train"); setMenuOpen(false); if (session) setSessionOpen(false); setApkHidden(false); setUpdSeq(n => n + 1); return; }
+    if (d.kind === "plan" && d.pid) { go("plans", { pub: d.pid }); return; } // 1.10.0: someone saved or rated your plan
     setScreen("friends"); setMenuOpen(false); const who = d.uid || d.from; setChatWith(d.kind === "msg" && who ? who : null);
     if (session) setSessionOpen(false);
   }), [session]);
@@ -14367,7 +14392,8 @@ export default function App() {
                 {screen === "shop" && <ShopTab history={history} profile={profile} setProfile={setProfile} onGo={go} />}
                 {screen === "game" && <GameTab history={history} profile={profile} setProfile={setProfile} acct={acct} onPlay={sv => { if (sv.mode !== "tut") gameSave(sv); setGamePlay(sv); }} />}
                 {screen === "friends" && <OpenInApp />}
-                {screen === "friends" && <FriendsTab key={"fr" + addSeq} setTopHead={setTopHead} acct={acct} history={history} profile={profile} social={social} chatWith={chatWith} setChatWith={setChatWith} onBlocked={setBlocked} onSignIn={signIn} onCreate={createProfile} onRename={renameNick} fx={friendsFx} />}
+                {screen === "friends" && <FriendsTab key={"fr" + addSeq} setTopHead={setTopHead} acct={acct} history={history} profile={profile} social={social} chatWith={chatWith} setChatWith={setChatWith} onBlocked={setBlocked} onSignIn={signIn} onCreate={createProfile} onRename={renameNick} fx={friendsFx}
+                  pvOpen={pvOpen} onPvUsed={() => setPvOpen(null)} onPvBack={pid => go("plans", { pub: pid })} />}
               </div>
               {session && session.phase !== "summary" && <MiniPlayer session={session} live={live} onOpen={resume} />}
               {exitAsk && <ExitPrompt history={history} session={session} onStay={() => { sfxTap(); setExitAsk(false); }} onLeave={() => { setExitAsk(false); exitApp(); }} />}

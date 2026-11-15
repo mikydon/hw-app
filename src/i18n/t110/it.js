@@ -1,6 +1,12 @@
 // Italian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    ntPlanSave: "{nick} ha salvato il tuo piano",
+    ntPlanSaveD: "“{plan}” ora è tra i suoi piani. Grazie per la condivisione!",
+    ntPlanRate: "{nick} ha dato {r} ★ al tuo piano",
+    ntPlanRateD: "Si è allenato con “{plan}” e l'ha valutato.",
+    pvReqSent: "Richiesta inviata",
+    pvReqAccept: "Accetta la sua richiesta",
     yearT: "Il tuo {y}",
     yearShareT: "Il mio {y}",
     yearStreak: "Striscia più lunga",
@@ -247,5 +253,6 @@ export default {
     ["📱 Promemoria striscia", "Niente ti avvisava quando la striscia stava per finire.", "Una notifica la sera, solo nel giorno in cui la striscia finirebbe (18–21, a scelta). Impostazioni → Notifiche."],
     ["La tua settimana", "Niente riassumeva la settimana appena finita.", "Dal lunedì al mercoledì la Home mostra la settimana scorsa: allenamenti, serie, tempo, la differenza con la settimana prima e i giorni di allenamento, con un'immagine da condividere."],
     ["Il tuo anno", "Niente riassumeva l'anno intero.", "Dal 15 dicembre al 10 gennaio la Home mostra il tuo anno: allenamenti, tempo, la striscia più lunga, i mesi, gli esercizi preferiti e un'immagine da condividere."],
+    ["Libreria: persone", "L'autore di un piano era solo un nome.", "Tocca l'autore nella Libreria per vedere il suo profilo e inviargli una richiesta di amicizia da lì; gli autori ricevono una notifica quando qualcuno salva o valuta il loro piano (al massimo una volta al giorno)."],
   ],
 };

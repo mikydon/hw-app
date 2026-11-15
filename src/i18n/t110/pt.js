@@ -1,6 +1,12 @@
 // Portuguese (Brazil): texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    ntPlanSave: "{nick} salvou seu plano",
+    ntPlanSaveD: "“{plan}” agora está nos planos dessa pessoa. Obrigado por compartilhar!",
+    ntPlanRate: "{nick} deu {r} ★ ao seu plano",
+    ntPlanRateD: "Treinou “{plan}” e avaliou.",
+    pvReqSent: "Pedido enviado",
+    pvReqAccept: "Aceitar o pedido de amizade",
     yearT: "Seu {y}",
     yearShareT: "Meu {y}",
     yearStreak: "Maior sequência",
@@ -247,5 +253,6 @@ export default {
     ["📱 Lembrete de sequência", "Nada avisava quando sua sequência ia terminar.", "Uma notificação à noite, só no dia em que sua sequência terminaria (18h–21h, você escolhe). Ajustes → Notificações."],
     ["Sua semana", "Nada resumia a semana que terminou.", "De segunda a quarta, o Início mostra a semana passada: treinos, séries, tempo, a mudança em relação à semana anterior e os dias de treino, com uma imagem para compartilhar."],
     ["Seu ano", "Nada resumia o ano inteiro.", "De 15 de dezembro a 10 de janeiro, o Início mostra seu ano: treinos, tempo, a maior sequência, os meses, seus exercícios favoritos e uma imagem para compartilhar."],
+    ["Biblioteca: pessoas", "O autor de um plano era só um nome.", "Toque no autor na Biblioteca para ver o perfil e mandar um pedido de amizade dali; os autores recebem uma notificação quando alguém salva ou avalia o plano (no máximo uma vez por dia)."],
   ],
 };

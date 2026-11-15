@@ -1,6 +1,12 @@
 // French: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    ntPlanSave: "{nick} a enregistré ton programme",
+    ntPlanSaveD: "« {plan} » est maintenant dans ses programmes. Merci de partager !",
+    ntPlanRate: "{nick} a donné {r} ★ à ton programme",
+    ntPlanRateD: "Il s'est entraîné avec « {plan} » et l'a noté.",
+    pvReqSent: "Demande envoyée",
+    pvReqAccept: "Accepter sa demande d'ami",
     yearT: "Ton année {y}",
     yearShareT: "Mon année {y}",
     yearStreak: "Plus longue flamme",
@@ -247,5 +253,6 @@ export default {
     ["📱 Rappel de flamme", "Rien ne te prévenait quand ta flamme allait s'éteindre.", "Une notification le soir, seulement le jour où ta flamme s'éteindrait (18 h–21 h, au choix). Réglages → Notifications."],
     ["Ta semaine", "Rien ne revenait sur la semaine qui venait de se terminer.", "Du lundi au mercredi, l'Accueil montre la semaine dernière : séances, séries, temps, le changement par rapport à la semaine d'avant et les jours d'entraînement, avec une image à partager."],
     ["Ton année", "Rien ne revenait sur l'année entière.", "Du 15 décembre au 10 janvier, l'Accueil montre ton année : séances, temps, la plus longue flamme, les mois, tes exercices préférés et une image à partager."],
+    ["Bibliothèque : les gens", "L'auteur d'un programme n'était qu'un nom.", "Touche l'auteur dans la Bibliothèque pour voir son profil et lui envoyer une demande d'ami ; les auteurs reçoivent une notification quand quelqu'un enregistre ou note leur programme (au plus une fois par jour)."],
   ],
 };

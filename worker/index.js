@@ -283,7 +283,9 @@ export async function checkInvite({ uid, sa, fetchFn = fetch, now = Date.now() }
 //   "psave" {pid, copy}: the first save of a plan by an account counts once (not your own plan).
 //   "prate" {pid, r}: 1–5 stars, only from an account that saved it AND did a workout from its copy (checked in the
 //   cloud backup: a workout of that plan, not added by hand, with a real set); changing the stars replaces them.
-const pidOk = p => typeof p === "string" && /^[A-Za-z0-9]{6,128}_[A-Za-z0-9~_-]{1,64}$/.test(p);
+// 1.10.0: HW App's own plans are "hwapp_<k>" (the owner "hwapp" is shorter than a real uid; before Nov 15 their saves
+// and stars were refused here as a bad id)
+const pidOk = p => typeof p === "string" && /^([A-Za-z0-9]{6,128}|hwapp)_[A-Za-z0-9~_-]{1,64}$/.test(p);
 export async function planSave({ uid, pid, copy, sa, fetchFn = fetch, now = Date.now() }) {
   if (!pidOk(pid) || typeof copy !== "string" || copy.length > 64) return { why: "bad" };
   const tok = await accessToken(sa, fetchFn, now);
@@ -300,7 +302,27 @@ export async function planSave({ uid, pid, copy, sa, fetchFn = fetch, now = Date
   const ws = pub.wk === wk ? (pub.ws || 0) + 1 : 1;
   const wp = pub.wk === wk ? pub.wp || 0 : pub.wk === prev ? pub.ws || 0 : 0;
   await patchDoc(`pub/${pid}`, { sv, wk, ws, wp }, tok, fetchFn, ["sv", "wk", "ws", "wp"]);
-  return { why: "ok", sv };
+  const note = await planNote({ to: pub.o, from: uid, kind: "save", name: pub.name, pid, tok, fetchFn, now }).catch(() => ({ why: "err" }));
+  return { why: "ok", sv, note: note.why };
+}
+// 1.10.0 (Michael's idea 5): the author hears that someone saved or rated their plan: at most one notification a day
+// per author (pnote/{author} {d}), never for HW App's own plans, not when the author switched notifications off or
+// blocked that person. Tap = the plan in the Library.
+async function planNote({ to, from, kind, r, name, pid, tok, fetchFn, now }) {
+  if (!isUid(to) || to === from) return { why: "skip" };
+  const day = new Date(now).toISOString().slice(0, 10);
+  const pn = await getDoc(`pnote/${to}`, tok, fetchFn);
+  if (pn && pn.d === day) return { why: "today" };
+  const push = await getDoc(`push/${to}`, tok, fetchFn);
+  if (!push || !Array.isArray(push.t) || !push.t.length) return { why: "no-phone" };
+  if (push.off === true || (Array.isArray(push.blk) && push.blk.includes(from))) return { why: "off" };
+  await patchDoc(`pnote/${to}`, { d: day }, tok, fetchFn, ["d"]);
+  const prof = await getDoc(`profiles/${from}`, tok, fetchFn);
+  const nick = (prof && prof.nick) || "HW App", lang = typeof push.lang === "string" ? push.lang : "en", plan = String(name || "").slice(0, 60);
+  const title = kind === "rate" ? lineOf(lang, "ntPlanRate", nick, plan).replace("{r}", String(r)) : lineOf(lang, "ntPlanSave", nick, plan);
+  const body = lineOf(lang, kind === "rate" ? "ntPlanRateD" : "ntPlanSaveD", nick, plan);
+  const res = await sendPush({ to, push, title, body, data: { kind: "plan", pid }, tag: "plan_" + pid, tok, fetchFn });
+  return res.sent ? { why: "sent" } : { why: "fcm" };
 }
 // the Monday (UTC) of the week of a time, as "YYYY-MM-DD"
 export const weekOf = t => { const d = new Date(t); d.setUTCHours(0, 0, 0, 0); d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7)); return d.toISOString().slice(0, 10); };
@@ -320,7 +342,8 @@ export async function planRate({ uid, pid, r, sa, fetchFn = fetch, now = Date.no
   await patchDoc(`pub/${pid}/u/${uid}`, { r }, tok, fetchFn, ["r"]);
   const st = Math.max(0, (pub.st || 0) + r - old), sn = (pub.sn || 0) + (old ? 0 : 1), avg = sn ? Math.round((st / sn) * 10) / 10 : 0;
   await patchDoc(`pub/${pid}`, { st, sn, avg }, tok, fetchFn, ["st", "sn", "avg"]);
-  return { why: "ok", avg, sn };
+  const note = old ? { why: "changed" } : await planNote({ to: pub.o, from: uid, kind: "rate", r, name: pub.name, pid, tok, fetchFn, now }).catch(() => ({ why: "err" }));
+  return { why: "ok", avg, sn, note: note.why };
 }
 
 // ── Ranked card games (1.8.0) ──
@@ -421,9 +444,9 @@ export async function rankedEnd({ uid, moves, give, sa, fetchFn = fetch, now = D
 
 const seen = new Map(); // recently sent events (per server instance)
 const chatId = (a, b) => (a < b ? `${a}_${b}` : `${b}_${a}`);
-const lineOf = (lang, k, nick) => {
+const lineOf = (lang, k, nick, plan = "") => {
   const t = TEXTS[lang] || TEXTS.en;
-  return (t[k] || TEXTS.en[k] || "").replace("{nick}", nick);
+  return (t[k] || TEXTS.en[k] || "").replace("{nick}", nick).replace("{plan}", plan);
 };
 
 // The whole check-and-send for one request. Returns {sent, why}.

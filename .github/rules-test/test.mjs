@@ -339,6 +339,11 @@ await t("hank reads his rewards", true, () => getDoc(doc(as("hank"), "rew", "han
 await t("gina can't read hank's rewards", false, () => getDoc(doc(as("gina"), "rew", "hank")));
 await t("hank can't give himself rewards", false, () => setDoc(doc(as("hank"), "rew", "hank"), { i: { a: 1, b: 2, c: 3 } }));
 await t("hank deletes his rewards (account deletion)", true, () => deleteDoc(doc(as("hank"), "rew", "hank")));
+await env.withSecurityRulesDisabled(async c => { await setDoc(doc(c.firestore(), "pnote", "hank"), { d: "2026-11-15" }); });
+await t("hank can't read his plan-note day (server only)", false, () => getDoc(doc(as("hank"), "pnote", "hank")));
+await t("hank can't write a plan-note day", false, () => setDoc(doc(as("hank"), "pnote", "hank"), { d: "2020-01-01" }));
+await t("gina can't delete hank's plan-note day", false, () => deleteDoc(doc(as("gina"), "pnote", "hank")));
+await t("hank deletes his plan-note day (account deletion)", true, () => deleteDoc(doc(as("hank"), "pnote", "hank")));
 console.log("1.10.0 plan library");
 const pl = (vis, n = 1) => ({ vis, plans: Array.from({ length: n }, (_, i) => ({ id: "p" + i, name: "Push", n: 1, items: [{ id: "k1", sets: 3 }] })), ts: serverTimestamp() });
 await t("gina shares a plan for friends", true, () => setDoc(doc(as("gina"), "plib", "gina"), pl("friends")));

@@ -1,6 +1,12 @@
 // Indonesian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    ntPlanSave: "{nick} menyimpan rencanamu",
+    ntPlanSaveD: "“{plan}” sekarang ada di rencananya. Terima kasih sudah berbagi!",
+    ntPlanRate: "{nick} memberi rencanamu {r} ★",
+    ntPlanRateD: "Dia berlatih “{plan}” dan menilainya.",
+    pvReqSent: "Permintaan terkirim",
+    pvReqAccept: "Terima permintaan pertemanannya",
     yearT: "Tahun {y}-mu",
     yearShareT: "Tahun {y}-ku",
     yearStreak: "Runtutan terpanjang",
@@ -247,5 +253,6 @@ export default {
     ["📱 Pengingat runtutan", "Tidak ada yang mengingatkan saat runtutanmu akan berakhir.", "Satu notifikasi di malam hari, hanya di hari runtutanmu akan berakhir (18–21, pilih sendiri). Pengaturan → Notifikasi."],
     ["Minggumu", "Tidak ada yang merangkum minggu yang baru berakhir.", "Senin sampai Rabu, Beranda menampilkan minggu lalu: latihan, set, waktu, perubahan dari minggu sebelumnya dan hari latihanmu, dengan gambar untuk dibagikan."],
     ["Tahunmu", "Tidak ada yang merangkum setahun penuh.", "Dari 15 Desember sampai 10 Januari, Beranda menampilkan tahunmu: latihan, waktu, runtutan terpanjang, bulan-bulan, latihan favorit, dan gambar untuk dibagikan."],
+    ["Pustaka: orang", "Pembuat rencana hanya sebuah nama.", "Ketuk pembuatnya di Pustaka untuk melihat profilnya dan mengirim permintaan pertemanan dari sana; pembuat mendapat notifikasi saat seseorang menyimpan atau menilai rencananya (paling banyak sekali sehari)."],
   ],
 };

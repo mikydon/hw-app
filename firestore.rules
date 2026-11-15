@@ -309,6 +309,10 @@ service cloud.firestore {
     match /rew/{uid} {
       allow get, delete: if isMe(uid);
     }
+    // 1.10.0: the day the server last told this author about a save or rating of their plan (server only)
+    match /pnote/{uid} {
+      allow delete: if isMe(uid);
+    }
     // Reports about a profile: anyone signed in can send one; only the developer reads them (console).
     match /reports/{id} {
       allow create: if signedIn() && only(['by', 'about', 'reason', 'ts']) && data().by == request.auth.uid
