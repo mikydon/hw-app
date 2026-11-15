@@ -1,6 +1,12 @@
 // Spanish: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    recapT: "La semana pasada",
+    recapShareT: "Mi semana",
+    recapUp: "{d} más que la semana anterior",
+    recapDown: "{d} menos que la semana anterior",
+    recapSame: "Tantos como la semana anterior",
+    recapShareText: "Mi semana en HW App 💪 https://play.google.com/store/apps/details?id=io.github.mikydon.hwapp",
     remindT: "🔥 {n}: tu racha termina esta noche",
     remindD: "Un entreno corto hoy la mantiene.",
     remindFzD: "Un entreno corto hoy la mantiene; si no, se usa un protector de racha.",
@@ -231,5 +237,6 @@ export default {
     ["Nombres limpios", "Se podía coger cualquier apodo libre.", "Los nombres que parecen HW App o el equipo y las palabrotas conocidas se rechazan en apodos nuevos y en planes que ven otros."],
     ["📱 Tamaño del texto", "Las letras seguían el ajuste de fuente del móvil y con un tamaño grande los textos se cortaban.", "Ajustes → Apariencia → Tamaño del texto: 100, 115 o 130 %, y las pantallas dejan sitio a las letras más grandes."],
     ["📱 Recordatorio de racha", "Nada te avisaba cuando tu racha iba a terminar.", "Una notificación por la tarde, solo el día en que tu racha terminaría (18–21 h, a tu elección). Ajustes → Notificaciones."],
+    ["Tu semana", "Nada repasaba la semana que había terminado.", "De lunes a miércoles, Inicio muestra la semana pasada: entrenos, series, tiempo, el cambio frente a la semana anterior y los días que entrenaste, con una imagen para compartir."],
   ],
 };

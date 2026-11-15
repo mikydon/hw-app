@@ -1,6 +1,12 @@
 // Polish: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    recapT: "Zeszły tydzień",
+    recapShareT: "Mój tydzień",
+    recapUp: "O {d} więcej niż tydzień wcześniej",
+    recapDown: "O {d} mniej niż tydzień wcześniej",
+    recapSame: "Tyle samo co tydzień wcześniej",
+    recapShareText: "Mój tydzień w HW App 💪 https://play.google.com/store/apps/details?id=io.github.mikydon.hwapp",
     remindT: "🔥 {n}: dziś wieczorem kończy się twoja passa",
     remindD: "Krótki trening dziś ją utrzyma.",
     remindFzD: "Krótki trening dziś ją utrzyma, inaczej zużyjesz zamrożenie passy.",
@@ -231,5 +237,6 @@ export default {
     ["Czyste nazwy", "Można było zająć dowolną wolną nazwę.", "Nazwy udające HW App lub zespół oraz znane przekleństwa są odrzucane w nowych nazwach i w planach pokazywanych innym."],
     ["📱 Rozmiar tekstu", "Litery zależały od ustawienia czcionki w telefonie, a przy dużej czcionce teksty były ucinane.", "Ustawienia → Wygląd → Rozmiar tekstu: 100, 115 lub 130 %, a ekrany robią miejsce na większe litery."],
     ["📱 Przypomnienie o passie", "Nic nie przypominało, gdy passa miała się skończyć.", "Jedno powiadomienie wieczorem, tylko w dniu, w którym passa by się skończyła (18–21, do wyboru). Ustawienia → Powiadomienia."],
+    ["Twój tydzień", "Nic nie podsumowywało tygodnia, który się skończył.", "Od poniedziałku do środy ekran Start pokazuje zeszły tydzień: treningi, serie, czas, zmianę względem tygodnia wcześniej i dni z treningiem, z obrazkiem do udostępnienia."],
   ],
 };

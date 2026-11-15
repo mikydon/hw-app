@@ -1,6 +1,12 @@
 // Slovak: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    recapT: "Minulý týždeň",
+    recapShareT: "Môj týždeň",
+    recapUp: "O {d} viac ako týždeň predtým",
+    recapDown: "O {d} menej ako týždeň predtým",
+    recapSame: "Rovnako ako týždeň predtým",
+    recapShareText: "Môj týždeň v HW App 💪 https://play.google.com/store/apps/details?id=io.github.mikydon.hwapp",
     remindT: "🔥 {n}: dnes večer ti skončí séria",
     remindD: "Krátky tréning dnes ju udrží.",
     remindFzD: "Krátky tréning dnes ju udrží, inak sa minie zamrazenie série.",
@@ -231,5 +237,6 @@ export default {
     ["Slušné mená", "Dala sa zobrať akákoľvek voľná prezývka.", "Mená, ktoré vyzerajú ako HW App alebo tím, a známe nadávky sa nedajú použiť v nových prezývkach ani v plánoch, ktoré ukazuješ ostatným."],
     ["📱 Veľkosť textu", "Písmo sa riadilo nastavením telefónu a pri veľkom písme sa texty orezávali.", "Nastavenia → Vzhľad → Veľkosť textu: 100, 115 alebo 130 % a obrazovky sa väčším písmenám prispôsobia."],
     ["📱 Pripomienka série", "Nič ťa neupozornilo, keď ti mala skončiť séria.", "Jedno upozornenie večer, len v deň, keď by ti séria skončila (18–21 h, podľa teba). Nastavenia → Upozornenia."],
+    ["Tvoj týždeň", "Nič sa neohliadlo za týždňom, ktorý skončil.", "Od pondelka do stredy ukáže Domov minulý týždeň: tréningy, série, čas, zmenu oproti týždňu predtým a dni, keď si cvičil, s obrázkom na zdieľanie."],
   ],
 };

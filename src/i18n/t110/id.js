@@ -1,6 +1,12 @@
 // Indonesian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    recapT: "Minggu lalu",
+    recapShareT: "Mingguku",
+    recapUp: "{d} lebih banyak dari minggu sebelumnya",
+    recapDown: "{d} lebih sedikit dari minggu sebelumnya",
+    recapSame: "Sama seperti minggu sebelumnya",
+    recapShareText: "Mingguku di HW App 💪 https://play.google.com/store/apps/details?id=io.github.mikydon.hwapp",
     remindT: "🔥 {n}: runtutanmu berakhir malam ini",
     remindD: "Latihan singkat hari ini menjaganya tetap jalan.",
     remindFzD: "Latihan singkat hari ini menjaganya; kalau tidak, satu pembeku runtutan terpakai.",
@@ -231,5 +237,6 @@ export default {
     ["Nama yang bersih", "Nama panggilan apa pun yang kosong bisa diambil.", "Nama yang mirip HW App atau tim, dan kata kasar yang dikenal, ditolak untuk nama panggilan baru dan rencana yang ditampilkan ke orang lain."],
     ["📱 Ukuran teks", "Huruf mengikuti setelan font ponsel, dan setelan besar memotong teks.", "Pengaturan → Tampilan → Ukuran teks: 100, 115, atau 130 %, dan layar memberi ruang untuk huruf yang lebih besar."],
     ["📱 Pengingat runtutan", "Tidak ada yang mengingatkan saat runtutanmu akan berakhir.", "Satu notifikasi di malam hari, hanya di hari runtutanmu akan berakhir (18–21, pilih sendiri). Pengaturan → Notifikasi."],
+    ["Minggumu", "Tidak ada yang merangkum minggu yang baru berakhir.", "Senin sampai Rabu, Beranda menampilkan minggu lalu: latihan, set, waktu, perubahan dari minggu sebelumnya dan hari latihanmu, dengan gambar untuk dibagikan."],
   ],
 };

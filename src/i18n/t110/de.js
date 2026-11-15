@@ -1,6 +1,12 @@
 // German: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    recapT: "Letzte Woche",
+    recapShareT: "Meine Woche",
+    recapUp: "{d} mehr als die Woche davor",
+    recapDown: "{d} weniger als die Woche davor",
+    recapSame: "Genauso viele wie die Woche davor",
+    recapShareText: "Meine Woche in HW App 💪 https://play.google.com/store/apps/details?id=io.github.mikydon.hwapp",
     remindT: "🔥 {n}: heute Abend endet deine Serie",
     remindD: "Ein kurzes Training heute hält sie.",
     remindFzD: "Ein kurzes Training heute hält sie, sonst wird ein Serienschutz verbraucht.",
@@ -231,5 +237,6 @@ export default {
     ["Saubere Namen", "Jeder freie Spitzname konnte vergeben werden.", "Namen, die wie HW App oder das Team aussehen, und bekannte Schimpfwörter werden bei neuen Spitznamen und bei Plänen für andere abgelehnt."],
     ["📱 Textgröße", "Die Schrift folgte der Schriftgröße des Handys, und bei großer Einstellung wurden Texte abgeschnitten.", "Einstellungen → Darstellung → Textgröße: 100, 115 oder 130 %, und die Bildschirme machen Platz für größere Buchstaben."],
     ["📱 Serien-Erinnerung", "Nichts hat dich erinnert, wenn deine Serie enden würde.", "Eine Benachrichtigung am Abend, nur an dem Tag, an dem deine Serie enden würde (18–21 Uhr, nach Wahl). Einstellungen → Benachrichtigungen."],
+    ["Deine Woche", "Nichts hat auf die vergangene Woche zurückgeblickt.", "Von Montag bis Mittwoch zeigt Start die letzte Woche: Trainings, Sätze, Zeit, die Veränderung zur Woche davor und deine Trainingstage, mit einem Bild zum Teilen."],
   ],
 };

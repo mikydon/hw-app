@@ -1,6 +1,12 @@
 // Portuguese (Brazil): texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    recapT: "Semana passada",
+    recapShareT: "Minha semana",
+    recapUp: "{d} a mais que na semana anterior",
+    recapDown: "{d} a menos que na semana anterior",
+    recapSame: "O mesmo que na semana anterior",
+    recapShareText: "Minha semana no HW App 💪 https://play.google.com/store/apps/details?id=io.github.mikydon.hwapp",
     remindT: "🔥 {n}: sua sequência termina hoje à noite",
     remindD: "Um treino curto hoje a mantém.",
     remindFzD: "Um treino curto hoje a mantém; senão, um congelamento de sequência é usado.",
@@ -231,5 +237,6 @@ export default {
     ["Nomes limpos", "Dava para pegar qualquer apelido livre.", "Nomes que parecem o HW App ou a equipe e palavrões conhecidos são recusados em apelidos novos e em planos mostrados aos outros."],
     ["📱 Tamanho do texto", "As letras seguiam o tamanho de fonte do celular e, com fonte grande, os textos eram cortados.", "Configurações → Aparência → Tamanho do texto: 100, 115 ou 130 %, e as telas abrem espaço para letras maiores."],
     ["📱 Lembrete de sequência", "Nada avisava quando sua sequência ia terminar.", "Uma notificação à noite, só no dia em que sua sequência terminaria (18h–21h, você escolhe). Ajustes → Notificações."],
+    ["Sua semana", "Nada resumia a semana que terminou.", "De segunda a quarta, o Início mostra a semana passada: treinos, séries, tempo, a mudança em relação à semana anterior e os dias de treino, com uma imagem para compartilhar."],
   ],
 };

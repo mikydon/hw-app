@@ -1,6 +1,12 @@
 // Italian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    recapT: "La settimana scorsa",
+    recapShareT: "La mia settimana",
+    recapUp: "{d} in più della settimana prima",
+    recapDown: "{d} in meno della settimana prima",
+    recapSame: "Tanti quanti la settimana prima",
+    recapShareText: "La mia settimana in HW App 💪 https://play.google.com/store/apps/details?id=io.github.mikydon.hwapp",
     remindT: "🔥 {n}: la tua striscia finisce stasera",
     remindD: "Un breve allenamento oggi la tiene viva.",
     remindFzD: "Un breve allenamento oggi la tiene, altrimenti si usa un congelamento della striscia.",
@@ -231,5 +237,6 @@ export default {
     ["Nomi puliti", "Si poteva prendere qualsiasi nickname libero.", "I nomi che sembrano HW App o lo staff e le parolacce note vengono rifiutati nei nuovi nickname e nelle schede mostrate agli altri."],
     ["📱 Dimensione del testo", "Le lettere seguivano l'impostazione del carattere del telefono e con un carattere grande i testi venivano tagliati.", "Impostazioni → Aspetto → Dimensione del testo: 100, 115 o 130 %, e le schermate fanno spazio alle lettere più grandi."],
     ["📱 Promemoria striscia", "Niente ti avvisava quando la striscia stava per finire.", "Una notifica la sera, solo nel giorno in cui la striscia finirebbe (18–21, a scelta). Impostazioni → Notifiche."],
+    ["La tua settimana", "Niente riassumeva la settimana appena finita.", "Dal lunedì al mercoledì la Home mostra la settimana scorsa: allenamenti, serie, tempo, la differenza con la settimana prima e i giorni di allenamento, con un'immagine da condividere."],
   ],
 };

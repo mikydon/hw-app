@@ -36,6 +36,7 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 | Clean names | any free nickname could be taken | names that look like HW App or staff, and known swear words, are refused for new nicknames and for plans shown to others |
 | Text size *(Android app only)* | letters followed the phone's font setting, and a big setting cut texts off | Settings → Appearance → Text size: 100, 115 or 130 %; the screens make room for the bigger letters |
 | Streak reminder *(Android app only)* | nothing reminded you when your streak was about to end | one notification in the evening, only on the day your streak would end (6–9 PM, your choice); Settings → Notifications |
+| Your week | nothing looked back at the week that ended | Monday to Wednesday, Home shows last week: workouts, sets, time, the change from the week before and the days you trained, with a picture to share |
 | Restore points | Settings → Account → Restore points stayed empty | fixed on the server on November 13 (the rules for them were missing there); from then on a restore point is saved before a device's first backup of a day |
 | Support the app | a "Support the app" row (Patreon) in Settings of the APK and the website | removed everywhere: HW App is free, with nothing to pay for |
 | Guide | the History and Shop chapters showed the old screens | they walk the new pages (Progress; Shop, Looks and Earned). If you saw them before, they show once more the next time you open History or the Shop |

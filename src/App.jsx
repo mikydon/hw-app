@@ -3953,6 +3953,75 @@ function usePager(name, n, lay, same, start) {
   return { page, goPage, jumpPage, tabs, tabItems, pagerProps, pageProps, wide };
 }
 
+// 1.10.0 (Michael's idea 3, Nov 15): last week in one card on Home (Monday to Wednesday, until closed): workouts, sets
+// and time with the change from the week before, the days trained, and a picture to share (src/sharecard.js).
+// Only workouts with a real set count. null = no workout that week.
+function weekRecap(history, wk) {
+  const inW = k => history.filter(e => weekKey(e.date) === k && hasRealSet(e.items));
+  const a = inW(wk);
+  if (!a.length) return null;
+  const sum = w => ({ n: w.length, sets: w.reduce((x, e) => x + setsIn(e), 0), secs: w.reduce((x, e) => x + (e.dur > 0 ? e.dur : 0), 0) });
+  const tm = id => EX[id] && (EX[id].type === "time" || EX[id].type === "carry");
+  const ex = {};
+  a.forEach(e => e.items.forEach(it => {
+    const vals = it.res.map(numVal).filter(v => !isNaN(v) && v > 0);
+    if (!vals.length) return;
+    const o = ex[it.id] || (ex[it.id] = { it, t: tm(it.id), sets: 0, reps: 0, hold: 0 });
+    o.sets += vals.length;
+    if (o.t) o.hold = Math.max(o.hold, ...vals); else o.reps += vals.reduce((p, q) => p + q, 0);
+  }));
+  return { wk, cur: sum(a), prev: sum(inW(addDays(wk, -7))), on: [0, 1, 2, 3, 4, 5, 6].map(i => a.some(e => e.date === addDays(wk, i))), ex: Object.values(ex).sort((x, y) => y.sets - x.sets || y.reps - x.reps) };
+}
+const recapRange = wk => `${fmtShortDM(parseKey(wk))} – ${fmtShortDM(parseKey(addDays(wk, 6)))}`;
+const recapVs = r => { const d = r.cur.n - r.prev.n; return d > 0 ? T("recapUp", { d: TP("workouts", d) }) : d < 0 ? T("recapDown", { d: TP("workouts", -d) }) : T("recapSame"); };
+function RecapCard({ recap: r, history, onClose }) {
+  const [st, setSt] = useState("");
+  const wd = weekdaysShort();
+  const stat = (ic, v, col) => <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}><Ico n={ic} size={15} color={col} sw={2.3} />{v}</span>;
+  const share = async () => {
+    if (st === "busy") return;
+    sfxTap(); setSt("busy");
+    try {
+      try { await Promise.race([document.fonts.ready, new Promise(x => setTimeout(x, 1500))]); } catch (_) {}
+      const end = addDays(r.wk, 6), sn0 = streakInfo(history.filter(e => e.date <= end), end).n, sn = sn0 >= 2 ? sn0 : 0; // a streak of 1 isn't worth showing off
+      const cv = drawShareCard(document.createElement("canvas"), {
+        title: T("recapShareT"), date: recapRange(r.wk), sub: recapVs(r),
+        stats: [[r.cur.n, T("stM_n")], [r.cur.sets, T("sumSets")], ...(r.cur.secs >= 60 ? [[fmtMins(Math.floor(r.cur.secs / 60)), T("stM_min")]] : [])],
+        streak: sn, streakLabel: T("shareStreak"), foot: T("shareFoot"),
+        rows: r.ex.slice(0, 5).map(o => [exName(o.it), `${TP("sets", o.sets)} · ${o.t ? fmtHold(o.hold) : nf(o.reps)}`]),
+        days: r.on.map((on, i) => [wd[i], on]),
+        c: { ink: C.ink, panel: C.panel, line: C.line, chalk: C.chalk, dim: C.dim, signal: C.signal, mint: C.mint }, font: { display: DISPLAY, body: BODY },
+      });
+      const res = await shareImage(cv.toDataURL("image/png").split(",")[1], `hw-app-week-${r.wk}.png`, T("recapShareText"));
+      setSt(res === "saved" ? "saved" : "");
+    } catch (_) { setSt("err"); }
+  };
+  return (
+    <div data-recap={r.wk} className="cardIn" style={{ ...card, position: "relative", padding: "14px 16px", marginBottom: 12, borderColor: `${C.signal}66` }}>
+      <CloseX onClick={onClose} />
+      <div style={{ display: "flex", alignItems: "baseline", gap: 8, paddingRight: 30 }}>
+        <span style={{ fontFamily: DISPLAY, fontSize: 22, fontWeight: 900, color: C.chalk, lineHeight: 1 }}>{T("recapT")}</span>
+        <span style={{ fontSize: 12, color: C.dim, fontWeight: 600 }}>{recapRange(r.wk)}</span>
+      </div>
+      <div data-recap-stats aria-label={`${TP("workouts", r.cur.n)}, ${TP("sets", r.cur.sets)}`} style={{ display: "flex", flexWrap: "wrap", gap: 14, marginTop: 10, fontSize: 16, fontWeight: 800, color: C.chalk }}>
+        {stat("dumbbell", r.cur.n, C.signal)}{stat("layers", r.cur.sets, C.sky)}{r.cur.secs >= 60 && stat("timer", fmtMins(Math.floor(r.cur.secs / 60)), "#ffa94d")}
+      </div>
+      <div data-recap-vs style={{ fontSize: 13, color: r.cur.n > r.prev.n ? C.mint : C.dim, fontWeight: 700, marginTop: 6 }}>{recapVs(r)}</div>
+      <div data-recap-days style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 5, marginTop: 10 }}>
+        {r.on.map((on, i) => (
+          <div key={i} data-on={on ? 1 : 0} style={{ textAlign: "center" }}>
+            <div style={{ fontSize: 11, color: C.dim, fontWeight: 600 }}>{wd[i]}</div>
+            <div style={{ height: 8, borderRadius: 99, marginTop: 4, background: on ? C.mint : `${C.chalk}14` }} />
+          </div>
+        ))}
+      </div>
+      <button type="button" data-recap-share data-state={st || "idle"} onClick={share} style={{ ...btnBase, marginTop: 12, background: C.signal, color: C.signalInk, padding: "10px 16px", fontSize: 14, display: "inline-flex", alignItems: "center", gap: 7 }}>
+        <Ico n="upload" size={16} color={C.signalInk} sw={2.3} />{st === "busy" ? "…" : T("sumShare")}
+      </button>
+      {(st === "saved" || st === "err") && <div role="status" data-recap-share-msg style={{ fontSize: 12, color: st === "err" ? "#ff8a80" : C.mint, marginTop: 6 }}>{T(st === "err" ? "frErr" : "shareSaved")}</div>}
+    </div>
+  );
+}
 function TrainTab({ history, onStart, onStartPlan, onStartFree, onFreeze, ui, setUi, active, onResume, profile, onGo, upd, apk, kcal, setKcal, dl, onDlClose, onSetup, settings, setSettings, tourOffer }) {
   const today = dateKey();
   // Make sure today's daily line and the "done" card texts are picked (and saved) before painting.
@@ -4019,11 +4088,14 @@ function TrainTab({ history, onStart, onStartPlan, onStartFree, onFreeze, ui, se
   // One notice at a time (Michael marked it in design A), the most important first. A download in progress and a new
   // APK always show (rare and important).
   const hint = ui.hint && ui.hint.date === today && ui.hintHidden !== today ? HINTS.find(x => x.k === ui.hint.k) : null;
+  const recapWk = addDays(weekKey(today), -7);
+  const recap = useMemo(() => (PLN.weekdayOf(today) <= 3 && ui.recapHidden !== recapWk ? weekRecap(history, recapWk) : null), [history, today, ui.recapHidden]);
   const notices = [
     profile && bdayToday() && ui.bdayHidden !== today && "bday",
     showDone && "done",
     upd && "upd",
     ui.autoFz && ui.autoFz.day === today && ui.autoFzHidden !== ui.autoFz.day && "autofz",
+    recap && "recap", // 1.10.0: last week, Monday to Wednesday
     onGo && profile && ui.chestHidden !== weekKey(today) && readyChests(history, profile).length > 0 && "chest", // 1.9.0
     tourOffer && "tour",
     history.length === 0 && !ui.welcomeHidden && "welcome", // a new user first sees what the app is, then what is missing
@@ -4176,6 +4248,7 @@ function TrainTab({ history, onStart, onStartPlan, onStartFree, onFreeze, ui, se
           <div data-autofz-left={ui.autoFz.left} style={{ fontSize: 13, color: ui.autoFz.left ? C.dim : C.signal, fontWeight: ui.autoFz.left ? 400 : 700, lineHeight: 1.45, marginTop: 2 }}>{ui.autoFz.left ? TP("autoFzLeft", ui.autoFz.left) : T("autoFzNone")}</div>
         </div>
       </>, () => setUi({ ...ui, autoFzHidden: ui.autoFz.day }), { "data-autofz": ui.autoFz.used })}
+      {notice === "recap" && <RecapCard recap={recap} history={history} onClose={() => setUi({ ...ui, recapHidden: recap.wk })} />}
       {notice === "chest" && ntBox("chest", C.signal, <>
         <span className="chBob" style={{ flexShrink: 0 }}><ChestArt size={44} /></span>
         <div style={{ minWidth: 0 }}>

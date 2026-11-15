@@ -1,6 +1,12 @@
 // Hungarian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    recapT: "Múlt hét",
+    recapShareT: "Az én hetem",
+    recapUp: "{d} több, mint az előző héten",
+    recapDown: "{d} kevesebb, mint az előző héten",
+    recapSame: "Ugyanannyi, mint az előző héten",
+    recapShareText: "Az én hetem a HW Appban 💪 https://play.google.com/store/apps/details?id=io.github.mikydon.hwapp",
     remindT: "🔥 {n}: ma este véget ér a szériád",
     remindD: "Egy rövid edzés ma megtartja.",
     remindFzD: "Egy rövid edzés ma megtartja, különben egy szériavédő fogy el.",
@@ -231,5 +237,6 @@ export default {
     ["Tiszta nevek", "Bármilyen szabad becenevet el lehetett venni.", "A HW App-nak vagy a csapatnak látszó nevek és az ismert csúnya szavak nem használhatók új becenévben és másoknak mutatott tervben."],
     ["📱 Szövegméret", "A betűk a telefon betűméretét követték, és nagy beállításnál a szövegek levágódtak.", "Beállítások → Megjelenés → Szövegméret: 100, 115 vagy 130 %, és a képernyők helyet adnak a nagyobb betűknek."],
     ["📱 Széria-emlékeztető", "Semmi sem figyelmeztetett, amikor a szériád véget ért volna.", "Egy értesítés este, csak azon a napon, amikor a szériád véget érne (18–21 óra, te választod). Beállítások → Értesítések."],
+    ["A heted", "Semmi sem tekintett vissza a véget ért hétre.", "Hétfőtől szerdáig a Kezdőlap mutatja a múlt hetet: edzések, sorozatok, idő, a változás az előző héthez képest és az edzésnapok, megosztható képpel."],
   ],
 };

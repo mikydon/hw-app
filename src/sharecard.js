@@ -30,7 +30,7 @@ function ellipsis(g, text, max) {
   return t + "…";
 }
 
-// d = { title, date, stats: [[value, label]] (2–3), streak, streakLabel, rows: [[name, value]] (≤ 5), foot, sub,
+// d = { title, date, stats: [[value, label]] (2–3), streak, streakLabel, days: [[letter, on]] × 7 (optional), rows: [[name, value]] (≤ 5), foot, sub,
 //       c: {ink, panel, line, chalk, dim, signal, signalInk, mint}, font: {display, body} }
 export function drawShareCard(canvas, d) {
   canvas.width = CARD_W; canvas.height = CARD_H;
@@ -74,6 +74,16 @@ export function drawShareCard(canvas, d) {
     g.fillStyle = c.dim; g.font = `700 30px ${F.body}`; g.fillText(d.streakLabel, P + 86 + nw + 18, y + 44);
     g.textBaseline = "alphabetic";
     y += 84 + 48;
+  }
+  // the week (recap card): seven day pills, trained ones in the workout colour
+  if (d.days && d.days.length === 7) {
+    const dg = 14, dw = (CARD_W - 2 * P - dg * 6) / 7;
+    d.days.forEach(([l, on], i) => {
+      const x = P + i * (dw + dg);
+      g.textAlign = "center"; g.fillStyle = on ? c.chalk : c.dim; g.font = `700 28px ${F.body}`; g.fillText(l, x + dw / 2, y + 30);
+      g.fillStyle = on ? (c.mint || c.signal) : c.panel; rr(g, x, y + 48, dw, 26, 13); g.fill();
+    });
+    y += 74 + 48;
   }
   // exercises: up to five rows
   const rows = d.rows.slice(0, 5), rh = 76, box = rows.length * rh + 24;

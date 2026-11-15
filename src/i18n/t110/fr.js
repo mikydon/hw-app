@@ -1,6 +1,12 @@
 // French: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    recapT: "La semaine dernière",
+    recapShareT: "Ma semaine",
+    recapUp: "{d} de plus que la semaine d'avant",
+    recapDown: "{d} de moins que la semaine d'avant",
+    recapSame: "Autant que la semaine d'avant",
+    recapShareText: "Ma semaine dans HW App 💪 https://play.google.com/store/apps/details?id=io.github.mikydon.hwapp",
     remindT: "🔥 {n} : ta flamme s'éteint ce soir",
     remindD: "Un petit entraînement aujourd'hui la garde allumée.",
     remindFzD: "Un petit entraînement aujourd'hui la garde, sinon un gel de flamme est utilisé.",
@@ -231,5 +237,6 @@ export default {
     ["Noms propres", "On pouvait prendre n'importe quel pseudo libre.", "Les noms qui ressemblent à HW App ou à l'équipe, et les gros mots connus, sont refusés pour les nouveaux pseudos et les programmes montrés aux autres."],
     ["📱 Taille du texte", "Les lettres suivaient la taille de police du téléphone, et une grande taille coupait des textes.", "Réglages → Apparence → Taille du texte : 100, 115 ou 130 %, et les écrans font de la place aux lettres plus grandes."],
     ["📱 Rappel de flamme", "Rien ne te prévenait quand ta flamme allait s'éteindre.", "Une notification le soir, seulement le jour où ta flamme s'éteindrait (18 h–21 h, au choix). Réglages → Notifications."],
+    ["Ta semaine", "Rien ne revenait sur la semaine qui venait de se terminer.", "Du lundi au mercredi, l'Accueil montre la semaine dernière : séances, séries, temps, le changement par rapport à la semaine d'avant et les jours d'entraînement, avec une image à partager."],
   ],
 };

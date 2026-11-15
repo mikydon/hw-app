@@ -1,6 +1,12 @@
 // Chinese (Simplified): texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    recapT: "上周",
+    recapShareT: "我的一周",
+    recapUp: "比前一周多 {d}",
+    recapDown: "比前一周少 {d}",
+    recapSame: "和前一周一样多",
+    recapShareText: "我在 HW App 的一周 💪 https://play.google.com/store/apps/details?id=io.github.mikydon.hwapp",
     remindT: "🔥 {n}：你的连胜今晚就要中断了",
     remindD: "今天做一次简短训练就能保住它。",
     remindFzD: "今天做一次简短训练就能保住它，否则会用掉一次连胜冻结。",
@@ -231,5 +237,6 @@ export default {
     ["干净的名字", "任何没人用的昵称都能被注册。", "看起来像 HW App 或官方人员的名字，以及常见脏话，不能用于新昵称，也不能用于展示给别人的计划。"],
     ["📱 文字大小", "文字跟随手机的字体设置，字体调大时文字会被截断。", "设置 → 外观 → 文字大小：100、115 或 130 %，各个界面会为更大的文字留出空间。"],
     ["📱 连胜提醒", "连胜快要中断时，没有任何提醒。", "只在连胜将要中断的那天晚上提醒一次（18–21 点，可自选）。设置 → 通知。"],
+    ["你的一周", "过去的一周没有任何回顾。", "周一到周三，主页会显示上周的训练次数、组数、时长、与前一周的变化以及训练的日子，还能生成图片分享。"],
   ],
 };
