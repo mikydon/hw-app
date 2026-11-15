@@ -1,6 +1,14 @@
 // French: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    tourPfCards: "Ta collection de cartes : les styles de cartes de Muscle Deck. Choisis-en un dans ton apparence ; en Ranked, l'adversaire le voit aussi.",
+    lookKind_card: "Cartes",
+    pfCards: "Collection de cartes",
+    cardClassic: "Classique",
+    cardOwnD: "Choisis un style dans l'apparence du profil : tes cartes Muscle Deck l'affichent (aussi aux joueurs qui reçoivent ta donne en Ranked).",
+    cardTheirD: "Dans sa collection.",
+    cardLockedD: "Pas encore dans la collection : les styles de cartes arrivent dans les looks de la Boutique, et certains se gagnent.",
+    gmVs: "vs {nick}",
     plLink: "Partager un lien",
     plLinkD: "Toute personne ayant le lien peut enregistrer une copie ou l'essayer. Tes charges n'y figurent jamais.",
     plLinkText: "{name} : un programme d'entraînement dans HW App 💪 {url}",
@@ -198,6 +206,7 @@ export default {
   tour: { c5: { 0: "Calendrier : un jour vert est une séance, le point sous un numéro, ce sont les calories. Touche un jour pour voir ce que tu as fait ; touche un jour vide pour ajouter une séance." }, c7: { 3: "Ajoute ici un ami par code ou pseudo. En dessous, amis et discussions forment une seule liste : touche un ami pour lui écrire, touche la photo pour son profil. Garde le doigt sur un ami pour sa carte : duo, supprimer la discussion, bloquer.", 5: "Invite un ami avec ton lien : quand il fait 3 séances, vous recevez tous les deux 100 💎." } },
   ach: { duo: ["Plus forts à deux", "{x} avec un ami"] },
   looks: {
+    c_night: "Nuit", c_mint: "Menthe", c_carbon: "Carbone", c_marble: "Marbre", c_gold: "Or", c_neon: "Néon", c_holo: "Hologramme", c_obsidian: "Obsidienne",
     fx_rain: "Pluie", fx_bubbles: "Soda", fx_hearts: "Cœurs", fx_fireflies: "Lucioles", fx_stars: "Étoiles filantes",
     f_ring2: "Double anneau", f_dash: "Anneau pointillé", f_gear: "Engrenage", f_petal: "Fleur", f_ice: "Couronne de glace", f_orbit: "Orbite", f_rainbow: "Anneau arc-en-ciel",
     b_dusk: "Crépuscule", b_stripes: "Rayures", b_forest: "Forêt", b_ocean: "Océan", b_circuit: "Circuit imprimé", b_lava: "Lave", b_synth: "Soleil rétro",
@@ -266,5 +275,6 @@ export default {
     ["Bibliothèque : sections", "La Bibliothèque était une longue liste.", "Elle s'ouvre sur des sections : populaires cette semaine, les mieux notés, programmes d'amis, les plus enregistrés, par HW App, les plus récents ; la flèche les montre tous dans cet ordre."],
     ["Liens de programmes", "Un programme pouvait seulement être montré sur ton profil ou publié dans la Bibliothèque.", "Partage un lien depuis l'éditeur : qui l'ouvre voit le programme et peut en enregistrer une copie ou l'essayer, même sans compte. Tes charges n'y figurent jamais."],
     ["Rangs du corps", "Le corps avait des couleurs plates et toujours neuf tuiles en dessous.", "Les muscles brillent comme des métaux et des gemmes (fer, bronze, argent, or… obsidienne) ; le bloc ne montre que le corps et un toucher déroule les neuf parties."],
+    ["Styles de cartes", "Les cartes de Muscle Deck avaient toujours le même look.", "Huit styles de cartes (Nuit, Menthe, Carbone, Marbre, Or, Néon, Hologramme, Obsidienne) dans les looks de la Boutique ; choisis-en un dans l'apparence du profil, retrouve-les tous dans ta collection de cartes, et en Ranked l'adversaire voit le tien."],
   ],
 };

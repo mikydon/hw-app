@@ -5816,13 +5816,15 @@ function ownModel(history, profile, kcal) {
     ach: achievements(history, achExtra(profile, kcal, history)), rk, show: Array.isArray(profile.show) ? profile.show : [],
     look: lookOn(profile), // 1.9.0: frame, banner, title, name effect
     lw: cleanLw(lastWork(history)), // 1.9.0: last workout line
+    cs: ownCards(history, profile), // 1.10.0: card styles you own
   };
 }
+const ownCards = (history, profile) => { try { return econState(history, profile).own.filter(id => EC.LOOKS[id] && EC.LOOKS[id].kind === "card"); } catch (_) { return []; } };
 function cardModel(c, p) {
   const k = cleanCard(c);
   return {
     own: false, nick: p.nick || "?", pfp: p.pfp || null, lvl: k.lvl, xp: k.xp, streak: k.streak, best: k.best, n: k.n, reps: k.reps,
-    min: k.min, prs: k.prs, since: k.since, rk: k.rk, rr: k.rr, show: k.show, look: k.look, lw: k.lw,
+    min: k.min, prs: k.prs, since: k.since, rk: k.rk, rr: k.rr, show: k.show, look: k.look, lw: k.lw, cs: k.cs,
     // values when the card has them (1.7.0+), else the lowest value of the level they reached
     ach: ACH.filter(a => !CARD_HIDE.includes(a.k)).map(a => achFrom(a, k.av[a.k] !== undefined ? k.av[a.k] : (k.ach[a.k] ? a.at[Math.max(0, (a.rk ? a.rk.indexOf(k.ach[a.k] - 1) : k.ach[a.k] - 1))] ?? 0 : 0))),
   };
@@ -6651,6 +6653,7 @@ function ProfilePage({ m, own, onEditProfile, onEditSlot, onStreak, onPhoto, onP
           </div>
         </Sect>
         {plansEl}
+        <CardCollection cs={m.cs || []} on={(m.look || {}).card || null} own={own} />
         </div>
         {/* on a wide screen there are no tabs: each column gets its title */}
         <div {...pg.pageProps(1)}>{pg.wide && <div data-pf-col-title style={{ ...sectionTitle, marginTop: 0 }}>{T("badgesTitle")}</div>}<BadgesList m={m} focus={focus} claim={claim} /></div>
@@ -7483,6 +7486,7 @@ function cardData(history, profile) {
     ...(history.length ? { lw: lastWork(history) } : {}), // 1.9.0: last workout (needs the 1.9.0 rules: lwOk)
     // 1.9.0: the profile looks you wear (sent once you have put one on, also {} to take them all off; needs the 1.9.0 rules)
     ...(profile.look ? { look: lookOn(profile) } : {}),
+    ...(() => { const cs = ownCards(history, profile); return cs.length ? { cs } : {}; })(), // 1.10.0: your card collection (needs the 1.10.0 rules: cs), only once you own one
   };
 }
 // A card from the cloud is someone else's data: only numbers we know, in sane ranges, are shown.
@@ -7496,6 +7500,7 @@ function cleanCard(c) {
     lvl: Math.max(1, cardNum(c.lvl)), xp: cardNum(c.xp), streak: cardNum(c.streak), best: cardNum(c.best), n: cardNum(c.n), reps: cardNum(c.reps), min: cardNum(c.min),
     since: typeof c.since === "string" && /^\d{4}-\d{2}-\d{2}$/.test(c.since) ? c.since : null, ach, av, rk, rr, prs: cardNum(c.prs), ts: cardNum(c.ts), vis: CARD_VIS.includes(c.vis) ? c.vis : "friends",
     look: lookOn({ look: c.look && typeof c.look === "object" ? c.look : {} }), lw: cleanLw(c.lw),
+    cs: Array.isArray(c.cs) ? c.cs.filter(id => typeof id === "string" && EC.LOOKS[id] && EC.LOOKS[id].kind === "card").slice(0, 30) : [],
     show: Array.isArray(c.show) ? c.show.slice(0, SLOT_LV.length).map(x => (typeof x === "string" ? x.slice(0, 80) : "")) : [],
   };
 }
@@ -10036,22 +10041,41 @@ function SuitIcon({ s, size = 14, col }) {
   const d = { push: "M12 3 L22 20 H2 Z", pull: "M2 4 H22 L12 21 Z", core: "M12 1.5 L22.5 12 L12 22.5 L1.5 12 Z" }[s];
   return <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true" style={{ flexShrink: 0, display: "block" }}>{s === "legs" ? <circle cx="12" cy="12" r="9.5" fill={c} /> : <path d={d} fill={c} strokeLinejoin="round" stroke={c} strokeWidth="1.5" />}</svg>;
 }
+// 1.10.0 (Michael, Nov 15: "card variations in the shop, for Muscle Deck and Ranked; the players against you see your
+// cards; a card collection on the profile"): card styles are looks (kind "card", economy.js c_*): only how the cards
+// look, never what they do. CARD_SKIN = the style you wear (set by the App from profile.look.card).
+let CARD_SKIN = null;
+const CARD_SK = {
+  c_night: { bg: "linear-gradient(160deg, #2a3756, #111a2c)", fg: "#e9edf7", edge: "rgba(255,255,255,.16)", dark: 1 },
+  c_mint: { bg: "linear-gradient(160deg, #f0fff8, #c4f0de)", fg: "#1f3b33", edge: "rgba(0,90,60,.25)" },
+  c_carbon: { bg: "repeating-linear-gradient(45deg, #2b2f36 0 3px, #1d2025 3px 6px), #22252b", fg: "#eef1f6", edge: "rgba(255,255,255,.14)", dark: 1 },
+  c_marble: { bg: "linear-gradient(118deg, transparent 38%, rgba(120,120,135,.28) 40%, transparent 43%), linear-gradient(64deg, transparent 58%, rgba(140,140,150,.22) 60%, transparent 62%), linear-gradient(160deg, #ffffff, #e9e7e2)", fg: "#2a2a35", edge: "rgba(0,0,0,.2)" },
+  c_gold: { bg: "linear-gradient(135deg, #fff4b8, #ffd23f 34%, #c8961a 70%, #ffe98a)", fg: "#3b2a06", edge: "#a87a10", shine: 1 },
+  c_neon: { bg: "radial-gradient(120% 90% at 50% 0%, #1b1430, #07070d)", fg: "#f4f2ff", edge: "neon", dark: 1 },
+  c_holo: { bg: "linear-gradient(120deg, #ffd6f3, #c9f0ff, #d9ffd0, #fff1c2, #ffd6f3)", fg: "#2a2a35", edge: "rgba(120,90,200,.35)", shine: 1, holo: 1 },
+  c_obsidian: { bg: "linear-gradient(160deg, #3a2030, #0e080c 70%)", fg: "#ffb3c8", edge: "rgba(255,92,138,.55)", dark: 1, shine: 1, glow: "#ff5c8a" },
+};
+const skinOf = sk => CARD_SK[sk === undefined ? CARD_SKIN : sk] || null;
 // out = selected but not part of the hand (it adds nothing); still = a small picture in a guide or a breakdown
-function PlayCard({ c, sel, onClick, w = 64, bests, dead, pop, i = 0, deal, out, still, glow }) {
-  const s = GM.suitOf(c), v = GM.valueOf(c), col = SUIT_COL[s], face = v >= 11 && v <= 13;
+// sk = a card style id (undefined = the one you wear, null = the classic card)
+function PlayCard({ c, sel, onClick, w = 64, bests, dead, pop, i = 0, deal, out, still, glow, sk }) {
+  const s = GM.suitOf(c), v = GM.valueOf(c), col = SUIT_COL[s], face = v >= 11 && v <= 13, S = skinOf(sk);
+  const edge = S ? (S.edge === "neon" ? col : S.edge) : "rgba(0,0,0,.18)";
+  const lift = S && S.edge === "neon" ? `, 0 0 10px ${col}88, inset 0 0 8px ${col}55` : S && S.glow ? `, 0 0 10px ${S.glow}55` : "";
   const ex = face ? GM.faceExercise(c, bests) : null;
   const Tag = still ? "span" : "button";
   return (
     <Tag type={still ? undefined : "button"} data-card={still ? undefined : c} data-mini={still ? c : undefined} data-out={out ? 1 : undefined} data-glow={glow ? 1 : undefined} data-sel={still ? undefined : sel ? 1 : 0} onClick={onClick} className={(deal ? "gmDeal " : "") + (pop ? "gmPop" : "") + (glow ? " gmGlowCard" : "")} aria-pressed={still ? undefined : !!sel}
       aria-label={`${cardVal(c)} ${T("grp_" + s)}${ex ? " · " + EX[ex].name : ""}`} role={still ? "img" : undefined}
-      style={{ ...btnBase, display: still ? "inline-block" : undefined, verticalAlign: "middle", position: "relative", width: w, height: Math.round(w * 1.4), flexShrink: 0, padding: 0, borderRadius: Math.round(w * 0.14), background: dead ? "#c9c3b5" : "#f7f3ea", color: col, border: `2px solid ${sel ? C.signal : "rgba(0,0,0,.18)"}`, boxShadow: sel ? `0 0 0 2px ${C.signal}, 0 10px 22px rgba(0,0,0,.45)` : "0 4px 12px rgba(0,0,0,.35)", transform: sel ? "translateY(-14px)" : "none", transition: `transform ${MO.t1} ${MO.ease}, box-shadow ${MO.t1}`, overflow: "hidden", "--dl": `${i * 45}ms`, opacity: dead ? 0.7 : out ? 0.45 : 1, filter: out ? "saturate(.35)" : undefined }}>
+      style={{ ...btnBase, display: still ? "inline-block" : undefined, verticalAlign: "middle", position: "relative", width: w, height: Math.round(w * 1.4), flexShrink: 0, padding: 0, borderRadius: Math.round(w * 0.14), background: dead ? "#c9c3b5" : S ? S.bg : "#f7f3ea", backgroundSize: S && S.holo ? "300% 300%" : undefined, color: col, border: `2px solid ${sel ? C.signal : edge}`, boxShadow: (sel ? `0 0 0 2px ${C.signal}, 0 10px 22px rgba(0,0,0,.45)` : "0 4px 12px rgba(0,0,0,.35)") + lift, transform: sel ? "translateY(-14px)" : "none", transition: `transform ${MO.t1} ${MO.ease}, box-shadow ${MO.t1}`, overflow: "hidden", "--dl": `${i * 45}ms`, opacity: dead ? 0.7 : out ? 0.45 : 1, filter: out ? "saturate(.35)" : undefined }}>
       <span style={{ position: "absolute", left: 5, top: 3, fontFamily: DISPLAY, fontSize: Math.round(w * 0.3), fontWeight: 900, lineHeight: 1 }}>{cardVal(c)}</span>
       <span style={{ position: "absolute", left: 6, top: Math.round(w * 0.36) }}><SuitIcon s={s} size={Math.round(w * 0.17)} /></span>
       <span style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", padding: `${Math.round(w * 0.32)}px 4px 4px` }}>
         {face
-          ? <span style={{ fontSize: Math.max(8, Math.round(w * 0.135)), fontWeight: 800, color: "#2a2a35", lineHeight: 1.1, textAlign: "center", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden", overflowWrap: "anywhere" }}>{EX[ex].name}</span>
+          ? <span style={{ fontSize: Math.max(8, Math.round(w * 0.135)), fontWeight: 800, color: S && !dead ? S.fg : "#2a2a35", lineHeight: 1.1, textAlign: "center", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden", overflowWrap: "anywhere" }}>{EX[ex].name}</span>
           : <SuitIcon s={s} size={Math.round(w * 0.42)} />}
       </span>
+      {S && S.shine && !dead && <span aria-hidden="true" className={"cdShine" + (S.holo ? " cdHolo" : "")} />}
       {dead && <span aria-hidden="true" style={{ position: "absolute", inset: 0, background: "repeating-linear-gradient(45deg, rgba(0,0,0,.18) 0 4px, transparent 4px 9px)" }} />}
     </Tag>
   );
@@ -10501,10 +10525,47 @@ function LookFx({ id, thumb }) {
   return <div data-look-fx={id} aria-hidden="true" style={{ position: "absolute", inset: 0, pointerEvents: "none", overflow: "hidden", zIndex: 3, borderRadius: "inherit" }}>{body}</div>;
 }
 // A look as a small picture for the shop and the list.
+// 1.10.0 (Michael, Nov 15: "a card collection on the profile"): every card style, the ones this person owns in
+// colour (the classic one always), the rest greyed like locked badges; the one in use is marked. Tap = a bigger look.
+const CARD_IDS = () => EC.LOOK_IDS.filter(id => EC.LOOKS[id].kind === "card");
+function CardCollection({ cs, on, own }) {
+  const [big, setBig] = useState(null);
+  const all = [null, ...CARD_IDS()], has = id => !id || cs.includes(id);
+  const n = all.filter(has).length;
+  return (
+    <Sect data-pf-cards title={T("pfCards")} meta={`${n}/${all.length}`} style={{ padding: "16px 16px 14px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(92px, 1fr))", gap: 10 }}>
+        {all.map((id, i) => { const got = has(id), cur = (on || null) === id; return (
+          <button key={id || "classic"} type="button" data-pf-card={id || "classic"} data-own={got ? 1 : 0} data-on={cur ? 1 : 0} onClick={() => { sfxTap(); setBig(id || "classic"); }}
+            className="bdTile" style={{ animationDelay: `${40 + i * 40}ms`, ...btnBase, fontWeight: 400, position: "relative", display: "flex", flexDirection: "column", alignItems: "center", gap: 6, padding: "10px 4px 8px", borderRadius: 14, background: SOFT(), color: C.chalk, border: `1.5px solid ${cur ? C.signal : "transparent"}`, opacity: got ? 1 : 0.38, filter: got ? undefined : "grayscale(1)" }}>
+            <CardFan sk={id} w={26} />
+            <span style={{ fontSize: 11, fontWeight: 800, lineHeight: 1.2, textAlign: "center", width: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{id ? lookName(id) : T("cardClassic")}</span>
+            {!got && <span style={{ position: "absolute", top: 6, right: 6 }}><Ico n="lock" size={12} color={C.dim} /></span>}
+          </button>); })}
+      </div>
+      {big && (
+        <Sheet title={big === "classic" ? T("cardClassic") : lookName(big)} onClose={() => setBig(null)} short>
+          <div data-pf-card-big={big} style={{ height: 190, borderRadius: 18, display: "flex", alignItems: "center", justifyContent: "center", background: "radial-gradient(80% 90% at 50% 100%, #1f6b46, #0f3a26)" }}><CardFan sk={big === "classic" ? null : big} w={64} /></div>
+          <div style={{ fontSize: 13, color: C.dim, textAlign: "center", marginTop: 10, lineHeight: 1.5 }}>{has(big === "classic" ? null : big) ? (own ? T("cardOwnD") : T("cardTheirD")) : T("cardLockedD")}</div>
+        </Sheet>
+      )}
+    </Sect>
+  );
+}
+// 1.10.0: three cards fanned out in a card style (Shop, looks, the profile's card collection, the Ranked opponent)
+function CardFan({ sk, w = 30, n = 3 }) {
+  const cards = [12, 13 + 7, 39 + 5].slice(0, n), mid = (n - 1) / 2; // A, 9, 7 (no exercise names on tiny face cards)
+  return (
+    <span aria-hidden="true" data-card-fan={sk || ""} style={{ position: "relative", display: "inline-flex", width: w * (1 + 0.42 * (n - 1)) + 6, height: Math.round(w * 1.4) + 8, flexShrink: 0 }}>
+      {cards.map((c, i) => <span key={c} style={{ position: "absolute", left: i * w * 0.42, top: Math.abs(i - mid) * 3 + 2, transform: `rotate(${(i - mid) * 9}deg)`, transformOrigin: "50% 100%" }}><PlayCard c={c} w={w} still sk={sk || null} /></span>)}
+    </span>
+  );
+}
 function LookThumb({ id, size = 56 }) {
   const k = EC.LOOKS[id] && EC.LOOKS[id].kind, box = { width: size, height: size, borderRadius: Math.round(size * 0.28), flexShrink: 0, position: "relative", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", background: SOFT() };
   if (k === "frame") return <span aria-hidden="true" style={{ ...box, overflow: "visible", background: "transparent" }}><span style={{ width: size * 0.7, height: size * 0.7, borderRadius: 99, background: `radial-gradient(circle at 35% 30%, ${C.signal}, ${C.signal}99)` }} /><LookFrame id={id} size={size} style={{ left: 0, top: 0 }} /></span>;
   if (k === "bg") return <span aria-hidden="true" style={box}><LookBanner id={id} /></span>;
+  if (k === "card") return <span aria-hidden="true" style={{ ...box, overflow: "visible", background: "transparent" }}><PlayCard c={12} w={Math.round(size * 0.62)} still sk={id} /></span>;
   if (k === "title") { const st = TITLE_ST()[id] || {}; return <span aria-hidden="true" style={{ ...box, background: st.bg, border: `1.5px ${st.dash ? "dashed" : "solid"} ${st.bd}`, boxSizing: "border-box", color: st.fg }}><svg viewBox="0 0 24 24" width={size * 0.5} height={size * 0.5} style={{ fill: "none", stroke: "currentColor", strokeWidth: 2.2, strokeLinecap: "round", strokeLinejoin: "round", filter: st.glow ? `drop-shadow(0 0 4px ${st.glow})` : "none" }} dangerouslySetInnerHTML={{ __html: st.ic }} /></span>; }
   if (k === "fx") return <span aria-hidden="true" style={{ ...box, background: `linear-gradient(160deg, ${C.panelHi}, ${C.ink})` }}><span style={{ width: size * 0.42, height: size * 0.42, borderRadius: 99, background: `${C.signal}33` }} /><LookFx id={id} thumb /></span>;
   return <span aria-hidden="true" style={box}><span style={{ fontFamily: DISPLAY, fontSize: size * 0.46, fontWeight: 900, lineHeight: 1, ...nameFx(id) }}>Aa</span></span>;
@@ -10547,6 +10608,11 @@ function LookDemo({ id, h = 124, on }) {
   const ref = useRef(null), own = useOnScreen(ref), seen = on === undefined ? own : on;
   const kind = EC.LOOKS[id] && EC.LOOKS[id].kind, grey = `${C.chalk}17`, av = 58, fr = Math.round(av * 116 / 84);
   const bar = (w, ht, extra) => <span style={{ display: "block", width: w, height: ht, borderRadius: 99, background: grey, ...extra }} />;
+  if (kind === "card") return (
+    <span ref={ref} data-look-demo={id} aria-hidden="true" style={{ display: "flex", alignItems: "center", justifyContent: "center", position: "relative", height: h, borderRadius: 16, overflow: "hidden", background: `radial-gradient(80% 90% at 50% 100%, #1f6b46, #0f3a26)`, border: `1px solid ${C.line}`, boxSizing: "border-box" }}>
+      <CardFan sk={id} w={Math.round(h * 0.4)} />
+    </span>
+  );
   return (
     <span ref={ref} data-look-demo={id} aria-hidden="true" style={{ display: "block", position: "relative", height: h, borderRadius: 16, overflow: "hidden", background: `linear-gradient(160deg, ${C.panelHi}, ${C.ink})`, border: `1px solid ${C.line}`, boxSizing: "border-box", isolation: "isolate" }}>
       {kind === "bg" && <span style={{ position: "absolute", left: 0, right: 0, top: 0, height: h * 1.05, WebkitMaskImage: "linear-gradient(180deg, #000 50%, transparent 100%)", maskImage: "linear-gradient(180deg, #000 50%, transparent 100%)" }}><LookBanner id={id} /></span>}
@@ -10657,7 +10723,7 @@ function LookShopSheet({ id, profile, history, own, bal, onBuy, onEquip, onGo, o
             <span style={{ display: "block", fontSize: 13, color: C.dim, marginTop: 4, lineHeight: 1.4 }}>{st === "equipped" ? T("shEquippedD") : T("shGotItD")}</span>
           </span>
         </div>}
-        <LookPreview profile={profile} look={look} history={history} />
+        {EC.LOOKS[id] && EC.LOOKS[id].kind === "card" ? <LookDemo id={id} h={170} on /> : <LookPreview profile={profile} look={look} history={history} />}
         <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginTop: 12 }}>
           <span data-rar-chip={L0.r} style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.4, textTransform: "uppercase", color: col, border: `1px solid ${col}88`, borderRadius: 99, padding: "2px 8px" }}>{T("gmRar" + L0.r)}</span>
           <span style={{ fontSize: 13, color: C.dim }}>{T("lookKind_" + kind)}</span>
@@ -10683,7 +10749,7 @@ function LookShopSheet({ id, profile, history, own, bal, onBuy, onEquip, onGo, o
 // Your looks: changed only on your own Profile (Michael: "changing them only in the shop wouldn't make sense").
 // 1.9.0 (Michael, Nov 7: like the profile editor: bigger, modern, and a draft until Save, "someone may only be trying"):
 // the preview on top stays in view while you pick; closing without Save keeps the profile as it was.
-const LOOK_KIND_ICO = { frame: "frame", bg: "layers", title: "tag", name: "sparkle", fx: "burst" };
+const LOOK_KIND_ICO = { frame: "frame", bg: "layers", title: "tag", name: "sparkle", fx: "burst", card: "cards" };
 function LooksSheet({ profile, setProfile, history, own, onShop, onClose }) {
   const [kind, setKind] = useState("frame");
   const saved = lookOn(profile, own);
@@ -10702,7 +10768,9 @@ function LooksSheet({ profile, setProfile, history, own, onShop, onClose }) {
         {/* the preview stays on top while the list scrolls under it (not on a short screen: the list would have no room) */}
         <style>{`@media (max-height: 679px){[data-looks-preview]{position:static!important}}`}</style>
         <div data-looks-preview style={{ position: "sticky", top: -22, zIndex: 2, margin: "-6px -20px 0", padding: "6px 20px 12px", background: C.panel }}>
-          <div style={{ borderRadius: 20, overflow: "hidden", isolation: "isolate" }}><LookPreview profile={profile} look={draft} history={history} /></div>
+          {kind === "card"
+            ? <div data-looks-cards style={{ height: 150, borderRadius: 20, display: "flex", alignItems: "center", justifyContent: "center", background: "radial-gradient(80% 90% at 50% 100%, #1f6b46, #0f3a26)" }}><CardFan sk={cur("card")} w={58} /></div>
+            : <div style={{ borderRadius: 20, overflow: "hidden", isolation: "isolate" }}><LookPreview profile={profile} look={draft} history={history} /></div>}
           {/* kinds as one segmented strip: icon + a small name; a dot = changed and not saved yet */}
           <div role="tablist" style={{ display: "flex", gap: 3, padding: 4, marginTop: 12, borderRadius: 16, ...SUNK() }}>
             {EC.LOOK_KINDS.map(k => { const on = kind === k; return (
@@ -11841,6 +11909,12 @@ function GameTable({ saved, history, onEnd, onQuit, onTutDone }) {
         <span data-gm-hands={g.handsLeft} title={T("gmPlay")} style={{ ...gmPill, color: C.sky, borderColor: `${C.sky}55` }}><Ico n="hand" size={15} color={C.sky} />{g.handsLeft}</span>
         <span data-gm-discards={g.discardsLeft} title={T("gmDiscard")} style={{ ...gmPill, color: "#ff8a65", borderColor: "#ff8a6555" }}><Ico n="eraser" size={15} color="#ff8a65" />{g.discardsLeft}</span>
         {bossTxt && g.phase === "blind" && <span data-gm-boss={g.boss} style={{ ...gmPill, color: "#ff9a9a", borderColor: "#ff6b6b55", flex: 1, minWidth: 0, fontSize: 12, fontWeight: 700, fontFamily: BODY, justifyContent: "flex-start" }}><Ico n="alert" size={14} color="#ff9a9a" /><span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{bossTxt[1]}</span></span>}
+        {saved.mode === "ranked" && saved.opp && (
+          // 1.10.0 (Michael): in Ranked you see who you play against, with their card style
+          <span data-gm-opp={saved.opp.sk || "classic"} style={{ ...gmPill, marginLeft: "auto", color: C.chalk, borderColor: C.line, fontSize: 12, fontWeight: 800, fontFamily: BODY, minWidth: 0, gap: 6 }}>
+            <PlayCard c={12} w={14} still sk={saved.opp.sk || null} /><span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 110 }}>{T("gmVs", { nick: saved.opp.nick })}</span>
+          </span>
+        )}
         {g.perk && <span data-gm-perk-chip={g.perk} title={L.gm.perk[g.perk][0] + ": " + L.gm.perk[g.perk][1].replace(/\$(\d+)/g, "$1 " + COIN)} style={{ ...gmPill, marginLeft: "auto", color: C.signal, borderColor: `${C.signal}44` }}><Ico n={PERK_ICON[g.perk]} size={15} color={C.signal} /></span>}
       </div>
       {/* jokers (also in the shop, so they show once: the shop draws its own row) */}
@@ -12131,7 +12205,7 @@ function GameEnd({ res, onClose, onAgain }) {
       {pend && <div data-gm-rk-pend style={{ fontSize: 15, color: C.chalk, maxWidth: 340, lineHeight: 1.5 }}>{T("gmRkPend")}</div>}
       <div style={{ fontFamily: DISPLAY, fontSize: 38, fontWeight: 900, lineHeight: 1 }}>{pend ? T("gmRkPendT") : won === null ? T("gmWaitServer") : won ? (saved.mode === "run" ? T("gmWon") : T("gmWin")) : draw ? T("gmDraw") : saved.mode === "run" ? T("gmOver") : T("gmLose")}</div>
       <div style={{ fontSize: 15, color: C.dim }}>{T("gmResult", { n: me.cleared, t: nf(me.total) })}</div>
-      {opp && <div data-gm-opp style={{ fontSize: 15, color: C.dim }}>{saved.mode === "duel" ? T("gmBotRes", { n: opp.lvl }) : opp.bot ? T("gmBotRes", { n: opp.bot }) : opp.nick}: {T("gmResult", { n: opp.cleared, t: nf(opp.total) })}</div>}
+      {opp && <div data-gm-opp style={{ fontSize: 15, color: C.dim, display: "flex", alignItems: "center", gap: 8 }}>{saved.mode === "ranked" && <CardFan sk={opp.sk || null} w={18} />}<span>{saved.mode === "duel" ? T("gmBotRes", { n: opp.lvl }) : opp.bot ? T("gmBotRes", { n: opp.bot }) : opp.nick}: {T("gmResult", { n: opp.cleared, t: nf(opp.total) })}</span></div>}
       {rk && !pend && <div data-gm-rating style={{ fontFamily: DISPLAY, fontSize: 26, fontWeight: 900, color: rk.dr >= 0 ? C.mint : "#ff8a80" }}>{T("gmRating", { r: rk.r })} ({rk.dr >= 0 ? "+" : ""}{rk.dr})</div>}
       {rkErr && <div role="alert" style={{ fontSize: 14, color: "#ff8a80", maxWidth: 340 }}>{T("gmErrEnd")}</div>}
       {xp > 0 && <div data-gm-xp style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, color: C.signal }}>+{nf(xp)} {T("gmXp")}</div>}
@@ -12243,6 +12317,7 @@ function tourSteps(ch, x) {
     s("[data-body-ranks]", 9, { opt: true }), // 1.9.0: body ranks
     s("[data-pf-showcase]", 2, { opt: true }),
     s("[data-pf-plans]", 2, { opt: true, t: T("tourPfPlans") }), // 1.10.0: plans shown on the profile (signed in)
+    s("[data-pf-cards]", 2, { opt: true, t: T("tourPfCards") }), // 1.10.0: the card collection
     s('[data-pf-tab="2"]', 3, { tap: true, opt: true }),
     s("[data-pf-ranks]", 4, { opt: true }),
     s('[data-pf-tab="3"]', 5, { tap: true, opt: true }),
@@ -13340,6 +13415,7 @@ export default function App() {
   };
   // Every change to past workouts keeps the history sorted and records/rank-ups correct.
   const editHistory = fn => setHistory(h => recomputeFlags(sortHistory(fn(h))));
+  { const cs = profile.look && profile.look.card; CARD_SKIN = cs && EC.LOOKS[cs] && EC.LOOKS[cs].kind === "card" ? cs : null; } // 1.10.0 card style
   META = { kcal, skips: profile.skips || {}, freezeDays: profile.freezeDays || [], streakResetTs: profile.streakResetTs || 0, boosts: EC.shopOf(profile).boosts, bonusFreezes: (profile.bdayGifts || []).length + EC.shopOf(profile).fz, giftThisYear: (profile.bdayGifts || []).includes(parseKey(dateKey()).getFullYear()), birth: profile.birth || null };
   window._wset = settings;
   applyTheme(settings.theme, settings.accent);
@@ -13638,7 +13714,7 @@ export default function App() {
     setGamePlay(null);
     if (saved.mode === "ranked") {
       setGameEnd({ saved, g });
-      try { const r = await cloud().rkEnd(saved.moves); if (r.why !== "ok" && r.why !== "no-game") throw new Error(r.why); gameSave(null); setGameEnd({ saved, g, rk: r.why === "ok" ? r : null }); }
+      try { const r = await cloud().rkEnd(saved.moves, false, CARD_SKIN || undefined); if (r.why !== "ok" && r.why !== "no-game") throw new Error(r.why); gameSave(null); setGameEnd({ saved, g, rk: r.why === "ok" ? r : null }); }
       catch (_) { setGameEnd({ saved, g, rkErr: true }); } // kept: "Continue" sends it again
       return;
     }
@@ -14349,6 +14425,10 @@ export default function App() {
         .gmGlow{animation:gmGlow .5s ease-out;box-shadow:0 0 18px var(--gc)}
         .gmShake{animation:gmShake .45s ease-out}@keyframes gmShake{0%,100%{transform:none}20%{transform:translate(-5px,2px) rotate(-.4deg)}40%{transform:translate(5px,-2px) rotate(.4deg)}60%{transform:translate(-3px,1px)}80%{transform:translate(2px,0)}}
         .gmMoneyUp{animation:gmMoneyUp .5s ease-out}@keyframes gmMoneyUp{40%{transform:scale(1.25)}}
+        .cdShine{position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.55) 45%,transparent 60%);background-size:250% 100%;animation:cdShine 3.2s ease-in-out infinite;mix-blend-mode:soft-light}
+        .cdHolo{background:linear-gradient(115deg,rgba(255,0,170,.18),rgba(0,200,255,.22),rgba(120,255,120,.18),rgba(255,220,0,.2));background-size:300% 300%;animation:cdHolo 4s linear infinite;mix-blend-mode:color-dodge}
+        @keyframes cdShine{from{background-position:120% 0}to{background-position:-60% 0}}@keyframes cdHolo{from{background-position:0 50%}to{background-position:300% 50%}}
+        @media (prefers-reduced-motion:reduce){.cdShine,.cdHolo{animation:none}}
         .gmFlipIn{animation:gmFlipIn .5s ${MO.spring} both}@keyframes gmFlipIn{from{transform:perspective(600px) rotateY(90deg) scale(.8);opacity:0}to{transform:none;opacity:1}}
         .gmWobble{animation:gmWobble 2.4s ease-in-out infinite}@keyframes gmWobble{0%,80%,100%{transform:none}86%{transform:rotate(-8deg) scale(1.08)}92%{transform:rotate(7deg) scale(1.08)}}
         .gmGlowCard{animation:gmGlowCard 1.1s ease-in-out infinite alternate}

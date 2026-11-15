@@ -1,6 +1,14 @@
 // Hungarian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    tourPfCards: "A kártyagyűjteményed: Muscle Deck kártyastílusok. Válassz egyet a kinézetben; a Rankedben az ellenfél is látja.",
+    lookKind_card: "Kártyák",
+    pfCards: "Kártyagyűjtemény",
+    cardClassic: "Klasszikus",
+    cardOwnD: "Válaszd a stílust a profil kinézetében: a Muscle Deck kártyáid ezt mutatják (a Rankedben azoknak is, akik a te osztásodat kapják).",
+    cardTheirD: "Megvan a gyűjteményében.",
+    cardLockedD: "Még nincs a gyűjteményben: a kártyastílusok a Bolt kinézetei között jelennek meg, néhányat meg lehet nyerni.",
+    gmVs: "vs {nick}",
     plLink: "Link megosztása",
     plLinkD: "A link birtokában bárki elmenthet egy másolatot vagy kipróbálhatja. A súlyaid sosem szerepelnek benne.",
     plLinkText: "{name}: edzésterv a HW Appban 💪 {url}",
@@ -198,6 +206,7 @@ export default {
   tour: { c5: { 0: "Naptár: a zöld nap edzés, a szám alatti pötty kalória. Koppints egy napra, hogy lásd, mit csináltál; koppints egy üres napra, hogy edzést adj hozzá." }, c7: { 3: "Itt adhatsz hozzá barátot kód vagy becenév alapján. Lent a barátok és a csevegések egy listában vannak: koppints egy barátra, hogy írj neki, koppints a fotóra a profiljáért. Tartsd lenyomva a barátot a kártyájáért: duó, csevegés törlése, letiltás.", 5: "Hívj meg egy barátot a linkeddel: ha elvégez 3 edzést, mindketten kaptok 100 💎-ot." } },
   ach: { duo: ["Együtt jobb", "{x} egy baráttal"] },
   looks: {
+    c_night: "Éjszaka", c_mint: "Menta", c_carbon: "Karbon", c_marble: "Márvány", c_gold: "Arany", c_neon: "Neon", c_holo: "Hologram", c_obsidian: "Obszidián",
     fx_rain: "Eső", fx_bubbles: "Szóda", fx_hearts: "Szívecskék", fx_fireflies: "Szentjánosbogarak", fx_stars: "Hullócsillagok",
     f_ring2: "Dupla gyűrű", f_dash: "Szaggatott gyűrű", f_gear: "Fogaskerék", f_petal: "Virág", f_ice: "Jégkorona", f_orbit: "Pálya", f_rainbow: "Szivárványgyűrű",
     b_dusk: "Alkonyat", b_stripes: "Csíkok", b_forest: "Erdő", b_ocean: "Óceán", b_circuit: "Áramkör", b_lava: "Láva", b_synth: "Retró nap",
@@ -266,5 +275,6 @@ export default {
     ["Könyvtár: rovatok", "A Könyvtár egyetlen hosszú lista volt.", "Rovatokkal nyílik: népszerű a héten, legjobbra értékelt, barátok tervei, legtöbbet mentett, a HW Apptól, legújabb; a nyíl mindet megmutatja ebben a sorrendben."],
     ["Terv linkje", "Egy tervet csak a profilodon lehetett megmutatni vagy a Könyvtárban közzétenni.", "A tervszerkesztőből megoszthatsz egy linket: aki megnyitja, látja a tervet, és fiók nélkül is elmenthet egy másolatot vagy kipróbálhatja. A súlyaid sosem szerepelnek benne."],
     ["Testrangok", "A test lapos színekkel jelent meg, alatta mindig kilenc csempével.", "Az izmok fémként és drágakőként csillognak (vas, bronz, ezüst, arany… obszidián); a doboz csak a testet mutatja, koppintásra legördül a kilenc testrész."],
+    ["Kártyastílusok", "A Muscle Deck kártyái mindig ugyanúgy néztek ki.", "Nyolc kártyastílus (Éjszaka, Menta, Karbon, Márvány, Arany, Neon, Hologram, Obszidián) a Bolt kinézetei között; a profil kinézetében választhatsz, mindet látod a profilod kártyagyűjteményében, és a Rankedben az ellenfél is látja a tiédet."],
   ],
 };

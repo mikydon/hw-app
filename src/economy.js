@@ -11,7 +11,8 @@ export const BOOST_MS = 24 * 3600 * 1000; // an XP boost: 2× XP for the workout
 // What earns diamonds (the numbers on the plan page).
 export const EARN = { day: 5, streak7: 15, achLevel: 3, single: { 4: 15, 6: 30, 8: 60 }, run: 20, inv: 100 };
 
-// Profile looks. kind: frame | bg | title | name | fx (a profile effect drawn over the whole profile card, like Discord's).
+// Profile looks. kind: frame | bg | title | name | fx (a profile effect drawn over the whole profile card, like Discord's)
+// | card (1.10.0: the style of your Muscle Deck cards).
 // r = rarity 0–3. won = only won (a badge / the season pass), never sold; the key names what wins it (lookGot in App.jsx).
 export const LOOKS = {
   f_iron: { kind: "frame", r: 0 }, f_dots: { kind: "frame", r: 0 }, f_pixel: { kind: "frame", r: 1 }, f_hex: { kind: "frame", r: 1 },
@@ -42,9 +43,12 @@ export const LOOKS = {
   n_mint: { kind: "name", r: 0 }, n_sky: { kind: "name", r: 0 }, n_sunset: { kind: "name", r: 1 }, n_chrome: { kind: "name", r: 2 }, n_neon: { kind: "name", r: 2 }, n_glitch: { kind: "name", r: 3 },
   fx_leaves: { kind: "fx", r: 1 }, fx_code: { kind: "fx", r: 2 }, fx_aura: { kind: "fx", r: 3 },
   fx_frost: { kind: "fx", r: 2, won: "frozen" }, fx_confetti: { kind: "fx", r: 2, won: "bdayW" }, fx_fireworks: { kind: "fx", r: 3, won: "newyear" },
+  // 1.10.0 (Michael, Nov 15): card styles for Muscle Deck (Runs and Ranked; the other player sees yours). Only looks.
+  c_night: { kind: "card", r: 0 }, c_mint: { kind: "card", r: 0 }, c_carbon: { kind: "card", r: 1 }, c_marble: { kind: "card", r: 1 },
+  c_gold: { kind: "card", r: 2 }, c_neon: { kind: "card", r: 2 }, c_holo: { kind: "card", r: 3 }, c_obsidian: { kind: "card", r: 3, won: "deck" },
 };
 export const LOOK_IDS = Object.keys(LOOKS);
-export const LOOK_KINDS = ["frame", "bg", "title", "name", "fx"];
+export const LOOK_KINDS = ["frame", "bg", "title", "name", "fx", "card"];
 export const lookPrice = id => (LOOKS[id] && !LOOKS[id].won ? LOOK_PRICE[LOOKS[id].r] : null);
 
 // a small seeded random (same idea as the card game): the same day always shows the same shop and the same chest

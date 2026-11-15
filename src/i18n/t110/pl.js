@@ -1,6 +1,14 @@
 // Polish: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    tourPfCards: "Twoja kolekcja kart: style kart do Muscle Deck. Załóż jeden w wyglądzie; w Ranked zobaczy go też rywal.",
+    lookKind_card: "Karty",
+    pfCards: "Kolekcja kart",
+    cardClassic: "Klasyczne",
+    cardOwnD: "Załóż styl w wyglądzie profilu: pokażą go twoje karty w Muscle Deck (także graczom, którzy dostaną twoje rozdanie w Ranked).",
+    cardTheirD: "Jest w jego kolekcji.",
+    cardLockedD: "Jeszcze nie w kolekcji: style kart pojawiają się w wyglądach w Sklepie, a niektóre można wygrać.",
+    gmVs: "vs {nick}",
     plLink: "Udostępnij link",
     plLinkD: "Każdy z linkiem może zapisać kopię lub go wypróbować. Twoich ciężarów nigdy w nim nie ma.",
     plLinkText: "{name}: plan treningowy w HW App 💪 {url}",
@@ -198,6 +206,7 @@ export default {
   tour: { c5: { 0: "Kalendarz: zielony dzień to trening, kropka pod liczbą to kalorie. Stuknij dzień, aby zobaczyć, co robiłeś; stuknij pusty dzień, aby dodać trening." }, c7: { 3: "Tu dodasz znajomego po kodzie albo nicku. Niżej znajomi i czaty to jedna lista: dotknij znajomego, aby pisać, dotknij zdjęcia, aby zobaczyć profil. Przytrzymaj znajomego, aby otworzyć jego kartę: duet, usunięcie czatu, blokada.", 5: "Zaproś znajomego swoim linkiem: gdy zrobi 3 treningi, oboje dostaniecie 100 💎." } },
   ach: { duo: ["Razem raźniej", "{x} ze znajomym"] },
   looks: {
+    c_night: "Noc", c_mint: "Mięta", c_carbon: "Karbon", c_marble: "Marmur", c_gold: "Złoto", c_neon: "Neon", c_holo: "Hologram", c_obsidian: "Obsydian",
     fx_rain: "Deszcz", fx_bubbles: "Oranżada", fx_hearts: "Serduszka", fx_fireflies: "Świetliki", fx_stars: "Spadające gwiazdy",
     f_ring2: "Podwójny pierścień", f_dash: "Kreskowany pierścień", f_gear: "Zębatka", f_petal: "Kwiat", f_ice: "Lodowa korona", f_orbit: "Orbita", f_rainbow: "Tęczowy pierścień",
     b_dusk: "Zmierzch", b_stripes: "Paski", b_forest: "Las", b_ocean: "Ocean", b_circuit: "Płytka drukowana", b_lava: "Lawa", b_synth: "Retro słońce",
@@ -266,5 +275,6 @@ export default {
     ["Biblioteka: sekcje", "Biblioteka była jedną długą listą.", "Otwiera się na sekcjach: popularne w tym tygodniu, najwyżej oceniane, plany znajomych, najczęściej zapisywane, od HW App, najnowsze; strzałka pokaże wszystkie w tej kolejności."],
     ["Link do planu", "Plan można było tylko pokazać na profilu lub opublikować w Bibliotece.", "W edytorze planu udostępnij link: kto go otworzy, zobaczy plan i może zapisać kopię lub go wypróbować, nawet bez konta. Twoich ciężarów nigdy w nim nie ma."],
     ["Rangi ciała", "Ciało miało płaskie kolory i zawsze dziewięć kafelków pod spodem.", "Mięśnie lśnią jak metale i klejnoty (żelazo, brąz, srebro, złoto… obsydian); pole pokazuje tylko ciało, a stuknięcie rozwija dziewięć partii."],
+    ["Style kart", "Karty w Muscle Deck zawsze wyglądały tak samo.", "Osiem stylów kart (Noc, Mięta, Karbon, Marmur, Złoto, Neon, Hologram, Obsydian) w wyglądach w Sklepie; załóż jeden w wyglądzie profilu, wszystkie zobaczysz w kolekcji kart na profilu, a w Ranked twój zobaczy też rywal."],
   ],
 };

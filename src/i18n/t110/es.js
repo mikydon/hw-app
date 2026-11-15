@@ -1,6 +1,14 @@
 // Spanish: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    tourPfCards: "Tu colección de cartas: estilos de cartas de Muscle Deck. Ponte uno en tu aspecto; en Ranked también lo ve el rival.",
+    lookKind_card: "Cartas",
+    pfCards: "Colección de cartas",
+    cardClassic: "Clásico",
+    cardOwnD: "Ponte un estilo en el aspecto del perfil: lo mostrarán tus cartas de Muscle Deck (también a quienes reciban tu reparto en Ranked).",
+    cardTheirD: "Está en su colección.",
+    cardLockedD: "Aún no está en la colección: los estilos de cartas llegan a los aspectos de la Tienda y algunos se ganan.",
+    gmVs: "vs {nick}",
     plLink: "Compartir un enlace",
     plLinkD: "Cualquiera con el enlace puede guardar una copia o probarlo. Tus pesos nunca van en él.",
     plLinkText: "{name}: un plan de entrenamiento en HW App 💪 {url}",
@@ -198,6 +206,7 @@ export default {
   tour: { c5: { 0: "Calendario: un día verde es un entrenamiento, el punto bajo un número son calorías. Toca un día para ver qué hiciste; toca un día vacío para añadir un entrenamiento." }, c7: { 3: "Aquí añades un amigo por código o apodo. Debajo, amigos y chats son una sola lista: toca a un amigo para escribirle, toca la foto para ver su perfil. Mantén pulsado a un amigo para ver su tarjeta: dúo, borrar el chat, bloquear.", 5: "Invita a un amigo con tu enlace: cuando haga 3 entrenamientos, los dos recibiréis 100 💎." } },
   ach: { duo: ["Mejor juntos", "{x} con un amigo"] },
   looks: {
+    c_night: "Noche", c_mint: "Menta", c_carbon: "Carbono", c_marble: "Mármol", c_gold: "Oro", c_neon: "Neón", c_holo: "Holograma", c_obsidian: "Obsidiana",
     fx_rain: "Lluvia", fx_bubbles: "Refresco", fx_hearts: "Corazones", fx_fireflies: "Luciérnagas", fx_stars: "Estrellas fugaces",
     f_ring2: "Anillo doble", f_dash: "Anillo discontinuo", f_gear: "Engranaje", f_petal: "Flor", f_ice: "Corona de hielo", f_orbit: "Órbita", f_rainbow: "Anillo arcoíris",
     b_dusk: "Anochecer", b_stripes: "Rayas", b_forest: "Bosque", b_ocean: "Océano", b_circuit: "Circuito", b_lava: "Lava", b_synth: "Sol retro",
@@ -266,5 +275,6 @@ export default {
     ["Biblioteca: secciones", "La Biblioteca era una larga lista.", "Se abre en secciones: popular esta semana, mejor valorados, planes de amigos, más guardados, de HW App, más nuevos; la flecha muestra todos en ese orden."],
     ["Enlaces de planes", "Un plan solo se podía mostrar en tu perfil o publicar en la Biblioteca.", "Comparte un enlace desde el editor del plan: quien lo abra ve el plan y puede guardar una copia o probarlo, incluso sin cuenta. Tus pesos nunca van en él."],
     ["Rangos del cuerpo", "El cuerpo tenía colores planos y siempre nueve fichas debajo.", "Los músculos brillan como metales y gemas (hierro, bronce, plata, oro… obsidiana); el cuadro muestra solo el cuerpo y un toque despliega las nueve partes."],
+    ["Estilos de cartas", "Las cartas de Muscle Deck siempre se veían igual.", "Ocho estilos de cartas (Noche, Menta, Carbono, Mármol, Oro, Neón, Holograma, Obsidiana) en los aspectos de la Tienda; ponte uno en el aspecto del perfil, todos se ven en tu colección de cartas y en Ranked el rival ve el tuyo."],
   ],
 };

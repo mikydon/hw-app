@@ -79,7 +79,7 @@ eq((await call(rankedStart, { uid: "A", today: "2020-01-01" })).why, "bad", "a d
 const s1 = await call(rankedStart, { uid: "A", today: today() });
 eq([s1.why, s1.opp, s1.left], ["ok", null, 1], "A: a new deal, no opponent yet, 1 ticket left");
 const ga = play(s1.seed, 7);
-const e1 = await call(rankedEnd, { uid: "A", moves: ga.moves });
+const e1 = await call(rankedEnd, { uid: "A", moves: ga.moves, sk: "c_gold" });
 eq([e1.why, e1.pend, e1.dr, e1.r], ["ok", 1, 0, 1000], "A's result waits, rating unchanged");
 const runs1 = [...db.entries()].filter(([p]) => p.startsWith("runs/"));
 eq(runs1.length, 1, "A's game is kept for the next player");
@@ -89,6 +89,7 @@ eq(runs1[0][1].f.done, false, "and not settled yet");
 clock += 60e3; put("ranked/B", { r: 1100, w: 0, l: 0, d: 0 });
 const s2 = await call(rankedStart, { uid: "B", today: today() });
 eq([s2.seed, s2.opp && s2.opp.nick], [s1.seed, "Anna"], "B gets A's deal (A is waiting)");
+eq(s2.opp && s2.opp.sk, "c_gold", "with A's card style (1.10.0)");
 const gb = play(s2.seed, 2);
 const e2 = await call(rankedEnd, { uid: "B", moves: gb.moves });
 const ra = resultOf(ga.st), rb = resultOf(gb.st);
@@ -97,6 +98,9 @@ eq(e2.sc, exp, "B is compared with A's result");
 const A = doc("ranked/A"), B = doc("ranked/B");
 ok(A.r + B.r === 2100 && A.r !== 1000, `both ratings moved by the same amount (A ${A.r}, B ${B.r})`);
 eq(A.res && A.res[0].nick, "Ben", "A sees who played the deal");
+ok(!("sk" in (A.res[0] || {})), "B sent no style: none stored");
+eq(e2.opp && e2.opp.sk, "c_gold", "B's result names A's style");
+{ const bad = await call(rankedEnd, { uid: "NOBODY", moves: [], sk: "<script>" }); ok(bad.why === "no-game", "no game: nothing"); }
 eq(doc(`runs/${runs1[0][0].split("/")[1]}`).done, true, "A's game is settled once");
 
 // ── C plays the same deal later: only C moves ──

@@ -74,7 +74,7 @@ for (const fx of ["fx_rain", "fx_bubbles", "fx_hearts", "fx_fireflies", "fx_star
 {
   const EC = await import("../src/economy.js");
   const ids = EC.LOOK_IDS, buys = ids.map((w, j) => ({ i: "lk" + j, w, p: 0, ts: j + 1 }));
-  T.eq(ids.length, 91, "91 looks in all");
+  T.eq(ids.length, 99, "99 looks in all (1.10.0: + 8 card styles)");
   const NEW = { frame: ["f_ring2", "f_dash", "f_gear", "f_petal", "f_ice", "f_orbit", "f_rainbow"], bg: ["b_dusk", "b_stripes", "b_forest", "b_ocean", "b_circuit", "b_lava", "b_synth"],
     title: ["t_home", "t_noexcuse", "t_sweat", "t_ice", "t_machine", "t_titan", "t_champion", "t_unbreak"], name: ["n_mint", "n_sky", "n_sunset", "n_chrome", "n_neon", "n_glitch"], fx: ["fx_leaves", "fx_code", "fx_aura"] };
   const errs = [];

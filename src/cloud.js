@@ -74,7 +74,7 @@ async function googleCredential() {
 const nativeSignOut = () => (native() ? Promise.race([FirebaseAuthentication.signOut().catch(() => {}), new Promise(r => setTimeout(r, 3000))]) : Promise.resolve());
 const pick = (o, keys) => Object.fromEntries(keys.filter(k => o[k] !== undefined).map(k => [k, o[k]]));
 const PROFILE_KEYS = ["nick", "pfp", "xp", "lvl", "streak", "n", "code", "global"];
-const CARD_KEYS = ["lvl", "xp", "streak", "best", "n", "reps", "min", "since", "ach", "rk", "rr", "av", "show", "prs", "look", "lw"]; // look: 1.8.0, rr + lw: 1.9.0
+const CARD_KEYS = ["lvl", "xp", "streak", "best", "n", "reps", "min", "since", "ach", "rk", "rr", "av", "show", "prs", "look", "lw", "cs"]; // look: 1.8.0, rr + lw: 1.9.0, cs: 1.10.0 card styles
 async function profilesOf(uids) {
   const out = await Promise.all(uids.map(u => getDoc(d("profiles", u)).then(s => (s.exists() ? { uid: u, ...s.data() } : { uid: u, missing: true })).catch(() => ({ uid: u, missing: true }))));
   return out;
@@ -357,7 +357,7 @@ export const impl = {
   pubSaved(pid, copy) { return impl.rk("psave", { pid, copy }); },
   pubRate(pid, r) { return impl.rk("prate", { pid, r }); },
   async getRew() { const s = await getDoc(d("rew", uid())); if (!s.exists()) return null; const v = s.data(); return { by: v.by || null, i: v.i || {} }; },
-  rkEnd(moves, give) { return impl.rk("rk-end", give ? { give: true } : { moves }); },
+  rkEnd(moves, give, sk) { return impl.rk("rk-end", give ? { give: true } : { moves, ...(sk ? { sk } : {}) }); },
   async myRanked() { const s = await getDoc(d("ranked", uid())); return s.exists() ? s.data() : null; },
   async rankedList(n = 50) { const s = await getDocs(query(collection(db, "ranked"), orderBy("r", "desc"), limit(n))); return s.docs.map(x => { const v = x.data(); return { uid: x.id, nick: v.nick, r: v.r, w: v.w || 0, l: v.l || 0, d: v.d || 0 }; }); },
   // 1.8.0 friend streaks: my last training days (friends read them) and the streaks (fstreak/{a_b}).

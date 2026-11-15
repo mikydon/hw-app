@@ -389,15 +389,18 @@ export async function rankedStart({ uid, today, sa, fetchFn = fetch, now = Date.
   // people still waiting for a result first, then the nearest rating
   runs.sort((a, b) => (a.done ? 1 : 0) - (b.done ? 1 : 0) || dist(a) - dist(b));
   const o = runs.find(x => dist(x) <= RK.near) || runs.find(x => dist(x) <= RK.wide);
-  const opp = o ? { uid: o.uid, run: o.id, nick: String(o.nick || "?").slice(0, 20), r: typeof o.r === "number" ? o.r : RK.start, res: { cleared: o.cleared, total: o.total } } : null;
+  const opp = o ? { uid: o.uid, run: o.id, nick: String(o.nick || "?").slice(0, 20), r: typeof o.r === "number" ? o.r : RK.start, res: { cleared: o.cleared, total: o.total }, ...(skOk(o.sk) ? { sk: o.sk } : {}) } : null;
   const seed = o ? o.seed : randomSeed();
   const cur = { seed, opp, at: now };
   const seeds = [...mine, seed].slice(-RK.keepSeeds);
   await patchDoc(`ranked/${uid}`, { r, w, l, d, nick: String(prof.nick).slice(0, 20), ts: new Date(now).toISOString(), cur, seeds, tk: { day: today, n: used + 1 } }, tok, fetchFn,
     ["r", "w", "l", "d", "nick", "ts", "cur", "seeds", "tk"]);
-  return { why: "ok", seed, opp: opp ? { nick: opp.nick, r: opp.r } : null, r, abandoned, left: RK.tickets - used - 1 };
+  return { why: "ok", seed, opp: opp ? { nick: opp.nick, r: opp.r, ...(opp.sk ? { sk: opp.sk } : {}) } : null, r, abandoned, left: RK.tickets - used - 1 };
 }
-export async function rankedEnd({ uid, moves, give, sa, fetchFn = fetch, now = Date.now() }) {
+// 1.10.0 (Michael, Nov 15: "card variations; the players against you see which cards you have"): a card style id
+// (looks c_*, only looks: no effect on the game); kept with the game in runs/ and shown to the other player
+export const skOk = x => typeof x === "string" && /^c_[a-z0-9]{1,16}$/.test(x);
+export async function rankedEnd({ uid, moves, give, sk, sa, fetchFn = fetch, now = Date.now() }) {
   const tok = await accessToken(sa, fetchFn, now);
   const rk = await getDoc(`ranked/${uid}`, tok, fetchFn);
   if (!rk || !rk.cur || !rk.cur.seed) return { why: "no-game" };
@@ -417,7 +420,7 @@ export async function rankedEnd({ uid, moves, give, sa, fetchFn = fetch, now = D
   if (cur.opp) {
     const opp = cur.opp.res, sc = bad ? 0 : outcome(me, opp), dr = elo(r0, cur.opp.r, sc);
     r = Math.max(0, r0 + dr); if (sc === 1) w++; else if (sc === 0) l++; else d++;
-    last = { sc, dr, me: { cleared: me.cleared, total: me.total }, opp: { cleared: opp.cleared, total: opp.total, nick: cur.opp.nick }, bad: bad ? 1 : 0, at: now };
+    last = { sc, dr, me: { cleared: me.cleared, total: me.total }, opp: { cleared: opp.cleared, total: opp.total, nick: cur.opp.nick, ...(skOk(cur.opp.sk) ? { sk: cur.opp.sk } : {}) }, bad: bad ? 1 : 0, at: now };
     // the opponent's result settles once (the first player on their deal): their rating moves too
     const run = cur.opp.run ? await getDoc(`runs/${cur.opp.run}`, tok, fetchFn) : null;
     if (run && !run.done) {
@@ -425,7 +428,7 @@ export async function rankedEnd({ uid, moves, give, sa, fetchFn = fetch, now = D
       const ok = await getDoc(`ranked/${cur.opp.uid}`, tok, fetchFn);
       if (ok) {
         const osc = 1 - sc, or0 = typeof ok.r === "number" ? ok.r : RK.start, odr = elo(or0, r0, osc);
-        const res = [...(Array.isArray(ok.res) ? ok.res : []), { sc: osc, dr: odr, nick, at: now, me: { cleared: opp.cleared, total: opp.total }, opp: { cleared: me.cleared, total: me.total } }].slice(-RK.keepRes);
+        const res = [...(Array.isArray(ok.res) ? ok.res : []), { sc: osc, dr: odr, nick, at: now, ...(skOk(sk) ? { sk } : {}), me: { cleared: opp.cleared, total: opp.total }, opp: { cleared: me.cleared, total: me.total } }].slice(-RK.keepRes);
         await patchDoc(`ranked/${cur.opp.uid}`, { r: Math.max(0, or0 + odr), w: (ok.w || 0) + (osc === 1 ? 1 : 0), l: (ok.l || 0) + (osc === 0 ? 1 : 0), d: (ok.d || 0) + (osc === 0.5 ? 1 : 0), res }, tok, fetchFn, ["r", "w", "l", "d", "res"]);
       }
     }
@@ -437,7 +440,7 @@ export async function rankedEnd({ uid, moves, give, sa, fetchFn = fetch, now = D
   await patchDoc(`ranked/${uid}`, { r, w, l, d, ts: new Date(now).toISOString(), last }, tok, fetchFn, ["r", "w", "l", "d", "ts", "last", "cur"]);
   if (!bad) {
     await fetchFn(`${FS}/runs`, { method: "POST", headers: { authorization: "Bearer " + tok, "content-type": "application/json" },
-      body: JSON.stringify({ fields: encFields({ uid, nick, seed: cur.seed, r: r0, cleared: me.cleared, total: me.total, done: !!cur.opp, ts: new Date(now).toISOString() }) }) });
+      body: JSON.stringify({ fields: encFields({ uid, nick, seed: cur.seed, r: r0, cleared: me.cleared, total: me.total, done: !!cur.opp, ts: new Date(now).toISOString(), ...(skOk(sk) ? { sk } : {}) }) }) });
   }
   return { why: "ok", ...last, r };
 }
@@ -505,7 +508,7 @@ export default {
     try {
       const sa = JSON.parse(env.FIREBASE_SERVICE_ACCOUNT);
       const r = b.kind === "rep" ? await checkReports({ to: b.to, sa }) : b.kind === "board" ? await checkBoard({ uid: from, today: b.today, sa })
-        : b.kind === "rk-start" ? await rankedStart({ uid: from, today: b.today, sa }) : b.kind === "rk-end" ? await rankedEnd({ uid: from, moves: b.moves, give: b.give === true, sa })
+        : b.kind === "rk-start" ? await rankedStart({ uid: from, today: b.today, sa }) : b.kind === "rk-end" ? await rankedEnd({ uid: from, moves: b.moves, give: b.give === true, sk: b.sk, sa })
         : b.kind === "vday" ? await checkVdays({ uid: from, to: b.to, today: b.today, sa }) : b.kind === "nudge" ? await nudge({ from, to: b.to, today: b.today, sa })
         : b.kind === "inv" ? await checkInvite({ uid: from, sa })
         : b.kind === "psave" ? await planSave({ uid: from, pid: b.pid, copy: b.copy, sa }) : b.kind === "prate" ? await planRate({ uid: from, pid: b.pid, r: b.r, sa })

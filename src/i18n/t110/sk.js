@@ -1,6 +1,14 @@
 // Slovak: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    tourPfCards: "Tvoja kolekcia kariet: štýly kariet pre Muscle Deck. Jeden si nasaď vo vzhľade; v Rankede ho uvidí aj súper.",
+    lookKind_card: "Karty",
+    pfCards: "Kolekcia kariet",
+    cardClassic: "Klasika",
+    cardOwnD: "Štýl si nasaď vo vzhľade profilu: ukážu ho tvoje karty v Muscle Decku (aj hráčom, ktorí dostanú tvoje rozdanie v Rankede).",
+    cardTheirD: "Je v jeho kolekcii.",
+    cardLockedD: "Ešte nie je v kolekcii: štýly kariet bývajú vo vzhľadoch v Obchode a niektoré sa dajú vyhrať.",
+    gmVs: "vs {nick}",
     plLink: "Zdieľať odkaz",
     plLinkD: "Každý s odkazom si môže uložiť kópiu alebo ho vyskúšať. Tvoje váhy v ňom nikdy nie sú.",
     plLinkText: "{name}: tréningový plán v HW App 💪 {url}",
@@ -198,6 +206,7 @@ export default {
   tour: { c5: { 0: "Kalendár: zelený deň je tréning, bodka pod číslom sú kalórie. Ťukni na deň a uvidíš, čo si robil; ťukni na prázdny deň a pridáš tréning." }, c7: { 3: "Tu pridáš kamaráta podľa kódu alebo prezývky. Nižšie sú kamaráti a správy v jednom zozname: ťukni na kamaráta a píš mu, ťukni na fotku a uvidíš profil. Podrž kamaráta pre jeho kartu: duo, zmazanie správ, blokovanie.", 5: "Pozvi kamaráta svojím odkazom: keď odcvičí 3 tréningy, obaja dostanete 100 💎." } },
   ach: { duo: ["Lepšie vo dvojici", "{x} s kamarátom"] },
   looks: {
+    c_night: "Noc", c_mint: "Mäta", c_carbon: "Karbón", c_marble: "Mramor", c_gold: "Zlato", c_neon: "Neón", c_holo: "Hologram", c_obsidian: "Obsidián",
     fx_rain: "Dážď", fx_bubbles: "Sóda", fx_hearts: "Srdiečka", fx_fireflies: "Svätojánske mušky", fx_stars: "Padajúce hviezdy",
     f_ring2: "Dvojitý kruh", f_dash: "Čiarkovaný kruh", f_gear: "Ozubené koleso", f_petal: "Kvet", f_ice: "Ľadová koruna", f_orbit: "Obežná dráha", f_rainbow: "Dúhový kruh",
     b_dusk: "Súmrak", b_stripes: "Pruhy", b_forest: "Les", b_ocean: "Oceán", b_circuit: "Plošný spoj", b_lava: "Láva", b_synth: "Retro slnko",
@@ -266,5 +275,6 @@ export default {
     ["Knižnica: sekcie", "Knižnica bola jeden dlhý zoznam.", "Otvorí sa na sekciách: populárne tento týždeň, najlepšie hodnotené, plány priateľov, najviac uložené, od HW App, najnovšie; šípka ukáže všetky v tom poradí."],
     ["Odkaz na plán", "Plán sa dal len ukázať na profile alebo zverejniť v Knižnici.", "V editore plánu zdieľaj odkaz: kto ho otvorí, uvidí plán a môže si uložiť kópiu alebo ho vyskúšať, aj bez účtu. Tvoje váhy v ňom nikdy nie sú."],
     ["Ranky tela", "Telo malo ploché farby a pod ním vždy deväť dlaždíc.", "Svaly sa lesknú ako kovy a drahokamy (železo, bronz, striebro, zlato… obsidián); box ukazuje len telo a ťuknutím sa rozroluje deväť partií."],
+    ["Štýly kariet", "Karty v Muscle Decku vyzerali vždy rovnako.", "Osem štýlov kariet (Noc, Mäta, Karbón, Mramor, Zlato, Neón, Hologram, Obsidián) vo vzhľadoch v Obchode; nasadíš si ich vo vzhľade profilu, všetky uvidíš v kolekcii kariet na profile a v Rankede uvidí ten tvoj aj súper."],
   ],
 };

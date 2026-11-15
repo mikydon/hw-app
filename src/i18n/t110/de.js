@@ -1,6 +1,14 @@
 // German: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    tourPfCards: "Deine Kartensammlung: Kartenstile für Muscle Deck. Leg einen in deinen Looks an; in Ranked sieht ihn auch der Gegner.",
+    lookKind_card: "Karten",
+    pfCards: "Kartensammlung",
+    cardClassic: "Klassisch",
+    cardOwnD: "Leg einen Stil im Profil-Look an: deine Muscle-Deck-Karten zeigen ihn (auch den Spielern, die in Ranked dein Blatt bekommen).",
+    cardTheirD: "In der Sammlung.",
+    cardLockedD: "Noch nicht in der Sammlung: Kartenstile kommen in die Looks im Shop, manche gewinnt man.",
+    gmVs: "vs {nick}",
     plLink: "Link teilen",
     plLinkD: "Jeder mit dem Link kann eine Kopie speichern oder ihn ausprobieren. Deine Gewichte sind nie darin.",
     plLinkText: "{name}: ein Trainingsplan in HW App 💪 {url}",
@@ -198,6 +206,7 @@ export default {
   tour: { c5: { 0: "Kalender: Ein grüner Tag ist ein Training, der Punkt unter einer Zahl sind Kalorien. Tippe auf einen Tag, um zu sehen, was du gemacht hast; tippe auf einen leeren Tag, um ein Training hinzuzufügen." }, c7: { 3: "Hier fügst du Freunde per Code oder Nickname hinzu. Darunter sind Freunde und Chats eine Liste: Tippe auf einen Freund, um zu schreiben, tippe auf das Foto für sein Profil. Halte einen Freund gedrückt für seine Karte: Duo, Chat löschen, blockieren.", 5: "Lade einen Freund mit deinem Link ein: Wenn er 3 Trainings macht, bekommt ihr beide 100 💎." } },
   ach: { duo: ["Gemeinsam stärker", "{x} mit einem Freund"] },
   looks: {
+    c_night: "Nacht", c_mint: "Minze", c_carbon: "Carbon", c_marble: "Marmor", c_gold: "Gold", c_neon: "Neon", c_holo: "Hologramm", c_obsidian: "Obsidian",
     fx_rain: "Regen", fx_bubbles: "Limo", fx_hearts: "Herzen", fx_fireflies: "Glühwürmchen", fx_stars: "Sternschnuppen",
     f_ring2: "Doppelring", f_dash: "Strichring", f_gear: "Zahnrad", f_petal: "Blüte", f_ice: "Eiskrone", f_orbit: "Umlaufbahn", f_rainbow: "Regenbogenring",
     b_dusk: "Dämmerung", b_stripes: "Streifen", b_forest: "Wald", b_ocean: "Ozean", b_circuit: "Platine", b_lava: "Lava", b_synth: "Retro-Sonne",
@@ -266,5 +275,6 @@ export default {
     ["Bibliothek: Bereiche", "Die Bibliothek war eine lange Liste.", "Sie öffnet mit Bereichen: beliebt diese Woche, am besten bewertet, Pläne von Freunden, am häufigsten gespeichert, von HW App, neueste; der Pfeil zeigt alle in dieser Reihenfolge."],
     ["Plan-Links", "Ein Plan ließ sich nur im Profil zeigen oder in der Bibliothek veröffentlichen.", "Teile im Plan-Editor einen Link: Wer ihn öffnet, sieht den Plan und kann eine Kopie speichern oder ihn ausprobieren, auch ohne Konto. Deine Gewichte sind nie darin."],
     ["Körperränge", "Der Körper hatte flache Farben und immer neun Kacheln darunter.", "Die Muskeln glänzen wie Metalle und Edelsteine (Eisen, Bronze, Silber, Gold… Obsidian); die Box zeigt nur den Körper, ein Tipp klappt die neun Partien aus."],
+    ["Kartenstile", "Die Karten in Muscle Deck sahen immer gleich aus.", "Acht Kartenstile (Nacht, Minze, Carbon, Marmor, Gold, Neon, Hologramm, Obsidian) bei den Looks im Shop; leg einen im Profil-Look an, alle siehst du in der Kartensammlung im Profil, und in Ranked sieht der Gegner deinen."],
   ],
 };

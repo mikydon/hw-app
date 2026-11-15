@@ -220,6 +220,10 @@ await t("unknown fields are refused", false, () => setDoc(doc(as("erin"), "cards
 await t("1.9.0: profile looks on the card", true, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ look: { frame: "f_pulse", bg: "b_topo", title: "t_iron", name: "n_glow", fx: "fx_snow" } })));
 await t("1.9.0: no looks ({}) is fine", true, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ look: {} })));
 await t("1.9.0: looks only frame/bg/title/name/fx", false, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ look: { hat: "x" } })));
+await t("1.10.0: a card style on the card", true, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ look: { frame: "f_pulse", card: "c_gold" } })));
+await t("1.10.0: the card collection (cs) on the card", true, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ cs: ["c_gold", "c_neon"] })));
+await t("1.10.0: the card collection is capped", false, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ cs: Array.from({ length: 31 }, (_, i) => "c_x" + i) })));
+await t("1.10.0: a card style id stays short", false, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ look: { card: "c_" + "x".repeat(40) } })));
 await t("1.9.0: a look id is a short string", false, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ look: { frame: "x".repeat(40) } })));
 await t("1.9.0: looks must be a map", false, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ look: "f_pulse" })));
 await t("level must be a whole number", false, () => setDoc(doc(as("erin"), "cards", "erin"), cardDoc({ lvl: "99" })));

@@ -1,6 +1,14 @@
 // Indonesian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    tourPfCards: "Koleksi kartumu: gaya kartu Muscle Deck. Pakai satu di tampilanmu; di Ranked lawan juga melihatnya.",
+    lookKind_card: "Kartu",
+    pfCards: "Koleksi kartu",
+    cardClassic: "Klasik",
+    cardOwnD: "Pakai gaya di tampilan profil: kartu Muscle Deck-mu menampilkannya (juga ke pemain yang mendapat bagianmu di Ranked).",
+    cardTheirD: "Ada di koleksinya.",
+    cardLockedD: "Belum ada di koleksi: gaya kartu muncul di tampilan Toko, dan sebagian bisa dimenangkan.",
+    gmVs: "vs {nick}",
     plLink: "Bagikan tautan",
     plLinkD: "Siapa pun yang punya tautan bisa menyimpan salinan atau mencobanya. Bebanmu tidak pernah ikut.",
     plLinkText: "{name}: rencana latihan di HW App 💪 {url}",
@@ -198,6 +206,7 @@ export default {
   tour: { c5: { 0: "Kalender: hari hijau berarti ada latihan, titik di bawah angka berarti kalori. Ketuk satu hari untuk melihat apa yang kamu lakukan; ketuk hari kosong untuk menambah latihan." }, c7: { 3: "Tambahkan teman di sini lewat kode atau nama panggilan. Di bawah, teman dan obrolan jadi satu daftar: ketuk teman untuk menulis, ketuk foto untuk profilnya. Tahan teman untuk kartunya: duo, hapus obrolan, blokir.", 5: "Undang teman dengan tautanmu: setelah dia latihan 3 kali, kalian berdua dapat 100 💎." } },
   ach: { duo: ["Lebih baik berdua", "{x} dengan teman"] },
   looks: {
+    c_night: "Malam", c_mint: "Mint", c_carbon: "Karbon", c_marble: "Marmer", c_gold: "Emas", c_neon: "Neon", c_holo: "Hologram", c_obsidian: "Obsidian",
     fx_rain: "Hujan", fx_bubbles: "Soda", fx_hearts: "Hati", fx_fireflies: "Kunang-kunang", fx_stars: "Bintang jatuh",
     f_ring2: "Cincin ganda", f_dash: "Cincin putus-putus", f_gear: "Roda gigi", f_petal: "Bunga", f_ice: "Mahkota es", f_orbit: "Orbit", f_rainbow: "Cincin pelangi",
     b_dusk: "Senja", b_stripes: "Garis-garis", b_forest: "Hutan", b_ocean: "Samudra", b_circuit: "Sirkuit", b_lava: "Lava", b_synth: "Matahari retro",
@@ -266,5 +275,6 @@ export default {
     ["Pustaka: bagian", "Pustaka hanya satu daftar panjang.", "Kini terbuka dengan bagian: populer minggu ini, nilai tertinggi, rencana teman, paling banyak disimpan, dari HW App, terbaru; panah menampilkan semuanya dalam urutan itu."],
     ["Tautan rencana", "Rencana hanya bisa ditampilkan di profil atau diterbitkan di Pustaka.", "Bagikan tautan dari editor rencana: siapa pun yang membukanya melihat rencana itu dan bisa menyimpan salinan atau mencobanya, bahkan tanpa akun. Bebanmu tidak pernah ikut."],
     ["Rank tubuh", "Tubuh berwarna datar dengan sembilan ubin selalu di bawahnya.", "Otot berkilau seperti logam dan permata (besi, perunggu, perak, emas… obsidian); kotaknya hanya menampilkan tubuh, dan satu ketukan membuka sembilan bagian."],
+    ["Gaya kartu", "Kartu Muscle Deck selalu terlihat sama.", "Delapan gaya kartu (Malam, Mint, Karbon, Marmer, Emas, Neon, Hologram, Obsidian) di tampilan Toko; pakai satu di tampilan profil, lihat semuanya di koleksi kartu pada profil, dan di Ranked lawan melihat gayamu."],
   ],
 };
