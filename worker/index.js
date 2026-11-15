@@ -19,11 +19,10 @@
 // don't count), the flags and the last result (the person can read it). Someone with flags who would land in the
 // world top 50 waits for the developer: fair/{uid}.ok = true (set by hand in the Firebase console) lets them in.
 //
-// 1.8.0: ranked card games (src/game/engine.js). "rk-start" picks the opponent (a recent ranked game of another player
-// with a rating close to yours, on the same cards; or the bot when there is none), fixes your training strength from
-// your checked cloud backup (src/fair.js) and remembers the game in ranked/{uid}.cur. "rk-end" replays your moves
-// (a move that isn't possible = a loss), compares with the opponent, changes your rating (Elo, K = 32) and keeps your
-// game in runs/ for others to play against. Starting a new game while one is open counts the open one as a loss.
+// Ranked card games (src/game/engine.js; 1.10.0 rules at RK below): "rk-start" {today} checks the tickets, picks the
+// deal of another player's recent game near your rating (or a new deal) and remembers it in ranked/{uid}.cur;
+// "rk-end" replays your moves, compares, changes the ratings (Elo) and keeps your game in runs/ for the next player.
+// Starting a new game while one is open counts the open one as a loss.
 //
 // 1.10.0 Friends together (Michael, Nov 14: "the server checks everything, so nobody can cheat"):
 //   "vday" {to?}: vdays/{uid} = the checked training days of you (or of a friend: friends only) from the cloud backup
@@ -37,7 +36,7 @@
 // Secret (Cloudflare): FIREBASE_SERVICE_ACCOUNT = the service account key JSON from the Firebase console.
 import TEXTS from "./texts.js";
 import { fairStats, fairEntryId } from "../src/fair.js";
-import { loadout, replay, botGame, botLoadout, resultOf, JOKER_IDS } from "../src/game/engine.js";
+import { replay, resultOf, JOKER_IDS } from "../src/game/engine.js";
 
 const PROJECT = "hw-app-mikydon";
 const FS = `https://firestore.googleapis.com/v1/projects/${PROJECT}/databases/(default)/documents`;
@@ -325,42 +324,55 @@ export async function planRate({ uid, pid, r, sa, fetchFn = fetch, now = Date.no
 }
 
 // ── Ranked card games (1.8.0) ──
-export const RK = { start: 1000, k: 32, botMin: 2, botMax: 10, maxMoves: 600, pick: 40 };
+// 1.10.0 Ranked (design approved by Michael, Nov 12): no bot and no waiting. You get the deal (seed) of a recent game
+// of another player with a rating near yours and are compared with their recorded result; with nobody to match, you
+// get a new deal and your result waits: the next player on that deal settles both of you. A match = 2 antes (6
+// blinds); more blinds beaten wins, then the score. Equal decks for everyone (workout strength only powers the normal
+// Run, because reps can be typed in). Tickets: 2 ranked matches on a day with a checked workout (fair.js). One try per
+// deal; a game must end within RK.limitMs; leaving or a move that isn't possible = a loss. Rating = Elo (K 32).
+export const RK = { start: 1000, k: 32, maxMoves: 600, pick: 60, tickets: 2, limitMs: 30 * 60e3, near: 300, wide: 600, keepSeeds: 80, keepRes: 6 };
 const elo = (r, ro, score) => Math.round(RK.k * (score - 1 / (1 + Math.pow(10, (ro - r) / 400))));
-const botLevelFor = r => Math.max(RK.botMin, Math.min(RK.botMax, Math.round((r - 800) / 40)));
 const randomSeed = () => { const a = new Uint8Array(6); crypto.getRandomValues(a); return Array.from(a, b => b.toString(36).padStart(2, "0")).join("").slice(0, 10); };
 async function recentRuns(tok, fetchFn) {
   const r = await fetchFn(`${FS}:runQuery`, { method: "POST", headers: { authorization: "Bearer " + tok, "content-type": "application/json" },
     body: JSON.stringify({ structuredQuery: { from: [{ collectionId: "runs" }], orderBy: [{ field: { fieldPath: "ts" }, direction: "DESCENDING" }], limit: RK.pick } }) });
   if (!r.ok) throw new Error("runs " + r.status);
-  return (await r.json()).filter(x => x.document).map(x => fields(x.document.fields));
+  return (await r.json()).filter(x => x.document).map(x => ({ id: x.document.name.split("/").pop(), ...fields(x.document.fields) }));
 }
-async function trainingOf(uid, tok, fetchFn) {
-  const bk = await getDoc(`backups/${uid}`, tok, fetchFn);
-  let data = null; try { data = bk && JSON.parse(bk.json); } catch (_) { data = null; }
-  if (!data || !Array.isArray(data.history)) return loadout({});
-  const fair = await getDoc(`fair/${uid}`, tok, fetchFn);
-  const st = fairStats(data.history, { seen: (fair && fair.seen) || {}, since: (fair && fair.since) || 0, freezeDays: data.profile && data.profile.freezeDays, today: new Date().toISOString().slice(0, 10) });
-  return loadout({ bests: st.bests, streak: st.streak, n: st.n });
-}
-const gameOpts = cur => ({ seed: cur.seed, mode: "duel", suit: cur.lo.suit, perk: cur.lo.perk, streak: cur.lo.streak, pool: JOKER_IDS });
+// the same deck for everyone in Ranked
+export const rankedOpts = seed => ({ seed, mode: "duel", antes: 2, suit: null, perk: null, streak: 0, pool: JOKER_IDS });
 const outcome = (a, b) => (a.cleared !== b.cleared ? (a.cleared > b.cleared ? 1 : 0) : a.total !== b.total ? (a.total > b.total ? 1 : 0) : 0.5);
-export async function rankedStart({ uid, perk, sa, fetchFn = fetch, now = Date.now() }) {
+const dayOk = (today, now) => typeof today === "string" && /^\d{4}-\d{2}-\d{2}$/.test(today) && Math.abs(Date.parse(today + "T12:00:00Z") - now) <= 36 * 3600e3;
+export async function rankedStart({ uid, today, sa, fetchFn = fetch, now = Date.now() }) {
+  if (!dayOk(today, now)) return { why: "bad" };
   const tok = await accessToken(sa, fetchFn, now);
   const prof = await getDoc(`profiles/${uid}`, tok, fetchFn);
   if (!prof || !prof.nick) return { why: "no-profile" };
-  const rk = (await getDoc(`ranked/${uid}`, tok, fetchFn)) || { r: RK.start, w: 0, l: 0, d: 0 };
-  let r = typeof rk.r === "number" ? rk.r : RK.start, abandoned = null;
-  if (rk.cur && rk.cur.seed) { const dr = elo(r, rk.cur.opp.r, 0); r += dr; rk.l = (rk.l || 0) + 1; abandoned = { dr }; } // an open game = lost
-  const lo = await trainingOf(uid, tok, fetchFn);
-  const pk = lo.perks.includes(perk) ? perk : null;
-  const runs = (await recentRuns(tok, fetchFn)).filter(x => x.uid !== uid && typeof x.seed === "string" && typeof x.cleared === "number");
-  runs.sort((a, b) => Math.abs((a.r || RK.start) - r) - Math.abs((b.r || RK.start) - r));
-  const o = runs.find(x => Math.abs((x.r || RK.start) - r) <= 300);
-  const opp = o ? { uid: o.uid, nick: String(o.nick || "?").slice(0, 20), r: o.r || RK.start, res: { cleared: o.cleared, total: o.total } } : { bot: botLevelFor(r), nick: "", r };
-  const cur = { seed: o ? o.seed : randomSeed(), opp, lo: { suit: lo.suit, perk: pk, streak: lo.streak }, at: now };
-  await patchDoc(`ranked/${uid}`, { r, w: rk.w || 0, l: rk.l || 0, d: rk.d || 0, nick: String(prof.nick).slice(0, 20), ts: new Date(now).toISOString(), cur }, tok, fetchFn);
-  return { why: "ok", seed: cur.seed, lo: cur.lo, opp: { nick: opp.nick, r: opp.r, bot: opp.bot || 0 }, r, abandoned };
+  const rk = (await getDoc(`ranked/${uid}`, tok, fetchFn)) || {};
+  let r = typeof rk.r === "number" ? rk.r : RK.start, w = rk.w || 0, l = rk.l || 0, d = rk.d || 0, abandoned = null;
+  // tickets: a checked workout today (the cloud backup, not added by hand), 2 games a day
+  const used = rk.tk && rk.tk.day === today ? rk.tk.n || 0 : 0;
+  if (used >= RK.tickets) return { why: "tickets", left: 0, r };
+  const ch = await checkedOf(uid, today, tok, fetchFn, now);
+  if (!ch || !(ch.st.dates || []).includes(today)) return { why: "train", left: RK.tickets - used, r };
+  // a game left open counts as lost
+  if (rk.cur && rk.cur.seed) {
+    if (rk.cur.opp) { const dr = elo(r, rk.cur.opp.r, 0); r = Math.max(0, r + dr); l++; abandoned = { dr }; }
+    else { l++; abandoned = { dr: 0 }; }
+  }
+  const mine = new Set(Array.isArray(rk.seeds) ? rk.seeds : []);
+  const runs = (await recentRuns(tok, fetchFn)).filter(x => x.uid !== uid && typeof x.seed === "string" && typeof x.cleared === "number" && !mine.has(x.seed));
+  const dist = x => Math.abs((typeof x.r === "number" ? x.r : RK.start) - r);
+  // people still waiting for a result first, then the nearest rating
+  runs.sort((a, b) => (a.done ? 1 : 0) - (b.done ? 1 : 0) || dist(a) - dist(b));
+  const o = runs.find(x => dist(x) <= RK.near) || runs.find(x => dist(x) <= RK.wide);
+  const opp = o ? { uid: o.uid, run: o.id, nick: String(o.nick || "?").slice(0, 20), r: typeof o.r === "number" ? o.r : RK.start, res: { cleared: o.cleared, total: o.total } } : null;
+  const seed = o ? o.seed : randomSeed();
+  const cur = { seed, opp, at: now };
+  const seeds = [...mine, seed].slice(-RK.keepSeeds);
+  await patchDoc(`ranked/${uid}`, { r, w, l, d, nick: String(prof.nick).slice(0, 20), ts: new Date(now).toISOString(), cur, seeds, tk: { day: today, n: used + 1 } }, tok, fetchFn,
+    ["r", "w", "l", "d", "nick", "ts", "cur", "seeds", "tk"]);
+  return { why: "ok", seed, opp: opp ? { nick: opp.nick, r: opp.r } : null, r, abandoned, left: RK.tickets - used - 1 };
 }
 export async function rankedEnd({ uid, moves, give, sa, fetchFn = fetch, now = Date.now() }) {
   const tok = await accessToken(sa, fetchFn, now);
@@ -370,20 +382,39 @@ export async function rankedEnd({ uid, moves, give, sa, fetchFn = fetch, now = D
   let me, bad = false;
   try {
     if (give === true) throw new Error("gave up"); // left the game: a loss
+    if (now - (cur.at || 0) > RK.limitMs) throw new Error("late");
     if (!Array.isArray(moves) || moves.length > RK.maxMoves) throw new Error("moves");
-    const st = replay(gameOpts(cur), moves.map(m => ({ t: String(m && m.t), c: Array.isArray(m && m.c) ? m.c.slice(0, 5).map(Number) : undefined, i: Number(m && m.i) })), RK.maxMoves);
+    const st = replay(rankedOpts(cur.seed), moves.map(m => ({ t: String(m && m.t), c: Array.isArray(m && m.c) ? m.c.slice(0, 5).map(Number) : undefined, i: Number(m && m.i) })), RK.maxMoves);
     if (st.phase !== "over" && st.phase !== "won") return { why: "unfinished" };
     me = resultOf(st);
   } catch (_) { bad = true; me = { cleared: 0, total: 0 }; }
-  const opp = cur.opp.res || resultOf(botGame({ ...gameOpts(cur), suit: botLoadout(cur.opp.bot).suit, perk: botLoadout(cur.opp.bot).perk, streak: 0 }, cur.opp.bot).st);
-  const sc = bad ? 0 : outcome(me, opp), r0 = typeof rk.r === "number" ? rk.r : RK.start, dr = elo(r0, cur.opp.r, sc), r = Math.max(0, r0 + dr);
-  const w = (rk.w || 0) + (sc === 1 ? 1 : 0), l = (rk.l || 0) + (sc === 0 ? 1 : 0), d = (rk.d || 0) + (sc === 0.5 ? 1 : 0);
-  const last = { sc, dr, me: { cleared: me.cleared, total: me.total }, opp: { cleared: opp.cleared, total: opp.total, nick: cur.opp.nick, bot: cur.opp.bot || 0 }, bad: bad ? 1 : 0, at: now };
+  const r0 = typeof rk.r === "number" ? rk.r : RK.start;
+  let r = r0, w = rk.w || 0, l = rk.l || 0, d = rk.d || 0, last;
+  const prof = await getDoc(`profiles/${uid}`, tok, fetchFn), nick = String((prof && prof.nick) || rk.nick || "?").slice(0, 20);
+  if (cur.opp) {
+    const opp = cur.opp.res, sc = bad ? 0 : outcome(me, opp), dr = elo(r0, cur.opp.r, sc);
+    r = Math.max(0, r0 + dr); if (sc === 1) w++; else if (sc === 0) l++; else d++;
+    last = { sc, dr, me: { cleared: me.cleared, total: me.total }, opp: { cleared: opp.cleared, total: opp.total, nick: cur.opp.nick }, bad: bad ? 1 : 0, at: now };
+    // the opponent's result settles once (the first player on their deal): their rating moves too
+    const run = cur.opp.run ? await getDoc(`runs/${cur.opp.run}`, tok, fetchFn) : null;
+    if (run && !run.done) {
+      await patchDoc(`runs/${cur.opp.run}`, { done: true }, tok, fetchFn, ["done"]);
+      const ok = await getDoc(`ranked/${cur.opp.uid}`, tok, fetchFn);
+      if (ok) {
+        const osc = 1 - sc, or0 = typeof ok.r === "number" ? ok.r : RK.start, odr = elo(or0, r0, osc);
+        const res = [...(Array.isArray(ok.res) ? ok.res : []), { sc: osc, dr: odr, nick, at: now, me: { cleared: opp.cleared, total: opp.total }, opp: { cleared: me.cleared, total: me.total } }].slice(-RK.keepRes);
+        await patchDoc(`ranked/${cur.opp.uid}`, { r: Math.max(0, or0 + odr), w: (ok.w || 0) + (osc === 1 ? 1 : 0), l: (ok.l || 0) + (osc === 0 ? 1 : 0), d: (ok.d || 0) + (osc === 0.5 ? 1 : 0), res }, tok, fetchFn, ["r", "w", "l", "d", "res"]);
+      }
+    }
+  } else {
+    // first on this deal: the result waits for the next player (a loss when the game was left or broken)
+    if (bad) l++;
+    last = { pend: bad ? 0 : 1, sc: bad ? 0 : null, dr: 0, me: { cleared: me.cleared, total: me.total }, bad: bad ? 1 : 0, at: now };
+  }
   await patchDoc(`ranked/${uid}`, { r, w, l, d, ts: new Date(now).toISOString(), last }, tok, fetchFn, ["r", "w", "l", "d", "ts", "last", "cur"]);
   if (!bad) {
-    const prof = await getDoc(`profiles/${uid}`, tok, fetchFn);
     await fetchFn(`${FS}/runs`, { method: "POST", headers: { authorization: "Bearer " + tok, "content-type": "application/json" },
-      body: JSON.stringify({ fields: encFields({ uid, nick: String((prof && prof.nick) || "?").slice(0, 20), seed: cur.seed, r: r0, cleared: me.cleared, total: me.total, ts: new Date(now).toISOString() }) }) });
+      body: JSON.stringify({ fields: encFields({ uid, nick, seed: cur.seed, r: r0, cleared: me.cleared, total: me.total, done: !!cur.opp, ts: new Date(now).toISOString() }) }) });
   }
   return { why: "ok", ...last, r };
 }
@@ -451,7 +482,7 @@ export default {
     try {
       const sa = JSON.parse(env.FIREBASE_SERVICE_ACCOUNT);
       const r = b.kind === "rep" ? await checkReports({ to: b.to, sa }) : b.kind === "board" ? await checkBoard({ uid: from, today: b.today, sa })
-        : b.kind === "rk-start" ? await rankedStart({ uid: from, perk: b.perk, sa }) : b.kind === "rk-end" ? await rankedEnd({ uid: from, moves: b.moves, give: b.give === true, sa })
+        : b.kind === "rk-start" ? await rankedStart({ uid: from, today: b.today, sa }) : b.kind === "rk-end" ? await rankedEnd({ uid: from, moves: b.moves, give: b.give === true, sa })
         : b.kind === "vday" ? await checkVdays({ uid: from, to: b.to, today: b.today, sa }) : b.kind === "nudge" ? await nudge({ from, to: b.to, today: b.today, sa })
         : b.kind === "inv" ? await checkInvite({ uid: from, sa })
         : b.kind === "psave" ? await planSave({ uid: from, pid: b.pid, copy: b.copy, sa }) : b.kind === "prate" ? await planRate({ uid: from, pid: b.pid, r: b.r, sa })

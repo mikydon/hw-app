@@ -332,10 +332,10 @@ function startBlind(st) {
   draw(st);
 }
 function draw(st) { const size = RULES.handSize + (st.perk === "allround" ? 1 : 0) + (owns(st, "bighand") ? 1 : 0) + (hasV(st, "bigbag") ? 1 : 0) - (st.stake >= 4 ? 1 : 0) - (st.blind === 2 && st.boss === "small" ? 1 : 0); while (st.hand.length < size && st.deck.length) st.hand.push(st.deck.shift()); }
-// opts: {seed, mode: "run"|"duel", suit: {push..core: level}, perk, streak, pool: [joker ids] (what the shop may offer)}
+// opts: {seed, mode: "run"|"duel", antes (duel only: 2 for Ranked, else 3), suit: {push..core: level}, perk, streak, pool: [joker ids] (what the shop may offer)}
 export function newGame(opts) {
   const st = {
-    v: RULES_V, seed: String(opts.seed), mode: opts.mode === "duel" ? "duel" : "run", antes: opts.mode === "duel" ? 3 : 8,
+    v: RULES_V, seed: String(opts.seed), mode: opts.mode === "duel" ? "duel" : "run", antes: opts.mode === "duel" ? (opts.antes === 2 ? 2 : 3) : 8, // 1.10.0 Ranked: 2 antes = 6 blinds
     suit: Object.fromEntries(SUITS.map(s => [s, Math.max(-1, Math.min(8, Math.floor(((opts.suit || {})[s] ?? -1))))])),
     perk: PERK_IDS.includes(opts.perk) ? opts.perk : null, streak: Math.max(0, opts.streak | 0), stake: Math.max(0, Math.min(STAKES.length - 1, opts.stake | 0)),
     pool: (opts.pool || JOKER_IDS).filter(j => JOKERS[j]),

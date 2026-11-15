@@ -359,6 +359,16 @@ await t("gina publishes a plan", true, () => setDoc(doc(as("gina"), "pub", "gina
 await t("ivan (anyone signed in) reads it", true, () => getDoc(doc(as("ivan"), "pub", "gina_p1")));
 await t("and lists the store", true, () => getDocs(query(collection(as("ivan"), "pub"), orderBy("sv", "desc"), limit(20))));
 await t("signed out can't", false, () => getDoc(doc(env.unauthenticatedContext().firestore(), "pub", "gina_p1")));
+// 1.10.0 Ranked: runs are the server's; you may list and delete only your own; your ranked record can be deleted by you
+await env.withSecurityRulesDisabled(async c => { const db = c.firestore(); await setDoc(doc(db, "runs", "r1"), { uid: "gina", seed: "s", cleared: 3, total: 9, ts: 1 }); await setDoc(doc(db, "runs", "r2"), { uid: "hank", seed: "s", cleared: 2, total: 5, ts: 1 }); await setDoc(doc(db, "ranked", "gina"), { r: 1000 }); });
+await t("my own ranked games can be listed", true, () => getDocs(query(collection(as("gina"), "runs"), where("uid", "==", "gina"))));
+await t("someone else's ranked games can't be listed", false, () => getDocs(query(collection(as("gina"), "runs"), where("uid", "==", "hank"))));
+await t("all ranked games can't be listed", false, () => getDocs(collection(as("gina"), "runs")));
+await t("my ranked game can be deleted", true, () => deleteDoc(doc(as("gina"), "runs", "r1")));
+await t("someone else's can't", false, () => deleteDoc(doc(as("gina"), "runs", "r2")));
+await t("nobody writes a ranked game", false, () => setDoc(doc(as("gina"), "runs", "r3"), { uid: "gina", seed: "s", cleared: 9, total: 99999, ts: 1 }));
+await t("my ranked record can be deleted", true, () => deleteDoc(doc(as("gina"), "ranked", "gina")));
+await t("not someone else's", false, () => deleteDoc(doc(as("hank"), "ranked", "gina")));
 await t("nobody publishes as 'HW App' (the app's own plans carry that name)", false, () => setDoc(doc(as("gina"), "pub", "gina_p7"), pp("gina", { nick: "HW App" })));
 await t("gina can't publish under another id", false, () => setDoc(doc(as("gina"), "pub", "hank_p1"), pp("gina")));
 await t("nor as someone else", false, () => setDoc(doc(as("gina"), "pub", "gina_p2"), pp("hank")));

@@ -323,7 +323,7 @@ export const impl = {
     if (!r.ok) throw Object.assign(new Error(kind + " " + r.status), { code: "unavailable" });
     return r.json();
   },
-  rkStart(perk) { return impl.rk("rk-start", { perk }); },
+  rkStart(today) { return impl.rk("rk-start", { today }); }, // 1.10.0: the phone's day (tickets: a workout today)
   // 1.10.0 Friends together: the server counts the checked training days (vdays/{uid}) of me or of a friend, sends a
   // nudge, and pays the invite reward (see worker/index.js). Answers {why, …}; "recent" = counted in the last 5 min.
   vday(to, today) { return impl.rk("vday", to ? { to, today } : { today }); },
@@ -417,6 +417,7 @@ export const impl = {
     else await reauthenticateWithPopup(cu, new GoogleAuthProvider());
     const fr = await getDocs(collection(db, "friends", me, "list")).catch(() => ({ docs: [] }));
     const pubs = await getDocs(query(collection(db, "pub"), where("o", "==", me))).catch(() => ({ docs: [] })); // 1.10.0 plan store
+    const runs = await getDocs(query(collection(db, "runs"), where("uid", "==", me))).catch(() => ({ docs: [] })); // 1.10.0 Ranked
     const old = await getDocs(collection(db, "backups", me, "old")).catch(() => ({ docs: [] })); // 1.9.1 restore points
     const inbox = await getDocs(collection(db, "inbox", me, "from")).catch(() => ({ docs: [] }));
     // Chats: every message and the chat itself (members may delete; the other person loses the chat too).
@@ -431,7 +432,8 @@ export const impl = {
     fs.docs.forEach(c => b.delete(c.ref)); // 1.8.0 friend streaks
     old.docs.forEach(c => b.delete(c.ref));
     b.delete(d("days", me));
-    ["vdays", "inv", "rew", "plib"].forEach(c => b.delete(d(c, me))); // 1.10.0 Friends together, plan library
+    ["vdays", "inv", "rew", "plib", "ranked"].forEach(c => b.delete(d(c, me))); // 1.10.0 Friends together, plan library, Ranked
+    runs.docs.slice(0, 300).forEach(x => b.delete(x.ref));
     pubs.docs.forEach(x => b.delete(x.ref));
     fr.docs.forEach(x => { b.delete(d("friends", me, "list", x.id)); b.delete(d("friends", x.id, "list", me)); });
     inbox.docs.forEach(x => b.delete(d("inbox", me, "from", x.id)));

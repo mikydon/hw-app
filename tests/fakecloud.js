@@ -29,6 +29,11 @@
     checkInv: () => ok({ why: F.invWhy || "none" }),
     getCard: u => ok((F.cards || {})[u] || null),
     getPlib: u => ok((F.plib || {})[u || F.uid] || null),
+    // 1.10.0 Ranked: the server's answers come from the seed (F.rkStart / F.rkEnd), else a new deal that waits
+    myRanked: () => ok(F.ranked || null),
+    rankedList: () => ok(F.rankedTop || []),
+    rkStart: today => ok(F.rkStart || { why: "ok", seed: "rk1", opp: null, r: (F.ranked && F.ranked.r) || 1000, left: 1 }),
+    rkEnd: (moves, give) => ok(give ? { why: "ok", sc: 0, dr: -16, bad: 1, r: 984 } : F.rkEnd || { why: "ok", pend: 1, sc: null, dr: 0, me: { cleared: 3, total: 1000 }, r: 1000 }),
     pubList: () => (F.pubDelay ? new Promise(r => setTimeout(() => r(F.pub || []), F.pubDelay)) : ok(F.pub || [])),
     pubMine: () => ok((F.pub || []).filter(x => x.o === F.uid)),
     pubSaved: (pid, copy) => ok({ why: "ok", sv: (((F.pub || []).find(x => x.pid === pid) || {}).sv || 0) + 1 }),

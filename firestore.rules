@@ -230,6 +230,12 @@ service cloud.firestore {
     match /ranked/{uid} {
       allow get: if signedIn();
       allow list: if signedIn() && request.query.limit <= 100;
+      allow delete: if isMe(uid); // 1.10.0: deleting the account
+    }
+    // 1.10.0 Ranked games kept for the next player on the same deal (written by the server only); your own can be
+    // listed and deleted (deleting the account)
+    match /runs/{id} {
+      allow list, delete: if signedIn() && resource.data.uid == request.auth.uid;
     }
     // 1.8.0 friend streaks: days/{uid} = your last training days (dates only), readable by your friends, so a shared
     // streak can be counted on both phones; fstreak/{a_b} = a friend streak between two friends (sorted uids): one

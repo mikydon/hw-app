@@ -9671,7 +9671,14 @@ function revealList(entry, newAch, xpBefore, gained) {
 const GAME_KEY = "domaci-trening-v1-game";
 // 1.8.0 (Michael): the offline Run first; Duel and Ranked are shown locked ("coming soon") and switched on later
 // (the engine, the bot and the server's ranked check are already in place: worker/index.js rk-start / rk-end).
-const DUEL_ON = false, RANKED_ON = false;
+const DUEL_ON = false, RANKED_ON = true; // 1.10.0: Ranked open (no bot: real players only, worker/index.js RK)
+// 1.10.0 Ranked: the same deck for everyone (worker/index.js rankedOpts), 2 antes = 6 blinds; 2 games a day with a
+// workout; a rank from the rating (Iron … Obsidian, it drops when the rating drops)
+const RK_TICKETS = 2;
+const rankedOpts = seed => ({ seed, mode: "duel", antes: 2, suit: null, perk: null, streak: 0, pool: GM.JOKER_IDS });
+const RK_TIER_AT = [0, 1050, 1120, 1200, 1300, 1420, 1550, 1700, 1900]; // Iron (the start, 1000) … Obsidian
+const rkTier = r => { let t = 0; RK_TIER_AT.forEach((a, i) => { if ((r || 0) >= a) t = i; }); return t; };
+const trainedToday = history => history.some(e => e.date === dateKey() && !e.manual && hasRealSet(e.items));
 // intensity levels (shown as "intensity", internally still "stake"): cool to hot
 const STAKE_COL = ["#8fd3ff", "#3ddc84", "#ffd23f", "#ff8a3d", "#ff4d5e"];
 const stakeXp = k => 1 + 0.5 * k; // +50 % game XP per stake
@@ -11036,15 +11043,20 @@ function GameTab({ history, profile, setProfile, acct, onPlay }) {
   const [rk, setRk] = useState(null), [top, setTop] = useState(null), [err, setErr] = useState("");
   const signed = acct.st === "in" && acct.prof;
   const startTut = () => onPlay({ mode: "tut", opts: tutOpts(), moves: [], at: Date.now() });
+  const rkR = rk && typeof rk.r === "number" ? rk.r : 1000;
+  const rkLeft = Math.max(0, RK_TICKETS - (rk && rk.tk && rk.tk.day === dateKey() ? rk.tk.n || 0 : 0));
+  // results of my waiting games, settled by the next player on the deal (newest first, until seen)
+  const [seenRes, setSeenRes] = useState(() => cloudMem().rkSeen || 0);
+  const newRes = ((rk && rk.res) || []).filter(x => x.at > seenRes).sort((a, b) => b.at - a.at);
   useEffect(() => {
     if (!signed || !RANKED_ON) return;
     cloud().myRanked().then(setRk).catch(() => {});
-    cloud().rankedList(50).then(setTop).catch(() => setTop([]));
+    cloud().rankedList(100).then(l => setTop(l.filter(x => (x.w || 0) + (x.l || 0) + (x.d || 0) > 0).slice(0, 50))).catch(() => setTop([]));
   }, [signed]);
   const modes = [
     { id: "run", icon: "cards", name: T("gmRun"), desc: null }, // 1.8.2: the Run needs no line under it
     { id: "duel", icon: "robot", name: T("gmDuel"), desc: DUEL_ON ? T("gmDuelD", { n: Math.min(10, gl.lvl) }) : T("gmSoon"), off: !DUEL_ON, soon: !DUEL_ON },
-    { id: "ranked", icon: "trophy", name: T("gmRanked"), desc: !RANKED_ON ? T("gmSoon") : signed ? T("gmRankedD", { r: rk && typeof rk.r === "number" ? rk.r : 1000 }) : T("gmRankedSign"), off: !RANKED_ON || !signed, soon: !RANKED_ON },
+    { id: "ranked", icon: "trophy", name: T("gmRanked"), desc: !RANKED_ON ? T("gmSoon") : signed ? T("gmRkTile", { rank: RANKS[rkTier(rkR)].name, r: rkR, n: rkLeft }) : T("gmRankedSign"), off: !RANKED_ON || !signed, soon: !RANKED_ON },
   ];
   // 1.10.0 (Michael: "redesign PC and tablet"): on a wide screen two columns: play (level, modes, how to play) on the
   // left, your deck and the leaderboard on the right; a phone keeps one column in the same order
@@ -11066,6 +11078,17 @@ function GameTab({ history, profile, setProfile, acct, onPlay }) {
       </Sect>
       {saved && (
         <button type="button" data-gm-continue onClick={() => { sfxTap(); onPlay(saved); }} style={{ ...bigBtn(C.signal, C.signalInk), marginTop: 12 }} className="b3d">{T("gmContinue")}</button>
+      )}
+      {newRes.length > 0 && (
+        <Sect data-gm-rk-res title={T("gmRkResT")} style={{ marginTop: 12 }} meta={<button type="button" data-gm-rk-res-ok onClick={() => { sfxTap(); const t = newRes[0].at; setSeenRes(t); setCloudMem({ rkSeen: t }); }} aria-label={T("close")} style={{ ...btnBase, background: "transparent", color: C.dim, padding: 4 }}><Ico n="x" size={16} /></button>}>
+          {newRes.map((x, i) => (
+            <div key={x.at} data-gm-rk-res-row={x.sc} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderTop: i ? `1px solid ${C.line}` : "none" }}>
+              <IcoBox n={x.sc === 1 ? "trophy" : x.sc === 0.5 ? "duo" : "bicep"} color={x.sc === 1 ? C.signal : C.dim} size={36} />
+              <span style={{ flex: 1, minWidth: 0, fontSize: 14, color: C.chalk, lineHeight: 1.4 }}>{T(x.sc === 1 ? "gmRkResWin" : x.sc === 0.5 ? "gmRkResDraw" : "gmRkResLose", { nick: x.nick || "?" })}</span>
+              <span style={{ fontFamily: DISPLAY, fontWeight: 900, fontSize: 18, color: x.dr >= 0 ? C.mint : "#ff8a80" }}>{x.dr >= 0 ? "+" : ""}{x.dr}</span>
+            </div>
+          ))}
+        </Sect>
       )}
       <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 12 }}>
         {modes.filter(m => !m.soon).map(m => (
@@ -11131,6 +11154,7 @@ function GameTab({ history, profile, setProfile, acct, onPlay }) {
             : top.map((p, i) => (
               <div key={p.uid} data-gm-top-row={p.uid} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 16px", borderTop: i ? `1px solid ${C.line}` : "none", background: p.uid === acct.uid ? `${C.signal}14` : "transparent" }}>
                 <span style={{ width: 24, fontFamily: DISPLAY, fontWeight: 900, color: i < 3 ? C.signal : C.dim, fontSize: 18 }}>{i + 1}</span>
+                <RankIcon r={rkTier(p.r)} size={20} />
                 <span style={{ flex: 1, minWidth: 0, fontWeight: 800, color: C.chalk, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", ...INK }}>{p.nick || "?"}</span>
                 <span style={{ fontSize: 12, color: C.dim, whiteSpace: "nowrap" }}>{p.w}–{p.l}</span>
                 <span style={{ fontFamily: DISPLAY, fontWeight: 900, fontSize: 18, color: C.chalk, minWidth: 48, textAlign: "right" }}>{p.r}</span>
@@ -11140,7 +11164,20 @@ function GameTab({ history, profile, setProfile, acct, onPlay }) {
       )}
       </>} />
       {err && <div role="alert" style={{ fontSize: 13, color: "#ff8a80", marginTop: 10 }}>{err}</div>}
-      {pick && <PerkSheet lo={lo} mode={pick} stakeMax={Math.min(GM.STAKES.length - 1, gp.stake || 0)} onClose={() => setPick(null)} onGo={async (perk, stake) => {
+      {pick === "ranked" && <RankedSheet r={rkR} left={rkLeft} trained={trainedToday(history)} w={(rk && rk.w) || 0} l={(rk && rk.l) || 0} d={(rk && rk.d) || 0} onClose={() => setPick(null)} onGo={async () => {
+        setErr("");
+        try {
+          const r = await cloud().rkStart(dateKey());
+          if (r.why === "train") return T("gmRkNeedTrain");
+          if (r.why === "tickets") return T("gmRkNoTickets");
+          if (r.why !== "ok") return T("gmErrServer");
+          setPick(null);
+          setRk(x => ({ ...(x || {}), r: r.r, tk: { day: dateKey(), n: RK_TICKETS - r.left } }));
+          onPlay({ mode: "ranked", opts: rankedOpts(r.seed), moves: [], opp: r.opp, r: r.r, abandoned: r.abandoned || null, at: Date.now() });
+        } catch (e) { return T("gmErrServer"); }
+        return null;
+      }} />}
+      {pick && pick !== "ranked" && <PerkSheet lo={lo} mode={pick} stakeMax={Math.min(GM.STAKES.length - 1, gp.stake || 0)} onClose={() => setPick(null)} onGo={async (perk, stake) => {
         setPick(null); setErr("");
         if (pick === "ranked") {
           try {
@@ -11157,6 +11194,36 @@ function GameTab({ history, profile, setProfile, acct, onPlay }) {
       }} />}
       {rules && <GameRules lo={lo} onClose={() => setRules(false)} onTutorial={() => { setRules(false); startTut(); }} />}
     </div>
+  );
+}
+// 1.10.0 Ranked: what it is (equal decks, 6 blinds, a player near your rating, 2 a day with a workout) and Start
+function RankedSheet({ r, left, trained, w, l, d, onClose, onGo }) {
+  const [busy, setBusy] = useState(false), [msg, setMsg] = useState("");
+  const tier = rkTier(r), next = RK_TIER_AT[tier + 1];
+  const can = trained && left > 0;
+  return (
+    <Sheet title={T("gmRanked")} onClose={onClose}>
+      <div data-gm-rk-sheet style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 14, background: SOFT(), borderRadius: 16, padding: "14px 16px" }}>
+          <RankIcon r={tier} size={54} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div data-gm-rk-tier={tier} style={{ fontFamily: DISPLAY, fontSize: 26, fontWeight: 900, color: RANKS[tier].color, lineHeight: 1 }}>{RANKS[tier].name}</div>
+            <div style={{ fontSize: 13, color: C.dim, marginTop: 5 }}>{T("gmRating", { r })} · {w}–{l}{d ? `–${d}` : ""}</div>
+            {next && <div style={{ fontSize: 12, color: C.dim, marginTop: 3 }}>{T("gmRkNext", { rank: RANKS[tier + 1].name, n: next - r })}</div>}
+          </div>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {[["cards", T("gmRkHow1")], ["duo", T("gmRkHow2")], ["dumbbell", T("gmRkHow3")], ["flag", T("gmRkHow4")]].map(([ic, t]) => (
+            <div key={ic} style={{ display: "flex", alignItems: "flex-start", gap: 10, fontSize: 14, color: C.chalk, lineHeight: 1.45 }}><span style={{ marginTop: 1, flexShrink: 0 }}><Ico n={ic} size={18} color={C.signal} /></span><span>{t}</span></div>
+          ))}
+        </div>
+        <div data-gm-rk-left={left} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, fontWeight: 800, color: can ? C.chalk : C.dim }}>
+          <Ico n="ticket" size={18} color={can ? C.signal : C.dim} />{!trained ? T("gmRkNeedTrain") : left > 0 ? T("gmRkLeft", { n: left }) : T("gmRkNoTickets")}
+        </div>
+        {msg && <div role="alert" data-gm-rk-msg style={{ fontSize: 13, color: "#ff8a80" }}>{msg}</div>}
+        <button type="button" data-gm-rk-go disabled={!can || busy} onClick={async () => { sfxTap(); setBusy(true); setMsg(""); const m = await onGo(); setBusy(false); if (m) setMsg(m); }} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), opacity: can ? 1 : 0.5 }}>{busy ? "…" : T("gmGo")}</button>
+      </div>
+    </Sheet>
   );
 }
 function PerkSheet({ lo, mode, stakeMax = 0, onClose, onGo }) {
@@ -11721,16 +11788,18 @@ function GameShop({ g, tut, W = 412, onMove, onMoves, onTap, onSell, onHands, on
 function GameEnd({ res, onClose, onAgain }) {
   const { saved, g, xp, lvlUp, rk, rkErr, stakeUp } = res;
   const me = GM.resultOf(g), opp = saved.mode === "duel" ? saved.bot : rk ? rk.opp : null;
-  const won = saved.mode === "run" ? g.phase === "won" : saved.mode === "duel" ? GM.beats(me, opp) : rk ? rk.sc === 1 : null;
+  const pend = !!(rk && rk.pend); // 1.10.0 Ranked: first on this deal, the result waits for the next player
+  const won = saved.mode === "run" ? g.phase === "won" : saved.mode === "duel" ? GM.beats(me, opp) : rk && !pend ? rk.sc === 1 : null;
   const draw = saved.mode === "duel" ? !GM.beats(me, opp) && !GM.beats(opp, me) : rk ? rk.sc === 0.5 : false;
   return createPortal(
     <div data-gm-end={won ? "win" : draw ? "draw" : won === null ? "wait" : "lose"} style={{ position: "fixed", inset: 0, zIndex: 91, background: "rgba(4,7,16,.96)", color: C.chalk, fontFamily: BODY, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px 20px", textAlign: "center", gap: 10 }}>
       {won && <Confetti />}
       <div aria-hidden="true" style={{ display: "flex", justifyContent: "center", color: won ? C.signal : C.chalk }} className="gmPop"><Ico n={won ? "trophy" : draw ? "duo" : won === null ? "hourglass" : "bicep"} size={76} sw={1.6} /></div>
-      <div style={{ fontFamily: DISPLAY, fontSize: 38, fontWeight: 900, lineHeight: 1 }}>{won === null ? T("gmWaitServer") : won ? (saved.mode === "run" ? T("gmWon") : T("gmWin")) : draw ? T("gmDraw") : saved.mode === "run" ? T("gmOver") : T("gmLose")}</div>
+      {pend && <div data-gm-rk-pend style={{ fontSize: 15, color: C.chalk, maxWidth: 340, lineHeight: 1.5 }}>{T("gmRkPend")}</div>}
+      <div style={{ fontFamily: DISPLAY, fontSize: 38, fontWeight: 900, lineHeight: 1 }}>{pend ? T("gmRkPendT") : won === null ? T("gmWaitServer") : won ? (saved.mode === "run" ? T("gmWon") : T("gmWin")) : draw ? T("gmDraw") : saved.mode === "run" ? T("gmOver") : T("gmLose")}</div>
       <div style={{ fontSize: 15, color: C.dim }}>{T("gmResult", { n: me.cleared, t: nf(me.total) })}</div>
       {opp && <div data-gm-opp style={{ fontSize: 15, color: C.dim }}>{saved.mode === "duel" ? T("gmBotRes", { n: opp.lvl }) : opp.bot ? T("gmBotRes", { n: opp.bot }) : opp.nick}: {T("gmResult", { n: opp.cleared, t: nf(opp.total) })}</div>}
-      {rk && <div data-gm-rating style={{ fontFamily: DISPLAY, fontSize: 26, fontWeight: 900, color: rk.dr >= 0 ? C.mint : "#ff8a80" }}>{T("gmRating", { r: rk.r })} ({rk.dr >= 0 ? "+" : ""}{rk.dr})</div>}
+      {rk && !pend && <div data-gm-rating style={{ fontFamily: DISPLAY, fontSize: 26, fontWeight: 900, color: rk.dr >= 0 ? C.mint : "#ff8a80" }}>{T("gmRating", { r: rk.r })} ({rk.dr >= 0 ? "+" : ""}{rk.dr})</div>}
       {rkErr && <div role="alert" style={{ fontSize: 14, color: "#ff8a80", maxWidth: 340 }}>{T("gmErrEnd")}</div>}
       {xp > 0 && <div data-gm-xp style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 900, color: C.signal }}>+{nf(xp)} {T("gmXp")}</div>}
       {stakeUp > 0 && <div data-gm-stakeup={stakeUp} className="gmPop" style={{ fontSize: 15, fontWeight: 800, color: C.chalk, display: "flex", alignItems: "center", gap: 8 }}><span style={{ width: 14, height: 14, borderRadius: 4, background: STAKE_COL[stakeUp] }} />{T("gmStakeOpen", { s: L.gm.stake[stakeUp][0] })}</div>}
@@ -11873,6 +11942,7 @@ function tourSteps(ch, x) {
     s("[data-gm-deck]", 0, { opt: true, prep: screen("game") }),
     s("[data-gm-tut]", 1, { opt: true }),
     s('[data-gm-mode="run"]', 2, { opt: true }),
+    s('[data-gm-mode="ranked"]', 2, { opt: true, t: T("tourGmRanked") }), // 1.10.0: Ranked is open
     s("[data-gm-rules]", 3, { opt: true }),
     { done: true, t: X[4] },
   ];
@@ -13783,7 +13853,7 @@ export default function App() {
     if (!profLoaded || (u.tourPl3 && u.tour110)) return;
     const seen = tourSeen(), drop = [];
     if (!u.tourPl3 && seen.has(10)) drop.push(10);
-    if (!u.tour110) for (const c of [4, 5, 7, 9, 10]) if (seen.has(c)) drop.push(c); // 1.10.0: Profile (plans), History, Friends (Together), Shop, Workout plans (share)
+    if (!u.tour110) for (const c of [4, 5, 7, 8, 9, 10]) if (seen.has(c)) drop.push(c); // 1.10.0: Profile (plans), History, Friends (Together), Muscle Deck (Ranked), Shop, Workout plans (share)
     setUi({ ...u, tourPl3: 1, tour110: 1, ...(drop.length ? { tourAuto: [...seen].filter(c => !drop.includes(c)) } : {}) });
   }, [profLoaded]);
   const tourAskNo = () => { setTourAsk(false); setTourAskDue(false); setUi({ ...uiRef.current, tourAskV: APP_VERSION }); };
