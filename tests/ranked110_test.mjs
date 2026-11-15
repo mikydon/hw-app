@@ -1,5 +1,5 @@
 // 1.10.0 Ranked (Michael's approved design, Nov 12): open on the Muscle Deck screen; a sheet explains it (equal decks,
-// 6 blinds, a player near your rating, 2 games on a day with a workout, leaving = a loss); results of games that waited
+// 6 blinds, a player near your rating, open all week after a workout (Michael, Nov 15: "let them grind"), leaving = a loss); results of games that waited
 // for the next player show on the screen; the top 50 lists players who have played. The server side is
 // tools/worker_ranked_test.mjs.
 import { start, T, shot, entry } from "./harness.mjs";
@@ -7,23 +7,36 @@ const now = new Date(2026, 10, 15, 18, 0);
 const dk = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 const it = [{ id: "k1", name: "Push-up", unit: "", res: [10, 10] }];
 const go = async p => { await p.click("[data-menu-btn]"); await p.waitForTimeout(350); await p.click('[data-nav-box] [data-screen="game"]'); await p.waitForTimeout(900); };
-// ─── no workout today: Ranked explains and waits ───
+// ─── no workout this week (last one on last Sunday): Ranked explains and waits ───
 {
   const cloud = { ranked: { r: 1000, w: 0, l: 0, d: 0 }, rankedTop: [{ uid: "x1", nick: "Pro", r: 1320, w: 9, l: 2 }, { uid: "x2", nick: "Newbie", r: 1000, w: 0, l: 0, d: 0 }] };
-  const h = await start({ clock: now.getTime(), viewport: { width: 380, height: 820 }, cloud, seed: { history: [entry("2026-11-13", "A", it)], profile: { name: "Michael", game: { tut: 1 } } } });
+  const h = await start({ clock: now.getTime(), viewport: { width: 380, height: 820 }, cloud, seed: { history: [entry("2026-11-08", "A", it)], profile: { name: "Michael", game: { tut: 1 } } } });
   const p = h.page;
   await go(p);
   const tile = p.locator('[data-gm-mode="ranked"]');
   T.ok(await tile.isVisible(), "Ranked is open (no lock)");
-  T.ok((await tile.textContent()).includes("Iron") && (await tile.textContent()).includes("2 left today"), "the tile: rank, rating, games left: " + (await tile.textContent()));
+  T.ok((await tile.textContent()).includes("Iron · rating 1000") && !(await tile.textContent()).includes("left"), "the tile: rank and rating, no games left count: " + (await tile.textContent()));
   T.eq(await p.locator("[data-gm-top-row]").count(), 1, "the top list shows only players who have played");
   T.eq(await p.locator('[data-gm-top-row="x1"] [data-rank-icon]').getAttribute("data-rank-icon"), "4", "with their rank (1320 = Platinum)");
   await tile.click(); await p.waitForSelector("[data-gm-rk-sheet]");
   T.ok((await p.textContent("[data-gm-rk-sheet]")).includes("same deck"), "the sheet explains equal decks");
-  T.ok(await p.locator("[data-gm-rk-go]").isDisabled(), "Start waits for a workout today");
-  T.ok((await p.textContent("[data-gm-rk-left]")).includes("Train today"), "and says so");
+  T.ok(await p.locator("[data-gm-rk-go]").isDisabled(), "Start waits for a workout this week");
+  T.ok((await p.textContent("[data-gm-rk-left]")).includes("Train once this week"), "and says so");
+  T.ok((await p.textContent("[data-gm-rk-sheet]")).includes("as much as you like until Sunday"), "the sheet: open all week");
   await p.waitForTimeout(700); await shot(p, "ranked_sheet");
   T.eq(h.errors, [], "no page errors (no workout)");
+  await h.close();
+}
+// ─── trained on Friday, today is Sunday: open ───
+{
+  const h = await start({ clock: now.getTime(), viewport: { width: 380, height: 820 }, cloud: { ranked: { r: 1000, w: 3, l: 1, d: 0, tk: { day: "2026-11-15", n: 7 } } }, seed: { history: [entry("2026-11-13", "A", it)], profile: { name: "Michael", game: { tut: 1 } } } });
+  const p = h.page;
+  await go(p);
+  await p.click('[data-gm-mode="ranked"]'); await p.waitForSelector("[data-gm-rk-sheet]");
+  T.ok(!(await p.locator("[data-gm-rk-go]").isDisabled()), "a workout earlier this week: Start is on (7 games already today)");
+  T.ok((await p.textContent("[data-gm-rk-left]")).includes("Open until Sunday"), "open until Sunday");
+  await p.waitForTimeout(600); await shot(p, "ranked_week");
+  T.eq(h.errors, [], "no page errors (week)");
   await h.close();
 }
 // ─── trained today: start, then leave (a loss) ───

@@ -9691,11 +9691,11 @@ const GAME_KEY = "domaci-trening-v1-game";
 const DUEL_ON = false, RANKED_ON = true; // 1.10.0: Ranked open (no bot: real players only, worker/index.js RK)
 // 1.10.0 Ranked: the same deck for everyone (worker/index.js rankedOpts), 2 antes = 6 blinds; 2 games a day with a
 // workout; a rank from the rating (Iron … Obsidian, it drops when the rating drops)
-const RK_TICKETS = 2;
+const RK_DAY_MAX = 30; // Michael, Nov 15: one workout a week opens Ranked until Sunday (the server keeps this daily safety limit)
 const rankedOpts = seed => ({ seed, mode: "duel", antes: 2, suit: null, perk: null, streak: 0, pool: GM.JOKER_IDS });
 const RK_TIER_AT = [0, 1050, 1120, 1200, 1300, 1420, 1550, 1700, 1900]; // Iron (the start, 1000) … Obsidian
 const rkTier = r => { let t = 0; RK_TIER_AT.forEach((a, i) => { if ((r || 0) >= a) t = i; }); return t; };
-const trainedToday = history => history.some(e => e.date === dateKey() && !e.manual && hasRealSet(e.items));
+const trainedWeek = history => { const t = dateKey(), mon = weekKey(t); return history.some(e => e.date >= mon && e.date <= t && !e.manual && hasRealSet(e.items)); };
 // intensity levels (shown as "intensity", internally still "stake"): cool to hot
 const STAKE_COL = ["#8fd3ff", "#3ddc84", "#ffd23f", "#ff8a3d", "#ff4d5e"];
 const stakeXp = k => 1 + 0.5 * k; // +50 % game XP per stake
@@ -11061,7 +11061,7 @@ function GameTab({ history, profile, setProfile, acct, onPlay }) {
   const signed = acct.st === "in" && acct.prof;
   const startTut = () => onPlay({ mode: "tut", opts: tutOpts(), moves: [], at: Date.now() });
   const rkR = rk && typeof rk.r === "number" ? rk.r : 1000;
-  const rkLeft = Math.max(0, RK_TICKETS - (rk && rk.tk && rk.tk.day === dateKey() ? rk.tk.n || 0 : 0));
+  const rkLeft = Math.max(0, RK_DAY_MAX - (rk && rk.tk && rk.tk.day === dateKey() ? rk.tk.n || 0 : 0));
   // results of my waiting games, settled by the next player on the deal (newest first, until seen)
   const [seenRes, setSeenRes] = useState(() => cloudMem().rkSeen || 0);
   const newRes = ((rk && rk.res) || []).filter(x => x.at > seenRes).sort((a, b) => b.at - a.at);
@@ -11073,7 +11073,7 @@ function GameTab({ history, profile, setProfile, acct, onPlay }) {
   const modes = [
     { id: "run", icon: "cards", name: T("gmRun"), desc: null }, // 1.8.2: the Run needs no line under it
     { id: "duel", icon: "robot", name: T("gmDuel"), desc: DUEL_ON ? T("gmDuelD", { n: Math.min(10, gl.lvl) }) : T("gmSoon"), off: !DUEL_ON, soon: !DUEL_ON },
-    { id: "ranked", icon: "trophy", name: T("gmRanked"), desc: !RANKED_ON ? T("gmSoon") : signed ? T("gmRkTile", { rank: RANKS[rkTier(rkR)].name, r: rkR, n: rkLeft }) : T("gmRankedSign"), off: !RANKED_ON || !signed, soon: !RANKED_ON },
+    { id: "ranked", icon: "trophy", name: T("gmRanked"), desc: !RANKED_ON ? T("gmSoon") : signed ? T("gmRkTile", { rank: RANKS[rkTier(rkR)].name, r: rkR }) : T("gmRankedSign"), off: !RANKED_ON || !signed, soon: !RANKED_ON },
   ];
   // 1.10.0 (Michael: "redesign PC and tablet"): on a wide screen two columns: play (level, modes, how to play) on the
   // left, your deck and the leaderboard on the right; a phone keeps one column in the same order
@@ -11181,7 +11181,7 @@ function GameTab({ history, profile, setProfile, acct, onPlay }) {
       )}
       </>} />
       {err && <div role="alert" style={{ fontSize: 13, color: "#ff8a80", marginTop: 10 }}>{err}</div>}
-      {pick === "ranked" && <RankedSheet r={rkR} left={rkLeft} trained={trainedToday(history)} w={(rk && rk.w) || 0} l={(rk && rk.l) || 0} d={(rk && rk.d) || 0} onClose={() => setPick(null)} onGo={async () => {
+      {pick === "ranked" && <RankedSheet r={rkR} left={rkLeft} trained={trainedWeek(history)} w={(rk && rk.w) || 0} l={(rk && rk.l) || 0} d={(rk && rk.d) || 0} onClose={() => setPick(null)} onGo={async () => {
         setErr("");
         try {
           const r = await cloud().rkStart(dateKey());
@@ -11189,7 +11189,7 @@ function GameTab({ history, profile, setProfile, acct, onPlay }) {
           if (r.why === "tickets") return T("gmRkNoTickets");
           if (r.why !== "ok") return T("gmErrServer");
           setPick(null);
-          setRk(x => ({ ...(x || {}), r: r.r, tk: { day: dateKey(), n: RK_TICKETS - r.left } }));
+          setRk(x => ({ ...(x || {}), r: r.r, tk: { day: dateKey(), n: RK_DAY_MAX - r.left } }));
           onPlay({ mode: "ranked", opts: rankedOpts(r.seed), moves: [], opp: r.opp, r: r.r, abandoned: r.abandoned || null, at: Date.now() });
         } catch (e) { return T("gmErrServer"); }
         return null;
@@ -11213,7 +11213,7 @@ function GameTab({ history, profile, setProfile, acct, onPlay }) {
     </div>
   );
 }
-// 1.10.0 Ranked: what it is (equal decks, 6 blinds, a player near your rating, 2 a day with a workout) and Start
+// 1.10.0 Ranked: what it is (equal decks, 6 blinds, a player near your rating, open all week after a workout) and Start
 function RankedSheet({ r, left, trained, w, l, d, onClose, onGo }) {
   const [busy, setBusy] = useState(false), [msg, setMsg] = useState("");
   const tier = rkTier(r), next = RK_TIER_AT[tier + 1];
@@ -11235,7 +11235,7 @@ function RankedSheet({ r, left, trained, w, l, d, onClose, onGo }) {
           ))}
         </div>
         <div data-gm-rk-left={left} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, fontWeight: 800, color: can ? C.chalk : C.dim }}>
-          <Ico n="ticket" size={18} color={can ? C.signal : C.dim} />{!trained ? T("gmRkNeedTrain") : left > 0 ? T("gmRkLeft", { n: left }) : T("gmRkNoTickets")}
+          <Ico n="ticket" size={18} color={can ? C.signal : C.dim} />{!trained ? T("gmRkNeedTrain") : left > 0 ? T("gmRkLeft") : T("gmRkNoTickets")}
         </div>
         {msg && <div role="alert" data-gm-rk-msg style={{ fontSize: 13, color: "#ff8a80" }}>{msg}</div>}
         <button type="button" data-gm-rk-go disabled={!can || busy} onClick={async () => { sfxTap(); setBusy(true); setMsg(""); const m = await onGo(); setBusy(false); if (m) setMsg(m); }} className="b3d" style={{ ...bigBtn(C.signal, C.signalInk), opacity: can ? 1 : 0.5 }}>{busy ? "…" : T("gmGo")}</button>

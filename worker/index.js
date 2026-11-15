@@ -19,7 +19,7 @@
 // don't count), the flags and the last result (the person can read it). Someone with flags who would land in the
 // world top 50 waits for the developer: fair/{uid}.ok = true (set by hand in the Firebase console) lets them in.
 //
-// Ranked card games (src/game/engine.js; 1.10.0 rules at RK below): "rk-start" {today} checks the tickets, picks the
+// Ranked card games (src/game/engine.js; 1.10.0 rules at RK below): "rk-start" {today} checks the week (a workout) and the daily limit, picks the
 // deal of another player's recent game near your rating (or a new deal) and remembers it in ranked/{uid}.cur;
 // "rk-end" replays your moves, compares, changes the ratings (Elo) and keeps your game in runs/ for the next player.
 // Starting a new game while one is open counts the open one as a loss.
@@ -328,9 +328,11 @@ export async function planRate({ uid, pid, r, sa, fetchFn = fetch, now = Date.no
 // of another player with a rating near yours and are compared with their recorded result; with nobody to match, you
 // get a new deal and your result waits: the next player on that deal settles both of you. A match = 2 antes (6
 // blinds); more blinds beaten wins, then the score. Equal decks for everyone (workout strength only powers the normal
-// Run, because reps can be typed in). Tickets: 2 ranked matches on a day with a checked workout (fair.js). One try per
+// Run, because reps can be typed in). Michael, Nov 15 ("let them grind"): one checked workout in a week (Monday to Sunday,
+// fair.js) opens Ranked for that whole week, as many matches as you like (only `dayMax` a day, to keep the free
+// Worker and Firestore quota safe; the week is remembered in `wk`, so the backup is read once a week). One try per
 // deal; a game must end within RK.limitMs; leaving or a move that isn't possible = a loss. Rating = Elo (K 32).
-export const RK = { start: 1000, k: 32, maxMoves: 600, pick: 60, tickets: 2, limitMs: 30 * 60e3, near: 300, wide: 600, keepSeeds: 80, keepRes: 6 };
+export const RK = { start: 1000, k: 32, maxMoves: 600, pick: 60, dayMax: 30, limitMs: 30 * 60e3, near: 300, wide: 600, keepSeeds: 80, keepRes: 6 };
 const elo = (r, ro, score) => Math.round(RK.k * (score - 1 / (1 + Math.pow(10, (ro - r) / 400))));
 const randomSeed = () => { const a = new Uint8Array(6); crypto.getRandomValues(a); return Array.from(a, b => b.toString(36).padStart(2, "0")).join("").slice(0, 10); };
 async function recentRuns(tok, fetchFn) {
@@ -342,6 +344,8 @@ async function recentRuns(tok, fetchFn) {
 // the same deck for everyone in Ranked
 export const rankedOpts = seed => ({ seed, mode: "duel", antes: 2, suit: null, perk: null, streak: 0, pool: JOKER_IDS });
 const outcome = (a, b) => (a.cleared !== b.cleared ? (a.cleared > b.cleared ? 1 : 0) : a.total !== b.total ? (a.total > b.total ? 1 : 0) : 0.5);
+// the Monday of a "YYYY-MM-DD" day
+export const mondayKey = k => { const t = Date.parse(k + "T12:00:00Z"); return new Date(t - ((new Date(t).getUTCDay() + 6) % 7) * 864e5).toISOString().slice(0, 10); };
 const dayOk = (today, now) => typeof today === "string" && /^\d{4}-\d{2}-\d{2}$/.test(today) && Math.abs(Date.parse(today + "T12:00:00Z") - now) <= 36 * 3600e3;
 export async function rankedStart({ uid, today, sa, fetchFn = fetch, now = Date.now() }) {
   if (!dayOk(today, now)) return { why: "bad" };
@@ -350,11 +354,14 @@ export async function rankedStart({ uid, today, sa, fetchFn = fetch, now = Date.
   if (!prof || !prof.nick) return { why: "no-profile" };
   const rk = (await getDoc(`ranked/${uid}`, tok, fetchFn)) || {};
   let r = typeof rk.r === "number" ? rk.r : RK.start, w = rk.w || 0, l = rk.l || 0, d = rk.d || 0, abandoned = null;
-  // tickets: a checked workout today (the cloud backup, not added by hand), 2 games a day
+  // open for the week of a checked workout (the cloud backup, not added by hand); at most dayMax a day
   const used = rk.tk && rk.tk.day === today ? rk.tk.n || 0 : 0;
-  if (used >= RK.tickets) return { why: "tickets", left: 0, r };
-  const ch = await checkedOf(uid, today, tok, fetchFn, now);
-  if (!ch || !(ch.st.dates || []).includes(today)) return { why: "train", left: RK.tickets - used, r };
+  if (used >= RK.dayMax) return { why: "tickets", left: 0, r };
+  const mon = mondayKey(today);
+  if (rk.wk !== mon) {
+    const ch = await checkedOf(uid, today, tok, fetchFn, now);
+    if (!ch || !(ch.st.dates || []).some(x => x >= mon && x <= today)) return { why: "train", left: RK.dayMax - used, r };
+  }
   // a game left open counts as lost
   if (rk.cur && rk.cur.seed) {
     if (rk.cur.opp) { const dr = elo(r, rk.cur.opp.r, 0); r = Math.max(0, r + dr); l++; abandoned = { dr }; }
@@ -370,9 +377,9 @@ export async function rankedStart({ uid, today, sa, fetchFn = fetch, now = Date.
   const seed = o ? o.seed : randomSeed();
   const cur = { seed, opp, at: now };
   const seeds = [...mine, seed].slice(-RK.keepSeeds);
-  await patchDoc(`ranked/${uid}`, { r, w, l, d, nick: String(prof.nick).slice(0, 20), ts: new Date(now).toISOString(), cur, seeds, tk: { day: today, n: used + 1 } }, tok, fetchFn,
-    ["r", "w", "l", "d", "nick", "ts", "cur", "seeds", "tk"]);
-  return { why: "ok", seed, opp: opp ? { nick: opp.nick, r: opp.r } : null, r, abandoned, left: RK.tickets - used - 1 };
+  await patchDoc(`ranked/${uid}`, { r, w, l, d, nick: String(prof.nick).slice(0, 20), ts: new Date(now).toISOString(), cur, seeds, tk: { day: today, n: used + 1 }, wk: mon }, tok, fetchFn,
+    ["r", "w", "l", "d", "nick", "ts", "cur", "seeds", "tk", "wk"]);
+  return { why: "ok", seed, opp: opp ? { nick: opp.nick, r: opp.r } : null, r, abandoned, left: RK.dayMax - used - 1 };
 }
 export async function rankedEnd({ uid, moves, give, sa, fetchFn = fetch, now = Date.now() }) {
   const tok = await accessToken(sa, fetchFn, now);
