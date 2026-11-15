@@ -1,6 +1,9 @@
 // French: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    tourQuick5: "Pas le temps aujourd'hui ? Juste 5 minutes : un tour sans échauffement, et ta flamme continue.",
+    quick5: "Juste 5 minutes",
+    quick5D: "1 tour du jour {d}, sans échauffement. Ça compte quand même pour ta flamme.",
     badgeShareText: "Nouveau badge dans HW App : {name} 🏅 https://play.google.com/store/apps/details?id=io.github.mikydon.hwapp",
     tourPfCards: "Ta collection de cartes : les styles de cartes de Muscle Deck. Choisis-en un dans ton apparence ; en Ranked, l'adversaire le voit aussi.",
     lookKind_card: "Cartes",
@@ -278,5 +281,6 @@ export default {
     ["Rangs du corps", "Le corps avait des couleurs plates et toujours neuf tuiles en dessous.", "Les muscles brillent comme des métaux et des gemmes (fer, bronze, argent, or… obsidienne) ; le bloc ne montre que le corps et un toucher déroule les neuf parties."],
     ["Styles de cartes", "Les cartes de Muscle Deck avaient toujours le même look.", "Huit styles de cartes (Nuit, Menthe, Carbone, Marbre, Or, Néon, Hologramme, Obsidienne) dans les looks de la Boutique ; choisis-en un dans l'apparence du profil, retrouve-les tous dans ta collection de cartes, et en Ranked l'adversaire voit le tien."],
     ["Partage un badge", "Les badges ne se voyaient que dans l'app.", "Ouvre un badge gagné et touche Partager : une image du badge dans la couleur de son niveau, prête pour les stories et les discussions."],
+    ["Juste 5 minutes", "Même une courte journée voulait dire tout l'échauffement et au moins 2 tours.", "L'Accueil propose Juste 5 minutes : un tour du jour sans échauffement. C'est une séance normale qui garde ta flamme."],
   ],
 };

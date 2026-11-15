@@ -1,6 +1,9 @@
 // Czech: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    tourQuick5: "Dnes nemáš čas? Jen 5 minut: jedno kolo bez rozcvičky a šňůra jde dál.",
+    quick5: "Jen 5 minut",
+    quick5D: "1 kolo dne {d}, bez rozcvičky. I tak se počítá do šňůry.",
     badgeShareText: "Nový odznak v HW App: {name} 🏅 https://play.google.com/store/apps/details?id=io.github.mikydon.hwapp",
     tourPfCards: "Tvoje sbírka karet: styly karet pro Muscle Deck. Jeden si nasaď ve vzhledu; v Rankedu ho uvidí i soupeř.",
     lookKind_card: "Karty",
@@ -278,5 +281,6 @@ export default {
     ["Ranky těla", "Tělo mělo ploché barvy a pod ním vždy devět dlaždic.", "Svaly se lesknou jako kovy a drahokamy (železo, bronz, stříbro, zlato… obsidián); box ukazuje jen tělo a ťuknutím se rozbalí devět partií."],
     ["Styly karet", "Karty v Muscle Decku vypadaly vždy stejně.", "Osm stylů karet (Noc, Máta, Karbon, Mramor, Zlato, Neon, Hologram, Obsidián) ve vzhledech v Obchodě; nasadíš si je ve vzhledu profilu, všechny uvidíš ve sbírce karet na profilu a v Rankedu uvidí ten tvůj i soupeř."],
     ["Sdílej odznak", "Odznaky šly vidět jen v aplikaci.", "Otevři odznak, který máš, a ťukni na Sdílet: obrázek s odznakem v barvě jeho úrovně, hotový do stories i chatu."],
+    ["Jen 5 minut", "I krátký den znamenal celou rozcvičku a aspoň 2 kola.", "Úvod nabízí Jen 5 minut: jedno kolo dnešního dne bez rozcvičky. Je to normální trénink a udrží ti šňůru."],
   ],
 };

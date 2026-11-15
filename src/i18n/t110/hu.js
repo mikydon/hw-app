@@ -1,6 +1,9 @@
 // Hungarian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    tourQuick5: "Ma nincs időd? Csak 5 perc: egy kör bemelegítés nélkül, és a széria megy tovább.",
+    quick5: "Csak 5 perc",
+    quick5D: "A(z) {d} nap 1 köre, bemelegítés nélkül. A szériába így is beszámít.",
     badgeShareText: "Új jelvény a HW Appban: {name} 🏅 https://play.google.com/store/apps/details?id=io.github.mikydon.hwapp",
     tourPfCards: "A kártyagyűjteményed: Muscle Deck kártyastílusok. Válassz egyet a kinézetben; a Rankedben az ellenfél is látja.",
     lookKind_card: "Kártyák",
@@ -278,5 +281,6 @@ export default {
     ["Testrangok", "A test lapos színekkel jelent meg, alatta mindig kilenc csempével.", "Az izmok fémként és drágakőként csillognak (vas, bronz, ezüst, arany… obszidián); a doboz csak a testet mutatja, koppintásra legördül a kilenc testrész."],
     ["Kártyastílusok", "A Muscle Deck kártyái mindig ugyanúgy néztek ki.", "Nyolc kártyastílus (Éjszaka, Menta, Karbon, Márvány, Arany, Neon, Hologram, Obszidián) a Bolt kinézetei között; a profil kinézetében választhatsz, mindet látod a profilod kártyagyűjteményében, és a Rankedben az ellenfél is látja a tiédet."],
     ["Jelvény megosztása", "A jelvényeket csak az appban lehetett látni.", "Nyisd meg a megszerzett jelvényt, és koppints a Megosztásra: kép a jelvénnyel a szintje színében, sztorikhoz és chatekhez."],
+    ["Csak 5 perc", "Egy rövid nap is a teljes bemelegítést és legalább 2 kört jelentette.", "A Kezdőlap felkínálja a Csak 5 percet: a mai nap egy köre bemelegítés nélkül. Rendes edzés, és megtartja a szériádat."],
   ],
 };

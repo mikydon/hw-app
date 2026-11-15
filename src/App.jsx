@@ -4223,6 +4223,17 @@ function TrainTab({ history, onStart, onStartPlan, onStartFree, onFreeze, ui, se
       {!doneToday && st.gap === 2 && st.n > 0 && !st.frozenToday && !(META.skips || {})[dateKey()] && (
         <button data-skip-btn onClick={onFreeze} style={{ ...ghostBtn, marginTop: 10, color: C.sky, borderColor: C.sky }}><IcoI n="ice" /> {noEmo(T("skipBtn"))}</button>
       )}
+      {/* 1.10.0 (idea 9, from a review Michael sent: "a 5-minute workout for lazy days"): one round of today's day, no
+          warm-up; it is a normal workout (streak, XP, history) */}
+      {!doneToday && !active && <button type="button" data-quick5 onClick={() => { unlockAudio(); sfxTap(); onStart(day.id, 1, true); }}
+        style={{ ...btnBase, marginTop: 10, display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 12px", borderRadius: 14, ...SUNK(), color: C.chalk, textAlign: "left" }}>
+        <Ico n="bolt" size={18} color={C.signal} sw={2.3} />
+        <span style={{ flex: 1, minWidth: 0 }}>
+          <span style={{ display: "block", fontSize: 14, fontWeight: 800 }}>{T("quick5")}</span>
+          <span style={{ display: "block", fontSize: 12, color: C.dim, marginTop: 1 }}>{T("quick5D", { d: day.id })}</span>
+        </span>
+        <Arrow />
+      </button>}
       {st.frozenToday && <div style={{ fontSize: 13, color: C.sky, marginTop: 8 }}><IcoI n="ice" /> {noEmo(T("frozenToday"))}</div>}
       {(META.skips || {})[dateKey()] && <div data-skip-today style={{ fontSize: 13, color: C.dim, marginTop: 4 }}>{T("skipSaved", { r: `${T("skip_" + META.skips[dateKey()].r)}${META.skips[dateKey()].note ? ` (${META.skips[dateKey()].note})` : ""}` })}</div>}
       {active && (
@@ -12299,6 +12310,7 @@ function tourSteps(ch, x) {
   if (ch === 1) return [ // no welcome text: straight to what's on the screen (Michael)
     // 1.9.0: Home's first page is the week; the workout (day, picker, exercises) is on the Exercises page
     s("[data-home-week]", 4, { prep: screen("train", ["home", HOME_TAB.today]) }),
+    s("[data-quick5]", 10, { opt: true, t: T("tourQuick5") }), // 1.10.0: Only 5 minutes (not shown once trained today)
     s("[data-home-ch]", 10, { opt: true }), // 1.8.2: the weekly challenges as rows with icons
     s(`[data-home-tab="${HOME_TAB.ex}"]`, 5, { tap: true, opt: true }),
     s("[data-home-hero]", 1, pm.week ? { t: T("tourPlHero", { w: T("plWeek") }) } : {}), // 1.9.2: with My week Home shows the weekday's plan
@@ -14321,9 +14333,10 @@ export default function App() {
     setMenuOpen(false); setSessionOpen(false); setScreen("friends"); setAddSeq(n => n + 1);
   }), []);
 
-  const start = (dayId, rounds) => {
+  const start = (dayId, rounds, quick) => {
     const day = DAYS.find(d => d.id === dayId);
-    setSession({ day: dayId, rounds, base: Object.fromEntries(day.ids.map(slot => [slot, effId(slot)])), phase: "warmup", pos: 0, warm: WARMUP.map(() => false), results: {}, rest: null, startTs: Date.now() });
+    // quick (1.10.0, "Only 5 minutes"): one round, straight to the first exercise
+    setSession({ day: dayId, rounds: quick ? 1 : rounds, ...(quick ? { quick: true } : {}), base: Object.fromEntries(day.ids.map(slot => [slot, effId(slot)])), phase: quick ? "work" : "warmup", pos: 0, warm: WARMUP.map(() => false), results: {}, rest: null, startTs: Date.now() });
     setSessionOpen(true);
   };
   // 1.9.0: an own plan (1.9.2: a single workout; wd = the weekday it is done on) as a copy of its exercises, name and

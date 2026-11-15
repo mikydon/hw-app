@@ -1,6 +1,9 @@
 // Polish: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    tourQuick5: "Brak czasu? Tylko 5 minut: jedna runda bez rozgrzewki, a passa trwa dalej.",
+    quick5: "Tylko 5 minut",
+    quick5D: "1 runda dnia {d}, bez rozgrzewki. I tak liczy się do passy.",
     badgeShareText: "Nowa odznaka w HW App: {name} 🏅 https://play.google.com/store/apps/details?id=io.github.mikydon.hwapp",
     tourPfCards: "Twoja kolekcja kart: style kart do Muscle Deck. Załóż jeden w wyglądzie; w Ranked zobaczy go też rywal.",
     lookKind_card: "Karty",
@@ -278,5 +281,6 @@ export default {
     ["Rangi ciała", "Ciało miało płaskie kolory i zawsze dziewięć kafelków pod spodem.", "Mięśnie lśnią jak metale i klejnoty (żelazo, brąz, srebro, złoto… obsydian); pole pokazuje tylko ciało, a stuknięcie rozwija dziewięć partii."],
     ["Style kart", "Karty w Muscle Deck zawsze wyglądały tak samo.", "Osiem stylów kart (Noc, Mięta, Karbon, Marmur, Złoto, Neon, Hologram, Obsydian) w wyglądach w Sklepie; załóż jeden w wyglądzie profilu, wszystkie zobaczysz w kolekcji kart na profilu, a w Ranked twój zobaczy też rywal."],
     ["Udostępnij odznakę", "Odznaki było widać tylko w aplikacji.", "Otwórz zdobytą odznakę i stuknij Udostępnij: obrazek z odznaką w kolorze jej poziomu, gotowy do relacji i czatów."],
+    ["Tylko 5 minut", "Nawet krótki dzień oznaczał całą rozgrzewkę i co najmniej 2 rundy.", "Start proponuje Tylko 5 minut: jedną rundę dzisiejszego dnia bez rozgrzewki. To zwykły trening i utrzymuje passę."],
   ],
 };

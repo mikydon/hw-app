@@ -789,6 +789,9 @@ const en = {
     plSortOld: "Oldest",
     plSortAZ: "A–Z",
     plSortZA: "Z–A",
+    tourQuick5: "No time today? Only 5 minutes: one round without the warm-up, and your streak keeps going.",
+    quick5: "Only 5 minutes",
+    quick5D: "1 round of day {d}, no warm-up. Still counts for your streak.",
     badgeShareText: "New badge in HW App: {name} 🏅 https://play.google.com/store/apps/details?id=io.github.mikydon.hwapp",
     tourPfCards: "Your card collection: Muscle Deck card styles. Wear one in your looks; in Ranked the other player sees it too.",
     lookKind_card: "Cards",
@@ -1994,6 +1997,7 @@ const en = {
     ["Your week", "Nothing looked back at the week that ended.", "On Monday to Wednesday, Home shows last week: workouts, sets, time, the change from the week before and the days you trained, with a picture to share."],
     ["Your year", "Nothing looked back at the whole year.", "From December 15 to January 10, Home shows your year: workouts, time, the longest streak, the months, your favourite exercises, and a picture to share."],
     ["Share a badge", "Badges could only be seen in the app.", "Open a badge you earned and tap Share: a picture with the badge in its level's colour, ready for stories and chats."],
+    ["Only 5 minutes", "A short day still meant the whole warm-up and at least 2 rounds.", "Home offers Only 5 minutes: one round of today's day without the warm-up. It is a normal workout and keeps your streak."],
   ],
   news19: [
     ["Workout plans", "One plan for everyone: days A, B and C.", "Build your own plans from the app's exercises: pick exercises and sets for every weekday (empty days are rest days), sort plans into groups and use one. Home then shows that plan's week, with the days you've done in green. Small icons show what each day trains, and tips say when a muscle gets little work. The recommended A, B, C plan is still there."],

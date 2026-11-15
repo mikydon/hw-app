@@ -1,6 +1,9 @@
 // Italian: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    tourQuick5: "Niente tempo oggi? Solo 5 minuti: un giro senza riscaldamento e la striscia continua.",
+    quick5: "Solo 5 minuti",
+    quick5D: "1 giro del giorno {d}, senza riscaldamento. Conta comunque per la striscia.",
     badgeShareText: "Nuovo badge in HW App: {name} 🏅 https://play.google.com/store/apps/details?id=io.github.mikydon.hwapp",
     tourPfCards: "La tua collezione di carte: stili di carte per Muscle Deck. Scegline uno nell'aspetto; in Ranked lo vede anche l'avversario.",
     lookKind_card: "Carte",
@@ -278,5 +281,6 @@ export default {
     ["Gradi del corpo", "Il corpo aveva colori piatti e sempre nove riquadri sotto.", "I muscoli brillano come metalli e gemme (ferro, bronzo, argento, oro… ossidiana); il riquadro mostra solo il corpo e un tocco apre le nove parti."],
     ["Stili delle carte", "Le carte di Muscle Deck erano sempre uguali.", "Otto stili di carte (Notte, Menta, Carbonio, Marmo, Oro, Neon, Ologramma, Ossidiana) tra gli aspetti del Negozio; scegline uno nell'aspetto del profilo, li vedi tutti nella collezione di carte e in Ranked l'avversario vede il tuo."],
     ["Condividi un badge", "I badge si vedevano solo nell'app.", "Apri un badge che hai ottenuto e tocca Condividi: un'immagine con il badge nel colore del suo livello, pronta per storie e chat."],
+    ["Solo 5 minuti", "Anche un giorno breve voleva dire tutto il riscaldamento e almeno 2 giri.", "La Home offre Solo 5 minuti: un giro del giorno senza riscaldamento. È un allenamento normale e mantiene la striscia."],
   ],
 };

@@ -1,6 +1,9 @@
 // Spanish: texts of 1.10.0 (merged by merge.js)
 export default {
   ui: {
+    tourQuick5: "¿Sin tiempo hoy? Solo 5 minutos: una ronda sin calentamiento y tu racha sigue.",
+    quick5: "Solo 5 minutos",
+    quick5D: "1 ronda del día {d}, sin calentamiento. Igual cuenta para tu racha.",
     badgeShareText: "Nueva insignia en HW App: {name} 🏅 https://play.google.com/store/apps/details?id=io.github.mikydon.hwapp",
     tourPfCards: "Tu colección de cartas: estilos de cartas de Muscle Deck. Ponte uno en tu aspecto; en Ranked también lo ve el rival.",
     lookKind_card: "Cartas",
@@ -278,5 +281,6 @@ export default {
     ["Rangos del cuerpo", "El cuerpo tenía colores planos y siempre nueve fichas debajo.", "Los músculos brillan como metales y gemas (hierro, bronce, plata, oro… obsidiana); el cuadro muestra solo el cuerpo y un toque despliega las nueve partes."],
     ["Estilos de cartas", "Las cartas de Muscle Deck siempre se veían igual.", "Ocho estilos de cartas (Noche, Menta, Carbono, Mármol, Oro, Neón, Holograma, Obsidiana) en los aspectos de la Tienda; ponte uno en el aspecto del perfil, todos se ven en tu colección de cartas y en Ranked el rival ve el tuyo."],
     ["Comparte una insignia", "Las insignias solo se veían en la app.", "Abre una insignia que ganaste y toca Compartir: una imagen con la insignia en el color de su nivel, lista para historias y chats."],
+    ["Solo 5 minutos", "Hasta un día corto significaba todo el calentamiento y al menos 2 rondas.", "Inicio ofrece Solo 5 minutos: una ronda del día de hoy sin calentamiento. Es un entreno normal y mantiene tu racha."],
   ],
 };
