@@ -1,11 +1,10 @@
 // 1.10.0 Ranked on the server (worker/index.js rankedStart / rankedEnd), against an in-memory Firestore:
-// the week (one checked workout opens Ranked until Sunday, at most RK.dayMax a day), matching a recent deal near your rating (people still waiting first),
+// tickets (2 on a day with a checked workout), matching a recent deal near your rating (people still waiting first),
 // a new deal when nobody fits (the result waits), the waiting player settled by the next one, equal decks, one try
 // per deal, the time limit, leaving = a loss, and the replay check.
 // node tools/worker_ranked_test.mjs
-import { rankedStart, rankedEnd, rankedOpts, RK, mondayKey } from "../worker/index.js";
+import { rankedStart, rankedEnd, rankedOpts, RK } from "../worker/index.js";
 import { botGame, resultOf } from "../src/game/engine.js";
-import { fairEntryId } from "../src/fair.js";
 
 let pass = 0, fail = 0;
 const ok = (c, m) => { if (c) pass++; else { fail++; console.log("FAIL", m); } };
@@ -73,27 +72,12 @@ const play = (seed, level) => botGame(rankedOpts(seed), level);
 
 // ── tickets ──
 user("A", "Anna"); user("B", "Ben"); user("C", "Cid"); user("L", "Lazy", false);
-eq((await call(rankedStart, { uid: "L", today: today() })).why, "train", "no workout this week: no ranked game");
-eq([mondayKey("2026-11-15"), mondayKey("2026-11-16"), mondayKey("2026-11-11"), mondayKey("2027-01-01")], ["2026-11-09", "2026-11-16", "2026-11-09", "2026-12-28"], "the Monday of a day");
-{ // a workout earlier this week opens it; one from last week doesn't; the week is remembered (the backup is read once)
-  const mon = mondayKey(today()), prev = new Date(Date.parse(mon + "T12:00:00Z") - 864e5).toISOString().slice(0, 10);
-  put("profiles/W", { nick: "Wes" }); put("fair/W", { since: 1, seen: {} });
-  put("backups/W", backup([wk(prev)]));
-  eq((await call(rankedStart, { uid: "W", today: today() })).why, "train", "trained only last week (Sunday): closed");
-  put("backups/W", backup([wk(mon)])); put("fair/W", { since: 1, seen: { [fairEntryId(wk(mon))]: Date.parse(mon + "T10:05:00Z") } }); // uploaded right after the workout
-  const w1 = await call(rankedStart, { uid: "W", today: today() });
-  eq([w1.why, w1.left], ["ok", RK.dayMax - 1], "trained on Monday: open for the week");
-  eq(doc("ranked/W").wk, mon, "the week is remembered");
-  await call(rankedEnd, { uid: "W", give: true });
-  put("backups/W", backup([]));
-  eq((await call(rankedStart, { uid: "W", today: today() })).why, "ok", "same week: no need to read the backup again");
-  await call(rankedEnd, { uid: "W", give: true });
-}
+eq((await call(rankedStart, { uid: "L", today: today() })).why, "train", "no workout today: no ranked game");
 eq((await call(rankedStart, { uid: "A", today: "2020-01-01" })).why, "bad", "a day far from the server's date is refused");
 
 // ── A is first: a new deal, the result waits ──
 const s1 = await call(rankedStart, { uid: "A", today: today() });
-eq([s1.why, s1.opp, s1.left], ["ok", null, RK.dayMax - 1], "A: a new deal, no opponent yet");
+eq([s1.why, s1.opp, s1.left], ["ok", null, 1], "A: a new deal, no opponent yet, 1 ticket left");
 const ga = play(s1.seed, 7);
 const e1 = await call(rankedEnd, { uid: "A", moves: ga.moves });
 eq([e1.why, e1.pend, e1.dr, e1.r], ["ok", 1, 0, 1000], "A's result waits, rating unchanged");
@@ -127,15 +111,11 @@ ok(doc("ranked/A").r === aBefore, "A's rating is not moved twice");
 clock += 60e3;
 const s4 = await call(rankedStart, { uid: "B", today: today() });
 ok(s4.seed !== s1.seed, "B never gets the same deal again");
-eq(s4.left, RK.dayMax - 2, "B's second game today");
+eq(s4.left, 0, "B's second ticket");
 // ── leaving = a loss; an open game counts as lost; tickets run out ──
 const e4 = await call(rankedEnd, { uid: "B", give: true });
 eq([e4.bad, e4.sc], [1, s4.opp ? 0 : 0], "leaving is a loss");
-{ const b = doc("ranked/B"); ok(!b.cur, "B's game is closed"); }
-eq((await call(rankedStart, { uid: "B", today: today() })).why, "ok", "a third game the same day (no daily 2 any more)");
-await call(rankedEnd, { uid: "B", give: true });
-put("ranked/B", { ...doc("ranked/B"), tk: { day: today(), n: RK.dayMax } });
-eq((await call(rankedStart, { uid: "B", today: today() })).why, "tickets", "the daily safety limit");
+eq((await call(rankedStart, { uid: "B", today: today() })).why, "tickets", "2 ranked games a day");
 // ── a broken replay and the time limit ──
 user("D", "Dan"); user("E", "Eve");
 const s5 = await call(rankedStart, { uid: "D", today: today() });
