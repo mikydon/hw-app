@@ -260,6 +260,7 @@ export default {
     },
   },
   news1_10_1: [
+    "Edzéstervek telefonon: bejelentkezve a képernyő a jobb alsó sarokba csúszhatott, és az alsó oldalváltó le volt vágva, mert a Könyvtár oldal egy része kilógott oldalra. Javítva; az útmutató is újra működik ezen a képernyőn.",
     "Útmutató: már nem tudja lezárni a képernyőt. Ha egy lépés elakad, néhány másodperc múlva megjelenik az Útmutató kihagyása, és a vissza gomb is működik; a képernyőn kívülre kerülő buborék lekerül az aljára.",
   ],
   news1_10: [

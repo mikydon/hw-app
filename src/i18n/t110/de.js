@@ -260,6 +260,7 @@ export default {
     },
   },
   news1_10_1: [
+    "Trainingspläne auf dem Handy: Angemeldet konnte der Bildschirm nach rechts unten rutschen und der Seitenwechsel unten war abgeschnitten, weil ein Teil der Bibliothek-Seite seitlich herausragte. Behoben; auch die Anleitung auf diesem Bildschirm funktioniert wieder.",
     "Anleitung: Sie kann den Bildschirm nicht mehr sperren. Hängt ein Schritt, erscheint nach ein paar Sekunden „Anleitung überspringen“ und auch die Zurück-Taste funktioniert; eine Sprechblase außerhalb des Bildschirms rutscht nach unten.",
   ],
   news1_10: [

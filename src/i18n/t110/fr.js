@@ -260,6 +260,7 @@ export default {
     },
   },
   news1_10_1: [
+    "Programmes d'entraînement sur téléphone : connecté, l'écran pouvait glisser en bas à droite et le sélecteur de pages en bas était coupé, car une partie de la page Bibliothèque dépassait sur le côté. Corrigé ; le guide de cet écran fonctionne de nouveau.",
     "Guide : il ne peut plus bloquer l'écran. Si une étape reste bloquée, Passer le guide apparaît après quelques secondes et le bouton retour fonctionne aussi ; une bulle qui serait hors de l'écran passe en bas.",
   ],
   news1_10: [

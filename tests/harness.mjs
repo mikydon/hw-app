@@ -37,7 +37,7 @@ export async function start(o = {}) {
   const srv = await serve();
   const port = srv.address().port;
   const browser = await chromium.launch(o.gl ? { args: ["--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader"] } : {});
-  const ctx = await browser.newContext({ viewport: o.viewport || { width: 412, height: 860 }, deviceScaleFactor: o.dpr || 1, locale: o.locale || "en-US", hasTouch: !!o.touch });
+  const ctx = await browser.newContext({ viewport: o.viewport || { width: 412, height: 860 }, deviceScaleFactor: o.dpr || 1, locale: o.locale || "en-US", hasTouch: !!o.touch || !!o.mobile, isMobile: !!o.mobile });
   const s = o.seed || {};
   const store = {};
   if (!s.fresh) {

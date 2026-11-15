@@ -14520,7 +14520,7 @@ export default function App() {
         .sheetGhost>.sheetDim{animation:dFadeOut ${MO.out} ease-in both} .sheetGhost>.sheetGhostBox{box-sizing:border-box;animation:shOut ${MO.out} ${MO.exit} both}
         .sheetBox{box-sizing:border-box;max-height:86vh;max-height:calc(100dvh - 24px - var(--sat) - var(--sab))}
         .exq{position:relative} .exq::before{content:"";position:absolute;inset:-4px}
-        .swPager{display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;align-items:flex-start}.swPager::-webkit-scrollbar{display:none}.swPage{flex:0 0 100%;min-width:0;box-sizing:border-box;scroll-snap-align:start;scroll-snap-stop:always;padding:0 18px 18px}.swPager.anim{scroll-snap-type:none}
+        .swPager{display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;align-items:flex-start}.swPager::-webkit-scrollbar{display:none}.swPage{flex:0 0 100%;min-width:0;box-sizing:border-box;position:relative;scroll-snap-align:start;scroll-snap-stop:always;padding:0 18px 18px}.swPager.anim{scroll-snap-type:none}
         .noBar{scrollbar-width:none}.noBar::-webkit-scrollbar{display:none}
         ::selection{background:${C.signal}55;color:${C.chalk}} input,textarea{caret-color:${C.signal};accent-color:${C.signal}}
         @keyframes bump{0%{transform:scale(.82)}55%{transform:scale(1.12)}100%{transform:scale(1)}}

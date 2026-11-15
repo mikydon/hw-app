@@ -1971,6 +1971,7 @@ const en = {
   },
   // 1.10: keys with "_" from here on (news1_10, news1_10_1), see newsKey in App.jsx
   news1_10_1: [
+    "Workout plans on a phone: when you were signed in, the screen could slide to the bottom right and the page switch at the bottom was cut off, because a part of the Library page stuck out to the side. Fixed; the guide on that screen works again too.",
     "Guide: it can no longer lock the screen. If a step gets stuck, Skip the guide shows after a few seconds and the back button works too; a bubble that would land off the screen moves to the bottom.",
   ],
   news1_10: [

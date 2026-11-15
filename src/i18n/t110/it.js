@@ -260,6 +260,7 @@ export default {
     },
   },
   news1_10_1: [
+    "Piani di allenamento sul telefono: con l'accesso effettuato, lo schermo poteva spostarsi in basso a destra e il selettore delle pagine in basso era tagliato, perché una parte della pagina Libreria sporgeva di lato. Risolto; anche la guida di questa schermata funziona di nuovo.",
     "Guida: non può più bloccare lo schermo. Se un passaggio si blocca, dopo pochi secondi compare Salta la guida e funziona anche il tasto indietro; un fumetto che finirebbe fuori dallo schermo si sposta in basso.",
   ],
   news1_10: [

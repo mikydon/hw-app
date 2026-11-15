@@ -260,6 +260,7 @@ export default {
     },
   },
   news1_10_1: [
+    "Planes de entrenamiento en el móvil: con la sesión iniciada, la pantalla podía desplazarse abajo a la derecha y el selector de páginas de abajo quedaba cortado, porque una parte de la página Biblioteca sobresalía hacia un lado. Arreglado; la guía de esa pantalla vuelve a funcionar.",
     "Guía: ya no puede bloquear la pantalla. Si un paso se queda atascado, a los pocos segundos aparece Saltar la guía y el botón Atrás también funciona; una burbuja que quedaría fuera de la pantalla pasa abajo.",
   ],
   news1_10: [

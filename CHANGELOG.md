@@ -12,6 +12,7 @@ Everything before the Android app is **Browser beta** (the website), numbered 1.
 
 ## 1.10.1 (2026-11-15)
 
+- Workout plans on a phone: when you were signed in, the screen could slide to the bottom right and the page switch at the bottom was cut off, because a part of the Library page (the search icon and a hidden "Loading…" text) stuck out to the side and the phone zoomed the page out. The guide on that screen only dimmed it. Fixed: every swipe page now holds its own parts, and a test checks every screen and page at phone width.
 - Guide: it can no longer lock the screen. On some phones the Workout plans chapter only dimmed the screen and nothing could be tapped. Now a step that gets stuck is skipped after a few seconds, "Skip the guide" shows on the dimmed screen after 3 seconds and the back button ends the guide there, and a bubble that would land off the screen moves to the bottom.
 
 ## 1.10.0 (2026-11-15)

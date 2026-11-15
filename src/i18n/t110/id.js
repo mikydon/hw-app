@@ -260,6 +260,7 @@ export default {
     },
   },
   news1_10_1: [
+    "Rencana latihan di ponsel: saat masuk ke akun, layar bisa bergeser ke kanan bawah dan pengalih halaman di bawah terpotong, karena sebagian halaman Pustaka menonjol ke samping. Sudah diperbaiki; panduan di layar ini juga berfungsi lagi.",
     "Panduan: tidak bisa lagi mengunci layar. Jika satu langkah macet, setelah beberapa detik muncul Lewati panduan dan tombol kembali juga berfungsi; gelembung yang akan berada di luar layar pindah ke bawah.",
   ],
   news1_10: [

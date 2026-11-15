@@ -260,6 +260,7 @@ export default {
     },
   },
   news1_10_1: [
+    "Planos de treino no celular: com a conta conectada, a tela podia escorregar para baixo e para a direita e o seletor de páginas embaixo ficava cortado, porque uma parte da página Biblioteca saía para o lado. Corrigido; o guia dessa tela também volta a funcionar.",
     "Guia: não pode mais travar a tela. Se uma etapa travar, depois de alguns segundos aparece Saltar o guia e o botão voltar também funciona; um balão que ficaria fora da tela vai para baixo.",
   ],
   news1_10: [

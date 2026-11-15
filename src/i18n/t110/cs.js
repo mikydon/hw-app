@@ -260,6 +260,7 @@ export default {
     },
   },
   news1_10_1: [
+    "Tréninkové plány na telefonu: když jsi byl přihlášený, obrazovka se mohla posunout dolů doprava a přepínač stránek dole byl useknutý, protože část stránky Knihovna vyčnívala do strany. Opraveno; i návod na této obrazovce zase funguje.",
     "Návod: už nemůže zamknout obrazovku. Když se krok zasekne, po pár sekundách se ukáže Přeskočit návod a funguje i tlačítko zpět; bublina, která by byla mimo obrazovku, se přesune dolů.",
   ],
   news1_10: [

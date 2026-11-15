@@ -260,6 +260,7 @@ export default {
     },
   },
   news1_10_1: [
+    "Plany treningowe na telefonie: po zalogowaniu ekran mógł przesunąć się w prawy dolny róg, a przełącznik stron na dole był ucięty, bo część strony Biblioteka wystawała w bok. Naprawione; przewodnik na tym ekranie też znów działa.",
     "Przewodnik: nie może już zablokować ekranu. Jeśli krok się zatnie, po kilku sekundach pojawi się Pomiń przewodnik i działa też przycisk wstecz; dymek, który byłby poza ekranem, przesuwa się na dół.",
   ],
   news1_10: [

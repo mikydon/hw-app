@@ -260,6 +260,7 @@ export default {
     },
   },
   news1_10_1: [
+    "Tréningové plány na telefóne: keď si bol prihlásený, obrazovka sa mohla posunúť dole doprava a prepínač stránok dole bol odrezaný, lebo časť stránky Knižnica vytŕčala do strany. Opravené; aj návod na tejto obrazovke znova funguje.",
     "Návod: už nemôže zamknúť obrazovku. Ak sa krok zasekne, po pár sekundách sa ukáže Preskočiť návod a funguje aj tlačidlo späť; bublina, ktorá by bola mimo obrazovky, sa presunie dole.",
   ],
   news1_10: [
